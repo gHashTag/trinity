@@ -45,23 +45,23 @@ struct FocusModeView: View {
                             isFocusMode = false
                         }
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: ParietalSpacing.sm - 2) {
                             Image(systemName: "arrow.up.left.and.arrow.down.right")
                             Text("Exit Focus")
                             Text("(Esc)")
                                 .font(.caption2)
-                                .foregroundStyle(Color.white.opacity(0.5))
+                                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                         }
-                        .font(.system(size: 13, weight: .medium))
+                        .font(WernickeTypography.smallMedium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, ParietalSpacing.md + 2)
+                        .padding(.vertical, ParietalSpacing.sm)
                         .background(
                             SwiftUI.Capsule()
-                                .fill(Color.black.opacity(0.6))
+                                .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
                                 .overlay(
                                     SwiftUI.Capsule()
-                                        .stroke(hoverExitButton ? TrinityTheme.accent : Color.white.opacity(0.2), lineWidth: 1)
+                                        .stroke(hoverExitButton ? V4Color.accent : V4Color.white20, lineWidth: 1)
                                 )
                         )
                     }
@@ -82,7 +82,7 @@ struct FocusModeView: View {
             VStack {
                 Spacer()
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                         MarkdownTextView(text: content)
                             .font(.system(size: fontSize))
                     }
@@ -134,37 +134,37 @@ struct FocusModeView: View {
     // MARK: - Reading Progress Indicator
 
     private var readingProgressIndicator: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm - 2) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Text("\(Int(readingProgress * 100))%")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.caption2MediumMono)
+                    .foregroundStyle(V4Color.accent)
                     .frame(width: 36)
 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.white.opacity(0.1))
-                            .frame(height: 4)
+                            .fill(Color.white.opacity(V2Depth.bgSubtle))
+                            .frame(height: ParietalSpacing.xs)
 
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                             .frame(width: geometry.size.width * readingProgress, height: 4)
                     }
                 }
-                .frame(height: 4)
+                .frame(height: ParietalSpacing.xs)
             }
-            .frame(width: 120)
+            .frame(width: ParietalSpacing.xl * 5)
 
             Text("Reading progress")
                 .font(.caption2)
-                .foregroundStyle(Color.white.opacity(0.4))
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .background(
             SwiftUI.Capsule()
-                .fill(Color.black.opacity(0.5))
+                .fill(Color.black.opacity(V2Depth.stateDisabled))
         )
     }
 
@@ -179,15 +179,15 @@ struct FocusModeView: View {
                 }
             } label: {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 16))
-                    .foregroundStyle(showControls ? TrinityTheme.accent : Color.white.opacity(0.4))
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(showControls ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                     .frame(width: 36, height: 36)
                     .background(
                         Circle()
-                            .fill(Color.black.opacity(0.6))
+                            .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
                             .overlay(
                                 Circle()
-                                    .stroke(showControls ? TrinityTheme.accent.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
+                                    .stroke(showControls ? V4Color.accent.opacity(V2Depth.stateDisabled) : Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
                             )
                     )
             }
@@ -197,14 +197,14 @@ struct FocusModeView: View {
             .accessibilityHint("Double tap to show or hide focus mode controls")
 
             if showControls {
-                VStack(spacing: 12) {
+                VStack(spacing: ParietalSpacing.md) {
                     // Font size control
-                    VStack(spacing: 6) {
+                    VStack(spacing: ParietalSpacing.sm - 2) {
                         Text("Font Size")
                             .font(.caption2)
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
 
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Button {
                                 withAnimation {
                                     focusFontSize = max(12, focusFontSize - 2)
@@ -212,18 +212,18 @@ struct FocusModeView: View {
                                 }
                             } label: {
                                 Image(systemName: "minus")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(Color.white.opacity(0.6))
-                                    .frame(width: 24, height: 24)
-                                    .background(Circle().fill(Color.white.opacity(0.1)))
+                                    .font(WernickeTypography.miniBold)
+                                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
+                                    .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
+                                    .background(Circle().fill(Color.white.opacity(V2Depth.bgSubtle)))
                             }
                             .buttonStyle(.plain)
                             .disabled(focusFontSize <= 12)
 
                             Text("\(focusFontSize)pt")
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                .font(WernickeTypography.caption2MediumMono)
                                 .foregroundStyle(.white)
-                                .frame(width: 40)
+                                .frame(width: ParietalSpacing.buttonMediumWidth)
 
                             Button {
                                 withAnimation {
@@ -232,10 +232,10 @@ struct FocusModeView: View {
                                 }
                             } label: {
                                 Image(systemName: "plus")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(Color.white.opacity(0.6))
-                                    .frame(width: 24, height: 24)
-                                    .background(Circle().fill(Color.white.opacity(0.1)))
+                                    .font(WernickeTypography.miniBold)
+                                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
+                                    .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
+                                    .background(Circle().fill(Color.white.opacity(V2Depth.bgSubtle)))
                             }
                             .buttonStyle(.plain)
                             .disabled(focusFontSize >= 28)
@@ -243,15 +243,15 @@ struct FocusModeView: View {
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.1))
+                        .background(Color.white.opacity(V2Depth.bgSubtle))
 
                     // Ambient color picker (presets)
-                    VStack(spacing: 6) {
+                    VStack(spacing: ParietalSpacing.sm - 2) {
                         Text("Background")
                             .font(.caption2)
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
 
-                        HStack(spacing: 6) {
+                        HStack(spacing: ParietalSpacing.sm - 2) {
                             colorButton("0x0A0A0F", name: "Deep")     // Default dark
                             colorButton("0x000000", name: "OLED")      // Pure black
                             colorButton("0x0D1117", name: "GitHub")    // GitHub dark
@@ -261,10 +261,10 @@ struct FocusModeView: View {
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.1))
+                        .background(Color.white.opacity(V2Depth.bgSubtle))
 
                     // Toggles
-                    VStack(spacing: 8) {
+                    VStack(spacing: ParietalSpacing.sm) {
                         Toggle("Progress Bar", isOn: $showProgress)
                             .font(.caption)
                             .foregroundStyle(.white)
@@ -284,7 +284,7 @@ struct FocusModeView: View {
                         .fill(Color.black.opacity(0.8))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
                         )
                 )
                 .transition(.asymmetric(
@@ -305,11 +305,11 @@ struct FocusModeView: View {
             }
         } label: {
             Color(hex: UInt32(hex.dropFirst(2), radix: 16) ?? 0x0A0A0F)
-                .frame(width: 24, height: 24)
+                .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
                 .clipShape(Circle())
                 .overlay(
                     Circle()
-                        .stroke(isSelected ? TrinityTheme.accent : Color.white.opacity(0.2), lineWidth: 2)
+                        .stroke(isSelected ? V4Color.accent : V4Color.white20, lineWidth: 2)
                 )
         }
         .buttonStyle(.plain)
@@ -340,8 +340,8 @@ struct FocusModeToggleButton: View {
             NotificationCenter.default.post(name: .toggleFocusMode, object: nil)
         } label: {
             Image(systemName: isFocusMode ? "viewfinder.circle.fill" : "viewfinder.circle")
-                .font(.system(size: 15))
-                .foregroundStyle(isFocusMode ? TrinityTheme.accent : Color.white.opacity(0.4))
+                .font(WernickeTypography.size15)
+                .foregroundStyle(isFocusMode ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                 .frame(width: 28, height: 28)
                 .scaleEffect(isHovered ? 1.05 : 1.0)
         }

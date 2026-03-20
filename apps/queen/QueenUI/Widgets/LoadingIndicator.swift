@@ -6,10 +6,10 @@ struct ThinkingDots: View {
     @State private var phase = 0
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(0..<3, id: \.self) { i in
                 Circle()
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 6, height: 6)
                     .opacity(phase == i ? 1.0 : 0.3)
             }
@@ -33,7 +33,7 @@ struct StreamingText: View {
         HStack(spacing: 0) {
             Text(String(text.prefix(visibleCount)))
                 .font(.body.monospaced())
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             if visibleCount < text.count {
                 BlinkingCursor()
             }
@@ -65,27 +65,27 @@ struct ToolProgress: View {
     @State private var shimmerOffset: CGFloat = -0.3
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(tool)
                 .font(.caption.monospaced())
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.bgCard)
+                        .fill(V4Color.surface)
                     if completed {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(success ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                            .fill(success ? V4Color.success : V4Color.error)
                             .frame(width: geo.size.width)
                     } else {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.accent.opacity(0.6))
+                            .fill(V4Color.accent.opacity(V1Theme.opacityTextSecondary))
                             .frame(width: geo.size.width * 0.3)
                             .offset(x: shimmerOffset * geo.size.width)
                     }
                 }
             }
-            .frame(height: 4)
+            .frame(height: ParietalSpacing.xs)
         }
         .task {
             guard !completed else { return }
@@ -105,7 +105,7 @@ struct BlinkingCursor: View {
 
     var body: some View {
         Rectangle()
-            .fill(TrinityTheme.accent)
+            .fill(V4Color.accent)
             .frame(width: 8, height: 16)
             .opacity(visible ? 1 : 0)
             .onAppear {

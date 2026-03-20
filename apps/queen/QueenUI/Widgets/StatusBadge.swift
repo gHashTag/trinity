@@ -5,11 +5,11 @@ struct StatusBadge: View {
 
     var body: some View {
         Text(status.label)
-            .font(.caption2.weight(.bold))
+            .font(WernickeTypography.caption2Bold)
             .foregroundStyle(status.color)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(status.color.opacity(0.15))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, ParietalSpacing.xs)
+            .padding(.vertical, ParietalSpacing.xxs)
+            .background(status.color.opacity(V4Color.opacity15))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
     }
 }

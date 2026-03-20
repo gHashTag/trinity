@@ -50,10 +50,10 @@ enum MessageAction: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .copy, .copyCode, .share, .translate, .cite: return TrinityTheme.accent
-        case .regenerate, .edit, .quoteReply: return TrinityTheme.purple
-        case .delete: return TrinityTheme.statusError
-        case .bookmark: return TrinityTheme.statusWarn
+        case .copy, .copyCode, .share, .translate, .cite: return V4Color.accent
+        case .regenerate, .edit, .quoteReply: return V4Color.purple
+        case .delete: return V4Color.error
+        case .bookmark: return V4Color.warning
         }
     }
 }
@@ -104,19 +104,19 @@ struct MessageActionsPanel: View {
     // MARK: - Body
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ForEach(availableActions) { action in
                 ActionButton(action: action) {
                     performAction(action)
                 }
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs + 2)
         .background(panelBackground)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .opacity(isHovering ? 1 : 0.7)
-        .animation(TrinityTheme.quickSpring(), value: isHovering)
+        .animation(MTMotion.quickSpring, value: isHovering)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Message actions")
     }
@@ -124,7 +124,7 @@ struct MessageActionsPanel: View {
     // MARK: - Background
 
     private var panelBackground: some View {
-        TrinityTheme.bgCardBorder.opacity(0.3)
+        V4Color.border.opacity(V2Depth.stateHover)
     }
 
     // MARK: - Action Handler
@@ -171,7 +171,7 @@ struct MessageActionsPanel: View {
                 }
             }) {
                 Image(systemName: action.icon)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(WernickeTypography.smallMedium)
                     .foregroundColor(buttonColor)
                     .frame(width: 28, height: 28)
                     .background(buttonBackground)
@@ -188,7 +188,7 @@ struct MessageActionsPanel: View {
         }
 
         private var buttonBackground: some View {
-            TrinityTheme.bgCardBorder.opacity(0.2)
+            V4Color.border.opacity(0.2)
         }
     }
 }
@@ -202,20 +202,20 @@ struct MessageActionsCompact: View {
     let onAction: (MessageAction) -> Void
 
     var body: some View {
-        HStack(spacing: 4) {
-            CompactActionButton(icon: "doc.on.doc", color: TrinityTheme.accent) {
+        HStack(spacing: ParietalSpacing.xs) {
+            CompactActionButton(icon: "doc.on.doc", color: V4Color.accent) {
                 onAction(.copy)
                 SoundCueManager.shared.playCopy()
             }
             .accessibilityLabel("Copy message")
 
             CompactActionButton(icon: message.isBookmarked == true ? "bookmark.fill" : "bookmark",
-                                color: TrinityTheme.statusWarn) {
+                                color: V4Color.warning) {
                 onAction(.bookmark)
             }
             .accessibilityLabel(message.isBookmarked == true ? "Unbookmark" : "Bookmark")
 
-            CompactActionButton(icon: "square.and.arrow.up", color: TrinityTheme.accent) {
+            CompactActionButton(icon: "square.and.arrow.up", color: V4Color.accent) {
                 onAction(.share)
             }
             .accessibilityLabel("Share message")
@@ -233,13 +233,13 @@ private struct CompactActionButton: View {
     var body: some View {
         Button(action: onTap) {
             Image(systemName: icon)
-                .font(.system(size: 12))
+                .font(WernickeTypography.size12)
                 .foregroundColor(color.opacity(isHovering ? 1.0 : 0.6))
-                .frame(width: 24, height: 24)
+                .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
         }
         .buttonStyle(.plain)
         .onHover { hovering in
-            withAnimation(TrinityTheme.quickSpring()) {
+            withAnimation(MTMotion.quickSpring) {
                 isHovering = hovering
             }
         }
@@ -416,13 +416,13 @@ private struct MessageActionButtons: View {
 #if DEBUG
 struct MessageActionsPanel_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Full panel
             MessageActionsPanel(
                 message: sampleMessage,
                 onAction: { _ in }
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
 
             // Compact row
             MessageActionsCompact(
@@ -437,7 +437,7 @@ struct MessageActionsPanel_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 
     private static var sampleMessage: ChatMessage {

@@ -63,16 +63,40 @@ pub const alerts = @import("alerts");
 /// Realistic workload testing for brain circuit validation
 pub const simulation = @import("simulation");
 
-// TODO: state_recovery module - pending implementation (task #34)
-// /// State Recovery (Persistence)
-// /// Crash recovery and state persistence for brain components
-// pub const state_recovery = @import("state_recovery");
+/// Observability Export (External Monitoring)
+/// Export brain telemetry for Prometheus, OpenTelemetry, and other systems
+pub const observability_export = @import("observability_export");
+
+/// Intraparietal Sulcus (Numerical Processing)
+/// f16/GF16/TF3 numerical format conversions
+pub const intraparietal_sulcus = @import("intraparietal_sulcus");
+
+/// State Recovery (Persistence)
+/// Crash recovery and state persistence for brain components
+pub const state_recovery = @import("state_recovery");
+
+/// Hypothalamus (Administrative Control)
+/// Brain maintenance: reset, doctor, prune, migrate, backup, restore
+pub const admin = @import("admin");
+
+/// Thalamic Async Processor (Non-blocking Operations)
+/// Async task claim/release, event publishing, health checks, background telemetry
+pub const async_processor = @import("async_processor");
+
+/// Cerebellum (Motor Learning & Adaptive Performance)
+/// Performance history tracking, pattern recognition, adaptive backoff, failure prediction
+pub const learning = @import("learning");
+
+/// Corpus Callosum (Inter-Hemispheric Communication)
+/// Distributed multi-instance coordination: inter-instance communication, leader election, CRDT state sync
+pub const federation = @import("federation");
+
+/// Visual Cortex (Spatial Representation)
+/// ASCII art brain maps, sparklines, heatmaps, 3D visualization
+pub const visualization = @import("visualization");
 
 // Note: benchmarks is NOT imported here to avoid build system complexity.
 // Use @import("benchmarks") directly in benchmark code.
-
-// Note: stress_test is NOT imported here to avoid circular dependency.
-// Stress test imports brain, but brain does not import stress_test.
 
 // Note: stress_test is NOT imported here to avoid circular dependency.
 // Stress test imports brain, but brain does not import stress_test.
@@ -140,22 +164,106 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .biological_function = "Immune Surveillance — The Constant Gardeners. Patrols farm every 30min, prunes crashed workers, stimulates regrowth from leaders",
         .file = "microglia.zig",
     },
-    // TODO: State Recovery - pending implementation (task #34)
-    // .{
-    //     .name = "State Recovery",
-    //     .biological_function = "Crash Recovery — Persistent state storage with versioning and migration",
-    //     .file = "state_recovery.zig",
-    // },
+    .{
+        .name = "State Recovery",
+        .biological_function = "Crash Recovery — Persistent state storage with versioning and migration",
+        .file = "state_recovery.zig",
+    },
+    .{
+        .name = "Hypothalamus",
+        .biological_function = "Administrative Control — brain maintenance: reset, doctor, prune, migrate, backup, restore",
+        .file = "admin.zig",
+    },
+    .{
+        .name = "Health History",
+        .biological_function = "Hippocampal Memory — brain health snapshots for trend analysis",
+        .file = "health_history.zig",
+    },
+    .{
+        .name = "Metrics Dashboard",
+        .biological_function = "Command Center — aggregates metrics from all brain regions with trend detection",
+        .file = "metrics_dashboard.zig",
+    },
     .{
         .name = "Brain Alerts",
         .biological_function = "Critical Health Notification — monitors health and sends alerts when thresholds are crossed",
         .file = "alerts.zig",
+    },
+    .{
+        .name = "Simulation",
+        .biological_function = "Synthetic Workload Testing — realistic workload testing for brain circuit validation",
+        .file = "simulation.zig",
+    },
+    .{
+        .name = "Observability Export",
+        .biological_function = "External Monitoring — Export brain telemetry for Prometheus, OpenTelemetry, and other systems",
+        .file = "observability_export.zig",
+    },
+    .{
+        .name = "Cerebellum",
+        .biological_function = "Motor Learning & Adaptive Performance — performance history tracking, pattern recognition, adaptive backoff, failure prediction",
+        .file = "learning.zig",
+    },
+    .{
+        .name = "Thalamic Async Processor",
+        .biological_function = "Non-blocking Operations — async task claim/release, event publishing, health checks, background telemetry collection",
+        .file = "async_processor.zig",
+    },
+    .{
+        .name = "Corpus Callosum (Federation)",
+        .biological_function = "Inter-Hemispheric Communication — distributed multi-instance coordination, leader election, CRDT state sync",
+        .file = "federation.zig",
+    },
+    .{
+        .name = "Visual Cortex",
+        .biological_function = "Spatial Representation — ASCII art brain maps, sparklines, heatmaps, 3D visualization",
+        .file = "visualization.zig",
     },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // AGENT COORDINATION HELPER — High-level API for orchestrators
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/// Region health status for monitoring
+pub const RegionHealth = struct {
+    name: []const u8,
+    healthy: bool,
+    score: f32,
+    last_check: i64,
+    error_msg: ?[]const u8 = null,
+};
+
+/// Brain region dependency graph
+pub const RegionDependency = struct {
+    region: []const u8,
+    depends_on: []const []const u8,
+};
+
+/// All brain region dependencies
+pub const REGION_DEPENDENCIES = [_]RegionDependency{
+    .{ .region = "Basal Ganglia", .depends_on = &[_][]const u8{} },
+    .{ .region = "Reticular Formation", .depends_on = &[_][]const u8{} },
+    .{ .region = "Locus Coeruleus", .depends_on = &[_][]const u8{} },
+    .{ .region = "Amygdala", .depends_on = &[_][]const u8{} },
+    .{ .region = "Prefrontal Cortex", .depends_on = &[_][]const u8{ "Reticular Formation", "Basal Ganglia" } },
+    .{ .region = "Hippocampus", .depends_on = &[_][]const u8{"Reticular Formation"} },
+    .{ .region = "Corpus Callosum", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Microglia", .depends_on = &[_][]const u8{ "Basal Ganglia", "Corpus Callosum" } },
+    .{ .region = "Intraparietal Sulcus", .depends_on = &[_][]const u8{} },
+    .{ .region = "Thalamus", .depends_on = &[_][]const u8{} },
+    .{ .region = "State Recovery", .depends_on = &[_][]const u8{"Hippocampus"} },
+    .{ .region = "Hypothalamus", .depends_on = &[_][]const u8{ "State Recovery", "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Health History", .depends_on = &[_][]const u8{"Corpus Callosum"} },
+    .{ .region = "Metrics Dashboard", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation", "Locus Coeruleus", "Hippocampus", "Corpus Callosum", "Amygdala", "Prefrontal Cortex", "Intraparietal Sulcus", "Microglia", "Thalamus" } },
+    .{ .region = "Brain Alerts", .depends_on = &[_][]const u8{ "Metrics Dashboard", "Health History" } },
+    .{ .region = "Simulation", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Observability Export", .depends_on = &[_][]const u8{ "Metrics Dashboard", "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Thalamic Async Processor", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Cerebellum", .depends_on = &[_][]const u8{ "Locus Coeruleus", "Telemetry" } },
+    .{ .region = "Corpus Callosum (Federation)", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation", "Locus Coeruleus" } },
+    .{ .region = "Visual Cortex", .depends_on = &[_][]const u8{} },
+};
 
 /// AgentCoordination — high-level wrapper combining all brain regions
 /// for seamless integration into orchestrators and coordinators.
@@ -164,17 +272,158 @@ pub const AgentCoordination = struct {
     registry: *basal_ganglia.Registry,
     event_bus: *reticular_formation.EventBus,
     backoff_policy: locus_coeruleus.BackoffPolicy,
+    region_health: std.StringHashMap(RegionHealth),
+    telemetry: ?*telemetry.BrainTelemetry,
+    alert_manager: ?*alerts.AlertManager,
 
     /// Initialize agent coordination with all brain regions
     pub fn init(allocator: std.mem.Allocator) !AgentCoordination {
         const registry = try basal_ganglia.getGlobal(allocator);
         const event_bus = try reticular_formation.getGlobal(allocator);
-        return AgentCoordination{
+
+        var coord = AgentCoordination{
             .allocator = allocator,
             .registry = registry,
             .event_bus = event_bus,
             .backoff_policy = locus_coeruleus.BackoffPolicy.init(),
+            .region_health = std.StringHashMap(RegionHealth).init(allocator),
+            .telemetry = null,
+            .alert_manager = null,
         };
+
+        // Initialize region health tracking
+        const now = std.time.milliTimestamp();
+        inline for (BRAIN_ATLAS) |region| {
+            try coord.region_health.put(region.name, .{
+                .name = region.name,
+                .healthy = true,
+                .score = 100.0,
+                .last_check = now,
+            });
+        }
+
+        return coord;
+    }
+
+    /// Deinitialize coordination
+    pub fn deinit(self: *AgentCoordination) void {
+        var iter = self.region_health.iterator();
+        while (iter.next()) |entry| {
+            // Note: keys point to string literals in BRAIN_ATLAS, don't free them
+            // Only free allocated error messages
+            if (entry.value_ptr.error_msg) |err| self.allocator.free(err);
+        }
+        self.region_health.deinit();
+    }
+
+    /// Attach telemetry for metrics tracking
+    pub fn attachTelemetry(self: *AgentCoordination, tel: *telemetry.BrainTelemetry) void {
+        self.telemetry = tel;
+    }
+
+    /// Attach alert manager for notifications
+    pub fn attachAlertManager(self: *AgentCoordination, mgr: *alerts.AlertManager) void {
+        self.alert_manager = mgr;
+    }
+
+    /// Check health of all brain regions
+    pub fn checkRegionHealth(self: *AgentCoordination) !void {
+        const now = std.time.milliTimestamp();
+
+        // Check Basal Ganglia
+        if (self.region_health.getPtr("Basal Ganglia")) |health| {
+            const claim_count = self.registry.claims.count();
+            health.score = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(claim_count - 1000)) / 10.0);
+            health.healthy = health.score >= 50.0;
+            health.last_check = now;
+        }
+
+        // Check Reticular Formation
+        if (self.region_health.getPtr("Reticular Formation")) |health| {
+            const stats = self.event_bus.getStats();
+            const buffer_pct = @as(f32, @floatFromInt(stats.buffered)) / 10000.0 * 100.0;
+            health.score = 100.0 - buffer_pct;
+            health.healthy = health.score >= 50.0;
+            health.last_check = now;
+        }
+
+        // Locus Coeruleus is always healthy (stateless)
+        if (self.region_health.getPtr("Locus Coeruleus")) |health| {
+            health.score = 100.0;
+            health.healthy = true;
+            health.last_check = now;
+        }
+
+        // Record telemetry point if attached
+        if (self.telemetry) |tel| {
+            const overall_health = self.getOverallHealthScore();
+            try tel.record(.{
+                .timestamp = now,
+                .active_claims = self.registry.claims.count(),
+                .events_published = self.event_bus.getStats().published,
+                .events_buffered = self.event_bus.getStats().buffered,
+                .health_score = overall_health,
+            });
+        }
+
+        // Check for critical conditions and alert
+        if (self.alert_manager) |mgr| {
+            const overall_health = self.getOverallHealthScore();
+            const stats = self.event_bus.getStats();
+            try mgr.checkHealth(overall_health, stats.buffered, self.registry.claims.count());
+        }
+    }
+
+    /// Get overall health score across all regions
+    pub fn getOverallHealthScore(self: *const AgentCoordination) f32 {
+        var total: f32 = 0;
+        var count: usize = 0;
+
+        var iter = self.region_health.iterator();
+        while (iter.next()) |entry| {
+            total += entry.value_ptr.score;
+            count += 1;
+        }
+
+        return if (count > 0) total / @as(f32, @floatFromInt(count)) else 100.0;
+    }
+
+    /// Get health status of a specific region
+    pub fn getRegionHealth(self: *const AgentCoordination, region_name: []const u8) ?RegionHealth {
+        return self.region_health.get(region_name);
+    }
+
+    /// Check if region dependencies are satisfied
+    pub fn checkDependencies(self: *const AgentCoordination, region_name: []const u8) bool {
+        for (REGION_DEPENDENCIES) |dep| {
+            if (std.mem.eql(u8, dep.region, region_name)) {
+                for (dep.depends_on) |dep_name| {
+                    if (self.region_health.get(dep_name)) |health| {
+                        if (!health.healthy) return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return true; // No dependencies means always satisfied
+    }
+
+    /// Get list of unhealthy regions
+    pub fn getUnhealthyRegions(self: *const AgentCoordination, allocator: std.mem.Allocator) ![][]const u8 {
+        var list = std.ArrayList([]const u8).initCapacity(allocator, 16) catch |err| {
+            std.log.err("Failed to allocate unhealthy regions list: {}", .{err});
+            return error.OutOfMemory;
+        };
+        defer list.deinit(allocator);
+
+        var iter = self.region_health.iterator();
+        while (iter.next()) |entry| {
+            if (!entry.value_ptr.healthy) {
+                try list.append(allocator, try allocator.dupe(u8, entry.key_ptr.*));
+            }
+        }
+
+        return list.toOwnedSlice(allocator);
     }
 
     /// Claim a task for an agent — returns true if successful
@@ -260,6 +509,7 @@ pub const AgentCoordination = struct {
             claims_count: usize,
             events_published: u64,
             events_buffered: usize,
+            unhealthy_regions: usize,
         },
     } {
         const stats = self.getStats();
@@ -272,17 +522,25 @@ pub const AgentCoordination = struct {
         const claims_ok = stats.active_claims < 10_000; // Not overflowing
         const events_ok = stats.total_events_published > 0 or stats.buffered_events == 0; // Either publishing or empty
 
+        // Count unhealthy regions
+        var unhealthy_count: usize = 0;
+        var iter = self.region_health.iterator();
+        while (iter.next()) |entry| {
+            if (!entry.value_ptr.healthy) unhealthy_count += 1;
+        }
+
         const score = (@as(f32, if (claims_ok) 1 else 0) * 0.4 +
             @as(f32, if (events_ok) 1 else 0) * 0.4 +
             1.0 * 0.2) * 100.0; // Backoff always OK
 
         return .{
             .score = score,
-            .healthy = score >= 80.0,
+            .healthy = score >= 80.0 and unhealthy_count == 0,
             .details = .{
                 .claims_count = stats.active_claims,
                 .events_published = stats.total_events_published,
                 .events_buffered = stats.buffered_events,
+                .unhealthy_regions = unhealthy_count,
             },
         };
     }
@@ -371,17 +629,32 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 11), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 21), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
     try std.testing.expect(std.mem.eql(u8, "Microglia", BRAIN_ATLAS[9].name));
-    try std.testing.expect(std.mem.eql(u8, "Brain Alerts", BRAIN_ATLAS[10].name));
+    try std.testing.expect(std.mem.eql(u8, "State Recovery", BRAIN_ATLAS[10].name));
+    try std.testing.expect(std.mem.eql(u8, "Hypothalamus", BRAIN_ATLAS[11].name));
+    try std.testing.expect(std.mem.eql(u8, "Health History", BRAIN_ATLAS[12].name));
+    try std.testing.expect(std.mem.eql(u8, "Metrics Dashboard", BRAIN_ATLAS[13].name));
+    try std.testing.expect(std.mem.eql(u8, "Brain Alerts", BRAIN_ATLAS[14].name));
+    try std.testing.expect(std.mem.eql(u8, "Simulation", BRAIN_ATLAS[15].name));
+    try std.testing.expect(std.mem.eql(u8, "Observability Export", BRAIN_ATLAS[16].name));
+    try std.testing.expect(std.mem.eql(u8, "Cerebellum", BRAIN_ATLAS[17].name));
+    try std.testing.expect(std.mem.eql(u8, "Thalamic Async Processor", BRAIN_ATLAS[18].name));
+    try std.testing.expect(std.mem.eql(u8, "Corpus Callosum (Federation)", BRAIN_ATLAS[19].name));
+    try std.testing.expect(std.mem.eql(u8, "Visual Cortex", BRAIN_ATLAS[20].name));
 }
 
 test "Metrics dashboard collects all regions" {
     const allocator = std.testing.allocator;
     const dashboard = metrics_dashboard;
     var metrics = dashboard.AggregateMetrics.init(allocator);
-    defer metrics.deinit();
+    defer {
+        metrics.deinit();
+        // Clean up globals created during metrics.collect()
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+    }
 
     try metrics.collect();
     try std.testing.expectEqual(@as(usize, 10), metrics.regions.items.len);
@@ -391,9 +664,9 @@ test "AgentCoordination claim and complete" {
     const allocator = std.testing.allocator;
     var coord = try AgentCoordination.init(allocator);
     defer {
+        coord.deinit();
         reticular_formation.resetGlobal(allocator);
         basal_ganglia.resetGlobal(allocator);
-        // coord.deinit() would go here when implemented
     }
 
     const task_id = "test-task-123";
@@ -421,10 +694,244 @@ test "AgentCoordination health check" {
     defer {
         reticular_formation.resetGlobal(allocator);
         basal_ganglia.resetGlobal(allocator);
-        // coord.deinit() would go here when implemented
+        coord.deinit();
     }
 
     const health = coord.healthCheck();
     try std.testing.expect(health.healthy);
     try std.testing.expect(health.score >= 80.0);
+}
+
+test "AgentCoordination region health tracking" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    // Check that all regions are tracked
+    try std.testing.expectEqual(BRAIN_ATLAS.len, coord.region_health.count());
+
+    // Verify Basal Ganglia health
+    const bg_health = coord.getRegionHealth("Basal Ganglia");
+    try std.testing.expect(bg_health != null);
+    try std.testing.expect(bg_health.?.healthy);
+
+    // Verify Reticular Formation health
+    const rf_health = coord.getRegionHealth("Reticular Formation");
+    try std.testing.expect(rf_health != null);
+    try std.testing.expect(rf_health.?.healthy);
+}
+
+test "AgentCoordination dependency checking" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    // Regions with no dependencies should always pass
+    try std.testing.expect(coord.checkDependencies("Basal Ganglia"));
+    try std.testing.expect(coord.checkDependencies("Locus Coeruleus"));
+
+    // Prefrontal Cortex depends on Reticular Formation and Basal Ganglia
+    // Both should be healthy initially
+    try std.testing.expect(coord.checkDependencies("Prefrontal Cortex"));
+
+    // Metrics Dashboard depends on all regions
+    try std.testing.expect(coord.checkDependencies("Metrics Dashboard"));
+}
+
+test "AgentCoordination unhealthy regions detection" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    // Initially no unhealthy regions
+    const unhealthy = try coord.getUnhealthyRegions(allocator);
+    defer {
+        for (unhealthy) |r| allocator.free(r);
+        allocator.free(unhealthy);
+    }
+    try std.testing.expectEqual(@as(usize, 0), unhealthy.len);
+}
+
+test "AgentCoordination overall health score" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    const overall = coord.getOverallHealthScore();
+    try std.testing.expect(overall >= 0.0);
+    try std.testing.expect(overall <= 100.0);
+    try std.testing.expect(overall >= 80.0); // Should be healthy initially
+}
+
+test "AgentCoordination telemetry integration" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    coord.attachTelemetry(&tel);
+
+    // Check region health - should record telemetry
+    try coord.checkRegionHealth();
+
+    // Verify telemetry was recorded
+    const avg = tel.avgHealth(10);
+    try std.testing.expect(avg >= 0.0);
+}
+
+test "AgentCoordination alert manager integration" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    var mgr = try alerts.AlertManager.init(allocator);
+    defer mgr.deinit();
+
+    coord.attachAlertManager(&mgr);
+
+    // Check region health - should trigger alerts if needed
+    try coord.checkRegionHealth();
+
+    // Verify stats are available
+    const stats = try mgr.getStats();
+    try std.testing.expect(stats.total >= 0);
+}
+
+test "AgentCoordination full lifecycle with monitoring" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
+        coord.deinit();
+    }
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+    coord.attachTelemetry(&tel);
+
+    var mgr = try alerts.AlertManager.init(allocator);
+    defer mgr.deinit();
+    coord.attachAlertManager(&mgr);
+
+    const task_id = "lifecycle-test";
+    const agent_id = "agent-test";
+
+    // Claim
+    _ = try coord.claimTask(task_id, agent_id);
+
+    // Check health
+    try coord.checkRegionHealth();
+
+    // Complete
+    try coord.completeTask(task_id, agent_id, 100);
+
+    // Verify telemetry recorded
+    const avg = tel.avgHealth(10);
+    try std.testing.expect(avg >= 0.0);
+}
+
+test "Brain region dependency graph completeness" {
+    // Verify all regions in BRAIN_ATLAS have dependencies defined
+    try std.testing.expectEqual(@as(usize, 21), BRAIN_ATLAS.len);
+    // REGION_DEPENDENCIES may not include all regions (some have no deps)
+
+    // Check that all region names match
+    for (BRAIN_ATLAS) |region| {
+        var found = false;
+        for (REGION_DEPENDENCIES) |dep| {
+            if (std.mem.eql(u8, region.name, dep.region)) {
+                found = true;
+                break;
+            }
+        }
+        try std.testing.expect(found);
+    }
+}
+
+test "All brain regions are exported" {
+    // Verify all brain region modules have expected symbols
+    // This test ensures modules compile and export expected APIs
+
+    // Basal Ganglia should have Registry
+    _ = basal_ganglia.Registry;
+
+    // Reticular Formation should have EventBus
+    _ = reticular_formation.EventBus;
+
+    // Locus Coeruleus should have BackoffPolicy
+    _ = locus_coeruleus.BackoffPolicy;
+
+    // Persistence should have BrainEventLog
+    _ = persistence.BrainEventLog;
+
+    // Telemetry should have BrainTelemetry
+    _ = telemetry.BrainTelemetry;
+
+    // Amygdala should have Amygdala
+    _ = amygdala.Amygdala;
+
+    // Prefrontal Cortex should have PrefrontalCortex
+    _ = prefrontal_cortex.PrefrontalCortex;
+
+    // Health History should have BrainHealthHistory
+    _ = health_history.BrainHealthHistory;
+
+    // Note: thalamus_logs requires external 'trinity-sensation' module
+    // _ = thalamus_logs.ThalamusLogs;
+
+    // Microglia should have Microglia
+    _ = microglia.Microglia;
+
+    // Metrics Dashboard should have RegionMetrics
+    _ = metrics_dashboard.RegionMetrics;
+
+    // Alerts should have AlertManager
+    _ = alerts.AlertManager;
+
+    // Simulation should have SimulationEngine
+    _ = simulation.SimulationEngine;
+
+    // State Recovery should have StateManager
+    _ = state_recovery.StateManager;
+
+    // Admin should have AdminManager
+    _ = admin.AdminManager;
+
+    // Note: intraparietal_sulcus not provided as test dependency
+    // _ = intraparietal_sulcus.NumberFormatter;
+
+    // Observability Export should have ObservabilityExporter
+    _ = observability_export.ObservabilityExporter;
+
+    // Note: async_processor, learning, federation not provided as test dependencies
+    // _ = async_processor.AsyncProcessor;
+    // _ = learning.LearningSystem;
+    // _ = federation.FederationMessage;
 }

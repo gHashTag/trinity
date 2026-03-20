@@ -45,11 +45,11 @@ struct CustomStepper: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             if let label = label {
                 Text(label)
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             // Decrement button
@@ -59,8 +59,8 @@ struct CustomStepper: View {
 
             // Value display
             Text(format.format(value))
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.smallSemiboldMono)
+                .foregroundStyle(V4Color.textPrimary)
                 .frame(minWidth: 50)
 
             // Increment button
@@ -89,12 +89,12 @@ struct StepperButton: View {
             action()
         } label: {
             Image(systemName: direction == .increment ? "plus" : "minus")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(isEnabled ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
-                .frame(width: 24, height: 24)
+                .font(WernickeTypography.miniSemibold)
+                .foregroundStyle(isEnabled ? V4Color.textPrimary : V4Color.textSecondary)
+                .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                 )
         }
         .buttonStyle(.plain)
@@ -124,7 +124,7 @@ struct CustomRangeSlider: View {
             ZStack {
                 // Track
                 RoundedRectangle(cornerRadius: trackHeight / 2)
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(height: trackHeight)
                     .frame(maxWidth: .infinity)
                     .position(y: minY)
@@ -134,7 +134,7 @@ struct CustomRangeSlider: View {
                 let upperX = xPosition(for: upperValue, in: geometry.size.width)
 
                 RoundedRectangle(cornerRadius: trackHeight / 2)
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(height: trackHeight)
                     .frame(width: upperX - lowerX)
                     .position(x: (lowerX + upperX) / 2, y: minY)
@@ -158,13 +158,13 @@ struct CustomRangeSlider: View {
                     )
             }
         }
-        .frame(height: 40)
+        .frame(height: ParietalSpacing.avatarMedium - 8)
     }
 
     private func thumb(at x: CGFloat, y: CGFloat, isDragging: Bool) -> some View {
         Circle()
             .fill(.white)
-            .frame(width: 16, height: 16)
+            .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
             .shadow(color: .black.opacity(0.2), radius: 2)
             .position(x: x, y: y)
     }
@@ -211,13 +211,13 @@ struct SegmentedStepper: View {
                     }
                 } label: {
                     Text(segment)
-                        .font(.system(size: 12, weight: selectedIndex == index ? .medium : .regular))
-                        .foregroundStyle(selectedIndex == index ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                        .font(selectedIndex == index ? WernickeTypography.captionMedium : WernickeTypography.caption)
+                        .foregroundStyle(selectedIndex == index ? V4Color.textPrimary : V4Color.textSecondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, ParietalSpacing.xs + 2)
                         .background(
                             selectedIndex == index ?
-                                TrinityTheme.bgCardBorder :
+                                V4Color.border :
                                 Color.clear
                         )
                 }
@@ -225,13 +225,13 @@ struct SegmentedStepper: View {
 
                 if index < segments.count - 1 {
                     Divider()
-                        .frame(height: 16)
+                        .frame(height: ParietalSpacing.icon)
                 }
             }
         }
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -245,11 +245,11 @@ struct CounterStepper: View {
     let label: String?
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             if let label = label {
                 Text(label)
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             HStack(spacing: 0) {
@@ -258,8 +258,8 @@ struct CounterStepper: View {
                 }
 
                 Text("\(count)")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
                     .frame(minWidth: 30)
 
                 counterButton("+") {
@@ -268,7 +268,7 @@ struct CounterStepper: View {
             }
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
         }
     }
@@ -280,8 +280,8 @@ struct CounterStepper: View {
             }
         } label: {
             Text(title)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.body14Medium)
+                .foregroundStyle(V4Color.accent)
                 .frame(width: 28, height: 28)
         }
         .buttonStyle(.plain)
@@ -295,7 +295,7 @@ struct QuantitySelector: View {
     let available: Int?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             stepperButton(icon: "minus", enabled: quantity > 0) {
                 withAnimation {
                     quantity = max(0, quantity - 1)
@@ -303,8 +303,8 @@ struct QuantitySelector: View {
             }
 
             Text("\(quantity)")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.bodyEmphasized)
+                .foregroundStyle(V4Color.textPrimary)
                 .frame(minWidth: 30)
 
             stepperButton(icon: "plus", enabled: available == nil || quantity < (available ?? 0)) {
@@ -322,7 +322,7 @@ struct QuantitySelector: View {
             if let available = available {
                 Text("\(available) available")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
     }
@@ -332,12 +332,12 @@ struct QuantitySelector: View {
             action()
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(enabled ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
-                .frame(width: 32, height: 32)
+                .font(WernickeTypography.caption2Semibold)
+                .foregroundStyle(enabled ? V4Color.textPrimary : V4Color.textSecondary)
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                 .background(
                     Circle()
-                        .fill(enabled ? TrinityTheme.bgCardBorder : Color.clear)
+                        .fill(enabled ? V4Color.border : Color.clear)
                 )
         }
         .buttonStyle(.plain)
@@ -350,7 +350,7 @@ struct QuantitySelector: View {
 struct StepperView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 CustomStepper(
                     value: .constant(5),
                     in: 0...10,
@@ -382,9 +382,9 @@ struct StepperView_Previews: PreviewProvider {
                 )
             }
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

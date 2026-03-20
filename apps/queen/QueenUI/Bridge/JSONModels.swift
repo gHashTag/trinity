@@ -202,7 +202,7 @@ struct BuildStatus: Codable {
 
 // MARK: - Agent Event (v3 Event Stream)
 
-struct AgentEvent: Codable, Identifiable {
+struct AgentEvent: Codable, Identifiable, Equatable {
     let ts: Int?
     let seq: Int?
     let agent: String?

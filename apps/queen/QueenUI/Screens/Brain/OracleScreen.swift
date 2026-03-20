@@ -9,7 +9,7 @@ struct OracleScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 headerSection
 
@@ -33,7 +33,7 @@ struct OracleScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { watcher.reload() }
     }
 
@@ -42,14 +42,14 @@ struct OracleScreen: View {
     private var headerSection: some View {
         HStack {
             Text("\u{1F52E}")
-                .font(.system(size: 48))
+                .font(WernickeTypography.size48)
             VStack(alignment: .leading) {
                 Text("QUEEN v4 COMMAND CENTER")
                     .font(.title.weight(.bold))
-                    .foregroundStyle(TrinityTheme.golden)
+                    .foregroundStyle(V4Color.golden)
                 Text("18 Senses | 29 Actions | 12 Rules")
                     .font(.subheadline)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             Spacer()
         }
@@ -59,25 +59,25 @@ struct OracleScreen: View {
     // MARK: - Daemon Status
 
     private var daemonStatusSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             let running = daemonState?.isRunning ?? false
             Circle()
-                .fill(running ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                .fill(running ? V4Color.statusOK : V4Color.statusError)
                 .frame(width: 12, height: 12)
             Text(running ? "DAEMON RUNNING" : "DAEMON STOPPED")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(running ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                .foregroundStyle(running ? V4Color.statusOK : V4Color.statusError)
 
             if let cycle = daemonState?.cycle {
                 Text("Cycle #\(cycle)")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             if let state = daemonState {
                 Text("Uptime: \(state.uptimeFormatted)")
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
@@ -88,24 +88,24 @@ struct OracleScreen: View {
     // MARK: - Gauges
 
     private var gaugesSection: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: ParietalSpacing.xl) {
             MetricGauge(
                 label: "Ouroboros",
                 value: senses?.ouroboros_score ?? 0,
                 maxValue: 100,
-                accent: TrinityTheme.golden
+                accent: V4Color.golden
             )
             MetricGauge(
                 label: "Best PPL",
                 value: senses?.farm_best_ppl ?? 999,
                 maxValue: 100,
-                accent: TrinityTheme.accent
+                accent: V4Color.accent
             )
             MetricGauge(
                 label: "Tests",
                 value: Double(senses?.test_rate ?? 0),
                 maxValue: 100,
-                accent: TrinityTheme.purple
+                accent: V4Color.purple
             )
         }
         .padding()
@@ -117,10 +117,10 @@ struct OracleScreen: View {
         let status = senses?.healthStatus ?? "UNKNOWN"
         let color: Color = {
             switch senses?.healthColor {
-            case "green": return TrinityTheme.statusOK
-            case "yellow": return TrinityTheme.statusWarn
-            case "red": return TrinityTheme.statusError
-            default: return TrinityTheme.textMuted
+            case "green": return V4Color.statusOK
+            case "yellow": return V4Color.statusWarn
+            case "red": return V4Color.statusError
+            default: return V4Color.textSecondary
             }
         }()
 
@@ -129,20 +129,20 @@ struct OracleScreen: View {
             .foregroundStyle(color)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(color.opacity(0.15))
+            .background(color.opacity(V2Depth.bgSidebarHover))
             .clipShape(SwiftUI.Capsule())
     }
 
     // MARK: - Senses Grid
 
     private var sensesGrid: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("SENSES (18)")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
                 .padding(.horizontal)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.sm) {
                 senseCard(icon: "\u{1F527}", name: "Build", value: (senses?.build_ok ?? false) ? "OK" : "FAIL",
                          ok: senses?.build_ok ?? false)
                 senseCard(icon: "\u{2699}\u{FE0F}", name: "Tests", value: "\(senses?.test_rate ?? 0)%",
@@ -183,24 +183,24 @@ struct OracleScreen: View {
     // MARK: - Auto-Decision
 
     private var autoDecisionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             let autoCount = daemonState?.auto_actions_this_hour ?? 0
 
             Text("AUTO-ACTIONS")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal)
 
             HStack {
                 Text("\u{26A1}")
                 Text("\(autoCount)/3 this hour")
                     .font(.body.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
             }
             .padding()
-            .background(TrinityTheme.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+            .background(V4Color.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .padding(.horizontal)
         }
     }
@@ -208,29 +208,29 @@ struct OracleScreen: View {
     // MARK: - Recent Audit
 
     private var recentAuditSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("RECENT ACTIONS")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.purple)
+                .foregroundStyle(V4Color.purple)
                 .padding(.horizontal)
 
             if audit.isEmpty {
                 Text("No audit entries yet")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .padding(.horizontal)
             } else {
                 ForEach(audit) { entry in
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Text(entry.icon)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(entry.action ?? "unknown")
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             if let detail = entry.detail, !detail.isEmpty {
                                 Text(detail)
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                                     .lineLimit(1)
                             }
                         }
@@ -245,29 +245,29 @@ struct OracleScreen: View {
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .padding(.horizontal)
     }
 
     // MARK: - Helpers
 
     private func senseCard(icon: String, name: String, value: String, ok: Bool) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text(icon)
                 .font(.caption)
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                 Text(name)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 Text(value)
                     .font(.caption.weight(.bold).monospacedDigit())
-                    .foregroundStyle(ok ? TrinityTheme.statusOK : TrinityTheme.statusWarn)
+                    .foregroundStyle(ok ? V4Color.statusOK : V4Color.statusWarn)
             }
             Spacer()
         }
         .padding(6)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 

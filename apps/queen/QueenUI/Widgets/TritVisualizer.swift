@@ -23,9 +23,9 @@ struct TritVisualizer: View {
 
                     let color: Color
                     switch values[idx] {
-                    case 1: color = TrinityTheme.accent
-                    case -1: color = TrinityTheme.purple
-                    default: color = TrinityTheme.bgCard
+                    case 1: color = V4Color.accent
+                    case -1: color = V4Color.purple
+                    default: color = V4Color.surface
                     }
 
                     context.fill(Path(rect), with: .color(color))

@@ -27,10 +27,10 @@ struct Avatar: View {
 
         var color: Color {
             switch self {
-            case .online: return TrinityTheme.statusOK
-            case .away: return TrinityTheme.statusWarn
-            case .busy: return TrinityTheme.statusError
-            case .offline: return TrinityTheme.textMuted
+            case .online: return V4Color.success
+            case .away: return V4Color.warning
+            case .busy: return V4Color.error
+            case .offline: return V4Color.textSecondary
             }
         }
     }
@@ -69,7 +69,7 @@ struct Avatar: View {
                     .frame(width: size.dimension / 4, height: size.dimension / 4)
                     .overlay(
                         Circle()
-                            .stroke(TrinityTheme.bgCard, lineWidth: 1)
+                            .stroke(V4Color.surface, lineWidth: 1)
                     )
                     .offset(x: size.dimension / 8, y: size.dimension / 8)
             }
@@ -158,39 +158,39 @@ struct UserProfileCard: View {
     let onAction: () -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Avatar(name: name, imageURL: imageURL, size: .xLarge)
 
-            VStack(spacing: 4) {
-                HStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(name)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.body16Medium)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     if isVerified {
                         Image(systemName: "checkmark.seal.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(V4Color.accent)
                     }
                 }
 
                 if let username = username {
                     Text("@\(username)")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
 
                 if let bio = bio {
                     Text(bio)
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(3)
                 }
             }
 
             if let followers = followers, let following = following {
-                HStack(spacing: 20) {
+                HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                     StatItem(label: "Followers", value: "\(followers)")
                     StatItem(label: "Following", value: "\(following)")
                 }
@@ -200,23 +200,23 @@ struct UserProfileCard: View {
                 onAction()
             } label: {
                 Text("Follow")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(WernickeTypography.body14Medium)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(TrinityTheme.accent)
-                    .cornerRadius(8)
+                    .padding(.vertical, ParietalSpacing.sm + 2)
+                    .background(V4Color.accent)
+                    .cornerRadius(V1Theme.cornerBase)
             }
             .buttonStyle(.plain)
         }
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -227,12 +227,12 @@ struct UserProfileCard: View {
         var body: some View {
             VStack(spacing: 2) {
                 Text(value)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(label)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
     }
@@ -271,7 +271,7 @@ struct EditableAvatar: View {
                     .frame(width: size.dimension * 0.35, height: size.dimension * 0.35)
                     .background(
                         Circle()
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                     )
                     .offset(x: size.dimension / 8, y: size.dimension / 8)
             }
@@ -282,12 +282,12 @@ struct EditableAvatar: View {
     private var placeholder: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(width: size.dimension, height: size.dimension)
 
             Image(systemName: "person.fill")
                 .font(.system(size: size.dimension * 0.4))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
     }
 
@@ -307,22 +307,22 @@ struct MentionAvatar: View {
     let mention: String
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text("@")
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.accent)
 
             Text(mention)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .padding(.horizontal, ParietalSpacing.sm + 2)
+        .padding(.vertical, ParietalSpacing.xs + 2)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(TrinityTheme.accent.opacity(0.1))
+                .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
         )
     }
 }
@@ -334,15 +334,15 @@ struct UserStatusIndicator: View {
     let showLabel: Bool
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Circle()
                 .fill(status.color)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
             if showLabel {
                 Text(statusText)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
     }
@@ -362,8 +362,8 @@ struct UserStatusIndicator: View {
 struct AvatarView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 16) {
-                HStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.lg) {
+                HStack(spacing: ParietalSpacing.md) {
                     Avatar(name: "Alice", size: .small, status: .online)
                     Avatar(name: "Bob Smith", size: .medium, status: .away)
                     Avatar(name: "Charlie", size: .large, status: .busy)
@@ -385,6 +385,6 @@ struct AvatarView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

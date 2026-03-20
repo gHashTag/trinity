@@ -3,7 +3,7 @@ import SwiftUI
 struct StatCard: View, Equatable {
     let label: String
     let value: String
-    var accent: Color = TrinityTheme.accent
+    var accent: Color = V4Color.accent
     var history: [Double] = []
 
     static func == (lhs: StatCard, rhs: StatCard) -> Bool {
@@ -13,19 +13,19 @@ struct StatCard: View, Equatable {
     @State private var isHovered = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack(spacing: 0) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(accent)
-                    .frame(width: 3, height: 16)
+                    .frame(width: 3, height: ParietalSpacing.icon)
                 Text(label)
-                    .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .padding(.leading, 8)
+                    .font(WernickeTypography.caption)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .padding(.leading, ParietalSpacing.xs)
             }
             Text(value)
                 .font(.title2.weight(.bold).monospacedDigit())
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
                 .accessibilityLabel(label)
                 .accessibilityValue(value)
 
@@ -48,7 +48,7 @@ struct StatCard: View, Equatable {
                     }
                     ctx.stroke(
                         path,
-                        with: .color(accent.opacity(0.7)),
+                        with: .color(accent.opacity(V4Color.opacity70)),
                         style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
                     )
                 }
@@ -57,15 +57,15 @@ struct StatCard: View, Equatable {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
-        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .scaleEffect(isHovered ? MTMotion.hoverScale : 1.0)
         .onHover { isHovered = $0 }
-        .animation(.easeInOut(duration: 0.12), value: isHovered)
+        .animation(MTMotion.quick, value: isHovered)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(label)
         .accessibilityValue(value)

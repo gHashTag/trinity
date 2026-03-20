@@ -8,21 +8,26 @@
 
 const std = @import("std");
 
-/// Float16 type alias
-pub const f16 = std.meta.Float(.f16);
+/// Float16 type alias (HslmF16 to avoid shadowing primitive f16)
+/// In Zig 0.15, f16 is a primitive type, so we just alias it
+pub const HslmF16 = f16;
 
 /// GF16 (Golden Float16) — φ-optimized packed format
+/// Simplified placeholder implementation
 pub const GF16 = packed struct(u16) {
-    sign: u1,
-    exponent: u11,
-    mantissa: u4,
+    /// Raw storage (simplified - just store f16 bits)
+    bits: u16,
 
     pub fn from_f32(v: f32) GF16 {
-        return @bitCast(@as(u16, @intFromFloat(v)));
+        // Simple conversion: cast to f16, then extract bits
+        const f16_val: f16 = @floatCast(v);
+        return .{ .bits = @bitCast(f16_val) };
     }
 
     pub fn to_f32(self: GF16) f32 {
-        return @floatFromInt(@as(i32, @bitCast(self)));
+        // Extract bits as f16, then widen to f32
+        const f16_val: f16 = @bitCast(self.bits);
+        return @as(f32, f16_val);
     }
 };
 
@@ -57,26 +62,60 @@ pub const TF3 = packed struct(u16) {
     }
 };
 
+/// Safe f16 to f32 conversion (alias for backward compatibility)
+pub fn hslmF16ToF32(v: HslmF16) f32 {
+    return @as(f32, v);
+}
+
 /// Safe f16 to f32 conversion
-pub fn safeF16ToF32(v: f16) f32 {
-    return @floatFromFloat(v);
+pub fn safeF16ToF32(v: HslmF16) f32 {
+    return @as(f32, v);
 }
 
 /// Vector-safe float cast
+/// Converts integer vectors to float vectors using @floatFromInt
 pub fn vectorFloatCast(comptime T: type, src: anytype) T {
-    return @floatCast(src);
+    const ST = @TypeOf(src);
+
+    // Check if both are vectors with same length
+    const S = @typeInfo(ST);
+    const D = @typeInfo(T);
+
+    if (S == .vector and D == .vector) {
+        const src_child = S.vector.child;
+        const len = S.vector.len;
+
+        // Integer to float conversion
+        switch (src_child) {
+            i8, i16, i32, i64, i128, isize,
+            u8, u16, u32, u64, u128, usize
+            => {
+                // Convert element by element
+                var result: T = undefined;
+                comptime var i: usize = 0;
+                inline while (i < len) : (i += 1) {
+                    result[i] = @floatFromInt(src[i]);
+                }
+                return result;
+            },
+            else => {},
+        }
+    }
+
+    // Fallback to direct cast for float-to-float
+    return @as(T, src);
 }
 
 /// Batch f16 to f32 conversion
-pub fn f16BatchToF32(comptime N: usize, src: [N]f16) [N]f32 {
+pub fn f16BatchToF32(comptime N: usize, src: [N]HslmF16) [N]f32 {
     var result: [N]f32 = undefined;
-    for (0..N) |i| result[i] = @floatFromFloat(src[i]);
+    for (0..N) |i| result[i] = @as(f32, src[i]);
     return result;
 }
 
 /// Batch f32 to f16 conversion
-pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]f16 {
-    var result: [N]f16 = undefined;
+pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]HslmF16 {
+    var result: [N]HslmF16 = undefined;
     for (0..N) |i| result[i] = @floatCast(src[i]);
     return result;
 }
@@ -85,19 +124,19 @@ pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]f16 {
 pub const PHI: f32 = 1.618033988749895;
 pub const PHI_INV: f32 = 0.6180339887498949;
 
-pub fn phiQuantize(v: f32) f16 {
+pub fn phiQuantize(v: f32) HslmF16 {
     return @floatCast(v * PHI_INV);
 }
 
-pub fn phiDequantize(v: f16) f32 {
-    return @floatFromFloat(v) * PHI;
+pub fn phiDequantize(v: HslmF16) f32 {
+    return @as(f32, v) * PHI;
 }
 
 // Tests
 test "f16 basic conversion" {
     const original: f32 = 3.14159;
-    const f16_val: f16 = @floatCast(original);
-    const f32_val: f32 = @floatFromFloat(f16_val);
+    const f16_val: HslmF16 = @floatCast(original);
+    const f32_val: f32 = @floatCast(f16_val);
     try std.testing.expect(f32_val > 3.0 and f32_val < 3.2);
 }
 

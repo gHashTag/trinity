@@ -31,16 +31,16 @@ struct Popover: View {
                     }
 
                 AnyView(content)
-                    .padding(12)
+                    .padding(ParietalSpacing.md)
                     .background(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                            .fill(TrinityTheme.bgCard)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                            .fill(V4Color.surface)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                            .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                            .stroke(V4Color.border, lineWidth: 1)
                     )
-                    .shadow(color: .black.opacity(TrinityTheme.shadowLargeOpacity), radius: TrinityTheme.shadowLargeRadius)
+                    .shadow(color: .black.opacity(V1Theme.shadowLargeOpacity), radius: V1Theme.shadowLargeRadius)
             }
             .transition(.scale.combined(with: .opacity))
             .zIndex(1000)
@@ -48,7 +48,7 @@ struct Popover: View {
     }
 
     private func dismiss() {
-        withAnimation(TrinityTheme.quickSpring()) {
+        withAnimation(MTMotion.quickSpring) {
             isPresented = false
         }
     }
@@ -69,22 +69,22 @@ struct PopoverModifier<PopoverContent: View>: ViewModifier {
                 ZStack {
                     Color.black.opacity(0.001)
                         .onTapGesture {
-                            withAnimation(TrinityTheme.quickSpring()) {
+                            withAnimation(MTMotion.quickSpring) {
                                 isPresented = false
                             }
                         }
 
                     popoverContent
-                        .padding(12)
+                        .padding(ParietalSpacing.md)
                         .background(
-                            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                                .fill(TrinityTheme.bgCard)
+                            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                                .fill(V4Color.surface)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                                .stroke(V4Color.border, lineWidth: 1)
                         )
-                        .shadow(color: .black.opacity(TrinityTheme.shadowLargeOpacity), radius: TrinityTheme.shadowLargeRadius)
+                        .shadow(color: .black.opacity(V1Theme.shadowLargeOpacity), radius: V1Theme.shadowLargeRadius)
                 }
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
                 .zIndex(1000)
@@ -145,15 +145,15 @@ struct Tooltip: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11))
+            .font(WernickeTypography.size11)
             .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 4)
                     .fill(.black.opacity(0.85))
             )
-            .shadow(color: .black.opacity(0.3), radius: 4)
+            .shadow(color: .black.opacity(V2Depth.stateHover), radius: 4)
             .opacity(isVisible ? 1 : 0)
             .scaleEffect(isVisible ? 1 : 0.9)
             .animation(.easeOut(duration: 0.2), value: isVisible)
@@ -212,36 +212,36 @@ struct ContextualMenu: View {
                 ForEach(Array(menuItems.enumerated()), id: \.element.id) { index, item in
                     if item.isSeparator {
                         Divider()
-                            .background(TrinityTheme.bgCardBorder)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 4)
+                            .background(V4Color.border)
+                            .padding(.horizontal, ParietalSpacing.xs)
+                            .padding(.vertical, ParietalSpacing.xs)
                     } else {
                         Button {
                             item.action()
                             onDismiss()
                         } label: {
-                            HStack(spacing: 10) {
+                            HStack(spacing: ParietalSpacing.sm + 2) {
                                 if let icon = item.icon {
                                     Image(systemName: icon)
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(item.isDestructive ? TrinityTheme.statusError : TrinityTheme.textMuted)
-                                        .frame(width: 20)
+                                        .font(WernickeTypography.size13)
+                                        .foregroundStyle(item.isDestructive ? V4Color.error : V4Color.textSecondary)
+                                        .frame(width: ParietalSpacing.buttonSmallWidth)
                                 }
 
                                 Text(item.title)
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(item.isDestructive ? TrinityTheme.statusError : TrinityTheme.textPrimary)
+                                    .font(WernickeTypography.size13)
+                                    .foregroundStyle(item.isDestructive ? V4Color.error : V4Color.textPrimary)
 
                                 Spacer()
                             }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, ParietalSpacing.sm + 2)
+                            .padding(.vertical, ParietalSpacing.xs + 2)
                         }
                         .buttonStyle(.plain)
 
                         if index < menuItems.count - 1 && !menuItems[index + 1].isSeparator {
                             Divider()
-                                .background(TrinityTheme.bgCardBorder)
+                                .background(V4Color.border)
                                 .padding(.leading, 36)
                         }
                     }
@@ -249,14 +249,14 @@ struct ContextualMenu: View {
             }
             .padding(4)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
-            .shadow(color: .black.opacity(TrinityTheme.shadowLargeOpacity), radius: TrinityTheme.shadowLargeRadius)
+            .shadow(color: .black.opacity(V1Theme.shadowLargeOpacity), radius: V1Theme.shadowLargeRadius)
         }
         .transition(.scale.combined(with: .opacity))
     }
@@ -342,14 +342,14 @@ struct ModalView: View {
             modalContent
         }
         .onAppear {
-            withAnimation(TrinityTheme.springAnimation()) {
+            withAnimation(MTMotion.standardSpring) {
                 isAnimating = true
             }
         }
     }
 
     private var modalBackdrop: some View {
-        Color.black.opacity(0.4)
+        Color.black.opacity(V1Theme.opacityTextTertiary)
             .ignoresSafeArea()
             .opacity(isAnimating ? 1 : 0)
             .onTapGesture {
@@ -358,24 +358,24 @@ struct ModalView: View {
     }
 
     private var modalContent: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Title
             Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
                 .multilineTextAlignment(.center)
 
             // Message
             if let message = message {
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             // Buttons
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 if let secondaryButtonTitle = secondaryButtonTitle {
                     Button(secondaryButtonTitle) {
                         dismiss()
@@ -389,20 +389,20 @@ struct ModalView: View {
                     onPrimary()
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(isPrimaryDestructive ? TrinityTheme.statusError : TrinityTheme.accent)
+                .tint(isPrimaryDestructive ? V4Color.error : V4Color.accent)
             }
         }
         .padding(24)
         .frame(width: 360)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerLarge)
-        .shadow(color: .black.opacity(0.3), radius: 20)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerLarge)
+        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 20)
         .scaleEffect(isAnimating ? 1 : 0.9)
         .opacity(isAnimating ? 1 : 0)
     }
 
     private func dismiss() {
-        withAnimation(TrinityTheme.springAnimation()) {
+        withAnimation(MTMotion.standardSpring) {
             isAnimating = false
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -515,7 +515,7 @@ struct Drawer: View {
         ZStack {
             // Backdrop
             if isOpen {
-                Color.black.opacity(0.3)
+                Color.black.opacity(V2Depth.stateHover)
                     .ignoresSafeArea()
                     .opacity(openProgress)
                     .onTapGesture {
@@ -541,10 +541,10 @@ struct Drawer: View {
 
                 AnyView(content)
                     .frame(width: width)
-                    .background(TrinityTheme.bgSidebar)
+                    .background(V4Color.sidebar)
                     .overlay(
                         Rectangle()
-                            .fill(TrinityTheme.bgCardBorder)
+                            .fill(V4Color.border)
                             .frame(width: 1),
                         alignment: position == .leading ? .trailing : .leading
                     )
@@ -581,7 +581,7 @@ struct Drawer: View {
     }
 
     private func closeDrawer() {
-        withAnimation(TrinityTheme.springAnimation()) {
+        withAnimation(MTMotion.standardSpring) {
             isOpen = false
             dragOffset = 0
         }
@@ -650,15 +650,15 @@ struct BannerView: View {
 
         var color: Color {
             switch self {
-            case .info: return Color(hex: 0x00D9FF)
-            case .warning: return TrinityTheme.statusWarn
-            case .error: return TrinityTheme.statusError
-            case .success: return TrinityTheme.statusOK
+            case .info: return V4Color.info
+            case .warning: return V4Color.warning
+            case .error: return V4Color.error
+            case .success: return V4Color.success
             }
         }
 
         var backgroundColor: Color {
-            color.opacity(0.15)
+            color.opacity(V2Depth.bgSidebarHover)
         }
     }
 
@@ -680,16 +680,16 @@ struct BannerView: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Icon
             Image(systemName: style.icon)
-                .font(.system(size: 16))
+                .font(WernickeTypography.size16)
                 .foregroundStyle(style.color)
 
             // Message
             Text(message)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
@@ -699,25 +699,25 @@ struct BannerView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.horizontal, ParietalSpacing.md + 2)
+        .padding(.vertical, ParietalSpacing.md)
         .background(style.backgroundColor)
         .overlay(
             Rectangle()
                 .fill(style.color)
-                .frame(width: 3),
+                .frame(width: ParietalSpacing.xxxs),
             alignment: .leading
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(style.color.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(style.color.opacity(V2Depth.stateHover), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.2), radius: 8)
         .offset(y: isVisible ? 0 : -80)
@@ -756,7 +756,7 @@ struct BannerStack: View {
     @StateObject private var manager = BannerManager()
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ForEach(manager.banners) { banner in
                 BannerView(
                     message: banner.message,
@@ -770,7 +770,7 @@ struct BannerStack: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .top)
-        .padding(16)
+        .padding(ParietalSpacing.lg)
     }
 }
 
@@ -835,15 +835,15 @@ struct OverlayComponentsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // Banner styles
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 BannerView(message: "Info message", style: .info) {}
                 BannerView(message: "Warning message", style: .warning) {}
                 BannerView(message: "Error occurred", style: .error) {}
                 BannerView(message: "Success!", style: .success) {}
             }
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .previewDisplayName("Banners")
 
             // Modal
@@ -857,7 +857,7 @@ struct OverlayComponentsView_Previews: PreviewProvider {
                 onSecondary: {}
             )
             .frame(width: 500, height: 400)
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .previewDisplayName("Modal")
 
             // Contextual Menu
@@ -867,21 +867,21 @@ struct OverlayComponentsView_Previews: PreviewProvider {
                 ContextualMenu.MenuItem.separator(),
                 ContextualMenu.MenuItem(title: "Delete", icon: "trash", isDestructive: true) {}
             ], onDismiss: {})
-            .frame(width: 200)
+            .frame(width: ParietalSpacing.xl * 8)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .previewDisplayName("Contextual Menu")
 
             // Tooltip
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 Text("Hover for tooltip")
                     .padding()
-                    .background(TrinityTheme.bgCard)
+                    .background(V4Color.surface)
                     .tooltip("This is a helpful tooltip")
             }
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .previewDisplayName("Tooltip")
         }
     }

@@ -206,10 +206,10 @@ struct TriangleLogo: View {
             let world = Self.worlds[hov]
             let screen = Screen.screenForBlock(hov)
             Text("\(screen.icon) \(world.name) — \(world.formula)")
-                .font(.system(size: 13, design: .monospaced))
+                .font(WernickeTypography.smallSemiboldMono)
                 .foregroundStyle(.black)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(Color.white.opacity(0.94))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
                 .position(tooltipPosition(hov, scale: scale, ox: offsetX, oy: offsetY))
@@ -278,7 +278,7 @@ struct TriangleLogo: View {
 
     private func realmLabel(_ text: String, color: Color, x: CGFloat, y: CGFloat) -> some View {
         Text(text)
-            .font(.system(size: 10, weight: .bold, design: .monospaced))
+            .font(WernickeTypography.miniBoldMono)
             .foregroundStyle(color)
             .position(x: x, y: y)
             .allowsHitTesting(false)

@@ -1,4 +1,4 @@
-//! BRAIN BENCHMARKS — v1.0 — Performance Measurement for S³AI Neuroanatomy
+//! BRAIN BENCHMARKS — v1.1 — Performance Measurement for S³AI Neuroanatomy
 //!
 //! Comprehensive benchmarking suite for all brain regions.
 //! Measures throughput, latency, and overhead for critical operations.
@@ -7,10 +7,13 @@
 //! Brain Region: Corpus Callosum (Aggregation & Analysis)
 
 const std = @import("std");
-const basal_ganglia = @import("basal_ganglia");
-const reticular_formation = @import("reticular_formation");
-const locus_coeruleus = @import("locus_coeruleus");
-const telemetry = @import("telemetry");
+const array_list = std.array_list;
+const basal_ganglia = @import("basal_ganglia.zig");
+const reticular_formation = @import("reticular_formation.zig");
+const locus_coeruleus = @import("locus_coeruleus.zig");
+const telemetry = @import("telemetry.zig");
+const amygdala = @import("amygdala.zig");
+const brain = @import("brain.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BENCHMARK RESULT TYPES
@@ -56,8 +59,8 @@ pub const BenchmarkResult = struct {
 
 pub const BenchmarkSuite = struct {
     allocator: std.mem.Allocator,
-    results: std.ArrayList(BenchmarkResult),
-    comparisons: std.ArrayList(Comparison),
+    results: array_list.Managed(BenchmarkResult),
+    comparisons: array_list.Managed(Comparison),
 
     pub const Comparison = struct {
         name: []const u8,
@@ -70,8 +73,8 @@ pub const BenchmarkSuite = struct {
     pub fn init(allocator: std.mem.Allocator) BenchmarkSuite {
         return BenchmarkSuite{
             .allocator = allocator,
-            .results = std.ArrayList(BenchmarkResult).init(allocator),
-            .comparisons = std.ArrayList(Comparison).init(allocator),
+            .results = array_list.Managed(BenchmarkResult).init(allocator),
+            .comparisons = array_list.Managed(Comparison).init(allocator),
         };
     }
 
@@ -97,6 +100,7 @@ pub const BenchmarkSuite = struct {
         try self.benchmarkTelemetryRecord(config);
         try self.benchmarkTelemetryAggregation(config);
         try self.benchmarkAgentCoordination(config);
+        try self.benchmarkAmygdalaSalience(config);
     }
 
     /// Benchmark: Task claim throughput (operations per second)
@@ -106,7 +110,7 @@ pub const BenchmarkSuite = struct {
         defer registry.deinit();
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -129,8 +133,8 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
-            allocator,
+        const result = try BenchmarkSuite.computeResult(
+            self.allocator,
             "Task Claim Throughput",
             iterations,
             total_ns,
@@ -154,7 +158,7 @@ pub const BenchmarkSuite = struct {
             _ = try registry.claim(allocator, task_id, "agent-001", 300000);
         }
 
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(num_tasks, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(num_tasks, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -177,7 +181,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Task Release Throughput",
             num_tasks,
@@ -194,7 +198,7 @@ pub const BenchmarkSuite = struct {
         defer bus.deinit();
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -224,7 +228,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Event Bus Publish",
             iterations,
@@ -257,7 +261,7 @@ pub const BenchmarkSuite = struct {
         }
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -266,8 +270,9 @@ pub const BenchmarkSuite = struct {
         while (i < iterations) : (i += 1) {
             const start = std.time.nanoTimestamp();
             const events = try bus.poll(0, allocator, 100);
-            defer allocator.free(events);
-            _ = events;
+            defer {
+                allocator.free(events);
+            }
             const end = std.time.nanoTimestamp();
 
             const latency = @as(u64, @intCast(end - start));
@@ -279,7 +284,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Event Bus Poll",
             iterations,
@@ -292,11 +297,9 @@ pub const BenchmarkSuite = struct {
     /// Benchmark: Backoff calculation speed
     pub fn benchmarkBackoffCalculation(self: *BenchmarkSuite, config: BenchmarkConfig) !void {
         const allocator = self.allocator;
-        _ = allocator;
-
         const policy = locus_coeruleus.BackoffPolicy.init();
         const iterations = config.iterations * 10; // More iterations since it's fast
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -318,7 +321,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Backoff Calculation",
             iterations,
@@ -335,10 +338,11 @@ pub const BenchmarkSuite = struct {
         defer {
             reticular_formation.resetGlobal(allocator);
             basal_ganglia.resetGlobal(allocator);
+            coord.deinit();
         }
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -358,7 +362,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Health Check",
             iterations,
@@ -375,7 +379,7 @@ pub const BenchmarkSuite = struct {
         defer tel.deinit();
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -403,7 +407,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Telemetry Record",
             iterations,
@@ -434,7 +438,7 @@ pub const BenchmarkSuite = struct {
         }
 
         const iterations = config.iterations;
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, @min(iterations, 100_000));
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -455,7 +459,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Telemetry Aggregation",
             iterations,
@@ -472,10 +476,11 @@ pub const BenchmarkSuite = struct {
         defer {
             reticular_formation.resetGlobal(allocator);
             basal_ganglia.resetGlobal(allocator);
+            coord.deinit();
         }
 
         const iterations = @min(config.iterations, 10_000); // Fewer since it's slower
-        var latencies = try std.ArrayList(u64).initCapacity(allocator, iterations);
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, iterations);
         defer latencies.deinit();
 
         const start_total = std.time.nanoTimestamp();
@@ -501,7 +506,7 @@ pub const BenchmarkSuite = struct {
         const end_total = std.time.nanoTimestamp();
         const total_ns = @as(u64, @intCast(end_total - start_total));
 
-        const result = try self.computeResult(
+        const result = try BenchmarkSuite.computeResult(
             allocator,
             "Agent Coordination Cycle",
             iterations,
@@ -511,9 +516,58 @@ pub const BenchmarkSuite = struct {
         try self.results.append(result);
     }
 
+    /// Benchmark: Amygdala salience calculation speed
+    pub fn benchmarkAmygdalaSalience(self: *BenchmarkSuite, config: BenchmarkConfig) !void {
+        const allocator = self.allocator;
+
+        const iterations = config.iterations * 100; // More iterations since it's fast
+        var latencies = try array_list.Managed(u64).initCapacity(allocator, @min(iterations, 100_000));
+        defer latencies.deinit();
+
+        // Test data for different salience scenarios
+        const test_cases = [_]struct {
+            task_id: []const u8,
+            realm: []const u8,
+            priority: []const u8,
+        }{
+            .{ .task_id = "urgent-critical-security-fix", .realm = "dukh", .priority = "critical" },
+            .{ .task_id = "regular-maintenance-task", .realm = "sattva", .priority = "low" },
+            .{ .task_id = "performance-optimization", .realm = "razum", .priority = "high" },
+            .{ .task_id = "bugfix-ui-issue", .realm = "sattva", .priority = "medium" },
+            .{ .task_id = "critical-data-corruption", .realm = "dukh", .priority = "high" },
+        };
+
+        const start_total = std.time.nanoTimestamp();
+
+        var i: u64 = 0;
+        while (i < iterations) : (i += 1) {
+            const test_case = test_cases[i % test_cases.len];
+
+            const start = std.time.nanoTimestamp();
+            _ = amygdala.Amygdala.analyzeTask(test_case.task_id, test_case.realm, test_case.priority);
+            const end = std.time.nanoTimestamp();
+
+            const latency = @as(u64, @intCast(end - start));
+            if (latencies.items.len < 100_000) {
+                try latencies.append(latency);
+            }
+        }
+
+        const end_total = std.time.nanoTimestamp();
+        const total_ns = @as(u64, @intCast(end_total - start_total));
+
+        const result = try BenchmarkSuite.computeResult(
+            allocator,
+            "Amygdala Salience",
+            iterations,
+            total_ns,
+            latencies.items,
+        );
+        try self.results.append(result);
+    }
+
     /// Compute benchmark statistics from raw latency samples
-    fn computeResult(
-        self: *BenchmarkSuite,
+    pub fn computeResult(
         allocator: std.mem.Allocator,
         name: []const u8,
         iterations: u64,
@@ -665,12 +719,17 @@ pub const BenchmarkSuite = struct {
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
 
-        const writer = file.writer();
-        try writer.writeAll("{\"brain_benchmarks\":[\n");
+        // Build JSON string in memory first (simpler than dealing with new Writer API)
+        var json_buffer = array_list.Managed(u8).init(self.allocator);
+        defer json_buffer.deinit();
+
+        try json_buffer.appendSlice("{\"brain_benchmarks\":[\n");
 
         for (self.results.items, 0..) |result, i| {
-            if (i > 0) try writer.writeAll(",\n");
-            try writer.print("  {{\"name\":\"{s}\",\"iterations\":{d},\"total_ns\":{d},\"min_ns\":{d},\"max_ns\":{d},\"avg_ns\":{d:.2},\"ops_per_sec\":{d:.2},\"p50_ns\":{d},\"p95_ns\":{d},\"p99_ns\":{d},\"p999_ns\":{d}}", .{
+            if (i > 0) try json_buffer.appendSlice(",\n");
+            const json_line = try std.fmt.allocPrint(self.allocator,
+                "  {{\"name\":\"{s}\",\"iterations\":{d},\"total_ns\":{d},\"min_ns\":{d},\"max_ns\":{d},\"avg_ns\":{d:.2},\"ops_per_sec\":{d:.2},\"p50_ns\":{d},\"p95_ns\":{d},\"p99_ns\":{d},\"p999_ns\":{d}}}",
+                .{
                 result.name,
                 result.iterations,
                 result.total_ns,
@@ -683,13 +742,16 @@ pub const BenchmarkSuite = struct {
                 result.p99_ns,
                 result.p999_ns,
             });
+            defer self.allocator.free(json_line);
+            try json_buffer.appendSlice(json_line);
         }
 
-        try writer.writeAll("\n]}\n");
+        try json_buffer.appendSlice("\n]}\n");
+        try file.writeAll(json_buffer.items);
     }
 
     /// Load previous results for comparison
-    pub fn loadBaseline(allocator: std.mem.Allocator, path: []const u8) !?BenchmarkSuite {
+    pub fn loadBaseline(allocator: std.mem.Allocator, path: []const u8) !?*BenchmarkSuite {
         const file = std.fs.cwd().openFile(path, .{}) catch return null;
         defer file.close();
 
@@ -697,8 +759,12 @@ pub const BenchmarkSuite = struct {
         defer allocator.free(content);
 
         // Parse JSON (simplified)
-        var suite = BenchmarkSuite.init(allocator);
-        errdefer suite.deinit();
+        const suite = try allocator.create(BenchmarkSuite);
+        suite.* = BenchmarkSuite.init(allocator);
+        errdefer {
+            suite.deinit();
+            allocator.destroy(suite);
+        }
 
         // Extract benchmark data from JSON
         var lines = std.mem.splitScalar(u8, content, '\n');
@@ -773,7 +839,6 @@ pub const BenchmarkSuite = struct {
         try writer.writeAll("╠════════════════════════════════════════════════════════════════════════════╣\n");
 
         for (self.comparisons.items) |comp| {
-            const arrow = if (comp.improved) "+" else "-";
             const color = if (comp.improved) "↑" else "↓";
 
             try writer.print("║  %-28s │ ", .{comp.name});
@@ -897,14 +962,14 @@ test "BenchmarkResult formatting" {
     defer allocator.free(result.name);
 
     var buffer: [100]u8 = undefined;
-    const stream = std.io.fixedBufferStream(&buffer);
+    var stream = std.io.fixedBufferStream(&buffer);
 
     try result.formatOps(stream.writer());
     try std.testing.expect(std.mem.indexOf(u8, &buffer, "MOP/s") != null);
 }
 
 test "BenchmarkConfig parse" {
-    const args = [][]const u8{ "--iterations", "50000", "--verbose" };
+    const args = [_][]const u8{ "--iterations", "50000", "--verbose" };
     const config = BenchmarkConfig.parse(&args);
 
     try std.testing.expectEqual(@as(u64, 50000), config.iterations);
@@ -918,7 +983,7 @@ test "BenchmarkConfig parse" {
 test "benchmark accuracy: nanoTimestamp precision" {
     // Verify that std.time.nanoTimestamp() provides nanosecond precision
     const t1 = std.time.nanoTimestamp();
-    std.time.sleep(1_000_000); // Sleep 1ms
+    std.Thread.sleep(1_000_000); // Sleep 1ms
     const t2 = std.time.nanoTimestamp();
 
     const elapsed_ns = t2 - t1;
@@ -966,7 +1031,7 @@ test "benchmark accuracy: operations per second calculation" {
     var suite = BenchmarkSuite.init(allocator);
     defer suite.deinit();
 
-    const result = try suite.computeResult(
+    const result = try BenchmarkSuite.computeResult(
         allocator,
         "test-ops",
         1000,
@@ -987,7 +1052,7 @@ test "benchmark accuracy: latency percentiles match sorted data" {
     var suite = BenchmarkSuite.init(allocator);
     defer suite.deinit();
 
-    const result = try suite.computeResult(
+    const result = try BenchmarkSuite.computeResult(
         allocator,
         "test-percentiles",
         100,
@@ -1097,7 +1162,7 @@ test "benchmark accuracy: telemetry aggregation correctness" {
 
     // Trend should be improving (70 -> 90 -> 100)
     const trend = tel.trend(10);
-    try std.testing.expectEqual(@typeInfo(@TypeOf(trend)).Enum.tag_type, .improving, trend);
+    try std.testing.expectEqual(trend, .improving);
 }
 
 test "benchmark accuracy: full suite completes without errors" {
@@ -1113,8 +1178,8 @@ test "benchmark accuracy: full suite completes without errors" {
     // Run all benchmarks - should complete without errors
     try suite.runAll(config);
 
-    // Should have results for all benchmarks
-    try std.testing.expect(suite.results.items.len >= 8);
+    // Should have results for all benchmarks (including Amygdala)
+    try std.testing.expect(suite.results.items.len >= 9);
 
     // All results should have valid metrics
     for (suite.results.items) |result| {
@@ -1122,6 +1187,19 @@ test "benchmark accuracy: full suite completes without errors" {
         try std.testing.expect(result.ops_per_sec > 0);
         try std.testing.expect(result.avg_ns >= 0);
     }
+}
+
+test "benchmark amygdala salience calculation" {
+    const allocator = std.testing.allocator;
+    var suite = BenchmarkSuite.init(allocator);
+    defer suite.deinit();
+
+    const config = BenchmarkConfig{ .iterations = 1000 };
+    try suite.benchmarkAmygdalaSalience(config);
+
+    const result = suite.results.items[0];
+    try std.testing.expect(result.ops_per_sec > 0); // Should be very fast
+    try std.testing.expect(std.mem.eql(u8, "Amygdala Salience", result.name));
 }
 
 test "benchmark accuracy: save and load baseline preserves data" {
@@ -1142,8 +1220,11 @@ test "benchmark accuracy: save and load baseline preserves data" {
 
     // Load and verify
     const loaded = try BenchmarkSuite.loadBaseline(allocator, tmp_path);
-    if (loaded) |*baseline| {
-        defer baseline.deinit();
+    if (loaded) |baseline| {
+        defer {
+            baseline.deinit();
+            allocator.destroy(baseline);
+        }
         try std.testing.expect(baseline.results.items.len > 0);
     } else {
         try std.testing.expect(false); // Should have loaded something
@@ -1159,7 +1240,7 @@ test "benchmark accuracy: comparison calculates correct percentage" {
     defer baseline.deinit();
 
     // Create baseline result
-    const baseline_result = try baseline.computeResult(
+    const baseline_result = try BenchmarkSuite.computeResult(
         allocator,
         "test-comparison",
         1000,
@@ -1169,7 +1250,7 @@ test "benchmark accuracy: comparison calculates correct percentage" {
     try baseline.results.append(baseline_result);
 
     // Create current result (2x faster)
-    const current_result = try suite.computeResult(
+    const current_result = try BenchmarkSuite.computeResult(
         allocator,
         "test-comparison",
         1000,
@@ -1190,4 +1271,27 @@ test "benchmark accuracy: comparison calculates correct percentage" {
 
     allocator.free(baseline_result.name);
     allocator.free(current_result.name);
+}
+
+test "benchmark amygdala salience included in suite" {
+    const allocator = std.testing.allocator;
+    var suite = BenchmarkSuite.init(allocator);
+    defer suite.deinit();
+
+    const config = BenchmarkConfig{
+        .iterations = 10, // Very small for quick test
+        .verbose = false,
+    };
+
+    try suite.runAll(config);
+
+    // Check that Amygdala benchmark was run
+    var found_amygdala = false;
+    for (suite.results.items) |result| {
+        if (std.mem.eql(u8, "Amygdala Salience", result.name)) {
+            found_amygdala = true;
+            try std.testing.expect(result.ops_per_sec > 0);
+        }
+    }
+    try std.testing.expect(found_amygdala);
 }

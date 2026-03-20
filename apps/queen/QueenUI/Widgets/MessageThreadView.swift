@@ -61,7 +61,7 @@ struct ThreadReply: Identifiable, Equatable {
     var isUnread: Bool = true
     var reactions: [String] = []
 
-    init(author: String, authorAvatarColor: Color = TrinityTheme.accent, content: String, timestamp: Date = Date(), reactions: [String] = []) {
+    init(author: String, authorAvatarColor: Color = V4Color.accent, content: String, timestamp: Date = Date(), reactions: [String] = []) {
         self.author = author
         self.authorAvatarColor = authorAvatarColor
         self.content = content
@@ -81,7 +81,7 @@ struct ThreadIndicator: View {
 
     var body: some View {
         Button(action: {
-            withAnimation(TrinityTheme.quickSpring()) {
+            withAnimation(MTMotion.quickSpring) {
                 onTap()
             }
         }) {
@@ -89,17 +89,17 @@ struct ThreadIndicator: View {
                 // Outer ring for unread state
                 if hasUnread {
                     Circle()
-                        .stroke(TrinityTheme.accent, lineWidth: 2)
+                        .stroke(V4Color.accent, lineWidth: 2)
                 }
 
                 // Badge background
                 Circle()
-                    .fill(hasUnread ? TrinityTheme.accent.opacity(0.2) : TrinityTheme.textMuted.opacity(0.3))
+                    .fill(hasUnread ? V4Color.accent.opacity(0.2) : V4Color.textSecondary.opacity(V2Depth.stateHover))
 
                 // Reply count
                 Text(count < 10 ? "\(count)" : "9+")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(hasUnread ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.caption2Bold)
+                    .foregroundStyle(hasUnread ? V4Color.accent : V4Color.textSecondary)
             }
             .frame(width: 22, height: 22)
         }
@@ -139,116 +139,116 @@ struct ThreadInlineView: View {
             headerView
 
             Divider()
-                .background(TrinityTheme.bgCardBorder.opacity(0.5))
+                .background(V4Color.border.opacity(V2Depth.stateDisabled))
 
             // Replies scroll view
             repliesScrollView
 
             Divider()
-                .background(TrinityTheme.bgCardBorder.opacity(0.5))
+                .background(V4Color.border.opacity(V2Depth.stateDisabled))
 
             // Reply composer
             replyComposer
         }
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border.opacity(V2Depth.stateDisabled), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 2)
     }
 
     private var headerView: some View {
-        HStack(spacing: TrinityTheme.spacing / 2) {
+        HStack(spacing: ParietalSpacing.md / 2) {
             // Thread icon
             Image(systemName: "bubble.left.and.bubble.right.fill")
-                .foregroundStyle(TrinityTheme.accent)
-                .font(.system(size: 14))
+                .foregroundStyle(V4Color.accent)
+                .font(WernickeTypography.size14)
 
             // Reply count
             Text("\(thread.replies.count) \(thread.replies.count == 1 ? "Reply" : "Replies")")
-                .font(.system(size: TrinityTheme.chatCaptionSize, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(.system(size: V1Theme.chatCaptionSize, weight: .medium))
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
             // Close button
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .font(.system(size: 16))
+                    .foregroundStyle(V4Color.textSecondary)
+                    .font(WernickeTypography.size16)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Close thread")
         }
-        .padding(.horizontal, TrinityTheme.spacing)
-        .padding(.vertical, 10)
-        .background(TrinityTheme.bgSidebar.opacity(0.5))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
+        .background(V4Color.sidebar.opacity(V2Depth.stateDisabled))
     }
 
     private var repliesScrollView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 // Collapsed parent message preview
                 parentPreview
 
                 // Thread replies
                 ForEach(thread.replies) { reply in
                     ThreadReplyCell(reply: reply)
-                        .padding(.horizontal, TrinityTheme.spacing)
+                        .padding(.horizontal, ParietalSpacing.md)
                 }
             }
-            .padding(.vertical, TrinityTheme.spacing)
+            .padding(.vertical, ParietalSpacing.md)
         }
         .frame(maxHeight: thread.replies.count > maxVisibleReplies ? 280 : .none)
     }
 
     private var parentPreview: some View {
-        HStack(alignment: .top, spacing: 8) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text("Original message")
-                    .font(.system(size: TrinityTheme.chatCaptionSize, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(.system(size: V1Theme.chatCaptionSize, weight: .medium))
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Text(parentMessage.text)
-                    .font(.system(size: TrinityTheme.chatFontSize - 1))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(.system(size: V1Theme.chatFontSize - 1))
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(2)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgSidebar.opacity(0.3))
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.sidebar.opacity(V2Depth.stateHover))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         }
-        .padding(.horizontal, TrinityTheme.spacing)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.bottom, 4)
     }
 
     private var replyComposer: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        HStack(alignment: .bottom, spacing: ParietalSpacing.sm) {
             TextField("Add a reply...", text: $replyText, axis: .vertical)
-                .font(.system(size: TrinityTheme.chatFontSize))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(.system(size: V1Theme.chatFontSize))
+                .foregroundStyle(V4Color.textPrimary)
                 .focused($isFocused)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.bgSidebar.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.sidebar.opacity(V2Depth.stateDisabled))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .onSubmit {
                     submitReply()
                 }
 
             Button(action: submitReply) {
                 Image(systemName: "arrow.up.circle.fill")
-                    .foregroundStyle(replyText.isEmpty ? TrinityTheme.textMuted : TrinityTheme.accent)
-                    .font(.system(size: 20))
+                    .foregroundStyle(replyText.isEmpty ? V4Color.textSecondary : V4Color.accent)
+                    .font(WernickeTypography.size20)
             }
             .buttonStyle(.plain)
             .disabled(replyText.isEmpty)
             .accessibilityLabel("Send reply")
         }
-        .padding(TrinityTheme.spacing)
+        .padding(ParietalSpacing.md)
     }
 
     private func submitReply() {
@@ -265,39 +265,39 @@ struct ThreadReplyCell: View {
     @State private var isHovering = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm + 2) {
             // Indentation spacer (40% left indentation)
             Spacer()
                 .frame(width: 0)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 // Author header
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     // Avatar
                     Circle()
                         .fill(reply.authorAvatarColor.opacity(0.8))
-                        .frame(width: 24, height: 24)
+                        .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
                         .overlay(
                             Text(String(reply.author.prefix(1)).uppercased())
-                                .font(.system(size: 11, weight: .bold))
+                                .font(WernickeTypography.caption2Bold)
                                 .foregroundStyle(.white)
                         )
 
                     // Author name
                     Text(reply.author)
-                        .font(.system(size: TrinityTheme.chatCaptionSize, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(.system(size: V1Theme.chatCaptionSize, weight: .semibold))
+                        .foregroundStyle(V4Color.textPrimary)
 
                     // Timestamp
                     Text(formatTimestamp(reply.timestamp))
-                        .font(.system(size: TrinityTheme.chatCaptionSize - 1))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(.system(size: V1Theme.chatCaptionSize - 1))
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Spacer()
 
                     // Inline actions (show on hover)
                     if isHovering {
-                        HStack(spacing: 6) {
+                        HStack(spacing: ParietalSpacing.sm - 2) {
                             replyActionButton(icon: "arrowshape.turn.up.left", label: "Reply") {}
                             replyActionButton(icon: "hand.thumbsup", label: "React") {}
                         }
@@ -307,30 +307,30 @@ struct ThreadReplyCell: View {
 
                 // Content with markdown support
                 MarkdownTextView(text: reply.content)
-                    .font(.system(size: TrinityTheme.chatFontSize))
+                    .font(.system(size: V1Theme.chatFontSize))
 
                 // Reactions
                 if !reply.reactions.isEmpty {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         ForEach(reply.reactions, id: \.self) { reaction in
                             Text(reaction)
-                                .font(.system(size: 13))
-                                .padding(.horizontal, 6)
+                                .font(WernickeTypography.size13)
+                                .padding(.horizontal, ParietalSpacing.xs + 2)
                                 .padding(.vertical, 2)
-                                .background(TrinityTheme.bgCardBorder.opacity(0.5))
+                                .background(V4Color.border.opacity(V2Depth.stateDisabled))
                                 .clipShape(SwiftUI.Capsule())
                         }
                     }
                 }
             }
-            .padding(12)
+            .padding(ParietalSpacing.md)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .fill(V4Color.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke(TrinityTheme.bgCardBorder.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke(V4Color.border.opacity(V2Depth.stateHover), lineWidth: 1)
             )
         }
         .onHover { hovering in
@@ -343,10 +343,10 @@ struct ThreadReplyCell: View {
     private func replyActionButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
                 .padding(4)
-                .background(TrinityTheme.bgCardBorder.opacity(0.3))
+                .background(V4Color.border.opacity(V2Depth.stateHover))
                 .clipShape(Circle())
         }
         .buttonStyle(.plain)
@@ -371,19 +371,19 @@ struct ThreadExpandableContainer: View {
     @State private var isExpanded = false
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 4) {
+        VStack(alignment: .trailing, spacing: ParietalSpacing.xs) {
             if isExpanded {
                 ThreadInlineView(
                     parentMessage: parentMessage,
                     thread: thread,
                     onReply: { content in
                         onReply(content)
-                        withAnimation(TrinityTheme.gentleSpring()) {
+                        withAnimation(MTMotion.slow) {
                             isExpanded = false
                         }
                     },
                     onDismiss: {
-                        withAnimation(TrinityTheme.gentleSpring()) {
+                        withAnimation(MTMotion.slow) {
                             isExpanded = false
                         }
                     }
@@ -397,7 +397,7 @@ struct ThreadExpandableContainer: View {
                     count: thread.replies.count,
                     hasUnread: thread.unreadCount > 0
                 ) {
-                    withAnimation(TrinityTheme.springAnimation()) {
+                    withAnimation(MTMotion.standardSpring) {
                         isExpanded = true
                         onMarkRead()
                     }
@@ -405,7 +405,7 @@ struct ThreadExpandableContainer: View {
                 .transition(.scale.combined(with: .opacity))
             }
         }
-        .animation(TrinityTheme.springAnimation(), value: isExpanded)
+        .animation(MTMotion.standardSpring, value: isExpanded)
     }
 }
 
@@ -422,29 +422,29 @@ struct MessageThreadView_Previews: PreviewProvider {
 
 private struct ThreadStatesPreview: View {
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             // Thread indicator - unread
             HStack {
                 Text("Parent message with thread")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 ThreadIndicator(count: 3, hasUnread: true) {}
             }
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             // Thread indicator - read
             HStack {
                 Text("Parent message with read thread")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 ThreadIndicator(count: 5, hasUnread: false) {}
             }
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             // Expanded thread
@@ -455,35 +455,35 @@ private struct ThreadStatesPreview: View {
                 onDismiss: {}
             )
             .padding()
-            .frame(width: 500)
+            .frame(width: ParietalSpacing.xl * 20)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 
 private struct ReplyCellsPreview: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("Thread Reply Cells")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
                 .padding(.horizontal)
 
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 ThreadReplyCell(reply: sampleReply1)
                 ThreadReplyCell(reply: sampleReply2)
                 ThreadReplyCell(reply: sampleReply3)
             }
             .padding()
-            .frame(width: 500)
-            .background(TrinityTheme.bgCard)
+            .frame(width: ParietalSpacing.xl * 20)
+            .background(V4Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 

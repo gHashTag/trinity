@@ -9,16 +9,16 @@ struct LabeledDivider: View {
     var body: some View {
         HStack {
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(height: 1)
 
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
-                .padding(.horizontal, 8)
+                .foregroundStyle(V4Color.textSecondary)
+                .padding(.horizontal, ParietalSpacing.sm)
 
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(height: 1)
         }
     }
@@ -102,23 +102,23 @@ struct SectionContainer<Content: View>: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             if let title = title {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             content
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(backgroundColor ?? TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .fill(backgroundColor ?? V4Color.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -144,11 +144,11 @@ struct CardContainer<Content: View>: View {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(TrinityTheme.bgCard)
+                    .fill(V4Color.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
             .shadow(color: .black.opacity(shadowRadius > 0 ? 0.1 : 0), radius: shadowRadius)
     }
@@ -160,7 +160,7 @@ struct Separator: View {
     let color: Color
     let thickness: CGFloat
 
-    init(color: Color = TrinityTheme.bgCardBorder, thickness: CGFloat = 1) {
+    init(color: Color = V4Color.border, thickness: CGFloat = 1) {
         self.color = color
         self.thickness = thickness
     }
@@ -194,13 +194,13 @@ struct BadgeOverlay: View {
     var body: some View {
         if count > 0 {
             Text("\(count > 99 ? "99+" : "\(count)")")
-                .font(.system(size: 10, weight: .bold))
+                .font(WernickeTypography.miniBold)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, ParietalSpacing.xs + 2)
                 .padding(.vertical, 2)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(TrinityTheme.statusError)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .fill(V4Color.error)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: position.alignment)
         }
@@ -214,7 +214,7 @@ struct Capsule: View {
     let color: Color
     let padding: EdgeInsets
 
-    init(color: Color = TrinityTheme.accent, padding: EdgeInsets = EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12), @ViewBuilder content: @escaping () -> some View) {
+    init(color: Color = V4Color.accent, padding: EdgeInsets = EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12), @ViewBuilder content: @escaping () -> some View) {
         self.color = color
         self.padding = padding
         self.content = { AnyView(content()) }
@@ -225,11 +225,11 @@ struct Capsule: View {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(color.opacity(0.15))
+                    .fill(color.opacity(V2Depth.bgSidebarHover))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(color.opacity(0.5), lineWidth: 1)
+                    .stroke(color.opacity(V2Depth.stateDisabled), lineWidth: 1)
             )
     }
 }
@@ -241,16 +241,16 @@ struct Tag: View {
     let color: Color
     let onRemove: (() -> Void)?
 
-    init(_ text: String, color: Color = TrinityTheme.accent, onRemove: (() -> Void)? = nil) {
+    init(_ text: String, color: Color = V4Color.accent, onRemove: (() -> Void)? = nil) {
         self.text = text
         self.color = color
         self.onRemove = onRemove
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Text(text)
-                .font(.system(size: 11))
+                .font(WernickeTypography.size11)
                 .foregroundStyle(color)
 
             if let onRemove = onRemove {
@@ -258,17 +258,17 @@ struct Tag: View {
                     onRemove()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 8))
+                        .font(WernickeTypography.size8)
                         .foregroundStyle(color)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(color.opacity(0.15))
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .fill(color.opacity(V2Depth.bgSidebarHover))
         )
     }
 }
@@ -284,10 +284,10 @@ struct Badge: View {
 
         var color: Color {
             switch self {
-            case .info: return Color(hex: 0x00D9FF)
-            case .success: return TrinityTheme.statusOK
-            case .warning: return TrinityTheme.statusWarn
-            case .error: return TrinityTheme.statusError
+            case .info: return V4Color.info
+            case .success: return V4Color.success
+            case .warning: return V4Color.warning
+            case .error: return V4Color.error
             }
         }
     }
@@ -299,10 +299,10 @@ struct Badge: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 10, weight: .medium))
+            .font(WernickeTypography.miniMedium)
             .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 4)
                     .fill(style.color)
@@ -331,14 +331,14 @@ struct QuickCopyButton: View {
                 }
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
 
                 Text(isCopied ? "Copied!" : "Copy")
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
             }
-            .foregroundStyle(isCopied ? TrinityTheme.statusOK : TrinityTheme.textMuted)
+            .foregroundStyle(isCopied ? V4Color.success : V4Color.textSecondary)
         }
         .buttonStyle(.plain)
     }
@@ -366,7 +366,7 @@ struct ActionSheet: View {
     var body: some View {
         if isVisible.wrappedValue {
             ZStack {
-                Color.black.opacity(0.4)
+                Color.black.opacity(V1Theme.opacityTextTertiary)
                     .ignoresSafeArea()
                     .onTapGesture {
                         isVisible.wrappedValue = false
@@ -375,17 +375,17 @@ struct ActionSheet: View {
                 VStack(spacing: 0) {
                     if let title = title {
                         Text(title)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.body14Semibold)
+                            .foregroundStyle(V4Color.textPrimary)
                             .padding(.top, 16)
                             .frame(maxWidth: .infinity)
                     }
 
                     if let message = message {
                         Text(message)
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textMuted)
-                            .padding(.vertical, 8)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textSecondary)
+                            .padding(.vertical, ParietalSpacing.sm)
                             .frame(maxWidth: .infinity)
                     }
 
@@ -397,21 +397,21 @@ struct ActionSheet: View {
                             isVisible.wrappedValue = false
                         } label: {
                             Text(action.title)
-                                .font(.system(size: 13))
-                                .foregroundStyle(action.style == .destructive ? TrinityTheme.statusError : TrinityTheme.accent)
+                                .font(WernickeTypography.size13)
+                                .foregroundStyle(action.style == .destructive ? V4Color.error : V4Color.accent)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
+                                .padding(.vertical, ParietalSpacing.md)
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(TrinityTheme.bgCard)
+                        .fill(V4Color.surface)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
                 .padding(.horizontal, 40)
             }
@@ -424,18 +424,18 @@ struct ActionSheet: View {
 struct UtilityView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                 LabeledDivider(label: "Utilities")
 
                 SectionContainer("Tags") {
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Tag("SwiftUI")
                         Tag("Animation")
                         Tag("Layout")
                     }
                 }
 
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Badge("New", style: .info)
                     Badge("Success", style: .success)
                     Badge("Warning", style: .warning)
@@ -447,6 +447,6 @@ struct UtilityView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

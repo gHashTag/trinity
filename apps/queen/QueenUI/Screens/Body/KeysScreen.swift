@@ -18,43 +18,43 @@ struct KeysScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("\u{1F511}")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("KEYS")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                         Text("API Keys & Tokens (redacted)")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
-                    ActionButton(icon: "🔑", label: "Test Keys", color: TrinityTheme.golden,
+                    ActionButton(icon: "🔑", label: "Test Keys", color: V4Color.golden,
                                  action: "keys_test")
                     let present = keys.filter { $0.status == .present }.count
                     MetricGauge(
                         label: "Valid",
                         value: Double(present),
                         maxValue: Double(max(keys.count, 1)),
-                        accent: TrinityTheme.accent
+                        accent: V4Color.accent
                     )
                 }
                 .padding()
 
                 ForEach(keys) { key in
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Text(statusIcon(key.status))
                             .font(.title2)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(key.name)
                                 .font(.headline.monospaced())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text(key.redacted)
                                 .font(.caption.monospaced())
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
 
                         Spacer()
@@ -62,8 +62,8 @@ struct KeysScreen: View {
                         StatusBadge(status: key.status == .present ? .up : (key.status == .expired ? .down : .stub))
                     }
                     .padding()
-                    .background(TrinityTheme.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                    .background(V4Color.bgCard)
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                     .padding(.horizontal)
                 }
 
@@ -74,7 +74,7 @@ struct KeysScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear {
             scanKeys()
             actions = QueenBridge.shared.loadActions()
@@ -84,49 +84,49 @@ struct KeysScreen: View {
     // MARK: - Policy Map Section
 
     private var policyMapSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("QUEEN POLICY MAP (\(actions.count) actions)")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
                 .padding(.horizontal)
 
-            policyLevel(title: "L0 READ-ONLY", level: 0, color: TrinityTheme.statusOK)
-            policyLevel(title: "L1 SOFT-WRITE", level: 1, color: TrinityTheme.golden)
-            policyLevel(title: "L2 DANGEROUS", level: 2, color: TrinityTheme.statusError)
+            policyLevel(title: "L0 READ-ONLY", level: 0, color: V4Color.statusOK)
+            policyLevel(title: "L1 SOFT-WRITE", level: 1, color: V4Color.golden)
+            policyLevel(title: "L2 DANGEROUS", level: 2, color: V4Color.statusError)
         }
         .padding(.top, 8)
     }
 
     private func policyLevel(title: String, level: Int, color: Color) -> some View {
         let filtered = actions.filter { $0.level == level }
-        return VStack(alignment: .leading, spacing: 4) {
+        return VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text(title)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(color)
                 .padding(.horizontal)
 
             ForEach(filtered) { action in
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text(action.emoji ?? "\u{2699}\u{FE0F}")
                         .font(.caption)
                     Text(action.label ?? "unknown")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                     Text(action.levelLabel)
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(color)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(color.opacity(0.15))
+                        .background(color.opacity(V2Depth.bgSidebarHover))
                         .clipShape(SwiftUI.Capsule())
                     Text("\(action.max_per_hour ?? 0)/h")
                         .font(.caption2.monospacedDigit())
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     if let cd = action.cooldown_sec, cd > 0 {
                         Text("\(cd)s cd")
                             .font(.caption2.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
                 .padding(.horizontal)
@@ -134,8 +134,8 @@ struct KeysScreen: View {
             }
         }
         .padding(.vertical, 4)
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .padding(.horizontal)
     }
 

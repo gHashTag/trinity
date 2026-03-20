@@ -31,21 +31,21 @@ struct DetailedSuccessState: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             // Success icon
             successIcon
 
             // Title and message
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Text(title)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h4Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 300)
             }
@@ -56,12 +56,12 @@ struct DetailedSuccessState: View {
                     action()
                 } label: {
                     Text(actionTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(TrinityTheme.statusOK)
-                        .cornerRadius(8)
+                        .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.sm + 2)
+                        .background(V4Color.success)
+                        .cornerRadius(V1Theme.cornerSmall)
                 }
                 .buttonStyle(.plain)
             }
@@ -80,12 +80,12 @@ struct DetailedSuccessState: View {
     private var successIcon: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.statusOK.opacity(0.15))
+                .fill(V4Color.success.opacity(V2Depth.bgSidebarHover))
                 .frame(width: 70, height: 70)
 
             Image(systemName: icon ?? "checkmark.circle.fill")
-                .font(.system(size: 32))
-                .foregroundStyle(TrinityTheme.statusOK)
+                .font(WernickeTypography.size32)
+                .foregroundStyle(V4Color.success)
         }
     }
 }
@@ -100,11 +100,11 @@ struct CheckmarkAnimation: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.statusOK)
+                .fill(V4Color.success)
                 .frame(width: 60, height: 60)
 
             Image(systemName: "checkmark")
-                .font(.system(size: 24, weight: .bold))
+                .font(WernickeTypography.h3Bold)
                 .foregroundStyle(.white)
                 .scaleEffect(scale)
                 .rotationEffect(.degrees(rotate ? 45 : 0))
@@ -129,14 +129,14 @@ struct SuccessBanner: View {
     @State private var isVisible = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(TrinityTheme.statusOK)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(V4Color.success)
 
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
@@ -149,19 +149,19 @@ struct SuccessBanner: View {
                 }
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            TrinityTheme.statusOK.opacity(0.1)
+            V4Color.success.opacity(V2Depth.bgSubtle)
         )
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.statusOK)
+                .fill(V4Color.success)
                 .frame(height: 2),
             alignment: .top
         )
@@ -188,41 +188,41 @@ struct ConfettiSuccessView: View {
     var body: some View {
         ZStack {
             // Background
-            Color.black.opacity(0.3)
+            Color.black.opacity(V2Depth.stateHover)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
 
             // Content
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 CheckmarkAnimation()
 
                 Text(title)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size20.weight(.bold))
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
 
                 Button {
                     onDismiss()
                 } label: {
                     Text("Continue")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
-                        .background(TrinityTheme.accent)
-                        .cornerRadius(8)
+                        .padding(.horizontal, ParietalSpacing.xl)
+                        .padding(.vertical, ParietalSpacing.sm + 2)
+                        .background(V4Color.accent)
+                        .cornerRadius(V1Theme.cornerSmall)
                 }
                 .buttonStyle(.plain)
             }
             .padding(32)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerLarge)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
             .overlay(
                 // Confetti
@@ -268,7 +268,7 @@ struct ConfettiPieceView: View {
     var body: some View {
         Rectangle()
             .fill(piece.color)
-            .frame(width: 8, height: 8)
+            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
             .rotationEffect(.degrees(piece.rotation))
             .offset(x: piece.x, y: piece.y + offset)
             .opacity(opacity)
@@ -288,29 +288,29 @@ struct ProgressSuccessView: View {
     let currentStep: Int
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             // Success icon
             CheckmarkAnimation()
 
             Text("All Done!")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size20.weight(.bold))
+                .foregroundStyle(V4Color.textPrimary)
 
             Text("You've completed all steps successfully.")
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
 
             // Progress steps
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Image(systemName: index < steps.count ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 16))
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .font(WernickeTypography.size16)
+                            .foregroundStyle(V4Color.success)
 
                         Text(step)
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textPrimary)
                     }
                 }
             }
@@ -325,24 +325,24 @@ struct CompactSuccess: View {
     let message: String
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(TrinityTheme.statusOK)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(V4Color.success)
 
             Text(message)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(TrinityTheme.statusOK.opacity(0.1))
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
+        .background(V4Color.success.opacity(V2Depth.bgSubtle))
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.statusOK.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.success.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -359,12 +359,12 @@ struct DetailedSuccessStates_Previews: PreviewProvider {
             )
             .frame(width: 400, height: 300)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             CheckmarkAnimation()
                 .frame(width: 100, height: 100)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             ProgressSuccessView(
                 steps: ["Step 1: Setup", "Step 2: Configure", "Step 3: Complete"],
@@ -372,12 +372,12 @@ struct DetailedSuccessStates_Previews: PreviewProvider {
             )
             .frame(width: 350)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             CompactSuccess(message: "File uploaded successfully")
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
         }
     }
 }

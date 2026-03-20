@@ -36,24 +36,24 @@ public struct ValidatedTextField: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
+            HStack(spacing: ParietalSpacing.sm) {
                 TextField(placeholder, text: $value)
                     .textFieldStyle(.plain)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm + 2)
                     .background(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                            .fill(TrinityTheme.bgCard)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                            .fill(V4Color.surface)
                             .stroke(
-                                showError ? TrinityTheme.statusError :
-                                    isFocused ? TrinityTheme.accent :
-                                        TrinityTheme.bgCardBorder,
+                                showError ? V4Color.error :
+                                    isFocused ? V4Color.accent :
+                                        V4Color.border,
                                 lineWidth: showError ? 2 : 1
                             )
                     )
-                    .foregroundColor(TrinityTheme.textPrimary)
-                    .font(.system(size: TrinityTheme.bodySize()))
+                    .foregroundColor(V4Color.textPrimary)
+                    .font(.system(size: WernickeTypography.bodySize()))
                     .onFocusChange { focused in
                         isFocused = focused
                         if !focused {
@@ -69,26 +69,26 @@ public struct ValidatedTextField: View {
                 // Validation status icon
                 if hasEdited && !value.isEmpty {
                     Image(systemName: isValid ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(isValid ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                        .font(WernickeTypography.size16)
+                        .foregroundColor(isValid ? V4Color.success : V4Color.error)
                         .accessibilityLabel(isValid ? "Valid" : "Invalid")
                 }
             }
 
             // Inline error message with animation
             if showError {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.size10)
                     Text(errorMessage)
-                        .font(.system(size: TrinityTheme.captionSize()))
+                        .font(.system(size: WernickeTypography.captionSize()))
                 }
-                .foregroundColor(TrinityTheme.statusError)
+                .foregroundColor(V4Color.error)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .animation(TrinityTheme.quickSpring(), value: showError)
-        .animation(TrinityTheme.quickSpring(), value: isFocused)
+        .animation(MTMotion.quickSpring, value: showError)
+        .animation(MTMotion.quickSpring, value: isFocused)
     }
 }
 
@@ -109,8 +109,8 @@ public struct SecurePasswordField: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Group {
                     if isVisible {
                         TextField("Password", text: $value)
@@ -119,24 +119,24 @@ public struct SecurePasswordField: View {
                     }
                 }
                 .textFieldStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .fill(TrinityTheme.bgCard)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .fill(V4Color.surface)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
-                .foregroundColor(TrinityTheme.textPrimary)
-                .font(.system(size: TrinityTheme.bodySize()))
+                .foregroundColor(V4Color.textPrimary)
+                .font(.system(size: WernickeTypography.bodySize()))
 
                 Button {
-                    withAnimation(TrinityTheme.quickSpring()) {
+                    withAnimation(MTMotion.quickSpring) {
                         isVisible.toggle()
                     }
                 } label: {
                     Image(systemName: isVisible ? "eye.slash.fill" : "eye.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size14)
+                        .foregroundColor(V4Color.textSecondary)
                         .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
@@ -145,10 +145,10 @@ public struct SecurePasswordField: View {
 
             // Password strength indicator with animated bars
             if !value.isEmpty {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("Strength:")
-                        .font(.system(size: TrinityTheme.captionSize()))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(.system(size: WernickeTypography.captionSize()))
+                        .foregroundColor(V4Color.textSecondary)
 
                     strengthBar(for: .weak)
                     strengthBar(for: .medium)
@@ -156,13 +156,13 @@ public struct SecurePasswordField: View {
                     strengthBar(for: .secure)
 
                     Text(passwordStrength.label)
-                        .font(.system(size: TrinityTheme.captionSize(), weight: .medium))
+                        .font(.system(size: WernickeTypography.captionSize(), weight: .medium))
                         .foregroundColor(passwordStrength.color)
                         .transition(.scale.combined(with: .opacity))
 
                     Spacer()
                 }
-                .animation(TrinityTheme.springAnimation(), value: passwordStrength)
+                .animation(MTMotion.standardSpring, value: passwordStrength)
             }
         }
     }
@@ -170,7 +170,7 @@ public struct SecurePasswordField: View {
     @ViewBuilder
     private func strengthBar(for level: PasswordStrength) -> some View {
         RoundedRectangle(cornerRadius: 2)
-            .fill(passwordStrength >= level ? passwordStrength.color : Color.gray.opacity(0.3))
+            .fill(passwordStrength >= level ? passwordStrength.color : Color.gray.opacity(V2Depth.stateHover))
             .frame(width: 32, height: 4)
     }
 
@@ -182,10 +182,10 @@ public struct SecurePasswordField: View {
 
         var color: Color {
             switch self {
-            case .weak: return TrinityTheme.statusError
-            case .medium: return TrinityTheme.statusWarn
+            case .weak: return V4Color.error
+            case .medium: return V4Color.warning
             case .strong: return Color.orange
-            case .secure: return TrinityTheme.statusOK
+            case .secure: return V4Color.success
             }
         }
 
@@ -266,15 +266,15 @@ public struct NumericTextField: View {
             TextField("", text: $textValue)
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .frame(minWidth: 80)
                 .background(
                     Rectangle()
-                        .fill(TrinityTheme.bgCard)
+                        .fill(V4Color.surface)
                 )
-                .foregroundColor(TrinityTheme.textPrimary)
-                .font(.system(size: TrinityTheme.bodySize(), design: .monospaced))
+                .foregroundColor(V4Color.textPrimary)
+                .font(.system(size: WernickeTypography.bodySize(), design: .monospaced))
                 .focused($isFocused)
                 .onSubmit {
                     commitText()
@@ -298,23 +298,23 @@ public struct NumericTextField: View {
                 .accessibilityLabel("Increment")
         }
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
     }
 
     @ViewBuilder
     private func stepperButton(systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(TrinityTheme.textMuted)
-                .frame(width: 32, height: 32)
+                .font(WernickeTypography.captionMedium)
+                .foregroundColor(V4Color.textSecondary)
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                        .fill(TrinityTheme.bgCardBorder.opacity(0.5))
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                        .fill(V4Color.border.opacity(V2Depth.stateDisabled))
                 )
         }
         .buttonStyle(.plain)
@@ -380,15 +380,15 @@ public struct SearchField: View {
     }
 
     public var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
-                .foregroundColor(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundColor(V4Color.textSecondary)
 
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .foregroundColor(TrinityTheme.textPrimary)
-                .font(.system(size: TrinityTheme.bodySize()))
+                .foregroundColor(V4Color.textPrimary)
+                .font(.system(size: WernickeTypography.bodySize()))
                 .focused($isFocused)
                 .onSubmit {
                     onSubmit?()
@@ -396,29 +396,29 @@ public struct SearchField: View {
 
             if !text.isEmpty {
                 Button {
-                    withAnimation(TrinityTheme.quickSpring()) {
+                    withAnimation(MTMotion.quickSpring) {
                         text = ""
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size14)
+                        .foregroundColor(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
                 .stroke(
-                    isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder,
+                    isFocused ? V4Color.accent : V4Color.border,
                     lineWidth: isFocused ? 2 : 1
                 )
         )
-        .animation(TrinityTheme.quickSpring(), value: isFocused)
+        .animation(MTMotion.quickSpring, value: isFocused)
     }
 }
 
@@ -448,23 +448,23 @@ public struct TextArea: View {
     }
 
     public var body: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .trailing, spacing: ParietalSpacing.sm - 2) {
             ZStack(alignment: .topLeading) {
                 if text.isEmpty {
                     Text(placeholder)
-                        .foregroundColor(TrinityTheme.textMuted.opacity(0.6))
-                        .font(.system(size: TrinityTheme.bodySize()))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
+                        .foregroundColor(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
+                        .font(.system(size: WernickeTypography.bodySize()))
+                        .padding(.horizontal, ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.sm + 2)
                         .allowsHitTesting(false)
                 }
 
                 TextEditor(text: $text)
-                    .font(.system(size: TrinityTheme.bodySize()))
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .font(.system(size: WernickeTypography.bodySize()))
+                    .foregroundColor(V4Color.textPrimary)
                     .background(Color.clear)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, ParietalSpacing.sm)
+                    .padding(.vertical, ParietalSpacing.xs + 2)
                     .scrollContentBackground(.hidden)
                     .focused($isFocusedBinding)
                     .onChange(of: isFocusedBinding) { _, newValue in
@@ -478,35 +478,35 @@ public struct TextArea: View {
             }
             .frame(minHeight: CGFloat(lineLimit.lowerBound) * 20, maxHeight: CGFloat(lineLimit.upperBound) * 24)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.surface)
                     .stroke(
-                        isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder,
+                        isFocused ? V4Color.accent : V4Color.border,
                         lineWidth: isFocused ? 2 : 1
                     )
             )
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
 
             // Character count with color warning near limit
             if let maxLength = maxLength {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Spacer()
                     Text("\(text.count)/\(maxLength)")
-                        .font(.system(size: TrinityTheme.captionSize()))
+                        .font(.system(size: WernickeTypography.captionSize()))
                         .foregroundColor(textCountColor)
-                        .animation(TrinityTheme.quickSpring(), value: text.count)
+                        .animation(MTMotion.quickSpring, value: text.count)
                 }
             }
         }
-        .animation(TrinityTheme.quickSpring(), value: isFocused)
+        .animation(MTMotion.quickSpring, value: isFocused)
     }
 
     private var textCountColor: Color {
-        guard let maxLength = maxLength else { return TrinityTheme.textMuted }
+        guard let maxLength = maxLength else { return V4Color.textSecondary }
         let percentage = Double(text.count) / Double(maxLength)
-        if percentage >= 1.0 { return TrinityTheme.statusError }
-        if percentage >= 0.9 { return TrinityTheme.statusWarn }
-        return TrinityTheme.textMuted
+        if percentage >= 1.0 { return V4Color.error }
+        if percentage >= 0.9 { return V4Color.warning }
+        return V4Color.textSecondary
     }
 }
 
@@ -532,37 +532,37 @@ public struct PickerField: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             if let label = label {
                 Text(label)
-                    .font(.system(size: TrinityTheme.captionSize(), weight: .medium))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(.system(size: WernickeTypography.captionSize(), weight: .medium))
+                    .foregroundColor(V4Color.textSecondary)
             }
 
             Button {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.standardSpring) {
                     isExpanded.toggle()
                 }
             } label: {
                 HStack {
                     Text(selection.isEmpty ? "Select..." : selection)
-                        .foregroundColor(selection.isEmpty ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
-                        .font(.system(size: TrinityTheme.bodySize()))
+                        .foregroundColor(selection.isEmpty ? V4Color.textSecondary : V4Color.textPrimary)
+                        .font(.system(size: WernickeTypography.bodySize()))
 
                     Spacer()
 
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2Semibold)
+                        .foregroundColor(V4Color.textSecondary)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .fill(TrinityTheme.bgCard)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .fill(V4Color.surface)
                         .stroke(
-                            isExpanded ? TrinityTheme.accent : TrinityTheme.bgCardBorder,
+                            isExpanded ? V4Color.accent : V4Color.border,
                             lineWidth: isExpanded ? 2 : 1
                         )
                 )
@@ -576,45 +576,45 @@ public struct PickerField: View {
                 VStack(spacing: 0) {
                     ForEach(options, id: \.self) { option in
                         Button {
-                            withAnimation(TrinityTheme.springAnimation()) {
+                            withAnimation(MTMotion.standardSpring) {
                                 selection = option
                                 isExpanded = false
                             }
                         } label: {
                             HStack {
                                 Text(option)
-                                    .foregroundColor(option == selection ? TrinityTheme.accent : TrinityTheme.textPrimary)
-                                    .font(.system(size: TrinityTheme.bodySize()))
+                                    .foregroundColor(option == selection ? V4Color.accent : V4Color.textPrimary)
+                                    .font(.system(size: WernickeTypography.bodySize()))
                                 Spacer()
                                 if option == selection {
                                     Image(systemName: "checkmark")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(TrinityTheme.accent)
+                                        .font(WernickeTypography.size12)
+                                        .foregroundColor(V4Color.accent)
                                 }
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
+                            .padding(.horizontal, ParietalSpacing.md)
+                            .padding(.vertical, ParietalSpacing.sm + 2)
                             .background(
                                 option == selection ?
-                                    TrinityTheme.accent.opacity(0.1) : Color.clear
+                                    V4Color.accent.opacity(V2Depth.bgSubtle) : Color.clear
                             )
                         }
                         .buttonStyle(.plain)
 
                         if option != options.last {
                             Divider()
-                                .overlay(TrinityTheme.bgCardBorder)
+                                .overlay(V4Color.border)
                         }
                     }
                 }
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .fill(TrinityTheme.bgCard)
-                        .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .fill(V4Color.surface)
+                        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 8, y: 2)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -627,12 +627,12 @@ public struct PickerField: View {
 struct InputComponentsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 24) {
+            VStack(spacing: ParietalSpacing.xl) {
                 // ValidatedTextField
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("ValidatedTextField")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             ValidatedTextField(
                 value: .constant("test@email.com"),
@@ -650,13 +650,13 @@ struct InputComponentsView_Previews: PreviewProvider {
         }
 
         Divider()
-            .overlay(TrinityTheme.bgCardBorder)
+            .overlay(V4Color.border)
 
         // SecurePasswordField
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("SecurePasswordField")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             SecurePasswordField(value: .constant("weak"))
             SecurePasswordField(value: .constant("Medium123"))
@@ -664,13 +664,13 @@ struct InputComponentsView_Previews: PreviewProvider {
         }
 
         Divider()
-            .overlay(TrinityTheme.bgCardBorder)
+            .overlay(V4Color.border)
 
         // NumericTextField
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("NumericTextField")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             NumericTextField(value: .constant(50.0), min: 0, max: 100, step: 5)
             NumericTextField(value: .constant(1.5), min: -10, max: 10, step: 0.5)
@@ -678,26 +678,26 @@ struct InputComponentsView_Previews: PreviewProvider {
         }
 
         Divider()
-            .overlay(TrinityTheme.bgCardBorder)
+            .overlay(V4Color.border)
 
         // SearchField
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("SearchField")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             SearchField(text: .constant(""), placeholder: "Search...")
             SearchField(text: .constant("query"), placeholder: "Search...")
         }
 
         Divider()
-            .overlay(TrinityTheme.bgCardBorder)
+            .overlay(V4Color.border)
 
         // TextArea
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("TextArea")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             TextArea(
                 text: .constant(""),
@@ -715,13 +715,13 @@ struct InputComponentsView_Previews: PreviewProvider {
         }
 
         Divider()
-            .overlay(TrinityTheme.bgCardBorder)
+            .overlay(V4Color.border)
 
         // PickerField
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("PickerField")
-                .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
-                .foregroundColor(TrinityTheme.textPrimary)
+                .font(.system(size: WernickeTypography.headingSize(), weight: .semibold))
+                .foregroundColor(V4Color.textPrimary)
 
             PickerField(
                 selection: .constant("Option 1"),
@@ -732,7 +732,7 @@ struct InputComponentsView_Previews: PreviewProvider {
     }
     .padding(24)
     .frame(width: 500, height: 900)
-    .background(TrinityTheme.bgWindow)
+    .background(V4Color.background)
         }
     }
 }

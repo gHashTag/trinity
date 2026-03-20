@@ -25,11 +25,12 @@ struct ModelProviderTests {
     }
 
     @Test func provider_allCases() {
-        #expect(AIProvider.allCases.count == 4)
+        #expect(AIProvider.allCases.count == 5)
         #expect(AIProvider.allCases.contains(.anthropic))
         #expect(AIProvider.allCases.contains(.zai))
         #expect(AIProvider.allCases.contains(.perplexity))
         #expect(AIProvider.allCases.contains(.xai))
+        #expect(AIProvider.allCases.contains(.ollama))
     }
 
     @Test func provider_rawValues() {
@@ -37,6 +38,7 @@ struct ModelProviderTests {
         #expect(AIProvider.zai.rawValue == "z.ai")
         #expect(AIProvider.perplexity.rawValue == "Perplexity")
         #expect(AIProvider.xai.rawValue == "xAI")
+        #expect(AIProvider.ollama.rawValue == "Ollama")
     }
 
     @Test func chatMode_allCases() {

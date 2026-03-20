@@ -51,10 +51,10 @@ struct CarouselView<Content: View>: View {
     }
 
     private var indicators: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ForEach(0..<itemCount, id: \.self) { index in
                 Circle()
-                    .fill(currentIndex == index ? TrinityTheme.accent : TrinityTheme.textMuted.opacity(0.4))
+                    .fill(currentIndex == index ? V4Color.accent : V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
                     .frame(width: currentIndex == index ? 7 : 5, height: currentIndex == index ? 7 : 5)
                     .animation(.spring(response: 0.3), value: currentIndex)
             }
@@ -102,22 +102,22 @@ struct BannerCarousel: View {
         ZStack {
             banner.backgroundColor
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 Text(banner.title)
-                    .font(.system(size: 18, weight: .bold))
+                    .font(WernickeTypography.size18Medium)
                     .foregroundStyle(.white)
 
                 if let subtitle = banner.subtitle {
                     Text(subtitle)
-                        .font(.system(size: 13))
+                        .font(WernickeTypography.size13)
                         .foregroundStyle(.white.opacity(0.9))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
         }
-        .cornerRadius(12)
-        .padding(.horizontal, 4)
+        .cornerRadius(V1Theme.cornerLarge)
+        .padding(.horizontal, ParietalSpacing.xs)
         .onTapGesture {
             banners[currentIndex].action?()
         }
@@ -222,13 +222,13 @@ struct GalleryView: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             // Main image
             ZStack {
                 images[selectedIndex].image
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .cornerRadius(12)
+                    .cornerRadius(V1Theme.cornerLarge)
                     .onTapGesture(count: 2) {
                         showFullscreen = true
                     }
@@ -241,10 +241,10 @@ struct GalleryView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 20))
+                            .font(WernickeTypography.size20)
                             .foregroundStyle(.white)
-                            .padding(12)
-                            .background(.black.opacity(0.5))
+                            .padding(ParietalSpacing.md)
+                            .background(.black.opacity(V2Depth.stateDisabled))
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
@@ -258,10 +258,10 @@ struct GalleryView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 20))
+                            .font(WernickeTypography.size20)
                             .foregroundStyle(.white)
-                            .padding(12)
-                            .background(.black.opacity(0.5))
+                            .padding(ParietalSpacing.md)
+                            .background(.black.opacity(V2Depth.stateDisabled))
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
@@ -272,16 +272,16 @@ struct GalleryView: View {
 
             // Thumbnail strip
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
                         image.image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                             .frame(width: 60, height: 60)
-                            .cornerRadius(6)
+                            .cornerRadius(V1Theme.cornerSmall)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 6)
-                                    .stroke(selectedIndex == index ? TrinityTheme.accent : Color.clear, lineWidth: 2)
+                                    .stroke(selectedIndex == index ? V4Color.accent : Color.clear, lineWidth: 2)
                             )
                             .onTapGesture {
                                 withAnimation {
@@ -290,14 +290,14 @@ struct GalleryView: View {
                             }
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
             }
 
             // Caption
             if let caption = images[selectedIndex].caption {
                 Text(caption)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         #if os(iOS)
@@ -333,10 +333,10 @@ struct CustomPageControl: View {
     @Binding var currentPage: Int
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             ForEach(0..<numberOfPages, id: \.self) { page in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(currentPage == page ? TrinityTheme.accent : TrinityTheme.textMuted.opacity(0.4))
+                    .fill(currentPage == page ? V4Color.accent : V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
                     .frame(width: currentPage == page ? 20 : 6, height: 6)
                     .animation(.spring(response: 0.3), value: currentPage)
                     .onTapGesture {
@@ -369,6 +369,6 @@ struct CarouselView_Previews: PreviewProvider {
                 .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

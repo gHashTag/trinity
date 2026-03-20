@@ -101,15 +101,15 @@ enum FileType {
 
     var color: Color {
         switch self {
-        case .image: return TrinityTheme.purple
-        case .pdf: return Color(hex: 0xFF6B6B)
-        case .code: return Color(hex: 0x4ECDC4)
-        case .text: return TrinityTheme.textMuted
-        case .video: return Color(hex: 0xFFD93D)
-        case .audio: return Color(hex: 0x6BCF7F)
-        case .archive: return Color(hex: 0xA8A8A8)
-        case .document: return Color(hex: 0x6C5CE7)
-        case .unknown: return TrinityTheme.textMuted
+        case .image: return V4Color.purple
+        case .pdf: return V4Color.error
+        case .code: return V4Color.info
+        case .text: return V4Color.textSecondary
+        case .video: return V4Color.warning
+        case .audio: return V4Color.success
+        case .archive: return V4Color.textSecondary
+        case .document: return V4Color.purple
+        case .unknown: return V4Color.textSecondary
         }
     }
 
@@ -137,28 +137,28 @@ struct MessageAttachmentPreview: View {
     @State private var isLoadingThumbnail = false
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             thumbnailView
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(attachment.displayName)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundColor(V4Color.textPrimary)
                     .lineLimit(1)
 
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: attachment.fileType.icon)
-                        .font(.system(size: 9))
+                        .font(WernickeTypography.size9)
                         .foregroundColor(attachment.fileType.color)
 
                     Text(attachment.formattedSize)
-                        .font(.system(size: 11))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundColor(V4Color.textSecondary)
 
                     if !attachment.isDownloaded && attachment.downloadProgress > 0 {
                         Text("\(Int(attachment.downloadProgress * 100))%")
-                            .font(.system(size: 10))
-                            .foregroundColor(TrinityTheme.accent)
+                            .font(WernickeTypography.size10)
+                            .foregroundColor(V4Color.accent)
                     }
                 }
             }
@@ -167,17 +167,17 @@ struct MessageAttachmentPreview: View {
 
             actionButtons
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .stroke(isHovered ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .stroke(isHovered ? V4Color.accent.opacity(V2Depth.stateHover) : V4Color.border, lineWidth: 1)
                 )
         )
         .onHover { hovering in
-            withAnimation(TrinityTheme.quickSpring()) {
+            withAnimation(MTMotion.quickSpring) {
                 isHovered = hovering
             }
         }
@@ -201,16 +201,16 @@ struct MessageAttachmentPreview: View {
                 ProgressView()
                     .controlSize(.small)
                     .frame(width: 56, height: 56)
-                    .background(TrinityTheme.bgCardBorder.opacity(0.3))
+                    .background(V4Color.border.opacity(V2Depth.stateHover))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(attachment.fileType.color.opacity(0.15))
+                        .fill(attachment.fileType.color.opacity(V2Depth.bgSidebarHover))
                         .frame(width: 56, height: 56)
 
                     Image(systemName: attachment.fileType.icon)
-                        .font(.system(size: 22))
+                        .font(WernickeTypography.h2)
                         .foregroundColor(attachment.fileType.color)
                 }
             }
@@ -218,19 +218,19 @@ struct MessageAttachmentPreview: View {
             if !attachment.isDownloaded {
                 ZStack {
                     Circle()
-                        .fill(TrinityTheme.bgCard.opacity(0.9))
-                        .frame(width: 20, height: 20)
+                        .fill(V4Color.surface.opacity(0.9))
+                        .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
 
                     if attachment.downloadProgress > 0 {
                         Circle()
                             .trim(from: 0, to: attachment.downloadProgress)
-                            .stroke(TrinityTheme.accent, lineWidth: 2)
-                            .frame(width: 20, height: 20)
+                            .stroke(V4Color.accent, lineWidth: 2)
+                            .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                             .rotationEffect(.degrees(-90))
                     } else {
                         Image(systemName: "arrow.down.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(TrinityTheme.accent)
+                            .font(WernickeTypography.size14)
+                            .foregroundColor(V4Color.accent)
                     }
                 }
             }
@@ -240,17 +240,17 @@ struct MessageAttachmentPreview: View {
     @ViewBuilder
     private var actionButtons: some View {
         if isHovered {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Button {
                     openPreview()
                 } label: {
                     Image(systemName: "eye")
-                        .font(.system(size: 12))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size12)
+                        .foregroundColor(V4Color.textSecondary)
                         .frame(width: 28, height: 28)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.bgCardBorder.opacity(0.5))
+                                .fill(V4Color.border.opacity(V2Depth.stateDisabled))
                         )
                 }
                 .buttonStyle(.plain)
@@ -261,12 +261,12 @@ struct MessageAttachmentPreview: View {
                     downloadAttachment()
                 } label: {
                     Image(systemName: attachment.isDownloaded ? "checkmark" : "arrow.down")
-                        .font(.system(size: 11))
-                        .foregroundColor(attachment.isDownloaded ? TrinityTheme.statusOK : TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundColor(attachment.isDownloaded ? V4Color.success : V4Color.textSecondary)
                         .frame(width: 28, height: 28)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.bgCardBorder.opacity(0.5))
+                                .fill(V4Color.border.opacity(V2Depth.stateDisabled))
                         )
                 }
                 .buttonStyle(.plain)
@@ -298,7 +298,7 @@ struct AttachmentsGallery: View {
     @State private var selectedIndex: Int?
 
     private let columns = [
-        GridItem(.adaptive(minimum: 200, maximum: 300), spacing: 12)
+        GridItem(.adaptive(minimum: 200, maximum: 300), spacing: ParietalSpacing.md)
     ]
 
     var body: some View {
@@ -306,7 +306,7 @@ struct AttachmentsGallery: View {
             emptyState
         } else {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 12) {
+                LazyVGrid(columns: columns, spacing: ParietalSpacing.md) {
                     ForEach(Array(attachments.enumerated()), id: \.element.id) { index, attachment in
                         MessageAttachmentPreview(attachment: attachment)
                             .onTapGesture {
@@ -315,21 +315,21 @@ struct AttachmentsGallery: View {
                             }
                     }
                 }
-                .padding(12)
+                .padding(ParietalSpacing.md)
             }
             .frame(maxHeight: 400)
         }
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: "paperclip")
-                .font(.system(size: 32))
-                .foregroundColor(TrinityTheme.textMuted.opacity(0.5))
+                .font(WernickeTypography.size32)
+                .foregroundColor(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
 
             Text("No attachments")
-                .font(.system(size: 14))
-                .foregroundColor(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundColor(V4Color.textSecondary)
         }
         .frame(height: 100)
     }
@@ -355,34 +355,34 @@ struct InlineAttachmentRow: View {
     }
 
     private var multipleAttachmentsView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "paperclip")
-                    .font(.system(size: 11))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundColor(V4Color.textSecondary)
 
                 Text("\(attachments.count) attachments")
-                    .font(.system(size: 12))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundColor(V4Color.textSecondary)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.top, 8)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     ForEach(attachments) { attachment in
                         MiniAttachmentThumbnail(attachment: attachment) {
                             expandedAttachment = attachment
                         }
                     }
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.bottom, 12)
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard.opacity(0.5))
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
         )
         .sheet(item: $expandedAttachment) { attachment in
             AttachmentDetailView(attachment: attachment)
@@ -400,22 +400,22 @@ struct MiniAttachmentThumbnail: View {
         Button {
             onTap()
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(attachment.fileType.color.opacity(0.15))
-                        .frame(width: 48, height: 48)
+                        .fill(attachment.fileType.color.opacity(V2Depth.bgSidebarHover))
+                        .frame(width: ParietalSpacing.avatarMedium, height: ParietalSpacing.avatarMedium)
 
                     Image(systemName: attachment.fileType.icon)
-                        .font(.system(size: 18))
+                        .font(WernickeTypography.size18)
                         .foregroundColor(attachment.fileType.color)
                 }
 
                 Text(attachment.displayName)
-                    .font(.system(size: 9))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size9)
+                    .foregroundColor(V4Color.textSecondary)
                     .lineLimit(1)
-                    .frame(width: 56)
+                    .frame(width: ParietalSpacing.avatarMedium + 8)
             }
         }
         .buttonStyle(.plain)
@@ -442,7 +442,7 @@ struct AttachmentDetailView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: 600, minHeight: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .task {
             if attachment.fileType == .image {
                 loadImage()
@@ -452,35 +452,35 @@ struct AttachmentDetailView: View {
 
     private var header: some View {
         HStack {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(attachment.fileType.color.opacity(0.15))
-                        .frame(width: 32, height: 32)
+                        .fill(attachment.fileType.color.opacity(V2Depth.bgSidebarHover))
+                        .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
                     Image(systemName: attachment.fileType.icon)
-                        .font(.system(size: 14))
+                        .font(WernickeTypography.size14)
                         .foregroundColor(attachment.fileType.color)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(attachment.displayName)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundColor(V4Color.textPrimary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Text(attachment.fileType.accessibilityLabel)
                         Text("•")
                         Text(attachment.formattedSize)
                     }
-                    .font(.system(size: 11))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundColor(V4Color.textSecondary)
                 }
             }
 
             Spacer()
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Button {
                     saveAttachment()
                 } label: {
@@ -503,15 +503,15 @@ struct AttachmentDetailView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .foregroundColor(V4Color.textSecondary)
                         .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.escape)
             }
         }
-        .padding(12)
-        .background(TrinityTheme.bgSidebar)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.sidebar)
     }
 
     @ViewBuilder
@@ -524,24 +524,24 @@ struct AttachmentDetailView: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
             }
         } else if isLoading {
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 ProgressView()
                     .controlSize(.large)
 
                 Text("Loading attachment...")
-                    .font(.system(size: 13))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundColor(V4Color.textSecondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 Image(systemName: attachment.fileType.icon)
-                    .font(.system(size: 48))
-                    .foregroundColor(attachment.fileType.color.opacity(0.6))
+                    .font(WernickeTypography.display)
+                    .foregroundColor(attachment.fileType.color.opacity(V1Theme.opacityTextSecondary))
 
                 Text("Preview not available")
-                    .font(.system(size: 14))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundColor(V4Color.textSecondary)
 
                 Button("Open in Browser") {
                     if let url = URL(string: attachment.fileURL) {
@@ -628,27 +628,27 @@ struct AttachmentDownloadProgress: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             HStack {
                 Text("Downloading...")
-                    .font(.system(size: 11))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundColor(V4Color.textSecondary)
 
                 Spacer()
 
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(TrinityTheme.accent)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundColor(V4Color.accent)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(TrinityTheme.bgCardBorder.opacity(0.5))
+                        .fill(V4Color.border.opacity(V2Depth.stateDisabled))
                         .frame(height: 6)
 
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                         .frame(width: geometry.size.width * progress, height: 6)
                 }
             }
@@ -656,16 +656,16 @@ struct AttachmentDownloadProgress: View {
 
             HStack {
                 Text(ByteCountFormatter.string(fromByteCount: downloadedBytes, countStyle: .file))
-                    .font(.system(size: 10))
-                    .foregroundColor(TrinityTheme.textMuted.opacity(0.8))
+                    .font(WernickeTypography.size10)
+                    .foregroundColor(V4Color.textSecondary.opacity(0.8))
 
                 Text("of")
-                    .font(.system(size: 10))
-                    .foregroundColor(TrinityTheme.textMuted.opacity(0.6))
+                    .font(WernickeTypography.size10)
+                    .foregroundColor(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
 
                 Text(ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file))
-                    .font(.system(size: 10))
-                    .foregroundColor(TrinityTheme.textMuted.opacity(0.8))
+                    .font(WernickeTypography.size10)
+                    .foregroundColor(V4Color.textSecondary.opacity(0.8))
 
                 Spacer()
 
@@ -673,15 +673,15 @@ struct AttachmentDownloadProgress: View {
                     let speed = 2_500_000
                     let remaining = Double(remainingBytes) / Double(speed)
                     Text(remaining < 60 ? "\(Int(remaining))s left" : "\(Int(remaining/60))m left")
-                        .font(.system(size: 10))
-                        .foregroundColor(TrinityTheme.textMuted.opacity(0.6))
+                        .font(WernickeTypography.size10)
+                        .foregroundColor(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
                 }
             }
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard.opacity(0.5))
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
         )
     }
 }
@@ -692,25 +692,25 @@ struct FileMetadataBadge: View {
     let attachment: FileAttachment
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Image(systemName: attachment.fileType.icon)
-                .font(.system(size: 9))
+                .font(WernickeTypography.size9)
 
             Text(attachment.fileType.accessibilityLabel.uppercased())
-                .font(.system(size: 8, weight: .bold))
+                .font(WernickeTypography.tiny8Bold)
 
             Text("•")
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
 
             Text(attachment.formattedSize)
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
         }
         .foregroundColor(attachment.fileType.color.opacity(0.9))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
         .background(
             SwiftUI.Capsule()
-                .fill(attachment.fileType.color.opacity(0.15))
+                .fill(attachment.fileType.color.opacity(V2Depth.bgSidebarHover))
         )
         .accessibilityLabel("File type: \(attachment.fileType.accessibilityLabel), Size: \(attachment.formattedSize)")
     }

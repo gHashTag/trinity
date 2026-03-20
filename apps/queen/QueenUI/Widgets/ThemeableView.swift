@@ -12,7 +12,7 @@ struct ThemeableContainer<Content: View>: View {
 
     var body: some View {
         content
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
     }
 }
 
@@ -49,7 +49,7 @@ struct ThemeSwitcher: View {
             }
         }
         .pickerStyle(.segmented)
-        .frame(width: 200)
+        .frame(width: ParietalSpacing.xl * 8)
     }
 }
 
@@ -63,7 +63,7 @@ struct AccentColorPicker: View {
     }
 
     let colors: [Color] = [
-        Color(hex: 0x00D9FF), // Cyan
+        V4Color.info, // Cyan
         Color(hex: 0x5AC8FA), // Blue
         Color(hex: 0x007AFF), // systemBlue
         Color(hex: 0x5856D6), // Purple
@@ -76,10 +76,10 @@ struct AccentColorPicker: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("Accent Color")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.smallMedium)
+                .foregroundStyle(V4Color.textPrimary)
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -87,7 +87,7 @@ struct AccentColorPicker: View {
                 GridItem(.flexible()),
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 10) {
+            ], spacing: ParietalSpacing.sm + 2) {
                 ForEach(Array(colors.enumerated()), id: \.offset) { index, color in
                     colorButton(color: color, isSelected: color == accentColor) {
                         if let hex = color.toHex() {
@@ -97,14 +97,14 @@ struct AccentColorPicker: View {
                 }
             }
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -114,12 +114,12 @@ struct AccentColorPicker: View {
         } label: {
             RoundedRectangle(cornerRadius: 8)
                 .fill(color)
-                .frame(height: 36)
+                .frame(height: ParietalSpacing.buttonHeight)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(isSelected ? .white : Color.clear, lineWidth: 2)
                 )
-                .shadow(color: isSelected ? color.opacity(0.5) : .clear, radius: 4)
+                .shadow(color: isSelected ? color.opacity(V2Depth.stateDisabled) : .clear, radius: 4)
         }
         .buttonStyle(.plain)
     }
@@ -131,37 +131,37 @@ struct FontSizePicker: View {
     @AppStorage("fontSize") private var fontSize: Double = 14
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("Font Size")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.smallMedium)
+                .foregroundStyle(V4Color.textPrimary)
 
             HStack {
                 Text("A")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Slider(value: $fontSize, in: 10...20, step: 1)
-                    .tint(TrinityTheme.accent)
+                    .tint(V4Color.accent)
 
                 Text("A")
-                    .font(.system(size: 20))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size20)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Text("\(Int(fontSize))pt")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -174,16 +174,16 @@ struct ThemePreviewCard: View {
     let actionTitle: String
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Text(title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.body16Medium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(message)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textSecondary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Button("Cancel") {}
                     .buttonStyle(.bordered)
 
@@ -194,11 +194,11 @@ struct ThemePreviewCard: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -210,7 +210,7 @@ struct ReduceMotionOption: View {
 
     var body: some View {
         Toggle("Reduce Motion", isOn: $reduceMotion)
-            .font(.system(size: 13))
+            .font(WernickeTypography.size13)
             .toggleStyle(.switch)
     }
 }
@@ -222,7 +222,7 @@ struct HighContrastOption: View {
 
     var body: some View {
         Toggle("High Contrast", isOn: $highContrast)
-            .font(.system(size: 13))
+            .font(WernickeTypography.size13)
             .toggleStyle(.switch)
     }
 }
@@ -262,16 +262,16 @@ struct ThemeSettingsPanel: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
     private var generalSettings: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md + ParietalSpacing.md) {
             ThemeSwitcher()
             ReduceMotionOption()
             HighContrastOption()
@@ -279,13 +279,13 @@ struct ThemeSettingsPanel: View {
     }
 
     private var colorSettings: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md + ParietalSpacing.md) {
             AccentColorPicker()
         }
     }
 
     private var typographySettings: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md + ParietalSpacing.md) {
             FontSizePicker()
         }
     }
@@ -310,18 +310,18 @@ struct TabPicker: View {
                         selection = tab
                     }
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: tab.icon)
-                            .font(.system(size: 12))
+                            .font(WernickeTypography.size12)
                         Text(tab.rawValue.capitalized)
-                            .font(.system(size: 12))
+                            .font(WernickeTypography.size12)
                     }
-                    .foregroundStyle(selection == tab ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .foregroundStyle(selection == tab ? V4Color.accent : V4Color.textSecondary)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, ParietalSpacing.sm)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(selection == tab ? TrinityTheme.accent.opacity(0.15) : Color.clear)
+                            .fill(selection == tab ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)
@@ -368,16 +368,16 @@ struct ThemeableView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             ThemeSettingsPanel()
-                .frame(width: 400)
+                .frame(width: ParietalSpacing.xl * 16)
 
             ThemePreviewCard(
                 title: "Theme Preview",
                 message: "This is how the theme looks",
                 actionTitle: "Save"
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

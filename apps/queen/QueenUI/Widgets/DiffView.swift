@@ -5,17 +5,17 @@ struct DiffView: View {
     @State private var expanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             // Header: file path + counts
             Button {
                 withAnimation(.easeInOut(duration: 0.15)) { expanded.toggle() }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F4DD}")
                         .font(.caption)
                     Text(event.file ?? "unknown")
                         .font(.caption.monospaced())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
 
                     Spacer()
@@ -23,12 +23,12 @@ struct DiffView: View {
                     if let added = event.added, added > 0 {
                         Text("+\(added)")
                             .font(.caption2.monospaced())
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .foregroundStyle(V4Color.success)
                     }
                     if let removed = event.removed, removed > 0 {
                         Text("-\(removed)")
                             .font(.caption2.monospaced())
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .foregroundStyle(V4Color.error)
                     }
                 }
             }
@@ -46,15 +46,15 @@ struct DiffView: View {
                 .padding(.leading, 20)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgCard)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
     private func lineColor(_ line: String) -> Color {
-        if line.hasPrefix("+") { return TrinityTheme.statusOK }
-        if line.hasPrefix("-") { return TrinityTheme.statusError }
-        return TrinityTheme.textMuted
+        if line.hasPrefix("+") { return V4Color.success }
+        if line.hasPrefix("-") { return V4Color.error }
+        return V4Color.textSecondary
     }
 }

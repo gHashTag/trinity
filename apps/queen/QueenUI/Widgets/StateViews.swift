@@ -18,19 +18,19 @@ struct EmptyStateView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             // Animated icon
             animatedIcon
 
             Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 300)
 
@@ -50,8 +50,8 @@ struct EmptyStateView: View {
 
     private var animatedIcon: some View {
         Image(systemName: icon)
-            .font(.system(size: 48))
-            .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+            .font(WernickeTypography.display)
+            .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
             .scaleEffect(1.0)
             .onAppear {
                 withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
@@ -68,21 +68,21 @@ struct LoadingStateView: View {
     let progress: Double?
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(TrinityTheme.accent)
+                .tint(V4Color.accent)
 
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
 
             if let progress = progress {
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                    .font(WernickeTypography.caption2MediumMono)
+                    .foregroundStyle(V4Color.textSecondary.opacity(0.7))
             }
 
             Spacer()
@@ -98,20 +98,20 @@ struct ErrorStateView: View {
     let retryAction: (() -> Void)?
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.display)
+                .foregroundStyle(V4Color.error)
 
             Text("Something went wrong")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(error.localizedDescription)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 300)
 
@@ -169,7 +169,7 @@ struct WelcomeOnboardingView: View {
                 } label: {
                     Text("Skip")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -186,7 +186,7 @@ struct WelcomeOnboardingView: View {
             }
 
             // Navigation
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 if currentPage > 0 {
                     Button("Back") {
                         withAnimation {
@@ -212,25 +212,25 @@ struct WelcomeOnboardingView: View {
             }
             .padding(.bottom, 32)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 
     private func onboardingPage(_ page: OnboardingPage) -> some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Spacer()
 
             Image(systemName: page.icon)
-                .font(.system(size: 64))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.size56)
+                .foregroundStyle(V4Color.accent)
                 .symbolRenderingMode(.hierarchical)
 
             Text(page.title)
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h2Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(page.message)
-                .font(.system(size: 16))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 400)
 
@@ -263,12 +263,12 @@ struct FeatureDiscoveryView: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             Text("Discover Features")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: ParietalSpacing.md) {
                 ForEach(features) { feature in
                     featureCard(feature)
                 }
@@ -282,29 +282,29 @@ struct FeatureDiscoveryView: View {
             selectedFeature = feature
             showTooltip = true
         } label: {
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 Image(systemName: feature.icon)
-                    .font(.system(size: 24))
-                    .foregroundStyle(selectedFeature?.id == feature.id ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size24)
+                    .foregroundStyle(selectedFeature?.id == feature.id ? V4Color.accent : V4Color.textSecondary)
                     .frame(width: 40, height: 40)
                     .background(
                         Circle()
-                            .fill(selectedFeature?.id == feature.id ? TrinityTheme.accent.opacity(0.15) : Color.clear)
+                            .fill(selectedFeature?.id == feature.id ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.clear)
                     )
 
                 Text(feature.title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(feature.description)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(2)
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerSmall)
         }
         .buttonStyle(.plain)
     }
@@ -330,17 +330,17 @@ struct SuccessStateView: View {
     @State private var showConfetti = false
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Spacer()
 
             // Success icon with animation
             ZStack {
                 Circle()
-                    .fill(.green.opacity(0.15))
+                    .fill(.green.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 80, height: 80)
 
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 48))
+                    .font(WernickeTypography.display)
                     .foregroundStyle(.green)
                     .scaleEffect(showConfetti ? 1 : 0.5)
             }
@@ -351,12 +351,12 @@ struct SuccessStateView: View {
             }
 
             Text(title)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size20.weight(.bold))
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 350)
 
@@ -386,38 +386,38 @@ struct ProgressStateView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Spacer()
 
             // Progress ring
             ZStack {
-                ProgressRing(progress: progress, size: 60, color: TrinityTheme.accent)
+                ProgressRing(progress: progress, size: 60, color: V4Color.accent)
 
                 Text("\(currentStep + 1)")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h4Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             // Step list
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Circle()
-                            .fill(index <= currentStep ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
-                            .frame(width: 8, height: 8)
+                            .fill(index <= currentStep ? V4Color.accent : V4Color.border)
+                            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
                         Text(step)
-                            .font(.system(size: 12))
-                            .foregroundStyle(index <= currentStep ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(index <= currentStep ? V4Color.textPrimary : V4Color.textSecondary)
 
                         if index < currentStep {
                             Spacer()
                                 .frame(height: 1)
-                                .background(TrinityTheme.accent.opacity(0.3))
+                                .background(V4Color.accent.opacity(V2Depth.stateHover))
                         } else {
                             Spacer()
                         }
@@ -475,6 +475,6 @@ struct StateViews_Previews: PreviewProvider {
             .previewDisplayName("Success State")
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

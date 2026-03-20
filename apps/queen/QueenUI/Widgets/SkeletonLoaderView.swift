@@ -198,7 +198,7 @@ struct SkeletonLine: View {
 
     @ViewBuilder
     private func shimmerShape<S: Shape>(_ shape: S) -> some View {
-        let base = TrinityTheme.bgCardBorder
+        let base = V4Color.border
         let highlight = Color(nsColor: NSColor(base).blended(withFraction: 0.3, of: .white) ?? .white)
 
         shape
@@ -239,7 +239,7 @@ struct SkeletonRectangle: View {
     init(
         width: CGFloat? = nil,
         height: CGFloat,
-        cornerRadius: CGFloat = TrinityTheme.cornerMedium,
+        cornerRadius: CGFloat = V1Theme.cornerMedium,
         duration: Double = 1.8,
         usePulse: Bool = false
     ) {
@@ -260,7 +260,7 @@ struct SkeletonRectangle: View {
 
     @ViewBuilder
     private func shimmerShape<S: Shape>(_ shape: S) -> some View {
-        let base = TrinityTheme.bgCardBorder
+        let base = V4Color.border
         let highlight = Color(nsColor: NSColor(base).blended(withFraction: 0.3, of: .white) ?? .white)
 
         shape
@@ -316,7 +316,7 @@ struct SkeletonCircle: View {
 
     @ViewBuilder
     private func shimmerShape<S: Shape>(_ shape: S) -> some View {
-        let base = TrinityTheme.bgCardBorder
+        let base = V4Color.border
         let highlight = Color(nsColor: NSColor(base).blended(withFraction: 0.3, of: .white) ?? .white)
 
         shape
@@ -448,7 +448,7 @@ struct SkeletonAvatar: View {
             SkeletonCircle(diameter: size.diameter, duration: duration, usePulse: usePulse)
 
             if showName || showSubtitle {
-                VStack(alignment: alignment == .leading ? .leading : .trailing, spacing: 4) {
+                VStack(alignment: alignment == .leading ? .leading : .trailing, spacing: ParietalSpacing.xs) {
                     if showName {
                         SkeletonLine(
                             style: .medium,
@@ -516,7 +516,7 @@ struct SkeletonCard: View {
             SkeletonRectangle(
                 width: .infinity,
                 height: headerHeight,
-                cornerRadius: TrinityTheme.cornerSmall,
+                cornerRadius: V1Theme.cornerSmall,
                 duration: duration,
                 usePulse: usePulse
             )
@@ -524,14 +524,14 @@ struct SkeletonCard: View {
             // Content lines
             SkeletonText(
                 lineCount: contentLines,
-                spacing: 6,
+                spacing: ParietalSpacing.sm - 2,
                 duration: duration,
                 usePulse: usePulse
             )
 
             // Footer
             if showFooter {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     SkeletonRectangle(
                         width: 60,
                         height: footerHeight,
@@ -552,11 +552,11 @@ struct SkeletonCard: View {
         }
         .padding(padding)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .fill(V4Color.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
         )
         .accessibilityHidden(true)
@@ -617,7 +617,7 @@ struct SkeletonList: View {
         let usePulse: Bool
 
         var body: some View {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 if showLeading {
                     SkeletonCircle(
                         diameter: height * 0.5,
@@ -626,7 +626,7 @@ struct SkeletonList: View {
                     )
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                     SkeletonLine(
                         style: .medium,
                         height: 12,
@@ -653,12 +653,12 @@ struct SkeletonList: View {
                     )
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
             .frame(height: height)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.surface)
             )
         }
     }
@@ -703,7 +703,7 @@ struct SkeletonGrid: View {
                             SkeletonRectangle(
                                 width: .infinity,
                                 height: itemHeight,
-                                cornerRadius: TrinityTheme.cornerMedium,
+                                cornerRadius: V1Theme.cornerMedium,
                                 duration: duration + Double(index) * 0.1, // Stagger animations
                                 usePulse: usePulse
                             )
@@ -824,54 +824,54 @@ extension View {
 /// Preview provider for skeleton components
 struct SkeletonLoaderView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             // Basic shapes
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: ParietalSpacing.lg) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Skeleton Line").font(.caption)
                     SkeletonLine(style: .long)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Skeleton Rectangle").font(.caption)
                     SkeletonRectangle(width: 80, height: 60)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Skeleton Circle").font(.caption)
                     SkeletonCircle(diameter: 50)
                 }
             }
 
             // Text lines
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton Text").font(.caption)
                 SkeletonText(lineCount: 4)
             }
 
             // Avatar
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton Avatar").font(.caption)
                 SkeletonAvatar(size: .medium)
             }
 
             // Card
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton Card").font(.caption)
                 SkeletonCard(headerHeight: 36, contentLines: 3)
                     .frame(width: 280)
             }
 
             // List
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton List").font(.caption)
                 SkeletonList(itemCount: 3, showLeading: true)
                     .frame(width: 280)
             }
 
             // Pulse variant
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: ParietalSpacing.lg) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Pulse Animation").font(.caption)
                     SkeletonLine(style: .medium, usePulse: true)
                 }
@@ -879,7 +879,7 @@ struct SkeletonLoaderView_Previews: PreviewProvider {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 

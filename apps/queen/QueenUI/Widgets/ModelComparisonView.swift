@@ -30,54 +30,54 @@ struct ModelComparisonView: View {
             // Header
             HStack {
                 Text("MODEL COMPARISON")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.golden)
+                    .font(WernickeTypography.caption2BoldMono)
+                    .foregroundStyle(V4Color.golden)
 
                 Spacer()
 
                 if !isRunning {
                     Button("Run") { startComparison() }
-                        .font(.system(size: 11, weight: .bold))
+                        .font(WernickeTypography.caption2Bold)
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(TrinityTheme.accent)
+                        .padding(.horizontal, ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.xs)
+                        .background(V4Color.accent)
                         .clipShape(SwiftUI.Capsule())
                         .buttonStyle(.plain)
                         .disabled(leftModel == nil || rightModel == nil)
                 } else {
                     Button("Stop") { stopComparison() }
-                        .font(.system(size: 11, weight: .bold))
+                        .font(WernickeTypography.caption2Bold)
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(TrinityTheme.statusError)
+                        .padding(.horizontal, ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.xs)
+                        .background(V4Color.error)
                         .clipShape(SwiftUI.Capsule())
                         .buttonStyle(.plain)
                 }
 
                 Button { onClose() } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color(hex: 0x0A0A0A))
+            .padding(.horizontal, ParietalSpacing.lg)
+            .padding(.vertical, ParietalSpacing.sm + 2)
+            .background(V4Color.background)
 
             // Prompt preview
             Text(prompt)
-                .font(.system(size: 12))
-                .foregroundStyle(Color.white.opacity(0.5))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.xs + 2)
                 .background(Color.white.opacity(0.02))
 
-            Divider().background(Color.white.opacity(0.06))
+            Divider().background(Color.white.opacity(V2Depth.bgCard))
 
             // Model pickers
             HStack(spacing: 0) {
@@ -85,16 +85,16 @@ struct ModelComparisonView: View {
                     .frame(maxWidth: .infinity)
 
                 Rectangle()
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(V2Depth.bgCard))
                     .frame(width: 1)
 
                 modelPicker(selection: $rightModel, label: "RIGHT")
                     .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 6)
-            .background(Color(hex: 0x0A0A0A))
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.background)
 
-            Divider().background(Color.white.opacity(0.06))
+            Divider().background(Color.white.opacity(V2Depth.bgCard))
 
             // Side-by-side responses
             HStack(spacing: 0) {
@@ -106,7 +106,7 @@ struct ModelComparisonView: View {
                 .frame(maxWidth: .infinity)
 
                 Rectangle()
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(V2Depth.bgCard))
                     .frame(width: 1)
 
                 responsePanel(
@@ -124,10 +124,10 @@ struct ModelComparisonView: View {
     // MARK: - Model Picker
 
     private func modelPicker(selection: Binding<AIModel?>, label: String) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text(label)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.microBoldMono)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
 
             Menu {
                 ForEach(modelManager.availableModels.filter { !$0.isImageModel }) { model in
@@ -136,23 +136,23 @@ struct ModelComparisonView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(selection.wrappedValue?.displayName ?? "Select...")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V2Depth.white70)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 8))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size8)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.white.opacity(0.06))
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ParietalSpacing.md)
     }
 
     // MARK: - Response Panel
@@ -160,7 +160,7 @@ struct ModelComparisonView: View {
     private func responsePanel(text: String, metrics: StreamMetrics, model: AIModel?) -> some View {
         VStack(spacing: 0) {
             // Metrics bar
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 statusDot(metrics.status)
                 if metrics.ttfbMs > 0 {
                     metricLabel("TTFB", "\(metrics.ttfbMs)ms")
@@ -176,31 +176,31 @@ struct ModelComparisonView: View {
                 }
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.xs + 2)
             .background(Color.white.opacity(0.02))
 
             // Response text
             ScrollView {
                 if text.isEmpty && metrics.status == "streaming" {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         ThinkingDots()
                         Text("Thinking...")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .padding()
                 } else if text.isEmpty {
                     Text("Waiting...")
                         .font(.caption)
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .foregroundStyle(V4Color.white20)
                         .padding()
                 } else {
                     MarkdownTextView(text: text)
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color(hex: 0xD1D1D1))
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.border)
                         .textSelection(.enabled)
-                        .padding(12)
+                        .padding(ParietalSpacing.md)
                 }
             }
         }
@@ -214,21 +214,21 @@ struct ModelComparisonView: View {
 
     private func statusColor(_ status: String) -> Color {
         switch status {
-        case "streaming": return TrinityTheme.golden
-        case "done": return TrinityTheme.statusOK
-        case "error": return TrinityTheme.statusError
-        default: return Color.white.opacity(0.2)
+        case "streaming": return V4Color.golden
+        case "done": return V4Color.success
+        case "error": return V4Color.error
+        default: return V4Color.white20
         }
     }
 
     private func metricLabel(_ label: String, _ value: String) -> some View {
         HStack(spacing: 2) {
             Text(label)
-                .font(.system(size: 8, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.size8Mono)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             Text(value)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .font(WernickeTypography.microBoldMono)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
         }
     }
 

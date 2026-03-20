@@ -17,26 +17,26 @@ struct MessageVoiceRecorder: View {
     @StateObject private var audioRecorder = AudioRecorderManager()
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             // Audio visualization
             audioVisualization
 
             // Duration and status
             HStack {
                 Text(formattedDuration)
-                    .font(.system(size: 24, weight: .medium, design: .rounded))
-                    .foregroundStyle(TrinityTheme.textPrimary)
-                    .frame(width: 100)
+                    .font(WernickeTypography.size24.weight(.medium))
+                    .foregroundStyle(V4Color.textPrimary)
+                    .frame(width: ParietalSpacing.avatarLarge + ParietalSpacing.lg)
 
                 Spacer()
 
                 if isTranscribing {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         ProgressView()
                             .scaleEffect(0.8)
                         Text("Transcribing...")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -50,12 +50,12 @@ struct MessageVoiceRecorder: View {
             controlsBar
         }
         .padding(20)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isRecording ? TrinityTheme.statusError : TrinityTheme.bgCardBorder, lineWidth: 2)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isRecording ? V4Color.error : V4Color.border, lineWidth: 2)
         )
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 
     // MARK: - Audio Visualization
@@ -84,43 +84,43 @@ struct MessageVoiceRecorder: View {
     private func visualizationColor(for index: Int) -> Color {
         let normalizedIndex = Double(index) / 30.0
         if isRecording {
-            return TrinityTheme.accent.opacity(0.5 + normalizedIndex * 0.5)
+            return V4Color.accent.opacity(0.5 + normalizedIndex * 0.5)
         }
-        return TrinityTheme.textMuted.opacity(0.3)
+        return V4Color.textSecondary.opacity(V2Depth.stateHover)
     }
 
     // MARK: - Transcript Preview
 
     private var transcriptPreview: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("Transcript")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
-                .padding(.horizontal, 12)
+                .foregroundStyle(V4Color.textSecondary)
+                .padding(.horizontal, ParietalSpacing.md)
 
             Text(transcript)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textPrimary)
-                .padding(.horizontal, 12)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textPrimary)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.bottom, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(TrinityTheme.bgWindow.opacity(0.5))
-        .cornerRadius(TrinityTheme.cornerSmall)
+        .background(V4Color.background.opacity(V2Depth.stateDisabled))
+        .cornerRadius(V1Theme.cornerSmall)
     }
 
     // MARK: - Controls Bar
 
     private var controlsBar: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Cancel button
             if isRecording || !transcript.isEmpty {
                 Button {
                     cancelRecording()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size28)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -133,11 +133,11 @@ struct MessageVoiceRecorder: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(isRecording ? TrinityTheme.statusError : TrinityTheme.accent)
-                        .frame(width: 64, height: 64)
+                        .fill(isRecording ? V4Color.error : V4Color.accent)
+                        .frame(width: ParietalSpacing.avatarLarge, height: ParietalSpacing.avatarLarge)
 
                     Image(systemName: isRecording ? "stop.fill" : "mic.fill")
-                        .font(.system(size: 24))
+                        .font(WernickeTypography.size24)
                         .foregroundStyle(.white)
                 }
                 .scaleEffect(isRecording ? recordingPulse : 1.0)
@@ -153,8 +153,8 @@ struct MessageVoiceRecorder: View {
                     reset()
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size28)
+                        .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
             }
@@ -269,8 +269,8 @@ struct VoiceInputButton: View {
             showRecorder = true
         } label: {
             Image(systemName: "mic.circle.fill")
-                .font(.system(size: 28))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.size28)
+                .foregroundStyle(V4Color.accent)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $showRecorder) {
@@ -290,21 +290,21 @@ struct VoiceInputButton: View {
 
 struct MessageVoiceRecorder_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             MessageVoiceRecorder(
                 onTranscriptReady: { _ in },
                 onAudioReady: { _ in }
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
 
             HStack {
                 VoiceInputButton { _ in }
                 Text("Voice input available")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

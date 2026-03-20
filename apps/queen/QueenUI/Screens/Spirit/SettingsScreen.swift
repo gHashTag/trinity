@@ -36,32 +36,32 @@ struct SettingsScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("\u{2699}\u{FE0F}")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("SETTINGS")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text("Queen UI Configuration")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                 }
                 .padding()
 
                 // Appearance
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("APPEARANCE")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     HStack {
                         Text("Mode")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Picker("", selection: $appearanceModeRaw) {
                             ForEach(AppearanceMode.allCases, id: \.rawValue) { mode in
@@ -72,32 +72,32 @@ struct SettingsScreen: View {
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.1))
+                        .background(Color.white.opacity(V2Depth.bgSubtle))
 
                     // ThemeSelector() — TODO: restore after fixing build
 
                     Text("Theme variants apply to dark mode only. Light mode uses standard colors.")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Queen Daemon config
                 queenDaemonSection
 
                 // Arena connection
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("ARENA HTTP")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     HStack {
                         Text("Host")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         TextField("localhost", text: $arenaHost)
                             .textFieldStyle(.roundedBorder)
@@ -107,7 +107,7 @@ struct SettingsScreen: View {
                     HStack {
                         Text("Port")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         TextField("8080", value: $arenaPort, format: .number)
                             .textFieldStyle(.roundedBorder)
@@ -115,31 +115,31 @@ struct SettingsScreen: View {
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Notifications
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("NOTIFICATIONS")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
 
                     Toggle(isOn: $soundFeedback) {
                         VStack(alignment: .leading) {
                             Text("Sound Feedback")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Play sounds for send, receive, and error events")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     HStack {
                         Text("Sound Mode")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Picker("", selection: $soundMode) {
                             Text("Full").tag("full")
@@ -153,32 +153,32 @@ struct SettingsScreen: View {
                         VStack(alignment: .leading) {
                             Text("Background Notifications")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Show banners when app is in background")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     Text("Full = sounds + notifications | Notifications = banners only | Silent = nothing")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Font Size / Chat Density
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("CHAT DISPLAY")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     HStack {
                         Text("Font Size")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Slider(value: Binding(
                             get: { Double(chatFontSize) },
@@ -186,43 +186,43 @@ struct SettingsScreen: View {
                         ), in: 12...22, step: 1)
                         Text("\(chatFontSize)pt")
                             .font(.body.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textPrimary)
-                            .frame(width: 40)
+                            .foregroundStyle(V4Color.textPrimary)
+                            .frame(width: ParietalSpacing.buttonMediumWidth)
                     }
 
                     Text("The quick brown fox jumps over the lazy dog")
                         .font(.system(size: CGFloat(chatFontSize)))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .padding(8)
-                        .background(Color.white.opacity(0.04))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .background(Color.white.opacity(V2Depth.bgCardLight))
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Ollama (Local Models)
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("OLLAMA (LOCAL MODELS)")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
 
                     Toggle(isOn: $ollamaEnabled) {
                         VStack(alignment: .leading) {
                             Text("Enable Ollama")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Connect to local Ollama instance for offline inference")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     HStack {
                         Text("URL")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         TextField("http://localhost:11434", text: $ollamaURL)
                             .textFieldStyle(.roundedBorder)
@@ -233,16 +233,16 @@ struct SettingsScreen: View {
                         Button {
                             detectOllamaModels()
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 11))
+                                    .font(WernickeTypography.size11)
                                 Text("Detect Models")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(WernickeTypography.captionMedium)
                             }
                             .foregroundStyle(.black)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(TrinityTheme.purple)
+                            .background(V4Color.purple)
                             .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
@@ -250,47 +250,47 @@ struct SettingsScreen: View {
                         if !ollamaStatus.isEmpty {
                             Text(ollamaStatus)
                                 .font(.caption)
-                                .foregroundStyle(ollamaStatus.contains("Found") ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                                .foregroundStyle(ollamaStatus.contains("Found") ? V4Color.statusOK : V4Color.statusError)
                         }
                     }
 
                     if !ollamaModels.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                             Text("Available Models:")
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                             ForEach(ollamaModels, id: \.self) { model in
-                                HStack(spacing: 6) {
+                                HStack(spacing: ParietalSpacing.sm - 2) {
                                     Image(systemName: "cpu")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(TrinityTheme.purple)
+                                        .font(WernickeTypography.size10)
+                                        .foregroundStyle(V4Color.purple)
                                     Text(model)
                                         .font(.caption.monospaced())
-                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                        .foregroundStyle(V4Color.textPrimary)
                                 }
                             }
                         }
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Budget
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("BUDGET")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
 
                     HStack {
                         Text("Daily Limit")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Text("$")
                             .font(.body)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         TextField("5.00", value: $dailyCostBudget, format: .number.precision(.fractionLength(2)))
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospacedDigit())
@@ -302,37 +302,37 @@ struct SettingsScreen: View {
                         VStack(alignment: .leading) {
                             Text("Show Cost Estimates")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Display estimated cost per message in chat")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     Text("Budget warning at 80%, hard stop at 100% of daily limit")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Conversation
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("CONVERSATION")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     HStack {
                         Text("Auto-Archive")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 120, alignment: .leading)
                         Stepper(value: $autoArchiveDays, in: 7...365, step: 7) {
                             Text("\(autoArchiveDays) days")
                                 .font(.caption.monospacedDigit())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                         }
                     }
 
@@ -340,10 +340,10 @@ struct SettingsScreen: View {
                         VStack(alignment: .leading) {
                             Text("Auto-Title Threads")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Automatically generate thread title from first message")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
@@ -351,17 +351,17 @@ struct SettingsScreen: View {
                         VStack(alignment: .leading) {
                             Text("Draft Auto-Save")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Save unsent messages as drafts when switching threads")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     HStack {
                         Text("Sort Order")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 120, alignment: .leading)
                         Picker("", selection: $threadSortOrder) {
                             Text("Date").tag("date")
@@ -373,23 +373,23 @@ struct SettingsScreen: View {
 
                     Text("Threads older than \(autoArchiveDays) days are auto-archived")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // AI Defaults
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("AI DEFAULTS")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
 
                     HStack {
                         Text("Chat Mode")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Picker("", selection: $defaultChatModeRaw) {
                             ForEach(ChatMode.allCases, id: \.rawValue) { mode in
@@ -402,7 +402,7 @@ struct SettingsScreen: View {
                     HStack {
                         Text("Effort Level")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Picker("", selection: $effortLevelRaw) {
                             ForEach(EffortLevel.allCases, id: \.rawValue) { level in
@@ -415,7 +415,7 @@ struct SettingsScreen: View {
                     HStack {
                         Text("Style Preset")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Picker("", selection: $stylePresetRaw) {
                             ForEach(StylePreset.allCases, id: \.rawValue) { preset in
@@ -427,112 +427,112 @@ struct SettingsScreen: View {
 
                     Text("Defaults apply to new threads. Existing threads keep their settings.")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Input behavior
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("INPUT")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     Toggle(isOn: $useCtrlEnterToSend) {
                         VStack(alignment: .leading) {
                             Text("Ctrl+Enter to send")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text(useCtrlEnterToSend
                                 ? "Enter = new line, Ctrl+Enter = send"
                                 : "Enter = send, Shift+Enter = new line")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     HStack {
                         Text("Session Cleanup")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 120, alignment: .leading)
                         Stepper(value: $sessionCleanupDays, in: 7...365, step: 7) {
                             Text("\(sessionCleanupDays) days")
                                 .font(.caption.monospacedDigit())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                         }
                     }
                     Text("Threads older than \(sessionCleanupDays) days are auto-deleted")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Refresh
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("REFRESH")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
 
                     HStack {
                         Text("Interval")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Slider(value: $refreshInterval, in: 1...30, step: 1)
                         Text("\(Int(refreshInterval))s")
                             .font(.body.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textPrimary)
-                            .frame(width: 40)
+                            .foregroundStyle(V4Color.textPrimary)
+                            .frame(width: ParietalSpacing.buttonMediumWidth)
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Project path
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("PROJECT")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
 
                     HStack {
                         Text("Path")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 100, alignment: .leading)
                         Text(trinityPath.isEmpty ? FileManager.default.currentDirectoryPath : trinityPath)
                             .font(.caption.monospaced())
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Tips
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("TIPS & ONBOARDING")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Shortcut cheatsheet")
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text(hasSeenShortcuts
                                 ? "Already shown on first launch"
                                 : "Will show on next launch")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         Spacer()
                         if hasSeenShortcuts {
@@ -540,11 +540,11 @@ struct SettingsScreen: View {
                                 hasSeenShortcuts = false
                             } label: {
                                 Text("Reset tips")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(WernickeTypography.captionMedium)
                                     .foregroundStyle(.black)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
-                                    .background(TrinityTheme.accent)
+                                    .background(V4Color.accent)
                                     .clipShape(SwiftUI.Capsule())
                             }
                             .buttonStyle(.plain)
@@ -552,67 +552,67 @@ struct SettingsScreen: View {
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // About
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("ABOUT")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     HStack {
                         Text("Queen UI")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         Spacer()
                         Text("v1.0.0")
                             .font(.caption.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                     }
                     HStack {
                         Text("libtrinity-queen")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         Spacer()
                         Text("v1.0.0")
                             .font(.caption.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                     }
                     HStack {
                         Text("Architecture")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         Spacer()
                         Text("3\u{00B3} = 27 screens")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                     }
                     HStack {
                         Text("Principle")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         Spacer()
                         Text("Swift renders, Zig computes")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.1))
+                        .background(Color.white.opacity(V2Depth.bgSubtle))
 
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Button {
                             resetAllTips()
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "arrow.counterclockwise")
-                                    .font(.system(size: 11))
+                                    .font(WernickeTypography.size11)
                                 Text("Reset All Tips")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(WernickeTypography.captionMedium)
                             }
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(Color.white.opacity(0.08))
@@ -623,16 +623,16 @@ struct SettingsScreen: View {
                         Button {
                             showClearConfirmation = true
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "trash")
-                                    .font(.system(size: 11))
+                                    .font(WernickeTypography.size11)
                                 Text("Clear All Data")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(WernickeTypography.captionMedium)
                             }
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .foregroundStyle(V4Color.statusError)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(TrinityTheme.statusError.opacity(0.15))
+                            .background(V4Color.statusError.opacity(V2Depth.bgSidebarHover))
                             .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
@@ -641,8 +641,8 @@ struct SettingsScreen: View {
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
                 .alert("Clear All Data", isPresented: $showClearConfirmation) {
                     Button("Cancel", role: .cancel) {}
@@ -655,26 +655,26 @@ struct SettingsScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadQueenConfig() }
     }
 
     // MARK: - Queen Daemon Config
 
     private var queenDaemonSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("QUEEN DAEMON")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
 
             Toggle(isOn: $godMode) {
                 HStack {
                     Text("\u{26A1} God Mode")
                         .font(.body.weight(.medium))
-                        .foregroundStyle(godMode ? TrinityTheme.statusError : TrinityTheme.textPrimary)
+                        .foregroundStyle(godMode ? V4Color.statusError : V4Color.textPrimary)
                     Text("L2 + no approval")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
             .onChange(of: godMode) {
@@ -688,7 +688,7 @@ struct SettingsScreen: View {
             HStack {
                 Text("Max Auto Level")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 120, alignment: .leading)
                 Picker("", selection: $maxAutoLevel) {
                     Text("L0 (read-only)").tag(0)
@@ -702,30 +702,30 @@ struct SettingsScreen: View {
             Toggle(isOn: $requireApproval) {
                 Text("Require Human Approval (L2)")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .onChange(of: requireApproval) { saveQueenConfig() }
 
             HStack {
                 Text("Interval")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 120, alignment: .leading)
                 Stepper(value: $intervalSec, in: 60...3600, step: 60) {
                     Text("\(intervalSec)s (\(intervalSec / 60)m)")
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                 }
                 .onChange(of: intervalSec) { saveQueenConfig() }
             }
 
             Text("Queen daemon reads config.json on next cycle")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .padding(.horizontal)
     }
 

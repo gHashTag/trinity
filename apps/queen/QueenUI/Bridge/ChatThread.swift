@@ -210,8 +210,8 @@ enum MessageErrorKind: String, Codable {
 
     var color: Color {
         switch self {
-        case .rateLimited, .timeout: return TrinityTheme.statusWarn
-        default: return TrinityTheme.statusError
+        case .rateLimited, .timeout: return V4Color.warning
+        default: return V4Color.error
         }
     }
 }

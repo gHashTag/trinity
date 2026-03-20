@@ -6,17 +6,17 @@ struct ELOChart: View {
     private var maxElo: Double { entries.map(\.elo).max() ?? 1200 }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             ForEach(Array(entries.enumerated()), id: \.offset) { idx, entry in
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Text("#\(idx + 1)")
                         .font(.caption.weight(.bold).monospacedDigit())
-                        .foregroundStyle(idx == 0 ? TrinityTheme.golden : TrinityTheme.textMuted)
+                        .foregroundStyle(idx == 0 ? V4Color.golden : V4Color.textSecondary)
                         .frame(width: 30)
 
                     Text(entry.name)
                         .font(.body.weight(.medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .frame(maxWidth: 120, alignment: .leading)
 
                     GeometryReader { geo in
@@ -26,30 +26,30 @@ struct ELOChart: View {
                             .fill(barColor(idx))
                             .frame(width: max(width, 4), height: 16)
                     }
-                    .frame(height: 16)
+                    .frame(height: ParietalSpacing.icon)
 
                     Text(String(format: "%.0f", entry.elo))
                         .font(.caption.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                         .frame(width: 50, alignment: .trailing)
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
     private func barColor(_ idx: Int) -> Color {
         switch idx {
-        case 0: return TrinityTheme.golden
-        case 1: return TrinityTheme.accent
-        case 2: return TrinityTheme.purple
-        default: return TrinityTheme.textMuted
+        case 0: return V4Color.golden
+        case 1: return V4Color.accent
+        case 2: return V4Color.purple
+        default: return V4Color.textSecondary
         }
     }
 }

@@ -22,28 +22,28 @@ struct MUMemoryScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 headerView
                 heartbeatView
                 contentView
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadLearningDB() }
     }
 
     private var headerView: some View {
         HStack {
             Text("🧠")
-                .font(.system(size: 48))
+                .font(WernickeTypography.size48)
             VStack(alignment: .leading) {
                 Text("MU MEMORY")
                     .font(.title.weight(.bold))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
                 Text("Learning Database — Pattern Recognition & Fixes")
                     .font(.subheadline)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             Spacer()
         }
@@ -76,21 +76,21 @@ struct MUMemoryScreen: View {
     }
 
     private func summaryView(db: LearningDB) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
             StatCard(
                 label: "Rules",
                 value: "\(db.rules_count ?? db.rules?.count ?? 0)",
-                accent: TrinityTheme.accent
+                accent: V4Color.accent
             )
             StatCard(
                 label: "Errors Scanned",
                 value: "\(db.total_errors_scanned ?? 0)",
-                accent: TrinityTheme.golden
+                accent: V4Color.golden
             )
             StatCard(
                 label: "Version",
                 value: db.version ?? "—",
-                accent: TrinityTheme.purple
+                accent: V4Color.purple
             )
         }
         .padding(.horizontal)
@@ -99,10 +99,10 @@ struct MUMemoryScreen: View {
     @ViewBuilder
     private func categoryFrequencyView(db: LearningDB) -> some View {
         if let cats = db.category_frequency, !cats.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("CATEGORY FREQUENCY")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.golden)
+                    .foregroundStyle(V4Color.golden)
                     .padding(.horizontal)
 
                 ForEach(cats.sorted(by: { $0.value > $1.value }), id: \.key) { cat, count in
@@ -117,11 +117,11 @@ struct MUMemoryScreen: View {
             Text(categoryEmoji(cat))
             Text(cat)
                 .font(.caption.weight(.medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Spacer()
             Text("\(count)")
                 .font(.caption.weight(.bold).monospacedDigit())
-                .foregroundStyle(count > 0 ? TrinityTheme.accent : TrinityTheme.textMuted)
+                .foregroundStyle(count > 0 ? V4Color.accent : V4Color.textSecondary)
         }
         .padding(.horizontal)
         .padding(.vertical, 2)
@@ -130,10 +130,10 @@ struct MUMemoryScreen: View {
     @ViewBuilder
     private func learningRulesView(db: LearningDB) -> some View {
         if let rules = db.rules, !rules.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("LEARNING RULES (\(rules.count))")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                     .padding(.horizontal)
 
                 ForEach(rules) { rule in
@@ -144,53 +144,53 @@ struct MUMemoryScreen: View {
     }
 
     private func ruleRow(rule: LearningRule) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             HStack {
                 Text(rule.id)
                     .font(.caption.weight(.bold).monospaced())
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 if let cat = rule.category {
                     Text(cat)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(TrinityTheme.purple.opacity(0.15))
+                        .background(V4Color.purple.opacity(V2Depth.bgSidebarHover))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
             }
             if let desc = rule.description {
                 Text(desc)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Text(rule.pattern ?? "")
                     .font(.caption2.monospaced())
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .foregroundStyle(V4Color.statusError)
                 Text("→")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 Text(rule.replacement ?? "")
                     .font(.caption2.monospaced())
-                    .foregroundStyle(TrinityTheme.statusOK)
+                    .foregroundStyle(V4Color.statusOK)
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .padding(.horizontal)
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("No MU learning data")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Text(".trinity/mu/learning_db.json not found")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(32)

@@ -51,7 +51,7 @@ struct AlertModal: View {
     }
     
     private var modalBackdrop: some View {
-        Color.black.opacity(0.4)
+        Color.black.opacity(V1Theme.opacityTextTertiary)
             .ignoresSafeArea()
             .opacity(isVisible ? 1 : 0)
             .onTapGesture {
@@ -62,29 +62,29 @@ struct AlertModal: View {
     }
     
     private var modalContent: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Icon
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 36))
-                    .foregroundStyle(isDestructive ? TrinityTheme.statusError : TrinityTheme.accent)
+                    .font(WernickeTypography.size36Light)
+                    .foregroundStyle(isDestructive ? V4Color.error : V4Color.accent)
             }
             
             // Title
             Text(title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
                 .multilineTextAlignment(.center)
             
             // Message
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             
             // Buttons
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 if let cancelTitle = cancelTitle {
                     Button(cancelTitle) {
                         dismiss()
@@ -98,13 +98,13 @@ struct AlertModal: View {
                     onConfirm()
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(isDestructive ? TrinityTheme.statusError : TrinityTheme.accent)
+                .tint(isDestructive ? V4Color.error : V4Color.accent)
             }
         }
         .padding(24)
         .frame(width: 360)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerLarge)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerLarge)
         .shadow(color: .black.opacity(0.2), radius: 20)
         .scaleEffect(isVisible ? 1 : 0.9)
         .opacity(isVisible ? 1 : 0)
@@ -157,16 +157,16 @@ struct InputModal: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(V1Theme.opacityTextTertiary)
                 .ignoresSafeArea()
                 .onTapGesture {
                     dismiss()
                 }
             
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body16Medium)
+                    .foregroundStyle(V4Color.textPrimary)
                 
                 TextField(placeholder, text: $text)
                     .textFieldStyle(.roundedBorder)
@@ -176,16 +176,16 @@ struct InputModal: View {
                     }
                 
                 if let error = error {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.caption2)
                         Text(error)
                             .font(.caption)
                     }
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .foregroundStyle(V4Color.error)
                 }
                 
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Button("Cancel") {
                         dismiss()
                         onCancel()
@@ -201,8 +201,8 @@ struct InputModal: View {
             }
             .padding(20)
             .frame(width: 320)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerLarge)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
             .scaleEffect(isVisible ? 1 : 0.9)
             .opacity(isVisible ? 1 : 0)
@@ -269,7 +269,7 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(V1Theme.opacityTextTertiary)
                 .ignoresSafeArea()
                 .onTapGesture {
                     dismiss()
@@ -278,11 +278,11 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
             VStack(spacing: 0) {
                 // Header
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body16Medium)
+                    .foregroundStyle(V4Color.textPrimary)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(TrinityTheme.bgCard)
+                    .background(V4Color.surface)
                 
                 Divider()
                 
@@ -290,12 +290,12 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
                 if options.count > 10 {
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         TextField("Search...", text: $searchText)
                             .textFieldStyle(.plain)
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, ParietalSpacing.sm)
                 }
                 
                 // Options
@@ -305,7 +305,7 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
                             optionRow(option)
                             if option != filteredOptions.last {
                                 Divider()
-                                    .background(TrinityTheme.bgCardBorder)
+                                    .background(V4Color.border)
                             }
                         }
                     }
@@ -332,8 +332,8 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
                 .padding()
             }
             .frame(width: 360, height: 480)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerLarge)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
             .scaleEffect(isVisible ? 1 : 0.9)
             .opacity(isVisible ? 1 : 0)
@@ -360,17 +360,17 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
         } label: {
             HStack {
                 Text("\(option)")
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
                 
                 Spacer()
                 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, 12)
+            .padding(.vertical, ParietalSpacing.md)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -411,32 +411,32 @@ struct ProgressModal: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(V1Theme.opacityTextTertiary)
                 .ignoresSafeArea()
             
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 // Spinner or progress
                 ZStack {
                     if let progress = progress {
                         // Progress ring
                         Circle()
-                            .stroke(TrinityTheme.bgCardBorder, lineWidth: 4)
+                            .stroke(V4Color.border, lineWidth: 4)
                             .frame(width: 60, height: 60)
                         
                         Circle()
                             .trim(from: 0, to: progress)
-                            .stroke(TrinityTheme.accent, lineWidth: 4)
+                            .stroke(V4Color.accent, lineWidth: 4)
                             .frame(width: 60, height: 60)
                             .rotationEffect(.degrees(-90))
                         
                         Text("\(Int(progress * 100))%")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.body14Medium)
+                            .foregroundStyle(V4Color.textPrimary)
                     } else {
                         // Spinning indicator
                         Circle()
                             .trim(from: 0.2, to: 1)
-                            .stroke(TrinityTheme.accent, lineWidth: 4)
+                            .stroke(V4Color.accent, lineWidth: 4)
                             .frame(width: 60, height: 60)
                             .rotationEffect(.degrees(rotation))
                             .onAppear {
@@ -449,14 +449,14 @@ struct ProgressModal: View {
                 
                 // Title
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body16Medium)
+                    .foregroundStyle(V4Color.textPrimary)
                 
                 // Message
                 if let message = message {
                     Text(message)
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.textSecondary)
                         .multilineTextAlignment(.center)
                 }
                 
@@ -470,8 +470,8 @@ struct ProgressModal: View {
             }
             .padding(24)
             .frame(width: 320)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerLarge)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
             .scaleEffect(isVisible ? 1 : 0.9)
             .opacity(isVisible ? 1 : 0)
@@ -548,6 +548,6 @@ struct ModalPatternsView_Previews: PreviewProvider {
             .frame(width: 500, height: 400)
             .previewDisplayName("Progress Modal")
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

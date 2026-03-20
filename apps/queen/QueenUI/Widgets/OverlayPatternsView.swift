@@ -30,8 +30,8 @@ struct SimpleTooltip: View {
     var body: some View {
         Text(text)
             .font(.caption)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 4)
                     .fill(.black.opacity(0.8))
@@ -69,37 +69,37 @@ struct ContextMenuOverlay: View {
                         item.action()
                         onDismiss()
                     } label: {
-                        HStack(spacing: 10) {
+                        HStack(spacing: ParietalSpacing.sm + 2) {
                             Image(systemName: item.icon)
-                                .font(.system(size: 13))
-                                .foregroundStyle(TrinityTheme.textMuted)
-                                .frame(width: 20)
+                                .font(WernickeTypography.size13)
+                                .foregroundStyle(V4Color.textSecondary)
+                                .frame(width: ParietalSpacing.buttonSmallWidth)
                             
                             Text(item.title)
-                                .font(.system(size: 13))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .font(WernickeTypography.size13)
+                                .foregroundStyle(V4Color.textPrimary)
                             
                             Spacer()
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, ParietalSpacing.sm + 2)
+                        .padding(.vertical, ParietalSpacing.xs + 2)
                     }
                     .buttonStyle(.plain)
                     
                     if index < items.count - 1 {
                         Divider()
-                            .background(TrinityTheme.bgCardBorder)
+                            .background(V4Color.border)
                     }
                 }
             }
             .padding(4)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
         }
         .opacity(isVisible ? 1 : 0)
@@ -116,22 +116,22 @@ struct LoadingOverlay: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.3)
+            Color.black.opacity(V2Depth.stateHover)
                 .ignoresSafeArea()
             
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 ProgressView()
                     .scaleEffect(1.5)
-                    .tint(TrinityTheme.accent)
+                    .tint(V4Color.accent)
                 
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textPrimary)
             }
             .padding(24)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                    .fill(V4Color.surface)
             )
         }
         .opacity(isVisible ? 1 : 0)
@@ -140,21 +140,21 @@ struct LoadingOverlay: View {
 
 // MARK: - Error Banner
 
-struct ErrorBanner: View {
+struct OverlayErrorBanner: View {
     let error: String
     let onDismiss: () -> Void
     
     @State private var isVisible = false
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(V4Color.error)
             
             Text(error)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
             
             Spacer()
             
@@ -167,15 +167,15 @@ struct ErrorBanner: View {
                 }
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.statusError.opacity(0.1))
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.error.opacity(V2Depth.bgSubtle))
         )
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : -20)
@@ -210,10 +210,10 @@ struct OverlayPatternsView_Previews: PreviewProvider {
             SimpleTooltip(text: "Helpful info", isVisible: true)
                 .frame(width: 200, height: 100)
             
-            ErrorBanner(error: "Something went wrong") {}
-                .frame(width: 400)
+            OverlayErrorBanner(error: "Something went wrong") {}
+                .frame(width: ParietalSpacing.xl * 16)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

@@ -19,7 +19,7 @@ struct StarRating: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(1...maximumRating, id: \.self) { index in
                 starImage(for: index)
                     .onTapGesture {
@@ -49,14 +49,14 @@ struct StarRating: View {
 
     private var filledStar: some View {
         Image(systemName: "star.fill")
-            .font(.system(size: 14))
+            .font(WernickeTypography.size14)
             .foregroundStyle(.yellow)
     }
 
     private var emptyStar: some View {
         Image(systemName: "star")
-            .font(.system(size: 14))
-            .foregroundStyle(interactive ? TrinityTheme.textMuted : .yellow.opacity(0.3))
+            .font(WernickeTypography.size14)
+            .foregroundStyle(interactive ? V4Color.textSecondary : .yellow.opacity(V2Depth.stateHover))
     }
 
     private func partialStarView(fill: Double) -> some View {
@@ -106,7 +106,7 @@ struct InteractiveRating: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ForEach(1...maximumRating, id: \.self) { index in
                 starView(for: index)
             }
@@ -122,7 +122,7 @@ struct InteractiveRating: View {
 
         Image(systemName: isActive ? "star.fill" : "star")
             .font(.system(size: size.pointSize))
-            .foregroundStyle(isActive ? .yellow : TrinityTheme.textMuted)
+            .foregroundStyle(isActive ? .yellow : V4Color.textSecondary)
             .onHover { hovering in
                 if hovering {
                     hoverRating = index
@@ -150,35 +150,35 @@ struct ReviewCard: View {
     let helpfulCount: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 // Avatar
                 if let avatar = avatar {
                     Image(systemName: avatar)
-                        .font(.system(size: 20))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size20)
+                        .foregroundStyle(V4Color.accent)
                         .frame(width: 36, height: 36)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.accent.opacity(0.15))
+                                .fill(V4Color.accent.opacity(V2Depth.bgSidebarHover))
                         )
                 } else {
                     Circle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                         .frame(width: 36, height: 36)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(reviewer)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.textPrimary)
 
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         StaticStarRating(rating: rating, size: .small)
 
                         Text(dateString)
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
 
@@ -186,25 +186,25 @@ struct ReviewCard: View {
             }
 
             Text(title)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.smallMedium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(comment)
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
                 .lineLimit(4)
 
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: "hand.thumbsup")
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
                 Text("\(helpfulCount) helpful")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding(14)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 
     private var dateString: String {
@@ -251,34 +251,34 @@ struct RatingSummary: View {
     let ratingDistribution: [Int]
 
     var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Average rating
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 Text(String(format: "%.1f", averageRating))
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size36Light.weight(.bold))
+                    .foregroundStyle(V4Color.textPrimary)
 
                 StaticStarRating(rating: Int(round(averageRating)), size: .medium)
 
                 Text("\(totalReviews) reviews")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
-            .frame(width: 100)
+            .frame(width: ParietalSpacing.avatarLarge + ParietalSpacing.lg)
 
             // Distribution bars
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 ForEach((1...5).reversed(), id: \.self) { star in
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Text("\(star)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 12)
 
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(TrinityTheme.bgCardBorder)
+                                    .fill(V4Color.border)
 
                                 let count = ratingDistribution[safe: star - 1] ?? 0
                                 let maxCount = ratingDistribution.max() ?? 1
@@ -293,15 +293,15 @@ struct RatingSummary: View {
 
                         Text("\(ratingDistribution[safe: star - 1] ?? 0)")
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .frame(width: 30)
                     }
                 }
             }
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 }
 
@@ -324,28 +324,28 @@ struct RatingInput: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 InteractiveRating(rating: $rating, size: .large)
 
                 Text(ratingText)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             if !categories.isEmpty {
                 Divider()
 
-                VStack(spacing: 12) {
+                VStack(spacing: ParietalSpacing.md) {
                     ForEach(categories) { category in
                         HStack {
                             Text(category.name)
-                                .font(.system(size: 12))
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .font(WernickeTypography.size12)
+                                .foregroundStyle(V4Color.textPrimary)
 
                             Spacer()
 
@@ -358,9 +358,9 @@ struct RatingInput: View {
                 }
             }
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 
     private var ratingText: String {
@@ -388,7 +388,7 @@ private extension Array {
 struct RatingView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 StarRating(rating: .constant(3.5))
                 StarRating(rating: .constant(4.8))
 
@@ -399,7 +399,7 @@ struct RatingView_Previews: PreviewProvider {
                     totalReviews: 128,
                     ratingDistribution: [8, 12, 24, 45, 39]
                 )
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
 
                 ReviewCard(
                     reviewer: "John Doe",
@@ -410,11 +410,11 @@ struct RatingView_Previews: PreviewProvider {
                     date: Date().addingTimeInterval(-86400 * 3),
                     helpfulCount: 24
                 )
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
             }
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

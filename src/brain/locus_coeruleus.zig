@@ -105,3 +105,104 @@ test "BackoffPolicy constant strategy" {
     try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(5));
     try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(100));
 }
+
+test "BackoffPolicy jitter uniform" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 1.0,
+        .strategy = .constant,
+        .jitter_type = .uniform,
+    };
+
+    const delay = policy.nextDelay(0);
+    // With uniform jitter, delay should be >= initial_ms (1.0 to 2.0x)
+    try std.testing.expect(delay >= 1000);
+}
+
+test "BackoffPolicy jitter phi_weighted" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 1.0,
+        .strategy = .constant,
+        .jitter_type = .phi_weighted,
+    };
+
+    const delay = policy.nextDelay(0);
+    // Phi-weighted: either 0.618x or 1.618x
+    try std.testing.expect(delay >= 618 and delay <= 1618);
+}
+
+test "BackoffPolicy exponential overflow protection" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 10.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // High attempt number could cause overflow
+    const delay = policy.nextDelay(100);
+    try std.testing.expect(delay > 0);
+}
+
+test "BackoffPolicy linear max boundary" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .max_ms = 5000,
+        .linear_increment = 2000,
+        .strategy = .linear,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 3000), policy.nextDelay(1));
+    try std.testing.expectEqual(@as(u64, 5000), policy.nextDelay(2));
+    try std.testing.expectEqual(@as(u64, 5000), policy.nextDelay(10)); // Capped at max
+}
+
+test "BackoffPolicy init default values" {
+    const policy = BackoffPolicy.init();
+    try std.testing.expectEqual(@as(u64, 1000), policy.initial_ms);
+    try std.testing.expectEqual(@as(u64, 60000), policy.max_ms);
+    try std.testing.expectEqual(@as(f32, 2.0), policy.multiplier);
+    try std.testing.expectEqual(@as(u64, 1000), policy.linear_increment);
+    try std.testing.expectEqual(@as(@TypeOf(policy.strategy), .exponential), policy.strategy);
+    try std.testing.expectEqual(@as(@TypeOf(policy.jitter_type), .none), policy.jitter_type);
+}
+
+test "BackoffPolicy exponential with multiplier 1.0" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 1.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(1));
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(100));
+}
+
+test "BackoffPolicy exponential with small multiplier" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 1.5,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 1500), policy.nextDelay(1));
+    try std.testing.expectEqual(@as(u64, 2250), policy.nextDelay(2));
+}
+
+test "BackoffPolicy zero attempt" {
+    var policy = BackoffPolicy{
+        .initial_ms = 5000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 5000), policy.nextDelay(0));
+}

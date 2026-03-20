@@ -98,47 +98,47 @@ struct BrowserFrame: View {
     var body: some View {
         VStack(spacing: 0) {
             // Browser toolbar
-            HStack(spacing: 8) {
-                HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Circle()
-                        .fill(TrinityTheme.statusError)
-                        .frame(width: 8, height: 8)
+                        .fill(V4Color.error)
+                        .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
                     Circle()
-                        .fill(TrinityTheme.statusWarn)
-                        .frame(width: 8, height: 8)
+                        .fill(V4Color.warning)
+                        .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
                     Circle()
-                        .fill(TrinityTheme.statusOK)
-                        .frame(width: 8, height: 8)
+                        .fill(V4Color.success)
+                        .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                     }
 
                 Rectangle()
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(height: 28)
-                    .cornerRadius(6)
+                    .cornerRadius(V1Theme.cornerSmall)
                     .overlay(
                         HStack {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(V4Color.textSecondary)
                             Text(url)
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         .padding(.leading, 8)
                     )
             }
-            .padding(12)
-            .background(TrinityTheme.bgCard)
+            .padding(ParietalSpacing.md)
+            .background(V4Color.surface)
 
             // Content area
             content()
                 .frame(maxWidth: .infinity)
         }
-        .background(TrinityTheme.bgWindow)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.15), radius: 15)
+        .background(V4Color.background)
+        .cornerRadius(V1Theme.cornerLarge)
+        .shadow(color: .black.opacity(V2Depth.bgSidebarHover), radius: 15)
         .scaleEffect(scale)
     }
 }
@@ -163,38 +163,38 @@ struct WindowFrame: View {
     var body: some View {
         VStack(spacing: 0) {
             // Title bar
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "app.fill")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.accent)
 
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(WernickeTypography.size12)
 
                 Spacer()
 
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Circle()
-                        .fill(TrinityTheme.statusError)
+                        .fill(V4Color.error)
                         .frame(width: 10, height: 10)
 
                     Circle()
-                        .fill(TrinityTheme.statusWarn)
+                        .fill(V4Color.warning)
                         .frame(width: 10, height: 10)
 
                     Circle()
-                        .fill(TrinityTheme.statusOK)
+                        .fill(V4Color.success)
                         .frame(width: 10, height: 10)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
             .background(
                 Rectangle()
-                    .fill(TrinityTheme.bgCard)
+                    .fill(V4Color.surface)
                     .overlay(
                         Rectangle()
-                            .fill(TrinityTheme.bgWindow)
+                            .fill(V4Color.background)
                             .frame(height: 1),
                         alignment: .bottom
                     )
@@ -203,9 +203,9 @@ struct WindowFrame: View {
             // Content
             content()
         }
-        .background(TrinityTheme.bgWindow)
-        .cornerRadius(10)
-        .shadow(color: .black.opacity(0.15), radius: 10)
+        .background(V4Color.background)
+        .cornerRadius(V1Theme.cornerMedium)
+        .shadow(color: .black.opacity(V2Depth.bgSidebarHover), radius: 10)
         .scaleEffect(scale)
     }
 }
@@ -232,30 +232,30 @@ struct CodeEditorFrame: View {
             // Tab bar
             HStack {
                 Text(language)
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(TrinityTheme.bgCardBorder)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.xs + 2)
+                    .background(V4Color.border)
 
                 Spacer()
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TrinityTheme.bgCard)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(V4Color.surface)
 
             // Code area
             ScrollView([.horizontal, .vertical]) {
                 Text(code)
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textPrimary)
-                    .padding(12)
+                    .font(WernickeTypography.size12Mono)
+                    .foregroundStyle(V4Color.textPrimary)
+                    .padding(ParietalSpacing.md)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(Color(red: 28/255, green: 28/255, blue: 30/255))
         }
-        .cornerRadius(8)
-        .shadow(color: .black.opacity(0.1), radius: 8)
+        .cornerRadius(V1Theme.cornerBase)
+        .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: 8)
         .scaleEffect(scale)
     }
 }
@@ -278,22 +278,22 @@ struct SplitViewFrame: View {
     }
 
     var body: some View {
-        HStack(spacing: 1) {
+        HStack(spacing: ParietalSpacing.xxxxs) {
             leadingContent()
                 .frame(maxWidth: .infinity)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.surface)
 
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(width: 1)
 
             trailingContent()
                 .frame(maxWidth: .infinity)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.surface)
         }
         .frame(height: 300)
-        .cornerRadius(8)
-        .shadow(color: .black.opacity(0.1), radius: 5)
+        .cornerRadius(V1Theme.cornerBase)
+        .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: 5)
         .scaleEffect(scale)
     }
 }
@@ -305,7 +305,7 @@ struct MockupContainer: View {
     let content: () -> AnyView
 
     init(
-        backgroundColor: Color = TrinityTheme.bgWindow,
+        backgroundColor: Color = V4Color.background,
         @ViewBuilder content: @escaping () -> some View
     ) {
         self.backgroundColor = backgroundColor
@@ -343,6 +343,6 @@ struct DeviceFrameView_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(.gray.opacity(0.1))
+        .background(.gray.opacity(V2Depth.bgSubtle))
     }
 }

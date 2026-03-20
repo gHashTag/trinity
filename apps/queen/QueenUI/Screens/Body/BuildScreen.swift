@@ -18,63 +18,63 @@ struct BuildScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("🔨")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("BUILD STATUS")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("6 binaries from one build.zig")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
 
-                    ActionButton(icon: "🔨", label: "Rebuild", color: buildOk ? TrinityTheme.accent : TrinityTheme.statusError,
+                    ActionButton(icon: "🔨", label: "Rebuild", color: buildOk ? V4Color.accent : V4Color.statusError,
                                  action: "build")
 
                     MetricGauge(
                         label: "Build",
                         value: buildOk ? 100 : 0,
                         maxValue: 100,
-                        accent: buildOk ? TrinityTheme.statusOK : TrinityTheme.statusError
+                        accent: buildOk ? V4Color.statusOK : V4Color.statusError
                     )
                 }
                 .padding()
 
                 // Summary
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                     StatCard(label: "Language", value: "Zig 0.15.x")
-                    StatCard(label: "Dependencies", value: "0 external", accent: TrinityTheme.golden)
-                    StatCard(label: "Build System", value: "build.zig", accent: TrinityTheme.purple)
+                    StatCard(label: "Dependencies", value: "0 external", accent: V4Color.golden)
+                    StatCard(label: "Build System", value: "build.zig", accent: V4Color.purple)
                     StatCard(label: "Status", value: buildOk ? "OK" : "BROKEN",
-                             accent: buildOk ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                             accent: buildOk ? V4Color.statusOK : V4Color.statusError)
                 }
                 .padding(.horizontal)
 
                 // Binary list
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("BINARIES")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                         .padding(.horizontal)
 
                     ForEach(binaries, id: \.0) { name, description, path in
                         let mtime = binaryMtime(path)
-                        HStack(spacing: 12) {
+                        HStack(spacing: ParietalSpacing.md) {
                             Text("⚡")
                                 .font(.title2)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(name)
                                     .font(.headline.monospaced())
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                 Text(description)
                                     .font(.caption)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
 
                             Spacer()
@@ -82,51 +82,51 @@ struct BuildScreen: View {
                             if let mtime {
                                 Text(mtime)
                                     .font(.caption2.monospacedDigit())
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
 
                             StatusBadge(status: mtime != nil ? .up : .down)
                         }
                         .padding()
-                        .background(TrinityTheme.bgCard)
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                        .background(V4Color.bgCard)
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                         .padding(.horizontal)
                     }
                 }
 
                 // Libraries
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("LIBRARIES")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
                         .padding(.horizontal)
 
                     ForEach([
                         ("libtrinity-vsa", "C API — VSA operations (shared + static)"),
                         ("libtrinity-queen", "C API — Queen dashboard data (shared + static)"),
                     ], id: \.0) { name, desc in
-                        HStack(spacing: 12) {
+                        HStack(spacing: ParietalSpacing.md) {
                             Text("📦")
                             VStack(alignment: .leading) {
                                 Text(name)
                                     .font(.headline.monospaced())
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                 Text(desc)
                                     .font(.caption)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
                             Spacer()
                         }
                         .padding()
-                        .background(TrinityTheme.bgCard)
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                        .background(V4Color.bgCard)
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                         .padding(.horizontal)
                     }
                 }
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
     }
 
     private func binaryMtime(_ relativePath: String) -> String? {

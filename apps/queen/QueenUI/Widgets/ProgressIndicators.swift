@@ -8,8 +8,8 @@ struct LinearProgressBar: View {
     /// Progress value from 0.0 to 1.0
     var value: Double = 0.0
 
-    /// Custom color, defaults to TrinityTheme.accent
-    var color: Color = TrinityTheme.accent
+    /// Custom color, defaults to V4Color.accent
+    var color: Color = V4Color.accent
 
     /// Height of the progress bar
     var height: CGFloat = 6
@@ -28,12 +28,12 @@ struct LinearProgressBar: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             if showsPercentage {
                 HStack {
                     Text("\(Int(value * 100))%")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2MediumMono)
+                        .foregroundStyle(V4Color.textSecondary)
                     Spacer()
                 }
             }
@@ -42,7 +42,7 @@ struct LinearProgressBar: View {
                 ZStack(alignment: .leading) {
                     // Background track
                     RoundedRectangle(cornerRadius: height / 2)
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
 
                     // Progress fill
                     RoundedRectangle(cornerRadius: height / 2)
@@ -88,7 +88,7 @@ struct LinearProgressBar: View {
             ZStack {
                 ForEach(0..<20) { i in
                     Rectangle()
-                        .fill(color.opacity(0.3))
+                        .fill(color.opacity(V2Depth.stateHover))
                         .frame(width: 8, height: height * 2)
                         .offset(x: CGFloat(i) * 20 - stripeOffset)
                 }
@@ -105,8 +105,8 @@ struct CircularProgressIndicator: View {
     /// Progress value from 0.0 to 1.0
     var value: Double = 0.0
 
-    /// Custom color, defaults to TrinityTheme.accent
-    var color: Color = TrinityTheme.accent
+    /// Custom color, defaults to V4Color.accent
+    var color: Color = V4Color.accent
 
     /// Size of the progress ring
     var size: CGFloat = 44
@@ -126,7 +126,7 @@ struct CircularProgressIndicator: View {
         ZStack {
             // Background ring
             Circle()
-                .stroke(color.opacity(0.15), lineWidth: lineWidth)
+                .stroke(color.opacity(V2Depth.bgSidebarHover), lineWidth: lineWidth)
                 .frame(width: size, height: size)
 
             // Progress ring
@@ -134,7 +134,7 @@ struct CircularProgressIndicator: View {
                 .trim(from: 0, to: clampedValue)
                 .stroke(
                     AngularGradient(
-                        gradient: .init(colors: [color.opacity(0.6), color, color]),
+                        gradient: .init(colors: [color.opacity(V1Theme.opacityTextSecondary), color, color]),
                         center: .center,
                         startAngle: .degrees(0),
                         endAngle: .degrees(360)
@@ -149,7 +149,7 @@ struct CircularProgressIndicator: View {
             if showsPercentage {
                 Text("\(Int(value * 100))%")
                     .font(.system(size: size * 0.22, weight: .semibold, design: .rounded))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                     .contentTransition(.numericText(value: Double(Int(value * 100))))
             }
         }
@@ -176,7 +176,7 @@ struct SegmentedProgress: View {
     var totalSteps: Int = 5
 
     /// Custom color for completed steps
-    var color: Color = TrinityTheme.accent
+    var color: Color = V4Color.accent
 
     /// Size of each step dot
     var dotSize: CGFloat = 8
@@ -187,8 +187,8 @@ struct SegmentedProgress: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.sm) {
+            HStack(spacing: ParietalSpacing.md) {
                 ForEach(0..<totalSteps, id: \.self) { index in
                     stepView(for: index)
                         .accessibilityElement(children: .ignore)
@@ -199,8 +199,8 @@ struct SegmentedProgress: View {
 
             if showsLabel {
                 Text("Step \(currentStep + 1) of \(totalSteps)")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundStyle(V4Color.textSecondary)
                     .contentTransition(.numericText())
             }
         }
@@ -225,13 +225,13 @@ struct SegmentedProgress: View {
                 .frame(width: dotSize * 1.3, height: dotSize * 1.3)
                 .overlay(
                     Circle()
-                        .stroke(color.opacity(0.3), lineWidth: 4)
+                        .stroke(color.opacity(V2Depth.stateHover), lineWidth: 4)
                 )
-                .shadow(color: color.opacity(0.4), radius: 4)
+                .shadow(color: color.opacity(V1Theme.opacityTextTertiary), radius: 4)
         } else {
             // Future step
             Circle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(width: dotSize, height: dotSize)
         }
     }
@@ -255,22 +255,22 @@ struct DeterminateProgress: View {
     /// Progress value from 0.0 to 1.0
     var value: Double = 0.0
 
-    /// Custom color, defaults to TrinityTheme.accent
-    var color: Color = TrinityTheme.accent
+    /// Custom color, defaults to V4Color.accent
+    var color: Color = V4Color.accent
 
     /// Display label above the progress
     var label: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             if let label = label {
                 HStack {
                     Text(label)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.textSecondary)
                     Spacer()
                     Text("\(Int(value * 100))%")
-                        .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        .font(WernickeTypography.captionSemiboldMono)
                         .foregroundStyle(color)
                 }
             }
@@ -278,7 +278,7 @@ struct DeterminateProgress: View {
             ZStack(alignment: .leading) {
                 // Track
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(height: 12)
 
                 // Fill with glow effect
@@ -292,7 +292,7 @@ struct DeterminateProgress: View {
                             )
                         )
                         .frame(width: max(0, geo.size.width * max(0, min(1, value))), height: 12)
-                        .shadow(color: color.opacity(0.5), radius: 3)
+                        .shadow(color: color.opacity(V2Depth.stateDisabled), radius: 3)
                         .animation(.easeOut(duration: 0.3), value: value)
                 }
             }
@@ -309,8 +309,8 @@ struct DeterminateProgress: View {
 /// An animated loading state with no specific progress value.
 /// Uses continuous animation to indicate ongoing activity.
 struct IndeterminateProgressIndicator: View {
-    /// Custom color, defaults to TrinityTheme.accent
-    var color: Color = TrinityTheme.accent
+    /// Custom color, defaults to V4Color.accent
+    var color: Color = V4Color.accent
 
     /// Display a loading message
     var message: String?
@@ -324,11 +324,11 @@ struct IndeterminateProgressIndicator: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             ZStack {
                 // Outer ring
                 Circle()
-                    .stroke(color.opacity(0.15), lineWidth: 2)
+                    .stroke(color.opacity(V2Depth.bgSidebarHover), lineWidth: 2)
                     .frame(width: size, height: size)
 
                 // Rotating segment
@@ -336,7 +336,7 @@ struct IndeterminateProgressIndicator: View {
                     .trim(from: 0, to: 0.7)
                     .stroke(
                         AngularGradient(
-                            gradient: .init(colors: [color.opacity(0.3), color]),
+                            gradient: .init(colors: [color.opacity(V2Depth.stateHover), color]),
                             center: .center
                         ),
                         style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
@@ -348,8 +348,8 @@ struct IndeterminateProgressIndicator: View {
 
             if let message = message {
                 Text(message)
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .task {
@@ -381,8 +381,8 @@ struct ProgressWithLabel: View {
     /// Secondary description text
     var description: String?
 
-    /// Custom color, defaults to TrinityTheme.accent
-    var color: Color = TrinityTheme.accent
+    /// Custom color, defaults to V4Color.accent
+    var color: Color = V4Color.accent
 
     /// Style variant
     var style: ProgressStyle = .linear
@@ -396,7 +396,7 @@ struct ProgressWithLabel: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: ParietalSpacing.md + 2) {
             // Progress indicator
             Group {
                 if let value = value {
@@ -417,13 +417,13 @@ struct ProgressWithLabel: View {
             // Labels
             VStack(alignment: .leading, spacing: 3) {
                 Text(label)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 if let description = description {
                     Text(description)
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -433,23 +433,23 @@ struct ProgressWithLabel: View {
             // Percentage badge for determinate progress
             if let value = value, style != .compact {
                 Text("\(Int(value * 100))%")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(WernickeTypography.caption2Semibold)
                     .foregroundStyle(color)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(color.opacity(0.15))
+                    .padding(.horizontal, ParietalSpacing.sm)
+                    .padding(.vertical, ParietalSpacing.xs)
+                    .background(color.opacity(V2Depth.bgSidebarHover))
                     .clipShape(SwiftUI.Capsule())
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md + 2)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(value != nil && value! > 0 ? color.opacity(0.3) : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(value != nil && value! > 0 ? color.opacity(V2Depth.stateHover) : Color.clear, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label). \(description ?? "")")
@@ -461,14 +461,14 @@ struct ProgressWithLabel: View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
 
                 RoundedRectangle(cornerRadius: 2)
                     .fill(color)
                     .frame(width: geo.size.width * max(0, min(1, value)))
             }
         }
-        .frame(height: 4)
+        .frame(height: ParietalSpacing.xs)
     }
 }
 
@@ -477,7 +477,7 @@ struct ProgressWithLabel: View {
 extension View {
     /// Returns a linear progress bar with the specified value.
     /// - Parameter value: Progress value from 0.0 to 1.0
-    func progressBarOverlay(_ value: Double, color: Color = TrinityTheme.accent) -> some View {
+    func progressBarOverlay(_ value: Double, color: Color = V4Color.accent) -> some View {
         self.overlay(
             LinearProgressBar(value: value, color: color)
                 .offset(y: 2)
@@ -486,7 +486,7 @@ extension View {
 
     /// Returns a circular progress ring with the specified value.
     /// - Parameter value: Progress value from 0.0 to 1.0
-    func progressRingOverlay(_ value: Double, color: Color = TrinityTheme.accent) -> some View {
+    func progressRingOverlay(_ value: Double, color: Color = V4Color.accent) -> some View {
         self.overlay(
             CircularProgressIndicator(value: value, color: color)
         )
@@ -510,10 +510,10 @@ struct ProgressIndicators_Previews: PreviewProvider {
         ScrollView {
             VStack(spacing: 32) {
                 // Linear Progress Bar
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Linear Progress Bar")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     LinearProgressBar(value: 0.65)
                     LinearProgressBar(value: 0.3, color: .blue, showsPercentage: true)
@@ -521,16 +521,16 @@ struct ProgressIndicators_Previews: PreviewProvider {
                     LinearProgressBar(value: 0.45, color: .purple, height: 10)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
 
                 // Circular Progress
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Circular Progress")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
-                    HStack(spacing: 20) {
+                    HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                         CircularProgressIndicator(value: 0.3)
                         CircularProgressIndicator(value: 0.65, showsPercentage: true)
                         CircularProgressIndicator(value: 0.85, color: .purple, size: 60, lineWidth: 6)
@@ -538,58 +538,58 @@ struct ProgressIndicators_Previews: PreviewProvider {
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
 
                 // Segmented Progress
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Segmented Progress")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     SegmentedProgress(currentStep: 2, totalSteps: 5)
                     SegmentedProgress(currentStep: 1, totalSteps: 5, color: .blue, showsLabel: true)
                     SegmentedProgress(currentStep: 4, totalSteps: 5, color: .purple, dotSize: 12)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
 
                 // Determinate Progress
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Determinate Progress")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     DeterminateProgress(value: 0.72, label: "Uploading files...")
                     DeterminateProgress(value: 0.25, color: .orange, label: "Processing")
                     DeterminateProgress(value: 0.95, color: .green, label: "Almost done")
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
 
                 // Indeterminate Progress
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Indeterminate Progress")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
-                    HStack(spacing: 20) {
+                    HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                         IndeterminateProgressIndicator()
                         IndeterminateProgressIndicator(message: "Loading...")
                         IndeterminateProgressIndicator(color: .blue, size: 32)
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
 
                 // Progress with Label
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Progress with Label")
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     ProgressWithLabel(
                         value: 0.65,
@@ -622,12 +622,12 @@ struct ProgressIndicators_Previews: PreviewProvider {
                     )
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(12)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerLarge)
             }
             .padding()
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .frame(height: 900)
     }
 }

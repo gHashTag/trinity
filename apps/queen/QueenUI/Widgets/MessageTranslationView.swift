@@ -11,8 +11,8 @@ struct TranslateButton: View {
     var body: some View {
         Button(action: onTranslate) {
             Image(systemName: "globe")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(width: 28, height: 28)
         }
         .accessibilityLabel("Translate message")
@@ -42,7 +42,7 @@ struct TranslationOverlay: View {
             header
 
             ScrollView {
-                VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     // Language selectors
                     languageSelectorRow
 
@@ -52,14 +52,14 @@ struct TranslationOverlay: View {
                     // Translation result
                     translationSection
                 }
-                .padding(TrinityTheme.spacing)
+                .padding(ParietalSpacing.md)
             }
 
             // Footer
             footer
         }
         .frame(width: 600, height: 500)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .onAppear {
             detectLanguage()
             loadFromCache()
@@ -85,64 +85,64 @@ struct TranslationOverlay: View {
     private var header: some View {
         HStack {
             Text("Translate Message")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.body16Medium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Close")
         }
-        .padding(.horizontal, TrinityTheme.spacing)
-        .padding(.vertical, 12)
-        .background(TrinityTheme.bgSidebar)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.md)
+        .background(V4Color.sidebar)
     }
 
     private var languageSelectorRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Source language
             Button(action: { showSourcePicker = true }) {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Text(sourceLanguage?.flag ?? "??")
                     Text(sourceLanguage?.localizedName ?? "Auto-detect")
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
-                .font(.system(size: 12))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerSmall)
+                .font(WernickeTypography.size12)
+                .padding(.horizontal, ParietalSpacing.sm + 2)
+                .padding(.vertical, ParietalSpacing.xs + 2)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerSmall)
             }
             .buttonStyle(.plain)
 
             // Arrow
             Image(systemName: "arrow.right")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
 
             // Target language
             Button(action: { showLanguagePicker = true }) {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Text(selectedTargetLanguage.flag)
                     Text(selectedTargetLanguage.localizedName)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
-                .font(.system(size: 12))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerSmall)
+                .font(WernickeTypography.size12)
+                .padding(.horizontal, ParietalSpacing.sm + 2)
+                .padding(.vertical, ParietalSpacing.xs + 2)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerSmall)
             }
             .buttonStyle(.plain)
 
@@ -150,7 +150,7 @@ struct TranslationOverlay: View {
 
             // Translate button
             Button(action: performTranslation) {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     if isTranslating {
                         ProgressView()
                             .scaleEffect(0.7)
@@ -159,12 +159,12 @@ struct TranslationOverlay: View {
                     }
                     Text("Translate")
                 }
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(isTranslating ? TrinityTheme.textMuted : .white)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(isTranslating ? TrinityTheme.bgCardBorder : TrinityTheme.accent)
-                .cornerRadius(TrinityTheme.cornerSmall)
+                .font(WernickeTypography.captionMedium)
+                .foregroundStyle(isTranslating ? V4Color.textSecondary : .white)
+                .padding(.horizontal, ParietalSpacing.md + 2)
+                .padding(.vertical, ParietalSpacing.xs + 2)
+                .background(isTranslating ? V4Color.border : V4Color.accent)
+                .cornerRadius(V1Theme.cornerSmall)
             }
             .buttonStyle(.plain)
             .disabled(isTranslating)
@@ -173,18 +173,18 @@ struct TranslationOverlay: View {
     }
 
     private var sourceTextSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Button(action: { sourceExpanded.toggle() }) {
                 HStack {
                     Text("Original")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V4Color.textSecondary)
                     Image(systemName: sourceExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text(String(message.text.prefix(50)) + (message.text.count > 50 ? "..." : ""))
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(1)
                 }
             }
@@ -192,77 +192,77 @@ struct TranslationOverlay: View {
 
             if sourceExpanded {
                 Text(message.text)
-                    .font(.system(size: TrinityTheme.chatFontSize))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(.system(size: V1Theme.chatFontSize))
+                    .foregroundStyle(V4Color.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
-                    .background(TrinityTheme.bgCard)
-                    .cornerRadius(TrinityTheme.cornerSmall)
+                    .padding(ParietalSpacing.md)
+                    .background(V4Color.surface)
+                    .cornerRadius(V1Theme.cornerSmall)
             }
         }
     }
 
     private var translationSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("Translation")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(V4Color.textSecondary)
 
             if isTranslating {
                 loadingSkeleton
             } else if translatedText.isEmpty {
                 Text("Click \"Translate\" to translate this message")
-                    .font(.system(size: TrinityTheme.chatFontSize))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(.system(size: V1Theme.chatFontSize))
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .frame(minHeight: 100)
-                    .padding(12)
-                    .background(TrinityTheme.bgCard)
-                    .cornerRadius(TrinityTheme.cornerSmall)
+                    .padding(ParietalSpacing.md)
+                    .background(V4Color.surface)
+                    .cornerRadius(V1Theme.cornerSmall)
             } else {
                 Text(translatedText)
-                    .font(.system(size: TrinityTheme.chatFontSize))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(.system(size: V1Theme.chatFontSize))
+                    .foregroundStyle(V4Color.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(12)
-                    .background(TrinityTheme.bgCard)
-                    .cornerRadius(TrinityTheme.cornerSmall)
+                    .padding(ParietalSpacing.md)
+                    .background(V4Color.surface)
+                    .cornerRadius(V1Theme.cornerSmall)
             }
         }
     }
 
     private var loadingSkeleton: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             ForEach(0..<3) { _ in
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Circle()
-                        .fill(TrinityTheme.textMuted.opacity(0.3))
-                        .frame(width: 8, height: 8)
+                        .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
+                        .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(TrinityTheme.textMuted.opacity(0.3))
+                        .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
                         .frame(height: 12)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(TrinityTheme.textMuted.opacity(0.2))
+                        .fill(V4Color.textSecondary.opacity(0.2))
                         .frame(height: 12)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerSmall)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerSmall)
     }
 
     private var footer: some View {
         HStack {
             if !translatedText.isEmpty {
                 Button(action: copyTranslation) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
                         Text(didCopy ? "Copied" : "Copy Translation")
                     }
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -270,12 +270,12 @@ struct TranslationOverlay: View {
             Spacer()
 
             Text("Translation API not connected")
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.statusWarn)
+                .font(WernickeTypography.size10)
+                .foregroundStyle(V4Color.warning)
         }
-        .padding(.horizontal, TrinityTheme.spacing)
-        .padding(.vertical, 10)
-        .background(TrinityTheme.bgSidebar)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
+        .background(V4Color.sidebar)
     }
 
     // MARK: - Actions
@@ -389,23 +389,23 @@ struct LanguagePicker: View {
             // Search bar
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 TextField("Search languages...", text: $searchText)
                     .textFieldStyle(.plain)
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .font(.system(size: 13))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerSmall)
-            .padding(TrinityTheme.spacing)
+            .font(WernickeTypography.size13)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerSmall)
+            .padding(ParietalSpacing.md)
 
             // Language list
             ScrollView {
@@ -424,25 +424,25 @@ struct LanguagePicker: View {
             // Selected indicator
             HStack {
                 Text("Selected: \(selectedLanguage.localizedName)")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
             }
-            .padding(TrinityTheme.spacing)
-            .background(TrinityTheme.bgSidebar)
+            .padding(ParietalSpacing.md)
+            .background(V4Color.sidebar)
         }
         .frame(width: 350, height: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 
     private func languageSection(title: String?, languages: [SupportedLanguage]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             if let title = title {
                 Text(title.uppercased())
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .padding(.horizontal, TrinityTheme.spacing)
-                    .padding(.vertical, 8)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm)
             }
 
             ForEach(languages, id: \.self) { language in
@@ -452,23 +452,23 @@ struct LanguagePicker: View {
                 }) {
                     HStack {
                         Text(language.flag)
-                            .font(.system(size: 18))
+                            .font(WernickeTypography.size18)
                         Text(language.localizedName)
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textPrimary)
                         Spacer()
                         if language == selectedLanguage {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 12))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.size12)
+                                .foregroundStyle(V4Color.accent)
                         }
                     }
-                    .padding(.horizontal, TrinityTheme.spacing)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm + 2)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .background(language == selectedLanguage ? TrinityTheme.bgCard : Color.clear)
+                .background(language == selectedLanguage ? V4Color.surface : Color.clear)
             }
         }
     }

@@ -323,30 +323,30 @@ struct ThreadSelectionIndicator: View {
         HStack(spacing: 0) {
             // Selection indicator bar
             Rectangle()
-                .fill(isSelected ? TrinityTheme.accent : Color.clear)
-                .frame(width: 3)
+                .fill(isSelected ? V4Color.accent : Color.clear)
+                .frame(width: ParietalSpacing.xxxs)
                 .animation(reduceMotion ? .none : .easeInOut(duration: 0.2), value: isSelected)
 
             // Selection background
             if isSelected {
                 Rectangle()
-                    .fill(TrinityTheme.accent.opacity(0.15))
+                    .fill(V4Color.accent.opacity(V2Depth.bgSidebarHover))
                     .transition(.opacity.combined(with: .move(edge: .leading)))
             }
 
             // Pin indicator
             if isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.system(size: 8))
-                    .foregroundColor(TrinityTheme.golden)
+                    .font(WernickeTypography.size8)
+                    .foregroundColor(V4Color.golden)
                     .padding(4)
-                    .background(Circle().fill(TrinityTheme.golden.opacity(0.2)))
+                    .background(Circle().fill(V4Color.golden.opacity(0.2)))
             }
 
             // Unread indicator
             if hasUnread {
                 Circle()
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 6, height: 6)
             }
         }
@@ -367,27 +367,27 @@ struct KeyboardShortcutHint: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text(action)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
 
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 if !modifiers.isEmpty {
                     Text(modifiers)
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10Mono.weight(.medium))
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 Text(key)
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.golden)
-                    .padding(.horizontal, 6)
+                    .font(WernickeTypography.size10Mono.weight(.medium))
+                    .foregroundStyle(V4Color.golden)
+                    .padding(.horizontal, ParietalSpacing.xs + 2)
                     .padding(.vertical, 2)
                     .background(
                         RoundedRectangle(cornerRadius: 4)
-                            .fill(TrinityTheme.textMuted.opacity(0.3))
+                            .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
                     )
             }
         }
@@ -410,7 +410,7 @@ struct ThreadKeyboardHelpPanel: View {
             HStack {
                 Text("Thread Navigation")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
 
                 Spacer()
 
@@ -420,22 +420,22 @@ struct ThreadKeyboardHelpPanel: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding()
 
             Divider()
-                .background(TrinityTheme.textMuted.opacity(0.2))
+                .background(V4Color.textSecondary.opacity(0.2))
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                     // Actions section
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("Actions")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(.horizontal)
 
                         KeyboardShortcutHint("N", modifiers: "⌘⇧", action: "New Thread")
@@ -447,10 +447,10 @@ struct ThreadKeyboardHelpPanel: View {
                     .padding(.bottom, 8)
 
                     // Navigation section
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("Navigation")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(.horizontal)
 
                         KeyboardShortcutHint("↑", action: "Previous Thread")
@@ -461,16 +461,16 @@ struct ThreadKeyboardHelpPanel: View {
                     .padding(.bottom, 8)
 
                     // Type to select
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("Type to Select")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(.horizontal)
 
                         HStack {
                             Text("Start typing to filter threads by title")
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                             Spacer()
                         }
                         .padding(.horizontal)
@@ -482,12 +482,12 @@ struct ThreadKeyboardHelpPanel: View {
         .frame(width: 280, height: 320)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCard)
-                .shadow(color: .black.opacity(0.5), radius: 20, y: 4)
+                .fill(V4Color.surface)
+                .shadow(color: .black.opacity(V2Depth.stateDisabled), radius: 20, y: 4)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+                .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -522,11 +522,11 @@ struct AccessibleThreadRow<Content: View>: View {
             content
         }
         .buttonStyle(.plain)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.15) : Color.clear)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.clear)
         .overlay(
             Rectangle()
-                .fill(isSelected ? TrinityTheme.accent : Color.clear)
-                .frame(width: 3),
+                .fill(isSelected ? V4Color.accent : Color.clear)
+                .frame(width: ParietalSpacing.xxxs),
             alignment: .leading
         )
         .contextMenu {

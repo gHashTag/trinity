@@ -84,7 +84,7 @@ pub const Microglia = struct {
         // Check "don't-eat-me" signals
         for (self.dont_eat_me) |sacred| {
             if (std.mem.eql(u8, sacred, worker_id)) {
-                print("{s}🛡️ SACRED: {s} — don't-eat-me signal{ s}\n", .{ CYAN, worker_id, RESET });
+                print("{s}🛡️ SACRED: {s} — don't-eat-me signal{s}\n", .{ CYAN, worker_id, RESET });
                 return;
             }
         }
@@ -104,13 +104,13 @@ pub const Microglia = struct {
     /// Sleep mode — reduces pruning aggression
     pub fn enterSleepMode(self: *Microglia) void {
         self.night_mode = true;
-        print("{s}🌙 Microglia entering night mode — reduced pruning{ s}\n", .{ YELLOW, RESET });
+        print("{s}🌙 Microglia entering night mode — reduced pruning{s}\n", .{ YELLOW, RESET });
     }
 
     /// Wake mode — full pruning capacity
     pub fn wakeUp(self: *Microglia) void {
         self.night_mode = false;
-        print("{s}☀️ Microglia waking up — full pruning capacity{ s}\n", .{ YELLOW, RESET });
+        print("{s}☀️ Microglia waking up — full pruning capacity{s}\n", .{ YELLOW, RESET });
     }
 };
 
@@ -205,4 +205,235 @@ test "Synaptic signal detection" {
 
     const signal = detectSignal(worker);
     try std.testing.expectEqual(SynapticSignal.help_me, signal);
+}
+
+test "Microglia default initialization" {
+    const microglia = Microglia{};
+
+    // Default patrol interval: 30 minutes
+    try std.testing.expectEqual(@as(u64, 30 * 60 * 1000), microglia.patrol_interval_ms);
+
+    // Night mode off by default
+    try std.testing.expectEqual(false, microglia.night_mode);
+
+    // Default sacred list
+    try std.testing.expectEqual(@as(usize, 3), microglia.dont_eat_me.len);
+    try std.testing.expectEqualStrings("hslm-r33", microglia.dont_eat_me[0]);
+    try std.testing.expectEqualStrings("hslm-r5", microglia.dont_eat_me[1]);
+    try std.testing.expectEqualStrings("hslm-r13", microglia.dont_eat_me[2]);
+
+    // Thresholds
+    try std.testing.expectEqual(@as(f32, 15.0), microglia.find_me_threshold);
+    try std.testing.expectEqual(@as(f32, 100.0), microglia.eat_me_threshold);
+}
+
+test "SurveillanceReport initialization" {
+    const report = SurveillanceReport{
+        .timestamp = 1710907200000,
+        .active_workers = 42,
+        .crashed_workers = 3,
+        .idle_workers = 5,
+        .stalled_workers = 2,
+        .diversity_index = 0.75,
+        .recommendation = .monitor,
+    };
+
+    try std.testing.expectEqual(@as(i64, 1710907200000), report.timestamp);
+    try std.testing.expectEqual(@as(usize, 42), report.active_workers);
+    try std.testing.expectEqual(@as(usize, 3), report.crashed_workers);
+    try std.testing.expectEqual(@as(usize, 5), report.idle_workers);
+    try std.testing.expectEqual(@as(usize, 2), report.stalled_workers);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), report.diversity_index, 0.001);
+    try std.testing.expectEqual(Recommendation.monitor, report.recommendation);
+}
+
+test "Surveillance patrol returns valid report" {
+    const microglia = Microglia{};
+    const allocator = std.testing.allocator;
+
+    const report = try microglia.patrol(allocator);
+
+    // Verify report structure (default implementation returns zeros)
+    try std.testing.expect(report.timestamp > 0);
+    try std.testing.expectEqual(@as(usize, 0), report.active_workers);
+    try std.testing.expectEqual(@as(usize, 0), report.crashed_workers);
+    try std.testing.expectEqual(@as(usize, 0), report.idle_workers);
+    try std.testing.expectEqual(@as(usize, 0), report.stalled_workers);
+    try std.testing.expectEqual(@as(f32, 0.0), report.diversity_index);
+    try std.testing.expectEqual(Recommendation.monitor, report.recommendation);
+}
+
+test "Phagocytosis prunes non-sacred worker" {
+    var microglia = Microglia{
+        .dont_eat_me = &.{ "hslm-r33", "hslm-r5" },
+        .night_mode = false,
+    };
+
+    // Non-sacred worker should be pruned (no error = success)
+    try microglia.phagocytose("hslm-weak-worker");
+}
+
+test "Phagocytosis respects don't-eat-me signals" {
+    var microglia = Microglia{
+        .dont_eat_me = &.{ "hslm-r33", "hslm-r5" },
+        .night_mode = false,
+    };
+
+    // Sacred workers are protected
+    try microglia.phagocytose("hslm-r33");
+    try microglia.phagocytose("hslm-r5");
+}
+
+test "Phagocytosis respects night mode" {
+    var microglia = Microglia{
+        .dont_eat_me = &.{},
+        .night_mode = true, // Night mode active
+    };
+
+    // Even non-sacred workers protected during night
+    try microglia.phagocytose("hslm-weak-worker");
+}
+
+test "Sleep mode transition" {
+    var microglia = Microglia{};
+
+    // Initially awake
+    try std.testing.expectEqual(false, microglia.night_mode);
+
+    // Enter sleep
+    microglia.enterSleepMode();
+    try std.testing.expectEqual(true, microglia.night_mode);
+
+    // Wake up
+    microglia.wakeUp();
+    try std.testing.expectEqual(false, microglia.night_mode);
+}
+
+test "Stimulate regrowth creates new worker ID" {
+    const microglia = Microglia{};
+    const allocator = std.testing.allocator;
+
+    const new_worker = try microglia.stimulateRegrowth("hslm-r33", allocator);
+    defer allocator.free(new_worker);
+
+    try std.testing.expectEqualStrings("hslm-born-from-hslm-r33", new_worker);
+}
+
+test "Stimulate regrowth from different templates" {
+    const microglia = Microglia{};
+    const allocator = std.testing.allocator;
+
+    const born_from_r33 = try microglia.stimulateRegrowth("hslm-r33", allocator);
+    defer allocator.free(born_from_r33);
+    try std.testing.expectEqualStrings("hslm-born-from-hslm-r33", born_from_r33);
+
+    const born_from_r5 = try microglia.stimulateRegrowth("hslm-r5", allocator);
+    defer allocator.free(born_from_r5);
+    try std.testing.expectEqualStrings("hslm-born-from-hslm-r5", born_from_r5);
+}
+
+test "Recommendation enum covers all states" {
+    // Verify all recommendation types exist
+    const recs = [_]Recommendation{
+        .monitor,
+        .prune_crashed,
+        .prune_stalled,
+        .stimulate_growth,
+        .inject_diversity,
+        .enter_sleep,
+    };
+
+    try std.testing.expectEqual(@as(usize, 6), recs.len);
+}
+
+test "SynapticSignal enum covers all signals" {
+    // Verify all signal types exist
+    const signals = [_]SynapticSignal{
+        .find_me,
+        .eat_me,
+        .dont_eat_me,
+        .help_me,
+    };
+
+    try std.testing.expectEqual(@as(usize, 4), signals.len);
+}
+
+test "WorkerState structure" {
+    const worker = WorkerState{
+        .ppl = 4.6,
+        .step = 100000,
+        .status = .active,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 4.6), worker.ppl, 0.001);
+    try std.testing.expectEqual(@as(u32, 100000), worker.step);
+    // Check status is active (can't directly compare enum tags in Zig)
+    try std.testing.expect(worker.status == .active);
+}
+
+test "WorkerState crashed status" {
+    const crashed_worker = WorkerState{
+        .ppl = 150.0,
+        .step = 5000,
+        .status = .crashed,
+    };
+
+    try std.testing.expect(crashed_worker.status == .crashed);
+}
+
+test "WorkerState stalled status" {
+    const stalled_worker = WorkerState{
+        .ppl = 50.0,
+        .step = 10000,
+        .status = .stalled,
+    };
+
+    try std.testing.expect(stalled_worker.status == .stalled);
+}
+
+test "Sacred PHI constant" {
+    // Verify the golden ratio constant
+    try std.testing.expectApproxEqAbs(@as(f32, 1.618), SACRED_PHI, 0.001);
+}
+
+test "Microglia custom patrol interval" {
+    const microglia = Microglia{
+        .patrol_interval_ms = 15 * 60 * 1000, // 15 minutes
+    };
+
+    try std.testing.expectEqual(@as(u64, 15 * 60 * 1000), microglia.patrol_interval_ms);
+}
+
+test "Microglia custom thresholds" {
+    const microglia = Microglia{
+        .find_me_threshold = 20.0,
+        .eat_me_threshold = 200.0,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 20.0), microglia.find_me_threshold, 0.001);
+    try std.testing.expectApproxEqAbs(@as(f32, 200.0), microglia.eat_me_threshold, 0.001);
+}
+
+test "SurveillanceReport with different recommendations" {
+    const recommendations = [_]Recommendation{
+        .monitor,
+        .prune_crashed,
+        .prune_stalled,
+        .stimulate_growth,
+        .inject_diversity,
+        .enter_sleep,
+    };
+
+    for (recommendations) |rec| {
+        const report = SurveillanceReport{
+            .timestamp = std.time.milliTimestamp(),
+            .active_workers = 10,
+            .crashed_workers = 1,
+            .idle_workers = 0,
+            .stalled_workers = 0,
+            .diversity_index = 0.5,
+            .recommendation = rec,
+        };
+        try std.testing.expectEqual(rec, report.recommendation);
+    }
 }

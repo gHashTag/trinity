@@ -124,32 +124,32 @@ struct SmartSuggestionBar: View {
 
         return AnyView(
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     ForEach(suggestions) { suggestion in
                         Button {
                             onSuggestion(suggestion.prompt)
                         } label: {
                             HStack(spacing: 5) {
                                 Text(suggestion.icon)
-                                    .font(.system(size: 11))
+                                    .font(WernickeTypography.size11)
                                 Text(suggestion.text)
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(suggestion.urgent ? Color.black : Color.white.opacity(0.7))
+                                    .font(WernickeTypography.miniMedium)
+                                    .foregroundStyle(suggestion.urgent ? Color.black : V2Depth.white70)
                             }
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, ParietalSpacing.sm + 2)
                             .padding(.vertical, 5)
                             .background(suggestion.urgent ? suggestion.color : suggestion.color.opacity(0.12))
                             .clipShape(SwiftUI.Capsule())
                             .overlay(
                                 SwiftUI.Capsule()
-                                    .stroke(suggestion.color.opacity(0.3), lineWidth: suggestion.urgent ? 0 : 1)
+                                    .stroke(suggestion.color.opacity(V2Depth.stateHover), lineWidth: suggestion.urgent ? 0 : 1)
                             )
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 60)
-                .padding(.vertical, 6)
+                .padding(.vertical, ParietalSpacing.xs + 2)
             }
         )
     }
@@ -176,7 +176,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{1F6A8}",
                 text: "Build broken — diagnose?",
                 prompt: "The build is broken. Please analyze the errors and suggest a fix.",
-                color: TrinityTheme.statusError,
+                color: V4Color.error,
                 urgent: true
             ))
         }
@@ -187,7 +187,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{1F3C6}",
                 text: "\(run) PPL=\(String(format: "%.1f", ppl)) — deploy?",
                 prompt: "Run \(run) has PPL=\(String(format: "%.2f", ppl)). Should we deploy this as the production config? What's the risk?",
-                color: TrinityTheme.golden,
+                color: V4Color.golden,
                 urgent: false
             ))
         }
@@ -198,7 +198,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{1F9F9}",
                 text: "\(dirty) dirty files — review?",
                 prompt: "There are \(dirty) dirty files in the working tree. Help me review and organize these changes.",
-                color: TrinityTheme.statusWarn,
+                color: V4Color.warning,
                 urgent: false
             ))
         }
@@ -209,7 +209,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{2694}",
                 text: "Arena idle — run battle?",
                 prompt: "The arena has no recent battles. Let's run a comparison between trinity-hslm and the latest challenger.",
-                color: TrinityTheme.purple,
+                color: V4Color.purple,
                 urgent: false
             ))
         }
@@ -220,7 +220,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{1F4CB}",
                 text: "\(issues) open issues — triage?",
                 prompt: "We have \(issues) open issues. Help me prioritize and triage the most important ones.",
-                color: TrinityTheme.accent,
+                color: V4Color.accent,
                 urgent: false
             ))
         }
@@ -231,7 +231,7 @@ struct SmartSuggestionBar: View {
                 icon: "\u{1F4C9}",
                 text: "Score \(Int(score)) — improve?",
                 prompt: "The Ouroboros score is only \(Int(score))/100. What are the top 3 things we should fix to improve it?",
-                color: TrinityTheme.statusError,
+                color: V4Color.error,
                 urgent: false
             ))
         }
@@ -496,13 +496,13 @@ struct EnhancedMentionPopup: View {
             }
         }
         .frame(width: 340)
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.4), radius: 12)
+        .shadow(color: .black.opacity(V1Theme.opacityTextTertiary), radius: 12)
         .focusable()
         .onKeyPress(phases: .down) { keyPress in
             if keyPress.key == .upArrow {
@@ -528,29 +528,29 @@ struct EnhancedMentionPopup: View {
             onSelect(item.value)
             isPresented = false
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: item.icon)
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
                     .foregroundStyle(iconColor(for: item.category))
-                    .frame(width: 16)
+                    .frame(width: ParietalSpacing.icon)
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                     Text(item.label)
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.size12)
                         .foregroundStyle(Color.white.opacity(0.9))
                         .lineLimit(1)
 
                     if let detail = item.detail {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Text(detail)
-                                .font(.system(size: 10))
-                                .foregroundStyle(Color.white.opacity(0.5))
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                                 .lineLimit(1)
 
                             if item.isRecent {
                                 Text("· recent")
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                                    .font(WernickeTypography.size9)
+                                    .foregroundStyle(V4Color.accent.opacity(0.7))
                             }
                         }
                     }
@@ -558,8 +558,8 @@ struct EnhancedMentionPopup: View {
 
                 Spacer()
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
             .contentShape(Rectangle())
             .background(index == selectedIndex ? Color.white.opacity(0.08) : Color.clear)
         }
@@ -568,12 +568,12 @@ struct EnhancedMentionPopup: View {
 
     private func iconColor(for category: SmartSuggestionItem.SuggestionCategory) -> Color {
         switch category {
-        case .mention: return TrinityTheme.accent
-        case .command: return TrinityTheme.purple
-        case .file: return TrinityTheme.textMuted
-        case .pattern: return TrinityTheme.statusWarn
-        case .proactive: return TrinityTheme.golden
-        case .history: return TrinityTheme.textMuted
+        case .mention: return V4Color.accent
+        case .command: return V4Color.purple
+        case .file: return V4Color.textSecondary
+        case .pattern: return V4Color.warning
+        case .proactive: return V4Color.golden
+        case .history: return V4Color.textSecondary
         }
     }
 }
@@ -637,32 +637,32 @@ struct SmartSuggestionPopup: View {
                         onSelect(item.label)
                         isPresented = false
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Image(systemName: item.icon)
-                                .font(.system(size: 10))
+                                .font(WernickeTypography.size10)
                                 .foregroundStyle(iconColor(for: item.category))
                             Text(item.label)
-                                .font(.system(size: 11))
-                                .foregroundStyle(selectedIndex == index ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(selectedIndex == index ? V4Color.accent : V4Color.textPrimary)
                             Spacer()
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(selectedIndex == index ? TrinityTheme.accent.opacity(0.1) : Color.clear)
+                        .padding(.horizontal, ParietalSpacing.sm + 2)
+                        .padding(.vertical, ParietalSpacing.xs + 2)
+                        .background(selectedIndex == index ? V4Color.accent.opacity(V2Depth.bgSubtle) : Color.clear)
                     }
                     .buttonStyle(.plain)
 
                     if index < suggestions.count - 1 {
                         Divider()
-                            .background(Color.white.opacity(0.1))
+                            .background(Color.white.opacity(V2Depth.bgSubtle))
                     }
                 }
             }
-            .background(Color(hex: 0x1A1A1A))
+            .background(V4Color.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
             )
             .shadow(radius: 10)
         }
@@ -670,12 +670,12 @@ struct SmartSuggestionPopup: View {
 
     private func iconColor(for category: SmartSuggestionItem.SuggestionCategory) -> Color {
         switch category {
-        case .mention: return TrinityTheme.accent
-        case .command: return TrinityTheme.purple
-        case .file: return TrinityTheme.textMuted
-        case .pattern: return TrinityTheme.statusWarn
-        case .proactive: return TrinityTheme.golden
-        case .history: return TrinityTheme.textMuted
+        case .mention: return V4Color.accent
+        case .command: return V4Color.purple
+        case .file: return V4Color.textSecondary
+        case .pattern: return V4Color.warning
+        case .proactive: return V4Color.golden
+        case .history: return V4Color.textSecondary
         }
     }
 
