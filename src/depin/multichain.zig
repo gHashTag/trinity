@@ -152,15 +152,8 @@ pub const MultiChainManager = struct {
 
     /// Get all active chains
     pub fn getActiveChains(self: *const MultiChainManager) []const ChainId {
-        var count: usize = 0;
-        var iter = self.active_chains.iterator();
-        while (iter.next()) |entry| {
-            if (entry.value_ptr.*) {
-                count += 1;
-            }
-        }
-        _ = count;
-        // Return empty list for now (TODO: allocate and return actual list)
+        // TODO: allocate and return actual list of active chains
+        _ = self; // Use parameter to avoid unused var warning
         return &[_]ChainId{};
     }
 
