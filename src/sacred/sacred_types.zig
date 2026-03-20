@@ -55,8 +55,9 @@ pub const GF16 = packed struct(u16) {
         while (mant_f >= 1.0 and exp < 31) : (exp += 1) mant_f /= 2.0;
         while (mant_f < 0.5 and exp > -32) : (exp -= 1) mant_f *= 2.0;
 
-        const exp_i16: i16 = @intCast(exp);
-        const exp_u6: u6 = @intCast(EXP_BIAS +% @as(u6, @bitCast(@as(i16, exp_i16))));
+        const exp_i8: i8 = exp;
+        const exp_bias: i8 = EXP_BIAS;
+        const exp_u6: u6 = @intCast(exp_bias + exp_i8);
         const mant_u9: u9 = @intFromFloat((mant_f - 0.5) * 512.0);
 
         return .{
@@ -206,7 +207,7 @@ pub const TF3 = packed struct(u18) {
         const exp_trits_u6: u6 = @intCast(encodeTrits3(exp_u8));
 
         // Тернарная мантисса (5 тритов: -121, -120, ..., 0, ..., +120, +121)
-        const mant_i8 = @intFromFloat(mant_f * 121.0);
+        const mant_i8: i8 = @intFromFloat(mant_f * 121.0);
         const mant_clamped = @max(-121, @min(121, mant_i8));
         const mant_trits_u10: u10 = encodeTrits5(@intCast(mant_clamped + 121));
 

@@ -4,6 +4,7 @@
 //! φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
+const builtin = @import("builtin");
 const sacred_types = @import("sacred_types.zig");
 const sacred_verify = @import("verify.zig");
 
