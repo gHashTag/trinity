@@ -2219,6 +2219,24 @@ pub fn build(b: *std.Build) void {
     const sim_suite_step = b.step("sim-suite", "Run Brain Evolution Simulation Suite");
     sim_suite_step.dependOn(&run_sim_suite.step);
 
+    // SIM PLOT — ASCII Visualization from CSV
+    const sim_plot = b.addExecutable(.{
+        .name = "tri-sim-plot",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/sim_plot.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(sim_plot);
+
+    const run_sim_plot = b.addRunArtifact(sim_plot);
+    if (b.args) |run_args| {
+        run_sim_plot.addArgs(run_args);
+    }
+    const sim_plot_step = b.step("sim-plot", "Visualize simulation CSV results");
+    sim_plot_step.dependOn(&run_sim_plot.step);
+
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
     const tri_utils_mod = b.createModule(.{
@@ -2656,6 +2674,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "learning", .module = learning_mod },
             .{ .name = "federation", .module = federation_mod },
             .{ .name = "async_processor", .module = async_processor_mod },
+            .{ .name = "metrics_dashboard", .module = metrics_dashboard_mod },
         },
     });
     const brain_integration_tests = b.addTest(.{
@@ -3224,4 +3243,20 @@ pub fn build(b: *std.Build) void {
 
     const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
     sacred_synth_report_step.dependOn(&sacred_synth_report.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // storm — STORM: 32-agent, 5-wave autonomous operation
+    // ═══════════════════════════════════════════════════════════════════════════
+    const storm = b.addExecutable(.{
+        .name = "storm",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/storm/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(storm);
+
+    const storm_step = b.step("storm", "STORM: 32-agent, 5-wave autonomous operation");
+    storm_step.dependOn(&storm.step);
 }

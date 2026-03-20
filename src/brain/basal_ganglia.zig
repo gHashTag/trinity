@@ -186,17 +186,18 @@ pub const Registry = struct {
     /// Read-write lock protecting the claims map
     /// Allows concurrent readers, exclusive writers
     rwlock: std.Thread.RwLock,
-    /// Performance counters for monitoring
+    /// Performance counters for monitoring (lock-free atomic)
+    /// These can be read without acquiring the lock
     stats: struct {
-        claim_attempts: u64,
-        claim_success: u64,
-        claim_conflicts: u64,
-        heartbeat_calls: u64,
-        heartbeat_success: u64,
-        complete_calls: u64,
-        complete_success: u64,
-        abandon_calls: u64,
-        abandon_success: u64,
+        claim_attempts: std.atomic.Value(u64),
+        claim_success: std.atomic.Value(u64),
+        claim_conflicts: std.atomic.Value(u64),
+        heartbeat_calls: std.atomic.Value(u64),
+        heartbeat_success: std.atomic.Value(u64),
+        complete_calls: std.atomic.Value(u64),
+        complete_success: std.atomic.Value(u64),
+        abandon_calls: std.atomic.Value(u64),
+        abandon_success: std.atomic.Value(u64),
     },
 
     /// Creates a new task claim registry.
@@ -220,15 +221,15 @@ pub const Registry = struct {
             .claims = std.StringHashMap(TaskClaim).init(allocator),
             .rwlock = std.Thread.RwLock{},
             .stats = .{
-                .claim_attempts = 0,
-                .claim_success = 0,
-                .claim_conflicts = 0,
-                .heartbeat_calls = 0,
-                .heartbeat_success = 0,
-                .complete_calls = 0,
-                .complete_success = 0,
-                .abandon_calls = 0,
-                .abandon_success = 0,
+                .claim_attempts = std.atomic.Value(u64).init(0),
+                .claim_success = std.atomic.Value(u64).init(0),
+                .claim_conflicts = std.atomic.Value(u64).init(0),
+                .heartbeat_calls = std.atomic.Value(u64).init(0),
+                .heartbeat_success = std.atomic.Value(u64).init(0),
+                .complete_calls = std.atomic.Value(u64).init(0),
+                .complete_success = std.atomic.Value(u64).init(0),
+                .abandon_calls = std.atomic.Value(u64).init(0),
+                .abandon_success = std.atomic.Value(u64).init(0),
             },
         };
     }
@@ -286,14 +287,14 @@ pub const Registry = struct {
         self.rwlock.lock();
         defer self.rwlock.unlock();
 
-        self.stats.claim_attempts += 1;
+        _ = self.stats.claim_attempts.fetchAdd(1, .monotonic);
 
         const now_ms = std.time.timestamp() * 1000;
 
         // Check if already claimed and valid
         if (self.claims.get(task_id)) |existing| {
             if (existing.isValid()) {
-                self.stats.claim_conflicts += 1;
+                _ = self.stats.claim_conflicts.fetchAdd(1, .monotonic);
                 return false; // Already claimed by someone else
             }
         }
@@ -327,7 +328,7 @@ pub const Registry = struct {
 
         try self.claims.put(key_dup, new_claim);
         // If put succeeds, all allocations are now owned by the HashMap
-        self.stats.claim_success += 1;
+        _ = self.stats.claim_success.fetchAdd(1, .monotonic);
         return true;
     }
 
@@ -360,6 +361,7 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn heartbeat(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        _ = self.stats.heartbeat_calls.fetchAdd(1, .monotonic);
         self.rwlock.lock();
         defer self.rwlock.unlock();
 
@@ -367,6 +369,7 @@ pub const Registry = struct {
             const entry_claim = &entry.value_ptr.*;
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
                 entry_claim.last_heartbeat = std.time.timestamp() * 1000;
+                _ = self.stats.heartbeat_success.fetchAdd(1, .monotonic);
                 return true;
             }
         }
@@ -396,6 +399,7 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn complete(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        _ = self.stats.complete_calls.fetchAdd(1, .monotonic);
         self.rwlock.lock();
         defer self.rwlock.unlock();
 
@@ -404,6 +408,7 @@ pub const Registry = struct {
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
                 entry_claim.status = .completed;
                 entry_claim.completed_at = std.time.timestamp() * 1000;
+                _ = self.stats.complete_success.fetchAdd(1, .monotonic);
                 return true;
             }
         }
@@ -506,19 +511,20 @@ pub const Registry = struct {
         abandon_success: u64,
         active_claims: usize,
     } {
+        // Lock-free: stats are atomic, only claims.count() needs read lock
         self.rwlock.readLock();
         defer self.rwlock.unlock();
 
         return .{
-            .claim_attempts = self.stats.claim_attempts,
-            .claim_success = self.stats.claim_success,
-            .claim_conflicts = self.stats.claim_conflicts,
-            .heartbeat_calls = self.stats.heartbeat_calls,
-            .heartbeat_success = self.stats.heartbeat_success,
-            .complete_calls = self.stats.complete_calls,
-            .complete_success = self.stats.complete_success,
-            .abandon_calls = self.stats.abandon_calls,
-            .abandon_success = self.stats.abandon_success,
+            .claim_attempts = self.stats.claim_attempts.load(.monotonic),
+            .claim_success = self.stats.claim_success.load(.monotonic),
+            .claim_conflicts = self.stats.claim_conflicts.load(.monotonic),
+            .heartbeat_calls = self.stats.heartbeat_calls.load(.monotonic),
+            .heartbeat_success = self.stats.heartbeat_success.load(.monotonic),
+            .complete_calls = self.stats.complete_calls.load(.monotonic),
+            .complete_success = self.stats.complete_success.load(.monotonic),
+            .abandon_calls = self.stats.abandon_calls.load(.monotonic),
+            .abandon_success = self.stats.abandon_success.load(.monotonic),
             .active_claims = self.claims.count(),
         };
     }

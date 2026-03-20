@@ -1,1 +1,2 @@
 {"agent":"enforce-check","file":"/tmp/build_jtag_echo.sh","action":"shell_script_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/fpga/openxc7-synth/synth_phi.sh","action":"shell_script_blocked","blocked":true}
