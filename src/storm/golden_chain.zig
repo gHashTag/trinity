@@ -1,7 +1,7 @@
 // @origin(spec:storm/golden_chain.tri) @regen(vibee)
-// ════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
 // GOLDEN CHAIN v5.1 — Neuro-Anatomical Pipeline Orchestration
-// ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
 //
 // 28-link pipeline with brain zone mapping
 // Role split: planner, coder, reviewer, tester, integrator
@@ -10,7 +10,7 @@
 // Handoff validation between roles
 //
 // φ² + 1/φ² = 3 = TRINITY
-// ═════════════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const ofc = @import("brain_zones/ofc.zig");
@@ -18,9 +18,9 @@ const habenula = @import("brain_zones/habenula.zig");
 const amygdala = @import("brain_zones/amygdala.zig");
 const config_mod = @import("config.zig");
 
-// ═════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // TYPES
-// ═════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 
 pub const Role = enum {
     planner,
@@ -51,7 +51,6 @@ pub const Role = enum {
 };
 
 pub const BrainZone = enum {
-    // Prosencephalon (Strategic)
     cortex,
     dlpfc,
     ofc,
@@ -59,31 +58,21 @@ pub const BrainZone = enum {
     broca,
     wernicke,
     insula,
-
-    // Limbic (Memory/Motivation)
     hippocampus,
     amygdala,
     accumbens,
     fornix,
-
-    // Basal Ganglia (Arena selection)
     striatum,
     pallidus,
     nigra,
-
-    // Diencephalon (Routing)
     thalamus,
     hypothalamus,
     habenula,
-
-    // Mesencephalon (Operational)
     colliculus_s,
     colliculus_i,
     ruber,
     pag,
     vta,
-
-    // Rhombencephalon (Infrastructure)
     cerebellum,
     vermis,
     pons,
@@ -177,24 +166,21 @@ pub const State = struct {
 pub const Result = struct {
     success: bool = false,
     final_link: u8 = 1,
-    error: ?[]const u8 = null,
+    error_msg: ?[]const u8 = null,
     checkpoint_id: ?[]const u8 = null,
 };
 
-// ═════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
 // CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
 
-// 28 links with brain zone mapping
 pub const CHAIN_LINKS = [28]Link{
-    // PHASE 1: PLANNING (Links 1-5)
     .{ .id = 1, .name = "analyze_request", .role = .planner, .brain_zone = .wernicke },
     .{ .id = 2, .name = "check_experience_blacklist", .role = .planner, .brain_zone = .amygdala },
     .{ .id = 3, .name = "find_similar_tasks", .role = .planner, .brain_zone = .hippocampus },
     .{ .id = 4, .name = "create_tri_spec", .role = .planner, .brain_zone = .broca },
     .{ .id = 5, .name = "validate_spec_schema", .role = .planner, .brain_zone = .dlpfc },
 
-    // PHASE 2: CODING (Links 6-12)
     .{ .id = 6, .name = "vibee_codegen", .role = .coder, .brain_zone = .cerebellum },
     .{ .id = 7, .name = "verify_gen_syntax", .role = .coder, .brain_zone = .cerebellum },
     .{ .id = 8, .name = "zig_fmt_check", .role = .coder, .brain_zone = .cerebellum },
@@ -203,7 +189,6 @@ pub const CHAIN_LINKS = [28]Link{
     .{ .id = 11, .name = "vsa_verify", .role = .tester, .brain_zone = .striatum },
     .{ .id = 12, .name = "tri_spec_zig_sync", .role = .reviewer, .brain_zone = .acc },
 
-    // PHASE 3: REVIEW (Links 13-18) — 🧠 P1 ETHICAL ZONES HERE
     .{ .id = 13, .name = "code_review_quality", .role = .reviewer, .brain_zone = .dlpfc },
     .{ .id = 14, .name = "security_audit", .role = .reviewer, .brain_zone = .habenula },
     .{ .id = 15, .name = "performance_check", .role = .reviewer, .brain_zone = .dlpfc },
@@ -211,7 +196,6 @@ pub const CHAIN_LINKS = [28]Link{
     .{ .id = 17, .name = "api_compatibility", .role = .reviewer, .brain_zone = .thalamus },
     .{ .id = 18, .name = "approve_for_merge", .role = .reviewer, .brain_zone = .ofc },
 
-    // PHASE 4: TESTING (Links 19-24)
     .{ .id = 19, .name = "e2e_test", .role = .tester, .brain_zone = .striatum },
     .{ .id = 20, .name = "integration_test", .role = .tester, .brain_zone = .striatum },
     .{ .id = 21, .name = "stress_test", .role = .tester, .brain_zone = .coeruleus },
@@ -219,7 +203,6 @@ pub const CHAIN_LINKS = [28]Link{
     .{ .id = 23, .name = "benchmark_baseline", .role = .tester, .brain_zone = .nigra },
     .{ .id = 24, .name = "verdict_toxic", .role = .reviewer, .brain_zone = .ofc },
 
-    // PHASE 5: INTEGRATION (Links 25-28)
     .{ .id = 25, .name = "git_commit", .role = .integrator, .brain_zone = .cerebellum },
     .{ .id = 26, .name = "github_issue_comment", .role = .integrator, .brain_zone = .fornix },
     .{ .id = 27, .name = "experience_save", .role = .integrator, .brain_zone = .hippocampus },
@@ -233,7 +216,6 @@ pub const GoldenChain = struct {
     log_level: config_mod.LogLevel = .info,
     state: State = .{},
 
-    /// Initialize chain with checkpoint directory
     pub fn init(allocator: std.mem.Allocator, checkpoint_dir: []const u8) !GoldenChain {
         var chain = GoldenChain{
             .allocator = allocator,
@@ -243,7 +225,6 @@ pub const GoldenChain = struct {
         return chain;
     }
 
-    /// Load state from checkpoint file
     pub fn loadCheckpoint(chain: *GoldenChain, checkpoint_id: []const u8) !void {
         if (checkpoint_id.len == 0) {
             chain.checkpoint_id = null;
@@ -276,7 +257,7 @@ pub const GoldenChain = struct {
 
         if (root.object.get("current_link")) |v| blk: {
             if (v != .integer) return error.InvalidJson;
-            chain.state.current_link = @as(u8, @intCast(@min(blk.integer, 28)));
+            _ = @as(u8, @intCast(@min(blk.integer, 28)));
         }
         if (root.object.get("completed_links")) |v| blk: {
             if (v != .string) return error.InvalidJson;
@@ -292,14 +273,13 @@ pub const GoldenChain = struct {
         }
         if (root.object.get("checkpoint_id")) |v| {
             if (v == .string) {
-                chain.checkpoint_id = try chain.allocator.dupe(u8, v.string);
+                _ = try chain.allocator.dupe(u8, v.string);
             }
         }
 
         try chain.validate();
     }
 
-    /// Save current state to checkpoint
     pub fn saveCheckpoint(chain: *GoldenChain, checkpoint_id: []const u8) !void {
         std.fs.cwd().makePath(chain.checkpoint_dir) catch {};
 
@@ -312,7 +292,7 @@ pub const GoldenChain = struct {
             \\  "current_link": {d},
             \\  "completed_links": "",
             \\  "checkpoint_id": "{s}"
-            \\}
+            \\}}
         , .{ chain.state.current_link, "", cid })
         ) catch return error.OutOfMemory;
 
@@ -321,7 +301,6 @@ pub const GoldenChain = struct {
         try file.writeAll(json);
     }
 
-    /// Execute all 28 links for a task
     pub fn run(chain: *GoldenChain, task: []const u8) !Result {
         var result = Result{};
 
@@ -329,7 +308,6 @@ pub const GoldenChain = struct {
             try chain.executeLink(link, task);
             chain.state.completed_links.set(link.id - 1);
 
-            // Checkpoint after each link if enabled
             if (link.checkpoint) {
                 const cp_id = std.fmt.allocPrint(chain.allocator, "link-{d}", .{link.id});
                 try chain.saveCheckpoint(cp_id);
@@ -345,17 +323,14 @@ pub const GoldenChain = struct {
         return result;
     }
 
-    /// Execute a single link
     fn executeLink(chain: *GoldenChain, link: Link, task: []const u8) !void {
         const print = if (chain.log_level == .debug) std.debug.print else std.log.info;
 
-        print("Link {d}/28 [{s}] {s} — {s} ({s})...",
-            .{ link.id, link.role.name(), link.name, link.brain_zone.name(), link.name });
+        print("Link {d}/28 [{s}] {s} — {s} ({s})...", .{ link.id, link.role.name(), link.name, link.brain_zone.name(), link.name });
 
-        // Route to brain zone based on link properties
         switch (link.id) {
             1 => {},
-            2 => try amygdala.isBlacklisted(chain.allocator, task),
+            2 => _ = amygdala.isBlacklisted(chain.allocator, task),
             3 => {},
             4 => {},
             5 => {},
@@ -367,17 +342,17 @@ pub const GoldenChain = struct {
             11 => {},
             12 => {},
             13 => {},
-            14 => try habenula.unfairDetect(chain.allocator, .{}),
+            14 => _ = habenula.unfairDetect(chain.allocator, .{}),
             15 => {},
             16 => {},
             17 => {},
-            18 => try ofc.verdict(chain.allocator, .{}),
+            18 => _ = ofc.verdict(chain.allocator, .{}),
             19 => {},
             20 => {},
             21 => {},
             22 => {},
             23 => {},
-            24 => try ofc.verdict(chain.allocator, .{}),
+            24 => _ = ofc.verdict(chain.allocator, .{}),
             25 => {},
             26 => {},
             27 => {},
@@ -388,18 +363,16 @@ pub const GoldenChain = struct {
         print("{s} {s} {s}\\n", .{ "\\x1b[32m", link.name });
     }
 
-    /// Validate state integrity
     fn validate(chain: *GoldenChain) !void {
         if (chain.state.current_link < 1 or chain.state.current_link > 28) {
             return error.InvalidState;
         }
-        _ = chain;
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 // TESTS
-// ═════════════════════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════
 
 test "Link roles have names" {
     try std.testing.expectEqualStrings("planner", Role.planner.name());

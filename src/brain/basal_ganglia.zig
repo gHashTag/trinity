@@ -440,6 +440,7 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn abandon(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        _ = self.stats.abandon_calls.fetchAdd(1, .monotonic);
         self.rwlock.lock();
         defer self.rwlock.unlock();
 
@@ -448,6 +449,7 @@ pub const Registry = struct {
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
                 entry_claim.status = .abandoned;
                 entry_claim.completed_at = std.time.timestamp() * 1000;
+                _ = self.stats.abandon_success.fetchAdd(1, .monotonic);
                 return true;
             }
         }
