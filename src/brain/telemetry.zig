@@ -1,6 +1,90 @@
-//! BRAIN TELEMETRY — Time-series metrics aggregation
+//! BRAIN TELEMETRY — v0.2 — Time-series Health Monitoring
 //!
 //! Tracks brain metrics over time for analysis and alerting.
+//! Brain Region: Interosceptive Network (Internal State Monitoring)
+//!
+//! # Biological Analogy
+//!
+//! In the mammalian brain, the interosceptive network (including insular cortex
+//! and anterior cingulate) monitors internal bodily signals such as heart rate,
+//! temperature, hunger, and hormonal states. This information is continuously
+//! aggregated to maintain homeostasis and trigger responses to deviations.
+//!
+//! The Telemetry module provides similar functionality for the S³AI Brain:
+//! - Continuous collection of health metrics (claims, events, health score)
+//! - Time-series aggregation for trend analysis
+//! - Alert triggering based on threshold violations
+//! - Historical data export for post-hoc analysis
+//!
+//! # Features
+//!
+//! - Thread-safe metrics collection (mutex-protected)
+//! - Configurable max points with automatic FIFO trimming
+//! - Average health score over sliding window
+//! - Trend detection (improving, stable, declining)
+//! - Percentile calculation for distribution analysis
+//! - Health range (min/max) for volatility assessment
+//! - Per-metric averaging for custom analytics
+//! - JSON export for external visualization
+//!
+//! # Thread Safety
+//!
+//! - All public methods are thread-safe via mutex
+//! - Mutex protects the points ArrayList
+//! - Multiple threads can record, query, and export concurrently
+//!
+//! # Memory Management
+//!
+//! - Pre-allocation of max_points capacity on init (best effort)
+//! - Falls back to dynamic growth if pre-allocation fails
+//! - FIFO eviction when max_points exceeded (oldest data dropped)
+//!
+//! # Performance Characteristics
+//!
+//! - record(): O(1) amortized, O(n) worst-case when trimming
+//! - avgHealth(): O(n) where n = last_n
+//! - trend(): O(n) where n = last_n
+//! - percentile(): O(n log n) due to sorting, limited to 256 points
+//! - exportJson(): O(n)
+//!
+//! # Usage Example
+//!
+//! ```zig
+//! const allocator = std.testing.allocator;
+//! var tel = telemetry.BrainTelemetry.init(allocator, 1000);
+//! defer tel.deinit();
+//!
+//! // Record metrics
+//! try tel.record(.{
+//!     .timestamp = std.time.nanoTimestamp(),
+//!     .active_claims = 5,
+//!     .events_published = 1000,
+//!     .events_buffered = 10,
+//!     .health_score = 92.5,
+//! });
+//!
+//! // Query health
+//! const avg_health = tel.avgHealth(100);
+//! std.log.info("Average health: {d:.1}", .{avg_health});
+//!
+//! // Check trend
+//! const trend = tel.trend(50);
+//! switch (trend) {
+//!     .improving => std.log.info("System health improving"),
+//!     .stable => std.log.info("System health stable"),
+//!     .declining => std.log.info("System health declining - attention needed"),
+//! }
+//!
+//! // Get percentiles
+//! const p50 = tel.percentile(50.0, 100); // median
+//! const p95 = tel.percentile(95.0, 100); // 95th percentile
+//!
+//! // Export to JSON
+//! var buffer: [4096]u8 = undefined;
+//! var fbs = std.io.fixedBufferStream(&buffer);
+//! try tel.exportJson(fbs.writer());
+//! const json = fbs.getWritten();
+//! ```
 
 const std = @import("std");
 
@@ -122,7 +206,25 @@ pub const BrainTelemetry = struct {
     }
 
     /// Get percentile of health scores (0-100)
+    ///
+    /// Returns the p-th percentile of health scores over the last N points.
+    /// Uses linear interpolation between adjacent sorted values for accuracy.
+    ///
+    /// # Parameters
+    /// - p: Percentile value in range [0, 100]. Values outside range are clamped.
+    /// - last_n: Number of recent points to consider. If > available, uses all.
+    ///
+    /// # Returns
+    /// - The percentile value, or 100.0 for empty data
+    /// - Returns 100.0 if >256 points (stack buffer limitation)
+    ///
+    /// # Performance
+    /// - O(n log n) due to sorting, limited to 256 points max
+    /// - Uses stack-allocated buffer for sorting (no heap allocation)
     pub fn percentile(self: *Self, p: f32, last_n: usize) f32 {
+        // Clamp p to [0, 100] for robustness against invalid input
+        const clamped_p = if (p < 0.0) 0.0 else if (p > 100.0) 100.0 else p;
+
         self.mutex.lock();
         defer self.mutex.unlock();
 
@@ -152,7 +254,7 @@ pub const BrainTelemetry = struct {
 
         // Linear interpolation for percentile
         // p is in [0, 100], so idx_f is in [0, scores.len - 1]
-        const idx_f = @as(f32, @floatFromInt(scores.len - 1)) * (p / 100.0);
+        const idx_f = @as(f32, @floatFromInt(scores.len - 1)) * (clamped_p / 100.0);
         // Clamp to valid range [0, scores.len - 1] to handle floating point errors
         const clamped_idx_f = @max(0.0, @min(idx_f, @as(f32, @floatFromInt(scores.len - 1))));
         const idx = @as(usize, @intFromFloat(clamped_idx_f));
@@ -178,6 +280,19 @@ pub const BrainTelemetry = struct {
     }
 
     /// Get average of a metric over last N points
+    ///
+    /// Computes the average value of a specific metric field over the last N points.
+    ///
+    /// # Parameters
+    /// - field: One of "active_claims", "events_published", "events_buffered", "health_score"
+    /// - last_n: Number of recent points to consider. If > available, uses all.
+    ///
+    /// # Returns
+    /// - The average value, or 0.0 for empty data or invalid field name
+    ///
+    /// # Note
+    /// Invalid field names are silently ignored and return 0.0.
+    /// This is by design to avoid panicking from comptime string comparisons.
     pub fn avgMetric(self: *Self, comptime field: []const u8, last_n: usize) f64 {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -198,6 +313,7 @@ pub const BrainTelemetry = struct {
             else if (std.mem.eql(u8, field, "health_score"))
                 pt.health_score
             else
+                // Invalid field: silently return 0.0
                 0.0;
             sum += value;
             n += 1;
@@ -533,4 +649,260 @@ test "BrainTelemetry exportJson: multiple points" {
     try std.testing.expect(output.len > 80);
     try std.testing.expect(std.mem.indexOf(u8, output, "\"claims\":5") != null);
     try std.testing.expect(std.mem.indexOf(u8, output, "\"claims\":3") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EDGE CASE TESTS (v0.2 additions)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "BrainTelemetry percentile: p < 0 clamps to 0" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 50.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 70.0 });
+
+    // p < 0 should clamp to 0 (minimum value)
+    const p = tel.percentile(-10.0, 10);
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), p, 1.0);
+}
+
+test "BrainTelemetry percentile: p > 100 clamps to 100" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 50.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 70.0 });
+
+    // p > 100 should clamp to 100 (maximum value)
+    const p = tel.percentile(150.0, 10);
+    try std.testing.expectApproxEqAbs(@as(f32, 70.0), p, 1.0);
+}
+
+test "BrainTelemetry percentile: p=0 returns minimum" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 40.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 80.0 });
+
+    const p = tel.percentile(0.0, 10);
+    try std.testing.expectApproxEqAbs(@as(f32, 40.0), p, 0.1);
+}
+
+test "BrainTelemetry percentile: p=100 returns maximum" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 40.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 80.0 });
+
+    const p = tel.percentile(100.0, 10);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), p, 0.1);
+}
+
+test "BrainTelemetry percentile: volatile data" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    // Highly oscillating data
+    var i: u32 = 0;
+    while (i < 10) : (i += 1) {
+        const score: f32 = if (i % 2 == 0) 100.0 else 0.0;
+        try tel.record(.{ .timestamp = now + @as(i64, @intCast(i)), .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = score });
+    }
+
+    const p50 = tel.percentile(50.0, 10);
+    // With 5x 100 and 5x 0, median should be around 50
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), p50, 10.0);
+}
+
+test "BrainTelemetry trend: exactly 3 points" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    // Exactly 3 points (edge case for trend detection)
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 70.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 90.0 });
+
+    const trend = tel.trend(10);
+    // third = 3/3 = 1, which is < 2, so returns .stable
+    // The function requires at least 6 points (third >= 2) for trend detection
+    try std.testing.expect(trend == .stable);
+}
+
+test "BrainTelemetry trend: oscillating data" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    // Oscillating data: high-low-high-low
+    var i: u32 = 0;
+    while (i < 12) : (i += 1) {
+        const score: f32 = if (i % 2 == 0) 90.0 else 70.0;
+        try tel.record(.{ .timestamp = now + @as(i64, @intCast(i)), .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = score });
+    }
+
+    const trend = tel.trend(12);
+    // With oscillating data, trend should be stable (no clear direction)
+    try std.testing.expect(trend == .stable);
+}
+
+test "BrainTelemetry exportJson: empty" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    var buffer: [64]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buffer);
+    try tel.exportJson(fbs.writer());
+
+    const output = fbs.getWritten();
+    try std.testing.expectEqualStrings("{\"telemetry\":[]}", output);
+}
+
+test "BrainTelemetry avgMetric: events_buffered" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 0, .events_published = 0, .events_buffered = 10, .health_score = 100.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 0, .events_published = 0, .events_buffered = 20, .health_score = 100.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 0, .events_published = 0, .events_buffered = 30, .health_score = 100.0 });
+
+    const avg = tel.avgMetric("events_buffered", 10);
+    try std.testing.expectApproxEqAbs(@as(f64, 20.0), avg, 0.01);
+}
+
+test "BrainTelemetry avgMetric: health_score" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 0, .events_published = 0, .events_buffered = 0, .health_score = 80.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 0, .events_published = 0, .events_buffered = 0, .health_score = 90.0 });
+
+    const avg = tel.avgMetric("health_score", 10);
+    try std.testing.expectApproxEqAbs(@as(f64, 85.0), avg, 0.01);
+}
+
+test "BrainTelemetry avgMetric: respects last_n" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 100, .events_published = 0, .events_buffered = 0, .health_score = 100.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 10, .events_published = 0, .events_buffered = 0, .health_score = 100.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 20, .events_published = 0, .events_buffered = 0, .health_score = 100.0 });
+
+    // last_n=2 should average only last 2: (10+20)/2 = 15
+    const avg = tel.avgMetric("active_claims", 2);
+    try std.testing.expectApproxEqAbs(@as(f64, 15.0), avg, 0.01);
+}
+
+test "BrainTelemetry healthRange: respects last_n" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 10.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 50.0 });
+    try tel.record(.{ .timestamp = now + 2, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 100.0 });
+    try tel.record(.{ .timestamp = now + 3, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 60.0 });
+    try tel.record(.{ .timestamp = now + 4, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 70.0 });
+
+    // last_n=2 should only consider last 2 points
+    const range = tel.healthRange(2);
+    try std.testing.expectApproxEqAbs(@as(f32, 60.0), range.min, 0.1);
+    try std.testing.expectApproxEqAbs(@as(f32, 70.0), range.max, 0.1);
+}
+
+test "BrainTelemetry record: zero max_points still works" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 0);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    // Should be able to record even with max_points=0
+    try tel.record(.{ .timestamp = now, .active_claims = 5, .events_published = 100, .events_buffered = 10, .health_score = 90.0 });
+
+    // But it will be trimmed immediately, so count should be 0
+    try std.testing.expectEqual(@as(usize, 0), tel.count());
+}
+
+test "BrainTelemetry latest: returns copy not reference" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 42, .events_published = 100, .events_buffered = 10, .health_score = 88.5 });
+
+    const latest = tel.latest();
+    try std.testing.expect(latest != null);
+    // The returned value is a copy, so we can safely compare
+    try std.testing.expectEqual(@as(usize, 42), latest.?.active_claims);
+    try std.testing.expectEqual(@as(i64, now), latest.?.timestamp);
+}
+
+test "BrainTelemetry avgHealth: all zeros" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 0, .events_published = 0, .events_buffered = 0, .health_score = 0.0 });
+    try tel.record(.{ .timestamp = now + 1, .active_claims = 0, .events_published = 0, .events_buffered = 0, .health_score = 0.0 });
+
+    const avg = tel.avgHealth(10);
+    try std.testing.expectEqual(@as(f32, 0.0), avg);
+}
+
+test "BrainTelemetry avgHealth: single point" {
+    const allocator = std.testing.allocator;
+    var tel = BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now: i64 = 1000000;
+
+    try tel.record(.{ .timestamp = now, .active_claims = 1, .events_published = 0, .events_buffered = 0, .health_score = 75.5 });
+
+    const avg = tel.avgHealth(10);
+    try std.testing.expectEqual(@as(f32, 75.5), avg);
 }

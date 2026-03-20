@@ -4148,8 +4148,8 @@ fn runDeploy(allocator: Allocator, args: []const []const u8) !void {
     var target_count: usize = 0;
 
     for (accounts_buf[0..account_count], 0..) |acct, acct_idx| {
-        // Skip PRIMARY (old image)
-        if (acct_idx == 0) continue;
+        // PRIMARY now included for Wave 8+ deployment
+        // if (acct_idx == 0) continue;
 
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch continue;
         defer api.deinit();

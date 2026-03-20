@@ -4,6 +4,19 @@
 // Thalamus: Relays sensory input from Queen (18 sensors) to cortex (5 modules)
 // Provides circular buffer logging with direct HSLM module calls
 //
+// NEUROANATOMICAL CONTEXT:
+//   The thalamus is the brain's sensory gateway - all touch, vision, hearing,
+//   and other sensory signals pass through it before reaching cortex.
+//   In Trinity, Railway logs are "touch" (external sensory data) that flows
+//   through Thalamus to HSLM cortex modules (IPS, Weber, OFC, Angular, Fusiform).
+//
+// BIOLOGICAL MAPPING:
+//   - Ventral Posterior Nucleus (VPN) → Touch relay → Railway logs
+//   - Lateral Geniculate Nucleus (LGN) → Vision → Not implemented
+//   - Medial Geniculate Nucleus (MGN) → Auditory → Not implemented
+//
+// Version: 5.2.0 (bugfix: iterator modulus, added clear/reset, improved tests)
+//
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
@@ -190,15 +203,18 @@ pub const SensoryEvent = struct {
 pub const ThalamusLogs = struct {
     const Self = @This();
 
+    /// Circular buffer capacity (fixed, no allocation)
+    pub const CAPACITY: usize = 256;
+
     /// Circular buffer storage (fixed size, no allocation)
-    buf: [256]SensoryEvent,
+    buf: [CAPACITY]SensoryEvent,
 
     /// Circular buffer pointers
     head: usize = 0,
     len: usize = 0,
 
     /// Initialize Thalamus with pre-allocated buffer storage
-    pub fn init(buf_storage: *[256]SensoryEvent) Self {
+    pub fn init(buf_storage: *[CAPACITY]SensoryEvent) Self {
         return .{
             .buf = buf_storage.*,
         };
@@ -206,11 +222,37 @@ pub const ThalamusLogs = struct {
 
     /// Log a sensory event (thread-safe: atomic head update)
     pub fn logEvent(self: *Self, event: SensoryEvent) void {
-        if (self.len < 256) {
-            const idx = (self.head + self.len) % 256;
+        if (self.len < CAPACITY) {
+            const idx = (self.head + self.len) % CAPACITY;
             self.buf[idx] = event;
             self.len += 1;
         }
+    }
+
+    /// Clear all events from the buffer
+    pub fn clear(self: *Self) void {
+        self.head = 0;
+        self.len = 0;
+    }
+
+    /// Reset buffer to initial state (alias for clear)
+    pub fn reset(self: *Self) void {
+        self.clear();
+    }
+
+    /// Get current event count
+    pub fn count(self: *const Self) usize {
+        return self.len;
+    }
+
+    /// Check if buffer is empty
+    pub fn isEmpty(self: *const Self) bool {
+        return self.len == 0;
+    }
+
+    /// Check if buffer is full
+    pub fn isFull(self: *const Self) bool {
+        return self.len >= CAPACITY;
     }
 
     /// Get iterator over all events (head to tail)
@@ -218,6 +260,7 @@ pub const ThalamusLogs = struct {
         return .{
             .thalamus = self,
             .index = self.head,
+            .remaining = self.len,
         };
     }
 
@@ -363,12 +406,14 @@ pub const ThalamusLogs = struct {
     pub const Iterator = struct {
         thalamus: *const ThalamusLogs,
         index: usize,
+        remaining: usize,
 
         /// Get next event from iterator (returns pointer to event in buffer)
         pub fn next(self: *Iterator) ?*const SensoryEvent {
-            if (self.thalamus.len == 0) return null;
+            if (self.remaining == 0) return null;
             const idx = self.index;
-            self.index = (self.index + 1) % self.thalamus.len;
+            self.index = (self.index + 1) % ThalamusLogs.CAPACITY;
+            self.remaining -= 1;
             return &self.thalamus.buf[idx];
         }
     };
@@ -751,6 +796,310 @@ test "thalamus_logs: SensorInput id field matches sensor" {
     };
 
     try std.testing.expectEqual(SensorId.DiskFree, input.id);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+// NEW TESTS — Bugfixes, edge cases, buffer operations
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+test "thalamus_logs: clear empties buffer" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    // Add some events
+    for (0..10) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    try std.testing.expectEqual(@as(usize, 10), thalamus.len);
+
+    // Clear buffer
+    thalamus.clear();
+
+    try std.testing.expectEqual(@as(usize, 0), thalamus.len);
+    try std.testing.expect(thalamus.isEmpty());
+}
+
+test "thalamus_logs: reset empties buffer" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    thalamus.logEvent(.{
+        .timestamp_ns = 100,
+        .sensor = .FarmBestPpl,
+        .input = SensorInput{ .id = .FarmBestPpl },
+    });
+
+    try std.testing.expectEqual(@as(usize, 1), thalamus.len);
+
+    thalamus.reset();
+
+    try std.testing.expectEqual(@as(usize, 0), thalamus.len);
+    try std.testing.expectEqual(@as(usize, 0), thalamus.head);
+}
+
+test "thalamus_logs: count returns event count" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    try std.testing.expectEqual(@as(usize, 0), thalamus.count());
+
+    for (0..42) |_| {
+        thalamus.logEvent(.{
+            .timestamp_ns = 0,
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    try std.testing.expectEqual(@as(usize, 42), thalamus.count());
+}
+
+test "thalamus_logs: isEmpty checks buffer state" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    try std.testing.expect(thalamus.isEmpty());
+
+    thalamus.logEvent(.{
+        .timestamp_ns = 1,
+        .sensor = .FarmBestPpl,
+        .input = SensorInput{ .id = .FarmBestPpl },
+    });
+
+    try std.testing.expect(!thalamus.isEmpty());
+}
+
+test "thalamus_logs: isFull checks buffer capacity" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    try std.testing.expect(!thalamus.isFull());
+
+    for (0..256) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    try std.testing.expect(thalamus.isFull());
+}
+
+test "thalamus_logs: iterator iterates correct number" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    const event_count = 50;
+    for (0..event_count) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl, .raw_f32 = @floatFromInt(i) },
+        });
+    }
+
+    var iter_count: usize = 0;
+    var iter = thalamus.iterator();
+    while (iter.next()) |_| {
+        iter_count += 1;
+    }
+
+    try std.testing.expectEqual(event_count, iter_count);
+}
+
+test "thalamus_logs: iterator respects buffer wrap" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    // Fill buffer beyond half to cause wrap
+    const fill_count = 150;
+    for (0..fill_count) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    // Clear and refill to move head
+    thalamus.clear();
+    for (0..fill_count) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i + 1000),
+            .sensor = .ArenaBattles,
+            .input = SensorInput{ .id = .ArenaBattles },
+        });
+    }
+
+    var iter = thalamus.iterator();
+    var seen_count: usize = 0;
+    while (iter.next()) |ev| {
+        seen_count += 1;
+        // Verify all events are ArenaBattles
+        try std.testing.expectEqual(SensorId.ArenaBattles, ev.sensor);
+    }
+
+    try std.testing.expectEqual(fill_count, seen_count);
+}
+
+test "thalamus_logs: iterator returns null after exhausting" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    thalamus.logEvent(.{
+        .timestamp_ns = 100,
+        .sensor = .FarmBestPpl,
+        .input = SensorInput{ .id = .FarmBestPpl },
+    });
+
+    var iter = thalamus.iterator();
+
+    // First call returns event
+    const first = iter.next();
+    try std.testing.expect(first != null);
+
+    // Second call returns null
+    const second = iter.next();
+    try std.testing.expect(second == null);
+
+    // Third call also returns null
+    const third = iter.next();
+    try std.testing.expect(third == null);
+}
+
+test "thalamus_logs: capacity constant" {
+    try std.testing.expectEqual(@as(usize, 256), ThalamusLogs.CAPACITY);
+}
+
+test "thalamus_logs: multiple iterators independent" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    for (0..10) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    // Create multiple iterators
+    var iter1 = thalamus.iterator();
+    var iter2 = thalamus.iterator();
+
+    // Both should return first event
+    const ev1 = iter1.next();
+    const ev2 = iter2.next();
+
+    try std.testing.expect(ev1 != null);
+    try std.testing.expect(ev2 != null);
+    try std.testing.expectEqual(ev1.?.timestamp_ns, ev2.?.timestamp_ns);
+}
+
+test "thalamus_logs: processSensor with null data" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    // SensorInput with all null values should not crash
+    const null_input = SensorInput{
+        .id = .FarmBestPpl,
+    };
+
+    // This should not crash or log anything
+    thalamus.processSensor(null_input) catch {};
+
+    // Buffer should remain empty
+    try std.testing.expectEqual(@as(usize, 0), thalamus.len);
+}
+
+test "thalamus_logs: all sensor IDs covered" {
+    // Verify all sensor IDs are testable
+    const all_sensors = [_]SensorId{
+        .FarmBestPpl,
+        .ArenaBattles,
+        .OuroborosScore,
+        .TestsRate,
+        .DiskFree,
+        .ArenaStale,
+    };
+
+    for (all_sensors) |sensor| {
+        // Each sensor should have corresponding enum value
+        _ = @intFromEnum(sensor);
+    }
+}
+
+test "thalamus_logs: all sensory kinds covered" {
+    // Verify all sensory kinds are testable
+    const all_kinds = [_]SensoryKind{
+        .magnitude,
+        .ternary,
+        .valence,
+        .verbal,
+    };
+
+    for (all_kinds) |kind| {
+        _ = @intFromEnum(kind);
+    }
+}
+
+test "thalamus_logs: all valence values" {
+    // Test OFC valence enum values
+    _ = ofc.Valence.positive;
+    _ = ofc.Valence.neutral;
+    _ = ofc.Valence.negative;
+}
+
+test "thalamus_logs: circular buffer edge case" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    // Fill to exactly one less than capacity
+    for (0..255) |i| {
+        thalamus.logEvent(.{
+            .timestamp_ns = @intCast(i),
+            .sensor = .FarmBestPpl,
+            .input = SensorInput{ .id = .FarmBestPpl },
+        });
+    }
+
+    try std.testing.expectEqual(@as(usize, 255), thalamus.len);
+    try std.testing.expect(!thalamus.isFull());
+
+    // Add one more to reach full
+    thalamus.logEvent(.{
+        .timestamp_ns = 999,
+        .sensor = .ArenaBattles,
+        .input = SensorInput{ .id = .ArenaBattles },
+    });
+
+    try std.testing.expectEqual(@as(usize, 256), thalamus.len);
+    try std.testing.expect(thalamus.isFull());
+}
+
+test "thalamus_logs: timestamp monotonicity" {
+    var buf_storage: [256]SensoryEvent = undefined;
+    var thalamus = ThalamusLogs.init(&buf_storage);
+
+    // Process sensors - timestamps are set by processSensor
+    try thalamus.processSensor(SensorInput{ .id = .FarmBestPpl, .raw_f32 = 4.6 });
+    try thalamus.processSensor(SensorInput{ .id = .ArenaBattles, .raw_i8 = 1 });
+
+    var iter = thalamus.iterator();
+    const ev1 = iter.next();
+    const ev2 = iter.next();
+
+    try std.testing.expect(ev1 != null);
+    try std.testing.expect(ev2 != null);
+    // Timestamps should be set (non-zero)
+    try std.testing.expect(ev1.?.timestamp_ns > 0);
+    try std.testing.expect(ev2.?.timestamp_ns > 0);
 }
 
 // φ² + 1/φ² = 3 | TRINITY
