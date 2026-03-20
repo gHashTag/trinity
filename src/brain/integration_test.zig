@@ -2141,8 +2141,6 @@ const BrainTestContext = struct {
     }
 };
 
-
-
 test "Multi-region: Brain initialization and teardown" {
     const allocator = std.testing.allocator;
 
