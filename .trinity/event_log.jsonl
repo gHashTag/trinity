@@ -6005,3 +6005,8 @@
 {"ts":1774065651,"seq":2348,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
 {"ts":1774065651,"seq":2349,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
 {"ts":1774065651,"seq":2350,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":336,"build_ok":true,"dirty":21,"issues":53,"alerts":0}
+{"ts":1774066293,"seq":2353,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774066294,"seq":2354,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774066294,"seq":2355,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774066294,"seq":2356,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774066294,"seq":2357,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
