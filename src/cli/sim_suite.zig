@@ -64,11 +64,11 @@ pub fn main() !void {
     // Import evolution simulation
     const evo_sim = @import("brain").evolution_simulation;
 
-    // Run all 15 scenarios
+    // Run all 20 scenarios
     print("\n{s}╔═══════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
     print("{s}║  DETERMINISTIC BRAIN EVOLUTION SIMULATION SUITE         ║{s}\n", .{ BOLD, RESET });
     print("{s}╚═══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-    print("Running {d} scenarios in parallel...\n\n", .{15});
+    print("Running {d} scenarios in parallel...\n\n", .{20});
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
@@ -144,6 +144,32 @@ pub fn main() !void {
     defer s15.deinit(allocator);
     const s15_status = if (s15.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s15.final_ppl});
     print("  {s}✓{s} S15 Baseline-Extended complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s15_status, s15.workers_alive, s15.diversity_index });
+
+    // Quantum-inspired scenarios (S16-S20)
+    var s16 = try evo_sim.runS16Superposition(allocator, steps);
+    defer s16.deinit(allocator);
+    const s16_status = if (s16.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s16.final_ppl});
+    print("  {s}✓{s} S16 Superposition complete: PPL={s}, Alive={d}, Diversity={d:.3}, Superposition\n", .{ GREEN, RESET, s16_status, s16.workers_alive, s16.diversity_index });
+
+    var s17 = try evo_sim.runS17Coherence(allocator, steps);
+    defer s17.deinit(allocator);
+    const s17_status = if (s17.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s17.final_ppl});
+    print("  {s}✓{s} S17 Coherence complete: PPL={s}, Alive={d}, Diversity={d:.3}, Coherence\n", .{ GREEN, RESET, s17_status, s17.workers_alive, s17.diversity_index });
+
+    var s18 = try evo_sim.runS18Interference(allocator, steps);
+    defer s18.deinit(allocator);
+    const s18_status = if (s18.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s18.final_ppl});
+    print("  {s}✓{s} S18 Interference complete: PPL={s}, Alive={d}, Diversity={d:.3}, Interference\n", .{ GREEN, RESET, s18_status, s18.workers_alive, s18.diversity_index });
+
+    var s19 = try evo_sim.runS19Collapse(allocator, steps);
+    defer s19.deinit(allocator);
+    const s19_status = if (s19.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s19.final_ppl});
+    print("  {s}✓{s} S19 Collapse complete: PPL={s}, Alive={d}, Diversity={d:.3}, Collapse\n", .{ GREEN, RESET, s19_status, s19.workers_alive, s19.diversity_index });
+
+    var s20 = try evo_sim.runS20QuantumZeno(allocator, steps);
+    defer s20.deinit(allocator);
+    const s20_status = if (s20.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s20.final_ppl});
+    print("  {s}✓{s} S20 Quantum-Zeno complete: PPL={s}, Alive={d}, Diversity={d:.3}, Quantum-Zeno\n", .{ GREEN, RESET, s20_status, s20.workers_alive, s20.diversity_index });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });
 
@@ -265,9 +291,15 @@ fn printHelp() void {
     print("  S13 Sacred-C  Compact (162 dims), 27 heads\n", .{});
     print("  S14 Wide  Wide context (81), standard heads (9)\n", .{});
     print("  S15 Baseline-Extended  Current Trinity, 4× training\n", .{});
+    print("  S16 Superposition  φ⁷×1000 seed — maximum strategy diversity\n", .{});
+    print("  S17 Coherence  φ⁸×1000 seed — maximum learning agreement\n", .{});
+    print("  S18 Interference  φ⁹×1000 seed — constructive pattern interference\n", .{});
+    print("  S19 Collapse  φ¹⁰×1000 seed — fast convergence to single state\n", .{});
+    print("  S20 Quantum-Zeno  φ¹¹×1000 seed — frequent measurement blocks evolution\n", .{});
     print("\n{s}Deterministic Seeds:{s}\n", .{ CYAN, RESET });
     print("  S1: 42    S2: 137    S3: 1618 (φ)    S4: 2718 (e)    S5: 3236 (φ²)\n", .{});
     print("  S6: 5242 (e³)    S7: 8450 (φ³)    S8: 13692 (φ⁴)\n", .{});
     print("  S9: 22134 (φ⁵)   S10: 35780 (φ⁶)   S11-S15: sacred constants\n", .{});
+    print("  S16-S20: φ⁷-φ¹¹ × 1000 (quantum-inspired seeds)\n", .{});
     print("\n", .{});
 }
