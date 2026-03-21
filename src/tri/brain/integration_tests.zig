@@ -95,7 +95,6 @@ const MockHippocampus = struct {
             });
         }
     }
-    }
 };
 
 /// Mock Thalamus for live status simulation
@@ -119,7 +118,7 @@ const MockThalamus = struct {
         while (iter.next()) |entry| {
             allocator.free(entry.key_ptr.*);
         }
-        self.workers.deinit(allocator);
+        self.workers.deinit();
     }
 
     pub fn setWorker(self: *Self, allocator: std.mem.Allocator, service_name: []const u8, status: LiveState, step: u32, ppl: f32) !void {
@@ -156,11 +155,10 @@ const MockInsula = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        var iter = self.events.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.value_ptr.*.component);
-            self.allocator.free(entry.value_ptr.*.event_type);
-            self.allocator.free(entry.value_ptr.*.message);
+        for (self.events.items) |ev| {
+            self.allocator.free(ev.component);
+            self.allocator.free(ev.event_type);
+            self.allocator.free(ev.message);
         }
         self.events.deinit();
     }
@@ -217,10 +215,9 @@ const MockACC = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        var iter = self.conflicts.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.value_ptr.*.service_name);
-            self.allocator.free(entry.value_ptr.*.message);
+        for (self.conflicts.items) |conflict| {
+            self.allocator.free(conflict.service_name);
+            self.allocator.free(conflict.message);
         }
         self.conflicts.deinit();
     }
@@ -345,9 +342,8 @@ const MockBasalGanglia = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        var iter = self.executed_actions.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.value_ptr.*.service_name);
+        for (self.executed_actions.items) |action| {
+            self.allocator.free(action.service_name);
         }
         self.executed_actions.deinit();
     }
@@ -458,9 +454,8 @@ const MockLocusCoeruleus = struct {
     }
 
     pub fn deinit(self: *Self) void {
-        var iter = self.alarms.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.value_ptr.*.service_name);
+        for (self.alarms.items) |alarm| {
+            self.allocator.free(alarm.service_name);
         }
         self.alarms.deinit();
     }
@@ -1073,6 +1068,9 @@ test "integration_stress_test_no_memory_leaks" {
 
     var hippocampus = MockHippocampus.init(allocator);
     defer hippocampus.deinit();
+
+    var thalamus = MockThalamus.init(allocator);
+    defer thalamus.deinit(allocator);
 
     // Create and destroy many objects to test memory management
     var i: usize = 0;
