@@ -4,6 +4,9 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const print = std.debug.print;
 
+// STORM Golden Chain module
+const golden_chain = @import("golden_chain");
+
 // ANSI colors
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -150,7 +153,6 @@ pub fn runStormCommand(allocator: Allocator, args: []const []const u8) !u8 {
 }
 
 fn cmdRun(a: Allocator, args: []const []const u8) !u8 {
-    _ = a;
     var waves: u4 = 5;
     var agents: u8 = 32;
     var dry_run: bool = false;
@@ -188,8 +190,12 @@ fn cmdRun(a: Allocator, args: []const []const u8) !u8 {
         return 0;
     }
 
-    print("\n{s}STORM run not yet implemented{s}\n\n", .{ YELLOW, RESET });
-    return 0;
+    // Real execution: Initialize and run Golden Chain
+    var gc = try golden_chain.GoldenChain.init(a);
+    defer gc.deinit();
+
+    const task = "Execute STORM Golden Chain";
+    return gc.run(task);
 }
 
 fn cmdStatus(a: Allocator, b: []const []const u8) !u8 {
@@ -224,13 +230,23 @@ fn cmdStatus(a: Allocator, b: []const []const u8) !u8 {
     return 0;
 }
 
-fn cmdResume(a: Allocator, b: []const []const u8) !u8 {
-    _ = a;
-    _ = b;
+fn cmdResume(a: Allocator, args: []const []const u8) !u8 {
     print("\n{s}STORM RESUME{s}\n", .{ CYAN, RESET });
     print("{s}----------------------------------{s}\n", .{ BOLD, RESET });
-    print("Resume not yet implemented.\n\n", .{});
-    return 0;
+
+    if (args.len == 0) {
+        print("Error: resume requires checkpoint ID\n", .{});
+        print("Usage: tri storm resume <checkpoint_id>\n", .{});
+        return 1;
+    }
+
+    var gc = try golden_chain.GoldenChain.init(a);
+    defer gc.deinit();
+
+    const checkpoint_id = args[0];
+    const task = "Execute STORM Golden Chain (resumed)";
+
+    return gc.resumeFromCheckpoint(checkpoint_id, task);
 }
 
 fn cmdInit(a: Allocator) !u8 {

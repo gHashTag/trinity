@@ -74,6 +74,7 @@ pub const Brain = struct {
     pub fn deinit(self: *Self) void {
         self.thalamus.deinit();
         self.hippocampus.deinit(self.allocator);
+        self.insula.deinit();
     }
 
     /// Refresh brain state: update Hippocampus from Thalamus

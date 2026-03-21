@@ -194,9 +194,9 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
 /// P0.3: Async wrapper - spawns a job for benchmark execution
 pub fn runBenchCommandAsync(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const subcommand = if (args.len > 0) args[0] else "";
     _ = allocator;
 
+    const subcommand = if (args.len > 0) args[0] else "";
     if (std.mem.eql(u8, subcommand, "igla")) {
         // TODO: runIglaBench not implemented yet
         std.debug.print("⚠️  igla bench: TODO - not implemented\n", .{});
@@ -204,8 +204,6 @@ pub fn runBenchCommandAsync(allocator: std.mem.Allocator, args: []const []const 
 
     const job_system = @import("job_system.zig");
     _ = job_system;
-    _ = args;
-    _ = subcommand;
 
     std.debug.print("⚠️  bench async: TODO - job system not configured\n", .{});
 }
@@ -302,12 +300,15 @@ fn runBrainStateRecoveryCommand(allocator: std.mem.Allocator, args: []const []co
 }
 
 /// Brain Health Check - Shows status of all brain regions (implemented elsewhere)
-/// Usage: tri brain health
+/// Usage: tri brain health [--json]
 fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("⚠️  brain health: TODO - not implemented yet\n", .{});
-}
+    // Parse --json flag
+    var output_json = false;
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--json") or std.mem.eql(u8, arg, "-j")) {
+            output_json = true;
+        }
+    }
 
     const RegionStatus = enum {
         healthy,
@@ -386,16 +387,16 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
 
     // Calculate aggregate health score (0-100)
     var healthy_count: usize = 0;
-    if (basal_status == RegionStatus.healthy) healthy_count += 1;
-    if (reticular_status == RegionStatus.healthy) healthy_count += 1;
+    if (basal_status == RegionStatus.healthy) healthy_count = healthy_count + 1;
+    if (reticular_status == RegionStatus.healthy) healthy_count = healthy_count + 1;
 
     var warning_count: usize = 0;
-    if (basal_status == RegionStatus.warning) warning_count += 1;
-    if (reticular_status == RegionStatus.warning) warning_count += 1;
+    if (basal_status == RegionStatus.warning) warning_count = warning_count + 1;
+    if (reticular_status == RegionStatus.warning) warning_count = warning_count + 1;
 
     var critical_count: usize = 0;
-    if (basal_status == RegionStatus.critical) critical_count += 1;
-    if (reticular_status == RegionStatus.critical) critical_count += 1;
+    if (basal_status == RegionStatus.critical) critical_count = critical_count + 1;
+    if (reticular_status == RegionStatus.critical) critical_count = critical_count + 1;
 
     var unavailable_count: usize = 0;
     if (basal_status == RegionStatus.unavailable) unavailable_count += 1;
@@ -484,5 +485,156 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.process.exit(3);
     }
 
+}
+
+/// Stub: Brain Simulate Command (TODO: implement)
+pub fn runBrainSimulateCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  brain simulate: TODO - not implemented yet\n", .{});
+}
+
+/// Stub: Brain Viz Command (TODO: implement)
+pub fn runBrainVizCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  brain viz: TODO - not implemented yet\n", .{});
+}
+
+/// Stub: REPL Test Command (TODO: implement)
+pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  repl test: TODO - not implemented yet\n", .{});
+}
+
+/// Git Command - Routes to git operations
+/// Usage: tri git <subcommand> [args]
+pub fn runGitCommand(allocator: std.mem.Allocator, subcommand: []const u8, args: []const []const u8) !void {
+    // Route to appropriate git function
+    if (std.mem.eql(u8, subcommand, "status")) {
+        try printGitStatus();
+    } else if (std.mem.eql(u8, subcommand, "commit")) {
+        try performGitCommit(allocator, args);
+    } else if (std.mem.eql(u8, subcommand, "push")) {
+        try performGitPush();
+    } else if (std.mem.eql(u8, subcommand, "pull")) {
+        try performGitPull();
+    } else if (std.mem.eql(u8, subcommand, "log")) {
+        try printGitLog(allocator, args);
+    } else {
+        std.debug.print("Unknown git subcommand: {s}\n", .{subcommand});
+    }
+}
+
+/// Print git status
+fn printGitStatus() !void {
+    const result = std.process.Child.run(.{
+        .allocator = std.heap.page_allocator,
+        .argv = &[_][]const u8{ "git", "status", "--short" },
+    }) catch |err| {
+        std.debug.print("Error running git status: {s}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    if (result.term.Exited != 0) {
+        std.debug.print("Git status failed\n", .{});
+        return error.GitFailed;
+    }
+
+    std.debug.print("{s}", .{result.stdout});
+}
+
+/// Perform git commit
+fn performGitCommit(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const commit_msg = if (args.len > 0)
+        args[0]
+    else
+        "Update";
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "commit", "-m", commit_msg },
+    }) catch |err| {
+        std.debug.print("Error running git commit: {s}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    if (result.term.Exited != 0) {
+        std.debug.print("Git commit failed: {s}", .{result.stderr});
+        return error.GitFailed;
+    }
+
+    std.debug.print("{s}", .{result.stdout});
+}
+
+/// Perform git push
+fn performGitPush() !void {
+    const result = std.process.Child.run(.{
+        .allocator = std.heap.page_allocator,
+        .argv = &[_][]const u8{ "git", "push" },
+    }) catch |err| {
+        std.debug.print("Error running git push: {s}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    if (result.term.Exited != 0) {
+        std.debug.print("Git push failed: {s}", .{result.stderr});
+        return error.GitFailed;
+    }
+
+    std.debug.print("{s}", .{result.stdout});
+}
+
+/// Perform git pull
+fn performGitPull() !void {
+    const result = std.process.Child.run(.{
+        .allocator = std.heap.page_allocator,
+        .argv = &[_][]const u8{ "git", "pull" },
+    }) catch |err| {
+        std.debug.print("Error running git pull: {s}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    if (result.term.Exited != 0) {
+        std.debug.print("Git pull failed: {s}", .{result.stderr});
+        return error.GitFailed;
+    }
+
+    std.debug.print("{s}", .{result.stdout});
+}
+
+/// Print git log
+fn printGitLog(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const count_str = if (args.len > 0) args[0] else "10";
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "log", "--oneline", "-n", count_str },
+    }) catch |err| {
+        std.debug.print("Error running git log: {s}\n", .{@errorName(err)});
+        return error.GitFailed;
+    };
+    defer result.deinit();
+
+    if (result.term.Exited != 0) {
+        std.debug.print("Git log failed\n", .{});
+        return error.GitFailed;
+    }
+
+    std.debug.print("{s}", .{result.stdout});
+}
+
+/// Print git help
+pub fn printGitHelp() void {
+    std.debug.print("{s}Git Commands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri git status                    Show git status\n", .{});
+    std.debug.print("  tri git commit [message]         Commit changes\n", .{});
+    std.debug.print("  tri git push                      Push to remote\n", .{});
+    std.debug.print("  tri git pull                      Pull from remote\n", .{});
+    std.debug.print("  tri git log [n]                 Show log\n", .{});
 }
 
