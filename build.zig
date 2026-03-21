@@ -2682,6 +2682,22 @@ pub fn build(b: *std.Build) void {
     const microglia_tests_step = b.step("test-microglia", "Run Microglia Tests");
     microglia_tests_step.dependOn(&run_microglia_tests.step);
 
+    // Thalamus (Async Processor) tests
+    const async_processor_tests = b.addTest(.{
+        .root_module = async_processor_mod,
+    });
+    const run_async_processor_tests = b.addRunArtifact(async_processor_tests);
+    const async_processor_tests_step = b.step("test-async-processor", "Run Async Processor Tests");
+    async_processor_tests_step.dependOn(&run_async_processor_tests.step);
+
+    // Hypothalamus (Admin) tests
+    const admin_tests = b.addTest(.{
+        .root_module = admin_mod,
+    });
+    const run_admin_tests = b.addRunArtifact(admin_tests);
+    const admin_tests_step = b.step("test-admin", "Run Admin Tests");
+    admin_tests_step.dependOn(&run_admin_tests.step);
+
     const brain_tests = b.addTest(.{
         .root_module = brain_mod,
     });
