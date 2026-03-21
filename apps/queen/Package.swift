@@ -17,6 +17,10 @@ let package = Package(
             name: "trinity",
             dependencies: ["QueenUILib"],
             path: "QueenUI/Entry"),
+        .executableTarget(
+            name: "QueenApp",
+            dependencies: ["QueenUILib"],
+            path: "QueenUI/Entry"),
         .testTarget(
             name: "QueenUITests",
             dependencies: ["QueenUILib"],
