@@ -89,7 +89,7 @@ fn cmdHabenulaUnfairDetect(a: Allocator, b: []const []const u8) !u8 {
     print("\n{s}HABENULA - Anti-Corruption Sensor (P1){s}\n", .{ MAGENTA, RESET });
     print("{s}====================================={s}\n\n", .{ BOLD, RESET });
     print("  {s}Unfairness Detection:{s}\n", .{ BOLD, RESET });
-    print("    Reward != Effort -> corruption signal\n");
+    print("    Reward != Effort -> corruption signal\n", .{});
     print("\n  {s}Fairness Ranges:{s}\n", .{ BOLD, RESET });
     print("    {s}SAFE{s}   |reward/effort| < 1.5\n", .{ GREEN, RESET });
     print("    {s}WARN{s}   |reward/effort| in [1.5, 3.0]\n", .{ YELLOW, RESET });
@@ -105,13 +105,13 @@ fn cmdAmygdalaCheckFear(a: Allocator, task: []const u8) !u8 {
     print("{s}====================================={s}\n\n", .{ BOLD, RESET });
     print("  Task: {s}\n\n", .{task});
     print("  {s}MNL Pattern:{s}\n", .{ BOLD, RESET });
-    print("    1x failure -> Warning logged\n");
-    print("    2x failure -> Elevated concern\n");
+    print("    1x failure -> Warning logged\n", .{});
+    print("    2x failure -> Elevated concern\n", .{});
     print("    {s}3x failure -> BLACKLISTED{s}\n", .{ RED, RESET });
     print("\n  {s}Blacklist Storage:{s}\n", .{ BOLD, RESET });
-    print("    .trinity/mistakes/blacklist.json\n");
-    print("    Vector search for similar past failures\n");
-    print("    Experience enrichment on each episode\n");
+    print("    .trinity/mistakes/blacklist.json\n", .{});
+    print("    Vector search for similar past failures\n", .{});
+    print("    Experience enrichment on each episode\n", .{});
     print("\n{s}STATUS: P1 implementation complete - ready for integration{s}\n\n", .{ CYAN, RESET });
     return 0;
 }
@@ -182,11 +182,11 @@ fn cmdRun(a: Allocator, args: []const []const u8) !u8 {
     if (dry_run) {
         print("  Mode: {s}DRY RUN{s}\n\n", .{ YELLOW, RESET });
         print("DRY RUN: {d} waves, {d} agents\n", .{waves, agents});
-        print("Golden Chain: 28 links\n");
-        print("P1 Ethical Zones:\n");
-        print("  OFC: toxic verdict (v)\n", .{ GREEN, RESET });
-        print("  HABENULA: unfair detection (v)\n", .{ GREEN, RESET });
-        print("  AMYGDALA: MNL blacklist (v)\n\n", .{ GREEN, RESET });
+        print("Golden Chain: 28 links\n", .{});
+        print("P1 Ethical Zones:\n", .{});
+        print("  OFC: toxic verdict (v)\n", .{});
+        print("  HABENULA: unfair detection (v)\n", .{});
+        print("  AMYGDALA: MNL blacklist (v)\n", .{});
         return 0;
     }
 
@@ -226,7 +226,7 @@ fn cmdStatus(a: Allocator, b: []const []const u8) !u8 {
         print("Total checkpoints: {d}\n", .{count});
     }
 
-    print("\n");
+    print("\n", .{});
     return 0;
 }
 
