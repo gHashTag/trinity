@@ -48,6 +48,15 @@ pub const LogLevel = enum {
             .critical => "🚨",
         };
     }
+
+    pub fn fromString(s: []const u8) ?LogLevel {
+        if (std.mem.eql(u8, s, "DEBUG")) return .debug;
+        if (std.mem.eql(u8, s, "INFO")) return .info;
+        if (std.mem.eql(u8, s, "WARN")) return .warn;
+        if (std.mem.eql(u8, s, "ERROR")) return .err;
+        if (std.mem.eql(u8, s, "CRITICAL")) return .critical;
+        return null;
+    }
 };
 
 pub const EventType = enum {
@@ -107,7 +116,7 @@ pub const SystemEvent = struct {
         component: []const u8,
         event_type: EventType,
         message: []const u8,
-        metadata: std.json.Value,
+        metadata: ?std.json.Value,
     ) !SystemEvent {
         return .{
             .timestamp = std.time.timestamp(),
@@ -217,147 +226,301 @@ pub const Insula = struct {
         try file.writeAll("\n");
     }
 
-    /// Get recent events for debugging
+    /// Get recent events for debugging (optimized with arena allocator)
     pub fn getRecentEvents(self: *Self, limit: usize) !std.ArrayList(SystemEvent) {
         const file = std.fs.cwd().openFile(self.file_path, .{}) catch {
-            return std.ArrayList(SystemEvent).init(self.allocator);
+            return .{ .items = &.{}, .capacity = 0 };
         };
         defer file.close();
 
-        var results = std.ArrayList(SystemEvent).init(self.allocator);
+        const arena_allocator = self.arena.allocator();
 
-        const content = try file.readToEndAlloc(self.allocator, 65536);
-        defer self.allocator.free(content);
+        // Read entire file into arena (single allocation)
+        const content = try file.readToEndAlloc(arena_allocator, 65536);
 
-        // Parse JSONL lines from end (reverse order for recent first)
-        var lines = std.mem.splitScalar(u8, content, '\n');
-        var lines_list = std.ArrayList([]const u8).init(self.allocator);
+        // Use arena for line storage and parsing
+        var results = std.ArrayList(SystemEvent).empty;
+
+        // Count lines first to allocate exact capacity
+        var line_count: usize = 0;
+        var count_iter = std.mem.splitScalar(u8, content, '\n');
+        while (count_iter.next()) |line| {
+            if (line.len > 0) line_count += 1;
+        }
+
+        // Parse directly without storing all lines
+        var line_ends = std.ArrayList(usize).initCapacity(arena_allocator, line_count) catch unreachable;
         defer {
-            for (lines_list.items) |line| {
-                self.allocator.free(line);
+            // arena will handle cleanup
+        }
+
+        // First pass: find line boundaries
+        var scan_idx: usize = 0;
+        while (scan_idx < content.len) : (scan_idx += 1) {
+            if (content[scan_idx] == '\n') {
+                try line_ends.append(arena_allocator, scan_idx);
             }
-            lines_list.deinit();
         }
 
-        while (lines.next()) |line| {
+        // Process from end (most recent first)
+        var line_num: usize = line_ends.items.len;
+        var result_count: usize = 0;
+
+        while (line_num > 0 and result_count < limit) : (line_num -= 1) {
+            const line_end = line_ends.items[line_num - 1];
+            const line_start_prev = if (line_num > 1) line_ends.items[line_num - 2] + 1 else 0;
+            const line = content[line_start_prev..line_end];
+
             if (line.len == 0) continue;
-            const line_copy = try self.allocator.dupe(u8, line);
-            try lines_list.append(self.allocator, line_copy);
-        }
 
-        // Read from end (reverse)
-        const start_idx = if (lines_list.items.len > limit) lines_list.items.len - limit else 0;
-        _ = start_idx; // Calculated for future use in optimized reading
+            // Parse JSON using arena allocator for temporary values
+            const parsed = std.json.parseFromSlice(SystemEventFromJson, arena_allocator, line, .{}) catch |err| {
+                if (err == error.UnexpectedEndOfInput or err == error.InvalidToken) continue;
+                return err;
+            };
 
-        var idx: usize = lines_list.items.len;
-        while (idx > 0 and results.items.len < limit) : (idx -= 1) {
-            const line = lines_list.items[idx - 1];
-            const parsed = try std.json.parseFromSlice(self.allocator, line);
-            defer parsed.deinit(self.allocator);
-
-            if (parsed != .object) continue;
-
-            const event = try parseEventFromJson(self.allocator, parsed.object);
+            // Create event using main allocator (for long-term storage)
+            const event = try SystemEvent.createWithMetadata(
+                self.allocator,
+                parsed.value.level,
+                parsed.value.component,
+                parsed.value.event_type,
+                parsed.value.message,
+                parsed.value.metadata,
+            );
             try results.append(self.allocator, event);
+            result_count += 1;
         }
+
+        // Reset arena after batch parsing (retain capacity for next call)
+        _ = self.arena.reset(.retain_capacity);
 
         return results;
     }
 
-    /// Get events by component filter
+    /// Get events by component filter (optimized: filter during parse)
     pub fn getEventsByComponent(self: *Self, component: []const u8, limit: usize) !std.ArrayList(SystemEvent) {
-        const all_events = try self.getRecentEvents(1000);
-        defer {
-            for (all_events.items) |e| {
-                e.deinit(self.allocator);
+        const file = std.fs.cwd().openFile(self.file_path, .{}) catch {
+            return .{ .items = &.{}, .capacity = 0 };
+        };
+        defer file.close();
+
+        const arena_allocator = self.arena.allocator();
+
+        // Read entire file into arena (single allocation)
+        const content = try file.readToEndAlloc(arena_allocator, 65536);
+
+        var results = std.ArrayList(SystemEvent).empty;
+
+        // Count lines first
+        var line_count: usize = 0;
+        var count_iter = std.mem.splitScalar(u8, content, '\n');
+        while (count_iter.next()) |line| {
+            if (line.len > 0) line_count += 1;
+        }
+
+        // Find line boundaries
+        var line_ends = std.ArrayList(usize).initCapacity(arena_allocator, line_count) catch unreachable;
+
+        var scan_idx: usize = 0;
+        while (scan_idx < content.len) : (scan_idx += 1) {
+            if (content[scan_idx] == '\n') {
+                try line_ends.append(arena_allocator, scan_idx);
             }
-            all_events.deinit();
         }
 
-        var filtered = std.ArrayList(SystemEvent).init(self.allocator);
+        // Process from end (most recent first)
+        var line_num: usize = line_ends.items.len;
+        var result_count: usize = 0;
 
-        for (all_events.items) |e| {
-            if (std.mem.eql(u8, e.component, component)) {
-                const copy = try SystemEvent.create(
-                    self.allocator,
-                    e.level,
-                    e.component,
-                    e.event_type,
-                    e.message,
-                );
-                try filtered.append(self.allocator, copy);
-            }
+        while (line_num > 0 and result_count < limit) : (line_num -= 1) {
+            const line_end = line_ends.items[line_num - 1];
+            const line_start_prev = if (line_num > 1) line_ends.items[line_num - 2] + 1 else 0;
+            const line = content[line_start_prev..line_end];
+
+            if (line.len == 0) continue;
+
+            // Quick filter: check if component is in the line before parsing
+            if (std.mem.indexOf(u8, line, component) == null) continue;
+
+            // Parse JSON using arena allocator
+            const parsed = std.json.parseFromSlice(SystemEventFromJson, arena_allocator, line, .{}) catch |err| {
+                if (err == error.UnexpectedEndOfInput or err == error.InvalidToken) continue;
+                return err;
+            };
+
+            // Double-check component match after parsing
+            if (!std.mem.eql(u8, parsed.component, component)) continue;
+
+            // Create event using main allocator
+            const event = try SystemEvent.createWithMetadata(
+                self.allocator,
+                parsed.level,
+                parsed.component,
+                parsed.event_type,
+                parsed.message,
+                if (parsed.metadata) |m| m else null,
+            );
+            try results.append(self.allocator, event);
+            result_count += 1;
         }
 
-        if (filtered.items.len > limit) {
-            filtered.shrinkRetainingCapacity(limit);
-        }
+        // Reset arena after batch parsing
+        self.arena.reset(.retain_capacity);
 
-        return filtered;
+        return results;
     }
 
-    /// Get events by event type filter
+    /// Get events by event type filter (optimized: filter during parse)
     pub fn getEventsByType(self: *Self, event_type: EventType, limit: usize) !std.ArrayList(SystemEvent) {
-        const all_events = try self.getRecentEvents(1000);
-        defer {
-            for (all_events.items) |e| {
-                e.deinit(self.allocator);
+        const file = std.fs.cwd().openFile(self.file_path, .{}) catch {
+            return .{ .items = &.{}, .capacity = 0 };
+        };
+        defer file.close();
+
+        const arena_allocator = self.arena.allocator();
+
+        // Read entire file into arena (single allocation)
+        const content = try file.readToEndAlloc(arena_allocator, 65536);
+
+        var results = std.ArrayList(SystemEvent).empty;
+
+        // Count lines first
+        var line_count: usize = 0;
+        var count_iter = std.mem.splitScalar(u8, content, '\n');
+        while (count_iter.next()) |line| {
+            if (line.len > 0) line_count += 1;
+        }
+
+        // Find line boundaries
+        var line_ends = std.ArrayList(usize).initCapacity(arena_allocator, line_count) catch unreachable;
+
+        var scan_idx: usize = 0;
+        while (scan_idx < content.len) : (scan_idx += 1) {
+            if (content[scan_idx] == '\n') {
+                try line_ends.append(arena_allocator, scan_idx);
             }
-            all_events.deinit();
         }
 
-        var filtered = std.ArrayList(SystemEvent).init(self.allocator);
+        // Get event type string for quick filtering
+        const type_str = event_type.toString();
 
-        for (all_events.items) |e| {
-            if (e.event_type == event_type) {
-                const copy = try SystemEvent.create(
-                    self.allocator,
-                    e.level,
-                    e.component,
-                    e.event_type,
-                    e.message,
-                );
-                try filtered.append(self.allocator, copy);
-            }
+        // Process from end (most recent first)
+        var line_num: usize = line_ends.items.len;
+        var result_count: usize = 0;
+
+        while (line_num > 0 and result_count < limit) : (line_num -= 1) {
+            const line_end = line_ends.items[line_num - 1];
+            const line_start_prev = if (line_num > 1) line_ends.items[line_num - 2] + 1 else 0;
+            const line = content[line_start_prev..line_end];
+
+            if (line.len == 0) continue;
+
+            // Quick filter: check if event_type string is in the line
+            if (std.mem.indexOf(u8, line, type_str) == null) continue;
+
+            // Parse JSON using arena allocator
+            const parsed = std.json.parseFromSlice(SystemEventFromJson, arena_allocator, line, .{}) catch |err| {
+                if (err == error.UnexpectedEndOfInput or err == error.InvalidToken) continue;
+                return err;
+            };
+
+            // Double-check event type match after parsing
+            if (parsed.event_type != event_type) continue;
+
+            // Create event using main allocator
+            const event = try SystemEvent.createWithMetadata(
+                self.allocator,
+                parsed.level,
+                parsed.component,
+                parsed.event_type,
+                parsed.message,
+                if (parsed.metadata) |m| m else null,
+            );
+            try results.append(self.allocator, event);
+            result_count += 1;
         }
 
-        if (filtered.items.len > limit) {
-            filtered.shrinkRetainingCapacity(limit);
-        }
+        // Reset arena after batch parsing
+        self.arena.reset(.retain_capacity);
 
-        return filtered;
+        return results;
     }
 
-    /// Get events by log level filter
+    /// Get events by log level filter (optimized: filter during parse)
     pub fn getEventsByLevel(self: *Self, level: LogLevel, limit: usize) !std.ArrayList(SystemEvent) {
-        const all_events = try self.getRecentEvents(1000);
-        defer {
-            for (all_events.items) |e| {
-                e.deinit(self.allocator);
+        const file = std.fs.cwd().openFile(self.file_path, .{}) catch {
+            return .{ .items = &.{}, .capacity = 0 };
+        };
+        defer file.close();
+
+        const arena_allocator = self.arena.allocator();
+
+        // Read entire file into arena (single allocation)
+        const content = try file.readToEndAlloc(arena_allocator, 65536);
+
+        var results = std.ArrayList(SystemEvent).empty;
+
+        // Count lines first
+        var line_count: usize = 0;
+        var count_iter = std.mem.splitScalar(u8, content, '\n');
+        while (count_iter.next()) |line| {
+            if (line.len > 0) line_count += 1;
+        }
+
+        // Find line boundaries
+        var line_ends = std.ArrayList(usize).initCapacity(arena_allocator, line_count) catch unreachable;
+
+        var scan_idx: usize = 0;
+        while (scan_idx < content.len) : (scan_idx += 1) {
+            if (content[scan_idx] == '\n') {
+                try line_ends.append(arena_allocator, scan_idx);
             }
-            all_events.deinit();
         }
 
-        var filtered = std.ArrayList(SystemEvent).init(self.allocator);
+        // Get level string for quick filtering
+        const level_str = level.toString();
 
-        for (all_events.items) |e| {
-            if (e.level == level) {
-                const copy = try SystemEvent.create(
-                    self.allocator,
-                    e.level,
-                    e.component,
-                    e.event_type,
-                    e.message,
-                );
-                try filtered.append(self.allocator, copy);
-            }
+        // Process from end (most recent first)
+        var line_num: usize = line_ends.items.len;
+        var result_count: usize = 0;
+
+        while (line_num > 0 and result_count < limit) : (line_num -= 1) {
+            const line_end = line_ends.items[line_num - 1];
+            const line_start_prev = if (line_num > 1) line_ends.items[line_num - 2] + 1 else 0;
+            const line = content[line_start_prev..line_end];
+
+            if (line.len == 0) continue;
+
+            // Quick filter: check if level string is in the line
+            if (std.mem.indexOf(u8, line, level_str) == null) continue;
+
+            // Parse JSON using arena allocator
+            const parsed = std.json.parseFromSlice(SystemEventFromJson, arena_allocator, line, .{}) catch |err| {
+                if (err == error.UnexpectedEndOfInput or err == error.InvalidToken) continue;
+                return err;
+            };
+
+            // Double-check level match after parsing
+            if (parsed.level != level) continue;
+
+            // Create event using main allocator
+            const event = try SystemEvent.createWithMetadata(
+                self.allocator,
+                parsed.level,
+                parsed.component,
+                parsed.event_type,
+                parsed.message,
+                if (parsed.metadata) |m| m else null,
+            );
+            try results.append(self.allocator, event);
+            result_count += 1;
         }
 
-        if (filtered.items.len > limit) {
-            filtered.shrinkRetainingCapacity(limit);
-        }
+        // Reset arena after batch parsing
+        self.arena.reset(.retain_capacity);
 
-        return filtered;
+        return results;
     }
 
     /// Count events by type for analytics
@@ -375,7 +538,17 @@ pub const Insula = struct {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SERIALIZATION HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Temp struct for JSON parsing (arena-allocated strings)
+const SystemEventFromJson = struct {
+    timestamp: i64,
+    level: LogLevel,
+    component: []const u8,
+    event_type: EventType,
+    message: []const u8,
+    metadata: ?std.json.Value,
+};
 
 fn serializeEvent(buf: *[4096]u8, event: *const SystemEvent) ![]const u8 {
     var obj = std.json.ObjectMap.init(buf[0..]);

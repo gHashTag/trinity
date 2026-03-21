@@ -232,40 +232,40 @@ pub fn main() !void {
         }
 
         const s3_converged: u8 = if (s3.convergence_step != null) 1 else 0;
-        try writeTimeline(s3.timeline, "S3", allocator, csv_file, s3_converged, 50.0 * 200.0, 14000, 50, 0.42, 0.05, s3.kill_threshold, 0.60, 0.15, 0.15);
+        try writeTimeline(s3.timeline, "S3", allocator, csv_file, s3_converged, 50.0 * 200.0, 14000, 50, 0.42, 0.05, s3.kill_threshold, 0.60, 0.15, 0.15, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s4_converged: u8 = if (s4.convergence_step != null) 1 else 0;
-        try writeTimeline(s4.timeline, "S4", allocator, csv_file, s4_converged, 100.0 * 300.0, 25000, 110, 0.50, s4.crash_rate, s4.kill_threshold, 0.50, 0.25, 0.25);
+        try writeTimeline(s4.timeline, "S4", allocator, csv_file, s4_converged, 100.0 * 300.0, 25000, 110, 0.50, s4.crash_rate, s4.kill_threshold, 0.50, 0.25, 0.25, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s5_converged: u8 = if (s5.convergence_step != null) 1 else 0;
-        try writeTimeline(s5.timeline, "S5", allocator, csv_file, s5_converged, 100.0 * 300.0, 25000, 110, 0.50, s5.crash_rate, s5.kill_threshold, 0.50, 0.25, 0.25);
+        try writeTimeline(s5.timeline, "S5", allocator, csv_file, s5_converged, 100.0 * 300.0, 25000, 110, 0.50, s5.crash_rate, s5.kill_threshold, 0.50, 0.25, 0.25, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s6_converged: u8 = if (s6.convergence_step != null) 1 else 0;
-        try writeTimeline(s6.timeline, "S6", allocator, csv_file, s6_converged, 100.0 * 300.0, 16000, 85, 0.46, s6.crash_rate, s6.kill_threshold, 0.35, 0.35, 0.30);
+        try writeTimeline(s6.timeline, "S6", allocator, csv_file, s6_converged, 100.0 * 300.0, 16000, 85, 0.46, s6.crash_rate, s6.kill_threshold, 0.35, 0.35, 0.30, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s7_converged: u8 = if (s7.convergence_step != null) 1 else 0;
-        try writeTimeline(s7.timeline, "S7", allocator, csv_file, s7_converged, 150.0 * 200.0, 15000, 60, 0.27, 0.03, s7.kill_threshold, 0.25, 0.25, 0.25);
+        try writeTimeline(s7.timeline, "S7", allocator, csv_file, s7_converged, 150.0 * 200.0, 15000, 60, 0.27, 0.03, s7.kill_threshold, 0.25, 0.25, 0.25, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s8_converged: u8 = if (s8.convergence_step != null) 1 else 0;
-        try writeTimeline(s8.timeline, "S8", allocator, csv_file, s8_converged, 80.0 * 400.0, 13000, 75, 0.20, 0.01, s8.kill_threshold, 0.70, 0.20, 0.10);
+        try writeTimeline(s8.timeline, "S8", allocator, csv_file, s8_converged, 80.0 * 400.0, 13000, 75, 0.20, 0.01, s8.kill_threshold, 0.70, 0.20, 0.10, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s9_converged: u8 = if (s9.convergence_step != null) 1 else 0;
-        try writeTimeline(s9.timeline, "S9", allocator, csv_file, s9_converged, 120.0 * 200.0, 16000, 85, 0.46, s9.crash_rate, s9.kill_threshold, 0.50, 0.30, 0.20);
+        try writeTimeline(s9.timeline, "S9", allocator, csv_file, s9_converged, 120.0 * 200.0, 16000, 85, 0.46, s9.crash_rate, s9.kill_threshold, 0.50, 0.30, 0.20, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s10_converged: u8 = if (s10.convergence_step != null) 1 else 0;
-        try writeTimeline(s10.timeline, "S10", allocator, csv_file, s10_converged, 60.0 * 100.0, 12000, 50, 0.15, 0.02, s10.kill_threshold, 0.80, 0.0, 0.0);
+        try writeTimeline(s10.timeline, "S10", allocator, csv_file, s10_converged, 60.0 * 100.0, 12000, 50, 0.15, 0.02, s10.kill_threshold, 0.80, 0.0, 0.0, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s11_converged: u8 = if (s11.convergence_step != null) 1 else 0;
-        try writeTimeline(s11.timeline, "S11", allocator, csv_file, s11_converged, 120.0 * 200.0, 25000, 80, 0.40, 0.03, s11.kill_threshold, 0.40, 0.40, 0.20);
+        try writeTimeline(s11.timeline, "S11", allocator, csv_file, s11_converged, 120.0 * 200.0, 25000, 80, 0.40, 0.03, s11.kill_threshold, 0.40, 0.40, 0.20, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s12_converged: u8 = if (s12.convergence_step != null) 1 else 0;
-        try writeTimeline(s12.timeline, "S12", allocator, csv_file, s12_converged, 120.0 * 300.0, 35000, 120, 0.50, 0.02, s12.kill_threshold, 0.35, 0.50, 0.15);
+        try writeTimeline(s12.timeline, "S12", allocator, csv_file, s12_converged, 120.0 * 300.0, 35000, 120, 0.50, 0.02, s12.kill_threshold, 0.35, 0.50, 0.15, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s13_converged: u8 = if (s13.convergence_step != null) 1 else 0;
-        try writeTimeline(s13.timeline, "S13", allocator, csv_file, s13_converged, 80.0 * 300.0, 15000, 90, 0.25, 0.02, s13.kill_threshold, 0.50, 0.30, 0.20);
+        try writeTimeline(s13.timeline, "S13", allocator, csv_file, s13_converged, 80.0 * 300.0, 15000, 90, 0.25, 0.02, s13.kill_threshold, 0.50, 0.30, 0.20, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s14_converged: u8 = if (s14.convergence_step != null) 1 else 0;
-        try writeTimeline(s14.timeline, "S14", allocator, csv_file, s14_converged, 100.0 * 300.0, 18000, 100, 0.30, 0.02, s14.kill_threshold, 0.60, 0.25, 0.15);
+        try writeTimeline(s14.timeline, "S14", allocator, csv_file, s14_converged, 100.0 * 300.0, 18000, 100, 0.30, 0.02, s14.kill_threshold, 0.60, 0.25, 0.15, q_superpos, q_coherence, q_interference, q_collapse);
 
         const s15_converged: u8 = if (s15.convergence_step != null) 1 else 0;
         try writeTimeline(s15.timeline, "S15", allocator, csv_file, s15_converged, 100.0 * 400.0, 18000, 100, 0.30, 0.02, s15.kill_threshold, 0.70, 0.20, 0.10, s15.quantum_superposition, s15.quantum_coherence, s15.quantum_interference, s15.quantum_collapse_prob);
