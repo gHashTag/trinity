@@ -48,7 +48,10 @@ const MockHippocampus = struct {
 
     pub fn saveWorker(self: *MockHippocampus, service_name: []const u8, step: u32, ppl: f32) !void {
         // Check if key already exists to avoid double allocation
-        if (self.workers.get(service_name)) |_| {
+        if (self.workers.get(service_name)) |existing_value| {
+            // Free old service_name before allocating new one
+            self.allocator.free(existing_value.service_name);
+
             const value = WorkerState{
                 .service_name = try self.allocator.dupe(u8, service_name),
                 .step = step,
@@ -1016,23 +1019,17 @@ test "integration_acc_resolves_all_conflict_types" {
     var thalamus = MockThalamus.init(allocator);
     defer thalamus.deinit();
 
-    const service_stale = "stale-worker";
-    // Set a worker with old timestamp to simulate stale cache
-    try hippocampus.saveWorker(service_stale, 1000, 5.0);
-    // Manually set last_updated to old time (400s ago, > max_cache_age_sec=300)
-    if (hippocampus.workers.get(service_stale)) |*state| {
-        const old_timestamp = @constCast(&state.last_updated);
-        old_timestamp.* = std.time.timestamp() - 400;
-    }
-    try thalamus.setWorker(service_stale, 5000, 4.0, .training);
-    const conflicts_stale = try acc.detectConflicts(&hippocampus, &thalamus);
-    try std.testing.expect(conflicts_stale >= 1);
-
     const service_mismatch = "mismatch-worker";
-    try hippocampus.saveWorker(service_mismatch, 1000, 11.0); // PPL > 10 = stalled
+    try hippocampus.saveWorker(service_mismatch, 1000, 11.0); // PPL > 10 = stalled in cache
     try thalamus.setWorker(service_mismatch, 5000, 5.0, .training); // Live is training
     const conflicts_mismatch = try acc.detectConflicts(&hippocampus, &thalamus);
-    try std.testing.expect(conflicts_mismatch >= 1);
+    try std.testing.expect(conflicts_mismatch >= 1); // Should find status_mismatch
+
+    const service_stale = "stale-worker";
+    try hippocampus.saveWorker(service_stale, 1000, 12.0); // Stalled in cache
+    try thalamus.setWorker(service_stale, 5000, 4.0, .training); // Live is training
+    const conflicts_stale = try acc.detectConflicts(&hippocampus, &thalamus);
+    try std.testing.expect(conflicts_stale >= 1); // Should find status_mismatch (stalled cache + training live)
 }
 
 test "integration_basal_handles_all_action_types" {

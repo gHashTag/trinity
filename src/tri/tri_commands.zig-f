@@ -354,33 +354,16 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         }
     };
 
-    // Stats struct types for type compatibility
-    const BasalStats = struct {
-        active: usize,
-        attempts: u64,
-        successes: u64,
-        conflicts: u64,
-    };
-
-    const ReticularStats = struct {
-        buffered: usize,
-        published: u64,
-        polled: u64,
-        trim_count: u64,
-        peak_buffered: usize,
-        utilization_pct: f32,
-    };
-
     // Get detailed stats for output
     const basal_stats = if (basal_ganglia.getGlobal(allocator)) |registry| blk: {
         const s = registry.getStats();
-        break :blk BasalStats{
+        break :blk .{
             .active = s.active_claims,
             .attempts = s.claim_attempts,
             .successes = s.claim_success,
             .conflicts = s.claim_conflicts,
         };
-    } else |_| BasalStats{
+    } else |_| .{
         .active = 0,
         .attempts = 0,
         .successes = 0,
@@ -389,15 +372,13 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
 
     const reticular_stats = if (reticular_formation.getGlobal(allocator)) |bus| blk: {
         const s = bus.getStats();
-        break :blk ReticularStats{
+        break :blk .{
             .buffered = s.buffered,
             .published = s.published,
             .polled = s.polled,
-            .trim_count = s.trim_count,
-            .peak_buffered = s.peak_buffered,
             .utilization_pct = @as(f32, @floatFromInt(s.buffered)) / @as(f32, @floatFromInt(10_000)) * 100.0,
         };
-    } else |_| ReticularStats{
+    } else |_| .{
         .buffered = 0,
         .published = 0,
         .polled = 0,
@@ -444,10 +425,10 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.debug.print("  \"overall_health_score\": {d:.1},\n", .{health_score});
         std.debug.print("  \"basal_ganglia\": {\n", .{});
         std.debug.print("    \"status\": \"{s}\",\n", .{basal_text});
-        std.debug.print("    \"active_claims\": {d},\n", .{basal_stats.active_claims});
-        std.debug.print("    \"claim_attempts\": {d},\n", .{basal_stats.claim_attempts});
-        std.debug.print("    \"claim_successes\": {d},\n", .{basal_stats.claim_success});
-        std.debug.print("    \"claim_conflicts\": {d}\n", .{basal_stats.claim_conflicts});
+        std.debug.print("    \"active_claims\": {d},\n", .{basal_stats.active});
+        std.debug.print("    \"claim_attempts\": {d},\n", .{basal_stats.attempts});
+        std.debug.print("    \"claim_successes\": {d},\n", .{basal_stats.successes});
+        std.debug.print("    \"claim_conflicts\": {d}\n", .{basal_stats.conflicts});
         std.debug.print("  },\n", .{});
         std.debug.print("  \"reticular_formation\": {\n", .{});
         std.debug.print("    \"status\": \"{s}\",\n", .{reticular_text});
@@ -464,11 +445,11 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.debug.print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
 
         // Overall health score
-        std.debug.print("{s}{s} Overall Health Score: {s}{s}{d:.1}{{RESET}}\n", .{ CYAN, RESET, score_color, BOLD, health_score });
+        std.debug.print("{s}{s} Overall Health Score: {s}{d:6.1}%{s}\n", .{ CYAN, RESET, score_color, BOLD, health_score, RESET });
         std.debug.print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
 
         // Basal Ganglia status
-        std.debug.print("{s}Basal Ganglia{{RESET}}: {s}{s} {s}{s}\n", .{ CYAN, basal_color, BOLD, basal_icon, basal_text });
+        std.debug.print("{s}Basal Ganglia{RESET}: {s}{s} {s}\n", .{ CYAN, basal_color, BOLD, basal_icon, basal_text, RESET });
         std.debug.print("  Active Claims: {d}\n", .{basal_stats.active});
         std.debug.print("  Claim Attempts: {d}\n", .{basal_stats.attempts});
         const success_rate = if (basal_stats.attempts > 0)
@@ -478,15 +459,15 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.debug.print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
 
         // Reticular Formation status
-        std.debug.print("{s}Reticular Formation{{RESET}}: {s}{s} {s}{s}\n", .{ CYAN, reticular_color, BOLD, reticular_icon, reticular_text });
+        std.debug.print("{s}Reticular Formation{RESET}: {s}{s} {s}\n", .{ CYAN, reticular_color, BOLD, reticular_icon, reticular_text, RESET });
         std.debug.print("  Buffered Events: {d}\n", .{reticular_stats.buffered});
         std.debug.print("  Published Events: {d}\n", .{reticular_stats.published});
         std.debug.print("  Buffer Utilization: {d}%\n", .{@as(usize, @intFromFloat(reticular_stats.utilization_pct))});
         std.debug.print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
 
         // Summary
-        std.debug.print("{s}Summary: {d} healthy, {d} warning, {d} critical, {d} unavailable{{RESET}}\n", .{
-            CYAN,
+        std.debug.print("{s}Summary: {d} healthy, {d} warning, {d} critical, {d} unavailable{RESET}\n", .{
+            CYAN, RESET,
             healthy_count,
             warning_count,
             critical_count,
@@ -529,10 +510,10 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
 
 /// SEBO Command - Sacred Evolutionary Bayesian Optimization
 pub fn runSeboCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const sebo_cli = @import("brain").sebo_cli;
+    try sebo_cli.main();
     _ = allocator;
     _ = args;
-    // sebo_cli is a separate module imported via build.zig
-    std.debug.print("⚠️  sebo: TODO - use tri-sebo-cli binary\n", .{});
 }
 
 /// Git Command - Routes to git operations
@@ -586,7 +567,7 @@ fn performGitCommit(allocator: std.mem.Allocator, args: []const []const u8) !voi
         std.debug.print("Error running git commit: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    // RunResult no longer has deinit() in Zig 0.15 - memory managed by page_allocator
+    // result.deinit() removed in Zig 0.15
 
     if (result.term.Exited != 0) {
         std.debug.print("Git commit failed: {s}", .{result.stderr});
@@ -659,59 +640,5 @@ pub fn printGitHelp() void {
     std.debug.print("  tri git push                      Push to remote\n", .{});
     std.debug.print("  tri git pull                      Pull from remote\n", .{});
     std.debug.print("  tri git log [n]                 Show log\n", .{});
-}
-
-/// Deploy Command - Routes to deployment operations
-/// Usage: tri deploy <subcommand> [args]
-pub fn runDeployCommand(allocator: std.mem.Allocator, subcommand: []const u8, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    if (std.mem.eql(u8, subcommand, "status")) {
-        std.debug.print("{s}⚠️  deploy status: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    } else if (std.mem.eql(u8, subcommand, "push")) {
-        std.debug.print("{s}⚠️  deploy push: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    } else if (std.mem.eql(u8, subcommand, "list")) {
-        std.debug.print("{s}⚠️  deploy list: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    } else {
-        std.debug.print("{s}Error: unknown deploy subcommand '{s}'{s}\n", .{ RED, subcommand, RESET });
-    }
-}
-
-/// Notify Command - Send notifications
-/// Usage: tri notify <message> [--chat-id=ID] [--pin] [--edit=ID]
-pub fn runNotifyCommand(allocator: std.mem.Allocator, msg: []const u8, chat_id_override: ?[]const u8, pin_after_send: bool, edit_message_id: ?[]const u8) !void {
-    _ = allocator;
-    _ = chat_id_override;
-    _ = pin_after_send;
-    _ = edit_message_id;
-    std.debug.print("{s}⚠️  notify: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Message: {s}\n", .{msg});
-}
-
-/// Doctor Command - Health and migration tool
-/// Usage: tri doctor [subcommand] [args]
-pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("{s}⚠️  doctor: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Use: tri doctor [init|scan|mark|report|plan|heal|enforce]\n", .{});
-}
-
-/// Sim Command - Simulation commands
-/// Usage: tri sim <subcommand> [args]
-pub fn runSimCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("{s}⚠️  sim: TODO - use tri-sim-suite or tri-sim-plot binaries{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Available: tri-sim-suite (run scenarios), tri-sim-plot (visualize CSV)\n", .{});
-}
-
-/// UI Command - UI commands
-/// Usage: tri ui <subcommand> [args]
-pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("{s}⚠️  ui: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Use: tri ui [build|kill|launch]\n", .{});
 }
 

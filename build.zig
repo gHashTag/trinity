@@ -2279,16 +2279,17 @@ pub fn build(b: *std.Build) void {
     sim_plot_step.dependOn(&run_sim_plot.step);
 
     // SEBO CLI — Sacred Evolutionary Bayesian Optimization
+    const sebo_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/cli/sebo_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "brain", .module = brain_mod },
+        },
+    });
     const sebo_cli = b.addExecutable(.{
         .name = "tri-sebo",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/sebo_cli.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "brain", .module = brain_mod },
-            },
-        }),
+        .root_module = sebo_cli_mod,
     });
     b.installArtifact(sebo_cli);
 
@@ -2318,6 +2319,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tri_colors", .module = tri_colors_mod },
             .{ .name = "brain", .module = brain_mod },
             .{ .name = "simulation", .module = simulation_mod },
+            .{ .name = "sebo_cli", .module = sebo_cli_mod },
             // STORM P1 Brain Zones (Ethical Infrastructure)
             .{ .name = "storm_ofc", .module = storm_ofc_mod },
             .{ .name = "storm_habenula", .module = storm_habenula_mod },
@@ -2492,6 +2494,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "brain", .module = brain_mod },
                 // Brain simulation module
                 .{ .name = "simulation", .module = simulation_mod },
+                // SEBO CLI module
+                .{ .name = "sebo_cli", .module = sebo_cli_mod },
                 // STORM P1 Brain Zones (Ethical Infrastructure)
                 .{ .name = "storm_ofc", .module = storm_ofc_mod },
                 .{ .name = "storm_habenula", .module = storm_habenula_mod },
@@ -2504,6 +2508,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "hslm", .module = hslm_mod },
                 // Intraparietal Sulcus — Numerical Layer
                 .{ .name = "intraparietal", .module = intraparietal_mod },
+                // STORM Golden Chain — 28-link pipeline
+                .{ .name = "golden_chain", .module = golden_chain_mod },
             },
         }),
     });
