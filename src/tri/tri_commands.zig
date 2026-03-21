@@ -544,7 +544,6 @@ fn printGitStatus() !void {
         std.debug.print("Error running git status: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    defer result.deinit();
 
     if (result.term.Exited != 0) {
         std.debug.print("Git status failed\n", .{});
@@ -568,7 +567,7 @@ fn performGitCommit(allocator: std.mem.Allocator, args: []const []const u8) !voi
         std.debug.print("Error running git commit: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    defer result.deinit();
+    result.deinit();
 
     if (result.term.Exited != 0) {
         std.debug.print("Git commit failed: {s}", .{result.stderr});
@@ -587,7 +586,6 @@ fn performGitPush() !void {
         std.debug.print("Error running git push: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    defer result.deinit();
 
     if (result.term.Exited != 0) {
         std.debug.print("Git push failed: {s}", .{result.stderr});
@@ -606,7 +604,6 @@ fn performGitPull() !void {
         std.debug.print("Error running git pull: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    defer result.deinit();
 
     if (result.term.Exited != 0) {
         std.debug.print("Git pull failed: {s}", .{result.stderr});
@@ -626,7 +623,6 @@ fn printGitLog(allocator: std.mem.Allocator, args: []const []const u8) !void {
         std.debug.print("Error running git log: {s}\n", .{@errorName(err)});
         return error.GitFailed;
     };
-    defer result.deinit();
 
     if (result.term.Exited != 0) {
         std.debug.print("Git log failed\n", .{});

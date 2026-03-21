@@ -777,3 +777,5 @@ Changes not staged for commit:
 "}
 {"ts":1774056956,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"▼ Celebrating farm progress"}
 {"ts":1774057590,"kind":"auto","action":"doctor quick","verdict":"OK","success":false,"detail":"exec error: FileNotFound"}
+{"ts":1774058688,"kind":"phase2","action":"doctor quick","verdict":"incident escalated, human required","success":false,"detail":""}
+{"ts":1774058691,"kind":"auto-action","action":"notify","verdict":"OK","success":false,"detail":"▼ Celebrating farm progress"}

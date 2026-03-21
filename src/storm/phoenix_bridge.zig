@@ -41,7 +41,7 @@ pub const PhoenixBridge = struct {
         var skip_count: u5 = 0;
 
         // Check key specs directory
-        const specs_dir = std.fs.cwd().openDir("specs", .{ .iterate = true }) catch |err| {
+        var specs_dir = std.fs.cwd().openDir("specs", .{ .iterate = true }) catch |err| {
             std.log.warn("Failed to open specs/: {}", .{err});
             return;
         };
@@ -78,7 +78,7 @@ pub const PhoenixBridge = struct {
         }
 
         // Check src/storm/ directory for self-consistency
-        const storm_dir = std.fs.cwd().openDir("src/storm", .{ .iterate = true }) catch |err| {
+        var storm_dir = std.fs.cwd().openDir("src/storm", .{ .iterate = true }) catch |err| {
             std.log.warn("Failed to open src/storm/: {}", .{err});
             return;
         };
@@ -95,11 +95,13 @@ pub const PhoenixBridge = struct {
                 const tri_path = try std.fmt.allocPrint(pb.allocator, "specs/storm/{s}.tri", .{base_name});
                 defer pb.allocator.free(tri_path);
 
-                const tri_exists = std.fs.cwd().statFile(tri_path) != null;
-
-                if (!tri_exists) {
-                    std.debug.print("  ⚠️  {s} exists but no .tri spec (may be manually written)\n", .{entry.name});
-                }
+                // Check if .tri spec exists for this .zig file
+                _ = std.fs.cwd().statFile(tri_path) catch |err| {
+                    if (err == error.FileNotFound) {
+                        std.debug.print("  ⚠️  {s} exists but no .tri spec (may be manually written)\n", .{entry.name});
+                    }
+                    return;
+                };
             }
         }
 

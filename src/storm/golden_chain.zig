@@ -157,20 +157,21 @@ pub const GoldenChain = struct {
 
         // Spawn child process
         const start_time = std.time.nanoTimestamp();
-        var child = std.process.Child.init(.{
-            .allocator = self.allocator,
-            .argv = cmd.argv,
-            .cwd = null, // Current working directory
-            .env_map = null, // Inherit environment
-        });
-        defer child.deinit();
+        var child = std.process.Child.init(cmd.argv, self.allocator);
 
         // Start the process
         try child.spawn();
 
         // Wait for completion with timeout (simulated for P6)
         // TODO: Add real timeout handling using std.Thread.spawn with child.wait()
-        const wait_result = child.wait();
+        const wait_result = child.wait() catch |err| {
+            return .{
+                .success = false,
+                .exit_code = 1,
+                .message = try std.fmt.allocPrint(self.allocator, "Process wait failed: {}", .{err}),
+                .duration_ms = 0,
+            };
+        };
 
         const end_time = std.time.nanoTimestamp();
         const elapsed_ns = end_time - start_time;
@@ -182,21 +183,21 @@ pub const GoldenChain = struct {
         var message: []const u8 = "";
 
         switch (wait_result) {
-            .Exited => |term| {
-                if (term.code == 0) {
+            .Exited => |code| {
+                if (code == 0) {
                     success = true;
-                    exit_code = term.code;
+                    exit_code = code;
                     message = "Success";
                 } else {
                     success = false;
-                    exit_code = term.code;
-                    message = try std.fmt.allocPrint(self.allocator, "Exit code {d}", .{term.code});
+                    exit_code = code;
+                    message = try std.fmt.allocPrint(self.allocator, "Exit code {d}", .{code});
                 }
             },
             .Signal => |sig| {
                 success = false;
-                exit_code = 128 + @as(u8, @intFromEnum(sig));
-                message = try std.fmt.allocPrint(self.allocator, "Signal: {s}", .{@tagName(sig)});
+                exit_code = 128 + @as(u8, @truncate(sig));
+                message = try std.fmt.allocPrint(self.allocator, "Signal: {d}", .{sig});
             },
             else => {
                 success = false;
@@ -272,16 +273,23 @@ pub const GoldenChain = struct {
             else => try std.fmt.allocPrint(self.allocator, "echo Link[{d}]: {s}", .{link.id, link.name}),
         };
 
-        // Parse command into argv
-        var parts = std.ArrayList([]const u8).init(self.allocator);
-        defer parts.deinit();
+        // Parse command into argv (simple implementation)
+        // Just split on space and return
+        var part_count: usize = 0;
+        var space_count: usize = 0;
+        for (link_command) |c| {
+            if (c == ' ') space_count += 1;
+        }
+        part_count = space_count + 1;
 
-        var iter = std.mem.splitSequence(u8, link_command, .{ ' ' });
+        var argv = try self.allocator.alloc([]const u8, part_count);
+        var i: usize = 0;
+        var iter = std.mem.tokenizeScalar(u8, link_command, ' ');
         while (iter.next()) |part| {
-            try parts.append(part);
+            argv[i] = try self.allocator.dupe(u8, part);
+            i += 1;
         }
 
-        const argv = try parts.toOwnedSlice();
         return .{ .argv = argv };
     }
 
