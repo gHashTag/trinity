@@ -30,7 +30,7 @@ pub const WaveResult = struct {
     completed_agents: u5,
     failed_agents: u5,
     duration_ms: u64,
-    errors: [][]const u8,
+    errors: []const []const u8,
 };
 
 pub const STORM_WAVES = [5]Wave{
@@ -116,17 +116,9 @@ pub const StormWaveProtocol = struct {
             wave.id, wave.name, wave.agent_count, wave.links.len,
         });
 
-        const result_init = WaveResult{
-            .wave_id = wave.id,
-            .wave_name = wave.name,
-            .success = true,
-            .completed_agents = 0,
-            .failed_agents = 0,
-            .duration_ms = 0,
-            .errors = try self.allocator.alloc([]const u8, 0),
-        };
-        var result = result_init;
-        errdefer self.allocator.free(result.errors);
+        var error_msgs: [28][]const u8 = undefined;
+        var error_count: usize = 0;
+        var completed_count: usize = 0;
 
         if (wave.parallel) {
             // Parallel execution (simulated for P5, will use ThreadPool in P6)
@@ -134,16 +126,16 @@ pub const StormWaveProtocol = struct {
                 const link = self.getLinkById(link_id) orelse continue;
                 const link_result = try self.golden_chain.executeLink(link, task);
                 if (link_result.success) {
-                    result.completed_agents += 1;
+                    completed_count += 1;
+                    self.allocator.free(link_result.message);
                 } else {
-                    result.failed_agents += 1;
-                    result.success = false;
-                    const err_msg = try std.fmt.allocPrint(
+                    error_msgs[error_count] = try std.fmt.allocPrint(
                         self.allocator,
                         "Link {d} failed: {s}",
                         .{ link_id, link_result.message }
                     );
-                    try result.errors.append(self.allocator, err_msg);
+                    error_count += 1;
+                    self.allocator.free(link_result.message);
                 }
             }
         } else {
@@ -152,27 +144,45 @@ pub const StormWaveProtocol = struct {
                 const link = self.getLinkById(link_id) orelse continue;
                 const link_result = try self.golden_chain.executeLink(link, task);
                 if (link_result.success) {
-                    result.completed_agents += 1;
+                    completed_count += 1;
+                    self.allocator.free(link_result.message);
                 } else {
-                    result.failed_agents += 1;
-                    result.success = false;
-                    const err_msg = try std.fmt.allocPrint(
+                    error_msgs[error_count] = try std.fmt.allocPrint(
                         self.allocator,
                         "Link {d} failed: {s}",
                         .{ link_id, link_result.message }
                     );
-                    try result.errors.append(self.allocator, err_msg);
+                    error_count += 1;
+                    self.allocator.free(link_result.message);
                 }
             }
         }
 
         const end_time = std.time.nanoTimestamp();
-        result.duration_ms = @as(u64, @intCast((end_time - start_time) / 1_000_000));
-        self.total_duration_ms += result.duration_ms;
+        const elapsed_ns = end_time - start_time;
+        const duration_ms: u64 = @intCast(@abs(elapsed_ns) / 1_000_000);
+        self.total_duration_ms += duration_ms;
+
+        const total_links = wave.links.len;
+        const failed_count = error_count;
 
         std.debug.print("✅ WAVE {d} completed: {d}/{d} agents in {}ms\n", .{
-            wave.id, result.completed_agents, result.completed_agents + result.failed_agents, result.duration_ms,
+            wave.id, completed_count, total_links, duration_ms,
         });
+
+        // Copy errors to result slice
+        const errors_slice = try self.allocator.alloc([]const u8, error_count);
+        @memcpy(errors_slice, error_msgs[0..error_count]);
+
+        const result = WaveResult{
+            .wave_id = wave.id,
+            .wave_name = wave.name,
+            .success = error_count == 0,
+            .completed_agents = @intCast(completed_count),
+            .failed_agents = @intCast(failed_count),
+            .duration_ms = duration_ms,
+            .errors = errors_slice,
+        };
 
         return result;
     }

@@ -15,6 +15,7 @@ const CYAN = "\x1b[36m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const RED = "\x1b[31m";
+const RESET = "\x1b[0m";
 
 pub fn main() !u8 {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -30,14 +31,6 @@ pub fn main() !u8 {
     }
 
     const command = args[1];
-    var command_args = std.ArrayList([]const u8).init(allocator);
-    defer command_args.deinit();
-
-    var i: usize = 1;
-    while (i < args.len) : (i += 1) {
-        try command_args.append(args[i]);
-    }
-    const command_args_slice = try command_args.toOwnedSlice();
 
     if (std.mem.eql(u8, command, "--help") or std.mem.eql(u8, command, "-h")) {
         try printHelp();
@@ -47,11 +40,11 @@ pub fn main() !u8 {
     if (std.mem.eql(u8, command, "init")) {
         return try cmdInit(allocator);
     } else if (std.mem.eql(u8, command, "run")) {
-        return try cmdRun(allocator, command_args_slice);
+        return try cmdRun(allocator, args);
     } else if (std.mem.eql(u8, command, "status")) {
-        return try cmdStatus(allocator, command_args_slice);
+        return try cmdStatus(allocator);
     } else if (std.mem.eql(u8, command, "resume")) {
-        return try cmdResume(allocator, command_args_slice);
+        return try cmdResume(allocator, args);
     } else {
         std.debug.print("{s}Unknown command: {s}{s}\n", .{ RED, command, RESET });
         try printHelp();
@@ -60,6 +53,7 @@ pub fn main() !u8 {
 }
 
 fn cmdInit(allocator: std.mem.Allocator) !u8 {
+    _ = allocator;
     std.debug.print("\n{s}🌪️ STORM INIT{s}\n", .{ CYAN, RESET });
 
     const dirs = [_][]const u8{
@@ -74,21 +68,21 @@ fn cmdInit(allocator: std.mem.Allocator) !u8 {
     for (dirs) |dir| {
         std.fs.cwd().makePath(dir) catch |err| {
             if (err != error.PathAlreadyExists) {
-                std.debug.print("{RED}Failed to create {s}: {}{s}\n", .{ dir, err, RESET });
+                std.debug.print("{s}Failed to create {s}: {}{s}\n", .{ RED, dir, err, RESET });
                 return 1;
             }
         };
-        std.debug.print("{GREEN}✓{s} Created {s}\n", .{ GREEN, RESET, dir });
+        std.debug.print("{s}✓{s} Created {s}\n", .{ GREEN, RESET, dir });
     }
 
     return 0;
 }
 
-fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+fn cmdRun(allocator: std.mem.Allocator, args: [][:0]u8) !u8 {
     std.debug.print("\n{s}🚀 STORM RUN{s}\n", .{ YELLOW, RESET });
 
-    const task = if (args.len > 1)
-        try std.fmt.allocPrint(allocator, "STORM autonomous operation: {s}", .{args[1] })
+    const task = if (args.len > 2)
+        try std.fmt.allocPrint(allocator, "STORM autonomous operation: {s}", .{args[2]})
     else
         "STORM autonomous operation";
 
@@ -105,22 +99,16 @@ fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     var model_roulette = try mr.ModelRoulette.init(allocator, null);
     defer model_roulette.deinit();
 
-    std.debug.print("\n{s}Configuration:\n", .{ CYAN, RESET });
-    std.debug.print("  Task: {s}\n", .{ task });
-    std.debug.print("  Waves: {d} (default)\n", .{ 5 });
-    std.debug.print("  Agents: {d} (default)\n", .{ 32 });
-    std.debug.print("  Config: .trinity/storm/config.json\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Configuration:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Task: {s}\n", .{task});
+    std.debug.print("  Waves: {d} (default)\n", .{5});
+    std.debug.print("  Agents: {d} (default)\n", .{32});
+    std.debug.print("  Config: .trinity/storm/config.json\n", .{});
 
     // TODO: Load config from config.json if provided
-    var config = try loadConfig(allocator);
-    defer {
-        if (config.waves) |w| config.waves.* = config.waves.? |@max(@as(u32, config.waves.*) else 5 {}
-    else config.waves.?.*config.waves.?;
-    _ = config.waves;
-    }
 
     const result = try wave_proto.runAll(task);
-    std.debug.print("\n{s}Result: {d}\n\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Result: {d}{s}\n\n", .{ CYAN, result, RESET });
 
     if (result == 0) {
         std.debug.print("\n{s}✅ STORM run complete!{s}\n\n", .{ GREEN, RESET });
@@ -131,16 +119,15 @@ fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     return result;
 }
 
-fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-    _ = args;
-    _ = command_args_slice;
+fn cmdStatus(allocator: std.mem.Allocator) !u8 {
+    _ = allocator;
 
     std.debug.print("\n{s}📊 STORM STATUS{s}\n", .{ CYAN, RESET });
-    std.debug.print("\n{s}Checkpoint: {s}\n", .{ CYAN, RESET });
+    std.debug.print("\n{s}Checkpoint:{s}\n", .{ CYAN, RESET });
 
     const checkpoint_dir = ".trinity/storm/checkpoints";
     var dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
-        std.debug.print("{RED}No checkpoints found. Run 'storm init' first.\n", .{ RED, RESET });
+        std.debug.print("{s}No checkpoints found. Run 'storm init' first.{s}\n", .{ RED, RESET });
         return 0;
     };
     defer dir.close();
@@ -150,60 +137,58 @@ fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     while (try iter.next()) |entry| {
         if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".json")) {
             count += 1;
-            std.debug.print("  Checkpoint: {s}\n", .{ entry.name });
+            std.debug.print("  Checkpoint: {s}\n", .{entry.name});
         }
     }
 
     if (count == 0) {
-        std.debug.print("  No checkpoints found.\n", .{ });
+        std.debug.print("  No checkpoints found.\n", .{});
     } else {
-        std.debug.print("  Total checkpoints: {d}\n", .{ count });
+        std.debug.print("  Total checkpoints: {d}\n", .{count});
     }
 
     std.debug.print("\n", .{});
     return 0;
 }
 
-fn cmdResume(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-    _ = args;
-    _ = command_args_slice;
+fn cmdResume(allocator: std.mem.Allocator, args: [][:0]u8) !u8 {
+    _ = allocator;
 
-    if (args.len < 1) {
-        std.debug.print("{RED}Error: resume requires checkpoint ID{s}\n", .{ RED, RESET });
-        std.debug.print(" Usage: storm resume <checkpoint_id>\n", .{ CYAN, RESET });
+    if (args.len < 3) {
+        std.debug.print("{s}Error: resume requires checkpoint ID{s}\n", .{ RED, RESET });
+        std.debug.print(" Usage: storm resume <checkpoint_id>\n", .{});
         return 1;
     }
 
-    const checkpoint_id = args[0];
-    std.debug.print("  Resuming from checkpoint: {s}\n", .{ checkpoint_id });
+    const checkpoint_id = args[2];
+    std.debug.print("  Resuming from checkpoint: {s}\n", .{checkpoint_id});
 
     // TODO: Implement resumeFromCheckpoint with experience loading
-    std.debug.print("  Resume not yet implemented.\n", .{ YELLOW, RESET });
+    std.debug.print("  {s}Resume not yet implemented.{s}\n", .{ YELLOW, RESET });
     return 0;
 }
 
 fn printHelp() !void {
     std.debug.print("\n{s}STORM P9 — 32-Agent Autonomous Operation{s}\n", .{ CYAN, RESET });
-    std.debug.print("Usage: storm <command> [options]\n\n", .{ CYAN, RESET });
-    std.debug.print("Commands:\n", .{ CYAN, RESET });
-    std.debug.print("  {CYAN}init{s}               — Scaffold .trinity/storm/ structure\n", .{ CYAN, RESET });
-    std.debug.print("  {CYAN}run{s}                — Execute STORM operation\n", .{ CYAN, RESET });
-    std.debug.print("  {CYAN}status{s}              — Show checkpoint status\n", .{ CYAN, RESET });
-    std.debug.print("  {CYAN}resume{s}             — Continue from checkpoint\n", .{ CYAN, RESET });
-    std.debug.print("  {CYAN}help{s}               — Show this help\n", .{ CYAN, RESET });
-    std.debug.print("\n", .{ CYAN, RESET });
-    std.debug.print("Options:\n", .{ CYAN, RESET });
-    std.debug.print("  --waves <N>{s}         — Number of waves (default: 5)\n", .{ CYAN, RESET });
-    std.debug.print("  --agents <M>{s}        — Number of agents (default: 32)\n", .{ CYAN, RESET });
-    std.debug.print("  --config <PATH>     — Config file path\n", . { CYAN, RESET });
-    std.debug.print("  --dry-run{s}           — Simulate without executing commands\n", .{ CYAN, RESET });
-    std.debug.print("  --task <s>{s}         — Custom task description\n", .{ CYAN, RESET });
-    std.debug.print("\nExamples:\n", .{ CYAN, RESET });
-    std.debug.print("  storm init                              — Initialize STORM\n", .{ CYAN, RESET });
-    std.debug.print("  storm run                               — Run with defaults\n", .{ CYAN, RESET });
-    std.debug.print("  storm run --waves=3 --agents=16        — Custom wave count\n", . { CYAN, RESET });
-    std.debug.print("  storm status                            — Show checkpoint status\n", .{ CYAN, RESET });
-    std.debug.print("  storm resume checkpoint_1234567890     — Resume from checkpoint\n", . { CYAN, RESET });
-    std.debug.print("\n", .{ CYAN, RESET });
-}
+    std.debug.print("Usage: storm <command> [options]\n\n", .{});
+    std.debug.print("Commands:\n", .{});
+    std.debug.print("  {s}init{s}               — Scaffold .trinity/storm/ structure\n", .{ CYAN, RESET });
+    std.debug.print("  {s}run{s}                — Execute STORM operation\n", .{ CYAN, RESET });
+    std.debug.print("  {s}status{s}             — Show checkpoint status\n", .{ CYAN, RESET });
+    std.debug.print("  {s}resume{s}            — Continue from checkpoint\n", .{ CYAN, RESET });
+    std.debug.print("  {s}help{s}               — Show this help\n", .{ CYAN, RESET });
+    std.debug.print("\n", .{});
+    std.debug.print("Options:\n", .{});
+    std.debug.print("  --waves <N>         — Number of waves (default: 5)\n", .{});
+    std.debug.print("  --agents <M>        — Number of agents (default: 32)\n", .{});
+    std.debug.print("  --config <PATH>     — Config file path\n", .{});
+    std.debug.print("  --dry-run          — Simulate without executing commands\n", .{});
+    std.debug.print("  --task <DESC>      — Custom task description\n", .{});
+    std.debug.print("\nExamples:\n", .{});
+    std.debug.print("  storm init                              — Initialize STORM\n", .{});
+    std.debug.print("  storm run                               — Run with defaults\n", .{});
+    std.debug.print("  storm run --waves=3 --agents=16        — Custom wave count\n", .{});
+    std.debug.print("  storm status                            — Show checkpoint status\n", .{});
+    std.debug.print("  storm resume checkpoint_1234567890     — Resume from checkpoint\n", .{});
+    std.debug.print("\n", .{});
 }
