@@ -48,13 +48,16 @@ public struct AutomationOverlay: View {
         Group {
             if let pos = highlightPosition {
                 ZStack {
-                    ForEach(0..<3) { i in
+                    // Expanding circles
+                    ForEach(0..<3, id: \.self) { i in
                         Circle()
                             .stroke(Color.white, lineWidth: 2)
                             .frame(width: 60 + CGFloat(i) * 20, height: 60 + CGFloat(i) * 20)
                             .opacity(Double(3 - i) * highlightOpacity * 0.5)
                     }
-                    Group {
+
+                    // Crosshair lines
+                    VStack(spacing: 0) {
                         Rectangle()
                             .fill(Color.white)
                             .frame(width: ParietalSpacing.chipWidth, height: 2)
