@@ -280,21 +280,5 @@ public struct PlaybackResult {
     }
 }
 
-// Codable support for CGPoint
-extension CGPoint: Codable {
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(x: try container.decode(CGFloat.self, forKey: .x),
-                  y: try container.decode(CGFloat.self, forKey: .y))
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(x, forKey: .x)
-        try container.encode(y, forKey: .y)
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case x, y
-    }
-}
+// CGPoint already has Codable support in CoreGraphics (iOS 7+, macOS 10.9+)
+// No custom extension needed
