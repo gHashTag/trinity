@@ -384,11 +384,11 @@ struct CompactContextIndicator: View {
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 1.5)
+                    RoundedRectangle(cornerRadius: ParietalSpacing.cornerRadiusXSmall)
                         .fill(Color.white.opacity(V2Depth.bgSubtle))
                         .frame(height: ParietalSpacing.xxxs)
 
-                    RoundedRectangle(cornerRadius: 1.5)
+                    RoundedRectangle(cornerRadius: ParietalSpacing.cornerRadiusXSmall)
                         .fill(tier.color)
                         .frame(width: geometry.size.width * percentage, height: 3)
                 }

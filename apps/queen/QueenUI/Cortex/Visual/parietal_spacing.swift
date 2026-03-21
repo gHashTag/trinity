@@ -111,6 +111,23 @@ public enum ParietalSpacing {
     /// Card corner radius
     public static let cardCornerRadius: CGFloat = 12
 
+    // MARK: - Additional Corner Radius Values
+
+    /// Extra small corner radius - 1.5pt
+    public static let cornerRadiusXSmall: CGFloat = 1.5
+
+    /// Tiny corner radius - 2pt
+    public static let cornerRadiusTiny: CGFloat = 2
+
+    /// Small corner radius - 5pt
+    public static let cornerRadiusSmall: CGFloat = 5
+
+    /// Medium corner radius - 6pt
+    public static let cornerRadiusMedium: CGFloat = 6
+
+    /// Large corner radius - 8pt
+    public static let cornerRadiusLarge: CGFloat = 8
+
     // MARK: - Helper Functions
 
     /// Returns spacing scaled by a factor
