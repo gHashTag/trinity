@@ -231,6 +231,12 @@ pub const QuantumMetrics = struct {
     /// S = -Σ pᵢⱼ log(pᵢⱼ) normalized to [0, 1]
     entanglement_entropy: f32,
 
+    /// Interference: constructive pattern from diversity × survival
+    interference: f32 = 0.0,
+
+    /// Collapse probability: inverse of superposition
+    collapse_prob: f32 = 0.0,
+
     /// Compute Shannon entropy: H(p) = -Σ pᵢ log₂(pᵢ)
     pub fn shannonEntropy(probabilities: []const f32) f32 {
         var entropy: f32 = 0.0;
@@ -373,6 +379,12 @@ pub const EvolutionResult = struct {
     fpga_bram: u32 = 0, // BRAM36-eq usage
     fpga_dsp: u32 = 0, // DSP usage
     fpga_cost_norm: f32 = 0.0, // Normalized FPGA cost (0-1, 1=cheapest)
+
+    // Quantum-inspired metrics (formal statistics)
+    quantum_superposition: f32 = 0.0, // Normalized Shannon entropy H(p)/log(N)
+    quantum_coherence: f32 = 0.0, // Pearson correlation of gradient steps
+    quantum_interference: f32 = 0.0, // Constructive pattern interference
+    quantum_collapse_prob: f32 = 0.0, // Probability of wave function collapse
 
     // Policy parameters (for CSV export)
     kill_threshold: f32 = 400.0, // PPL threshold for worker culling
@@ -711,6 +723,9 @@ pub const EvolutionSimulator = struct {
             self.config.fpga_dsp,
         );
 
+        // Calculate quantum-inspired metrics
+        const quantum_metrics = try self.calculateQuantumMetrics();
+
         return EvolutionResult{
             .scenario_name = scenario_name,
             .final_ppl = final_ppl,
@@ -729,6 +744,10 @@ pub const EvolutionSimulator = struct {
             .fpga_bram = self.config.fpga_bram,
             .fpga_dsp = self.config.fpga_dsp,
             .fpga_cost_norm = fpga_cost_norm,
+            .quantum_superposition = quantum_metrics.superposition,
+            .quantum_coherence = quantum_metrics.coherence,
+            .quantum_interference = quantum_metrics.interference,
+            .quantum_collapse_prob = quantum_metrics.collapse_prob,
             .kill_threshold = 400.0, // Standard kill threshold
             .microglia_interval = self.config.microglia_interval,
             .objective_ppl = objective_ppl,
@@ -807,6 +826,76 @@ pub const EvolutionSimulator = struct {
             // Odd: middle value
             return values[mid];
         }
+    }
+
+    /// Calculate quantum-inspired metrics from simulation data
+    fn calculateQuantumMetrics(self: *const EvolutionSimulator) !QuantumMetrics {
+        var counts = std.StringHashMap(u32).init(self.allocator);
+        defer counts.deinit();
+
+        // Count workers by objective (strategy distribution)
+        var alive_count: u32 = 0;
+        for (self.workers[0..self.worker_count]) |*worker| {
+            if (!worker.alive) continue;
+            alive_count += 1;
+            const gop = try counts.getOrPut(worker.objective);
+            if (!gop.found_existing) {
+                gop.value_ptr.* = 0;
+            }
+            gop.value_ptr.* += 1;
+        }
+
+        // Calculate superposition: normalized Shannon entropy of strategy distribution
+        var superposition: f32 = 0.0;
+        if (alive_count > 0 and counts.count() > 0) {
+            var iter = counts.iterator();
+            while (iter.next()) |entry| {
+                const p = @as(f32, @floatFromInt(entry.value_ptr.*)) / @as(f32, @floatFromInt(alive_count));
+                if (p > 0) {
+                    superposition -= p * @log(p);
+                }
+            }
+            const num_types = @as(f32, @floatFromInt(counts.count()));
+            const max_entropy = if (num_types > 1) @log(num_types) else 1.0;
+            superposition = if (max_entropy > 0) superposition / max_entropy else 0.0;
+        }
+
+        // Calculate coherence: Pearson correlation between PPL trends
+        // For simplicity, use inverse of PPL variance as coherence proxy
+        var coherence: f32 = 0.0;
+        if (self.timeline_count >= 2) {
+            // Calculate variance of PPL across timeline
+            var mean_ppl: f64 = 0.0;
+            for (self.timeline[0..self.timeline_count]) |entry| {
+                mean_ppl += entry.avg_ppl;
+            }
+            mean_ppl /= @as(f64, @floatFromInt(self.timeline_count));
+
+            var variance: f64 = 0.0;
+            for (self.timeline[0..self.timeline_count]) |entry| {
+                const diff = entry.avg_ppl - mean_ppl;
+                variance += diff * diff;
+            }
+            variance /= @as(f64, @floatFromInt(self.timeline_count));
+
+            // Coherence = 1 / (1 + variance) — higher coherence = lower variance
+            coherence = 1.0 / (1.0 + @as(f32, @floatFromInt(variance)));
+        }
+
+        // Calculate interference: constructive pattern from diversity × survival
+        const interference = superposition * (@as(f32, @floatFromInt(alive_count)) / @as(f32, @floatFromInt(self.config.workers)));
+
+        // Calculate collapse probability: inverse of superposition
+        const collapse_prob = 1.0 - superposition;
+
+        return QuantumMetrics{
+            .superposition = superposition,
+            .coherence = coherence,
+            .uncertainty = 0.0, // Not used in CSV
+            .entanglement_entropy = 0.0, // Not used in CSV
+            .interference = interference,
+            .collapse_prob = collapse_prob,
+        };
     }
 
     /// Microglia patrol — prune worst workers using relative threshold

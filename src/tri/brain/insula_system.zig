@@ -165,6 +165,7 @@ pub const EventBuffer = struct {
 pub const Insula = struct {
     allocator: Allocator,
     file_path: []const u8 = ".trinity/insula_events.jsonl",
+    arena: std.heap.ArenaAllocator,
 
     const Self = @This();
 
@@ -174,7 +175,18 @@ pub const Insula = struct {
         std.fs.cwd().makePath(".trinity") catch {};
         return .{
             .allocator = allocator,
+            .arena = std.heap.ArenaAllocator.init(allocator),
         };
+    }
+
+    /// Clean up arena allocator
+    pub fn deinit(self: *Self) void {
+        self.arena.deinit();
+    }
+
+    /// Reset arena for reuse (faster than deinit+init)
+    pub fn resetArena(self: *Self) void {
+        self.arena.reset(.retain_capacity);
     }
 
     /// Log a system event (decision, error, alert)

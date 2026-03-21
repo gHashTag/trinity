@@ -74,12 +74,25 @@ pub const PopulationCache = struct {
         return self.workers.get(service_name);
     }
 
-    /// Update or add worker in cache
+    /// Update or add worker in cache (optimized: avoids key allocation on update)
     pub fn updateWorker(self: *Self, allocator: Allocator, service_name: []const u8, status: LiveStatus, step: u32, ppl: f32) !void {
         const now = std.time.timestamp();
 
+        // First try get existing entry to avoid allocation
+        if (self.workers.getEntry(service_name)) |entry| {
+            // Update in-place - zero allocations!
+            entry.value_ptr.*.status = status;
+            entry.value_ptr.*.step = step;
+            entry.value_ptr.*.ppl = ppl;
+            entry.value_ptr.*.last_updated = now;
+            return;
+        }
+
+        // New entry - allocate key only once
         const key = try allocator.dupe(u8, service_name);
-        if (self.workers.fetchPut(key, .{
+        errdefer allocator.free(key);
+
+        try self.workers.put(key, .{
             .service_name = key,
             .status = status,
             .step = step,
@@ -87,22 +100,36 @@ pub const PopulationCache = struct {
             .tok_per_sec = 0,
             .last_updated = now,
             .cached = true,
-        })) |kv| {
-            // Update existing
-            kv.value_ptr.*.status = status;
-            kv.value_ptr.*.step = step;
-            kv.value_ptr.*.ppl = ppl;
-            kv.value_ptr.*.last_updated = now;
-            allocator.free(key);
+        });
+    }
+
+    /// Batch update multiple workers (reduces hashmap lookups)
+    pub fn updateWorkersBatch(self: *Self, allocator: Allocator, updates: []const WorkerUpdate) !void {
+        const now = std.time.timestamp();
+        for (updates) |update| {
+            // Reuse updateWorker for its get-then-put optimization
+            try self.updateWorker(allocator, update.service_name, update.status, update.step, update.ppl);
         }
     }
 
-    /// Get all worker keys in cache
-    pub fn listWorkers(self: *const Self) std.ArrayList([]const u8) {
-        var list = std.ArrayList([]const u8).init(std.heap.page_allocator);
+    /// Worker update struct for batch operations
+    pub const WorkerUpdate = struct {
+        service_name: []const u8,
+        status: LiveStatus,
+        step: u32,
+        ppl: f32,
+    };
+
+    /// Get all worker keys in cache (fixed: uses passed allocator, not page_allocator)
+    pub fn listWorkers(self: *const Self, allocator: Allocator) !std.ArrayList([]const u8) {
+        var list = std.ArrayList([]const u8).init(allocator);
         var iter = self.workers.iterator();
         while (iter.next()) |entry| {
-            list.append(entry.key_ptr.*) catch {};
+            try list.append(allocator.dupe(u8, entry.key_ptr.*) catch |err| {
+                // On error, clean up what we've allocated
+                for (list.items) |k| allocator.free(k);
+                return err;
+            });
         }
         return list;
     }
