@@ -53,7 +53,8 @@ fn runSebo(allocator: Allocator, args: []const []const u8) !void {
     // Parse args
     var generations: u32 = 10;
     var population: u32 = 10;
-    var steps: u32 = 50;
+    var steps: u32 = 100;
+    var use_simulation: bool = false;
 
     for (args[2..]) |arg| {
         if (std.mem.startsWith(u8, arg, "--generations=")) {
@@ -65,6 +66,8 @@ fn runSebo(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.startsWith(u8, arg, "--steps=")) {
             const val = arg["--steps=".len..];
             steps = std.fmt.parseUnsigned(u32, val, 10) catch steps;
+        } else if (std.mem.eql(u8, arg, "--use-simulation")) {
+            use_simulation = true;
         }
     }
 
@@ -76,12 +79,15 @@ fn runSebo(allocator: Allocator, args: []const []const u8) !void {
     print("  Generations: {d}\n", .{generations});
     print("  Population:  {d}\n", .{population});
     print("  Steps:       {d}\n", .{steps});
+    print("  Mode:        {s}{s}\n", .{ if (use_simulation) GREEN else YELLOW, if (use_simulation) "Real Simulation" else "Synthetic (Fast)" });
     print("\n", .{});
 
     // SEBO configuration
     const config = sebo.SeboConfig{
         .population_size = population,
         .generations = generations,
+        .steps = steps,
+        .use_simulation = use_simulation,
         .mutation_rate = 0.1,
         .crossover_rate = 0.7,
         .elitism = 2,
@@ -93,7 +99,7 @@ fn runSebo(allocator: Allocator, args: []const []const u8) !void {
 
     print("{s}Starting optimization...{s}\n\n", .{ GREEN, RESET });
 
-    // Run optimization (using synthetic evaluation for speed)
+    // Run optimization
     try optimizer.run();
 
     // Get best result
@@ -137,13 +143,17 @@ fn printHelp() void {
     print("\n{s}Options:{s}\n", .{ CYAN, RESET });
     print("  --generations=N  Number of generations (default: 10)\n", .{});
     print("  --population=N   Population size (default: 10)\n", .{});
-    print("  --steps=N        Simulation steps per evaluation (default: 50)\n", .{});
+    print("  --steps=N        Simulation steps per evaluation (default: 100)\n", .{});
+    print("  --use-simulation Use real evolution simulation (slower, accurate)\n", .{});
     print("  --help, -h       Show this help\n", .{});
     print("  --version        Show version\n", .{});
     print("\n{s}Description:{s}\n", .{ CYAN, RESET });
     print("  SEBO optimizes brain evolution hyperparameters using Sacred\n", .{});
     print("  constants (φ, e, π) as Bayesian priors. Multi-objective optimization\n", .{});
     print("  minimizes PPL and FPGA cost while maximizing diversity.\n", .{});
+    print("\n  {s}Modes:{s}\n", .{ YELLOW, RESET });
+    print("  Synthetic (default): Fast evaluation using formulas\n", .{});
+    print("  Real (--use-simulation): Slow, uses full evolution simulation\n", .{});
     print("\n{s}Sacred Identity:{s}\n", .{ CYAN, RESET });
     print("  φ² + 1/φ² = 3 = TRINITY\n", .{});
     print("  where φ = (1 + √5) / 2 ≈ 1.618034\n", .{});
