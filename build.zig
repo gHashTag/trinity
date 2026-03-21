@@ -1989,14 +1989,12 @@ pub fn build(b: *std.Build) void {
             .{ .name = "triples_parser", .module = triples_parser_mod },
         },
     });
-    // Golden Chain Agent (8-node unified pipeline)
+    // STORM Golden Chain (28-link pipeline with neuroanatomical mapping)
     const golden_chain_mod = b.createModule(.{
-        .root_source_file = b.path("src/vibeec/golden_chain.zig"),
+        .root_source_file = b.path("src/storm/golden_chain.zig"),
         .target = target,
         .optimize = optimize,
-        .imports = &.{
-            .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
-        },
+        .imports = &.{},
     });
     // IGLA TVC Chat module (fluent chat + TVC integration)
     const igla_tvc_chat_mod = b.createModule(.{

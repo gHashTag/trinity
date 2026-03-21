@@ -812,36 +812,41 @@ test "ofc — inferMood returns valid Mood" {
     _ = mood;
 }
 
-test "ofc — inferMood broken build returns stressed" {
+test "ofc — inferMood broken build returns alarm" {
     const mood = inferMood(false, 50.0, false);
-    try std.testing.expectEqual(Mood.stressed, mood);
+    try std.testing.expectEqual(Mood.alarm, mood);
 }
 
-test "ofc — inferMood high score returns excited" {
+test "ofc — inferMood high score returns euphoria" {
     const mood = inferMood(true, 85.0, true);
-    try std.testing.expectEqual(Mood.excited, mood);
+    try std.testing.expectEqual(Mood.euphoria, mood);
 }
 
 test "ofc — Mood emoji returns valid" {
-    try std.testing.expectEqualStrings("🟢", Mood.healthy.emoji());
-    try std.testing.expectEqualStrings("🟡", Mood.caution.emoji());
-    try std.testing.expectEqualStrings("🔴", Mood.stressed.emoji());
+    try std.testing.expectEqualStrings("✅", Mood.calm.emoji());
+    try std.testing.expectEqualStrings("⚠️", Mood.alert.emoji());
+    try std.testing.expectEqualStrings("🚨", Mood.alarm.emoji());
+    try std.testing.expectEqualStrings("🏆", Mood.euphoria.emoji());
 }
 
 test "ofc — Mood label returns valid" {
-    try std.testing.expectEqualStrings("healthy", Mood.healthy.label());
-    try std.testing.expectEqualStrings("caution", Mood.caution.label());
-    try std.testing.expectEqualStrings("stressed", Mood.stressed.label());
+    try std.testing.expectEqualStrings("CALM", Mood.calm.label());
+    try std.testing.expectEqualStrings("ALERT", Mood.alert.label());
+    try std.testing.expectEqualStrings("ALARM", Mood.alarm.label());
+    try std.testing.expectEqualStrings("EUPHORIA", Mood.euphoria.label());
 }
 
 test "ofc — ChatRoute chatId returns valid" {
-    try std.testing.expectEqualStrings("main", .main.chatId());
-    try std.testing.expectEqualStrings("alerts", .alerts.chatId());
+    try std.testing.expectEqualStrings("144022504", ChatRoute.personal.chatId());
+    try std.testing.expectEqualStrings("-5160767429", ChatRoute.group.chatId());
+    try std.testing.expectEqualStrings("-5160767429", ChatRoute.alert.chatId());
 }
 
 test "ofc — ChatRoute emoji returns valid" {
-    try std.testing.expectEqualStrings("📢", .main.emoji());
-    try std.testing.expectEqualStrings("🚨", .alerts.emoji());
+    try std.testing.expectEqualStrings("🖐️", ChatRoute.personal.emoji());
+    try std.testing.expectEqualStrings("👑", ChatRoute.group.emoji());
+    try std.testing.expectEqualStrings("🤖", ChatRoute.agent.emoji());
+    try std.testing.expectEqualStrings("🚨", ChatRoute.alert.emoji());
 }
 
 test "ofc — RewardPrediction meanAbsoluteError calculates" {

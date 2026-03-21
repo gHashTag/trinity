@@ -105,7 +105,6 @@ pub const PopulationCache = struct {
 
     /// Batch update multiple workers (reduces hashmap lookups)
     pub fn updateWorkersBatch(self: *Self, allocator: Allocator, updates: []const WorkerUpdate) !void {
-        const now = std.time.timestamp();
         for (updates) |update| {
             // Reuse updateWorker for its get-then-put optimization
             try self.updateWorker(allocator, update.service_name, update.status, update.step, update.ppl);
@@ -271,32 +270,55 @@ pub const Hippocampus = struct {
         return results;
     }
 
-    /// Write cache to disk (evolution_state.json)
+    /// Write cache to disk (evolution_state.json) - optimized with reduced allocations
     pub fn persist(self: *Self) !void {
-        var array_list = try std.json.Value.Array.init(self.allocator, 16);
+        // Pre-allocate array with exact capacity to avoid reallocations
+        const worker_count = self.cache.workers.count();
+        var array_list = try std.json.Value.Array.init(self.allocator, worker_count);
+        errdefer {
+            // Cleanup on error: all array elements must be freed
+            for (array_list.items) |item| {
+                if (item == .object) item.object.deinit(self.allocator);
+            }
+            array_list.deinit(self.allocator);
+        }
 
         var iter = self.cache.workers.iterator();
         while (iter.next()) |entry| {
             const worker = entry.value_ptr.*;
 
-            var obj = try std.json.Value.Object.init(self.allocator, 8);
+            // Exact object size (6 fields)
+            var obj = try std.json.Value.Object.init(self.allocator, 6);
+            errdefer obj.deinit(self.allocator);
+
+            // Use cached status string views when possible
+            const status_str = worker.status.toString();
             try obj.put(self.allocator, "service", std.json.Value.string(worker.service_name));
-            try obj.put(self.allocator, "status", std.json.Value.string(worker.status.toString()));
+            try obj.put(self.allocator, "status", std.json.Value.string(status_str));
             try obj.put(self.allocator, "step", std.json.Value.number(@floatFromInt(worker.step)));
             try obj.put(self.allocator, "ppl", std.json.Value.number(@floatFromInt(@as(i32, @intFromFloat(worker.ppl)))));
             try obj.put(self.allocator, "last_updated", std.json.Value.number(@floatFromInt(worker.last_updated)));
             try obj.put(self.allocator, "cached", std.json.Value.bool_true);
+
             try array_list.append(self.allocator, std.json.Value.object(obj));
         }
 
+        // Root object with exact size (4 fields)
         var root = try std.json.Value.Object.init(self.allocator, 4);
+        errdefer root.deinit(self.allocator);
+
         try root.put(self.allocator, "workers", std.json.Value.array(array_list));
         try root.put(self.allocator, "last_refresh", std.json.Value.number(@floatFromInt(self.cache.last_refresh)));
         try root.put(self.allocator, "refresh_interval_sec", std.json.Value.number(@floatFromInt(self.cache.refresh_interval_sec)));
         try root.put(self.allocator, "cache_age", std.json.Value.string("CACHED (NOT LIVE TRUTH!)"));
 
+        // Single JSON stringify
         const json_str = try std.json.stringifyAlloc(self.allocator, std.json.Value.object(root), .{ .whitespace = .indent_2 });
-        defer self.allocator.free(json_str);
+        defer {
+            self.allocator.free(json_str);
+            // Cleanup all JSON Value structures after stringify
+            root.deinit(self.allocator);
+        }
 
         const file = try std.fs.cwd().createFile(self.file_path, .{});
         defer file.close();
@@ -349,15 +371,18 @@ fn loadCacheFromFile(allocator: Allocator, cache: *PopulationCache) !void {
 
         if (service != .string or status_str != .string) continue;
 
-        const service_name = try allocator.dupe(u8, service.string);
         const status = if (LiveStatus.fromString(status_str.string)) |s| s else LiveStatus.unknown;
 
         const step_int = @as(u32, @intFromFloat(step.number));
         const ppl_float = ppl.number;
         const last_ts = @as(i64, @intFromFloat(last_updated.number));
 
-        const key = try allocator.dupe(u8, service_name);
-        if (cache.workers.fetchPut(key, .{
+        // Use put instead of fetchPut to avoid duplicate key allocation
+        // fetchPut always allocates the key even if exists
+        const key = try allocator.dupe(u8, service.string);
+        errdefer allocator.free(key);
+
+        try cache.workers.put(key, .{
             .service_name = key,
             .status = status,
             .step = step_int,
@@ -365,9 +390,7 @@ fn loadCacheFromFile(allocator: Allocator, cache: *PopulationCache) !void {
             .tok_per_sec = 0,
             .last_updated = last_ts,
             .cached = true,
-        })) |_| {
-            allocator.free(key);
-        }
+        });
     }
 }
 
@@ -400,9 +423,9 @@ test "hippocampus_stale_detection" {
     }
 
     // Get all workers
-    const workers = cache.listWorkers();
+    const workers = try cache.listWorkers(allocator);
+    defer workers.deinit(allocator);
     try std.testing.expect(workers.items.len > 0);
-    workers.deinit(allocator);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -516,9 +539,9 @@ test "hippocampus_clear_all" {
 
     cache.clear(allocator);
 
-    const workers_after = cache.listWorkers();
+    const workers_after = try cache.listWorkers(allocator);
+    defer workers_after.deinit(allocator);
     try std.testing.expect(workers_after.items.len == 0);
-    workers_after.deinit(allocator);
 }
 
 test "hippocampus_needs_refresh" {
@@ -595,7 +618,7 @@ test "hippocampus_list_workers_content" {
     try cache.updateWorker(allocator, "list-test-1", .training, 1000, 4.5);
     try cache.updateWorker(allocator, "list-test-2", .training, 2000, 5.0);
 
-    const workers = cache.listWorkers();
+    const workers = try cache.listWorkers(allocator);
     defer workers.deinit(allocator);
 
     try std.testing.expectEqual(@as(usize, 2), workers.items.len);
@@ -643,4 +666,41 @@ test "hippocampus_step_and_ppl_values" {
     const frac = cache.getWorker("fractional-ppl").?;
     try std.testing.expectEqual(@as(u32, 5000), frac.step);
     try std.testing.expect(frac.ppl > 4.6 and frac.ppl < 4.7);
+}
+
+test "hippocampus_batch_update" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    const updates = [_]PopulationCache.WorkerUpdate{
+        .{ .service_name = "batch-1", .status = .training, .step = 100, .ppl = 4.0 },
+        .{ .service_name = "batch-2", .status = .stalled, .step = 200, .ppl = 5.0 },
+        .{ .service_name = "batch-3", .status = .crashed, .step = 300, .ppl = 6.0 },
+    };
+
+    try cache.updateWorkersBatch(allocator, &updates);
+
+    try std.testing.expect(cache.getWorker("batch-1") != null);
+    try std.testing.expectEqual(@as(u32, 100), cache.getWorker("batch-1").?.step);
+    try std.testing.expectEqual(LiveStatus.stalled, cache.getWorker("batch-2").?.status);
+}
+
+test "hippocampus_update_in_place" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    // Initial state
+    try cache.updateWorker(allocator, "inplace-test", .training, 1000, 4.5);
+    var worker = cache.getWorker("inplace-test").?;
+    const original_key = worker.service_name;
+
+    // Update should reuse existing entry, no key reallocation
+    try cache.updateWorker(allocator, "inplace-test", .training, 2000, 3.5);
+    worker = cache.getWorker("inplace-test").?;
+
+    // Same key pointer (reused)
+    try std.testing.expectEqual(original_key, worker.service_name);
+    try std.testing.expectEqual(@as(u32, 2000), worker.step);
 }
