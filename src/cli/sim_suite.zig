@@ -71,6 +71,12 @@ pub fn main() !void {
     print("Running {d} scenarios in parallel...\n\n", .{20});
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
+    // Quantum metrics for non-quantum scenarios (S1-S15) — set to 0.0
+    const q_superpos: f32 = 0.0;
+    const q_coherence: f32 = 0.0;
+    const q_interference: f32 = 0.0;
+    const q_collapse: f32 = 0.0;
+
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
     defer s1.deinit(allocator);
     print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}, Alive={d}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index, s1.workers_alive });
@@ -180,23 +186,25 @@ pub fn main() !void {
         defer csv_file.close();
         defer allocator.free(csv_path);
 
-        // Enhanced CSV format for visualization and analysis (18 columns)
+        // Enhanced CSV format for visualization and analysis (22 columns)
         // energy_cost calculated as: cumulative alive workers × step
         // fpga_cost_norm = (lut_ratio * 0.7 + bram_ratio * 0.3)
-        try csv_file.writeAll("step,scenario_id,ppl,diversity,alive,culled,byzantine,converged,energy_cost,fpga_lut,fpga_bram,fpga_cost_norm,seed_rate,kill_rate,ntp_weight,jepa_weight,nca_weight\n");
+        // quantum_*: quantum-inspired metrics (superposition, coherence, interference, collapse)
+        try csv_file.writeAll("step,scenario_id,ppl,diversity,alive,culled,byzantine,converged,energy_cost,fpga_lut,fpga_bram,fpga_cost_norm,seed_rate,kill_rate,ntp_weight,jepa_weight,nca_weight,quantum_superposition,quantum_coherence,quantum_interference,quantum_collapse_prob\n");
 
-        // Helper to write timeline with energy cost and policy params
+        // Helper to write timeline with energy cost, policy params, and quantum metrics
         const writeTimeline = struct {
-            fn write(timeline: []const evo_sim.EvolutionResult.TimelineEntry, scenario: []const u8, alloc: Allocator, csv_out: std.fs.File, converged: u8, energy_cost: f32, fpga_lut: u16, fpga_bram: u8, fpga_cost: f32, seed_rate: f32, kill_rate: f32, ntp_weight: f32, jepa_weight: f32, nca_weight: f32) !void {
+            fn write(timeline: []const evo_sim.EvolutionResult.TimelineEntry, scenario: []const u8, alloc: Allocator, csv_out: std.fs.File, converged: u8, energy_cost: f32, fpga_lut: u16, fpga_bram: u8, fpga_cost: f32, seed_rate: f32, kill_rate: f32, ntp_weight: f32, jepa_weight: f32, nca_weight: f32, quantum_superposition: f32, quantum_coherence: f32, quantum_interference: f32, quantum_collapse_prob: f32) !void {
                 for (timeline) |entry| {
                     // Calculate cumulative energy cost up to this step
                     const cum_energy = energy_cost * @as(f32, @floatFromInt(entry.step + 1));
-                    const line = try std.fmt.allocPrint(alloc, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
+                    const line = try std.fmt.allocPrint(alloc, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2},{d:.3},{d:.3},{d:.3},{d:.3}\n", .{
                         entry.step,       scenario,       entry.avg_ppl, entry.diversity,
                         entry.alive_workers, 0,               0,             converged,
                         cum_energy,       fpga_lut,        fpga_bram,       fpga_cost,
                         seed_rate,        kill_rate,      ntp_weight,
-                        jepa_weight,      nca_weight,
+                        jepa_weight,      nca_weight,    quantum_superposition,
+                        quantum_coherence, quantum_interference, quantum_collapse_prob,
                     });
                     try csv_out.writeAll(line);
                     alloc.free(line);
@@ -260,7 +268,23 @@ pub fn main() !void {
         try writeTimeline(s14.timeline, "S14", allocator, csv_file, s14_converged, 100.0 * 300.0, 18000, 100, 0.30, 0.02, s14.kill_threshold, 0.60, 0.25, 0.15);
 
         const s15_converged: u8 = if (s15.convergence_step != null) 1 else 0;
-        try writeTimeline(s15.timeline, "S15", allocator, csv_file, s15_converged, 100.0 * 400.0, 18000, 100, 0.30, 0.02, s15.kill_threshold, 0.70, 0.20, 0.10);
+        try writeTimeline(s15.timeline, "S15", allocator, csv_file, s15_converged, 100.0 * 400.0, 18000, 100, 0.30, 0.02, s15.kill_threshold, 0.70, 0.20, 0.10, s15.quantum_superposition, s15.quantum_coherence, s15.quantum_interference, s15.quantum_collapse_prob);
+
+        // Quantum scenarios S16-S20
+        const s16_converged: u8 = if (s16.convergence_step != null) 1 else 0;
+        try writeTimeline(s16.timeline, "S16", allocator, csv_file, s16_converged, 200.0 * 400.0, 20000, 200, 0.40, 0.0, s16.kill_threshold, 0.20, 0.20, 0.20, s16.quantum_superposition, s16.quantum_coherence, s16.quantum_interference, s16.quantum_collapse_prob);
+
+        const s17_converged: u8 = if (s17.convergence_step != null) 1 else 0;
+        try writeTimeline(s17.timeline, "S17", allocator, csv_file, s17_converged, 80.0 * 300.0, 15000, 90, 0.25, 0.0, s17.kill_threshold, 0.50, 0.30, 0.20, s17.quantum_superposition, s17.quantum_coherence, s17.quantum_interference, s17.quantum_collapse_prob);
+
+        const s18_converged: u8 = if (s18.convergence_step != null) 1 else 0;
+        try writeTimeline(s18.timeline, "S18", allocator, csv_file, s18_converged, 120.0 * 400.0, 18000, 120, 0.30, 0.02, s18.kill_threshold, 0.60, 0.25, 0.15, s18.quantum_superposition, s18.quantum_coherence, s18.quantum_interference, s18.quantum_collapse_prob);
+
+        const s19_converged: u8 = if (s19.convergence_step != null) 1 else 0;
+        try writeTimeline(s19.timeline, "S19", allocator, csv_file, s19_converged, 50.0 * 200.0, 12000, 50, 0.15, 0.02, s19.kill_threshold, 0.80, 0.0, 0.0, s19.quantum_superposition, s19.quantum_coherence, s19.quantum_interference, s19.quantum_collapse_prob);
+
+        const s20_converged: u8 = if (s20.convergence_step != null) 1 else 0;
+        try writeTimeline(s20.timeline, "S20", allocator, csv_file, s20_converged, 60.0 * 200.0, 12000, 60, 0.15, 0.02, s20.kill_threshold, 0.60, 0.20, 0.20, s20.quantum_superposition, s20.quantum_coherence, s20.quantum_interference, s20.quantum_collapse_prob);
 
         print("{s}CSV written to {s}{s}\n", .{ CYAN, RESET, csv_path });
     }
