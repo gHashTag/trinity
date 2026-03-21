@@ -122,6 +122,50 @@ public enum ParietalSpacing {
     /// Avatar frame height - 28pt
     public static let avatarFrameHeight: CGFloat = 28
 
+    // MARK: - Additional Corner Radius Values
+
+    /// Extra small corner radius - 1.5pt
+    public static let cornerRadiusXSmall: CGFloat = 1.5
+
+    /// Tiny corner radius - 2pt
+    public static let cornerRadiusTiny: CGFloat = 2
+
+    /// Small corner radius - 5pt
+    public static let cornerRadiusSmall: CGFloat = 5
+
+    /// Medium corner radius - 6pt
+    public static let cornerRadiusMedium: CGFloat = 6
+
+    /// Large corner radius - 8pt
+    public static let cornerRadiusLarge: CGFloat = 8
+
+    // MARK: - Frame Constraint Tokens
+
+    /// Frame width zero - 0pt (for hiding)
+    public static let frameWidthZero: CGFloat = 0
+
+    /// Frame height tiny - 6pt
+    public static let frameHeightTiny: CGFloat = 6
+
+    /// Frame height small - 12pt
+    public static let frameHeightSmall: CGFloat = 12
+
+    /// Frame height medium - 100pt
+    public static let frameHeightMedium: CGFloat = 100
+
+    /// Frame height large - 120pt
+    public static let frameHeightLarge: CGFloat = 120
+
+    /// Frame height XL - 160pt
+    public static let frameHeightXL: CGFloat = 160
+
+    /// Frame height XXL - 180pt
+    public static let frameHeightXXL: CGFloat = 180
+
+    /// Frame height XXXL - 300pt
+    public static let frameHeightXXXL: CGFloat = 300
+}
+
     // MARK: - Component-Specific Spacing
 
     /// Horizontal padding for buttons
