@@ -666,11 +666,41 @@ pub fn runEventStreamCommand(allocator: std.mem.Allocator, args: []const []const
 /// Task Claim Command - Async task claiming
 /// UI Command - UI commands
 /// Usage: tri ui <subcommand> [args]
+/// Queen UI Command - Launch Queen UI (Swift app)
+/// Usage: tri ui
 pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
     _ = args;
-    std.debug.print("{s}⚠️  ui: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Use: tri ui [build|kill|launch]\n", .{});
+
+    const queen_dir = "apps/queen";
+
+    // Kill any running swift processes
+    std.debug.print("{s}🔄 Killing existing swift processes...{s}\n", .{ CYAN, RESET });
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "pkill", "-f", "swift-frontend" },
+    }) catch |err| {
+        // pkill may fail if no processes found - that's OK
+        std.debug.print("{s}info: pkill: {s}{s}\n", .{ GRAY, @errorName(err), RESET });
+    };
+
+    // Wait a moment for processes to terminate
+    std.Thread.sleep(100_000_000); // 100ms
+
+    // Run swift run
+    std.debug.print("{s}🚀 Launching Queen UI...{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}  Directory: {s}{s}\n", .{ GRAY, queen_dir, RESET });
+    std.debug.print("{s}  Command: swift run &{s}\n\n", .{ GRAY, RESET });
+
+    // Run in background via shell
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "sh", "-c", "cd apps/queen && swift run &" },
+    }) catch |err| {
+        std.debug.print("{s}⚠️  Launch command returned: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
+    };
+
+    std.debug.print("{s}✅ Queen UI launched in background{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}💡 Monitor with: ps aux | grep Queen{s}\n", .{ YELLOW, RESET });
 }
 
 /// Task Claim Command - Claim tasks from brain task queue
