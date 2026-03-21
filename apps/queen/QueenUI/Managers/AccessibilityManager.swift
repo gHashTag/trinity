@@ -9,7 +9,7 @@ public final class AccessibilityManager: ObservableObject {
 
     // MARK: - Singleton
 
-    public static let shared = AccessibilityManager()
+        public static let shared = AccessibilityManager()
 
     private init() {
         loadPreferences()
