@@ -11,13 +11,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MOCK IMPLEMENTATIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const MockHippocampus = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     workers: std.StringHashMap(WorkerState),
     last_refresh: i64,
 
@@ -28,7 +29,7 @@ const MockHippocampus = struct {
         last_updated: i64,
     };
 
-    pub fn init(allocator: std.mem.Allocator) MockHippocampus {
+    pub fn init(allocator: Allocator) MockHippocampus {
         return .{
             .allocator = allocator,
             .workers = std.StringHashMap(WorkerState).init(allocator),
@@ -89,16 +90,18 @@ const MockHippocampus = struct {
 };
 
 const MockThalamus = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     workers: std.StringHashMap(LiveState),
 
+    const Status = enum { training, stalled, has_error, unknown };
+
     const LiveState = struct {
-        status: enum { training, stalled, has_error, unknown },
+        status: Status,
         step: u32,
         ppl: f32,
     };
 
-    pub fn init(allocator: std.mem.Allocator) MockThalamus {
+    pub fn init(allocator: Allocator) MockThalamus {
         return .{
             .allocator = allocator,
             .workers = std.StringHashMap(LiveState).init(allocator),
@@ -113,7 +116,7 @@ const MockThalamus = struct {
         self.workers.deinit();
     }
 
-    pub fn setWorker(self: *MockThalamus, service_name: []const u8, status: LiveState, step: u32, ppl: f32) !void {
+    pub fn setWorker(self: *MockThalamus, service_name: []const u8, step: u32, ppl: f32, status: LiveState.Status) !void {
         const key = try self.allocator.dupe(u8, service_name);
         const value = LiveState{
             .status = status,
@@ -129,7 +132,7 @@ const MockThalamus = struct {
 };
 
 const MockACC = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     conflicts: std.ArrayList(Conflict),
     max_cache_age_sec: i64 = 300,
 
@@ -140,10 +143,10 @@ const MockACC = struct {
         message: []const u8,
     };
 
-    pub fn init(allocator: std.mem.Allocator) MockACC {
+    pub fn init(allocator: Allocator) MockACC {
         return .{
             .allocator = allocator,
-            .conflicts = std.ArrayList(Conflict).init(allocator),
+            .conflicts = std.ArrayList(Conflict).initCapacity(allocator, 0) catch unreachable,
         };
     }
 
@@ -152,7 +155,7 @@ const MockACC = struct {
             self.allocator.free(conflict.service_name);
             self.allocator.free(conflict.message);
         }
-        self.conflicts.deinit();
+        self.conflicts.deinit(self.allocator);
     }
 
     pub fn detectConflicts(self: *MockACC, hippocampus: *const MockHippocampus, thalamus: *const MockThalamus) !usize {
@@ -171,7 +174,7 @@ const MockACC = struct {
                     .severity = if (cache_age > self.max_cache_age_sec * 2) .critical else .warning,
                     .message = try std.fmt.allocPrint(self.allocator, "Cache stale for {s} (age={d}s)", .{ service_name, cache_age }),
                 };
-                try self.conflicts.append(allocator, conflict);
+                try self.conflicts.append(self.allocator, conflict);
                 conflict_count += 1;
             }
 
@@ -186,7 +189,7 @@ const MockACC = struct {
                         .severity = .critical,
                         .message = try std.fmt.allocPrint(self.allocator, "Cache says stalled but live says training for {s}", .{service_name}),
                     };
-                    try self.conflicts.append(allocator, conflict);
+                    try self.conflicts.append(self.allocator, conflict);
                     conflict_count += 1;
                 }
             }
@@ -220,7 +223,7 @@ const MockACC = struct {
 };
 
 const MockBasalGanglia = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     executed_actions: std.ArrayList(Action),
 
     const ActionType = enum { habit, trigger, reward, suppress };
@@ -231,10 +234,10 @@ const MockBasalGanglia = struct {
         timestamp: i64,
     };
 
-    pub fn init(allocator: std.mem.Allocator) MockBasalGanglia {
+    pub fn init(allocator: Allocator) MockBasalGanglia {
         return .{
             .allocator = allocator,
-            .executed_actions = std.ArrayList(Action).init(allocator),
+            .executed_actions = std.ArrayList(Action).initCapacity(allocator, 0) catch unreachable,
         };
     }
 
@@ -242,7 +245,7 @@ const MockBasalGanglia = struct {
         for (self.executed_actions.items) |action| {
             self.allocator.free(action.service_name);
         }
-        self.executed_actions.deinit();
+        self.executed_actions.deinit(self.allocator);
     }
 
     pub fn executeAction(self: *MockBasalGanglia, service_name: []const u8, action_type: ActionType) !void {
@@ -251,7 +254,7 @@ const MockBasalGanglia = struct {
             .service_name = try self.allocator.dupe(u8, service_name),
             .timestamp = std.time.timestamp(),
         };
-        try self.executed_actions.append(allocator, action);
+        try self.executed_actions.append(self.allocator, action);
     }
 
     pub fn hasConflict(self: *const MockBasalGanglia, service_name: []const u8) bool {
@@ -269,12 +272,12 @@ const MockBasalGanglia = struct {
 };
 
 const MockAmygdala = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     threats: std.StringHashMap(ThreatLevel),
 
     const ThreatLevel = enum { none, low, medium, high, critical };
 
-    pub fn init(allocator: std.mem.Allocator) MockAmygdala {
+    pub fn init(allocator: Allocator) MockAmygdala {
         return .{
             .allocator = allocator,
             .threats = std.StringHashMap(ThreatLevel).init(allocator),
@@ -326,7 +329,7 @@ const MockAmygdala = struct {
 };
 
 const MockLocusCoeruleus = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     alarms: std.ArrayList(Alarm),
     arousal_level: u8 = 0,
 
@@ -338,10 +341,10 @@ const MockLocusCoeruleus = struct {
         timestamp: i64,
     };
 
-    pub fn init(allocator: std.mem.Allocator) MockLocusCoeruleus {
+    pub fn init(allocator: Allocator) MockLocusCoeruleus {
         return .{
             .allocator = allocator,
-            .alarms = std.ArrayList(Alarm).init(allocator),
+            .alarms = std.ArrayList(Alarm).initCapacity(allocator, 0) catch unreachable,
             .arousal_level = 0,
         };
     }
@@ -350,7 +353,7 @@ const MockLocusCoeruleus = struct {
         for (self.alarms.items) |alarm| {
             self.allocator.free(alarm.service_name);
         }
-        self.alarms.deinit();
+        self.alarms.deinit(self.allocator);
     }
 
     pub fn triggerAlarm(self: *MockLocusCoeruleus, service_name: []const u8, severity: Severity) !void {
@@ -359,7 +362,7 @@ const MockLocusCoeruleus = struct {
             .severity = severity,
             .timestamp = std.time.timestamp(),
         };
-        try self.alarms.append(allocator, alarm);
+        try self.alarms.append(self.allocator, alarm);
         self.arousal_level = if (severity == .critical) 3 else if (severity == .warning) 2 else 1;
     }
 
@@ -393,7 +396,7 @@ test "integration_acc_basal_conflict_detection" {
 
     const service_name = "worker-001";
     try hippocampus.saveWorker(service_name, 1000, 5.0);
-    try thalamus.setWorker(service_name, .{ .status = .training, .step = 5000, .ppl = 4.0 });
+    try thalamus.setWorker(service_name, .{ .status = .training }, 5000, 4.0);
 
     const conflict_count = try acc.detectConflicts(&hippocampus, &thalamus);
     try std.testing.expectEqual(@as(usize, 1), conflict_count);
@@ -450,7 +453,7 @@ test "integration_acc_basal_full_decision_cycle" {
     const service_name = "worker-003";
 
     try hippocampus.saveWorker(service_name, 1000, 6.0);
-    try thalamus.setWorker(service_name, .{ .status = .stalled, .step = 5000, .ppl = 6.0 });
+    try thalamus.setWorker(service_name, .{ .status = .stalled }, 5000, 6.0);
 
     const conflicts_before = try acc.detectConflicts(&hippocampus, &thalamus);
     try std.testing.expectEqual(@as(usize, 1), conflicts_before);
@@ -489,7 +492,7 @@ test "integration_acc_basal_no_duplicate_actions" {
     const service_name = "worker-no-dup";
 
     try hippocampus.saveWorker(service_name, 1000, 8.0);
-    try thalamus.setWorker(service_name, .{ .status = .training, .step = 5000, .ppl = 8.0 });
+    try thalamus.setWorker(service_name, .{ .status = .training }, 5000, 8.0);
 
     try bg.executeAction(service_name, .habit);
     try bg.executeAction(service_name, .habit);
@@ -660,7 +663,7 @@ test "integration_locus_alarm_propagation_latency" {
     try lc.triggerAlarm("worker-c", .critical);
 
     const end = std.time.nanoTimestamp();
-    const elapsed_ms = @as(u64, @intCast((end - start) / 1_000_000));
+    const elapsed_ms = @as(u64, @intFromInt((end - start) / 1_000_000));
 
     try std.testing.expectEqual(@as(usize, 3), lc.getAlarmCount());
     try std.testing.expect(elapsed_ms < 100);
@@ -1079,7 +1082,7 @@ test "integration_full_brain_decision_cycle_end_to_end" {
 
     try hippocampus.saveWorker(service_name, 5000, 6.0);
 
-    try thalamus.setWorker(service_name, .{ .status = .training, .step = 7000, .ppl = 6.5 });
+    try thalamus.setWorker(service_name, .{ .status = .training }, 7000, 6.5);
 
     const conflicts = try acc.detectConflicts(&hippocampus, &thalamus);
     try std.testing.expect(conflicts >= 1);
