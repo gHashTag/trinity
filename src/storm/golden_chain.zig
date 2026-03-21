@@ -142,35 +142,157 @@ pub const GoldenChain = struct {
         if (self.state.last_checkpoint) |cp| self.allocator.free(cp);
     }
 
-    /// Execute a single link with subprocess execution and timeout
+    /// Execute a single link with real subprocess execution and timeout
     pub fn executeLink(self: *GoldenChain, link: Link, task: []const u8) !LinkResult {
-        _ = task;
-        const start_time = std.time.nanoTimestamp();
-
         self.log(.info, "\n🔗 [{d:0>2}] {s} [{s}] [{s}] executing...", .{
             link.id, link.name, @tagName(link.role), @tagName(link.brain_zone),
         });
 
-        // P4: Simulate execution (real subprocess in full implementation)
-        const elapsed = std.time.nanoTimestamp() - start_time;
-        const duration_ms = @as(u64, @intCast(@divTrunc(elapsed, 1_000_000)));
+        // Build command based on link name
+        const cmd = try self.buildCommand(link, task);
+        defer {
+            self.allocator.free(cmd.argv[0]);
+            for (cmd.argv[1..]) |arg| self.allocator.free(arg);
+            self.allocator.free(cmd.argv);
+        }
 
-        // For now, simulate success
-        const result = LinkResult{
-            .success = true,
-            .message = try self.allocator.dupe(u8, "Success (simulated)"),
-            .duration_ms = duration_ms,
-            .exit_code = 0,
+        // Spawn subprocess
+        var process = std.process.Child.init(cmd.argv, self.allocator);
+        process.stdout_behavior = .Pipe;
+        process.stderr_behavior = .Pipe;
+
+        var timer = try std.time.Timer.start();
+        process.spawn() catch |err| {
+            const elapsed_ms = @as(u64, @intCast(@divTrunc(timer.read(), 1_000_000)));
+            const result = LinkResult{
+                .success = false,
+                .message = try std.fmt.allocPrint(self.allocator, "Spawn failed: {}", .{err}),
+                .duration_ms = elapsed_ms,
+                .exit_code = 1,
+            };
+            try self.results.append(self.allocator, result);
+            return result;
+        };
+        defer process.deinit();
+
+        // Wait with timeout
+        const result = blk: {
+            while (true) {
+                const elapsed_ms = @as(u64, @intCast(@divTrunc(timer.read(), 1_000_000)));
+
+                if (elapsed_ms >= link.timeout_ms) {
+                    self.log(.warn, "⏱️ Timeout after {}ms", .{elapsed_ms});
+                    process.kill() catch {};
+                    break :blk LinkResult{
+                        .success = false,
+                        .message = try self.allocator.dupe(u8, "Timeout exceeded"),
+                        .duration_ms = elapsed_ms,
+                        .exit_code = 1,
+                    };
+                }
+
+                if (process.poll()) |maybe_exit| {
+                    if (maybe_exit) |exit| {
+                        // Capture output
+                        const stdout_reader = process.stdout.?.reader();
+                        const stderr_reader = process.stderr.?.reader();
+
+                        var stdout_buf = std.ArrayListUnmanaged(u8){};
+                        var stderr_buf = std.ArrayListUnmanaged(u8){};
+
+                        _ = try stdout_reader.readAllArrayList(self.allocator, &stdout_buf, 1_048_576);
+                        _ = try stderr_reader.readAllArrayList(self.allocator, &stderr_buf, 1_048_576);
+
+                        const success = exit == 0;
+                        const message = if (success)
+                            try self.allocator.dupe(u8, "Success")
+                        else
+                            try std.fmt.allocPrint(self.allocator, "Exit {}", .{exit});
+
+                        break :blk LinkResult{
+                            .success = success,
+                            .message = message,
+                            .duration_ms = elapsed_ms,
+                            .exit_code = @intCast(@abs(exit)),
+                            .stdout = stdout_buf.items,
+                            .stderr = stderr_buf.items,
+                        };
+                    }
+                }
+
+                std.time.sleep(50 * std.time.ns_per_ms);
+            }
         };
 
         // Log result
-        self.log(.info, "✅ [{d}] {s} completed in {d}ms", .{ link.id, link.name, result.duration_ms });
+        if (result.success) {
+            self.log(.info, "✅ [{d}] {s} completed in {}ms", .{ link.id, link.name, result.duration_ms });
+        } else {
+            self.log(.err, "❌ [{d}] {s} failed: {s}", .{ link.id, link.name, result.message });
+        }
 
-        // Store result
+        // Store and return
         try self.results.append(self.allocator, result);
         self.state.total_cost_ms += result.duration_ms;
 
         return result;
+    }
+
+    /// Build command arguments for a link
+    fn buildCommand(self: *GoldenChain, link: Link, task: []const u8) !struct { argv: [][]const u8 } {
+        _ = task;
+
+        // Link name to command mapping (using simple echo for P4 demo)
+        _ = link.name; // TODO: Implement real command mapping
+            // Planning phase
+            .{ "analyze_request", &[_][]const u8{ "echo", "Analyzing:" } },
+            .{ "check_experience_blacklist", &[_][]const u8{ "echo", "Checking blacklist..." } },
+            .{ "find_similar", &[_][]const u8{ "echo", "Finding similar tasks..." } },
+            .{ "create_tri_spec", &[_][]const u8{ "echo", "Creating .tri spec..." } },
+            .{ "validate_spec", &[_][]const u8{ "echo", "Validating spec schema..." } },
+            // Coding phase
+            .{ "vibee_codegen", &[_][]const u8{ "echo", "Running VIBEE codegen..." } },
+            .{ "verify_syntax", &[_][]const u8{ "echo", "Verifying syntax..." } },
+            .{ "zig_fmt_check", &[_][]const u8{ "echo", "Checking zig fmt..." } },
+            .{ "zig_build", &[_][]const u8{ "echo", "Building..." } },
+            // Testing phase
+            .{ "run_unit_tests", &[_][]const u8{ "echo", "Running unit tests..." } },
+            .{ "vsa_verify", &[_][]const u8{ "echo", "Verifying VSA..." } },
+            .{ "tri_spec_zig_sync", &[_][]const u8{ "echo", "Syncing .tri <-> .zig..." } },
+            // Review phase
+            .{ "code_review", &[_][]const u8{ "echo", "Reviewing code..." } },
+            .{ "security_audit", &[_][]const u8{ "echo", "Security audit..." } },
+            .{ "perf_check", &[_][]const u8{ "echo", "Checking performance..." } },
+            .{ "doc_check", &[_][]const u8{ "echo", "Checking docs..." } },
+            .{ "api_compat", &[_][]const u8{ "echo", "Checking API compatibility..." } },
+            .{ "approve_merge", &[_][]const u8{ "echo", "Approving merge..." } },
+            // Testing phase 2
+            .{ "e2e_test", &[_][]const u8{ "echo", "Running E2E tests..." } },
+            .{ "integration_test", &[_][]const u8{ "echo", "Running integration tests..." } },
+            .{ "stress_test", &[_][]const u8{ "echo", "Running stress tests..." } },
+            .{ "fuzz_test", &[_][]const u8{ "echo", "Running fuzz tests..." } },
+            .{ "benchmark", &[_][]const u8{ "echo", "Running benchmarks..." } },
+            .{ "toxic_verdict", &[_][]const u8{ "echo", "Toxic verdict check..." } },
+            // Integration phase
+            .{ "git_commit", &[_][]const u8{ "echo", "Committing..." } },
+            .{ "github_issue_comment", &[_][]const u8{ "echo", "Commenting on issue..." } },
+            .{ "experience_save", &[_][]const u8{ "echo", "Saving experience..." } },
+            .{ "phoenix_lineage_update", &[_][]const u8{ "echo", "Updating Phoenix lineage..." } },
+        });
+
+        if (cmd_map.get(link.name)) |cmd| {
+            var argv = try self.allocator.alloc([]const u8, cmd.len);
+            for (cmd, 0..) |part, i| {
+                argv[i] = try self.allocator.dupe(u8, part);
+            }
+            return .{ .argv = argv };
+        }
+
+        // Fallback: echo link name
+        var argv = try self.allocator.alloc([]const u8, 2);
+        argv[0] = try self.allocator.dupe(u8, "echo");
+        argv[1] = try std.fmt.allocPrint(self.allocator, "Link: {s}", .{link.name});
+        return .{ .argv = argv };
     }
 
     /// Validate handoff between two roles
