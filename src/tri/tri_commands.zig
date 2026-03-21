@@ -303,21 +303,11 @@ fn runBrainStateRecoveryCommand(allocator: std.mem.Allocator, args: []const []co
 
 /// Brain Health Check - Shows status of all brain regions (implemented elsewhere)
 /// Usage: tri brain health
-// Note: Implementation moved to avoid duplicate
-// pub fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-
-    var i: usize = 0;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--json")) {
-            output_json = true;
-        } else if (std.mem.eql(u8, args[i], "--help") or std.mem.eql(u8, args[i], "-h")) {
-            std.debug.print("Brain Health Check:\n", .{});
-            std.debug.print("  tri brain health [--json]\n", .{});
-            std.debug.print("\nOptions:\n", .{});
-            std.debug.print("  --json  Output in JSON format\n", .{});
-            return;
-        }
-    }
+fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  brain health: TODO - not implemented yet\n", .{});
+}
 
     const RegionStatus = enum {
         healthy,

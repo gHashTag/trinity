@@ -99,6 +99,10 @@ pub const visualization = @import("visualization");
 /// Parallel evolution scenarios: baseline, current, multi-objective, dePIN
 pub const evolution_simulation = @import("evolution_simulation");
 
+/// SEBO — Sacred Evolutionary Bayesian Optimization
+/// Multi-objective hyperparameter optimization using Sacred constants as priors
+pub const sebo = @import("sebo");
+
 /// Performance Dashboard (Unified Performance Monitoring)
 /// Real-time performance tracking, SLA monitoring, comparison reports, sparklines
 pub const perf_dashboard = @import("perf_dashboard");

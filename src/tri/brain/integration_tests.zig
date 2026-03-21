@@ -9,21 +9,195 @@
 // - Safety verification workflows
 // - Edge cases and boundary conditions
 //
+// NOTE: These tests use simplified mock types to avoid Railway API dependency.
+// For full integration tests with Railway, see the main test suite.
+//
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// Import types from respective modules
-const LiveStatus = @import("thalamus_logs.zig").LiveStatus;
-const CachedWorkerStatus = @import("hippocampus_training.zig").CachedWorkerStatus;
-const ConflictType = @import("anterior_cingulate.zig").ConflictType;
-const SafetyVerdict = @import("anterior_cingulate.zig").SafetyVerdict;
-const Action = @import("anterior_cingulate.zig").Action;
-const HealthStatus = @import("anterior_cingulate.zig").HealthStatus;
+// ═══════════════════════════════════════════════════════════════════════════
+// TYPE DEFINITIONS (simplified for isolated testing)
+// ═══════════════════════════════════════════════════════════════════════════════
 
-const WorkerLiveState = @import("thalamus_logs.zig").WorkerLiveState;
+/// Live status from Railway logs (source of truth!)
+const LiveStatus = enum {
+    training,
+    stalled,
+    has_error,
+    building,
+    not_found,
+    unknown,
+
+    pub fn toString(self: LiveStatus) []const u8 {
+        return switch (self) {
+            .training => "TRAINING",
+            .stalled => "stalled (no recent logs)",
+            .has_error => "ERROR - needs restart",
+            .building => "BUILDING",
+            .not_found => "NOT FOUND",
+            .unknown => "UNKNOWN",
+        };
+    }
+
+    pub fn icon(self: LiveStatus) []const u8 {
+        return switch (self) {
+            .training => "✅",
+            .stalled => "⏸️",
+            .has_error => "❌",
+            .building => "🔄",
+            .not_found => "❓",
+            .unknown => "❔",
+        };
+    }
+};
+
+/// Worker metrics from live logs
+const WorkerMetrics = struct {
+    step: u32 = 0,
+    ppl: f32 = 0,
+    tok_per_sec: f32 = 0,
+    loss: f32 = 0,
+    last_seen_sec: i64 = 0, // UNIX timestamp
+};
+
+/// Full worker live state (from Thalamus)
+const WorkerLiveState = struct {
+    status: LiveStatus = .unknown,
+    metrics: WorkerMetrics = .{},
+    is_building: bool = false,
+    has_error: bool = false,
+    is_training: bool = false,
+    fresh: bool = false,
+};
+
+/// Cached worker status (may be stale!)
+const CachedWorkerStatus = struct {
+    service_name: []const u8,
+    status: LiveStatus,
+    step: u32,
+    ppl: f32,
+    tok_per_sec: f32,
+    last_updated: i64, // UNIX timestamp when cache was updated
+    cached: bool = true, // Flag indicating this is cache, NOT live truth
+
+    pub fn ageSec(self: *const CachedWorkerStatus) i64 {
+        const now = std.time.timestamp();
+        return now - self.last_updated;
+    }
+
+    pub fn isStale(self: *const CachedWorkerStatus, max_age_sec: i64) bool {
+        return self.ageSec() > max_age_sec;
+    }
+};
+
+/// Conflict types detected by ACC
+const ConflictType = enum {
+    stale_cache,
+    ghost_worker,
+    zombie_worker,
+    status_mismatch,
+    metrics_mismatch,
+    missing_metadata,
+
+    pub fn toString(self: ConflictType) []const u8 {
+        return switch (self) {
+            .stale_cache => "stale_cache",
+            .ghost_worker => "ghost_worker",
+            .zombie_worker => "zombie_worker",
+            .status_mismatch => "status_mismatch",
+            .metrics_mismatch => "metrics_mismatch",
+            .missing_metadata => "missing_metadata",
+        };
+    }
+};
+
+/// Severity levels for conflicts
+const Severity = enum {
+    info,
+    warning,
+    critical,
+
+    pub fn toString(self: Severity) []const u8 {
+        return switch (self) {
+            .info => "INFO",
+            .warning => "WARNING",
+            .critical => "CRITICAL",
+        };
+    }
+};
+
+/// Actions that can be taken on workers
+const Action = enum {
+    kill_worker,
+    restart_worker,
+    evolve_step,
+    inject_config,
+    enable_night_mode,
+    disable_night_mode,
+
+    pub fn toString(self: Action) []const u8 {
+        return switch (self) {
+            .kill_worker => "kill",
+            .restart_worker => "restart",
+            .evolve_step => "evolve",
+            .inject_config => "inject",
+            .enable_night_mode => "enable_night",
+            .disable_night_mode => "disable_night",
+        };
+    }
+};
+
+/// Safety verdict for actions
+const SafetyVerdict = enum {
+    safe,
+    unsafe,
+    needs_verification,
+
+    pub fn toString(self: SafetyVerdict) []const u8 {
+        return switch (self) {
+            .safe => "SAFE",
+            .unsafe => "UNSAFE - BLOCKED",
+            .needs_verification => "NEEDS LIVE VERIFICATION",
+        };
+    }
+
+    pub fn icon(self: SafetyVerdict) []const u8 {
+        return switch (self) {
+            .safe => "✅",
+            .unsafe => "🚫",
+            .needs_verification => "⏳",
+        };
+    }
+};
+
+/// Health status for cache
+const HealthStatus = enum {
+    healthy,
+    recovering,
+    infected,
+    critical,
+
+    pub fn toString(self: HealthStatus) []const u8 {
+        return switch (self) {
+            .healthy => "HEALTHY",
+            .recovering => "RECOVERING",
+            .infected => "INFECTED",
+            .critical => "CRITICAL",
+        };
+    }
+
+    pub fn icon(self: HealthStatus) []const u8 {
+        return switch (self) {
+            .healthy => "💚",
+            .recovering => "🏥",
+            .infected => "🦠",
+            .critical => "🚨",
+        };
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MOCK HIPPOCAMPUS - Simulates cached training state for testing
@@ -67,10 +241,10 @@ const TestHippocampus = struct {
 
     /// Get all cached workers (for ACC conflict detection)
     pub fn getAllCachedWorkers(self: *const Self) !std.ArrayList(CachedWorkerStatus) {
-        var list = std.ArrayList(CachedWorkerStatus).init(self.allocator);
+        var list = try std.ArrayList(CachedWorkerStatus).initCapacity(self.allocator, 10);
         var iter = self.workers.iterator();
         while (iter.next()) |entry| {
-            list.append(entry.value_ptr.*) catch {};
+            try list.append(self.allocator, entry.value_ptr.*);
         }
         return list;
     }
