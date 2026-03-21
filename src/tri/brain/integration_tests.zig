@@ -1150,7 +1150,6 @@ test "integration_stress_test_edge_cases" {
     try std.testing.expect(zero_loaded != null);
     try std.testing.expectEqual(@as(u32, 0), zero_loaded.?.step);
 }
-}
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // ADDITIONAL INTEGRATION TESTS
