@@ -13,8 +13,10 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const hippocampus = @import("hippocampus.zig");
 const voice_engine = @import("voice_engine.zig");
+const queen_ofc = @import("queen_ofc.zig");
 
 // Mood state (temporary - should be unified with OFC)
+// NOTE: This enum is deprecated. Use queen_ofc.Mood for all mood operations.
 pub const Mood = enum {
     calm,
     focused,
@@ -32,6 +34,23 @@ pub const Mood = enum {
         };
     }
 };
+
+// Mood System Mapping
+// ==================
+// The amygdala has its own internal Mood enum (focused/agitated/tired) for
+// tracking emotional processing state. However, when communicating with the
+// OFC (Orbitofrontal Cortex), we use queen_ofc.Mood which has the
+// canonical mood states for the system: {calm, alert, alarm, euphoria}.
+//
+// This separation allows amygdala to have nuanced internal state while
+// exposing a simplified interface to the rest of the Queen system.
+//
+// Mapping (internal → OFC):
+//   calm   → calm
+//   focused → calm (focused work is healthy)
+//   agitated → alert (needs attention)
+//   excited → euphoria (positive high arousal)
+//   tired → alarm (resource depletion)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EMOTION — Basic emotion types
@@ -329,11 +348,12 @@ pub fn extinguish(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Modulate OFC mood based on emotional context
+/// Returns queen_ofc.Mood for integration with Queen system
 pub fn modulateMood(
     allocator: Allocator,
-    base_mood: Mood,
+    base_mood: queen_ofc.Mood,
     context: []const u8,
-) !Mood {
+) !queen_ofc.Mood {
     // Check for recent fear associations
     var results = try hippocampus.read(allocator, .{
         .tag_filter = "emo:fear",
