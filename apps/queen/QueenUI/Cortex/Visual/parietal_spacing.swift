@@ -78,6 +78,28 @@ public enum ParietalSpacing {
     /// Vertical padding for buttons
     public static let buttonVertical: CGFloat = xs
 
+    // MARK: - Icon Sizes
+    public static let smallIconFrame: CGFloat = 16
+    public static let icon: CGFloat = 20
+
+    // MARK: - Button Sizes
+    public static let smallButtonHeight: CGFloat = 28
+
+    // MARK: - Touch Sizes
+    public static let touchFrame: CGFloat = 44
+
+    // MARK: - Avatar Sizes
+    public static let avatarSmall: CGFloat = 24
+
+    // MARK: - Sheet Widths
+    public static let wideSheetWidth: CGFloat = 600
+
+    // MARK: - Screen Frame Sizes
+    public static let largeScreenFrame: CGFloat = 120
+
+    // MARK: - Micro Height
+    public static let microHeight: CGFloat = 4
+
     /// Horizontal padding for inputs
     public static let inputHorizontal: CGFloat = sm
 
