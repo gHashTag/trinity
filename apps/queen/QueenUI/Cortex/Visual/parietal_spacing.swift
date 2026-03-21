@@ -27,6 +27,9 @@ public enum ParietalSpacing {
     /// Extra extra extra extra small spacing - 1pt (micro spacing)
     public static let xxxxs: CGFloat = 1
 
+    /// Alias for xxxxs - xxxfs (alternative naming)
+    public static let xxxfs: CGFloat = 1
+
     /// Extra small spacing - 8pt
     public static let xs: CGFloat = 8
 
