@@ -27,6 +27,10 @@ struct QueenApp: App {
                     // Start server after app finishes launching
                     server.startIfPuppetMode()
                 }
+            // Always show AutomationOverlay for GUI mode
+                .onAppear {
+                    AutomationOverlay()
+                }
         }
         .windowStyle(.titleBar)
         .commands {
