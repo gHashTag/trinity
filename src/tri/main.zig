@@ -654,7 +654,7 @@ pub fn main() !void {
             try commands.runBenchCommandInternal(allocator)
         else
             try commands.runBenchCommandAsync(allocator, cmd_args),
-        .evolve => try commands.runEvolutionCommand(cmd_args),
+        .evolve => try commands.runBrainSimulateCommand(allocator, cmd_args),
         // Git commands
         .commit => try commands.runGitCommand(allocator, "commit", cmd_args),
         .diff => try commands.runGitCommand(allocator, "diff", cmd_args),
