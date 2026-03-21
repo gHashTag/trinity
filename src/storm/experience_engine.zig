@@ -123,13 +123,67 @@ pub const ExperienceEngine = struct {
         return false;
     }
 
-    /// Record failure → blacklist after 3rd
+    /// Record failure → blacklist after 3rd (P11: Full implementation)
     pub fn recordFailure(ee: *ExperienceEngine, task: []const u8, error_msg: []const u8) !void {
-        _ = ee;
-        _ = error_msg;
-        // For P10, simplify to just log the failure
-        // Full blacklist management in P11
-        std.log.warn("MNL: Recording failure for '{s}'", .{task});
+        // Load current blacklist
+        var blacklist = try ee.loadBlacklist();
+        defer {
+            // Cleanup old entries
+            for (blacklist.entries) |entry| {
+                ee.allocator.free(entry.task);
+                if (entry.last_error.len > 0) ee.allocator.free(entry.last_error);
+            }
+            ee.allocator.free(blacklist.entries);
+        }
+
+        // Find existing entry or create new one
+        var found_index: ?usize = null;
+        for (blacklist.entries, 0..) |entry, i| {
+            if (std.mem.eql(u8, entry.task, task)) {
+                found_index = i;
+                break;
+            }
+        }
+
+        const timestamp = std.time.timestamp();
+
+        if (found_index) |idx| {
+            // Update existing entry
+            blacklist.entries[idx].count +|= 1; // Saturation add
+            blacklist.entries[idx].timestamp = timestamp;
+            // Free old error message
+            if (blacklist.entries[idx].last_error.len > 0) {
+                ee.allocator.free(blacklist.entries[idx].last_error);
+            }
+            blacklist.entries[idx].last_error = try ee.allocator.dupe(u8, error_msg);
+        } else {
+            // Create new entry
+            const new_entry = FailureRecord{
+                .task = try ee.allocator.dupe(u8, task),
+                .count = 1,
+                .last_error = try ee.allocator.dupe(u8, error_msg),
+                .timestamp = timestamp,
+            };
+
+            // Allocate new array with one more element
+            const new_entries = try ee.allocator.alloc(FailureRecord, blacklist.entries.len + 1);
+            @memcpy(new_entries[0..blacklist.entries.len], blacklist.entries);
+            new_entries[blacklist.entries.len] = new_entry;
+            blacklist.entries = new_entries;
+        }
+
+        blacklist.last_updated = timestamp;
+
+        // Save updated blacklist
+        try ee.saveBlacklist(&blacklist);
+
+        // Log warning/blacklist status
+        const entry_count = if (found_index) |idx| blacklist.entries[idx].count else 1;
+        if (entry_count >= 3) {
+            std.log.warn("🚫 MNL: Task '{s}' BLACKLISTED (3+ failures)", .{task});
+        } else {
+            std.log.warn("⚠️ MNL: Task '{s}' failure #{d}: {s}", .{ task, entry_count, error_msg });
+        }
     }
 
     /// Save episode with learnings
@@ -151,12 +205,12 @@ pub const ExperienceEngine = struct {
         // Ensure episodes directory exists
         std.fs.cwd().makePath(ee.experience_dir ++ "episodes/") catch {};
 
-        // Serialize episode to JSON using std.json.stringify
-        const episode_json = try std.json.stringifyAlloc(ee.allocator, episode);
-        defer ee.allocator.free(episode_json);
+        // Serialize episode to JSON using std.json.Stringify.valueAlloc (Zig 0.15 API)
+        const json_str = try std.json.Stringify.valueAlloc(ee.allocator, episode, .{});
+        defer ee.allocator.free(json_str);
 
         // Write to file
-        try file.writeAll(episode_json);
+        try file.writeAll(json_str.items);
 
         std.debug.print("💾 Episode saved: {s}\n", .{filename});
     }
@@ -193,12 +247,12 @@ pub const ExperienceEngine = struct {
         const file = try std.fs.cwd().createFile(ee.blacklist_file, .{ .read = true });
         defer file.close();
 
-        // Serialize to JSON using std.json.stringify
-        const json_str = try std.json.stringifyAlloc(ee.allocator, blacklist);
+        // Serialize to JSON using std.json.Stringify.valueAlloc (Zig 0.15 API)
+        const json_str = try std.json.Stringify.valueAlloc(ee.allocator, blacklist, .{});
         defer ee.allocator.free(json_str);
 
         // Write to file
-        try file.writeAll(json_str);
+        try file.writeAll(json_str.items);
 
         std.debug.print("💾 Blacklist saved: {d} entries\n", .{blacklist.entries.len});
     }
@@ -277,17 +331,67 @@ fn cmdConsult(allocator: MemAllocator, task: []const u8) !u8 {
 }
 
 fn cmdBlacklist(allocator: MemAllocator) !u8 {
-    _ = ExperienceEngine.init(allocator);
+    var ee = ExperienceEngine.init(allocator);
 
     const RESET = "\x1b[0m";
     const CYAN = "\x1b[36m";
+    const YELLOW = "\x1b[33m";
+    const RED = "\x1b[31m";
+    const GREEN = "\x1b[32m";
 
     std.debug.print("\n{s}🧠 BLACKLIST STATUS{s}\n", .{ CYAN, RESET });
     std.debug.print("  File: .trinity/mistakes/blacklist.json\n\n", .{});
-    std.debug.print("  Loading blacklist...\n", .{});
 
-    // TODO: Load and display blacklist entries
-    std.debug.print("\n  No blacklisted tasks (yet).\n\n", .{});
+    const blacklist = ee.loadBlacklist() catch |err| {
+        std.debug.print("  {s}Error loading blacklist: {}{s}\n\n", .{ RED, err, RESET });
+        return 1;
+    };
+    defer {
+        for (blacklist.entries) |entry| {
+            allocator.free(entry.task);
+            if (entry.last_error.len > 0) allocator.free(entry.last_error);
+        }
+        allocator.free(blacklist.entries);
+    }
+
+    if (blacklist.entries.len == 0) {
+        std.debug.print("  {s}✓ No blacklisted tasks (yet).{s}\n\n", .{ GREEN, RESET });
+        return 0;
+    }
+
+    std.debug.print("  Total entries: {d}\n", .{blacklist.entries.len});
+    std.debug.print("  Last updated: {d}\n\n", .{blacklist.last_updated});
+
+    std.debug.print("  {s}┌─────────────────────────────────────────────────────────────┐{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  {s}│ Task                              Count  Last Error         │{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  {s}├─────────────────────────────────────────────────────────────┤{s}\n", .{ YELLOW, RESET });
+
+    for (blacklist.entries) |entry| {
+        const status_color = if (entry.count >= 3) RED else GREEN;
+        std.debug.print("  {s}│ {s:<32} {d:>2}x   {s:<15} │{s}\n", .{
+            status_color,
+            entry.task[0..@min(entry.task.len, 32)],
+            entry.count,
+            if (entry.last_error.len > 0)
+                entry.last_error[0..@min(entry.last_error.len, 15)]
+            else
+                "(none)",
+            RESET,
+        });
+    }
+
+    std.debug.print("  {s}└─────────────────────────────────────────────────────────────┘{s}\n\n", .{ YELLOW, RESET });
+
+    // Count blacklisted (3+ failures)
+    var blacklisted_count: usize = 0;
+    for (blacklist.entries) |entry| {
+        if (entry.count >= 3) blacklisted_count += 1;
+    }
+
+    if (blacklisted_count > 0) {
+        std.debug.print("  {s}⛔ {d} task(s) BLACKLISTED (auto-skipped){s}\n\n", .{ RED, blacklisted_count, RESET });
+    }
+
     return 0;
 }
 
