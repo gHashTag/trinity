@@ -654,7 +654,7 @@ pub fn main() !void {
             try commands.runBenchCommandInternal(allocator)
         else
             try commands.runBenchCommandAsync(allocator, cmd_args),
-        .evolve => try commands.runEvolveCommand(cmd_args),
+        .evolve => try commands.runEvolutionCommand(cmd_args),
         // Git commands
         .commit => try commands.runGitCommand(allocator, "commit", cmd_args),
         .diff => try commands.runGitCommand(allocator, "diff", cmd_args),
@@ -1517,11 +1517,11 @@ fn dispatchNamespacedCommand(
             return;
         }
         if (std.mem.eql(u8, cmd_name, "clean")) {
-            try commands.runCleanCommand(allocator);
+            try commands.runCleanCommand(allocator, cmd_args);
             return;
         }
         if (std.mem.eql(u8, cmd_name, "info")) {
-            try commands.runInfoCommand(allocator);
+            try commands.runInfoCommand(allocator, &[_][]const u8{});
             return;
         }
     }

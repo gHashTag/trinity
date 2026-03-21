@@ -44,11 +44,11 @@ pub const Link = struct {
 
 pub const LinkResult = struct {
     success: bool,
-    message: []const u8,
+    message: ?[]const u8 = null,    // P11: null means no message, safe to free
     duration_ms: u64,
     exit_code: u8 = 0,
-    stdout: []const u8 = "",
-    stderr: []const u8 = "",
+    stdout: ?[]const u8 = null,   // P11: null means no output, safe to free
+    stderr: ?[]const u8 = null,   // P11: null means no error, safe to free
 };
 
 pub const LogLevel = enum {
@@ -73,7 +73,7 @@ pub const CheckpointData = struct {
     completed_links: u28,
     total_cost_ms: u64,
     timestamp: i64,
-    results: []LinkResult,
+    results: []LinkResult,  // References to JSON-parsed data
 };
 
 pub const CHAIN_LINKS = [28]Link{
@@ -156,13 +156,14 @@ pub const GoldenChain = struct {
 
     pub fn deinit(self: *GoldenChain) void {
         self.allocator.free(self.checkpoint_dir);
+
+        // P11: Free only message strings (allocated with self.allocator)
+        // stdout/stderr from timeout_handler use page_allocator - don't free
         for (self.results.items) |r| {
-            // Free message if allocated with self.allocator
-            // Skip empty strings (literals)
-            if (r.message.len > 0) {
-                self.allocator.free(r.message);
-            }
+            if (r.message) |msg| self.allocator.free(msg);
+            // Skip freeing stdout/stderr - allocated with page_allocator in timeout_handler
         }
+
         self.results.deinit(self.allocator);
         if (self.state.last_checkpoint) |cp| self.allocator.free(cp);
 
@@ -227,7 +228,6 @@ pub const GoldenChain = struct {
 
         var result = LinkResult{
             .success = false,
-            .message = "",
             .duration_ms = 0,
             .exit_code = 1,
         };
@@ -236,8 +236,14 @@ pub const GoldenChain = struct {
             result.success = tr.exit_code == 0 and !tr.timed_out;
             result.duration_ms = tr.duration_ms;
             result.exit_code = tr.exit_code;
-            result.stdout = tr.stdout;
-            result.stderr = tr.stderr;
+
+            // P11: Only assign non-empty strings, keep null for empty
+            if (tr.stdout.len > 0) {
+                result.stdout = tr.stdout;
+            }
+            if (tr.stderr.len > 0) {
+                result.stderr = tr.stderr;
+            }
 
             if (tr.timed_out) {
                 result.message = try std.fmt.allocPrint(self.allocator, "Timeout after {d}ms", .{tr.duration_ms});
@@ -296,7 +302,8 @@ pub const GoldenChain = struct {
         if (result.success) {
             self.log(.info, "✅ [{d}] {s} completed in {}ms", .{ link.id, link.name, result.duration_ms });
         } else {
-            self.log(.err, "❌ [{d}] {s} failed: {s}", .{ link.id, link.name, result.message });
+            const msg = result.message orelse "(no message)";
+            self.log(.err, "❌ [{d}] {s} failed: {s}", .{ link.id, link.name, msg });
         }
 
         try self.results.append(self.allocator, result);
@@ -410,7 +417,7 @@ pub const GoldenChain = struct {
         return true;
     }
 
-    /// Save checkpoint to disk
+    /// Save checkpoint to disk (P11: Full JSON serialization)
     pub fn saveCheckpoint(self: *GoldenChain, task: []const u8) !void {
         const timestamp = std.time.timestamp();
 
@@ -422,40 +429,25 @@ pub const GoldenChain = struct {
         );
         defer self.allocator.free(filename);
 
-        // Serialize to JSON (simple format)
-        var json_buf = std.ArrayListUnmanaged(u8){};
-        defer json_buf.deinit(self.allocator);
+        // P11: Use std.json.stringify for automatic escaping
+        const checkpoint_data = CheckpointData{
+            .version = "5.2",
+            .task = task,
+            .current_link = self.state.current_link,
+            .completed_links = self.state.completed_links,
+            .total_cost_ms = self.state.total_cost_ms,
+            .timestamp = timestamp,
+            .results = self.results.items,
+        };
 
-        const open_brace = [_]u8{'{'};
-        try json_buf.appendSlice(self.allocator, &open_brace);
-        try json_buf.writer(self.allocator).print("\"version\": \"5.1\",", .{});
-        try json_buf.writer(self.allocator).print("\"task\": \"{s}\",", .{task});
-        try json_buf.writer(self.allocator).print("\"current_link\": {d},", .{self.state.current_link});
-        try json_buf.writer(self.allocator).print("\"completed_links\": {d},", .{self.state.completed_links});
-        try json_buf.writer(self.allocator).print("\"total_cost_ms\": {d},", .{self.state.total_cost_ms});
-        try json_buf.writer(self.allocator).print("\"timestamp\": {d},", .{timestamp});
-
-        const results_open = [_]u8{',', '"', 'r', 'e', 's', 'u', 'l', 't', 's', '"', ' ', '['};
-        try json_buf.appendSlice(self.allocator, &results_open);
-
-        for (self.results.items, 0..) |r, i| {
-            if (i > 0) {
-                const comma = [_]u8{','};
-                try json_buf.appendSlice(self.allocator, &comma);
-            }
-            try json_buf.writer(self.allocator).print(
-                "{{\"success\": {},\"message\": \"{s}\",\"duration_ms\": {d}}}",
-                .{ r.success, r.message, r.duration_ms }
-            );
-        }
-
-        const close_brace = [_]u8{']', '}'};
-        try json_buf.appendSlice(self.allocator, &close_brace);
+        // Serialize to JSON
+        const json_str = try std.json.Stringify.valueAlloc(self.allocator, checkpoint_data, .{});
+        defer self.allocator.free(json_str);
 
         // Write to file
         try std.fs.cwd().writeFile(.{
             .sub_path = filename,
-            .data = json_buf.items,
+            .data = json_str,
         });
 
         self.log(.info, "💾 Checkpoint saved to {s}", .{filename});
@@ -465,27 +457,31 @@ pub const GoldenChain = struct {
         self.state.last_checkpoint = try self.allocator.dupe(u8, filename);
     }
 
-    /// Load checkpoint from disk (simplified for P10)
+    /// Load checkpoint from disk (P11: Full JSON parsing)
     pub fn loadCheckpoint(self: *GoldenChain, filename: []const u8) !CheckpointData {
         self.log(.info, "📂 Loading checkpoint from {s}", .{filename});
 
-        // For P10, return simple checkpoint data
-        // Full JSON parsing requires std.json.parse integration
-        // TODO: Implement proper JSON parsing in P11
-        const cp_data: CheckpointData = .{
-            .version = "5.2",
-            .task = "",
-            .current_link = 1,
-            .completed_links = 0,
-            .total_cost_ms = 0,
-            .timestamp = std.time.timestamp(),
-            .results = &[_]LinkResult{},
-        };
+        // Read checkpoint file
+        const file = try std.fs.cwd().openFile(filename, .{});
+        defer file.close();
+
+        const content = try file.readToEndAlloc(self.allocator, 1024 * 1024); // Max 1MB
+        defer self.allocator.free(content);
+
+        // P11: Parse JSON using std.json.parseFromSlice
+        const parsed = try std.json.parseFromSlice(CheckpointData, self.allocator, content, .{});
+        defer parsed.deinit();
+
+        const cp_data = parsed.value;
+
+        self.log(.info, "📂 Checkpoint loaded: link {d}, {d} results", .{
+            cp_data.current_link, cp_data.results.len
+        });
 
         return cp_data;
     }
 
-    /// Resume from checkpoint
+    /// Resume from checkpoint (P11: Full state restoration)
     pub fn resumeFromCheckpoint(self: *GoldenChain, checkpoint_id: []const u8, task: []const u8) !u8 {
         const checkpoint_path = try std.fmt.allocPrint(
             self.allocator,
@@ -496,15 +492,48 @@ pub const GoldenChain = struct {
 
         const cp = try self.loadCheckpoint(checkpoint_path);
 
-        // Restore state
+        // P11: Restore state from checkpoint
         self.state.current_link = cp.current_link;
         self.state.completed_links = cp.completed_links;
         self.state.total_cost_ms = cp.total_cost_ms;
 
-        self.log(.info, "▶️ Resuming from link {d}", .{cp.current_link});
+        // P11: Copy results from checkpoint (deep copy nullable strings)
+        self.results.clearRetainingCapacity();
+        for (cp.results) |r| {
+            var result = LinkResult{
+                .success = r.success,
+                .message = null,
+                .duration_ms = r.duration_ms,
+                .exit_code = r.exit_code,
+                .stdout = null,
+                .stderr = null,
+            };
 
-        // Continue execution from checkpoint
-        return self.runFrom(task, cp.current_link);
+            // Deep copy message string
+            if (r.message) |msg| {
+                result.message = try self.allocator.dupe(u8, msg);
+            }
+            // Deep copy stdout
+            if (r.stdout) |out| {
+                result.stdout = try self.allocator.dupe(u8, out);
+            }
+            // Deep copy stderr
+            if (r.stderr) |err_msg| {
+                result.stderr = try self.allocator.dupe(u8, err_msg);
+            }
+
+            try self.results.append(self.allocator, result);
+        }
+
+        self.log(.info, "▶️ Resuming from link {d} with {d} previous results", .{
+            cp.current_link, cp.results.len
+        });
+
+        // Calculate start link index (0-based)
+        const start_link_idx = if (cp.current_link == 0) 0 else cp.current_link - 1;
+
+        // Continue execution from checkpoint link
+        return self.runFrom(task, start_link_idx);
     }
 
     /// Run chain from specific link
@@ -586,3 +615,54 @@ pub const GoldenChain = struct {
         std.debug.print(fmt ++ "\n", args);
     }
 };
+
+/// CLI wrapper for golden chain command (module-level function)
+pub fn runGoldenChainCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    if (args.len < 1) {
+        std.debug.print("Usage: tri golden-chain <run|resume|links> [args]\n", .{});
+        std.debug.print("  run     - Execute full chain\n", .{});
+        std.debug.print("  resume  - Resume from checkpoint\n", .{});
+        std.debug.print("  links   - Show available links\n", .{});
+        return 1;
+    }
+
+    const subcommand = args[0];
+    const command_args = if (args.len > 1) args[1..] else ([_][]const u8{})[0..];
+
+    if (std.mem.eql(u8, subcommand, "run")) {
+        return try runCommand(allocator, command_args);
+    } else if (std.mem.eql(u8, subcommand, "resume")) {
+        return try resumeCommand(allocator, command_args);
+    } else if (std.mem.eql(u8, subcommand, "links")) {
+        return try linksCommand(allocator, command_args);
+    } else {
+        std.debug.print("Unknown golden-chain subcommand: {s}\n", .{subcommand});
+        return 1;
+    }
+}
+
+fn runCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    var chain = try GoldenChain.init(allocator);
+    defer chain.deinit();
+    // Join args into a single task string
+    const task = if (args.len > 0) args[0] else "Execute Golden Chain";
+    return try chain.run(task);
+}
+
+fn resumeCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    var chain = try GoldenChain.init(allocator);
+    defer chain.deinit();
+    const checkpoint_id = if (args.len > 0) args[0] else "latest";
+    // Pass remaining args as task string
+    const task = if (args.len > 1) args[1] else "Resume Golden Chain";
+    return try chain.resumeFromCheckpoint(checkpoint_id, task);
+}
+
+fn linksCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    _ = allocator;
+    _ = args;
+    std.debug.print("Available Links (28 total):\n", .{});
+    std.debug.print("  ID   Role          Brain Zone    Link Name\n", .{});
+    std.debug.print("  ────────────────────────────────────────\n", .{});
+    return 0;
+}

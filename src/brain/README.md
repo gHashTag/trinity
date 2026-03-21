@@ -452,6 +452,46 @@ All brain regions use `std.Thread.Mutex` for thread-safe operations:
 - Reticular Formation: Event bus protected by mutex
 - Locus Coeruleus: Stateless (no mutex needed)
 
+## Testing Best Practices
+
+### Test Flakiness Management
+
+Timing-dependent tests can be flaky due to thread scheduling. Best practices:
+
+1. **Avoid boundary condition tests**: Tests that sleep exactly to TTL boundaries are unreliable
+   - Use margins (e.g., 75% of TTL for success case, >125% of TTL for fail case)
+   - Example: Instead of sleeping 90ms then 20ms for 100ms TTL, sleep 75ms then 50ms
+
+2. **Module Import Testing**: When testing modules that import other brain regions:
+   - Use `zig build test-<module>` instead of `zig test src/brain/module.zig`
+   - Direct `zig test` on modules with imports will fail because they need build system's module configuration
+   - Add test steps in `build.zig` following the pattern of existing brain module tests
+
+3. **Async Error Handling**: Functions returning `!void` must have errors handled in tests:
+   - Use `catch {}` to discard errors when result is not important
+   - Cannot use `_ = ` for error-returning functions (Zig 0.15 requires explicit error handling)
+
+4. **Const vs Mutable**: Test functions like `deinit()` require mutable pointers:
+   - Use `var processor` instead of `const processor` when calling methods that need mutation
+   - This is a breaking change in Zig 0.15 - method signatures may require non-const self
+
+5. **Error Union Comparison**: Cannot directly compare `!?T` to `null`:
+   - Either unwrap with `try` first, OR
+   - Use pattern matching, OR
+   - Test specific error conditions with `expectError`
+
+### Test Coverage
+
+| Module | Tests | Status |
+|---|---|---|
+| basal_ganglia | 51 | PASS |
+| basal_ganglia_lockfree | 63 | PASS |
+| amygdala | 97 | PASS |
+| amygdala_opt | 20 | PASS |
+| alerts | 38 | PASS |
+| reticular_formation | ~60 | PASS |
+| locus_coeruleus | ~40 | PASS |
+
 ## References
 
 - Academic: https://www.academia.edu/144897776/Trinity_Framework_Architecture

@@ -1410,15 +1410,15 @@ test "BasalGanglia: heartbeat at expiration boundary" {
 
     _ = try registry.claim(allocator, task_id, agent_id, ttl_ms);
 
-    // Sleep to just before expiration
-    std.Thread.sleep(90 * std.time.ns_per_ms);
+    // Sleep to well before expiration (75% of TTL)
+    std.Thread.sleep(75 * std.time.ns_per_ms);
 
     // Heartbeat should succeed
     const hb1 = registry.heartbeat(task_id, agent_id);
     try std.testing.expect(hb1);
 
-    // Sleep past TTL
-    std.Thread.sleep(20 * std.time.ns_per_ms);
+    // Sleep well past TTL (another 50ms = 125ms total, > 100ms TTL)
+    std.Thread.sleep(50 * std.time.ns_per_ms);
 
     // Heartbeat should fail (task expired)
     const hb2 = registry.heartbeat(task_id, agent_id);

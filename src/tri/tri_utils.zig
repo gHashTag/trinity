@@ -176,6 +176,7 @@ pub const Command = enum {
     multi_cluster,
     // Sacred Mathematics (v3.6)
     math,
+    sebo,
     constants_cmd,
     phi,
     fib,
