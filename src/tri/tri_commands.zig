@@ -508,6 +508,14 @@ pub fn runReplTestCommand(allocator: std.mem.Allocator, args: []const []const u8
     std.debug.print("⚠️  repl test: TODO - not implemented yet\n", .{});
 }
 
+/// SEBO Command - Sacred Evolutionary Bayesian Optimization
+pub fn runSeboCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const sebo_cli = @import("brain").sebo_cli;
+    try sebo_cli.main();
+    _ = allocator;
+    _ = args;
+}
+
 /// Git Command - Routes to git operations
 /// Usage: tri git <subcommand> [args]
 pub fn runGitCommand(allocator: std.mem.Allocator, subcommand: []const u8, args: []const []const u8) !void {

@@ -286,6 +286,14 @@ pub fn main() !void {
             }
         }
 
+        // SEBO namespace: route `tri sebo [args]` to runSeboCommand
+        if (std.mem.eql(u8, first_arg, "sebo")) {
+            const sebo_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runSeboCommand(allocator, sebo_args);
+            return;
+        }
+
         // Phoenix namespace: route `tri phoenix <subcommand>` to tri_phoenix
         if (std.mem.eql(u8, first_arg, "phoenix")) {
             const phoenix_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
@@ -1006,6 +1014,10 @@ pub fn main() !void {
             const tri_commands_mod = @import("tri_commands.zig");
             try tri_commands_mod.runBrainSimulateCommand(allocator, cmd_args);
         },
+        .sebo => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runSeboCommand(allocator, cmd_args);
+        },
         .phi,
         .fib,
         .lucas,
@@ -1639,6 +1651,11 @@ fn dispatchCommand(
         .brain_simulate => {
             const tri_commands_mod = @import("tri_commands.zig");
             try tri_commands_mod.runBrainSimulateCommand(allocator, cmd_args);
+        },
+        // SEBO - Sacred Evolutionary Bayesian Optimization
+        .sebo => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runSeboCommand(allocator, cmd_args);
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
