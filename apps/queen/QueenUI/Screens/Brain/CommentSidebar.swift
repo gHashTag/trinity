@@ -46,7 +46,7 @@ struct CommentSidebar: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 12)
                 .overlay(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 1.5)
+                    RoundedRectangle(cornerRadius: ParietalSpacing.cornerRadiusXSmall)
                         .fill(V4Color.accent.opacity(V2Depth.stateDisabled))
                         .frame(width: ParietalSpacing.smallIndicator)
                 }
