@@ -401,6 +401,8 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         .buffered = 0,
         .published = 0,
         .polled = 0,
+        .trim_count = 0,
+        .peak_buffered = 0,
         .utilization_pct = 0.0,
     };
 
@@ -444,10 +446,10 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.debug.print("  \"overall_health_score\": {d:.1},\n", .{health_score});
         std.debug.print("  \"basal_ganglia\": {\n", .{});
         std.debug.print("    \"status\": \"{s}\",\n", .{basal_text});
-        std.debug.print("    \"active_claims\": {d},\n", .{basal_stats.active_claims});
-        std.debug.print("    \"claim_attempts\": {d},\n", .{basal_stats.claim_attempts});
-        std.debug.print("    \"claim_successes\": {d},\n", .{basal_stats.claim_success});
-        std.debug.print("    \"claim_conflicts\": {d}\n", .{basal_stats.claim_conflicts});
+        std.debug.print("    \"active_claims\": {d},\n", .{basal_stats.active});
+        std.debug.print("    \"claim_attempts\": {d},\n", .{basal_stats.attempts});
+        std.debug.print("    \"claim_successes\": {d},\n", .{basal_stats.successes});
+        std.debug.print("    \"claim_conflicts\": {d}\n", .{basal_stats.conflicts});
         std.debug.print("  },\n", .{});
         std.debug.print("  \"reticular_formation\": {\n", .{});
         std.debug.print("    \"status\": \"{s}\",\n", .{reticular_text});
