@@ -212,20 +212,21 @@ pub fn main() !void {
             }
         }.write;
 
-        // Write data from all scenarios (S1-S15)
+        // Write data from all scenarios (S1-S20)
         // FPGA costs from docs/fpga_cost.md
         const s1_converged: u8 = if (s1.convergence_step != null) 1 else 0;
-        try writeTimeline(s1.timeline, "S1", allocator, csv_file, s1_converged, 25.0 * 100.0, 8000, 30, 0.22, 0.0, s1.kill_threshold, 1.0, 0.0, 0.0);
+        try writeTimeline(s1.timeline, "S1", allocator, csv_file, s1_converged, 25.0 * 100.0, 8000, 30, 0.22, 0.0, s1.kill_threshold, 1.0, 0.0, 0.0, q_superpos, q_coherence, q_interference, q_collapse);
 
         // S2 uses special manual CSV because it has very high crash rate and culled workers
         for (s2.timeline) |entry| {
             const cum_energy = 102.0 * @as(f32, @floatFromInt(entry.step + 1));
-            const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
+            const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2},{d:.3},{d:.3},{d:.3},{d:.3}\n", .{
                 entry.step,       "S2",              entry.avg_ppl, entry.diversity,
                 entry.alive_workers, s2.workers_culled, 0,             0,
                 cum_energy,       19000,            100,            0.40,
                 s2.crash_rate,    s2.kill_threshold, 1.0,
                 0.0,              0.0,
+                q_superpos,       q_coherence,       q_interference, q_collapse,
             });
             try csv_file.writeAll(line);
             allocator.free(line);

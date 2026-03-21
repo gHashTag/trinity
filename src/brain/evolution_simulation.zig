@@ -879,7 +879,7 @@ pub const EvolutionSimulator = struct {
             variance /= @as(f64, @floatFromInt(self.timeline_count));
 
             // Coherence = 1 / (1 + variance) — higher coherence = lower variance
-            coherence = 1.0 / (1.0 + @as(f32, @floatFromInt(variance)));
+            coherence = @floatCast(1.0 / (1.0 + variance));
         }
 
         // Calculate interference: constructive pattern from diversity × survival

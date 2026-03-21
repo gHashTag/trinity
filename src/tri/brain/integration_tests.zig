@@ -1267,6 +1267,7 @@ test "integration_locus_all_severity_levels" {
     try std.testing.expectEqual(@as(u8, 3), lc.getArousalLevel());
 }
 
+
 test "integration_full_brain_decision_cycle_end_to_end" {
     const allocator = std.testing.allocator;
 
@@ -1286,23 +1287,28 @@ test "integration_full_brain_decision_cycle_end_to_end" {
     var hippocampus = MockHippocampus.init(allocator);
     defer hippocampus.deinit();
 
+    var thalamus = MockThalamus.init(allocator);
+    defer thalamus.deinit(allocator);
+
     const service_name = "full-cycle-worker";
 
     // Step 1: ACC saves state
     try hippocampus.saveWorker(service_name, 5000, 6.0);
 
-    // Step 2: ACC detects conflict (stale cache)
-    try hippocampus.saveWorker(service_name, 5000, 7.0);
+    // Step 2: Setup thalamus state for conflict detection
+    try thalamus.setWorker(allocator, service_name, .{ .status = .training, .step = 7000, .ppl = 6.5 });
+
+    // Step 3: ACC detects conflict (stale cache vs live training)
     const conflicts = try acc.detectConflicts(&hippocampus, &thalamus);
     try std.testing.expect(conflicts >= 1);
 
-    // Step 3: LC triggers alarm
+    // Step 4: LC triggers alarm
     try lc.triggerAlarm(service_name, .warning);
 
-    // Step 4: Amygdala evaluates threat
+    // Step 5: Amygdala evaluates threat
     try amygdala.evaluateThreat(service_name, "warning: high loss");
 
-    // Step 5: BG executes action (not suppressed - low threat)
+    // Step 6: BG executes action (not suppressed - low threat)
     try bg.executeAction(service_name, .habit);
 
     // Verify full cycle completed
@@ -1312,12 +1318,6 @@ test "integration_full_brain_decision_cycle_end_to_end" {
 
     const threat_level = amygdala.getThreatLevel(service_name);
     try std.testing.expect(threat_level == .low or threat_level == .medium);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-// COMPTIME ASSERTIONS FOR CRITICAL INVARIANTS
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════-based 32, zero allocation hot path
-    try std.testing.expect(trials.size == 32);
 }
 
 // φ² + 1/φ² = 3 = TRINITY
