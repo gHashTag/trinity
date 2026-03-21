@@ -198,9 +198,17 @@ pub const ExperienceEngine = struct {
         const file = try std.fs.cwd().createFile(file_path, .{});
         defer file.close();
 
-        // TODO: Write episode as JSON to file
-        // For now: use episode to avoid unused warning
-        _ = episode.task.len;
+        // Ensure episodes directory exists
+        std.fs.cwd().makePath(ee.experience_dir ++ "episodes/") catch {};
+
+        // Serialize episode to JSON using std.json.stringify
+        const episode_json = try std.json.stringifyAlloc(ee.allocator, episode);
+        defer ee.allocator.free(episode_json);
+
+        // Write to file
+        try file.writeAll(episode_json);
+
+        std.debug.print("💾 Episode saved: {s}\n", .{filename});
     }
 
     /// Load blacklist from JSON
@@ -220,25 +228,29 @@ pub const ExperienceEngine = struct {
         const content = try file.readToEndAlloc(ee.allocator, 1024 * 1024);
         defer ee.allocator.free(content);
 
-        // TODO: Parse JSON from content
-        // Use content to avoid unused warning
-        _ = content.len;
+        // Parse JSON using std.json.parse
+        const parsed = try std.json.parseFromSlice(Blacklist, content);
+        defer parsed.deinit(ee.allocator);
 
-        return Blacklist{
-            .entries = &[_]FailureRecord{},
-            .last_updated = 0,
-        };
+        return parsed;
     }
 
     /// Save blacklist to JSON
-    fn saveBlacklist(ee: *ExperienceEngine, _: *const Blacklist) !void {
+    fn saveBlacklist(ee: *ExperienceEngine, blacklist: *const Blacklist) !void {
         // Ensure directory exists
         std.fs.cwd().makePath(".trinity/mistakes") catch {};
 
         const file = try std.fs.cwd().createFile(ee.blacklist_file, .{ .read = true });
         defer file.close();
 
-        // TODO: Write JSON
+        // Serialize to JSON using std.json.stringify
+        const json_str = try std.json.stringifyAlloc(ee.allocator, blacklist);
+        defer ee.allocator.free(json_str);
+
+        // Write to file
+        try file.writeAll(json_str);
+
+        std.debug.print("💾 Blacklist saved: {d} entries\n", .{blacklist.entries.len});
     }
 };
 
@@ -292,14 +304,13 @@ fn printExperienceHelp() void {
 }
 
 fn cmdConsult(allocator: MemAllocator, task: []const u8) !u8 {
-    var ee = ExperienceEngine.init(allocator);
+    const ee = ExperienceEngine.init(allocator);
     const ctx = try ee.consult(task);
     defer ctx.deinit(allocator);
 
     const RESET = "\x1b[0m";
     const CYAN = "\x1b[36m";
     const GREEN = "\x1b[32m";
-    const YELLOW = "\x1b[33m";
     const RED = "\x1b[31m";
 
     std.debug.print("\n{s}🧠 EXPERIENCE CONSULT{s}\n", .{ CYAN, RESET });
@@ -316,16 +327,13 @@ fn cmdConsult(allocator: MemAllocator, task: []const u8) !u8 {
 }
 
 fn cmdBlacklist(allocator: MemAllocator) !u8 {
-    var ee = ExperienceEngine.init(allocator);
-    _ = ee; // autofix
+    _ = ExperienceEngine.init(allocator);
 
     const RESET = "\x1b[0m";
     const CYAN = "\x1b[36m";
-    const YELLOW = "\x1b[33m";
 
     std.debug.print("\n{s}🧠 BLACKLIST STATUS{s}\n", .{ CYAN, RESET });
     std.debug.print("  File: .trinity/mistakes/blacklist.json\n\n", .{});
-    std.debug.print("  {s}STATUS: P2 implementation active{s}\n", .{ YELLOW, RESET });
     std.debug.print("  Loading blacklist...\n", .{});
 
     // TODO: Load and display blacklist entries

@@ -73,6 +73,8 @@ pub const SearchResult = struct {
 pub const SeboConfig = struct {
     population_size: u32 = 20,
     generations: u32 = 50,
+    steps: u32 = 100,
+    use_simulation: bool = false,
     mutation_rate: f32 = 0.1,
     crossover_rate: f32 = 0.7,
     elitism: u32 = 2,
@@ -84,6 +86,8 @@ pub const SeboOptimizer = struct {
     config: SeboConfig,
     prng: std.Random.DefaultPrng,
     population: std.ArrayList(SearchResult),
+    steps: u32,
+    use_simulation: bool,
 
     pub fn init(alloc: Allocator, config: SeboConfig) !SeboOptimizer {
         const prng = std.Random.DefaultPrng.init(std.crypto.random.int(u64));
@@ -92,6 +96,8 @@ pub const SeboOptimizer = struct {
             .config = config,
             .prng = prng,
             .population = undefined,
+            .steps = config.steps,
+            .use_simulation = config.use_simulation,
         };
         sebo.population = std.ArrayList(SearchResult).initCapacity(alloc, 0) catch |err| return err;
         return sebo;
@@ -132,9 +138,15 @@ pub const SeboOptimizer = struct {
             result.config.nca_weight = self.sampleWithPrior(0.0, 1.0);
             result.config.workers = @as(u32, @intFromFloat(self.sampleWithPrior(50.0, 200.0)));
             result.config.kill_threshold = self.sampleWithPrior(0.1, 0.5);
+            result.config.steps = self.steps;
 
             // Evaluate
-            result.objectives = try self.evaluate(&result.config);
+            if (self.use_simulation) {
+                const seed = self.prng.random().int(u64);
+                result.objectives = try evaluateWithSimulation(self.alloc, result.config, seed);
+            } else {
+                result.objectives = try self.evaluate(&result.config);
+            }
             result.fitness = result.objectives.weightedFitness();
 
             try self.population.append(self.alloc, result);
@@ -178,8 +190,8 @@ pub const SeboOptimizer = struct {
         config: HyperparameterConfig,
         seed: u64,
     ) !Objectives {
-        // Import evolution simulation module
-        const evo_sim = @import("brain").evolution_simulation;
+        // Import evolution simulation module directly
+        const evo_sim = @import("evolution_simulation");
 
         // Build objectives array from config
         const objectives = [_]evo_sim.EvolutionSimulationConfig.ObjectiveConfig{
@@ -206,7 +218,7 @@ pub const SeboOptimizer = struct {
         var sim = try evo_sim.EvolutionSimulator.init(alloc, evo_config);
         defer sim.deinit();
 
-        const result = try sim.run("SEBO_Eval");
+        var result = try sim.run("SEBO_Eval");
 
         const obj = Objectives{
             .ppl = result.final_ppl,
@@ -257,9 +269,15 @@ pub const SeboOptimizer = struct {
                 offspring.config.jepa_weight = @max(0.0, @min(1.0, offspring.config.jepa_weight + (self.prng.random().float(f32) - 0.5) * 0.1));
                 offspring.config.nca_weight = @max(0.0, @min(1.0, offspring.config.nca_weight + (self.prng.random().float(f32) - 0.5) * 0.1));
             }
+            offspring.config.steps = self.steps;
 
             // Evaluate
-            offspring.objectives = try self.evaluate(&offspring.config);
+            if (self.use_simulation) {
+                const seed = self.prng.random().int(u64);
+                offspring.objectives = try evaluateWithSimulation(self.alloc, offspring.config, seed);
+            } else {
+                offspring.objectives = try self.evaluate(&offspring.config);
+            }
             offspring.fitness = offspring.objectives.weightedFitness();
 
             try new_pop.append(self.alloc, offspring);

@@ -164,33 +164,6 @@ public enum ParietalSpacing {
 
     /// Frame height XXXL - 300pt
     public static let frameHeightXXXL: CGFloat = 300
-}
-
-    // MARK: - Component-Specific Spacing
-
-    /// Horizontal padding for buttons
-    public static let buttonHorizontal: CGFloat = sm
-
-    /// Vertical padding for buttons
-    public static let buttonVertical: CGFloat = xs
-
-    /// Horizontal padding for inputs
-    public static let inputHorizontal: CGFloat = sm
-
-    /// Vertical padding for inputs
-    public static let inputVertical: CGFloat = xs
-
-    /// Spacing between icon and text
-    public static let iconText: CGFloat = xs
-
-    /// Spacing between related elements
-    public static let related: CGFloat = xs
-
-    /// Spacing between unrelated elements
-    public static let unrelated: CGFloat = md
-
-    /// Spacing between sections
-    public static let section: CGFloat = xl
 
     // MARK: - Layout Constants
 
