@@ -3402,6 +3402,54 @@ pub fn build(b: *std.Build) void {
     caps_step.dependOn(&run_caps.step);
 
     // ═══════════════════════════════════════════════════════════════════════════════
+    // STORM P5 — Wave Protocol, Cost Tracking, Model Roulette
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const wave_protocol_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/wave_protocol.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "golden_chain", .module = golden_chain_mod },
+        },
+    });
+
+    const cost_tracker_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/cost_tracker.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const model_roulette_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/model_roulette.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "cost_tracker", .module = cost_tracker_mod },
+        },
+    });
+
+    const storm_p5_test = b.addExecutable(.{
+        .name = "storm-p5-test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/storm/test_standalone_p5.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "golden_chain", .module = golden_chain_mod },
+                .{ .name = "wave_protocol", .module = wave_protocol_mod },
+                .{ .name = "cost_tracker", .module = cost_tracker_mod },
+                .{ .name = "model_roulette", .module = model_roulette_mod },
+            },
+        }),
+    });
+    b.installArtifact(storm_p5_test);
+
+    const run_storm_p5 = b.addRunArtifact(storm_p5_test);
+    const storm_p5_step = b.step("storm-p5", "Run STORM P5 integration test");
+    storm_p5_step.dependOn(&run_storm_p5.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
     // FPGA SYNTHESIS — Sacred ALU via Docker openXC7
     // ═══════════════════════════════════════════════════════════════════════════════
 
