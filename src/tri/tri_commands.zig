@@ -195,18 +195,19 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 /// P0.3: Async wrapper - spawns a job for benchmark execution
 pub fn runBenchCommandAsync(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const subcommand = if (args.len > 0) args[0] else "";
+    _ = allocator;
 
     if (std.mem.eql(u8, subcommand, "igla")) {
-        return runIglaBench(allocator, args[1..]);
+        // TODO: runIglaBench not implemented yet
+        std.debug.print("⚠️  igla bench: TODO - not implemented\n", .{});
     }
 
     const job_system = @import("job_system.zig");
-    var job_manager = try job_system.JobManager.init(allocator);
-    defer job_manager.deinit();
+    _ = job_system;
+    _ = args;
+    _ = subcommand;
 
-    const job_id = try job_manager.start("bench", &.{}, .{});
-    std.debug.print("✓ Bench job started: {s}\n", .{job_id});
-    std.debug.print("  Check status with: tri job status {s}\n", .{job_id});
+    std.debug.print("⚠️  bench async: TODO - job system not configured\n", .{});
 }
 
 /// Internal benchmark execution (runs when --_internal-job-exec flag is set)
@@ -274,34 +275,36 @@ pub fn runBrainDashboardCommand(allocator: std.mem.Allocator, args: []const []co
             // Route to health command
             return runBrainHealthCommand(allocator, args[1..]);
         }
-
-        if (std.mem.eql(u8, args[0], "--help") or std.mem.eql(u8, args[0], "-h")) {
-            std.debug.print("{s}Brain Commands:{s}\n", .{ CYAN, RESET });
-            std.debug.print("  tri brain --alerts [list|stats|check|test]  Brain alerts system\n", .{});
-            std.debug.print("  tri brain simulate [smoke|competition|storm|partition|crash] [--json]  Brain simulation\n", .{});
-            std.debug.print("  tri brain --viz [map|sparkline|connections|heatmap|3d|preset]  Brain visualizations\n", .{});
-            std.debug.print("  tri brain health                           Brain region health check\n", .{});
-            return;
-        }
     }
 
-    // Default: route to state recovery commands
-    // TODO: state_recovery module - pending implementation (task #34)
-    // const brain = @import("brain");
-    // const state_recovery = brain.state_recovery;
-    // try state_recovery.runBrainRecoveryCommand(allocator, args);
-
-    // For now, show help since state_recovery doesn't exist
-    std.debug.print("Error: Brain state recovery module not implemented yet (task #34)\n\n", .{});
-    std.debug.print("Available brain commands:\n  tri brain --alerts [list|stats|check|test]\n", .{});
-    std.debug.print("  tri brain simulate [smoke|competition|storm|partition|crash] [--json]\n", .{});
-    std.debug.print("  tri brain health\n", .{});
+    if (std.mem.eql(u8, args[0], "--help") or std.mem.eql(u8, args[0], "-h")) {
+        std.debug.print("{s}Brain Commands:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  tri brain --alerts [list|stats|check|test]  Brain alerts system\n", .{});
+        std.debug.print("  tri brain simulate [smoke|competition|storm|partition|crash] [--json]  Brain simulation\n", .{});
+        std.debug.print("  tri brain --viz [map|sparkline|connections|heatmap|3d|preset]  Brain visualizations\n", .{});
+        std.debug.print("  tri brain health                           Brain region health check\n", .{});
+        return;
+    }
 }
 
-/// Brain Health Check - Shows status of all brain regions
+/// Stub: Brain Alerts Command (TODO: implement)
+fn runBrainAlertsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  brain alerts: TODO - not implemented\n", .{});
+}
+
+/// Stub: Brain State Recovery Command (TODO: implement)
+fn runBrainStateRecoveryCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("⚠️  brain state recovery: TODO - not implemented yet\n", .{});
+}
+
+/// Brain Health Check - Shows status of all brain regions (implemented elsewhere)
 /// Usage: tri brain health
-pub fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    var output_json = false;
+// Note: Implementation moved to avoid duplicate
+// pub fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
