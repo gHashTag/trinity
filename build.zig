@@ -3271,9 +3271,11 @@ pub fn build(b: *std.Build) void {
     // STORM P9: Main CLI for autonomous operation
     const storm_exe = b.addExecutable(.{
         .name = "storm",
-        .root_source_file = b.path("src/storm/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/storm/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     b.installArtifact(storm_exe);
     const storm_step = b.step("storm", "STORM P9 — 32-agent autonomous operation");
