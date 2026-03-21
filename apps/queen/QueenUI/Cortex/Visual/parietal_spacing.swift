@@ -187,6 +187,26 @@ public enum ParietalSpacing {
     /// Status indicator height - 8pt
     public static let statusIndicatorHeight: CGFloat = 8
 
+    // MARK: - Additional Frame Properties
+
+    /// Panel width for sheet panels
+    public static let panelWidth: CGFloat = 64
+
+    /// Wide modal frame
+    public static let wideModalFrame: CGFloat = 72
+
+    /// Dot size for loading indicators
+    public static let dotSize: CGFloat = 4
+
+    /// Small indicator height
+    public static let smallIndicatorHeight: CGFloat = 2
+
+    /// Extra wide panel
+    public static let extraWidePanel: CGFloat = 96
+
+    /// Small indicator for StatCard
+    public static let smallIndicator: CGFloat = 6
+
     /// Frame height tiny - 6pt
     public static let frameHeightTiny: CGFloat = 6
 
@@ -289,3 +309,21 @@ public enum ParietalSpacingToken {
         }
     }
 }
+
+    // MARK: - Additional Frame Properties
+
+    /// Wide modal frame
+    public static let wideModalFrame: CGFloat = 72
+
+    /// Icon large frame
+    public static let iconLargeFrame: CGFloat = 16
+
+    /// Dot size for loading indicators
+    public static let dotSize: CGFloat = 4
+
+    /// Small indicator height
+    public static let smallIndicatorHeight: CGFloat = 2
+
+    /// Extra wide panel
+    public static let extraWidePanel: CGFloat = 96
+
