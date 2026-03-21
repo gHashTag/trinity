@@ -23,7 +23,6 @@ pub const TimeoutHandler = struct {
         args: anytype,
         timeout_ms: u64,
     ) !TimeoutResult {
-        _ = timeout_ms; // Parameter reserved for future use
         const start = std.time.nanoTimestamp();
 
         // Execute function and check for errors

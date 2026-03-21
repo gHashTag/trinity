@@ -70,10 +70,10 @@ fn cmdOFCVerdict(a: Allocator, b: []const []const u8) !u8 {
     print("\n{s}OFC - Value Chamber (P1 Ethical Infrastructure){s}\n", .{ MAGENTA, RESET });
     print("{s}====================================={s}\n\n", .{ BOLD, RESET });
     print("  {s}12D Ethical Metric System{s}\n", .{ BOLD, RESET });
-    print("CORRUPTION, DECEPTION, CRUELTY, INJUSTICE\n");
-    print("PROMISE-BREAKING, NEGLIGENCE, EXPLOITATION\n");
-    print("HARASSMENT, DISCRIMINATION, VIOLATION\n");
-    print("GREED, ARROGANCE, SPITE\n");
+    print("CORRUPTION, DECEPTION, CRUELTY, INJUSTICE\n", .{});
+    print("PROMISE-BREAKING, NEGLIGENCE, EXPLOITATION\n", .{});
+    print("HARASSMENT, DISCRIMINATION, VIOLATION\n", .{});
+    print("GREED, ARROGANCE, SPITE\n", .{});
     print("\n  {s}Verdict Levels:{s}\n", .{ BOLD, RESET });
     print("    {s}SAFE{s}   - Ethical action approved\n", .{ GREEN, RESET });
     print("    {s}WARN{s}   - Caution advised\n", .{ YELLOW, RESET });
