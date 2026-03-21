@@ -144,6 +144,27 @@ public enum ParietalSpacing {
     /// Frame width zero - 0pt (for hiding)
     public static let frameWidthZero: CGFloat = 0
 
+    /// Frame width tiny - 6pt
+    public static let tinyIndicator: CGFloat = 6
+
+    /// Frame width small - 12pt
+    public static let smallFrame: CGFloat = 12
+
+    /// Frame width medium - 24pt
+    public static let mediumFrame: CGFloat = 24
+
+    /// Frame width large - 32pt
+    public static let largeFrame: CGFloat = 32
+
+    /// Frame width extra large - 48pt
+    public static let xLargeFrame: CGFloat = 48
+
+    /// Frame width extra extra large - 64pt
+    public static let xxLargeFrame: CGFloat = 64
+
+    /// Status indicator height - 8pt
+    public static let statusIndicatorHeight: CGFloat = 8
+
     /// Frame height tiny - 6pt
     public static let frameHeightTiny: CGFloat = 6
 
