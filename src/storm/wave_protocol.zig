@@ -1,9 +1,11 @@
-//! STORM P5 — Wave Protocol (5 waves, 32 agents)
+//! STORM P7 — Wave Protocol (5 waves, 32 agents)
 //! Self-Organizing Regenerative Task Management
 //! Parallel wave execution with checkpoint recovery
+//! Phoenix preWaveRegen integration
 
 const std = @import("std");
 const gc = @import("golden_chain.zig");
+const pb = @import("phoenix_bridge.zig");
 
 pub const Wave = struct {
     id: u4,
@@ -52,6 +54,7 @@ pub const StormWaveProtocol = struct {
     allocator: std.mem.Allocator,
     config: WaveConfig,
     golden_chain: *gc.GoldenChain,
+    phoenix_bridge: ?*pb.PhoenixBridge = null,
     wave_results: std.ArrayListUnmanaged(WaveResult) = .empty,
     total_duration_ms: u64 = 0,
 
@@ -60,6 +63,7 @@ pub const StormWaveProtocol = struct {
             .allocator = allocator,
             .config = .{ .waves = STORM_WAVES },
             .golden_chain = gc_chain,
+            .phoenix_bridge = null,
         };
     }
 
@@ -183,9 +187,11 @@ pub const StormWaveProtocol = struct {
 
     /// Phoenix regeneration before wave
     fn runPhoenixRegen(self: *StormWaveProtocol, wave_id: u4) !void {
-        _ = self;
-        std.debug.print("\n🔥 Phoenix regeneration before Wave {d}...\n", .{wave_id});
-        // TODO: Call phoenix_bridge.preWaveRegen() when implemented
+        // Create PhoenixBridge instance for this wave
+        var bridge = try pb.PhoenixBridge.init(self.allocator, "specs/storm");
+        defer bridge.deinit();
+
+        try bridge.preWaveRegen(wave_id);
     }
 
     /// Print execution summary

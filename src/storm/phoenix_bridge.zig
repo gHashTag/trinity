@@ -34,8 +34,76 @@ pub const PhoenixBridge = struct {
 
     /// Run BEFORE each wave — system health check + regen
     pub fn preWaveRegen(pb: *PhoenixBridge, wave_id: u4) !void {
-        _ = pb;
-        _ = wave_id;
+        std.debug.print("\n🔥 Phoenix preWaveRegen for Wave {d}\n", .{wave_id});
+
+        // Scan .trinity/ for .tri files that need regeneration
+        var regen_count: u5 = 0;
+        var skip_count: u5 = 0;
+
+        // Check key specs directory
+        const specs_dir = std.fs.cwd().openDir("specs", .{ .iterate = true }) catch |err| {
+            std.log.warn("Failed to open specs/: {}", .{err});
+            return;
+        };
+        defer specs_dir.close();
+
+        var iter = specs_dir.iterate();
+        while (try iter.next()) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
+                // Build cell path (remove .tri extension)
+                const base_name = entry.name[0 .. entry.name.len - 4];
+                const cell_path = try std.fmt.allocPrint(pb.allocator, "specs/{s}", .{base_name});
+                defer pb.allocator.free(cell_path);
+
+                // Run biopsy
+                const result = try pb.biopsy(cell_path);
+
+                switch (result.decision) {
+                    .skip => {
+                        skip_count += 1;
+                        std.debug.print("  ✓ {s}.tri: {s}\n", .{base_name, result.reason});
+                    },
+                    .regen => {
+                        regen_count += 1;
+                        std.debug.print("  ⚠️  {s}.tri: {s} → VIBEE regen\n", .{base_name, result.reason});
+                        // TODO: Run VIBEE codegen: zig build vibee -- gen specs/{s}.tri
+                    },
+                    .destroy => {
+                        regen_count += 1;
+                        std.debug.print("  🔥 {s}.tri: {s} → destroy + regen\n", .{base_name, result.reason});
+                        // TODO: Delete .zig, run VIBEE codegen
+                    },
+                }
+            }
+        }
+
+        // Check src/storm/ directory for self-consistency
+        const storm_dir = std.fs.cwd().openDir("src/storm", .{ .iterate = true }) catch |err| {
+            std.log.warn("Failed to open src/storm/: {}", .{err});
+            return;
+        };
+        defer storm_dir.close();
+
+        var storm_iter = storm_dir.iterate();
+        while (try storm_iter.next()) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".zig")) {
+                // Skip test files
+                if (std.mem.indexOf(u8, entry.name, "test_") != null) continue;
+
+                // For each .zig in storm/, check if .tri exists
+                const base_name = entry.name[0 .. entry.name.len - 4];
+                const tri_path = try std.fmt.allocPrint(pb.allocator, "specs/storm/{s}.tri", .{base_name});
+                defer pb.allocator.free(tri_path);
+
+                const tri_exists = std.fs.cwd().statFile(tri_path) != null;
+
+                if (!tri_exists) {
+                    std.debug.print("  ⚠️  {s} exists but no .tri spec (may be manually written)\n", .{entry.name});
+                }
+            }
+        }
+
+        std.debug.print("\n🔥 Phoenix Wave {d} Summary: {d} skipped, {d} need regen\n", .{ wave_id, skip_count, regen_count });
     }
 
     /// Biopsy: analyze if cell needs regeneration
@@ -50,7 +118,7 @@ pub const PhoenixBridge = struct {
             return switch (err) {
                 error.FileNotFound => BiopsyResult{
                     .decision = .skip,
-                    .reason = try std.fmt.allocPrint(pb.allocator, "TRI file not found"),
+                    .reason = "TRI file not found",
                 },
                 else => BiopsyResult{
                     .decision = .skip,
@@ -64,7 +132,7 @@ pub const PhoenixBridge = struct {
             return switch (err) {
                 error.FileNotFound => BiopsyResult{
                     .decision = .skip,
-                    .reason = try std.fmt.allocPrint(pb.allocator, "ZIG file not found"),
+                    .reason = "ZIG file not found",
                 },
                 else => BiopsyResult{
                     .decision = .skip,
@@ -87,7 +155,7 @@ pub const PhoenixBridge = struct {
         if (mtime_diff < 1_000_000_000) {
             return BiopsyResult{
                 .decision = .skip,
-                .reason = try std.fmt.allocPrint(pb.allocator, "Files in sync"),
+                .reason = "Files in sync",
             };
         }
 
@@ -95,7 +163,7 @@ pub const PhoenixBridge = struct {
         if (zig_mtime + 5_000_000_000 < tri_mtime) {
             return BiopsyResult{
                 .decision = .regen,
-                .reason = try std.fmt.allocPrint(pb.allocator, "ZIG older, needs VIBEE regen"),
+                .reason = "ZIG older, needs VIBEE regen",
             };
         }
 
@@ -103,13 +171,13 @@ pub const PhoenixBridge = struct {
         if (tri_mtime + 60_000_000_000 < zig_mtime) {
             return BiopsyResult{
                 .decision = .skip,
-                .reason = try std.fmt.allocPrint(pb.allocator, "TRI stale (ZIG newer)"),
+                .reason = "TRI stale (ZIG newer)",
             };
         }
 
         return BiopsyResult{
             .decision = .skip,
-            .reason = try std.fmt.allocPrint(pb.allocator, "Files in sync (tolerance)"),
+            .reason = "Files in sync (tolerance)",
         };
     }
 
@@ -150,7 +218,7 @@ test "BiopsyResult defaults" {
 
 test "PhoenixBridge init" {
     const allocator = std.testing.allocator;
-    const pb = try PhoenixBridge.init(allocator, "/tmp/cell");
+    var pb = try PhoenixBridge.init(allocator, "/tmp/cell");
     defer pb.deinit();
 
     try std.testing.expectEqualStrings("/tmp/cell", pb.cell_path);
@@ -159,7 +227,7 @@ test "PhoenixBridge init" {
 
 test "biopsy handles non-existent files" {
     const allocator = std.testing.allocator;
-    const pb = try PhoenixBridge.init(allocator, "/tmp/nonexistent");
+    var pb = try PhoenixBridge.init(allocator, "/tmp/nonexistent");
     defer pb.deinit();
 
     const result = try pb.biopsy("/tmp/nonexistent");
