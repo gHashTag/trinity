@@ -11,10 +11,10 @@ const Allocator = std.mem.Allocator;
 
 // Sacred constants as Bayesian priors
 pub const SACRED_PRIORS = struct {
-    const PHI: f32 = 1.618033988749895; // Golden ratio
-    const E: f32 = 2.718281828459045; // Euler's number
-    const PI: f32 = 3.141592653589793; // Pi
-    const PHI_INVERSE: f32 = 0.61803398874989; // 1/φ
+    pub const PHI: f32 = 1.618033988749895; // Golden ratio
+    pub const E: f32 = 2.718281828459045; // Euler's number
+    pub const PI: f32 = 3.141592653589793; // Pi
+    pub const PHI_INVERSE: f32 = 0.61803398874989; // 1/φ
 };
 
 /// Multi-objective evaluation metrics
@@ -43,10 +43,13 @@ pub const Objectives = struct {
 
 /// Hyperparameter configuration
 pub const HyperparameterConfig = struct {
+    workers: u32 = 100,
+    steps: u32 = 100,
+    crash_rate: f32 = 0.0,
+    byzantine_rate: f32 = 0.0,
     ntp_weight: f32 = 0.5,
     jepa_weight: f32 = 0.25,
     nca_weight: f32 = 0.25,
-    workers: u32 = 100,
     kill_threshold: f32 = 0.3,
 };
 
@@ -168,6 +171,56 @@ pub const SeboOptimizer = struct {
         return obj;
     }
 
+    /// Evaluate configuration with real evolution simulation
+    /// This function runs a full simulation and returns actual objectives
+    pub fn evaluateWithSimulation(
+        alloc: Allocator,
+        config: HyperparameterConfig,
+        seed: u64,
+    ) !Objectives {
+        // Import evolution simulation module
+        const evo_sim = @import("brain").evolution_simulation;
+
+        // Build objectives array from config
+        const objectives = [_]evo_sim.EvolutionSimulationConfig.ObjectiveConfig{
+            .{ .name = "ntp", .weight = config.ntp_weight },
+            .{ .name = "jepa", .weight = config.jepa_weight },
+            .{ .name = "nca", .weight = config.nca_weight },
+        };
+
+        // Create evolution config
+        const evo_config = evo_sim.EvolutionSimulationConfig{
+            .workers = config.workers,
+            .steps = config.steps,
+            .crash_rate = config.crash_rate,
+            .byzantine_rate = config.byzantine_rate,
+            .seed = seed,
+            .objectives = &objectives,
+            .microglia_interval = 30,
+            .fpga_lut = @as(u32, @intFromFloat(@as(f32, @floatFromInt(config.workers)) / 200.0 * 50000)),
+            .fpga_bram = @as(u32, @intFromFloat(@as(f32, @floatFromInt(config.workers)) / 200.0 * 200)),
+            .fpga_dsp = 0,
+        };
+
+        // Run simulation
+        var sim = try evo_sim.EvolutionSimulator.init(alloc, evo_config);
+        defer sim.deinit();
+
+        const result = try sim.run("SEBO_Eval");
+
+        const obj = Objectives{
+            .ppl = result.final_ppl,
+            .diversity = result.diversity_index,
+            .fpga_cost = @as(f32, @floatFromInt(evo_config.fpga_lut)) / 50000.0 * 0.7 +
+                         @as(f32, @floatFromInt(evo_config.fpga_bram)) / 200.0 * 0.3,
+        };
+
+        // Cleanup result
+        result.deinit(alloc);
+
+        return obj;
+    }
+
     /// Evolve population for one generation
     fn evolve(self: *SeboOptimizer) !void {
         const pop_size = self.population.items.len;
@@ -266,7 +319,7 @@ pub const SeboOptimizer = struct {
     }
 
     /// Get best candidate
-    fn getBest(self: *const SeboOptimizer) SearchResult {
+    pub fn getBest(self: *const SeboOptimizer) SearchResult {
         if (self.population.items.len == 0) {
             return SearchResult{
                 .config = .{},
