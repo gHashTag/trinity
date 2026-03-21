@@ -127,15 +127,16 @@ pub const StormWaveProtocol = struct {
                 const link_result = try self.golden_chain.executeLink(link, task);
                 if (link_result.success) {
                     completed_count += 1;
-                    self.allocator.free(link_result.message);
+                    if (link_result.message) |msg| self.allocator.free(msg);
                 } else {
+                    const msg = link_result.message orelse "(no message)";
                     error_msgs[error_count] = try std.fmt.allocPrint(
                         self.allocator,
                         "Link {d} failed: {s}",
-                        .{ link_id, link_result.message }
+                        .{ link_id, msg }
                     );
                     error_count += 1;
-                    self.allocator.free(link_result.message);
+                    if (link_result.message) |m| self.allocator.free(m);
                 }
             }
         } else {
@@ -145,15 +146,16 @@ pub const StormWaveProtocol = struct {
                 const link_result = try self.golden_chain.executeLink(link, task);
                 if (link_result.success) {
                     completed_count += 1;
-                    self.allocator.free(link_result.message);
+                    if (link_result.message) |msg| self.allocator.free(msg);
                 } else {
+                    const msg = link_result.message orelse "(no message)";
                     error_msgs[error_count] = try std.fmt.allocPrint(
                         self.allocator,
                         "Link {d} failed: {s}",
-                        .{ link_id, link_result.message }
+                        .{ link_id, msg }
                     );
                     error_count += 1;
-                    self.allocator.free(link_result.message);
+                    if (link_result.message) |m| self.allocator.free(m);
                 }
             }
         }
