@@ -2203,6 +2203,14 @@ pub fn build(b: *std.Build) void {
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
         },
     });
+    const sebo_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/sebo.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "evolution_simulation", .module = evolution_simulation_mod },
+        },
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2224,6 +2232,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "alerts", .module = alerts_mod },
             .{ .name = "simulation", .module = simulation_mod },
             .{ .name = "evolution_simulation", .module = evolution_simulation_mod },
+            .{ .name = "sebo", .module = sebo_mod },
             .{ .name = "observability_export", .module = observability_export_mod },
             .{ .name = "visualization", .module = visualization_mod },
             .{ .name = "learning", .module = learning_mod },
@@ -2270,6 +2279,27 @@ pub fn build(b: *std.Build) void {
     }
     const sim_plot_step = b.step("sim-plot", "Visualize simulation CSV results");
     sim_plot_step.dependOn(&run_sim_plot.step);
+
+    // SEBO CLI — Sacred Evolutionary Bayesian Optimization
+    const sebo_cli = b.addExecutable(.{
+        .name = "tri-sebo",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/sebo_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "brain", .module = brain_mod },
+            },
+        }),
+    });
+    b.installArtifact(sebo_cli);
+
+    const run_sebo = b.addRunArtifact(sebo_cli);
+    if (b.args) |run_args| {
+        run_sebo.addArgs(run_args);
+    }
+    const sebo_step = b.step("sebo", "Run Sacred Evolutionary Bayesian Optimization");
+    sebo_step.dependOn(&run_sebo.step);
 
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
