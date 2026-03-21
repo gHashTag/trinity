@@ -3268,6 +3268,18 @@ pub fn build(b: *std.Build) void {
     const arena_step = b.step("arena", "Run Trinity Arena — LLM Battle Platform");
     arena_step.dependOn(&run_arena.step);
 
+    // STORM P9: Main CLI for autonomous operation
+    const storm_exe = b.addExecutable(.{
+        .name = "storm",
+        .root_source_file = b.path("src/storm/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    b.installArtifact(storm_exe);
+    const storm_step = b.step("storm", "STORM P9 — 32-agent autonomous operation");
+    const run_storm = b.addRunArtifact(storm_exe);
+    storm_step.dependOn(&run_storm.step);
+
     // Arena tests
     const arena_tests = b.addTest(.{
         .root_module = b.createModule(.{
