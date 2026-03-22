@@ -2257,7 +2257,7 @@ pub fn build(b: *std.Build) void {
     if (b.args) |run_args| {
         run_sim_suite.addArgs(run_args);
     }
-    const sim_suite_step = b.step("sim-suite", "Run Brain Evolution Simulation Suite");
+    const sim_suite_step = b.step("tri-sim-suite", "Run Brain Evolution Simulation Suite");
     sim_suite_step.dependOn(&run_sim_suite.step);
 
     // SIM PLOT — ASCII Visualization from CSV
@@ -2275,7 +2275,7 @@ pub fn build(b: *std.Build) void {
     if (b.args) |run_args| {
         run_sim_plot.addArgs(run_args);
     }
-    const sim_plot_step = b.step("sim-plot", "Visualize simulation CSV results");
+    const sim_plot_step = b.step("tri-sim-plot", "Visualize simulation CSV results");
     sim_plot_step.dependOn(&run_sim_plot.step);
 
     // SEBO CLI — Sacred Evolutionary Bayesian Optimization
@@ -2297,9 +2297,31 @@ pub fn build(b: *std.Build) void {
     if (b.args) |run_args| {
         run_sebo.addArgs(run_args);
     }
-    const sebo_step = b.step("sebo", "Run Sacred Evolutionary Bayesian Optimization");
+    const sebo_step = b.step("tri-sebo", "Run Sacred Evolutionary Bayesian Optimization");
     sebo_step.dependOn(&run_sebo.step);
 
+    // ═════════════════════════════════════════════════════════════════════════════
+    // FARM STATS — Statistics & Simulation Comparison
+    // ═════════════════════════════════════════════════════════════════════════════════════
+
+    const farm_stats_mod = b.createModule(.{
+        .root_source_file = b.path("src/cli/farm_stats.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const farm_stats_cli = b.addExecutable(.{
+        .name = "farm-stats",
+        .root_module = farm_stats_mod,
+    });
+    b.installArtifact(farm_stats_cli);
+
+    const run_farm_stats = b.addRunArtifact(farm_stats_cli);
+    if (b.args) |run_args| {
+        run_farm_stats.addArgs(run_args);
+    }
+    const farm_stats_step = b.step("farm-stats", "Farm Statistics & Simulation Comparison");
+    farm_stats_step.dependOn(&run_farm_stats.step);
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
     const tri_utils_mod = b.createModule(.{
