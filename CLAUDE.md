@@ -119,6 +119,56 @@ New feature? → New `tri` command. No direct tool calls.
 
 This gives: **safety** (tri git push blocks main), **audit** (every command logged), **testability** (test tri CLI, not 6 separate agents).
 
+## Rigid Process Framework — Dev Workflow
+
+Trinity S³AI includes a **Rigid Process Framework** for structured development workflow enforcement.
+
+### State Machine
+
+```
+IDLE → ACTIVE → DIRTY → TESTED → COMMITTED → SHIPPED
+   ↑        ↓        ↑        ↓          ↑
+   ←─────────────────── RESET ──────────────
+                        ↓
+                     BLOCKED
+```
+
+### Dev Commands
+
+```bash
+tri dev              # Show dev session status
+tri dev status        # Alias for status
+tri dev start --issue <N>  # Start session for issue N
+tri dev test          # Run tests and mark as passed
+tri dev commit "msg"  # Commit changes with issue ID
+tri dev ship          # Ship changes (mark as delivered)
+tri dev reset         # Reset changes back to ACTIVE state
+tri dev unblock       # Clear BLOCKED state
+tri dev log           # Show state history
+```
+
+### Session Persistence
+
+- **File**: `.trinity/dev_session.json`
+- **State**: Tracks current workflow state, issue number, test status
+- **Validation**: Each transition checked by `canTransition()` before applying
+
+### Integration
+
+- **Git Hooks**: Commit-msg hook enforces issue ID format (#N) and session state validation
+- **GitHub**: `src/tri/github_integration.zig` provides issue creation, status updates, test results
+- **Test Runner**: `src/tri/test_dev_runner.zig` — standalone binary for framework testing
+
+### Test Commands
+
+```bash
+zig build test_dev_runner  # Build standalone test runner
+./zig-out/bin/test_dev_runner status
+./zig-out/bin/test_dev_runner cycle  # Full cycle test
+```
+
+See [AGENTS.md](AGENTS.md) for complete agent documentation.
+
 ## Workflow
 
 1. Issue on GitHub → branch `feat/issue-{N}`
