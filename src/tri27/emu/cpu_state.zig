@@ -37,6 +37,14 @@ pub const CPUFlags = packed struct {
     }
 };
 
+/// Call stack frame (for CALL/RET)
+pub const CallFrame = struct {
+    return_addr: u32 = 0,
+};
+
+/// Maximum call stack depth
+pub const CALL_STACK_MAX: usize = 4096;
+
 /// TRI-27 CPU State
 /// 27 trinary registers (t0-t26) + 3 float registers (f0-f2)
 pub const CPUState = struct {
@@ -53,6 +61,7 @@ pub const CPUState = struct {
     sp: u32,          // Stack pointer
     fp: u32,          // Frame pointer (for calls)
     flags: CPUFlags,   // Condition flags
+    call_stack: [CALL_STACK_MAX]CallFrame,  // Call stack
 
     // === MEMORY ===
     /// Direct memory access (byte-addressable)
@@ -79,6 +88,7 @@ pub const CPUState = struct {
             .sp = 0,
             .fp = 0,
             .flags = CPUFlags{},
+            .call_stack = [_]CallFrame{.return_addr = 0} ** CALL_STACK_MAX,
             .memory = memory,
             .memory_len = memory_size,
             .instructions_executed = 0,
@@ -129,7 +139,7 @@ pub const CPUState = struct {
 
 test "CPUState init" {
     var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit();
+    defer cpu.deinit(std.testing.allocator);
 
     try std.testing.expectEqual(@as(usize, 27), cpu.trits.len);
     try std.testing.expectEqual(@as(usize, 3), cpu.floats.len);
@@ -144,7 +154,7 @@ test "CPUState init" {
 
 test "CPUState resetExecution" {
     var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit();
+    defer cpu.deinit(std.testing.allocator);
 
     // Set some state
     cpu.pc = 100;
@@ -167,7 +177,7 @@ test "CPUState resetExecution" {
 
 test "CPUState metrics" {
     var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit();
+    defer cpu.deinit(std.testing.allocator);
 
     cpu.start_time = std.time.nanoTimestamp();
 
