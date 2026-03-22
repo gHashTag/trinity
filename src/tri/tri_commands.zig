@@ -48,6 +48,7 @@ pub const NodeTier = multi_cluster.NodeTier;
 pub const NodeEntry = multi_cluster.NodeEntry;
 pub const ClusterState = multi_cluster.ClusterState;
 pub const runMultiClusterCommand = multi_cluster.runMultiClusterCommand;
+pub const runDistributedCommand = multi_cluster.runMultiClusterCommand; // Alias for distributed command
 // Re-export quantum/cosmic/temporal commands
 pub const runTimeCommand = quantum_cosmic.runTimeCommand;
 pub const runQuantumCommand = quantum_cosmic.runQuantumCommand;
@@ -640,6 +641,58 @@ pub fn runCleanCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     _ = allocator;
     _ = args;
     std.debug.print("{s}⚠️  clean: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+}
+
+/// Format Command - Run zig fmt on source files
+/// Usage: tri fmt [path]
+pub fn runFmtCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}🔧 Running zig fmt...{s}\n", .{ CYAN, RESET });
+    const argv = &[_][]const u8{ "zig", "fmt" };
+    var child = std.process.Child.init(argv, allocator);
+    child.stderr_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    _ = try child.spawnAndWait();
+}
+
+/// Stats Command - Show build statistics
+/// Usage: tri stats
+pub fn runStatsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}📊 Stats: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+}
+
+/// IGLA Command - IGLA related operations
+/// Usage: tri igla <subcommand>
+pub fn runIglaCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}⚠️  igla: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+}
+
+/// Needle Command - Code search and replace (STUB)
+/// Usage: tri needle [subcommand]
+pub fn runNeedleCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}🔍 needle: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+}
+
+/// Needle Search Command - Search code (STUB)
+/// Usage: tri needle-search <query>
+pub fn runNeedleSearchCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}🔍 needle-search: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
+}
+
+/// Needle Check Command - Check code (STUB)
+/// Usage: tri needle-check <path>
+pub fn runNeedleCheckCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("{s}🔍 needle-check: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
 }
 /// Info Command - System information
 /// Usage: tri info [subcommand]

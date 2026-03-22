@@ -681,10 +681,10 @@ pub fn main() !void {
         },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator, cmd_args),
-        .clean => try commands.runCleanCommand(allocator),
-        .fmt_cmd => try commands.runFmtCommand(allocator),
-        .stats_cmd => try commands.runStatsCommand(allocator),
-        .igla => try commands.runIglaCommand(allocator),
+        .clean => try commands.runCleanCommand(allocator, cmd_args),
+        .fmt_cmd => try commands.runFmtCommand(allocator, cmd_args),
+        .stats_cmd => try commands.runStatsCommand(allocator, cmd_args),
+        .igla => try commands.runIglaCommand(allocator, cmd_args),
         // Cycle 98: Sacred Intelligence
         .identity => {
             std.debug.print(
