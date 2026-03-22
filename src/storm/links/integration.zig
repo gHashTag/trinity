@@ -2,6 +2,7 @@
 //! Git commit, GitHub API, experience save, phoenix lineage
 
 const std = @import("std");
+const storm = @import("../golden_chain.zig");
 
 pub const gitCommitLinkID = 25;
 pub const githubIssueCommentLinkID = 26;

@@ -2,6 +2,7 @@
 //! Unit tests and VSA verification
 
 const std = @import("std");
+const storm = @import("../golden_chain.zig");
 
 pub const unitTestLinkID = 10;
 pub const integrationTestLinkID = 11;
