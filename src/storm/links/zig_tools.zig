@@ -2,6 +2,7 @@
 //! AST check, format check, and build verification
 
 const std = @import("std");
+const storm = @import("../golden_chain.zig");
 
 pub const astCheckLinkID = 7;
 pub const fmtCheckLinkID = 8;
