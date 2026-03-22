@@ -1,20 +1,21 @@
-# QMTECH XC7A100T-1FGG676C UART Echo Constraints
-# FT232RL Connections:
-#   RXD (green)  → J2 pin 5  → L20 → FPGA uart_tx
-#   TXD (white)  → J2 pin 6  → K20 → FPGA uart_rx
-#   GND (black) → J2 pin 1  → GND
-#   LED            → T23  (D5)
-#   Clock         → M22  (50 MHz)
+# UART Echo Constraints for QMTech XC7A100T FGG676C
+# Board: QMTech XC7A100T-1FGG676C
+# J2 Connector pins: M22(clk), K20(RX), L20(TX), T23(LED)
 
-set_property LOC M22 [get_ports clk]
-set_property IOSTANDARD LVCMOS33 [get_ports clk]
+# Clock — 50 MHz system clock on M22
+set_property -dict {PACKAGE_PIN M22 IOSTANDARD LVCMOS33} [get_ports clk]
+create_clock -period 20.000 -name sys_clk [get_ports clk]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_IBUF]
 
-set_property LOC L20 [get_ports uart_tx]
-set_property IOSTANDARD LVCMOS33 [get_ports uart_tx]
-set_property PULLDOWN TRUE [get_ports uart_tx]  # Pull down to idle
+# UART TX (FPGA → ESP32/Mac) - L20 on J2 connector
+set_property -dict {PACKAGE_PIN L20 IOSTANDARD LVCMOS33} [get_ports uart_tx]
 
-set_property LOC K20 [get_ports uart_rx]
-set_property IOSTANDARD LVCMOS33 [get_ports uart_rx]
+# UART RX (ESP32/Mac → FPGA) - K20 on J2 connector
+set_property -dict {PACKAGE_PIN K20 IOSTANDARD LVCMOS33} [get_ports uart_rx]
 
-set_property LOC T23 [get_ports led]
-set_property IOSTANDARD LVCMOS33 [get_ports led]
+# Activity LED - T23 on J2 connector
+set_property -dict {PACKAGE_PIN T23 IOSTANDARD LVCMOS33} [get_ports led]
+
+# Bitstream configuration
+set_property CFGBVS VCCO [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
