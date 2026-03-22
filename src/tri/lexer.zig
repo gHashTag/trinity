@@ -171,9 +171,13 @@ fn identToToken(s: []const u8) Token {
     if (std.mem.eql(u8, s, "t3")) return .t_t3;
     if (std.mem.eql(u8, s, "t9")) return .t_t9;
     if (std.mem.eql(u8, s, "t27")) return .t_t27;
+    // Types
+    if (std.mem.eql(u8, s, "trit")) return .t_trit;
+    if (std.mem.eql(u8, s, "t3")) return .t_t3;
+    if (std.mem.eql(u8, s, "t9")) return .t_t9;
+    if (std.mem.eql(u8, s, "t27")) return .t_t27;
     if (std.mem.eql(u8, s, "gf16")) return .t_gf16;
-    if (std.mem.eql(u8, s, "tf3")) return .t_gf16;
-}
+    if (std.mem.eql(u8, s, "tf3")) return .t_tf3;
 
     // Trit literals: N (neg), O (zero), P (pos)
     if (std.mem.eql(u8, s, "N")) return Token{ .lit_trit = .neg };
