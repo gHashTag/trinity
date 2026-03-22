@@ -69,6 +69,33 @@ pub fn getOpcodeName(opcode: u8) []const u8 {
     return "<unknown>";
 }
 
+/// TRI-27 Instruction Format
+/// RRR: rd, rs1, rs2 (3-bit each, up to 27 registers)
+/// RI:  rd, imm16 (8-bit rd, 16-bit immediate)
+/// RRI: rd, rs, imm16 (8-bit rd, 8-bit rs, 16-bit imm)
+/// JMP: cond, addr16 (4-bit cond, 16-bit target)
+/// CALL/RET: addr16 (16-bit target)
+/// SACRED: imm16 (16-bit sacred constant)
+pub const Instruction = struct {
+    /// Operation code
+    opcode: u8,
+
+    /// Destination register (0-26)
+    rd: u8,
+
+    /// Source register 1 (0-26)
+    rs1: u8,
+
+    /// Source register 2 (0-26)
+    rs2: u8,
+
+    /// Immediate value (16-bit signed)
+    imm16: i16,
+
+    /// Condition code (for branches)
+    cond: u8,
+};
+
 /// Decode register encoding (3 bits: 5 values)
 /// For most RRR/RRI opcodes: reg field contains destination + 2 sources
 pub const RegDecode = packed struct {
@@ -143,6 +170,11 @@ test "decoder: decodeRegPair" {
     try std.testing.expectEqual(@as(u8, 2), pair.rs2);
 }
 
+/// Wrapper for external decode calls
+pub fn decodeInstruction(word: u32) Instruction {
+    return decode(word);
+}
+
 test "decoder: decodeImm16" {
     const code = [_]u8{ 0x02, 0x80, 0x00 };
     const imm = decodeImm16(&code, 0);
@@ -166,6 +198,57 @@ test "decoder: getOpcodeName" {
     try std.testing.expectEqualStrings("ADD", getOpcodeName(OPCODE_ADD));
     try std.testing.expectEqualStrings("DOT", getOpcodeName(OPCODE_DOT));
     try std.testing.expectEqualStrings("UNKNOWN", getOpcodeName(255));
+}
+
+/// Decode register from 3-bit field (bits 8-10)
+fn decodeRd(word: u32) u8 {
+    return @as(u8, (word >> 8) & 0x1F); // 5 bits for 27 registers
+}
+
+/// Decode register from 3-bit field (bits 11-13)
+fn decodeRs1(word: u32) u8 {
+    return @as(u8, (word >> 11) & 0x1F);
+}
+
+/// Decode register from 3-bit field (bits 14-16)
+fn decodeRs2(word: u32) u8 {
+    return @as(u8, (word >> 14) & 0x1F);
+}
+
+/// Decode 16-bit immediate (bits 16-31)
+fn decodeImm16FromWord(word: u32) i16 {
+    return @as(i16, @truncate((word >> 16) & 0xFFFF));
+}
+
+/// Decode 32-bit instruction word into Instruction struct
+pub fn decode(word: u32) Instruction {
+    const opcode = @as(u8, word & 0xFF);
+
+    // For most instructions: decode register fields
+    const rd = decodeRd(word);
+    const rs1 = decodeRs1(word);
+    const rs2 = decodeRs2(word);
+    const imm16 = decodeImm16FromWord(word);
+
+    return Instruction{
+        .opcode = opcode,
+        .rd = rd,
+        .rs1 = rs1,
+        .rs2 = rs2,
+        .imm16 = imm16,
+        .cond = 0,
+    };
+}
+
+/// Encode Instruction to 32-bit word
+pub fn encode(inst: Instruction) u32 {
+    var word: u32 = 0;
+    word |= inst.opcode;
+    word |= @as(u32, inst.rd) << 8;
+    word |= @as(u32, inst.rs1) << 11;
+    word |= @as(u32, inst.rs2) << 14;
+    word |= @as(u32, @as(u16, @bitCast(inst.imm16))) << 16;
+    return word;
 }
 
 test "CPUState compatibility" {

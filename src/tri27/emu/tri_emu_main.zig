@@ -9,13 +9,13 @@
 const std = @import("std");
 
 const Memory = @import("tri_memory.zig").Memory;
-const CPUState = @import("executor.zig").CPUState;
+const CPUState = @import("cpu_state.zig").CPUState;
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
     // Parse command line arguments
-    const args = try std.process.argsAlloc(allocator, &std.process.ArgIterator.init(allocator));
+    const args = try std.process.argsAlloc(allocator);
     defer allocator.free(args);
 
     if (args.len < 2) {
@@ -98,7 +98,7 @@ pub const EmulatorResult = struct {
 
 /// Run the TRI-27 emulator
 pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: std.mem.Allocator) !EmulatorResult {
-    const Instruction = @import("tri_decode.zig").Instruction;
+    const Instruction = @import("decoder.zig").Instruction;
 
     // Initialize memory
     var mem = try Memory.init(allocator);
@@ -118,8 +118,7 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     // Initialize CPU
     var cpu = CPUState.init(allocator);
     cpu.ip = load_result.entry_point;
-    const mem_module = @import("tri_memory.zig");
-    cpu.sp = mem_module.STACK_START;
+    cpu.sp = 19683;
 
     if (options.verbose) {
         std.debug.print("  SP: 0x{X:0>4}\n", .{cpu.sp});
@@ -166,7 +165,7 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
 
         // Dump memory if requested at this instruction
         if (options.dump_instructions > 0 and cpu.instructions_executed == options.dump_instructions) {
-            try dumpMemoryState(&mem, &cpu);
+            try dumpMemoryState(cpu);
             exit_reason = "dump requested";
             break;
         }
@@ -185,7 +184,10 @@ const execute = @import("tri_exec.zig").execute;
 
 /// Print usage information
 fn printUsage() !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout_file = std.io.getStdOut();
+    var stdout_buf = std.io.bufferedWriter(stdout_file);
+    const stdout = stdout_buf.writer();
+
     try stdout.print(
         \\TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor
         \\
@@ -215,11 +217,15 @@ fn printUsage() !void {
         \\  4  - Emulation error
         \\
     , .{});
+
+    
 }
 
 /// Print execution statistics
 fn printStats(result: *const EmulatorResult) !void {
-    const stdout = std.io.getStdOut().writer();
+    const stdout_file = std.io.getStdOut();
+    var stdout_buf = std.io.bufferedWriter(stdout_file);
+    const stdout = stdout_buf.writer();
 
     try stdout.print("\n", .{});
     try stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});
@@ -233,11 +239,15 @@ fn printStats(result: *const EmulatorResult) !void {
     try stdout.print("║  Final IP:           0x{X:0>10}                                ║\n", .{result.final_ip});
     try stdout.print("║                                                                  ║\n", .{});
     try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
+
+    
 }
 
 /// Dump current memory and CPU state
-fn dumpMemoryState(mem: Memory, cpu: CPUState) !void {
-    const stdout = std.io.getStdOut().writer();
+fn dumpMemoryState(cpu: CPUState) !void {
+    const stdout_file = std.io.getStdOut();
+    var stdout_buf = std.io.bufferedWriter(stdout_file);
+    const stdout = stdout_buf.writer();
 
     try stdout.print("\n╔══════════════════════════════════════════════════════════════════════════╗\n", .{});
     try stdout.print("║  TRI-27 CPU STATE — DUMP                                               ║\n", .{});
@@ -276,4 +286,6 @@ fn dumpMemoryState(mem: Memory, cpu: CPUState) !void {
         cpu.cycles,
     });
     try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
+
+    
 }

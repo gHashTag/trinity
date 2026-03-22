@@ -1,101 +1,70 @@
-FAMILY  = artix7
-PART    = xc7a100tfgg676-1
-PROJECT = trinity
-TOP_MODULE = trinity_top
-XDC     = trinity.xdc
+# UART Echo Synthesis Makefile
+# Target: QMTech XC7A100T-1FGG676C
+# Tools: Yosys, nextpnr-xilinx, fasm2frames, xc7patch
 
-# Paths for openXC7 tools (snap-based)
-NEXTPNR_XILINX_DIR ?= /snap/openxc7/current/opt/nextpnr-xilinx
-NEXTPNR_XILINX_PYTHON_DIR ?= $(NEXTPNR_XILINX_DIR)/python
-PRJXRAY_DB_DIR ?= $(NEXTPNR_XILINX_DIR)/external/prjxray-db
-CHIPDB ?= ./chipdb/
+YOSYS ?= yosys
+TOP_MODULE ?= uart_echo_top
+DEVICE ?= xc7a100t-fgg484-1
 
-DBPART = $(shell echo $(PART) | sed -e 's/-[0-9]//g')
+# Source files
+RTL_SOURCES = uart_echo_top.v
+XDC_CONSTRAINTS = uart_echo_top.xdc
 
-PYPY3 ?= pypy3
+# Output files
+BLIF_OUTPUT = $(TOP_MODULE).blif
+JSON_OUTPUT = $(TOP_MODULE).json
+FASM_OUTPUT = $(TOP_MODULE).fasm
+FRAMES_OUTPUT = $(TOP_MODULE).frames
+BITSTREAM_OUTPUT = $(TOP_MODULE).bit
 
-.PHONY: all clean
+# Synthesis
+synthesis: $(BLIF_OUTPUT)
 
-all: $(PROJECT).bit
+$(BLIF_OUTPUT): $(RTL_SOURCES)
+	@echo "[1/4] Running Yosys synthesis..."
+	$(YOSYS) -p 'read_verilog $(RTL_SOURCES); synth_xilinx -family xc7 -top $(TOP_MODULE) -blif $(BLIF_OUTPUT)'
+	@echo "✅ Yosys complete: $(BLIF_OUTPUT)"
 
-$(PROJECT).json: $(PROJECT).v
-	yosys -p "synth_xilinx -flatten -abc9 -arch xc7 -top $(TOP_MODULE); write_json $(PROJECT).json" $<
+# Place and route (requires nextpnr-xilinx)
+place_route: $(FASM_OUTPUT)
 
-$(CHIPDB)/$(DBPART).bin:
-	mkdir -p $(CHIPDB)
-	$(PYPY3) $(NEXTPNR_XILINX_PYTHON_DIR)/bbaexport.py --device $(PART) --bba $(DBPART).bba
-	bbasm -l $(DBPART).bba $(CHIPDB)/$(DBPART).bin
-	rm -f $(DBPART).bba
+$(FASM_OUTPUT): $(BLIF_OUTPUT) $(XDC_CONSTRAINTS)
+	@echo "[2/4] Running nextpnr-xilinx..."
+	@echo "   ERROR: nextpnr-xilinx not installed!"
+	@echo "   Install: pip install nextpnr-xilinx"
+	@exit 1
 
-$(PROJECT).fasm: $(PROJECT).json $(CHIPDB)/$(DBPART).bin $(XDC)
-	nextpnr-xilinx --chipdb $(CHIPDB)/$(DBPART).bin --xdc $(XDC) --json $(PROJECT).json --fasm $@
+# Generate bitstream (requires fasm2frames + xc7patch)
+bitstream: $(BITSTREAM_OUTPUT)
 
-$(PROJECT).frames: $(PROJECT).fasm
-	fasm2frames --part $(PART) --db-root $(PRJXRAY_DB_DIR)/$(FAMILY) $< > $@
+$(BITSTREAM_OUTPUT): $(FASM_OUTPUT)
+	@echo "[3/4] Generating bitstream..."
+	@echo "   ERROR: fasm2frames or xc7patch not installed!"
+	@echo "   This requires SymbiFlow/prjxray toolchain"
+	@exit 1
 
-$(PROJECT).bit: $(PROJECT).frames
-	xc7frames2bit --part_file $(PRJXRAY_DB_DIR)/$(FAMILY)/$(PART)/part.yaml --part_name $(PART) --frm_file $< --output_file $@
-
-## TMU (Ternary MatMul Unit) — K-parallel dot product
-sim-tmu:
-	iverilog -o tmu_test tmu.v tmu_tb.v && ./tmu_test
-
-synth-tmu:
-	yosys -p "read_verilog tmu.v; synth_xilinx -flatten -abc9 -arch xc7 -top tmu; stat"
-
-sim-tmu-full:
-	iverilog -DNOWAVE -o hslm_full_test tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
-	  trinity_block.v embedding_lookup.v argmax_unit.v \
-	  hslm_full_top.v hslm_full_top_tb.v && ./hslm_full_test
-
-sim-tmu-full-wave:
-	iverilog -o hslm_full_test tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
-	  trinity_block.v embedding_lookup.v argmax_unit.v \
-	  hslm_full_top.v hslm_full_top_tb.v && ./hslm_full_test
-
-synth-tmu-full:
-	yosys -p "read_verilog tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
-	  trinity_block.v embedding_lookup.v argmax_unit.v \
-	  hslm_full_top.v; \
-	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; stat" \
-	  2>&1 | tee synth_reports/hslm_tmu_full.log
-
-## HSLM Full — Yosys synth only (wide BRAM, K=32 + BSCANE2 bridge)
-HSLM_SRCS = tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
-            trinity_block.v embedding_lookup.v argmax_unit.v hslm_full_top.v
-
-synth-hslm:
-	@mkdir -p synth_reports
-	yosys -p "read_verilog $(HSLM_SRCS); \
-	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; stat" \
-	  2>&1 | tee synth_reports/hslm_wide_bram.log
-
-## HSLM Full — complete bitstream pipeline (requires openXC7 toolchain)
-hslm_full_top.json: $(HSLM_SRCS)
-	yosys -p "read_verilog $(HSLM_SRCS); \
-	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; \
-	  write_json $@"
-
-hslm_full_top.fasm: hslm_full_top.json $(CHIPDB)/$(DBPART).bin hslm_full_top.xdc
-	nextpnr-xilinx --chipdb $(CHIPDB)/$(DBPART).bin --xdc hslm_full_top.xdc \
-	  --json hslm_full_top.json --fasm $@
-
-hslm_full_top.frames: hslm_full_top.fasm
-	fasm2frames --part $(PART) --db-root $(PRJXRAY_DB_DIR)/$(FAMILY) $< > $@
-
-hslm_full_top.bit: hslm_full_top.frames
-	xc7frames2bit --part_file $(PRJXRAY_DB_DIR)/$(FAMILY)/$(PART)/part.yaml \
-	  --part_name $(PART) --frm_file $< --output_file $@
-
-## Pack weights: 32 bank .mem → 1 wide .mem (requires weight_pack_wide tool)
-pack-weights:
-	@echo "Packing lm_head..."
-	../tools/weight_pack_wide lm_head 32 1024
-	@for prefix in tmu_w_b1_up tmu_w_b1_down tmu_w_b2_up tmu_w_b2_down tmu_w_b3_up tmu_w_b3_down; do \
-	  echo "Packing $$prefix..."; \
-	  ../tools/weight_pack_wide $$prefix 32 5832; \
-	done
-
+# Clean
 clean:
-	rm -f *.bit *.frames *.fasm *.json tmu_test *.vcd
-	rm -rf chipdb/
+	@rm -f *.blif *.json *.fasm *.frames *.bit
+	@rm -f *.log
+	@echo "✅ Cleaned"
+
+# Help
+help:
+	@echo "UART Echo Synthesis"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make synthesis          - Run Yosys (requires yosys)"
+	@echo "  make place_route       - Place & route (requires nextpnr-xilinx)"
+	@echo "  make bitstream        - Generate .bit (requires fasm2frames + xc7patch)"
+	@echo "  make clean             - Clean outputs"
+	@echo ""
+	@echo "Requirements:"
+	@echo "  - yosys (synthesis)"
+	@echo "  - nextpnr-xilinx (placement & routing)"
+	@echo "  - fasm2frames (FASM to frames)"
+	@echo "  - xc7patch (frames to bitstream)"
+	@echo ""
+	@echo "Install all: pip install nextpnr-xilinx fasm2frames xc7patch"
+
+.PHONY: synthesis place_route bitstream clean help

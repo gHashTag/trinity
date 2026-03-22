@@ -27,7 +27,7 @@ pub const Flags = packed struct {
 // ═══════════════════════════════════════════════════════════════════════════════════════
 pub const CPUState = struct {
     // Register file
-    t27: [16]Trit27, // 16 ternary registers (27 trits each)
+    t27: [27]Trit27, // 27 ternary registers (27 trits each)
     f: [8]u16, // 8 GF16 registers for floating-point
     v: [16][16]u16, // 16 vector registers (16×GF16)
 
@@ -56,7 +56,7 @@ pub const CPUState = struct {
         };
 
         // Zero initialize arrays
-        for (0..16) |i| {
+        for (0..27) |i| {
             state.t27[i] = Trit27{ .trits = 0 };
         }
         for (0..8) |i| {
@@ -72,14 +72,14 @@ pub const CPUState = struct {
     }
 
     /// Get ternary register value
-    pub fn getT27(self: *CPUState, reg: u4) Trit27 {
-        std.debug.assert(reg < 16, "Invalid ternary register index");
+    pub fn getT27(self: *CPUState, reg: u5) Trit27 {
+        std.debug.assert(reg < 27, "Invalid ternary register index");
         return self.t27[reg];
     }
 
     /// Set ternary register value
-    pub fn setT27(self: *CPUState, reg: u4, value: Trit27) void {
-        std.debug.assert(reg < 16, "Invalid ternary register index");
+    pub fn setT27(self: *CPUState, reg: u5, value: Trit27) void {
+        std.debug.assert(reg < 27, "Invalid ternary register index");
         self.t27[reg] = value;
     }
 
@@ -146,7 +146,6 @@ pub const ExecError = error{
 // ═══════════════════════════════════════════════════════════════════════════════════════
 pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
     // Increment IP before execution (unless this is a control flow instruction)
-    const old_ip = cpu.ip;
     cpu.instructions_executed += 1;
 
     switch (inst.opcode) {
@@ -164,7 +163,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
         .LD_IMM => {
             const value = inst.immediate;
             // Pack immediate into Trit27 (sign-extended)
-            const trit_value = Trit27.fromI8(@as(i8, @min(@as(i32, 1), @max(@as(i32, -1), value));
+            const clamped = std.math.clamp(value, @as(i32, -1), @as(i32, 1));
+            const trit_value = Trit27.fromI8(@as(i8, clamped));
             cpu.setT27(inst.dst, trit_value);
             cpu.updateFlagsT27(trit_value);
             cpu.ip += 1;

@@ -42,6 +42,8 @@ pub const CallFrame = struct {
     return_addr: u32 = 0,
 };
 
+pub const DEFAULT_CALL_FRAME: CallFrame = .{ .return_addr = 0 };
+
 /// Maximum call stack depth
 pub const CALL_STACK_MAX: usize = 4096;
 
@@ -88,7 +90,7 @@ pub const CPUState = struct {
             .sp = 0,
             .fp = 0,
             .flags = CPUFlags{},
-            .call_stack = [_]CallFrame{ .return_addr = 0 } ** CALL_STACK_MAX,
+            .call_stack = std.mem.zeroes([CALL_STACK_MAX]CallFrame),
             .memory = memory,
             .memory_len = memory_size,
             .instructions_executed = 0,
