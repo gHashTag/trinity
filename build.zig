@@ -2677,6 +2677,18 @@ pub fn build(b: *std.Build) void {
     const tri_config_tests_step = b.step("test-tri-config", "Run TRI Config Tests");
     tri_config_tests_step.dependOn(&run_tri_config_tests.step);
 
+    // Dev State Machine tests
+    const dev_state_machine_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/dev_state_machine.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_dev_state_machine_tests = b.addRunArtifact(dev_state_machine_tests);
+    const dev_state_machine_tests_step = b.step("test-dev-state-machine", "Run Dev State Machine Tests");
+    dev_state_machine_tests_step.dependOn(&run_dev_state_machine_tests.step);
+
     // History module tests
     const tri_history_tests = b.addTest(.{
         .root_module = b.createModule(.{
