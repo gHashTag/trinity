@@ -118,7 +118,7 @@ struct CustomRangeSlider: View {
     var body: some View {
         GeometryReader { geometry in
             let trackHeight: CGFloat = 4
-            let thumbSize: CGFloat = 16
+            let _ = 16
             let minY = geometry.size.height / 2
 
             ZStack {
