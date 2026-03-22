@@ -6454,3 +6454,17 @@
 {"ts":1774207939,"seq":2934,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
 {"ts":1774207939,"seq":2935,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
 {"ts":1774207939,"seq":2936,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":420,"build_ok":true,"dirty":34,"issues":53,"alerts":0}
+{"ts":1774208539,"seq":2937,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1774208547,"seq":2938,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1774208551,"seq":2939,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774208551,"seq":2940,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774208551,"seq":2941,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774208551,"seq":2942,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774208562,"seq":2943,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1774208562,"seq":2944,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1774208585,"seq":2945,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1774208585,"seq":2946,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1774208585,"seq":2947,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Medulla sleep cycle check"}
+{"ts":1774208585,"seq":2948,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1774208585,"seq":2949,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1774208585,"seq":2950,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":422,"build_ok":true,"dirty":7,"issues":53,"alerts":0}

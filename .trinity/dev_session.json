@@ -1,2 +1,12 @@
-{"state": "ACTIVE", "issue_number": 42, "branch": "", "issue_title_len": 22, "issue_title": "", "files_count": 0, "tests_passed": false, "commit_hash": "", "started_at": 1234567890, "last_updated": 1239999999
+{
+  "state": "COMMITTED",
+  "issue_number": 357,
+  "branch": "",
+  "issue_title_len": 22,
+  "issue_title": "",
+  "files_count": 0,
+  "tests_passed": false,
+  "commit_hash": "",
+  "started_at": 1234567890,
+  "last_updated": 1239999999
 }
