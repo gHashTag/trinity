@@ -1203,23 +1203,9 @@ fn isProcessAlive(pid: u32) bool {
     return true;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// TELEGRAM ALERTS — Send notifications to Telegram group
-// ═══════════════════════════════════════════════════════════════════════════════
-
-fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anytype) !void {
-    const msg = std.fmt.allocPrint(allocator, fmt, args) catch return;
-    defer allocator.free(msg);
-
-    const token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch return;
-    defer allocator.free(token);
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-// STATS COMMAND — Farm Statistics & Simulation Comparison
 // ═════════════════════════════════════════════════════════════════════════
 
-fn runFarmStatsCommand(allocator: Allocator, args: []const []const u8) !void {
-    const farm_stats = @import("../cli/farm_stats.zig");
+fn runFarmStatsCommand(allocator: Allocator, _args: []const []const u8) !void {
 
     // Parse flags
     var show_farm_only = false;
@@ -1235,13 +1221,8 @@ fn runFarmStatsCommand(allocator: Allocator, args: []const []const u8) !void {
         }
     }
 
-    if (export_csv) {
-        return farm_stats.exportToCSV(allocator);
-    } else if (show_farm_only) {
-        return farm_stats.showFarmStatsOnly(allocator);
-    } else {
-        return farm_stats.generateReport(allocator);
-    }
+    print("Farm stats command not yet implemented. Use: tri farm status\n", .{});
+    return;
 }
 
 // ═════════════════════════════════════════════════════════════════════

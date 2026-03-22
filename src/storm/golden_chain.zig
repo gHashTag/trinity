@@ -6,6 +6,12 @@
 
 const std = @import("std");
 
+// P10: Import real link modules
+const vibee_link = @import("links/vibee.zig");
+const zig_tools_link = @import("links/zig_tools.zig");
+const testing_link = @import("links/testing.zig");
+const integration_link = @import("links/integration.zig");
+
 // P10: Import Experience Engine and Timeout Handler
 const ExperienceEngine = @import("experience_engine.zig").ExperienceEngine;
 const TimeoutHandler = @import("timeout_handler.zig").TimeoutHandler;
@@ -138,13 +144,13 @@ pub const GoldenChain = struct {
             std.log.warn("Failed to create experience engine: {}", .{e});
             return error.ExperienceInitFailed;
         };
-        experience.* = ExperienceEngine.init(allocator);
+        experience.* = try ExperienceEngine.init(allocator);
 
         const timeout_handler = allocator.create(TimeoutHandler) catch |e| {
             std.log.warn("Failed to create timeout handler: {}", .{e});
             return error.TimeoutHandlerInitFailed;
         };
-        timeout_handler.* = TimeoutHandler.init(allocator);
+        timeout_handler.* = try TimeoutHandler.init(allocator);
 
         return .{
             .allocator = allocator,
