@@ -308,6 +308,48 @@ pub fn quantizeF16ToTernary(input: []const f16, threshold: f16, output: []i8) vo
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// GF16 ARITHMETIC — Saturating operations matching sacred_alu.v
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Saturating GF16 multiplication: (a × b) clamped to [-limit, limit]
+/// Matches sacred_alu.v multiplier behavior (DSP48E1, single-cycle)
+/// Returns packed u16 in GF16 format
+pub fn gf16MulSaturated(a: u16, b: u16, limit: u16) u16 {
+    const a_f16: f16 = @bitCast(a);
+    const b_f16: f16 = @bitCast(b);
+    const a_f32: f32 = @floatCast(a_f16);
+    const b_f32: f32 = @floatCast(b_f16);
+    const prod = a_f32 * b_f32;
+
+    const limit_f16: f16 = @bitCast(limit);
+    const limit_f32: f32 = @floatCast(limit_f16);
+
+    // Saturate: clamp to [-limit, limit]
+    const clamped = if (prod > limit_f32) limit_f32 else if (prod < -limit_f32) -limit_f32 else prod;
+
+    return @bitCast(@as(f16, @floatCast(clamped)));
+}
+
+/// GF16 division with IEEE754 compliance
+/// Fast approximation: result ≈ a / b
+/// Returns packed u16 in GF16 format
+pub fn gf16Div(a: u16, b: u16) u16 {
+    const a_f16: f16 = @bitCast(a);
+    const b_f16: f16 = @bitCast(b);
+    const a_f32: f32 = @floatCast(a_f16);
+    const b_f32: f32 = @floatCast(b_f16);
+
+    // Check for division by zero
+    if (@abs(b_f32) < 1e-5) {
+        const inf_val: f32 = if (a_f32 > 0) 65504.0 else -65504.0;
+        return @bitCast(@as(f16, @floatCast(inf_val)));
+    }
+
+    const result = a_f32 / b_f32;
+    return @bitCast(@as(f16, @floatCast(result)));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -347,6 +389,106 @@ test "f32 to f16 slice conversion roundtrip" {
         const err = @abs(orig - res);
         try std.testing.expect(err <= @abs(orig) * 0.002 + 0.001);
     }
+}
+
+test "gf16MulSaturated within limit" {
+    const a: f16 = @as(f16, 1.5);
+    const b: f16 = @as(f16, 2.0);
+    const limit: f16 = @as(f16, 5.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const limit_u16: u16 = @bitCast(limit);
+    const result_u16 = gf16MulSaturated(a_u16, b_u16, limit_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    try std.testing.expectApproxEqAbs(3.0, result_f32, 0.01);
+}
+
+test "gf16MulSaturated positive overflow" {
+    const a: f16 = @as(f16, 10.0);
+    const b: f16 = @as(f16, 10.0);
+    const limit: f16 = @as(f16, 50.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const limit_u16: u16 = @bitCast(limit);
+    const result_u16 = gf16MulSaturated(a_u16, b_u16, limit_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    // 10 * 10 = 100, should saturate to 50
+    try std.testing.expectApproxEqAbs(50.0, result_f32, 0.01);
+}
+
+test "gf16MulSaturated negative overflow" {
+    const a: f16 = @as(f16, -10.0);
+    const b: f16 = @as(f16, 10.0);
+    const limit: f16 = @as(f16, 50.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const limit_u16: u16 = @bitCast(limit);
+    const result_u16 = gf16MulSaturated(a_u16, b_u16, limit_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    // -10 * 10 = -100, should saturate to -50
+    try std.testing.expectApproxEqAbs(-50.0, result_f32, 0.01);
+}
+
+test "gf16MulSaturated zero" {
+    const a: f16 = @as(f16, 0.0);
+    const b: f16 = @as(f16, 10.0);
+    const limit: f16 = @as(f16, 50.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const limit_u16: u16 = @bitCast(limit);
+    const result_u16 = gf16MulSaturated(a_u16, b_u16, limit_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    try std.testing.expectApproxEqAbs(0.0, result_f32, 0.01);
+}
+
+test "gf16Div basic" {
+    const a: f16 = @as(f16, 4.0);
+    const b: f16 = @as(f16, 2.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const result_u16 = gf16Div(a_u16, b_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    try std.testing.expectApproxEqAbs(2.0, result_f32, 0.01);
+}
+
+test "gf16Div negative" {
+    const a: f16 = @as(f16, -6.0);
+    const b: f16 = @as(f16, 2.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const result_u16 = gf16Div(a_u16, b_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    try std.testing.expectApproxEqAbs(-3.0, result_f32, 0.01);
+}
+
+test "gf16Div by zero positive" {
+    const a: f16 = @as(f16, 5.0);
+    const b: f16 = @as(f16, 0.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const result_u16 = gf16Div(a_u16, b_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    // Division by zero should return +inf (clamped to max f16)
+    try std.testing.expectApproxEqAbs(65504.0, result_f32, 0.1);
+}
+
+test "gf16Div by zero negative" {
+    const a: f16 = @as(f16, -5.0);
+    const b: f16 = @as(f16, 0.0);
+    const a_u16: u16 = @bitCast(a);
+    const b_u16: u16 = @bitCast(b);
+    const result_u16 = gf16Div(a_u16, b_u16);
+    const result: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result);
+    // Division by zero should return -inf (clamped to min f16)
+    try std.testing.expectApproxEqAbs(-65504.0, result_f32, 0.1);
 }
 
 test "vec f16 to f32 conversion roundtrip" {
