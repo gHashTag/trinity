@@ -184,11 +184,11 @@ const execute = @import("tri_exec.zig").execute;
 
 /// Print usage information
 fn printUsage() !void {
-    const stdout_file = std.io.getStdOut();
-    var stdout_buf = std.io.bufferedWriter(stdout_file);
-    const stdout = stdout_buf.writer();
+    const stdout_file = std.fs.File.stdout();
+    var write_buf: [4096]u8 = undefined;
+    const stdout = stdout_file.writer(&write_buf);
 
-    try stdout.print(
+    const msg =
         \\TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor
         \\
         \\Usage: tri-emu <file.tbin> [options]
@@ -216,70 +216,95 @@ fn printUsage() !void {
         \\  3  - Invalid .tbin file
         \\  4  - Emulation error
         \\
-    , .{});
+    ;
+    try stdout.writeAll(msg);
+    try stdout.flush();
 }
 
 /// Print execution statistics
 fn printStats(result: *const EmulatorResult) !void {
-    const stdout_file = std.io.getStdOut();
-    var stdout_buf = std.io.bufferedWriter(stdout_file);
-    const stdout = stdout_buf.writer();
+    const stdout_file = std.fs.File.stdout();
+    var write_buf: [8192]u8 = undefined;
+    const stdout = stdout_file.writer(&write_buf);
 
-    try stdout.print("\n", .{});
-    try stdout.print("╔══════════════════════════════════════════════════════════════════╗\n", .{});
-    try stdout.print("║  TRI-27 EMULATOR — EXECUTION STATISTICS                              ║\n", .{});
-    try stdout.print("╠════════════════════════════════════════════════════════════════════╣\n", .{});
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("║  Instructions executed:  {:>15}                                ║\n", .{result.instructions_executed});
-    try stdout.print("║  Cycles completed:      {:>15}                                ║\n", .{result.cycles});
-    try stdout.print("║  Instructions/cycle:    {:>15.2}                             ║\n", .{@as(f64, result.instructions_executed) / @as(f64, result.cycles)});
-    try stdout.print("║  Exit reason:          {:>15s}                                ║\n", .{result.exit_reason});
-    try stdout.print("║  Final IP:           0x{X:0>10}                                ║\n", .{result.final_ip});
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
+    const ipc = if (result.cycles > 0)
+        @as(f64, @floatFromInt(result.instructions_executed)) / @as(f64, @floatFromInt(result.cycles))
+    else
+        0.0;
+
+    const msg = try std.fmt.allocPrint(std.heap.page_allocator,
+        \\n
+        ╔══════════════════════════════════════════════════════════╗
+        ║  TRI-27 EMULATOR — EXECUTION STATISTICS                              ║
+        ╠══════════════════════════════════════════════════════╣
+        ║                                                                  ║
+        ║  Instructions executed:  {:>15}                                ║
+        ║  Cycles completed:      {:>15}                                ║
+        ║  Instructions/cycle:    {:>15.2}                             ║
+        ║  Exit reason:          {:>15s}                                ║
+        ║  Final IP:           0x{X:0>10}                                ║
+        ║                                                                  ║
+        ╚══════════════════════════════════════════════════════════════╝
+    , .{result.instructions_executed, result.cycles, ipc, result.exit_reason, result.final_ip});
+    defer std.heap.page_allocator.free(msg);
+
+    try stdout.writeAll(msg);
+    try stdout.flush();
 }
 
 /// Dump current memory and CPU state
 fn dumpMemoryState(cpu: CPUState) !void {
-    const stdout_file = std.io.getStdOut();
-    var stdout_buf = std.io.bufferedWriter(stdout_file);
-    const stdout = stdout_buf.writer();
+    const stdout_file = std.fs.File.stdout();
+    var write_buf: [8192]u8 = undefined;
+    const stdout = stdout_file.writer(&write_buf);
 
-    try stdout.print("\n╔══════════════════════════════════════════════════════════════════════════╗\n", .{});
-    try stdout.print("║  TRI-27 CPU STATE — DUMP                                               ║\n", .{});
-    try stdout.print("╠════════════════════════════════════════════════════════════════════════╣\n", .{});
-    try stdout.print("║  Registers:                                                       ║\n", .{});
+    var msg_list = std.ArrayList(u8).init(std.heap.page_allocator);
+    defer msg_list.deinit();
+
+    const writer = msg_list.writer();
+
+    try writer.writeAll(
+        \\n╔════════════════════════════════════════════════════════════════╗
+        ║  TRI-27 CPU STATE — DUMP                                               ║
+        ╠══════════════════════════════════════════════════════════╣
+        ║  Registers:                                                       ║
+    );
 
     // Print ternary registers (8 per line)
-    try stdout.print("║  t0-t7:  ", .{});
+    try writer.writeAll("║  t0-t7:  ");
     for (0..8) |i| {
-        const val = cpu.t27[i].toI8Clamped();
-        try stdout.print("t{:d}={d:>3} ", .{ i, val });
+        const val = cpu.trits[i];
+        try writer.print("t{d}={d:>3} ", .{ i, val });
     }
-    try stdout.print("               ║\n", .{});
+    try writer.writeAll("               ║\n");
 
-    try stdout.print("║  t8-t15: ", .{});
+    try writer.writeAll("║  t8-t15: ");
     for (8..16) |i| {
-        const val = cpu.t27[i].toI8Clamped();
-        try stdout.print("t{:d}={d:>3} ", .{ i, val });
+        const val = cpu.trits[i];
+        try writer.print("t{d}={d:>3} ", .{ i, val });
     }
-    try stdout.print("               ║\n", .{});
+    try writer.writeAll("               ║\n");
 
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("║  Special registers:                                              ║\n", .{});
-    try stdout.print("║    IP = 0x{X:0>8}    SP = 0x{X:0>8}    FP = 0x{X:0>8}    ║\n", .{ cpu.ip, cpu.sp, cpu.fp });
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("║  Flags: Z={} N={} V={} H={}                                 ║\n", .{
-        if (cpu.flags.Z) 1 else 0,
-        if (cpu.flags.N) 1 else 0,
-        if (cpu.flags.V) 1 else 0,
-        if (cpu.flags.H) 1 else 0,
+    try writer.writeAll(
+        \\║                                                                  ║
+        \\║  Special registers:                                              ║
+    );
+
+    try writer.print("║    PC = 0x{X:0>8}    SP = 0x{X:0>8}    FP = 0x{X:0>8}    ║\n", .{ cpu.pc, cpu.sp, cpu.fp });
+    try writer.writeAll("║                                                                  ║\n");
+    try writer.writeAll("║  Flags: zero={} negative={} positive={}                                 ║\n", .{
+        if (cpu.flags.zero) 1 else 0,
+        if (cpu.flags.negative) 1 else 0,
+        if (cpu.flags.positive) 1 else 0,
     });
-    try stdout.print("║                                                                  ║\n", .{});
-    try stdout.print("║  Metrics:                                                        ║\n", .{});
-    try stdout.print("║    Instructions: {}    Cycles: {}                         ║\n", .{
+    try writer.writeAll("║                                                                  ║\n");
+    try writer.writeAll("║  Metrics:                                                        ║\n");
+    try writer.writeAll("║  Instructions: {}    Cycles: {}                         ║\n", .{
         cpu.instructions_executed,
         cpu.cycles,
     });
-    try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
+    try writer.writeAll("╚════════════════════════════════════════════════════════╝\n");
+
+    try stdout.writeAll(msg_list.items);
+    try stdout.flush();
 }
