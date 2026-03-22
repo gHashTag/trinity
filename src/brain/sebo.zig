@@ -158,9 +158,9 @@ pub const SeboOptimizer = struct {
         const phi_bias = SACRED_PRIORS.PHI_INVERSE * 0.5; // Reduced bias
         const random = self.prng.random().float(f32);
         const value = min + (max - min) * random;
-        // Apply φ-based bias towards golden mean
-        const biased = value * SACRED_PRIORS.PHI + (1.0 - SACRED_PRIORS.PHI) * (1.0 - phi_bias);
-        return @max(min, @min(max, biased));
+        // Apply φ-based bias towards golden mean (capped at max)
+        const biased = @min(max, value * SACRED_PRIORS.PHI + (1.0 - SACRED_PRIORS.PHI) * (1.0 - phi_bias));
+        return biased;
     }
 
     /// Evaluate configuration (synthetic - integrate with evolution_simulation.zig)
