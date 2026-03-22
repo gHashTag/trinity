@@ -14,10 +14,10 @@
 // ============================================================================
 
 module uart_echo_top(
-    input  wire clk,        // U22, 50 MHz
-    input  wire uart_rx,    // L20 (from CH340 TX)
-    output wire uart_tx,    // K20 (to CH340 RX)
-    output wire led         // T23, active-low
+    input  wire clk,        // M22, 50 MHz
+    input  wire uart_rx,    // E26 (J2 pin 6, from FT232RL TX)
+    output wire uart_tx,    // D26 (J2 pin 5, to FT232RL RX)
+    output wire led         // J19 (D5, active-low)
 );
 
     // 115200 baud @ 50 MHz: 50_000_000 / 115_200 = 434

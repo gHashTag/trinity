@@ -1,19 +1,18 @@
-//! Testing Links (Links 10-11)
+//! Testing Links (Links 10-13)
 //! Unit tests and VSA verification
 
 const std = @import("std");
 const storm = @import("../golden_chain.zig");
 
 pub const unitTestLinkID = 10;
-pub const integrationTestLinkID = 11;
-pub const stressTestLinkID = 12;
-pub const fuzzTestLinkID = 13;
-pub const benchmarkLinkID = 14;
+pub const vsaVerifyLinkID = 11;
+pub const integrationTestLinkID = 12;
+pub const stressTestLinkID = 13;
+pub const fuzzTestLinkID = 14;
+pub const benchmarkLinkID = 15;
 
 pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("🧪 Unit Test: {s}", .{file });
 
@@ -31,18 +30,25 @@ pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []c
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
+
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
+
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
 
     // Parse test results
     var passed: usize = 0;
     var failed: usize = 0;
     var skipped: usize = 0;
 
-    for (stdout) |line| {
+    var lines_iter = std.mem.splitScalar(u8, stdout, '\n');
+    while (lines_iter.next()) |line| {
         if (std.mem.indexOfScalar(u8, line, "PASS") != null) {
             passed += 1;
         } else if (std.mem.indexOfScalar(u8, line, "FAIL") != null) {
@@ -52,14 +58,14 @@ pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []c
         }
     }
 
-    if (result.term != .Exited or result.code != 0) {
+    if (exit_code != 0) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\Test execution failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
@@ -80,9 +86,7 @@ pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []c
 }
 
 pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("🔬 VSA Verify: {s}", .{spec_file });
 
@@ -100,26 +104,33 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
 
-    if (result.term != .Exited or result.code != 0) {
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
+
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
+
+    if (exit_code != 0) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\VSA verification failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
     // Parse verification results
     var verified: bool = false;
-    for (stdout) |line| {
+    var lines_iter = std.mem.splitScalar(u8, stdout, '\n');
+    while (lines_iter.next()) |line| {
         if (std.mem.indexOfScalar(u8, line, "VERIFIED") != null or
             std.mem.indexOfScalar(u8, line, "OK") != null)
         {
@@ -149,9 +160,7 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
 }
 
 pub fn executeIntegrationTest(allocator: std.mem.Allocator, task: []const u8, config: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("🔗 Integration Test: {s}", .{config });
 
@@ -169,20 +178,26 @@ pub fn executeIntegrationTest(allocator: std.mem.Allocator, task: []const u8, co
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
 
-    if (result.term != .Exited or result.code != 0) {
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
+
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
+
+    if (exit_code != 0) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\Integration test failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
