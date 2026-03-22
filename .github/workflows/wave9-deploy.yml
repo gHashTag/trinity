@@ -1,0 +1,95 @@
+name: Wave 9 Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "YES" to confirm deployment of 48 services'
+        required: true
+        type: string
+
+jobs:
+  deploy-wave9:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        account: [1, 2, 3, 8, 9, 10, 11, 12]
+    steps:
+      - name: Deploy Wave 9 services for account ${{ matrix.account }}
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets['RAILWAY_API_TOKEN_${{ matrix.account == 1 && '' || matrix.account }}'] }}
+          RAILWAY_PROJECT_ID: ${{ secrets['RAILWAY_PROJECT_ID_${{ matrix.account == 1 && '' || matrix.account }}'] }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets['RAILWAY_ENVIRONMENT_ID_${{ matrix.account == 1 && '' || matrix.account }}'] }}
+        run: |
+          set -e
+          echo "🚀 Wave 9 Deployment - Account ${{ matrix.account }}"
+          echo "==================================="
+          echo ""
+
+          SUCCESS=0
+          FAILED=0
+
+          for i in 01 02 03 04 05 06; do
+            SVC_NAME="hslm-w9-${{ matrix.account }}-$i"
+            echo "Creating $SVC_NAME..."
+
+            # Create service
+            RESULT=$(curl -s -X POST "https://railway.com/graphql/v2" \
+              -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "query": "mutation($input: ServiceCreateInput!) { serviceCreate(input: $input) { id name } }",
+                "variables": {
+                  "input": {
+                    "projectId": "'$RAILWAY_PROJECT_ID'",
+                    "name": "'$SVC_NAME'"
+                  }
+                }
+              }')
+
+            SVC_ID=$(echo "$RESULT" | jq -r '.data.serviceCreate.id // empty')
+
+            if [ -n "$SVC_ID" ]; then
+              echo "  ✅ Created: ${SVC_ID:0:8}"
+
+              # Set environment variables
+              curl -s -X POST "https://railway.com/graphql/v2" \
+                -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d '{
+                  "query": "mutation($projectId: String!, $environmentId: String!, $serviceId: String!, $input: VariableCollectionUpsertInput!) { variableCollectionUpsert(projectId: $projectId, environmentId: $environmentId, serviceId: $serviceId, input: $input) { id } }",
+                  "variables": {
+                    "projectId": "'$RAILWAY_PROJECT_ID'",
+                    "environmentId": "'$RAILWAY_ENVIRONMENT_ID'",
+                    "serviceId": "'$SVC_ID'",
+                    "input": {
+                      "HSLM_PROFILE": "s3-multiobj",
+                      "HSLM_CTX": "81",
+                      "HSLM_NTP_WEIGHT": "0.50",
+                      "HSLM_JEPA_WEIGHT": "0.25",
+                      "HSLM_NCA_WEIGHT": "0.25",
+                      "HSLM_CRASH_TOLERANCE": "0.05",
+                      "HSLM_WAVE": "9"
+                    }
+                  }
+                }' > /dev/null 2>&1
+
+              if [ $? -eq 0 ]; then
+                echo "  ✅ Variables set"
+                SUCCESS=$((SUCCESS + 1))
+              else
+                echo "  ⚠️  Variables failed (service created)"
+                FAILED=$((FAILED + 1))
+              fi
+            else
+              echo "  ❌ Failed to create service"
+              echo "  Response: $RESULT"
+              FAILED=$((FAILED + 1))
+            fi
+
+            sleep 0.2
+          done
+
+          echo ""
+          echo "Account ${{ matrix.account }}: ✅ $SUCCESS created, ❌ $FAILED failed"
+          echo ""
