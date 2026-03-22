@@ -356,8 +356,8 @@ const execute_map = [_]ExecuteEntry{
         }
     }.f },
     .{ .name = "evolve", .execute = struct {
-        fn f(_: std.mem.Allocator, args: []const []const u8) !void {
-            return commands.runEvolveCommand(args);
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return commands.runBrainSimulateCommand(a, args);
         }
     }.f },
 
@@ -912,26 +912,22 @@ const execute_map = [_]ExecuteEntry{
     }.f },
     .{ .name = "clean", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            _ = args;
-            return commands.runCleanCommand(a);
+            return commands.runCleanCommand(a, args);
         }
     }.f },
     .{ .name = "fmt", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            _ = args;
-            return commands.runFmtCommand(a);
+            return commands.runFmtCommand(a, args);
         }
     }.f },
     .{ .name = "stats", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            _ = args;
-            return commands.runStatsCommand(a);
+            return commands.runStatsCommand(a, args);
         }
     }.f },
     .{ .name = "igla", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
-            _ = args;
-            return commands.runIglaCommand(a);
+            return commands.runIglaCommand(a, args);
         }
     }.f },
 

@@ -506,9 +506,9 @@ pub const EvolutionSimulator = struct {
             const count = @as(u32, @intFromFloat(@as(f32, @floatFromInt(config.workers)) * obj.weight));
             var i: u32 = 0;
             while (i < count) : (i += 1) {
-                const worker_id = try std.fmt.allocPrint(allocator, "sim-worker-{d:0>4}", .{worker_idx});
+                const worker_id = try std.fmt.allocPrint(allocator, "sim-worker-{d:0>4}", .{worker_count});
                 // Use 32-bit golden ratio for mixing (reduced to fit u32)
-                const mix_value = (@as(u64, worker_idx) *% 0x9E3779B) & 0xFFFFFFFF;
+                const mix_value = (@as(u64, worker_count) *% 0x9E3779B) & 0xFFFFFFFF;
                 const worker_seed = config.seed ^ mix_value;
                 workers[worker_count] = SimulatedWorker.init(worker_id, obj.name, worker_seed);
                 worker_count += 1;
