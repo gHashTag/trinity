@@ -44,6 +44,8 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
         return runFarmRecycle(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "fill")) {
         return runFarmFill(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "stats")) {
+        return runFarmStatsCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "evolve")) {
         const tri_farm_evolve = @import("evolution.zig");
         return tri_farm_evolve.runEvolveCommand(allocator, args[1..]);
@@ -1212,11 +1214,51 @@ fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anyty
     const token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch return;
     defer allocator.free(token);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+// STATS COMMAND — Farm Statistics & Simulation Comparison
+// ═════════════════════════════════════════════════════════════════════════
+
+fn runFarmStatsCommand(allocator: Allocator, args: []const []const u8) !void {
+    const farm_stats = @import("../cli/farm_stats.zig");
+
+    // Parse flags
+    var show_farm_only = false;
+    var export_csv = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--farm") or std.mem.eql(u8, arg, "-f")) {
+            show_farm_only = true;
+        } else if (std.mem.eql(u8, arg, "--export") or std.mem.eql(u8, arg, "-e")) {
+            export_csv = true;
+        }
+    }
+
+    if (export_csv) {
+        return farm_stats.exportToCSV(allocator);
+    } else if (show_farm_only) {
+        return farm_stats.showFarmStatsOnly(allocator);
+    } else {
+        return farm_stats.generateReport(allocator);
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// TELEGRAM ALERTS — Send notifications to Telegram group
+// ═════════════════════════════════════════════════════════════════════════════════
+
+fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anytype) !void {
+    const msg = std.fmt.allocPrint(allocator, fmt, args) catch return;
+    defer allocator.free(msg);
+
+    const token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch return;
+    defer allocator.free(token);
+
     const chat_id = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch {
         allocator.free(token);
         return;
-    };
-    defer allocator.free(chat_id);
+    };    defer allocator.free(chat_id);
 
     // URL-encode the message
     var encoded_msg = try std.ArrayList(u8).initCapacity(allocator, msg.len * 2);
@@ -1268,6 +1310,7 @@ fn printHelp() void {
         \\  evolve           ASHA+PBT evolution (init/status/step/watch/history)
         \\  watch-daemon     24/7 autonomous monitoring (start/stop/status)
         \\  from-issues      Execute farm tasks from GitHub Issues (farm-task label)
+        \\  stats            Farm statistics & simulation comparison (--farm only, --export csv, --scenario S1|S3|...)
         \\  help             Show this help
         \\
         \\Common options:
