@@ -51,7 +51,7 @@ pub fn main() !void {
 
     std.debug.print("\n=== TRI-27 Execution Complete ===\n", .{});
     std.debug.print("Instructions: {}\n", .{cpu.instructions_executed});
-    std.debug.print("Time: {} ms ({} IPS)\n", .{cpu.getExecutionTimeMs(), ips});
+    std.debug.print("Time: {} ms ({} IPS)\n", .{ cpu.getExecutionTimeMs(), ips });
     std.debug.print("PC: 0x{X:04X}\n", .{cpu.pc});
     std.debug.print("Flags: Z={} N={} P={}\n", .{
         cpu.flags.zero, cpu.flags.negative, cpu.flags.positive,
@@ -68,9 +68,6 @@ pub fn main() !void {
     std.debug.print("Memory: {}/{} bytes used\n", .{
         used_memory, cpu.memory_len,
     });
-}
-
-    return;
 }
 
 const MAX_FILE_BYTES: usize = 1024 * 1024; // 1MB max file size
