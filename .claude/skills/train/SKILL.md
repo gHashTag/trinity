@@ -39,9 +39,23 @@ After dashboard, show sacred workers explicitly:
 cd /Users/playra/trinity-w1 && ./zig-out/bin/tri train dashboard 2>&1 | grep -E "(hslm-r6|hslm-r33|hslm-r5|hslm-r12|hslm-r13|hslm-r11|hslm-r18|hslm-w7-50)" | head -10
 ```
 
-## Step 2: Wave 8 Status (REQUIRED)
+## Step 2: Wave 9 Status (REQUIRED) — S3 MultiObj
 
-Query FARM-7 and FARM-8 for wave 8 deployment status:
+**CRITICAL**: Wave 9 is the current active wave with S3 MultiObj profile.
+
+### S3 MultiObj Configuration (ALL 48 services MUST use):
+
+```
+HSLM_PROFILE = s3-multiobj
+HSLM_CTX = 81
+HSLM_NTP_WEIGHT = 0.50
+HSLM_JEPA_WEIGHT = 0.25
+HSLM_NCA_WEIGHT = 0.25
+HSLM_CRASH_TOLERANCE = 0.05
+HSLM_WAVE = 9
+```
+
+Query ALL 8 Railway accounts (FARM-2 through FARM-12) for wave 9 deployment:
 ```bash
 set -a && source /Users/playra/trinity-w1/.env && set +a
 for ACCT in 7 8; do
@@ -75,29 +89,33 @@ print(f'  --- {len(svcs)} total: {running} running, {building} building, {failed
 done
 ```
 
-Display wave 8 table:
+Display wave 9 table:
 ```
-### Wave 8 — 48 Workers (FARM-7 + FARM-8)
-| Account | Workers | Building | Running | Failed |
-|---------|---------|----------|---------|--------|
-| FARM-7  | 24      | ...      | ...     | ...    |
-| FARM-8  | 24      | ...      | ...     | ...    |
-| TOTAL   | 48      | ...      | ...     | ...    |
+### Wave 9 — 48 Workers (ALL 8 Railway accounts)
+| Account | Workers | Building | Running | Failed | S3-Ready |
+|---------|---------|----------|---------|--------|----------|
+| FARM-2  | 6       | ...      | ...     | ...    | ... |
+| FARM-3  | 6       | ...      | ...     | ...    | ... |
+| FARM-8  | 6       | ...      | ...     | ...    | ... |
+| FARM-9  | 6       | ...      | ...     | ...    | ... |
+| FARM-10 | 6       | ...      | ...     | ...    | ... |
+| FARM-11 | 6       | ...      | ...     | ...    | ... |
+| FARM-12 | 6       | ...      | ...     | ...    | ... |
+| ...     | ...     | ...      | ...     | ...    | ... |
+| TOTAL   | 48      | ...      | ...     | ...    | ... |
 
-Config: LAMB, cosine, batch=66, ctx=81, startCommand=null
-LR range: 3.82e-4 .. 1.618e-3 (phi-grid)
-Kill thresholds: 800/400/200/80
+Config: S3 MultiObj (NTP 50%, JEPA 25%, NCA 25%), ctx=81, crash_tol=5%
 ```
 
 ## Step 3: Your Analysis (after dashboard)
 
-After showing the full dashboard + wave 8 table, add a SHORT (5-10 lines) analytical block in Russian:
+After showing the full dashboard + wave 9 table, add a SHORT (5-10 lines) analytical block in Russian:
 
 ```
 ### 📊 Аналитика [UTC: $(date -u +%H:%M)]
 
 {emoji} **Лидер**: {name} PPL={val} @ {step} — {insight}
-{emoji} **Сакральные**: {count}/{total} активны — {status}
+{emoji} **S3 MultiObj**: {count}/{total} активны — {status} (NTP 50%, JEPA 25%, NCA 25%)
 {emoji} **Stalled**: {count} воркеров — {action if any}
 {emoji} **Эволюция**: Step {step} — {kills} kills за сессию
 {emoji} **Волна 7**: {best} w7-50 PPL={val} — {insight}
@@ -107,20 +125,21 @@ After showing the full dashboard + wave 8 table, add a SHORT (5-10 lines) analyt
 
 Rules:
 - Compare leader with R6 PPL=28.07 (current king)
-- Flag sacred workers that are STALLED (r5, r13, r33, etc.)
+- Flag S3 workers that are STALLED
 - Count stalled total vs previous run
 - Note which objective (NTP/NCA/JEPA) is winning
 - Say the phase: EARLY (<10K) / MIDDLE (10-50K) / LATE (50K+)
-- Report wave 8 build progress (how many building/running/failed)
+- Report wave 9 build progress (how many building/running/failed)
 - Max 10 lines. Dense. No fluff.
 
-### Sacred Workers Alert
+### S3 Workers Alert
 
-If ANY sacred worker is STALLED, add:
+If ANY S3 MultiObj worker is STALLED, add:
 
 ```
-🚨 **СТОП! Сакральный воркер {name} stalled на {step} шагов!**
+🚨 **СТОП! S3 воркер {name} stalled на {step} шагов!**
    Действие: railway restart --service {name}
+   Профиль: S3 MultiObj (NTP 50%, JEPA 25%, NCA 25%)
 ```
 
 ## Step 4: Additional Data (if $ARGUMENTS specified)
