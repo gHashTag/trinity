@@ -1,0 +1,1 @@
+/Users/playra/trinity-w1/fpga/openxc7-synth/uart_simple.v

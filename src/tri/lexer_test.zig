@@ -43,7 +43,7 @@ test "tokenize types" {
     try testing.expect(tokens[3] == .t_t27);
     try testing.expect(tokens[4] == .t_gf16);
     try testing.expect(tokens[5] == .t_tf3);
-    try testing.expect(tokens[6] == .t_void);
+    try testing.expect(tokens[6] == .kw_void);
 }
 
 test "tokenize operators" {
