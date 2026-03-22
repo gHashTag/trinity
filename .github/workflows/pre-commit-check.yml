@@ -1,0 +1,26 @@
+name: Pre-commit Validation
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  format-check:
+    name: Code Format Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check zig fmt
+        run: |
+          git diff --name-only --cached --diff-filter=M '*.zig' | grep '^A.*zig$' | xargs zig fmt --check
+          if [ $? -ne 0 ]; then
+            echo "❌ Code not formatted. Run: zig fmt src/"
+            exit 1
+          fi
+          echo "✅ All zig code formatted"
+
+      - name: Check whitespace
+        run: |
+          TRAILING=$(git diff --cached HEAD -- '*.zig' | grep -E '^\+.*$' | wc -l)
+          if [ "$TRAILING" -gt 0 ]; then
+            echo "❌ Trailing whitespace detected"
+            exit 1
+          fi

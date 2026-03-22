@@ -405,7 +405,7 @@ test "save and load roundtrip" {
     var original = DevSession{
         .state = .active,
         .issue_number = 42,
-        .issue_title_len = 22,  // Set to actual title length
+        .issue_title_len = 22, // Set to actual title length
     };
 
     original.started_at = 1234567890;

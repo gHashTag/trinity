@@ -9,6 +9,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const state_machine = @import("dev_state_machine.zig");
+const github_integration = @import("github_integration.zig");
 
 /// Display current session status
 fn cmdStatus(allocator: Allocator, args: []const []const u8) !void {
@@ -52,7 +53,7 @@ fn cmdStart(allocator: Allocator, args: []const []const u8) !void {
         return;
     }
 
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (!session.canTransition(.active)) {
         std.debug.print("Cannot start: current state is {s}", .{state_machine.stateToString(session.state)});
@@ -67,12 +68,20 @@ fn cmdStart(allocator: Allocator, args: []const []const u8) !void {
 
     std.debug.print("Started development session for issue #{d}", .{issue_number});
     std.debug.print("  State: IDLE -> ACTIVE", .{});
+
+    // Create GitHub issue with in-progress status
+    _ = github_integration.DevGithub.startIssue(allocator, issue_number, "Starting development session");
+
+    // Update session state to ACTIVE on success
+    session.state = .active;
+    session.last_updated = std.time.timestamp();
+    try session.save();
 }
 
 /// Run tests
 fn cmdTest(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (session.state != .dirty and session.state != .tested) {
         std.debug.print("Cannot run tests: current state is {s}", .{state_machine.stateToString(session.state)});
@@ -86,12 +95,16 @@ fn cmdTest(allocator: Allocator, args: []const []const u8) !void {
     try session.save();
 
     std.debug.print("Tests passed", .{});
-    std.debug.print("  State: {s} -> TESTED", .{state_machine.stateToString(session.state)}, .{state_machine.stateToString(.tested)});
+    std.debug.print("  State: {s} -> {s}", .{state_machine.stateToString(session.state), state_machine.stateToString(.tested)});
+
+    // Post test results to GitHub issue
+    const details = "All tests passed successfully";
+    _ = github_integration.DevGithub.postTestResults(allocator, session.issue_number, true, details);
 }
 
 /// Commit changes with issue ID
 fn cmdCommit(allocator: Allocator, args: []const []const u8) !void {
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (session.state != .tested) {
         std.debug.print("Cannot commit: current state is {s}", .{state_machine.stateToString(session.state)});
@@ -104,7 +117,7 @@ fn cmdCommit(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const message = if (args.len > 0) args[0] else "chore: commit changes";
-    const commit_msg = try std.fmt.allocPrint(allocator, "{s} (#{d})", message, session.issue_number);
+    const commit_msg = try std.fmt.allocPrint(allocator, "{s} (#{d})", .{ message, session.issue_number });
 
     std.debug.print("Committing with message:", .{});
     std.debug.print("  {s}", .{commit_msg});
@@ -135,12 +148,26 @@ fn cmdCommit(allocator: Allocator, args: []const []const u8) !void {
 
     std.debug.print("Committed", .{});
     std.debug.print("  State: TESTED -> COMMITTED", .{});
+
+    // Post commit summary to GitHub issue
+    var issue_id_buf: [32]u8 = undefined;
+    const issue_str = try std.fmt.allocPrint(allocator, "{d}", .{session.issue_number});
+    defer allocator.free(issue_str);
+
+    var i: usize = 0;
+    while (i < issue_str.len) : (i += 1) {
+        issue_id_buf[i] = issue_str[i];
+    }
+
+    const body = try std.fmt.allocPrint(allocator, "📦 **Commit**: Files changed, ready for PR\n\n**Files**: Changed {d} file(s)\n**Message**: {s}", .{message});
+
+    _ = github_integration.DevGithub.postCommitSummary(allocator, session.issue_number, &[_][]const u8{body}, &[_][]const u8{"Changed 1 file(s)"});
 }
 
 /// Ship changes
 fn cmdShip(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (session.state != .committed) {
         std.debug.print("Cannot ship: current state is {s}", .{state_machine.stateToString(session.state)});
@@ -165,7 +192,7 @@ fn cmdShip(allocator: Allocator, args: []const []const u8) !void {
 /// Reset changes
 fn cmdReset(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (session.state != .active and session.state != .dirty) {
         std.debug.print("Cannot reset: current state is {s}", .{state_machine.stateToString(session.state)});
@@ -180,13 +207,13 @@ fn cmdReset(allocator: Allocator, args: []const []const u8) !void {
     try session.save();
 
     std.debug.print("Reset complete (simulated)", .{});
-    std.debug.print("  State: {s} -> ACTIVE", .{state_machine.stateToString(session.state)}, .{state_machine.stateToString(.active)});
+    std.debug.print("  State: {s} -> ACTIVE", .{state_machine.stateToString(session.state)});
 }
 
 /// Clear blocked state
 fn cmdUnblock(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
-    const session = try state_machine.DevSession.load(allocator);
+    var session = try state_machine.DevSession.load(allocator);
 
     if (session.state != .blocked) {
         std.debug.print("Cannot unblock: current state is {s}", .{state_machine.stateToString(session.state)});

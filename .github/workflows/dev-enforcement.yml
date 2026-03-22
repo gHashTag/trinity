@@ -1,0 +1,62 @@
+name: Dev Workflow Enforcement
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+
+jobs:
+  ci-check:
+    name: CI Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Commit Format
+        run: |
+          git log -1 --format=%s | grep -E '^\[a-f]+\((feat|fix|refactor|docs|chore|test|ci)\([^)]+\):' | head -1
+          if [[ $(echo "$COMMIT" | grep -oE '(ISSUE-|#)[0-9]+') ]]; then
+            echo "✅ Valid issue ID format"
+          else
+            echo "❌ Missing issue ID (format: feat(scope): description (#123) or fix(scope): description (ISSUE-123))"
+            exit 1
+          fi
+
+  session-check:
+    name: Verify Dev Session State
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check session state before commit
+        run: |
+          if [ ! -f .trinity/dev_session.json ]; then
+            echo "❌ No dev session found"
+            exit 1
+          fi
+
+          STATE=$(jq -r '.state' .trinity/dev_session.json 2>/dev/null || echo "IDLE")
+          ISSUE=$(jq -r '.issue_number' .trinity/dev_session.json 2>/dev/null || echo "0")
+
+          if [ "$STATE" != "TESTED" ] && [ "$STATE" != "COMMITTED" ]; then
+            echo "❌ Invalid state: $STATE (must be TESTED or COMMITTED)"
+            echo "   Run: tri dev test to pass tests"
+            exit 1
+          fi
+
+          if [ "$ISSUE" = "0" ]; then
+            echo "❌ No active issue"
+            exit 1
+          fi
+
+          echo "✅ Session state valid: $STATE for issue #$ISSUE"
+
+  pr-status:
+    name: Update PR Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+      steps:
+        - name: Add in-progress label
+          run: |
+            gh pr edit "$PR_NUMBER" --add-label "status:in-progress"
+        - name: Update to done when merged
+          if: github.event.action == 'closed' && github.event.pull_request.merged == true
+            run: |
+              gh pr edit "$PR_NUMBER" --remove-label "status:in-progress"
+              gh pr edit "$PR_NUMBER" --add-label "status:completed"

@@ -217,8 +217,6 @@ fn printUsage() !void {
         \\  4  - Emulation error
         \\
     , .{});
-
-    
 }
 
 /// Print execution statistics
@@ -239,8 +237,6 @@ fn printStats(result: *const EmulatorResult) !void {
     try stdout.print("║  Final IP:           0x{X:0>10}                                ║\n", .{result.final_ip});
     try stdout.print("║                                                                  ║\n", .{});
     try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
-
-    
 }
 
 /// Dump current memory and CPU state
@@ -286,6 +282,4 @@ fn dumpMemoryState(cpu: CPUState) !void {
         cpu.cycles,
     });
     try stdout.print("╚══════════════════════════════════════════════════════════════════════╝\n", .{});
-
-    
 }
