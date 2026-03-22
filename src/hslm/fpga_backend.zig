@@ -12,9 +12,9 @@
 const std = @import("std");
 const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
 
-// ═════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // BACKEND MODE — Hardware or Software fallback
-// ═════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 
 pub const Backend = enum {
     /// Hardware mode: FPGA ALU via JTAG/memory-mapped access
@@ -23,9 +23,9 @@ pub const Backend = enum {
     software,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 // SACRED ALU MODES — Matches sacred_alu.v encoding
-// ═════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 
 /// Mode bits for sacred_alu.v (2-bit encoding)
 pub const AluMode = enum(u2) {
@@ -39,9 +39,9 @@ pub const AluMode = enum(u2) {
     tf3_dot = 0b11,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // FPGA ALU — Unified backend interface
-// ═════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════
 
 pub const FpgaAlu = struct {
     mode: Backend,
@@ -73,7 +73,7 @@ pub const FpgaAlu = struct {
         self.mode = .software;
     }
 
-    // ═════════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
     // GF16 OPERATIONS — 16-bit operations on Golden Float 16 format
     // ═════════════════════════════════════════════════════════════════════════════
 
@@ -125,9 +125,9 @@ pub const FpgaAlu = struct {
         };
     }
 
-    // ═════════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     // TF3 OPERATIONS — Ternary Float operations (-1, 0, +1)
-    // ═════════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
 
     /// Ternary Float Addition: a + b (saturating to {-1, 0, +1})
     /// Returns trit value encoded as u2 (00=0, 01=-1, 10=+1).
@@ -177,9 +177,49 @@ pub const FpgaAlu = struct {
         };
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DIRECT FPGA HARDWARE ACCESS — Mode-specific operations
     // ═════════════════════════════════════════════════════════════════════════════
+
+    /// Direct GF16 addition via sacred_alu.v mode 00
+    /// Hardware: 4-cycle pipeline, returns result in u16 GF16 format
+    /// Software: software fallback via gf16Add
+    pub fn gf16AddDirect(self: *const FpgaAlu, a: u16, b: u16) u16 {
+        // TODO: Hardware path - write mode 00 to ALU, read result
+        // Software path - reuse existing gf16Add
+        return self.gf16Add(a, b);
+    }
+
+    /// Direct GF16 multiplication via sacred_alu.v mode 01
+    /// Hardware: DSP48E1 single-cycle, returns result in u16 GF16 format
+    /// Software: software fallback via gf16Mul
+    pub fn gf16MulDirect(self: *const FpgaAlu, a: u16, b: u16) u16 {
+        // TODO: Hardware path - write mode 01 to ALU, read result
+        // Software path - reuse existing gf16Mul
+        return self.gf16Mul(a, b);
+    }
+
+    /// Direct ternary addition via sacred_alu.v mode 10
+    /// Hardware: single-cycle saturating adder
+    /// Software: software fallback via tf3Add
+    pub fn tf3AddDirect(self: *const FpgaAlu, a: u2, b: u2) u2 {
+        // TODO: Hardware path - write mode 10 to ALU, read result
+        // Software path - reuse existing tf3Add
+        return self.tf3Add(a, b);
+    }
+
+    /// Batch ternary dot product via sacred_alu.v mode 11
+    /// Hardware: accumulator in ALU, returns accumulated sum
+    /// Software: sequential dot product via tf3Dot
+    pub fn tf3DotBatch(self: *const FpgaAlu, a: []const u2, b: []const u2) i32 {
+        // TODO: Hardware path - write mode 11, feed pairs to ALU
+        // Software path - reuse existing tf3Dot
+        return self.tf3Dot(a, b);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     // TRIT ENCODING — 2-bit encoding for {-1, 0, +1}
-    // ═════════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
 
     /// Decode 2-bit trit to i8: 00=0, 01=-1, 10=+1
     pub fn decodeTrit(code: u2) i8 {
@@ -210,7 +250,7 @@ pub const FpgaAlu = struct {
     }
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -369,6 +409,58 @@ test "modeName returns correct string" {
     try alu.enableHardware();
     const hw_name = alu.modeName();
     try std.testing.expectEqualStrings("FPGA Hardware", hw_name);
+}
+
+test "gf16AddDirect software fallback" {
+    var alu = try FpgaAlu.init(std.testing.allocator);
+    alu.enableSoftware();
+
+    const a = intraparietal_sulcus.gf16FromF32(1.5);
+    const b = intraparietal_sulcus.gf16FromF32(2.5);
+    const result_raw = alu.gf16AddDirect(@bitCast(a), @bitCast(b));
+    const result_gf16 = @as(intraparietal_sulcus.GoldenFloat16, @bitCast(result_raw));
+    const result_f32 = intraparietal_sulcus.gf16ToF32(result_gf16);
+
+    // Verify matches gf16Add behavior (should be ~4.0)
+    try std.testing.expectApproxEqAbs(4.0, result_f32, 0.01);
+}
+
+test "gf16MulDirect software fallback" {
+    var alu = try FpgaAlu.init(std.testing.allocator);
+    alu.enableSoftware();
+
+    const a = intraparietal_sulcus.gf16FromF32(3.0);
+    const b = intraparietal_sulcus.gf16FromF32(4.0);
+    const result_raw = alu.gf16MulDirect(@bitCast(a), @bitCast(b));
+    const result_gf16 = @as(intraparietal_sulcus.GoldenFloat16, @bitCast(result_raw));
+    const result_f32 = intraparietal_sulcus.gf16ToF32(result_gf16);
+
+    // Verify matches gf16Mul behavior (should be ~12.0)
+    try std.testing.expectApproxEqAbs(12.0, result_f32, 0.05);
+}
+
+test "tf3AddDirect software fallback" {
+    var alu = try FpgaAlu.init(std.testing.allocator);
+    alu.enableSoftware();
+
+    const pos = FpgaAlu.encodeTrit(1);
+    const neg = FpgaAlu.encodeTrit(-1);
+    const result = alu.tf3AddDirect(pos, neg);
+
+    try std.testing.expectEqual(@as(u2, 0b00), result); // 0
+}
+
+test "tf3DotBatch software fallback" {
+    var alu = try FpgaAlu.init(std.testing.allocator);
+    alu.enableSoftware();
+
+    // Test: [1, -1, 0] · [1, 1, -1] = 1 + -1 + 0 = 0
+    const a = [_]u2{ FpgaAlu.encodeTrit(1), FpgaAlu.encodeTrit(-1), FpgaAlu.encodeTrit(0) };
+    const b = [_]u2{ FpgaAlu.encodeTrit(1), FpgaAlu.encodeTrit(1), FpgaAlu.encodeTrit(-1) };
+
+    const result = alu.tf3DotBatch(&a, &b);
+
+    try std.testing.expectEqual(@as(i32, 0), result);
 }
 
 test "FpgaAlu integration with GoldenFloat16" {
