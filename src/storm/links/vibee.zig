@@ -2,6 +2,7 @@
 //! Executes vibee binary to generate Zig code from .tri specification
 
 const std = @import("std");
+const storm = @import("../golden_chain.zig");
 
 pub const LinkID = 6;
 

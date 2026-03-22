@@ -95,7 +95,7 @@ pub const ExperienceEngine = struct {
         defer distances.deinit();
 
         for (episodes.items) |*ep| {
-            const distance = self.levenshteinDistance(task, ep._task);
+            const distance = self.levenshteinDistance(task, ep.task);
             try distances.append(.{ .episode = ep, .distance = distance });
         }
 
@@ -118,7 +118,7 @@ pub const ExperienceEngine = struct {
                 "";
 
             try similar.append(.{
-                .task = try self.allocator.dupe(u8, item.episode._task),
+                .task = try self.allocator.dupe(u8, item.episode.task),
                 .distance = item.distance,
                 .context = try self.allocator.dupe(u8, item.episode.context orelse ""),
             });
@@ -162,7 +162,7 @@ pub const ExperienceEngine = struct {
         const full_path = try std.fs.path.join(self.allocator, &[_][]const u8{ self.episodes_dir, filename });
 
         const episode_json = std.json.stringify(&.{
-            std.json.Value{ .string = try self.allocator.dupe(u8, _task) },
+            std.json.Value{ .string = try self.allocator.dupe(u8, task) },
             std.json.Value{ .integer = @as(u64, timestamp) },
             std.json.Value{ .bool = _success },
             std.json.Value{ .string = try self.allocator.dupe(u8, _context) },
@@ -242,11 +242,11 @@ pub const ExperienceEngine = struct {
             }
         }
 
-        const count_val = index_data.get(_task);
+        const count_val = index_data.get(task);
         if (count_val) |cv| {
             if (cv == .integer) {
                 const count = cv.integer + 1;
-                index_data.put(try self.allocator.dupe(u8, _task), std.json.Value{ .integer = count });
+                index_data.put(try self.allocator.dupe(u8, task), std.json.Value{ .integer = count });
             }
         }
 
@@ -277,7 +277,7 @@ pub const ExperienceEngine = struct {
         );
         defer parsed.deinit();
 
-        return parsed.value.get(_task) != null;
+        return parsed.value.get(task) != null;
     }
 
     pub fn getSimilar(self: *ExperienceEngine, task: []const u8, top_k: usize) ![]const SimilarTask {
@@ -285,7 +285,7 @@ pub const ExperienceEngine = struct {
         defer {
             if (result.recommendations) |rec| self.allocator.free(rec);
             for (result.similar_tasks) |sim| {
-                self.allocator.free(sim._task);
+                self.allocator.free(sim.task);
                 self.allocator.free(sim.context);
             }
         }
