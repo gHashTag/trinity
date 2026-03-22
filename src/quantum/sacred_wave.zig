@@ -228,12 +228,12 @@ pub const SacredWaveFunction = struct {
     }
 
     /// Score structure for top configurations
-pub const ConfigScore = struct {
-    idx: usize,
-    prob: f64,
-};
+    pub const ConfigScore = struct {
+        idx: usize,
+        prob: f64,
+    };
 
-/// Get probability for a specific configuration
+    /// Get probability for a specific configuration
     /// P(θᵢ) = |ψᵢ|²
     pub fn probability(self: *const SacredWaveFunction, config_idx: usize) f64 {
         if (config_idx >= self.amplitudes.len) return 0.0;
@@ -400,7 +400,7 @@ test "SacredWaveFunction topConfigs returns sorted" {
 
     // Update configs: lower PPL should get higher probability
     try wave.measureAndUpdate(0, 5.0);
-    try wave.measureAndUpdate(1, 3.0);  // Best PPL
+    try wave.measureAndUpdate(1, 3.0); // Best PPL
     try wave.measureAndUpdate(2, 7.0);
     try wave.measureAndUpdate(3, 10.0);
 

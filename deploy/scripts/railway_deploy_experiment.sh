@@ -158,7 +158,7 @@ pairs = ', '.join(f'\"{k}\": \"{v}\"' for k,v in v.items())
 print('{' + pairs + '}')
 ")
 
-RESULT=$(curl -s 'https://backboard.railway.app/graphql/v2' \
+RESULT=$(curl -s 'https://railway.com/graphql/v2' \
   -H "Authorization: Bearer $RAILWAY_TOKEN" \
   -H 'Content-Type: application/json' \
   -d "{
@@ -177,7 +177,7 @@ else:
 
 # Step 2: Find latest deployment to redeploy
 echo "[2/3] Finding latest deployment..."
-DEPLOY_ID=$(curl -s 'https://backboard.railway.app/graphql/v2' \
+DEPLOY_ID=$(curl -s 'https://railway.com/graphql/v2' \
   -H "Authorization: Bearer $RAILWAY_TOKEN" \
   -H 'Content-Type: application/json' \
   -d "{
@@ -200,7 +200,7 @@ echo "  Latest deployment: $DEPLOY_ID"
 
 # Step 3: Redeploy with same image
 echo "[3/3] Redeploying..."
-RESULT=$(curl -s 'https://backboard.railway.app/graphql/v2' \
+RESULT=$(curl -s 'https://railway.com/graphql/v2' \
   -H "Authorization: Bearer $RAILWAY_TOKEN" \
   -H 'Content-Type: application/json' \
   -d "{

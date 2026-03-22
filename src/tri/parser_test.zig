@@ -54,4 +54,3 @@ test "parse tilde operation" {
     const ast = try parse(std.testing.allocator, tokens);
     try std.testing.expect(ast.program.len, 1);
 }
-

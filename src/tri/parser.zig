@@ -236,11 +236,11 @@ fn parseTerm(p: *Parser) !Expression {
                     .op = tokenToBinOp(op_token),
                     .left = result,
                     .right = right,
-                }};
+                } };
             },
             else => {
                 break;
-            }
+            },
         }
     }
 

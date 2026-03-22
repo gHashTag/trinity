@@ -21,7 +21,7 @@ jobs:
           echo "🧹 Checking for stuck agent containers..."
 
           # Get all services with their deployment status and creation time
-          SERVICES=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          SERVICES=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{

@@ -113,7 +113,7 @@ fn testToken(allocator: std.mem.Allocator, token: []const u8) !?[]const u8 {
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    const uri = try std.Uri.parse("https://backboard.railway.com/graphql");
+    const uri = try std.Uri.parse("https://railway.com/graphql");
 
     const query = "{\"query\":\"query { me { email } }\"}";
 

@@ -68,7 +68,7 @@ except: print('No evolution data')
 ```bash
 # Query Railway API for service status
 source /Users/playra/trinity-w1/.env 2>/dev/null
-curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+curl -s -X POST "https://railway.com/graphql/v2" \
   -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"query":"query($id:String!){project(id:$id){services{edges{node{id name deployments(first:1){edges{node{status}}}}}}}}","variables":{"id":"aa0efa7f-95e6-4466-8de6-43945a031365"}}' 2>/dev/null

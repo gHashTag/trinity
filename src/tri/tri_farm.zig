@@ -1261,7 +1261,8 @@ fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anyty
     const chat_id = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch {
         allocator.free(token);
         return;
-    };    defer allocator.free(chat_id);
+    };
+    defer allocator.free(chat_id);
 
     // URL-encode the message
     var encoded_msg = try std.ArrayList(u8).initCapacity(allocator, msg.len * 2);

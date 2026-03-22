@@ -51,11 +51,11 @@ pub fn main() !void {
     for (0..11) |k| {
         const dim = sacred_verify.PowersOf3[k];
         const marker = switch (dim) {
-            81 => " ← context",   // 3^4
-            243 => " ← embed",    // 3^5
-            729 => " ← VSA",       // 3^6
+            81 => " ← context", // 3^4
+            243 => " ← embed", // 3^5
+            729 => " ← VSA", // 3^6
             2187 => " ← seq_max", // 3^7
-            59049 => " ← max",     // 3^10
+            59049 => " ← max", // 3^10
             else => "",
         };
         try stdout.print("  3^{d:2} = {d:6}{s}\n", .{ k, dim, marker });

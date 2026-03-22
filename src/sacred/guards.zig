@@ -268,8 +268,8 @@ test "HSLMConfigGuard validates training config" {
     try std.testing.expectError(error.ContextNotTritResonance, guard.assertContextLength(100));
 
     // Batch size checks
-    try guard.assertBatchSize(66);  // 66 = 3 * 22
-    try guard.assertBatchSize(99);  // 99 = 3 * 33
+    try guard.assertBatchSize(66); // 66 = 3 * 22
+    try guard.assertBatchSize(99); // 99 = 3 * 33
     try std.testing.expectError(error.BatchSizeNotMultiple, guard.assertBatchSize(64));
 }
 

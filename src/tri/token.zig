@@ -13,9 +13,9 @@ pub const Token = union(enum) {
     kw_type,
     kw_struct,
     kw_void,
-    t_cpu,      // @cpu
-    t_fpga,     // @fpga
-    t_any,      // @any
+    t_cpu, // @cpu
+    t_fpga, // @fpga
+    t_any, // @any
 
     // Types (7)
     t_trit,
@@ -32,36 +32,36 @@ pub const Token = union(enum) {
     lit_int: i64,
     lit_float: f64,
     identifier: []const u8,
-    underscore,  // _
+    underscore, // _
 
     // Operators (10)
-    op_at_at,    // @@
-    op_plus_plus,// ++
-    op_tilde,    // ~
-    op_plus,     // +
-    op_minus,    // -
-    op_times,    // *
-    op_assign,   // =
-    op_eq,       // ==
-    op_neq,      // !=
-    op_gt,       // >
-    op_lt,       // <
+    op_at_at, // @@
+    op_plus_plus, // ++
+    op_tilde, // ~
+    op_plus, // +
+    op_minus, // -
+    op_times, // *
+    op_assign, // =
+    op_eq, // ==
+    op_neq, // !=
+    op_gt, // >
+    op_lt, // <
 
     // Delimiters (10)
-    l_paren,     // (
-    r_paren,     // )
-    l_bracket,   // [
-    r_bracket,   // ]
-    l_brace,     // {
-    r_brace,     // }
-    comma,       // ,
-    colon,       // :
-    arrow,       // =>
-    semicolon,    // ;
+    l_paren, // (
+    r_paren, // )
+    l_bracket, // [
+    r_bracket, // ]
+    l_brace, // {
+    r_brace, // }
+    comma, // ,
+    colon, // :
+    arrow, // =>
+    semicolon, // ;
 };
 
 pub const TritValue = enum {
-    neg,  // N
+    neg, // N
     zero, // O
-    pos,  // P
+    pos, // P
 };

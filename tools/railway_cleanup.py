@@ -37,7 +37,7 @@ def run_query(token, query):
         '-H', 'Authorization: Bearer ' + token,
         '-H', 'Content-Type: application/json',
         '-d', query,
-        'https://backboard.railway.app/graphql/v2'
+        'https://railway.com/graphql/v2'
     ], capture_output=True, text=True)
 
     if result.stderr:

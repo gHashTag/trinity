@@ -25,7 +25,7 @@ jobs:
           set -e
 
           # 1. Check if any slots are free
-          DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          DEPLOYMENTS=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{

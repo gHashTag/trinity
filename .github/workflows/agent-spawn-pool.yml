@@ -49,7 +49,7 @@ jobs:
           POOL_0="acfee27a-74e8-4436-961c-698ae93508ca"  # ubuntu
           POOL_1="12c2bdf9-d124-4a45-93ad-22921e842d1b"  # Agents Anywhere
 
-          DEPLOYMENTS=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          DEPLOYMENTS=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -133,7 +133,7 @@ jobs:
           echo "🚀 Spawning agent for issue #${ISSUE_NUMBER} on ${POOL_NAME} (${SERVICE_ID})..."
 
           # Set environment variables via variableCollectionUpsert (batch)
-          VARS_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          VARS_RESPONSE=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -172,7 +172,7 @@ jobs:
           echo "✅ Variables set"
 
           # Deploy the service
-          DEPLOY_RESPONSE=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          DEPLOY_RESPONSE=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{

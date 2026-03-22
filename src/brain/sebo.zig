@@ -224,7 +224,7 @@ pub const SeboOptimizer = struct {
             .ppl = result.final_ppl,
             .diversity = result.diversity_index,
             .fpga_cost = @as(f32, @floatFromInt(evo_config.fpga_lut)) / 50000.0 * 0.7 +
-                         @as(f32, @floatFromInt(evo_config.fpga_bram)) / 200.0 * 0.3,
+                @as(f32, @floatFromInt(evo_config.fpga_bram)) / 200.0 * 0.3,
         };
 
         // Cleanup result
