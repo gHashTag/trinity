@@ -1,0 +1,100 @@
+{
+  "wave": 9,
+  "name": "S3 MultiObj",
+  "description": "Wave 9 deployment with balanced S3 objective configuration",
+  "services_total": 48,
+  "services_per_account": 6,
+  "configuration": {
+    "HSLM_PROFILE": "s3-multiobj",
+    "HSLM_CTX": "81",
+    "HSLM_NTP_WEIGHT": "0.50",
+    "HSLM_JEPA_WEIGHT": "0.25",
+    "HSLM_NCA_WEIGHT": "0.25",
+    "HSLM_CRASH_TOLERANCE": "0.05",
+    "HSLM_WAVE": "9"
+  },
+  "accounts": [
+    {
+      "id": "1",
+      "name": "FARM-1",
+      "project_id": "aa0efa7f-95e6-4466-8de6-43945a031365",
+      "environment_id": "6748f1ad-9c2f-4b71-9a90-67f40ce34dc9",
+      "services": [
+        "hslm-w9-1-01", "hslm-w9-1-02", "hslm-w9-1-03",
+        "hslm-w9-1-04", "hslm-w9-1-05", "hslm-w9-1-06"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "FARM-2",
+      "project_id": "ca4303d2-4a09-4143-b725-9a3f3977118f",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_2",
+      "services": [
+        "hslm-w9-2-01", "hslm-w9-2-02", "hslm-w9-2-03",
+        "hslm-w9-2-04", "hslm-w9-2-05", "hslm-w9-2-06"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "FARM-3",
+      "project_id": "292e8862-11ce-4542-aff8-35a41e6b3217",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_3",
+      "services": [
+        "hslm-w9-3-01", "hslm-w9-3-02", "hslm-w9-3-03",
+        "hslm-w9-3-04", "hslm-w9-3-05", "hslm-w9-3-06"
+      ]
+    },
+    {
+      "id": "8",
+      "name": "FARM-8",
+      "project_id": "5e2aa97e-d4ff-4f32-a329-4d1c4239049e",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_8",
+      "services": [
+        "hslm-w9-8-01", "hslm-w9-8-02", "hslm-w9-8-03",
+        "hslm-w9-8-04", "hslm-w9-8-05", "hslm-w9-8-06"
+      ]
+    },
+    {
+      "id": "9",
+      "name": "FARM-9",
+      "project_id": "22bff7ef-6c44-4f90-9818-6050800c0dcf",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_9",
+      "services": [
+        "hslm-w9-9-01", "hslm-w9-9-02", "hslm-w9-9-03",
+        "hslm-w9-9-04", "hslm-w9-9-05", "hslm-w9-9-06"
+      ]
+    },
+    {
+      "id": "10",
+      "name": "FARM-10",
+      "project_id": "6e315376-05fa-4661-8a75-c605e9a7a1b3",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_10",
+      "services": [
+        "hslm-w9-10-01", "hslm-w9-10-02", "hslm-w9-10-03",
+        "hslm-w9-10-04", "hslm-w9-10-05", "hslm-w9-10-06"
+      ]
+    },
+    {
+      "id": "11",
+      "name": "FARM-11",
+      "project_id": "088ccb3a-283e-4520-a4e4-2a741c0f659b",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_11",
+      "services": [
+        "hslm-w9-11-01", "hslm-w9-11-02", "hslm-w9-11-03",
+        "hslm-w9-11-04", "hslm-w9-11-05", "hslm-w9-11-06"
+      ]
+    },
+    {
+      "id": "12",
+      "name": "FARM-12",
+      "project_id": "6e7c1bc8-4e7d-4634-8d3e-e3c286d3a2e1",
+      "environment_id": "RAILWAY_ENVIRONMENT_ID_12",
+      "services": [
+        "hslm-w9-12-01", "hslm-w9-12-02", "hslm-w9-12-03",
+        "hslm-w9-12-04", "hslm-w9-12-05", "hslm-w9-12-06"
+      ]
+    }
+  ],
+  "status": "pending",
+  "created_at": "2026-03-23T00:00:00Z"
+}
