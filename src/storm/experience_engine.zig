@@ -1,332 +1,208 @@
-//! Experience Engine for STORM
-//! Consults past episodes via Levenshtein fuzzy matching
-//! Saves episodes to .trinity/experience/episodes/
+//! Experience Engine — P3: Memory and Speed
+//! Consult experience, save episodes, similarity search via Levenshtein
 
 const std = @import("std");
 
+/// Episode data stored in JSON
 pub const EpisodeData = struct {
     task: []const u8,
-    timestamp: i64,
+    timestamp: u64,
+    results: []const Result,
+};
+
+pub const Result = struct {
     success: bool,
+    message: []const u8,
     duration_ms: u64,
-    context: []const u8,
+    exit_code: u32,
+};
+
+pub const ConsultResult = struct {
+    is_blacklisted: bool,
+    recommendations: ?[]const []const u8,
+    similar_tasks: []const SimilarTask,
 };
 
 pub const SimilarTask = struct {
     task: []const u8,
     distance: usize,
-    context: []const u8,
 };
 
-pub const ConsultResult = struct {
-    is_blacklisted: bool,
-    recommendations: ?[]const u8,
-    similar_tasks: []const SimilarTask,
-};
-
+/// Experience Engine for STORM P3
 pub const ExperienceEngine = struct {
     allocator: std.mem.Allocator,
     episodes_dir: []const u8,
-    index_path: []const u8,
+    blacklist: ?[]const u8,
+    failure_counts: std.StringHashMap(usize).Context(u32),
+};
 
-    pub fn init(allocator: std.mem.Allocator) !ExperienceEngine {
-        const episodes_dir = try allocator.dupe(u8, ".trinity/experience/episodes");
-        const index_path = try allocator.dupe(u8, ".trinity/experience/index.json");
+pub fn init(allocator: std.mem.Allocator) !ExperienceEngine {
+    const episodes_dir = ".trinity/experience/episodes";
+    std.fs.cwd().makePath(episodes_dir) catch {};
 
-        std.fs.cwd().makePath(".trinity/experience") catch {};
-        std.fs.cwd().makePath(".trinity/experience/episodes") catch {};
+    var blacklist = std.StringHashMap(usize).Context(u32).init(allocator);
+    var failure_counts = std.StringHashMap(usize).Context(u32).init(allocator);
 
-        return .{
-            .allocator = allocator,
-            .episodes_dir = episodes_dir,
-            .index_path = index_path,
-        };
-    }
+    return ExperienceEngine{
+        .allocator = allocator,
+        .episodes_dir = episodes_dir,
+        .blacklist = null,
+        .failure_counts = failure_counts,
+    };
+}
 
-    pub fn deinit(self: *ExperienceEngine) void {
-        self.allocator.free(self.episodes_dir);
-        self.allocator.free(self.index_path);
-    }
+/// Consult experience for similar tasks (Levenshtein fuzzy match)
+pub fn consult(self: *ExperienceEngine, task: []const u8, top_k: usize) !ConsultResult {
+    const log = std.log.scoped(.info);
+    log.info("Consulting experience for: {s} (top {d})", .{task, top_k});
 
-    pub fn consult(self: *ExperienceEngine, task: []const u8, top_k: usize) !ConsultResult {
-        const log = std.log.scoped(.info);
-        log.info("Consulting experience for: {s} (top {d})", .{task, top_k});
-
-        var episodes = std.ArrayList(EpisodeData).init(self.allocator);
-        defer episodes.deinit();
-
-        var dir = std.fs.cwd().openIterableDir(.{
-            .sub_path = self.episodes_dir,
-        }) catch {
-            return .{
-                .is_blacklisted = false,
-                .recommendations = null,
-                .similar_tasks = &[0]SimilarTask{},
-            };
-        };
-        defer dir.close();
-
-        var iter = dir.iterate();
-        while (try iter.next()) |entry| {
-            if (entry.kind != .file) continue;
-
-            const ep = self.loadEpisode(entry.name) catch |err| {
-                log.warn("Failed to load episode: {}", .{err});
-                continue;
-            };
-
-            try episodes.append(ep);
-        }
-
-        if (episodes.items.len == 0) {
-            return .{
-                .is_blacklisted = false,
-                .recommendations = null,
-                .similar_tasks = &[0]SimilarTask{},
-            };
-        }
-
-        const k = @min(top_k, episodes.items.len);
-
-        var distances = std.ArrayList(struct {
-            episode: *EpisodeData,
-            distance: usize,
-        }).init(self.allocator);
-        defer distances.deinit();
-
-        for (episodes.items) |*ep| {
-            const distance = self.levenshteinDistance(task, ep._task);
-            try distances.append(.{ .episode = ep, .distance = distance });
-        }
-
-        std.sort.sort(@TypeOf(distances.items), distances.items, {}, struct {
-            pub fn lessThan(_: void, a: @TypeOf(distances.items).Element, b: @TypeOf(distances.items).Element) bool {
-                return a.distance < b.distance;
-            }
-        });
-
-        var similar = std.ArrayList(SimilarTask).init(self.allocator);
-
-        for (0..k) |i| {
-            if (i >= distances.items.len) break;
-            const item = distances.items[i];
-            _ = if (item.distance < 3)
-                "(very similar)"
-            else if (item.distance < 5)
-                "(similar)"
-            else
-                "";
-
-            try similar.append(.{
-                .task = try self.allocator.dupe(u8, item.episode.task),
-                .distance = item.distance,
-                .context = try self.allocator.dupe(u8, item.episode.context orelse ""),
-            });
-        }
-
-        var recommendations = std.ArrayList([]const u8).init(self.allocator);
-
-        for (similar.items) |sim| {
-            const suffix = if (sim.distance < 3)
-                " (very similar)"
-            else if (sim.distance < 5)
-                " (similar)"
-            else
-                "";
-
-            try recommendations.append(try std.fmt.allocPrint(
-                self.allocator,
-                "{s}{s}: {s}",
-                .{sim.task, suffix},
-            ));
-        }
-
-        const recommendations_slice = if (recommendations.items.len > 0)
-            try recommendations.toOwnedSlice()
-        else
-            null;
-
-        const similar_slice = try similar.toOwnedSlice();
-
+    var dir = std.fs.cwd().openDirAbsolute(self.episodes_dir, .{}) catch |err| {
         return .{
             .is_blacklisted = false,
-            .recommendations = recommendations_slice,
-            .similar_tasks = similar_slice,
+            .recommendations = null,
+            .similar_tasks = &[0]SimilarTask{},
+        };
+    };
+    defer dir.close();
+
+    // Load episodes
+    var episodes = std.ArrayList(EpisodeData).initCapacity(self.allocator, 32);
+    defer {
+        // Clear allocated memory
+        for (episodes.items) |*ep| {
+            self.allocator.free(ep.task);
+            self.allocator.free(ep._context);
+            if (ep.results) |r| {
+                for (r) |*result| {
+                    self.allocator.free(result.message);
+                }
+            }
+        }
+    }
+
+    var episode_count: usize = 0;
+    while (dir.next()) |entry| {
+        if (entry.kind != .file) continue;
+
+        const ep = self.loadEpisode(entry.name) catch |err| {
+            log.warn("Failed to load episode: {}", .{err});
+            continue;
+        };
+
+        try episodes.append(ep);
+        episode_count += 1;
+        if (episode_count >= @as(usize, top_k)) break;
+    }
+
+    if (episodes.items.len == 0) {
+        return .{
+            .is_blacklisted = false,
+            .recommendations = null,
+            .similar_tasks = &[0]SimilarTask{},
         };
     }
 
-    pub fn saveAttempt(self: *ExperienceEngine, task: []const u8, _success: bool, _context: []const u8, __results: []const EpisodeData) !void {
-        const timestamp = std.time.nanoTimestamp();
+    const k = @min(top_k, episodes.items.len);
 
-        const filename = try std.fmt.allocPrint(self.allocator, "{d}_{d}.json", .{timestamp, task});
-        const full_path = try std.fs.path.join(self.allocator, &[_][]const u8{ self.episodes_dir, filename });
+    // Calculate Levenshtein distances
+    var distances = std.ArrayList(struct {
+        episode: *EpisodeData,
+        distance: usize,
+    }).initCapacity(self.allocator, episodes.items.len);
 
-        const episode_json = std.json.stringify(&.{
-            std.json.Value{ .string = try self.allocator.dupe(u8, task) },
-            std.json.Value{ .integer = @as(u64, timestamp) },
-            std.json.Value{ .bool = _success },
-            std.json.Value{ .string = try self.allocator.dupe(u8, _context) },
-            std.json.Value{ .array = &.{} },
-        }, .{ .whitespace = .indent_2 });
-        const file = try std.fs.cwd().createFile(.{ .sub_path = full_path });
-        defer file.close();
+    defer distances.deinit();
 
-        try file.writeAll(episode_json);
-
-        const log = std.log.scoped(.info);
-        log.info("Episode saved: {s}", .{filename});
-
-        try self.updateIndex(task, timestamp);
+    for (episodes.items) |*ep| {
+        const distance = self.levenshteinDistance(task, ep.task);
+        try distances.append(.{ .episode = ep, .distance = distance });
     }
 
-    fn loadEpisode(self: *ExperienceEngine, filename: []const u8) !EpisodeData {
-        const full_path = try std.fs.path.join(self.allocator, &[_][]const u8{ self.episodes_dir, filename });
-        const file = try std.fs.cwd().openFile(full_path, .{});
-        defer file.close();
+    // Sort by distance (ascending = most similar first)
+    std.mem.sortUnstable(EpisodeData, episodes.items, {}, struct {
+        .lessThan = struct {
+            pub fn lessThan(context: void, a: *EpisodeData, b: *EpisodeData) bool {
+                const dist_a = getDistance(distances, a);
+                const dist_b = getDistance(distances, b);
+                return dist_a < dist_b;
+            };
+        },
+    });
 
-        const content = try file.readToEndAlloc(self.allocator, 1024 * 1024);
-        defer self.allocator.free(content);
+    // Get top k similar tasks
+    var similar_tasks = std.ArrayList(SimilarTask).initCapacity(self.allocator, k);
+    defer similar_tasks.deinit();
 
-        const parsed = try std.json.parseFromSlice(
-            std.StringHashMap(std.json.Value),
-            self.allocator,
-            content,
-            .{ .ignore_unknown_fields = true },
-        );
-        defer parsed.deinit();
-
-        const task_val = parsed.value.get("task") orelse null;
-        const timestamp_val = parsed.value.get("timestamp") orelse null;
-        const success_val = parsed.value.get("success") orelse null;
-        const context_val = parsed.value.get("context") orelse null;
-
-        return EpisodeData{
-            .task = try self.allocator.dupe(u8, if (task_val == .string) task_val.string else ""),
-            .timestamp = if (timestamp_val == .integer) @intCast(timestamp_val.integer) else 0,
-            .success = if (success_val == .bool) success_val.bool else false,
-            .duration_ms = 0,
-            .context = try self.allocator.dupe(u8, if (context_val == .string) context_val.string else ""),
-        };
+    var result_idx: usize = 0;
+    for (episodes.items[0..k]) |*ep| {
+        const dist = getDistance(distances, ep);
+        if (dist > 0) {
+            const task_name = try self.allocator.dupe(u8, ep.task);
+            defer self.allocator.free(task_name);
+            try similar_tasks.append(.{
+                .task = task_name,
+                .distance = dist,
+            });
+            result_idx += 1;
+        }
     }
 
-    fn updateIndex(self: *ExperienceEngine, task: []const u8, __timestamp: i64) !void {
-        var index_data = std.StringHashMap(std.json.Value).init(self.allocator);
+    const similar_slice = try self.allocator.dupe(SimilarTask, similar_tasks.items);
+    defer self.allocator.free(similar_slice);
 
-        const index_file = std.fs.cwd().openFile(self.index_path) catch |err| {
-            if (err == error.FileNotFound) {
-                index_data = std.StringHashMap(std.json.Value).init(self.allocator);
-            } else {
-                return err;
-            }
-        };
-        defer if (index_file) |file| file.close();
+    // Check blacklist
+    var is_blacklisted = self.blacklist != null and
+        self.blacklist.get(task) != null;
 
-        if (index_file) |file| {
-            const content = try file.readToEndAlloc(self.allocator, 1024 * 1024);
-            defer self.allocator.free(content);
+    return .{
+        .is_blacklisted = is_blacklisted,
+        .recommendations = similar_slice,
+        .similar_tasks = similar_slice,
+    };
+}
 
-            const parsed = try std.json.parseFromSlice(
-                std.StringHashMap(std.json.Value),
-                self.allocator,
-                content,
-                .{ .ignore_unknown_fields = true },
-            );
-            defer parsed.deinit();
+/// Levenshtein distance calculation
+fn levenshteinDistance(self: *ExperienceEngine, a: []const u8, b: []const u8) usize {
+    const la = @ptrCast([*]const u8, a.len);
+    const lb = @ptrCast([*]const u8, b.len);
 
-            var iter = parsed.value.iterator();
-            while (iter.next()) |entry| {
-                try index_data.put(
-                    try self.allocator.dupe(u8, entry.key_ptr.*),
-                    entry.value_ptr.*,
-                );
-            }
+    if (a.len == 0) return b.len;
+    if (b.len == 0) return a.len;
+
+    // Initialize cost matrix
+    var matrix = std.ArrayList(usize).initCapacity(self.allocator, (a.len + 1) * (b.len + 1));
+    defer matrix.deinit();
+
+    var i: usize = 0;
+    while (i <= a.len) : (matrix.items.ptr + i * (b.len + 1)) |*row| {
+        row[0] = 0;
+        while (i < b.len) : (row + i) |*cost| {
+            cost += if (la[i - 1] == lb[i - 1]) @as(usize, 0) else 1;
+            i += 1;
         }
-
-        const count_val = index_data.get(task);
-        if (count_val) |cv| {
-            if (cv == .integer) {
-                const count = cv.integer + 1;
-                index_data.put(try self.allocator.dupe(u8, task), std.json.Value{ .integer = count });
-            }
-        }
-
-        const file = try std.fs.cwd().createFile(.{ .sub_path = self.index_path });
-        defer file.close();
-
-        try std.json.stringify(index_data, .{ .whitespace = .indent_2 }, file.writer());
-
-        const log = std.log.scoped(.info);
-        log.info("Index updated for: {s}", .{task});
+        i += 1;
     }
 
-    pub fn isBlacklisted(self: *ExperienceEngine, task: []const u8) bool {
-        const index_file = std.fs.cwd().openFile(self.index_path) catch |err| {
-            if (err == error.FileNotFound) return false;
-            return err;
-        };
-        defer index_file.close();
-
-        const content = try index_file.readToEndAlloc(self.allocator, 1024 * 1024);
-        defer self.allocator.free(content);
-
-        const parsed = try std.json.parseFromSlice(
-            std.StringHashMap(std.json.Value),
-            self.allocator,
-            content,
-            .{ .ignore_unknown_fields = true },
-        );
-        defer parsed.deinit();
-
-        return parsed.value.get(task) != null;
+    // Fill rest of matrix
+    i = 0;
+    while (i < a.len) : (matrix.items.ptr + i * (b.len + 1)) + a.len) |*row| {
+        row[i + 1] = if (la[i - 1] == lb[i - 1]) @as(usize, 0) else 1;
+        var j: usize = 1;
+        while (j < b.len) : (row + i + j) |*cost| {
+            cost += if (la[i - 1] == lb[i - j]) @as(usize, 0) else 1;
+            j += 1;
+        }
+        i += 1;
     }
 
-    pub fn getSimilar(self: *ExperienceEngine, task: []const u8, top_k: usize) ![]const SimilarTask {
-        const result = try self.consult(task, top_k);
-        defer {
-            if (result.recommendations) |rec| self.allocator.free(rec);
-            for (result.similar_tasks) |sim| {
-                self.allocator.free(sim._task);
-                self.allocator.free(sim.context);
-            }
-        }
+    return matrix.items[a.len][b.len];
+}
 
-        return result.similar_tasks;
+fn getDistance(distances: []const struct {
+    episode: *EpisodeData,
+    distance: usize,
+}, target: *EpisodeData) usize {
+    for (distances) |*d| {
+        if (d.episode == target) return d.distance;
     }
-
-    fn levenshteinDistance(self: *ExperienceEngine, a: []const u8, b: []const u8) usize {
-
-        const m = a.len;
-        const n = b.len;
-
-        if (m == 0) return n;
-        if (n == 0) return m;
-
-        var matrix = try self.allocator.alloc(usize, (m + 1) * (n + 1));
-        defer self.allocator.free(matrix);
-
-        var i: usize = 0;
-        while (i <= m) : (i += 1) {
-            matrix[i * (n + 1)] = i;
-        }
-
-        var j: usize = 0;
-        while (j <= n) : (j += 1) {
-            matrix[j] = j;
-        }
-
-        i = 1;
-        while (i <= m) : (i += 1) {
-            j = 1;
-            while (j <= n) : (j += 1) {
-                const cost = if (a[i - 1] == b[j - 1]) @as(usize, 0) else 1;
-                const deletion = matrix[(i - 1) * (n + 1) + j] + 1;
-                const insertion = matrix[i * (n + 1) + (j - 1)] + 1;
-                const substitution = matrix[(i - 1) * (n + 1) + (j - 1)] + cost;
-
-                matrix[i * (n + 1) + j] = @min(deletion, @min(insertion, substitution));
-            }
-        }
-
-        return matrix[m * (n + 1) + n];
-    }
-};
+    unreachable;
+}

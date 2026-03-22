@@ -9,9 +9,7 @@ pub const fmtCheckLinkID = 8;
 pub const buildLinkID = 9;
 
 pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("🔍 AST Check: {s}", .{file });
 
@@ -29,26 +27,34 @@ pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
 
-    if (result.term != .Exited or result.code != 0) {
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
+
+    // Check exit code (Zig 0.15: term is Term enum)
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
+
+    if (exit_code != 0) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\AST check failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
     // Parse output for errors
     var errors: usize = 0;
-    for (stdout) |line| {
+    var lines_iter = std.mem.splitScalar(u8, stdout, '\n');
+    while (lines_iter.next()) |line| {
         if (std.mem.indexOfScalar(u8, line, "error") != null or
             std.mem.indexOfScalar(u8, line, "Error") != null)
         {
@@ -77,9 +83,7 @@ pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
 }
 
 pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("✏️️  FMT Check: {s}", .{file });
 
@@ -97,13 +101,19 @@ pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
 
-    if (result.term != .Exited or result.code != 0) {
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
+
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
+
+    if (exit_code != 0) {
         // Exit code 1 means formatting issues found
         return .{
             .success = false,
@@ -125,9 +135,7 @@ pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
 }
 
 pub fn executeBuild(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
     log.info("🔨 Build: {s}", .{file });
 
@@ -145,15 +153,17 @@ pub fn executeBuild(allocator: std.mem.Allocator, task: []const u8, file: []cons
     };
     defer result.deinit();
 
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
-    const duration = std.time.nanoTimestamp() - result.start_time;
+
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
 
     // Parse build output for errors
     var has_errors = false;
-    for (stderr) |line| {
+    var lines_iter = std.mem.splitScalar(u8, stderr, '\n');
+    while (lines_iter.next()) |line| {
         if (std.mem.indexOfScalar(u8, line, "error:") != null or
             std.mem.indexOfScalar(u8, line, " Error") != null)
         {
@@ -162,14 +172,19 @@ pub fn executeBuild(allocator: std.mem.Allocator, task: []const u8, file: []cons
         }
     }
 
-    if (result.term != .Exited or result.code != 0 or has_errors) {
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
+
+    if (exit_code != 0 or has_errors) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\Build failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
