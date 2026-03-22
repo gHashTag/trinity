@@ -150,7 +150,7 @@ pub const GoldenChain = struct {
             std.log.warn("Failed to create timeout handler: {}", .{e});
             return error.TimeoutHandlerInitFailed;
         };
-        timeout_handler.* = try TimeoutHandler.init(allocator);
+        timeout_handler.* = TimeoutHandler.init(allocator);
 
         return .{
             .allocator = allocator,

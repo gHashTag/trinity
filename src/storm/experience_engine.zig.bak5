@@ -57,7 +57,7 @@ pub const ExperienceEngine = struct {
 
         var dir = std.fs.cwd().openIterableDir(.{
             .sub_path = self.episodes_dir,
-        }) catch {
+        }) catch |_| {
             return .{
                 .is_blacklisted = false,
                 .recommendations = null,
@@ -155,7 +155,7 @@ pub const ExperienceEngine = struct {
         };
     }
 
-    pub fn saveAttempt(self: *ExperienceEngine, task: []const u8, _success: bool, _context: []const u8, __results: []const EpisodeData) !void {
+    pub fn saveAttempt(self: *ExperienceEngine, task: []const u8, _success: bool, _context: []const u8, _results: []const EpisodeData) !void {
         const timestamp = std.time.nanoTimestamp();
 
         const filename = try std.fmt.allocPrint(self.allocator, "{d}_{d}.json", .{timestamp, task});
@@ -176,7 +176,7 @@ pub const ExperienceEngine = struct {
         const log = std.log.scoped(.info);
         log.info("Episode saved: {s}", .{filename});
 
-        try self.updateIndex(task, timestamp);
+        try self.updateIndex(task, _timestamp, _success);
     }
 
     fn loadEpisode(self: *ExperienceEngine, filename: []const u8) !EpisodeData {
@@ -209,7 +209,7 @@ pub const ExperienceEngine = struct {
         };
     }
 
-    fn updateIndex(self: *ExperienceEngine, task: []const u8, __timestamp: i64) !void {
+    fn updateIndex(self: *ExperienceEngine, task: []const u8, timestamp: i64) !void {
         var index_data = std.StringHashMap(std.json.Value).init(self.allocator);
 
         const index_file = std.fs.cwd().openFile(self.index_path) catch |err| {
@@ -242,11 +242,11 @@ pub const ExperienceEngine = struct {
             }
         }
 
-        const count_val = index_data.get(task);
+        const count_val = index_data.get(_task);
         if (count_val) |cv| {
             if (cv == .integer) {
                 const count = cv.integer + 1;
-                index_data.put(try self.allocator.dupe(u8, task), std.json.Value{ .integer = count });
+                index_data.put(try self.allocator.dupe(u8, _task), std.json.Value{ .integer = count });
             }
         }
 
@@ -277,7 +277,7 @@ pub const ExperienceEngine = struct {
         );
         defer parsed.deinit();
 
-        return parsed.value.get(task) != null;
+        return parsed.value.get(_task) != null;
     }
 
     pub fn getSimilar(self: *ExperienceEngine, task: []const u8, top_k: usize) ![]const SimilarTask {

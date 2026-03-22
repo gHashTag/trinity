@@ -10,7 +10,7 @@ pub const experienceSaveLinkID = 27;
 pub const phoenixLineageUpdateLinkID = 28;
 
 pub fn executeGitCommit(allocator: std.mem.Allocator, phase: []const u8, task: []const u8, issue: ?u32) !storm.golden_chain.LinkResult {
-    _ = allocator;
+
 
     const log = std.log.scoped(.info);
     log.info("📝 Git Commit: {s}", .{task});
@@ -106,9 +106,6 @@ pub fn executeGitCommit(allocator: std.mem.Allocator, phase: []const u8, task: [
 }
 
 pub fn executeGithubIssueComment(allocator: std.mem.Allocator, issue: u32, results: []const storm.golden_chain.LinkResult) !storm.golden_chain.LinkResult {
-    _ = allocator;
-    _ = issue;
-    _ = results;
 
     const log = std.log.scoped(.info);
     log.info("💬 GitHub Issue Comment: #{d}", .{issue});
@@ -197,9 +194,6 @@ pub fn executeGithubIssueComment(allocator: std.mem.Allocator, issue: u32, resul
 }
 
 pub fn executeExperienceSave(allocator: std.mem.Allocator, task: []const u8, results: []const storm.golden_chain.LinkResult) !storm.golden_chain.LinkResult {
-    _ = allocator;
-    _ = task;
-    _ = results;
 
     const log = std.log.scoped(.info);
     log.info("🧠 Experience Save: {s}", .{task});
@@ -250,9 +244,7 @@ pub fn executeExperienceSave(allocator: std.mem.Allocator, task: []const u8, res
     };
 }
 
-pub fn executePhoenixLineageUpdate(allocator: std.mem.Allocator, task: []const u8, generation: u32) !storm.golden_chain.LinkResult {
-    _ = allocator;
-    _ = generation;
+pub fn executePhoenixLineageUpdate(allocator: std.mem.Allocator, generation: u32, task: []const u8 !storm.golden_chain.LinkResult {
 
     const log = std.log.scoped(.info);
     log.info("🔥 Phoenix Lineage Update: {s}", .{task});
@@ -265,7 +257,7 @@ pub fn executePhoenixLineageUpdate(allocator: std.mem.Allocator, task: []const u
     // Read or create lineage
     var lineage: std.json.Value = .null;
 
-    const file = std.fs.cwd().openFile(lineage_path, .{}) catch |err| {
+    _ = std.fs.cwd().openFile(lineage_path, .{}) catch |err| {
         if (err == error.FileNotFound) {
             // Create new lineage
             var new_lineage = std.StringHashMap(std.json.Value).init(allocator);
