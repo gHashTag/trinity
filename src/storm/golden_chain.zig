@@ -26,17 +26,39 @@ pub const Role = enum {
 
 pub const BrainZone = enum {
     // Prosencephalon (Strategic)
-    cortex, dlpfc, ofc, acc, broca, wernicke, insula,
+    cortex,
+    dlpfc,
+    ofc,
+    acc,
+    broca,
+    wernicke,
+    insula,
     // Limbic System (Memory/Motivation)
-    hippocampus, amygdala, accumbens, fornix,
+    hippocampus,
+    amygdala,
+    accumbens,
+    fornix,
     // Basal Ganglia (Arena Selection)
-    striatum, pallidus, nigra,
+    striatum,
+    pallidus,
+    nigra,
     // Diencephalon (Relay)
-    thalamus, hypothalamus, habenula,
+    thalamus,
+    hypothalamus,
+    habenula,
     // Mesencephalon (Operational)
-    colliculus_s, colliculus_i, ruber, pag, vta,
+    colliculus_s,
+    colliculus_i,
+    ruber,
+    pag,
+    vta,
     // Rhombencephalon (Infrastructure)
-    cerebellum, vermis, pons, medulla, coeruleus, raphe,
+    cerebellum,
+    vermis,
+    pons,
+    medulla,
+    coeruleus,
+    raphe,
 };
 
 pub const Link = struct {
@@ -50,11 +72,11 @@ pub const Link = struct {
 
 pub const LinkResult = struct {
     success: bool,
-    message: ?[]const u8 = null,    // P11: null means no message, safe to free
+    message: ?[]const u8 = null, // P11: null means no message, safe to free
     duration_ms: u64,
     exit_code: u8 = 0,
-    stdout: ?[]const u8 = null,   // P11: null means no output, safe to free
-    stderr: ?[]const u8 = null,   // P11: null means no error, safe to free
+    stdout: ?[]const u8 = null, // P11: null means no output, safe to free
+    stderr: ?[]const u8 = null, // P11: null means no error, safe to free
 };
 
 pub const LogLevel = enum {
@@ -79,7 +101,7 @@ pub const CheckpointData = struct {
     completed_links: u28,
     total_cost_ms: u64,
     timestamp: i64,
-    results: []LinkResult,  // References to JSON-parsed data
+    results: []LinkResult, // References to JSON-parsed data
 };
 
 pub const CHAIN_LINKS = [28]Link{
@@ -361,7 +383,7 @@ pub const GoldenChain = struct {
             27 => "tri hippocampus save", // experience_save
             28 => "tri raphe stabilize", // phoenix_lineage_update
 
-            else => try std.fmt.allocPrint(self.allocator, "echo Link[{d}]: {s}", .{link.id, link.name}),
+            else => try std.fmt.allocPrint(self.allocator, "echo Link[{d}]: {s}", .{ link.id, link.name }),
         };
 
         // Parse command into argv (simple implementation)
@@ -478,9 +500,7 @@ pub const GoldenChain = struct {
 
         const cp_data = parsed.value;
 
-        self.log(.info, "📂 Checkpoint loaded: link {d}, {d} results", .{
-            cp_data.current_link, cp_data.results.len
-        });
+        self.log(.info, "📂 Checkpoint loaded: link {d}, {d} results", .{ cp_data.current_link, cp_data.results.len });
 
         return cp_data;
     }
@@ -529,9 +549,7 @@ pub const GoldenChain = struct {
             try self.results.append(self.allocator, result);
         }
 
-        self.log(.info, "▶️ Resuming from link {d} with {d} previous results", .{
-            cp.current_link, cp.results.len
-        });
+        self.log(.info, "▶️ Resuming from link {d} with {d} previous results", .{ cp.current_link, cp.results.len });
 
         // Calculate start link index (0-based)
         const start_link_idx = if (cp.current_link == 0) 0 else cp.current_link - 1;
