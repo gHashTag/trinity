@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Stores recent commands and their frequency for learning
 struct CommandHistory: Codable, Identifiable {
-    let id = UUID()
+    var id = UUID()
     let command: String      // e.g., "@grep:func ", "@tri:build"
     let prompt: String       // Short label for display
     let timestamp: Date

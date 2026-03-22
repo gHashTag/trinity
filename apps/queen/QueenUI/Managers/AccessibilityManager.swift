@@ -4,7 +4,6 @@ import AppKit
 /// Manages accessibility preferences and provides helper methods for accessibility features.
 /// This class ensures that Queen UI respects user accessibility preferences and provides
 /// appropriate accommodations throughout the application.
-@MainActor
 public final class AccessibilityManager: ObservableObject {
 
     // MARK: - Singleton
