@@ -19,6 +19,8 @@ const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const tri_dev = @import("tri_dev.zig");
+// P3.0: State machine for rigid process framework
+const dev_workflow = @import("dev_commands.zig");
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
 const swe_arena = @import("swe_arena.zig");
 const code_arena = @import("code_arena.zig");
@@ -1417,8 +1419,31 @@ fn dispatchNamespacedCommand(
             try tri_zai_proxy.runZaiProxyCommand(allocator, cmd_args);
             return;
         }
-        // SWE Agent Dev Farm commands: status, spawn, kill, recycle, fill, metrics, leaderboard, evolve
-        if (std.mem.eql(u8, cmd_name, "status") or std.mem.eql(u8, cmd_name, "spawn") or
+        // P3.0: Rigid Process Framework commands (state machine)
+        if (std.mem.eql(u8, cmd_name, "start") or std.mem.eql(u8, cmd_name, "test") or
+            std.mem.eql(u8, cmd_name, "commit") or std.mem.eql(u8, cmd_name, "ship") or
+            std.mem.eql(u8, cmd_name, "reset") or std.mem.eql(u8, cmd_name, "unblock") or
+            std.mem.eql(u8, cmd_name, "log"))
+        {
+            try dev_workflow.runDevCommand(allocator, cmd_args);
+            return;
+        }
+        // Special case: "tri dev status" routes to state machine, cloud dev uses "tri dev farm-status"
+        if (std.mem.eql(u8, cmd_name, "status")) {
+            try dev_workflow.runDevCommand(allocator, cmd_args);
+            return;
+        }
+        // Cloud dev farm: tri dev farm-status for cloud agents (state machine uses "status")
+        if (std.mem.eql(u8, cmd_name, "farm-status")) {
+            var farm_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer farm_args.deinit(allocator);
+            try farm_args.append(allocator, "status");
+            try farm_args.appendSlice(allocator, cmd_args);
+            try tri_dev.runDevCommand(allocator, farm_args.items);
+            return;
+        }
+        // SWE Agent Dev Farm commands: spawn, kill, recycle, fill, metrics, leaderboard, evolve
+        if (std.mem.eql(u8, cmd_name, "spawn") or
             std.mem.eql(u8, cmd_name, "kill") or std.mem.eql(u8, cmd_name, "recycle") or
             std.mem.eql(u8, cmd_name, "fill") or std.mem.eql(u8, cmd_name, "metrics") or
             std.mem.eql(u8, cmd_name, "leaderboard") or std.mem.eql(u8, cmd_name, "evolve") or

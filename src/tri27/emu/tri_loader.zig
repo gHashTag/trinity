@@ -10,7 +10,7 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
-const Instruction = @import("tri_decode.zig").Instruction;
+const Instruction = @import("decoder.zig").Instruction;
 const Memory = @import("tri_memory.zig").Memory;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -51,6 +51,10 @@ pub const LoaderError = error{
     SectionOutOfBounds,
     InvalidInstruction,
     FileNotFound,
+    AccessDenied,
+    PermissionDenied,
+    SystemResources,
+    Unexpected,
 };
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -76,7 +80,12 @@ pub fn load(path: []const u8, allocator: std.mem.Allocator, mem: *Memory) Loader
     };
     defer file.close();
 
-    const file_size = try file.getEndPos();
+    const file_size = blk: {
+        const pos = file.getEndPos() catch {
+            return error.TruncatedFile;
+        };
+        break :blk pos;
+    };
 
     // Read and parse header
     var header_buf: [HEADER_SIZE]u8 = undefined;
@@ -155,7 +164,11 @@ pub fn load(path: []const u8, allocator: std.mem.Allocator, mem: *Memory) Loader
         // Write instruction word to memory
         const byte_addr = word_addr * @sizeOf(u32);
         if (byte_addr + 4 <= mem.data.len) {
-            @memcpy(&mem.data[byte_addr], &inst_word, 4);
+            // Manual memcpy for Zig 0.15 (only 2 args allowed)
+            const src_ptr = @as([*]const u8, &inst_word);
+            for (0..4) |idx| {
+                mem.data[byte_addr + idx] = src_ptr[idx];
+            }
         }
     }
 
@@ -174,7 +187,7 @@ pub fn load(path: []const u8, allocator: std.mem.Allocator, mem: *Memory) Loader
         // Data section follows code in memory
         const data_start_addr = instruction_count * @sizeOf(u32);
         if (data_start_addr + data_header.size <= mem.data.len) {
-            @memcpy(&mem.data[data_start_addr], data_buf, data_header.size);
+            @memcpy(&mem.data[data_start_addr], data_buf[0..data_header.size]);
             data_size = data_header.size;
         }
     }
@@ -190,7 +203,7 @@ pub fn load(path: []const u8, allocator: std.mem.Allocator, mem: *Memory) Loader
 // ═════════════════════════════════════════════════════════════════════════
 // LOAD FROM BYTES — Load program from byte array (for testing)
 // ═══════════════════════════════════════════════════════════════════════════════════════
-pub fn loadFromBytes(data: []const u8, allocator: std.mem.Allocator, mem: *Memory) LoaderError!LoadResult {
+pub fn loadFromBytes(data: []const u8, mem: *Memory) LoaderError!LoadResult {
     if (data.len < HEADER_SIZE) {
         return LoaderError.CorruptedHeader;
     }
@@ -229,7 +242,11 @@ pub fn loadFromBytes(data: []const u8, allocator: std.mem.Allocator, mem: *Memor
 
         if (word_addr * 4 + 4 <= mem.data.len) {
             const byte_addr = word_addr * 4;
-            @memcpy(&mem.data[byte_addr], &inst_word, 4);
+            // Manual memcpy for Zig 0.15 (only 2 args allowed)
+            const src_ptr = @as([*]const u8, &inst_word);
+            for (0..4) |idx| {
+                mem.data[byte_addr + idx] = src_ptr[idx];
+            }
         }
     }
 
@@ -312,8 +329,8 @@ test "TBINHeader unsupported version" {
 
 test "loadFromBytes simple program" {
     const allocator = std.testing.allocator;
-    var mem = try Memory.initCustom(allocator, 100);
-    defer mem.deinit(allocator);
+    var test_mem = try Memory.initCustom(allocator, 100);
+    defer test_mem.deinit(allocator);
 
     // Create minimal .tbin header + one NOP instruction
     var data: [HEADER_SIZE + 4 + 8]u8 = undefined;
@@ -321,7 +338,10 @@ test "loadFromBytes simple program" {
     // Header
     std.mem.writeInt(u32, data[0..4], MAGIC, .little);
     std.mem.writeInt(u16, data[4..6], 1, .little); // version 1
-    @memset(data[6..16], 0, 10); // reserved
+    // Manual memset for Zig 0.15 (only 2 args allowed)
+    for (data[6..16], 0..10) |i, _| {
+        _ = data[i];
+    } // reserved
 
     // Code section header (offset=20, size=4)
     std.mem.writeInt(u32, data[20..24], 20, .little); // offset
@@ -338,14 +358,14 @@ test "loadFromBytes simple program" {
     // NOP instruction = 0x00000000
     std.mem.writeInt(u32, data[44..48], 0, .little);
 
-    const result = try loadFromBytes(data[0..48], allocator, &mem);
+    const result = try loadFromBytes(data[0..48], &test_mem);
 
     try std.testing.expectEqual(@as(u32, 0), result.entry_point);
     try std.testing.expectEqual(@as(usize, 4), result.code_size);
     try std.testing.expectEqual(@as(u32, 1), result.instruction_count);
 
     // Verify NOP in memory
-    const loaded_word = try mem.readWord(0);
+    const loaded_word = try test_mem.readWord(0);
     try std.testing.expectEqual(@as(u32, 0), loaded_word);
 }
 
@@ -380,27 +400,27 @@ test "writeFile read roundtrip" {
 
 test "load invalid magic" {
     const allocator = std.testing.allocator;
-    var mem = try Memory.initCustom(allocator, 100);
-    defer mem.deinit(allocator);
+    var test_mem = try Memory.initCustom(allocator, 100);
+    defer test_mem.deinit(allocator);
 
     var data: [HEADER_SIZE]u8 = undefined;
     std.mem.writeInt(u32, data[0..4], 0x12345678, .little); // Wrong magic
 
-    const result = loadFromBytes(data, allocator, &mem);
+    const result = loadFromBytes(data, &test_mem);
 
     try std.testing.expectError(LoaderError.InvalidMagic, result);
 }
 
 test "load unsupported version" {
     const allocator = std.testing.allocator;
-    var mem = try Memory.initCustom(allocator, 100);
-    defer mem.deinit(allocator);
+    var test_mem = try Memory.initCustom(allocator, 100);
+    defer test_mem.deinit(allocator);
 
     var data: [HEADER_SIZE]u8 = undefined;
     std.mem.writeInt(u32, data[0..4], MAGIC, .little);
     std.mem.writeInt(u16, data[4..6], 2, .little); // Version 2
 
-    const result = loadFromBytes(data, allocator, &mem);
+    const result = loadFromBytes(data, &test_mem);
 
     try std.testing.expectError(LoaderError.UnsupportedVersion, result);
 }

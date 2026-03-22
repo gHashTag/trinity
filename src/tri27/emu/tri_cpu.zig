@@ -25,11 +25,14 @@ pub const Trit27 = struct {
         return 1;
     }
 
-    /// Add two Trit27 values
+    /// Add two Trit27 values (ternary addition with carry)
     pub fn add(self: Trit27, other: Trit27) Trit27 {
         const sum = self.trits + other.trits;
-        const half = @divTrunc(sum, 2);
-        const result = @modTrunc(sum + @remTrunc(sum, 4) - half, 3);
+        // Calculate carry using 3-trit balanced ternary arithmetic
+        const half_carry = sum >> 54; // Carry for 27-trit values
+        // Reduce result modulo 3^27 and add carry
+        const base: i64 = 19683; // 3^27
+        const result = (sum % base) + half_carry;
         return .{ .trits = result };
     }
 

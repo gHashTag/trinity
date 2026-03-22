@@ -2329,6 +2329,22 @@ pub fn build(b: *std.Build) void {
     const sim_plot_step = b.step("tri-sim-plot", "Visualize simulation CSV results");
     sim_plot_step.dependOn(&run_sim_plot.step);
 
+    // UART Test Tool — Serial communication test without FPGA
+    const uart_test_mod = b.createModule(.{
+        .root_source_file = b.path("src/cli/uart_test.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const uart_test = b.addExecutable(.{
+        .name = "tri-uart-test",
+        .root_module = uart_test_mod,
+    });
+    b.installArtifact(uart_test);
+
+    const run_uart_test = b.addRunArtifact(uart_test);
+    const uart_test_step = b.step("tri-uart-test", "Run UART communication test");
+    uart_test_step.dependOn(&run_uart_test.step);
+
     // SEBO CLI — Sacred Evolutionary Bayesian Optimization
     const sebo_cli_mod = b.createModule(.{
         .root_source_file = b.path("src/cli/sebo_cli.zig"),
@@ -2688,6 +2704,19 @@ pub fn build(b: *std.Build) void {
     const run_dev_state_machine_tests = b.addRunArtifact(dev_state_machine_tests);
     const dev_state_machine_tests_step = b.step("test-dev-state-machine", "Run Dev State Machine Tests");
     dev_state_machine_tests_step.dependOn(&run_dev_state_machine_tests.step);
+
+    // Dev Commands module
+    const dev_commands_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_commands.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_commands_tests = b.addTest(.{
+        .root_module = dev_commands_mod,
+    });
+    const run_dev_commands_tests = b.addRunArtifact(dev_commands_tests);
+    const dev_commands_tests_step = b.step("test-dev-commands", "Run Dev Commands Tests");
+    dev_commands_tests_step.dependOn(&run_dev_commands_tests.step);
 
     // History module tests
     const tri_history_tests = b.addTest(.{

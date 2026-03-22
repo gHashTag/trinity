@@ -101,23 +101,105 @@ pub const DevSession = struct {
         const file = try cwd.createFile(DevSessionPath, .{ .read = true });
         defer file.close();
 
-        const writer = file.writer();
+        // Build JSON string manually
+        var json_buffer: [1024]u8 = undefined;
+        var pos: usize = 0;
 
-        // Write JSON manually - simple approach
-        try writer.print(
-            \\{{{{
-            \\  "state": "{s}",
-            \\  "issue_number": {d},
-            \\  "branch": "{s}",
-            \\  "issue_title_len": {d},
-            \\  "issue_title": "{s}",
-            \\  "files_count": {d},
-            \\  "tests_passed": {},
-            \\  "commit_hash": "{s}",
-            \\  "started_at": {d},
-            \\  "last_updated": {d}
-            \\}}}}
-        , stateToString(self.state), self.issue_number, sanitizeString(self.branch[0..]), self.issue_title_len, sanitizeString(self.issueTitleStr()), self.files_count, self.tests_passed, sanitizeString(&self.commit_hash), self.started_at, self.last_updated);
+        // Opening brace and state
+        const json1 = "{\"state\": \"";
+        @memcpy(json_buffer[pos .. pos + json1.len], json1);
+        pos += json1.len;
+        const state_str = stateToString(self.state);
+        @memcpy(json_buffer[pos .. pos + state_str.len], state_str);
+        pos += state_str.len;
+
+        // issue_number
+        const json2 = "\", \"issue_number\": ";
+        @memcpy(json_buffer[pos .. pos + json2.len], json2);
+        pos += json2.len;
+        const issue_num_str = try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{self.issue_number});
+        defer std.heap.page_allocator.free(issue_num_str);
+        @memcpy(json_buffer[pos .. pos + issue_num_str.len], issue_num_str);
+        pos += issue_num_str.len;
+
+        // branch
+        const json3 = ", \"branch\": \"";
+        @memcpy(json_buffer[pos .. pos + json3.len], json3);
+        pos += json3.len;
+        const branch_str = sanitizeString(self.branch[0..]);
+        @memcpy(json_buffer[pos .. pos + branch_str.len], branch_str);
+        pos += branch_str.len;
+
+        // issue_title_len
+        const json4 = "\", \"issue_title_len\": ";
+        @memcpy(json_buffer[pos .. pos + json4.len], json4);
+        pos += json4.len;
+        const title_len_str = try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{self.issue_title_len});
+        defer std.heap.page_allocator.free(title_len_str);
+        @memcpy(json_buffer[pos .. pos + title_len_str.len], title_len_str);
+        pos += title_len_str.len;
+
+        // issue_title
+        const json5 = ", \"issue_title\": \"";
+        @memcpy(json_buffer[pos .. pos + json5.len], json5);
+        pos += json5.len;
+        const title_str = sanitizeString(self.issueTitleStr());
+        @memcpy(json_buffer[pos .. pos + title_str.len], title_str);
+        pos += title_str.len;
+
+        // files_count
+        const json6 = "\", \"files_count\": ";
+        @memcpy(json_buffer[pos .. pos + json6.len], json6);
+        pos += json6.len;
+        const files_str = try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{self.files_count});
+        defer std.heap.page_allocator.free(files_str);
+        @memcpy(json_buffer[pos .. pos + files_str.len], files_str);
+        pos += files_str.len;
+
+        // tests_passed
+        const json7 = ", \"tests_passed\": ";
+        @memcpy(json_buffer[pos .. pos + json7.len], json7);
+        pos += json7.len;
+        const tests_str = try std.fmt.allocPrint(std.heap.page_allocator, "{}", .{self.tests_passed});
+        defer std.heap.page_allocator.free(tests_str);
+        @memcpy(json_buffer[pos .. pos + tests_str.len], tests_str);
+        pos += tests_str.len;
+
+        // commit_hash
+        const json8 = ", \"commit_hash\": \"";
+        @memcpy(json_buffer[pos .. pos + json8.len], json8);
+        pos += json8.len;
+        const hash_str = sanitizeString(&self.commit_hash);
+        @memcpy(json_buffer[pos .. pos + hash_str.len], hash_str);
+        pos += hash_str.len;
+        const closing_quote = "\"";
+        @memcpy(json_buffer[pos .. pos + closing_quote.len], closing_quote);
+        pos += closing_quote.len;
+
+        // started_at
+        const json9 = ", \"started_at\": ";
+        @memcpy(json_buffer[pos .. pos + json9.len], json9);
+        pos += json9.len;
+        const started_str = try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{self.started_at});
+        defer std.heap.page_allocator.free(started_str);
+        @memcpy(json_buffer[pos .. pos + started_str.len], started_str);
+        pos += started_str.len;
+
+        // last_updated
+        const json10 = ", \"last_updated\": ";
+        @memcpy(json_buffer[pos .. pos + json10.len], json10);
+        pos += json10.len;
+        const updated_str = try std.fmt.allocPrint(std.heap.page_allocator, "{d}", .{self.last_updated});
+        defer std.heap.page_allocator.free(updated_str);
+        @memcpy(json_buffer[pos .. pos + updated_str.len], updated_str);
+        pos += updated_str.len;
+
+        // Closing brace
+        const json11 = "\n}";
+        @memcpy(json_buffer[pos .. pos + json11.len], json11);
+        pos += json11.len;
+
+        try file.writeAll(json_buffer[0..pos]);
     }
 
     /// Load session state from JSON file
@@ -174,7 +256,8 @@ pub const DevSession = struct {
             const start = idx + "\"branch\": \"".len;
             if (std.mem.indexOf(u8, content[start..], "\"")) |end_idx| {
                 const branch_str = content[start .. start + end_idx];
-                @memcpy(&session.branch, branch_str);
+                const len = @min(branch_str.len, session.branch.len - 1);
+                @memcpy(session.branch[0..len], branch_str);
             }
         }
 
@@ -183,8 +266,9 @@ pub const DevSession = struct {
             const start = idx + "\"issue_title\": \"".len;
             if (std.mem.indexOf(u8, content[start..], "\"")) |end_idx| {
                 const title_str = content[start .. start + end_idx];
-                @memcpy(&session.issue_title, title_str);
-                session.issue_title_len = @min(@as(u8, @intCast(title_str.len)), 127);
+                const len = @min(title_str.len, session.issue_title.len - 1);
+                @memcpy(session.issue_title[0..len], title_str);
+                session.issue_title_len = @as(u8, @intCast(len));
             }
         }
 
@@ -211,7 +295,8 @@ pub const DevSession = struct {
             const start = idx + "\"commit_hash\": \"".len;
             if (std.mem.indexOf(u8, content[start..], "\"")) |end_idx| {
                 const hash_str = content[start .. start + end_idx];
-                @memcpy(&session.commit_hash, hash_str);
+                const len = @min(hash_str.len, session.commit_hash.len - 1);
+                @memcpy(session.commit_hash[0..len], hash_str);
             }
         }
 
@@ -245,3 +330,94 @@ pub const DevSession = struct {
         return s;
     }
 };
+
+// Tests
+test "DevState enum" {
+    try std.testing.expectEqualStrings("IDLE", "IDLE");
+    try std.testing.expectEqualStrings("ACTIVE", "ACTIVE");
+    try std.testing.expectEqualStrings("DIRTY", "DIRTY");
+    try std.testing.expectEqualStrings("TESTED", "TESTED");
+    try std.testing.expectEqualStrings("COMMITTED", "COMMITTED");
+    try std.testing.expectEqualStrings("SHIPPED", "SHIPPED");
+    try std.testing.expectEqualStrings("BLOCKED", "BLOCKED");
+}
+
+test "stateToString" {
+    try std.testing.expectEqualStrings("IDLE", "IDLE");
+    try std.testing.expectEqualStrings("ACTIVE", "ACTIVE");
+}
+
+test "canTransition valid transitions from idle" {
+    const state = DevSession{ .state = .idle };
+    try std.testing.expect(state.canTransition(.active));
+    try std.testing.expect(state.canTransition(.idle));
+    try std.testing.expect(!state.canTransition(.committed));
+    try std.testing.expect(!state.canTransition(.tested));
+}
+
+test "canTransition invalid transitions from active" {
+    const state = DevSession{ .state = .active };
+    try std.testing.expect(!state.canTransition(.committed));
+    try std.testing.expect(!state.canTransition(.shipped));
+}
+
+test "canTransition valid transitions from dirty" {
+    const state = DevSession{ .state = .dirty };
+    try std.testing.expect(state.canTransition(.tested));
+    try std.testing.expect(state.canTransition(.active));
+    try std.testing.expect(!state.canTransition(.committed));
+}
+
+test "canTransition valid transitions from tested" {
+    const state = DevSession{ .state = .tested };
+    try std.testing.expect(state.canTransition(.committed));
+    try std.testing.expect(state.canTransition(.dirty));
+    try std.testing.expect(!state.canTransition(.shipped));
+}
+
+test "canTransition valid transitions from committed" {
+    const state = DevSession{ .state = .committed };
+    try std.testing.expect(state.canTransition(.shipped));
+    try std.testing.expect(state.canTransition(.tested));
+}
+
+test "canTransition valid transitions from shipped" {
+    const state = DevSession{ .state = .shipped };
+    try std.testing.expect(state.canTransition(.idle));
+}
+
+test "canTransition valid transitions from blocked" {
+    const state = DevSession{ .state = .blocked };
+    try std.testing.expect(state.canTransition(.idle));
+    try std.testing.expect(!state.canTransition(.active));
+}
+
+test "load default session" {
+    const allocator = std.testing.allocator;
+    const loaded = try DevSession.load(allocator);
+    try std.testing.expectEqual(.idle, loaded.state);
+    try std.testing.expectEqual(@as(u32, 0), loaded.issue_number);
+}
+
+test "save and load roundtrip" {
+    const allocator = std.testing.allocator;
+
+    var original = DevSession{
+        .state = .active,
+        .issue_number = 42,
+        .issue_title_len = 22,  // Set to actual title length
+    };
+
+    original.started_at = 1234567890;
+    original.last_updated = 1239999999;
+
+    try original.save();
+    const loaded = try DevSession.load(allocator);
+
+    try std.testing.expectEqual(.active, loaded.state);
+    try std.testing.expectEqual(@as(u32, 42), loaded.issue_number);
+    try std.testing.expectEqualStrings("Fix VSA bind operation", loaded.issueTitleStr());
+    try std.testing.expectEqual(@as(i64, 1234567890), loaded.started_at);
+    try std.testing.expectEqual(@as(i64, 1239999999), loaded.last_updated);
+    try std.testing.expectEqual(@as(usize, 0), loaded.files_count);
+}
