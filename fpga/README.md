@@ -563,3 +563,186 @@ fpga/
 | **quantum_bridge needs active-low fix** | ⚠️ **TODO** |
 
 **φ² + 1/φ² = 3 = TRINITY**
+
+---
+
+## UART Echo Bitstream (2026-03-22)
+
+**Status:** ✅ **WORKING** — Successfully flashed to FPGA
+
+### Design Overview
+Simple UART echo at 115200 baud with LED flash on byte reception.
+
+| Feature | Description |
+|---------|-------------|
+| UART speed | 115200 baud |
+| Clock source | 50 MHz oscillator (M22) |
+| UART RX pin | E26 (J2 pin 6) |
+| UART TX pin | D26 (J2 pin 5) |
+| LED pin | J19 (active-low) |
+| LED behavior | Flashes 50ms on byte reception |
+
+### Ping/Pong Protocol
+- Send `0x03` (PING) → Receive `0x83` (PONG)
+- Echo: All received bytes echoed back
+- LED J19 flashes for 50ms on every received byte
+
+### Build & Flash
+```bash
+# Build bitstream
+cd fpga/openxc7-synth
+docker run --rm -v "$(pwd)/fpga:/work/fpga" -w /work/fpga/openxc7-synth regymm/openxc7:latest \
+  bash -c "
+    yosys -p 'read_verilog uart_echo_top.v; synth_xilinx -top uart_echo_top; write_json uart_echo_top.json' && \
+    nextpnr-xilinx --chipdb /nextpnr-xilinx/xilinx/chipdb-xc7a100tfgg676-1.bin \
+      --json uart_echo_top.json --xdc uart_echo_top.xdc \
+      --fasm uart_echo_top.fasm --write uart_echo_top_routed.json && \
+    xc7frames2bit --part_file /nextpnr-xilinx/xilinx/external/prjxray-db/artix7/xc7a100tfgg676-1/part.yaml \
+      --fasm uart_echo_top.fasm --bit uart_echo_top.bit
+  "
+
+# Flash to FPGA
+./fpga/tools/fpgactl flash fpga/openxc7-synth/uart_echo_top.bit
+```
+
+**Flashing result (2026-03-22):**
+```
+Cable PID: 0x13 → 0x8
+Flashing: uart_echo_top.bit (3.6 MB)
+Sync word: 0xAA995566 at offset +0x30
+Done! ✅
+```
+
+### UART Testing via FT232RL
+
+Connect FT232RL to J2 header on FPGA board:
+
+```
+QMTech XC7A100 Board
+┌──────────────────────────────────────────┐
+│  ESP32 (XVC) ─┐               │
+│  GPIO 21 = TDO   │  JTAG Header  │
+│  GPIO 19 = TCK   │              │
+│  GPIO 22 = TMS   │              │
+│  GPIO 25 = TDI   │              │
+│  GND = GND       │              │
+│  └────────────────┘              │
+│                                 │
+│  Xilinx Cable ──────────────────┼─── FPGA
+│  (PID: 0x13→0x8)              │
+│                                 │
+│  └───────────────────────────────┘
+│              │
+│  FT232RL ─── J2 Header
+│    (UART test bridge)
+```
+
+**FT232RL Wiring:**
+| FT232RL Wire | → J2 Pin | FPGA Pin |
+|-------------|-----------|----------|
+| ⬜ White (pin 5) | L20 | uart_rx (E26) |
+| 🟢 Green (pin 6) | K20 | uart_tx (D26) |
+| ⬛ Black (pin 1) | pin 1 (GND) | GND |
+| 🔴 Red (VCC) | **DON'T CONNECT** | — |
+
+**Test Commands:**
+```bash
+# List FTDI devices
+ls /dev/cu.usbserial*
+
+# Open Serial Monitor at 115200 baud
+screen /dev/cu.usbserial-2140 115200
+
+# Test echo: send "a" should return "a"
+# Test ping: send 0x03 should return 0x83
+```
+
+**Expected Behavior:**
+- Send `"HELLO"` → Receive `"HELLO"` (echo)
+- Send `0x03` → Receive `0x83` (PONG)
+- Any byte → LED J19 flashes for 50ms
+
+---
+
+## Dual-Path Architecture (NEW!)
+
+### Overview
+Trinity FPGA now supports **two parallel programming paths** for maximum flexibility:
+
+```
+                    ┌─────────────────────────────────────────┐
+                    │         DEVELOPMENT HOST          │
+                    │  (MacBook Pro)                │
+                    │                                 │
+    ┌───────────┼─────────┐              └─────┬────┬────┘
+    │           │         │                      │         │
+Xilinx USB   ESP32     │                      │         │
+Platform    2.8" TFT  │                      │         │
+Cable II    (XVC)     │                      │         │
+    │           │         │                      │         │
+    │  ┌──────▼────┐  │              ┌────▼────┐  │
+    │  │  GPIO  JTAG  │              │   J2      │  │
+    ▼  │  Bridge  Header│              │  Header   │  │
+FPGA      │  │         │     │              │   ┌──────┴──────┐
+           │  │         │     └──►──────►─┘   │              │
+           │  │                         │   FT232RL      │  ◄─────► FT232RL
+           │  │  JTAG                   │   (USB)  │         │  (Mac)
+           │  │  WiFi                    │             │         │
+           │  │  TCP                     │             │         │
+           │  │  xvc-esp32:2542           │             │         │
+           │  │  (192.168.1.33)           │             │         │
+           │  │                         │             │         │
+           └─────────────────────────────────┘             └──────────────┘
+```
+
+### Programming Modes
+
+| Mode | JTAG Path | Speed | Use Case | Command |
+|------|-----------|-------|----------|---------|
+| **A: Xilinx Cable** | USB II → JTAG Header → FPGA | ~500 KB/s | Standard flashing | `openFPGALoader -c xpc <bitstream>` |
+| **B: ESP32 WiFi** | Mac → WiFi → ESP32 GPIO → JTAG Header → FPGA | ~50 KB/s | Remote programming | `openFPGALoader --cable xvc-client --ip-adr 192.168.1.33:2542 <bitstream>` |
+| **UART Test** | FT232RL → J2 Header (parallel to JTAG) | N/A | UART testing | `screen /dev/cu.usbserial-2140 115200` |
+
+### Important Notes
+
+1. **JTAG Header is shared** — Both Xilinx Cable AND ESP32 connect to the **same** 6-pin JTAG header. **Do not connect both simultaneously.**
+2. **FT232RL is parallel** — The FT232RL-to-J2 connection runs in parallel with JTAG programming. Use FT232RL only for UART testing.
+3. **ESP32 XVC Bridge** — Use the [xvc-esp32](https://github.com/kholia/xvc-esp32) firmware. Standard GPIO pins:
+   - GPIO 21 = TDO (Data Out)
+   - GPIO 19 = TCK (Clock)
+   - GPIO 22 = TMS (Mode Select)
+   - GPIO 25 = TDI (Data In)
+   - GND = GND
+
+### Quick Reference
+
+**Flash via Xilinx Cable:**
+```bash
+./fpga/tools/fpgactl flash <bitstream.bit>
+```
+
+**Test UART via FT232RL:**
+```bash
+screen /dev/cu.usbserial-2140 115200
+```
+
+**Flash via ESP32 XVC (remote):**
+```bash
+openFPGALoader --cable xvc-client --ip-adr 192.168.1.33:2542 <bitstream.bit>
+```
+
+---
+
+## Working Bitstreams (UPDATED 2026-03-22)
+
+| Bitstream | LED Behavior | Pin | Status | Notes |
+|-----------|--------------|-----|--------|-------|
+| `uart_echo_top.bit` | J19 flash on RX | ✅ **WORKING** | UART echo, 115200 baud, PING=0x03→PONG=0x83 |
+| `temporal_heartbeat.bit` | Complex 3-phase blink | ✅ WORKING | T23, active-low fix applied |
+| `uart_top.bit` | Fast ~3 Hz blink | ✅ WORKING | active-low fix applied |
+| `test_top.bit` | Slow 1 Hz blink | ✅ WORKING | active-low fix applied |
+| `d6_blink.bit` | Fast ~3 Hz blink | ✅ WORKING | active-low fix applied |
+| `ternary_matvec_243x729_top.bit` | D6 solid ON | ✅ WORKING | 243x729 BRAM matvec self-test |
+| `trinity_block_step4_top.bit` | D6 solid ON | ✅ WORKING | Full TrinityBlock pass |
+
+---
