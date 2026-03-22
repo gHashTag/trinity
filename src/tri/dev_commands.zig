@@ -28,7 +28,8 @@ fn cmdStatus(allocator: Allocator, args: []const []const u8) !void {
     const ts = std.time.timestamp();
     std.debug.print("  Started: {}", .{ts});
     std.debug.print("  Files: {}", .{session.files_count});
-    std.debug.print("  Tests: {}", .{if (session.tests_passed) "passed" else "pending"});
+    const test_status = if (session.tests_passed) "passed" else "pending";
+    std.debug.print("  Tests: {s}", .{test_status});
 }
 
 /// Start development session for an issue
@@ -86,7 +87,7 @@ fn cmdTest(allocator: Allocator, args: []const []const u8) !void {
     try session.save();
 
     std.debug.print("Tests passed", .{});
-    std.debug.print("  State: {s} -> TESTED", .{state_machine.stateToString(session.state)}, .{state_machine.stateToString(.tested)});
+    std.debug.print("  State: {s} -> TESTED", .{state_machine.stateToString(session.state)});
 }
 
 /// Commit changes with issue ID
@@ -104,7 +105,7 @@ fn cmdCommit(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const message = if (args.len > 0) args[0] else "chore: commit changes";
-    const commit_msg = try std.fmt.allocPrint(allocator, "{s} (#{d})", message, session.issue_number);
+    const commit_msg = try std.fmt.allocPrint(allocator, "{s} (#{d})", .{ message, session.issue_number });
 
     std.debug.print("Committing with message:", .{});
     std.debug.print("  {s}", .{commit_msg});
@@ -180,7 +181,7 @@ fn cmdReset(allocator: Allocator, args: []const []const u8) !void {
     try session.save();
 
     std.debug.print("Reset complete (simulated)", .{});
-    std.debug.print("  State: {s} -> ACTIVE", .{state_machine.stateToString(session.state)}, .{state_machine.stateToString(.active)});
+    std.debug.print("  State: {s} -> ACTIVE", .{state_machine.stateToString(session.state)});
 }
 
 /// Clear blocked state
@@ -217,23 +218,24 @@ fn cmdLog(allocator: Allocator, args: []const []const u8) !void {
 /// Main command router for tri dev subcommands
 pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "status";
+    const sub_args = if (args.len > 1) args[1..] else &[0][]const u8{};
 
     if (std.mem.eql(u8, subcmd, "status")) {
-        try cmdStatus(allocator, args[1..]);
+        try cmdStatus(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "start")) {
-        try cmdStart(allocator, args[1..]);
+        try cmdStart(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "test")) {
-        try cmdTest(allocator, args[1..]);
+        try cmdTest(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "commit")) {
-        try cmdCommit(allocator, args[1..]);
+        try cmdCommit(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "ship")) {
-        try cmdShip(allocator, args[1..]);
+        try cmdShip(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "reset")) {
-        try cmdReset(allocator, args[1..]);
+        try cmdReset(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "unblock")) {
-        try cmdUnblock(allocator, args[1..]);
+        try cmdUnblock(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "log")) {
-        try cmdLog(allocator, args[1..]);
+        try cmdLog(allocator, sub_args);
     } else {
         std.debug.print("Unknown dev subcommand: '{s}'", .{subcmd});
         std.debug.print("Available: status, start, test, commit, ship, reset, unblock, log", .{});
