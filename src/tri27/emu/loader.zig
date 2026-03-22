@@ -72,7 +72,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
 
     // Process each section
     var section_idx: usize = 0;
-    while (section_idx < section_count) : (section_idx += 1) {
+    for (0..section_count) |section_idx| {
         if (offset + 1 > code.len) return LoadError.Truncated;
 
         const section_type = code[offset];
@@ -82,7 +82,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             1 => { // CODE section
                 if (offset + 3 > code.len) return LoadError.Truncated;
 
-                const size = @as(u16, code[offset + 1]) | (@as(u16, code[offset + 2]) << 8;
+                const size = @as(u16, code[offset + 1]) | (@as(u16, code[offset + 2]) << 8);
                 offset += 3; // Skip size + padding
 
                 if (offset + size > code.len) return LoadError.Truncated;
@@ -120,7 +120,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             3 => { // DATA section
                 if (offset + 3 > code.len) return LoadError.Truncated;
 
-                const data_size = @as(u16, code[offset + 1]) | (@as(u16, code[offset + 2]) << 8;
+                const data_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2])) << 8;
                 offset += 3; // Skip size + padding
 
                 if (offset + data_size > code.len) return LoadError.Truncated;
@@ -140,7 +140,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             4 => { // BSS section (uninitialized)
                 if (offset + 3 > code.len) return LoadError.Truncated;
 
-                const bss_size = @as(u16, code[offset + 1]) | (@as(u16, code[offset + 2]) << 8;
+                const bss_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2])) << 8;
                 offset += 3;
 
                 // BSS is just reserved space, no data to copy

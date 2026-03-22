@@ -9,7 +9,6 @@ const std = @import("std");
 // ═══════════════════════════════════════════════════════════════════════════════════════
 /// Architecture: 27 trinary registers + 3 float registers
 /// Opcodes (0x00-0x1B total)
-
 /// === ARITHMETIC (0x10-0x13) ===
 pub const OPCODE_NOP: u8 = 0x00;
 pub const OPCODE_ADD: u8 = 0x10;
@@ -28,10 +27,10 @@ pub const OPCODE_SHL: u8 = 0x1C;
 pub const OPCODE_SHR: u8 = 0x1D;
 
 /// === MEMORY (0x02-0x05) ===
-pub const OPCODE_LD: u8 = 0x02;   // Load from memory/register
-pub const OPCODE_ST: u8 = 0x03;   // Store to memory
-pub const OPCODE_LDI: u8 = 0x04;  // Load immediate
-pub const OPCODE_STI: u8 = 0x05;   // Store immediate
+pub const OPCODE_LD: u8 = 0x02; // Load from memory/register
+pub const OPCODE_ST: u8 = 0x03; // Store to memory
+pub const OPCODE_LDI: u8 = 0x04; // Load immediate
+pub const OPCODE_STI: u8 = 0x05; // Store immediate
 
 /// === CONTROL (0x40-0x4F) ===
 pub const OPCODE_JMP: u8 = 0x40;
@@ -42,25 +41,24 @@ pub const OPCODE_RET: u8 = 0x4B;
 pub const OPCODE_HALT: u8 = 0x4D;
 
 /// === TERNARY (0x60-0x6D) ===
-pub const OPCODE_DOT: u8 = 0x60;   // Dot product (VSA/TF3)
-pub const OPCODE_BIND: u8 = 0x61;   // Bind two vectors
-pub const OPCODE_BUNDLE2: u8 = 0x62;  // Bundle 2 vectors
-pub const OPCODE_BUNDLE3: u8 = 0x63;  // Bundle 3 vectors
+pub const OPCODE_DOT: u8 = 0x60; // Dot product (VSA/TF3)
+pub const OPCODE_BIND: u8 = 0x61; // Bind two vectors
+pub const OPCODE_BUNDLE2: u8 = 0x62; // Bundle 2 vectors
+pub const OPCODE_BUNDLE3: u8 = 0x63; // Bundle 3 vectors
 
 /// === SACRED (0x80-0x92) ===
-pub const OPCODE_PHI_CONST: u8 = 0x80;  // Load φ constant
-pub const OPCODE_PI_CONST: u8 = 0x81;  // Load π constant
-pub const OPCODE_E_CONST: u8 = 0x82;  // Load e constant
-pub const OPCODE_SACR: u8 = 0x83;  // Sacred arithmetic operation
+pub const OPCODE_PHI_CONST: u8 = 0x80; // Load φ constant
+pub const OPCODE_PI_CONST: u8 = 0x81; // Load π constant
+pub const OPCODE_E_CONST: u8 = 0x82; // Load e constant
+pub const OPCODE_SACR: u8 = 0x83; // Sacred arithmetic operation
 
 /// Opcode names for debugging
 pub const opcodeNames: [27][]const u8 = [27]u8{
-    "NOP", "ADD", "SUB", "MUL", "DIV", "INC", "DEC",
-    "AND", "OR", "XOR", "NOT", "SHL", "SHR",
-    "LD", "ST", "LDI", "STI",
-    "JMP", "JZ", "JNZ", "CALL", "RET", "HALT",
-    "DOT", "BIND", "BUNDLE2", "BUNDLE3",
-    "PHI_CONST", "PI_CONST", "E_CONST", "SACR",
+    "NOP",      "ADD",     "SUB",  "MUL",  "DIV",     "INC",     "DEC",
+    "AND",      "OR",      "XOR",  "NOT",  "SHL",     "SHR",     "LD",
+    "ST",       "LDI",     "STI",  "JMP",  "JZ",      "JNZ",     "CALL",
+    "RET",      "HALT",    "DOT",  "BIND", "BUNDLE2", "BUNDLE3", "PHI_CONST",
+    "PI_CONST", "E_CONST", "SACR",
 };
 
 /// Get opcode name for debugging
@@ -74,9 +72,9 @@ pub fn getOpcodeName(opcode: u8) []const u8 {
 /// Decode register encoding (3 bits: 5 values)
 /// For most RRR/RRI opcodes: reg field contains destination + 2 sources
 pub const RegDecode = packed struct {
-    rd: u8 = 0,     // Destination register (t0-t26)
-    rs1: u8 = 0,    // Source register 1
-    rs2: u8 = 0,    // Source register 2
+    rd: u8 = 0, // Destination register (t0-t26)
+    rs1: u8 = 0, // Source register 1
+    rs2: u8 = 0, // Source register 2
 };
 
 /// Decode immediate value (16-bit signed)
@@ -124,10 +122,9 @@ pub fn decodeAddr16Reg(code: []const u8, ip: *u32) Addr16Reg {
 pub fn decodeCond(code: []const u8, ip: *u32) u16 {
     const lo = code[ip.*];
     const hi = code[ip.* + 1];
-    return (@as(u16, hi) << 8) | @as(u16, lo));
+    return (@as(u16, hi) << 8) | @as(u16, lo);
 }
 
-/// Test: Decode all opcodes
 test "decoder: opcodeNames coverage" {
     try std.testing.expectEqual(@as(usize, 27), opcodeNames.len);
 }
