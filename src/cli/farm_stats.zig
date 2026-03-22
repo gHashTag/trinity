@@ -9,6 +9,12 @@ const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 const DIM = "\x1b[2m";
 
+// Helper to format float values
+fn fmtFloat(value: f64, precision: usize) []const u8 {
+    var buf: [32]u8 = undefined;
+    return std.fmt.bufPrint(&buf, "{d:.{d}}", .{ value, precision });
+}
+
 // Configuration
 const SIMULATION_CSV_PATH = "output/simulation_results.csv";
 const FARM_SNAPSHOT_PATH = ".trinity/farm/w7v2_snapshot.json";
@@ -68,27 +74,24 @@ pub const CalibrationState = struct {
 
 /// Main entry point for standalone binary
 pub fn main() !void {
-    const stdout = std.io.getStdOut();
     const allocator = std.heap.page_allocator;
 
-    var args = CLIArgs{};
-    _ = args; // Parse args from command line in CLI integration
-
-    try runFarmStats(allocator, stdout, args);
+    // Simple stats display for standalone binary
+    try runFarmStats(allocator, std.io.getStdErr().writer(), .{});
 }
 
 /// Main stats function - called from CLI or standalone
-pub fn runFarmStats(allocator: std.mem.Allocator, stdout: std.fs.File.Writer, args: CLIArgs) !void {
+pub fn runFarmStats(allocator: std.mem.Allocator, writer: anytype, args: CLIArgs) !void {
     if (args.show_farm_only) {
-        return showFarmStatsOnly(allocator, stdout);
+        return showFarmStatsOnly(allocator, writer);
     }
 
     if (args.export_csv) {
-        return exportFarmData(allocator, stdout);
+        return exportFarmData(allocator, writer);
     }
 
     // Default: generate full comparison report
-    return generateReport(allocator, stdout);
+    return generateReport(allocator, writer);
 }
 
 /// Load simulation data from CSV file
@@ -248,17 +251,6 @@ pub fn calculateFarmStats(workers: []const FarmWorker) struct {
         },
     };
 }
-
-/// Find matching scenario from simulation data
-fn findScenario(scenarios: []const SimulationScenario, worker: FarmWorker) ?SimulationScenario {
-    // Match by context size and optimizer similarity
-    for (scenarios) |scenario| {
-        // Simple matching: could be enhanced with more criteria
-        if (scenario.alive > 0) {
-            return scenario;
-        }
-    }
-    return null;
 }
 
 /// Calculate calibration metrics between simulation and reality
@@ -322,7 +314,7 @@ fn calculateCalibrationMetrics(
 
     // Add recommendations based on analysis
     if (diversity_benefit > 3.0) {
-        try metrics.recommendations.append(allocator, "LAMB optimizer shows strong advantage (+" ++ fmtFloat(designatedInit, diversity_benefit, 1) ++ "%)");
+        try metrics.recommendations.append(allocator, "LAMB optimizer shows strong advantage (+" ++ fmtFloat(diversity_benefit, 1) ++ "%)");
     }
 
     // Compare context sizes (if we have ctx=27 workers)
@@ -346,9 +338,9 @@ fn calculateCalibrationMetrics(
 
     if (@abs(ctx_comparison_delta) > 5.0) {
         if (ctx_comparison_delta > 0) {
-            try metrics.recommendations.append(allocator, "Farm PPL exceeds simulation by " ++ fmtFloat(designatedInit, ctx_comparison_delta, 1) ++ "% - investigate");
+            try metrics.recommendations.append(allocator, "Farm PPL exceeds simulation by " ++ fmtFloat(ctx_comparison_delta, 1) ++ "% - investigate");
         } else {
-            try metrics.recommendations.append(allocator, "Farm outperforms simulation by " ++ fmtFloat(designatedInit, -ctx_comparison_delta, 1) ++ "% - good!");
+            try metrics.recommendations.append(allocator, "Farm outperforms simulation by " ++ fmtFloat(-ctx_comparison_delta, 1) ++ "% - good!");
         }
     }
 
@@ -359,8 +351,8 @@ fn calculateCalibrationMetrics(
 }
 
 /// Show farm statistics only
-pub fn showFarmStatsOnly(allocator: std.mem.Allocator, stdout: std.fs.File.Writer) !void {
-    const stdout_print = stdout.print;
+pub fn showFarmStatsOnly(allocator: std.mem.Allocator, writer: anytype) !void {
+    const stdout_print = writer.print;
 
     stdout_print("{s}=== FARM STATISTICS ==={s}\n\n", .{ BOLD, RESET });
 
@@ -415,8 +407,8 @@ pub fn showFarmStatsOnly(allocator: std.mem.Allocator, stdout: std.fs.File.Write
 }
 
 /// Generate comparison report between simulation and reality
-pub fn generateReport(allocator: std.mem.Allocator, stdout: std.fs.File.Writer) !void {
-    const stdout_print = stdout.print;
+pub fn generateReport(allocator: std.mem.Allocator, writer: anytype) !void {
+    const stdout_print = writer.print;
 
     stdout_print("\n{s}=== SIMULATION vs REALITY REPORT ==={s}\n\n", .{ BOLD, RESET });
 
@@ -482,7 +474,7 @@ pub fn generateReport(allocator: std.mem.Allocator, stdout: std.fs.File.Writer) 
         RESET,
         sim_color,
         delta_pct,
-        VERDICT_COLOR: if (@abs(delta_pct) < 5.0) GREEN else YELLOW,
+        if (@abs(delta_pct) < 5.0) GREEN else YELLOW,
         verdict,
         RESET,
     });
@@ -513,8 +505,8 @@ pub fn generateReport(allocator: std.mem.Allocator, stdout: std.fs.File.Writer) 
 }
 
 /// Export farm data to CSV for visualization
-pub fn exportFarmData(allocator: std.mem.Allocator, stdout: std.fs.File.Writer) !void {
-    const stdout_print = stdout.print;
+pub fn exportFarmData(allocator: std.mem.Allocator, writer: anytype) !void {
+    const stdout_print = writer.print;
 
     const workers = loadFarmSnapshot(allocator) catch |err| {
         stdout_print("{s}Error loading snapshot: {s}\n", .{ RED, @errorName(err) });
@@ -617,7 +609,3 @@ fn padTo(current: usize, target: usize) void {
 
 const VERDICT_COLOR = "\x1b[33m"; // Yellow for verdicts
 
-fn fmtFloat(designatedInit: bool, value: f64, precision: usize) []const u8 {
-    var buf: [32]u8 = undefined;
-    return std.fmt.bufPrint(&buf, "{d:.{d}}", .{ value, precision });
-}

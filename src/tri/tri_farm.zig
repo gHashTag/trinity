@@ -1205,24 +1205,26 @@ fn isProcessAlive(pid: u32) bool {
 
 // ═════════════════════════════════════════════════════════════════════════
 
-fn runFarmStatsCommand(allocator: Allocator, _args: []const []const u8) !void {
+fn runFarmStatsCommand(allocator: Allocator, args: []const []const u8) !void {
+    // Farm stats module import removed - tri farm stats command not yet implemented
 
-    // Parse flags
-    var show_farm_only = false;
-    var export_csv = false;
+    var cli_args = FarmStatsCLIArgs{};
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
         const arg = args[i];
-        if (std.mem.eql(u8, arg, "--farm") or std.mem.eql(u8, arg, "-f")) {
-            show_farm_only = true;
+        if (std.mem.eql(u8, arg, "--farm-only") or std.mem.eql(u8, arg, "-f")) {
+            cli_args.show_farm_only = true;
         } else if (std.mem.eql(u8, arg, "--export") or std.mem.eql(u8, arg, "-e")) {
-            export_csv = true;
+            cli_args.export_csv = true;
+        } else if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
+            cli_args.verbose = true;
+        } else if (std.mem.eql(u8, arg, "--scenario") and i + 1 < args.len) {
+            i += 1;
+            cli_args.scenario_filter = args[i];
         }
     }
 
-    print("Farm stats command not yet implemented. Use: tri farm status\n", .{});
-    return;
 }
 
 // ═════════════════════════════════════════════════════════════════════
