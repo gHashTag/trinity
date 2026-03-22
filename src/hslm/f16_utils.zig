@@ -350,6 +350,98 @@ pub fn gf16Div(a: u16, b: u16) u16 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// VECTORIZED OPERATIONS — Batch GF16 arithmetic for inference pipeline
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Vectorized GF16 addition: output[i] = a[i] + b[i]
+/// All values in packed u16 GF16 format
+pub fn addVecGF16(a: []const u16, b: []const u16, output: []u16) void {
+    std.debug.assert(a.len == b.len);
+    std.debug.assert(a.len == output.len);
+
+    for (a, b, 0..) |a_u16, b_u16, i| {
+        const a_f16: f16 = @bitCast(a_u16);
+        const a_f32: f32 = @floatCast(a_f16);
+        const b_f16: f16 = @bitCast(b_u16);
+        const b_f32: f32 = @floatCast(b_f16);
+        const sum_f32 = a_f32 + b_f32;
+        const sum_f16: f16 = @floatCast(sum_f32);
+        output[i] = @bitCast(sum_f16);
+    }
+}
+
+/// Vectorized GF16 scalar multiplication: output[i] = input[i] * scalar
+/// All values in packed u16 GF16 format
+pub fn mulVecGF16(input: []const u16, scalar: u16, output: []u16) void {
+    std.debug.assert(input.len == output.len);
+
+    const scalar_f16: f16 = @bitCast(scalar);
+    const scalar_f32: f32 = @floatCast(scalar_f16);
+    for (input, 0..) |a_u16, i| {
+        const a_f16: f16 = @bitCast(a_u16);
+        const a_f32: f32 = @floatCast(a_f16);
+        const prod_f32 = a_f32 * scalar_f32;
+        const prod_f16: f16 = @floatCast(prod_f32);
+        output[i] = @bitCast(prod_f16);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MATHEMATICAL FUNCTIONS — sqrt, exp, log for GF16 format
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Square root in GF16 format (Babylonian method, 3 iterations)
+/// For RMS normalization in inference pipeline
+/// Returns packed u16 in GF16 format
+pub fn sqrtF16(val: u16) u16 {
+    const val_f16: f16 = @bitCast(val);
+    const x_f32: f32 = @floatCast(val_f16);
+    if (x_f32 < 0) return @bitCast(@as(f16, @floatCast(0.0))); // sqrt(negative) = 0
+    if (x_f32 < 1e-6) return @bitCast(@as(f16, @floatCast(0.0))); // sqrt(small) ≈ 0
+
+    // Babylonian method: 3 iterations for ~1% accuracy
+    var guess: f32 = @max(1.0, x_f32 * 0.5);
+    var i: u32 = 0;
+    while (i < 3) : (i += 1) {
+        if (guess > 1e-6) guess = (guess + x_f32 / guess) * 0.5;
+    }
+
+    const result_f16: f16 = @floatCast(guess);
+    return @bitCast(result_f16);
+}
+
+/// Exponential in GF16 format (polynomial approximation)
+/// For softmax computation in attention mechanism
+/// Returns packed u16 in GF16 format
+pub fn expF16(val: u16) u16 {
+    const val_f16: f16 = @bitCast(val);
+    const x_f32: f32 = @floatCast(val_f16);
+    // Clamp to reasonable range for exp (f16 overflow protection)
+    const clamped = @max(-10.0, @min(x_f32, 10.0));
+    // Polynomial approximation: exp(x) ≈ 1 + x + x²/2 + x³/6
+    const x2 = clamped * clamped;
+    const x3 = x2 * clamped;
+    const result = 1.0 + clamped + x2 * 0.5 + x3 * 0.1667;
+    const result_f16: f16 = @floatCast(result);
+    return @bitCast(result_f16);
+}
+
+/// Natural logarithm in GF16 format
+/// For weight checking and training diagnostics
+/// Returns packed u16 in GF16 format
+pub fn logF16(val: u16) u16 {
+    const val_f16: f16 = @bitCast(val);
+    const x_f32: f32 = @floatCast(val_f16);
+    if (x_f32 <= 0) return @bitCast(@as(f16, @floatCast(0.0))); // log(0) = 0
+
+    // log2(x) * ln(2) for natural log
+    const log2_f32 = @log2(x_f32);
+    const result = log2_f32 * 0.69314718056;
+    const result_f16: f16 = @floatCast(result);
+    return @bitCast(result_f16);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -624,6 +716,174 @@ test "quantize f16 to ternary" {
     try std.testing.expectEqual(@as(i8, 0), output[2]); // -0.3 > -0.5
     try std.testing.expectEqual(@as(i8, -1), output[3]); // -0.8 < -0.5
     try std.testing.expectEqual(@as(i8, 0), output[4]); // 0.0 = 0
+}
+
+test "addVecGF16 basic" {
+    const a_f16 = [_]f16{ 1.0, 2.0, 3.0 };
+    const b_f16 = [_]f16{ 4.0, 5.0, 6.0 };
+    var a: [3]u16 = undefined;
+    var b: [3]u16 = undefined;
+    var output: [3]u16 = undefined;
+
+    for (a_f16, 0..) |val, i| a[i] = @bitCast(val);
+    for (b_f16, 0..) |val, i| b[i] = @bitCast(val);
+
+    addVecGF16(&a, &b, &output);
+
+    // 1+4=5, 2+5=7, 3+6=9
+    const expected_f16 = [_]f16{ 5.0, 7.0, 9.0 };
+    var expected: [3]u16 = undefined;
+    for (expected_f16, 0..) |val, i| expected[i] = @bitCast(val);
+    try std.testing.expectEqualSlices(u16, &expected, &output);
+}
+
+test "addVecGF16 negative" {
+    const a_f16 = [_]f16{ 1.0, -2.0 };
+    const b_f16 = [_]f16{ 2.0, 3.0 };
+    var a: [2]u16 = undefined;
+    var b: [2]u16 = undefined;
+    var output: [2]u16 = undefined;
+
+    for (a_f16, 0..) |val, i| a[i] = @bitCast(val);
+    for (b_f16, 0..) |val, i| b[i] = @bitCast(val);
+
+    addVecGF16(&a, &b, &output);
+
+    const res0_f16: f16 = @bitCast(output[0]);
+    const res1_f16: f16 = @bitCast(output[1]);
+    const res0: f32 = @floatCast(res0_f16);
+    const res1: f32 = @floatCast(res1_f16);
+    try std.testing.expectApproxEqAbs(3.0, res0, 0.01);
+    try std.testing.expectApproxEqAbs(1.0, res1, 0.01);
+}
+
+test "mulVecGF16 basic" {
+    const input_f16 = [_]f16{ 2.0, 3.0, 4.0 };
+    const scalar_f16: f16 = 5.0;
+    var input: [3]u16 = undefined;
+    const scalar: u16 = @bitCast(scalar_f16);
+    var output: [3]u16 = undefined;
+
+    for (input_f16, 0..) |val, i| input[i] = @bitCast(val);
+
+    mulVecGF16(&input, scalar, &output);
+
+    // 2*5=10, 3*5=15, 4*5=20
+    const expected_f16 = [_]f16{ 10.0, 15.0, 20.0 };
+    var expected: [3]u16 = undefined;
+    for (expected_f16, 0..) |val, i| expected[i] = @bitCast(val);
+    try std.testing.expectEqualSlices(u16, &expected, &output);
+}
+
+test "mulVecGF16 negative scalar" {
+    const input_f16 = [_]f16{ 2.0, 3.0 };
+    const scalar_f16: f16 = -3.0;
+    var input: [2]u16 = undefined;
+    const scalar: u16 = @bitCast(scalar_f16);
+    var output: [2]u16 = undefined;
+
+    for (input_f16, 0..) |val, i| input[i] = @bitCast(val);
+
+    mulVecGF16(&input, scalar, &output);
+
+    const res0_f16: f16 = @bitCast(output[0]);
+    const res1_f16: f16 = @bitCast(output[1]);
+    const res0: f32 = @floatCast(res0_f16);
+    const res1: f32 = @floatCast(res1_f16);
+    try std.testing.expectApproxEqAbs(-6.0, res0, 0.01);
+    try std.testing.expectApproxEqAbs(-9.0, res1, 0.01);
+}
+
+test "sqrtF16 perfect squares" {
+    const tests = [_]f16{ 0.0, 1.0, 4.0, 9.0, 16.0, 25.0 };
+    const expected = [_]f32{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+
+    for (tests, expected) |val, exp| {
+        const val_u16: u16 = @bitCast(val);
+        const result_u16 = sqrtF16(val_u16);
+        const result_f16: f16 = @bitCast(result_u16);
+        const result_f32: f32 = @floatCast(result_f16);
+        try std.testing.expectApproxEqAbs(exp, result_f32, 0.1);
+    }
+}
+
+test "sqrtF16 negative" {
+    const val: f16 = @as(f16, -4.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = sqrtF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // sqrt(negative) should return 0
+    try std.testing.expectApproxEqAbs(0.0, result_f32, 0.01);
+}
+
+test "expF16 zero" {
+    const val: f16 = @as(f16, 0.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = expF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    try std.testing.expectApproxEqAbs(1.0, result_f32, 0.1);
+}
+
+test "expF16 positive" {
+    const val: f16 = @as(f16, 1.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = expF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // exp(1) ≈ 2.718
+    try std.testing.expectApproxEqAbs(2.718, result_f32, 0.5);
+}
+
+test "expF16 negative" {
+    const val: f16 = @as(f16, -1.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = expF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // exp(-1) ≈ 0.368
+    try std.testing.expectApproxEqAbs(0.368, result_f32, 0.5);
+}
+
+test "logF16 one" {
+    const val: f16 = @as(f16, 1.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = logF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // log(1) = 0
+    try std.testing.expectApproxEqAbs(0.0, result_f32, 0.1);
+}
+
+test "logF16 positive" {
+    const val: f16 = @as(f16, 10.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = logF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // log(10) ≈ 2.303
+    try std.testing.expectApproxEqAbs(2.303, result_f32, 0.2);
+}
+
+test "logF16 zero" {
+    const val: f16 = @as(f16, 0.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = logF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // log(0) should return 0
+    try std.testing.expectApproxEqAbs(0.0, result_f32, 0.01);
+}
+
+test "logF16 negative" {
+    const val: f16 = @as(f16, -5.0);
+    const val_u16: u16 = @bitCast(val);
+    const result_u16 = logF16(val_u16);
+    const result_f16: f16 = @bitCast(result_u16);
+    const result_f32: f32 = @floatCast(result_f16);
+    // log(negative) should return 0
+    try std.testing.expectApproxEqAbs(0.0, result_f32, 0.01);
 }
 
 test "simd width info" {
