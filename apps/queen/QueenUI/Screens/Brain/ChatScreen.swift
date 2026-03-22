@@ -5108,9 +5108,21 @@ struct MultilineInput: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
-        if textView.string != text {
-            textView.string = text
+
+        // FIXED: Only update text if user is NOT actively typing (textView is not first responder)
+        // This prevents race condition where SwiftUI update overwrites user input
+        if textView.window?.firstResponder != textView {
+            if textView.string != text {
+                // Save cursor position before updating
+                let selectedRange = textView.selectedRange()
+                textView.string = text
+                // Restore cursor position if still within bounds
+                if selectedRange.location <= textView.string.count {
+                    textView.setSelectedRange(selectedRange)
+                }
+            }
         }
+
         context.coordinator.onSubmit = onSubmit
         context.coordinator.placeholder = placeholder
         context.coordinator.onImagePaste = onImagePaste
@@ -5120,7 +5132,7 @@ struct MultilineInput: NSViewRepresentable {
         // Update placeholder visibility
         context.coordinator.updatePlaceholder()
 
-        if isFocused.wrappedValue {
+        if isFocused.wrappedValue && textView.window?.firstResponder != textView {
             DispatchQueue.main.async {
                 textView.window?.makeFirstResponder(textView)
             }
