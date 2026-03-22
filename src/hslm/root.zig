@@ -25,6 +25,7 @@ pub const simd_ops = @import("simd_ops.zig");
 pub const parallel = @import("parallel.zig");
 pub const ste = @import("ste.zig");
 pub const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
+pub const fpga_backend = @import("fpga_backend.zig");
 pub const weber_tuning = @import("weber_tuning.zig");
 pub const fusiform_gyrus = @import("fusiform_gyrus.zig");
 pub const angular_gyrus = @import("angular_gyrus.zig");
@@ -56,6 +57,11 @@ pub const SteConfig = ste.SteConfig;
 // Re-export sensation types
 pub const GoldenFloat16 = intraparietal_sulcus.GoldenFloat16;
 pub const TernaryFloat9 = intraparietal_sulcus.TernaryFloat9;
+
+// Re-export FPGA backend
+pub const Backend = fpga_backend.Backend;
+pub const AluMode = fpga_backend.AluMode;
+pub const FpgaAlu = fpga_backend.FpgaAlu;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -98,6 +104,7 @@ comptime {
     _ = parallel;
     _ = ste;
     _ = intraparietal_sulcus;
+    _ = fpga_backend;
     _ = weber_tuning;
 }
 

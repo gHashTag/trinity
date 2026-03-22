@@ -7,15 +7,18 @@ const storm = @import("../golden_chain.zig");
 pub const LinkID = 6;
 
 pub fn execute(allocator: std.mem.Allocator, task: []const u8, spec_file: []const u8) !storm.golden_chain.LinkResult {
-    _ = allocator;
     _ = task;
-
     const log = std.log.scoped(.info);
 
     log.info("🧬 VIBEE Codegen: {s} → {s}", .{ spec_file, "Zig" });
 
-    // Check if spec file exists
-    if (!std.fs.cwd().access(spec_file, .{})) {
+    // Check if spec file exists (Zig 0.15: access() returns error, not bool)
+    var exists = true;
+    if (std.fs.cwd().access(spec_file, .{})) |_| {
+        exists = false;
+    }
+
+    if (!exists) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator, "Spec file not found: {s}", .{spec_file}),
@@ -40,40 +43,46 @@ pub fn execute(allocator: std.mem.Allocator, task: []const u8, spec_file: []cons
     };
     defer result.deinit();
 
-    // Capture stdout and stderr
-    const stdout = try result.stdout.allocator.dupe(allocator, result.stdout.items);
+    // Capture stdout and stderr (Zig 0.15: dupe() returns []u8)
+    const stdout = try allocator.dupe(u8, result.stdout.items);
     defer allocator.free(stdout);
-    const stderr = try result.stderr.allocator.dupe(allocator, result.stderr.items);
+    const stderr = try allocator.dupe(u8, result.stderr.items);
     defer allocator.free(stderr);
 
-    const duration = std.time.nanoTimestamp() - result.start_time;
+    const duration: u64 = @intCast(std.time.nanoTimestamp() - result.start_time);
 
-    log.info("VIBEE exit code: {d}", .{result.term.? });
+    // Check exit code (Zig 0.15: term is Term enum)
+    const exit_code: u32 = switch (result.term) {
+        .Exited => |code| code,
+        .Signal, .Stopped, .Unknown => 1,
+    };
 
-    // Check exit code
-    if (result.term != .Exited or result.code != 0) {
+    log.info("VIBEE exit code: {d}", .{exit_code});
+
+    if (exit_code != 0) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\VIBEE failed (code: {d})\\nStderr: {s}
-            , .{ result.code, stderr }),
+            , .{ exit_code, stderr }),
             .duration_ms = duration,
-            .exit_code = result.code orelse 1,
+            .exit_code = exit_code,
         };
     }
 
     // Parse generated file path from stdout
     var output_path: []const u8 = "";
-    for (stdout) |line| {
+    var lines_iter = std.mem.splitScalar(u8, stdout, '\n');
+    while (lines_iter.next()) |line| {
         if (std.mem.startsWith(u8, line, "Generated:") or
             std.mem.startsWith(u8, line, "Writing:"))
         {
             // Extract path after "Generated: " or "Writing: "
             const parts = std.mem.splitScalar(u8, line, ' ');
-            if (parts.len > 1) {
-                output_path = try allocator.dupe(u8, parts[1]);
-                break;
-            }
+            _ = parts.next() orelse break;
+            const second_part = parts.next() orelse break;
+            output_path = try allocator.dupe(u8, second_part);
+            break;
         }
     }
 
@@ -89,7 +98,12 @@ pub fn execute(allocator: std.mem.Allocator, task: []const u8, spec_file: []cons
     }
 
     // Verify generated file exists
-    if (!std.fs.cwd().access(output_path, .{})) {
+    var gen_exists = true;
+    if (std.fs.cwd().access(output_path, .{})) |_| {
+        gen_exists = false;
+    }
+
+    if (!gen_exists) {
         return .{
             .success = false,
             .message = try std.fmt.allocPrint(allocator,

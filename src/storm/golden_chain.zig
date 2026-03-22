@@ -193,7 +193,7 @@ pub const GoldenChain = struct {
             const task_name = try std.fmt.allocPrint(self.allocator, "{s}:{s}", .{ task, link.name });
             defer self.allocator.free(task_name);
 
-            if (exp.consult(task_name)) |ctx| {
+            if (exp.consult(task_name, 3)) |ctx| {
                 defer {
                     // Manual cleanup for ctx (const -> needs allocator access)
                     // TaskContext.similar_tasks is already a slice reference

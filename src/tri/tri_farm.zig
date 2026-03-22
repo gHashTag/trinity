@@ -1206,25 +1206,45 @@ fn isProcessAlive(pid: u32) bool {
 // ═════════════════════════════════════════════════════════════════════════
 
 fn runFarmStatsCommand(allocator: Allocator, args: []const []const u8) !void {
-    // Farm stats module import removed - tri farm stats command not yet implemented
+    _ = args; // Mark as used
+    print("{s}=== FARM STATISTICS ==={s}\n\n", .{ BOLD, RESET });
 
-    var cli_args = FarmStatsCLIArgs{};
+    const file = std.fs.cwd().openFile(".trinity/farm/w7v2_snapshot.json", .{}) catch |err| {
+        print("{s}Error loading snapshot: {s}\n", .{ RED, @errorName(err) });
+        return;
+    };
+    defer file.close();
 
-    var i: usize = 0;
-    while (i < args.len) : (i += 1) {
-        const arg = args[i];
-        if (std.mem.eql(u8, arg, "--farm-only") or std.mem.eql(u8, arg, "-f")) {
-            cli_args.show_farm_only = true;
-        } else if (std.mem.eql(u8, arg, "--export") or std.mem.eql(u8, arg, "-e")) {
-            cli_args.export_csv = true;
-        } else if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
-            cli_args.verbose = true;
-        } else if (std.mem.eql(u8, arg, "--scenario") and i + 1 < args.len) {
-            i += 1;
-            cli_args.scenario_filter = args[i];
+    const content = try file.readToEndAlloc(allocator, 1_000_000);
+    defer allocator.free(content);
+
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, content, .{});
+    defer parsed.deinit();
+
+    var worker_count: usize = 0;
+    var total_ppl: f64 = 0;
+    var min_ppl: f64 = std.math.floatMax(f64);
+    var max_ppl: f64 = 0;
+
+    for (parsed.value.array.items) |worker_val| {
+        if (worker_val.object.get("ppl")) |ppl| {
+            if (ppl == .float) {
+                total_ppl += ppl.float;
+                min_ppl = @min(min_ppl, ppl.float);
+                max_ppl = @max(max_ppl, ppl.float);
+                worker_count += 1;
+            }
         }
     }
 
+    if (worker_count > 0) {
+        print("Workers: {d}\n", .{worker_count});
+        print("Avg PPL: {s}{d:.2}{s}\n", .{ GREEN, total_ppl / @as(f64, @floatFromInt(worker_count)), RESET });
+        print("Min PPL: {d:.2}\n", .{min_ppl});
+        print("Max PPL: {d:.2}\n", .{max_ppl});
+    } else {
+        print("{s}No workers found in snapshot{s}\n", .{ YELLOW, RESET });
+    }
 }
 
 // ═════════════════════════════════════════════════════════════════════
