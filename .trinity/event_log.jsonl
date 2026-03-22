@@ -6416,3 +6416,5 @@
 {"ts":1774197109,"seq":2752,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
 {"ts":1774197109,"seq":2753,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
 {"ts":1774197109,"seq":2754,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":394,"build_ok":true,"dirty":58,"issues":53,"alerts":0}
+{"ts":1774197708,"seq":2755,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1774197712,"seq":2756,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}

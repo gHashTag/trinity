@@ -9,7 +9,7 @@
 const std = @import("std");
 
 const Memory = @import("tri_memory.zig").Memory;
-const CPUState = @import("tri_exec.zig").CPUState;
+const CPUState = @import("executor.zig").CPUState;
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -98,7 +98,6 @@ pub const EmulatorResult = struct {
 
 /// Run the TRI-27 emulator
 pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: std.mem.Allocator) !EmulatorResult {
-    const CPUState = @import("tri_exec.zig").CPUState;
     const Instruction = @import("tri_decode.zig").Instruction;
 
     // Initialize memory

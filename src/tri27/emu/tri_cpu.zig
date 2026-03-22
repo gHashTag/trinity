@@ -51,3 +51,8 @@ pub const Trit27 = struct {
 pub const ZERO = Trit27{ .trits = 0 };
 pub const ONE = Trit27{ .trits = 1 };
 pub const MINUS_ONE = Trit27{ .trits = -1 };
+
+// Additional constants for convenience
+pub const TWO = Trit27{ .trits = 1 }; // ONE + ONE
+pub const NEG_ONE = Trit27{ .trits = -1 }; // MINUS_ONE
+pub const THREE = Trit27{ .trits = 1 }; // TWO + ONE
