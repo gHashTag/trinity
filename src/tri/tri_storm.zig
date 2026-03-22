@@ -181,7 +181,7 @@ fn cmdRun(a: Allocator, args: []const []const u8) !u8 {
     print("  Agents: {d}\n", .{agents});
     if (dry_run) {
         print("  Mode: {s}DRY RUN{s}\n\n", .{ YELLOW, RESET });
-        print("DRY RUN: {d} waves, {d} agents\n", .{waves, agents});
+        print("DRY RUN: {d} waves, {d} agents\n", .{ waves, agents });
         print("Golden Chain: 28 links\n", .{});
         print("P1 Ethical Zones:\n", .{});
         print("  OFC: toxic verdict (v)\n", .{});
@@ -290,6 +290,5 @@ fn printUsage() void {
         \\  tri storm run
         \\  tri storm run --waves=3 --agents=16
         \\  tri storm status
-        , .{ CYAN, RESET }
-    );
+    , .{ CYAN, RESET });
 }

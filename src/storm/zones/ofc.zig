@@ -5,23 +5,23 @@
 const std = @import("std");
 
 pub const ToxicDimension = enum {
-    spec_drift,           // Code deviates from .tri spec
-    destructiveness,      // Destructive operations (deletes, force-push)
-    test_bypass,          // Bypassing or removing tests
+    spec_drift, // Code deviates from .tri spec
+    destructiveness, // Destructive operations (deletes, force-push)
+    test_bypass, // Bypassing or removing tests
     performance_regression, // Significant performance degradation
-    non_transparency,     // Hidden operations, unclear changes
+    non_transparency, // Hidden operations, unclear changes
 };
 
 pub const ToxicScore = struct {
-    total: u8,                     // 0-50 (sum of 5 dimensions, each 0-10)
+    total: u8, // 0-50 (sum of 5 dimensions, each 0-10)
     verdict: Verdict,
-    dimensions: [5]u8,             // Individual scores
+    dimensions: [5]u8, // Individual scores
     reasons: std.ArrayList([]const u8),
 
     pub const Verdict = enum {
-        safe,     // 0-7
-        warning,  // 8-15
-        toxic,    // 16+
+        safe, // 0-7
+        warning, // 8-15
+        toxic, // 16+
     };
 };
 

@@ -48,16 +48,16 @@ pub const Expression = union(enum) {
 
 // Binary operator types
 pub const BinOp = enum {
-    at_at,     // @@
-    plus_plus,  // ++
-    tilde,      // ~
-    plus,       // +
-    minus,      // -
-    times,      // *
-    eq,         // ==
-    neq,        // !=
-    gt,         // >
-    lt,         // <
+    at_at, // @@
+    plus_plus, // ++
+    tilde, // ~
+    plus, // +
+    minus, // -
+    times, // *
+    eq, // ==
+    neq, // !=
+    gt, // >
+    lt, // <
 };
 
 // Match arm pattern

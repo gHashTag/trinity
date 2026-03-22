@@ -286,7 +286,7 @@ pub const REGION_DEPENDENCIES = [_]RegionDependency{
     .{ .region = "Corpus Callosum (Federation)", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation", "Locus Coeruleus" } },
     .{ .region = "Visual Cortex", .depends_on = &[_][]const u8{} },
     .{ .region = "Evolution Simulation", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
-    .{ .region = "Performance Dashboard", .depends_on = &[_][]const u8{ "Metrics Dashboard" } },
+    .{ .region = "Performance Dashboard", .depends_on = &[_][]const u8{"Metrics Dashboard"} },
 };
 
 /// AgentCoordination — high-level wrapper combining all brain regions

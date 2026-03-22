@@ -2062,7 +2062,7 @@ fn curlGraphQL(allocator: Allocator, token: []const u8, deployment_id: []const u
         "curl",                                     "-s",     "--max-time", "15",
         "-X",                                       "POST",   "-H",         "Content-Type: application/json",
         "-H",                                       auth_hdr, "-d",         body,
-        "https://backboard.railway.com/graphql/v2",
+        "https://railway.com/graphql/v2",
     }, allocator);
     child.stdout_behavior = .Pipe;
     child.stderr_behavior = .Pipe;

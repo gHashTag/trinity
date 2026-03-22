@@ -10,7 +10,7 @@ context: fork
 # 🤖 Agent Swarm Observatory
 
 ## 📡 Railway Service Pools (Live)
-!`curl -s -X POST "https://backboard.railway.com/graphql/v2" -H "Authorization: Bearer $(grep RAILWAY_API_TOKEN /Users/playra/trinity-w1/.env | cut -d= -f2)" -H "Content-Type: application/json" -d '{"query":"query($id:String!){project(id:$id){services{edges{node{id name deployments(first:1){edges{node{status createdAt}}}}}}}}","variables":{"id":"aa0efa7f-95e6-4466-8de6-43945a031365"}}' 2>/dev/null | python3 -c "
+!`curl -s -X POST "https://railway.com/graphql/v2" -H "Authorization: Bearer $(grep RAILWAY_API_TOKEN /Users/playra/trinity-w1/.env | cut -d= -f2)" -H "Content-Type: application/json" -d '{"query":"query($id:String!){project(id:$id){services{edges{node{id name deployments(first:1){edges{node{status createdAt}}}}}}}}","variables":{"id":"aa0efa7f-95e6-4466-8de6-43945a031365"}}' 2>/dev/null | python3 -c "
 import sys,json,datetime
 d=json.load(sys.stdin)
 nodes=[e['node'] for e in d['data']['project']['services']['edges']]

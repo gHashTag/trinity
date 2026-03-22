@@ -907,11 +907,7 @@ test "Amygdala: threat level - fractional scores" {
 
 test "Amygdala: salience calculation - maximum score" {
     // Test all scoring factors combined
-    const result = Amygdala.analyzeTask(
-        "urgent-critical-security",
-        "dukh",
-        "critical"
-    );
+    const result = Amygdala.analyzeTask("urgent-critical-security", "dukh", "critical");
 
     //dukhh(40) + urgent(30) + critical(50) + security(40) + critical_priority(30) = 190
     // But capped at 100
@@ -921,11 +917,7 @@ test "Amygdala: salience calculation - maximum score" {
 
 test "Amygdala: salience calculation - minimum score" {
     // Test with no scoring factors
-    const result = Amygdala.analyzeTask(
-        "routine-task",
-        "unknown-realm",
-        "low"
-    );
+    const result = Amygdala.analyzeTask("routine-task", "unknown-realm", "low");
 
     try std.testing.expect(result.score < 20);
     try std.testing.expectEqual(SalienceLevel.none, result.level);
@@ -961,9 +953,7 @@ test "Amygdala: salience calculation - keyword stacking" {
 }
 
 test "Amygdala: error salience - all critical patterns" {
-    const result = Amygdala.analyzeError(
-        "segfault panic deadlock corruption security authentication injection out of memory"
-    );
+    const result = Amygdala.analyzeError("segfault panic deadlock corruption security authentication injection out of memory");
 
     // Base 20 + 8 patterns * 30 = 260, capped at 100
     try std.testing.expectEqual(@as(f32, 100), result.score);
@@ -971,9 +961,7 @@ test "Amygdala: error salience - all critical patterns" {
 }
 
 test "Amygdala: error salience - all high severity patterns" {
-    const result = Amygdala.analyzeError(
-        "timeout connection refused not found"
-    );
+    const result = Amygdala.analyzeError("timeout connection refused not found");
 
     // Base 20 + timeout(15) + connection_refused(15) + not_found(15) = 65
     // Note: patterns are checked for presence, not count

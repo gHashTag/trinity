@@ -6362,3 +6362,57 @@
 {"ts":1774173970,"seq":2699,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":386,"build_ok":true,"dirty":6,"issues":53,"alerts":0}
 {"ts":1774195120,"seq":2699,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
 {"ts":1774195123,"seq":2700,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1774195133,"seq":2701,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774195133,"seq":2702,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774195133,"seq":2703,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774195133,"seq":2704,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774195144,"seq":2705,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1774195144,"seq":2706,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1774195187,"seq":2707,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1774195189,"seq":2708,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1774195189,"seq":2709,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Medulla sleep cycle check"}
+{"ts":1774195189,"seq":2710,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1774195189,"seq":2711,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1774195189,"seq":2712,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":388,"build_ok":true,"dirty":21,"issues":53,"alerts":0}
+{"ts":1774195789,"seq":2713,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1774195795,"seq":2714,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1774195797,"seq":2715,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774195797,"seq":2716,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774195797,"seq":2717,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774195797,"seq":2718,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774195807,"seq":2719,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1774195807,"seq":2720,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1774195818,"seq":2721,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1774195818,"seq":2722,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1774195818,"seq":2723,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Medulla sleep cycle check"}
+{"ts":1774195818,"seq":2724,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1774195818,"seq":2725,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1774195818,"seq":2726,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":390,"build_ok":true,"dirty":18,"issues":53,"alerts":0}
+{"ts":1774196418,"seq":2727,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1774196423,"seq":2728,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1774196425,"seq":2729,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774196425,"seq":2730,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774196425,"seq":2731,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774196426,"seq":2732,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774196463,"seq":2733,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1774196463,"seq":2734,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1774196478,"seq":2735,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1774196478,"seq":2736,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1774196478,"seq":2737,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Medulla sleep cycle check"}
+{"ts":1774196478,"seq":2738,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1774196478,"seq":2739,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1774196478,"seq":2740,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":392,"build_ok":true,"dirty":55,"issues":53,"alerts":1}
+{"ts":1774197078,"seq":2741,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1774197083,"seq":2742,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1774197085,"seq":2743,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1774197085,"seq":2744,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1774197085,"seq":2745,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1774197085,"seq":2746,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1774197085,"seq":2747,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1774197085,"seq":2748,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1774197109,"seq":2749,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1774197109,"seq":2750,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1774197109,"seq":2751,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Medulla sleep cycle check"}
+{"ts":1774197109,"seq":2752,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1774197109,"seq":2753,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1774197109,"seq":2754,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":394,"build_ok":true,"dirty":58,"issues":53,"alerts":0}

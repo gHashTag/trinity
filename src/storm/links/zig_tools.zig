@@ -11,7 +11,7 @@ pub const buildLinkID = 9;
 pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("🔍 AST Check: {s}", .{file });
+    log.info("🔍 AST Check: {s}", .{file});
 
     const zig_binary = "zig";
     const result = std.process.Child.run(.{
@@ -67,7 +67,7 @@ pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\Found {d} AST errors\\n{s}
-            , .{errors, stdout }),
+            , .{ errors, stdout }),
             .duration_ms = duration,
             .exit_code = 1,
         };
@@ -85,7 +85,7 @@ pub fn executeAstCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
 pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("✏️️  FMT Check: {s}", .{file });
+    log.info("✏️️  FMT Check: {s}", .{file});
 
     const zig_binary = "zig";
     const result = std.process.Child.run(.{
@@ -119,7 +119,7 @@ pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\File needs formatting\\nStderr: {s}
-            , .{stderr }),
+            , .{stderr}),
             .duration_ms = duration,
             .exit_code = 1,
         };
@@ -128,7 +128,7 @@ pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
     log.info("✅ Format check passed");
     return .{
         .success = true,
-        .message = try std.fmt.allocPrint(allocator, "Formatted correctly: {s}", .{file }),
+        .message = try std.fmt.allocPrint(allocator, "Formatted correctly: {s}", .{file}),
         .duration_ms = duration,
         .exit_code = 0,
     };
@@ -137,7 +137,7 @@ pub fn executeFmtCheck(allocator: std.mem.Allocator, task: []const u8, file: []c
 pub fn executeBuild(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("🔨 Build: {s}", .{file });
+    log.info("🔨 Build: {s}", .{file});
 
     const zig_binary = "zig";
     const result = std.process.Child.run(.{
@@ -191,7 +191,7 @@ pub fn executeBuild(allocator: std.mem.Allocator, task: []const u8, file: []cons
     log.info("✅ Build successful");
     return .{
         .success = true,
-        .message = try std.fmt.allocPrint(allocator, "Built: {s}", .{file }),
+        .message = try std.fmt.allocPrint(allocator, "Built: {s}", .{file}),
         .duration_ms = duration,
         .exit_code = 0,
     };

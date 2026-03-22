@@ -4,8 +4,8 @@
 const std = @import("std");
 
 pub const RegenDecision = enum {
-    skip,   // No regeneration needed
-    regen,  // Regenerate .zig from .tri (VIBEE codegen)
+    skip, // No regeneration needed
+    regen, // Regenerate .zig from .tri (VIBEE codegen)
     destroy, // Delete .zig (corrupted), regenerate from .tri
 };
 
@@ -61,16 +61,16 @@ pub const PhoenixBridge = struct {
                 switch (result.decision) {
                     .skip => {
                         skip_count += 1;
-                        std.debug.print("  ✓ {s}.tri: {s}\n", .{base_name, result.reason});
+                        std.debug.print("  ✓ {s}.tri: {s}\n", .{ base_name, result.reason });
                     },
                     .regen => {
                         regen_count += 1;
-                        std.debug.print("  ⚠️  {s}.tri: {s} → VIBEE regen\n", .{base_name, result.reason});
+                        std.debug.print("  ⚠️  {s}.tri: {s} → VIBEE regen\n", .{ base_name, result.reason });
                         // TODO: Run VIBEE codegen: zig build vibee -- gen specs/{s}.tri
                     },
                     .destroy => {
                         regen_count += 1;
-                        std.debug.print("  🔥 {s}.tri: {s} → destroy + regen\n", .{base_name, result.reason});
+                        std.debug.print("  🔥 {s}.tri: {s} → destroy + regen\n", .{ base_name, result.reason });
                         // TODO: Delete .zig, run VIBEE codegen
                     },
                 }

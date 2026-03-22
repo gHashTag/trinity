@@ -15,11 +15,11 @@ const Instruction = @import("tri_decode.zig").Instruction;
 // CPU FLAGS — Zero, Negative, Overflow, Halted
 // ═════════════════════════════════════════════════════════════════════════════════════════════════════
 pub const Flags = packed struct {
-    Z: bool = false,  // Zero result flag
-    N: bool = false,  // Negative result flag
-    V: bool = false,  // Overflow flag
-    H: bool = false,  // Halted flag
-    _: u4 = 0,       // Reserved bits
+    Z: bool = false, // Zero result flag
+    N: bool = false, // Negative result flag
+    V: bool = false, // Overflow flag
+    H: bool = false, // Halted flag
+    _: u4 = 0, // Reserved bits
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -27,14 +27,14 @@ pub const Flags = packed struct {
 // ═══════════════════════════════════════════════════════════════════════════════════════
 pub const CPUState = struct {
     // Register file
-    t27: [16]Trit27,  // 16 ternary registers (27 trits each)
-    f: [8]u16,          // 8 GF16 registers for floating-point
-    v: [16][16]u16,    // 16 vector registers (16×GF16)
+    t27: [16]Trit27, // 16 ternary registers (27 trits each)
+    f: [8]u16, // 8 GF16 registers for floating-point
+    v: [16][16]u16, // 16 vector registers (16×GF16)
 
     // Special purpose registers
-    ip: u32 = 0,         // Instruction pointer
-    sp: u32 = 0,         // Stack pointer
-    fp: u32 = 0,         // Frame pointer
+    ip: u32 = 0, // Instruction pointer
+    sp: u32 = 0, // Stack pointer
+    fp: u32 = 0, // Frame pointer
 
     // Status flags
     flags: Flags = .{},
@@ -48,12 +48,27 @@ pub const CPUState = struct {
 
     /// Create initial CPU state with all registers zeroed
     pub fn init(allocator: std.mem.Allocator) CPUState {
-        return .{
-            .t27 = [_]Trit27{.trits = 0} ** 16,
-            .f = [_]u16{0} ** 8,
-            .v = [_][16]u16{0} ** 16,
+        var state = CPUState{
+            .t27 = undefined,
+            .f = undefined,
+            .v = undefined,
             .allocator = allocator,
         };
+
+        // Zero initialize arrays
+        for (0..16) |i| {
+            state.t27[i] = Trit27{ .trits = 0 };
+        }
+        for (0..8) |i| {
+            state.f[i] = 0;
+        }
+        for (0..16) |i| {
+            for (0..16) |j| {
+                state.v[i][j] = 0;
+            }
+        }
+
+        return state;
     }
 
     /// Get ternary register value
@@ -90,7 +105,7 @@ pub const CPUState = struct {
     pub fn setVec(self: *CPUState, reg: u4, value: []const u16) void {
         std.debug.assert(reg < 16, "Invalid vector register index");
         std.debug.assert(value.len == 16, "Vector must be 16 GF16 elements");
-        @memcpy(&self.v[reg], value.ptr, 16 * @sizeOf(u16));
+        @memcpy(&self.v[reg][0], value.ptr);
     }
 
     /// Update flags based on Trit27 result
@@ -104,7 +119,7 @@ pub const CPUState = struct {
     /// Update flags based on comparison result
     pub fn updateFlagsCmp(self: *CPUState, lt: bool, eq: bool) void {
         self.flags.Z = eq;
-        self.flags.N = lt;  // Less than implies negative in signed comparison
+        self.flags.N = lt; // Less than implies negative in signed comparison
     }
 
     /// Update overflow flag
@@ -149,7 +164,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
         .LD_IMM => {
             const value = inst.immediate;
             // Pack immediate into Trit27 (sign-extended)
-            const trit_value = Trit27.fromI8(@as(i8, @min(@as(i32, 1), @max(@as(i32, -1), value))));
+            const trit_value = Trit27.fromI8(@as(i8, @min(@as(i32, 1), @max(@as(i32, -1), value));
             cpu.setT27(inst.dst, trit_value);
             cpu.updateFlagsT27(trit_value);
             cpu.ip += 1;
@@ -158,7 +173,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
         .ST => {
             // Store ternary register to memory
             // Format: [op:5][dst:4][addr:4][unused:19]
-            const addr = inst.immediate;  // Address in immediate field
+            const addr = inst.immediate; // Address in immediate field
             const value = cpu.getT27(inst.dst);
 
             // Memory word is 32 bits (fits 2 Trit27s)
@@ -168,7 +183,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
                 return ExecError.InvalidMemory;
             }
 
-            @memcpy(memory[word_index..], &value.trits, @sizeOf(i64));
+            @memcpy(memory[word_index..][0..@sizeOf(i64)], std.mem.asBytes(&value.trits));
             cpu.ip += 1;
         },
 
@@ -227,7 +242,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
 
             // Push old IP to stack
             const sp_ptr = memory[cpu.sp..];
-            @memcpy(sp_ptr, &cpu.ip, @sizeOf(u32));
+            @memcpy(sp_ptr[0..@sizeOf(u32)], std.mem.asBytes(&cpu.ip));
             cpu.sp += 4;
 
             cpu.ip = target;
@@ -241,7 +256,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
 
             cpu.sp -= 4;
             const sp_ptr = memory[cpu.sp..];
-            @memcpy(&cpu.ip, sp_ptr, @sizeOf(u32));
+            @memcpy(&cpu.ip[0..@sizeOf(u32)], std.mem.asBytes(sp_ptr));
         },
 
         // ═══════════════════════════════════════════════════════════════════════════
@@ -256,7 +271,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
             // System call - handled by emulator layer
             // syscall number in src1, arguments in other fields
             const syscall_num = inst.src1;
-            _ = syscall_num;  // Placeholder - actual handling in emulator layer
+            _ = syscall_num; // Placeholder - actual handling in emulator layer
 
             // For now, just advance IP
             // Real implementation will delegate to syscall handler
@@ -272,15 +287,15 @@ pub fn estimateCycles(opcode: Opcode) u64 {
     return switch (opcode) {
         .NOP => 1,
         .LD_IMM => 1,
-        .ST => 2,          // Memory write
-        .ADD3 => 2,         // Ternary addition
-        .SUB3 => 2,         // Ternary subtraction
-        .CMP3 => 2,         // Comparison
+        .ST => 2, // Memory write
+        .ADD3 => 2, // Ternary addition
+        .SUB3 => 2, // Ternary subtraction
+        .CMP3 => 2, // Comparison
         .JMP => 1,
-        .CALL => 3,          // Stack push + jump
-        .RET => 3,           // Stack pop + jump
+        .CALL => 3, // Stack push + jump
+        .RET => 3, // Stack pop + jump
         .HALT => 1,
-        .SYSCALL => 10,       // System call (variable)
+        .SYSCALL => 10, // System call (variable)
     };
 }
 
@@ -331,7 +346,7 @@ test "CPUState get/set vector registers" {
     var cpu = CPUState.init(allocator);
     defer cpu.allocator.deinit();
 
-    const vec = [_]u16{0} ** 16;
+    const vec = [_]u16{0} * 16;
     vec[5] = 0x1234;
     cpu.setVec(7, &vec);
     const retrieved = cpu.getVec(7);
@@ -423,7 +438,7 @@ test "execute HALT" {
     try execute(&cpu, inst, &memory);
 
     try std.testing.expect(cpu.flags.H);
-    try std.testing.expectEqual(@as(u32, 0), cpu.ip);  // IP not advanced
+    try std.testing.expectEqual(@as(u32, 0), cpu.ip); // IP not advanced
 }
 
 test "execute ADD3" {
@@ -449,7 +464,7 @@ test "execute ADD3" {
     try execute(&cpu, inst, &memory);
 
     const result = cpu.getT27(2);
-    try std.testing.expectEqual(@as(i8, 1), result.toI8Clamped());  // 1 + 0 = 1
+    try std.testing.expectEqual(@as(i8, 1), result.toI8Clamped()); // 1 + 0 = 1
     try std.testing.expectEqual(@as(u32, 1), cpu.ip);
 }
 
@@ -476,7 +491,7 @@ test "execute SUB3" {
     try execute(&cpu, inst, &memory);
 
     const result = cpu.getT27(2);
-    try std.testing.expectEqual(@as(i8, 0), result.toI8Clamped());  // 1 - 1 = 0
+    try std.testing.expectEqual(@as(i8, 0), result.toI8Clamped()); // 1 - 1 = 0
 }
 
 test "execute CMP3" {
@@ -501,8 +516,8 @@ test "execute CMP3" {
 
     try execute(&cpu, inst, &memory);
 
-    try std.testing.expect(cpu.flags.N);  // 1 > 0, so not less than
-    try std.testing.expect(!cpu.flags.Z);  // Not equal
+    try std.testing.expect(cpu.flags.N); // 1 > 0, so not less than
+    try std.testing.expect(!cpu.flags.Z); // Not equal
 }
 
 test "estimateCycles" {

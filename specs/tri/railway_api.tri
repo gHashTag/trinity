@@ -4,7 +4,7 @@ language: zig
 module: tri.railway_api
 
 description: |
-  Native GraphQL client for Railway.app API (backboard.railway.com/graphql/v2).
+  Native GraphQL client for Railway.app API (railway.com/graphql/v2).
   Zero dependency on railway CLI binary.
   Auth via RAILWAY_API_TOKEN env var, project via .railway.json or RAILWAY_PROJECT_ID.
 

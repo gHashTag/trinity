@@ -130,21 +130,21 @@ pub fn benchmarkSelectAction(iterations: u64) !BenchmarkResult {
 
 test "brain_bench — ActionCandidate score" {
     const result = try benchmarkActionCandidateScore(10000);
-    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{result.avg_ns, result.ops_per_sec});
+    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{ result.avg_ns, result.ops_per_sec });
     try std.testing.expect(result.iterations == 10000);
     try std.testing.expect(result.avg_ns < 1000);
 }
 
 test "brain_bench — Urgency weight" {
     const result = try benchmarkUrgencyWeight(10000);
-    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{result.avg_ns, result.ops_per_sec});
+    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{ result.avg_ns, result.ops_per_sec });
     try std.testing.expect(result.iterations == 10000);
     try std.testing.expect(result.avg_ns < 500);
 }
 
 test "brain_bench — selectAction" {
     const result = try benchmarkSelectAction(1000);
-    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{result.avg_ns, result.ops_per_sec});
+    std.debug.print("Avg: {d} ns, Ops/sec: {d}\n", .{ result.avg_ns, result.ops_per_sec });
     try std.testing.expect(result.iterations == 1000);
 }
 

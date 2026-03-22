@@ -64,7 +64,7 @@ for ACCT in 7 8; do
   PID_VAR="RAILWAY_PROJECT_ID_$ACCT"
   PID="${!PID_VAR}"
   echo "=== FARM-$ACCT ==="
-  curl -s https://backboard.railway.app/graphql/v2 \
+  curl -s https://railway.com/graphql/v2 \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
     -d "{\"query\":\"query { project(id: \\\"$PID\\\") { services { edges { node { name serviceInstances { edges { node { startCommand builder latestDeployment { status } } } } } } } } }\"}" 2>/dev/null | python3 -c "

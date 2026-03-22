@@ -29,7 +29,7 @@ pub fn main() !void {
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{ "curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", query, "https://backboard.railway.app/graphql/v2" },
+        .argv = &.{ "curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", query, "https://railway.com/graphql/v2" },
     });
     defer allocator.free(result.stderr);
     defer allocator.free(result.stdout);

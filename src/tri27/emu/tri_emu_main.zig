@@ -8,6 +8,9 @@
 
 const std = @import("std");
 
+const Memory = @import("tri_memory.zig").Memory;
+const CPUState = @import("tri_exec.zig").CPUState;
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -95,10 +98,8 @@ pub const EmulatorResult = struct {
 
 /// Run the TRI-27 emulator
 pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: std.mem.Allocator) !EmulatorResult {
-    const Memory = @import("tri_memory.zig").Memory;
     const CPUState = @import("tri_exec.zig").CPUState;
     const Instruction = @import("tri_decode.zig").Instruction;
-    const Opcode = @import("tri_decode.zig").Opcode;
 
     // Initialize memory
     var mem = try Memory.init(allocator);
@@ -118,7 +119,8 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     // Initialize CPU
     var cpu = CPUState.init(allocator);
     cpu.ip = load_result.entry_point;
-    cpu.sp = @import("tri_memory.zig").STACK_START;
+    const mem_module = @import("tri_memory.zig");
+    cpu.sp = mem_module.STACK_START;
 
     if (options.verbose) {
         std.debug.print("  SP: 0x{X:0>4}\n", .{cpu.sp});
@@ -127,7 +129,7 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
 
     // Main execution loop
     var exit_reason: []const u8 = "normal";
-    var max_cycles = options.max_cycles orelse @as(u32, std.math.maxInt(u32));
+    const max_cycles: u32 = if (options.max_cycles) |mc| mc else @as(u32, std.math.maxInt(u32));
 
     while (!cpu.flags.H) {
         // Check cycle limit
@@ -154,7 +156,6 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
         }
 
         // Execute instruction
-        const ExecError = @import("tri_exec.zig").ExecError;
         execute(&cpu, &inst, mem.data) catch |err| {
             exit_reason = @errorName(err);
             break;
@@ -236,7 +237,7 @@ fn printStats(result: *const EmulatorResult) !void {
 }
 
 /// Dump current memory and CPU state
-fn dumpMemoryState(mem: *const Memory, cpu: *const CPUState) !void {
+fn dumpMemoryState(mem: Memory, cpu: CPUState) !void {
     const stdout = std.io.getStdOut().writer();
 
     try stdout.print("\n╔══════════════════════════════════════════════════════════════════════════╗\n", .{});

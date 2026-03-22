@@ -260,7 +260,7 @@ pub fn main() !void {
         // Reserved commands (below) fall through to their hardcoded handlers.
         // Temporarily disabled for build - TODO: fix isReservedCommand
         // if (!isReservedCommand(first_arg)) {
-        if (true) {  // Always go to cell dispatch
+        if (true) { // Always go to cell dispatch
             const cell_dispatch = @import("tri_cell_dispatch.zig");
             // Try two-word command first ("arena battle"), then single ("arena")
             const full_cmd = if (arg_idx + 1 < args.len)

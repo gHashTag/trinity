@@ -4,7 +4,7 @@
 // RAILWAY API — GraphQL Client for Railway.app
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Native GraphQL client for backboard.railway.com/graphql/v2
+// Native GraphQL client for railway.com/graphql/v2
 // Zero dependency on `railway` CLI binary.
 //
 // Auth: RAILWAY_API_TOKEN env var (Personal Token)
@@ -17,7 +17,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const crypto = std.crypto.random;
 
-const RAILWAY_GQL_HOST = "backboard.railway.com";
+const RAILWAY_GQL_HOST = "railway.com";
 const RAILWAY_GQL_PATH = "/graphql/v2";
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -14,7 +14,7 @@ pub const benchmarkLinkID = 15;
 pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("🧪 Unit Test: {s}", .{file });
+    log.info("🧪 Unit Test: {s}", .{file});
 
     const zig_binary = "zig";
     const result = std.process.Child.run(.{
@@ -72,13 +72,13 @@ pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []c
     const total = passed + failed + skipped;
     const status = if (failed == 0 and total > 0) "PASSED" else if (failed > 0) "FAILED" else "NO TESTS";
 
-    log.info("Test results: {d}/{d} passed, {d} failed", .{passed, total, failed});
+    log.info("Test results: {d}/{d} passed, {d} failed", .{ passed, total, failed });
 
     return .{
         .success = (failed == 0),
         .message = try std.fmt.allocPrint(allocator,
             \\{s}: {d}/{d} tests passed, {d} skipped\\n{d} failed
-        , .{status, passed, skipped, failed }),
+        , .{ status, passed, skipped, failed }),
         .duration_ms = duration,
         .exit_code = if (failed == 0) 0 else 1,
         .stdout = try allocator.dupe(u8, stdout),
@@ -88,7 +88,7 @@ pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []c
 pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_file: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("🔬 VSA Verify: {s}", .{spec_file });
+    log.info("🔬 VSA Verify: {s}", .{spec_file});
 
     const tri_binary = "zig-out/bin/tri";
     const result = std.process.Child.run(.{
@@ -144,7 +144,7 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\VSA verification failed\\nStdout: {s}
-            , .{stdout }),
+            , .{stdout}),
             .duration_ms = duration,
             .exit_code = 1,
         };
@@ -153,7 +153,7 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
     log.info("✅ VSA verification passed");
     return .{
         .success = true,
-        .message = try std.fmt.allocPrint(allocator, "VSA verified: {s}", .{spec_file }),
+        .message = try std.fmt.allocPrint(allocator, "VSA verified: {s}", .{spec_file}),
         .duration_ms = duration,
         .exit_code = 0,
     };
@@ -162,7 +162,7 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
 pub fn executeIntegrationTest(allocator: std.mem.Allocator, task: []const u8, config: []const u8) !storm.golden_chain.LinkResult {
     _ = task;
     const log = std.log.scoped(.info);
-    log.info("🔗 Integration Test: {s}", .{config });
+    log.info("🔗 Integration Test: {s}", .{config});
 
     const tri_binary = "zig-out/bin/tri";
     const result = std.process.Child.run(.{
@@ -204,7 +204,7 @@ pub fn executeIntegrationTest(allocator: std.mem.Allocator, task: []const u8, co
     log.info("✅ Integration test passed");
     return .{
         .success = true,
-        .message = try std.fmt.allocPrint(allocator, "Integration test passed: {s}", .{config }),
+        .message = try std.fmt.allocPrint(allocator, "Integration test passed: {s}", .{config}),
         .duration_ms = duration,
         .exit_code = 0,
     };

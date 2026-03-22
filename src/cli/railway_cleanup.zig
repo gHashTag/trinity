@@ -159,7 +159,7 @@ fn execCurl(allocator: std.mem.Allocator, token: []const u8, body: []const u8) !
         .argv = &[_][]const u8{
             "curl", "-s",        "-X",                                       "POST",
             "-H",   auth_header, "-H",                                       "Content-Type: application/json",
-            "-d",   body,        "https://backboard.railway.app/graphql/v2",
+            "-d",   body,        "https://railway.com/graphql/v2",
         },
     });
     defer {

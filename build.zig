@@ -2595,6 +2595,26 @@ pub fn build(b: *std.Build) void {
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // TRI‑27 EMULATOR — Ternary RISC Processor Emulator
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    const tri_emu = b.addExecutable(.{
+        .name = "tri-emu",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/emu/tri_emu_main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(tri_emu);
+
+    const run_tri_emu = b.addRunArtifact(tri_emu);
+    if (b.args) |args| {
+        run_tri_emu.addArgs(args);
+    }
+    const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
+    tri_emu_step.dependOn(&run_tri_emu.step);
+
     // Cycle 100: REPL Testing Infrastructure
     // Test suite for TRI CLI commands with sacred assertions
     const tri_testing = b.addTest(.{
