@@ -112,7 +112,9 @@ pub fn decodeAddr16(code: []const u8, ip: *u32) u16 {
 }
 
 /// Memory address (16-bit) + register offset
-pub fn decodeAddr16Reg(code: []const u8, ip: *u32) struct {
+const Addr16Reg = struct { addr: u16, reg: u8 };
+
+pub fn decodeAddr16Reg(code: []const u8, ip: *u32) Addr16Reg {
     const addr = decodeAddr16(code, ip);
     const reg = decodeReg8(code, ip);
     return .{ .addr = addr, .reg = reg };

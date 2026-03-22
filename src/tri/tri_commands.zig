@@ -433,7 +433,8 @@ fn runBrainHealthCommand(allocator: std.mem.Allocator, args: []const []const u8)
         std.debug.print("  Claim Attempts: {d}\n", .{basal_stats.claim_attempts});
         const success_rate = if (basal_stats.claim_attempts > 0)
             @as(usize, @intFromFloat(@as(f32, @floatFromInt(basal_stats.claim_success)) / @as(f32, @floatFromInt(basal_stats.claim_attempts)) * 100.0))
-        else 0;
+        else
+            0;
         std.debug.print("  Success Rate: {d}%\n", .{success_rate});
         std.debug.print("{s}════════════════════════════════════════════════════════════════{s}\n", .{ CYAN, RESET });
         // Reticular Formation status
