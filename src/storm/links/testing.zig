@@ -10,6 +10,11 @@ pub const stressTestLinkID = 12;
 pub const fuzzTestLinkID = 13;
 pub const benchmarkLinkID = 14;
 
+pub fn executeUnitTest(allocator: std.mem.Allocator, task: []const u8, file: []const u8) !storm.golden_chain.LinkResult {
+    _ = allocator;
+    _ = task;
+
+    const log = std.log.scoped(.info);
     log.info("🧪 Unit Test: {s}", .{file });
 
     const zig_binary = "zig";
@@ -75,8 +80,13 @@ pub const benchmarkLinkID = 14;
 }
 
 pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_file: []const u8) !storm.golden_chain.LinkResult {
+    _ = allocator;
+    _ = task;
 
     const log = std.log.scoped(.info);
+    log.info("🔬 VSA Verify: {s}", .{spec_file });
+
+    const tri_binary = "zig-out/bin/tri";
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{ tri_binary, "vsacodegen", "verify", spec_file },
@@ -139,6 +149,8 @@ pub fn executeVsaVerify(allocator: std.mem.Allocator, task: []const u8, spec_fil
 }
 
 pub fn executeIntegrationTest(allocator: std.mem.Allocator, task: []const u8, config: []const u8) !storm.golden_chain.LinkResult {
+    _ = allocator;
+    _ = task;
 
     const log = std.log.scoped(.info);
     log.info("🔗 Integration Test: {s}", .{config });
