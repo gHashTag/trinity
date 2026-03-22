@@ -5,7 +5,7 @@ const std = @import("std");
 
 const Allocator = std.mem.Allocator;
 
-const RAILWAY_GQL_HOST = "backboard.railway.com";
+const RAILWAY_GQL_HOST = "railway.com";
 const RAILWAY_GQL_PATH = "/graphql/v2";
 
 const RESET = "\x1b[0m";

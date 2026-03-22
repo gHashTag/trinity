@@ -8,8 +8,8 @@
 
 const std = @import("std");
 const Trit27 = @import("tri_cpu.zig").Trit27;
-const Opcode = @import("tri_decode.zig").Opcode;
-const Instruction = @import("tri_decode.zig").Instruction;
+const Opcode = @import("decoder.zig").Opcode;
+const Instruction = @import("decoder.zig").Instruction;
 
 // ═════════════════════════════════════════════════════════════════════════════════════════
 // CPU FLAGS — Zero, Negative, Overflow, Halted
@@ -228,13 +228,13 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
         // ═══════════════════════════════════════════════════════════════════════════════════════
         .JMP => {
             // Unconditional jump to immediate address
-            const target = @as(u32, @bitCast(u32, @abs(inst.immediate)));
+            const target = @as(u32, @abs(inst.immediate));
             cpu.ip = target;
         },
 
         .CALL => {
             // Push return address to stack, then jump
-            const target = @as(u32, @bitCast(u32, @abs(inst.immediate)));
+            const target = @as(u32, @abs(inst.immediate));
 
             if (cpu.sp + 4 > memory.len) {
                 return ExecError.StackOverflow;
@@ -242,7 +242,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
 
             // Push old IP to stack
             const sp_ptr = memory[cpu.sp..];
-            @memcpy(sp_ptr[0..@sizeOf(u32)], std.mem.asBytes(&cpu.ip));
+            @memcpy(sp_ptr[0..4], std.mem.asBytes(&cpu.ip));
             cpu.sp += 4;
 
             cpu.ip = target;
@@ -256,7 +256,7 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []u8) ExecError!void {
 
             cpu.sp -= 4;
             const sp_ptr = memory[cpu.sp..];
-            @memcpy(&cpu.ip[0..@sizeOf(u32)], std.mem.asBytes(sp_ptr));
+            @memcpy(&cpu.ip[0..4], std.mem.asBytes(sp_ptr));
         },
 
         // ═══════════════════════════════════════════════════════════════════════════
