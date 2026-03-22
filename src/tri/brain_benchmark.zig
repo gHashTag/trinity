@@ -37,7 +37,7 @@ pub const BenchmarkResult = struct {
         _ = options;
         try writer.print(" {s}: {d} iterations\n", .{ self.name, self.iterations });
         try writer.print("   Total: {d:>12} ns  Avg: {d:>10} ns  Min: {d:>10} ns  Max: {d:>10} ns\n", .{ self.total_ns, self.avg_ns, self.min_ns, self.max_ns });
-        try writer.print("   Throughput: {d:>12} ops/sec\n", .{ self.ops_per_sec });
+        try writer.print("   Throughput: {d:>12} ops/sec\n", .{self.ops_per_sec});
     }
 };
 

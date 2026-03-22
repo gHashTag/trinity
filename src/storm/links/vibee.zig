@@ -91,7 +91,7 @@ pub fn execute(allocator: std.mem.Allocator, task: []const u8, spec_file: []cons
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\VIBEE completed but no output file detected\\nStdout: {s}
-            , .{stdout }),
+            , .{stdout}),
             .duration_ms = duration,
             .exit_code = 0,
         };
@@ -108,13 +108,13 @@ pub fn execute(allocator: std.mem.Allocator, task: []const u8, spec_file: []cons
             .success = false,
             .message = try std.fmt.allocPrint(allocator,
                 \\Generated file not found: {s}\\nVIBEE may have failed silently
-            , .{output_path }),
+            , .{output_path}),
             .duration_ms = duration,
             .exit_code = 1,
         };
     }
 
-    log.info("✅ Generated: {s}", .{output_path });
+    log.info("✅ Generated: {s}", .{output_path});
 
     return .{
         .success = true,

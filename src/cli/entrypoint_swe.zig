@@ -368,7 +368,7 @@ fn writeFitness(allocator: std.mem.Allocator, report: ExitReport) void {
     const exit = runCmd(allocator, &.{
         "curl", "-s",                             "-X",                                       "POST",
         "-H",   "Content-Type: application/json", "-H",                                       auth_header,
-        "-d",   body,                             "https://backboard.railway.com/graphql/v2",
+        "-d",   body,                             "https://railway.com/graphql/v2",
     }) catch {
         log.warn("curl failed for fitness write", .{});
         return;

@@ -86,10 +86,7 @@ pub const ParallelExecutor = struct {
                         // Execute task function
                         if (t.func(std.heap.page_allocator, t.context)) {
                             const end = std.time.nanoTimestamp();
-                            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                                @as(f128, @floatFromInt(end - start)),
-                                1_000_000
-                            )));
+                            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
                             r.* = .{
                                 .success = true,
@@ -101,19 +98,12 @@ pub const ParallelExecutor = struct {
                             });
                         } else |err| {
                             const end = std.time.nanoTimestamp();
-                            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                                @as(f128, @floatFromInt(end - start)),
-                                1_000_000
-                            )));
+                            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
                             r.* = .{
                                 .success = false,
                                 .duration_ms = duration_ms,
-                                .error_msg = std.fmt.allocPrint(
-                                    std.heap.page_allocator,
-                                    "{}",
-                                    .{err}
-                                ) catch null,
+                                .error_msg = std.fmt.allocPrint(std.heap.page_allocator, "{}", .{err}) catch null,
                             };
 
                             std.debug.print("  ❌ [{d}] {s} failed: {}\n", .{
@@ -145,10 +135,7 @@ pub const ParallelExecutor = struct {
 
             if (task.func(self.allocator, task.context)) {
                 const end = std.time.nanoTimestamp();
-                const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                    @as(f128, @floatFromInt(end - start)),
-                    1_000_000
-                )));
+                const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
                 results[i] = .{
                     .success = true,
@@ -160,19 +147,12 @@ pub const ParallelExecutor = struct {
                 });
             } else |err| {
                 const end = std.time.nanoTimestamp();
-                const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                    @as(f128, @floatFromInt(end - start)),
-                    1_000_000
-                )));
+                const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
                 results[i] = .{
                     .success = false,
                     .duration_ms = duration_ms,
-                    .error_msg = std.fmt.allocPrint(
-                        self.allocator,
-                        "{}",
-                        .{err}
-                    ) catch null,
+                    .error_msg = std.fmt.allocPrint(self.allocator, "{}", .{err}) catch null,
                 };
 
                 std.debug.print("  ❌ [{d}] {s} failed: {}\n", .{

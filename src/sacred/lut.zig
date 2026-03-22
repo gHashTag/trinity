@@ -154,17 +154,17 @@ pub const SacredDimensionsLUT = struct {
     pub const dims: [11]usize = [11]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
 
     /// Индексы по имени
-    pub const idx_unit: u5 = 0;       // 1 = 3^0
-    pub const idx_trit: u5 = 1;       // 3 = 3^1
-    pub const idx_nine: u5 = 2;       // 9 = 3^2
-    pub const idx_27: u5 = 3;          // 27 = 3^3
-    pub const idx_81: u5 = 4;         // 81 = 3^4 (context)
-    pub const idx_243: u5 = 5;        // 243 = 3^5 (embedding)
-    pub const idx_729: u5 = 6;        // 729 = 3^6 (VSA)
-    pub const idx_2187: u5 = 7;       // 2187 = 3^7 (sequence max)
-    pub const idx_6561: u5 = 8;       // 6561 = 3^8
-    pub const idx_19683: u5 = 9;      // 19683 = 3^9
-    pub const idx_59049: u5 = 10;     // 59049 = 3^10 (max trits)
+    pub const idx_unit: u5 = 0; // 1 = 3^0
+    pub const idx_trit: u5 = 1; // 3 = 3^1
+    pub const idx_nine: u5 = 2; // 9 = 3^2
+    pub const idx_27: u5 = 3; // 27 = 3^3
+    pub const idx_81: u5 = 4; // 81 = 3^4 (context)
+    pub const idx_243: u5 = 5; // 243 = 3^5 (embedding)
+    pub const idx_729: u5 = 6; // 729 = 3^6 (VSA)
+    pub const idx_2187: u5 = 7; // 2187 = 3^7 (sequence max)
+    pub const idx_6561: u5 = 8; // 6561 = 3^8
+    pub const idx_19683: u5 = 9; // 19683 = 3^9
+    pub const idx_59049: u5 = 10; // 59049 = 3^10 (max trits)
 
     /// Получить размерность по индексу
     pub inline fn dim(comptime k: u5) comptime_int {

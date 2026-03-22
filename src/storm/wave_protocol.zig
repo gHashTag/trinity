@@ -130,11 +130,7 @@ pub const StormWaveProtocol = struct {
                     if (link_result.message) |msg| self.allocator.free(msg);
                 } else {
                     const msg = link_result.message orelse "(no message)";
-                    error_msgs[error_count] = try std.fmt.allocPrint(
-                        self.allocator,
-                        "Link {d} failed: {s}",
-                        .{ link_id, msg }
-                    );
+                    error_msgs[error_count] = try std.fmt.allocPrint(self.allocator, "Link {d} failed: {s}", .{ link_id, msg });
                     error_count += 1;
                     if (link_result.message) |m| self.allocator.free(m);
                 }
@@ -149,11 +145,7 @@ pub const StormWaveProtocol = struct {
                     if (link_result.message) |msg| self.allocator.free(msg);
                 } else {
                     const msg = link_result.message orelse "(no message)";
-                    error_msgs[error_count] = try std.fmt.allocPrint(
-                        self.allocator,
-                        "Link {d} failed: {s}",
-                        .{ link_id, msg }
-                    );
+                    error_msgs[error_count] = try std.fmt.allocPrint(self.allocator, "Link {d} failed: {s}", .{ link_id, msg });
                     error_count += 1;
                     if (link_result.message) |m| self.allocator.free(m);
                 }
@@ -215,7 +207,7 @@ pub const StormWaveProtocol = struct {
             const status = if (wr.success) "✅" else "❌";
             std.debug.print("{s} WAVE {d}: {s}\n", .{ status, wr.wave_id, wr.wave_name });
             std.debug.print("   Agents: {d}/{d} completed\n", .{ wr.completed_agents, wr.completed_agents + wr.failed_agents });
-            std.debug.print("   Duration: {}ms\n", .{ wr.duration_ms });
+            std.debug.print("   Duration: {}ms\n", .{wr.duration_ms});
         }
 
         std.debug.print("\nTotal time: {}ms ({d:.1}s)\n", .{
@@ -245,7 +237,7 @@ test "Wave defaults" {
         .id = 1,
         .name = "Test",
         .agent_count = 3,
-        .links = &[_]u8{1, 2, 3},
+        .links = &[_]u8{ 1, 2, 3 },
     };
     try std.testing.expect(wave.parallel);
     try std.testing.expectEqual(@as(u64, 600_000), wave.timeout_ms);

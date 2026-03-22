@@ -28,7 +28,7 @@ jobs:
             echo "Creating ${SERVICE_NAME}..."
 
             # Create service
-            RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+            RESULT=$(curl -s -X POST "https://railway.com/graphql/v2" \
               -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "{
@@ -45,7 +45,7 @@ jobs:
             if [ -z "$SERVICE_ID" ]; then
               echo "❌ Failed to create ${SERVICE_NAME}: $RESULT"
               # Try alternative mutation
-              RESULT=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              RESULT=$(curl -s -X POST "https://railway.com/graphql/v2" \
                 -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -d "{
@@ -58,7 +58,7 @@ jobs:
               echo "✅ Created ${SERVICE_NAME}: ${SERVICE_ID}"
 
               # Connect to Docker image source
-              curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+              curl -s -X POST "https://railway.com/graphql/v2" \
                 -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -d "{

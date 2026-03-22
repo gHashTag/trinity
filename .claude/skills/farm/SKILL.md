@@ -59,7 +59,7 @@ for i in "" _2 _3 _4 _5 _6 _7 _8; do
   TOKEN="${!TOKEN_VAR}"
   [ -z "$TOKEN" ] && continue
   echo "=== Account${i:-_1} ==="
-  curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+  curl -s -X POST "https://railway.com/graphql/v2" \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
     -d '{"query":"query{projects{edges{node{id name services{edges{node{id name deployments(first:1){edges{node{status createdAt}}}}}}}}}}"}'  2>/dev/null | python3 -c "

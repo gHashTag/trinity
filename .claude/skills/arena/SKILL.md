@@ -127,7 +127,7 @@ ENTRYPOINT ["/usr/local/bin/arena", "serve"]
 source .env
 
 # Create service
-ARENA_SVC=$(curl -s https://backboard.railway.app/graphql/v2 \
+ARENA_SVC=$(curl -s https://railway.com/graphql/v2 \
   -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"query":"mutation{serviceCreate(input:{name:\"trinity-arena\",projectId:\"aa0efa7f-95e6-4466-8de6-43945a031365\"}){id}}"}' \
@@ -136,7 +136,7 @@ ARENA_SVC=$(curl -s https://backboard.railway.app/graphql/v2 \
 echo "Arena service: $ARENA_SVC"
 
 # Set config: builder=NIXPACKS won't work, must set dockerfilePath
-curl -s https://backboard.railway.app/graphql/v2 \
+curl -s https://railway.com/graphql/v2 \
   -H "Authorization: Bearer $RAILWAY_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d "{\"query\":\"mutation{serviceInstanceUpdate(input:{serviceId:\\\"$ARENA_SVC\\\",environmentId:\\\"6748f1ad-9c2f-4b71-9a90-67f40ce34dc9\\\",source:{image:\\\"ghcr.io/ghashtag/trinity-arena:latest\\\"}})}\"}\"}"

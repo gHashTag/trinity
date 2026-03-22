@@ -294,7 +294,7 @@ fn execCurl(allocator: std.mem.Allocator, token: []const u8, body: []const u8) !
             "-H",   auth_header,
             "-H",   "Content-Type: application/json",
             "-d",   body,
-            "https://backboard.railway.com/graphql/v2",
+            "https://railway.com/graphql/v2",
         },
     });
     defer {

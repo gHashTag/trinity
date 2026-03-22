@@ -109,32 +109,32 @@ pub fn assertSacredDim(comptime dim: usize, comptime ctx: []const u8) void {
 
 /// Powers of 3 up to 3^10
 pub const PowersOf3 = [11]usize{
-    1,      // 3^0
-    3,      // 3^1
-    9,      // 3^2
-    27,     // 3^3
-    81,     // 3^4
-    243,    // 3^5
-    729,    // 3^6
-    2187,   // 3^7
-    6561,   // 3^8
-    19683,  // 3^9
-    59049,  // 3^10
+    1, // 3^0
+    3, // 3^1
+    9, // 3^2
+    27, // 3^3
+    81, // 3^4
+    243, // 3^5
+    729, // 3^6
+    2187, // 3^7
+    6561, // 3^8
+    19683, // 3^9
+    59049, // 3^10
 };
 
 /// Powers of φ up to φ^10
 pub const PowersOfPhi = [11]f64{
     1.0,
-    1.6180339887498948482,                     // φ^1
-    2.6180339887498948482,                     // φ^2
-    4.2360679774997896964,                     // φ^3
-    6.8541019662496845446,                     // φ^4
-    11.090169943749474241,                     // φ^5
-    17.944271909999158785,                     // φ^6
-    29.034441853748633026,                     // φ^7
-    46.978713763747791811,                     // φ^8
-    76.013155617496424837,                     // φ^9
-    122.99186938124421665,                     // φ^10
+    1.6180339887498948482, // φ^1
+    2.6180339887498948482, // φ^2
+    4.2360679774997896964, // φ^3
+    6.8541019662496845446, // φ^4
+    11.090169943749474241, // φ^5
+    17.944271909999158785, // φ^6
+    29.034441853748633026, // φ^7
+    46.978713763747791811, // φ^8
+    76.013155617496424837, // φ^9
+    122.99186938124421665, // φ^10
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -265,10 +265,10 @@ test "computePhiDistance" {
 
 test "SacredDimensions are 3^k" {
     comptime {
-        try std.testing.expect(isPowerOf3(SacredDimensions.context_len));  // 81 = 3^4
-        try std.testing.expect(isPowerOf3(SacredDimensions.embed_dim));    // 243 = 3^5
-        try std.testing.expect(isPowerOf3(SacredDimensions.vsa_dim));      // 729 = 3^6
-        try std.testing.expect(isPowerOf3(SacredDimensions.seq_max));      // 2187 = 3^7
+        try std.testing.expect(isPowerOf3(SacredDimensions.context_len)); // 81 = 3^4
+        try std.testing.expect(isPowerOf3(SacredDimensions.embed_dim)); // 243 = 3^5
+        try std.testing.expect(isPowerOf3(SacredDimensions.vsa_dim)); // 729 = 3^6
+        try std.testing.expect(isPowerOf3(SacredDimensions.seq_max)); // 2187 = 3^7
     }
 }
 

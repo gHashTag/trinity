@@ -6,12 +6,12 @@ const std = @import("std");
 const ct = @import("cost_tracker.zig");
 
 pub const Model = enum {
-    claude_opus,      // Highest quality, most expensive
-    claude_sonnet,    // Balanced
-    claude_haiku,     // Fast, cheap
-    glm_5,            // z.ai proxy, cost-effective
-    local_llm,        // Free, no API limits
-    custom,           // User-defined model
+    claude_opus, // Highest quality, most expensive
+    claude_sonnet, // Balanced
+    claude_haiku, // Fast, cheap
+    glm_5, // z.ai proxy, cost-effective
+    local_llm, // Free, no API limits
+    custom, // User-defined model
 
     pub fn jsonStringify(value: Model, allocator: std.mem.Allocator) ![]const u8 {
         const names = .{
@@ -28,21 +28,21 @@ pub const Model = enum {
 };
 
 pub const TaskComplexity = enum {
-    trivial,      // Simple formatting, 1-liners
-    simple,       // Basic logic, <50 LOC
-    medium,       // Standard feature, 50-200 LOC
-    complex,      // Advanced feature, 200-500 LOC
-    critical,     // Core infrastructure, >500 LOC
+    trivial, // Simple formatting, 1-liners
+    simple, // Basic logic, <50 LOC
+    medium, // Standard feature, 50-200 LOC
+    complex, // Advanced feature, 200-500 LOC
+    critical, // Core infrastructure, >500 LOC
 };
 
 pub const ModelCapability = struct {
     model: Model,
-    max_context: u32,     // Max tokens in context
-    input_cost: u64,      // Cost per 1M input tokens (in cents)
-    output_cost: u64,     // Cost per 1M output tokens (in cents)
-    avg_speed: f64,       // Average tokens/second
-    code_quality: f64,    // 0.0-1.0 score (subjective)
-    reliability: f64,     // 0.0-1.0 uptime
+    max_context: u32, // Max tokens in context
+    input_cost: u64, // Cost per 1M input tokens (in cents)
+    output_cost: u64, // Cost per 1M output tokens (in cents)
+    avg_speed: f64, // Average tokens/second
+    code_quality: f64, // 0.0-1.0 score (subjective)
+    reliability: f64, // 0.0-1.0 uptime
 };
 
 // Capability data (as of 2026-03)
@@ -278,12 +278,34 @@ pub const ModelRoulette = struct {
 };
 
 pub const BrainZone = enum {
-    cortex, dlpfc, ofc, acc, broca, wernicke, insula,
-    hippocampus, amygdala, accumbens, fornix,
-    striatum, pallidus, nigra,
-    thalamus, hypothalamus, habenula,
-    colliculus_s, colliculus_i, ruber, pag, vta,
-    cerebellum, vermis, pons, medulla, coeruleus, raphe,
+    cortex,
+    dlpfc,
+    ofc,
+    acc,
+    broca,
+    wernicke,
+    insula,
+    hippocampus,
+    amygdala,
+    accumbens,
+    fornix,
+    striatum,
+    pallidus,
+    nigra,
+    thalamus,
+    hypothalamus,
+    habenula,
+    colliculus_s,
+    colliculus_i,
+    ruber,
+    pag,
+    vta,
+    cerebellum,
+    vermis,
+    pons,
+    medulla,
+    coeruleus,
+    raphe,
 };
 
 // ═════════════════════════════════════════════════════════════════

@@ -57,11 +57,11 @@ pub const CPUState = struct {
     floats: [3]f64,
 
     // === CONTROL REGISTERS ===
-    pc: u32,          // Program counter
-    sp: u32,          // Stack pointer
-    fp: u32,          // Frame pointer (for calls)
-    flags: CPUFlags,   // Condition flags
-    call_stack: [CALL_STACK_MAX]CallFrame,  // Call stack
+    pc: u32, // Program counter
+    sp: u32, // Stack pointer
+    fp: u32, // Frame pointer (for calls)
+    flags: CPUFlags, // Condition flags
+    call_stack: [CALL_STACK_MAX]CallFrame, // Call stack
 
     // === MEMORY ===
     /// Direct memory access (byte-addressable)
@@ -88,7 +88,7 @@ pub const CPUState = struct {
             .sp = 0,
             .fp = 0,
             .flags = CPUFlags{},
-            .call_stack = [_]CallFrame{.return_addr = 0} ** CALL_STACK_MAX,
+            .call_stack = [_]CallFrame{ .return_addr = 0 } ** CALL_STACK_MAX,
             .memory = memory,
             .memory_len = memory_size,
             .instructions_executed = 0,

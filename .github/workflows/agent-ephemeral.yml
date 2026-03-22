@@ -43,7 +43,7 @@ jobs:
         run: |
           set -e
           # Count services named agent-*
-          SERVICES=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          SERVICES=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -94,7 +94,7 @@ jobs:
 
           # 1. Create service
           echo "🏗️ Creating ephemeral service agent-${ISSUE}..."
-          CREATE_RESP=$(curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          CREATE_RESP=$(curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -115,7 +115,7 @@ jobs:
 
           # 2. Connect Docker image source
           echo "🐳 Connecting Docker image..."
-          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -128,7 +128,7 @@ jobs:
 
           # 3. Set environment variables (batch upsert)
           echo "🔧 Setting environment variables..."
-          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{
@@ -163,7 +163,7 @@ jobs:
 
           # 4. Deploy the service
           echo "🚀 Deploying..."
-          curl -s -X POST "https://backboard.railway.com/graphql/v2" \
+          curl -s -X POST "https://railway.com/graphql/v2" \
             -H "Authorization: Bearer ${RAILWAY_API_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "{

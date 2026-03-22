@@ -199,12 +199,12 @@ pub fn main() !void {
                     // Calculate cumulative energy cost up to this step
                     const cum_energy = energy_cost * @as(f32, @floatFromInt(entry.step + 1));
                     const line = try std.fmt.allocPrint(alloc, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2},{d:.3},{d:.3},{d:.3},{d:.3}\n", .{
-                        entry.step,       scenario,       entry.avg_ppl, entry.diversity,
-                        entry.alive_workers, 0,               0,             converged,
-                        cum_energy,       fpga_lut,        fpga_bram,       fpga_cost,
-                        seed_rate,        kill_rate,      ntp_weight,
-                        jepa_weight,      nca_weight,    quantum_superposition,
-                        quantum_coherence, quantum_interference, quantum_collapse_prob,
+                        entry.step,            scenario,              entry.avg_ppl,     entry.diversity,
+                        entry.alive_workers,   0,                     0,                 converged,
+                        cum_energy,            fpga_lut,              fpga_bram,         fpga_cost,
+                        seed_rate,             kill_rate,             ntp_weight,        jepa_weight,
+                        nca_weight,            quantum_superposition, quantum_coherence, quantum_interference,
+                        quantum_collapse_prob,
                     });
                     try csv_out.writeAll(line);
                     alloc.free(line);
@@ -221,12 +221,12 @@ pub fn main() !void {
         for (s2.timeline) |entry| {
             const cum_energy = 102.0 * @as(f32, @floatFromInt(entry.step + 1));
             const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2},{d:.3},{d:.3},{d:.3},{d:.3}\n", .{
-                entry.step,       "S2",              entry.avg_ppl, entry.diversity,
+                entry.step,          "S2",              entry.avg_ppl, entry.diversity,
                 entry.alive_workers, s2.workers_culled, 0,             0,
-                cum_energy,       19000,            100,            0.40,
-                s2.crash_rate,    s2.kill_threshold, 1.0,
-                0.0,              0.0,
-                q_superpos,       q_coherence,       q_interference, q_collapse,
+                cum_energy,          19000,             100,           0.40,
+                s2.crash_rate,       s2.kill_threshold, 1.0,           0.0,
+                0.0,                 q_superpos,        q_coherence,   q_interference,
+                q_collapse,
             });
             try csv_file.writeAll(line);
             allocator.free(line);
