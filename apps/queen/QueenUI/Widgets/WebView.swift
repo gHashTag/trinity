@@ -1,6 +1,6 @@
 // Web View — Web Content Display
 import SwiftUI
-import WebKit
+@preconcurrency import WebKit
 
 // MARK: - Web View
 
