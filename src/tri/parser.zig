@@ -4,6 +4,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Token = @import("token.zig").Token;
+const TritValue = @import("token.zig").TritValue;
 const Node = @import("ast.zig").Node;
 const Statement = @import("ast.zig").Statement;
 const Expression = @import("ast.zig").Expression;
@@ -13,7 +14,6 @@ const ReturnStmt = @import("ast.zig").ReturnStmt;
 const BinOp = @import("ast.zig").BinOp;
 const Param = @import("ast.zig").Param;
 const Type = @import("ast.zig").Type;
-const TritValue = @import("ast.zig").TritValue;
 
 // Map token types to BinOp enum values
 fn tokenToBinOp(token: Token) BinOp {
@@ -40,66 +40,80 @@ pub const Parser = struct {
 
 pub fn parse(alloc: Allocator, tokens: []Token) !Node {
     var p = Parser{ .tokens = tokens, .pos = 0, .allocator = alloc };
-    var statements = std.ArrayList(Statement).init(alloc);
+    var statements = try std.ArrayList(Statement).initCapacity(alloc, 256);
 
     // Parse top-level constructs
-    while (p.peek()) |token| {
+    while (peek(&p)) |token| {
         switch (token) {
             .semicolon => {
-                p.consume(.semicolon);
+                try consume(&p, .semicolon);
             },
             .kw_fn => {
-                const decl = try p.parseFnDecl();
-                try statements.append(.{ .fn_decl = decl });
+                const decl = try parseFnDecl(&p);
+                try statements.append(alloc, .{ .fn_decl = decl });
             },
             .kw_let => {
-                const decl = try p.parseVarDecl();
-                try statements.append(.{ .var_decl = decl });
+                const decl = try parseVarDecl(&p);
+                try statements.append(alloc, .{ .var_decl = decl });
             },
             .kw_return => {
-                const stmt = try p.parseReturnStmt();
-                try statements.append(.{ .return_stmt = stmt });
+                const stmt = try parseReturnStmt(&p);
+                try statements.append(alloc, .{ .return_stmt = stmt });
             },
             .underscore => {
-                p.consume(.underscore);
+                try consume(&p, .underscore);
             },
             else => {
-                const expr = try p.parseExpression();
-                try statements.append(.{ .expression = expr });
+                const expr = try parseExpression(&p);
+                try statements.append(alloc, .{ .expression = expr });
             },
         }
     }
 
-    return Node{ .program = try statements.toOwnedSlice() };
+    return Node{ .program = try statements.toOwnedSlice(alloc) };
 }
 
 // Parse return statement: return <expression>;
 fn parseReturnStmt(p: *Parser) !ReturnStmt {
-    p.consume(.kw_return);
+    try consume(p, .kw_return);
 
-    const token = p.peek();
-    if (token == null or token == .semicolon or token == .kw_fn or token == .kw_let) {
-        return ReturnStmt{ .value = null };
+    const token = peek(p);
+    if (token) |actual| {
+        switch (actual) {
+            .null => return ReturnStmt{ .value = null },
+            .semicolon, .kw_fn, .kw_let => {
+                // No value expression
+                return ReturnStmt{ .value = null };
+            },
+        }
     }
 
-    const expr = p.parseExpression();
+    const expr = try parseExpression(p);
     return ReturnStmt{ .value = expr };
 }
 
 // Parse function declaration: fn name(params) -> return_type
 fn parseFnDecl(p: *Parser) !FnDecl {
-    p.consume(.kw_fn);
+    try consume(p, .kw_fn);
 
-    const token = p.peek() orelse return error.ExpectedIdentifier;
-    if (token != .identifier) return error.ExpectedIdentifier;
-    const name = token.identifier;
-    p.consume(token);
+    const token = peek(p) orelse return error.ExpectedIdentifier;
+    if (token) |name_token| {
+        switch (name_token) {
+            .identifier => |id| {
+                try consume(p, name_token);
+                const name = id;
+            },
+            else => return error.ExpectedIdentifier,
+        }
+    }
 
-    if (p.peek() == .colon) return error.ExpectedColon;
-    p.consume(.colon);
+    if (peek(p)) |actual| {
+        if (actual == .colon) return error.ExpectedColon;
+    }
+    try consume(p, .colon);
 
-    const params = try p.parseParams();
-    const return_type = try p.parseType();
+    const params = try parseParams(p);
+    const return_type = try parseType(p);
 
     return FnDecl{
         .name = name,
@@ -111,23 +125,27 @@ fn parseFnDecl(p: *Parser) !FnDecl {
 
 // Parse variable declaration: let name: type = <expr>;
 fn parseVarDecl(p: *Parser) !VarDecl {
-    p.consume(.kw_let);
+    try consume(p, .kw_let);
 
-    const name_token = p.peek() orelse return error.ExpectedIdentifier;
-    if (name_token != .identifier) return error.ExpectedIdentifier;
-    const name = name_token.identifier;
-    p.consume(name_token);
+    if (peek(p)) |name_token| {
+        if (name_token == .identifier) {
+            const name = name_token.identifier;
+            try consume(p, name_token);
+        } else return error.ExpectedIdentifier;
+    }
 
-    if (p.peek() == .colon) return error.ExpectedColon;
-    p.consume(.colon);
+    if (peek(p)) |actual| {
+        if (actual == .colon) return error.ExpectedColon;
+    }
+    try consume(p, .colon);
 
-    const typ = try p.parseType();
+    const typ = try parseType(p);
 
     var init: ?Expression = null;
-    if (p.peek()) |token| {
+    if (peek(p)) |token| {
         if (token == .op_assign) {
-            p.consume(.op_assign);
-            init = p.parseExpression();
+            try consume(p, .op_assign);
+            init = parseExpression(p);
         }
     }
 
@@ -140,50 +158,52 @@ fn parseVarDecl(p: *Parser) !VarDecl {
 
 // Parse parameters: (param1: type1, param2: type2)
 fn parseParams(p: *Parser) ![]Param {
-    var params_list = std.ArrayList(Param).init(p.allocator);
+    var params_list = try std.ArrayList(Param).initCapacity(p.allocator, 16);
 
-    if (p.peek() != .l_paren) return error.ExpectedLparen;
-    p.consume(.l_paren);
+    try consume(p, .l_paren);
 
     // First parameter (required)
-    const name1_token = p.peek() orelse return error.ExpectedIdentifier;
-    if (name1_token != .identifier) return error.ExpectedIdentifier;
-    const name1 = name1_token.identifier;
-    p.consume(name1_token);
+    const name1_token = peek(p) orelse return error.ExpectedIdentifier;
+    const name1 = switch (name1_token) {
+        .identifier => |id| id,
+        else => return error.ExpectedIdentifier,
+    };
+    try consume(p, name1_token);
 
-    const type1 = try p.parseType();
-    try params_list.append(.{ .name = name1, .type = type1 });
-    p.consume(.colon);
+    const type1 = try parseType(p);
+    try params_list.append(p.allocator, .{ .name = name1, .type = type1 });
+    try consume(p, .colon);
 
     // Additional parameters
-    while (p.peek()) |t| {
-        if (t == .comma) {
-            p.consume(.comma);
-            const name_token = p.peek() orelse return error.ExpectedIdentifier;
-            if (name_token != .identifier) return error.ExpectedIdentifier;
-            const name = name_token.identifier;
-            p.consume(name_token);
+    while (peek(p)) |t| {
+        switch (t) {
+            .comma => {
+                try consume(p, .comma);
+                const name_token = peek(p) orelse return error.ExpectedIdentifier;
+                const name = switch (name_token) {
+                    .identifier => |id| id,
+                    else => return error.ExpectedIdentifier,
+                };
+                try consume(p, name_token);
 
-            const typ = try p.parseType();
-            p.consume(.colon);
-            try params_list.append(.{ .name = name, .type = typ });
-        } else if (t == .r_paren) {
-            break;
-        } else {
-            break;
+                const typ = try parseType(p);
+                try consume(p, .colon);
+                try params_list.append(p.allocator, .{ .name = name, .type = typ });
+            },
+            .r_paren => break,
+            else => break,
         }
     }
 
-    if (p.peek() != .r_paren) return error.ExpectedRparen;
-    p.consume(.r_paren);
+    try consume(p, .r_paren);
 
-    return params_list.toOwnedSlice();
+    return params_list.toOwnedSlice(p.allocator);
 }
 
 // Parse type: trit | t3 | t9 | t27 | gf16 | tf3 | void | [N]trit | [N]type
 fn parseType(p: *Parser) !Type {
-    const token = p.peek() orelse return error.ExpectedType;
-    p.consume(token);
+    const token = peek(p) orelse return error.ExpectedType;
+    try consume(p, token);
 
     return switch (token) {
         .t_trit => Type.t_trit,
@@ -199,19 +219,19 @@ fn parseType(p: *Parser) !Type {
 
 // Parse expression (left op right)
 fn parseExpression(p: *Parser) !Expression {
-    return p.parseTerm();
+    return parseTerm(p);
 }
 
 fn parseTerm(p: *Parser) !Expression {
-    var result: Expression = p.parseFactor();
+    var result: Expression = parseFactor(p);
 
-    while (p.peek()) |op| {
-        const op_token = p.peek() orelse break;
+    while (peek(p)) |op| {
+        const op_token = op;
 
         switch (op_token) {
             .op_plus_plus, .op_tilde, .op_plus, .op_minus, .op_times => {
-                p.consume(op_token);
-                const right = p.parseFactor();
+                try consume(p, op_token);
+                const right = parseFactor(p);
                 result = Expression{ .binary_op = .{
                     .op = tokenToBinOp(op_token),
                     .left = result,
@@ -229,42 +249,38 @@ fn parseTerm(p: *Parser) !Expression {
 
 fn parseFactor(p: *Parser) !Expression {
     // Factor: identifier, literal, or parenthesized expression
-    const token = p.peek() orelse unreachable;
+    const token = peek(p) orelse return error.UnexpectedToken;
 
-    if (token == .identifier) {
-        p.consume(token);
-        return Expression{ .identifier = token.identifier };
-    }
-
-    if (token == .lit_trit) {
-        p.consume(token);
-        return Expression{ .literal_trit = token.lit_trit };
-    }
-
-    if (token == .literal_int) {
-        p.consume(token);
-        return Expression{ .literal_int = token.lit_int };
-    }
-
-    if (token == .literal_float) {
-        p.consume(token);
-        return Expression{ .literal_float = token.lit_float };
-    }
-
-    if (token == .l_paren) {
-        p.consume(.l_paren);
-        const expr = p.parseExpression();
-        if (p.peek() != .r_paren) return error.ExpectedRparen;
-        p.consume(.r_paren);
-        return expr;
-    }
-
-    if (token == .underscore) {
-        p.consume(.underscore);
-        return Expression{ .wildcard = {} };
-    }
-
-    return error.UnexpectedToken;
+    return switch (token) {
+        .identifier => |id| {
+            consume(p, .identifier);
+            return Expression{ .identifier = id };
+        },
+        .lit_trit => |tv| {
+            consume(p, .lit_trit);
+            return Expression{ .literal_trit = tv };
+        },
+        .lit_int => |ival| {
+            try consume(p, .lit_int);
+            return Expression{ .literal_int = ival };
+        },
+        .lit_float => |fval| {
+            try consume(p, .lit_float);
+            return Expression{ .literal_float = fval };
+        },
+        .l_paren => {
+            try consume(p, .l_paren);
+            const expr = try parseExpression(p);
+            if (peek(p) != .r_paren) return error.ExpectedRparen;
+            try consume(p, .r_paren);
+            return expr;
+        },
+        .underscore => {
+            try consume(p, .underscore);
+            return Expression{ .wildcard = {} };
+        },
+        else => return error.UnexpectedToken,
+    };
 }
 
 // Helper functions
@@ -274,8 +290,8 @@ fn peek(p: *Parser) ?Token {
 }
 
 fn consume(p: *Parser, token: Token) !void {
-    if (p.peek()) |actual| {
-        if (actual == token) {
+    if (peek(p)) |actual| {
+        if (std.mem.eql(u8, @tagName(actual), @tagName(token))) {
             p.pos += 1;
             return;
         }
@@ -284,6 +300,6 @@ fn consume(p: *Parser, token: Token) !void {
 }
 
 fn expect(p: *Parser, expected: Token) !void {
-    const actual = p.peek();
+    const actual = peek(p);
     if (actual != expected) return error.UnexpectedToken;
 }

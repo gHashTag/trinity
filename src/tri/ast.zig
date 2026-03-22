@@ -2,7 +2,7 @@
 //! v0.2 — Node types for parsed code
 
 const Token = @import("token.zig").Token;
-pub const TritValue = Token.TritValue;
+pub const TritValue = @import("token.zig").TritValue;
 
 // Main AST node
 pub const Node = union(enum) {
@@ -42,7 +42,7 @@ pub const Expression = union(enum) {
     literal_float: f64,
     identifier: []const u8,
     wildcard,
-    binary_op: struct { op: BinOp, left: Expression, right: Expression },
+    binary_op: struct { op: BinOp, left: *Expression, right: *Expression },
     call: struct { func: []const u8, args: []Expression },
 };
 
@@ -96,13 +96,13 @@ pub const ArrayType = struct {
 
 // Type enum
 pub const Type = union(enum) {
-    trit: void,
-    t3: void,
-    t9: void,
-    t27: void,
-    gf16: void,
-    tf3: void,
-    void: void,
+    t_trit: void,
+    t_t3: void,
+    t_t9: void,
+    t_t27: void,
+    t_gf16: void,
+    t_tf3: void,
+    t_void: void,
     array: ArrayType,
     type_struct: []Field,
 };

@@ -755,7 +755,6 @@ pub fn runFpgaFlashCommand(allocator: std.mem.Allocator, args: []const []const u
 
     std.debug.print("\n{s}{s}=== TRI FPGA FLASH ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Bitstream: {s}\n", .{bit_path});
-    std.debug.print(" Cable: {s}\n", .{cable_type});
 
     // Use openFPGALoader directly (no jtag_program wrapper)
     std.debug.print("  Programming via openFPGALoader...\n\n", .{});
