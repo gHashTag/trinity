@@ -1,0 +1,17 @@
+{
+  "date": "2026-03-22T17:50:00+07:00",
+  "bitstream": "uart_echo_top.bit",
+  "flashed": true,
+  "uart_test": {
+    "sent": "0x61 ('a')",
+    "received": "0x00 or empty",
+    "expected": "0x61 (echo) or 0x83 (PONG)",
+    "result": "FAIL - incorrect data"
+  },
+  "next_steps": [
+    "Check LED J19 for visual confirmation",
+    "Try different baud rates",
+    "Swap TX/RX on FT232RL",
+    "Verify FPGA clock is 50MHz"
+  ]
+}

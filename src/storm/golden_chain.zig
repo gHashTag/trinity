@@ -193,20 +193,18 @@ pub const GoldenChain = struct {
             const task_name = try std.fmt.allocPrint(self.allocator, "{s}:{s}", .{ task, link.name });
             defer self.allocator.free(task_name);
 
-            if (exp.consult(task_name, 3)) |ctx| {
+            if (exp.consult(task_name)) |ctx| {
                 defer {
                     // Manual cleanup for ctx (const -> needs allocator access)
                     // TaskContext.similar_tasks is already a slice reference
-                    // TaskContext.task is allocated
-                    self.allocator.free(ctx.task);
-                    self.allocator.free(ctx.recommendation);
+                    // Note: ConsultResult no longer has task field in P3
                 }
 
                 if (ctx.is_blacklisted) {
-                    self.log(.warn, "⛔ Task blacklisted by MNL: {s}", .{ctx.recommendation});
+                    self.log(.warn, "⛔ Task blacklisted by MNL", .{});
                     return .{
                         .success = false,
-                        .message = try self.allocator.dupe(u8, ctx.recommendation),
+                        .message = try self.allocator.dupe(u8, "Task blacklisted by MNL"),
                         .duration_ms = 0,
                         .exit_code = 1,
                     };
