@@ -24,7 +24,7 @@ jobs:
           zig test src/hslm/simd_bench.zig 2>&1 | tee benchmark.txt
       
       - name: Upload Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: benchmark.txt

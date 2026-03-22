@@ -314,7 +314,7 @@ jobs:
 
       - name: Upload Brain Scan Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brain-stress-results
           path: |
@@ -397,7 +397,7 @@ jobs:
           ./zig-out/bin/tri stress --metrics >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Metrics Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: brain-metrics
           path: |
@@ -513,7 +513,7 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Weekly Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: weekly-brain-report-$(date +%Y%m%d)
           path: |

@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload CI status
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-status
           path: zig-out/
