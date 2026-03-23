@@ -204,12 +204,14 @@ pub fn main() !void {
         return;
     }
 
-    const tests = [_]TestByte{
+    const tests = [_]TestByte{,
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
         .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
         .{ .data = &[_]u8{0xAA}, .name = "0xAA (alternating)" },
         .{ .data = "Hello", .name = "Hello" },
         { .data = &[_]u8{0x00}, .name = "0x00 (zero)" },
+        { .data = &[_]u8{0x00}, .name = "0x00 (zero)" },
+        { .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
         { .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
     };
 
