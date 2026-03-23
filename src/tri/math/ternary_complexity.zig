@@ -2,7 +2,6 @@
 //!
 //! Sacred mathematics module for Trinity S³AI.
 //!
-
 //! TRINITY v7.0 OMEGA - Ternary Complexity Analysis
 //!
 //! This module analyzes the ternary representation complexity of

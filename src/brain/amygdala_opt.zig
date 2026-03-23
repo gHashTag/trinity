@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! AMYGDALA — Emotional Salience Detection v1.1 (Optimized)
 //!
 //! Detects emotionally significant events and prioritizes them.

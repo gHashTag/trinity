@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BASAL GANGLIA — v1.2 — Optimized Action Selection
 //!
 //! Optimizations:

@@ -2,7 +2,6 @@
 //!
 //! TRI-27 compiler component or VSA operations for Trinity S³AI.
 //!
-
 //! Token type definitions for Tri language
 //! v0.2 — 30 token types
 

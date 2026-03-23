@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN PERSISTENCE — Event Log for S³AI Brain
 //!
 //! Persists brain events to JSONL for replay and analysis.

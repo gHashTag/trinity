@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN PERFORMANCE BENCHMARK — v1.0 — Hot Path Profiling
 //!
 //! Direct benchmark of core brain operations.

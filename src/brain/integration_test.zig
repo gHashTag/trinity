@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN INTEGRATION TESTS — Cross-Region Coordination
 //!
 //! Comprehensive integration tests for all brain regions in src/brain/.
