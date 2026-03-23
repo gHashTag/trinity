@@ -1,0 +1,54 @@
+# Trinity HSLM Training — Local Docker Build
+# Simple multi-stage build
+#
+# φ² + 1/φ² = 3 = TRINITY
+
+FROM ubuntu:24.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download Zig 0.15.2
+RUN curl -fSL -o /tmp/zig.tar.xz \
+    "https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz" \
+    && tar -xf /tmp/zig.tar.xz -C /usr/local \
+    && rm /tmp/zig.tar.xz \
+    && zig version
+
+# Copy Trinity source code
+WORKDIR /trinity
+COPY . .
+
+# Build HSLM training binaries
+RUN zig build hslm-train hslm-entrypoint -Doptimize=ReleaseFast
+
+FROM ubuntu:24.04
+
+# Runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup data directories
+RUN mkdir -p /data/tinystories /data/checkpoints
+
+# Download TinyStories dataset
+RUN wget -q "https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStoriesV2-GPT4-train.txt" \
+    -O /data/tinystories/train_100k.txt && \
+    echo "Dataset downloaded: $(wc -l < /data/tinystories/train_100k.txt) lines"
+
+# Copy binaries from builder stage
+COPY --from=builder /trinity/zig-out/bin/hslm-entrypoint /usr/local/bin/hslm-entrypoint
+COPY --from=builder /trinity/zig-out/bin/hslm-train /usr/local/bin/hslm-train
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
+
+LABEL version="2.3.0-local-v5" \
+      description="Trinity HSLM Training — ternary language model on TinyStories (local build)" \
+      trinity.identity="phi^2 + 1/phi^2 = 3" \
+      trinity.service="ai-training" \
+      trinity.purpose="nlp-research"
