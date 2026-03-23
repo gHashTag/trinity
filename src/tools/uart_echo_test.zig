@@ -103,6 +103,15 @@ fn printUsage(stdout: std.fs.File) void {
 
 pub fn main() !void {
     const stderr = std.io.getStdErr().writer();
+    const stdout = std.io.getStdOut().writer();
+    const config = parseArgs(stderr);
+
+    if (config.verbose) {
+        logConfig(stderr, config);
+    }
+
+    try stderr.writeAll(
+    const stderr = std.io.getStdErr().writer();
     const config = parseArgs(stderr);
 
     if (config.verbose) {
