@@ -65,6 +65,7 @@ test "lotus_cycle: full cycle executes successfully" {
 
     const result = try runFullCycle(allocator);
     defer allocator.free(result.context.active_issues);
+    defer allocator.free(result.context.recalled_episodes);
 
     try std.testing.expect(result.result.success);
     try std.testing.expect(result.outcome != .failure_unknown);

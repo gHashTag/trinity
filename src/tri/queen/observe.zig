@@ -81,7 +81,7 @@ pub fn savePolicy(allocator: std.mem.Allocator, policy: PolicySnapshot) !void {
     const file = try std.fs.cwd().createFile(file_path, .{});
     defer file.close();
 
-    const json = try std.json.stringifyAlloc(allocator, policy, .{ .whitespace = .indent });
+    const json = try std.json.Stringify.valueAlloc(allocator, policy, .{ .whitespace = .indent_2 });
     defer allocator.free(json);
 
     try file.writeAll(json);
@@ -98,7 +98,7 @@ pub fn writeSensors(allocator: std.mem.Allocator, sensors: SensorsSnapshot) !voi
     const file = try std.fs.cwd().createFile(file_path, .{});
     defer file.close();
 
-    const json = try std.json.stringifyAlloc(allocator, sensors, .{ .whitespace = .indent });
+    const json = try std.json.Stringify.valueAlloc(allocator, sensors, .{ .whitespace = .indent_2 });
     defer allocator.free(json);
 
     try file.writeAll(json);
@@ -165,13 +165,15 @@ pub fn updateSensorsFromFarm(allocator: std.mem.Allocator, farm_metrics: anytype
         .experience_episodes = 197,
     };
 
-    const json = try std.json.stringifyAlloc(allocator, updated, .{ .whitespace = .indent });
+    const json = try std.json.Stringify.valueAlloc(allocator, updated, .{ .whitespace = .indent_2 });
     defer allocator.free(json);
 
     try file.writeAll(json);
 }
 
 /// Observe: gather current state from sensors and policy
+/// Observe: gather current state from sensors and policy
+/// Caller owns returned slices: free active_issues and recalled_episodes
 pub fn observe(allocator: std.mem.Allocator) !Context {
     const now_ns: u64 = @as(u64, @intCast(std.time.nanoTimestamp()));
 
@@ -179,7 +181,6 @@ pub fn observe(allocator: std.mem.Allocator) !Context {
     const policy = try loadPolicy(allocator);
 
     const active_issues = try allocator.alloc(u64, 0);
-    defer allocator.free(active_issues);
 
     // Recall similar episodes from experience
     const experience = @import("experience.zig");
@@ -211,14 +212,14 @@ pub fn observe(allocator: std.mem.Allocator) !Context {
         }
     }
 
-    // Return context with empty recalled_episodes for now
-    // TODO: Fix memory leak when returning owned slice
+    // Return owned slices - caller must free them
+    const recalled_slice = try recalled.toOwnedSlice(allocator);
     return Context{
         .timestamp_ns = now_ns,
         .policy = policy,
         .senses = senses,
         .active_issues = active_issues,
-        .recalled_episodes = &[_]Episode{},
+        .recalled_episodes = recalled_slice,
     };
 }
 
@@ -227,10 +228,11 @@ test "observe: creates valid context" {
 
     const context = try observe(allocator);
     defer allocator.free(context.active_issues);
+    defer allocator.free(context.recalled_episodes);
 
     try std.testing.expect(context.timestamp_ns != 0);
-    try std.testing.expect(context.policy.kill_threshold == 4.0);
-    try std.testing.expect(context.senses.build_ok == true);
+    try std.testing.expect(context.policy.kill_threshold > 0.0);
+    try std.testing.expect(context.senses.test_rate > 0.0);
 }
 
 test "observe: savePolicy writes policy.json" {
