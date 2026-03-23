@@ -7,6 +7,7 @@ const std = @import("std");
 pub const Context = @import("observe.zig").Context;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const SensorsSnapshot = @import("observe.zig").SensorsSnapshot;
+const Episode = @import("episodes.zig").Episode;
 
 /// Action that can be taken
 pub const Action = enum {
@@ -122,6 +123,7 @@ test "evaluate: generates valid evaluation" {
         .policy = .{},
         .senses = .{},
         .active_issues = &[_]u64{},
+        .recalled_episodes = &[_]Episode{},
     };
 
     const result = try evaluate(context);
