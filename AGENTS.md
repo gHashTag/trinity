@@ -30,8 +30,8 @@ Trinity S³AI implements a multi-agent swarm architecture using pure Zig. Each a
 
 **Key Files**:
 - `src/ralph/ralph_agent.zig` — Main daemon logic
-- `.ralph/state.json` — Agent state persistence
-- `.ralph/memory/` — Agent memory and handover data
+- `.trinity/ralph/state.json` — Agent state persistence
+- `.trinity/ralph/memory/` — Agent memory and handover data
 
 **Commands**:
 ```bash
@@ -56,7 +56,7 @@ tri agent kill <N>      # Kill agent container
 
 **Key Files**:
 - `src/mu/mu_agent.zig` — Memory agent logic
-- `.ralph/memory/` — Persistent memory storage
+- `.trinity/ralph/memory/` — Persistent memory storage
 
 ### Scholar Agent (`scholar-agent`)
 
@@ -284,10 +284,10 @@ PR merge triggers `agent-cleanup.yml`:
 
 ## State Management
 
-### Agent State Directory: `.ralph/`
+### Agent State Directory: `.trinity/ralph/`
 
 ```
-.ralph/
+.trinity/ralph/
 ├── state.json           # Current agent state
 ├── identity.json        # Agent identity and capabilities
 ├── memory/              # Persistent learnings
@@ -406,7 +406,7 @@ tri agent run 123
 
 **Check agent state**:
 ```bash
-cat .ralph/state.json | jq
+cat .trinity/ralph/state.json | jq
 cat .trinity/dev_session.json | jq
 ```
 
@@ -420,7 +420,10 @@ cat .trinity/dev_session.json | jq
 2. **Binaries** — build with **`zig build`**; run from **`zig-out/bin/`**. Do not leave `a.out`, `*.o`, or ad-hoc test binaries in root (they are ignored or removed).
 3. **Scripts & one-offs** — **`scripts/`**; long-lived experiments → **`archive/`** when obsolete.
 4. **JTAG / hardware config** — **`hardware/jtag/`**.
-5. **Historical note:** some old root executables live in **`bin/repo-root/`**; prefer `zig-out` for anything new.
+5. **Research drafts & lab notes** — canonical tree **`docs/lab/`** (`papers/`, `memory/`). Root **`papers`**, **`memory`**, **`notebooks`**, **`prebuilt`**, **`build.brain.zig`** are **symlinks** for backward compatibility — edit real files under `docs/lab/…`, `docs/notebooks/`, `deploy/prebuilt/`, `build/build.brain.zig`.
+6. **Railway / Docker prebuilt bins** — **`deploy/prebuilt/`** (HSLM / SWE images `COPY` via symlink `prebuilt` → `deploy/prebuilt`).
+7. **Historical note:** some old root executables live in **`bin/repo-root/`**; prefer `zig-out` for anything new.
+8. **Do not recreate** empty trees like `implementations/zig` — use `zig-out/` / SDK in `~` or ignored `zig/`.
 
 ---
 

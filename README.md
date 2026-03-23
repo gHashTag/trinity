@@ -361,7 +361,7 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 
 **📘 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for comprehensive system design.**
 
-**Repo layout:** Verilog snapshots live in [`hardware/rtl-root/`](hardware/rtl-root/); agents follow [`AGENTS.md`](AGENTS.md) (no new `*.v` or build junk in the root).
+**Repo layout:** Verilog snapshots live in [`hardware/rtl-root/`](hardware/rtl-root/); agents follow [`AGENTS.md`](AGENTS.md). Research drafts live under [`docs/lab/`](docs/lab/); root entries **`papers`**, **`memory`**, **`notebooks`**, **`prebuilt`**, **`build.brain.zig`** are symlinks so old paths and Docker `COPY` keep working.
 
 ### Module Documentation
 

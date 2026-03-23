@@ -7,9 +7,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Dockerfile.hslm-train'
+      - 'deploy/Dockerfile.hslm-train'
       - 'src/hslm/**'
-      - 'prebuilt/**'
+      - 'deploy/prebuilt/**'
       - '.github/workflows/hslm-docker.yml'
   workflow_dispatch:
 
@@ -51,7 +51,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.hslm-train
+          file: ./deploy/Dockerfile.hslm-train
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
