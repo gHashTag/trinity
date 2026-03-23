@@ -582,6 +582,45 @@ const JitterTracker = struct {
         }
     }
 
+    // v3.52: RTT Trend Analysis - detects if latency is improving/degrading/stable
+    pub fn getTrend(self: *const JitterTracker) struct { direction: []const u8, change_percent: f64, first_half_avg: f64, second_half_avg: f64 } {
+        if (self.count < 6) {
+            return .{ .direction = "insufficient_data", .change_percent = 0.0, .first_half_avg = 0.0, .second_half_avg = 0.0 };
+        }
+
+        const half_count = self.count / 2;
+        var first_sum: i64 = 0;
+        var second_sum: i64 = 0;
+
+        for (self.samples[0..half_count]) |s| {
+            first_sum += s;
+        }
+        for (self.samples[half_count .. self.count]) |s| {
+            second_sum += s;
+        }
+
+        const first_avg = @as(f64, @floatFromInt(first_sum)) / @as(f64, @floatFromInt(half_count));
+        const second_avg = @as(f64, @floatFromInt(second_sum)) / @as(f64, @floatFromInt(self.count - half_count));
+
+        const change_percent = if (first_avg > 0)
+            ((second_avg - first_avg) / first_avg) * 100.0
+        else
+            0.0;
+
+        const direction: []const u8 = if (change_percent > 10.0)
+            "DEGRADING" // Latency increasing significantly
+        else if (change_percent < -10.0)
+            "IMPROVING" // Latency decreasing significantly
+        else if (change_percent > 3.0)
+            "WORSE" // Slight increase
+        else if (change_percent < -3.0)
+            "BETTER" // Slight decrease
+        else
+            "STABLE"; // Within +/-3%
+
+        return .{ .direction = direction, .change_percent = change_percent, .first_half_avg = first_avg, .second_half_avg = second_avg };
+    }
+
     // v3.51: Comprehensive RTT Statistics Summary
     // Combines jitter, percentiles, and spike detection into unified report
     pub fn reportRTTSummary(self: *const JitterTracker, threshold_multiplier: f64) void {
@@ -662,6 +701,27 @@ const JitterTracker = struct {
             } else {
                 printDim("poor (p99/p50 >= 5x - high variance)\n", .{});
             }
+        }
+
+        // v3.52: Trend analysis
+        const trend = self.getTrend();
+        if (!std.mem.eql(u8, trend.direction, "insufficient_data")) {
+            printDim("\n  Trend:         ", .{});
+            const first_ms = trend.first_half_avg / 1000.0;
+            const second_ms = trend.second_half_avg / 1000.0;
+
+            if (std.mem.eql(u8, trend.direction, "IMPROVING")) {
+                printSuccess("v IMPROVING ({d:.1}%)\n", .{trend.change_percent});
+            } else if (std.mem.eql(u8, trend.direction, "DEGRADING")) {
+                printWarning("^ DEGRADING ({d:.1}%)\n", .{trend.change_percent});
+            } else if (std.mem.eql(u8, trend.direction, "BETTER")) {
+                printDim("v slightly better ({d:.1}%)\n", .{trend.change_percent});
+            } else if (std.mem.eql(u8, trend.direction, "WORSE")) {
+                printDim("^ slightly worse ({d:.1}%)\n", .{trend.change_percent});
+            } else {
+                printDim("- STABLE\n", .{});
+            }
+            printDim("    First half: {d:.2}ms, Second half: {d:.2}ms\n", .{ first_ms, second_ms });
         }
     }
 };
