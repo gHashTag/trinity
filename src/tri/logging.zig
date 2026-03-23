@@ -22,14 +22,14 @@ pub const LogLevel = enum {
 
 /// Log entry structure
 pub const LogEntry = struct {
-    timestamp: i64,
+    timestamp: i128,
     level: LogLevel,
     component: []const u8,
     message: []const u8,
     details: ?[]const u8,
 
     /// Format timestamp as [YYYY-MM-DD HH:MM:SS.mmm]
-    pub fn timestampFmt(ts: i64) []const u8 {
+    pub fn timestampFmt(ts: i128) []const u8 {
         // Convert nanoseconds to seconds and milliseconds
         const seconds = @divFloor(ts, 1_000_000_000);
         const millis = @rem(@divFloor(ts, 1_000_000), 1000);
@@ -117,7 +117,7 @@ pub fn log(level: LogLevel, comptime fmt: []const u8, args: anytype, details: ?[
     }
 
     const timestamp = std.time.nanoTimestamp();
-    const ts_formatted = LogEntry.timestampFmt(timestamp);
+    const ts_formatted = LogEntry.timestampFmt(@intCast(timestamp));
     const level_name = level.getName();
     const component = "core"; // Default component
 
@@ -125,7 +125,7 @@ pub fn log(level: LogLevel, comptime fmt: []const u8, args: anytype, details: ?[
     const formatted = try std.fmt.allocPrint(
         global_state.allocator,
         "[{s}] [{s}] [{s}] " ++ fmt ++ "\n",
-        .{ level_name, ts_formatted, component } ++ args,
+        .{ level_name, ts_formatted, component, args },
     );
     defer global_state.allocator.free(formatted);
 
@@ -161,13 +161,13 @@ pub fn logWithComponent(level: LogLevel, component: []const u8, comptime fmt: []
     }
 
     const timestamp = std.time.nanoTimestamp();
-    const ts_formatted = LogEntry.timestampFmt(timestamp);
+    const ts_formatted = LogEntry.timestampFmt(@intCast(timestamp));
     const level_name = level.getName();
 
     const formatted = try std.fmt.allocPrint(
         global_state.allocator,
         "[{s}] [{s}] [{s}] " ++ fmt ++ "\n",
-        .{ level_name, ts_formatted, component } ++ args,
+        .{ level_name, ts_formatted, component, args },
     );
     defer global_state.allocator.free(formatted);
 

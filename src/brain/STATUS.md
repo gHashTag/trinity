@@ -148,7 +148,7 @@ See `.github/workflows/brain-ci.yml`:
 ## Known Limitations
 
 1. **Zig Binary Issue:** macOS compatibility (user needs `brew reinstall zig`)
-2. **Standalone build file:** `build.brain.zig` exists for isolated testing
+2. **Standalone build file:** `build/build.brain.zig` (root `build.brain.zig` → symlink) — minimal runner; brain module graph is fully tested from the **main** `build.zig` / `zig build test`, not this stub alone.
 3. **Thalamus logs:** Temporarily disabled due to duplicate struct member
 
 ## Future Enhancements
