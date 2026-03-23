@@ -69,6 +69,8 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "wave9")) {
         const fly_wave9 = @import("fly_wave9.zig");
         return fly_wave9.deployWave9(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "local-wave9")) {
+        return runLocalWave9Command(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -1316,6 +1318,358 @@ fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anyty
     _ = req.finish() catch {};
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOCAL WAVE 9 — Local Docker-based training
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Usage: tri farm local-wave9 <action> [options]
+//
+// Actions:
+//   init           Initialize local farm (generate compose file, create directories)
+//   start          Start workers (default: 4, --workers N for more)
+//   stop           Stop all workers
+//   status         Show worker status
+//   restart        Restart workers
+//   logs <worker>  Show logs for worker (e.g., w9-1)
+//   recycle        Recycle crashed workers
+//   clean          Remove all containers and volumes
+
+fn runLocalWave9Command(allocator: Allocator, args: []const []const u8) !void {
+    const action = if (args.len > 0) args[0] else "status";
+
+    if (std.mem.eql(u8, action, "init")) {
+        return localWave9Init(allocator);
+    } else if (std.mem.eql(u8, action, "start")) {
+        return localWave9Start(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "stop")) {
+        return localWave9Stop(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "status")) {
+        return localWave9Status(allocator);
+    } else if (std.mem.eql(u8, action, "restart")) {
+        return localWave9Restart(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "logs")) {
+        return localWave9Logs(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "recycle")) {
+        return localWave9Recycle(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "clean")) {
+        return localWave9Clean(allocator);
+    } else if (std.mem.eql(u8, action, "help") or std.mem.eql(u8, action, "--help")) {
+        printLocalWave9Help();
+    } else {
+        print("{s}Unknown local-wave9 action: {s}{s}\n", .{ RED, action, RESET });
+        printLocalWave9Help();
+    }
+}
+
+fn localWave9Init(allocator: Allocator) !void {
+    print("\n{s}🏠 LOCAL WAVE 9 — INITIALIZATION{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const wave9_gen = @import("wave9_generator.zig");
+
+    // Generate compose file with 48 workers
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+    const compose = try wave9_gen.generateCompose(allocator, 48);
+    defer allocator.free(compose);
+
+    // Ensure directory exists
+    const compose_dir = std.fs.path.dirname(compose_file) orelse ".";
+    try std.fs.makeDirAbsolute(compose_dir) catch |err| switch (err) {
+        error.PathAlreadyExists => {},
+        else => return err,
+    };
+
+    // Write compose file
+    const file = try std.fs.createFileAbsolute(compose_file, .{});
+    defer file.close();
+    try file.writeAll(compose);
+
+    print("  {s}✅{s} Generated compose file: {s}\n", .{ GREEN, RESET, compose_file });
+
+    // Create data directories
+    const wave9_dir = "data/wave9";
+    try std.fs.makeDirAbsolute(wave9_dir) catch |err| switch (err) {
+        error.PathAlreadyExists => {},
+        else => return err,
+    };
+
+    for (1..49) |i| {
+        const worker_dir = try std.fmt.allocPrint(allocator, "{s}/worker-{d}", .{ wave9_dir, i });
+        defer allocator.free(worker_dir);
+        std.fs.makeDirAbsolute(worker_dir) catch |err| switch (err) {
+            error.PathAlreadyExists => {},
+            else => return err,
+        };
+    }
+
+    print("  {s}✅{s} Created worker directories: {s}\n", .{ GREEN, RESET, wave9_dir });
+
+    // Initialize local farm state
+    const local_farm_mod = @import("local_farm.zig");
+    var farm = local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit();
+
+    // Add 48 workers
+    for (1..49) |i| {
+        try farm.addWorker(i, @as(u32, @intCast(1000 + i)));
+    }
+
+    try farm.save();
+    print("  {s}✅{s} Initialized farm state: .trinity/local_farm.json\n", .{ GREEN, RESET });
+
+    print("\n{s}✅ Local Wave 9 initialized!{s}\n", .{ GREEN, RESET });
+    print("   Next: tri farm local-wave9 start --workers 4\n", .{});
+}
+
+fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
+    var workers: usize = 4;
+    var dry_run = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--workers") and i + 1 < args.len) {
+            i += 1;
+            workers = std.fmt.parseInt(usize, args[i], 10) catch 4;
+        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        }
+    }
+
+    if (workers > 48) {
+        print("{s}⚠️  Max workers is 48, using 48{s}\n", .{ YELLOW, RESET });
+        workers = 48;
+    }
+
+    print("\n{s}🚀 LOCAL WAVE 9 — STARTING {d} WORKERS{s}\n", .{ BOLD, workers, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    if (dry_run) {
+        print("{s}DRY RUN — would start {d} workers{s}\n", .{ YELLOW, workers, RESET });
+        print("   Workers: ", .{});
+        for (1..@min(workers, 10) + 1) |j| {
+            print("w9-{d} ", .{j});
+        }
+        if (workers > 10) print("...");
+        print("\n");
+        return;
+    }
+
+    const local_farm_mod = @import("local_farm.zig");
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+
+    // Build workers to start
+    var workers_to_start = try std.ArrayList([]const u8).initCapacity(allocator, workers);
+    defer {
+        for (workers_to_start.items) |w| allocator.free(w);
+        workers_to_start.deinit();
+    }
+
+    for (1..workers + 1) |j| {
+        const worker_name = try std.fmt.allocPrint(allocator, "w9-{d}", .{j});
+        try workers_to_start.append(worker_name);
+    }
+
+    const result = try local_farm_mod.composeUp(allocator, compose_file, null);
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.exit_code != 0) {
+        print("{s}❌ Failed to start workers{s}\n", .{ RED, RESET });
+        print("  stdout: {s}\n", .{result.stdout});
+        print("  stderr: {s}\n", .{result.stderr});
+        return error.ComposeUpFailed;
+    }
+
+    // Update farm state
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit();
+
+    for (1..workers + 1) |j| {
+        try farm.updateWorkerStatus(j, .starting);
+    }
+    try farm.save();
+
+    print("  {s}✅{s} Started {d} workers\n", .{ GREEN, RESET, workers });
+    print("   Monitor: tri farm local-wave9 status\n", .{});
+    print("   Logs: tri farm local-wave9 logs w9-1\n", .{});
+}
+
+fn localWave9Stop(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}🛑 LOCAL WAVE 9 — STOPPING WORKERS{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const local_farm_mod = @import("local_farm.zig");
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+
+    const result = try local_farm_mod.composeStop(allocator, compose_file, null);
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.exit_code != 0) {
+        print("{s}⚠️  Some workers may not have stopped{s}\n", .{ YELLOW, RESET });
+        print("  stderr: {s}\n", .{result.stderr});
+    }
+
+    // Update farm state
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit();
+
+    for (farm.workers.items) |*w| {
+        w.status = .stopped;
+    }
+    try farm.save();
+
+    print("  {s}✅{s} Workers stopped\n", .{ GREEN, RESET });
+}
+
+fn localWave9Status(allocator: Allocator) !void {
+    const local_farm_mod = @import("local_farm.zig");
+
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit();
+
+    farm.displayStatus();
+}
+
+fn localWave9Restart(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}🔄 LOCAL WAVE 9 — RESTARTING{s}\n", .{ BOLD, RESET });
+    try localWave9Stop(allocator, &[_][]const u8{});
+    std.Thread.sleep(2 * std.time.ns_per_s);
+    try localWave9Start(allocator, &[_][]const u8{});
+}
+
+fn localWave9Logs(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        print("{s}Usage: tri farm local-wave9 logs <worker-name>{s}\n", .{ YELLOW, RESET });
+        print("   Example: tri farm local-wave9 logs w9-1\n", .{});
+        return;
+    }
+
+    const worker_name = args[0];
+    print("\n{s}📋 LOGS — {s}{s}\n", .{ BOLD, worker_name, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+    print("  Press Ctrl+C to exit\n\n", .{});
+
+    const local_farm_mod = @import("local_farm.zig");
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+
+    // Follow logs (blocks until Ctrl+C)
+    const result = try local_farm_mod.composeLogs(allocator, compose_file, worker_name, true);
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.stdout.len > 0) print("{s}", .{result.stdout});
+    if (result.stderr.len > 0) print("{s}", .{result.stderr});
+}
+
+fn localWave9Recycle(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}♻️  LOCAL WAVE 9 — RECYCLING CRASHED{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const local_farm_mod = @import("local_farm.zig");
+
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit();
+
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+
+    var recycled: usize = 0;
+    for (farm.workers.items) |*w| {
+        if (w.status == .crashed) {
+            const worker_name = try std.fmt.allocPrint(allocator, "w9-{d}", .{w.id});
+            defer allocator.free(worker_name);
+
+            print("  Recycling {s}...", .{worker_name});
+
+            // Stop the worker
+            _ = local_farm_mod.composeStop(allocator, compose_file, worker_name) catch {};
+
+            // Start the worker
+            const result = local_farm_mod.composeUp(allocator, compose_file, worker_name);
+            if (result) |_| {
+                w.status = .starting;
+                w.crash_count += 1;
+                recycled += 1;
+                print(" {s}✅{s}\n", .{ GREEN, RESET });
+            } else |err| {
+                print(" {s}❌ {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+        }
+    }
+
+    try farm.save();
+
+    print("\n  {s}Recycled {d} crashed workers{s}\n", .{ BOLD, recycled, RESET });
+}
+
+fn localWave9Clean(allocator: Allocator) !void {
+    print("\n{s}🧹 LOCAL WAVE 9 — CLEANUP{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const local_farm_mod = @import("local_farm.zig");
+    const compose_file = "deploy/docker/docker-compose.wave9.yml";
+
+    const args = &[_][]const u8{ "-f", compose_file, "down", "-v" };
+    const result = local_farm_mod.runDocker(allocator, args[0..]);
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.exit_code != 0) {
+        print("  stdout: {s}\n", .{result.stdout});
+        print("  stderr: {s}\n", .{result.stderr});
+    }
+
+    print("  {s}✅{s} Removed all containers and volumes\n", .{ GREEN, RESET });
+}
+
+fn printLocalWave9Help() void {
+    print(
+        \\
+        \\Usage: tri farm local-wave9 <action> [options]
+        \\
+        \\Actions:
+        \\  init              Initialize local farm (generate compose, create dirs)
+        \\  start [--workers N] Start N workers (default: 4, max: 48)
+        \\  stop              Stop all workers
+        \\  status            Show worker status and metrics
+        \\  restart           Restart all workers
+        \\  logs <worker>     Show logs for worker (e.g., w9-1)
+        \\  recycle           Recycle crashed workers
+        \\  clean             Remove all containers and volumes
+        \\
+        \\Configuration:
+        \\  S3 MultiObj profile:
+        \\    NTP weight: 0.50, JEPA weight: 0.25, NCA weight: 0.25
+        \\    Context length: 81, LR: 1e-3, Schedule: cosine
+        \\    Optimizer: lamb, Batch: 66, Steps: 100K
+        \\
+        \\Data:
+        \\  Checkpoints: data/wave9/worker-N/
+        \\  Dataset: data/tinystories/ (TinyStories)
+        \\
+        \\Examples:
+        \\  tri farm local-wave9 init
+        \\  tri farm local-wave9 start --workers 8
+        \\  tri farm local-wave9 status
+        \\  tri farm local-wave9 logs w9-1
+        \\
+    , .{});
+}
+
 fn printHelp() void {
     print(
         \\
@@ -1337,6 +1691,9 @@ fn printHelp() void {
         \\  fly-status       Show all Wave 9 Fly.io training services
         \\  fly-recycle      Recycle crashed Wave 9 services with S3 MultiObj
         \\  wave9            Alias for fly-deploy
+        \\
+        \\Local Docker Commands (Wave 9):
+        \\  local-wave9      Local Docker-based training (init/start/stop/status/logs/recycle/clean)
         \\
         \\Common options:
         \\  --lr <value>           Learning rate (default: 1e-3)

@@ -116,6 +116,151 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc += 1;
         },
 
+        .DIV => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Ternary division
+            if (b.trits == 0) return ExecError.DivisionByZero;
+
+            const result = @divTrunc(a.trits, b.trits);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            // Update flags
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .INC => {
+            const dst_value = cpu.t27[inst.dst];
+
+            // Ternary increment
+            const result = @mod(dst_value.trits + 1, 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            // Update flags
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .DEC => {
+            const dst_value = cpu.t27[inst.dst];
+
+            // Ternary decrement
+            const result = @mod(dst_value.trits - 1, 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            // Update flags
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        // ═══════════════════════════════════════════════════════
+        // LOGIC INSTRUCTIONS — Bitwise on Trit27 trit values
+        // ═════════════════════════════════════════════════════════════
+        .AND => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Ternary bitwise AND (min of two values)
+            const result = if (a.trits < 0 and b.trits < 0) a.trits else if (a.trits > 0 and b.trits > 0) a.trits else 0;
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .OR => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Ternary bitwise OR (max of two values)
+            const result = if (a.trits > 0 or b.trits > 0) a.trits else if (a.trits < 0 and b.trits < 0) b.trits else a.trits;
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .XOR => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Ternary bitwise XOR
+            const result = if (a.trits != 0 and b.trits != 0) a.trits else if (a.trits == 0 or b.trits == 0) b.trits else if (a.trits < 0 and b.trits < 0) a.trits else b.trits;
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .NOT => {
+            const a = cpu.t27[inst.src1];
+
+            // Ternary bitwise NOT (negate)
+            const result = -a.trits;
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .SHL => {
+            const a = cpu.t27[inst.src1];
+
+            // Shift left by immediate amount
+            const shift = @abs(inst.immediate) % 27;
+            const result = @mod(a.trits << @intCast(shift), 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .SHR => {
+            const a = cpu.t27[inst.src1];
+
+            // Shift right by immediate amount
+            const shift = @abs(inst.immediate) % 27;
+            const result = @mod(a.trits >> @intCast(shift), 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .MUL => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Ternary multiplication
+            const result = @mod(a.trits * b.trits, 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
         // ═══════════════════════════════════════════════════════
         // CONTROL FLOW INSTRUCTIONS
         // ═══════════════════════════════════════════════════════════════════
