@@ -24,7 +24,7 @@ test "full cycle: asm → tbin → emulator → verify" {
     defer allocator.free(bytecode);
 
     // 2. Load bytecode into CPU
-    var cpu = try cpu_mod.CpuState.init(allocator);
+    var cpu = try cpu_mod.CPUState.init(allocator);
     defer cpu.deinit();
     try loader.load(&cpu, bytecode, &[_]f64{});
 

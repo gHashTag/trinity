@@ -100,6 +100,11 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     try bytecode.append(allocator, 1);
     try bytecode.append(allocator, 0);
 
+    // Reserve space for size field (2 bytes) before appending instructions
+    // This ensures instructions start at offset 10 (not offset 8)
+    try bytecode.append(allocator, 0);
+    try bytecode.append(allocator, 0);
+
     // Parse and encode instructions
     var lines = std.mem.splitScalar(u8, source, '\n');
     var instr_count: u16 = 0;
@@ -116,7 +121,7 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
         try bytecode.append(allocator, @as(u8, @truncate(word >> 24)));
     }
 
-    // Fill in size
+    // Fill in size (now at correct offset 8-9)
     const code_size: u16 = @as(u16, @intCast(instr_count * 4));
     bytecode.items[8] = @as(u8, @truncate(code_size));
     bytecode.items[9] = @as(u8, @truncate(code_size >> 8));

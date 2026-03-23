@@ -727,11 +727,16 @@ pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
 
     const queen_dir = "apps/queen";
 
+    // Get current environment for subprocess inheritance
+    var env_map = try std.process.getEnvMap(allocator);
+    defer env_map.deinit();
+
     // Kill any running swift processes
     std.debug.print("{s}🔄 Killing existing swift processes...{s}\n", .{ CYAN, RESET });
     _ = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{ "pkill", "-f", "swift-frontend" },
+        .env_map = &env_map,
     }) catch |err| {
         // pkill may fail if no processes found - that's OK
         std.debug.print("{s}info: pkill: {s}{s}\n", .{ GRAY, @errorName(err), RESET });
@@ -749,6 +754,7 @@ pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
     _ = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{ "sh", "-c", "cd apps/queen && swift run &" },
+        .env_map = &env_map,
     }) catch |err| {
         std.debug.print("{s}⚠️  Launch command returned: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
     };
