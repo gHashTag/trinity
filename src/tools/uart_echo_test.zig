@@ -28,8 +28,8 @@ const Config = struct {
 };
 
 // PING/PONG protocol
-const PING_BYTE: u8 = 0x03;  // Send PING
-const PONG_BYTE: u8 = 0x83;  // Expect PONG response
+const PING_BYTE: u8 = 0x03; // Send PING
+const PONG_BYTE: u8 = 0x83; // Expect PONG response
 
 // Helper for formatted stderr output
 fn printErr(comptime fmt: []const u8, args: anytype) void {
@@ -83,19 +83,10 @@ fn parseArgs() Config {
             i += 1;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
             config.verbose = true;
-            if (i + 1 < std.os.argv.len) {
-                i += 1;
-            }
         } else if (std.mem.eql(u8, arg, "--ping-mode")) {
             config.ping_mode = true;
-            if (i + 1 < std.os.argv.len) {
-                i += 1;
-            }
         } else if (std.mem.eql(u8, arg, "--auto-configure")) {
             config.auto_configure = true;
-            if (i + 1 < std.os.argv.len) {
-                i += 1;
-            }
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -152,16 +143,19 @@ pub fn main() !void {
 
     if (port) |p| {
         printErr("[+] Found FT232RL: {s}\n", .{p});
-        printErr("\n[!] IMPORTANT: Configure port first:\n", .{});
-        printErr("    stty -f {s} {d} cs8 -parenb -cstopb 1 -hupcl\n", .{ p, config.baud });
-        printErr("\n[Press Enter when ready...]\n", .{});
 
-        var buf: [100]u8 = undefined;
-        const stdin = std.fs.File{ .handle = std.posix.STDIN_FILENO };
-        _ = stdin.read(&buf) catch |err| {
-            printErr("[*] Failed to read input: {any}\n", .{err});
-            std.process.exit(1);
-        };
+        if (!config.auto_configure) {
+            printErr("\n[!] IMPORTANT: Configure port first:\n", .{});
+            printErr("    stty -f {s} {d}\n", .{ p, config.baud });
+            printErr("\n[Press Enter when ready...]\n", .{});
+
+            var buf: [100]u8 = undefined;
+            const stdin = std.fs.File{ .handle = std.posix.STDIN_FILENO };
+            _ = stdin.read(&buf) catch |err| {
+                printErr("[*] Failed to read input: {any}\n", .{err});
+                std.process.exit(1);
+            };
+        }
     } else {
         printErr("[!] FT232RL not found!\n", .{});
         printErr("\nAvailable serial ports:\n", .{});
@@ -190,6 +184,33 @@ fn listSerialPorts() void {
 }
 
 fn testEcho(port_path: []const u8, config: Config) void {
+    // Configure port BEFORE opening if auto-configure enabled
+    if (config.auto_configure) {
+        printErr("[+] Configuring port: {d} baud 8N1\n", .{config.baud});
+        const stty_cmd = std.fmt.allocPrint(std.heap.page_allocator, "stty -f {s} {d}", .{ port_path, config.baud }) catch {
+            printErr("[!] Failed to allocate stty command string\n", .{});
+            return;
+        };
+        defer std.heap.page_allocator.free(stty_cmd);
+
+        const result = std.process.Child.run(.{
+            .allocator = std.heap.page_allocator,
+            .argv = &[_][]const u8{ "sh", "-c", stty_cmd },
+        }) catch |err| {
+            printErr("[!] Failed to run stty: {any}\n", .{err});
+            return;
+        };
+        defer {
+            std.heap.page_allocator.free(result.stderr);
+            std.heap.page_allocator.free(result.stdout);
+        }
+
+        if (result.term != .Exited or result.term.Exited != 0) {
+            printErr("[!] stty failed: {s}\n", .{result.stderr});
+            return;
+        }
+    }
+
     const flags: u32 = 0x0002 | 0x08000;
     const fd = std.posix.open(port_path, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
         printErr("[*] Failed to open {s}: {any}\n", .{ port_path, err });
