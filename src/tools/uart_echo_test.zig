@@ -19,12 +19,23 @@ const DEFAULT_STOP_BITS: u8 = 1;
 const DEFAULT_DELAY_MS: u32 = 200;  // Delay between tests
 const DEFAULT_TIMEOUT_MS: u32 = 2000;  // Read timeout
 
+// PING/PONG protocol
+const PING_BYTE: u8 = 0x03;  // Request echo test
+const PONG_BYTE: u8 = 0x83;  // Echo response
+
+// Test modes
+const TestMode = enum {
+    echo,   // Simple byte echo
+    ping_pong,  // PING/PONG protocol test
+};
+
 // Test configuration
 const Config = struct {
     baud: u64,
     delay_ms: u32,
     timeout_ms: u32,
     verbose: bool,
+    mode: TestMode,
 };
 
 // Parse command line arguments
@@ -34,6 +45,7 @@ fn parseArgs(stdout: std.fs.File) Config {
         .delay_ms = DEFAULT_DELAY_MS,
         .timeout_ms = DEFAULT_TIMEOUT_MS,
         .verbose = false,
+        .mode = .echo,
     };
 
     var i: usize = 1;
@@ -70,7 +82,28 @@ fn parseArgs(stdout: std.fs.File) Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--mode")) {
+            const mode_arg = if (i + 1 >= std.os.argv.len) {
+                stdout.print("[✗] --mode requires value\n", .{}) catch {};
+                std.process.exit(1);
+            };
+            const mode_val = std.os.argv[i + 1];
+            if (std.mem.eql(u8, mode_val, "echo")) {
+                config.mode = .echo;
+            } else if (std.mem.eql(u8, mode_val, "ping-pong")) {
+                config.mode = .ping_pong;
+            } else {
+                stdout.print("[✗] Invalid mode: {s}\n", .{mode_val}) catch {};
+                stdout.print("  Supported modes: echo, ping-pong\n", .{}) catch {};
+                std.process.exit(1);
+            }
+            i += 1;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
+            config.verbose = true;
+            if (i + 1 < std.os.argv.len) {
+                i += 1; // Skip flag value
+            }
+        } else if (std.mem.eql(u8, arg, "--help")) {
             config.verbose = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage(stdout);
@@ -92,11 +125,15 @@ fn printUsage(stdout: std.fs.File) void {
         \\  --baud <rate>     Baud rate (default: 115200)
         \\  --delay <ms>      Delay between tests in ms (default: 200)
         \\  --timeout <ms>    Read timeout in ms (default: 2000)
+        \\  --mode <mode>     Test mode: echo, ping-pong
         \\  -v, --verbose     Enable verbose logging
         \\  --help            Show this help message
         \\
-        \\Example:
+        \\Example (echo mode):
         \\  zig run uart-echo-test --baud 115200 --delay 100 -v
+        \\
+        \\Example (ping-pong mode):
+        \\  zig run uart-echo-test --mode ping-pong --verbose
         \\
     , .{}) catch {};
 }
