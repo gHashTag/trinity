@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.47 — ASCII Histogram Bars Visualization
+//! v3.48 — Latency Spike Detection (Outliers > 3x Median)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -520,6 +520,64 @@ const JitterTracker = struct {
         printDim("    p90: {d:.2}ms ({d}us)\n", .{ p90_ms, p.p90 });
         printDim("    p95: {d:.2}ms ({d}us)\n", .{ p95_ms, p.p95 });
         printDim("    p99: {d:.2}ms ({d}us)\n", .{ p99_ms, p.p99 });
+    }
+
+    // v3.48: Spike detection (outliers > 3x median)
+    pub fn detectSpikes(self: *const JitterTracker) struct { count: usize, outliers: []usize } {
+        if (self.count < 5) {
+            return .{ .count = 0, .outliers = &[_]usize{} };
+        }
+
+        const len = self.count;
+        var spikes: usize = 0;
+        var outliers: [10]usize = undefined;
+        var outlier_idx: usize = 0;
+
+        // Use p50 (median) as baseline
+        const p = self.getPercentiles();
+        const median_us = p.p50;
+        const spike_threshold = median_us * 3;
+
+        for (self.samples[0..len]) |sample| {
+            if (sample > spike_threshold) {
+                if (outlier_idx < 10) {
+                    outliers[outlier_idx] = @intCast(sample);
+                    outlier_idx += 1;
+                }
+                spikes += 1;
+            }
+        }
+
+        return .{ .count = spikes, .outliers = outliers[0..outlier_idx] };
+    }
+
+    pub fn reportSpikes(self: *const JitterTracker) void {
+        if (self.count < 5) {
+            return;
+        }
+
+        const spikes = self.detectSpikes();
+        if (spikes.count == 0) {
+            return;
+        }
+
+        const p = self.getPercentiles();
+        const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+        const threshold_ms = median_ms * 3.0;
+
+        printInfo("[!] Latency Spikes Detected:\n", .{});
+        printDim("    Median: {d:.2}ms, Threshold: {d:.2}ms (3x)\n", .{ median_ms, threshold_ms });
+        printDim("    Spikes: {d} samples above threshold\n", .{spikes.count});
+
+        if (spikes.outliers.len > 0) {
+            printDim("    Sample spikes: ", .{});
+            for (spikes.outliers, 0..) |val, i| {
+                if (i > 0) printDim(", ", .{});
+                const val_ms = @as(f64, @floatFromInt(val)) / 1000.0;
+                printDim("{d:.1}ms", .{val_ms});
+            }
+            printDim("\n", .{});
+        }
     }
 };
 
@@ -1324,7 +1382,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.47           ║
+        \\║      Trinity UART Echo Test v3.48           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1369,7 +1427,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.47):
+        \\Performance Modes (v3.48):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1389,6 +1447,7 @@ fn printUsage() void {
         \\  JSON Percentiles: Export RTT percentiles in JSON output (v3.45)
         \\  CSV Percentiles: Export RTT percentiles in CSV format (v3.46)
         \\  ASCII Histogram Bars: Visual bar chart for latency distribution (v3.47)
+        \\  Latency Spike Detection: Identify outliers > 3x median RTT (v3.48)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2648,6 +2707,8 @@ fn runSimulation(config: Config) !void {
         jitter_tracker.report();
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
+        // v3.48: Report latency spikes
+        jitter_tracker.reportSpikes();
     }
 
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
@@ -2669,6 +2730,8 @@ fn runSimulation(config: Config) !void {
         jitter_tracker.report();
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
+        // v3.48: Report latency spikes
+        jitter_tracker.reportSpikes();
     }
 }
 
@@ -2760,6 +2823,8 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
         jitter_tracker.report();
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
+        // v3.48: Report latency spikes
+        jitter_tracker.reportSpikes();
     }
 
     // v3.42: Auto-recovery statistics summary
