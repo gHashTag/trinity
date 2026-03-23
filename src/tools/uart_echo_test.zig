@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.39 — Auto-Recovery Integration
+//! v3.40 — Batch Mode Auto-Recovery
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1245,7 +1245,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.39           ║
+        \\║      Trinity UART Echo Test v3.40           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1289,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.39):
+        \\Performance Modes (v3.40):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1300,6 +1300,8 @@ fn printUsage() void {
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
+        \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
+        \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
         \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
@@ -2815,6 +2817,10 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     var results = BatchTestResults{};
     var packet_num: usize = 0;
 
+    // v3.40: Auto-recovery statistics
+    var total_retries: usize = 0;
+    var recovered_packets: usize = 0;
+
     const start_time = std.time.nanoTimestamp();
 
     while (packet_num < batch_size) {
@@ -2827,7 +2833,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
             try buffered_io.writeByte(byte_val);
         }
 
-        // Get current timeout (adaptive or fixed)
+        // v3.40: Send packet with auto-recovery
         const current_timeout = if (adaptive_timeout) |*at|
             at.calculate()
         else
@@ -2837,75 +2843,169 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
         const send_buf = buffered_io.getWriteSlice();
         const start_send = std.time.nanoTimestamp();
 
-        _ = try std.posix.write(fd, send_buf);
+        var packet_success = false;
+        var retry_count: u32 = 0;
 
-        // Wait for response
-        var read_buffer: [256]u8 = undefined;
-        var bytes_read: usize = 0;
-        var timeout_remaining: i32 = @as(i32, @intCast(current_timeout));
-        var poll_fds = [1]std.posix.pollfd{.{ .fd = fd, .events = std.posix.POLL.IN, .revents = 0 }};
+        if (config.auto_recovery) {
+            const recovery = AutoRecovery.init(config.retries, 100);
 
-        while (bytes_read < send_buf.len and timeout_remaining > 0) {
-            const poll_start = std.time.nanoTimestamp();
-            const poll_ms = @as(c_int, @intCast(timeout_remaining));
+            while (!packet_success and recovery.shouldRetry(retry_count)) {
+                _ = try std.posix.write(fd, send_buf);
 
-            const poll_result = std.posix.poll(&poll_fds, poll_ms) catch |err| {
-                printErr("  [x] Poll error: {any}\n", .{err});
-                break;
-            };
-            if (poll_result == 0) {
-                break; // Timeout
-            }
+                // Wait for response
+                var read_buffer: [256]u8 = undefined;
+                var bytes_read: usize = 0;
+                var timeout_remaining: i32 = @as(i32, @intCast(current_timeout));
+                var poll_fds = [1]std.posix.pollfd{.{ .fd = fd, .events = std.posix.POLL.IN, .revents = 0 }};
 
-            // Data available - read it
-            const read_result = std.posix.read(fd, read_buffer[bytes_read..]) catch 0;
-            if (read_result > 0) {
-                bytes_read += read_result;
-            }
+                while (bytes_read < send_buf.len and timeout_remaining > 0) {
+                    const poll_start = std.time.nanoTimestamp();
+                    const poll_ms = @as(c_int, @intCast(timeout_remaining));
 
-            // Update timeout
-            const poll_elapsed_ms = @as(i32, @intCast(@divTrunc(std.time.nanoTimestamp() - poll_start, 1_000_000)));
-            timeout_remaining -= poll_elapsed_ms;
-        }
+                    const poll_result = std.posix.poll(&poll_fds, poll_ms) catch |err| {
+                        printErr("  [x] Poll error: {any}\n", .{err});
+                        break;
+                    };
+                    if (poll_result == 0) {
+                        break; // Timeout
+                    }
 
-        const elapsed_ns = std.time.nanoTimestamp() - start_send;
-        const elapsed_ms: i64 = @intCast(@divTrunc(elapsed_ns, 1_000_000));
+                    const read_result = std.posix.read(fd, read_buffer[bytes_read..]) catch 0;
+                    if (read_result > 0) {
+                        bytes_read += read_result;
+                    }
 
-        results.total_sent += send_buf.len;
+                    const poll_elapsed_ms = @as(i32, @intCast(@divTrunc(std.time.nanoTimestamp() - poll_start, 1_000_000)));
+                    timeout_remaining -= poll_elapsed_ms;
+                }
 
-        // Check response
-        if (bytes_read == send_buf.len) {
-            var match = true;
-            for (0..send_buf.len) |i| {
-                if (read_buffer[i] != send_buf[i]) {
-                    match = false;
-                    break;
+                const elapsed_ns = std.time.nanoTimestamp() - start_send;
+                const elapsed_ms: i64 = @intCast(@divTrunc(elapsed_ns, 1_000_000));
+
+                results.total_sent += send_buf.len;
+
+                // Check response
+                if (bytes_read == send_buf.len) {
+                    var match = true;
+                    for (0..send_buf.len) |i| {
+                        if (read_buffer[i] != send_buf[i]) {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match) {
+                        packet_success = true;
+                        results.matched += 1;
+                        results.total_received += bytes_read;
+                        if (adaptive_timeout) |*at| {
+                            at.addSample(elapsed_ms);
+                        }
+                        // Track recovered packets
+                        if (retry_count > 0) {
+                            recovered_packets += 1;
+                        }
+                    } else {
+                        retry_count += 1;
+                        total_retries += 1;
+                        if (recovery.shouldRetry(retry_count)) {
+                            const delay = recovery.getDelay(retry_count);
+                            printWarning("[i] Auto-recovery: retry {d}/{d} after {d}ms delay\n", .{ retry_count, config.retries, delay });
+                            std.Thread.sleep(delay * 1_000);
+                        }
+                        results.failed += 1;
+                    }
+                } else if (bytes_read > 0) {
+                    results.total_received += bytes_read;
+                    retry_count += 1;
+                    total_retries += 1;
+                    if (recovery.shouldRetry(retry_count)) {
+                        const delay = recovery.getDelay(retry_count);
+                        printWarning("[i] Auto-recovery: retry {d}/{d} after {d}ms delay (partial)\n", .{ retry_count, config.retries, delay });
+                        std.Thread.sleep(delay * 1_000);
+                    }
+                    results.failed += 1;
+                } else {
+                    retry_count += 1;
+                    total_retries += 1;
+                    if (recovery.shouldRetry(retry_count)) {
+                        const delay = recovery.getDelay(retry_count);
+                        printWarning("[i] Auto-recovery: retry {d}/{d} after {d}ms delay (timeout)\n", .{ retry_count, config.retries, delay });
+                        std.Thread.sleep(delay * 1_000);
+                    }
+                    results.timeouts += 1;
                 }
             }
-
-            if (match) {
-                results.matched += 1;
-                results.total_received += bytes_read;
-                // Update adaptive timeout
-                if (adaptive_timeout) |*at| {
-                    at.addSample(elapsed_ms);
-                }
-            } else {
-                results.failed += 1;
-            }
-        } else if (bytes_read > 0) {
-            // Partial response - still count bytes received
-            results.total_received += bytes_read;
-            results.failed += 1;
         } else {
-            // Timeout
-            results.timeouts += 1;
+            // Normal mode: single attempt
+            _ = try std.posix.write(fd, send_buf);
+
+            var read_buffer: [256]u8 = undefined;
+            var bytes_read: usize = 0;
+            var timeout_remaining: i32 = @as(i32, @intCast(current_timeout));
+            var poll_fds = [1]std.posix.pollfd{.{ .fd = fd, .events = std.posix.POLL.IN, .revents = 0 }};
+
+            while (bytes_read < send_buf.len and timeout_remaining > 0) {
+                const poll_start = std.time.nanoTimestamp();
+                const poll_ms = @as(c_int, @intCast(timeout_remaining));
+
+                const poll_result = std.posix.poll(&poll_fds, poll_ms) catch |err| {
+                    printErr("  [x] Poll error: {any}\n", .{err});
+                    break;
+                };
+                if (poll_result == 0) {
+                    break; // Timeout
+                }
+
+                const read_result = std.posix.read(fd, read_buffer[bytes_read..]) catch 0;
+                if (read_result > 0) {
+                    bytes_read += read_result;
+                }
+
+                const poll_elapsed_ms = @as(i32, @intCast(@divTrunc(std.time.nanoTimestamp() - poll_start, 1_000_000)));
+                timeout_remaining -= poll_elapsed_ms;
+            }
+
+            const elapsed_ns = std.time.nanoTimestamp() - start_send;
+            const elapsed_ms: i64 = @intCast(@divTrunc(elapsed_ns, 1_000_000));
+
+            results.total_sent += send_buf.len;
+
+            // Check response
+            if (bytes_read == send_buf.len) {
+                var match = true;
+                for (0..send_buf.len) |i| {
+                    if (read_buffer[i] != send_buf[i]) {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match) {
+                    results.matched += 1;
+                    results.total_received += bytes_read;
+                    if (adaptive_timeout) |*at| {
+                        at.addSample(elapsed_ms);
+                    }
+                } else {
+                    results.failed += 1;
+                }
+            } else if (bytes_read > 0) {
+                results.total_received += bytes_read;
+                results.failed += 1;
+            } else {
+                results.timeouts += 1;
+            }
+            packet_success = true;
         }
 
         // Clear buffer for next packet
         buffered_io.clearWrite();
 
-        packet_num += bytes_in_batch;
+        // Only advance packet_num if packet succeeded (or exhausted retries)
+        if (packet_success or !config.auto_recovery) {
+            packet_num += bytes_in_batch;
+        }
 
         // Progress indicator
         if (packet_num % @max(1, batch_size / 10) == 0) {
@@ -2929,6 +3029,10 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     printErr("  Batch time: {d}ms\n", .{results.batch_time_ms});
     printErr("  Packets/sec: {d:.2}\n", .{results.packets_per_second});
     printErr("  Bytes/sec: {d:.2}\n", .{results.bytes_per_second});
+    // v3.40: Auto-recovery statistics
+    if (config.auto_recovery and total_retries > 0) {
+        printErr("  Auto-Recovery: {d} retries, {d} packets recovered\n", .{ total_retries, recovered_packets });
+    }
 
     // Report adaptive timeout stats if enabled
     if (adaptive_timeout) |*at| {
