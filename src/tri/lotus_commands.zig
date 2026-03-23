@@ -40,7 +40,7 @@ fn runViaBuild(allocator: std.mem.Allocator, args: []const u8) !void {
     if (exit_code != 0) {
         const stderr = result.stderr.?;
         if (stderr.len > 0) {
-            std.debug.print("{s}{s}{s}\n", .{RED, stderr, RESET});
+            std.debug.print("{s}{s}{s}\n", .{ RED, stderr, RESET });
         }
     }
 
@@ -54,7 +54,7 @@ fn runDirect(allocator: std.mem.Allocator, args: []const u8) !void {
     // Check if binary exists
     std.fs.cwd().access(binary_path, .{}) catch {
         // Binary not found, try building first
-        std.debug.print("{s}Building lotus-cycle...{s}\n", .{YELLOW, RESET});
+        std.debug.print("{s}Building lotus-cycle...{s}\n", .{ YELLOW, RESET });
         _ = try std.process.Child.run(.{
             .allocator = allocator,
             .argv = &[_][]const u8{ "zig", "build", "lotus-cycle" },
@@ -78,7 +78,7 @@ fn runDirect(allocator: std.mem.Allocator, args: []const u8) !void {
     if (exit_code != 0) {
         const stderr = result.stderr.?;
         if (stderr.len > 0) {
-            std.debug.print("{s}{s}{s}\n", .{RED, stderr, RESET});
+            std.debug.print("{s}{s}{s}\n", .{ RED, stderr, RESET });
         }
     }
 
@@ -110,5 +110,5 @@ pub fn showLotusHelp() void {
         \\
         \\{s}φ² + 1/φ² = 3 = TRINITY{s}
         \\
-    , .{BOLD, RESET, BOLD, RESET, CYAN, RESET, GREEN, RESET, GREEN, RESET, YELLOW, RESET, YELLOW, RESET, DIM, RESET, DIM, RESET });
+    , .{ BOLD, RESET, BOLD, RESET, CYAN, RESET, GREEN, RESET, GREEN, RESET, YELLOW, RESET, YELLOW, RESET, DIM, RESET, DIM, RESET });
 }

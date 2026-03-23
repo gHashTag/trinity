@@ -75,8 +75,61 @@ fn runVm(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runDisasm(allocator: Allocator, args: []const []const u8) !void {
-    // TODO: Use tri_asm to disassemble
-    std.debug.print("Disassemble: {d} instructions\n", .{args[0]});
+    if (args.len < 1) {
+        std.debug.print("Usage: disasm <input.tbin>\n");
+        return;
+    }
+
+    const input_file = args[0];
+    const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        std.debug.print("Error reading {s}: {}\n", .{input_file, e});
+        return;
+    };
+    defer allocator.free(tbin_content);
+
+    // Check for TRI-2 magic header
+    if (tbin_content.len < 4) {
+        std.debug.print("Error: file too small\n");
+        return;
+    }
+
+    const magic = std.mem.readInt(u32, tbin_content[0..4], .little);
+    if (magic != 0x54524932) { // "TRI2"
+        std.debug.print("Error: invalid TRI-2 magic (0x{X:0>8})\n", .{magic});
+        return;
+    }
+
+    // Parse header (simplified - just get code start)
+    var offset: usize = 4;
+    const code_start = offset + 16; // Skip header
+
+    // Decode and print each instruction
+    std.debug.print("; TRI-27 Disassembly: {s}\n", .{input_file});
+    std.debug.print("; {d} bytes total\n", .{tbin_content.len});
+
+    var pc: u32 = 0;
+    while (code_start + pc * 4 + 4 <= tbin_content.len) {
+        const word_bytes = tbin_content[code_start + pc * 4 .. code_start + pc * 4 + 4];
+        const word = std.mem.readInt(u32, word_bytes, .little);
+
+        const inst = Decoder.decode(word) catch |err| {
+            std.debug.print("0x{X:0>4}: 0x{X:0>8} ; DECODE ERROR: {}\n", .{pc, word, err});
+            pc += 1;
+            continue;
+        };
+
+        // Format instruction
+        var buf: [128]u8 = undefined;
+        const formatted = Decoder.formatInstructionShort(inst, &buf);
+
+        std.debug.print("0x{X:0>4}: 0x{X:0>8}    {s}\n", .{pc, word, formatted});
+        pc += 1;
+
+        // Stop at HALT
+        if (inst.opcode == .HALT) break;
+    }
+
+    std.debug.print("; End of disassembly\n");
 }
 
 fn printUsage() void {
