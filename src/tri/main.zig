@@ -1322,7 +1322,7 @@ fn printNamespaceHelp(allocator: std.mem.Allocator, ns: tri_namespace.Namespace)
     }
 
     std.debug.print("\n{s}Note:{s} Many commands work without the namespace prefix too.\n", .{ "\x1b[38;2;0;255;255m", "\x1b[0m" });
-    std.debug.print("  Example: {s}tri bench{s} is equivalent to {s}tri dev bench{s}\n\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m", "\x1b[38;2;0;229;153m", "\x1b[0m" });
+    std.debug.print("  Example: {s}tri status{s} is equivalent to {s}tri dev status{s}\n\n", .{ "\x1b[38;2;0;229;153m", "\x1b[0m", "\x1b[38;2;0;229;153m", "\x1b[0m" });
 }
 
 // =============================================================================
@@ -1438,7 +1438,7 @@ fn dispatchNamespacedCommand(
             defer farm_args.deinit(allocator);
             try farm_args.append(allocator, "status");
             try farm_args.appendSlice(allocator, cmd_args);
-            try tri_dev.runDevCommand(allocator, farm_args.items);
+            try dev_workflow.runDevCommand(allocator, farm_args.items);
             return;
         }
         // SWE Agent Dev Farm commands: spawn, kill, recycle, fill, metrics, leaderboard, evolve
@@ -1453,7 +1453,7 @@ fn dispatchNamespacedCommand(
             defer dev_args.deinit(allocator);
             try dev_args.append(allocator, cmd_name);
             try dev_args.appendSlice(allocator, cmd_args);
-            try tri_dev.runDevCommand(allocator, dev_args.items);
+            try dev_workflow.runDevCommand(allocator, dev_args.items);
             return;
         }
         // Arena commands: tri dev arena list|run|compare
