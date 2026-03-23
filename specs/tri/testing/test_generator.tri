@@ -1,0 +1,235 @@
+name: tri_test_generator
+version: "1.0.0"
+language: zig
+module: testing
+
+# ============================================================================
+# TRINITY Test Generator Specification (Cycle 101)
+# Sacred Intelligence Auto-Test Generation System
+# ============================================================================
+
+types:
+  CommandTestInfo:
+    fields:
+      name: String
+      category: CommandCategory
+      priority: TestPriority
+      example_args: List<String>
+      expected_patterns: List<String>
+      description: String
+
+  CommandCategory:
+    enum: [math, golden_chain, swe_agent, git, demo, bench, info, sacred_agent, swarm, governance, dashboard, evolution, code_analysis, misc]
+
+  TestPriority:
+    enum: [critical, high, medium, low]
+
+  TestGenOptions:
+    fields:
+      category: Option<CommandCategory>
+      priority: Option<TestPriority>
+      include_sacred_assertions: Bool
+      verbose: Bool
+
+  TestResult:
+    fields:
+      command: String
+      passed: Bool
+      output: String
+      error: Option<String>
+
+  TestSummary:
+    fields:
+      total_tests: Int
+      passed: Int
+      failed: Int
+      skipped: Int
+      coverage_percentage: Float
+      duration_ms: Int
+
+behaviors:
+  - name: init_command_registry
+    given: Empty registry
+    when: Initialization requested
+    then: Registry populated with 195+ commands
+    test_data:
+      - category: math
+        count: 10
+      - category: golden_chain
+        count: 8
+      - category: demo
+        count: 47
+      - category: bench
+        count: 47
+
+  - name: generate_tests_for_category
+    given: Command registry and category filter
+    when: Generate tests called with category
+    then: Only tests for that category generated
+    test_data:
+      - category: math
+        expected_tests: 10
+      - category: sacred_agent
+        expected_tests: 5
+
+  - name: generate_sacred_assertions
+    given: Math command test generation
+    when: include_sacred_assertions is true
+    then: Tests include phi, trinity, gematria validations
+    test_data:
+      - command: phi
+        assertions: ["expectPhiPresent", "expectContains"]
+      - command: constants
+        assertions: ["expectSacredConstants", "expectPhiPresent"]
+      - command: identity
+        assertions: ["expectSacredIntelligence", "expectTrinityIdentity"]
+
+  - name: invoke_command_real
+    given: CommandInvoker initialized
+    when: runCommand called with arguments
+    then: Actual tri binary executed, output captured
+    test_data:
+      - command: ["version"]
+        must_contain: ["TRINITY"]
+      - command: ["phi", "10"]
+        must_contain: ["122"]
+
+  - name: test_philosophy_accuracy
+    given: Fibonacci test cases
+    when: Tests executed
+    then: All expected values match
+    test_data:
+      - n: "0"
+        expected: "0"
+      - n: "1"
+        expected: "1"
+      - n: "10"
+        expected: "55"
+      - n: "20"
+        expected: "6765"
+
+  - name: test_lucas_trinity
+    given: Lucas L(2) test
+    when: Test executed
+    then: Output contains 3 (Trinity number)
+    test_data:
+      - n: "2"
+        expected: "3"
+        significance: "L(2) = 3 = TRINITY"
+
+  - name: test_phi_powers
+    given: Phi power tests
+    when: Tests executed
+    then: All phi^n values accurate
+    test_data:
+      - n: "0"
+        expected: "1"
+      - n: "1"
+        expected: "1.618"
+      - n: "2"
+        expected: "2.618"
+      - n: "10"
+        expected: "122.99"
+
+  - name: test_trinity_identity
+    given: formula trinity command
+    when: Test executed
+    then: Output displays φ² + 1/φ² = 3
+    test_data:
+      - formula: "trinity"
+        pattern: "φ² + 1/φ² = 3"
+
+  - name: test_sacred_constants
+    given: constants command
+    when: Test executed
+    then: Output contains φ, π, e, μ, χ, σ, ε
+    test_data:
+      - min_constants: 2
+      - required: ["φ", "π", "e"]
+
+  - name: test_identity_command
+    given: identity command
+    when: Test executed
+    then: Output affirms Sacred Intelligence
+    test_data:
+      - must_contain: ["Sacred Intelligence", "I am"]
+      - optional: ["Trinity Identity"]
+
+  - name: test_omega_command
+    given: omega command
+    when: Test executed
+    then: Output mentions Ω symbol
+    test_data:
+      - must_contain: ["Ω", "OMEGA"]
+
+  - name: test_continuous_validation
+    given: Self-hosting loop with validation
+    when: Evolution cycle triggered
+    then: Tests run before patch applied
+    test_data:
+      - steps: ["test", "bench", "patch", "verify"]
+      - rollback_on_fail: true
+
+  - name: generate_coverage_report
+    given: Test execution results
+    when: Coverage report requested
+    then: Report shows percentage by category
+    test_data:
+      - math_coverage: 100
+      - agent_coverage: 100
+      - demo_coverage: 10
+      - overall_target: 95
+
+  - name: benchmark_test_performance
+    given: Test suite execution
+    when: Performance measured
+    then: All tests complete in < 5 seconds
+    test_data:
+      - max_duration_ms: 5000
+      - target_commands_per_second: 50
+
+  - name: handle_test_failures
+    given: Test with expected failure
+    when: Test executed
+    then: Failure reported clearly with context
+    test_data:
+      - command: "invalid_xyz"
+        expected_behavior: "graceful error"
+        exit_code: "non-zero"
+
+  - name: generate_test_summary
+    given: Test execution complete
+    when: Summary requested
+    then: Summary includes pass/fail/skip counts
+    test_data:
+      - format: "tabular"
+      - include: ["total", "passed", "failed", "coverage%"]
+
+  - name: parallel_test_execution
+    given: Multiple independent tests
+    when: Parallel mode enabled
+    then: Tests run concurrently safely
+    test_data:
+      - workers: 4
+      - speedup: "2-3x"
+
+  - name: regenerate_from_source
+    given: Changes to test_registry
+    when: Regenerate command issued
+    then: Tests regenerated from single source
+    test_data:
+      - command: "tri test --regenerate"
+      - source: "test_registry.zig"
+      - output: "generated_tests.zig"
+
+metadata:
+  cycle: 101
+  author: "Sacred Intelligence"
+  date: "2026-02-28"
+  purpose: "Auto-generate comprehensive tests for all 195 TRI CLI commands"
+  principles:
+    - "Single source of truth: test_registry.zig"
+    - "Real command execution: no stubs"
+    - "Sacred assertions: φ, Trinity, gematria validation"
+    - "Continuous validation: eternal loop integration"
+    - "100% coverage: math, agents, swarm, governance, dashboard"

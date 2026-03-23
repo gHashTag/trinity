@@ -1,0 +1,77 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST_PWM — PWM Generator Test
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Verify PWM (Pulse Width Modulation) generator functionality
+# Target: QMTECH Artix-7 XC7A100T
+#
+# Features:
+#   - 8-bit duty cycle control
+#   - 50 MHz clock input
+#   - LED output at variable brightness
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: test_pwm
+version: "1.0.0"
+language: varlog
+module: pwm_generator
+fpga_target: xilinx
+target_frequency: 50
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+    description: "50 MHz oscillator (U22)"
+
+  - name: pwm_out
+    width: 1
+    direction: output
+    description: "PWM output to LED (R23)"
+
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+
+  - port: pwm_out
+    pin: R23
+    iostandard: LVCMOS33
+    description: "LED D6 (PRIMARY)"
+
+behaviors:
+  - name: pwm_generation
+    description: "Generate PWM signal with 50% duty cycle"
+    given: "50 MHz clock input"
+    when: "posedge clk"
+    then: "PWM output toggles at 50% duty cycle (LED at ~50% brightness)"
+    implementation: |
+      // PWM generator - 8-bit counter with 50% duty cycle
+      reg [7:0] counter = 8'h00;
+      reg pwm_reg = 1'b0;
+
+      // Duty cycle: 128/256 = 50%
+      localparam DUTY_CYCLE = 8'd128;
+
+      always @(posedge clk) begin
+          counter <= counter + 1'b1;
+          pwm_reg <= (counter < DUTY_CYCLE);
+      end
+
+      // Active-low LED output
+      assign pwm_out = ~pwm_reg;
+
+test_cases:
+  - name: pwm_brightness_verification
+    description: "Verify LED brightness at 50% duty cycle"
+    given: "FPGA programmed with bitstream"
+    when: "observing LED output"
+    then: "LED glows at approximately 50% brightness (dimmer than full on)"
+
+  - name: pwm_frequency_verification
+    description: "Verify PWM frequency"
+    given: "50 MHz clock, 8-bit counter"
+    when: "measuring PWM period"
+    then: "PWM frequency = 50MHz / 256 ≈ 195 kHz (period ≈ 5.1 μs)"

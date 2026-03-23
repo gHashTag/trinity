@@ -412,6 +412,18 @@ cat .trinity/dev_session.json | jq
 
 ---
 
+## Repository layout (filesystem)
+
+**Goal:** keep the repo root small; agents and humans follow the same rules.
+
+1. **Verilog (`*.v`)** — not in the repository root. Put loose RTL in **`hardware/rtl-root/`**; curated flows under **`fpga/`** (e.g. `fpga/openxc7-synth/`).
+2. **Binaries** — build with **`zig build`**; run from **`zig-out/bin/`**. Do not leave `a.out`, `*.o`, or ad-hoc test binaries in root (they are ignored or removed).
+3. **Scripts & one-offs** — **`scripts/`**; long-lived experiments → **`archive/`** when obsolete.
+4. **JTAG / hardware config** — **`hardware/jtag/`**.
+5. **Historical note:** some old root executables live in **`bin/repo-root/`**; prefer `zig-out` for anything new.
+
+---
+
 ## Agent Labels
 
 GitHub issue labels control agent behavior:

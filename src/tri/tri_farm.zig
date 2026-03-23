@@ -61,7 +61,7 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
         return fly_wave9.deployWave9(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "fly-status")) {
         const fly_wave9 = @import("fly_wave9.zig");
-        return fly_wave9.showWave9Status(allocator);
+        return fly_wave9.showWave9Status(allocator, &[_][]const u8{});
     } else if (std.mem.eql(u8, subcmd, "fly-recycle")) {
         // TODO: Re-enable after fixing circular import issue
         // const fly_wave9 = @import("fly_wave9.zig");

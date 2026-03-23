@@ -13,6 +13,14 @@ zig-out/
 /build/
 **/.build/
 
+# Never commit accidental root clutter (use zig-out/bin, hardware/rtl-root)
+/a.out
+/*.blif
+/*.edif
+/uart_echo.json
+/trinity_chat.tvc
+/simulation_results.csv
+
 # IDE
 .vscode/
 .idea/
@@ -130,7 +138,7 @@ trinity_ona_ui
 trinity_swe_agent
 trinity_ui
 trinity_ui_app
-test_io*
+/test_io*
 test_mmap_ret
 test_page_size*
 debug_test
@@ -205,8 +213,8 @@ debug_test.zig
 build_zig13_old.zig
 /tri
 
-# Test artifacts in root (should use zig-out/ for binaries)
-test_*
+# Test artifacts in repo root only (zig-out/ for binaries; allow test_*.v under hardware/ etc.)
+/test_*
 !test/**/*.zig
 !test/**/*.sh
 *.vcd

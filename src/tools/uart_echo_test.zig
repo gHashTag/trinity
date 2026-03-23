@@ -280,7 +280,7 @@ fn listSerialPorts() void {
     const dir = std.fs.openDirAbsolute("/dev", .{}) catch return;
     var iterator = dir.iterate();
     while (iterator.next()) |entry| {
-        const name = entry.name;
+        const name = entry.basename;;
         if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
             printErr("  {s}\n", .{name});
         }
@@ -581,14 +581,14 @@ fn findFT232Device() ?[]const u8 {
 
     var iterator = dir.iterate();
     while (iterator.next()) |entry| {
-        const name = entry.name;
+        const name = entry.basename;;
         if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
             var fba = std.heap.FixedBufferAllocator.init(&std.heap.page_allocator);
             const full_path = std.fmt.allocPrintZ(fba.allocator(), "/dev/{s}", .{name}) catch return null;
             return full_path;
         }
-    } else |_| {
-        break;
+    } else |err| {
+        _ = err catch {};
     }
 
     return null;
