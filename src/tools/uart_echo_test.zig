@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.46 — CSV Export with RTT Percentiles
+//! v3.47 — ASCII Histogram Bars Visualization
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -352,11 +352,29 @@ const LatencyHistogram = struct {
             return;
         }
 
+        // v3.47: Find max count for bar scaling
+        const max_count: usize = blk: {
+            var max: usize = 0;
+            for (self.buckets) |count| {
+                if (count > max) max = count;
+            }
+            break :blk max;
+        };
+
         for (self.buckets, 0..) |count, i| {
             if (count > 0) {
                 const percent = @as(f64, @floatFromInt(count)) /
                     @as(f64, @floatFromInt(total_samples)) * 100.0;
-                printDim("    {s}: {d} ({d:.1}%)\n", .{ self.bucket_labels[i], count, percent });
+
+                // v3.47: ASCII bar (max 40 chars)
+                const bar_len = if (max_count > 0)
+                    @as(usize, @intFromFloat(@as(f64, @floatFromInt(count)) * 40.0 / @as(f64, @floatFromInt(max_count))))
+                else 0;
+                var bar: [41]u8 = undefined;
+                for (0..bar_len) |j| bar[j] = '#';
+                bar[bar_len] = 0;
+
+                printDim("    {s}: {d} ({d:.1}%) [{s}]\n", .{ self.bucket_labels[i], count, percent, bar[0..bar_len] });
             }
         }
     }
@@ -1306,7 +1324,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.46           ║
+        \\║      Trinity UART Echo Test v3.47           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1351,7 +1369,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.46):
+        \\Performance Modes (v3.47):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1370,6 +1388,7 @@ fn printUsage() void {
         \\  RTT Percentiles: p50/p90/p95/p99 latency percentiles with jitter tracking (v3.44)
         \\  JSON Percentiles: Export RTT percentiles in JSON output (v3.45)
         \\  CSV Percentiles: Export RTT percentiles in CSV format (v3.46)
+        \\  ASCII Histogram Bars: Visual bar chart for latency distribution (v3.47)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
