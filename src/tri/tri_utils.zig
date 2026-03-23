@@ -10,7 +10,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const trinity_swe = @import("trinity_swe");
+const trinity_swe_agent_mod = @import("trinity_swe");
 const igla_hybrid_chat = @import("igla_hybrid_chat");
 const igla_coder = @import("igla_coder");
 const tvc = @import("tvc_corpus");
@@ -297,11 +297,11 @@ pub const Command = enum {
 
 pub const CLIState = struct {
     allocator: std.mem.Allocator,
-    agent: trinity_swe.TrinitySWEAgent,
+    agent: trinity_swe_agent_mod.TrinitySWEAgent,
     chat_agent: igla_hybrid_chat.IglaHybridChat,
     coder: igla_coder.IglaLocalCoder,
-    mode: trinity_swe.SWETaskType,
-    language: trinity_swe.Language,
+    mode: trinity_swe_agent_mod.SWETaskType,
+    language: trinity_swe_agent_mod.Language,
     verbose: bool,
     running: bool,
     stream_enabled: bool,
@@ -373,7 +373,7 @@ pub const CLIState = struct {
 
         return Self{
             .allocator = allocator,
-            .agent = try trinity_swe.TrinitySWEAgent.init(allocator),
+            .agent = try trinity_swe_agent_mod.TrinitySWEAgent.init(allocator),
             .chat_agent = chat,
             .coder = igla_coder.IglaLocalCoder.init(allocator),
             .mode = .Explain,
@@ -1168,7 +1168,7 @@ pub fn processInput(state: *CLIState, input: []const u8) void {
                 }
             } else {
                 // Fallback to agent
-                const request = trinity_swe.SWERequest{
+                const request = trinity_swe_agent_mod.SWERequest{
                     .task_type = actual_mode,
                     .prompt = trimmed,
                     .language = state.language,
@@ -1181,7 +1181,7 @@ pub fn processInput(state: *CLIState, input: []const u8) void {
             }
         },
         else => {
-            const request = trinity_swe.SWERequest{
+            const request = trinity_swe_agent_mod.SWERequest{
                 .task_type = actual_mode,
                 .prompt = trimmed,
                 .language = state.language,
@@ -1200,7 +1200,7 @@ pub fn processInput(state: *CLIState, input: []const u8) void {
     }
 }
 
-pub fn detectMode(input: []const u8) ?trinity_swe.SWETaskType {
+pub fn detectMode(input: []const u8) ?trinity_swe_agent_mod.SWETaskType {
     const lower = blk: {
         var buf: [256]u8 = undefined;
         const len = @min(input.len, buf.len);
@@ -1545,7 +1545,7 @@ pub fn runCodeCommand(state: *CLIState, args: []const []const u8) void {
         {
             const final_prompt = if (enhanced_prompt != null) enhanced_prompt.? else prompt;
 
-            const request = trinity_swe.SWERequest{
+            const request = trinity_swe_agent_mod.SWERequest{
                 .task_type = .CodeGen,
                 .prompt = final_prompt,
                 .language = state.language,
@@ -1770,7 +1770,7 @@ fn hasNoSacredFlag(args: []const []const u8) bool {
     return false;
 }
 
-pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args: []const []const u8) void {
+pub fn runSWECommand(state: *CLIState, task_type: trinity_swe_agent_mod.SWETaskType, args: []const []const u8) void {
     if (args.len < 1) {
         std.debug.print("{s}Usage: tri {s} <file or prompt>{s}\n", .{ RED, @tagName(task_type), RESET });
         return;
@@ -1865,7 +1865,7 @@ pub fn runSWECommand(state: *CLIState, task_type: trinity_swe.SWETaskType, args:
         std.debug.print("{s}[Context: injected]{s}\n", .{ GRAY, RESET });
     }
 
-    const request = trinity_swe.SWERequest{
+    const request = trinity_swe_agent_mod.SWERequest{
         .task_type = task_type,
         .prompt = prompt,
         .context = enhanced_context,

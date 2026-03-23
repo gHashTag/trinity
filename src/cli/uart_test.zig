@@ -8,8 +8,8 @@ const DEFAULT_BAUD: u32 = 115_200;
 const BUFFER_SIZE: usize = 1024;
 
 const TestMode = enum {
-    echo,      // Echo mode: receive and echo back
-    loopback,  // Loopback mode: TX->RX hardware loopback
+    echo, // Echo mode: receive and echo back
+    loopback, // Loopback mode: TX->RX hardware loopback
 };
 
 pub fn main() !void {
@@ -64,15 +64,18 @@ pub fn main() !void {
     std.debug.print("═", .{});
     std.debug.print("Device: {s}\n", .{device});
     std.debug.print("Baud: {d}\n", .{baud_rate});
-    std.debug.print("Mode: {s}\n", .{switch (test_mode) { .echo => "Echo (PING/PONG)", .loopback => "Hardware Loopback" }});
+    std.debug.print("Mode: {s}\n", .{switch (test_mode) {
+        .echo => "Echo (PING/PONG)",
+        .loopback => "Hardware Loopback",
+    }});
     std.debug.print("═\n", .{});
 
-    // Open serial device
-    const fd = try openSerialDevice(device);
-    defer {
-        _ = std.os.close(fd);
-        std.debug.print("\n✅ Device closed\n", .{});
-    };
+    const fd = try std.posix.open(
+        device,
+        .{ .RDWR = true, .NOCTTY = true },
+        0,
+    );
+    defer std.os.close(fd);
 
     try configureSerial(fd, baud_rate);
 
@@ -82,40 +85,13 @@ pub fn main() !void {
     }
 }
 
-fn openSerialDevice(device: []const u8) !std.posix.fd_t {
-    std.debug.print("Opening {s}... ", .{device});
-
-    const fd = try std.posix.open(
-        device,
-        std.posix.O.RDWR | std.posix.O.NOCTTY,
-        0,
-    );
-
-    // Configure as raw terminal
-    try std.os.tcgetattr(fd);
-    var termios = try std.os.tcgetattr(fd);
-
-    termios.c_iflag &= ~@as(u32, std.os.ICRNL | std.os.IGNCR);
-    termios.c_oflag &= ~@as(u32, std.os.OPOST);
-    termios.c_lflag &= ~@as(u32, std.os.ECHO | std.os.ICANON | std.os.ISIG);
-    termios.c_cc[@as(usize, std.os.VMIN)] = 1;
-    termios.c_cc[@as(usize, std.os.VTIME)] = 0;
-
-    _ = std.os.tcsetattr(fd, .{ .v = termios, .act = .TCSANOW });
-
-    std.debug.print("✅\n", .{});
-
-    return fd;
-}
-
 fn configureSerial(fd: std.posix.fd_t, baud_rate: u32) !void {
-    // Set baud rate
     const baud_constant = switch (baud_rate) {
-        9600 => std.os.B9600,
-        19200 => std.os.B19200,
-        38400 => std.os.B38400,
-        57600 => std.os.B57600,
-        115200 => std.os.B115200,
+        9600 => 0xC,
+        19200 => 0xB,
+        38400 => 0xE,
+        57600 => 0x10,
+        115200 => 0x11,
         else => {
             std.debug.print("Unsupported baud rate: {d}\n", .{baud_rate});
             std.process.exit(1);
@@ -123,10 +99,8 @@ fn configureSerial(fd: std.posix.fd_t, baud_rate: u32) !void {
     };
 
     var termios = try std.os.tcgetattr(fd);
-
-    // Clear speed and set new speed
-    termios.c_cflag &= ~@as(u32, std.os.CBAUD);
-    termios.c_cflag |= @as(u32, baud_constant);
+    termios.c_cflag = termios.c_cflag & ~@as(u32, 0xC0C00);
+    termios.c_cflag = termios.c_cflag | @as(u32, baud_constant);
     termios.c_cflag |= @as(u32, std.os.CREAD | std.os.CLOCAL);
 
     _ = std.os.tcsetattr(fd, .{ .v = termios, .act = .TCSANOW });
@@ -138,7 +112,6 @@ fn runEchoTest(fd: std.posix.fd_t) !void {
     std.debug.print("Echo Test: PING (0x03) → PONG (0x83)\n", .{});
     std.debug.print("─", .{});
 
-    // Send PING
     const ping = [_]u8{0x03};
     _ = try std.os.write(fd, &ping);
 
@@ -162,7 +135,6 @@ fn runEchoTest(fd: std.posix.fd_t) !void {
         if (read_result > 0) {
             total_read += @as(usize, read_result);
 
-            // Check for PONG
             if (total_read == 1 and buffer[0] == 0x83) {
                 const response_ns = std.time.nanoTimestamp() - start_time;
                 const elapsed_us = @as(f64, response_ns) / 1000.0;
@@ -170,7 +142,6 @@ fn runEchoTest(fd: std.posix.fd_t) !void {
                 std.debug.print("\n✅ Received PONG (0x83)\n", .{});
                 std.debug.print("Round trip: {d:.3} μs\n", .{elapsed_us});
 
-                // Additional tests
                 try runMultiplePings(fd, 5);
                 return;
             } else {
@@ -178,7 +149,7 @@ fn runEchoTest(fd: std.posix.fd_t) !void {
             }
         }
 
-        std.time.sleep(100_000); // 10ms polling
+        std.time.sleep(100_000);
     }
 }
 
@@ -193,9 +164,7 @@ fn runMultiplePings(fd: std.posix.fd_t, count: u32) !void {
 
     var i: u32 = 0;
     while (i < count) : (i += 1) {
-        // Clear buffer
-        _ = std.os.fcntl(fd, std.os.F.FLUSH, 0);
-        std.time.sleep(100_000); // 10ms between pings
+        std.time.sleep(100_000);
 
         const ping = [_]u8{0x03};
         _ = try std.os.write(fd, &ping);
@@ -218,23 +187,22 @@ fn runMultiplePings(fd: std.posix.fd_t, count: u32) !void {
                 min_us = @min(min_us, elapsed_us);
                 max_us = @max(max_us, elapsed_us);
 
-                std.debug.print("  [{d}/{d}] {d:.3} μs", .{i + 1, count, elapsed_us});
+                std.debug.print("  [{d}/{d}] {d:.3} μs", .{ i + 1, count, elapsed_us });
             }
 
-            std.time.sleep(10_000); // 1ms polling
+            std.time.sleep(10_000);
             timeout += 1;
         }
 
         if (!pong_received) {
-            std.debug.print("  [{d}/{d}] ❌ Timeout\n", .{i + 1, count});
+            std.debug.print("  [{d}/{d}] ❌ Timeout\n", .{ i + 1, count });
         }
     }
 
-    // Statistics
     std.debug.print("\nPing Statistics:\n", .{});
     std.debug.print("────────────────\n", .{});
     std.debug.print("Success rate: {d}/{d} ({d:.1}%)\n", .{
-        success, count,
+        success,                                     count,
         @as(f64, success) * 100.0 / @as(f64, count),
     });
 
@@ -251,9 +219,7 @@ fn runLoopbackTest(fd: std.posix.fd_t) !void {
     std.debug.print("─", .{});
     std.debug.print("Send pattern, verify RX receives same data\n", .{});
 
-    const pattern = [_]u8{
-        0xAA, 0x55, 0x00, 0xFF, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0
-    };
+    const pattern = [_]u8{ 0xAA, 0x55, 0x00, 0xFF, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0 };
 
     var success: u32 = 0;
     var byte_idx: usize = 0;
@@ -279,6 +245,7 @@ fn runLoopbackTest(fd: std.posix.fd_t) !void {
                     std.debug.print("❌ (got 0x{X:0>2})\n", .{buffer[0]});
                 }
             }
+
             std.time.sleep(10_000);
             timeout += 1;
         }
@@ -287,8 +254,8 @@ fn runLoopbackTest(fd: std.posix.fd_t) !void {
             std.debug.print("❌ Timeout\n", .{});
         }
 
-        std.time.sleep(50_000); // 50ms between bytes
+        std.time.sleep(50_000);
     }
 
-    std.debug.print("\nResult: {d}/{d} bytes matched\n", .{success, pattern.len});
+    std.debug.print("\nResult: {d}/{d} bytes matched\n", .{ success, pattern.len });
 }

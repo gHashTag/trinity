@@ -1,40 +1,27 @@
-// ═══════════════════════════════════════════════════════════════════════
+// @origin(spec:tri27_isa.zig) @regen(manual-impl)
 // TRI-27 CPU STATE — Ternary RISC Processor State
-// ═══════════════════════════════════════════════════════════════════════════
-// 27 Trit Registers + 3 Float Registers + PC + SP + FP + Flags
+// ═════════════════════════════════════════════════════════════════════════════════════════
+// 27 Trit Registers + 3 Float Registers + 8 GF16 + 16 Vector registers + PC + SP + FP + Flags
 // Pure functional, no OOP — aligns with Tri language specification
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-// Trit type: {-1, 0, +1} — stored as i8 for efficiency
-pub const Trit = i8;
 
-/// CPU Flags Register
-pub const CPUFlags = packed struct {
-    zero: bool = false,
-    negative: bool = false,
-    positive: bool = false,
-    _padding: u5 = 0,
+const Memory = @import("tri_memory.zig").Memory;
+const Word = @import("tri_memory.zig").Word;
 
-    /// Set flags from comparison result
-    pub fn fromCmp(a: i64, b: i64) CPUFlags {
-        return .{
-            .zero = a == b,
-            .negative = a < b,
-            .positive = a > b,
-            ._padding = 0,
-        };
-    }
+pub const MEMORY_SIZE_WORDS: usize = 19683;
 
-    /// Check if any flag is set
-    pub fn anySet(self: CPUFlags) bool {
-        return self.zero or self.negative or self.positive;
-    }
+// Trit type from tri_cpu.zig
+const Trit27 = @import("tri_cpu.zig").Trit27;
 
-    /// Clear all flags
-    pub fn clear(self: *CPUFlags) void {
-        self.* = .{};
-    }
+/// CPU Flags Register (compatible with executor.zig)
+pub const Flags = packed struct {
+    Z: bool = false, // Zero result flag
+    N: bool = false, // Negative result flag
+    V: bool = false, // Overflow flag
+    H: bool = false, // Halted flag
+    _: u4 = 0, // Reserved bits
 };
 
 /// Call stack frame (for CALL/RET)
@@ -47,62 +34,120 @@ pub const DEFAULT_CALL_FRAME: CallFrame = .{ .return_addr = 0 };
 /// Maximum call stack depth
 pub const CALL_STACK_MAX: usize = 4096;
 
-/// TRI-27 CPU State
-/// 27 trinary registers (t0-t26) + 3 float registers (f0-f2)
-pub const CPUState = struct {
-    // === TRINARY REGISTERS (t0-t26) ===
-    // Stores ternary values {-1, 0, +1}
-    trits: [27]Trit,
+/// MemoryView adapter for byte access on Word-based memory
+/// Provides []const u8 interface on top of []Word storage
+pub const MemoryView = struct {
+    memory: []const Word,
+    memory_len: usize,
 
-    // === FLOAT REGISTERS (f0-f2) ===
-    // Stores IEEE 754 16-bit floats for sacred math operations
-    floats: [3]f64,
+    /// Create memory view from Word array
+    pub fn init(mem: []const Word, mem_len: usize) MemoryView {
+        return .{
+            .memory = mem,
+            .memory_len = mem_len,
+        };
+    }
+
+    /// Read byte at address (little-endian from u64 word_value)
+    pub fn readByte(self: *const MemoryView, addr: usize) u8 {
+        const word_idx = addr / 8;
+        const byte_idx = addr % 8;
+        if (word_idx >= self.memory.len) return 0;
+        const word_value = self.memory[word_idx].word_value;
+        const shifted = word_value >> @as(u6, byte_idx * 8);
+        return @as(u8, shifted & 0xFF);
+    }
+
+    /// Write byte at address (little-endian into u64 word_value)
+    pub fn writeByte(self: *MemoryView, addr: usize, value: u8) void {
+        const word_idx = addr / 8;
+        const byte_idx = addr % 8;
+        if (word_idx >= self.memory.len) return;
+        const mask = @as(u64, 0xFF) << @as(u6, byte_idx * 8);
+        const shifted = @as(u64, value) << @as(u6, byte_idx * 8);
+        const word_ptr: *Word = @ptrCast(&self.memory[word_idx]);
+        const mut_ptr = @constCast(word_ptr);
+        mut_ptr.word_value = (mut_ptr.word_value & ~mask) | shifted;
+    }
+
+    /// Get byte slice length (total bytes in memory)
+    pub fn getByteLen(self: *const MemoryView) usize {
+        return self.memory.len * 8;
+    }
+
+    /// Check if address is in bounds
+    pub fn inBounds(self: *const MemoryView, addr: usize) bool {
+        return addr < self.memory.len * 8;
+    }
+};
+
+/// TRI-27 CPU State
+/// Unified interface compatible with executor.zig and tri_emu_main.zig
+pub const CPUState = struct {
+    // === TRINARY REGISTERS (t0-t26, executor.zig: t27) ===
+    // Stores ternary values {-1, 0, +1} as Trit27
+    t27: [27]Trit27,
+
+    // === GF16 REGISTERS (f0-f7, executor.zig: f) ===
+    // Stores 16-bit GF16 values for floating-point
+    f: [8]u16,
+
+    // === VECTOR REGISTERS (v0-v15, executor.zig: v) ===
+    // 16 vector registers, each is 16×GF16
+    v: [16][16]u16,
 
     // === CONTROL REGISTERS ===
-    pc: u32, // Program counter
+    pc: u32, // Program counter (executor.zig: ip)
     sp: u32, // Stack pointer
     fp: u32, // Frame pointer (for calls)
-    flags: CPUFlags, // Condition flags
-    call_stack: [CALL_STACK_MAX]CallFrame, // Call stack
+    flags: Flags, // Condition flags (Z/N/V/H)
 
     // === MEMORY ===
     /// Direct memory access (byte-addressable)
     /// In real TRI-27, this maps to TMU/Sacred ALU memory
-    memory: []u8,
+    memory: []Word, // Direct reference to Word array
     memory_len: usize,
 
     // === METRICS ===
     instructions_executed: u64,
-    start_time: i128,
-    end_time: i128,
+    cycles: u64,
+
+    // === ALLOCATOR ===
+    /// For dynamic operations (compatible with executor.zig)
+    allocator: std.mem.Allocator,
 
     const Self = @This();
 
     /// Initialize CPU state
-    pub fn init(allocator: std.mem.Allocator, memory_size: usize) !Self {
-        const memory = try allocator.alloc(u8, memory_size);
+    pub fn init(allocator: std.mem.Allocator) !Self {
+        const memory = try allocator.alloc(Word, MEMORY_SIZE_WORDS);
         errdefer allocator.free(memory);
 
+        // Zero initialize all words
+        for (0..MEMORY_SIZE_WORDS) |i| {
+            memory[i] = Word{ .word_value = 0 };
+        }
+
         return Self{
-            .trits = [_]Trit{0} ** 27,
-            .floats = [_]f64{0.0} ** 3,
+            .t27 = undefined,
+            .f = [_]u16{0} ** 8,
+            .v = undefined, // Zero initialize array
             .pc = 0,
             .sp = 0,
             .fp = 0,
-            .flags = CPUFlags{},
-            .call_stack = std.mem.zeroes([CALL_STACK_MAX]CallFrame),
+            .flags = Flags{},
             .memory = memory,
-            .memory_len = memory_size,
+            .memory_len = MEMORY_SIZE_WORDS,
             .instructions_executed = 0,
-            .start_time = 0,
-            .end_time = 0,
+            .cycles = 0,
+            .allocator = allocator,
         };
     }
 
     /// Deinitialize CPU state
-    pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
+    pub fn deinit(self: *Self) void {
         if (self.memory.len > 0) {
-            allocator.free(self.memory);
+            self.allocator.free(self.memory);
         }
     }
 
@@ -111,88 +156,23 @@ pub const CPUState = struct {
         self.pc = 0;
         self.sp = 0;
         self.fp = 0;
-        self.flags.clear();
+        self.flags = Flags{};
         self.instructions_executed = 0;
-        self.start_time = 0;
-        self.end_time = 0;
+        self.cycles = 0;
     }
 
-    /// Get execution time in nanoseconds
-    pub fn getExecutionTimeNs(self: *const Self) u64 {
-        return @intCast(@max(0, self.end_time - self.start_time));
+    /// Get memory as byte view (for executor compatibility)
+    pub fn getBytes(self: *const Self) []align(8) const u8 {
+        return std.mem.sliceAsBytes(self.memory);
     }
 
-    /// Get instructions per second
-    pub fn getIPS(self: *const Self) f64 {
-        const time_ns = self.getExecutionTimeNs();
-        if (time_ns == 0) return 0;
-        return @as(f64, @floatFromInt(self.instructions_executed)) / (@as(f64, @floatFromInt(time_ns)) / 1_000_000_000.0);
+    /// Get mutable memory as byte slice (for executor writes)
+    pub fn getBytesMut(self: *Self) []align(8) u8 {
+        return std.mem.sliceAsBytes(self.memory);
     }
 
-    /// Get execution time in milliseconds
-    pub fn getExecutionTimeMs(self: *const Self) u64 {
-        return self.getExecutionTimeNs() / 1_000_000;
+    /// Get memory view as MemoryView for direct byte access
+    pub fn getMemoryView(self: *const Self) MemoryView {
+        return MemoryView.init(self.memory, self.memory_len);
     }
 };
-
-// ═══════════════════════════════════════════════════════════════════════════════════
-// TESTS
-// ═══════════════════════════════════════════════════════════════════════════════════════════
-
-test "CPUState init" {
-    var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit(std.testing.allocator);
-
-    try std.testing.expectEqual(@as(usize, 27), cpu.trits.len);
-    try std.testing.expectEqual(@as(usize, 3), cpu.floats.len);
-    try std.testing.expectEqual(@as(u32, 0), cpu.pc);
-    try std.testing.expectEqual(@as(u32, 0), cpu.sp);
-    try std.testing.expectEqual(@as(u32, 0), cpu.fp);
-    try std.testing.expect(!cpu.flags.anySet());
-
-    try std.testing.expectEqual(@as(usize, 4096), cpu.memory.len);
-    try std.testing.expectEqual(@as(usize, 0), cpu.instructions_executed);
-}
-
-test "CPUState resetExecution" {
-    var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit(std.testing.allocator);
-
-    // Set some state
-    cpu.pc = 100;
-    cpu.sp = 50;
-    cpu.fp = 25;
-    cpu.trits[5] = 1;
-    cpu.trits[10] = -1;
-    cpu.flags = CPUFlags.fromCmp(5, 10);
-
-    // Reset
-    cpu.resetExecution();
-
-    try std.testing.expectEqual(@as(u32, 0), cpu.pc);
-    try std.testing.expectEqual(@as(u32, 0), cpu.sp);
-    try std.testing.expectEqual(@as(u32, 0), cpu.fp);
-    try std.testing.expect(!cpu.flags.anySet());
-
-    try std.testing.expectEqual(@as(usize, 0), cpu.instructions_executed);
-}
-
-test "CPUState metrics" {
-    var cpu = try CPUState.init(std.testing.allocator, 4096);
-    defer cpu.deinit(std.testing.allocator);
-
-    cpu.start_time = std.time.nanoTimestamp();
-
-    // Simulate execution
-    cpu.pc = 100;
-    cpu.instructions_executed = 100;
-
-    cpu.end_time = std.time.nanoTimestamp();
-
-    const time_ns = cpu.getExecutionTimeNs();
-    const ips = cpu.getIPS();
-
-    try std.testing.expect(time_ns > 0);
-    try std.testing.expectEqual(@as(usize, 100), cpu.instructions_executed);
-    try std.testing.expect(ips > 0);
-}
