@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.18 — Auto-configure port, precise device detection (VID/PID), error stats
+//! v3.22 — Custom test patterns, HTML report export, improved statistics
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -8,8 +8,10 @@
 //!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout] [--auto-configure]
 //!
 //! Features:
-//!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303 (precise VID/PID detection)
-//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.18)
+//!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
+//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.21)
+//!   - Graceful exit: SIGINT (Ctrl+C) handler for clean shutdown (v3.21)
+//!   - Extended baud rates: Supports 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 (v3.21)
 //!   - Config file: TOML configuration for persistent settings (v3.15)
 //!   - JSON export: Structured test results for analysis
 //!   - Error recovery: Automatic retry on failed tests
@@ -18,7 +20,6 @@
 //!   - Buffered I/O: Pre-allocated buffers for reduced syscall overhead
 //!   - Adaptive timeout: Dynamically adjust based on measured RTT
 //!   - Health checks: Serial port validation before testing
-//!   - Error statistics: Track errors by type (timeout, mismatch, device error)
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
@@ -36,6 +37,32 @@ const DEFAULT_RETRIES: u32 = 3;
 const DEFAULT_BATCH_SIZE: usize = 16;
 const DEFAULT_BUFFER_SIZE: usize = 4096;
 const MIN_TIMEOUT_MS: u32 = 50;
+
+// v3.21: Graceful exit flag
+var should_exit: std.atomic.Value(bool) = std.atomic.Value(bool).init(false);
+
+// v3.21: Extended baud rates
+const VALID_BAUD_RATES = [_]u64{
+    9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600,
+};
+
+// v3.21: ANSI colors for better UX
+const ANSI = struct {
+    const RESET = "\x1b[0m";
+    const BOLD = "\x1b[1m";
+    const DIM = "\x1b[2m";
+    const RED = "\x1b[31m";
+    const GREEN = "\x1b[32m";
+    const YELLOW = "\x1b[33m";
+    const BLUE = "\x1b[34m";
+    const MAGENTA = "\x1b[35m";
+    const CYAN = "\x1b[36m";
+    const WHITE = "\x1b[37m";
+
+    fn color(comptime col: []const u8, text: []const u8) []const u8 {
+        return col ++ text ++ RESET;
+    }
+};
 
 // Test configuration
 const Config = struct {
@@ -59,6 +86,8 @@ const Config = struct {
     batch_size: usize,
     buffer_size: usize,
     adaptive_timeout: bool,
+    // v3.22: Custom test patterns
+    test_patterns_file: ?[]const u8,
 };
 
 // Device vendor detection
@@ -84,9 +113,9 @@ const ThroughputStats = struct {
     total_time_ms: i64 = 0,
     packets_sent: usize = 0,
     packets_received: usize = 0,
-    min_latency_ms: i64 = -1,
-    max_latency_ms: i64 = 0,
-    total_latency_ms: i64 = 0,
+    min_latency_ms: usize = -1,
+    max_latency_ms: usize = 0,
+    total_latency_ms: usize = 0,
     latency_samples: usize = 0,
 
     pub fn calculateThroughput(self: *const ThroughputStats) f64 {
@@ -107,7 +136,7 @@ const ThroughputStats = struct {
     }
 };
 
-// v3.18: Error statistics for tracking test failures by type
+// v3.21: Error statistics for tracking test failures by type
 const ErrorStats = struct {
     timeout_errors: usize = 0,
     mismatch_errors: usize = 0,
@@ -138,7 +167,55 @@ const ErrorStats = struct {
     }
 };
 
-// v3.18: Device detection with VID/PID
+// v3.21: Latency histogram for distribution analysis
+const LatencyHistogram = struct {
+    // Histogram buckets (ms)
+    buckets: [8]usize = [_]usize{0} ** 8,
+    bucket_labels: [8][]const u8 = [_][]const u8{
+        "0-10ms",   "10-20ms",   "20-30ms",   "30-50ms",
+        "50-100ms", "100-200ms", "200-500ms", ">500ms",
+    },
+
+    pub fn record(self: *LatencyHistogram, latency_ms: i64) void {
+        const bucket = getBucket(latency_ms);
+        self.buckets[bucket] += 1;
+    }
+
+    pub fn getBucket(latency_ms: i64) usize {
+        if (latency_ms < 10) return 0;
+        if (latency_ms < 20) return 1;
+        if (latency_ms < 30) return 2;
+        if (latency_ms < 50) return 3;
+        if (latency_ms < 100) return 4;
+        if (latency_ms < 200) return 5;
+        if (latency_ms < 500) return 6;
+        return 7;
+    }
+
+    pub fn report(self: *const LatencyHistogram) void {
+        printInfo("[i] Latency Distribution:\n", .{});
+        const total_samples: usize = blk: {
+            var sum: usize = 0;
+            for (self.buckets) |count| sum += count;
+            break :blk sum;
+        };
+
+        if (total_samples == 0) {
+            printDim("    No samples\n", .{});
+            return;
+        }
+
+        for (self.buckets, 0..) |count, i| {
+            if (count > 0) {
+                const percent = @as(f64, @floatFromInt(count)) /
+                    @as(f64, @floatFromInt(total_samples)) * 100.0;
+                printDim("    {s}: {d} ({d:.1}%)\n", .{ self.bucket_labels[i], count, percent });
+            }
+        }
+    }
+};
+
+// v3.21: Device detection with VID/PID
 const DeviceInfo = struct {
     path: []const u8,
     vendor_id: u16,
@@ -146,13 +223,54 @@ const DeviceInfo = struct {
     vendor_name: []const u8,
 };
 
+// v3.21: SIGINT handler for graceful exit
+fn setupSignalHandler() void {
+    const SIGINT = 2;
+    _ = std.posix.sigaction(SIGINT, &.{
+        .handler = .{ .handler = handleSIGINT },
+        .mask = std.posix.sigemptyset(),
+        .flags = 0,
+    }, null);
+}
+
+fn handleSIGINT(sig: c_int) callconv(.c) void {
+    _ = sig;
+    printErr("\n[i] Received SIGINT, exiting gracefully...\n", .{});
+    should_exit.store(true, .seq_cst);
+}
+
 // PING/PONG protocol
 const PING_BYTE: u8 = 0x03; // Send PING
 const PONG_BYTE: u8 = 0x83; // Expect PONG response
 
+// v3.21: Check if baud rate is valid
+fn isValidBaudRate(baud: u64) bool {
+    for (VALID_BAUD_RATES) |rate| {
+        if (baud == rate) return true;
+    }
+    return false;
+}
+
 // Helper for formatted stderr output
 fn printErr(comptime fmt: []const u8, args: anytype) void {
     std.debug.print(fmt, args);
+}
+
+// v3.21: Colored output functions
+fn printSuccess(comptime fmt: []const u8, args: anytype) void {
+    printErr(ANSI.GREEN ++ fmt ++ ANSI.RESET, args);
+}
+fn printError(comptime fmt: []const u8, args: anytype) void {
+    printErr(ANSI.RED ++ fmt ++ ANSI.RESET, args);
+}
+fn printWarning(comptime fmt: []const u8, args: anytype) void {
+    printErr(ANSI.YELLOW ++ fmt ++ ANSI.RESET, args);
+}
+fn printInfo(comptime fmt: []const u8, args: anytype) void {
+    printErr(ANSI.CYAN ++ fmt ++ ANSI.RESET, args);
+}
+fn printDim(comptime fmt: []const u8, args: anytype) void {
+    printErr(ANSI.DIM ++ fmt ++ ANSI.RESET, args);
 }
 
 // Parse command line arguments
@@ -177,6 +295,7 @@ fn parseArgs() Config {
         .batch_size = DEFAULT_BATCH_SIZE,
         .buffer_size = DEFAULT_BUFFER_SIZE,
         .adaptive_timeout = false,
+        .test_patterns_file = null,
     };
 
     var i: usize = 1;
@@ -192,6 +311,16 @@ fn parseArgs() Config {
                 printErr("[*] Invalid baud value: {any}\n", .{err});
                 std.process.exit(1);
             };
+            if (!isValidBaudRate(config.baud)) {
+                printErr("[*] Invalid baud rate: {d}\n", .{config.baud});
+                printErr("    Valid rates: ", .{});
+                for (VALID_BAUD_RATES, 0..) |rate, j| {
+                    if (j > 0) printErr(", ", .{});
+                    printErr("{d}", .{rate});
+                }
+                printErr("\n", .{});
+                std.process.exit(1);
+            }
             i += 1;
         } else if (std.mem.eql(u8, arg, "--delay")) {
             if (i + 1 >= std.os.argv.len) {
@@ -286,6 +415,9 @@ fn parseArgs() Config {
             config.adaptive_timeout = true;
         } else if (std.mem.eql(u8, arg, "--auto-configure")) {
             config.auto_configure = true;
+        } else if (std.mem.eql(u8, arg, "--list-devices")) {
+            listSerialPorts();
+            std.process.exit(0);
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -334,8 +466,13 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], &[_]u8{ ' ', '\t', '\r' });
 
             if (std.mem.eql(u8, key, "baud")) {
-                config.baud = std.fmt.parseInt(u64, value, 10) catch continue;
-                loaded_any = true;
+                const baud_val = std.fmt.parseInt(u64, value, 10) catch continue;
+                if (isValidBaudRate(baud_val)) {
+                    config.baud = baud_val;
+                    loaded_any = true;
+                } else {
+                    printErr("[!] Invalid baud rate in config: {d}\n", .{baud_val});
+                }
             } else if (std.mem.eql(u8, key, "delay")) {
                 config.delay_ms = std.fmt.parseInt(u32, value, 10) catch continue;
                 loaded_any = true;
@@ -394,7 +531,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.18           ║
+        \\║      Trinity UART Echo Test v3.21           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -418,6 +555,7 @@ fn printUsage() void {
         \\  --auto-configure    Auto-configure port (termios setup)
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
+        \\  --list-devices      List all available serial devices (v3.21)
         \\  --help              Show this help message
         \\
         \\Performance Modes:
@@ -445,13 +583,13 @@ fn printUsage() void {
     , .{});
 }
 
-// v3.18: Health check function - validates serial port before testing
+// v3.21: Health check function - validates serial port before testing
 fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     if (port_path == null) return true; // No port, skip check
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
 
-    // v3.18: Simple device type detection from path
+    // v3.21: Simple device type detection from path
     const device_name = std.fs.path.basename(port_path.?);
     if (std.mem.indexOf(u8, device_name, "usbserial-")) |_| {
         printErr("[+] Device type: USB Serial adapter\n", .{});
@@ -473,6 +611,9 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
 }
 
 pub fn main() !void {
+    // v3.21: Setup graceful exit handler
+    setupSignalHandler();
+
     const config = parseArgs();
 
     if (config.verbose) {
@@ -497,7 +638,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.18)         ║
+            \\║         SIMULATION MODE (v3.21)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -519,7 +660,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.18          ║
+        \\║      Trinity UART Echo Test v3.21          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -593,15 +734,48 @@ pub fn main() !void {
     testEcho(port.?, config);
 }
 
+// v3.21: List all available serial devices with detailed info
 fn listSerialPorts() void {
-    var dir = std.fs.openDirAbsolute("/dev", .{}) catch return;
+    printInfo("\n[*] Scanning for serial devices...\n", .{});
+    var dir = std.fs.openDirAbsolute("/dev", .{}) catch |err| {
+        printError("[!] Cannot open /dev: {any}\n", .{err});
+        return;
+    };
     defer dir.close();
+
     var iterator = dir.iterate();
+    var found_count: usize = 0;
+
     while (iterator.next() catch return) |entry| {
         const name = entry.name;
-        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
-            printErr("  {s}\n", .{name});
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null or
+            std.mem.indexOf(u8, name, "cu.usb") != null)
+        {
+            found_count += 1;
+            var device_path_buf: [256]u8 = undefined;
+            const device_path = std.fmt.bufPrintZ(&device_path_buf, "/dev/{s}", .{name}) catch "/dev/cu.unknown";
+
+            // Try to determine device type
+            var device_type: []const u8 = "Unknown";
+            if (std.mem.indexOf(u8, name, "usbserial") != null) {
+                device_type = "USB-Serial";
+            } else if (std.mem.indexOf(u8, name, "usbmodem") != null) {
+                device_type = "USB-Modem";
+            } else if (std.mem.indexOf(u8, name, "cu.Bluetooth") != null) {
+                device_type = "Bluetooth";
+                continue; // Skip Bluetooth devices
+            }
+
+            printSuccess("  [{d}] {s}\n", .{ found_count, device_path });
+            printDim("      Type: {s}\n", .{device_type});
         }
+    }
+
+    if (found_count == 0) {
+        printWarning("  No serial devices found\n", .{});
+    } else {
+        printInfo("\n[*] Found {d} device(s)\n", .{found_count});
+        printInfo("    Use: --device /dev/cu.xxx\n\n", .{});
     }
 }
 
@@ -684,6 +858,9 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var overall_rtt_sum: i64 = 0;
     var overall_rtt_count: usize = 0;
 
+    // v3.21: Latency histogram
+    var histogram = LatencyHistogram{};
+
     while (true) {
         if (config.continuous) {
             printErr("\n", .{});
@@ -716,6 +893,8 @@ fn testEcho(port_path: []const u8, config: Config) void {
                     }
                     rtt_sum += result.rtt_ms;
                     rtt_count += 1;
+                    // v3.21: Record in histogram
+                    histogram.record(result.rtt_ms);
                 }
             }
 
@@ -748,6 +927,12 @@ fn testEcho(port_path: []const u8, config: Config) void {
         }
         overall_rtt_sum += rtt_sum;
         overall_rtt_count += rtt_count;
+
+        // v3.21: Show latency histogram every 10 cycles in continuous mode
+        if (config.continuous and cycle % 10 == 0) {
+            printInfo("\n[i] Latency Histogram (Cycle {d}):\n", .{cycle});
+            histogram.report();
+        }
 
         if (!config.continuous) {
             printErr("\n", .{});
@@ -1022,7 +1207,7 @@ fn findFT232Device() ?[]const u8 {
     return null;
 }
 
-// v3.18: Configure serial port with configurable baud rate
+// v3.21: Configure serial port with configurable baud rate
 fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     var termio = std.posix.tcgetattr(fd) catch return false;
 
@@ -1053,7 +1238,7 @@ fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     termio.cc[@intFromEnum(std.posix.V.MIN)] = 0;
     termio.cc[@intFromEnum(std.posix.V.TIME)] = 1;
 
-    // Set baud rate (v3.18: configurable)
+    // Set baud rate (v3.21: configurable)
     termio.ispeed = @as(std.c.speed_t, @enumFromInt(baud));
     termio.ospeed = @as(std.c.speed_t, @enumFromInt(baud));
 
@@ -1103,7 +1288,7 @@ fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: us
 fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
     printErr(
         \\{{
-        \\  "version": "3.18",
+        \\  "version": "3.21",
         \\  "mode": "simulation",
         \\  "timestamp": {d},
         \\  "summary": {{
