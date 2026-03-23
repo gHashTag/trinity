@@ -1272,6 +1272,11 @@ fn testEcho(port_path: []const u8, config: Config) void {
                     rtt_count += 1;
                     // v3.24: Record in histogram
                     histogram.record(result.rtt_ms);
+
+                    // v3.25: Add jitter sample if enabled
+                    if (config.measure_jitter) {
+                        try jitter_tracker.addSample(result.rtt_us);
+                    }
                 }
             }
 
@@ -1287,6 +1292,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
                 .bytes_received = result.bytes_received,
                 .success = result.success,
                 .rtt_ms = result.rtt_ms,
+                .rtt_us = 0, // Not available from result
             }) catch {};
 
             std.Thread.sleep(config.delay_ms * 1_000_000);
@@ -1370,6 +1376,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_name: []const u8, tes
             .bytes_received = 0,
             .success = false,
             .rtt_ms = 0,
+            .rtt_us = 0,
         };
     }
     std.Thread.sleep(config.delay_ms * 500_000);
@@ -1443,6 +1450,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_name: []const u8, tes
                 .bytes_received = bytes_read,
                 .success = true,
                 .rtt_ms = round_trip_ms,
+                .rtt_us = round_trip_ms * 1000, // Convert ms to us
             };
         } else {
             printErr("  [x] ECHO FAIL! Mismatch\n", .{});
@@ -1456,6 +1464,8 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_name: []const u8, tes
                 .bytes_received = bytes_read,
                 .success = false,
                 .rtt_ms = round_trip_ms,
+                // v3.25: RTT in microseconds for jitter tracking
+                .rtt_us = 0,
             };
         }
     } else {
@@ -1470,6 +1480,8 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_name: []const u8, tes
             .bytes_received = bytes_read,
             .success = false,
             .rtt_ms = 0,
+            // v3.25: RTT in microseconds for jitter tracking
+            .rtt_us = 0,
         };
     }
 }
