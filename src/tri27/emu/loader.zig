@@ -40,7 +40,7 @@ pub fn validateMagic(bytes: []const u8) LoadError!void {
         @as(u32, bytes[2]) << 16 |
         @as(u32, bytes[3]) << 24;
 
-    std.debug.print("validateMagic: got 0x{X:0>8}, expect 0x{X:0>8}\n", .{ magic, MAGIC });
+    // std.debug.print("validateMagic: got 0x{X:0>8}, expect 0x{X:0>8}\n", .{ magic, MAGIC });
 
     if (magic != MAGIC) {
         return LoadError.InvalidMagic;
@@ -76,22 +76,33 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
         if (offset + 1 > code.len) return LoadError.Truncated;
 
         const section_type = code[offset];
-        offset += 1;
 
         switch (section_type) {
             1 => { // CODE section
-                if (offset + 3 > code.len) return LoadError.Truncated;
+                // Section header: type(1) + padding(1) + size(2) = 4 bytes
+                if (offset + 4 > code.len) return LoadError.Truncated;
 
-                const size = @as(u16, code[offset + 1]) | (@as(u16, code[offset + 2]) << 8);
-                offset += 3; // Skip size + padding
+                const size = @as(u16, code[offset + 2]) | (@as(u16, code[offset + 3]) << 8);
+
+                // Move offset past section header (type=1 + padding=1 + size=2 = 4 bytes)
+                offset += 4;
 
                 if (offset + size > code.len) return LoadError.Truncated;
                 if (offset + size > cpu.memory_len) return LoadError.DataTooLarge;
 
                 // Copy code to CPU memory
                 const code_data = code[offset .. offset + size];
-                for (0..size) |i| {
-                    cpu.memory[i] = tri_memory.Word{ .word_value = @intCast(code_data[i]) };
+                // Pack 4 bytes per word (little-endian)
+                var word_idx: usize = 2; // Skip magic(2) + header(2) words
+                var i: usize = 0;
+                while (i + 3 < size) : (i += 4) {
+                    const b0 = code_data[i];
+                    const b1 = code_data[i + 1];
+                    const b2 = code_data[i + 2];
+                    const b3 = code_data[i + 3];
+                    const word_value: u64 = @as(u64, b0) | (@as(u64, b1) << 8) | (@as(u64, b2) << 16) | (@as(u64, b3) << 24);
+                    cpu.memory[word_idx] = tri_memory.Word{ .word_value = @bitCast(word_value) };
+                    word_idx += 1;
                 }
                 code_size = size;
 
@@ -157,7 +168,9 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     }
 
     // Initialize CPU state
-    cpu.pc = 4; // Start at PC=4 to skip magic+version+header (10 bytes = 4 words)
+    // Instructions start at byte 10 (after magic[4] + header[6] = 10 bytes)
+    // Byte 10 = PC=2 + remainder (since PC is word index, 1 word = 4 bytes)
+    cpu.pc = 2;
     cpu.sp = @as(u32, @intCast(cpu.memory_len - 1));
     cpu.fp = 0;
     cpu.instructions_executed = 0;
