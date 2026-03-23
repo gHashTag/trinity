@@ -9,6 +9,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const state_machine = @import("dev_state_machine.zig");
+const dev_scan = @import("dev_scan.zig");
+const dev_pick = @import("dev_pick.zig");
 
 /// Display current session status
 fn cmdStatus(allocator: Allocator, args: []const []const u8) !void {
@@ -215,6 +217,24 @@ fn cmdLog(allocator: Allocator, args: []const []const u8) !void {
     std.debug.print("  Updated: {}", .{session.last_updated});
 }
 
+/// Scan for actionable work items
+fn cmdScan(allocator: Allocator, args: []const []const u8) !void {
+    try dev_scan.runScanCommand(allocator, args);
+}
+
+/// Pick next task with smart ranking
+fn cmdPick(allocator: Allocator, args: []const []const u8) !void {
+    dev_pick.runPickCommand(allocator, args);
+}
+
+/// Run autonomous dev loop
+fn cmdLoop(allocator: Allocator, args: []const []const u8) void {
+    const dev_loop = @import("dev_loop.zig");
+    dev_loop.runDevLoopCommand(allocator, args) catch |err| {
+        std.debug.print("Loop error: {s}\n", .{err});
+    };
+}
+
 /// Main command router for tri dev subcommands
 pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "status";
@@ -236,9 +256,15 @@ pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
         try cmdUnblock(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "log")) {
         try cmdLog(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "scan")) {
+        try cmdScan(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "pick")) {
+        try cmdPick(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "loop")) {
+        cmdLoop(allocator, sub_args);
     } else {
         std.debug.print("Unknown dev subcommand: '{s}'", .{subcmd});
-        std.debug.print("Available: status, start, test, commit, ship, reset, unblock, log", .{});
+        std.debug.print("Available: status, start, test, commit, ship, reset, unblock, log, scan, pick, loop", .{});
         return error.InvalidArgument;
     }
 }
