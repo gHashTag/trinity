@@ -25,6 +25,7 @@ const Config = struct {
     verbose: bool,
     ping_mode: bool,
     auto_configure: bool,
+    device: ?[]const u8,
 };
 
 // PING/PONG protocol
@@ -45,6 +46,7 @@ fn parseArgs() Config {
         .verbose = false,
         .ping_mode = false,
         .auto_configure = false,
+        .device = null,
     };
 
     var i: usize = 1;
@@ -81,6 +83,13 @@ fn parseArgs() Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--device")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --device requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.device = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
             config.verbose = true;
         } else if (std.mem.eql(u8, arg, "--ping-mode")) {
@@ -99,7 +108,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v2.9            ║
+        \\║      Trinity UART Echo Test v3.4            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -107,6 +116,7 @@ fn printUsage() void {
         \\  --baud <rate>     Baud rate (default: 115200)
         \\  --delay <ms>      Delay between tests in ms (default: 200)
         \\  --timeout <ms>    Read timeout in ms (default: 2000)
+        \\  --device <path>   Serial device (default: auto-detect)
         \\  -v, --verbose     Enable verbose logging
         \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
         \\  --help            Show this help message
@@ -131,36 +141,47 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v2.7           ║
+        \\║      Trinity UART Echo Test v3.4           ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
         \\
     , .{});
 
-    printErr("[+] Scanning for FT232RL device...\n", .{});
-    const port = findFT232Device();
+    var port: ?[]const u8 = null;
+
+    if (config.device) |dev| {
+        printErr("[+] Using device: {s}\n", .{dev});
+        port = dev;
+    } else {
+        printErr("[+] Scanning for FT232RL device...\n", .{});
+        port = findFT232Device();
+    }
 
     if (port) |p| {
-        printErr("[+] Found FT232RL: {s}\n", .{p});
-
-        if (!config.auto_configure) {
-            printErr("\n[!] IMPORTANT: Configure port first:\n", .{});
-            printErr("    stty -f {s} {d}\n", .{ p, config.baud });
-            printErr("\n[Press Enter when ready...]\n", .{});
-
-            var buf: [100]u8 = undefined;
-            const stdin = std.fs.File{ .handle = std.posix.STDIN_FILENO };
-            _ = stdin.read(&buf) catch |err| {
-                printErr("[*] Failed to read input: {any}\n", .{err});
-                std.process.exit(1);
-            };
+        if (config.device == null) {
+            printErr("[+] Found FT232RL: {s}\n", .{p});
         }
     } else {
         printErr("[!] FT232RL not found!\n", .{});
         printErr("\nAvailable serial ports:\n", .{});
         listSerialPorts();
         std.process.exit(1);
+    }
+
+    if (!config.auto_configure) {
+        printErr("\n[!] IMPORTANT: Configure port first:\n", .{});
+        if (port) |p| {
+            printErr("    stty -f {s} {d}\n", .{ p, config.baud });
+        }
+        printErr("\n[Press Enter when ready...]\n", .{});
+
+        var buf: [100]u8 = undefined;
+        const stdin = std.fs.File{ .handle = std.posix.STDIN_FILENO };
+        _ = stdin.read(&buf) catch |err| {
+            printErr("[*] Failed to read input: {any}\n", .{err});
+            std.process.exit(1);
+        };
     }
 
     printErr("\n", .{});
