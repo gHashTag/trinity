@@ -331,7 +331,7 @@ pub const CLIState = struct {
     const DEFAULT_MODEL_PATH = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
 
     /// Default TVC corpus save path
-    const TVC_CORPUS_PATH = "trinity_chat.tvc";
+    const TVC_CORPUS_PATH = "data/trinity_chat.tvc";
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         // Auto-detect model path
