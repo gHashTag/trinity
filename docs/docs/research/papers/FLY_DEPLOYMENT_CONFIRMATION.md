@@ -121,7 +121,7 @@ fly rollback --region sin  # Or rollback to previous release
 
 ## VERIFICATION
 
-**Deployment verified by:** Benjamin (Pipeline Agent)
+**Deployment verified by:** Dmitrii Vasilev (@gHashTag)
 **Date:** March 6, 2026, 10:10 UTC+7
 **Status:** ✓ DEPLOYMENT SUCCESSFUL
 

@@ -3,7 +3,9 @@
 **Version:** v10.2 (March 6, 2026)  
 **Repository:** https://github.com/gHashTag/trinity  
 **License:** MIT (code), CC-BY 4.0 (papers and results)  
-**Contact:** Abbie (@vibee_dev)
+**Contact:** Dmitrii Vasilev (@gHashTag)
+
+**Related:** [LISA predictions (2035)](LISA_PREDICTION_ROADMAP_2035.md) · [Phase 4 publication summary](PHASE_4_PUBLICATION_SUMMARY.md)
 
 ---
 
@@ -155,9 +157,11 @@ This framework is openly falsifiable. Any significant deviation in future measur
 ## Availability
 
 ### Code
-- **Particle physics formulas**: `src/particle_physics/sacred.zig` (MIT license)
-- **Tests**: `zig test src/particle_physics/sacred.zig`
-- **Full command registry**: `docs/command_registry.md` (auto-generated)
+- **Particle physics / proof graph**: [`src/sacred/proof_types.zig`](../../src/sacred/proof_types.zig) — `particle_physics_constants` and related types (MIT license)
+- **Sacred formula evaluation**: [`src/sacred/expanded_v2.zig`](../../src/sacred/expanded_v2.zig)
+- **CLI formula table** (aligned with `tri constants`): [`src/tri/math/formula.zig`](../../src/tri/math/formula.zig)
+- **Tests**: `tri test` (full suite) or `zig build test` — project standard; sacred modules are included in the main test graph
+- **Command registry**: [`docs/command_registry.md`](../command_registry.md) (auto-generated / maintained with the repo)
 
 ### Papers (preprints, submitted to arXiv)
 | Paper | Title | Category | arXiv ID (pending) |
@@ -167,11 +171,21 @@ This framework is openly falsifiable. Any significant deviation in future measur
 | 3 | Gravitational Constants from φ | gr-qc, astro-ph.CO | 2603.XXXXX |
 | 4 | TRINITY Unified Framework | physics.gen-ph, gr-qc, quant-ph | 2603.XXXXX |
 
-Source files: `docs/papers/*.tex`
+**LaTeX sources in this folder:**
+
+| File | Topic |
+|------|--------|
+| [TEMPORAL_PHI.tex](TEMPORAL_PHI.tex) | Time constants from φ, γ |
+| [CONSCIOUSNESS_TRINITY.tex](CONSCIOUSNESS_TRINITY.tex) | Consciousness, neural gamma, VSA |
+| [GRAVITY_PHI.tex](GRAVITY_PHI.tex) | G, dark sector, black holes |
+| [TRINITY_UNIFIED.tex](TRINITY_UNIFIED.tex) | Unified framework |
+| [ALPHA_GAMMA.tex](ALPHA_GAMMA.tex), [E8_GAMMA.tex](E8_GAMMA.tex), [RIEMANN_GAMMA.tex](RIEMANN_GAMMA.tex), [SACRED_EXPANSION.tex](SACRED_EXPANSION.tex), [trinity-sacred-mathematics.tex](trinity-sacred-mathematics.tex) | Supplementary derivations |
+
+Metadata: [arXiv_submission_metadata.txt](arXiv_submission_metadata.txt)
 
 ### Supplementary Materials
-- **LISA Prediction Roadmap 2035**: `docs/papers/LISA_PREDICTION_ROADMAP_2035.md` (12 testable predictions)
-- **Publication Summary**: `docs/papers/PHASE_4_PUBLICATION_SUMMARY.md`
+- **LISA Prediction Roadmap 2035**: [LISA_PREDICTION_ROADMAP_2035.md](LISA_PREDICTION_ROADMAP_2035.md) (12 testable predictions)
+- **Publication Summary**: [PHASE_4_PUBLICATION_SUMMARY.md](PHASE_4_PUBLICATION_SUMMARY.md)
 
 ---
 
@@ -182,7 +196,7 @@ If you use this work in research, please cite:
 ```bibtex
 @misc{trinity_v10_2,
   title={TRINITY v10.2: A Mathematical Framework for Fundamental Constants},
-  author={Abbie (@vibee_dev)},
+  author={Dmitrii Vasilev (@gHashTag)},
   year={2026},
   url={https://github.com/gHashTag/trinity},
   note={Version 10.2, March 2026}

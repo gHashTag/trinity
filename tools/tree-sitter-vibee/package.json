@@ -24,7 +24,7 @@
       ]
     }
   ],
-  "author": "Trinity Project <gHashTag>",
+  "author": "Dmitrii Vasilev (@gHashTag)",
   "license": "MIT",
   "dependencies": {
     "tree-sitter-cli": "^0.20.0"

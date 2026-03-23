@@ -23,7 +23,12 @@ const Config = struct {
     delay_ms: u32,
     timeout_ms: u32,
     verbose: bool,
+    ping_mode: bool,
 };
+
+// PING/PONG protocol
+const PING_BYTE: u8 = 0x03;  // Send PING
+const PONG_BYTE: u8 = 0x83;  // Expect PONG response
 
 // Helper for formatted stderr output
 fn printErr(comptime fmt: []const u8, args: anytype) void {
@@ -37,6 +42,7 @@ fn parseArgs() Config {
         .delay_ms = DEFAULT_DELAY_MS,
         .timeout_ms = DEFAULT_TIMEOUT_MS,
         .verbose = false,
+        .ping_mode = false,
     };
 
     var i: usize = 1;
@@ -78,6 +84,11 @@ fn parseArgs() Config {
             if (i + 1 < std.os.argv.len) {
                 i += 1;
             }
+        } else if (std.mem.eql(u8, arg, "--ping-mode")) {
+            config.ping_mode = true;
+            if (i + 1 < std.os.argv.len) {
+                i += 1;
+            }
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -90,7 +101,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v2.8            ║
+        \\║      Trinity UART Echo Test v2.9            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -99,10 +110,11 @@ fn printUsage() void {
         \\  --delay <ms>      Delay between tests in ms (default: 200)
         \\  --timeout <ms>    Read timeout in ms (default: 2000)
         \\  -v, --verbose     Enable verbose logging
+        \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
         \\  --help            Show this help message
         \\
         \\Example:
-        \\  zig run uart-echo-test --baud 115200 --delay 100 -v
+        \\  zig run uart-echo-test --ping-mode -v
         \\
     , .{});
 }
@@ -217,10 +229,13 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     }
     printErr(" ({d} bytes)\n", .{data.len});
 
-    const write_result = std.posix.write(fd, data);
+    // In ping mode, send PING_BYTE (0x03) instead of test data
+    const data_to_send = if (config.ping_mode) &[_]u8{PING_BYTE} else data;
+
+    const write_result = std.posix.write(fd, data_to_send);
     if (write_result) |written| {
-        if (written != data.len) {
-            printErr("  [!] Only wrote {d}/{d} bytes\n", .{ written, data.len });
+        if (written != data_to_send.len) {
+            printErr("  [!] Only wrote {d}/{d} bytes\n", .{ written, data_to_send.len });
         }
     } else |err| {
         printErr("  [*] Write error: {any}\n", .{err});
@@ -229,7 +244,8 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     std.Thread.sleep(config.delay_ms * 500_000);
 
     if (config.verbose) {
-        printErr("  [*] Waiting for echo (timeout: {d}ms)...\n", .{config.timeout_ms});
+        const mode_name = if (config.ping_mode) "PING/PONG" else "Echo";
+        printErr("  [*] Waiting for {s} response (timeout: {d}ms)...\n", .{ mode_name, config.timeout_ms });
     }
 
     var read_buffer: [512]u8 = undefined;
@@ -244,7 +260,8 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
             if (config.verbose) {
                 printErr("  [*] Read {d} bytes (total: {d})\n", .{ n, bytes_read });
             }
-            if (bytes_read >= data.len) {
+            // In ping mode, expect 1 byte (PONG). In echo mode, expect same as sent.
+            if ((config.ping_mode and bytes_read >= 1) or (!config.ping_mode and bytes_read >= data.len)) {
                 break;
             }
         } else |err| {
@@ -264,12 +281,12 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     }
     printErr(" ({d} bytes)\n", .{bytes_read});
 
-    if (bytes_read == data.len) {
+    if (bytes_read == data_to_send.len) {
         var match = true;
-        for (0..data.len) |i| {
-            if (read_buffer[i] != data[i]) {
+        for (0..data_to_send.len) |i| {
+            if (read_buffer[i] != data_to_send[i]) {
                 match = false;
-                printErr("  [x] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, data[i], read_buffer[i] });
+                printErr("  [x] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, data_to_send[i], read_buffer[i] });
                 break;
             }
         }
@@ -282,7 +299,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
             return false;
         }
     } else {
-        printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data.len });
+        printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data_to_send.len });
         return false;
     }
 }

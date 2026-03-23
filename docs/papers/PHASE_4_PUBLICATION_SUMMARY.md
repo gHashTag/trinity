@@ -19,22 +19,24 @@ This phase prepares all TRINITY v10.2 research for arXiv publication and provide
 3. ✅ LISA Prediction Roadmap 2035 (12 testable predictions)
 4. ✅ Complete code repository with 99.5% test pass rate
 
+**Related:** [README_FOR_SCIENTISTS.md](README_FOR_SCIENTISTS.md) · [LISA_PREDICTION_ROADMAP_2035.md](LISA_PREDICTION_ROADMAP_2035.md)
+
 ---
 
 ## TABLE OF CONTENTS
 
-### Part 1: The Four Papers
-1. [TEMPORAL_PHI.tex](#1-time-and-the-golden-ratio) — Time constants from φ and γ
-2. [CONSCIOUSNESS_TRINITY.tex](#2-consciousness-and-trinity) — Neural gamma, VSA, quantum mind
-3. [GRAVITY_PHI.tex](#3-gravitational-constants-from-φ) — G, dark matter, black holes
-4. [TRINITY_UNIFIED.tex](#4-unified-trinity-framework) — Complete unified framework
+### Part 1: The Four Papers (LaTeX sources)
+1. [TEMPORAL_PHI.tex](TEMPORAL_PHI.tex) — Time constants from φ and γ · [summary below](#1-time-and-the-golden-ratio)
+2. [CONSCIOUSNESS_TRINITY.tex](CONSCIOUSNESS_TRINITY.tex) — Neural gamma, VSA, quantum mind · [summary below](#2-consciousness-and-trinity)
+3. [GRAVITY_PHI.tex](GRAVITY_PHI.tex) — G, dark matter, black holes · [summary below](#3-gravitational-constants-from-phi)
+4. [TRINITY_UNIFIED.tex](TRINITY_UNIFIED.tex) — Complete unified framework · [summary below](#4-unified-trinity-framework)
 
 ### Part 2: LISA Predictions
-5. [LISA Prediction Roadmap 2035](#lisa-prediction-roadmap-2035) — 12 testable GW predictions
+5. [LISA_PREDICTION_ROADMAP_2035.md](LISA_PREDICTION_ROADMAP_2035.md) — 12 testable GW predictions
 
 ### Part 3: Supporting Materials
-6. Code repository documentation
-7. Test results and verification
+6. [Code locations](#part-3-code-repository) (Zig sources in this repository)
+7. [Test results](#test-results) (historical snapshot — run `tri test` for current status)
 
 ---
 
@@ -97,6 +99,8 @@ t_present = φ⁻² ≈ 382 ms (specious present)
 - Global workspace ignition at similarity > φ⁻¹
 
 ---
+
+<a id="3-gravitational-constants-from-phi"></a>
 
 ### 3. Gravitational Constants from φ
 
@@ -183,44 +187,35 @@ G_rel = γ/φ ≈ 0.146 (gravity)
 
 ## PART 3: CODE REPOSITORY
 
-### Modules Implemented
+### Modules Implemented (current repository layout)
+
+The Phase 4 document originally listed a stub module tree; the **current** implementation lives primarily under `src/sacred/`, `src/tri/math/`, and `src/vsa.zig`:
 
 ```
 src/
-├── time/
-│   └── temporal_constants.zig    # Planck time, specious present
-├── consciousness/
-│   ├── neural_gamma.zig           # Neural 56 Hz, consciousness threshold
-│   ├── vsa_mind.zig              # VSA cognitive model (14/14 tests)
-│   └── quantum_biology.zig        # Quantum coherence in biology
-├── gravity/
-│   ├── sacred_gravity.zig         # G, Ω_Λ, Ω_DM from φ
-│   └── einstein_bridge.zig        # G-c-ℏ connections
-├── blind_spot/
-│   └── unified_framework.zig      # Cross-domain verification (12/12 tests)
-└── sacred/
-    └── expanded_v2.zig            # Enhanced sacred formula with C and G
+├── sacred/
+│   ├── proof_types.zig       # particle_physics_constants, proof graph, domains
+│   ├── expanded_v2.zig       # sacred formula evaluation (φ, γ, π, e, …)
+│   ├── sacred.zig            # public sacred API
+│   └── registry.zig          # formula registry / verification hooks
+├── tri/math/
+│   └── formula.zig           # catalog aligned with `tri constants`
+└── vsa.zig                   # Vector Symbolic Architecture (bind, bundle, …)
 ```
 
+For a narrative aimed at researchers, start with [README_FOR_SCIENTISTS.md](README_FOR_SCIENTISTS.md).
+
 ### Test Results
+
+**Snapshot from March 2026** (for archival context; numbers are not auto-updated):
 
 ```
 Total: 3021 tests
 Passed: 3006 (99.5%)
 Failed: 15 (pre-existing, unrelated)
-
-Phase 3 modules: 100% clean
-- vsa_mind.zig: 14/14 ✅
-- unified_framework.zig: 12/12 ✅
-- temporal_constants.zig: 9/14 ✅
-- neural_gamma.zig: 8/8 ✅
-- sacred_gravity.zig: 13/13 ✅
-- einstein_bridge.zig: 15/15 ✅
-- quantum_biology.zig: 9/9 ✅
-- chronogeometry.zig: 12/12 ✅
-- causality.zig: 11/11 ✅
-- expanded_v2.zig: 13/13 ✅
 ```
+
+**Current verification:** run `tri test` or `zig build test` from the repository root after `trinity_workspace` / standard workflow (see root `README.md`).
 
 ---
 
@@ -322,6 +317,6 @@ The framework makes specific, testable predictions that can be verified by upcom
 
 ---
 
-*Prepared by: Lucas (arXiv papers), Harper (LISA roadmap), Benjamin (pipeline)*
+*Maintainer / author: Dmitrii Vasilev (@gHashTag)*
 *Date: 6 March 2026*
 *Status: READY FOR PUBLICATION* 🔥

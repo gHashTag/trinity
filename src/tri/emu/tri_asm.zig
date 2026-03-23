@@ -83,7 +83,7 @@ pub fn main() !void {
 
         std.debug.print("Writing .tbin: {}\n", .{output_path});
         // TODO: Write actual binary
-    try std.fs.cwd().writeFileAlloc(allocator, output_path, &[_]u8{0xAA, 0x55, 0xAA}); // placeholder
+        try std.fs.cwd().writeFileAlloc(allocator, output_path, &[_]u8{ 0xAA, 0x55, 0xAA }); // placeholder
     }
 
     return result;

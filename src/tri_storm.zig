@@ -87,7 +87,7 @@ fn cmdRun(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     std.debug.print("  Agents: {d}\n", .{agents});
     if (dry_run) {
         std.debug.print("  Mode: DRY RUN\n\n", .{});
-        std.debug.print("DRY RUN: {d} waves, {d} agents\n", .{waves, agents});
+        std.debug.print("DRY RUN: {d} waves, {d} agents\n", .{ waves, agents });
         std.debug.print("Golden Chain: 28 links\n", .{});
         std.debug.print("P1 Ethical Zones:\n", .{});
         std.debug.print("  - OFC: toxic verdict\n", .{});
@@ -181,6 +181,5 @@ fn printUsage() void {
         \\  tri storm run                               — Run with defaults\\
         \\  tri storm run --waves=3 --agents=16        — Custom configuration\\
         \\  tri storm status                            — Show checkpoint status\\
-        , .{}
-    );
+    , .{});
 }
