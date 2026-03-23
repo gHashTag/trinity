@@ -257,10 +257,9 @@ test "CPUState init zeros all registers" {
 
 test "execute NOP" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
-    var memory = [_]u8{0} ** 1024;
     const inst = Instruction{
         .opcode = .NOP,
         .dst = 0,
@@ -270,7 +269,7 @@ test "execute NOP" {
         .has_imm = false,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     try std.testing.expectEqual(@as(u32, 1), cpu.pc);
     try std.testing.expectEqual(@as(usize, 1), cpu.instructions_executed);
@@ -278,10 +277,9 @@ test "execute NOP" {
 
 test "execute LD_IMM" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
-    var memory = [_]u8{0} ** 1024;
     const inst = Instruction{
         .opcode = .LD_IMM,
         .dst = 3,
@@ -289,7 +287,7 @@ test "execute LD_IMM" {
         .has_imm = true,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     const result = cpu.t27[3];
     try std.testing.expectEqual(@as(i8, 1), result.toI8Clamped());
@@ -298,14 +296,12 @@ test "execute LD_IMM" {
 
 test "execute ADD" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
-
-    var memory = [_]u8{0} ** 1024;
 
     // Set up registers: t0 = 1, t1 = 0
     cpu.t27[0] = Trit27.fromI8(1);
-    cpu.t27[1] = Trit27.ZERO;
+    cpu.t27[1] = Trit27{ .trits = 0 };
 
     const inst = Instruction{
         .opcode = .ADD,
@@ -314,7 +310,7 @@ test "execute ADD" {
         .src2 = 1,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     const result = cpu.t27[2];
     try std.testing.expectEqual(@as(i8, 1), result.toI8Clamped()); // 1 + 0 = 1
@@ -323,10 +319,8 @@ test "execute ADD" {
 
 test "execute SUB" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
-
-    var memory = [_]u8{0} ** 1024;
 
     // Set up registers: t0 = 1, t1 = 1
     cpu.t27[0] = Trit27.fromI8(1);
@@ -339,7 +333,7 @@ test "execute SUB" {
         .src2 = 1,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     const result = cpu.t27[2];
     try std.testing.expectEqual(@as(i8, 0), result.toI8Clamped()); // 1 - 1 = 0
@@ -348,10 +342,8 @@ test "execute SUB" {
 
 test "execute JMP" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
-
-    var memory = [_]u8{0} ** 1024;
 
     const inst = Instruction{
         .opcode = .JMP,
@@ -359,23 +351,21 @@ test "execute JMP" {
         .has_imm = true,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     try std.testing.expectEqual(@as(u32, 100), cpu.pc);
 }
 
 test "execute HALT" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 1024);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
-
-    var memory = [_]u8{0} ** 1024;
 
     const inst = Instruction{
         .opcode = .HALT,
     };
 
-    try execute(&cpu, inst, &memory);
+    try execute(&cpu, inst, cpu.getBytesMut());
 
     try std.testing.expect(cpu.flags.H);
     try std.testing.expectEqual(@as(u32, 0), cpu.pc); // IP not advanced
