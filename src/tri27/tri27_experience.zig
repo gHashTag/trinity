@@ -74,30 +74,30 @@ pub const Tri27Event = struct {
     }
 
     pub fn inputFile(self: Tri27Event) []const u8 {
-        const len = self.indexOfNull(self.input_file);
+        const len = indexOfNull(self.input_file);
         return self.input_file[0..len];
     }
 
     pub fn outputFile(self: Tri27Event) []const u8 {
-        const len = self.indexOfNull(self.output_file);
+        const len = indexOfNull(self.output_file);
         return self.output_file[0..len];
     }
 
     pub fn errorMsg(self: Tri27Event) []const u8 {
         if (!self.has_error) return "";
-        const len = self.indexOfNull(self.error_msg);
+        const len = indexOfNull(self.error_msg);
         return self.error_msg[0..len];
     }
-
-    fn indexOfNull(buf: []const u8) usize {
-        var i: usize = 0;
-        while (i < buf.len) {
-            if (buf[i] == 0) return i;
-            i += 1;
-        }
-        return buf.len;
-    }
 };
+
+fn indexOfNull(buf: []const u8) usize {
+    var i: usize = 0;
+    while (i < buf.len) {
+        if (buf[i] == 0) return i;
+        i += 1;
+    }
+    return buf.len;
+}
 
 // Simple Episode struct for TRI‑27 (self-contained)
 const Episode = struct {

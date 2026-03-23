@@ -51,7 +51,7 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
 
 fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
     if (all_args.len < 1) {
-        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n", .{});
+        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n", .{}, .{});
         return;
     }
 
@@ -97,7 +97,7 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
 fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
     if (all_args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 disassemble <input.tbin>\n\n", .{});
+        print("  Usage: tri tri27 disassemble <input.tbin>\n\n");
         return;
     }
 
@@ -115,7 +115,7 @@ fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !vo
 fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 run <program.tbin>\n\n", .{});
+        print("  Usage: tri tri27 run <program.tbin>\n\n");
         return;
     }
 
@@ -159,7 +159,7 @@ fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
 fn runValidateCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 validate <source.tri>\n\n", .{});
+        print("  Usage: tri tri27 validate <source.tri>\n\n");
         return;
     }
 
@@ -190,7 +190,7 @@ fn runIsaCommand() !void {
     print("{s}═════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
     print("{s}ARITHMETIC (0x60-0x17){s}\n", .{ CYAN, RESET });
-    print("  ADD   dst, src1, src2   ; dst = src1 + src2\n", .{});
+    print("  ADD   dst, src1, src2   ; dst = src1 + src2\n");
     print("  SUB   dst, src1, src2   ; dst = src1 - src2\n");
     print("  MUL   dst, src1, src2   ; dst = src1 * src2\n");
     print("  DIV   dst, src1, src2   ; dst = src1 / src2\n");
@@ -225,7 +225,7 @@ fn runIsaCommand() !void {
 fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing subcommand{s}\n", .{ RED, RESET });
-        print("  experience init                    Initialize experience log\n", .{});
+        print("  experience init                    Initialize experience log\n");
         print("  experience log <file> [ASM|DISASM|RUN|VAL]  Log operation\n");
         print("  experience status                  Show event history\n");
         print("  experience record <issue>        Record episode from last event\n");
@@ -298,7 +298,7 @@ fn printHelp() void {
     print("  {s}tri tri27 isa{s}                                    Show ISA reference\n", .{ GREEN, RESET });
 
     print("\n{s}Examples:{s}\n", .{RESET});
-    print("  tri27 assemble prog.tri -o prog.tbin\n", .{});
+    print("  tri27 assemble prog.tri -o prog.tbin\n");
     print("  tri27 run prog.tbin\n");
     print("  tri27 disassemble prog.tbin\n");
 }

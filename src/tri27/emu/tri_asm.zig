@@ -17,323 +17,53 @@ fn parseRegister(name: []const u8) !u5 {
     return error.InvalidRegister;
 }
 
+/// Helper: Parse 3-register instruction (dst, src1, src2)
+fn parseThreeOp(allocator: Allocator, rest: []const u8) !struct { u8, u8, u8 } {
+    _ = allocator;
+    var it2 = std.mem.splitScalar(u8, rest, ',');
+    const dst_str = std.mem.trim(u8, it2.first(), " \t");
+    const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+    const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
+    const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
+    const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
+
+    const dst = try parseRegister(dst_str);
+    const src1 = try parseRegister(src1_str_trimmed);
+    const src2 = try parseRegister(src2_str);
+
+    return .{ dst, src1, src2 };
+}
+
 /// Parse instruction line to encoded word
 fn parseLine(line: []const u8) !u32 {
     const trimmed = std.mem.trim(u8, line, " \t\r");
     if (trimmed.len == 0 or trimmed[0] == ';') return error.EmptyLine;
 
-    // Split instruction by space
     var it = std.mem.splitScalar(u8, trimmed, ' ');
     const op_str = it.first();
 
-    // Check for opcodes (case-insensitive) - use stack buffer
     var op_lower_buf: [32]u8 = undefined;
     const op_lower = std.ascii.lowerString(&op_lower_buf, op_str);
 
-    if (std.mem.eql(u8, op_lower, "nop")) {
-        return encode(Instruction{ .opcode = Opcode.NOP });
-    }
+    const rest = std.mem.trimLeft(u8, it.rest(), " \t");
 
-    if (std.mem.eql(u8, op_lower, "halt")) {
-        return encode(Instruction{ .opcode = Opcode.HALT });
-    }
+    // === CONTROL (NOP, HALT, JMP, JZ, JNZ, CALL, RET) ===
+    if (std.mem.eql(u8, op_lower, "nop")) return encode(Instruction{ .opcode = Opcode.NOP });
+    if (std.mem.eql(u8, op_lower, "halt")) return encode(Instruction{ .opcode = Opcode.HALT });
 
-    if (std.mem.eql(u8, op_lower, "ldi")) {
-        // LDI dst, imm
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const imm_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const dst = try parseRegister(dst_str);
-        const imm = std.fmt.parseInt(i16, imm_str, 10) catch return error.InvalidImmediate;
-
+    if (std.mem.eql(u8, op_lower, "jmp")) {
+        // JMP offset (unconditional jump)
+        const offset = std.fmt.parseInt(i16, rest, 10) catch return error.InvalidImmediate;
         return encode(Instruction{
-            .opcode = Opcode.LDI,
-            .dst = dst,
-            .immediate = imm,
+            .opcode = Opcode.JMP,
+            .immediate = offset,
             .has_imm = true,
         });
     }
 
-    if (std.mem.eql(u8, op_lower, "add")) {
-        // ADD dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        // Find second comma
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.ADD,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
-        });
-    }
-
-    // === LOGIC OPERATIONS (3-register format: dst, src1, src2) ===
-    if (std.mem.eql(u8, op_lower, "and")) {
-        // AND dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.AND,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "xor")) {
-        // XOR dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.XOR,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "not")) {
-        // NOT dst
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        const dst_str = std.mem.trim(u8, rest, " \t");
-
-        const dst = try parseRegister(dst_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.NOT,
-            .dst = dst,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "shl")) {
-        // SHL dst, src1, shift_imm
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
-
-        return encode(Instruction{
-            .opcode = Opcode.SHL,
-            .dst = dst,
-            .src1 = src1,
-            .immediate = shift,
-            .has_imm = true,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "shr")) {
-        // SHR dst, src1, shift_imm
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
-
-        return encode(Instruction{
-            .opcode = Opcode.SHR,
-            .dst = dst,
-            .src1 = src1,
-            .immediate = shift,
-            .has_imm = true,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "or")) {
-        // OR dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.OR,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "xor")) {
-        // XOR dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.XOR,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "not")) {
-        // NOT dst
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        const dst_str = std.mem.trim(u8, rest, " \t");
-
-        const dst = try parseRegister(dst_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.NOT,
-            .dst = dst,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "shl")) {
-        // SHL dst, src1, shift_imm
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
-
-        return encode(Instruction{
-            .opcode = Opcode.SHL,
-            .dst = dst,
-            .src1 = src1,
-            .immediate = shift,
-            .has_imm = true,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "shr")) {
-        // SHR dst, src1, shift_imm
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
-
-        return encode(Instruction{
-            .opcode = Opcode.SHR,
-            .dst = dst,
-            .src1 = src1,
-            .immediate = shift,
-            .has_imm = true,
-        });
-    }
-
-    // === MEMORY OPERATIONS ===
-    if (std.mem.eql(u8, op_lower, "ld")) {
-        // LD dst, src (load from memory to register)
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src = try parseRegister(src_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.LD,
-            .dst = dst,
-            .src1 = src,
-        });
-    }
-
-    if (std.mem.eql(u8, op_lower, "st")) {
-        // ST src, dst (store register to memory)
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const src_str = std.mem.trim(u8, it2.first(), " \t");
-        const dst_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const src = try parseRegister(src_str);
-        const dst = try parseRegister(dst_str);
-
-        return encode(Instruction{
-            .opcode = Opcode.ST,
-            .src1 = src,
-            .dst = dst,
-        });
-    }
-
-    // === CONTROL OPERATIONS ===
     if (std.mem.eql(u8, op_lower, "jz")) {
         // JZ dst, offset (jump if zero)
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const dst_str = std.mem.trim(u8, it2.first(), " \t");
         const offset_str = std.mem.trim(u8, it2.rest(), " \t");
@@ -351,7 +81,6 @@ fn parseLine(line: []const u8) !u32 {
 
     if (std.mem.eql(u8, op_lower, "jnz")) {
         // JNZ dst, offset (jump if not zero)
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const dst_str = std.mem.trim(u8, it2.first(), " \t");
         const offset_str = std.mem.trim(u8, it2.rest(), " \t");
@@ -367,37 +96,69 @@ fn parseLine(line: []const u8) !u32 {
         });
     }
 
-    // === ARITHMETIC OPERATIONS (2-register format) ===
+    if (std.mem.eql(u8, op_lower, "call")) {
+        // CALL offset (call subroutine)
+        const offset = std.fmt.parseInt(i16, rest, 10) catch return error.InvalidImmediate;
+        return encode(Instruction{
+            .opcode = Opcode.CALL,
+            .immediate = offset,
+            .has_imm = true,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "ret")) {
+        // RET (return from subroutine)
+        return encode(Instruction{ .opcode = Opcode.RET });
+    }
+
+    // === ARITHMETIC (ADD, SUB, MUL, DIV, INC, DEC) ===
+    if (std.mem.eql(u8, op_lower, "add")) {
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.ADD,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "sub")) {
+        // SUB dst, src1, src2
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.SUB,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "mul")) {
+        // MUL dst, src1, src2
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.MUL,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
     if (std.mem.eql(u8, op_lower, "div")) {
         // DIV dst, src1, src2
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
-        var it2 = std.mem.splitScalar(u8, rest, ',');
-        const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
-
-        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
-        const src2_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
-        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
-
-        const dst = try parseRegister(dst_str);
-        const src1 = try parseRegister(src1_str_trimmed);
-        const src2 = try parseRegister(src2_str);
-
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
         return encode(Instruction{
             .opcode = Opcode.DIV,
-            .dst = dst,
-            .src1 = src1,
-            .src2 = src2,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
         });
     }
 
     if (std.mem.eql(u8, op_lower, "inc")) {
         // INC dst
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
         const dst_str = std.mem.trim(u8, rest, " \t");
-
         const dst = try parseRegister(dst_str);
-
         return encode(Instruction{
             .opcode = Opcode.INC,
             .dst = dst,
@@ -406,14 +167,165 @@ fn parseLine(line: []const u8) !u32 {
 
     if (std.mem.eql(u8, op_lower, "dec")) {
         // DEC dst
-        const rest = std.mem.trimLeft(u8, it.rest(), " \t");
         const dst_str = std.mem.trim(u8, rest, " \t");
-
         const dst = try parseRegister(dst_str);
-
         return encode(Instruction{
             .opcode = Opcode.DEC,
             .dst = dst,
+        });
+    }
+
+    // === LOGIC (AND, OR, XOR, NOT, SHL, SHR) ===
+    if (std.mem.eql(u8, op_lower, "and")) {
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.AND,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "or")) {
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.OR,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "xor")) {
+        const r = try parseThreeOp(std.heap.page_allocator, rest);
+        return encode(Instruction{
+            .opcode = Opcode.XOR,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "not")) {
+        // NOT dst
+        const dst_str = std.mem.trim(u8, rest, " \t");
+        const dst = try parseRegister(dst_str);
+        return encode(Instruction{
+            .opcode = Opcode.NOT,
+            .dst = dst,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "shl")) {
+        // SHL dst, src1, shift
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
+        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
+        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src1 = try parseRegister(src1_str_trimmed);
+        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
+
+        return encode(Instruction{
+            .opcode = Opcode.SHL,
+            .dst = dst,
+            .src1 = src1,
+            .immediate = shift,
+            .has_imm = true,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "shr")) {
+        // SHR dst, src1, shift
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
+        const shift_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
+        const src1_str_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src1 = try parseRegister(src1_str_trimmed);
+        const shift = std.fmt.parseInt(i16, shift_str, 10) catch return error.InvalidImmediate;
+
+        return encode(Instruction{
+            .opcode = Opcode.SHR,
+            .dst = dst,
+            .src1 = src1,
+            .immediate = shift,
+            .has_imm = true,
+        });
+    }
+
+    // === MEMORY (LD, ST, LDI, STI) ===
+    if (std.mem.eql(u8, op_lower, "ld")) {
+        // LD dst, src
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src = try parseRegister(src_str);
+
+        return encode(Instruction{
+            .opcode = Opcode.LD,
+            .dst = dst,
+            .src1 = src,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "st")) {
+        // ST src, dst
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const src_str = std.mem.trim(u8, it2.first(), " \t");
+        const dst_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const src = try parseRegister(src_str);
+        const dst = try parseRegister(dst_str);
+
+        return encode(Instruction{
+            .opcode = Opcode.ST,
+            .src1 = src,
+            .dst = dst,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "ldi")) {
+        // LDI dst, imm
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const imm_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const dst = try parseRegister(dst_str);
+        const imm = std.fmt.parseInt(i16, imm_str, 10) catch return error.InvalidImmediate;
+
+        return encode(Instruction{
+            .opcode = Opcode.LDI,
+            .dst = dst,
+            .immediate = imm,
+            .has_imm = true,
+        });
+    }
+
+    if (std.mem.eql(u8, op_lower, "sti")) {
+        // STI imm, dst (store immediate to memory)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const imm_str = std.mem.trim(u8, it2.first(), " \t");
+        const dst_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const imm = std.fmt.parseInt(i16, imm_str, 10) catch return error.InvalidImmediate;
+        const dst = try parseRegister(dst_str);
+
+        return encode(Instruction{
+            .opcode = Opcode.STI,
+            .dst = dst,
+            .immediate = imm,
+            .has_imm = true,
         });
     }
 

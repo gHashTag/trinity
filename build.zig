@@ -2688,7 +2688,7 @@ pub fn build(b: *std.Build) void {
     const tri27 = b.addExecutable(.{
         .name = "tri27",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/tri27_cli_fixed.zig"),
+            .root_source_file = b.path("src/tri27/tri27_cli.zig"),
             .target = target,
             .optimize = optimize,
         }),
