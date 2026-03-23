@@ -26,6 +26,7 @@ const Config = struct {
     ping_mode: bool,
     auto_configure: bool,
     device: ?[]const u8,
+    continuous: bool,
 };
 
 // PING/PONG protocol
@@ -47,6 +48,7 @@ fn parseArgs() Config {
         .ping_mode = false,
         .auto_configure = false,
         .device = null,
+        .continuous = false,
     };
 
     var i: usize = 1;
@@ -96,6 +98,8 @@ fn parseArgs() Config {
             config.ping_mode = true;
         } else if (std.mem.eql(u8, arg, "--auto-configure")) {
             config.auto_configure = true;
+        } else if (std.mem.eql(u8, arg, "--continuous")) {
+            config.continuous = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -108,7 +112,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.5            ║
+        \\║      Trinity UART Echo Test v3.6            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -119,6 +123,7 @@ fn printUsage() void {
         \\  --device <path>   Serial device (default: auto-detect)
         \\  -v, --verbose     Enable verbose logging
         \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
+        \\  --continuous      Run tests in continuous loop (Ctrl+C to stop)
         \\  --help            Show this help message
         \\
         \\Example:
@@ -141,7 +146,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.5           ║
+        \\║      Trinity UART Echo Test v3.6           ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -253,22 +258,45 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
     var passed: usize = 0;
     var test_idx: usize = 0;
+    var cycle: usize = 1;
 
-    while (test_idx < tests.len) {
-        const testCase = tests[test_idx];
-        if (testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config)) {
-            passed += 1;
+    while (true) {
+        if (config.continuous) {
+            printErr("\n", .{});
+            printErr("╔══════════════════════════════════════╗\n", .{});
+            printErr("║          CYCLE {d}                      ║\n", .{cycle});
+            printErr("╚════════════════════════════════════════╝\n", .{});
         }
-        std.Thread.sleep(config.delay_ms * 1_000_000);
-        test_idx += 1;
-    }
 
-    printErr("\n", .{});
-    printErr("╔══════════════════════════════════════╗\n", .{});
-    printErr("║          SUMMARY                      ║\n", .{});
-    printErr("╚════════════════════════════════════════╝\n", .{});
-    printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
-    printErr("\n", .{});
+        var cycle_passed: usize = 0;
+        test_idx = 0;
+
+        while (test_idx < tests.len) {
+            const testCase = tests[test_idx];
+            if (testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config)) {
+                cycle_passed += 1;
+            }
+            std.Thread.sleep(config.delay_ms * 1_000_000);
+            test_idx += 1;
+        }
+
+        passed += cycle_passed;
+
+        if (!config.continuous) {
+            printErr("\n", .{});
+            printErr("╔══════════════════════════════════════╗\n", .{});
+            printErr("║          SUMMARY                      ║\n", .{});
+            printErr("╚════════════════════════════════════════╝\n", .{});
+            printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
+            printErr("\n", .{});
+            break;
+        } else {
+            printErr("\n", .{});
+            printErr("  [i] Cycle {d} result: {d}/{d} passed\n", .{ cycle, cycle_passed, tests.len });
+            cycle += 1;
+            std.Thread.sleep(2_000_000); // 2 second delay between cycles
+        }
+    }
 }
 
 fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) bool {
