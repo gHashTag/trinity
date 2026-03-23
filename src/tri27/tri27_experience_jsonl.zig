@@ -62,7 +62,7 @@ pub fn saveTri27Episode(
         .disassemble => "DISASSEMBLE",
         .run => "RUN",
         .validate => "VALIDATE",
-    else => "UNKNOWN",
+        else => "UNKNOWN",
     };
     const task_len = std.fmt.bufPrint(&task_buf, "{s} {s}", .{ task_desc, input_file }) catch {
         std.mem.copyFor(u8, episode.task[0..task_len], task_buf);
@@ -96,9 +96,8 @@ pub fn saveTri27Episode(
     // Save via common Episode/JSONL
     try tri_experience.saveEpisode(episode);
     print("{s}✅ TRI‑27 episode saved ({s}: {s} → {s}){s}\n", .{
-        GREEN, kind.toStr(), RESET,
-        episode.timestamp, RESET,
-        EPISODES_DIR,
+        GREEN,             kind.toStr(), RESET,
+        episode.timestamp, RESET,        EPISODES_DIR,
         RESET,
     });
 }
