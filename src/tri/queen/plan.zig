@@ -5,15 +5,36 @@ const std = @import("std");
 
 /// Import from Evaluate stage
 pub const Evaluation = @import("evaluate.zig").Evaluation;
+pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
+pub const Action = @import("evaluate.zig").Action;
+pub const Context = @import("observe.zig").Context;
 
-/// ═════════════════════════════════════════════════════════════════════════════════════
-// ACTION TYPES — What can be done in Lotus Cycle
-/// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ approval check
-4. Build execution plan (substeps, dependencies, rollback)
-5. Generate PolicyDelta if action modifies policy
+/// Plan step
+pub const Step = struct {
+    name: []const u8,
+    command: []const u8,
+};
 
-// Plan generation with validation
+/// Rollback plan
+pub const Rollback = struct {
+    action: Action,
+    key: []const u8,
+    reason: []const u8,
+};
+
+/// Plan generated from evaluation
+pub const Plan = struct {
+    action: Action,
+    key: []const u8,
+    quality_score: f64,
+    steps: []const Step,
+    rollback: ?Rollback,
+};
+
+/// Generate execution plan
 pub fn plan(eval: Evaluation, policy: PolicySnapshot) !Plan {
+    _ = policy;
+
     var steps = std.ArrayList(Step).init(std.heap.page_allocator);
     defer steps.deinit();
 
@@ -96,40 +117,7 @@ pub fn plan(eval: Evaluation, policy: PolicySnapshot) !Plan {
     };
 }
 
-/// Generate PolicyDelta from Plan
-pub fn generatePolicyDelta(plan: Plan) !PolicyDelta {
-    const old_value = getPolicyValue(plan.key);
-
-    const new_value = switch (plan.action) {
-        .scale_up => union { f64: plan.quality_score * 1.1 },
-        .scale_down => union { f64: plan.quality_score * 0.9 },
-        else => return PolicyDelta{},
-    };
-
-    return PolicyDelta{
-        .operation = .scale,
-        .key = plan.key,
-        .old_value = old_value,
-        .new_value = new_value,
-        .reason = plan.reason,
-        .expected_quality_delta = plan.quality_score,
-    };
-}
-
-/// Get current policy value by key
-fn getPolicyValue(key: []const u8) union { bool: bool, f64: f64 } {
-    if (std.mem.eql(u8, key, "kill_threshold")) return .{ .f64 = 4.0 };
-    if (std.mem.eql(u8, key, "crash_rate_limit")) return .{ .f64 = 0.2 };
-    if (std.mem.eql(u8, key, "byzantine_rate_limit")) return .{ .f64 = 0.15 };
-    if (std.mem.eql(u8, key, "god_mode")) return .{ .bool = true };
-    if (std.mem.eql(u8, key, "max_auto_level")) return .{ .f64 = 2.0 };
-
-    return .{ .f64 = 0.0 };
-}
-
 test "plan: generates valid plan for scale_up" {
-    const allocator = std.testing.allocator;
-
     const eval = Evaluation{
         .action = .scale_up,
         .key = "kill_threshold",
@@ -139,9 +127,9 @@ test "plan: generates valid plan for scale_up" {
 
     const policy = PolicySnapshot{ .kill_threshold = 4.0 };
 
-    const plan = try plan(eval, policy);
+    const plan_result = try plan(eval, policy);
 
-    try std.testing.expect(plan.action == .scale_up);
-    try std.testing.expect(plan.steps.len > 0);
-    try std.testing.expect(plan.rollback != null);
+    try std.testing.expect(plan_result.action == .scale_up);
+    try std.testing.expect(plan_result.steps.len > 0);
+    try std.testing.expect(plan_result.rollback != null);
 }

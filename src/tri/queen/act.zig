@@ -5,15 +5,19 @@ const std = @import("std");
 
 /// Import from Plan stage
 pub const Plan = @import("plan.zig").Plan;
+pub const Step = @import("plan.zig").Step;
+pub const Rollback = @import("plan.zig").Rollback;
 pub const PolicyDelta = @import("plan.zig").PolicyDelta;
 pub const Evaluation = @import("evaluate.zig").Evaluation;
+const evaluate = @import("evaluate.zig").evaluate;
 pub const Context = @import("observe.zig").Context;
 pub const SensorsSnapshot = @import("observe.zig").SensorsSnapshot;
+pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
+const observe = @import("observe.zig").observe;
 
 /// ═══════════════════════════════════════════════════════════════════════════════════
 // RESULT OUTCOME — What happened after an action
 /// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 /// Outcome of an action execution
 pub const Outcome = enum {
     /// Action succeeded as expected
@@ -43,7 +47,7 @@ pub const Result = struct {
     /// Success/failure indicator
     success: bool,
     /// Error code (if failed)
-    error: ?[]const u8,
+    @"error": ?[]const u8,
     /// Timing information
     timing: Timing,
     /// Output data captured
@@ -69,14 +73,13 @@ pub const CycleResult = struct {
 /// ═════════════════════════════════════════════════════════════════════════════════════
 // RESULT OUTCOME — What happened after an action
 /// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════→ readCurrentSenses();
-
 /// Execute action and capture result
 pub fn act(plan: Plan) !Result {
     const start_ns = std.time.nanoTimestamp();
 
     var result = Result{
         .success = false,
-        .error = null,
+        .@"error" = null,
         .timing = Timing{
             .start_ns = start_ns,
             .end_ns = 0,
@@ -91,7 +94,7 @@ pub fn act(plan: Plan) !Result {
         if (plan.rollback) |rollback| {
             rollbackPolicyChange(rollback) catch {};
         }
-    };
+    }
 
     // Execute based on action type
     switch (plan.action) {
@@ -118,6 +121,7 @@ pub fn act(plan: Plan) !Result {
 
 /// Execute policy scaling action
 fn executePolicyScale(key: []const u8, multiplier: f64, quality: f64) !Result {
+    _ = quality;
     const start_ns = std.time.nanoTimestamp();
 
     // 1. Read current policy
@@ -128,12 +132,11 @@ fn executePolicyScale(key: []const u8, multiplier: f64, quality: f64) !Result {
     const contents = file.readToEndAlloc(std.heap.page_allocator, 1024 * 1024) catch |err| {
         return Result{
             .success = false,
-            .error = try std.fmt.allocPrint(std.heap.page_allocator, "Read failed: {s}", .{err}),
+            .@"error" = try std.fmt.allocPrint(std.heap.page_allocator, "Read failed: {s}", .{err}),
             .timing = Timing{ .start_ns = start_ns, .end_ns = std.time.nanoTimestamp(), .duration_ms = 0 },
             .output = null,
             .new_senses = undefined,
         };
-    };
     };
     defer std.heap.page_allocator.free(contents);
 
@@ -166,13 +169,13 @@ fn executePolicyScale(key: []const u8, multiplier: f64, quality: f64) !Result {
 
     return Result{
         .success = true,
-        .error = null,
+        .@"error" = null,
         .timing = Timing{
             .start_ns = start_ns,
             .end_ns = end_ns,
             .duration_ms = (end_ns - start_ns) / 1_000_000,
         },
-        .output = try std.fmt.allocPrint(std.heap.page_allocator, "Scaled {s} by {d:.2}", .{key, multiplier}),
+        .output = try std.fmt.allocPrint(std.heap.page_allocator, "Scaled {s} by {d:.2}", .{ key, multiplier }),
         .new_senses = try readCurrentSenses(),
     };
 }
@@ -218,7 +221,7 @@ fn executeTrigger(command: []const u8) !Result {
 
     return Result{
         .success = true,
-        .error = null,
+        .@"error" = null,
         .timing = Timing{
             .start_ns = start_ns,
             .end_ns = end_ns,

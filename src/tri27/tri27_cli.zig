@@ -10,7 +10,7 @@ const Instruction = Decoder.Instruction;
 const Assembler = @import("emu/tri_asm.zig");
 const Executor = @import("emu/executor.zig");
 const CPUState = @import("emu/cpu_state.zig").CPUState;
-const tri27_experience = @import("tri27_experience");
+const tri27_experience = @import("tri27_experience.zig");
 const tri27_experience_jsonl = @import("tri27_experience_jsonl.zig");
 
 const print = std.debug.print;
@@ -137,13 +137,13 @@ fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
     @memcpy(cpu_memory[0..copy_len], tbin_content[0..copy_len]);
 
     // Execute program
-    _ = Executor.run(&cpu, cpu_memory) catch |err| {
-        print("{s}Execution error: {s}{s}\n", .{ RED, err, RESET });
+    Executor.run(&cpu, cpu_memory) catch |err| {
+        std.debug.print("Execution error: {}\n", .{err});
         return err;
     };
 
     print("{s}Execution result: HALTED{s}\n", .{ BOLD, RESET });
-    print("{s}PC: 0x{X:0>4}{s}\n", .{ cpu.pc, RESET });
+    print("{s}PC: 0x{X:0>4}{s}\n", .{ BOLD, cpu.pc, RESET });
     print("{s}Instructions executed: {d}{s}\n", .{ BOLD, cpu.instructions_executed, RESET });
     print("{s}Cycles: {d}{s}\n", .{ BOLD, cpu.cycles, RESET });
 
@@ -246,7 +246,17 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
         const input_file = if (args.len > 1) args[1] else "";
         const operation_str = if (args.len > 2) args[2] else "RUN";
 
-        var event = tri27_experience.Tri27Event{};
+        var event = tri27_experience.Tri27Event{
+            .timestamp = 0,
+            .operation = .assemble,
+            .input_file = [_]u8{0} ** 256,
+            .output_file = [_]u8{0} ** 256,
+            .status = .queued,
+            .cycles = 0,
+            .instructions = 0,
+            .error_msg = [_]u8{0} ** 512,
+            .has_error = false,
+        };
         event.timestamp = std.time.timestamp();
         event.operation = tri27_experience.parseOperation(operation_str);
 
