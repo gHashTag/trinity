@@ -360,7 +360,7 @@ fn parseOperand(text: []const u8, labels: *const LabelTable, line_num: usize) As
                 std.debug.print("Warning: label address 0x{x} exceeds i16 range, clamping\n", .{label_addr});
                 return @as(i16, 32767);
             }
-            return @as(i16, @truncate(label_addr & 0xFFFF));
+            return @bitCast(@as(u16, @truncate(label_addr)));
         }
         std.debug.print("Error: Undefined label '{s}' at line {d}\n", .{ trimmed, line_num });
         return error.UndefinedLabel;
