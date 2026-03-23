@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.30 — Buffered I/O, Batch Testing, Adaptive Timeout (fully implemented)
+//! v3.31 — Performance Report + Recommendations (fully implemented)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1151,11 +1151,12 @@ fn printUsage() void {
         \\  --fpga-verify       Enable FPGA verification mode
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.30):
+        \\Performance Modes (v3.31):
         \\  Default: Sequential echo test with verification
-        \\  Batch: Send N packets, measure aggregated throughput (NEW)
-        \\  Adaptive: Auto-tune timeout based on measured latency (NEW)
-        \\  Buffered: Pre-allocated I/O buffers (NEW)
+        \\  Batch: Send N packets, measure aggregated throughput
+        \\  Adaptive: Auto-tune timeout based on measured latency
+        \\  Buffered: Pre-allocated I/O buffers
+        \\  Performance: Report with efficiency & recommendations (NEW)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\
@@ -2251,6 +2252,27 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
         at.report();
     }
 
+    // v3.31: Performance report with recommendations
+    printErr("\n╔══════════════════════════════════════╗\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.31)   ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+    const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
+    const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
+    printErr("  Theoretical throughput: {d:.2} bytes/sec\n", .{theoretical});
+    printErr("  Actual throughput: {d:.2} bytes/sec\n", .{results.bytes_per_second});
+    printErr("  Efficiency: {d:.1}%\n", .{efficiency});
+
+    // Recommendations
+    printErr("\n  Recommendations:\n", .{});
+    const recs = PerformanceReport.generateRecommendations(
+        results.successRate(),
+        results.bytes_per_second,
+        config.baud,
+    );
+    for (recs) |rec| {
+        printErr("    {s}\n", .{rec});
+    }
+
     // Export to JSON if requested
     if (config.json_output) {
         var json_buf: [1024]u8 = undefined;
@@ -2279,6 +2301,51 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
         printErr("\n{s}\n", .{json});
     }
 }
+
+// v3.31: Performance report with recommendations
+const PerformanceReport = struct {
+    // Theoretical throughput at given baud rate
+    pub fn theoreticalThroughput(baud: u64) f64 {
+        // UART: 10 bits per byte (8 data + 1 start + 1 stop)
+        // 11 bits with parity if enabled (not used here)
+        const bits_per_byte: f64 = 10.0;
+        const bytes_per_second = @as(f64, @floatFromInt(baud)) / bits_per_byte;
+        return bytes_per_second;
+    }
+
+    // Calculate efficiency percentage
+    pub fn efficiency(actual: f64, theoretical: f64) f64 {
+        if (theoretical == 0) return 0.0;
+        return (actual / theoretical) * 100.0;
+    }
+
+    // Generate recommendations based on results
+    pub fn generateRecommendations(success_rate: f64, throughput: f64, baud: u64) []const []const u8 {
+        var recommendations = std.ArrayList([]const u8).empty;
+        defer recommendations.deinit(std.heap.page_allocator);
+
+        const theoretical = theoreticalThroughput(baud);
+        const eff = efficiency(throughput, theoretical);
+
+        if (success_rate < 95.0) {
+            recommendations.append(std.heap.page_allocator, "⚠️  Low success rate - check cable/connection") catch {};
+        }
+        if (eff < 50.0) {
+            recommendations.append(std.heap.page_allocator, "⚠️  Low throughput - may need flow control (RTS/CTS)") catch {};
+        }
+        if (eff > 95.0) {
+            recommendations.append(std.heap.page_allocator, "✅ Excellent throughput - connection optimal") catch {};
+        }
+        if (throughput > 1000.0 and eff > 80.0) {
+            recommendations.append(std.heap.page_allocator, "💡 Consider larger packets for better efficiency") catch {};
+        }
+        if (baud < 115200) {
+            recommendations.append(std.heap.page_allocator, "💡 Higher baud rate (115200+) recommended") catch {};
+        }
+
+        return recommendations.items;
+    }
+};
 
 // v3.24: Stress test mode - high-throughput continuous testing
 fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
