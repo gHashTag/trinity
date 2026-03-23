@@ -36,19 +36,18 @@ pub const Context = struct {
 /// Read sensors from .trinity/queen/senses.json
 fn loadSensors(allocator: std.mem.Allocator) !SensorsSnapshot {
     const file = std.fs.cwd().openFile(".trinity/queen/senses.json", .{}) catch {
-        // Return default if file not found
         return SensorsSnapshot{};
     };
     defer file.close();
 
-    // Read all file contents - Zig 0.15 requires max_bytes parameter
-    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch _ {
-        // Return default on error
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
         return SensorsSnapshot{};
     };
     defer allocator.free(contents);
 
-    return std.json.parseFromSlice(SensorsSnapshot, contents) catch SensorsSnapshot{},
+    const parsed = std.json.parseFromSlice(SensorsSnapshot, std.heap.page_allocator, contents, .{}) catch return SensorsSnapshot{};
+    defer parsed.deinit();
+    return parsed.value;
 }
 
 /// Read policy from .trinity/queen/policy.json
@@ -58,25 +57,25 @@ fn loadPolicy(allocator: std.mem.Allocator) !PolicySnapshot {
     };
     defer file.close();
 
-    // Read all file contents - Zig 0.15 requires max_bytes parameter
-    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch _ {
-        // Error captured but not used - this is acceptable
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
         return PolicySnapshot{};
     };
     defer allocator.free(contents);
 
-    return std.json.parseFromSlice(PolicySnapshot, contents) catch PolicySnapshot{};
+    const parsed = std.json.parseFromSlice(PolicySnapshot, std.heap.page_allocator, contents, .{}) catch return PolicySnapshot{};
+    defer parsed.deinit();
+    return parsed.value;
 }
 
 /// Observe: gather current state from sensors and policy
 pub fn observe(allocator: std.mem.Allocator) !Context {
-    const now_ns = std.time.nanoTimestamp();
+    const now_ns: u64 = @as(u64, @intCast(std.time.nanoTimestamp()));
 
     const senses = try loadSensors(allocator);
     const policy = try loadPolicy(allocator);
 
-    // Placeholder for active issues (empty for now)
     const active_issues = try allocator.alloc(u64, 0);
+    defer allocator.free(active_issues);
 
     return Context{
         .timestamp_ns = now_ns,

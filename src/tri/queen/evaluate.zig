@@ -34,12 +34,12 @@ pub const Evaluation = struct {
 
 /// Generate candidates based on context
 pub fn generateCandidates(context: Context) ![]Candidate {
-    var candidates = std.ArrayList(Candidate).init(std.heap.page_allocator);
-    defer candidates.deinit();
+    var candidates = try std.ArrayList(Candidate).initCapacity(std.heap.page_allocator, 0);
+    defer candidates.deinit(std.heap.page_allocator);
 
     // 1. Candidate: scale up kill_threshold (if PPL is good)
     if (context.senses.farm_best_ppl < context.policy.kill_threshold) {
-        try candidates.append(Candidate{
+        try candidates.append(std.heap.page_allocator, Candidate{
             .action = .scale_up,
             .key = "kill_threshold",
             .quality_score = 0.5,
@@ -49,7 +49,7 @@ pub fn generateCandidates(context: Context) ![]Candidate {
 
     // 2. Candidate: scale down kill_threshold (if PPL is worse)
     if (context.senses.farm_best_ppl > context.policy.kill_threshold) {
-        try candidates.append(Candidate{
+        try candidates.append(std.heap.page_allocator, Candidate{
             .action = .scale_down,
             .key = "kill_threshold",
             .quality_score = -0.3,
@@ -58,7 +58,7 @@ pub fn generateCandidates(context: Context) ![]Candidate {
     }
 
     // 3. Candidate: wait (no action needed)
-    try candidates.append(Candidate{
+    try candidates.append(std.heap.page_allocator, Candidate{
         .action = .wait,
         .key = "",
         .quality_score = 0.0,
@@ -66,14 +66,14 @@ pub fn generateCandidates(context: Context) ![]Candidate {
     });
 
     // 4. Candidate: trigger farm status check
-    try candidates.append(Candidate{
+    try candidates.append(std.heap.page_allocator, Candidate{
         .action = .trigger,
         .key = "farm_status",
         .quality_score = 0.2,
         .reason = "Check current farm state",
     });
 
-    return candidates.toOwnedSlice();
+    return try candidates.toOwnedSlice(std.heap.page_allocator);
 }
 
 /// Generate candidate actions from context
