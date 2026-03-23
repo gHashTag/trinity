@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.45 — JSON Export with RTT Percentiles
+//! v3.46 — CSV Export with RTT Percentiles
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -82,6 +82,7 @@ const Config = struct {
     continuous: bool,
     output_file: ?[]const u8,
     json_output: bool,
+    csv_output: bool,  // v3.46: CSV export
     config_file: ?[]const u8,
     measure_throughput: bool,
     // v3.14 features
@@ -906,6 +907,7 @@ fn parseArgs() Config {
         .continuous = false,
         .output_file = null,
         .json_output = false,
+        .csv_output = false,  // v3.46: CSV export
         .config_file = null,
         .measure_throughput = false,
         .simulation_mode = false,
@@ -995,6 +997,9 @@ fn parseArgs() Config {
             config.measure_throughput = true;
         } else if (std.mem.eql(u8, arg, "--json")) {
             config.json_output = true;
+        } else if (std.mem.eql(u8, arg, "--csv")) {
+            // v3.46: CSV export
+            config.csv_output = true;
         } else if (std.mem.eql(u8, arg, "--retries")) {
             if (i + 1 >= std.os.argv.len) {
                 printErr("[*] --retries requires value\n", .{});
@@ -1301,7 +1306,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.45           ║
+        \\║      Trinity UART Echo Test v3.46           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1319,6 +1324,7 @@ fn printUsage() void {
         \\  --throughput        Measure and display throughput statistics
         \\  --output <file>     Export results to CSV file
         \\  --json              Export results to JSON format
+        \\  --csv               Export results to CSV format (v3.46)
         \\  --batch-size <n>    Send N packets per batch (default: 16)
         \\  --buffer-size <n>   I/O buffer size in bytes (default: 4096)
         \\  --adaptive-timeout   Dynamically adjust timeout based on RTT
@@ -1345,7 +1351,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.45):
+        \\Performance Modes (v3.46):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1363,6 +1369,7 @@ fn printUsage() void {
         \\  Stress Error Tracking: Write/read error tracking for stress test mode (v3.43)
         \\  RTT Percentiles: p50/p90/p95/p99 latency percentiles with jitter tracking (v3.44)
         \\  JSON Percentiles: Export RTT percentiles in JSON output (v3.45)
+        \\  CSV Percentiles: Export RTT percentiles in CSV format (v3.46)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2632,6 +2639,11 @@ fn runSimulation(config: Config) !void {
         exportSimulationJSON(passed, tests.len, total_time_ms, &jitter_tracker);
     }
 
+    // v3.46: Export to CSV if requested
+    if (config.csv_output) {
+        exportSimulationCSV(passed, tests.len, total_time_ms, &jitter_tracker);
+    }
+
     // v3.35: Show latency histogram if measure_jitter is enabled
     if (config.measure_jitter) {
         printErr("\n[i] Latency Distribution:\n", .{});
@@ -3501,4 +3513,37 @@ fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64, jitter_
 
     printErr("\n}}\n", .{});
     printErr("\n[+] Simulation JSON export complete\n", .{});
+}
+
+// v3.46: Export CSV with percentiles
+fn exportSimulationCSV(passed: usize, total: usize, total_time_ms: i64, jitter_tracker: ?*const JitterTracker) void {
+    // CSV Header
+    printErr("timestamp,version,mode,passed,total,success_rate,total_time_ms", .{});
+    if (jitter_tracker) |jt| {
+        if (jt.count > 1) {
+            printErr(",p50_us,p50_ms,p90_us,p90_ms,p95_us,p95_ms,p99_us,p99_ms", .{});
+        }
+    }
+    printErr("\n", .{});
+
+    // CSV Data
+    const timestamp = std.time.timestamp();
+    const success_rate = @as(f64, @floatFromInt(passed)) / @as(f64, @floatFromInt(total)) * 100.0;
+
+    printErr("{d},3.46,simulation,{d},{d},{d:.1},{d}", .{ timestamp, passed, total, success_rate, total_time_ms });
+
+    if (jitter_tracker) |jt| {
+        if (jt.count > 1) {
+            const p = jt.getPercentiles();
+            const p50_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+            const p90_ms = @as(f64, @floatFromInt(p.p90)) / 1000.0;
+            const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+            const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+            printErr(",{d},{d:.2},{d},{d:.2},{d},{d:.2},{d},{d:.2}", .{ p.p50, p50_ms, p.p90, p90_ms, p.p95, p95_ms, p.p99, p99_ms });
+        }
+    }
+
+    printErr("\n", .{});
+    printErr("\n[+] Simulation CSV export complete\n", .{});
 }
