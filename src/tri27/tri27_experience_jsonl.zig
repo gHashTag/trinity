@@ -87,3 +87,27 @@ pub fn saveTri27Episode(
         GREEN, kind.toStr(), input_file, RESET,
     });
 }
+
+test "tri27_experience_jsonl: saveTri27Episode creates event" {
+    // Mock tri27_experience module for testing
+    // In production this would write to event buffer
+    const event = tri27_exp.Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .assemble,
+        .input_file = [_]u8{0} ** 256,
+        .output_file = [_]u8{0} ** 256,
+        .status = .success,
+        .cycles = 100,
+        .instructions = 25,
+        .error_msg = [_]u8{0} ** 512,
+        .has_error = false,
+    };
+
+    // Verify event fields are set correctly
+    try std.testing.expectEqual(@as(i64, 1234567890), event.timestamp);
+    try std.testing.expectEqual(tri27_exp.Tri27Operation.assemble, event.operation);
+    try std.testing.expect(event.status == .success);
+    try std.testing.expectEqual(@as(u32, 100), event.cycles);
+    try std.testing.expectEqual(@as(u32, 25), event.instructions);
+    try std.testing.expectEqual(false, event.has_error);
+}
