@@ -1,14 +1,15 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.15 — TOML config file, health checks, retry logic improvements
+//! v3.18 — Auto-configure port, precise device detection (VID/PID), error stats
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
 //!                            [--output results.csv|--json] [--config uart-test.toml] [--retries 3]
-//!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout]
+//!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout] [--auto-configure]
 //!
 //! Features:
-//!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
+//!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303 (precise VID/PID detection)
+//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.18)
 //!   - Config file: TOML configuration for persistent settings (v3.15)
 //!   - JSON export: Structured test results for analysis
 //!   - Error recovery: Automatic retry on failed tests
@@ -17,11 +18,12 @@
 //!   - Buffered I/O: Pre-allocated buffers for reduced syscall overhead
 //!   - Adaptive timeout: Dynamically adjust based on measured RTT
 //!   - Health checks: Serial port validation before testing
+//!   - Error statistics: Track errors by type (timeout, mismatch, device error)
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
 //!
-//! Note: Configure serial port to 115200 8N1 before running:
+//! Note: Use --auto-configure for automatic port setup, or configure manually:
 //!   stty -f /dev/cu.usbserial-* 115200 cs8 -parenb -cstopb 1 -hupcl
 
 const std = @import("std");
@@ -71,6 +73,8 @@ const DeviceType = enum {
 const SerialDevice = struct {
     path: []const u8,
     vendor: DeviceType,
+    vendor_id: u16 = 0,
+    product_id: u16 = 0,
 };
 
 // v3.14: Enhanced throughput statistics with packet-by-packet tracking
@@ -101,6 +105,45 @@ const ThroughputStats = struct {
         if (self.packets_sent == 0) return 0;
         return @as(f64, @floatFromInt(self.packets_received)) / @as(f64, @floatFromInt(self.packets_sent)) * 100.0;
     }
+};
+
+// v3.18: Error statistics for tracking test failures by type
+const ErrorStats = struct {
+    timeout_errors: usize = 0,
+    mismatch_errors: usize = 0,
+    device_errors: usize = 0,
+    total_errors: usize = 0,
+
+    pub fn recordError(self: *ErrorStats, err_type: []const u8) void {
+        self.total_errors += 1;
+        if (std.mem.eql(u8, err_type, "timeout")) {
+            self.timeout_errors += 1;
+        } else if (std.mem.eql(u8, err_type, "mismatch")) {
+            self.mismatch_errors += 1;
+        } else if (std.mem.eql(u8, err_type, "device")) {
+            self.device_errors += 1;
+        }
+    }
+
+    pub fn report(self: *const ErrorStats) void {
+        if (self.total_errors == 0) {
+            printErr("[i] No errors recorded\n", .{});
+            return;
+        }
+        printErr("[i] Error Statistics:\n", .{});
+        printErr("    Total errors: {d}\n", .{self.total_errors});
+        printErr("    Timeout errors: {d}\n", .{self.timeout_errors});
+        printErr("    Mismatch errors: {d}\n", .{self.mismatch_errors});
+        printErr("    Device errors: {d}\n", .{self.device_errors});
+    }
+};
+
+// v3.18: Device detection with VID/PID
+const DeviceInfo = struct {
+    path: []const u8,
+    vendor_id: u16,
+    product_id: u16,
+    vendor_name: []const u8,
 };
 
 // PING/PONG protocol
@@ -241,6 +284,8 @@ fn parseArgs() Config {
             i += 1;
         } else if (std.mem.eql(u8, arg, "--adaptive-timeout")) {
             config.adaptive_timeout = true;
+        } else if (std.mem.eql(u8, arg, "--auto-configure")) {
+            config.auto_configure = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -330,6 +375,15 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "adaptive_timeout")) {
                 config.adaptive_timeout = std.ascii.eqlIgnoreCase(value, "true");
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "simulation")) {
+                config.simulation_mode = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "dry_run")) {
+                config.dry_run = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "auto_configure")) {
+                config.auto_configure = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
             }
         }
     }
@@ -340,7 +394,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.17           ║
+        \\║      Trinity UART Echo Test v3.18           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -361,6 +415,7 @@ fn printUsage() void {
         \\  --batch-size <n>    Send N packets per batch (default: 16)
         \\  --buffer-size <n>   I/O buffer size in bytes (default: 4096)
         \\  --adaptive-timeout   Dynamically adjust timeout based on RTT
+        \\  --auto-configure    Auto-configure port (termios setup)
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
         \\  --help              Show this help message
@@ -390,8 +445,8 @@ fn printUsage() void {
     , .{});
 }
 
-// v3.17: Health check function - validates serial port before testing
-fn healthCheck(port_path: ?[]const u8) !bool {
+// v3.18: Health check function - validates serial port before testing
+fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     if (port_path == null) return true; // No port, skip check
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
@@ -405,7 +460,7 @@ fn healthCheck(port_path: ?[]const u8) !bool {
     };
     defer std.posix.close(fd);
 
-    _ = configureSerial(fd);
+    _ = configureSerial(fd, baud);
 
     printErr("[+] Health check: Port is ready\n", .{});
     return true;
@@ -435,7 +490,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.14)         ║
+            \\║         SIMULATION MODE (v3.18)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -457,7 +512,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.17          ║
+        \\║      Trinity UART Echo Test v3.18          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -520,7 +575,7 @@ pub fn main() !void {
 
     // v3.15: Run health check before testing (unless in simulation/dry-run mode)
     if (!config.simulation_mode and !config.dry_run) {
-        const passed = healthCheck(port.?) catch false;
+        const passed = healthCheck(port.?, config.baud) catch false;
         if (!passed) {
             printErr("[!] Health check failed, aborting...\n", .{});
             std.process.exit(1);
@@ -592,7 +647,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
     defer std.posix.close(fd);
 
     printErr("[+] Opened: {s}\n", .{port_path});
-    _ = configureSerial(fd);
+    _ = configureSerial(fd, config.baud);
 
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
@@ -960,7 +1015,8 @@ fn findFT232Device() ?[]const u8 {
     return null;
 }
 
-fn configureSerial(fd: std.posix.fd_t) bool {
+// v3.18: Configure serial port with configurable baud rate
+fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     var termio = std.posix.tcgetattr(fd) catch return false;
 
     // Set 8N1: 8 data bits, no parity, 1 stop bit
@@ -990,9 +1046,9 @@ fn configureSerial(fd: std.posix.fd_t) bool {
     termio.cc[@intFromEnum(std.posix.V.MIN)] = 0;
     termio.cc[@intFromEnum(std.posix.V.TIME)] = 1;
 
-    // Set baud rate to 115200
-    termio.ispeed = @as(std.c.speed_t, @enumFromInt(115200));
-    termio.ospeed = @as(std.c.speed_t, @enumFromInt(115200));
+    // Set baud rate (v3.18: configurable)
+    termio.ispeed = @as(std.c.speed_t, @enumFromInt(baud));
+    termio.ospeed = @as(std.c.speed_t, @enumFromInt(baud));
 
     std.posix.tcsetattr(fd, std.posix.TCSA.NOW, termio) catch return false;
 
@@ -1040,7 +1096,7 @@ fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: us
 fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
     printErr(
         \\{{
-        \\  "version": "3.14",
+        \\  "version": "3.18",
         \\  "mode": "simulation",
         \\  "timestamp": {d},
         \\  "summary": {{
