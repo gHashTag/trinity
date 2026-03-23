@@ -1142,6 +1142,8 @@ const DetailedTestResult = struct {
     bytes_received: usize,
     success: bool,
     rtt_ms: i64,
+    // v3.25: RTT in microseconds for jitter tracking
+    rtt_us: i64,
 };
 
 fn testEcho(port_path: []const u8, config: Config) void {
@@ -1233,7 +1235,9 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
     // v3.24: Latency histogram
     var histogram = LatencyHistogram{};
-
+    // v3.25: Jitter tracker for RTT variance measurement
+    var jitter_tracker = JitterTracker.init(std.heap.page_allocator);
+    defer jitter_tracker.deinit();
     while (true) {
         if (config.continuous) {
             printErr("\n", .{});
