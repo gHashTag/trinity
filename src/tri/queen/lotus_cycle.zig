@@ -11,6 +11,11 @@ pub const Evaluation = @import("evaluate.zig").Evaluation;
 pub const Plan = @import("plan.zig").Plan;
 pub const Result = @import("act.zig").Result;
 pub const CycleResult = @import("act.zig").CycleResult;
+pub const Outcome = @import("act.zig").Outcome;
+const observe = @import("observe.zig").observe;
+const evaluate = @import("evaluate.zig").evaluate;
+const plan = @import("plan.zig").plan;
+const act = @import("act.zig").act;
 
 /// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════Phase 6: Full Cycle Integration
 //
@@ -47,7 +52,6 @@ fn deriveOutcome(result: Result) Outcome {
     return .partial;
 }
 
-/// Test: Full cycle integration
 test "lotus_cycle: full cycle executes successfully" {
     const allocator = std.testing.allocator;
 

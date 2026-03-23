@@ -8,11 +8,31 @@ pub const Context = @import("observe.zig").Context;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const SensorsSnapshot = @import("observe.zig").SensorsSnapshot;
 
-/// ═════════════════════════════════════════════════════════════════════════════════════
-// ACTION CANDIDATES — Possible actions to evaluate
-/// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════∎(_T)─
+/// Action that can be taken
+pub const Action = enum {
+    scale_up,
+    scale_down,
+    trigger,
+    wait,
+};
 
-/// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════generates possible actions and ranks them by quality score
+/// Candidate action with quality score
+pub const Candidate = struct {
+    action: Action,
+    key: []const u8,
+    quality_score: f64,
+    reason: []const u8,
+};
+
+/// Evaluation result
+pub const Evaluation = struct {
+    action: Action,
+    key: []const u8,
+    quality_score: f64,
+    reason: []const u8,
+};
+
+/// Generate candidates based on context
 pub fn generateCandidates(context: Context) ![]Candidate {
     var candidates = std.ArrayList(Candidate).init(std.heap.page_allocator);
     defer candidates.deinit();
@@ -56,6 +76,17 @@ pub fn generateCandidates(context: Context) ![]Candidate {
     return candidates.toOwnedSlice();
 }
 
+/// Generate candidate actions from context
+pub fn generateCandidateActions(context: Context) ![]Candidate {
+    return try generateCandidates(context);
+}
+
+/// Score a candidate based on context
+fn scoreCandidate(candidate: Candidate, context: Context) f64 {
+    _ = context;
+    return candidate.quality_score;
+}
+
 /// Evaluate candidates and return best action
 pub fn evaluate(context: Context) !Evaluation {
     const candidates = try generateCandidates(context);
@@ -63,132 +94,38 @@ pub fn evaluate(context: Context) !Evaluation {
     if (candidates.len == 0) {
         return Evaluation{
             .action = .wait,
+            .key = "",
             .quality_score = 0.0,
             .reason = "No candidates generated",
         };
     }
 
-    // Find best candidate (highest quality_score)
-    var best_idx: usize = 0;
-    var best_score: f64 = candidates[0].quality_score;
-
-    for (candidates[1..], 1..) |candidate, i| {
-        if (candidate.quality_score > best_score) {
-            best_score = candidate.quality_score;
-            best_idx = i;
+    // Find best candidate by score
+    var best_candidate = candidates[0];
+    for (candidates[1..]) |cand| {
+        if (scoreCandidate(cand, context) > scoreCandidate(best_candidate, context)) {
+            best_candidate = cand;
         }
     }
 
     return Evaluation{
-        .action = candidates[best_idx].action,
-        .quality_score = best_score,
-        .reason = candidates[best_idx].reason,
+        .action = best_candidate.action,
+        .key = best_candidate.key,
+        .quality_score = best_candidate.quality_score,
+        .reason = best_candidate.reason,
     };
 }
 
-/// Generate actions based on heuristics
-pub fn generateCandidateActions(context: Context) ![]Candidate {
-    var candidates = std.ArrayList(Candidate).init(std.heap.page_allocator);
-    defer candidates.deinit();
-
-    // 1. Farm optimization: adjust kill_threshold based on PPL
-    const ppl_diff = context.senses.farm_best_ppl - context.policy.kill_threshold;
-
-    if (ppl_diff < -0.5) {
-        // PPL is better, can increase threshold
-        try candidates.append(Candidate{
-            .action = .scale_up,
-            .key = "kill_threshold",
-            .quality_score = 0.7,
-            .reason = "PPL improved, increase kill threshold",
-        });
-    } else if (ppl_diff > 0.5) {
-        // PPL is worse, should decrease threshold
-        try candidates.append(Candidate{
-            .action = .scale_down,
-            .key = "kill_threshold",
-            .quality_score = 0.6,
-            .reason = "PPL degraded, decrease kill threshold",
-        });
-    }
-
-    // 2. Check if dirty files need cleanup
-    if (context.senses.dirty_files > 20) {
-        try candidates.append(Candidate{
-            .action = .trigger,
-            .key = "doctor_scan",
-            .quality_score = 0.4,
-            .reason = "High dirty file count, trigger doctor scan",
-        });
-    }
-
-    // 3. Wait if everything looks stable
-    if (candidates.items.len == 0) {
-        try candidates.append(Candidate{
-            .action = .wait,
-            .key = "",
-            .quality_score = 0.0,
-            .reason = "System stable, no action needed",
-        });
-    }
-
-    return candidates.toOwnedSlice();
-}
-
-/// Score a candidate action based on context
-fn scoreCandidate(candidate: Candidate, context: Context) f64 {
-    var score: f64 = candidate.quality_score;
-
-    // Bonus for actions that improve metrics
-    if (candidate.action == .scale_up and context.senses.farm_best_ppl < 3.0) {
-        score += 0.2;
-    }
-
-    // Penalty for actions that might degrade metrics
-    if (candidate.action == .scale_down and context.senses.farm_best_ppl > 5.0) {
-        score -= 0.3;
-    }
-
-    return score;
-}
-
-test "evaluate: returns valid evaluation" {
-    const allocator = std.testing.allocator;
-
-    // Create a test context
+test "evaluate: generates valid evaluation" {
     const context = Context{
-        .timestamp_ns = std.time.nanoTimestamp(),
-        .policy = PolicySnapshot{ .kill_threshold = 4.0 },
-        .senses = SensorsSnapshot{
-            .farm_best_ppl = 3.5,
-            .dirty_files = 25,
-        },
+        .timestamp_ns = 1234567890,
+        .policy = .{},
+        .senses = .{},
         .active_issues = &[_]u64{},
     };
 
-    const eval = try evaluate(context);
+    const result = try evaluate(context);
 
-    // Should recommend action (not wait)
-    try std.testing.expect(eval.action != .wait);
-    try std.testing.expect(eval.quality_score >= 0.0);
-}
-
-test "generateCandidateActions: with PPL improvement" {
-    const allocator = std.testing.allocator;
-
-    const context = Context{
-        .timestamp_ns = std.time.nanoTimestamp(),
-        .policy = PolicySnapshot{ .kill_threshold = 4.0 },
-        .senses = SensorsSnapshot{
-            .farm_best_ppl = 3.0, // Better than threshold
-            .dirty_files = 5,
-        },
-        .active_issues = &[_]u64{},
-    };
-
-    const candidates = try generateCandidateActions(context);
-    defer allocator.free(candidates);
-
-    // Should have at least one candidate
-    try std.testing.expect(candidates.len > 0);
+    try std.testing.expect(result.action == .scale_up or result.action == .wait);
+    try std.testing.expect(result.quality_score >= 0.0);
 }

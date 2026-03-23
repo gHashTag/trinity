@@ -9,6 +9,8 @@ const EPISODES_DIR = ".trinity/tri27/episodes";
 
 const print = std.debug.print;
 
+pub const FormatError = error{FormatError};
+
 // ANSI colors
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -74,18 +76,18 @@ pub const Tri27Event = struct {
     }
 
     pub fn inputFile(self: Tri27Event) []const u8 {
-        const len = indexOfNull(self.input_file);
+        const len = indexOfNull(&self.input_file);
         return self.input_file[0..len];
     }
 
     pub fn outputFile(self: Tri27Event) []const u8 {
-        const len = indexOfNull(self.output_file);
+        const len = indexOfNull(&self.output_file);
         return self.output_file[0..len];
     }
 
     pub fn errorMsg(self: Tri27Event) []const u8 {
         if (!self.has_error) return "";
-        const len = indexOfNull(self.error_msg);
+        const len = indexOfNull(&self.error_msg);
         return self.error_msg[0..len];
     }
 };
@@ -187,7 +189,13 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
     const op_str = event.operation.toStr();
     const input_str = event.inputFile();
     var task_fmt_buf: [256]u8 = undefined;
-    const task_len = std.fmt.bufPrint(&task_fmt_buf, "{s} {s}", .{ op_str, input_str }) catch "";
+    const task_len = blk: {
+        const result = std.fmt.bufPrint(&task_fmt_buf, "{s} {s}", .{ op_str, input_str }) catch |err| {
+            std.debug.print("Error formatting task: {}\n", .{err});
+            break :blk @as(usize, 0);
+        };
+        break :blk result.len;
+    };
     // Copy task to episode
     var i: usize = 0;
     while (i < task_len) : (i += 1) {
@@ -200,9 +208,16 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
         std.mem.eql(u8, event.statusStr(), "PASS") or
         std.mem.eql(u8, event.statusStr(), "COMPLETED");
     if (is_success) {
-        std.mem.copyFor(u8, episode.verdict[0..], "SUCCESS");
+        @memcpy(episode.verdict[0..7], "SUCCESS");
+        episode.verdict[7] = 0;
     } else {
-        std.mem.copyFor(u8, episode.verdict[0..], "FAILURE");
+        episode.verdict[0] = 'F';
+        episode.verdict[1] = 'A';
+        episode.verdict[2] = 'I';
+        episode.verdict[3] = 'L';
+        episode.verdict[4] = 'U';
+        episode.verdict[5] = 'R';
+        episode.verdict[6] = 'E';
     }
 
     // Save episode directly
@@ -228,8 +243,7 @@ pub fn runStatus() !void {
 
         print("  [{d}] {s}{s}{s} {s}{s} → {s}{s}{s}\n", .{
             i + 1,        DIM,               RESET, opToString(event.operation),
-            BOLD,         event.inputFile(), DIM,   RESET,
-            status_color, status_text,       RESET,
+            BOLD,         event.inputFile(), status_color, status_text,       RESET,
         });
     }
 }
