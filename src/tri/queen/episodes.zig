@@ -241,7 +241,7 @@ pub fn getLastEpisode(allocator: std.mem.Allocator) !?Episode {
 
 pub const EpisodeStats = struct {
     total: u32,
-    by_source: [4]u32,
+    by_source: [5]u32, // Updated to include tri27
     by_outcome: [5]u32,
     last_24h: u32,
 };
@@ -255,7 +255,7 @@ pub fn getEpisodeStats(allocator: std.mem.Allocator) !EpisodeStats {
 
     var stats = EpisodeStats{
         .total = @intCast(episodes.len),
-        .by_source = [_]u32{0} ** 4,
+        .by_source = [_]u32{0} ** 5,
         .by_outcome = [_]u32{0} ** 5,
         .last_24h = 0,
     };
@@ -311,4 +311,15 @@ test "episodes: recordEpisode creates valid episode" {
     try std.testing.expect(episode.timestamp != 0);
     try std.testing.expect(episode.source == .lotus_cycle);
     try std.testing.expect(episode.context.timestamp_ns == 1234567890);
+}
+
+test "episodes: parseTri27Operation" {
+    try std.testing.expectEqual(Tri27Operation.assemble, parseTri27Operation("assemble"));
+    try std.testing.expectEqual(Tri27Operation.disassemble, parseTri27Operation("disassemble"));
+    try std.testing.expectEqual(Tri27Operation.run, parseTri27Operation("run"));
+    try std.testing.expectEqual(Tri27Operation.@"test", parseTri27Operation("test"));
+    try std.testing.expectEqual(Tri27Operation.validate, parseTri27Operation("validate"));
+    try std.testing.expectEqual(Tri27Operation.flash, parseTri27Operation("flash"));
+    try std.testing.expectEqual(Tri27Operation.dump, parseTri27Operation("dump"));
+    try std.testing.expectEqual(Tri27Operation.assemble, parseTri27Operation("unknown")); // Default
 }
