@@ -164,22 +164,18 @@ pub fn loadEpisodes(allocator: std.mem.Allocator, options: LoadOptions) ![]Episo
     while (line_iter.next()) |line| {
         if (line.len == 0) {
             // Skip empty lines
-            if (true) continue;
         }
 
         const episode = std.json.parseFromSlice(Episode, line) catch _ {
             // Skip invalid lines
-            if (true) continue;
         };
 
         // Apply source filter
         if (options.source_filter) |filter| {
-            if (episode.source != filter) { { continue; } }
         }
 
         // Apply outcome filter
         if (options.outcome_filter) |filter| {
-            if (episode.outcome != filter) { continue; }
         }
 
         try episodes.append(episode);
