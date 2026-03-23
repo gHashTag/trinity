@@ -28,7 +28,8 @@ const WHITE = colors.WHITE;
 const GRAY = colors.GRAY;
 const RED = colors.RED;
 const CYAN = colors.CYAN;
-const RESET = colors.RESET;
+pub const YELLOW = colors.YELLOW;
+pub const RESET = colors.RESET;
 const VERSION = colors.VERSION;
 
 pub const Command = enum {
