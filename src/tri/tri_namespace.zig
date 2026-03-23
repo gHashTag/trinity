@@ -115,7 +115,7 @@ pub fn allNamespaces() []const []const u8 {
 pub fn namespaceDescription(ns: Namespace) []const u8 {
     return switch (ns) {
         .core => "AI, math, science commands (default)",
-        .dev => "Development tools (test, bench, build, gen)",
+        .dev => "Rigid Process Framework (status, start, test, commit, ship, reset, unblock, log)",
         .forge => "FPGA toolchain (synth, route, flash)",
         .agent => "SWE agent, GitHub issues, protocol",
         .mcp => "MCP server management",
@@ -133,12 +133,14 @@ pub fn namespaceExamples(allocator: std.mem.Allocator, ns: Namespace) ![][]const
             "tri core cosmos hubble",
         },
         .dev => &[_][]const u8{
-            "tri dev test src/vsa.zig",
-            "tri dev bench --filter vsa",
-            "tri dev build",
-            "tri dev gen specs/my.tri",
-            "tri dev zai-proxy start",
-            "tri dev zai-proxy status",
+            "tri dev status",
+            "tri dev start --issue 42",
+            "tri dev test",
+            "tri dev commit 'chore: changes'",
+            "tri dev ship",
+            "tri dev reset",
+            "tri dev unblock",
+            "tri dev log",
         },
         .forge => &[_][]const u8{
             "tri forge fpga design.v",

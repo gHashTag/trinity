@@ -240,7 +240,7 @@ pub fn estimateCycles(opcode: Opcode) u64 {
 
 test "CPUState init zeros all registers" {
     const allocator = std.testing.allocator;
-    var cpu = try CPUState.init(allocator, 4096);
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
     try std.testing.expectEqual(@as(u32, 0), cpu.pc);
