@@ -50,6 +50,8 @@ pub const Source = enum {
     scheduled,
     /// Experience replay (from similar past episodes)
     experience_recall,
+    /// TRI-27 ISA operations (assemble/disassemble/run/test/validate/flash/dump)
+    tri27,
 };
 
 pub const Context = struct {
@@ -576,6 +578,51 @@ A full Lotus Cycle completes when all 5 stages have executed and the episode is 
 | `src/tri/github_integration.zig` | Issue creation/comments |
 | `src/tri/command_registry.zig` | Command execution |
 | `.trinity/queen/*.json` | State persistence |
+
+---
+
+## TRI-27 Integration
+
+Lotus Cycle automatically tracks TRI-27 ISA operations as episodes.
+
+**TRI-27 Operations** (tracked via `tri27_experience.zig`):
+- `assemble` — Compile .tasm → .tbin bytecode
+- `disassemble` — Decompile .tbin → .tasm source
+- `run` — Execute bytecode on TRI-27 emulator
+- `test` — Run golden tests
+- `validate` — Verify bytecode integrity
+- `flash` — Program FPGA with bitstream
+- `dump` — Extract program from FPGA
+
+**Integration Points**:
+```zig
+// src/tri/queen/tri27_bridge.zig
+pub fn fromTri27Event(
+    allocator: Allocator,
+    event: Tri27Event,
+    issue_id: ?u64,
+) !Episode { ... }
+```
+
+**Episode Fields for TRI-27**:
+```json
+{
+  "id": 1774303776421905000,
+  "timestamp": 1774303776421905000,
+  "source": "tri27",
+  "action_type": "tri27_op",
+  "input_file": "test_program.tasm",
+  "tri27_operation": "run",
+  "outcome": "success",
+  "success": true,
+  "duration_ms": 12
+}
+```
+
+**Status Tracking**:
+- Event buffer (circular, 32 entries)
+- Episodes directory: `.trinity/tri27/episodes/`
+- JSONL persistence: `.trinity/queen/episodes.jsonl`
 
 ---
 
