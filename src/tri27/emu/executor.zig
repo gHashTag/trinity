@@ -252,7 +252,7 @@ pub fn run(cpu: *CPUState, memory: []align(8) u8) ExecError!void {
 
         // Decode and execute
         const inst = decodeInstruction(inst_word);
-        std.debug.print("PC={d}: byte_addr={d}, word=0x{x:0>8}, bytes={x:0>2} {x:0>2} {x:0>2} {x:0>2}, opcode={s}\n", .{ cpu.pc, byte_addr, inst_word, memory[byte_addr], memory[byte_addr + 1], memory[byte_addr + 2], memory[byte_addr + 3], @tagName(inst.opcode) });
+        // std.debug.print("PC={d}: byte_addr={d}, word=0x{x:0>8}, bytes={x:0>2} {x:0>2} {x:0>2} {x:0>2}, opcode={s}\n", .{ cpu.pc, byte_addr, inst_word, memory[byte_addr], memory[byte_addr + 1], memory[byte_addr + 2], memory[byte_addr + 3], @tagName(inst.opcode) });
         try execute(cpu, inst, memory);
     }
 }
