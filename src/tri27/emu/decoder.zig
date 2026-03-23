@@ -148,28 +148,15 @@ pub fn decodeInstruction(word: u32) Instruction {
 
 /// Encode Instruction to 32-bit word
 pub fn encode(inst: Instruction) u32 {
-    std.debug.print("encode: opcode=0x{x:0>2} dst={d} src1={d} src2={d} imm={d} has_imm={any}\n", .{ @intFromEnum(inst.opcode), inst.dst, inst.src1, inst.src2, inst.immediate, inst.has_imm });
-
     var word: u32 = @intFromEnum(inst.opcode);
-    std.debug.print("  after opcode: 0x{x:0>8}\n", .{word});
     word |= @as(u32, inst.dst) << 8;
-    std.debug.print("  after dst:   0x{x:0>8}\n", .{word});
-
     word |= @as(u32, inst.src1) << 13;
-    std.debug.print("  after src1:  0x{x:0>8}\n", .{word});
-
     word |= @as(u32, inst.src2) << 18;
-    std.debug.print("  after src2:  0x{x:0>8}\n", .{word});
 
     // Encode 9-bit immediate (bits 23-31), sign-extended to 16 bits
-    // imm_raw is truncated to 9 bits, then sign-extended with 0xFE00
-    std.debug.print("  before imm: imm={d}\n", .{inst.immediate});
     var imm_bits: u16 = @bitCast(inst.immediate);
-    std.debug.print("  cast to u16: imm_bits=0x{x:0>4}\n", .{imm_bits});
     imm_bits &= 0x1FF; // Keep only 9 bits (0-255)
-    std.debug.print("  masked: imm_bits=0x{x:0>4}\n", .{imm_bits});
     word |= @as(u32, imm_bits) << 23;
-    std.debug.print("encode result: 0x{x:0>8}\n", .{word});
 
     return word;
 }

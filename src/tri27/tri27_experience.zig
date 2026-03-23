@@ -28,30 +28,40 @@ pub const Tri27Operation = enum(u8) {
     assemble = 1,
     disassemble = 2,
     run = 3,
-    validate = 4,
+    @"test" = 4,
+    validate = 5,
+    flash = 6,
+    dump = 7,
 
     pub fn toStr(self: Tri27Operation) []const u8 {
         return switch (self) {
             .assemble => "ASSEMBLE",
             .disassemble => "DISASSEMBLE",
             .run => "RUN",
+            .@"test" => "TEST",
             .validate => "VALIDATE",
+            .flash => "FLASH",
+            .dump => "DUMP",
         };
     }
 };
 
 pub const Tri27Status = enum(u8) {
     queued = 1,
-    in_progress = 2,
+    running = 2,
     success = 3,
-    failure = 4,
+    failed = 4,
+    timeout = 5,
+    cancelled = 6,
 
     pub fn toStr(self: Tri27Status) []const u8 {
         return switch (self) {
             .queued => "QUEUED",
-            .in_progress => "IN_PROGRESS",
+            .running => "RUNNING",
             .success => "SUCCESS",
-            .failure => "FAILURE",
+            .failed => "FAILED",
+            .timeout => "TIMEOUT",
+            .cancelled => "CANCELLED",
         };
     }
 
@@ -149,20 +159,7 @@ pub fn initEventLog() void {
     event_count = 0;
     buffer_initialized = true;
     // Reset buffer with default events
-    var i: usize = 0;
-    while (i < EventLogSize) : (i += 1) {
-        event_buffer[i] = .{
-            .timestamp = 0,
-            .operation = .assemble,
-            .input_file = [_]u8{0} ** 256,
-            .output_file = [_]u8{0} ** 256,
-            .status = .queued,
-            .cycles = 0,
-            .instructions = 0,
-            .error_msg = [_]u8{0} ** 512,
-            .has_error = false,
-        };
-    }
+    @memset(std.mem.sliceAsBytes(&event_buffer), 0);
 }
 
 pub fn logEvent(event: Tri27Event) void {
@@ -254,7 +251,10 @@ fn opToString(op: Tri27Operation) []const u8 {
         .assemble => "ASM",
         .disassemble => "DISASM",
         .run => "RUN",
+        .@"test" => "TEST",
         .validate => "VAL",
+        .flash => "FLASH",
+        .dump => "DUMP",
     };
 }
 
@@ -327,7 +327,10 @@ pub fn parseOperation(str: []const u8) Tri27Operation {
     if (std.mem.eql(u8, str, "ASM")) return .assemble;
     if (std.mem.eql(u8, str, "DISASM")) return .disassemble;
     if (std.mem.eql(u8, str, "RUN")) return .run;
+    if (std.mem.eql(u8, str, "TEST")) return .@"test";
     if (std.mem.eql(u8, str, "VAL")) return .validate;
+    if (std.mem.eql(u8, str, "FLASH")) return .flash;
+    if (std.mem.eql(u8, str, "DUMP")) return .dump;
     return .run; // default
 }
 
