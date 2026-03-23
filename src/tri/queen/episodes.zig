@@ -46,6 +46,19 @@ pub const Episode = struct {
     outcome: Outcome,
 };
 
+/// Simplified episode summary for JSONL persistence
+/// (Full Episode struct has unions that Zig 0.15 JSON cannot serialize)
+pub const EpisodeSummary = struct {
+    id: u64,
+    timestamp: u64,
+    source: Source,
+    action_type: []const u8,
+    key: []const u8,
+    outcome: Outcome,
+    success: bool,
+    duration_ms: u64,
+};
+
 pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan, result: Result, outcome: Outcome) !Episode {
     _ = allocator;
     return Episode{
@@ -80,7 +93,28 @@ pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
 
     try file.seekFromEnd(0);
 
-    const json = try std.json.stringifyAlloc(allocator, episode, .{ .whitespace = .minified });
+    // Create simplified summary for JSONL
+    const action_name = @tagName(episode.action);
+    const key = switch (episode.action) {
+        .scale_up => |a| a.key,
+        .scale_down => |a| a.key,
+        .trigger => |a| a.key,
+        .set => |a| a.key,
+        .wait => "",
+    };
+
+    const summary = EpisodeSummary{
+        .id = episode.id,
+        .timestamp = episode.timestamp,
+        .source = episode.source,
+        .action_type = action_name,
+        .key = key,
+        .outcome = episode.outcome,
+        .success = episode.result.success,
+        .duration_ms = episode.result.timing.duration_ms,
+    };
+
+    const json = try std.json.Stringify.valueAlloc(allocator, summary, .{ .whitespace = .minified });
     defer allocator.free(json);
 
     const line = try std.fmt.allocPrint(allocator, "{s}\n", .{json});
@@ -110,13 +144,36 @@ pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
     while (line_iter.next()) |line| {
         if (line.len == 0) continue;
 
-        const parsed = std.json.parseFromSlice(Episode, allocator, line, .{}) catch |err| {
+        // Parse EpisodeSummary instead of full Episode
+        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch |err| {
             _ = err;
             continue;
         };
         defer parsed.deinit();
 
-        try episodes.append(parsed.value);
+        // Create minimal Episode from summary
+        // Note: This loses context and result details - suitable for stats only
+        const summary = parsed.value;
+        const action: Action = if (std.mem.eql(u8, summary.action_type, "scale_up"))
+            Action{ .scale_up = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "scale_down"))
+            Action{ .scale_down = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "trigger"))
+            Action{ .trigger = .{ .key = summary.key } }
+        else
+            Action{ .wait = {} };
+
+        const ep = Episode{
+            .id = summary.id,
+            .timestamp = summary.timestamp,
+            .source = summary.source,
+            .context = undefined, // Not preserved in summary
+            .action = action,
+            .result = undefined, // Not preserved in summary
+            .outcome = summary.outcome,
+        };
+
+        try episodes.append(ep);
     }
 
     return try episodes.toOwnedSlice(allocator);
