@@ -48,7 +48,7 @@ pub const Config = struct {
 
     // Paths
     specs_dir: []const u8 = "specs/tri",
-    output_dir: []const u8 = "trinity/output",
+    output_dir: []const u8 = "var/trinity/output",
 
     // History
     history_size: usize = 1000,
@@ -237,7 +237,7 @@ pub const Config = struct {
             \\
             \\# Paths
             \\specs_dir=specs/tri
-            \\output_dir=trinity/output
+            \\output_dir=var/trinity/output
             \\editor=vim
             \\
             \\# Command history

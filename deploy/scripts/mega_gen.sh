@@ -15,7 +15,7 @@ MODULES=("$@")
 }
 
 SD="specs/tri/${DOMAIN}"
-OD="trinity/output"
+OD="var/trinity/output"
 mkdir -p "$SD"
 
 echo "⚡ TURBO GEN v6.0: ${#MODULES[@]} modules → $DOMAIN"

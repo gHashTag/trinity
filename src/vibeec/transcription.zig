@@ -74,7 +74,7 @@ fn printUsage() void {
         \\
         \\Examples:
         \\  transcription gen specs/tri/trinity_cli.tri
-        \\  transcription gen specs/tri/agent.tri trinity/output/agent.zig
+        \\  transcription gen specs/tri/agent.tri var/trinity/output/agent.zig
         \\
         \\Supported languages in .tri:
         \\  language: zig         -> Generates .zig file
@@ -211,8 +211,8 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
     else
         ".zig";
 
-    // Build output path: trinity/output/<name><ext>
-    return try std.fmt.allocPrint(allocator, "trinity/output/{s}{s}", .{ name, ext });
+    // Build output path: var/trinity/output/<name><ext>
+    return try std.fmt.allocPrint(allocator, "var/trinity/output/{s}{s}", .{ name, ext });
 }
 
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_path: []const u8) !void {

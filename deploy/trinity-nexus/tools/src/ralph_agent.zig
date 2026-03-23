@@ -311,7 +311,7 @@ pub fn tri_spec_create() !void {
 /// Then: Generate Zig code via VIBEE compiler
 pub fn tri_gen() !void {
             // zig build vibee -- gen <spec.vibee>
-        // Output goes to trinity/output/ (NEVER manually edit)
+        // Output goes to var/trinity/output/ (NEVER manually edit)
         // Supported targets: Zig, Python, Rust, Go, TS, Verilog, WASM
         // Verify generated code compiles: zig build
 

@@ -97,7 +97,7 @@ PHOENIX     = 999
 vibee gen specs/tri/igla_v8_omniscient_fusion.vibee
 
 # Tewithtandraboutinanande
-zig test trinity/output/igla_v8_omniscient_fusion.zig
+zig test var/trinity/output/igla_v8_omniscient_fusion.zig
 
 # Vwithe v8 :]and
 for f in specs/tri/igla_v8_*.vibee; do vibee gen "$f"; done

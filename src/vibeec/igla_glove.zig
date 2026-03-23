@@ -498,7 +498,7 @@ pub fn main() !void {
     print("     LOADING GLOVE 300d EMBEDDINGS                             \n", .{});
     print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
-    const embedding_path = "models/embeddings/glove.6B.300d.txt";
+    const embedding_path = "data/models/embeddings/glove.6B.300d.txt";
     const max_words: usize = 400_000;
 
     var timer = try std.time.Timer.start();

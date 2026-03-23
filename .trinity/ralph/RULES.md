@@ -3,7 +3,7 @@
 ## 1. Source of Truth
 - `specs/tri/*.vibee` governs ALL application code
 - Manual editing of generated files is FORBIDDEN
-- Generated output: `trinity/output/*.zig`, `trinity/output/fpga/*.v`, `generated/*.zig`
+- Generated output: `var/trinity/output/*.zig`, `var/trinity/output/fpga/*.v`, `generated/*.zig`
 
 ## 2. Branch Safety
 - NEVER commit to `main` or `master`

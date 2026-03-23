@@ -12,7 +12,7 @@ Related to #<issue_number>
 If this implements a feature from a `.vibee` specification, link it here:
 
 **Spec:** `specs/tri/<feature_name>.vibee`
-**Generated Code:** `trinity/output/<feature_name>.zig`
+**Generated Code:** `var/trinity/output/<feature_name>.zig`
 
 ## Changes Made
 
@@ -28,7 +28,7 @@ If this implements a feature from a `.vibee` specification, link it here:
 
 - `src/file1.zig` - Description of changes
 - `specs/tri/feature.vibee` - Updated specification
-- `trinity/output/feature.zig` - Generated code (DO NOT EDIT MANUALLY)
+- `var/trinity/output/feature.zig` - Generated code (DO NOT EDIT MANUALLY)
 - `docs/feature.md` - Documentation updates
 
 ## Golden Chain Checklist
@@ -40,7 +40,7 @@ All PRs MUST follow the Golden Chain workflow:
 - [ ] **Tests Pass:** `zig build test` passes (100% coverage for new code)
 - [ ] **Format Applied:** `zig fmt src/` applied (code follows style guide)
 - [ ] **No Forbidden Files:** No `.html`, `.css`, `.js`, `.ts`, `.jsx`, `.tsx` files (use VIBEE gen)
-- [ ] **No Manual Edits:** Did not manually edit files in `trinity/output/`
+- [ ] **No Manual Edits:** Did not manually edit files in `var/trinity/output/`
 
 ## Testing Checklist
 
@@ -165,7 +165,7 @@ If this PR involves sacred mathematics, golden ratio, or ternary computing:
 
 ## Deployment Notes
 
-- [ ] Website deployment required (see `CLAUDE.md` "Deployment" section)
+- [ ] Website deployment required (see CLAUDE.md "Deployment" section)
 - [ ] Docsite deployment required
 - [ ] Database migration required
 - [ ] Configuration changes required

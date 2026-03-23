@@ -11,13 +11,13 @@
 vibee gen specs/tri/igla_koshey_core.vibee
 
 # Test generated code
-zig test trinity/output/igla_koshey_core.zig
+zig test var/trinity/output/igla_koshey_core.zig
 
 # Generate all KOSHEY modules
 for f in specs/tri/igla_koshey*.vibee; do vibee gen "$f"; done
 
 # Test all KOSHEY modules
-cd trinity/output && for f in igla_koshey*.zig; do zig test "$f"; done
+cd var/trinity/output && for f in igla_koshey*.zig; do zig test "$f"; done
 ```
 
 ---

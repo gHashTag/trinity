@@ -34,7 +34,7 @@ This is the **UPDATED** agent guidelines for VIBEE development, reflecting the n
 **REQUIRED**:
 - ✅ Create `.vibee` specifications
 - ✅ Run `./bin/vibee gen specs/tri/feature.vibee`
-- ✅ Test generated code: `zig test trinity/output/feature.zig`
+- ✅ Test generated code: `zig test var/trinity/output/feature.zig`
 
 ### 3. LINEAR WORKFLOW (NO MORE TOXIC VERDICTS)
 

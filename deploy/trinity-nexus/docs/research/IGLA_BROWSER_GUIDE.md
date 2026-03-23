@@ -197,7 +197,7 @@ specs/tri/igla_self_healing.vibee
 
 ```bash
 # Test all browser modules
-cd trinity/output
+cd var/trinity/output
 zig test igla_cdp_client.zig
 zig test igla_browser_actions.zig
 zig test igla_ai_selectors.zig

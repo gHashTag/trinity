@@ -26,8 +26,8 @@ behaviors:
 
 | Target | Output |
 |--------|--------|
-| `language: zig` | `trinity/output/*.zig` |
-| `language: varlog` | `trinity/output/fpga/*.v` |
+| `language: zig` | `var/trinity/output/*.zig` |
+| `language: varlog` | `var/trinity/output/fpga/*.v` |
 
 ---
 

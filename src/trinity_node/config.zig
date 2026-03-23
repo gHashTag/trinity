@@ -45,7 +45,7 @@ pub const Config = struct {
     max_concurrent_jobs: u8 = 4,
 
     // Model
-    model_path: []const u8 = "models/tinyllama-q6k.gguf",
+    model_path: []const u8 = "data/models/tinyllama-q6k.gguf",
     max_batch_size: u32 = 1,
     max_context_length: u32 = 2048,
 

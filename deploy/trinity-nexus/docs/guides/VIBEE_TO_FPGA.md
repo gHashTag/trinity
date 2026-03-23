@@ -31,13 +31,13 @@ behaviors:
 
 ```bash
 ./bin/vibee gen specs/fpga/my_module.vibee
-# Output: trinity/output/fpga/my_module.v
+# Output: var/trinity/output/fpga/my_module.v
 ```
 
 ## Step 3: Simulate
 
 ```bash
-iverilog -o sim trinity/output/fpga/my_module.v testbench.v
+iverilog -o sim var/trinity/output/fpga/my_module.v testbench.v
 vvp sim
 ```
 
@@ -45,7 +45,7 @@ vvp sim
 
 ```tcl
 create_project my_module ./vivado -part xc7a35tcpg236-1
-add_files trinity/output/fpga/my_module.v
+add_files var/trinity/output/fpga/my_module.v
 launch_runs synth_1 -jobs 4
 launch_runs impl_1 -to_step write_bitstream
 ```

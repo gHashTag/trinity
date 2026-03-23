@@ -27,7 +27,7 @@ jobs:
           
       - name: Test Core Modules
         run: |
-          cd trinity/output
+          cd var/trinity/output
           echo "Testing core modules..."
           passed=0
           failed=0

@@ -106,7 +106,7 @@ for f in specs/tri/igla_koshey_pre_universal*.vibee \
 done
 
 # Test
-cd trinity/output
+cd var/trinity/output
 zig test igla_koshey_transcendent_plus_core.zig
 zig test igla_koshey_pre_universal_core.zig
 ```

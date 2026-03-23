@@ -610,7 +610,7 @@ pub const ChatServer = struct {
                     "Lines:      {d}\\n" ++
                     "\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\u2501\\n" ++
                     "Status:     {s}\\n" ++
-                    "Output:     trinity/output/{s}.zig\\n" ++
+                    "Output:     var/trinity/output/{s}.zig\\n" ++
                     "Target:     {s}",
                 .{
                     name,

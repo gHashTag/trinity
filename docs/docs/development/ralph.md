@@ -145,7 +145,7 @@ Generate code from specifications.
 zig build vibee -- gen specs/tri/multilingual_codegen.vibee
 ```
 
-**Output:** `trinity/output/multilingual_codegen.zig`
+**Output:** `var/trinity/output/multilingual_codegen.zig`
 
 **Rules:**
 - NEVER edit generated files manually
@@ -754,7 +754,7 @@ tmux attach -t ralph               # Attach to running session
 These rules are NEVER violated:
 
 1. **Source of Truth**: `specs/tri/*.vibee` governs ALL code. Manual Zig creation is forbidden.
-2. **Safety**: Never edit `src/*.zig` or `trinity/output/*.zig` manually.
+2. **Safety**: Never edit `src/*.zig` or `var/trinity/output/*.zig` manually.
 3. **Branching**: Never commit to `main`. Use `ralph/<task-slug>`.
 4. **Validation**: `.ralph/scripts/gate.sh` must pass before any commit.
 5. **Parallel Work**: Use Git Worktree for concurrent tasks (see RULES.md §17).
@@ -772,8 +772,8 @@ These rules are NEVER violated:
 
 | Path | Reason |
 |------|--------|
-| `trinity/output/*.zig` | Generated from .vibee |
-| `trinity/output/fpga/*.v` | Generated from .vibee |
+| `var/trinity/output/*.zig` | Generated from .vibee |
+| `var/trinity/output/fpga/*.v` | Generated from .vibee |
 | `generated/*.zig` | Generated from .vibee |
 
 ---

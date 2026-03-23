@@ -201,7 +201,7 @@ specs/tri/igla_beir_benchmark.vibee
 
 ```bash
 # Test all v3 modules
-cd trinity/output
+cd var/trinity/output
 zig test igla_onnx_runtime.zig
 zig test igla_minilm_embeddings.zig
 zig test igla_persistent_store.zig

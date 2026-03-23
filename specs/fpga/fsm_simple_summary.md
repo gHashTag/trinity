@@ -156,7 +156,7 @@ validation:
 # Using VIBEE compiler
 zig build vibee -- gen specs/fpga/fsm_simple.tri
 
-# Output: trinity/output/fpga/fsm_simple.v
+# Output: var/trinity/output/fpga/fsm_simple.v
 ```
 
 ### Synthesize to Bitstream

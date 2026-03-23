@@ -79,7 +79,7 @@ $ tri gen specs/tri/todo.vibee
 
 [VIBEE] Parsing spec: specs/tri/todo.vibee
 [VIBEE] Generating Zig code...
-[VIBEE] Output: trinity/output/todo.zig
+[VIBEE] Output: var/trinity/output/todo.zig
 [VIBEE] Generated 2 types, 4 behaviors
 [VIBEE] ✓ Code generation complete
 ```

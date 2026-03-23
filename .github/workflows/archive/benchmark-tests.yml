@@ -7,13 +7,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'trinity/output/fpga/driver/python/**'
+      - 'var/trinity/output/fpga/driver/python/**'
       - 'specs/tri/benchmark*.vibee'
       - '.github/workflows/benchmark-tests.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'trinity/output/fpga/driver/python/**'
+      - 'var/trinity/output/fpga/driver/python/**'
       - 'specs/tri/benchmark*.vibee'
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: trinity/output/fpga/driver/python
+        working-directory: var/trinity/output/fpga/driver/python
     
     steps:
       - name: Checkout
@@ -43,7 +43,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: trinity/output/fpga/driver/python/requirements-test.txt
+          cache-dependency-path: var/trinity/output/fpga/driver/python/requirements-test.txt
       
       - name: Install dependencies
         run: |
@@ -71,7 +71,7 @@ jobs:
         if: always()
         with:
           name: test-results-py${{ matrix.python-version }}
-          path: trinity/output/fpga/driver/python/test-results/
+          path: var/trinity/output/fpga/driver/python/test-results/
           retention-days: 7
       
       - name: Upload coverage
@@ -79,7 +79,7 @@ jobs:
         if: matrix.python-version == '3.11'
         with:
           name: coverage-report
-          path: trinity/output/fpga/driver/python/htmlcov/
+          path: var/trinity/output/fpga/driver/python/htmlcov/
           retention-days: 7
 
   # ═══════════════════════════════════════════════════════════════════════════
@@ -91,7 +91,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: trinity/output/fpga/driver/python
+        working-directory: var/trinity/output/fpga/driver/python
     
     steps:
       - name: Checkout

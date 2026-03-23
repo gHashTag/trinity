@@ -58,7 +58,7 @@ tri fpga gen --batch design1.tri design2.tri design3.tri
 # → Processes all files, generates bitstreams
 
 # Flash to hardware works
-tri fpga flash trinity/output/fpga/blink.bit
+tri fpga flash var/trinity/output/fpga/blink.bit
 # → Programs FPGA via JTAG
 ```
 

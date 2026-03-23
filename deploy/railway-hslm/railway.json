@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile.hslm-train"
+    "dockerfilePath": "deploy/Dockerfile.hslm-train"
   },
   "deploy": {
     "restartPolicyType": "ON_FAILURE",

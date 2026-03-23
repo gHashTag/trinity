@@ -30,7 +30,7 @@ This document provides guidelines for AI agents working on the VIBEE project. Al
 │           ↓                                                     │
 │  3. RUN: ./bin/vibee gen specs/tri/feature.vibee                │
 │           ↓                                                     │
-│  4. TEST: zig test trinity/output/feature.zig                   │
+│  4. TEST: zig test var/trinity/output/feature.zig                   │
 │           ↓                                                     │
 │  5. CHECK: All tests passing?                                   │
 │           ↓                                                     │

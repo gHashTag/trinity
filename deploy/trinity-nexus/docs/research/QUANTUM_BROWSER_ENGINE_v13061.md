@@ -123,7 +123,7 @@ for f in specs/tri/quantum_*_v1306*.vibee specs/tri/quantum_*_v1307*.vibee \
 done
 
 # Test all modules
-cd trinity/output
+cd var/trinity/output
 for f in quantum_*_v1306*.zig quantum_*_v1307*.zig \
          vscode_*_v1307*.zig split_view_*.zig \
          realtime_*.zig ai_*_v1307*.zig ai_*_v1308*.zig \

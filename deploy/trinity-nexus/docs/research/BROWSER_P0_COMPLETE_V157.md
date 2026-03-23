@@ -14,7 +14,7 @@
 
 ```
 specs/tri/browser/websocket_client_v156.vibee
-→ trinity/output/websocket_client_v156.zig
+→ var/trinity/output/websocket_client_v156.zig
 ```
 
 **:]withtand:**
@@ -33,7 +33,7 @@ specs/tri/browser/websocket_client_v156.vibee
 
 ```
 specs/tri/browser/cdp_client_v157.vibee
-→ trinity/output/cdp_client_v157.zig
+→ var/trinity/output/cdp_client_v157.zig
 ```
 
 **CDP Domains:**

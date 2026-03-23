@@ -108,7 +108,7 @@
 │      Potential: +2000% to pass rate (4.9% → 100%)              │
 │      Dependencies: None                                          │
 │      Time: 1 day                                                │
-│      Description: Add "output: trinity/output/{name}.zig"       │
+│      Description: Add "output: var/trinity/output/{name}.zig"       │
 │                   field to all 117 failing specs using script   │
 │      Benefits:                                                  │
 │        - All specs validate                                    │

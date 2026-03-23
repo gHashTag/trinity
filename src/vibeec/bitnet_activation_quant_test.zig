@@ -147,9 +147,9 @@ pub fn main() !void {
 
     // Load model weights
     std.debug.print("Loading model weights from safetensors...\n", .{});
-    model.loadFromSafetensors("/workspaces/trinity/models/bitnet/model.safetensors") catch |err| {
+    model.loadFromSafetensors("/workspaces/trinity/data/models/bitnet/model.safetensors") catch |err| {
         std.debug.print("Failed to load model: {}\n", .{err});
-        std.debug.print("Please ensure model is downloaded to models/bitnet/\n", .{});
+        std.debug.print("Please ensure model is downloaded to data/models/bitnet/\n", .{});
         return;
     };
 
@@ -158,7 +158,7 @@ pub fn main() !void {
 
     // Load tokenizer
     std.debug.print("\nLoading tokenizer...\n", .{});
-    var tokenizer = Tokenizer.load(allocator, "/workspaces/trinity/models/bitnet/tokenizer.json") catch |err| {
+    var tokenizer = Tokenizer.load(allocator, "/workspaces/trinity/data/models/bitnet/tokenizer.json") catch |err| {
         std.debug.print("Failed to load tokenizer: {}\n", .{err});
         return;
     };

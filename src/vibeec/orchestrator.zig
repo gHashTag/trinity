@@ -508,7 +508,7 @@ pub const Orchestrator = struct {
         } else |_| {
             // File doesn't exist, return a default path
             self.alloc.free(spec_file);
-            return try self.alloc.dupe(u8, "trinity/output/generated.zig");
+            return try self.alloc.dupe(u8, "var/trinity/output/generated.zig");
         }
     }
 
@@ -556,7 +556,7 @@ fn deriveOutputPath(alloc: std.mem.Allocator, spec_file: []const u8) ![]const u8
     const basename = std.fs.path.basename(spec_file);
     const stem = std.fs.path.stem(basename);
 
-    return try std.fmt.allocPrint(alloc, "trinity/output/{s}.zig", .{stem});
+    return try std.fmt.allocPrint(alloc, "var/trinity/output/{s}.zig", .{stem});
 }
 
 const ralph_loop = struct {

@@ -81,7 +81,7 @@
 │      Potential: +2000% to pass rate (4.9% → 100%)              ║
 │      Dependencies: NVersiontoandkh                                      ║
 │      Time: 1 :] (or 1 chawith with ain:]and:]andey)                    │
-│      Description: :]inandt "output: trinity/output/{name}.zig"    ║
+│      Description: :]inandt "output: var/trinity/output/{name}.zig"    ║
 │                   inabout inwithe 117 failing specs with :] withtorand:].    ║
 │      Benefits:                                                  │
 │        - Vwithe specs inaland:]                                      ║
@@ -144,7 +144,7 @@
    for spec in specs/tri/core/*.vibee; do
        name=$(basename "$spec" .vibee)
        if ! grep -q "^output:" "$spec"; then
-           echo "output: trinity/output/$name.zig" >> "$spec"
+           echo "output: var/trinity/output/$name.zig" >> "$spec"
            echo "Fixed: $spec"
        fi
    done

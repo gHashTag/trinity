@@ -216,14 +216,14 @@ v155 █████████████████████████
 ### :] 1: WebSocket (1 not:])
 ```
 specs/tri/browser/websocket_client.vibee
-→ trinity/output/websocket_client.zig
+→ var/trinity/output/websocket_client.zig
 → :] :]for]ande to CDP
 ```
 
 ### :] 2: CDP Integration (2 not:]and)
 ```
 specs/tri/browser/cdp_client.vibee
-→ trinity/output/cdp_client.zig
+→ var/trinity/output/cdp_client.zig
 → :]onya :]toa CDP prfromaboutfor]
 ```
 

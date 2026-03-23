@@ -1567,7 +1567,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         \\//     then: Value increases by 1
         \\//
         \\// Run: ./bin/vibee gen specs/tri/my_module.tri
-        \\// Output: trinity/output/my_module.zig
+        \\// Output: var/trinity/output/my_module.zig
         \\
         \\const std = @import("std");
         \\

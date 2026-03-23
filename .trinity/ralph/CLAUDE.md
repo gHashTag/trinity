@@ -118,10 +118,10 @@ behaviors:
 EOF
 
 # 2. Generate code
-zig build vibee -- gen specs/tri/feature.vibee  # → trinity/output/feature.zig
+zig build vibee -- gen specs/tri/feature.vibee  # → var/trinity/output/feature.zig
 
 # 3. Test
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 
 # 4. Write Critical Assessment (honest self-criticism)
 # 5. Propose 3 TECH TREE options for next iteration
@@ -131,7 +131,7 @@ zig test trinity/output/feature.zig
 
 ```bash
 # Use language: varlog
-zig build vibee -- gen specs/tri/feature_fpga.vibee  # → trinity/output/fpga/feature_fpga.v
+zig build vibee -- gen specs/tri/feature_fpga.vibee  # → var/trinity/output/fpga/feature_fpga.v
 ```
 
 ---
@@ -153,8 +153,8 @@ zig build vibee -- gen specs/tri/feature_fpga.vibee  # → trinity/output/fpga/f
 
 | Path | Reason |
 |------|--------|
-| `trinity/output/*.zig` | Generated from .vibee |
-| `trinity/output/fpga/*.v` | Generated from .vibee |
+| `var/trinity/output/*.zig` | Generated from .vibee |
+| `var/trinity/output/fpga/*.v` | Generated from .vibee |
 | `generated/*.zig` | Generated from .vibee |
 
 ---

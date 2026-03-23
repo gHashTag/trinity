@@ -148,7 +148,7 @@ pub const SandboxType = enum {
 pub const Permission = enum {
     file_read, // Read files
     file_write, // Write files
-    codegen_output, // Write to trinity/output/
+    codegen_output, // Write to var/trinity/output/
     spec_read, // Read specs/tri/
     network, // Network access (rare)
 };

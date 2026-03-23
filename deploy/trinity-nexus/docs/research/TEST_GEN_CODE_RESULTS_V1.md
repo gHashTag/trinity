@@ -163,7 +163,7 @@ test "E2E_Latency_Measurement" {
    - This is a **test bug**, NOT a generation bug
 
 4. 🔴 **Compiler Still Has Output Path Bug**
-   - Files generate in `specs/tri/core/` instead of `trinity/output/`
+   - Files generate in `specs/tri/core/` instead of `var/trinity/output/`
    - Requires manual copying
    - Needs fix in `compiler.zig`
 
@@ -176,7 +176,7 @@ test "E2E_Latency_Measurement" {
    // In compiler.zig - compile() or compileFile()
    const output_path = spec.output orelse
        try std.fmt.allocPrint(allocator,
-           "trinity/output/{s}.zig",
+           "var/trinity/output/{s}.zig",
            .{spec.name});
    ```
 

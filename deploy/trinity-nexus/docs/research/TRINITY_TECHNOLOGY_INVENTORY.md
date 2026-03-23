@@ -318,7 +318,7 @@ All 24 tests passed.
 
 # 7. TRINITY CONSTANTS MODULE (Generated)
 
-**File:** `trinity/output/trinity_constants.zig`
+**File:** `var/trinity/output/trinity_constants.zig`
 **Tests:** 17/17 PASSED ✅
 
 ## φ-Spiral Dispatch:

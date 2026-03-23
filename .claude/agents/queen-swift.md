@@ -38,7 +38,7 @@ Queen UI is a macOS SwiftUI app (macOS 14+). Key patterns:
 ## Rules
 
 - NEVER touch Zig files (`*.zig`) — those are Trinity core
-- NEVER touch generated files in `generated/` or `trinity/output/`
+- NEVER touch generated files in `generated/` or `var/trinity/output/`
 - NEVER create .sh or .bash files
 - Always verify changes build: `swift build --package-path apps/queen 2>&1 | tail -20`
 - Keep views composable — extract reusable components into `Widgets/`

@@ -160,14 +160,14 @@
 │      Time: 1-2 hours                                            │
 │      Description: Fix critical bug in compiler.zig              │
 │                   Compiler should use output: field             │
-│                   to generate files in trinity/output/          │
+│                   to generate files in var/trinity/output/          │
 │                   Not in specs/tri/core/ next to spec!          │
 │      Steps:                                                     │
 │        1. Find generation code in compiler.zig                  │
 │        2. Understand why output: is ignored                     │
 │        3. Fix the code                                          │
 │        4. Test on several specs                                 │
-│        5. Ensure files are created in trinity/output/           │
+│        5. Ensure files are created in var/trinity/output/           │
 │      Benefits:                                                  │
 │        - Files in correct location                              │
 │        - No manual copying needed                               │
@@ -248,13 +248,13 @@
 1. Test remaining 60 files:
    for spec in specs/tri/core/*.vibee; do
        name=$(basename "$spec" .vibee)
-       if [ ! -f "trinity/output/$name.zig" ]; then
+       if [ ! -f "var/trinity/output/$name.zig" ]; then
            echo "Missing: $name.zig"
        fi
    done
 
 2. If all files are in place, complete testing:
-   cd trinity/output
+   cd var/trinity/output
    for spec_file in specs/tri/core/*.vibee; do
        name=$(basename "$spec_file" .vibee)
        zig test "$name.zig" > /dev/null 2>&1 && echo "✅" || echo "❌"
@@ -374,7 +374,7 @@ test "E2E_Latency_Measurement" { /* ... */ }
 ### Expected Structure After Completion:
 
 ```
-trinity/output/
+var/trinity/output/
 ├── absolute_security_v126.zig (tested ✅)
 ├── absolute_unity_v163.zig (tested ✅)
 ...
@@ -388,7 +388,7 @@ trinity/output/
 **CRITICALLY IMPORTANT:** Test remaining 60 files!
 
 ```
-cd trinity/output
+cd var/trinity/output
 for spec_file in specs/tri/core/*.vibee; do
     name=$(basename "$spec_file" .vibee)
     zig test "$name.zig" > /dev/null 2>&1 && echo "✅ $name" || echo "❌ $name"

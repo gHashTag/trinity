@@ -49,7 +49,7 @@ After reviewing all data above:
 1. **Summarize** agent status in 2-3 sentences
 2. **Report violations** if any:
    - Agent on main branch (MUST use feature branches)
-   - Agent editing files in `trinity/output/` or `generated/` (VIBEE-first violation)
+   - Agent editing files in `var/trinity/output/` or `generated/` (VIBEE-first violation)
    - Agent with `no_progress_count >= 5` (circuit breaker should trip)
    - Conflicting file locks between agents
 3. **Recommend interventions** if agents are stuck:

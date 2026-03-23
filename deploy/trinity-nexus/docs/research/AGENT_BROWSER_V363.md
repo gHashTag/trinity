@@ -145,7 +145,7 @@ done
 ### Run Tests
 
 ```bash
-cd trinity/output
+cd var/trinity/output
 for f in *v32*.zig *v33*.zig *v34*.zig *v35*.zig *v36*.zig; do
   zig test "$f"
 done

@@ -29,7 +29,7 @@ PHI_INV=61.8  # φ⁻¹ immortality threshold (%)
 
 # Configuration
 REPORT_DIR="fpga/test_results"
-BITSTREAM_DIR="trinity/output/fpga"
+BITSTREAM_DIR="var/trinity/output/fpga"
 SPEC_DIR="specs/fpga"
 
 # ═══════════════════════════════════════════════════════════════════════════════

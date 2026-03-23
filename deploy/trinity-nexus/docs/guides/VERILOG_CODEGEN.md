@@ -7,7 +7,7 @@ Generate synthesizable Verilog from `.vibee` specifications.
 ```bash
 # Create spec with language: verilog
 ./bin/vibee gen specs/tri/my_module.vibee
-# Output: trinity/output/fpga/my_module.v
+# Output: var/trinity/output/fpga/my_module.v
 ```
 
 ## Specification Format
@@ -42,7 +42,7 @@ behaviors:
 ## Validation
 
 ```bash
-verilator --lint-only --top-module my_counter_top trinity/output/fpga/my_counter.v
+verilator --lint-only --top-module my_counter_top var/trinity/output/fpga/my_counter.v
 ```
 
 ## Metrics

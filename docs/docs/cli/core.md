@@ -60,7 +60,7 @@ tri gen <spec.vibee>
 tri gen specs/tri/my_module.vibee
 ```
 
-**Output:** Generated code is placed in `trinity/output/` (Zig) or `trinity/output/fpga/` (Verilog).
+**Output:** Generated code is placed in `var/trinity/output/` (Zig) or `var/trinity/output/fpga/` (Verilog).
 
 ## SWE Agent Commands
 

@@ -68,7 +68,7 @@ pub const ${T}Result = struct { success: bool, output: []const u8, @\"error\": ?
 pub fn init_${N}(c: ${T}Config) ${T}State { _ = c; return .{ .status = \"initialized\", .data = \"{}\", .timestamp = std.time.timestamp() }; }
 pub fn process_${N}(s: *${T}State) ${T}Result { s.status = \"processed\"; return .{ .success = true, .output = \"{}\", .@\"error\" = null }; }
 test \"init_${N}\" { const s = init_${N}(.{ .id = \"t\", .enabled = true, .params = \"{}\" }); try std.testing.expectEqualStrings(\"initialized\", s.status); }
-test \"process_${N}\" { var s = ${T}State{ .status = \"init\", .data = \"{}\", .timestamp = 0 }; const r = process_${N}(&s); try std.testing.expect(r.success); }" > "trinity/output/${N}_v${V}.zig"
+test \"process_${N}\" { var s = ${T}State{ .status = \"init\", .data = \"{}\", .timestamp = 0 }; const r = process_${N}(&s); try std.testing.expect(r.success); }" > "var/trinity/output/${N}_v${V}.zig"
         } &
         ((V++))
     done

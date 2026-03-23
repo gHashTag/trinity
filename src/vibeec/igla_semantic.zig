@@ -370,7 +370,7 @@ pub fn main() !void {
     print("     LOADING EMBEDDINGS                                        \n", .{});
     print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
-    const embedding_path = "models/embeddings/semantic_core.txt";
+    const embedding_path = "data/models/embeddings/semantic_core.txt";
     const threshold: f32 = 0.15; // Quantization threshold
 
     var timer = try std.time.Timer.start();

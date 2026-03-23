@@ -2,6 +2,7 @@
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 
 const std = @import("std");
+const trinity_workspace = @import("trinity_workspace");
 
 // Decomposed modules
 const utils = @import("tri_utils.zig");
@@ -48,6 +49,8 @@ const golden_chain = @import("golden_chain");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
+    trinity_workspace.cdToRepoRootSilent();
+
     // Use page_allocator to avoid leak-check spam from GGUF reader metadata strings
     const allocator = std.heap.page_allocator;
 

@@ -104,7 +104,7 @@ pub fn main() !void {
     } else if (std.mem.eql(u8, command, "gen-protocol-defines")) {
         // Generate protocol_defines.v from SSOT
         const protocol_defines_gen = @import("root.zig").protocol_defines_gen;
-        const output_path = if (args.len > 2) args[2] else "trinity-nexus/output/lang/fpga/protocol_defines.v";
+        const output_path = if (args.len > 2) args[2] else "deploy/trinity-nexus/output/lang/fpga/protocol_defines.v";
 
         try protocol_defines_gen.generateProtocolDefinesFile(allocator, output_path);
         std.debug.print("// Generated protocol_defines.v: {s}\n", .{output_path});

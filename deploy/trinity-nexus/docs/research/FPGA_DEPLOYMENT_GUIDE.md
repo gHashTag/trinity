@@ -94,13 +94,13 @@ cd /workspaces/vibee-lang
 ./bin/vibeec gen specs/fpga/hello_fpga_led.vibee
 
 # Output:
-#   trinity/output/fpga/hello_fpga_led.v
+#   var/trinity/output/fpga/hello_fpga_led.v
 ```
 
 ### Step 2: Verify with Simulation
 
 ```bash
-cd trinity/output/fpga
+cd var/trinity/output/fpga
 
 # Icarus Verilog simulation
 iverilog -o test hello_fpga_led.v
@@ -159,7 +159,7 @@ vibee-lang/
 │   ├── hello_fpga_led.vibee      # LED blinker spec
 │   └── trinity_fpga_mvp.vibee    # Trinity MVP spec
 │
-├── trinity/output/fpga/
+├── var/trinity/output/fpga/
 │   ├── hello_fpga_led.v          # Generated Verilog
 │   ├── constraints/
 │   │   └── arty_a7.xdc           # Pin constraints

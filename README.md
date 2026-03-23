@@ -584,7 +584,7 @@ trinity/
 │   └── tvc/                # Ternary Vector Computing
 ├── deploy/                 # Docker configs
 │   └── Dockerfile.node     # Multi-stage Alpine build
-├── contracts/              # Solidity (TrinityToken.sol)
+├── deploy/contracts/       # Solidity (TrinityToken.sol)
 ├── specs/                  # .vibee specifications
 ├── docsite/                # Documentation site (Docusaurus)
 ├── website/                # Landing page (Vite + React)

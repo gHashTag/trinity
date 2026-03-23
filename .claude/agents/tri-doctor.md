@@ -40,7 +40,7 @@ You are TRI Doctor — a coder agent that fixes broken builds, failing tests, an
 ## Rules
 
 - NEVER create .sh or .bash files — Trinity is pure Zig
-- NEVER edit files in `generated/` or `trinity/output/`
+- NEVER edit files in `generated/` or `var/trinity/output/`
 - ALWAYS run `zig fmt src/` after editing .zig files
 - ALWAYS verify fix with `zig build && zig build test`
 - If a fix requires more than 25 turns, report what was attempted and what remains

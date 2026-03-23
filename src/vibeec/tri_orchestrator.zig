@@ -351,7 +351,7 @@ pub const TriOrchestrator = struct {
             .state = OrchestratorState.init(),
             .circuit_breaker = CircuitBreakerState{},
             .cluster_nodes = nodes,
-            .sacred_log_path = "trinity-nexus/.ralph/sacred_tool_calls.log",
+            .sacred_log_path = "deploy/trinity-nexus/.ralph/sacred_tool_calls.log",
         };
     }
 
@@ -589,7 +589,7 @@ pub const TriOrchestrator = struct {
         const file = try std.fs.cwd().openFile(self.sacred_log_path, .{ .mode = .read_write }) catch |err| {
             if (err == error.FileNotFound) {
                 // Create directory and file
-                try std.fs.cwd().makePath("trinity-nexus/.ralph");
+                try std.fs.cwd().makePath("deploy/trinity-nexus/.ralph");
                 const new_file = try std.fs.cwd().createFile(self.sacred_log_path, .{});
                 defer new_file.close();
                 try new_file.writeAll(log_line);

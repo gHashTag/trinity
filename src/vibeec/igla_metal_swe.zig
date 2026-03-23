@@ -787,7 +787,7 @@ pub fn main() !void {
 
     std.debug.print("  Loading GloVe embeddings...\n", .{});
 
-    var vocab = loadGloVe(allocator, "models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
+    var vocab = loadGloVe(allocator, "data/models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
         std.debug.print("  ERROR: {s}\n", .{@errorName(err)});
         return err;
     };

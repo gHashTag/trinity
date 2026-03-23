@@ -93,7 +93,7 @@
 ./bin/vibee gen specs/tri/browser_agent_e2e_v999.vibee
 
 # Run tests
-zig test trinity/output/browser_agent_e2e_v999.zig
+zig test var/trinity/output/browser_agent_e2e_v999.zig
 
 # Production endpoint
 curl -X POST https://vercel-agent-zeta.vercel.app/api/task \

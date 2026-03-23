@@ -30,8 +30,8 @@ fn printModelInfo(config: mistral.MistralConfig) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DemoConfig = struct {
-    model_path: []const u8 = "models/qwen-coder-7b.tri",
-    tokenizer_path: []const u8 = "models/qwen-coder-7b/tokenizer.json",
+    model_path: []const u8 = "data/models/qwen-coder-7b.tri",
+    tokenizer_path: []const u8 = "data/models/qwen-coder-7b/tokenizer.json",
     max_new_tokens: usize = 50,
     use_cache: bool = true,
     use_mini: bool = false, // Use mini model for low-memory systems
@@ -292,7 +292,7 @@ pub fn main() !void {
                 i += 1;
                 config.max_new_tokens = std.fmt.parseInt(usize, args[i], 10) catch 50;
             }
-        } else if (config.model_path.len == 0 or std.mem.eql(u8, config.model_path, "models/qwen-coder-7b.tri")) {
+        } else if (config.model_path.len == 0 or std.mem.eql(u8, config.model_path, "data/models/qwen-coder-7b.tri")) {
             config.model_path = arg;
         }
     }

@@ -39,7 +39,7 @@
      - `generateTests` — genot:]andya thosewiththatin
      -  :]ande...
 
-2. **V1 withgenotrandraboutinan**: `trinity/output/vibee_self_hosting_v1.zig`
+2. **V1 withgenotrandraboutinan**: `var/trinity/output/vibee_self_hosting_v1.zig`
    - :] withgenotrandraboutinan andz with]andfVersiontsand
    - Vfor] inwithe tandpy and with]for]
    - Vfor] inwithe :]totsand (toato :]toand)
@@ -150,7 +150,7 @@ V1 == V2 ? → SUCCESS
 - `specs/tri/CYCLE74_SELF_HOSTING.md` — etfrom daboutfor]
 
 ### :]notrandraboutin:]:
-- `trinity/output/vibee_self_hosting_v1.zig` — V1 (with :]toamand)
+- `var/trinity/output/vibee_self_hosting_v1.zig` — V1 (with :]toamand)
 
 ---
 

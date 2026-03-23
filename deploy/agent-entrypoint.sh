@@ -950,7 +950,7 @@ fi
 
 # 7b. Generated files check (only real blocker)
 stream_to_telegram "Checking for generated files..."
-if git diff --name-only main..HEAD 2>/dev/null | grep -qE 'trinity/output/|generated/'; then
+if git diff --name-only main..HEAD 2>/dev/null | grep -qE 'var/trinity/output/|generated/'; then
     emit_error "Modified generated files" 1
     REVIEW_WARNINGS=$((REVIEW_WARNINGS + 1))
     stream_to_telegram "Warning: Generated files modified."

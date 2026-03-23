@@ -3,7 +3,7 @@
 set -e
 
 SPECS_DIR="/workspaces/vibee-lang/specs/tri"
-OUTPUT_DIR="/workspaces/vibee-lang/trinity/output"
+OUTPUT_DIR="/workspaces/vibee-lang/var/trinity/output"
 DOMAINS=(quantum_computing neuromorphic distributed compiler_theory formal_verification category_theory type_systems memory_mgmt concurrency graph_algo cryptography zero_knowledge blockchain smart_contracts defi robotics computer_vision nlp_advanced speech multimodal reinforcement meta_learning automl nas)
 
 total=0

@@ -19,7 +19,7 @@ CORES=$(nproc)
 }
 
 SPEC_DIR="specs/tri/${DOMAIN}"
-OUTPUT_DIR="trinity/output"
+OUTPUT_DIR="var/trinity/output"
 mkdir -p "$SPEC_DIR"
 
 echo "⚡ QUANTUM GEN v4.0: ${#MODULES[@]} modules → $DOMAIN (v$START+) [$CORES cores]"
