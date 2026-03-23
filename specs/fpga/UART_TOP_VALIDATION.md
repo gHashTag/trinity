@@ -203,7 +203,7 @@ Successfully created comprehensive `uart_top.tri` specification for Trinity V1 U
 
 The spec is complete and validated. Next steps:
 1. Run VIBEE compiler: `zig build vibee -- gen specs/fpga/uart_top.tri`
-2. Generate Verilog: `trinity/output/fpga/uart_top.v`
+2. Generate Verilog: `var/trinity/output/fpga/uart_top.v`
 3. Synthesize with Yosys
 4. Generate bitstream with FORGE or openXC7
 5. Flash to FPGA and validate with uart_host_v6_refactored.zig

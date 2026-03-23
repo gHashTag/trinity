@@ -2,6 +2,7 @@
 // No claude CLI dependency. Talks to api.anthropic.com/v1/messages directly.
 // Self-contained in src/tri-api/. Issues #60, #64, #66, #67.
 const std = @import("std");
+const trinity_workspace = @import("trinity_workspace");
 const proto = @import("tool_protocol.zig");
 const executor = @import("tool_executor.zig");
 const session_store = @import("session_store.zig");
@@ -20,6 +21,8 @@ const max_turns = 20;
 const default_model = "claude-sonnet-4-20250514";
 
 pub fn main() !void {
+    trinity_workspace.cdToRepoRootSilent();
+
     var gpa: std.heap.GeneralPurposeAllocator(.{}) = .init;
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();

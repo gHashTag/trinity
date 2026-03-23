@@ -87,10 +87,10 @@ behaviors:
 EOF
 
 # Link 5: Generate code
-./bin/vibee gen specs/tri/feature.vibee  # -> trinity/output/feature.zig
+./bin/vibee gen specs/tri/feature.vibee  # -> var/trinity/output/feature.zig
 
 # Link 7: Test
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 
 # Link 11: Write Critical Assessment (honest self-criticism)
 # Link 12: Propose 3 TECH TREE options for next iteration
@@ -100,7 +100,7 @@ zig test trinity/output/feature.zig
 
 ```bash
 # Use language: varlog in your spec
-./bin/vibee gen specs/tri/feature_fpga.vibee  # -> trinity/output/fpga/feature_fpga.v
+./bin/vibee gen specs/tri/feature_fpga.vibee  # -> var/trinity/output/fpga/feature_fpga.v
 ```
 
 ### Exit Criteria
@@ -256,8 +256,8 @@ The only code you should ever write by hand lives in specifications, the compile
 
 | Path | Reason |
 |------|--------|
-| `trinity/output/*.zig` | Generated from `.vibee` specs -- will be overwritten |
-| `trinity/output/fpga/*.v` | Generated from `.vibee` specs -- will be overwritten |
+| `var/trinity/output/*.zig` | Generated from `.vibee` specs -- will be overwritten |
+| `var/trinity/output/fpga/*.v` | Generated from `.vibee` specs -- will be overwritten |
 | `generated/*.zig` | Generated from `.vibee` specs -- will be overwritten |
 
 If you find a bug in generated code, fix the **specification** or the **compiler** -- never the output.

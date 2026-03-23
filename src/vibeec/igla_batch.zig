@@ -468,7 +468,7 @@ pub fn main() !void {
 
     std.debug.print("  Loading GloVe (batch optimized)...\n", .{});
 
-    var vocab = loadGloVeBatch(allocator, "models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
+    var vocab = loadGloVeBatch(allocator, "data/models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
         std.debug.print("  ERROR: {s}\n", .{@errorName(err)});
         return err;
     };

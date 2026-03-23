@@ -9,10 +9,10 @@
 ## WHAT WAS DONE
 
 ### PRIORITY 1: Fixed Compiler Output Path Bug ✅
-- **Issue**: VIBEE compiler ignored `output:` field in specs and generated files in `specs/tri/core/` instead of `trinity/output/`
+- **Issue**: VIBEE compiler ignored `output:` field in specs and generated files in `specs/tri/core/` instead of `var/trinity/output/`
 - **Root Cause**: Compiler used `{input_path}.zig` which generated paths like `specs/tri/core/my_spec.vibee.zig`
 - **Solution Implemented**:
-  1. Changed output path from `{input_path}.zig` to `trinity/output/{spec_name}.zig`
+  1. Changed output path from `{input_path}.zig` to `var/trinity/output/{spec_name}.zig`
   2. Used `std.fs.path.stem(input_path)` to extract spec name from input path
   3. Updated both zig code (.zig) and bytecode (.999) output generation
   4. Removed dependency on spec.name field which was causing segmentation faults
@@ -25,7 +25,7 @@
 
 2. **src/vibeec/compiler.zig** (1 change):
    - Changed from: `const out_path = try std.fmt.allocPrint(allocator, "{s}.zig", .{input_path});`
-   - Changed to: `const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.zig", .{spec_name});`
+   - Changed to: `const out_path = try std.fmt.allocPrint(allocator, "var/trinity/output/{s}.zig", .{spec_name});`
    - Used `const spec_name = std.fs.path.stem(input_path);` to extract name
 
 ---
@@ -76,9 +76,9 @@ Location: specs/tri/core/ (wrong directory)
 
 ### After Fix:
 ```
-Generated: trinity/output/test_auto.zig
-Generated: trinity/output/strict_pipeline.zig
-Location: trinity/output/ (correct directory)
+Generated: var/trinity/output/test_auto.zig
+Generated: var/trinity/output/strict_pipeline.zig
+Location: var/trinity/output/ (correct directory)
 Files: ✅ Created in correct location
 ```
 
@@ -129,7 +129,7 @@ Files: ✅ Created in correct location
    ```zig
    // Quick, working solution
    const spec_name = std.fs.path.stem(input_path);
-   const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.zig", .{spec_name});
+   const out_path = try std.fmt.allocPrint(allocator, "var/trinity/output/{s}.zig", .{spec_name});
    ```
    This uses the input path (`specs/tri/core/my_spec.vibee`) to extract the spec name (`my_spec.vibee`) and generates the output in the correct directory. **DONE.**
 
@@ -150,7 +150,7 @@ Files: ✅ Created in correct location
 ## SCORE: 3/10
 
 **Breakdown:**
-- **Task Completion**: 10/10 (output files now generate in trinity/output/)
+- **Task Completion**: 10/10 (output files now generate in var/trinity/output/)
 - **Code Quality**: 5/10 (simple, working, but with many failed attempts)
 - **Time Efficiency**: 1/10 (4+ hours for 15-minute task)
 - **Debugging Skill**: 3/10 (many wasted attempts before finding workaround)
@@ -183,7 +183,7 @@ Files: ✅ Created in correct location
 
 Despite the failures, we achieved:
 
-1. **✅ Output Path Fixed**: Files now generate in `trinity/output/` instead of `specs/tri/core/`
+1. **✅ Output Path Fixed**: Files now generate in `var/trinity/output/` instead of `specs/tri/core/`
 2. **✅ Working Solution**: `std.fs.path.stem()` approach works perfectly
 3. **✅ Both Outputs Fixed**: Both .zig and .999 files use correct path
 4. **✅ No Breaking Changes**: Existing functionality preserved

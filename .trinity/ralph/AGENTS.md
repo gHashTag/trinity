@@ -65,7 +65,7 @@ Parent issue progress bar updates automatically via sub-issues.
 - Creating PR without "Closes #N"
 - Empty issue metadata (no labels, no milestone)
 - Manual issue close (only via PR merge)
-- Editing generated files (`trinity/output/`, `generated/`)
+- Editing generated files (`var/trinity/output/`, `generated/`)
 - Pushing to main directly
 - Reporting "done" without confirmed push
 

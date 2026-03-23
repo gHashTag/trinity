@@ -64,7 +64,7 @@ test_cases: 5 comprehensive scenarios  # NEW
 ### Generate Verilog from Spec
 ```bash
 zig build vibee -- gen specs/fpga/counter.tri
-# Output: trinity/output/fpga/counter.v
+# Output: var/trinity/output/fpga/counter.v
 ```
 
 ### Synthesize with Yosys

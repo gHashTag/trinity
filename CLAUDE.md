@@ -100,7 +100,7 @@ tri cloud spawn <N>    # Spawn Railway container for issue
 - Error handling: return error sets, never panic
 - Memory: explicit allocators, no hidden allocations
 - `zig fmt` before every commit
-- Never edit generated files in `trinity/output/` or `generated/`
+- Never edit generated files in `var/trinity/output/` or `generated/`
 
 ## Golden Rule
 
@@ -274,7 +274,7 @@ Trinity Identity: `phi^2 + 1/phi^2 = 3` where phi = (1 + sqrt(5)) / 2.
 ## Hooks
 
 - **Stop** → macOS notification + ralph-hook → Telegram
-- **PreToolUse** (Write/Edit) → Block editing `trinity/output/`, `generated/`
+- **PreToolUse** (Write/Edit) → Block editing `var/trinity/output/`, `generated/`
 - **PostToolUse** (.zig) → Auto `zig fmt`
 - **PostToolUse** (Bash/Edit/Write) → ralph-hook → Telegram
 

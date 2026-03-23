@@ -305,13 +305,13 @@ behaviors:
 
 1. **Write spec** in `specs/tri/`
 2. **Generate code**: `./bin/vibee gen specs/tri/feature.vibee`
-3. **Test**: `zig test trinity/output/feature.zig`
+3. **Test**: `zig test var/trinity/output/feature.zig`
 4. **Iterate** if tests fail
 
 ```bash
 # Example workflow
 ./bin/vibee gen specs/tri/matmul.vibee
-zig test trinity/output/ternary_matmul.zig
+zig test var/trinity/output/ternary_matmul.zig
 ```
 
 ## Best Practices

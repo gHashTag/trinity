@@ -4,7 +4,7 @@
 
 set -e
 SPECS_DIR="/workspaces/vibee-lang/specs/tri"
-OUTPUT_DIR="/workspaces/vibee-lang/trinity/output"
+OUTPUT_DIR="/workspaces/vibee-lang/var/trinity/output"
 
 # Phase 1: Quantum Computing v2120-v2139
 QUANTUM_MODULES=(

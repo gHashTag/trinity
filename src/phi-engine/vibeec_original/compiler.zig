@@ -375,7 +375,7 @@ pub fn main() !u8 {
             // Write output files
             if (result.zig_code) |zig| {
                 const spec_name = std.fs.path.stem(input_path);
-                const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.zig", .{spec_name});
+                const out_path = try std.fmt.allocPrint(allocator, "var/trinity/output/{s}.zig", .{spec_name});
                 defer allocator.free(out_path);
                 const out_file = try std.fs.cwd().createFile(out_path, .{});
                 defer out_file.close();
@@ -384,7 +384,7 @@ pub fn main() !u8 {
             }
             if (result.code999) |c999| {
                 const spec_name = std.fs.path.stem(input_path);
-                const out_path = try std.fmt.allocPrint(allocator, "trinity/output/{s}.999", .{spec_name});
+                const out_path = try std.fmt.allocPrint(allocator, "var/trinity/output/{s}.999", .{spec_name});
                 defer allocator.free(out_path);
                 const out_file = try std.fs.cwd().createFile(out_path, .{});
                 defer out_file.close();

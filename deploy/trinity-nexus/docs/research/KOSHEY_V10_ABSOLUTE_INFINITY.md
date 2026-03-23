@@ -158,7 +158,7 @@ for f in specs/tri/igla_koshey_absolute_infinity_core.vibee \
 done
 
 # Test
-cd trinity/output
+cd var/trinity/output
 for f in igla_koshey_absolute_infinity_core.zig \
          igla_koshey_infinite_recursion.zig \
          igla_koshey_omega_point.zig \

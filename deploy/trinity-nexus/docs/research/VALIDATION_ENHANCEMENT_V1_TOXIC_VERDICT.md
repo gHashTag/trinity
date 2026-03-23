@@ -91,7 +91,7 @@ if (std.mem.eql(u8, key, "output")) {
                 "❌ Output path should end with .zig, .999, or .tri",
                 line_num,
                 "output",
-                "Example: output: trinity/output/{name}.zig");
+                "Example: output: var/trinity/output/{name}.zig");
         }
     }
 }

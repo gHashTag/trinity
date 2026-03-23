@@ -1064,7 +1064,7 @@ pub fn main() !void {
     defer node.deinit();
 
     std.debug.print("\n  Loading vocabulary...\n", .{});
-    try node.loadVocabulary("models/embeddings/glove.6B.300d.txt", 50_000);
+    try node.loadVocabulary("data/models/embeddings/glove.6B.300d.txt", 50_000);
 
     // Enable hybrid LLM mode (if API keys available)
     node.enableHybridLLM();

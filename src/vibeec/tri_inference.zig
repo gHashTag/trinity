@@ -2023,7 +2023,7 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const path = if (args.len > 1) args[1] else "models/smollm2-360m.tri";
+    const path = if (args.len > 1) args[1] else "data/models/smollm2-360m.tri";
 
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});

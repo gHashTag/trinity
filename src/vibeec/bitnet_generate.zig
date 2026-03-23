@@ -223,11 +223,11 @@ pub fn main() !void {
     defer model.deinit();
 
     // Load weights
-    try model.loadFromSafetensors("../../models/bitnet/model.safetensors");
+    try model.loadFromSafetensors("../../data/models/bitnet/model.safetensors");
 
     // Load tokenizer
     std.debug.print("\nLoading tokenizer...\n", .{});
-    var tokenizer = try SimpleTokenizer.load(allocator, "../../models/bitnet/tokenizer.json");
+    var tokenizer = try SimpleTokenizer.load(allocator, "../../data/models/bitnet/tokenizer.json");
     defer tokenizer.deinit();
 
     // Test prompts
@@ -304,7 +304,7 @@ pub fn main() !void {
 test "tokenizer load" {
     const allocator = std.testing.allocator;
 
-    var tokenizer = SimpleTokenizer.load(allocator, "../../models/bitnet/tokenizer.json") catch |err| {
+    var tokenizer = SimpleTokenizer.load(allocator, "../../data/models/bitnet/tokenizer.json") catch |err| {
         std.debug.print("Tokenizer not found: {}\n", .{err});
         return;
     };

@@ -213,7 +213,7 @@ pub const IglaDogfooding = struct {
             ,
             .implementation_steps =
             \\STEP 1: Run `vibee gen specs/tri/hybrid_provider.tri`
-            \\STEP 2: Generated code in `trinity/output/hybrid_provider.zig`
+            \\STEP 2: Generated code in `var/trinity/output/hybrid_provider.zig`
             \\STEP 3: Integrate with existing OssApiClient
             \\STEP 4: Add language detection using Unicode ranges
             \\STEP 5: Test with mixed English/Chinese prompts

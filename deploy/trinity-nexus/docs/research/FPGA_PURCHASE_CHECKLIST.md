@@ -46,7 +46,7 @@
 ### Prepare Project
 
 - [ ] Generate Verilog: `./bin/vibeec gen specs/fpga/hello_fpga_led.vibee`
-- [ ] Verify simulation: `cd trinity/output/fpga && iverilog -o test hello_fpga_led.v && vvp test`
+- [ ] Verify simulation: `cd var/trinity/output/fpga && iverilog -o test hello_fpga_led.v && vvp test`
 - [ ] Review constraints: `cat constraints/arty_a7.xdc`
 
 ## After Delivery
@@ -68,7 +68,7 @@
 
 ### Build & Program
 
-- [ ] Navigate to scripts: `cd trinity/output/fpga/scripts`
+- [ ] Navigate to scripts: `cd var/trinity/output/fpga/scripts`
 - [ ] Run build: `vivado -mode batch -source build_all.tcl -tclargs hello_fpga_led_top`
 - [ ] Wait for completion (~15-20 minutes)
 - [ ] Verify bitstream: `ls ../output/hello_fpga_led_top.bit`

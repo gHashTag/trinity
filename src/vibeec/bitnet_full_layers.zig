@@ -771,8 +771,8 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const model_path = if (args.len > 1) args[1] else "models/bitnet-2b.bin";
-    const tokenizer_path = if (args.len > 2) args[2] else "models/microsoft-bitnet-2b/tokenizer.json";
+    const model_path = if (args.len > 1) args[1] else "data/models/bitnet-2b.bin";
+    const tokenizer_path = if (args.len > 2) args[2] else "data/models/microsoft-bitnet-2b/tokenizer.json";
 
     std.debug.print("\n", .{});
     std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
@@ -1003,7 +1003,7 @@ pub fn debugForwardTest() void {
     std.debug.print("     DEBUG FORWARD TEST - Token 9906 (Hello)\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════\n\n", .{});
 
-    var model = loadFromBin(allocator, "models/bitnet-2b.bin") catch |err| {
+    var model = loadFromBin(allocator, "data/models/bitnet-2b.bin") catch |err| {
         std.debug.print("Error loading model: {}\n", .{err});
         return;
     };

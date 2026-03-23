@@ -21,7 +21,7 @@ const std = @import("std");
 ///   ├── lib/              # Libraries (libtrinity.a, libtrinity-vsa.so, etc.)
 ///   └── include/          # C headers (trinity_vsa.h, etc.)
 ///
-/// trinity/output/         # Generated code and build artifacts (VIBEE, etc.)
+/// var/trinity/output/         # Generated code and build artifacts (VIBEE, etc.)
 ///   ├── *.zig             # Generated Zig code from .vibee specs
 ///   ├── *.999             # Generated 999-format code
 ///   └── fpga/             # Generated Verilog files
@@ -29,10 +29,10 @@ const std = @import("std");
 /// ```
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// Default output directory for VIBEE-generated code
-pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "trinity/output";
+pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "var/trinity/output";
 
 /// Default subdirectory for FPGA/Verilog output
-pub const DEFAULT_FPGA_OUTPUT: []const u8 = "trinity/output/fpga";
+pub const DEFAULT_FPGA_OUTPUT: []const u8 = "var/trinity/output/fpga";
 
 /// Output configuration
 pub const OutputConfig = struct {

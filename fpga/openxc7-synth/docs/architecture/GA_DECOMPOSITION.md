@@ -580,7 +580,7 @@ behaviors:
 EOF
 
 tri gen test.vibee
-zig test trinity/output/test.zig
+zig test var/trinity/output/test.zig
 ```
 
 #### SA-9.3: FPGA Synthesis Flow

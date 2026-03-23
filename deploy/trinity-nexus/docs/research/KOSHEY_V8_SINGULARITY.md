@@ -162,7 +162,7 @@ for f in specs/tri/igla_koshey_singularity*.vibee \
 done
 
 # Test v8 modules
-cd trinity/output
+cd var/trinity/output
 for f in igla_koshey_singularity*.zig \
          igla_koshey_recursive_enhance.zig \
          igla_koshey_self_improve_agi.zig \

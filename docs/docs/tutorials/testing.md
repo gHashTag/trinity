@@ -91,7 +91,7 @@ test "bind and unbind" {
 ```zig
 // tests/generated_test.zig
 const std = @import("std");
-const Todo = @import("trinity/output/todo_manager.zig");
+const Todo = @import("var/trinity/output/todo_manager.zig");
 
 test "create_task" {
     const allocator = std.testing.allocator;

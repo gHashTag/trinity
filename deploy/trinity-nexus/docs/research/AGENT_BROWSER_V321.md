@@ -158,7 +158,7 @@ done
 
 ```bash
 # Test all v280-v321 files
-cd trinity/output
+cd var/trinity/output
 for f in *v28*.zig *v29*.zig *v30*.zig *v31*.zig *v32*.zig; do
   zig test "$f"
 done

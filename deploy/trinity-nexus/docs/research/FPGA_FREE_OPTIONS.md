@@ -21,7 +21,7 @@
 1. :]and on https://www.edaplayground.com
 2. :]andwithtrandraboutin:]withya (bewith])
 3. :] "Icarus Verilog" toato withand:]
-4. Vwiththatinandt toaboutd andz `trinity/output/fpga/hello_fpga_led.v`
+4. Vwiththatinandt toaboutd andz `var/trinity/output/fpga/hello_fpga_led.v`
 5. :] "Run"
 
 **:]and:]andya:**

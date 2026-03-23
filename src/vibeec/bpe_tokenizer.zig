@@ -385,12 +385,12 @@ test "bpe tokenizer load" {
     defer tokenizer.deinit();
 
     // Skip if file doesn't exist
-    std.fs.cwd().access("models/qwen-coder-7b/tokenizer.json", .{}) catch {
+    std.fs.cwd().access("data/models/qwen-coder-7b/tokenizer.json", .{}) catch {
         std.debug.print("Skipping: tokenizer.json not found\n", .{});
         return;
     };
 
-    try tokenizer.loadFromFile("models/qwen-coder-7b/tokenizer.json");
+    try tokenizer.loadFromFile("data/models/qwen-coder-7b/tokenizer.json");
     tokenizer.printInfo();
 
     // At least some tokens should be loaded
@@ -403,12 +403,12 @@ test "bpe encode decode" {
     defer tokenizer.deinit();
 
     // Skip if file doesn't exist
-    std.fs.cwd().access("models/qwen-coder-7b/tokenizer.json", .{}) catch {
+    std.fs.cwd().access("data/models/qwen-coder-7b/tokenizer.json", .{}) catch {
         std.debug.print("Skipping: tokenizer.json not found\n", .{});
         return;
     };
 
-    try tokenizer.loadFromFile("models/qwen-coder-7b/tokenizer.json");
+    try tokenizer.loadFromFile("data/models/qwen-coder-7b/tokenizer.json");
 
     const text = "Hello world";
     const tokens = try tokenizer.encode(text);

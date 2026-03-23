@@ -208,14 +208,14 @@ signals:
 ```yaml
 language: zig
 ```
-Output: `trinity/output/*.zig`
+Output: `var/trinity/output/*.zig`
 
 ### Verilog (FPGA)
 
 ```yaml
 language: varlog
 ```
-Output: `trinity/output/fpga/*.v`
+Output: `var/trinity/output/fpga/*.v`
 
 ### Multi-language
 

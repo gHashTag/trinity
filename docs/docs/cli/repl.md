@@ -143,7 +143,7 @@ The REPL maintains a `CLIState` struct across the session:
 
 The TVC (Ternary Vector Corpus) is loaded at startup and saved on exit:
 
-- **File:** `trinity_chat.tvc`
+- **File:** `data/trinity_chat.tvc`
 - **Capacity:** 10,000 entries
 - **Vector dimension:** 1,000 trits
 - **Threshold:** $\phi^{-1} = 0.618$
@@ -179,7 +179,7 @@ The REPL auto-detects available API keys from environment variables:
 
 If no API key is set, TRI falls back to the local GGUF model:
 
-- **Default path:** `models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf`
+- **Default path:** `data/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf`
 
 ## Tips
 

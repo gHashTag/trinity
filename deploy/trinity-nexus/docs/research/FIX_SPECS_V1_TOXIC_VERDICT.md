@@ -24,7 +24,7 @@
 ║ - Iwith]in:]andya :] (:]in:]ande :] with]toand)           ║
 ║   Author:]and:]andya :] :]inand:], nabout this :] :]toabout                 ║
 ║ - Ne :]inerandl, that output: for]for] for for] spec            ║
-║   :]withthat :]inandl `trinity/output/{name}.zig` for inwithekh            ║
+║   :]withthat :]inandl `var/trinity/output/{name}.zig` for inwithekh            ║
 ║   :] :], nottofrom:] specs :] :]andkh :]                 ║
 ║ - Ne :]inandl unit tests for inaland:]                        ║
 ║   :] nandtothat not zonet, that inwithe 123 specs :]from:] :]inand:]   ║
@@ -32,7 +32,7 @@
 ║   :]and:]andya :]andt, nabout genot:]andya for] :] with]withya       ║
 ║ - Ne :]inandl CI/CD :]inertoat                                   ║
 ║    :] tothat-that :] withnaboutina with] specs :] output:      ║
-║ - Ne daboutfor]andraboutinal, :] and:] `trinity/output/{name}.zig`  ║
+║ - Ne daboutfor]andraboutinal, :] and:] `var/trinity/output/{name}.zig`  ║
 ║   :] :] :]withnandt :] with]for] :]to                     ║
 ║                                                                  ║
 ║ :]: 7/10                                                     ║
@@ -53,7 +53,7 @@
 ║    :]fromin:]andt with]ande specs :] output: in :]             ║
 ║ 4. :]inerandt, that output paths atnandfor]                        ║
 ║    :] land for]andzandy or :]andfor]in                               ║
-║ 5. Daboutfor]andraboutin:] with]for] :]to trinity/output/               ║
+║ 5. Daboutfor]andraboutin:] with]for] :]to var/trinity/output/               ║
 ║    :]withnandt, :] and:] etfrom path                            ║
 ║ 6. :]inandt :]inertoat on with]withtinaboutinanande output paths                 ║
 ║    Ewithland output path :] with]withtin:], :]inedandt :]in:]      ║
@@ -168,7 +168,7 @@
    done
 
 3. :]inerandt resulty:
-   ls -la trinity/output/*.zig | wc -l
+   ls -la var/trinity/output/*.zig | wc -l
    # Ozhand:]withya: 123 .zig fileaboutin
 ```
 
@@ -193,7 +193,7 @@
 
 1. ✅ **Author:]and:]andya** - :]withthat :] :]totandraboutinanandya 122 fileaboutin andwith]inalwithya bash withtorandpt
 2. ✅ **Bywith] :]and:]andya** - 30 mand:] on :] :]
-3. ✅ **:]withandwith] output paths** - `trinity/output/{name}.zig` for inwithekh specs
+3. ✅ **:]withandwith] output paths** - `var/trinity/output/{name}.zig` for inwithekh specs
 4. ✅ **Check resultaboutin** - :]and:]andya inwithekh 123 specs bywithle andwith]in:]andy
 5. ✅ **:] from:]** - :] validation_report.md with :]and
 
@@ -212,7 +212,7 @@
 for spec in specs/tri/core/*.vibee; do
     if ! grep -q "^output:" "$spec"; then
         name=$(basename "$spec" .vibee)
-        echo "output: trinity/output/$name.zig" >> "$spec"
+        echo "output: var/trinity/output/$name.zig" >> "$spec"
     fi
 done
 ```
@@ -234,13 +234,13 @@ name: {name}
 version: "1.0.0"
 language: zig
 module: {name}
-output: trinity/output/{name}.zig  # ← Naboutinaboute field
+output: var/trinity/output/{name}.zig  # ← Naboutinaboute field
 ```
 
 ### Ozhand:] :]for] :]to:
 
 ```
-trinity/output/
+var/trinity/output/
 ├── absolute_security_v126.zig
 ├── absolute_unity_v163.zig
 ├── agentic_mode_v66.zig

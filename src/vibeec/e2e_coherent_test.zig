@@ -18,8 +18,8 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     // Default paths - TinyLlama 1.1B (real model!)
-    const tri_path = if (args.len > 1) args[1] else "../../models/tinyllama-1.1b.tri";
-    const gguf_path = if (args.len > 2) args[2] else "../../models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    const tri_path = if (args.len > 1) args[1] else "../../data/models/tinyllama-1.1b.tri";
+    const gguf_path = if (args.len > 2) args[2] else "../../data/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
     const prompt = if (args.len > 3) args[3] else "Hello, Trinity! What is the meaning of";
 
     std.debug.print("\n", .{});

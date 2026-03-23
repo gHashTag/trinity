@@ -471,7 +471,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     const config = BenchmarkConfig{
-        .model_path = "models/trinity-7b.gguf",
+        .model_path = "data/models/trinity-7b.gguf",
         .model_name = "Trinity-7B-Ternary",
         .batch_sizes = &[_]usize{ 1, 8 },
         .prompt_lengths = &[_]usize{ 128, 512 },

@@ -90,7 +90,7 @@ for f in specs/tri/browser_*_v1304*.vibee specs/tri/browser_*_v1305*.vibee; do
 done
 
 # Test all modules
-cd trinity/output
+cd var/trinity/output
 for f in browser_*_v1304*.zig browser_*_v1305*.zig; do
   zig test "$f"
 done

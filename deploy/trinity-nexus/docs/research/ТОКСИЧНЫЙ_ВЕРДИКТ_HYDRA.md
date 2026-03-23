@@ -233,11 +233,11 @@ specs/tri/hydra_encryptor.vibee         (18,847 :]) ⚠️ + :]ande
 specs/tri/hydra_decryptor.vibee         (20,478 :]) ⚠️ + :]ande
 specs/tri/hydra_validator.vibee         (24,397 :]) ⚠️ + :]ande
 specs/tri/hydra_pas_analysis.vibee      (23,331 :]) ⚠️ + andwith]in:] tsand:]
-trinity/output/trinity_crypto_hydra.zig (11,487 :])
-trinity/output/hydra_encryptor.zig      (10,004 :])
-trinity/output/hydra_decryptor.zig      (11,273 :])
-trinity/output/hydra_validator.zig      (12,701 :])
-trinity/output/hydra_pas_analysis.zig   (6,804 :])
+var/trinity/output/trinity_crypto_hydra.zig (11,487 :])
+var/trinity/output/hydra_encryptor.zig      (10,004 :])
+var/trinity/output/hydra_decryptor.zig      (11,273 :])
+var/trinity/output/hydra_validator.zig      (12,701 :])
+var/trinity/output/hydra_pas_analysis.zig   (6,804 :])
 docs/TRINITY_CRYPTO_HYDRA.md            (daboutfor]andya)
 docs/:]_:]_HYDRA.md           (:] on ratwithtoaboutm)
 TOXIC_VERDICT_HYDRA_V1.md               (:]andywithtoandy in:]andtot)

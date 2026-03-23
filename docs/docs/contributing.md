@@ -35,7 +35,7 @@ This approach guarantees type safety, test coverage for all specified behaviors,
 <div class="theorem-card">
 <h4>MANDATORY 16-Link Development Cycle</h4>
 
-Every contribution -- no matter how small -- must follow the 16-step development cycle. Run `./bin/vibee koschei` to display the full cycle at any time.
+Every contribution -- no matter how small -- must follow the 16-step development cycle. Run `./zig-out/bin/vibee koschei` to display the full cycle at any time.
 
 **All steps are mandatory. No step may be skipped.**
 
@@ -48,8 +48,8 @@ The 16 steps are:
 | 1 | <span class="badge-golden">ANALYZE</span> | Study the problem domain. Read existing specs, understand the architecture, identify what needs to change. |
 | 2 | <span class="badge-golden">RESEARCH</span> | Investigate prior art, mathematical foundations, and relevant algorithms. Document findings. |
 | 3 | <span class="badge-golden">SPEC</span> | Write or update the `.vibee` specification in `specs/tri/`. This is the **creative step** -- all design decisions happen here. |
-| 4 | <span class="badge-golden">VALIDATE</span> | Run `./bin/vibee validate specs/tri/your_spec.vibee` to check the specification for syntactic and semantic correctness. |
-| 5 | <span class="badge-green">GENERATE</span> | Run `./bin/vibee gen specs/tri/your_spec.vibee` to produce implementation code in the target language. |
+| 4 | <span class="badge-golden">VALIDATE</span> | Run `./zig-out/bin/vibee validate specs/tri/your_spec.vibee` to check the specification for syntactic and semantic correctness. |
+| 5 | <span class="badge-green">GENERATE</span> | Run `./zig-out/bin/vibee gen specs/tri/your_spec.vibee` to produce implementation code in the target language. |
 | 6 | <span class="badge-green">COMPILE</span> | Build the generated output: `zig build` or `zig build test` to verify it compiles without errors. |
 | 7 | <span class="badge-green">TEST</span> | Run the full test suite: `zig build test`. Every behavior's test cases must pass. |
 | 8 | <span class="badge-green">BENCH</span> | Run `zig build bench` to measure performance. Record baseline metrics for comparison. |
@@ -87,10 +87,10 @@ behaviors:
 EOF
 
 # Link 5: Generate code
-./bin/vibee gen specs/tri/feature.vibee  # -> trinity/output/feature.zig
+./zig-out/bin/vibee gen specs/tri/feature.vibee  # -> var/trinity/output/feature.zig
 
 # Link 7: Test
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 
 # Link 11: Write Critical Assessment (honest self-criticism)
 # Link 12: Propose 3 TECH TREE options for next iteration
@@ -100,7 +100,7 @@ zig test trinity/output/feature.zig
 
 ```bash
 # Use language: varlog in your spec
-./bin/vibee gen specs/tri/feature_fpga.vibee  # -> trinity/output/fpga/feature_fpga.v
+./zig-out/bin/vibee gen specs/tri/feature_fpga.vibee  # -> var/trinity/output/fpga/feature_fpga.v
 ```
 
 ### Exit Criteria
@@ -256,8 +256,8 @@ The only code you should ever write by hand lives in specifications, the compile
 
 | Path | Reason |
 |------|--------|
-| `trinity/output/*.zig` | Generated from `.vibee` specs -- will be overwritten |
-| `trinity/output/fpga/*.v` | Generated from `.vibee` specs -- will be overwritten |
+| `var/trinity/output/*.zig` | Generated from `.vibee` specs -- will be overwritten |
+| `var/trinity/output/fpga/*.v` | Generated from `.vibee` specs -- will be overwritten |
 | `generated/*.zig` | Generated from `.vibee` specs -- will be overwritten |
 
 If you find a bug in generated code, fix the **specification** or the **compiler** -- never the output.
@@ -538,13 +538,13 @@ Quick reference for all Trinity CLI commands used during development.
 
 | Command | Description |
 |---------|-------------|
-| `./bin/vibee gen <spec.vibee>` | Generate code from specification |
-| `./bin/vibee gen-multi <spec> all` | Generate for all 42 supported languages |
-| `./bin/vibee validate <spec.vibee>` | Validate specification syntax and semantics |
-| `./bin/vibee run <file.999>` | Execute via bytecode VM |
-| `./bin/vibee koschei` | Display the full development cycle |
-| `./bin/vibee chat --model <path>` | Interactive chat with a model |
-| `./bin/vibee serve --port 8080` | Start the HTTP API server |
+| `./zig-out/bin/vibee gen <spec.vibee>` | Generate code from specification |
+| `./zig-out/bin/vibee gen-multi <spec> all` | Generate for all 42 supported languages |
+| `./zig-out/bin/vibee validate <spec.vibee>` | Validate specification syntax and semantics |
+| `./zig-out/bin/vibee run <file.999>` | Execute via bytecode VM |
+| `./zig-out/bin/vibee koschei` | Display the full development cycle |
+| `./zig-out/bin/vibee chat --model <path>` | Interactive chat with a model |
+| `./zig-out/bin/vibee serve --port 8080` | Start the HTTP API server |
 
 ---
 

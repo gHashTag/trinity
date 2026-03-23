@@ -318,11 +318,11 @@ pub fn main() !void {
 
 test "streaming converter" {
     // Skip if model not present
-    std.fs.cwd().access("models/qwen-coder-7b/model-00001-of-00004.safetensors", .{}) catch {
+    std.fs.cwd().access("data/models/qwen-coder-7b/model-00001-of-00004.safetensors", .{}) catch {
         std.debug.print("Skipping: model not found\n", .{});
         return;
     };
 
     const allocator = std.testing.allocator;
-    _ = try convertModel(allocator, "models/qwen-coder-7b", "/tmp/test_qwen.tri", 4);
+    _ = try convertModel(allocator, "data/models/qwen-coder-7b", "/tmp/test_qwen.tri", 4);
 }

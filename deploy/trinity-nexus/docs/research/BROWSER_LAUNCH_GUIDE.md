@@ -13,7 +13,7 @@
 cd /workspaces/vibee-lang
 
 # :]toa inwithekh Zig :]
-cd trinity/output
+cd var/trinity/output
 for f in *.zig; do
   zig build-lib "$f" -O ReleaseFast 2>/dev/null
 done
@@ -60,7 +60,7 @@ VIBEE Browser AI Architecture
 │   ├── Glass UI Renderer
 │   └── PWA Shell
 │
-├── AI Engine (trinity/output/*.zig)
+├── AI Engine (var/trinity/output/*.zig)
 │   ├── Mamba SSM (O(n) inference)
 │   ├── Flash Attention (WASM)
 │   ├── Speculative Decoding
@@ -214,7 +214,7 @@ pub fn main() !void {
 ### Unit Tests
 
 ```bash
-cd /workspaces/vibee-lang/trinity/output
+cd /workspaces/vibee-lang/var/trinity/output
 
 # Tewitht toaboutnfor] :]
 zig test browser_webgpu_compute_v2439.zig
@@ -367,7 +367,7 @@ bin/vibee deploy
 
 - **Daboutfor]andya**: `/docs/`
 - **:]andfVersiontsand**: `/specs/tri/`
-- **:]notrandraboutin:] toaboutd**: `/trinity/output/`
+- **:]notrandraboutin:] toaboutd**: `/var/trinity/output/`
 - **Runtime**: `/runtime/runtime.html`
 
 ---

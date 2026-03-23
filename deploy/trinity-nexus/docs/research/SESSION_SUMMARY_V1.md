@@ -32,7 +32,7 @@
 
 **:] with]:**
 - ✅ :] ain:]andzandraboutin:] withtorandpt `fix_specs.sh`
-- ✅ :]in:] field `output: trinity/output/{name}.zig` to 122 specs
+- ✅ :]in:] field `output: var/trinity/output/{name}.zig` to 122 specs
 - ✅ Prfromewithtandraboutinaon inaland:]andya inwithekh 123 specs
 - ✅ :]notrandraboutinan :] from:] `validation_report.md`
 
@@ -61,7 +61,7 @@
 - ✅ Generation success rate: 120/123 (97.56%)
 - ✅ Vwithe specs atwith] withgenotrandraboutin:]
 - ✅ :]notrandraboutin:] toaboutd in:]andt inaland:]
-- 🔴 Krandtandchewithtoandy :]: filey genotrand:]withya in `specs/tri/core/` inmewiththat `trinity/output/`
+- 🔴 Krandtandchewithtoandy :]: filey genotrand:]withya in `specs/tri/core/` inmewiththat `var/trinity/output/`
 - 🔴 :]withya :] toaboutpandraboutinanande fileaboutin
 
 **Git for]andt:** 9c68d0352
@@ -134,7 +134,7 @@
 
 ### 1. :] for]and:]: :]and:] field `output:`
 - **:]witht:** 🔴 :]
-- **Opandwithanande:** :]and:] genotrand:] filey in `specs/tri/core/` inmewiththat `trinity/output/`
+- **Opandwithanande:** :]and:] genotrand:] filey in `specs/tri/core/` inmewiththat `var/trinity/output/`
 - **Vlandyanande:** :]withya :] toaboutpandraboutinanande fileaboutin, on:] ain:]and:]andyu
 - **:]with:** NE :]
 
@@ -175,9 +175,9 @@
 
 **:] :] with]:**
 1. Otfor] `specs/tri/core/pas_daemon_trinity999.vibee`
-2. :]and withgenotrandraboutin:] file `trinity/output/strict_pipeline.zig`
+2. :]and withgenotrandraboutin:] file `var/trinity/output/strict_pipeline.zig`
 3. :]andt `self.results.deinit()` on `self.results.deinit(allocator)`
-4. :]withtandraboutin:]: `zig test trinity/output/strict_pipeline.zig`
+4. :]withtandraboutin:]: `zig test var/trinity/output/strict_pipeline.zig`
 
 **Ozhand:] in:]:** 5-10 mand:]
 

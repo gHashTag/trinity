@@ -220,7 +220,7 @@ specs/tri/igla_tensor_parallel.vibee
 ## Testing
 
 ```bash
-cd trinity/output
+cd var/trinity/output
 zig test igla_kv_cache.zig
 zig test igla_speculative_decode.zig
 zig test igla_continuous_batch.zig

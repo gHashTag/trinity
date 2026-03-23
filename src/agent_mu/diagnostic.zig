@@ -163,7 +163,7 @@ fn classifyError(err_info: *ErrorInfo) void {
     }
 
     // Check if error is in generated code (implies GENERATOR_PATCH)
-    if (std.mem.indexOf(u8, err_info.file, "trinity/output") != null or
+    if (std.mem.indexOf(u8, err_info.file, "var/trinity/output") != null or
         std.mem.indexOf(u8, err_info.file, "generated") != null)
     {
         // Error in generated output - likely a generator issue

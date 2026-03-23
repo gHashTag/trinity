@@ -671,9 +671,9 @@ pub fn main() !void {
     std.debug.print("  Loading GloVe 400K with ternary quantization...\n", .{});
 
     // Load vocabulary (50K for 1000+ ops/s target)
-    var vocab = loadGloVe(allocator, "models/embeddings/glove.6B.300d.txt", 50_000) catch |err| {
+    var vocab = loadGloVe(allocator, "data/models/embeddings/glove.6B.300d.txt", 50_000) catch |err| {
         std.debug.print("  ERROR: {s}\n", .{@errorName(err)});
-        std.debug.print("  Ensure models/embeddings/glove.6B.300d.txt exists\n", .{});
+        std.debug.print("  Ensure data/models/embeddings/glove.6B.300d.txt exists\n", .{});
         return err;
     };
     defer vocab.deinit();

@@ -107,7 +107,7 @@ const result = SacredConstants.PHI * x;
 |----------|-------|--------|
 | Core library (src/) | 50 | ✅ Migrated |
 | VIBEE codegen (trinity-nexus/) | 20 | ✅ Migrated |
-| Generated code (trinity/output/) | 400 | ✅ Regenerated |
+| Generated code (var/trinity/output/) | 400 | ✅ Regenerated |
 | Tools (tools/) | 10 | ⏳ Pending |
 | MCP servers (tools/mcp/) | 15 | ⏳ Pending |
 

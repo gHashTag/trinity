@@ -743,21 +743,21 @@ fn countSpecGaps(allocator: std.mem.Allocator) SpecGapCount {
 
         if (has_src) continue;
 
-        // Check trinity-nexus/output/ subdirs for generated impl
+        // Check deploy/trinity-nexus/output/ subdirs for generated impl
         const has_gen = blk: {
             const gen_dirs = [_][]const u8{
-                "trinity-nexus/output/lang/zig",
-                "trinity-nexus/output/tri/zig",
-                "trinity-nexus/output/phi/zig",
-                "trinity-nexus/output/ralph/zig",
-                "trinity-nexus/output/storage/zig",
-                "trinity-nexus/output/network/zig",
-                "trinity-nexus/output/sym/zig",
-                "trinity-nexus/output/core/zig",
-                "trinity-nexus/output/deploy/zig",
-                "trinity-nexus/output/bootstrap/zig",
-                "trinity-nexus/output/agent_mu/zig",
-                "trinity-nexus/output/examples/zig",
+                "deploy/trinity-nexus/output/lang/zig",
+                "deploy/trinity-nexus/output/tri/zig",
+                "deploy/trinity-nexus/output/phi/zig",
+                "deploy/trinity-nexus/output/ralph/zig",
+                "deploy/trinity-nexus/output/storage/zig",
+                "deploy/trinity-nexus/output/network/zig",
+                "deploy/trinity-nexus/output/sym/zig",
+                "deploy/trinity-nexus/output/core/zig",
+                "deploy/trinity-nexus/output/deploy/zig",
+                "deploy/trinity-nexus/output/bootstrap/zig",
+                "deploy/trinity-nexus/output/agent_mu/zig",
+                "deploy/trinity-nexus/output/examples/zig",
             };
             for (gen_dirs) |gd| {
                 var gdir = std.fs.cwd().openDir(gd, .{}) catch continue;

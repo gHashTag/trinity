@@ -10,7 +10,7 @@ language: varlog
 module: bitnet_mac
 
 description: |
-  Auto-generated skeleton from trinity/output/fpga/bitnet_mac.v.
+  Auto-generated skeleton from var/trinity/output/fpga/bitnet_mac.v.
   Contains 0 constants and 0 public functions.
   TODO: Review and add proper types/behaviors.
 

@@ -223,16 +223,16 @@ yamllint specs/tri/feature.vibee
 ### Checkpoint 2: Code Generated ✅
 **Location:** After SA-4 (Gen)
 **Validation:**
-- [ ] Zig code generated: `trinity/output/feature.zig`
-- [ ] Verilog code generated (if FPGA): `trinity/output/fpga/feature_fpga.v`
+- [ ] Zig code generated: `var/trinity/output/feature.zig`
+- [ ] Verilog code generated (if FPGA): `var/trinity/output/fpga/feature_fpga.v`
 - [ ] File sizes non-zero
 - [ ] No compiler errors in generated code
 - [ ] `zig build` succeeds
 
 **Commands:**
 ```bash
-ls -lh trinity/output/feature.zig
-zig test trinity/output/feature.zig
+ls -lh var/trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 ```
 
 **Rollback if fail:** Return to SA-4, check codegen templates
@@ -269,7 +269,7 @@ ls -lh fpga/openxc7-synth/ternary_dot.json
 
 **Commands:**
 ```bash
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 zig build test
 zig fmt --check src/
 ```
@@ -291,7 +291,7 @@ zig fmt --check src/
 ```bash
 # Full E2E test
 ./zig-out/bin/vibee gen specs/tri/feature.vibee
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 # FPGA: flash to hardware and verify
 fpga/tools/jtag_program /tmp/feature.bit
 ```
@@ -488,7 +488,7 @@ fpga/tools/jtag_program /tmp/feature.bit
 **Blocks:** SA-7, SA-8
 
 **Responsibilities:**
-- Run unit tests: `zig test trinity/output/feature.zig`
+- Run unit tests: `zig test var/trinity/output/feature.zig`
 - Run integration tests: `zig build test`
 - Run FPGA CI: `.github/workflows/fpga-ci.yml`
 - Check for memory leaks (GPA allocator)

@@ -213,7 +213,7 @@ pub const RAGConfig = struct {
 All modules are generated from `.vibee` specifications:
 
 ```
-specs/tri/*.vibee → vibee gen → trinity/output/*.zig
+specs/tri/*.vibee → vibee gen → var/trinity/output/*.zig
 ```
 
 Key integration modules:
@@ -229,9 +229,9 @@ zig test generated/crush/zig/rag.zig
 zig test generated/crush/zig/serve.zig
 
 # Test generated modules
-zig test trinity/output/igla_unified_pipeline.zig
-zig test trinity/output/igla_config_manager.zig
-zig test trinity/output/igla_module_registry.zig
+zig test var/trinity/output/igla_unified_pipeline.zig
+zig test var/trinity/output/igla_config_manager.zig
+zig test var/trinity/output/igla_module_registry.zig
 ```
 
 ## Sacred Constants

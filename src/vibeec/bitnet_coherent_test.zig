@@ -36,9 +36,9 @@ pub fn main() !void {
 
     // Load model weights
     std.debug.print("Loading model weights from safetensors...\n", .{});
-    model.loadFromSafetensors("/workspaces/trinity/models/bitnet/model.safetensors") catch |err| {
+    model.loadFromSafetensors("/workspaces/trinity/data/models/bitnet/model.safetensors") catch |err| {
         std.debug.print("Failed to load model: {}\n", .{err});
-        std.debug.print("Please ensure model is downloaded to models/bitnet/\n", .{});
+        std.debug.print("Please ensure model is downloaded to data/models/bitnet/\n", .{});
         return;
     };
 
@@ -47,7 +47,7 @@ pub fn main() !void {
 
     // Load tokenizer with proper SentencePiece decoding
     std.debug.print("\nLoading SentencePiece tokenizer...\n", .{});
-    var tokenizer = tokenizer_mod.SentencePieceTokenizer.load(allocator, "/workspaces/trinity/models/bitnet/tokenizer.json") catch |err| {
+    var tokenizer = tokenizer_mod.SentencePieceTokenizer.load(allocator, "/workspaces/trinity/data/models/bitnet/tokenizer.json") catch |err| {
         std.debug.print("Failed to load tokenizer: {}\n", .{err});
         return;
     };
@@ -159,7 +159,7 @@ pub fn main() !void {
 test "tokenizer load and decode" {
     const allocator = std.testing.allocator;
 
-    var tokenizer = tokenizer_mod.SentencePieceTokenizer.load(allocator, "/workspaces/trinity/models/bitnet/tokenizer.json") catch |err| {
+    var tokenizer = tokenizer_mod.SentencePieceTokenizer.load(allocator, "/workspaces/trinity/data/models/bitnet/tokenizer.json") catch |err| {
         std.debug.print("Tokenizer not found: {}\n", .{err});
         return;
     };

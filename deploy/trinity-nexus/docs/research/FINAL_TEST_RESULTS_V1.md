@@ -161,7 +161,7 @@ test "E2E_Latency_Measurement" { /* ... */ }
 
 2. **Re-test strict_pipeline** (Priority: LOW)
    ```bash
-   cd trinity/output
+   cd var/trinity/output
    zig test strict_pipeline.zig
    ```
 
@@ -173,7 +173,7 @@ test "E2E_Latency_Measurement" { /* ... */ }
 
 1. **Fix Compiler Output Path Bug** (Priority: HIGH)
    - Compiler ignores `output:` field
-   - Files generate in `specs/tri/core/` instead of `trinity/output/`
+   - Files generate in `specs/tri/core/` instead of `var/trinity/output/`
    - Need to fix in `compiler.zig`
 
 2. **Add Unit Tests for Generator** (Priority: MEDIUM)

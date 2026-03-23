@@ -81,7 +81,7 @@ Complete guide for training LLMs with iGLA + KOSHEY optimizations.
 for f in specs/tri/igla_training*.vibee; do vibee gen "$f"; done
 
 # Test all modules
-cd trinity/output && for f in igla_training*.zig; do zig test "$f"; done
+cd var/trinity/output && for f in igla_training*.zig; do zig test "$f"; done
 ```
 
 ## KOSHEY Integration

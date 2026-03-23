@@ -300,7 +300,7 @@ vibee-lang/
 │   ├── hydra_decryptor.vibee         ✅ :]andfVersiontsandya
 │   ├── hydra_validator.vibee         ✅ :]andfVersiontsandya
 │   └── hydra_pas_analysis.vibee      ✅ :]andfVersiontsandya
-├── trinity/output/
+├── var/trinity/output/
 │   ├── trinity_crypto_hydra.zig      ⚠️ :]toand
 │   ├── hydra_encryptor.zig           ⚠️ :]toand
 │   ├── hydra_decryptor.zig           ⚠️ :]toand

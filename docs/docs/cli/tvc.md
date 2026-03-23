@@ -122,7 +122,7 @@ Offset  Size    Field
 0x40    ...     Entries (vector + metadata)
 ```
 
-**Save path:** `trinity_chat.tvc` (auto-saved on REPL exit)
+**Save path:** `data/trinity_chat.tvc` (auto-saved on REPL exit)
 
 ## Sacred Mathematics
 
@@ -145,7 +145,7 @@ tri chat "What is VSA?"
 tri chat "What is VSA?"
 ```
 
-The TVC corpus persists across sessions via the `trinity_chat.tvc` file.
+The TVC corpus persists across sessions via the `data/trinity_chat.tvc` file.
 
 ## See Also
 

@@ -38,17 +38,17 @@ By specifying `pipeline: auto`, VIBEE automatically balances data paths by inser
 |------|-------------|
 | `src/vibeec/verilog_codegen.zig` | The core HLS / Verilog generation engine. |
 | `specs/tri/` | Example specifications including BitNet accelerators (e.g., `bitnet_top.vibee`). |
-| `trinity/output/fpga/` | The default output directory for generated `.v` and `.tb.v` files. |
+| `var/trinity/output/fpga/` | The default output directory for generated `.v` and `.tb.v` files. |
 | `docs/habr/` | High-level guides and performance comparisons. |
 
 ## 🧪 Quick Start for Hardware
 1. **Clone**: `git clone https://github.com/gHashTag/vibee-lang`
 2. **Generate**: `./bin/vibee gen-hdl specs/tri/bitnet_top.vibee`
-3. **Verify**: `verilator --lint-only trinity/output/fpga/bitnet_top.v`
+3. **Verify**: `verilator --lint-only var/trinity/output/fpga/bitnet_top.v`
 
 ---
 
 ## 📈 Performance Benchmarks
 VIBEE-generated BitNet accelerators achieve **8.0 token/J** on Xilinx ZCU104, outperforming traditional GPU-based inference in energy efficiency.
 
-[View Synthesis Summary](../trinity/output/fpga/reports/SYNTHESIS_SUMMARY.md)
+[View Synthesis Summary](../var/trinity/output/fpga/reports/SYNTHESIS_SUMMARY.md)

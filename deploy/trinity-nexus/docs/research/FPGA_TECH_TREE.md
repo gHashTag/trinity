@@ -260,7 +260,7 @@ axi_host_interface ───────────┼────────�
 ### Build Commands
 
 ```bash
-cd trinity/output/fpga
+cd var/trinity/output/fpga
 make create    # Create Vivado project
 make synth     # Run synthesis
 make impl      # Run implementation

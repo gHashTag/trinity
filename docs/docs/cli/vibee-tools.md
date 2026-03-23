@@ -79,7 +79,7 @@ tri strict check [path]                 # Validate compliance
 tri strict fix [--dry-run]              # Auto-generate missing .vibee specs
 ```
 
-**Protected directories:** `trinity/output/`, `generated/` — code in these directories must come from `.vibee` specifications.
+**Protected directories:** `var/trinity/output/`, `generated/` — code in these directories must come from `.vibee` specifications.
 
 ### Subcommands
 
@@ -313,7 +313,7 @@ tri gen specs/tri/my_module.vibee
 
 | Language | Output Directory |
 |----------|-----------------|
-| Zig | `trinity/output/` |
-| Verilog | `trinity/output/fpga/` |
+| Zig | `var/trinity/output/` |
+| Verilog | `var/trinity/output/fpga/` |
 
 See [Core Commands](/cli/core) for full `gen` documentation.

@@ -12,7 +12,7 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const path = if (args.len > 1) args[1] else "models/qwen2.5-coder-1.5b-q4_k_m.gguf";
+    const path = if (args.len > 1) args[1] else "data/models/qwen2.5-coder-1.5b-q4_k_m.gguf";
 
     std.debug.print("\n", .{});
     std.debug.print("GGUF READER DEMO\n", .{});

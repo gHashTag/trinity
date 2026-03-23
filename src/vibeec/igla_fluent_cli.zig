@@ -33,7 +33,7 @@ pub const Language = local_chat.Language;
 
 pub const MAX_HISTORY_SIZE: usize = 20; // Maximum messages in history
 pub const MAX_MESSAGE_LENGTH: usize = 1024; // Max chars per message
-pub const TINYLLAMA_PATH: []const u8 = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+pub const TINYLLAMA_PATH: []const u8 = "data/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
 
 // ANSI Colors
 const GREEN = "\x1b[38;2;0;229;153m";

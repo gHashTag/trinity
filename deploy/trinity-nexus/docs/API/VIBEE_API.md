@@ -151,10 +151,10 @@ const verilog = try vcodegen.generate(allocator, spec);
 
 | Language | Output Path |
 |----------|-------------|
-| Zig | `trinity/output/*.zig` |
-| Verilog | `trinity/output/fpga/*.v` |
-| Python | `trinity/output/py/*.py` |
-| Other | `trinity/output/<lang>/*` |
+| Zig | `var/trinity/output/*.zig` |
+| Verilog | `var/trinity/output/fpga/*.v` |
+| Python | `var/trinity/output/py/*.py` |
+| Other | `var/trinity/output/<lang>/*` |
 
 ---
 
@@ -164,7 +164,7 @@ The Koschei methodology (16-link cycle):
 
 1. Create `.vibee` specification
 2. Generate code: `./bin/vibee gen spec.vibee`
-3. Run tests: `zig test trinity/output/module.zig`
+3. Run tests: `zig test var/trinity/output/module.zig`
 4. Write TOXIC VERDICT (self-criticism)
 5. Propose 3 TECH TREE options
 

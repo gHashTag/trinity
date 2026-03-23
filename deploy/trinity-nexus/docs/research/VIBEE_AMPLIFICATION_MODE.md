@@ -79,7 +79,7 @@ AI Agent + VibeeSpec = 9x Faster Development
 │     vibee gen specs/tri/feature_vNN.vibee                       │
 │           ↓                                                     │
 │  4. VERIFY tests                                                │
-│     zig test trinity/output/feature_vNN.zig                     │
+│     zig test var/trinity/output/feature_vNN.zig                     │
 │           ↓                                                     │
 │  5. ITERATE if tests fail (go to step 2)                        │
 │           ↓                                                     │

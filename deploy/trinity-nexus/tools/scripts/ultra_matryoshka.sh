@@ -63,7 +63,7 @@ const std = @import(\"std\");
 pub const ${T}Config = struct { id: []const u8, enabled: bool, params: []const u8 };
 pub const ${T}State = struct { status: []const u8, data: []const u8, timestamp: i64 };
 pub fn init_${N}(c: ${T}Config) ${T}State { _ = c; return .{ .status = \"initialized\", .data = \"{}\", .timestamp = std.time.timestamp() }; }
-test \"init_${N}\" { const s = init_${N}(.{ .id = \"t\", .enabled = true, .params = \"{}\" }); try std.testing.expectEqualStrings(\"initialized\", s.status); }" > "trinity/output/${N}_v${V}.zig"
+test \"init_${N}\" { const s = init_${N}(.{ .id = \"t\", .enabled = true, .params = \"{}\" }); try std.testing.expectEqualStrings(\"initialized\", s.status); }" > "var/trinity/output/${N}_v${V}.zig"
         } &
         ((V++))
     done

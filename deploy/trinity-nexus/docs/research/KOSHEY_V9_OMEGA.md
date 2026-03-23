@@ -111,7 +111,7 @@ for f in specs/tri/igla_koshey_omega*.vibee \
 done
 
 # Test
-cd trinity/output
+cd var/trinity/output
 for f in igla_koshey_omega*.zig \
          igla_koshey_quantum_consciousness.zig \
          igla_koshey_multiverse_sim.zig \

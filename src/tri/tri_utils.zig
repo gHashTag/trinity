@@ -328,7 +328,7 @@ pub const CLIState = struct {
     };
 
     /// Default model path for auto-detection
-    const DEFAULT_MODEL_PATH = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    const DEFAULT_MODEL_PATH = "data/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
 
     /// Default TVC corpus save path
     const TVC_CORPUS_PATH = "data/trinity_chat.tvc";

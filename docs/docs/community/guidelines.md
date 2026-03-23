@@ -668,7 +668,7 @@ ralph --monitor             # Autonomous development
 | Specifications | `specs/tri/*.vibee` |
 | VIBEE Compiler | `src/vibeec/*.zig` |
 | Core Library | `src/*.zig` (vsa, vm, hybrid) |
-| Generated Code | `trinity/output/*.zig` (DO NOT EDIT) |
+| Generated Code | `var/trinity/output/*.zig` (DO NOT EDIT) |
 | Documentation | `docsite/docs/*.md` |
 | CLI Tools | `src/tri/*.zig` |
 | Ralph Config | `.ralph/*` |

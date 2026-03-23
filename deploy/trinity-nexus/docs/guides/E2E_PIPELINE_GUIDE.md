@@ -53,8 +53,8 @@ curl -s http://localhost:9222/json/list
 ```bash
 ./bin/vibee gen specs/tri/e2e_pipeline_v21.vibee
 ./bin/vibee gen specs/tri/e2e_simple_task_v21.vibee
-zig test trinity/output/e2e_pipeline_v21.zig
-zig test trinity/output/e2e_simple_task_v21.zig
+zig test var/trinity/output/e2e_pipeline_v21.zig
+zig test var/trinity/output/e2e_simple_task_v21.zig
 ```
 
 ## Latency Benchmarks (v21)
@@ -115,7 +115,7 @@ export HF_TOKEN=hf_your_token_here
 
 # Generate and test
 ./bin/vibee gen specs/tri/huggingface_llm_v21.vibee
-zig test trinity/output/huggingface_llm_v21.zig
+zig test var/trinity/output/huggingface_llm_v21.zig
 ```
 
 ### Browser Action Format

@@ -17,7 +17,7 @@ if [ -z "$DOMAIN" ] || [ -z "$START" ] || [ ${#MODULES[@]} -eq 0 ]; then
 fi
 
 SPEC_DIR="specs/tri/${DOMAIN}"
-OUTPUT_DIR="trinity/output"
+OUTPUT_DIR="var/trinity/output"
 mkdir -p "$SPEC_DIR"
 
 echo "⚡ ULTRA GEN v2.0: ${#MODULES[@]} modules → $DOMAIN (v$START+) [${PARALLEL} cores]"

@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
     // VIBEEC compiler module — single source of truth from .tri specs
     // Note: trinity-nexus compiler replaced with inline .tri spec parsing
     // const trinity_lang_mod = b.createModule(.{
-    //     .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+    //     .root_source_file = b.path("deploy/trinity-nexus/lang/src/root.zig"),
     //     .target = target,
     //     .optimize = optimize,
     // });
@@ -1232,8 +1232,8 @@ pub fn build(b: *std.Build) void {
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
 
-    // Ralph CLI is in trinity-nexus/tools - run from there:
-    //   cd trinity-nexus/tools && zig build ralph
+    // Ralph CLI is in deploy/trinity-nexus/tools - run from there:
+    //   cd deploy/trinity-nexus/tools && zig build ralph
 
     // Claude UI Demo
     const claude_ui = b.addExecutable(.{
@@ -1443,6 +1443,13 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Shared: cwd → repo root (build.zig) so `.trinity/` is always at workspace root
+    const trinity_workspace_mod = b.createModule(.{
+        .root_source_file = b.path("src/trinity_workspace.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const needle_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/needle/mod.zig"),
@@ -1506,6 +1513,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "treesitter_zig", .module = ts_zig_mod },
                 .{ .name = "tri_train", .module = tri_train_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
             },
         }),
     });
@@ -2549,6 +2557,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
                 .{ .name = "igla_hybrid_chat", .module = vibeec_hybrid_chat },
@@ -3407,6 +3416,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .imports = &.{
                 .{ .name = "token_rotator", .module = token_rotator_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
             },
         }),
     });

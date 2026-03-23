@@ -1,0 +1,12 @@
+{
+  "name": "@playra/trinity-source",
+  "private": true,
+  "description": "Zig-first monorepo. Full npm metadata + `tri` bin shim: deploy/npm-local/package.json",
+  "scripts": {
+    "postinstall": "echo 'φ² + 1/φ² = 3 = TRINITY' && echo 'Tri init...' && (./zig-out/bin/tri init || true)",
+    "build": "zig build tri vibee",
+    "test": "zig build test",
+    "link-tri": "npm install -g ./deploy/npm-local",
+    "sweep-rtl": "bash scripts/move-root-rtl-to-fpga.sh"
+  }
+}

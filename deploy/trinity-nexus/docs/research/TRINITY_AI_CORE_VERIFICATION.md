@@ -93,7 +93,7 @@ Before touching hardware, verify the design in simulation.
 ### Run Testbenches
 
 ```bash
-cd /workspaces/trinity/trinity/output/fpga
+cd /workspaces/trinity/var/trinity/output/fpga
 
 # Test Trit ALU
 iverilog -g2012 -o trit_alu_test -DTESTBENCH trit_alu.v
@@ -163,9 +163,9 @@ vivado &
 
 2. **Add Sources**
    - Add files:
-     - `trinity/output/fpga/trit_alu.v`
-     - `trinity/output/fpga/bitnet_mac.v`
-     - `trinity/output/fpga/trinity_ai_core.v`
+     - `var/trinity/output/fpga/trit_alu.v`
+     - `var/trinity/output/fpga/bitnet_mac.v`
+     - `var/trinity/output/fpga/trinity_ai_core.v`
    - Set `trinity_system` as top module
 
 3. **Add Constraints**
@@ -185,9 +185,9 @@ create_project trinity_ai_core ./vivado -part xc7a35ticsg324-1L
 
 # Add source files
 add_files -norecurse {
-    ../trinity/output/fpga/trit_alu.v
-    ../trinity/output/fpga/bitnet_mac.v
-    ../trinity/output/fpga/trinity_ai_core.v
+    ../var/trinity/output/fpga/trit_alu.v
+    ../var/trinity/output/fpga/bitnet_mac.v
+    ../var/trinity/output/fpga/trinity_ai_core.v
 }
 
 # Add constraints

@@ -152,7 +152,7 @@ pub const ContextManager = struct {
     is_dirty: bool,
 
     const Self = @This();
-    const INDEX_PATH = ".trinity-nexus/.context_index";
+    const INDEX_PATH = "deploy/trinity-nexus/.context_index";
     const TCTX_MAGIC = [4]u8{ 'T', 'C', 'T', 'X' };
 
     // Directories to exclude from scanning
@@ -162,7 +162,7 @@ pub const ContextManager = struct {
         "zig-cache",
         ".git",
         "node_modules",
-        "trinity-nexus/output",
+        "deploy/trinity-nexus/output",
         "target",
     };
 

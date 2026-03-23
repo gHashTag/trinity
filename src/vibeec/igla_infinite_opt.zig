@@ -552,7 +552,7 @@ pub fn main() !void {
 
     std.debug.print("  Loading GloVe vocabulary...\n", .{});
 
-    var vocab = loadGloVeOptimized(allocator, "models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
+    var vocab = loadGloVeOptimized(allocator, "data/models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
         std.debug.print("  ERROR: {s}\n", .{@errorName(err)});
         return err;
     };

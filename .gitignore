@@ -15,10 +15,12 @@ zig-out/
 
 # Never commit accidental root clutter (use zig-out/bin, hardware/rtl-root)
 /a.out
+/*.v
 /*.blif
 /*.edif
 /uart_echo.json
 /trinity_chat.tvc
+/data/trinity_chat.tvc
 /simulation_results.csv
 
 # IDE
@@ -41,12 +43,12 @@ docs/build/
 .zig-cache/
 -e 
 # Large model files
-models/*.tri
-models/qwen-coder-7b/
-models/qwen-coder-1.5b/
+data/models/*.tri
+data/models/qwen-coder-7b/
+data/models/qwen-coder-1.5b/
 -e 
 # Large model files
-models/*.gguf
+data/models/*.gguf
 *.gguf
 
 # Generated files
@@ -71,15 +73,15 @@ archive/frontend/docs/.docusaurus/
 archive/frontend/docs/build/
 
 # Test models (large files)
-models/test/*.safetensors
-models/bitnet/microsoft-bitnet-2b/model.safetensors
+data/models/test/*.safetensors
+data/models/bitnet/microsoft-bitnet-2b/model.safetensors
 src/vibeec/gguf_chat
 src/vibeec/gguf_full_generate
 src/vibeec/gguf_to_tri
 src/vibeec/tri_inference
 .vercel
 .env*.local
-models/bitnet/
+data/models/bitnet/
 src/vibeec/bitnet_inference_test
 
 # Zig SDK downloads
@@ -94,7 +96,7 @@ zig/
 .trinity/ralph/god_mode_log.jsonl
 
 # Context index (generated binary, 80MB+)
-.trinity-nexus/.context_index
+deploy/trinity-nexus/.context_index
 
 # Temporary scripts
 check_ssh.py
@@ -116,10 +118,10 @@ fpga/fly-vivado/output/
 src/forge/segbits_data.zig
 
 # Microsoft model weights
-models/microsoft-bitnet-2b/
-models/microsoft-bitnet-2b-bf16/
-models/bitnet-2b.bin
-models/embeddings/
+data/models/microsoft-bitnet-2b/
+data/models/microsoft-bitnet-2b-bf16/
+data/models/bitnet-2b.bin
+data/models/embeddings/
 
 # Binary executables (root)
 bitnet_ffi

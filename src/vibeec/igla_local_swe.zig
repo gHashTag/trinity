@@ -432,7 +432,7 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     // Default model path
-    const model_path = if (args.len > 1) args[1] else "models/bitnet-2b-fixed.gguf";
+    const model_path = if (args.len > 1) args[1] else "data/models/bitnet-2b-fixed.gguf";
 
     var swe = IglaLocalSWE.init(allocator, model_path);
     defer swe.deinit();

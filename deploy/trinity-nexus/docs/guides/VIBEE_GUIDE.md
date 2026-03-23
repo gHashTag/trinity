@@ -74,10 +74,10 @@ behaviors:
 
 | Target | Output |
 |--------|--------|
-| `zig` | `trinity/output/*.zig` |
-| `varlog` | `trinity/output/fpga/*.v` (Verilog) |
-| `python` | `trinity/output/*.py` |
-| `rust` | `trinity/output/*.rs` |
+| `zig` | `var/trinity/output/*.zig` |
+| `varlog` | `var/trinity/output/fpga/*.v` (Verilog) |
+| `python` | `var/trinity/output/*.py` |
+| `rust` | `var/trinity/output/*.rs` |
 
 ---
 
@@ -193,7 +193,7 @@ behaviors:
          ↓
 3. GENERATE code (./bin/vibee gen specs/tri/feature.vibee)
          ↓
-4. VERIFY tests (zig test trinity/output/feature.zig)
+4. VERIFY tests (zig test var/trinity/output/feature.zig)
          ↓
 5. ITERATE if tests fail (go to step 2)
          ↓
