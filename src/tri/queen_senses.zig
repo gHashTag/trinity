@@ -93,7 +93,7 @@ fn countAliveAgents() u8 {
         ".trinity/scholar/heartbeat.json",
     };
     const wake_paths = [_][]const u8{
-        ".ralph/state/wake_count",
+        ".trinity/ralph/state/wake_count",
         ".trinity/mu/state/wake_count",
         ".trinity/scholar/state/wake_count",
     };

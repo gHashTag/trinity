@@ -173,7 +173,7 @@ pub const McpNexus = struct {
 
     /// Search SUCCESS_HISTORY.md for similar patterns
     fn searchSuccessHistory(self: *McpNexus, error_message: []const u8) !?PatternMatch {
-        const history_path = ".ralph/SUCCESS_HISTORY.md";
+        const history_path = ".trinity/ralph/SUCCESS_HISTORY.md";
 
         const content = std.fs.cwd().readFileAlloc(
             self.allocator,

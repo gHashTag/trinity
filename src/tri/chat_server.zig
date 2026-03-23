@@ -765,7 +765,7 @@ pub const ChatServer = struct {
         try json.appendSlice(self.allocator, agent_buf[0..agent_str_len]);
 
         // 1. Read .ralph/logs/status.json
-        const status_json = base_dir.readFileAlloc(self.allocator, ".ralph/logs/status.json", 4096) catch |err| s_blk: {
+        const status_json = base_dir.readFileAlloc(self.allocator, ".trinity/ralph/logs/status.json", 4096) catch |err| s_blk: {
             std.debug.print("[ChatServer] Ralph agent {d} status read error: {}\n", .{ agent_idx, err });
             break :s_blk "{\"status\":\"offline\"}";
         };
@@ -778,7 +778,7 @@ pub const ChatServer = struct {
         try json.appendSlice(self.allocator, status_json);
 
         // 2. Read .ralph/internal/.circuit_breaker_state
-        const cb_json = base_dir.readFileAlloc(self.allocator, ".ralph/internal/.circuit_breaker_state", 4096) catch |err| cb_blk: {
+        const cb_json = base_dir.readFileAlloc(self.allocator, ".trinity/ralph/internal/.circuit_breaker_state", 4096) catch |err| cb_blk: {
             std.debug.print("[ChatServer] Ralph agent {d} CB read error: {}\n", .{ agent_idx, err });
             break :cb_blk "{\"state\":\"UNKNOWN\"}";
         };
@@ -791,7 +791,7 @@ pub const ChatServer = struct {
         // 3. Tail latest log
         try json.appendSlice(self.allocator, ",\"logs\":[");
         {
-            var dir = base_dir.openDir(".ralph/logs", .{ .iterate = true }) catch null;
+            var dir = base_dir.openDir(".trinity/ralph/logs", .{ .iterate = true }) catch null;
             if (dir) |*d| {
                 defer d.close();
                 var latest_time: i128 = 0;

@@ -4,8 +4,8 @@
 const std = @import("std");
 const proto = @import("tool_protocol.zig");
 
-const user_settings = ".tri-api/settings.json";
-const project_settings = ".tri-api/settings.json";
+const user_settings = ".trinity/api/settings.json";
+const project_settings = ".trinity/api/settings.json";
 const max_rules = 64;
 
 pub const Permission = enum { allow, deny };
