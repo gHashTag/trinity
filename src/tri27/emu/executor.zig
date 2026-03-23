@@ -80,6 +80,32 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc += 1;
         },
 
+        .LD => {
+            // Load from memory to register
+            const addr = @as(usize, @abs(inst.immediate));
+            const byte_addr = addr * 4;
+
+            if (byte_addr + 4 > memory.len) {
+                return ExecError.InvalidMemory;
+            }
+
+            // Read 4 bytes as little-endian word
+            const word: u32 = memory[byte_addr] |
+                @as(u32, memory[byte_addr + 1]) << 8 |
+                @as(u32, memory[byte_addr + 2]) << 16 |
+                @as(u32, memory[byte_addr + 3]) << 24;
+
+            // Convert word to Trit27 (sign-extend 32-bit to 64-bit)
+            const signed_word: i32 = @bitCast(word);
+            const trit_value = Trit27{ .trits = @as(i64, signed_word) };
+            cpu.t27[inst.dst] = trit_value;
+
+            // Update flags
+            cpu.flags.Z = trit_value.trits == 0;
+            cpu.flags.N = trit_value.trits < 0;
+            cpu.pc += 1;
+        },
+
         // ═════════════════════════════════════════════════════════
         // ARITHMETIC INSTRUCTIONS — Ternary
         // ═══════════════════════════════════════════════════════════════════════
@@ -270,6 +296,26 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc = target;
         },
 
+        .JZ => {
+            // Jump if zero flag is set
+            const target = @as(u32, @abs(inst.immediate));
+            if (cpu.flags.Z) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
+        .JNZ => {
+            // Jump if not zero
+            const target = @as(u32, @abs(inst.immediate));
+            if (!cpu.flags.Z) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
         .CALL => {
             // Push return address to stack, then jump
             const target = @as(u32, @abs(inst.immediate));
@@ -367,10 +413,10 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
 pub fn estimateCycles(opcode: Opcode) u64 {
     return switch (opcode) {
         .NOP => 1,
-        .LD_IMM, .LDI => 1,
+        .LD_IMM, .LDI, .LD => 1,
         .ST, .STI => 2, // Memory write
         .ADD, .SUB => 2, // Ternary arithmetic
-        .JMP => 1,
+        .JMP, .JZ, .JNZ => 1, // Control flow
         .CALL => 3, // Stack push + jump
         .RET => 3, // Stack pop + jump
         .HALT => 1,
