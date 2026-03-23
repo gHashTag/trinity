@@ -93,6 +93,10 @@ const Config = struct {
     stress_packets: usize = 10,
     // v3.24: Custom test patterns
     test_patterns_file: ?[]const u8,
+    // v3.24: Jitter measurement and pattern generation
+    measure_jitter: bool,
+    use_pattern: []const u8,
+    pattern_length: usize,
 };
 
 // Device vendor detection
@@ -220,6 +224,232 @@ const LatencyHistogram = struct {
     }
 };
 
+// v3.24: Jitter tracker for RTT variance measurement
+const JitterTracker = struct {
+    allocator: std.mem.Allocator,
+    samples: []i64,
+    count: usize,
+    capacity: usize,
+
+    pub fn init(allocator: std.mem.Allocator) JitterTracker {
+        const capacity = 1000;
+        const samples = allocator.alloc(i64, capacity) catch unreachable;
+        return .{
+            .allocator = allocator,
+            .samples = samples,
+            .count = 0,
+            .capacity = capacity,
+        };
+    }
+
+    pub fn deinit(self: *JitterTracker) void {
+        self.allocator.free(self.samples);
+    }
+
+    pub fn addSample(self: *JitterTracker, rtt_us: i64) !void {
+        if (self.count >= self.capacity) {
+            // Shift samples left (remove oldest, add new)
+            std.mem.copyForwards(i64, self.samples[0 .. self.capacity - 1], self.samples[1..]);
+            self.count = self.capacity;
+            self.samples[self.capacity - 1] = rtt_us;
+        } else {
+            self.samples[self.count] = rtt_us;
+            self.count += 1;
+        }
+    }
+
+    pub fn getJitter(self: *const JitterTracker) f64 {
+        if (self.count < 2) return 0.0;
+
+        // Calculate variance
+        const len = self.count;
+        var sum: i64 = 0;
+        for (self.samples[0..len]) |sample| {
+            sum += sample;
+        }
+        const mean = @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(len));
+
+        var variance: f64 = 0.0;
+        for (self.samples[0..len]) |sample| {
+            const diff = @as(f64, @floatFromInt(sample)) - mean;
+            variance += diff * diff;
+        }
+        variance /= @as(f64, @floatFromInt(len));
+
+        return std.math.sqrt(variance);
+    }
+
+    pub fn getStats(self: *const JitterTracker) struct { mean: f64, jitter: f64, min: i64, max: i64 } {
+        if (self.count == 0) {
+            return .{ .mean = 0.0, .jitter = 0.0, .min = 0, .max = 0 };
+        }
+
+        const len = self.count;
+        var sum: i64 = 0;
+        var min_val: i64 = std.math.maxInt(i64);
+        var max_val: i64 = std.math.minInt(i64);
+
+        for (self.samples[0..len]) |sample| {
+            sum += sample;
+            if (sample < min_val) min_val = sample;
+            if (sample > max_val) max_val = sample;
+        }
+
+        const mean = @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(len));
+        const jitter = self.getJitter();
+
+        return .{ .mean = mean, .jitter = jitter, .min = min_val, .max = max_val };
+    }
+
+    pub fn report(self: *const JitterTracker) void {
+        const stats = self.getStats();
+        printInfo("[i] Jitter Statistics:\n", .{});
+        printDim("    Mean RTT: {d:.2}us\n", .{stats.mean});
+        printDim("    Jitter (stddev): {d:.2}us\n", .{stats.jitter});
+        printDim("    Min RTT: {d}us\n", .{stats.min});
+        printDim("    Max RTT: {d}us\n", .{stats.max});
+    }
+};
+
+// v3.24: Test pattern structure
+const TestPattern = struct {
+    name: []const u8,
+    data: []const u8,
+    description: []const u8 = "",
+};
+
+// v3.24: Pattern generators for UART testing
+const PatternGenerators = struct {
+    // PRBS7 - Pseudo-Random Binary Sequence (7-bit LFSR)
+    pub fn generatePRBS7(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var lfsr: u8 = 0x7F; // Non-zero seed
+        var i: usize = 0;
+
+        while (i < length) : (i += 1) {
+            const new_bit = @as(u1, @truncate((lfsr >> 6) ^ (lfsr >> 5)));
+            lfsr = (lfsr << 1) | new_bit;
+            pattern[i] = lfsr;
+        }
+
+        return pattern;
+    }
+
+    // Walking 1s - single bit moves from LSB to MSB
+    pub fn generateWalkingOnes(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var i: usize = 0;
+        while (i < length) : (i += 1) {
+            pattern[i] = @as(u8, 1) << @as(u3, @truncate(i % 8));
+        }
+
+        return pattern;
+    }
+
+    // Walking 0s - single zero moves through all ones
+    pub fn generateWalkingZeros(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var i: usize = 0;
+        while (i < length) : (i += 1) {
+            pattern[i] = 0xFF ^ (@as(u8, 1) << @as(u3, @truncate(i % 8)));
+        }
+
+        return pattern;
+    }
+
+    // Sequential - 0x00, 0x01, 0x02, ...
+    pub fn generateSequential(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var i: usize = 0;
+        while (i < length) : (i += 1) {
+            pattern[i] = @truncate(i);
+        }
+
+        return pattern;
+    }
+
+    // Alternating - 0xAA, 0x55, 0xAA, 0x55, ...
+    pub fn generateAlternating(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var i: usize = 0;
+        while (i < length) : (i += 1) {
+            pattern[i] = if (i % 2 == 0) 0xAA else 0x55;
+        }
+
+        return pattern;
+    }
+
+    // Default pattern - mix of common test bytes
+    pub fn generateDefault(allocator: std.mem.Allocator, length: usize) ![]u8 {
+        const default_bytes = [_]u8{ 0x00, 0xFF, 0xAA, 0x55, 0x01, 0xFE, 0x55, 0xAA };
+        var pattern = try allocator.alloc(u8, length);
+        errdefer allocator.free(pattern);
+
+        var i: usize = 0;
+        while (i < length) : (i += 1) {
+            pattern[i] = default_bytes[i % default_bytes.len];
+        }
+
+        return pattern;
+    }
+
+    pub fn getPattern(allocator: std.mem.Allocator, name: []const u8, length: usize) !TestPattern {
+        if (std.mem.eql(u8, name, "prbs7")) {
+            const data = try generatePRBS7(allocator, length);
+            return .{
+                .name = "prbs7",
+                .data = data,
+                .description = "Pseudo-Random Binary Sequence (7-bit LFSR)",
+            };
+        } else if (std.mem.eql(u8, name, "walk1")) {
+            const data = try generateWalkingOnes(allocator, length);
+            return .{
+                .name = "walk1",
+                .data = data,
+                .description = "Walking 1s pattern",
+            };
+        } else if (std.mem.eql(u8, name, "walk0")) {
+            const data = try generateWalkingZeros(allocator, length);
+            return .{
+                .name = "walk0",
+                .data = data,
+                .description = "Walking 0s pattern",
+            };
+        } else if (std.mem.eql(u8, name, "seq")) {
+            const data = try generateSequential(allocator, length);
+            return .{
+                .name = "seq",
+                .data = data,
+                .description = "Sequential 0x00, 0x01, 0x02...",
+            };
+        } else if (std.mem.eql(u8, name, "alt")) {
+            const data = try generateAlternating(allocator, length);
+            return .{
+                .name = "alt",
+                .data = data,
+                .description = "Alternating 0xAA/0x55 pattern",
+            };
+        } else {
+            const data = try generateDefault(allocator, length);
+            return .{
+                .name = "default",
+                .data = data,
+                .description = "Default test pattern",
+            };
+        }
+    }
+};
+
 // v3.24: Device detection with VID/PID
 const DeviceInfo = struct {
     path: []const u8,
@@ -340,6 +570,9 @@ fn parseArgs() Config {
         .rts_cts_flow = false,
         .stress_test_mode = false,
         .stress_packets = 10,
+        .measure_jitter = false,
+        .use_pattern = "default",
+        .pattern_length = 256,
     };
 
     var i: usize = 1;
@@ -478,6 +711,25 @@ fn parseArgs() Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--measure-jitter")) {
+            config.measure_jitter = true;
+        } else if (std.mem.eql(u8, arg, "--pattern")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --pattern requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.use_pattern = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--pattern-length")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --pattern-length requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.pattern_length = std.fmt.parseInt(usize, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid pattern-length value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -593,6 +845,15 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "stress_packets")) {
                 config.stress_packets = std.fmt.parseInt(usize, value, 10) catch continue;
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "measure_jitter")) {
+                config.measure_jitter = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "pattern")) {
+                config.use_pattern = value;
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "pattern_length")) {
+                config.pattern_length = std.fmt.parseInt(usize, value, 10) catch continue;
+                loaded_any = true;
             }
         }
     }
@@ -629,6 +890,9 @@ fn printUsage() void {
         \\  --rts-cts           Enable RTS/CTS hardware flow control (v3.24)
         \\  --stress-test       High-throughput stress test mode (v3.24)
         \\  --stress-packets <n> Packets per stress test (default: 10)
+        \\  --measure-jitter    Measure RTT jitter variance (v3.24)
+        \\  --pattern <name>    Test pattern: default|prbs7|walk1|walk0|seq|alt
+        \\  --pattern-length <n> Length of generated pattern (default: 256)
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
         \\  --list-devices      List all available serial devices (v3.24)
@@ -713,6 +977,9 @@ pub fn main() !void {
         printErr("    rts_cts_flow: {}\n", .{config.rts_cts_flow});
         printErr("    stress_test_mode: {}\n", .{config.stress_test_mode});
         printErr("    stress_packets: {d}\n", .{config.stress_packets});
+        printErr("    measure_jitter: {}\n", .{config.measure_jitter});
+        printErr("    use_pattern: {s}\n", .{config.use_pattern});
+        printErr("    pattern_length: {d}\n", .{config.pattern_length});
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
@@ -1210,6 +1477,16 @@ const TestByte = struct {
 
 // v3.14: Simulation mode for testing without hardware
 fn runSimulation(config: Config) !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    // v3.24: Use custom pattern if specified
+    const test_pattern = try PatternGenerators.getPattern(allocator, config.use_pattern, config.pattern_length);
+
+    var jitter_tracker = JitterTracker.init(allocator);
+    defer jitter_tracker.deinit();
+
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
         .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
@@ -1219,22 +1496,41 @@ fn runSimulation(config: Config) !void {
         .{ .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
     };
 
+    // v3.24: Show pattern info if custom pattern is used
+    if (!std.mem.eql(u8, config.use_pattern, "default")) {
+        printInfo("[+] Pattern: {s} ({s})\n", .{ test_pattern.name, test_pattern.description });
+        printInfo("[+] Pattern length: {d} bytes\n", .{test_pattern.data.len});
+        printInfo("[+] Pattern data: ", .{});
+        for (test_pattern.data[0..@min(test_pattern.data.len, 16)]) |b| {
+            printInfo("{x:0>2} ", .{b});
+        }
+        if (test_pattern.data.len > 16) printInfo("...", .{});
+        printInfo("\n", .{});
+    }
+
     var passed: usize = 0;
     var total_time_ms: i64 = 0;
 
     printErr("[i] Running simulation with {d} tests...\n", .{tests.len});
 
     for (tests, 0..) |testCase, i| {
-        const start = std.time.milliTimestamp();
+        const start = std.time.nanoTimestamp();
 
-        // Simulate delay
+        // Simulate delay with random jitter
         const sim_delay = 5 + std.crypto.random.intRangeAtMost(u32, 0, 20);
         std.Thread.sleep(sim_delay * 1_000_000);
 
-        const elapsed = std.time.milliTimestamp() - start;
-        total_time_ms += elapsed;
+        const elapsed_ns = std.time.nanoTimestamp() - start;
+        const elapsed_ms: i64 = @intCast(@divTrunc(elapsed_ns, 1_000_000));
+        total_time_ms += elapsed_ms;
 
-        printErr("  [->] Sim Test {d}/{d}: {s} (RTT: {d}ms) ", .{ i + 1, tests.len, testCase.name, elapsed });
+        // v3.24: Track jitter if enabled
+        if (config.measure_jitter) {
+            const elapsed_us: i64 = @intCast(@divTrunc(elapsed_ns, 1000));
+            try jitter_tracker.addSample(elapsed_us);
+        }
+
+        printErr("  [->] Sim Test {d}/{d}: {s} (RTT: {d}ms) ", .{ i + 1, tests.len, testCase.name, elapsed_ms });
 
         // Simulate occasional "failure" in simulation mode
         const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
@@ -1252,6 +1548,12 @@ fn runSimulation(config: Config) !void {
     printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
     printErr("  Total time: {d}ms\n", .{total_time_ms});
     printErr("  Avg test time: {d:.1}ms\n", .{@as(f64, @floatFromInt(total_time_ms)) / @as(f64, @floatFromInt(tests.len))});
+
+    // v3.24: Report jitter statistics if enabled
+    if (config.measure_jitter) {
+        jitter_tracker.report();
+    }
+
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
 
     // Export to JSON if requested
