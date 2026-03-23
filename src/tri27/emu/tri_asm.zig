@@ -355,8 +355,12 @@ fn parseOperand(text: []const u8, labels: *const LabelTable, line_num: usize) As
     } else |_| {
         // Not a number, check if it's a label
         if (labels.get(trimmed)) |label_addr| {
-            const addr_i32: i32 = @intCast(label_addr);
-            return @as(i16, @truncate(addr_i32));
+            // Convert u32 to i16 (handle overflow by clamping)
+            if (label_addr > 32767) {
+                std.debug.print("Warning: label address 0x{x} exceeds i16 range, clamping\n", .{label_addr});
+                return @as(i16, 32767);
+            }
+            return @as(i16, @truncate(label_addr & 0xFFFF));
         }
         std.debug.print("Error: Undefined label '{s}' at line {d}\n", .{ trimmed, line_num });
         return error.UndefinedLabel;
