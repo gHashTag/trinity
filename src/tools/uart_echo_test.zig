@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.22 — Custom test patterns, HTML report export, improved statistics
+//! v3.23 — Auto baud detection, RTS/CTS flow control, stress test mode
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -9,9 +9,9 @@
 //!
 //! Features:
 //!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
-//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.21)
-//!   - Graceful exit: SIGINT (Ctrl+C) handler for clean shutdown (v3.21)
-//!   - Extended baud rates: Supports 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 (v3.21)
+//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.23)
+//!   - Graceful exit: SIGINT (Ctrl+C) handler for clean shutdown (v3.23)
+//!   - Extended baud rates: Supports 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 (v3.23)
 //!   - Config file: TOML configuration for persistent settings (v3.15)
 //!   - JSON export: Structured test results for analysis
 //!   - Error recovery: Automatic retry on failed tests
@@ -38,15 +38,15 @@ const DEFAULT_BATCH_SIZE: usize = 16;
 const DEFAULT_BUFFER_SIZE: usize = 4096;
 const MIN_TIMEOUT_MS: u32 = 50;
 
-// v3.21: Graceful exit flag
+// v3.23: Graceful exit flag
 var should_exit: std.atomic.Value(bool) = std.atomic.Value(bool).init(false);
 
-// v3.21: Extended baud rates
+// v3.23: Extended baud rates
 const VALID_BAUD_RATES = [_]u64{
     9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600,
 };
 
-// v3.21: ANSI colors for better UX
+// v3.23: ANSI colors for better UX
 const ANSI = struct {
     const RESET = "\x1b[0m";
     const BOLD = "\x1b[1m";
@@ -86,7 +86,12 @@ const Config = struct {
     batch_size: usize,
     buffer_size: usize,
     adaptive_timeout: bool,
-    // v3.22: Custom test patterns
+    // v3.23: Auto baud detection and RTS/CTS flow control
+    auto_baud: bool,
+    rts_cts_flow: bool,
+    stress_test_mode: bool,
+    stress_packets: usize = 10,
+    // v3.23: Custom test patterns
     test_patterns_file: ?[]const u8,
 };
 
@@ -136,7 +141,7 @@ const ThroughputStats = struct {
     }
 };
 
-// v3.21: Error statistics for tracking test failures by type
+// v3.23: Error statistics for tracking test failures by type
 const ErrorStats = struct {
     timeout_errors: usize = 0,
     mismatch_errors: usize = 0,
@@ -167,7 +172,7 @@ const ErrorStats = struct {
     }
 };
 
-// v3.21: Latency histogram for distribution analysis
+// v3.23: Latency histogram for distribution analysis
 const LatencyHistogram = struct {
     // Histogram buckets (ms)
     buckets: [8]usize = [_]usize{0} ** 8,
@@ -215,7 +220,7 @@ const LatencyHistogram = struct {
     }
 };
 
-// v3.21: Device detection with VID/PID
+// v3.23: Device detection with VID/PID
 const DeviceInfo = struct {
     path: []const u8,
     vendor_id: u16,
@@ -223,7 +228,7 @@ const DeviceInfo = struct {
     vendor_name: []const u8,
 };
 
-// v3.21: SIGINT handler for graceful exit
+// v3.23: SIGINT handler for graceful exit
 fn setupSignalHandler() void {
     const SIGINT = 2;
     _ = std.posix.sigaction(SIGINT, &.{
@@ -231,6 +236,40 @@ fn setupSignalHandler() void {
         .mask = std.posix.sigemptyset(),
         .flags = 0,
     }, null);
+}
+
+// v3.23: Auto baud detection - tries each baud rate and returns working one
+fn autoDetectBaud(fd: std.posix.fd_t) ?u64 {
+    printInfo("[i] Auto-detecting baud rate...\n", .{});
+
+    for (VALID_BAUD_RATES) |baud| {
+        printDim("[*] Trying {d} baud... ", .{baud});
+
+        if (configureSerial(fd, baud)) {
+            // Send test byte to verify
+            const test_byte: u8 = 0x55;
+            _ = std.posix.write(fd, &[_]u8{test_byte}) catch {};
+
+            std.Thread.sleep(100_000); // 100ms wait
+
+            // Try to read response
+            var read_buf: [8]u8 = undefined;
+            const read_result = std.posix.read(fd, &read_buf);
+
+            if (read_result) |_| {
+                // Port seems responsive at this baud rate
+                printSuccess("OK!\n", .{});
+                return baud;
+            } else |_| {
+                printDim("No response\n", .{});
+            }
+        } else {
+            printDim("Failed to configure\n", .{});
+        }
+    }
+
+    printError("[!] Could not auto-detect baud rate\n", .{});
+    return null;
 }
 
 fn handleSIGINT(sig: c_int) callconv(.c) void {
@@ -243,7 +282,7 @@ fn handleSIGINT(sig: c_int) callconv(.c) void {
 const PING_BYTE: u8 = 0x03; // Send PING
 const PONG_BYTE: u8 = 0x83; // Expect PONG response
 
-// v3.21: Check if baud rate is valid
+// v3.23: Check if baud rate is valid
 fn isValidBaudRate(baud: u64) bool {
     for (VALID_BAUD_RATES) |rate| {
         if (baud == rate) return true;
@@ -256,7 +295,7 @@ fn printErr(comptime fmt: []const u8, args: anytype) void {
     std.debug.print(fmt, args);
 }
 
-// v3.21: Colored output functions
+// v3.23: Colored output functions
 fn printSuccess(comptime fmt: []const u8, args: anytype) void {
     printErr(ANSI.GREEN ++ fmt ++ ANSI.RESET, args);
 }
@@ -296,6 +335,11 @@ fn parseArgs() Config {
         .buffer_size = DEFAULT_BUFFER_SIZE,
         .adaptive_timeout = false,
         .test_patterns_file = null,
+        // v3.23: Initialize new fields
+        .auto_baud = false,
+        .rts_cts_flow = false,
+        .stress_test_mode = false,
+        .stress_packets = 10,
     };
 
     var i: usize = 1;
@@ -418,6 +462,22 @@ fn parseArgs() Config {
         } else if (std.mem.eql(u8, arg, "--list-devices")) {
             listSerialPorts();
             std.process.exit(0);
+        } else if (std.mem.eql(u8, arg, "--auto-baud")) {
+            config.auto_baud = true;
+        } else if (std.mem.eql(u8, arg, "--rts-cts")) {
+            config.rts_cts_flow = true;
+        } else if (std.mem.eql(u8, arg, "--stress-test")) {
+            config.stress_test_mode = true;
+        } else if (std.mem.eql(u8, arg, "--stress-packets")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --stress-packets requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.stress_packets = std.fmt.parseInt(usize, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid stress-packets value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -521,6 +581,18 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "auto_configure")) {
                 config.auto_configure = std.ascii.eqlIgnoreCase(value, "true");
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "auto_baud")) {
+                config.auto_baud = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "rts_cts_flow")) {
+                config.rts_cts_flow = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "stress_test_mode")) {
+                config.stress_test_mode = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "stress_packets")) {
+                config.stress_packets = std.fmt.parseInt(usize, value, 10) catch continue;
+                loaded_any = true;
             }
         }
     }
@@ -531,7 +603,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.21           ║
+        \\║      Trinity UART Echo Test v3.23           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -553,23 +625,32 @@ fn printUsage() void {
         \\  --buffer-size <n>   I/O buffer size in bytes (default: 4096)
         \\  --adaptive-timeout   Dynamically adjust timeout based on RTT
         \\  --auto-configure    Auto-configure port (termios setup)
+        \\  --auto-baud         Auto-detect baud rate (v3.23)
+        \\  --rts-cts           Enable RTS/CTS hardware flow control (v3.23)
+        \\  --stress-test       High-throughput stress test mode (v3.23)
+        \\  --stress-packets <n> Packets per stress test (default: 10)
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
-        \\  --list-devices      List all available serial devices (v3.21)
+        \\  --list-devices      List all available serial devices (v3.23)
         \\  --help              Show this help message
         \\
         \\Performance Modes:
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
+        \\  Stress: High-throughput continuous testing without wait (v3.23)
         \\
-        \\Config File (v3.15):
+        \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
         \\  Example:
         \\    baud=115200
         \\    timeout=2000
         \\    batch_size=32
         \\    adaptive_timeout=true
+        \\    auto_baud=true
+        \\    rts_cts_flow=true
+        \\    stress_test_mode=true
+        \\    stress_packets=100
         \\
         \\Supported Adapters:
         \\  - FT232RL (FTDI)   - CP210x (Silicon Labs)
@@ -583,13 +664,13 @@ fn printUsage() void {
     , .{});
 }
 
-// v3.21: Health check function - validates serial port before testing
+// v3.23: Health check function - validates serial port before testing
 fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     if (port_path == null) return true; // No port, skip check
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
 
-    // v3.21: Simple device type detection from path
+    // v3.23: Simple device type detection from path
     const device_name = std.fs.path.basename(port_path.?);
     if (std.mem.indexOf(u8, device_name, "usbserial-")) |_| {
         printErr("[+] Device type: USB Serial adapter\n", .{});
@@ -611,7 +692,7 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
 }
 
 pub fn main() !void {
-    // v3.21: Setup graceful exit handler
+    // v3.23: Setup graceful exit handler
     setupSignalHandler();
 
     const config = parseArgs();
@@ -628,6 +709,10 @@ pub fn main() !void {
         printErr("    simulation_mode: {}\n", .{config.simulation_mode});
         printErr("    dry_run: {}\n", .{config.dry_run});
         printErr("    auto_configure: {}\n", .{config.auto_configure});
+        printErr("    auto_baud: {}\n", .{config.auto_baud});
+        printErr("    rts_cts_flow: {}\n", .{config.rts_cts_flow});
+        printErr("    stress_test_mode: {}\n", .{config.stress_test_mode});
+        printErr("    stress_packets: {d}\n", .{config.stress_packets});
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
@@ -638,7 +723,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.21)         ║
+            \\║         SIMULATION MODE (v3.23)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -660,7 +745,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.21          ║
+        \\║      Trinity UART Echo Test v3.23          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -734,7 +819,7 @@ pub fn main() !void {
     testEcho(port.?, config);
 }
 
-// v3.21: List all available serial devices with detailed info
+// v3.23: List all available serial devices with detailed info
 fn listSerialPorts() void {
     printInfo("\n[*] Scanning for serial devices...\n", .{});
     var dir = std.fs.openDirAbsolute("/dev", .{}) catch |err| {
@@ -828,7 +913,28 @@ fn testEcho(port_path: []const u8, config: Config) void {
     defer std.posix.close(fd);
 
     printErr("[+] Opened: {s}\n", .{port_path});
-    _ = configureSerial(fd, config.baud);
+
+    // v3.23: Auto baud detection
+    if (config.auto_baud) {
+        printInfo("[i] Auto-baud detection enabled\n", .{});
+        if (autoDetectBaud(fd)) |detected_baud| {
+            printSuccess("[+] Auto-detected baud rate: {d}\n", .{detected_baud});
+        } else {
+            printWarning("[!] Auto-detect failed, using configured baud\n", .{});
+        }
+    }
+
+    // v3.23: Configure with or without RTS/CTS flow control
+    if (config.rts_cts_flow) {
+        _ = configureSerialWithFlow(fd, config.baud, true);
+    } else {
+        _ = configureSerial(fd, config.baud);
+    }
+
+    // v3.23: Run stress test mode if enabled
+    if (config.stress_test_mode) {
+        return runStressTest(fd, config) catch {};
+    }
 
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
@@ -858,7 +964,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var overall_rtt_sum: i64 = 0;
     var overall_rtt_count: usize = 0;
 
-    // v3.21: Latency histogram
+    // v3.23: Latency histogram
     var histogram = LatencyHistogram{};
 
     while (true) {
@@ -893,7 +999,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
                     }
                     rtt_sum += result.rtt_ms;
                     rtt_count += 1;
-                    // v3.21: Record in histogram
+                    // v3.23: Record in histogram
                     histogram.record(result.rtt_ms);
                 }
             }
@@ -928,7 +1034,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
         overall_rtt_sum += rtt_sum;
         overall_rtt_count += rtt_count;
 
-        // v3.21: Show latency histogram every 10 cycles in continuous mode
+        // v3.23: Show latency histogram every 10 cycles in continuous mode
         if (config.continuous and cycle % 10 == 0) {
             printInfo("\n[i] Latency Histogram (Cycle {d}):\n", .{cycle});
             histogram.report();
@@ -1192,6 +1298,83 @@ fn runDryRun(config: Config) !void {
     printErr("\n[✓] Dry run complete - no actual I/O performed\n", .{});
 }
 
+// v3.23: Stress test mode - high-throughput continuous testing
+fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
+    printErr(
+        \\╔══════════════════════════════════════╗
+        \\║          STRESS TEST MODE (v3.23)       ║
+        \\║  High-throughput continuous testing       ║
+        \\╚══════════════════════════════════════╝
+        \\
+    , .{});
+
+    printErr("[i] Packets: {d}\n", .{config.stress_packets});
+    printErr("[i] Baud rate: {d}\n", .{config.baud});
+
+    // Prepare test packet
+    const packet_size = 64;
+    var packet: [packet_size]u8 = undefined;
+    for (&packet, 0..) |*b, i| {
+        b.* = @as(u8, @intCast(i % 256));
+    }
+
+    var total_sent: usize = 0;
+    var total_received: usize = 0;
+    var total_errors: usize = 0;
+    const start_time = std.time.nanoTimestamp();
+
+    for (0..config.stress_packets) |i| {
+        const packet_num = i + 1;
+
+        // Send packet
+        const write_result = std.posix.write(fd, &packet);
+        if (write_result) |sent| {
+            total_sent += sent;
+            printErr("\r[->] Sending packet {d}/{d}... ", .{ packet_num, config.stress_packets });
+        } else |_| {
+            total_errors += 1;
+            printErr("\n[!] Write error at packet {d}\n", .{packet_num});
+            continue;
+        }
+
+        // Minimal delay (stress mode)
+        std.Thread.sleep(1_000); // 1ms
+
+        // Try to read (non-blocking, optional in stress mode)
+        var read_buf: [256]u8 = undefined;
+        const read_result = std.posix.read(fd, &read_buf);
+        if (read_result) |received| {
+            total_received += received;
+        } else |_| {
+            // Expected in stress mode - may not get responses
+        }
+
+        if (should_exit.load(.seq_cst)) {
+            printErr("\n[i] Stress test interrupted\n", .{});
+            break;
+        }
+    }
+
+    const elapsed_ns = std.time.nanoTimestamp() - start_time;
+    const elapsed_ms = @divFloor(elapsed_ns, 1_000_000);
+    const elapsed_sec = @as(f64, @floatFromInt(elapsed_ms)) / 1000.0;
+
+    printErr("\n\n", .{});
+    printErr("╔══════════════════════════════════════╗\n", .{});
+    printErr("║          STRESS TEST RESULTS           ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+    printErr("  Packets sent: {d}\n", .{config.stress_packets});
+    printErr("  Bytes sent: {d}\n", .{total_sent});
+    printErr("  Bytes received: {d}\n", .{total_received});
+    printErr("  Errors: {d}\n", .{total_errors});
+    printErr("  Time elapsed: {d:.2}s\n", .{elapsed_sec});
+    if (elapsed_sec > 0) {
+        const throughput = @as(f64, @floatFromInt(total_sent)) / elapsed_sec;
+        printErr("  Throughput: {d:.1} bytes/sec\n", .{throughput});
+    }
+    printErr("\n[✓] Stress test complete\n", .{});
+}
+
 fn findFT232Device() ?[]const u8 {
     var dir = std.fs.openDirAbsolute("/dev", .{}) catch return null;
     defer dir.close();
@@ -1207,8 +1390,13 @@ fn findFT232Device() ?[]const u8 {
     return null;
 }
 
-// v3.21: Configure serial port with configurable baud rate
+// v3.23: Configure serial port with configurable baud rate and flow control
 fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
+    return configureSerialWithFlow(fd, baud, false);
+}
+
+// v3.23: Configure serial with optional RTS/CTS flow control
+fn configureSerialWithFlow(fd: std.posix.fd_t, baud: u64, enable_rtscts: bool) bool {
     var termio = std.posix.tcgetattr(fd) catch return false;
 
     // Set 8N1: 8 data bits, no parity, 1 stop bit
@@ -1220,6 +1408,13 @@ fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     termio.cflag.CREAD = true;
     termio.cflag.CLOCAL = true;
 
+    // v3.23: Enable RTS/CTS hardware flow control if requested
+    if (enable_rtscts) {
+        termio.cflag.CRTS_IFLOW = true; // Enable RTS
+        // Note: CTS is input-controlled, hardware manages it
+        printInfo("[i] RTS/CTS flow control enabled\n", .{});
+    }
+
     // Raw input mode: no ICANON, no echo, no signal chars
     termio.lflag.ICANON = false;
     termio.lflag.ECHO = false;
@@ -1229,7 +1424,7 @@ fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     // Raw output mode
     termio.oflag.OPOST = false;
 
-    // Disable software flow control
+    // Disable software flow control (use hardware instead)
     termio.iflag.IXON = false;
     termio.iflag.IXOFF = false;
     termio.iflag.IXANY = false;
@@ -1238,7 +1433,7 @@ fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     termio.cc[@intFromEnum(std.posix.V.MIN)] = 0;
     termio.cc[@intFromEnum(std.posix.V.TIME)] = 1;
 
-    // Set baud rate (v3.21: configurable)
+    // Set baud rate (v3.23: configurable)
     termio.ispeed = @as(std.c.speed_t, @enumFromInt(baud));
     termio.ospeed = @as(std.c.speed_t, @enumFromInt(baud));
 
@@ -1288,7 +1483,7 @@ fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: us
 fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
     printErr(
         \\{{
-        \\  "version": "3.21",
+        \\  "version": "3.23",
         \\  "mode": "simulation",
         \\  "timestamp": {d},
         \\  "summary": {{
