@@ -16,7 +16,7 @@ services:
   w9-1:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w1
     volumes:
       - ../../data/wave9/worker-1:/data/checkpoints
@@ -46,7 +46,7 @@ services:
   w9-2:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w2
     volumes:
       - ../../data/wave9/worker-2:/data/checkpoints
@@ -76,7 +76,7 @@ services:
   w9-3:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w3
     volumes:
       - ../../data/wave9/worker-3:/data/checkpoints
@@ -106,7 +106,7 @@ services:
   w9-4:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w4
     volumes:
       - ../../data/wave9/worker-4:/data/checkpoints
@@ -136,7 +136,7 @@ services:
   w9-5:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w5
     volumes:
       - ../../data/wave9/worker-5:/data/checkpoints
@@ -166,7 +166,7 @@ services:
   w9-6:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w6
     volumes:
       - ../../data/wave9/worker-6:/data/checkpoints
@@ -196,7 +196,7 @@ services:
   w9-7:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w7
     volumes:
       - ../../data/wave9/worker-7:/data/checkpoints
@@ -226,7 +226,7 @@ services:
   w9-8:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w8
     volumes:
       - ../../data/wave9/worker-8:/data/checkpoints
@@ -256,7 +256,7 @@ services:
   w9-9:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w9
     volumes:
       - ../../data/wave9/worker-9:/data/checkpoints
@@ -286,7 +286,7 @@ services:
   w9-10:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w10
     volumes:
       - ../../data/wave9/worker-10:/data/checkpoints
@@ -316,7 +316,7 @@ services:
   w9-11:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w11
     volumes:
       - ../../data/wave9/worker-11:/data/checkpoints
@@ -346,7 +346,7 @@ services:
   w9-12:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w12
     volumes:
       - ../../data/wave9/worker-12:/data/checkpoints
@@ -376,7 +376,7 @@ services:
   w9-13:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w13
     volumes:
       - ../../data/wave9/worker-13:/data/checkpoints
@@ -406,7 +406,7 @@ services:
   w9-14:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w14
     volumes:
       - ../../data/wave9/worker-14:/data/checkpoints
@@ -436,7 +436,7 @@ services:
   w9-15:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w15
     volumes:
       - ../../data/wave9/worker-15:/data/checkpoints
@@ -466,7 +466,7 @@ services:
   w9-16:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w16
     volumes:
       - ../../data/wave9/worker-16:/data/checkpoints
@@ -496,7 +496,7 @@ services:
   w9-17:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w17
     volumes:
       - ../../data/wave9/worker-17:/data/checkpoints
@@ -526,7 +526,7 @@ services:
   w9-18:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w18
     volumes:
       - ../../data/wave9/worker-18:/data/checkpoints
@@ -556,7 +556,7 @@ services:
   w9-19:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w19
     volumes:
       - ../../data/wave9/worker-19:/data/checkpoints
@@ -586,7 +586,7 @@ services:
   w9-20:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w20
     volumes:
       - ../../data/wave9/worker-20:/data/checkpoints
@@ -616,7 +616,7 @@ services:
   w9-21:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w21
     volumes:
       - ../../data/wave9/worker-21:/data/checkpoints
@@ -646,7 +646,7 @@ services:
   w9-22:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w22
     volumes:
       - ../../data/wave9/worker-22:/data/checkpoints
@@ -676,7 +676,7 @@ services:
   w9-23:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w23
     volumes:
       - ../../data/wave9/worker-23:/data/checkpoints
@@ -706,7 +706,7 @@ services:
   w9-24:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w24
     volumes:
       - ../../data/wave9/worker-24:/data/checkpoints
@@ -736,7 +736,7 @@ services:
   w9-25:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w25
     volumes:
       - ../../data/wave9/worker-25:/data/checkpoints
@@ -766,7 +766,7 @@ services:
   w9-26:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w26
     volumes:
       - ../../data/wave9/worker-26:/data/checkpoints
@@ -796,7 +796,7 @@ services:
   w9-27:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w27
     volumes:
       - ../../data/wave9/worker-27:/data/checkpoints
@@ -826,7 +826,7 @@ services:
   w9-28:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w28
     volumes:
       - ../../data/wave9/worker-28:/data/checkpoints
@@ -856,7 +856,7 @@ services:
   w9-29:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w29
     volumes:
       - ../../data/wave9/worker-29:/data/checkpoints
@@ -886,7 +886,7 @@ services:
   w9-30:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w30
     volumes:
       - ../../data/wave9/worker-30:/data/checkpoints
@@ -916,7 +916,7 @@ services:
   w9-31:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w31
     volumes:
       - ../../data/wave9/worker-31:/data/checkpoints
@@ -946,7 +946,7 @@ services:
   w9-32:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w32
     volumes:
       - ../../data/wave9/worker-32:/data/checkpoints
@@ -976,7 +976,7 @@ services:
   w9-33:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w33
     volumes:
       - ../../data/wave9/worker-33:/data/checkpoints
@@ -1006,7 +1006,7 @@ services:
   w9-34:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w34
     volumes:
       - ../../data/wave9/worker-34:/data/checkpoints
@@ -1036,7 +1036,7 @@ services:
   w9-35:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w35
     volumes:
       - ../../data/wave9/worker-35:/data/checkpoints
@@ -1066,7 +1066,7 @@ services:
   w9-36:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w36
     volumes:
       - ../../data/wave9/worker-36:/data/checkpoints
@@ -1096,7 +1096,7 @@ services:
   w9-37:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w37
     volumes:
       - ../../data/wave9/worker-37:/data/checkpoints
@@ -1126,7 +1126,7 @@ services:
   w9-38:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w38
     volumes:
       - ../../data/wave9/worker-38:/data/checkpoints
@@ -1156,7 +1156,7 @@ services:
   w9-39:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w39
     volumes:
       - ../../data/wave9/worker-39:/data/checkpoints
@@ -1186,7 +1186,7 @@ services:
   w9-40:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w40
     volumes:
       - ../../data/wave9/worker-40:/data/checkpoints
@@ -1216,7 +1216,7 @@ services:
   w9-41:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w41
     volumes:
       - ../../data/wave9/worker-41:/data/checkpoints
@@ -1246,7 +1246,7 @@ services:
   w9-42:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w42
     volumes:
       - ../../data/wave9/worker-42:/data/checkpoints
@@ -1276,7 +1276,7 @@ services:
   w9-43:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w43
     volumes:
       - ../../data/wave9/worker-43:/data/checkpoints
@@ -1306,7 +1306,7 @@ services:
   w9-44:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w44
     volumes:
       - ../../data/wave9/worker-44:/data/checkpoints
@@ -1336,7 +1336,7 @@ services:
   w9-45:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w45
     volumes:
       - ../../data/wave9/worker-45:/data/checkpoints
@@ -1366,7 +1366,7 @@ services:
   w9-46:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w46
     volumes:
       - ../../data/wave9/worker-46:/data/checkpoints
@@ -1396,7 +1396,7 @@ services:
   w9-47:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w47
     volumes:
       - ../../data/wave9/worker-47:/data/checkpoints
@@ -1426,7 +1426,7 @@ services:
   w9-48:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+      dockerfile: deploy/Dockerfile.hslm-train-local.minimal
     container_name: wave9-w48
     volumes:
       - ../../data/wave9/worker-48:/data/checkpoints
