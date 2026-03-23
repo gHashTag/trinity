@@ -202,3 +202,51 @@ Trinity становится целостной, когда три Strand син
 //! Strand III: Language & Hardware Bridge
 //!
 ```
+
+---
+
+## Queen Trinity Protocol
+
+**Расположение**: `src/tri/queen_trinity.zig`
+
+**Роль**: Lotus Cycle Protocol для очистки impure событий от всех трёх Strand.
+
+**Lotus Cycle (φ² + 1/φ² = 3)**:
+```
+QUEUED → DIAGNOSING → REFINE → VERIFY → PURIFIED
+   ↑        ↓         ↑        ↑
+   ←────────────────── RESET ────────────────
+```
+
+**Максимум 3 попытки** (архитектурный лимит Trinity).
+
+**Impure события** генерируются всеми Strand:
+- **Strand I (Math)**: `src/tri/math/` — sacred вычисления, формулы
+- **Strand II (Brain)**: `src/brain/` — обучение, telemetry, checkpoint
+- **Strand III (Lang)**: `src/tri27/`, `fpga/` — компиляции, синтез, верификация
+
+**Типы событий**:
+| Тип | Код | Описание |
+|-----|------|----------|
+| BUILD_FAIL | `zig build` упал |
+| TEST_FAIL | `zig build test` не прошёл |
+| SPEC_MISMATCH | `.tri` spec не совпадает с кодом |
+| GEN_FAIL | GEN фаза упала |
+| VERIFY_FAIL | VERIFY фаза не прошла |
+| DEPLOY_FAIL | деплой не удался |
+| CHECKPOINT_FAIL | checkpoint не создан |
+
+**Хранилище**: `.trinity/impure/*.json`
+
+**CLI команды**:
+```bash
+tri queen status      # Показать очередь impure событий
+tri queen purify     # Запустить Lotus Cycle на первом в очереди
+tri queen purify --all # Очистить все queued
+tri queen blocked     # Показать события, где Queen не смогла
+```
+
+**Интеграция**:
+- Hook события записывают в `.trinity/impure/` автоматически
+- Queen CLI читает очередь и выполняет Lotus Cycle
+- Каждая фаза цикла (DIAGNOSING → VERIFY → PURIFY) записывает прогресс в событие

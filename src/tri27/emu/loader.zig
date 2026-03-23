@@ -1,14 +1,13 @@
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // TRI-27 LOADER — Load .tbin bytecode files into CPU state
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ section_count (1 byte)
-//    const section_count = code[5];
-//    var offset: usize = 6; // Start after header
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const cpu_state = @import("./cpu_state.zig");
+const tri_memory = @import("./tri_memory.zig");
 
-/// Magic number for .tbin files: "TRI27"
-const MAGIC: u32 = 0x54524937; // 'T' << 24 | 'R' << 16 | 'I' << 8 | '2' | '7'
+/// Magic number for .tbin files: "TRI2"
+const MAGIC: u32 = 0x54524932; // '2' | 'I' << 8 | 'R' << 16 | 'T' << 24 (little-endian "2IRT")
 
 /// Supported version
 const VERSION: u8 = 1;
@@ -71,8 +70,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     var code_size: usize = 0;
 
     // Process each section
-    var section_idx: usize = 0;
-    for (0..section_count) |section_idx| {
+    for (0..section_count) |_| {
         if (offset + 1 > code.len) return LoadError.Truncated;
 
         const section_type = code[offset];
@@ -91,7 +89,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 // Copy code to CPU memory
                 const code_data = code[offset .. offset + size];
                 for (0..size) |i| {
-                    cpu.memory[i] = code_data[i];
+                    cpu.memory[i] = tri_memory.Word{ .word_value = @intCast(code_data[i]) };
                 }
                 code_size = size;
 
@@ -105,9 +103,14 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 offset += 1;
 
                 // Load constants from constants array (passed as parameter)
+                // Store as u64 in Word format for compatibility
                 for (0..@min(num_constants, constants.len)) |i| {
                     if (i < 3) {
-                        cpu.floats[i] = constants[i];
+                        // Convert f64 to u64 for Word.word_value
+                        const bits: u64 = @as(u64, @bitCast(constants[i]));
+                        // Store in high word (constants use upper 48 bits of Word)
+                        // For now, store in lower memory as u16
+                        cpu.f[i] = @as(u16, @truncate(bits >> 32));
                     }
                 }
 
@@ -120,7 +123,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             3 => { // DATA section
                 if (offset + 3 > code.len) return LoadError.Truncated;
 
-                const data_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2])) << 8;
+                const data_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2]) << 8);
                 offset += 3; // Skip size + padding
 
                 if (offset + data_size > code.len) return LoadError.Truncated;
@@ -131,7 +134,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
 
                 const data_data = code[offset .. offset + data_size];
                 for (0..data_size) |i| {
-                    cpu.memory[data_offset + i] = data_data[i];
+                    cpu.memory[data_offset + i] = tri_memory.Word{ .word_value = @intCast(data_data[i]) };
                 }
 
                 offset += data_size;
@@ -140,7 +143,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
             4 => { // BSS section (uninitialized)
                 if (offset + 3 > code.len) return LoadError.Truncated;
 
-                const bss_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2])) << 8;
+                const bss_size = (@as(u16, code[offset + 1]) | @as(u16, code[offset + 2]) << 8);
                 offset += 3;
 
                 // BSS is just reserved space, no data to copy
@@ -153,11 +156,10 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
 
     // Initialize CPU state
     cpu.pc = 0;
-    cpu.sp = cpu.memory_len - 1;
+    cpu.sp = @as(u32, @intCast(cpu.memory_len - 1));
     cpu.fp = 0;
     cpu.instructions_executed = 0;
-    cpu.start_time = 0;
-    cpu.end_time = 0;
+    cpu.cycles = 0;
 
     // Validate that we have a code section
     if (code_size == 0) return LoadError.SectionMissing;
@@ -165,27 +167,4 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     // Validate that constants count matches input
     const total_constants = code[4];
     _ = total_constants;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════.zig:1814:49: note: parameter type declared here
-pub inline fn readInt(comptime T: type, buffer: *const [@divExact(@typeInfo(T).int.bits, 8)]u8, endian: Endian) T {
-                                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-test "Loader: load code section" {
-    var cpu = try cpu_state.CPUState.init(std.testing.allocator, 1024);
-    defer cpu.deinit(std.testing.allocator);
-
-    const code = [_]u8{
-        0x37, 0x32, 0x49, 0x52, // "TRI27" magic
-        0x01, // version
-        0x01, // section_count = 1
-        0x01, // type = CODE
-        0x01, 0x00, // size = 1
-        0x00, // padding
-        0x4D, // HALT
-    };
-
-    try loader.load(&cpu, &code, &[_]f64{});
-
-    try std.testing.expectEqual(@as(u32, 0), cpu.pc);
 }

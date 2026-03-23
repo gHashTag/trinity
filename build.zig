@@ -2684,6 +2684,23 @@ pub fn build(b: *std.Build) void {
     const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
     tri_asm_step.dependOn(&run_tri_asm.step);
 
+    // TRI‑27 CLI — TRI-27 language toolchain (assemble/disassemble/run/validate/isa)
+    const tri27 = b.addExecutable(.{
+        .name = "tri27",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(tri27);
+    const run_tri27 = b.addRunArtifact(tri27);
+    if (b.args) |args| {
+        run_tri27.addArgs(args);
+    }
+    const tri27_step = b.step("tri27", "Run TRI-27 CLI (assemble/disassemble/run/validate/isa)");
+    tri27_step.dependOn(&run_tri27.step);
+
     // Cycle 100: REPL Testing Infrastructure
     // Test suite for TRI CLI commands with sacred assertions
     const tri_testing = b.addTest(.{
