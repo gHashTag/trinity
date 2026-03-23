@@ -93,9 +93,9 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 // Copy code to CPU memory
                 const code_data = code[offset .. offset + size];
                 // Pack 4 bytes per word (little-endian)
-                var word_idx: usize = 2; // Skip magic(2) + header(2) words
+                var word_idx: usize = 0; // Start at beginning of memory
                 var i: usize = 0;
-                while (i + 3 < size) : (i += 4) {
+                while (i + 4 <= size) : (i += 4) {
                     const b0 = code_data[i];
                     const b1 = code_data[i + 1];
                     const b2 = code_data[i + 2];
@@ -168,9 +168,8 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     }
 
     // Initialize CPU state
-    // Instructions start at byte 10 (after magic[4] + header[6] = 10 bytes)
-    // Byte 10 = PC=2 + remainder (since PC is word index, 1 word = 4 bytes)
-    cpu.pc = 2;
+    // Instructions start at word 0
+    cpu.pc = 0;
     cpu.sp = @as(u32, @intCast(cpu.memory_len - 1));
     cpu.fp = 0;
     cpu.instructions_executed = 0;
