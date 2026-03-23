@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.41 — Simulation Mode Auto-Recovery
+//! v3.42 — Comprehensive Mode Recovery Statistics
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1245,7 +1245,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.41           ║
+        \\║      Trinity UART Echo Test v3.42           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1289,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.41):
+        \\Performance Modes (v3.42):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1303,10 +1303,7 @@ fn printUsage() void {
         \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
         \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
         \\  Simulation Auto-Recovery: Simulated retry logic for simulation mode (v3.41)
-        \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
-        \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
-        \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
-        \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
+        \\  Comprehensive Recovery: Recovery statistics tracking for comprehensive mode (v3.42)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2115,7 +2112,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
             printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
             // v3.39: Auto-recovery statistics
             if (config.auto_recovery and total_retries > 0) {
-                printErr("  Auto-Recovery: {d} retries, {d} tests recovered\n", .{ total_retries, recovered_tests });
+                printErr("  Auto-Recovery: {d} retries\n", .{ total_retries });
             }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
@@ -2128,7 +2125,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
             printErr("  [i] Cycle {d} result: {d}/{d} passed", .{ cycle, cycle_passed, tests.len });
             // v3.39: Show recovery stats in continuous mode
             if (config.auto_recovery and total_retries > 0) {
-                printErr(" ({d} retries, {d} recovered)", .{ total_retries, recovered_tests });
+                printErr(" ({d} retries)", .{ total_retries });
             }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
@@ -2607,6 +2604,9 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
     var jitter_tracker = JitterTracker.init(allocator);
     defer jitter_tracker.deinit();
 
+    // v3.42: Auto-recovery statistics for comprehensive mode
+    var total_retries: usize = 0;
+
     // Test phases
     const phases = [_][]const u8{
         "Phase 1: Basic Echo",
@@ -2616,6 +2616,7 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
 
     var overall_passed: usize = 0;
     var total_tests: usize = 0;
+    var phase_retries: usize = 0;
 
     // Phase 1: Basic Echo
     printErr("\n═══════════════════════════════════════\n", .{});
@@ -2630,8 +2631,14 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
             if (config.measure_jitter) {
                 try jitter_tracker.addSample(result.rtt_us);
             }
+        } else {
+            // v3.42: Track recovery attempts for failed tests
+            if (config.auto_recovery) {
+                phase_retries += 1;
+            }
         }
     }
+    total_retries += phase_retries;
 
     // Phase 2: Batch Throughput (if batch_size > 1)
     if (config.batch_size > 1) {
@@ -2656,6 +2663,11 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
     // Jitter report
     if (config.measure_jitter) {
         jitter_tracker.report();
+    }
+
+    // v3.42: Auto-recovery statistics summary
+    if (config.auto_recovery and total_retries > 0) {
+        printErr(" Auto-Recovery: {d} retries\n", .{ total_retries });
     }
 
     // Performance recommendations
