@@ -18,7 +18,7 @@ pub const Tri27Operation = enum(u8) {
     assemble,
     disassemble,
     run,
-    test 
+    @"test",
     flash,
     dump,
 };
@@ -141,31 +141,31 @@ pub fn fromTri27Event(allocator: Allocator, event: Tri27Event, issue_id: ?u64) !
     };
 }
 
-/// Extension: Add TRI-27 source to episodes module
-/// This should be added to src/tri/queen/episodes.zig Source enum:
-///
-/// pub const Source = enum {
-///     lotus_cycle,
-///     external,
-///     scheduled,
-///     experience_recall,
-///     tri27,  // <-- Add this
-/// };
+// Extension: Add TRI-27 source to episodes module
+// This should be added to src/tri/queen/episodes.zig Source enum:
+//
+// pub const Source = enum {
+//     lotus_cycle,
+//     external,
+//     scheduled,
+//     experience_recall,
+//     tri27,  // <-- Add this
+// };
 
-/// Extension: Add TRI-27 action to episodes module
-/// This should be added to src/tri/queen/episodes.zig Action union:
-///
-/// pub const Action = union(enum) {
-///     scale_up: struct { key: []const u8, quality_score: f64 },
-///     scale_down: struct { key: []const u8, quality_score: f64 },
-///     trigger: struct { key: []const u8 },
-///     set: struct { key: []const u8, value: union { bool: bool, f64: f64 } },
-///     wait: void,
-///     tri27_op: struct {  // <-- Add this
-///         operation: Tri27Operation,
-///         input_file: []const u8,
-///         output_file: []const u8,
-///         cycles: u32,
-///         instructions: u32,
-///     },
-/// };
+// Extension: Add TRI-27 action to episodes module
+// This should be added to src/tri/queen/episodes.zig Action union:
+//
+// pub const Action = union(enum) {
+//     scale_up: struct { key: []const u8, quality_score: f64 },
+//     scale_down: struct { key: []const u8, quality_score: f64 },
+//     trigger: struct { key: []const u8 },
+//     set: struct { key: []const u8, value: union { bool: bool, f64: f64 } },
+//     wait: void,
+//     tri27_op: struct {  // <-- Add this
+//         operation: Tri27Operation,
+//         input_file: []const u8,
+//         output_file: []const u8,
+//         cycles: u32,
+//         instructions: u32,
+//     },
+// };

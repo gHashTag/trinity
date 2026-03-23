@@ -14,12 +14,10 @@ pub const CycleResult = @import("act.zig").CycleResult;
 pub const Outcome = @import("act.zig").Outcome;
 const observe = @import("observe.zig").observe;
 const evaluate = @import("evaluate.zig").evaluate;
-const plan = @import("plan.zig").plan;
+const planFn = @import("plan.zig").plan;
 const act = @import("act.zig").act;
 
-/// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════Phase 6: Full Cycle Integration
-//
-// Run complete Lotus Cycle: Observe → Evaluate → Plan → Act
+/// Run complete Lotus Cycle: Observe → Evaluate → Plan → Act
 pub fn runFullCycle(allocator: std.mem.Allocator) !CycleResult {
     // Stage 1: Observe
     const context = try observe(allocator);
@@ -28,10 +26,10 @@ pub fn runFullCycle(allocator: std.mem.Allocator) !CycleResult {
     const evaluation = try evaluate(context);
 
     // Stage 3: Plan
-    const plan = try plan(evaluation, context.policy);
+    const execution_plan = try planFn(evaluation, context.policy);
 
     // Stage 4: Act
-    const result = try act(plan);
+    const result = try act(execution_plan);
 
     // Stage 5: Derive outcome
     const outcome = deriveOutcome(result);
@@ -39,7 +37,7 @@ pub fn runFullCycle(allocator: std.mem.Allocator) !CycleResult {
     return CycleResult{
         .context = context,
         .evaluation = evaluation,
-        .plan = plan,
+        .plan = execution_plan,
         .result = result,
         .outcome = outcome,
     };
