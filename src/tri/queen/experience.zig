@@ -182,7 +182,7 @@ test "experience: recallSimilarEpisodes returns sorted results" {
     const allocator = std.testing.allocator;
 
     const context = Context{
-        .timestamp_ns = std.time.nanoTimestamp(),
+        .timestamp_ns = @as(u64, @intCast(std.time.nanoTimestamp())),
         .policy = .{},
         .senses = .{},
         .active_issues = &[_]u64{},

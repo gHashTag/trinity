@@ -283,6 +283,7 @@ test "episodes: recordEpisode creates valid episode" {
         .policy = .{},
         .senses = .{},
         .active_issues = try allocator.alloc(u64, 0),
+        .recalled_episodes = &[_]Episode{},
     };
     defer allocator.free(context.active_issues);
 

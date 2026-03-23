@@ -100,6 +100,7 @@ const Config = struct {
     test_patterns_file: ?[]const u8,
     // v3.24: Jitter measurement and pattern generation
     measure_jitter: bool,
+    spike_threshold: f64 = 3.0,  // v3.49: Configurable spike threshold (multiplier of median)
     use_pattern: []const u8,
     pattern_length: usize,
     // v3.26: FPGA XVC Bridge integration
