@@ -3,6 +3,8 @@
 
 const std = @import("std");
 
+pub const Episode = @import("episodes.zig").Episode;
+
 pub const PolicySnapshot = struct {
     kill_threshold: f64 = 4.0,
     crash_rate_limit: f64 = 0.2,
@@ -31,6 +33,7 @@ pub const Context = struct {
     policy: PolicySnapshot,
     senses: SensorsSnapshot,
     active_issues: []const u64,
+    recalled_episodes: []const Episode,
 };
 
 /// Read sensors from .trinity/queen/senses.json
@@ -77,11 +80,44 @@ pub fn observe(allocator: std.mem.Allocator) !Context {
     const active_issues = try allocator.alloc(u64, 0);
     defer allocator.free(active_issues);
 
+    // Recall similar episodes from experience
+    const experience = @import("experience.zig");
+    const base_context = Context{
+        .timestamp_ns = now_ns,
+        .policy = policy,
+        .senses = senses,
+        .active_issues = active_issues,
+        .recalled_episodes = &[_]Episode{},
+    };
+    const recall_scores = try experience.recallSimilarEpisodes(allocator, base_context, .{});
+    defer allocator.free(recall_scores);
+
+    // Load full recalled episodes
+    var recalled = try std.ArrayList(Episode).initCapacity(allocator, recall_scores.len);
+    defer recalled.deinit(allocator);
+
+    if (recall_scores.len > 0) {
+        const all_episodes = try @import("episodes.zig").loadEpisodes(allocator);
+        defer allocator.free(all_episodes);
+
+        for (recall_scores) |score| {
+            for (all_episodes) |ep| {
+                if (ep.id == score.episode_id) {
+                    try recalled.append(allocator, ep);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Return context with empty recalled_episodes for now
+    // TODO: Fix memory leak when returning owned slice
     return Context{
         .timestamp_ns = now_ns,
         .policy = policy,
         .senses = senses,
         .active_issues = active_issues,
+        .recalled_episodes = &[_]Episode{},
     };
 }
 
