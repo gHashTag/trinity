@@ -477,6 +477,106 @@ pub fn runPickCommand(allocator: Allocator, args: []const []const u8) void {
     };
 
     renderPick(&result, &pick);
+
+    // Save pick result for dev loop RESEARCH phase
+    savePickResult(&result, &pick);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SAVE PICK RESULT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Save pick result to .trinity/pick_result.json
+/// Used by dev_loop RESEARCH phase to load context
+fn savePickResult(result: *const dev_scan.ScanResult, pick: *const PickResult) void {
+    if (result.count == 0 or pick.chosen_idx >= result.count) return;
+
+    std.fs.cwd().makePath(".trinity") catch return;
+
+    const file = std.fs.cwd().createFile(".trinity/pick_result.json", .{}) catch return;
+    defer file.close();
+
+    const chosen = &result.items[pick.chosen_idx];
+    const score_int: u32 = @intFromFloat(pick.final_score);
+    const timestamp = std.time.timestamp();
+
+    // Manual JSON string escaping (Zig 0.15 doesn't have jsonEscape)
+    var id_escaped: [128]u8 = undefined;
+    var id_len: usize = 0;
+    for (chosen.idStr()) |c| {
+        if (c == '"') {
+            id_escaped[id_len] = '\\';
+            id_escaped[id_len + 1] = '"';
+            id_len += 2;
+        } else if (c == '\\') {
+            id_escaped[id_len] = '\\';
+            id_escaped[id_len + 1] = '\\';
+            id_len += 2;
+        } else {
+            id_escaped[id_len] = c;
+            id_len += 1;
+        }
+    }
+
+    var title_escaped: [512]u8 = undefined;
+    var title_len: usize = 0;
+    for (chosen.titleStr()) |c| {
+        if (c == '"') {
+            title_escaped[title_len] = '\\';
+            title_escaped[title_len + 1] = '"';
+            title_len += 2;
+        } else if (c == '\\') {
+            title_escaped[title_len] = '\\';
+            title_escaped[title_len + 1] = '\\';
+            title_len += 2;
+        } else if (c == '\n') {
+            title_escaped[title_len] = '\\';
+            title_escaped[title_len + 1] = 'n';
+            title_len += 2;
+        } else if (c == '\r') {
+            title_escaped[title_len] = '\\';
+            title_escaped[title_len + 1] = 'r';
+            title_len += 2;
+        } else if (c == '\t') {
+            title_escaped[title_len] = '\\';
+            title_escaped[title_len + 1] = 't';
+            title_len += 2;
+        } else {
+            title_escaped[title_len] = c;
+            title_len += 1;
+        }
+    }
+
+    var buf: [2048]u8 = undefined;
+    const content = std.fmt.bufPrint(&buf,
+        \\{{
+        \\  "chosen_idx":{d},
+        \\  "strategy":"{s}",
+        \\  "final_score":{d},
+        \\  "skipped_mnl":{d},
+        \\  "picked":{{
+        \\    "id":"{s}",
+        \\    "title":"{s}",
+        \\    "priority":"{s}",
+        \\    "source":"{s}",
+        \\    "fail_count":{d}
+        \\  }},
+        \\  "timestamp":{d}
+        \\}}
+    , .{
+        pick.chosen_idx,
+        pick.strategy.label(),
+        score_int,
+        pick.skipped_mnl,
+        id_escaped[0..id_len],
+        title_escaped[0..title_len],
+        chosen.priority.tag(),
+        chosen.source.label(),
+        chosen.fail_count,
+        timestamp,
+    }) catch return;
+
+    file.writeAll(content) catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
