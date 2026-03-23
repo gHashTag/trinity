@@ -177,6 +177,20 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
 
+    // Maintainer / author attribution — must match tools/config/author_attribution_guard.manifest
+    const author_guard_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/author_attribution_guard.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_author_guard_tests = b.addRunArtifact(author_guard_tests);
+    test_step.dependOn(&run_author_guard_tests.step);
+
+    const author_guard_step = b.step("author-guard", "Verify canonical maintainer strings (Dmitrii Vasilev / @gHashTag) in locked files");
+    author_guard_step.dependOn(&run_author_guard_tests.step);
+
     // VSA tests
     const vsa_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -2649,6 +2663,26 @@ pub fn build(b: *std.Build) void {
     }
     const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
     tri_emu_step.dependOn(&run_tri_emu.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // TRI‑27 ASSEMBLER — Ternary assembler for .tbin bytecode
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    const tri_asm = b.addExecutable(.{
+        .name = "tri-asm",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/emu/tri_asm.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(tri_asm);
+
+    const run_tri_asm = b.addRunArtifact(tri_asm);
+    if (b.args) |args| {
+        run_tri_asm.addArgs(args);
+    }
+    const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
+    tri_asm_step.dependOn(&run_tri_asm.step);
 
     // Cycle 100: REPL Testing Infrastructure
     // Test suite for TRI CLI commands with sacred assertions

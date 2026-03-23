@@ -1,0 +1,23 @@
+---
+description: Canonical maintainer / author — do not change without explicit human approval
+alwaysApply: true
+---
+
+# Author attribution lock
+
+**Canonical maintainer and author string:** **Dmitrii Vasilev** / GitHub **@gHashTag**.
+
+## Rules for agents and editors
+
+1. **Do not** replace this name or handle with placeholders (`Trinity Research Group`, `Abbie`, generic “Trinity Project”, etc.) in locked paths.
+2. **Do not** edit `tools/config/author_attribution_guard.manifest` to remove paths **unless** the corresponding file is deleted or ownership is explicitly changed by the repository owner.
+3. **Do not** weaken or delete `src/tri/author_attribution_guard.zig` or its `build.zig` `test_step` dependency without explicit human approval.
+
+## Enforcement
+
+- `zig build test` runs `src/tri/author_attribution_guard.zig` and fails if any listed file is missing **Dmitrii Vasilev** and **gHashTag**, or still contains **Trinity Research Group** / **Trinity Research Team**.
+- To add a new document that must carry the same attribution, append its repo-relative path to `tools/config/author_attribution_guard.manifest`.
+
+## When changes are allowed
+
+Only when the **human maintainer** explicitly requests a different attribution or adds co-authors. Then update the manifest, the guard constants if needed, and the tests in the same change.

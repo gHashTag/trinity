@@ -4,6 +4,7 @@ const CPUState = @import("cpu_state.zig").CPUState;
 const Instruction = @import("decoder.zig").Instruction;
 const Opcode = @import("decoder.zig").Opcode;
 const Memory = @import("tri_memory.zig").Memory;
+const Assembler = @import("tri_asm.zig");
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -27,6 +28,8 @@ pub fn main() !void {
         .dump_instructions = 0,
         .trace = false,
         .max_cycles = null,
+        .asm_mode = false,
+        .asm_output = null,
     };
 
     var i: usize = 2;
@@ -51,6 +54,12 @@ pub fn main() !void {
                 options.max_cycles = try std.fmt.parseInt(u32, args[i + 1], 10);
                 i += 1;
             }
+        } else if (std.mem.eql(u8, arg, "--asm") or std.mem.eql(u8, arg, "-a")) {
+            options.asm_mode = true;
+            if (i + 1 < args.len) {
+                options.asm_output = args[i + 1];
+                i += 1;
+            }
         } else if (std.mem.eql(u8, arg, "--help") or std.mem.eql(u8, arg, "-h")) {
             try printUsage();
             return error.Usage;
@@ -59,6 +68,12 @@ pub fn main() !void {
             try printUsage();
             return error.Usage;
         }
+    }
+
+    // Assembly mode: assemble .asm file to .tbin
+    if (options.asm_mode) {
+        const output_path = options.asm_output orelse "output.tbin";
+        return runAssembler(tbin_path, output_path, allocator);
     }
 
     // Run emulator
@@ -81,6 +96,8 @@ pub const Options = struct {
     dump_instructions: u32,
     trace: bool,
     max_cycles: ?u32,
+    asm_mode: bool,
+    asm_output: ?[]const u8,
 };
 
 pub const EmulatorResult = struct {
@@ -178,7 +195,39 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
 
 /// Print usage information
 fn printUsage() !void {
-    const msg = "TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor\nUsage: tri-emu <file.tbin> [options]\nOptions:\n  -v, --verbose      Verbose output (load info, instruction trace)\n  -t, --trace        Trace every instruction\n  -s, --stats        Print execution statistics\n  -dm, --dump-memory Dump memory state at exit\n  -d <n>, --dump <n> Dump memory after N instructions\n  -m <n>, --max-cycles <n> Stop after N cycles\n  -h, --help         Show this help message\n\nExamples:\n  tri-emu program.tbin                    Run program to completion\n  tri-emu program.tbin -v -t            Run with verbose trace\n  tri-emu program.tbin -s                Show statistics only\n  tri-emu program.tbin -m 100000      Stop after 100K cycles\n  tri-emu program.tbin -d 50           Dump memory after 50 instrs\n\nExit codes:\n  0  - Success\n  1  - Usage error\n  2  - File not found\n  3  - Invalid .tbin file\n  4  - Emulation error\n";
+    const msg =
+        \\TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor
+        \\Usage: tri-emu <file.asm|file.tbin> [options]
+        \\
+        \\Options:
+        \\  -v, --verbose      Verbose output (load info, instruction trace)
+        \\  -t, --trace        Trace every instruction
+        \\  -s, --stats        Print execution statistics
+        \\  -dm, --dump-memory Dump memory state at exit
+        \\  -d <n>, --dump <n> Dump memory after N instructions
+        \\  -m <n>, --max-cycles <n> Stop after N cycles
+        \\  -a <file>, --asm <file> Assemble .asm to .tbin (instead of emulation)
+        \\  -h, --help         Show this help message
+        \\
+        \\Examples:
+        \\  tri-emu program.asm -a out.tbin    Assemble to .tbin
+        \\  tri-emu program.tbin                Run program to completion
+        \\  tri-emu program.tbin -v -t         Run with verbose trace
+        \\  tri-emu program.tbin -s             Show statistics only
+        \\  tri-emu program.tbin -m 100000     Stop after 100K cycles
+        \\
+        \\Asm syntax:
+        \\  LDI t0, 42        ; Load immediate
+        \\  ADD t1, t0, t2   ; t1 = t0 + t2
+        \\  HALT             ; Stop execution
+        \\
+        \\Exit codes:
+        \\  0  - Success
+        \\  1  - Usage error
+        \\  2  - File not found
+        \\  3  - Invalid .tbin file
+        \\  4  - Emulation error
+    ;
     std.debug.print("{s}\n", .{msg});
 }
 
@@ -209,4 +258,34 @@ fn dumpMemoryState(cpu: CPUState) !void {
     std.debug.print("Flags: Z={} N={} V={} H={}\n", .{ z_flag, n_flag, v_flag, h_flag });
     std.debug.print("Instructions executed: {}\n", .{cpu.instructions_executed});
     std.debug.print("Cycles: {}\n", .{cpu.cycles});
+}
+
+/// Run assembler to convert .asm to .tbin
+fn runAssembler(input_path: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
+    // Read assembly source
+    const asm_content = std.fs.cwd().readFileAlloc(allocator, input_path, 10 * 1024 * 1024) catch |err| {
+        std.debug.print("Error reading {s}: {}\n", .{ input_path, err });
+        return err;
+    };
+    defer allocator.free(asm_content);
+
+    if (asm_content.len == 0) {
+        std.debug.print("Error: empty source file\n", .{});
+        return error.EmptySource;
+    }
+
+    // Assemble
+    const bytecode = try Assembler.assemble(allocator, asm_content);
+    defer allocator.free(bytecode);
+
+    // Write output
+    const file = try std.fs.cwd().createFile(output_path, .{});
+    defer file.close();
+    try file.writeAll(bytecode);
+
+    std.debug.print("Assembled {d} instructions -> {s} ({d} bytes)\n", .{
+        (bytecode.len - 10) / 4, // Subtract header
+        output_path,
+        bytecode.len,
+    });
 }
