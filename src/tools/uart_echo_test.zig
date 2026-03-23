@@ -6,6 +6,7 @@
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
 //!                            [--output results.csv|--json] [--config uart-test.toml] [--retries 3]
 //!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout] [--auto-configure]
+//!                            [--fpga-mode] [--esp32-host HOST] [--bitstream PATH]
 //!
 //! Features:
 //!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
@@ -20,6 +21,7 @@
 //!   - Buffered I/O: Pre-allocated buffers for reduced syscall overhead
 //!   - Adaptive timeout: Dynamically adjust based on measured RTT
 //!   - Health checks: Serial port validation before testing
+//!   - FPGA XVC Bridge: Full test cycle with ESP32 + FPGA (v3.26)
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
@@ -894,6 +896,21 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "pattern_length")) {
                 config.pattern_length = std.fmt.parseInt(usize, value, 10) catch continue;
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "fpga_mode")) {
+                config.fpga_mode = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "esp32_host")) {
+                config.esp32_host = value;
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "esp32_port")) {
+                config.esp32_port = std.fmt.parseInt(u16, value, 10) catch continue;
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "bitstream_path")) {
+                config.bitstream_path = value;
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "fpga_verify_mode")) {
+                config.fpga_verify_mode = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
             }
         }
     }
@@ -904,7 +921,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.24           ║
+        \\║      Trinity UART Echo Test v3.26           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -936,6 +953,11 @@ fn printUsage() void {
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
         \\  --list-devices      List all available serial devices (v3.24)
+        \\  --fpga-mode         Enable FPGA XVC Bridge integration (v3.26)
+        \\  --esp32-host HOST   ESP32 hostname/IP (default: esp32-xvc.local)
+        \\  --esp32-port PORT   XVC Bridge port (default: 2542)
+        \\  --bitstream PATH    Bitstream file to flash via ESP32
+        \\  --fpga-verify       Enable FPGA verification mode
         \\  --help              Show this help message
         \\
         \\Performance Modes:
@@ -943,6 +965,7 @@ fn printUsage() void {
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
         \\  Stress: High-throughput continuous testing without wait (v3.24)
+        \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.26)
         \\
         \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
@@ -955,6 +978,9 @@ fn printUsage() void {
         \\    rts_cts_flow=true
         \\    stress_test_mode=true
         \\    stress_packets=100
+        \\    fpga_mode=true
+        \\    esp32_host=esp32-xvc.local
+        \\    bitstream_path=phi_blink_top.bit
         \\
         \\Supported Adapters:
         \\  - FT232RL (FTDI)   - CP210x (Silicon Labs)
@@ -964,6 +990,8 @@ fn printUsage() void {
         \\  zig run uart-echo-test --ping-mode -v --throughput --json
         \\  zig run uart-echo-test --batch-size 32 --throughput
         \\  zig run uart-echo-test --adaptive-timeout --buffer-size 16384
+        \\  zig run uart-echo-test --fpga-mode --bitstream phi_blink_top.bit
+        \\  zig run uart-echo-test --fpga-mode --esp32-host 192.168.4.1 --ap
         \\
     , .{});
 }
@@ -995,6 +1023,153 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     return true;
 }
 
+// v3.26: FPGA XVC Bridge client
+const FpgaXvcClient = struct {
+    host: []const u8,
+    port: u16,
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator, host: []const u8, port: u16) FpgaXvcClient {
+        return .{
+            .host = host,
+            .port = port,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *const FpgaXvcClient) void {
+        _ = self;
+    }
+
+    // Check ESP32 status
+    pub fn checkStatus(self: *const FpgaXvcClient) !bool {
+        printInfo("[XVC] Checking ESP32 status...\n", .{});
+
+        const address = try std.net.Address.parseIp4(self.host, self.port);
+        var socket = try std.net.tcpConnectToAddress(address);
+        defer socket.close();
+
+        try socket.writeAll("STATUS\n");
+        var buf: [512]u8 = undefined;
+        const len = try socket.read(&buf);
+        const response = buf[0..len];
+
+        if (std.mem.indexOf(u8, response, "READY") != null) {
+            printSuccess("[XVC] ESP32: READY\n", .{});
+            return true;
+        } else {
+            printWarning("[XVC] ESP32 status: {s}\n", .{response});
+            return false;
+        }
+    }
+
+    // Flash bitstream to FPGA
+    pub fn flashBitstream(self: *const FpgaXvcClient, bitstream_path: []const u8) !bool {
+        printInfo("[XVC] Flashing bitstream: {s}\n", .{bitstream_path});
+
+        const address = try std.net.Address.parseIp4(self.host, self.port);
+        var socket = try std.net.tcpConnectToAddress(address);
+        defer socket.close();
+
+        // Send FLASH command
+        var cmd_buf: [1024]u8 = undefined;
+        const cmd = try std.fmt.bufPrintZ(&cmd_buf, "FLASH {s}\n", .{bitstream_path});
+        try socket.writeAll(cmd);
+        printSuccess("[XVC] Flash command sent\n", .{});
+
+        // Wait for response with timeout
+        var timeout: u32 = 30; // 30 seconds timeout
+        var response_buf: [512]u8 = undefined;
+
+        while (timeout > 0) : (timeout -= 1) {
+            const len = socket.read(&response_buf) catch 0;
+            if (len > 0) {
+                const response = response_buf[0..len];
+                if (std.mem.indexOf(u8, response, "OK") != null) {
+                    printSuccess("[XVC] Flash complete\n", .{});
+                    return true;
+                } else if (std.mem.indexOf(u8, response, "BUSY") != null) {
+                    printWarning("[XVC] ESP32 busy, waiting...\n", .{});
+                    std.Thread.sleep(1 * std.time.ns_per_s);
+                    continue;
+                } else if (std.mem.indexOf(u8, response, "ERROR") != null) {
+                    printError("[XVC] Flash error: {s}\n", .{response});
+                    return false;
+                }
+            }
+            std.Thread.sleep(1 * std.time.ns_per_s);
+        }
+
+        printError("[XVC] Flash timeout\n", .{});
+        return false;
+    }
+
+    // Get ESP32 info
+    pub fn getInfo(self: *const FpgaXvcClient) ![]const u8 {
+        const address = try std.net.Address.parseIp4(self.host, self.port);
+        var socket = try std.net.tcpConnectToAddress(address);
+        defer socket.close();
+
+        try socket.writeAll("GETINFO\n");
+        var buf: [512]u8 = undefined;
+        const len = try socket.read(&buf);
+        const response = try self.allocator.dupe(u8, buf[0..len]);
+        return response;
+    }
+};
+
+// v3.26: FPGA test cycle integration
+fn runFpgaTestCycle(config: Config) !void {
+    printErr(
+        \\╔══════════════════════════════════════╗
+        \\║      FPGA XVC INTEGRATED TEST CYCLE      ║
+        \\║             v3.26                       ║
+        \\╚══════════════════════════════════════╝
+        \\
+    , .{});
+
+    const allocator = std.heap.page_allocator;
+
+    // Initialize XVC client
+    var xvc_client = FpgaXvcClient.init(allocator, config.esp32_host, config.esp32_port);
+    defer xvc_client.deinit();
+
+    // Step 1: Check ESP32 status
+    printInfo("[1/4] Checking ESP32 XVC Bridge status...\n", .{});
+    if (!try xvc_client.checkStatus()) {
+        printError("[!] ESP32 not ready\n", .{});
+        return error.Esp32NotReady;
+    }
+
+    // Step 2: (Optional) Flash bitstream
+    if (config.bitstream_path) |bitstream| {
+        printInfo("[2/4] Flashing bitstream to FPGA...\n", .{});
+        if (!try xvc_client.flashBitstream(bitstream)) {
+            printError("[!] Bitstream flash failed\n", .{});
+            return error.BitstreamFlashFailed;
+        }
+        printSuccess("[+] Bitstream flashed successfully\n", .{});
+
+        // Wait for FPGA to initialize
+        printInfo("[3/4] Waiting for FPGA initialization (2s)...\n", .{});
+        std.Thread.sleep(2 * std.time.ns_per_s);
+    } else {
+        printInfo("[2/4] Skipping bitstream flash (none specified)\n", .{});
+        printInfo("[3/4] Using current FPGA configuration\n", .{});
+    }
+
+    // Step 3: Run UART echo tests with FPGA
+    printInfo("[4/4] Running UART echo tests with FPGA...\n", .{});
+    if (config.device) |dev| {
+        testEcho(dev, config);
+    } else {
+        printError("[!] No device specified for UART test\n", .{});
+        return error.NoDeviceSpecified;
+    }
+
+    printSuccess("\n[+] FPGA test cycle complete\n", .{});
+}
+
 pub fn main() !void {
     // v3.24: Setup graceful exit handler
     setupSignalHandler();
@@ -1020,10 +1195,30 @@ pub fn main() !void {
         printErr("    measure_jitter: {}\n", .{config.measure_jitter});
         printErr("    use_pattern: {s}\n", .{config.use_pattern});
         printErr("    pattern_length: {d}\n", .{config.pattern_length});
+        // v3.26: FPGA XVC settings
+        printErr("    fpga_mode: {}\n", .{config.fpga_mode});
+        printErr("    esp32_host: {s}\n", .{config.esp32_host});
+        printErr("    esp32_port: {d}\n", .{config.esp32_port});
+        if (config.bitstream_path) |bs| {
+            printErr("    bitstream_path: {s}\n", .{bs});
+        }
+        printErr("    fpga_verify_mode: {}\n", .{config.fpga_verify_mode});
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
         printErr("\n", .{});
+    }
+
+    // v3.26: Check for FPGA mode
+    if (config.fpga_mode) {
+        printErr(
+            \\╔══════════════════════════════════════╗
+            \\║         FPGA XVC MODE (v3.26)          ║
+            \\║  ESP32 Bridge + FPGA + UART test       ║
+            \\╚══════════════════════════════════════╝
+            \\
+        , .{});
+        return runFpgaTestCycle(config);
     }
 
     // v3.14: Check for simulation mode
@@ -1052,7 +1247,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.24          ║
+        \\║      Trinity UART Echo Test v3.26          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
