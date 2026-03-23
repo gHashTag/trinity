@@ -97,10 +97,10 @@ for f in specs/tri/agent/*.vibee; do vibee gen "$f"; done
 
 ```bash
 # Single file
-zig test trinity/output/agent_core_v242.zig
+zig test var/trinity/output/agent_core_v242.zig
 
 # All v242-v279
-cd trinity/output
+cd var/trinity/output
 for f in *v24*.zig *v25*.zig *v26*.zig *v27*.zig; do
   zig test "$f"
 done

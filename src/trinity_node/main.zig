@@ -815,7 +815,7 @@ fn runHeadless(allocator: std.mem.Allocator, network: *network_mod.NetworkNode, 
 
     // Initialize inference engine
     const inference_config = inference_mod.InferenceConfig{
-        .model_path = model_path orelse "models/tinyllama-q6k.gguf",
+        .model_path = model_path orelse "data/models/tinyllama-q6k.gguf",
         .max_tokens = 256,
         .temperature = 0.7,
     };

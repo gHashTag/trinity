@@ -15,7 +15,7 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const path = if (args.len > 1) args[1] else "models/tinyllama-1.1b-q8_0.gguf";
+    const path = if (args.len > 1) args[1] else "data/models/tinyllama-1.1b-q8_0.gguf";
 
     std.debug.print("\n", .{});
     std.debug.print("GGUF FULL TEXT GENERATION\n", .{});

@@ -22,7 +22,7 @@ const crypto = @import("crypto.zig");
 // =============================================================================
 
 pub const InferenceConfig = struct {
-    model_path: []const u8 = "models/tinyllama-q6k.gguf",
+    model_path: []const u8 = "data/models/tinyllama-q6k.gguf",
     max_tokens: u32 = 256,
     temperature: f32 = 0.7,
     top_p: f32 = 0.9,

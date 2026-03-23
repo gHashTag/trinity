@@ -92,11 +92,11 @@ cd /path/to/vibee-lang
 ./bin/vibeec gen specs/fpga/hello_fpga_led.vibee
 
 # Verify output
-ls trinity/output/fpga/hello_fpga_led.v
+ls var/trinity/output/fpga/hello_fpga_led.v
 # Should exist
 
 # Test with simulation
-cd trinity/output/fpga
+cd var/trinity/output/fpga
 iverilog -o test hello_fpga_led.v && vvp test
 # Should show: PASS
 ```
@@ -115,7 +115,7 @@ vivado &
 1. **Create Project**
    - File → New Project
    - Name: "vibee_hello"
-   - Location: `trinity/output/fpga/vivado`
+   - Location: `var/trinity/output/fpga/vivado`
    - Project Type: RTL Project
    - Add Sources: `hello_fpga_led.v`
    - Add Constraints: `constraints/arty_a7.xdc`
@@ -136,7 +136,7 @@ vivado &
 ### Option B: Command Line (Faster)
 
 ```bash
-cd trinity/output/fpga/scripts
+cd var/trinity/output/fpga/scripts
 
 # Run complete build
 vivado -mode batch -source build_all.tcl -tclargs hello_fpga_led_top
@@ -189,7 +189,7 @@ vivado -mode batch -source build_all.tcl -tclargs hello_fpga_led_top
 ### Option B: Command Line
 
 ```bash
-cd trinity/output/fpga/scripts
+cd var/trinity/output/fpga/scripts
 
 # Program FPGA
 vivado -mode batch -source program.tcl -tclargs ../output/hello_fpga_led_top.bit

@@ -47,12 +47,12 @@ behaviors:
 ./bin/vibee gen specs/tri/feature.vibee
 ```
 
-Output: `trinity/output/feature.zig`
+Output: `var/trinity/output/feature.zig`
 
 ### 3. Test
 
 ```bash
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 ```
 
 ## Supported Languages

@@ -233,7 +233,7 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
         "zig";
 
     const dir = if (std.mem.eql(u8, language, "verilog") or std.mem.eql(u8, language, "varlog"))
-        "trinity/output/fpga"
+        "var/trinity/output/fpga"
     else
         "generated";
 

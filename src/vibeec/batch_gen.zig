@@ -139,7 +139,7 @@ pub fn generateZig(allocator: std.mem.Allocator, module: ModuleDef, version: u32
 /// Batch notand inwith beforeon
 pub fn generateDomain(allocator: std.mem.Allocator, config: DomainConfig) !void {
     const spec_dir = try std.fmt.allocPrint(allocator, "specs/tri/{s}", .{config.name});
-    const output_dir = "trinity/output";
+    const output_dir = "var/trinity/output";
 
     // Create andtoand
     std.fs.cwd().makePath(spec_dir) catch {};

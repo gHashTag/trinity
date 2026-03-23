@@ -201,7 +201,7 @@ vibee chain
 
 # Manual parallel execution
 ls specs/tri/*v1325*.vibee | xargs -P 8 -I {} ./bin/vibee gen {}
-cd trinity/output && ls *v1325*.zig | xargs -P 8 -I {} zig test {}
+cd var/trinity/output && ls *v1325*.zig | xargs -P 8 -I {} zig test {}
 ```
 
 ---

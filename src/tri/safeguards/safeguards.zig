@@ -105,7 +105,7 @@ pub const SafeguardConfig = struct {
     max_consecutive_failures: u32 = 5,
 
     // Logging
-    log_file_path: []const u8 = ".trinity-nexus/.safety_log.json",
+    log_file_path: []const u8 = "deploy/trinity-nexus/.safety_log.json",
     max_log_size_mb: u32 = 100,
 
     /// Create default configuration

@@ -513,7 +513,7 @@ pub fn main() !void {
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
 
-    const model_path = if (args.len > 1) args[1] else "models/bitnet-gguf/ggml-model-i2_s.gguf";
+    const model_path = if (args.len > 1) args[1] else "data/models/bitnet-gguf/ggml-model-i2_s.gguf";
 
     std.debug.print("Loading BitNet model: {s}\n", .{model_path});
 

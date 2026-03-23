@@ -12,7 +12,7 @@ behaviors:
   - name: strictEnable
     given: Trinity repository
     when: User runs tri strict enable
-    then: Activates strict mode by creating .trinity-strict-mode marker
+    then: Activates strict mode by creating .trinity/strict-mode marker (legacy .trinity-strict-mode still honored)
 
   - name: strictDisable
     given: Active strict mode

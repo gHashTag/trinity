@@ -65,8 +65,8 @@ This document provides an honest assessment of what works and what doesn't in th
 | quantizeWeightsInPlace | `src/vibeec/bitnet_forward.zig` | Quantizes then immediately dequantizes (no savings) |
 
 ### Empty/Corrupted Files (DELETED)
-- `trinity/output/trinity_cli_gen.zig` - was 28KB of zeros
-- `trinity/output/trinity_swe_agent_gen.zig` - was 25KB of zeros
+- `var/trinity/output/trinity_cli_gen.zig` - was 28KB of zeros
+- `var/trinity/output/trinity_swe_agent_gen.zig` - was 25KB of zeros
 
 ### Unimplemented Features
 | Feature | Location | Status |

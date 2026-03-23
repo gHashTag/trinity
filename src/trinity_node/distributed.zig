@@ -1128,7 +1128,7 @@ fn setTcpNodelay(sock: std.posix.socket_t) void {
 pub fn runDistributed(allocator: std.mem.Allocator, args: []const []const u8) !void {
     // Parse arguments
     var role: []const u8 = "worker";
-    var model_path: []const u8 = "models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
+    var model_path: []const u8 = "data/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf";
     var layers_start: u32 = 11;
     var layers_end: u32 = 22;
     var port: u16 = 9335;

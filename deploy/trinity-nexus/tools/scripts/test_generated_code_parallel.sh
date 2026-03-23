@@ -9,7 +9,7 @@
 
 set -e
 
-OUTPUT_DIR="trinity/output"
+OUTPUT_DIR="var/trinity/output"
 REPORT_FILE="generated_code_test_report_parallel.txt"
 JSON_REPORT="generated_code_test_report_parallel.json"
 

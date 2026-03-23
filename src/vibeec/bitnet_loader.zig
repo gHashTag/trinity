@@ -355,8 +355,8 @@ test "load bitnet model" {
     // Try to load if model exists
     var model = BitNetModel.load(
         allocator,
-        "../../models/bitnet/model.safetensors",
-        "../../models/bitnet/config.json",
+        "../../data/models/bitnet/model.safetensors",
+        "../../data/models/bitnet/config.json",
     ) catch |err| {
         std.debug.print("Model not found (expected in CI): {}\n", .{err});
         return;

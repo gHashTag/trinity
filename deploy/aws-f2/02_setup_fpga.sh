@@ -85,7 +85,7 @@ set -e
 
 # Saboutzdayom dandrewhorandyu for praboutetothat
 mkdir -p ~/trinity_fpga_project
-cp ~/vibee-lang/trinity/output/fpga/*.v ~/trinity_fpga_project/
+cp ~/vibee-lang/var/trinity/output/fpga/*.v ~/trinity_fpga_project/
 
 echo "Filey withtoaboutpandraboutinany:"
 ls -la ~/trinity_fpga_project/

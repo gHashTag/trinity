@@ -98,7 +98,7 @@ EOF
 ./zig-out/bin/tri gen specs/tri/my_feature.vibee
 
 # Check generated code
-cat trinity/output/my_feature.zig
+cat var/trinity/output/my_feature.zig
 ```
 
 ---
@@ -108,7 +108,7 @@ cat trinity/output/my_feature.zig
 ```zig
 // tests/my_feature_test.zig
 const std = @import("std");
-const MyFeature = @import("trinity/output/my_feature.zig");
+const MyFeature = @import("var/trinity/output/my_feature.zig");
 
 test "process returns correct result" {
     const result = MyFeature.process(42);
@@ -158,7 +158,7 @@ Create a `CRITICAL_ASSESSMENT.md`:
 ```bash
 # Stage changes
 git add specs/tri/my_feature.vibee
-git add trinity/output/my_feature.zig
+git add var/trinity/output/my_feature.zig
 git add tests/my_feature_test.zig
 
 # Commit

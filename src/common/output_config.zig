@@ -21,7 +21,7 @@ const std = @import("std");
 ///   ├── lib/              # Libraries (libtrinity.a, libtrinity-vsa.so, etc.)
 ///   └── include/          # C headers (trinity_vsa.h, etc.)
 ///
-/// trinity/output/         # Generated code and build artifacts (VIBEE, etc.)
+/// var/trinity/output/         # Generated code and build artifacts (VIBEE, etc.)
 ///   ├── *.zig             # Generated Zig code from .tri specs
 ///   ├── *.999             # Generated 999-format code
 ///   └── fpga/             # Generated Verilog files
@@ -30,15 +30,15 @@ const std = @import("std");
 ///
 /// This separation ensures:
 /// 1. Zig's standard build output is respected (`zig-out/`)
-/// 2. Generated code is clearly separated from source (`trinity/output/`)
+/// 2. Generated code is clearly separated from source (`var/trinity/output/`)
 /// 3. Build artifacts are easy to clean and track
 /// 4. CI/CD pipelines have clear artifact targets
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// Default output directory for VIBEE-generated code
-pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "trinity/output";
+pub const DEFAULT_VIBEE_OUTPUT: []const u8 = "var/trinity/output";
 
 /// Default subdirectory for FPGA/Verilog output
-pub const DEFAULT_FPGA_OUTPUT: []const u8 = "trinity/output/fpga";
+pub const DEFAULT_FPGA_OUTPUT: []const u8 = "var/trinity/output/fpga";
 
 /// Output configuration
 pub const OutputConfig = struct {
@@ -101,7 +101,7 @@ pub fn getZigOutPath(allocator: std.mem.Allocator) ![]u8 {
 /// Check if path is within standard output directories
 pub fn isStandardOutputPath(path: []const u8) bool {
     const zig_out_prefix = "zig-out";
-    const trinity_output_prefix = "trinity/output";
+    const trinity_output_prefix = "var/trinity/output";
 
     return std.mem.startsWith(u8, path, zig_out_prefix) or
         std.mem.startsWith(u8, path, trinity_output_prefix);
@@ -126,7 +126,7 @@ test "OutputConfig: zig file path" {
     const path = try config.zigFilePath(testing.allocator, "test_module");
     defer testing.allocator.free(path);
 
-    try testing.expectEqualStrings("trinity/output/test_module.zig", path);
+    try testing.expectEqualStrings("var/trinity/output/test_module.zig", path);
 }
 
 test "OutputConfig: verilog file path" {
@@ -136,15 +136,15 @@ test "OutputConfig: verilog file path" {
     const path = try config.verilogFilePath(testing.allocator, "test_core");
     defer testing.allocator.free(path);
 
-    try testing.expectEqualStrings("trinity/output/fpga/test_core.v", path);
+    try testing.expectEqualStrings("var/trinity/output/fpga/test_core.v", path);
 }
 
 test "OutputConfig: is standard output path" {
     const testing = std.testing;
 
     try testing.expect(isStandardOutputPath("zig-out/bin/tri"));
-    try testing.expect(isStandardOutputPath("trinity/output/test.zig"));
-    try testing.expect(isStandardOutputPath("trinity/output/fpga/test.v"));
+    try testing.expect(isStandardOutputPath("var/trinity/output/test.zig"));
+    try testing.expect(isStandardOutputPath("var/trinity/output/fpga/test.v"));
     try testing.expect(!isStandardOutputPath("src/trinity.zig"));
     try testing.expect(!isStandardOutputPath("/usr/local/bin/tri"));
 }

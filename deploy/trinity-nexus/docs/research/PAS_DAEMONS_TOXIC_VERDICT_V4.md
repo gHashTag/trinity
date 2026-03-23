@@ -12,12 +12,12 @@
 
 ```
 ✅ CORRECT PIPELINE:
-specs/tri/*.vibee → trinity/[CYR:[TRANSLATED]]/.../*.tri → trinity/output/*.zig
+specs/tri/*.vibee → trinity/[CYR:[TRANSLATED]]/.../*.tri → var/trinity/output/*.zig
 
 Files created:
 - specs/tri/pas_daemons_v2.vibee (specification)
 - trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/ⲡⲁⲥ_ⲇⲁⲉⲙⲟⲛⲥ.tri (with ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ block)
-- trinity/output/pas_daemons.zig (extracted, 8/8 tests pass)
+- var/trinity/output/pas_daemons.zig (extracted, 8/8 tests pass)
 ```
 
 ---
@@ -251,10 +251,10 @@ vim specs/tri/feature.vibee
 vim trinity/[CYR:[TRANSLATED]]/ⲘⲈⲆⲚⲞⲈ/ⲧⲣⲓ/feature.tri
 
 # Extract .zig to output
-# (copy ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ content to trinity/output/feature.zig)
+# (copy ⲍⲓⲅ_ⲟⲩⲧⲡⲩⲧ content to var/trinity/output/feature.zig)
 
 # Test
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 
 # Or use vibee gen for direct generation
 vibee gen specs/tri/feature.vibee

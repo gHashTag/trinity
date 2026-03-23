@@ -10,7 +10,7 @@ language: varlog
 module: trit_alu
 
 description: |
-  Auto-generated skeleton from trinity/output/fpga/trit_alu.v.
+  Auto-generated skeleton from var/trinity/output/fpga/trit_alu.v.
   Contains 0 constants and 0 public functions.
   TODO: Review and add proper types/behaviors.
 

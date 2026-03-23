@@ -57,7 +57,7 @@ py2vibee examples/adder.py --target varlog --output specs/tri/adder.vibee
 
 # Generate Verilog from specification
 vibee gen specs/tri/adder.vibee
-# Output: trinity/output/fpga/adder.v
+# Output: var/trinity/output/fpga/adder.v
 ```
 
 ### Implementation Notes

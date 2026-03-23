@@ -225,11 +225,11 @@ Features: FEWER than VIBEE
 
 ```bash
 # Correct workflow:
-specs/tri/*.vibee → vibee gen → trinity/output/*.zig
+specs/tri/*.vibee → vibee gen → var/trinity/output/*.zig
 
 # Commands:
 vibee gen specs/tri/feature.vibee
-zig test trinity/output/feature.zig
+zig test var/trinity/output/feature.zig
 
 # NEVER write .zig manually!
 ```

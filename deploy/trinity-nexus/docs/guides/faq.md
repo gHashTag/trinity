@@ -93,7 +93,7 @@ Trinity uses a structured 16-step development cycle. It enforces a specification
 
 ### How do I contribute?
 
-Contributions follow the 16-step development cycle. Start by writing or modifying a `.vibee` specification under `specs/tri/`, generate the code, test it, and submit a pull request. Never edit auto-generated files directly (anything under `trinity/output/` or `generated/`). See the [Contributing guide](/contributing) for full guidelines.
+Contributions follow the 16-step development cycle. Start by writing or modifying a `.vibee` specification under `specs/tri/`, generate the code, test it, and submit a pull request. Never edit auto-generated files directly (anything under `var/trinity/output/` or `generated/`). See the [Contributing guide](/contributing) for full guidelines.
 
 ---
 

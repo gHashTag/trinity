@@ -9,7 +9,7 @@
 
 set -e
 
-OUTPUT_DIR="trinity/output"
+OUTPUT_DIR="var/trinity/output"
 REPORT_FILE="generated_code_test_report.txt"
 JSON_REPORT="generated_code_test_report.json"
 
@@ -46,7 +46,7 @@ fi
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║  VIBEE GENERATED CODE TESTER                                     ║${NC}"
-echo -e "${BLUE}║  Testing allkh .zig fileaboutin in trinity/output/               ║${NC}"
+echo -e "${BLUE}║  Testing allkh .zig fileaboutin in var/trinity/output/               ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

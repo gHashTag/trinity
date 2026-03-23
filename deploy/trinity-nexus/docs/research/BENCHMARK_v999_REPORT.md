@@ -70,10 +70,10 @@ specs/tri/browser_agent_e2e_v999.vibee
 specs/tri/llm_client_v999.vibee
 specs/tri/browser_actions_v999.vibee
 specs/tri/task_executor_v999.vibee
-trinity/output/browser_agent_e2e_v999.zig
-trinity/output/llm_client_v999.zig
-trinity/output/browser_actions_v999.zig
-trinity/output/task_executor_v999.zig
+var/trinity/output/browser_agent_e2e_v999.zig
+var/trinity/output/llm_client_v999.zig
+var/trinity/output/browser_actions_v999.zig
+var/trinity/output/task_executor_v999.zig
 ```
 
 ## Commands to Reproduce
@@ -86,10 +86,10 @@ trinity/output/task_executor_v999.zig
 ./bin/vibee gen specs/tri/task_executor_v999.vibee
 
 # Run tests
-zig test trinity/output/browser_agent_e2e_v999.zig
-zig test trinity/output/llm_client_v999.zig
-zig test trinity/output/browser_actions_v999.zig
-zig test trinity/output/task_executor_v999.zig
+zig test var/trinity/output/browser_agent_e2e_v999.zig
+zig test var/trinity/output/llm_client_v999.zig
+zig test var/trinity/output/browser_actions_v999.zig
+zig test var/trinity/output/task_executor_v999.zig
 
 # E2E test
 curl -X POST https://vercel-agent-zeta.vercel.app/api/task \

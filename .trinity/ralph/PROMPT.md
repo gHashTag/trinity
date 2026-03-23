@@ -26,14 +26,14 @@ Every fresh context window starts here. Know the codebase:
 | Trinity Node | `src/trinity_node/` | [GENERATED] DePIN: shards, DHT, erasure coding, rewards |
 | TVC | `src/tvc/` | [GENERATED] Ternary Vector Computing, corpus search |
 | Specifications | `specs/tri/*.vibee` | Source of truth for ALL code (MANDATORY) |
-| Generated Code | `trinity/output/` | Auto-generated from .vibee (NEVER edit) |
+| Generated Code | `var/trinity/output/` | Auto-generated from .vibee (NEVER edit) |
 
 ---
 
 ## Non-Negotiable Core
 
 1. **Source of Truth**: `specs/tri/*.vibee` governs ALL code. Manual Zig creation is forbidden.
-2. **Safety**: Never edit `src/*.zig` or `trinity/output/*.zig` manually.
+2. **Safety**: Never edit `src/*.zig` or `var/trinity/output/*.zig` manually.
 3. **Branching**: Never commit to `main`. Use `ralph/<task-slug>`.
 4. **Validation**: `.ralph/gate.sh` must pass before any commit.
 5. **Parallel Work**: Use Git Worktree for concurrent tasks (see RULES.md §17).

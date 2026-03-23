@@ -14,7 +14,7 @@ MODULES=("$@")
 }
 
 SD="specs/tri/${DOMAIN}"
-OD="trinity/output"
+OD="var/trinity/output"
 mkdir -p "$SD"
 
 echo "⚡ INSTANT GEN v5.0: ${#MODULES[@]} modules"

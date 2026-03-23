@@ -122,7 +122,7 @@ for f in specs/tri/igla_koshey_universal*.vibee \
 done
 
 # Test v7 modules
-cd trinity/output
+cd var/trinity/output
 for f in igla_koshey_universal*.zig \
          igla_koshey_zero_shot.zig \
          igla_koshey_few_shot.zig \

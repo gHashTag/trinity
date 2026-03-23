@@ -180,13 +180,13 @@ behaviors:
 
 ```bash
 vibee gen specs/tri/module.vibee
-# Output: trinity/output/module.zig
+# Output: var/trinity/output/module.zig
 ```
 
 ### 4.3 Testing
 
 ```bash
-zig test trinity/output/module.zig
+zig test var/trinity/output/module.zig
 ```
 
 ---

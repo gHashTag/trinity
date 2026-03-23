@@ -101,7 +101,7 @@ jobs:
           ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.tri
           # Check output in either location
           OUTPUT=""
-          for dir in trinity/output/fpga generated; do
+          for dir in var/trinity/output/fpga generated; do
             for ext in v zig; do
               if [ -f "$dir/${{ matrix.spec }}.$ext" ]; then
                 OUTPUT="$dir/${{ matrix.spec }}.$ext"
@@ -122,7 +122,7 @@ jobs:
         with:
           name: ${{ matrix.spec }}-output
           path: |
-            trinity/output/fpga/${{ matrix.spec }}.*
+            var/trinity/output/fpga/${{ matrix.spec }}.*
             generated/${{ matrix.spec }}.*
 
   # ═══════════════════════════════════════════════════════════════════════════════

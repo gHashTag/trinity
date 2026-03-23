@@ -648,7 +648,7 @@ fn generateCodeFromSpec(self: *RalphLoop, spec_file: []const u8) ![]const u8 {
     // Default output path
     return std.fmt.allocPrint(
         self.allocator,
-        "trinity/output/{s}.zig",
+        "var/trinity/output/{s}.zig",
         .{stem},
     );
 }

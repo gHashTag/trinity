@@ -7,14 +7,14 @@
 - *.ts
 - *.jsx
 - *.tsx
-- *.zig in trinity/output/ (GENERATED ONLY!)
+- *.zig in var/trinity/output/ (GENERATED ONLY!)
 - *.py (GENERATED ONLY!)
 
 ## ✅ THE ONLY WAY TO WRITE CODE:
 
 1. Create .vibee specification in specs/tri/
 2. Run: ./bin/vibee gen specs/tri/feature.vibee
-3. Test: zig test trinity/output/feature.zig
+3. Test: zig test var/trinity/output/feature.zig
 4. Write TOXIC VERDICT (self-criticism)
 5. Propose 3 options from TECH TREE
 
@@ -57,7 +57,7 @@ Propose 3 options for next research:
 
 ## 🚫 NEVER DO:
 - Don't write .zig code directly
-- Don't edit trinity/output/*
+- Don't edit var/trinity/output/*
 - Don't create legacy files
 - Don't skip toxic verdict
 - Don't skip tech tree select

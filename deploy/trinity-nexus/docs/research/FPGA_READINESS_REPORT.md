@@ -35,7 +35,7 @@ Vwithe :] for]not:] gfromaboutiny. :] zain:]andya :]and ":] Zainet" :]withya :]t
 │  ./bin/vibeec gen specs/fpga/hello_fpga_led.vibee               │
 │           │                                                     │
 │           ▼                                                     │
-│  trinity/output/fpga/hello_fpga_led.v  ✅ GENERATED             │
+│  var/trinity/output/fpga/hello_fpga_led.v  ✅ GENERATED             │
 │           │                                                     │
 │           ▼                                                     │
 │  iverilog -o test hello_fpga_led.v && vvp test                  │
@@ -101,17 +101,17 @@ $ verilator --lint-only --top-module hello_fpga_led_top hello_fpga_led.v
 - `specs/fpga/trinity_fpga_mvp.vibee` - with]andfVersiontsandya Trinity MVP
 
 ### :]notrandraboutin:] Verilog
-- `trinity/output/fpga/hello_fpga_led.v` (6.8 KB)
-- `trinity/output/fpga/trinity_fpga_mvp.v` (6.8 KB)
+- `var/trinity/output/fpga/hello_fpga_led.v` (6.8 KB)
+- `var/trinity/output/fpga/trinity_fpga_mvp.v` (6.8 KB)
 
 ### Constraints
-- `trinity/output/fpga/constraints/arty_a7.xdc` (11 KB)
+- `var/trinity/output/fpga/constraints/arty_a7.xdc` (11 KB)
 
 ### Vivado Scripts
-- `trinity/output/fpga/scripts/build_all.tcl`
-- `trinity/output/fpga/scripts/synth.tcl`
-- `trinity/output/fpga/scripts/impl.tcl`
-- `trinity/output/fpga/scripts/program.tcl`
+- `var/trinity/output/fpga/scripts/build_all.tcl`
+- `var/trinity/output/fpga/scripts/synth.tcl`
+- `var/trinity/output/fpga/scripts/impl.tcl`
+- `var/trinity/output/fpga/scripts/program.tcl`
 
 ### Daboutfor]andya
 - `docs/FPGA_DEPLOYMENT_GUIDE.md`

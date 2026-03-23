@@ -20,7 +20,7 @@
 ### Key Files
 - `.doctor/scan_results.json` — File classification registry
 - `.doctor/migration_queue.json` — Pending regenerations (84 manual files lack specs)
-- `railway.toml` — Training service config (startCommand MUST be null)
+- `deploy/railway-hslm/railway.toml` — HSLM training service config (startCommand MUST be null); set this path in Railway dashboard
 
 ### Manual Files (84 pending regeneration)
 These files lack .tri specs and cannot be auto-healed:

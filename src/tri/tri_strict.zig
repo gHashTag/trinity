@@ -5,10 +5,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Enforces that all development goes through .tri specifications first.
-// Protected paths (trinity/output/, generated/) must not be directly edited.
+// Protected paths (var/trinity/output/, generated/) must not be directly edited.
 //
 // Sub-commands:
-//   tri strict enable    - Activate strict mode (creates .trinity-strict-mode)
+//   tri strict enable    - Activate strict mode (creates .trinity/strict-mode)
 //   tri strict disable   - Deactivate strict mode (removes marker)
 //   tri strict status    - Show current mode and enforcement rules
 //   tri strict check     - Validate VIBEE-first compliance
@@ -27,8 +27,10 @@ const RED = colors.RED;
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;
 
-/// Marker file placed in project root when strict mode is active
-const STRICT_MODE_MARKER = ".trinity-strict-mode";
+/// Marker file when strict mode is active (under .trinity/)
+const STRICT_MODE_MARKER = ".trinity/strict-mode";
+/// Legacy marker at repo root (still honored until removed)
+const STRICT_MODE_MARKER_LEGACY = ".trinity-strict-mode";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TOP-LEVEL DISPATCHER
@@ -70,14 +72,14 @@ fn printStrictHelp() void {
     std.debug.print(".tri specifications. Direct edits to generated code are flagged.\n\n", .{});
     std.debug.print("{s}Usage:{s} tri strict <subcommand> [args...]\n\n", .{ CYAN, RESET });
     std.debug.print("{s}Subcommands:{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}enable{s}          Activate strict mode (creates .trinity-strict-mode)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}enable{s}          Activate strict mode (creates .trinity/strict-mode)\n", .{ GREEN, RESET });
     std.debug.print("  {s}disable{s}         Deactivate strict mode (removes marker)\n", .{ GREEN, RESET });
     std.debug.print("  {s}status{s}          Show current mode and enforcement rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}check{s} [path]    Validate VIBEE-first compliance for path or project\n", .{ GREEN, RESET });
     std.debug.print("  {s}fix{s} [--dry-run]  Auto-generate missing .tri specs from generated code\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Protected directories (NEVER edit directly):{s}\n", .{ RED, RESET });
-    std.debug.print("  trinity/output/*.zig    Auto-generated from .tri\n", .{});
-    std.debug.print("  trinity/output/fpga/*.v Auto-generated from .tri\n", .{});
+    std.debug.print("  var/trinity/output/*.zig    Auto-generated from .tri\n", .{});
+    std.debug.print("  var/trinity/output/fpga/*.v Auto-generated from .tri\n", .{});
     std.debug.print("  generated/*.zig         Auto-generated from .tri\n", .{});
     std.debug.print("\n{s}Source of truth (OK to edit):{s}\n", .{ GREEN, RESET });
     std.debug.print("  specs/tri/*.tri       VIBEE specifications\n", .{});
@@ -91,7 +93,10 @@ fn printStrictHelp() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn isStrictModeEnabled() bool {
-    std.fs.cwd().access(STRICT_MODE_MARKER, .{}) catch return false;
+    std.fs.cwd().access(STRICT_MODE_MARKER, .{}) catch {
+        std.fs.cwd().access(STRICT_MODE_MARKER_LEGACY, .{}) catch return false;
+        return true;
+    };
     return true;
 }
 
@@ -105,6 +110,11 @@ fn runStrictEnable() void {
         return;
     }
 
+    std.fs.cwd().makePath(".trinity") catch |err| {
+        std.debug.print("{s}Error creating .trinity directory: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+
     const file = std.fs.cwd().createFile(STRICT_MODE_MARKER, .{}) catch |err| {
         std.debug.print("{s}Error creating marker file: {}{s}\n", .{ RED, err, RESET });
         return;
@@ -116,12 +126,12 @@ fn runStrictEnable() void {
     const content = std.fmt.bufPrint(&buf,
         \\VIBEE-FIRST STRICT MODE ENABLED
         \\Activated: {d} (unix timestamp)
-        \\Protected: trinity/output/, generated/
+        \\Protected: var/trinity/output/, generated/
         \\Source of truth: specs/tri/*.tri
         \\
         \\Rules:
         \\  1. ALL application code MUST be generated from .tri specifications
-        \\  2. Files in trinity/output/ and generated/ must NOT be edited directly
+        \\  2. Files in var/trinity/output/ and generated/ must NOT be edited directly
         \\  3. Workflow: spec -> gen -> test -> assess
         \\  4. Only specs/tri/*.tri, src/vibeec/*.zig, src/*.zig are directly editable
     , .{timestamp}) catch |err| {
@@ -137,7 +147,7 @@ fn runStrictEnable() void {
     std.debug.print("\n{s}STRICT MODE ENABLED{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
     std.debug.print("  Marker: {s}{s}{s}\n", .{ CYAN, STRICT_MODE_MARKER, RESET });
-    std.debug.print("  Protected: trinity/output/, generated/\n", .{});
+    std.debug.print("  Protected: var/trinity/output/, generated/\n", .{});
     std.debug.print("  Source of truth: specs/tri/*.tri\n", .{});
     std.debug.print("\n  Run {s}tri strict check{s} to validate compliance.\n", .{ GREEN, RESET });
     std.debug.print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
@@ -153,10 +163,8 @@ fn runStrictDisable() void {
         return;
     }
 
-    std.fs.cwd().deleteFile(STRICT_MODE_MARKER) catch |err| {
-        std.debug.print("{s}Error removing marker file: {}{s}\n", .{ RED, err, RESET });
-        return;
-    };
+    std.fs.cwd().deleteFile(STRICT_MODE_MARKER) catch |_| {}
+    std.fs.cwd().deleteFile(STRICT_MODE_MARKER_LEGACY) catch |_| {};
 
     std.debug.print("\n{s}STRICT MODE DISABLED{s}\n", .{ RED, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
@@ -188,8 +196,8 @@ fn runStrictStatus() void {
     std.debug.print("  1. All code in protected dirs MUST come from .tri specs\n", .{});
     std.debug.print("  2. Workflow: spec ({s}specs/tri/*.tri{s}) -> gen -> test -> assess\n", .{ GREEN, RESET });
     std.debug.print("\n{s}Protected Directories:{s}\n", .{ RED, RESET });
-    std.debug.print("  trinity/output/*.zig      (auto-generated)\n", .{});
-    std.debug.print("  trinity/output/fpga/*.v   (auto-generated)\n", .{});
+    std.debug.print("  var/trinity/output/*.zig      (auto-generated)\n", .{});
+    std.debug.print("  var/trinity/output/fpga/*.v   (auto-generated)\n", .{});
     std.debug.print("  generated/*.zig           (auto-generated)\n", .{});
     std.debug.print("\n{s}Editable Directories:{s}\n", .{ GREEN, RESET });
     std.debug.print("  specs/tri/*.tri         (source of truth)\n", .{});
@@ -228,7 +236,7 @@ fn runStrictCheck(allocator: std.mem.Allocator, args: []const []const u8) void {
         }
     } else {
         std.debug.print("  Scanning protected directories...\n\n", .{});
-        total_files += scanDirectoryRecursive(allocator, "trinity/output", &violations, &warnings);
+        total_files += scanDirectoryRecursive(allocator, "var/trinity/output", &violations, &warnings);
         total_files += scanDirectoryRecursive(allocator, "generated", &violations, &warnings);
     }
 
@@ -267,9 +275,9 @@ fn runStrictCheck(allocator: std.mem.Allocator, args: []const []const u8) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn isProtectedPath(path: []const u8) bool {
-    if (std.mem.startsWith(u8, path, "trinity/output/")) return true;
+    if (std.mem.startsWith(u8, path, "var/trinity/output/")) return true;
     if (std.mem.startsWith(u8, path, "generated/")) return true;
-    if (std.mem.startsWith(u8, path, "./trinity/output/")) return true;
+    if (std.mem.startsWith(u8, path, "./var/trinity/output/")) return true;
     if (std.mem.startsWith(u8, path, "./generated/")) return true;
     return false;
 }
@@ -325,8 +333,8 @@ fn runStrictFix(allocator: std.mem.Allocator, args: []const []const u8) void {
 
     // Scan generated/ directory
     fixDirectory(allocator, "generated", dry_run, &created, &skipped, &errors);
-    // Scan trinity/output/ directory
-    fixDirectoryRecursive(allocator, "trinity/output", dry_run, &created, &skipped, &errors);
+    // Scan var/trinity/output/ directory
+    fixDirectoryRecursive(allocator, "var/trinity/output", dry_run, &created, &skipped, &errors);
 
     // Summary
     std.debug.print("\n{s}Fix Summary:{s}\n", .{ CYAN, RESET });
@@ -563,24 +571,24 @@ test "isStrictModeEnabled returns false when marker missing" {
 }
 
 test "STRICT_MODE_MARKER constant" {
-    try std.testing.expectEqualStrings(".trinity-strict-mode", STRICT_MODE_MARKER);
+    try std.testing.expectEqualStrings(".trinity/strict-mode", STRICT_MODE_MARKER);
 }
 
 test "isProtectedPath identifies protected directories" {
-    try std.testing.expect(isProtectedPath("trinity/output/main.zig") == true);
+    try std.testing.expect(isProtectedPath("var/trinity/output/main.zig") == true);
     try std.testing.expect(isProtectedPath("generated/test.v") == true);
-    try std.testing.expect(isProtectedPath("./trinity/output/") == true);
+    try std.testing.expect(isProtectedPath("./var/trinity/output/") == true);
     try std.testing.expect(isProtectedPath("./generated/") == true);
     try std.testing.expect(isProtectedPath("specs/tri/test.tri") == false);
     try std.testing.expect(isProtectedPath("src/vsa.zig") == false);
 }
 
 test "isProtectedPath handles relative paths" {
-    try std.testing.expect(isProtectedPath("trinity/output/file.zig") == true);
+    try std.testing.expect(isProtectedPath("var/trinity/output/file.zig") == true);
     try std.testing.expect(isProtectedPath("generated/file.v") == true);
 }
 
 test "isProtectedPath handles absolute paths" {
-    try std.testing.expect(isProtectedPath("/some/path/trinity/output/file.zig") == true);
+    try std.testing.expect(isProtectedPath("/some/path/var/trinity/output/file.zig") == true);
     try std.testing.expect(isProtectedPath("/some/path/generated/file.v") == true);
 }

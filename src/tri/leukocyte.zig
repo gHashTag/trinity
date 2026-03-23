@@ -471,8 +471,8 @@ pub fn runEnforceCheck(allocator: Allocator) !void {
         return;
     }
 
-    // Rule 2: Block writes to generated/ and trinity/output/
-    if (std.mem.startsWith(u8, file_path, "generated/") or std.mem.startsWith(u8, file_path, "trinity/output/")) {
+    // Rule 2: Block writes to generated/ and var/trinity/output/
+    if (std.mem.startsWith(u8, file_path, "generated/") or std.mem.startsWith(u8, file_path, "var/trinity/output/")) {
         try writeDeny(stdout_file, "Cannot write to generated directories. Edit .tri spec and regenerate.");
         logViolation(allocator, "enforce-check", file_path, "generated_dir_blocked");
         return;
@@ -610,8 +610,8 @@ fn classifyFile(path: []const u8) FileOrigin {
         return .generated;
     }
 
-    // Check if in generated/ or trinity/output/
-    if (std.mem.startsWith(u8, path, "generated/") or std.mem.startsWith(u8, path, "trinity/output/")) {
+    // Check if in generated/ or var/trinity/output/
+    if (std.mem.startsWith(u8, path, "generated/") or std.mem.startsWith(u8, path, "var/trinity/output/")) {
         return .generated;
     }
 
@@ -1330,7 +1330,7 @@ pub fn runDupes(allocator: Allocator) !void {
         "src/vsa.zig",
         "src/needle/vsa.zig",
         "src/firebird/vsa.zig",
-        "trinity-nexus/core/src/vsa.zig",
+        "deploy/trinity-nexus/core/src/vsa.zig",
         "src/vibeec/codegen/patterns/vsa.zig",
     };
     var vsa_count: u32 = 0;
@@ -1387,8 +1387,8 @@ pub fn runDupes(allocator: Allocator) !void {
     // 5. Duplicate model.zig
     const model_paths = [_][]const u8{
         "src/hslm/model.zig",
-        "trinity-nexus/core/src/ml/model.zig",
-        "trinity-nexus/llm/src/ml/model.zig",
+        "deploy/trinity-nexus/core/src/ml/model.zig",
+        "deploy/trinity-nexus/llm/src/ml/model.zig",
         "archive/implementations/zig/src/ml/model.zig",
     };
     var model_count: u32 = 0;
@@ -1407,8 +1407,8 @@ pub fn runDupes(allocator: Allocator) !void {
     // 6. Duplicate trainer.zig
     const trainer_paths = [_][]const u8{
         "src/hslm/trainer.zig",
-        "trinity-nexus/core/src/ml/trainer.zig",
-        "trinity-nexus/llm/src/ml/trainer.zig",
+        "deploy/trinity-nexus/core/src/ml/trainer.zig",
+        "deploy/trinity-nexus/llm/src/ml/trainer.zig",
         "archive/implementations/zig/src/ml/trainer.zig",
     };
     var trainer_count: u32 = 0;
@@ -1427,8 +1427,8 @@ pub fn runDupes(allocator: Allocator) !void {
     // 7. Trinity-nexus output backups
     var nexus_backups: u32 = 0;
     const backup_dirs = [_][]const u8{
-        "trinity-nexus/output.backup.1771749393",
-        "trinity-nexus/output.before_cycle66.1771750778",
+        "deploy/trinity-nexus/output.backup.1771749393",
+        "deploy/trinity-nexus/output.before_cycle66.1771750778",
     };
     for (backup_dirs) |d| {
         std.fs.cwd().access(d, .{}) catch continue;

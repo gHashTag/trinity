@@ -416,14 +416,16 @@ cat .trinity/dev_session.json | jq
 
 **Goal:** keep the repo root small; agents and humans follow the same rules.
 
-1. **Verilog (`*.v`)** — not in the repository root. Put loose RTL in **`hardware/rtl-root/`**; curated flows under **`fpga/`** (e.g. `fpga/openxc7-synth/`).
+1. **Verilog (`*.v`)** — not in the repository root. Put loose RTL in **`hardware/rtl-root/`**; curated flows under **`fpga/`** (e.g. `fpga/openxc7-synth/`). If something landed in root: **`npm run sweep-rtl`** (moves `*.v` into `hardware/rtl-root/`, collisions → `stray-from-root/`).
 2. **Binaries** — build with **`zig build`**; run from **`zig-out/bin/`**. Do not leave `a.out`, `*.o`, or ad-hoc test binaries in root (they are ignored or removed).
 3. **Scripts & one-offs** — **`scripts/`**; long-lived experiments → **`archive/`** when obsolete. Retired **`.tri`** bundles: **`archive/specs-tri/`**; active specs stay under **`specs/`**. Tri **language reference** (grammar lexer, spec prose): **`specs/tri/lang-ref/`**. Sample **YAML/dot configs**: **`tools/config/`**.
 4. **JTAG / hardware config** — **`hardware/jtag/`**.
 5. **Research drafts & lab notes** — **`docs/lab/papers/`**, **`docs/lab/memory/`**; notebooks **`docs/notebooks/`**. Brain-only build file **`build/build.brain.zig`** (`zig build --build-file build/build.brain.zig`).
-6. **Railway / Docker prebuilt bins** — **`deploy/prebuilt/`** (Dockerfiles use `deploy/prebuilt/…` paths).
-7. **Historical note:** some old root executables live in **`bin/repo-root/`**; prefer `zig-out` for anything new.
-8. **Do not recreate** empty trees like `implementations/zig` — use `zig-out/` / SDK in `~` or ignored `zig/`.
+6. **Solidity / DePIN contracts** — **`deploy/contracts/`** (not repo root).
+7. **Model weights & GGUF** — **`data/models/`** (code defaults use this path).
+8. **Shell helpers (ralph dashboards, MCP)** — **`tools/bin/`** (not root `bin/`; **`tools/bin/repo-root/`** holds legacy snapshots). Prefer **`zig-out/bin/`** for fresh builds.
+9. **Railway / Docker prebuilt bins** — **`deploy/prebuilt/`** (Dockerfiles use `deploy/prebuilt/…` paths). **HSLM Railway config** lives in **`deploy/railway-hslm/`** (not repo root); register that path in the Railway service settings.
+10. **Do not recreate** empty trees like `implementations/zig` — use `zig-out/` / SDK in `~` or ignored `zig/`.
 
 ---
 

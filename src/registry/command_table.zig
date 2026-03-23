@@ -974,7 +974,7 @@ pub const all_commands = [_]CommandDef{
         \\- Python
         \\- C, C++, Rust, Java, JavaScript, TypeScript, and more
         \\
-        \\Output: trinity/output/{language}/{name}.{ext}
+        \\Output: var/trinity/output/{language}/{name}.{ext}
         ,
         .category = .dev,
         .examples = &.{
@@ -1520,7 +1520,7 @@ pub const all_commands = [_]CommandDef{
         \\- Sacred mathematics
         \\- Architecture patterns
         \\
-        \\Output: trinity/output/deck.apkg
+        \\Output: var/trinity/output/deck.apkg
         ,
         .category = .dev,
         .examples = &.{

@@ -121,7 +121,7 @@ $ wc -l specs/tri/todo.vibee
 ./zig-out/bin/tri gen specs/tri/todo.vibee
 
 # Check generated code
-cat trinity/output/todo_manager.zig
+cat var/trinity/output/todo_manager.zig
 ```
 
 **Terminal output:**
@@ -144,7 +144,7 @@ $ ./zig-out/bin/tri gen specs/tri/todo.vibee
       • complete_task(list, id) -> bool
       • list_tasks(list) -> []Task
 
-   ✓ Writing: trinity/output/todo_manager.zig
+   ✓ Writing: var/trinity/output/todo_manager.zig
    ✓ Generated 89 lines of code
 
 🎉 Code generation complete!
@@ -213,7 +213,7 @@ pub fn listTasks(list: *TaskList) []const Task {
 ## Step 4: Create Test
 
 ```bash
-cat > trinity/output/todo_test.zig << 'EOF'
+cat > var/trinity/output/todo_test.zig << 'EOF'
 const std = @import("std");
 const todo = @import("todo_manager.zig");
 
@@ -249,12 +249,12 @@ EOF
 
 ```bash
 # Run the tests
-zig test trinity/output/todo_test.zig
+zig test var/trinity/output/todo_test.zig
 ```
 
 **Terminal output:**
 ```terminal
-$ zig test trinity/output/todo_test.zig
+$ zig test var/trinity/output/todo_test.zig
 
 Test [1/2] create task... OK
 Test [2/2] add and complete task... OK
@@ -284,7 +284,7 @@ All 2 tests passed!
 | Problem | Solution |
 |---------|----------|
 | `gen: command not found` | Build TRI first: `zig build tri` |
-| `todo_manager.zig not found` | Check output in `trinity/output/` |
+| `todo_manager.zig not found` | Check output in `var/trinity/output/` |
 | Test fails | Check generated code matches expected behavior |
 
 ---

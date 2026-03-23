@@ -1393,14 +1393,14 @@ fn printMetricRow(label: []const u8, val_1: ?i64, val_2: ?i64, lower_is_better: 
 }
 
 fn logSacredCall(command: []const u8, arg: []const u8) void {
-    const log_path = "trinity-nexus/.ralph/sacred_tool_calls.log";
+    const log_path = "deploy/trinity-nexus/.ralph/sacred_tool_calls.log";
 
     var line_buf: [512]u8 = undefined;
     const line = std.fmt.bufPrint(&line_buf, "[phi] | tri {s} {s}\n", .{ command, arg }) catch return;
 
     const file = std.fs.cwd().openFile(log_path, .{ .mode = .write_only }) catch {
         // Create directory and file if not exists
-        std.fs.cwd().makePath("trinity-nexus/.ralph") catch return;
+        std.fs.cwd().makePath("deploy/trinity-nexus/.ralph") catch return;
         const new_file = std.fs.cwd().createFile(log_path, .{}) catch return;
         defer new_file.close();
         new_file.writeAll(line) catch return;

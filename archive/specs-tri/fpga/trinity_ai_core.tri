@@ -10,7 +10,7 @@ language: varlog
 module: trinity_ai_core
 
 description: |
-  Auto-generated skeleton from trinity/output/fpga/trinity_ai_core.v.
+  Auto-generated skeleton from var/trinity/output/fpga/trinity_ai_core.v.
   Contains 0 constants and 0 public functions.
   TODO: Review and add proper types/behaviors.
 

@@ -13,12 +13,12 @@ This document provides REAL benchmark comparisons with actual code execution, te
 ### 1. CDP Browser Integration
 
 **Specification**: `specs/tri/cdp_real_browser.vibee`
-**Generated Code**: `trinity/output/cdp_real_browser.zig`
+**Generated Code**: `var/trinity/output/cdp_real_browser.zig`
 **Test Result**: ✅ **1/1 tests PASSED**
 
 **Actual Execution**:
 ```bash
-$ zig test trinity/output/cdp_real_browser.zig
+$ zig test var/trinity/output/cdp_real_browser.zig
 1/1 cdp_real_browser.test.connect_to_chrome...OK
 All 1 tests passed.
 ```
@@ -42,12 +42,12 @@ All 1 tests passed.
 ### 2. WebArena Task Parser
 
 **Specification**: `specs/tri/webarena_task_parser.vibee`
-**Generated Code**: `trinity/output/webarena_task_parser.zig`
+**Generated Code**: `var/trinity/output/webarena_task_parser.zig`
 **Test Result**: ✅ **1/1 tests PASSED**
 
 **Actual Execution**:
 ```bash
-$ zig test trinity/output/webarena_task_parser.zig
+$ zig test var/trinity/output/webarena_task_parser.zig
 1/1 webarena_task_parser.test.load_webarena_tasks...OK
 All 1 tests passed.
 ```
@@ -71,12 +71,12 @@ All 1 tests passed.
 ### 3. CDP + WebArena Integration
 
 **Specification**: `specs/tri/cdp_webarena_integration.vibee`
-**Generated Code**: `trinity/output/cdp_webarena_integration.zig`
+**Generated Code**: `var/trinity/output/cdp_webarena_integration.zig`
 **Test Result**: ✅ **1/1 tests PASSED**
 
 **Actual Execution**:
 ```bash
-$ zig test trinity/output/cdp_webarena_integration.zig
+$ zig test var/trinity/output/cdp_webarena_integration.zig
 1/1 cdp_webarena_integration.test.initialize_runner...OK
 All 1 tests passed.
 ```

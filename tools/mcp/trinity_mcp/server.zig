@@ -5,6 +5,7 @@
 //! Usage: ./zig-out/bin/trinity-mcp
 
 const std = @import("std");
+const trinity_workspace = @import("trinity_workspace");
 const posix = std.posix;
 const needle = @import("needle");
 const resources_mod = @import("resources.zig");
@@ -1802,6 +1803,8 @@ const StdoutWriter = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
+    trinity_workspace.cdToRepoRootSilent();
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();

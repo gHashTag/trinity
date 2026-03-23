@@ -756,9 +756,9 @@ pub fn main() !void {
 
     std.debug.print("  Loading GloVe 300d with percentile quantization...\n", .{});
 
-    var vocab = loadGloVe(allocator, "models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
+    var vocab = loadGloVe(allocator, "data/models/embeddings/glove.6B.300d.txt", MAX_VOCAB) catch |err| {
         std.debug.print("  ERROR loading embeddings: {s}\n", .{@errorName(err)});
-        std.debug.print("  Make sure models/embeddings/glove.6B.300d.txt exists\n", .{});
+        std.debug.print("  Make sure data/models/embeddings/glove.6B.300d.txt exists\n", .{});
         return err;
     };
     defer vocab.deinit();

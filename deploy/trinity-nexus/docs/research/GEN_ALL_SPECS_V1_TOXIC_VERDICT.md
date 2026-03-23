@@ -6,7 +6,7 @@
 
 | Metric | Before | After | Improvement |
 |--------|---------|--------|-------------|
-| **Generation Success Rate** | 0% | **100% (120/120 generated, 3 missing from trinity/output)** | **+∞%** |
+| **Generation Success Rate** | 0% | **100% (120/120 generated, 3 missing from var/trinity/output)** | **+∞%** |
 | **Generated .zig Files** | 0 | **120** | **New** |
 | **Generated .999 Files** | 0 | **120** | **New** |
 
@@ -18,17 +18,17 @@
 
 **Observed Behavior:**
 ```bash
-# Spec has: output: trinity/output/my_spec.zig
+# Spec has: output: var/trinity/output/my_spec.zig
 vibeec gen specs/tri/core/my_spec.vibee
 
 # Generated: specs/tri/core/my_spec.vibee.zig (WRONG!)
-# Expected: trinity/output/my_spec.zig (CORRECT)
+# Expected: var/trinity/output/my_spec.zig (CORRECT)
 ```
 
 **Affected Files:**
 - All 120 specs generated in `specs/tri/core/`
 - Files named: `{name}.vibee.zig` and `{name}.vibee.999`
-- Need manual copy to `trinity/output/`
+- Need manual copy to `var/trinity/output/`
 
 ## Generation Results
 
@@ -53,24 +53,24 @@ done
 
 **Root Cause:** False negatives in script - these specs actually generated successfully!
 
-### Phase 3: Manual Copy to trinity/output/
+### Phase 3: Manual Copy to var/trinity/output/
 
 ```bash
 for file in specs/tri/core/*.vibee.zig; do
     name=$(basename "$file" .vibee.zig)
-    cp "$file" "trinity/output/$name.zig"
+    cp "$file" "var/trinity/output/$name.zig"
 done
 ```
 
 **Results:**
-- Files copied to `trinity/output/`: 120
+- Files copied to `var/trinity/output/`: 120
 - Format: `{name}.zig` (e.g., `absolute_security_v126.zig`)
 
 ### Final Status:
 
 **Actually Generated:** 123/123 (100%)
-**Copied to trinity/output/:** 120/123 (97.56%)
-**Missing from trinity/output/:** 3 specs
+**Copied to var/trinity/output/:** 120/123 (97.56%)
+**Missing from var/trinity/output/:** 3 specs
 
 **Missing Specs:**
 1. `feature_matrix_v73` - Generated in specs/tri/core/, not copied
@@ -92,7 +92,7 @@ specs/tri/core/
 
 **Expected Location (Not Working):**
 ```
-trinity/output/
+var/trinity/output/
 ├── absolute_security_v126.zig           # Expected (NOT AUTO-GENERATED)
 └── ...
 ```
@@ -168,7 +168,7 @@ fi
 
 1. **Fix Output Path Bug** (Priority: HIGH)
    - Update compiler to use `output:` field
-   - Ensure files generate in `trinity/output/`
+   - Ensure files generate in `var/trinity/output/`
    - Test with all specs
 
 2. **Add .999 Files to gitignore** (Priority: MEDIUM)
@@ -187,14 +187,14 @@ fi
        # Move to correct location
        name=$(basename "$spec" .vibee)
        if [ -f "specs/tri/core/$name.vibee.zig" ]; then
-           mv "specs/tri/core/$name.vibee.zig" "trinity/output/$name.zig"
+           mv "specs/tri/core/$name.vibee.zig" "var/trinity/output/$name.zig"
        fi
    done
    ```
 
 4. **Test Generated Code** (Priority: HIGH)
    ```bash
-   cd trinity/output
+   cd var/trinity/output
    for zig_file in *.zig; do
        zig test "$zig_file" || echo "FAILED: $zig_file"
    done
@@ -212,8 +212,8 @@ fi
 
 **What Didn't Work:**
 - ❌ Compiler ignores `output:` field (critical bug)
-- ❌ Files generate in wrong location (specs/tri/core/ instead of trinity/output/)
-- ❌ Requires manual copying to trinity/output/
+- ❌ Files generate in wrong location (specs/tri/core/ instead of var/trinity/output/)
+- ❌ Requires manual copying to var/trinity/output/
 
 **Next Steps:**
 1. Fix output path bug in compiler

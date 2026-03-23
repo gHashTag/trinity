@@ -56,7 +56,7 @@ behaviors:
 # Using VIBEE CLI
 zig build vibee -- gen specs/tri/feature.vibee
 
-# Output: trinity/output/my_feature.zig
+# Output: var/trinity/output/my_feature.zig
 ```
 
 ### Generated Code
@@ -341,7 +341,7 @@ behaviors:
 Generate:
 ```bash
 zig build vibee -- gen specs/tri/knowledge_graph.vibee
-# → trinity/output/knowledge_graph.zig
+# → var/trinity/output/knowledge_graph.zig
 ```
 
 ---

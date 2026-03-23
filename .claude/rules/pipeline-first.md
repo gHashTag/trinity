@@ -20,7 +20,7 @@ The Golden Chain pipeline (`tri pipeline run "<task>"`) is the primary way to cr
 
 ## Forbidden
 - Never manually create .zig files that should come from .tri specs
-- Never edit files in `generated/` or `trinity/output/` — they are auto-generated
+- Never edit files in `generated/` or `var/trinity/output/` — they are auto-generated
 - If a .tri spec exists for a module, edit the spec and regenerate
 
 ## Agent Role

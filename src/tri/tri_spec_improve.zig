@@ -12,7 +12,7 @@ pub const ImproveConfig = struct {
     target_fill_rate: f64 = 0.85,
     backup_enabled: bool = true,
     parallel_jobs: u32 = 0, // 0 = auto (CPU count)
-    output_dir: []const u8 = "trinity/output",
+    output_dir: []const u8 = "var/trinity/output",
     specs_dir: []const u8 = "specs",
 };
 

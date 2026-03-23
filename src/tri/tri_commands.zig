@@ -158,7 +158,7 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     // Import generated serve_full module (from .tri spec: specs/integration/full-serve-v1.tri)
     // FIXME: trinity-nexus submodule missing
     // const serve_full = @import("serve_full");
-    // Single Source of Truth: trinity-nexus/output/lang/zig/full-serve-v1.zig
+    // Single Source of Truth: deploy/trinity-nexus/output/lang/zig/full-serve-v1.zig
     _ = args;
     _ = allocator;
     std.debug.print("🚧 Serve command not implemented yet. Requires trinity-nexus submodule.\n", .{});

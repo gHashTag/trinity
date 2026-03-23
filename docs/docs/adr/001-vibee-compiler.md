@@ -87,7 +87,7 @@ behaviors:
 
 ### Neutral
 
-- Generated code located in `trinity/output/` (gitignored)
+- Generated code located in `var/trinity/output/` (gitignored)
 - Specs located in `specs/tri/*.vibee`
 
 ---

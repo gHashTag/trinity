@@ -138,17 +138,17 @@ tri gen specs/tri/ga_batch.vibee
 tri gen specs/tri/ga_contracts.vibee
 tri gen specs/tri/ga_e2e_chat.vibee
 
-# Generated code will be in: trinity/output/
+# Generated code will be in: var/trinity/output/
 ```
 
 ### Run Tests
 
 ```bash
 # Run all GA certification tests
-zig test trinity/output/ga_smoke.zig
-zig test trinity/output/ga_batch.zig
-zig test trinity/output/ga_contracts.zig
-zig test trinity/output/ga_e2e_chat.zig
+zig test var/trinity/output/ga_smoke.zig
+zig test var/trinity/output/ga_batch.zig
+zig test var/trinity/output/ga_contracts.zig
+zig test var/trinity/output/ga_e2e_chat.zig
 ```
 
 ### Integration with Golden Chain
