@@ -54,6 +54,15 @@ pub const Tri27Operation = enum(u8) {
     dump,
 };
 
+pub const Tri27Status = enum(u8) {
+    queued,
+    running,
+    success,
+    failed,
+    timeout,
+    cancelled,
+};
+
 pub const Episode = struct {
     id: u64,
     timestamp: u64,

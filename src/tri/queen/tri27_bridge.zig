@@ -12,27 +12,8 @@ pub const SensorsSnapshot = @import("act.zig").SensorsSnapshot;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const Episode = @import("episodes.zig").Episode;
 pub const Source = @import("episodes.zig").Source;
-
-/// TRI-27 operation types
-pub const Tri27Operation = enum(u8) {
-    assemble,
-    disassemble,
-    run,
-    @"test",
-    validate,
-    flash,
-    dump,
-};
-
-/// TRI-27 status
-pub const Tri27Status = enum(u8) {
-    queued,
-    running,
-    success,
-    failed,
-    timeout,
-    cancelled,
-};
+pub const Tri27Operation = @import("episodes.zig").Tri27Operation;
+pub const Tri27Status = @import("episodes.zig").Tri27Status;
 
 /// TRI-27 Event (from tri27_experience.zig)
 pub const Tri27Event = struct {
@@ -82,6 +63,7 @@ pub fn fromTri27Event(allocator: Allocator, event: Tri27Event, issue_id: ?u64) !
         .policy = PolicySnapshot{},
         .senses = SensorsSnapshot{},
         .active_issues = &[_]u64{},
+        .recalled_episodes = &[_]Episode{},
     };
 
     // If issue_id provided, add to active_issues
@@ -104,25 +86,31 @@ pub fn fromTri27Event(allocator: Allocator, event: Tri27Event, issue_id: ?u64) !
     };
 
     // Map Tri27Status to Result
-    var result = Result{};
-    result.success = event.status == .success;
-    result.@"error" = if (event.has_error)
+    const error_msg = if (event.has_error)
         try allocator.dupe(u8, event.errorMsg())
     else
         null;
-    result.timing = Timing{
-        .start_ns = timestamp_ns,
-        .duration_ns = event.cycles * 1000, // Approx: 1 cycle = 1μs
-    };
-    result.output = if (event.status == .success)
+
+    const output_msg = if (event.status == .success)
         try allocator.dupe(u8, event.outputFile())
     else
         null;
-    result.new_senses = SensorsSnapshot{};
+
+    const result = Result{
+        .success = event.status == .success,
+        .@"error" = error_msg,
+        .timing = Timing{
+            .start_ns = timestamp_ns,
+            .end_ns = timestamp_ns + event.cycles * 1000,
+            .duration_ms = event.cycles / 1000, // Approx: cycles to ms
+        },
+        .output = output_msg,
+        .new_senses = SensorsSnapshot{},
+    };
 
     // Create episode with TRI-27 source
     return Episode{
-        .id = @as(u64, @bitCast(std.time.nanoTimestamp())),
+        .id = @as(u64, @intCast(std.time.nanoTimestamp())),
         .timestamp = timestamp_ns,
         .source = .tri27, // Will add this to Source enum
         .context = context,
@@ -138,6 +126,106 @@ pub fn fromTri27Event(allocator: Allocator, event: Tri27Event, issue_id: ?u64) !
         .result = result,
         .outcome = outcome,
     };
+}
+
+test "tri27_bridge: Tri27Event helper methods work correctly" {
+    var input_buf: [256]u8 = undefined;
+    var output_buf: [256]u8 = undefined;
+    @memset(input_buf[0..256], 0);
+    @memset(output_buf[0..256], 0);
+    @memcpy(input_buf[0..15], "test_input.tasm");
+    @memcpy(output_buf[0..16], "test_output.tbin");
+
+    const event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .run,
+        .input_file = input_buf,
+        .output_file = output_buf,
+        .status = .success,
+        .cycles = 100,
+        .instructions = 25,
+        .error_msg = [_]u8{0} ** 512,
+        .has_error = false,
+    };
+
+    try std.testing.expectEqual(@as(usize, 15), event.inputFile().len);
+    try std.testing.expectEqualStrings("test_input.tasm", event.inputFile());
+    try std.testing.expectEqual(@as(usize, 16), event.outputFile().len);
+    try std.testing.expectEqualStrings("test_output.tbin", event.outputFile());
+    try std.testing.expectEqualStrings("", event.errorMsg());
+}
+
+test "tri27_bridge: fromTri27Event creates valid episode" {
+    const allocator = std.testing.allocator;
+
+    var input_buf: [256]u8 = undefined;
+    var output_buf: [256]u8 = undefined;
+    @memcpy(input_buf[0..9], "test.tasm");
+    input_buf[8] = 0;
+    @memcpy(output_buf[0..9], "test.tbin");
+    output_buf[8] = 0;
+
+    const event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .run,
+        .input_file = input_buf,
+        .output_file = output_buf,
+        .status = .success,
+        .cycles = 100,
+        .instructions = 25,
+        .error_msg = [_]u8{0} ** 512,
+        .has_error = false,
+    };
+
+    const episode = try fromTri27Event(allocator, event, null);
+    defer {
+        allocator.free(episode.context.active_issues);
+        if (episode.result.output) |o| allocator.free(o);
+        if (episode.action.tri27_op.input_file.len > 0) allocator.free(episode.action.tri27_op.input_file);
+        if (episode.action.tri27_op.output_file.len > 0) allocator.free(episode.action.tri27_op.output_file);
+    }
+
+    try std.testing.expect(episode.id != 0);
+    try std.testing.expectEqual(Source.tri27, episode.source);
+    try std.testing.expectEqual(.success, episode.outcome);
+    try std.testing.expect(episode.result.success);
+    try std.testing.expectEqual(@as(u64, 0), episode.result.timing.duration_ms);
+}
+
+test "tri27_bridge: fromTri27Event maps failed status correctly" {
+    const allocator = std.testing.allocator;
+
+    var input_buf: [256]u8 = undefined;
+    var output_buf: [256]u8 = undefined;
+    var error_buf: [512]u8 = undefined;
+    @memcpy(input_buf[0..9], "test.tasm");
+    input_buf[8] = 0;
+    @memset(output_buf[0..256], 0);
+    @memcpy(error_buf[0..22], "Syntax error at line 5");
+    error_buf[21] = 0;
+
+    const event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .assemble,
+        .input_file = input_buf,
+        .output_file = output_buf,
+        .status = .failed,
+        .cycles = 50,
+        .instructions = 10,
+        .error_msg = error_buf,
+        .has_error = true,
+    };
+
+    const episode = try fromTri27Event(allocator, event, null);
+    defer {
+        allocator.free(episode.context.active_issues);
+        if (episode.result.@"error") |e| allocator.free(e);
+        if (episode.action.tri27_op.input_file.len > 0) allocator.free(episode.action.tri27_op.input_file);
+    }
+
+    try std.testing.expectEqual(.failure_learned, episode.outcome);
+    try std.testing.expect(!episode.result.success);
+    try std.testing.expect(episode.result.@"error" != null);
 }
 
 // Extension: Add TRI-27 source to episodes module
