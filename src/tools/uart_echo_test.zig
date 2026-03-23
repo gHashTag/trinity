@@ -2,7 +2,7 @@
 //! Sends bytes with configurable delay and expects them echoed back
 //!
 //! Usage:
-//!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
+//!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [--mode echo|ping-pong] [-v|--verbose]
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
@@ -29,16 +29,6 @@ const TestMode = enum {
     ping_pong,  // PING/PONG protocol test
 };
 
-// Test statistics
-const Statistics = struct {
-    total_tests: usize = 0,
-    passed: usize = 0,
-    failed: usize = 0,
-    min_time_ms: u64 = std.math.maxInt(u64),
-    max_time_ms: u64 = 0,
-    total_time_ms: u64 = 0,
-};
-
 // Test configuration
 const Config = struct {
     baud: u64,
@@ -46,12 +36,10 @@ const Config = struct {
     timeout_ms: u32,
     verbose: bool,
     mode: TestMode,
-    json_output: bool = false,  // Output JSON report
-    retry_count: usize = 1,  // Auto-retry on failure
 };
 
 // Parse command line arguments
-fn parseArgs(stdout: std.fs.File) Config {
+fn parseArgs(stderr: std.fs.File) Config {
     var config = Config{
         .baud = DEFAULT_BAUD,
         .delay_ms = DEFAULT_DELAY_MS,
@@ -66,37 +54,42 @@ fn parseArgs(stdout: std.fs.File) Config {
 
         if (std.mem.eql(u8, arg, "--baud")) {
             if (i + 1 >= std.os.argv.len) {
-                stdout.print("[✗] --baud requires value\n", .{}) catch {};
+                stderr.print("[✗] --baud requires value\n", .{}) catch {};
                 std.process.exit(1);
             }
             config.baud = std.fmt.parseInt(u64, std.os.argv[i + 1], 10) catch |err| {
-                stdout.print("[✗] Invalid baud value: {s}\n", .{err}) catch {};
+                stderr.print("[✗] Invalid baud value: {s}\n", .{err}) catch {};
                 std.process.exit(1);
             };
             i += 1;
         } else if (std.mem.eql(u8, arg, "--delay")) {
             if (i + 1 >= std.os.argv.len) {
-                stdout.print("[✗] --delay requires value\n", .{}) catch {};
+                stderr.print("[✗] --delay requires value\n", .{}) catch {};
                 std.process.exit(1);
             }
             config.delay_ms = std.fmt.parseInt(u32, std.os.argv[i + 1], 10) catch |err| {
-                stdout.print("[✗] Invalid delay value: {s}\n", .{err}) catch {};
+                stderr.print("[✗] Invalid delay value: {s}\n", .{err}) catch {};
                 std.process.exit(1);
             };
             i += 1;
         } else if (std.mem.eql(u8, arg, "--timeout")) {
             if (i + 1 >= std.os.argv.len) {
-                stdout.print("[✗] --timeout requires value\n", .{}) catch {};
+                stderr.print("[✗] --timeout requires value\n", .{}) catch {};
                 std.process.exit(1);
             }
             config.timeout_ms = std.fmt.parseInt(u32, std.os.argv[i + 1], 10) catch |err| {
-                stdout.print("[✗] Invalid timeout value: {s}\n", .{err}) catch {};
+                stderr.print("[✗] Invalid timeout value: {s}\n", .{err}) catch {};
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
+            config.verbose = true;
+            if (i + 1 < std.os.argv.len) {
+                i += 1; // Skip flag value
+            }
         } else if (std.mem.eql(u8, arg, "--mode")) {
             const mode_arg = if (i + 1 >= std.os.argv.len) {
-                stdout.print("[✗] --mode requires value\n", .{}) catch {};
+                stderr.print("[✗] --mode requires value\n", .{}) catch {};
                 std.process.exit(1);
             };
             const mode_val = std.os.argv[i + 1];
@@ -105,20 +98,13 @@ fn parseArgs(stdout: std.fs.File) Config {
             } else if (std.mem.eql(u8, mode_val, "ping-pong")) {
                 config.mode = .ping_pong;
             } else {
-                stdout.print("[✗] Invalid mode: {s}\n", .{mode_val}) catch {};
-                stdout.print("  Supported modes: echo, ping-pong\n", .{}) catch {};
+                stderr.print("[✗] Invalid mode: {s}\n", .{mode_val}) catch {};
+                stderr.print(" Supported modes: echo, ping-pong\n", .{}) catch {};
                 std.process.exit(1);
             }
             i += 1;
-        } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
-            config.verbose = true;
-            if (i + 1 < std.os.argv.len) {
-                i += 1; // Skip flag value
-            }
         } else if (std.mem.eql(u8, arg, "--help")) {
-            config.verbose = true;
-        } else if (std.mem.eql(u8, arg, "--help")) {
-            printUsage(stdout);
+            printUsage(stderr);
             std.process.exit(0);
         }
     }
@@ -126,12 +112,12 @@ fn parseArgs(stdout: std.fs.File) Config {
     return config;
 }
 
-fn printUsage(stdout: std.fs.File) void {
-    stdout.print(
-        \\╔══════════════════════════════════════════════════════╗
-        \\║           Trinity UART Echo Test v2.1                       ║
+fn printUsage(stderr: std.fs.File) void {
+    stderr.print(
+        \\╔══════════════════════════════════════════════════╗
+        \\║           Trinity UART Echo Test v2.2                       ║
         \\║    Usage: uart-echo-test [options]                        ║
-        \\╚══════════════════════════════════════════════════════╝
+        \\╚══════════════════════════════════════════════════╝
         \\
         \\Options:
         \\  --baud <rate>     Baud rate (default: 115200)
@@ -146,13 +132,12 @@ fn printUsage(stdout: std.fs.File) void {
         \\
         \\Example (ping-pong mode):
         \\  zig run uart-echo-test --mode ping-pong --verbose
-        \\
-    , .{}) catch {};
+        , .{}) catch {};
 }
 
 pub fn main() !void {
-    const stderr = std.io.getStdErr().writer();
-    const stdout = std.io.getStdOut().writer();
+    const stderr = std.io.getStdErr();
+    const stdout = std.io.getStdOut();
     const config = parseArgs(stderr);
 
     if (config.verbose) {
@@ -160,85 +145,93 @@ pub fn main() !void {
     }
 
     try stderr.writeAll(
-    const stderr = std.io.getStdErr().writer();
-    const config = parseArgs(stderr);
-
-    if (config.verbose) {
-        logConfig(stderr, config);
-    }
-
-    try stderr.writeAll(
-
-    if (config.verbose) {
-        logConfig(stdout, config);
-    }
-
-    try stdout.writeAll(
         \\╔══════════════════════════════════════════════════════╗
-        \\║           Trinity UART Echo Test v2.1                       ║
+        \\║           Trinity UART Echo Test v2.2                       ║
         \\║    Sends bytes with configurable delay/timeout               ║
         \\║    phi² + 1/phi² = 3 = TRINITY                        ║
-        \\╚══════════════════════════════════════════════════════╝
+        \\╚════════════════════════════════════════════════════════════╝
         \\
-    );
+    ) catch |err| {
+        stderr.print("[✗] Error: {s}\n", .{err});
+        std.process.exit(1);
+    };
 
     // Find FT232RL device
-    stdout.print("[+] Scanning for FT232RL device...\n", .{}) catch {};
+    stderr.print("[+] Scanning for FT232RL device...\n", .{}) catch {};
     const port = findFT232Device() catch |err| {
-        stdout.print("[✗] Error scanning: {s}\n", .{err}) catch {};
+        stderr.print("[✗] Error scanning: {s}\n", .{err}) catch {};
         std.process.exit(1);
     };
 
     if (port) |p| {
-        stdout.print("[+] Found FT232RL: {s}\n", .{p}) catch {};
-        stdout.print("\n[!] IMPORTANT: Configure port first:\n", .{}) catch {};
-        stdout.print("    stty -f {s} {d} cs8 -parenb -cstopb 1 -hupcl\n", .{p, config.baud}) catch {};
-        stdout.print("\n[Press Enter when ready...]\n", .{}) catch {};
+        stderr.print("[+] Found FT232RL: {s}\n", .{p}) catch {};
+        stderr.print("\n[!] IMPORTANT: Configure port first:\n", .{}) catch {};
+        stderr.print("    stty -f {s} {d} cs8 -parenb -cstopb 1 -hupcl\n", .{p, config.baud}) catch {};
+        stderr.print("\n[Press Enter when ready...]\n", .{}) catch {};
 
         var buf: [100]u8 = undefined;
         _ = std.io.getStdIn().read(&buf) catch |err| {
-            stdout.print("[✗] Failed to read input: {s}\n", .{err}) catch {};
+            stderr.print("[✗] Failed to read input: {s}\n", .{err}) catch {};
             std.process.exit(1);
         };
     } else {
-        stdout.print("[!] FT232RL not found!\n", .{}) catch {};
-        stdout.print("\nAvailable serial ports:\n", .{}) catch {};
-        listSerialPorts(stdout);
+        stderr.print("[!] FT232RL not found!\n", .{}) catch {};
+        stderr.print("\nAvailable serial ports:\n", .{}) catch {};
+        listSerialPorts(stderr);
         std.process.exit(1);
     }
 
-    stdout.print("\n", .{}) catch {};
-    stdout.print("╔══════════════════════════════════════════════════╗", .{}) catch {};
-    stdout.print("║  Testing:                                          ║", .{}) catch {};
-    stdout.print("╚════════════════════════════════════════════════╝", .{}) catch {};
+    stderr.print("\n", .{}) catch {};
+    stderr.print("╔════════════════════════════════════════════════════╗", .{}) catch {};
+    stderr.print("║  Testing:                                          ║", .{}) catch {};
+    stderr.print("╚══════════════════════════════════════════════════════╝", .{}) catch {};
+
+    // PING/PONG mode
+    if (config.mode == .ping_pong) {
+        stderr.print("\n[*] PING/PONG mode: sending PING (0x03), expecting PONG (0x83)\n", .{}) catch {};
+        const success = pingPong(stderr, stdout, port.?, config);
+
+        stderr.print("\n", .{}) catch {};
+        stderr.print("╔════════════════════════════════════════════════════════╗", .{}) catch {};
+        stderr.print("║  SUMMARY                                           ║", .{}) catch {};
+        stderr.print("╚════════════════════════════════════════════════════════════╝", .{}) catch {};
+        if (success) {
+            stderr.print("  [✓] PING/PONG TEST PASSED!\n", .{}) catch {};
+        } else {
+            stderr.print("  [✗] PING/PONG TEST FAILED!\n", .{}) catch {};
+        }
+        stderr.print("\n", .{}) catch {};
+        return;
+    }
 
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
         .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
         .{ .data = &[_]u8{0xAA}, .name = "0xAA (alternating)" },
-        .{ .data = &[_]u8{0x00}, .name = "0x00 (zero)" },
-        .{ .data = "Hello", .name = "\"Hello\"" },
-        .{ .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
+        .{ .data = "Hello", .name = "Hello" },
+        { .data = &[_]u8{0x00}, .name = "0x00 (zero)" },
+        { .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
     };
+
 
     var passed: usize = 0;
     var test_idx: usize = 0;
 
     while (test_idx < tests.len) {
         const testCase = tests[test_idx];
-        if (testEcho(stdout, port.?, testCase.data, test_idx + 1, tests.len, config)) {
+        if (testEcho(stderr, stdout, port.?, testCase.data, test_idx + 1, tests.len, config)) {
             passed += 1;
         }
         std.time.sleep(config.delay_ms * 1_000_000);
         test_idx += 1;
     }
 
-    stdout.print("\n", .{}) catch {};
-    stdout.print("╔════════════════════════════════════════════╗", .{}) catch {};
-    stdout.print("║  SUMMARY                                           ║", .{}) catch {};
-    stdout.print("╚══════════════════════════════════════════╝", .{}) catch {};
-    stdout.print("  Passed: {d}/{d}\n", .{passed, tests.len}) catch {};
-    stdout.print("\n", .{}) catch {};
+    stderr.print("\n", .{}) catch {};
+    stderr.print("╔════════════════════════════════════════════════════╗", .{}) catch {};
+    stderr.print("║  SUMMARY                                           ║", .{}) catch {};
+    stderr.print("╚════════════════════════════════════════════════════════════╝", .{}) catch {};
+    stderr.print("  Passed: {d}/{d}\n", .{passed, tests.len}) catch {};
+    stderr.print("\n", .{}) catch {};
 }
 
 const TestByte = struct {
@@ -246,16 +239,170 @@ const TestByte = struct {
     name: []const u8,
 };
 
-fn logConfig(stdout: std.fs.File, config: Config) void {
-    stdout.print("[*] Configuration:\n", .{}) catch {};
-    stdout.print("    baud: {d}\n", .{config.baud}) catch {};
-    stdout.print("    delay: {d}ms\n", .{config.delay_ms}) catch {};
-    stdout.print("    timeout: {d}ms\n", .{config.timeout_ms}) catch {};
-    stdout.print("    verbose: true\n", .{}) catch {};
-    stdout.print("\n", .{}) catch {};
+fn logConfig(stderr: std.fs.File, config: Config) void {
+    stderr.print("[*] Configuration:\n", .{}) catch {};
+    stderr.print("    mode: {s}\n", .{@tagName(TestMode, config.mode)}) catch {};
+    stderr.print("    baud: {d}\n", .{config.baud}) catch {};
+    stderr.print("    delay: {d}ms\n", .{config.delay_ms}) catch {};
+    stderr.print("    timeout: {d}ms\n", .{config.timeout_ms}) catch {};
+    stderr.print("    verbose: true\n", .{}) catch {};
+    stderr.print("\n", .{}) catch {};
 }
 
-fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_num: usize, total: usize, config: Config) bool {
+fn listSerialPorts(stderr: std.fs.File) void {
+    const dir = std.fs.openDirAbsolute("/dev") catch |err| return;
+    var iterator = dir.iterate();
+    while (iterator.next()) |entry| {
+        const name = entry.name;
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
+            stderr.print("  {s}\n", .{name}) catch {};
+        }
+    }
+}
+
+// Configure serial port settings
+fn configureSerial(stderr: std.fs.File, fd: std.posix.fd_t, baud: u64) bool {
+    var termios = std.os.tcgetattr(fd) catch {
+        stderr.print("[✗] tcgetattr failed\n", .{}) catch {};
+        return true;
+    };
+
+    termios.c_iflag &= ~@as(u32, std.os.ICRNL | std.os.IGNCR);
+    termios.c_oflag &= ~@as(u32, std.os.OPOST);
+    termios.c_lflag &= ~@as(u32, std.os.ECHO | std.os.ICANON | std.os.ISIG);
+    termios.c_cc[@as(usize, std.os.VMIN)] = 1;
+    termios.c_cc[@as(usize, std.os.VTIME)] = 0;
+
+    _ = std.os.tcsetattr(fd, .{ .v = termios, .act = .TCSANOW });
+
+    // Set baud rate
+    const baud_const: u32 = switch (baud) {
+        9600 => std.os.B9600,
+        19200 => std.os.B19200,
+        38400 => std.os.B38400,
+        57600 => std.os.B57600,
+        115200 => std.os.B115200,
+        else => {
+            stderr.print("[✗] Unsupported baud rate: {d}\n", .{baud}) catch {};
+            return true;
+        },
+    };
+
+    var termios2 = std.os.tcgetattr(fd) catch {
+        stderr.print("[✗] tcgetattr (2nd) failed\n", .{}) catch {};
+        return true;
+    };
+    termios2.c_cflag &= ~@as(u32, std.os.CBAUD);
+    termios2.c_cflag |= @as(u32, baud_const);
+    termios2.c_cflag |= @as(u32, std.os.CREAD | std.os.CLOCAL);
+
+    _ = std.os.tcsetattr(fd, .{ .v = termios2, .act = .TCSANOW });
+
+    return false;
+}
+
+// PING/PONG test mode
+fn pingPong(stderr: std.fs.File, stdout: std.fs.File, port_path: []const u8, config: Config) bool {
+    var fd: std.posix.fd_t = undefined;
+
+    // Open serial port
+    const open_result = std.posix.open(port_path, std.posix.O.RDWR | std.posix.O.NOCTTY, 0);
+
+    if (open_result) |err| {
+        stderr.print("[✗] Failed to open {s}: {s}\n", .{port_path, err}) catch {};
+        return false;
+    }
+    fd = open_result;
+
+    // Configure serial
+    if (configureSerial(stderr, fd, config.baud)) {
+        std.os.close(fd);
+        return false;
+    }
+
+    stderr.print("[+] Configured: {d} baud (PING/PONG mode)\n", .{config.baud}) catch {};
+
+    if (config.verbose) {
+        stderr.print("\n[*] Sending PING: 0x03\n", .{}) catch {};
+    }
+
+    // Send PING (0x03)
+    const ping_data = [_]u8{PING_BYTE};
+    const write_result = std.os.write(fd, &ping_data);
+
+    if (write_result) |written| {
+        if (written != ping_data.len) {
+            stderr.print("[!] Only wrote {d}/{d} bytes\n", .{written, ping_data.len}) catch {};
+        }
+    } else |err| {
+        stderr.print("[✗] Write error: {s}\n", .{err}) catch {};
+        std.os.close(fd);
+        return false;
+    }
+
+    // Wait for response
+    if (config.verbose) {
+        stderr.print("[*] Waiting for PONG response...\n", .{}) catch {};
+    }
+
+    var read_buffer: [512]u8 = undefined;
+    var bytes_read: usize = 0;
+    const start_time = std.time.milliTimestamp();
+
+    while (std.time.milliTimestamp() - start_time < config.timeout_ms) {
+        const read_result = std.os.read(fd, read_buffer[bytes_read..]);
+
+        if (read_result == error.OperationWouldBlock) {
+            std.time.sleep(10_000);
+            continue;
+        } else if (read_result) |n| {
+            bytes_read += n;
+            if (config.verbose) {
+                stderr.print("[*] Read {d} bytes (total: {d})\n", .{n, bytes_read}) catch {};
+            }
+            if (bytes_read >= 1) {
+                break;
+            }
+        } else {
+            if (config.verbose) {
+                stderr.print("[*] Read error, retrying...\n", .{}) catch {};
+            }
+        }
+    }
+
+    // Output received
+    stderr.print("  [←] Received ", .{}) catch {};
+    for (read_buffer[0..bytes_read]) |b| {
+        stderr.print("{x:0>2}", .{b}) catch {};
+    }
+    stderr.print(" ({d} bytes)\n", .{bytes_read}) catch {};
+
+    // Verify PONG response (0x83)
+    if (bytes_read >= 1) {
+        const response_byte = read_buffer[0];
+        if (response_byte == PONG_BYTE) {
+            stderr.print("  [✓] PING/PONG SUCCESS!\n", .{}) catch {};
+            if (config.verbose) {
+                stderr.print("  [*] FPGA responded with PONG (0x83)\n", .{}) catch {};
+            }
+            _ = std.os.close(fd);
+            return true;
+        } else {
+            stderr.print("  [✗] PING/PONG FAIL!\n", .{}) catch {};
+            stderr.print("  [*] Expected: 0x{x:0>2}\n", .{PONG_BYTE}) catch {};
+            stderr.print("  [*] Got:      0x{x:0>2}\n", .{response_byte}) catch {};
+            _ = std.os.close(fd);
+            return false;
+        }
+    } else {
+        stderr.print("  [✗] TIMEOUT - No response\n", .{}) catch {};
+        _ = std.os.close(fd);
+        return false;
+    }
+}
+
+// Simple echo test mode
+fn testEcho(stderr: std.fs.File, stdout: std.fs.File, port_path: []const u8, data: []const u8, test_num: usize, total: usize, config: Config) bool {
     var fd: std.posix.fd_t = undefined;
 
     // Try to open the serial port directly
@@ -266,17 +413,17 @@ fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_n
     );
 
     if (open_result) |err| {
-        stdout.print("[✗] Failed to open {s}: {s}\n", .{port_path, err}) catch {};
+        stderr.print("[✗] Failed to open {s}: {s}\n", .{port_path, err}) catch {};
         return false;
     }
 
     fd = open_result;
 
-    stdout.print("[+] Opened: {s}\n", .{port_path}) catch {};
+    stderr.print("[+] Opened: {s}\n", .{port_path}) catch {};
 
     // Configure as raw terminal
     var termios = std.os.tcgetattr(fd) catch {
-        stdout.print("[✗] tcgetattr failed\n", .{}) catch {};
+        stderr.print("[✗] tcgetattr failed\n", .{}) catch {};
         std.os.close(fd);
         return false;
     };
@@ -290,21 +437,21 @@ fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_n
     _ = std.os.tcsetattr(fd, .{ .v = termios, .act = .TCSANOW });
 
     // Set baud rate
-    const baud_const: u32 = switch (config.baud) {
+    const baud_const: u32 = switch (DEFAULT_BAUD) {
         9600 => std.os.B9600,
         19200 => std.os.B19200,
         38400 => std.os.B38400,
         57600 => std.os.B57600,
         115200 => std.os.B115200,
         else => {
-            stdout.print("[✗] Unsupported baud rate: {d}\n", .{config.baud}) catch {};
+            stderr.print("[✗] Unsupported baud rate: {d}\n", .{DEFAULT_BAUD}) catch {};
             std.os.close(fd);
             return false;
         },
     };
 
     var termios2 = std.os.tcgetattr(fd) catch {
-        stdout.print("[✗] tcgetattr (2nd) failed\n", .{}) catch {};
+        stderr.print("[✗] tcgetattr (2nd) failed\n", .{}) catch {};
         std.os.close(fd);
         return false;
     };
@@ -314,29 +461,29 @@ fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_n
 
     _ = std.os.tcsetattr(fd, .{ .v = termios2, .act = .TCSANOW });
 
-    stdout.print("[+] Configured: {d} baud\n", .{config.baud}) catch {};
+    stderr.print("[+] Configured: {d} baud\n", .{DEFAULT_BAUD}) catch {};
 
     // Send test data
-    stdout.print("  [→] Test {d}/{d} Sending data: ", .{test_num, total}) catch {};
+    stderr.print("  [→] Test {d}/{d} Sending data: ", .{test_num, total}) catch {};
     for (data) |b| {
-        stdout.print("{x:0>2}", .{b}) catch {};
+        stderr.print("{x:0>2}", .{b}) catch {};
     }
-    stdout.print(" ({d} bytes)\n", .{data.len}) catch {};
+    stderr.print(" ({d} bytes)\n", .{data.len}) catch {};
 
     // Write data to serial port
     const write_result = std.os.write(fd, data);
     if (write_result) |written| {
         if (written != data.len) {
-            stdout.print("  [!] Only wrote {d}/{d} bytes\n", .{written, data.len}) catch {};
+            stderr.print("  [!] Only wrote {d}/{d} bytes\n", .{written, data.len}) catch {};
         }
     } else |err| {
-        stdout.print("  [✗] Write error: {s}\n", .{err}) catch {};
+        stderr.print("  [✗] Write error: {s}\n", .{err}) catch {};
         std.os.close(fd);
         return false;
     }
 
     if (config.verbose) {
-        stdout.print("  [*] Waiting for echo (timeout: {d}ms)...\n", .{config.timeout_ms}) catch {};
+        stderr.print("  [*] Waiting for echo (timeout: {d}ms)...\n", .{config.timeout_ms}) catch {};
     }
 
     // Read response
@@ -353,25 +500,24 @@ fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_n
         } else if (read_result) |n| {
             bytes_read += n;
             if (config.verbose) {
-                stdout.print("  [*] Read {d} bytes\n", .{n}) catch {};
+                stderr.print("  [*] Read {d} bytes\n", .{n}) catch {};
             }
             if (bytes_read >= data.len) {
                 break;
             }
         } else {
-            // Error - continue trying
             if (config.verbose) {
-                stdout.print("  [*] Read error, retrying...\n", .{}) catch {};
+                stderr.print("  [*] Read error, retrying...\n", .{}) catch {};
             }
         }
     }
 
     // Output received
-    stdout.print("  [←] Received ", .{}) catch {};
+    stderr.print("  [←] Received ", .{}) catch {};
     for (read_buffer[0..bytes_read]) |b| {
-        stdout.print("{x:0>2}", .{b}) catch {};
+        stderr.print("{x:0>2}", .{b}) catch {};
     }
-    stdout.print(" ({d} bytes)\n", .{bytes_read}) catch {};
+    stderr.print(" ({d} bytes)\n", .{bytes_read}) catch {};
 
     // Verify match
     if (bytes_read == data.len) {
@@ -379,29 +525,29 @@ fn testEcho(stdout: std.fs.File, port_path: []const u8, data: []const u8, test_n
         for (0..data.len) |i| {
             if (read_buffer[i] != data[i]) {
                 match = false;
-                stdout.print("  [✗] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{i, data[i], read_buffer[i]}) catch {};
+                stderr.print("  [✗] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{i, data[i], read_buffer[i]}) catch {};
                 break;
             }
         }
 
         if (match) {
-            stdout.print("  [✓] ECHO SUCCESS!\n", .{}) catch {};
+            stderr.print("  [✓] ECHO SUCCESS!\n", .{}) catch {};
             _ = std.os.close(fd);
             return true;
         } else {
-            stdout.print("  [✗] ECHO FAIL! Mismatch\n", .{}) catch {};
+            stderr.print("  [✗] ECHO FAIL! Mismatch\n", .{}) catch {};
             _ = std.os.close(fd);
             return false;
         }
     } else {
-        stdout.print("  [✗] TIMEOUT - Received {d} bytes, expected {d}\n", .{bytes_read, data.len}) catch {};
+        stderr.print("  [✗] TIMEOUT - Received {d} bytes, expected {d}\n", .{bytes_read, data.len}) catch {};
         _ = std.os.close(fd);
         return false;
     }
 }
 
 fn findFT232Device() ?[]const u8 {
-    const dir = std.fs.openDirAbsolute("/dev") catch return null;
+    const dir = std.fs.openDirAbsolute("/dev") catch |err| return error.FileNotFound;
 
     var iterator = dir.iterate();
     while (iterator.next()) |entry| {
@@ -413,16 +559,4 @@ fn findFT232Device() ?[]const u8 {
     }
 
     return null;
-}
-
-fn listSerialPorts(stdout: anytype) void {
-    const dir = std.fs.openDirAbsolute("/dev") catch return;
-
-    var iterator = dir.iterate();
-    while (iterator.next()) |entry| {
-        const name = entry.name;
-        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
-            stdout.print("  {s}\n", .{name}) catch {};
-        }
-    }
 }
