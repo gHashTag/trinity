@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.34 — Full Documentation + All Modes Complete (fully implemented)
+//! v3.35 — RTT Histogram Integration (fully implemented)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2233,6 +2233,12 @@ fn runSimulation(config: Config) !void {
     // Export to JSON if requested
     if (config.json_output) {
         exportSimulationJSON(passed, tests.len, total_time_ms);
+    }
+
+    // v3.35: Show latency histogram if measure_jitter is enabled
+    if (config.measure_jitter) {
+        printErr("\n[i] Latency Distribution:\n", .{});
+        jitter_tracker.report();
     }
 }
 
