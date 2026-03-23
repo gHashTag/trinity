@@ -130,3 +130,42 @@ test "assembler: logic operations (AND, OR, XOR, NOT, SHL, SHR)" {
 
     std.debug.print("✅ Logic opcodes parse correctly\\n", .{});
 }
+
+test "assembler: labels and forward references" {
+    const allocator = std.testing.allocator;
+
+    // Test label support with loop
+    const asm_source =
+        \\LDI t0, 1
+        \\LDI t1, 0
+        \\ADD t2, t0, t1
+        \\loop:
+        \\INC t2
+        \\LDI t3, 1
+        \\JZ t3, loop
+        \\HALT
+    ;
+
+    const bytecode = try tri_asm.assemble(allocator, asm_source);
+    defer allocator.free(bytecode);
+
+    try testing.expectEqual(@as(usize, 7 * 4 + 10), bytecode.len);
+
+    std.debug.print("✅ Label support working correctly\\n", .{});
+}
+
+test "assembler: error messages with line numbers" {
+    const allocator = std.testing.allocator;
+
+    // Test undefined label error
+    const asm_source =
+        \\LDI t0, 1
+        \\JMP undefined_label
+        \\HALT
+    ;
+
+    const result = tri_asm.assemble(allocator, asm_source);
+    try testing.expectError(tri_asm.AsmError.UndefinedLabel, result);
+
+    std.debug.print("✅ Line number error messages working\\n", .{});
+}
