@@ -516,17 +516,16 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
-    // UART Echo Test — FPGA UART bridge test (TEMPORARILY DISABLED - Zig 0.15 termios API changes)
-    // TEMP: Disabled due to termios structure changes in Zig 0.15
-    // const uart_echo_test = b.addExecutable(.{
-    //     .name = "uart-echo-test",
-    //     .root_module = b.createModule(.{
-    //         .root_source_file = b.path("src/tools/uart_echo_test.zig"),
-    //         .target = target,
-    //         .optimize = optimize,
-    //     }),
-    // });
-    // b.installArtifact(uart_echo_test);
+    // UART Echo Test — FPGA UART bridge test
+    const uart_echo_test = b.addExecutable(.{
+        .name = "uart-echo-test",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tools/uart_echo_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(uart_echo_test);
 
     // Firebird tests
     const firebird_tests = b.addTest(.{
