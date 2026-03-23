@@ -52,7 +52,7 @@ pub const LocalFarm = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: Allocator) !Self {
+    pub fn init(_: Allocator) !Self {
         return Self{
             .workers = std.ArrayListUnmanaged(Worker){},
             .created_at = 0,
@@ -102,15 +102,9 @@ pub const LocalFarm = struct {
     }
 
     pub fn save(self: *const Self, allocator: Allocator) !void {
-        // Convert unmanaged to managed for JSON serialization
-        var managed_workers = std.ArrayList(Worker).init(allocator);
-        defer managed_workers.deinit();
-        for (self.workers.items) |w| {
-            try managed_workers.append(w);
-        }
-
+        // Use inline slice for JSON serialization
         const json_farm = struct {
-            workers: std.ArrayList(Worker),
+            workers: []const Worker,
             created_at: i64,
             updated_at: i64,
             total_steps: u64,
@@ -118,7 +112,7 @@ pub const LocalFarm = struct {
             best_ppl: f32,
             best_worker_id: ?usize,
         }{
-            .workers = managed_workers,
+            .workers = self.workers.items,
             .created_at = self.created_at,
             .updated_at = self.updated_at,
             .total_steps = self.total_steps,
@@ -128,7 +122,7 @@ pub const LocalFarm = struct {
         };
 
         const state_dir = std.fs.path.dirname(STATE_FILE) orelse ".";
-        try std.fs.cwd().makeDir(state_dir) catch |err| switch (err) {
+        std.fs.cwd().makeDir(state_dir) catch |err| switch (err) {
             error.PathAlreadyExists => {},
             else => return err,
         };
@@ -136,7 +130,9 @@ pub const LocalFarm = struct {
         const file = try std.fs.cwd().createFile(STATE_FILE, .{});
         defer file.close();
 
-        try std.json.stringify(json_farm, .{ .whitespace = .indent_2 }, file.writer());
+        const json_str = try std.json.Stringify.valueAlloc(allocator, json_farm, .{ .whitespace = .indent_2 });
+        defer allocator.free(json_str);
+        try file.writeAll(json_str);
     }
 
     pub fn addWorker(self: *Self, allocator: Allocator, id: usize, seed: u32) !void {
@@ -249,7 +245,7 @@ pub const LocalFarm = struct {
                 print("    {s}[crashes: {d}]{s}\n", .{ RED, w.crash_count, RESET });
             }
         }
-        print("\n");
+        print("\n", .{});
     }
 };
 
@@ -264,10 +260,10 @@ pub const DockerResult = struct {
 };
 
 pub fn runDocker(allocator: Allocator, args: []const []const u8) !DockerResult {
-    var argv = try std.ArrayList([]const u8).initCapacity(allocator, args.len + 1);
+    var argv = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, args.len + 1);
     defer argv.deinit(allocator);
-    try argv.append("docker");
-    try argv.appendSlice(args);
+    try argv.append(allocator, "docker");
+    try argv.appendSlice(allocator, args);
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
@@ -282,55 +278,55 @@ pub fn runDocker(allocator: Allocator, args: []const []const u8) !DockerResult {
 }
 
 pub fn composeUp(allocator: Allocator, compose_file: []const u8, workers: ?[]const u8) !DockerResult {
-    var args = std.ArrayList([]const u8).initCapacity(allocator, 5);
+    var args = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, 5);
     defer args.deinit(allocator);
 
-    try args.append("-f");
-    try args.append(compose_file);
-    try args.append("up");
-    try args.append("-d");
+    try args.append(allocator, "-f");
+    try args.append(allocator, compose_file);
+    try args.append(allocator, "up");
+    try args.append(allocator, "-d");
 
     if (workers) |w| {
-        try args.append(w);
+        try args.append(allocator, w);
     }
 
     return runDocker(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composeStop(allocator: Allocator, compose_file: []const u8, workers: ?[]const u8) !DockerResult {
-    var args = std.ArrayList([]const u8).initCapacity(allocator, 4);
+    var args = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, 4);
     defer args.deinit(allocator);
 
-    try args.append("-f");
-    try args.append(compose_file);
-    try args.append("stop");
+    try args.append(allocator, "-f");
+    try args.append(allocator, compose_file);
+    try args.append(allocator, "stop");
 
     if (workers) |w| {
-        try args.append(w);
+        try args.append(allocator, w);
     }
 
     return runDocker(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composeLogs(allocator: Allocator, compose_file: []const u8, worker: []const u8, follow: bool) !DockerResult {
-    var args = std.ArrayList([]const u8).initCapacity(allocator, 5);
+    var args = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, 5);
     defer args.deinit(allocator);
 
-    try args.append("-f");
-    try args.append(compose_file);
-    try args.append("logs");
-    if (follow) try args.append("-f");
-    try args.append(worker);
+    try args.append(allocator, "-f");
+    try args.append(allocator, compose_file);
+    try args.append(allocator, "logs");
+    if (follow) try args.append(allocator, "-f");
+    try args.append(allocator, worker);
 
     return runDocker(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composePs(allocator: Allocator, compose_file: []const u8) !DockerResult {
     const args = &[_][]const u8{ "-f", compose_file, "ps" };
-    return runDocker(allocator, args[0..]);
+    return runDocker(allocator, args[0..args.len]);
 }
 
 pub fn containerExec(allocator: Allocator, container: []const u8, cmd: []const u8) !DockerResult {
     const args = &[_][]const u8{ "exec", container, "sh", "-c", cmd };
-    return runDocker(allocator, args[0..]);
+    return runDocker(allocator, args[0..args.len]);
 }

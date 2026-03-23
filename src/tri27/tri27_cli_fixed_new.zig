@@ -10,7 +10,7 @@ const Instruction = Decoder.Instruction;
 const Assembler = @import("emu/tri_asm.zig");
 const Executor = @import("emu/executor.zig");
 const CPUState = @import("emu/cpu_state.zig");
-const tri27_experience = @import("tri27_experience.zig");
+const tri27_experience = @import("../tri27_experience.zig");
 
 const print = std.debug.print;
 
@@ -65,14 +65,14 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
         }
     }
 
-    const asm_content = std.fs.cwd().readFileAllAlloc(allocator, input_file, 4096) catch {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, });
+    const asm_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
+        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
         return;
     };
     defer allocator.free(asm_content);
 
     const bytecode = try Assembler.assemble(allocator, asm_content);
-    try std.fs.writeFileAll(allocator, output_file, bytecode);
+    try std.fs.cwd().writeFileAlloc(allocator, output_file, bytecode);
     allocator.free(bytecode);
 
     print("{s}✅ Assembled {d} instructions\n", .{ GREEN, bytecode.len / 4, RESET });
@@ -86,8 +86,8 @@ fn runDisassembleCommand(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const input_file = args[0];
-    const tbin_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |err| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, err });
+    const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
         return;
     };
     defer allocator.free(tbin_content);
@@ -103,30 +103,26 @@ fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const input_file = args[0];
-    const tbin_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |err| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, err });
+    const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
         return;
     };
     defer allocator.free(tbin_content);
 
-    var cpu = try CPUState.init(allocator);
+    var cpu = Executor.init();
     defer cpu.deinit();
 
-    // Load program into CPU memory
-    const cpu_memory = cpu.getBytesMut();
-    const copy_len = @min(tbin_content.len, cpu_memory.len);
-    @memcpy(cpu_memory[0..copy_len], tbin_content[0..copy_len]);
-
-    _ = Executor.run(&cpu, cpu.getBytes()) catch |err| {
-        print("{s}Execution error: {s}{s}\n", .{ RED, @errorName(err), RESET });
+    const loaded = cpu.loadProgram(tbin_content);
+    if (!loaded) {
+        print("{s}Error: failed to load program{s}\n", .{ RED, RESET });
         return;
-    };
+    }
 
-    print("{s}Execution result: {s}{s}\n", .{ BOLD, "HALTED", RESET });
+    const result = cpu.execute(1000);
+    print("{s}Execution result: {}{s}\n", .{ BOLD, result, RESET });
     print("{s}PC: 0x{X:0>4}{s}\n", .{ cpu.pc, RESET });
 
-    // Dump some registers
-    print("{s}Registers: {s}\n", .{ BOLD, RESET });
+    cpu.dumpRegisters();
 }
 
 fn runValidateCommand(allocator: Allocator, args: []const []const u8) !void {
@@ -136,13 +132,13 @@ fn runValidateCommand(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const input_file = args[0];
-    const tri_content = std.fs.readFileAllAlloc(allocator, input_file, 4096) catch {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, });
+    const tri_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
+        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
         return;
     };
     defer allocator.free(tri_content);
 
-    print("{s}Validation not yet implemented{s}\n", .{YELLOW});
+    print("{s}Validation not yet implemented\n", .{YELLOW});
 }
 
 fn runIsaCommand() !void {
@@ -200,17 +196,7 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
         const input_file = if (args.len > 1) args[1] else "";
         const operation_str = if (args.len > 2) args[2] else "RUN";
 
-        var event = tri27_experience.Tri27Event{
-            .timestamp = 0,
-            .operation = .run,
-            .input_file = [_]u8{0} ** 256,
-            .output_file = [_]u8{0} ** 256,
-            .status = .queued,
-            .cycles = 0,
-            .instructions = 0,
-            .error_msg = [_]u8{0} ** 512,
-            .has_error = false,
-        };
+        var event = tri27_experience.Tri27Event{};
         event.timestamp = std.time.timestamp();
         event.operation = tri27_experience.parseOperation(operation_str);
 
@@ -266,7 +252,7 @@ fn printHelp() void {
     print("  {s}tri tri27 experience record <issue>{s}             Record episode from last event\n", .{ GREEN, RESET });
     print("  {s}tri tri27 isa{s}                                    Show ISA reference\n", .{ GREEN, RESET });
 
-    print("\n{s}Examples:{s}\n", .{ RESET });
+    print("\n{s}Examples:{s}\n", .{RESET});
     print("  tri27 assemble prog.tri -o prog.tbin\n", .{});
     print("  tri27 run prog.tbin\n", .{});
     print("  tri27 disassemble prog.tbin\n", .{});
