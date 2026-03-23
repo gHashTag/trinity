@@ -361,6 +361,8 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 
 **📘 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for comprehensive system design.**
 
+**Repo layout:** Verilog snapshots live in [`hardware/rtl-root/`](hardware/rtl-root/); agents follow [`AGENTS.md`](AGENTS.md) (no new `*.v` or build junk in the root).
+
 ### Module Documentation
 
 | Domain | Docs | Status |
@@ -379,6 +381,7 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 | `src/needle/` | Semantic search with Brute+SIMD backend (100% exact) |
 | `src/firebird/` | BitNet LLM inference on CPU (20x memory efficiency) |
 | `fpga/openxc7-synth/` | FPGA toolchain + UART host (v6 current, v5 legacy) |
+| `hardware/rtl-root/` | Loose `.v` modules (historically in root); e.g. `tri fpga build hardware/rtl-root/blink.v` |
 
 ### Core VSA System
 

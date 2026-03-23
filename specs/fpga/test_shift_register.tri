@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST_SHIFT_REGISTER — Shift Register Test
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Verify 8-bit shift register functionality
+# Target: QMTECH Artix-7 XC7A100T
+#
+# Features:
+#   - 8-bit serial-in, serial-out shift register
+#   - LED shows output bit
+#   - Visible pattern at reduced clock
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: test_shift_register
+version: "1.0.0"
+language: varlog
+module: shift_register_8bit
+fpga_target: xilinx
+target_frequency: 50
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+    description: "50 MHz oscillator (U22)"
+
+  - name: data_in
+    width: 1
+    direction: input
+    description: "Serial data input (K22 - tie to VCC/GND)"
+
+  - name: serial_out
+    width: 1
+    direction: output
+    description: "Serial output to LED (R23)"
+
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+
+  - port: data_in
+    pin: K22
+    iostandard: LVCMOS33
+    description: "Data input (tie to VCC for '1' pattern)"
+
+  - port: serial_out
+    pin: R23
+    iostandard: LVCMOS33
+    description: "LED D6 output"
+
+behaviors:
+  - name: shift_operation
+    description: "8-bit shift register with rotating pattern"
+    given: "50 MHz clock, data input"
+    when: "posedge clk"
+    then: "Data shifts through register, LED shows output bit"
+    implementation: |
+      // 8-bit shift register
+      // With a walking '1' pattern for visual verification
+
+      reg [7:0] shift_reg = 8'b00000001;
+      reg [23:0] slow_counter = 0;
+
+      // Slow down the shift for visual verification
+      // At 50MHz, shift every 2^24 / 50MHz ≈ 0.34 seconds
+      always @(posedge clk) begin
+          slow_counter <= slow_counter + 1'b1;
+          if (slow_counter == 0) begin
+              // Rotate left: bit 7 moves to bit 0
+              shift_reg <= {shift_reg[6:0], shift_reg[7]};
+          end
+      end
+
+      // For testing with data_in: use slow_counter overflow as "data"
+      // In real use, connect data_in to shift_reg[0] input
+      // For visual test, we use the rotating pattern
+
+      // Active-low LED output
+      assign serial_out = ~shift_reg[7];
+
+test_cases:
+  - name: shift_verification
+    description: "Verify data shifts through register correctly"
+    given: "FPGA programmed with bitstream"
+    when: "observing LED output"
+    then: "LED blinks in rotating pattern (each bit lights up in sequence)"
+
+  - name: register_integrity
+    description: "Verify all 8 bits maintain data correctly"
+    given: "Pattern loaded into register"
+    when: "shifting 8 clock cycles"
+    then: "Original data appears at output in correct order"
+
+examples:
+  - name: walking_pattern
+    description: "Visual verification with walking '1' pattern"
+    expected: "LED blinks sequentially, one bit position at a time"

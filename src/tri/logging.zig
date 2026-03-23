@@ -40,16 +40,16 @@ pub const LogEntry = struct {
         const year = epoch_year + @divFloor(days_since_epoch, 365);
         const day_of_year = @rem(days_since_epoch, 365);
 
-        const month: u32 = @divFloor(day_of_year, 30) + 1;
-        const day: u32 = @rem(day_of_year, 30) + 1;
+        const month: u32 = @as(u32, @intCast(@divFloor(day_of_year, 30))) + 1;
+        const day: u32 = @as(u32, @intCast(@rem(day_of_year, 30))) + 1;
 
         const seconds_in_day: u64 = @intCast(@rem(seconds, 86400));
-        const hour: u32 = @intCast(@divFloor(seconds_in_day, 3600));
-        const minute: u32 = @intCast(@divFloor(@rem(seconds_in_day, 3600), 60));
-        const second: u32 = @intCast(@rem(@rem(seconds_in_day, 3600), 60));
+        const hour: u32 = @as(u32, @intCast(@divFloor(seconds_in_day, 3600)));
+        const minute: u32 = @as(u32, @intCast(@divFloor(@rem(seconds_in_day, 3600), 60)));
+        const second: u32 = @as(u32, @intCast(@rem(@rem(seconds_in_day, 3600), 60)));
 
-        // Static buffer for formatting (thread-local for safety)
-        threadlocal var buf: [32]u8 = undefined;
+        // Static buffer for formatting
+        var buf: [32]u8 = undefined;
         _ = std.fmt.bufPrint(&buf, "{d:0>4}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}:{d:0>2}.{d:0>3}", .{
             year, month, day, hour, minute, second, millis,
         }) catch "";
@@ -140,9 +140,9 @@ pub fn log(level: LogLevel, comptime fmt: []const u8, args: anytype, details: ?[
                 try fh.writeAll("\n");
             }
 
-            // Flush on error level
+            // Sync on error level
             if (level == .Error) {
-                try fh.flush();
+                try fh.sync();
             }
         }
     }
@@ -182,7 +182,7 @@ pub fn logWithComponent(level: LogLevel, component: []const u8, comptime fmt: []
             }
 
             if (level == .Error) {
-                try fh.flush();
+                try fh.sync();
             }
         }
     }
@@ -194,7 +194,7 @@ pub fn logWithComponent(level: LogLevel, component: []const u8, comptime fmt: []
 pub fn flush() !usize {
     if (global_state.log_file) |*file| {
         if (file.file_handle) |fh| {
-            try fh.flush();
+            try fh.sync();
         }
     }
     return global_state.entries_count;
@@ -202,7 +202,7 @@ pub fn flush() !usize {
 
 /// Set log level at runtime
 pub fn setLevel(level: LogLevel) void {
-    std.debug.print("[*] Log level set to {s}\n", .{ level.getName() });
+    std.debug.print("[*] Log level set to {s}\n", .{level.getName()});
     global_state.current_level = level;
 }
 

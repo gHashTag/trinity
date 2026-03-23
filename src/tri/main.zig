@@ -17,7 +17,8 @@ const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
-const tri_farm = @import("tri_farm.zig");
+// TEMP: Disabled tri_farm due to missing fly_wave9 stub
+// const tri_farm = @import("tri_farm.zig");
 const dev_workflow = @import("dev_commands.zig");
 // P3.0: State machine for rigid process framework
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
@@ -848,7 +849,8 @@ pub fn main() !void {
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
-        .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
+        // TEMP: Disabled .farm due to missing fly_wave9 stub
+        // .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
