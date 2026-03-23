@@ -6,8 +6,6 @@ pub const TestCase = struct {
     test: *const fn () bool,
 };
 
-const test: *const fn () callconv(.C) bool = test;
-
 var results = std.ArrayList(bool).init(allocator);
 defer results.deinit();
 
