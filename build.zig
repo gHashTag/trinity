@@ -3640,7 +3640,7 @@ pub fn build(b: *std.Build) void {
         \\  -v fpga/openxc7-synth:/work \\
         \\  -w /work ghcr.io/ghashtag/openxc7:latest \\
         \\  yosys -p "read_verilog sacred_alu.v; synth_xilinx -top sacred_alu -family xc7; stat"
-    ,
+        ,
     });
     const fpga_synth_step = b.step("fpga-synth", "Synthesize Sacred ALU with Yosys via Docker");
     fpga_synth_step.dependOn(&fpga_synth.step);
