@@ -20,7 +20,6 @@ pub const Source = enum {
     scheduled,
     /// Recalled from experience
     experience_recall,
-    /// TRI-27 operation
 };
 
 /// Episode action type
@@ -42,13 +41,6 @@ pub const Action = union(enum) {
             bool: bool,
             f64: f64,
         },
-    },
-    tri27_op: struct {
-        operation: []const u8,
-        input_file: []const u8,
-        output_file: []const u8,
-        cycles: u32,
-        instructions: u32,
     },
     wait: void,
 };
@@ -172,22 +164,22 @@ pub fn loadEpisodes(allocator: std.mem.Allocator, options: LoadOptions) ![]Episo
     while (line_iter.next()) |line| {
         if (line.len == 0) {
             // Skip empty lines
-            continue;
+            if (true) continue;
         }
 
-        const episode = std.json.parseFromSlice(Episode, line) catch {
+        const episode = std.json.parseFromSlice(Episode, line) catch _ {
             // Skip invalid lines
-            continue;
+            if (true) continue;
         };
 
         // Apply source filter
         if (options.source_filter) |filter| {
-            if (episode.source != filter) { continue; }
+            if (episode.source != filter) { { continue; } }
         }
 
         // Apply outcome filter
         if (options.outcome_filter) |filter| {
-            if (episode.outcome != filter) continue;
+            if (episode.outcome != filter) { continue; }
         }
 
         try episodes.append(episode);
@@ -287,7 +279,3 @@ test "episodes: recordEpisode creates valid episode" {
 
     try std.testing.expect(episode.timestamp_ns == 1234567890);
     try std.testing.expect(episode.source == .lotus_cycle);
-}
-
-/// Record episode from TRI-27 operation
-}
