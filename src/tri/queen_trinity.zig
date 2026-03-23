@@ -22,9 +22,9 @@ const Allocator = std.mem.Allocator;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Strand = enum(u2) {
-    Math = 0,     // Strand I: Sacred mathematics
-    Brain = 1,    // Strand II: Cognitive architecture
-    Lang = 2,     // Strand III: Language & Hardware Bridge
+    Math = 0, // Strand I: Sacred mathematics
+    Brain = 1, // Strand II: Cognitive architecture
+    Lang = 2, // Strand III: Language & Hardware Bridge
 };
 
 pub fn strandName(s: Strand) []const u8 {
@@ -74,12 +74,12 @@ pub fn eventName(et: ImpureEventType) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const LotusState = enum(u8) {
-    Queued = 0,      // Event waiting in queue
-    Diagnosing = 1,  // Analyzing the impurity
-    Refining = 2,    // Fixing the issue
-    Verifying = 3,   // Testing the fix
-    Purified = 4,    // Successfully resolved
-    Blocked = 5,     // Failed 3 times → manual intervention
+    Queued = 0, // Event waiting in queue
+    Diagnosing = 1, // Analyzing the impurity
+    Refining = 2, // Fixing the issue
+    Verifying = 3, // Testing the fix
+    Purified = 4, // Successfully resolved
+    Blocked = 5, // Failed 3 times → manual intervention
 };
 
 pub fn lotusStateName(ls: LotusState) []const u8 {
@@ -98,12 +98,12 @@ pub fn lotusStateName(ls: LotusState) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const ImpureEvent = struct {
-    id: [64]u8 = undefined,          // Unique event ID
+    id: [64]u8 = undefined, // Unique event ID
     strand: Strand = .Math,
     event_type: ImpureEventType = .BUILD_FAIL,
     source_file: [256]u8 = undefined, // File that caused the issue
     source_file_len: u8 = 0,
-    error_msg: [512]u8 = undefined,  // Error message
+    error_msg: [512]u8 = undefined, // Error message
     error_msg_len: u16 = 0,
     timestamp: i64 = 0,
     attempts: u8 = 0,

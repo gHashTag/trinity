@@ -12,7 +12,7 @@ const print = std.debug.print;
 
 // ════════════════════════════════════════════════════════
 
-pub const GeneratorError = error {
+pub const GeneratorError = error{
     UnexpectedOpcode,
     MissingOperand,
     InvalidRegister,
@@ -31,7 +31,7 @@ pub fn generateZigFromBytes(allocator: Allocator, bytecode: []const u8) ![]const
 
     var pc: usize = 0;
     while (pc < bytecode.len) : (pc += 4) {
-        const instruction_bytes = bytecode[pc..pc + 4];
+        const instruction_bytes = bytecode[pc .. pc + 4];
         const instr = try decodeInstruction(instruction_bytes) catch |err| {
             print("Error decoding instruction at offset {d}: {s}\n", .{ pc, err });
             return error.InvalidInstruction;
@@ -63,32 +63,32 @@ fn decodeInstruction(bytes: []const u8) Decoder.Instruction {
 
 fn opcodeToMnemonic(op: Opcode) []const u8 {
     return switch (op) {
-        .LDI_src1   => "LDI",
-        .LDI_src2   => "LDI",
-        .LDI_dst1   => "LDI",
-        .LDI_dst2   => "LDI",
-        .LDI_dst3   => "LDI",
-        .LDR_src2   => "LDR",
-        .LDR_dst3   => "LDR",
-        .MOV        => "MOV",
-        .ST_R0_src  => "ST",
-        .LD_src     => "LD",
-        .ST_src     => "ST",
-        .LDI_dst    => "LDI",
-        .SAI_dst    => "SAI",
+        .LDI_src1 => "LDI",
+        .LDI_src2 => "LDI",
+        .LDI_dst1 => "LDI",
+        .LDI_dst2 => "LDI",
+        .LDI_dst3 => "LDI",
+        .LDR_src2 => "LDR",
+        .LDR_dst3 => "LDR",
+        .MOV => "MOV",
+        .ST_R0_src => "ST",
+        .LD_src => "LD",
+        .ST_src => "ST",
+        .LDI_dst => "LDI",
+        .SAI_dst => "SAI",
         .SAI_dst_src => "SAI",
-        .JUMP       => "JUMP",
-        .CALL       => "CALL",
-        .RET        => "RET",
-        .HALT       => "HALT",
-        .NOP        => "NOP",
-        .LDTI_src   => "LDTI",
-        .STO_LO     => "STO",
-        .PUSH        => "PUSH",
-        .POP_R1     => "POP",
-        .JZ          => "JZ",
-        .JZ_INC      => "JZ_INC",
-        else         => "UNK",
+        .JUMP => "JUMP",
+        .CALL => "CALL",
+        .RET => "RET",
+        .HALT => "HALT",
+        .NOP => "NOP",
+        .LDTI_src => "LDTI",
+        .STO_LO => "STO",
+        .PUSH => "PUSH",
+        .POP_R1 => "POP",
+        .JZ => "JZ",
+        .JZ_INC => "JZ_INC",
+        else => "UNK",
     };
 }
 
@@ -120,14 +120,7 @@ fn operandsToString(instr: Instruction) []const u8 {
 
 fn getComment(instr: Instruction) []const u8 {
     return switch (instr.opcode) {
-        .LDI_src1, .LDI_src2, .LDI_src3,
-        .LDI_dst1, .LDI_dst2, .LDI_dst3,
-        .LDR_src2, .LDR_dst3,
-        .LDTI_src,
-        .SAI_dst, .SAI_dst_src,
-        .JUMP,
-        .CALL,
-        .RET => {
+        .LDI_src1, .LDI_src2, .LDI_src3, .LDI_dst1, .LDI_dst2, .LDI_dst3, .LDR_src2, .LDR_dst3, .LDTI_src, .SAI_dst, .SAI_dst_src, .JUMP, .CALL, .RET => {
             // Control flow - show target
             return "";
         },
@@ -139,8 +132,7 @@ fn getComment(instr: Instruction) []const u8 {
             // Register/memory ops
             return "";
         },
-        .LDI_dst, .LDTI_src, .STO_LO,
-        .PUSH, .POP_R1, .JZ, .JZ_INC => {
+        .LDI_dst, .LDTI_src, .STO_LO, .PUSH, .POP_R1, .JZ, .JZ_INC => {
             // Stack/flag ops
             return "";
         },

@@ -492,9 +492,9 @@ fn configureSerial(fd: std.posix.fd_t) bool {
     var termio = std.posix.tcgetattr(fd) catch return false;
 
     // Set 8N1: 8 data bits, no parity, 1 stop bit
-    termio.cflag.PARENB = false;  // No parity
-    termio.cflag.CSTOPB = false;  // 1 stop bit
-    termio.cflag.CSIZE = .CS8;   // 8 data bits
+    termio.cflag.PARENB = false; // No parity
+    termio.cflag.CSTOPB = false; // 1 stop bit
+    termio.cflag.CSIZE = .CS8; // 8 data bits
 
     // Enable receiver, ignore modem control lines
     termio.cflag.CREAD = true;
