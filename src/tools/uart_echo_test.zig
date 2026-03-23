@@ -68,7 +68,7 @@ const ThroughputStats = struct {
     pub fn calculateThroughput(self: *const ThroughputStats) f64 {
         if (self.total_time_ms == 0) return 0;
         const bytes_per_second = @as(f64, @floatFromInt(self.total_bytes_received)) /
-                                   @as(f64, @floatFromInt(self.total_time_ms)) * 1000.0;
+            @as(f64, @floatFromInt(self.total_time_ms)) * 1000.0;
         return bytes_per_second;
     }
 };
