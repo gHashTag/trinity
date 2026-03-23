@@ -5,8 +5,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const tri_experience = @import("tri_experience.zig");
-const Episode = tri_experience.Episode;
+const tri27_exp = @import("Tri27_Experience.zig");
+const Episode = tri27_exp.Episode;
 
 const print = std.debug.print;
 
@@ -44,7 +44,7 @@ pub fn saveTri27Episode(
     kind: Tri27EventKind,
     input_file: []const u8,
     output_file: []const u8,
-    status: tri_experience.Tri27Status,
+    status: tri27_experience.Tri27Status,
     cycles: u32,
     instructions: u32,
     error_msg: []const u8,
@@ -94,7 +94,7 @@ pub fn saveTri27Episode(
     episode.learnings_count = 0;
 
     // Save via common Episode/JSONL
-    try tri_experience.saveEpisode(episode);
+    try saveEpisode(episode);
     print("{s}✅ TRI‑27 episode saved ({s}: {s} → {s}){s}\n", .{
         GREEN,             kind.toStr(), RESET,
         episode.timestamp, RESET,        EPISODES_DIR,
