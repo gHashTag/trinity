@@ -849,8 +849,11 @@ pub fn main() !void {
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
-        // TEMP: Disabled .farm due to missing fly_wave9 stub
-        // .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
+        .farm => {
+            // TEMP: Disabled .farm due to missing fly_wave9 stub
+            std.debug.print("{s}Farm command temporarily disabled{s}\n", .{ utils.YELLOW, utils.RESET });
+            utils.printCommandHelp(.farm);
+        },
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
