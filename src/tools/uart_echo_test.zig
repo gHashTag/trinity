@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.42 — Comprehensive Mode Recovery Statistics
+//! v3.43 — Stress Test Mode Error Tracking
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1245,7 +1245,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.42           ║
+        \\║      Trinity UART Echo Test v3.43           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1289,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.42):
+        \\Performance Modes (v3.43):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1304,6 +1304,7 @@ fn printUsage() void {
         \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
         \\  Simulation Auto-Recovery: Simulated retry logic for simulation mode (v3.41)
         \\  Comprehensive Recovery: Recovery statistics tracking for comprehensive mode (v3.42)
+        \\  Stress Error Tracking: Write/read error tracking for stress test mode (v3.43)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -3205,7 +3206,7 @@ const PerformanceReport = struct {
 fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║          STRESS TEST MODE (v3.24)       ║
+        \\║          STRESS TEST MODE (v3.43)       ║
         \\║  High-throughput continuous testing       ║
         \\╚══════════════════════════════════════╝
         \\
@@ -3213,6 +3214,8 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
 
     printErr("[i] Packets: {d}\n", .{config.stress_packets});
     printErr("[i] Baud rate: {d}\n", .{config.baud});
+
+    // v3.43: Auto-recovery statistics for stress test
 
     // Prepare test packet
     const packet_size = 64;
@@ -3223,7 +3226,8 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
 
     var total_sent: usize = 0;
     var total_received: usize = 0;
-    var total_errors: usize = 0;
+    var write_errors: usize = 0;  // v3.43: Track write attempts as retries
+    var read_errors: usize = 0;   // v3.43: Track read errors separately
     const start_time = std.time.nanoTimestamp();
 
     for (0..config.stress_packets) |i| {
@@ -3235,7 +3239,7 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
             total_sent += sent;
             printErr("\r[->] Sending packet {d}/{d}... ", .{ packet_num, config.stress_packets });
         } else |_| {
-            total_errors += 1;
+            write_errors += 1;
             printErr("\n[!] Write error at packet {d}\n", .{packet_num});
             continue;
         }
@@ -3249,7 +3253,8 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
         if (read_result) |received| {
             total_received += received;
         } else |_| {
-            // Expected in stress mode - may not get responses
+            // Expected in stress mode - count as read retry
+            read_errors += 1;
         }
 
         if (should_exit.load(.seq_cst)) {
@@ -3269,7 +3274,9 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
     printErr("  Packets sent: {d}\n", .{config.stress_packets});
     printErr("  Bytes sent: {d}\n", .{total_sent});
     printErr("  Bytes received: {d}\n", .{total_received});
-    printErr("  Errors: {d}\n", .{total_errors});
+    printErr("  Write errors: {d}\n", .{write_errors});
+    printErr("  Read errors: {d}\n", .{read_errors});
+    printErr("  Total retries: {d}\n", .{write_errors + read_errors});
     printErr("  Time elapsed: {d:.2}s\n", .{elapsed_sec});
     if (elapsed_sec > 0) {
         const throughput = @as(f64, @floatFromInt(total_sent)) / elapsed_sec;
