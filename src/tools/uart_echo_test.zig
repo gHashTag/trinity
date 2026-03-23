@@ -775,6 +775,26 @@ fn parseArgs() Config {
             i += 1;
         } else if (std.mem.eql(u8, arg, "--fpga-verify")) {
             config.fpga_verify_mode = true;
+        } else if (std.mem.eql(u8, arg, "--fpga-timeout")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --fpga-timeout requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.fpga_timeout_ms = std.fmt.parseInt(u32, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid fpga-timeout value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--fpga-retries")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --fpga-retries requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.fpga_retries = std.fmt.parseInt(u32, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid fpga-retries value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -914,6 +934,12 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "fpga_verify_mode")) {
                 config.fpga_verify_mode = std.ascii.eqlIgnoreCase(value, "true");
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "fpga_timeout_ms")) {
+                config.fpga_timeout_ms = std.fmt.parseInt(u32, value, 10) catch continue;
+                loaded_any = true;
+            } else if (std.mem.eql(u8, key, "fpga_retries")) {
+                config.fpga_retries = std.fmt.parseInt(u32, value, 10) catch continue;
+                loaded_any = true;
             }
         }
     }
@@ -960,6 +986,8 @@ fn printUsage() void {
         \\  --esp32-host HOST   ESP32 hostname/IP (default: esp32-xvc.local)
         \\  --esp32-port PORT   XVC Bridge port (default: 2542)
         \\  --bitstream PATH    Bitstream file to flash via ESP32
+        \\  --fpga-timeout MS  FPGA operation timeout in milliseconds (default: 30000)
+        \\  --fpga-retries N    Max retries for FPGA operations (default: 3)
         \\  --fpga-verify       Enable FPGA verification mode
         \\  --help              Show this help message
         \\
@@ -968,7 +996,7 @@ fn printUsage() void {
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
         \\  Stress: High-throughput continuous testing without wait (v3.24)
-        \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.26)
+        \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.27)
         \\
         \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
@@ -1061,6 +1089,7 @@ const FpgaXvcClient = struct {
     pub fn checkStatus(self: *const FpgaXvcClient) !bool {
         printInfo("[XVC] Checking ESP32 status...\n", .{});
 
+        // v3.27: Parse IP address (hostname support planned for v3.28)
         const address = try std.net.Address.parseIp4(self.host, self.port);
         var socket = try std.net.tcpConnectToAddress(address);
         defer socket.close();
@@ -1107,6 +1136,7 @@ const FpgaXvcClient = struct {
 
     // v3.27: Single flash attempt with timeout
     fn flashBitstreamOnce(self: *const FpgaXvcClient, bitstream_path: []const u8) !bool {
+        // v3.27: Parse IP address (hostname support planned for v3.28)
         const address = try std.net.Address.parseIp4(self.host, self.port);
         var socket = try std.net.tcpConnectToAddress(address);
         defer socket.close();
@@ -1147,6 +1177,7 @@ const FpgaXvcClient = struct {
 
     // Get ESP32 info
     pub fn getInfo(self: *const FpgaXvcClient) ![]const u8 {
+        // v3.27: Parse IP address (hostname support planned for v3.28)
         const address = try std.net.Address.parseIp4(self.host, self.port);
         var socket = try std.net.tcpConnectToAddress(address);
         defer socket.close();
@@ -1164,7 +1195,7 @@ fn runFpgaTestCycle(config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
         \\║      FPGA XVC INTEGRATED TEST CYCLE      ║
-        \\║             v3.26                       ║
+        \\║             v3.27                       ║
         \\╚══════════════════════════════════════╝
         \\
     , .{});
@@ -1244,6 +1275,8 @@ pub fn main() !void {
             printErr("    bitstream_path: {s}\n", .{bs});
         }
         printErr("    fpga_verify_mode: {}\n", .{config.fpga_verify_mode});
+        printErr("    fpga_timeout_ms: {d}\n", .{config.fpga_timeout_ms});
+        printErr("    fpga_retries: {d}\n", .{config.fpga_retries});
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
@@ -1254,7 +1287,7 @@ pub fn main() !void {
     if (config.fpga_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         FPGA XVC MODE (v3.26)          ║
+            \\║         FPGA XVC MODE (v3.27)          ║
             \\║  ESP32 Bridge + FPGA + UART test       ║
             \\╚══════════════════════════════════════╝
             \\
