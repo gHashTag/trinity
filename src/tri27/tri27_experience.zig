@@ -5,7 +5,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const tri_experience = @import("../tri/tri_experience");
+const tri_experience = @import("../../tri/tri_experience.zig");
 const TriEpisode = tri_experience.Episode;
 
 const print = std.debug.print;

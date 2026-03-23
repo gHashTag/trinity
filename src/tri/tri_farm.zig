@@ -1374,13 +1374,13 @@ fn localWave9Init(allocator: Allocator) !void {
 
     // Ensure directory exists
     const compose_dir = std.fs.path.dirname(compose_file) orelse ".";
-    try std.fs.makeDirAbsolute(compose_dir) catch |err| switch (err) {
+    try std.fs.cwd().makeDir(compose_dir) catch |err| switch (err) {
         error.PathAlreadyExists => {},
         else => return err,
     };
 
     // Write compose file
-    const file = try std.fs.createFileAbsolute(compose_file, .{});
+    const file = try std.fs.cwd().createFile(compose_file, .{});
     defer file.close();
     try file.writeAll(compose);
 
@@ -1388,7 +1388,7 @@ fn localWave9Init(allocator: Allocator) !void {
 
     // Create data directories
     const wave9_dir = "data/wave9";
-    try std.fs.makeDirAbsolute(wave9_dir) catch |err| switch (err) {
+    try std.fs.cwd().makeDir(wave9_dir) catch |err| switch (err) {
         error.PathAlreadyExists => {},
         else => return err,
     };
@@ -1396,7 +1396,7 @@ fn localWave9Init(allocator: Allocator) !void {
     for (1..49) |i| {
         const worker_dir = try std.fmt.allocPrint(allocator, "{s}/worker-{d}", .{ wave9_dir, i });
         defer allocator.free(worker_dir);
-        std.fs.makeDirAbsolute(worker_dir) catch |err| switch (err) {
+        try std.fs.cwd().makeDir(worker_dir) catch |err| switch (err) {
             error.PathAlreadyExists => {},
             else => return err,
         };
@@ -1406,15 +1406,15 @@ fn localWave9Init(allocator: Allocator) !void {
 
     // Initialize local farm state
     const local_farm_mod = @import("local_farm.zig");
-    var farm = local_farm_mod.LocalFarm.init(allocator);
-    defer farm.deinit();
+    var farm = try local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit(allocator);
 
     // Add 48 workers
     for (1..49) |i| {
-        try farm.addWorker(i, @as(u32, @intCast(1000 + i)));
+        try farm.addWorker(allocator, i, @as(u32, @intCast(1000 + i)));
     }
 
-    try farm.save();
+    try farm.save(allocator);
     print("  {s}✅{s} Initialized farm state: .trinity/local_farm.json\n", .{ GREEN, RESET });
 
     print("\n{s}✅ Local Wave 9 initialized!{s}\n", .{ GREEN, RESET });
@@ -1449,8 +1449,8 @@ fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
         for (1..@min(workers, 10) + 1) |j| {
             print("w9-{d} ", .{j});
         }
-        if (workers > 10) print("...");
-        print("\n");
+        if (workers > 10) print("...\n", .{});
+        print("\n", .{});
         return;
     }
 
@@ -1458,10 +1458,10 @@ fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
     const compose_file = "deploy/docker/docker-compose.wave9.yml";
 
     // Build workers to start
-    var workers_to_start = try std.ArrayList([]const u8).initCapacity(allocator, workers);
+    var workers_to_start = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, workers);
     defer {
         for (workers_to_start.items) |w| allocator.free(w);
-        workers_to_start.deinit();
+        workers_to_start.deinit(allocator);
     }
 
     for (1..workers + 1) |j| {
@@ -1483,13 +1483,13 @@ fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
     }
 
     // Update farm state
-    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
-    defer farm.deinit();
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit(allocator);
 
     for (1..workers + 1) |j| {
         try farm.updateWorkerStatus(j, .starting);
     }
-    try farm.save();
+    try farm.save(allocator);
 
     print("  {s}✅{s} Started {d} workers\n", .{ GREEN, RESET, workers });
     print("   Monitor: tri farm local-wave9 status\n", .{});
@@ -1517,13 +1517,13 @@ fn localWave9Stop(allocator: Allocator, args: []const []const u8) !void {
     }
 
     // Update farm state
-    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
-    defer farm.deinit();
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit(allocator);
 
     for (farm.workers.items) |*w| {
         w.status = .stopped;
     }
-    try farm.save();
+    try farm.save(allocator);
 
     print("  {s}✅{s} Workers stopped\n", .{ GREEN, RESET });
 }
@@ -1531,8 +1531,8 @@ fn localWave9Stop(allocator: Allocator, args: []const []const u8) !void {
 fn localWave9Status(allocator: Allocator) !void {
     const local_farm_mod = @import("local_farm.zig");
 
-    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
-    defer farm.deinit();
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit(allocator);
 
     farm.displayStatus();
 }
@@ -1580,8 +1580,8 @@ fn localWave9Recycle(allocator: Allocator, args: []const []const u8) !void {
 
     const local_farm_mod = @import("local_farm.zig");
 
-    var farm = local_farm_mod.LocalFarm.load(allocator) catch local_farm_mod.LocalFarm.init(allocator);
-    defer farm.deinit();
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
+    defer farm.deinit(allocator);
 
     const compose_file = "deploy/docker/docker-compose.wave9.yml";
 
@@ -1609,7 +1609,7 @@ fn localWave9Recycle(allocator: Allocator, args: []const []const u8) !void {
         }
     }
 
-    try farm.save();
+    try farm.save(allocator);
 
     print("\n  {s}Recycled {d} crashed workers{s}\n", .{ BOLD, recycled, RESET });
 }
@@ -1621,8 +1621,8 @@ fn localWave9Clean(allocator: Allocator) !void {
     const local_farm_mod = @import("local_farm.zig");
     const compose_file = "deploy/docker/docker-compose.wave9.yml";
 
-    const args = &[_][]const u8{ "-f", compose_file, "down", "-v" };
-    const result = local_farm_mod.runDocker(allocator, args[0..]);
+    const args = [_][]const u8{ "-f", compose_file, "down", "-v" };
+    const result = try local_farm_mod.runDocker(allocator, &args);
     defer {
         allocator.free(result.stdout);
         allocator.free(result.stderr);

@@ -19,8 +19,7 @@ const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
-// TEMP: Disabled tri_farm due to missing fly_wave9 stub
-// const tri_farm = @import("tri_farm.zig");
+const tri_farm = @import("tri_farm.zig");
 const dev_workflow = @import("dev_commands.zig");
 // P3.0: State machine for rigid process framework
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
@@ -180,14 +179,14 @@ pub fn main() !void {
     }
 
     // TRI-27 namespace: route `tri tri27 <subcommand>` to tri27 commands
-    // Uncommented 2026-03-23 - Using fixed tri27_cli_fixed.zig
-    if (std.mem.eql(u8, args[arg_idx], "tri27")) {
-        const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-        logAgentCommand(args[arg_idx..]);
-        const tri27_mod = @import("../tri27/tri27_cli_fixed.zig");
-        try tri27_mod.runTri27Command(allocator, tri27_args);
-        return;
-    }
+    // TEMP: Disabled due to module path issues - needs build.zig configuration
+    // if (std.mem.eql(u8, args[arg_idx], "tri27")) {
+    //     const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+    //     logAgentCommand(args[arg_idx..]);
+    //     const tri27_mod = @import("../tri27/tri27_cli_fixed.zig");
+    //     try tri27_mod.runTri27Command(allocator, tri27_args);
+    //     return;
+    // }
 
     // GitHub Integration: route `tri issue/board/protocol` to github_commands
     if (arg_idx < args.len) {
@@ -837,11 +836,7 @@ pub fn main() !void {
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
-        .farm => {
-            // TEMP: Disabled .farm due to missing fly_wave9 stub
-            std.debug.print("{s}Farm command temporarily disabled{s}\n", .{ utils.YELLOW, utils.RESET });
-            utils.printCommandHelp(.farm);
-        },
+        .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
