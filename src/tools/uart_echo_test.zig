@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.48 — Latency Spike Detection (Outliers > 3x Median)
+//! v3.49 — Configurable Spike Threshold
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -524,7 +524,7 @@ const JitterTracker = struct {
     }
 
     // v3.48: Spike detection (outliers > 3x median)
-    pub fn detectSpikes(self: *const JitterTracker) struct { count: usize, outliers: []usize } {
+    pub fn detectSpikes(self: *const JitterTracker, threshold_multiplier: f64) struct { count: usize, outliers: []usize } {
         if (self.count < 5) {
             return .{ .count = 0, .outliers = &[_]usize{} };
         }
@@ -536,11 +536,11 @@ const JitterTracker = struct {
 
         // Use p50 (median) as baseline
         const p = self.getPercentiles();
-        const median_us = p.p50;
-        const spike_threshold = median_us * 3;
+        const median_us = @as(f64, @floatFromInt(p.p50));
+        const spike_threshold = median_us * threshold_multiplier;
 
         for (self.samples[0..len]) |sample| {
-            if (sample > spike_threshold) {
+            if (sample > @as(i64, @intFromFloat(spike_threshold))) {
                 if (outlier_idx < 10) {
                     outliers[outlier_idx] = @intCast(sample);
                     outlier_idx += 1;
@@ -552,22 +552,22 @@ const JitterTracker = struct {
         return .{ .count = spikes, .outliers = outliers[0..outlier_idx] };
     }
 
-    pub fn reportSpikes(self: *const JitterTracker) void {
+    pub fn reportSpikes(self: *const JitterTracker, threshold_multiplier: f64) void {
         if (self.count < 5) {
             return;
         }
 
-        const spikes = self.detectSpikes();
+        const spikes = self.detectSpikes(threshold_multiplier);
         if (spikes.count == 0) {
             return;
         }
 
         const p = self.getPercentiles();
         const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
-        const threshold_ms = median_ms * 3.0;
+        const threshold_ms = median_ms * threshold_multiplier;
 
         printInfo("[!] Latency Spikes Detected:\n", .{});
-        printDim("    Median: {d:.2}ms, Threshold: {d:.2}ms (3x)\n", .{ median_ms, threshold_ms });
+        printDim("    Median: {d:.2}ms, Threshold: {d:.2}ms ({d:.1}x)\n", .{ median_ms, threshold_ms, threshold_multiplier });
         printDim("    Spikes: {d} samples above threshold\n", .{spikes.count});
 
         if (spikes.outliers.len > 0) {
@@ -999,6 +999,7 @@ fn parseArgs() Config {
         .stress_test_mode = false,
         .stress_packets = 10,
         .measure_jitter = false,
+        .spike_threshold = 3.0,  // v3.49: Configurable spike threshold
         .use_pattern = "default",
         .pattern_length = 256,
         // v3.26: FPGA XVC Bridge integration
@@ -1150,6 +1151,18 @@ fn parseArgs() Config {
             i += 1;
         } else if (std.mem.eql(u8, arg, "--measure-jitter")) {
             config.measure_jitter = true;
+        } else if (std.mem.eql(u8, arg, "--spike-threshold")) {
+            // v3.49: Configurable spike threshold
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --spike-threshold requires value\n", .{});
+                std.process.exit(1);
+            }
+            const threshold_str = std.mem.span(std.os.argv[i + 1]);
+            config.spike_threshold = std.fmt.parseFloat(f64, threshold_str) catch {
+                printErr("[*] --spike-threshold must be a number\n", .{});
+                std.process.exit(1);
+            };
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--pattern")) {
             if (i + 1 >= std.os.argv.len) {
                 printErr("[*] --pattern requires value\n", .{});
@@ -1383,7 +1396,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.48           ║
+        \\║      Trinity UART Echo Test v3.49           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1428,7 +1441,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.48):
+        \\Performance Modes (v3.49):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1449,6 +1462,7 @@ fn printUsage() void {
         \\  CSV Percentiles: Export RTT percentiles in CSV format (v3.46)
         \\  ASCII Histogram Bars: Visual bar chart for latency distribution (v3.47)
         \\  Latency Spike Detection: Identify outliers > 3x median RTT (v3.48)
+        \\  Spike Threshold: Configurable via --spike-threshold (v3.49)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2709,7 +2723,7 @@ fn runSimulation(config: Config) !void {
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
         // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes();
+        jitter_tracker.reportSpikes(config.spike_threshold);
     }
 
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
@@ -2732,7 +2746,7 @@ fn runSimulation(config: Config) !void {
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
         // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes();
+        jitter_tracker.reportSpikes(config.spike_threshold);
     }
 }
 
@@ -2825,7 +2839,7 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
         // v3.44: Report RTT percentiles
         jitter_tracker.reportPercentiles();
         // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes();
+        jitter_tracker.reportSpikes(config.spike_threshold);
     }
 
     // v3.42: Auto-recovery statistics summary
