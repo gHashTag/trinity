@@ -391,6 +391,10 @@ const JitterTracker = struct {
     // v3.53: Consecutive failure tracking
     consecutive_failures: usize = 0,
     max_consecutive_failures: usize = 0,
+    // v3.56: Historical quality tracking
+    quality_samples: [10]f64 = [_]f64{0.0} ** 10,
+    quality_sample_count: usize = 0,
+    quality_avg: f64 = 0.0,
 
     pub fn init(allocator: std.mem.Allocator) JitterTracker {
         const capacity = 1000;
@@ -405,6 +409,37 @@ const JitterTracker = struct {
 
     pub fn deinit(self: *JitterTracker) void {
         self.allocator.free(self.samples);
+    }
+
+    // v3.56: Add quality score sample to history
+    pub fn addQualitySample(self: *JitterTracker, score: f64) void {
+        // Shift samples left
+        var i: usize = 0;
+        while (i < 9) : (i += 1) {
+            self.quality_samples[i] = self.quality_samples[i + 1];
+        }
+        self.quality_samples[9] = score;
+
+        if (self.quality_sample_count < 10) {
+            self.quality_sample_count += 1;
+        }
+
+        // Calculate average
+        var sum: f64 = 0.0;
+        for (0..self.quality_sample_count) |j| {
+            sum += self.quality_samples[j];
+        }
+        if (self.quality_sample_count > 0) {
+            self.quality_avg = sum / @as(f64, @floatFromInt(self.quality_sample_count));
+        }
+    }
+
+    pub fn getQualityHistory(self: *const JitterTracker) struct { count: usize, avg: f64, samples: [10]f64 } {
+        return .{
+            .count = self.quality_sample_count,
+            .avg = self.quality_avg,
+            .samples = self.quality_samples,
+        };
     }
 
     pub fn addSample(self: *JitterTracker, rtt_us: i64) !void {
@@ -618,7 +653,7 @@ const JitterTracker = struct {
         for (self.samples[0..half_count]) |s| {
             first_sum += s;
         }
-        for (self.samples[half_count .. self.count]) |s| {
+        for (self.samples[half_count..self.count]) |s| {
             second_sum += s;
         }
 
@@ -738,6 +773,7 @@ const JitterTracker = struct {
 
         // v3.54: Connection Quality Score (prominent display)
         const quality = self.getQualityScore(threshold_multiplier);
+
         if (quality.score >= 75.0) {
             printSuccess("  Quality Score: {d:.0}/100 {s}\n", .{ quality.score, quality.grade });
         } else if (quality.score >= 60.0) {
@@ -1010,7 +1046,7 @@ const QualityAlerts = struct {
             self.critical_triggered = true;
         } else if (quality_score >= self.critical_threshold and self.critical_triggered) {
             self.critical_triggered = false; // Reset when recovered
-            printErr("\n[i] CRITICAL ALERT CLEARED: Quality recovered to {d:.0}\n", .{ quality_score });
+            printErr("\n[i] CRITICAL ALERT CLEARED: Quality recovered to {d:.0}\n", .{quality_score});
         } else if (quality_score < self.warning_threshold and !self.warning_triggered) {
             printErr("\n[!] WARNING: Quality score {d:.0} below {d:.0} threshold\n", .{ quality_score, self.warning_threshold });
             printErr("      Action: Monitor for further degradation\n", .{});
