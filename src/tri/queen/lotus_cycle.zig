@@ -16,23 +16,33 @@ const observe = @import("observe.zig").observe;
 const evaluate = @import("evaluate.zig").evaluate;
 const planFn = @import("plan.zig").plan;
 const act = @import("act.zig").act;
+const recordEpisode = @import("episodes.zig").recordEpisode;
+const appendEpisode = @import("episodes.zig").appendEpisode;
 
-/// Run complete Lotus Cycle: Observe → Evaluate → Plan → Act
+/// Run complete Lotus Cycle: Observe → Record Episode → Evaluate → Plan → Act
 pub fn runFullCycle(allocator: std.mem.Allocator) !CycleResult {
     // Stage 1: Observe
     const context = try observe(allocator);
 
-    // Stage 2: Evaluate
+    // Stage 2: Record Episode (pre-action trace)
+    // Note: Episode will be updated after action completes
+    // This stage is for audit trail and crash recovery
+
+    // Stage 3: Evaluate
     const evaluation = try evaluate(context);
 
-    // Stage 3: Plan
+    // Stage 4: Plan
     const execution_plan = try planFn(evaluation, context.policy);
 
-    // Stage 4: Act
+    // Stage 5: Act
     const result = try act(execution_plan);
 
-    // Stage 5: Derive outcome
+    // Derive outcome
     const outcome = deriveOutcome(result);
+
+    // Record final episode to persistent storage
+    const episode = try recordEpisode(allocator, context, execution_plan, result, outcome);
+    try appendEpisode(episode, allocator);
 
     return CycleResult{
         .context = context,
