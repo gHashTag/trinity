@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.43 — Stress Test Mode Error Tracking
+//! v3.44 — RTT Percentiles (p50, p90, p95, p99)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -445,6 +445,62 @@ const JitterTracker = struct {
         printDim("    Jitter (stddev): {d:.2}us\n", .{stats.jitter});
         printDim("    Min RTT: {d}us\n", .{stats.min});
         printDim("    Max RTT: {d}us\n", .{stats.max});
+    }
+
+    // v3.44: Percentile calculation (p50, p90, p95, p99)
+    pub fn getPercentiles(self: *const JitterTracker) struct { p50: i64, p90: i64, p95: i64, p99: i64 } {
+        if (self.count == 0) {
+            return .{ .p50 = 0, .p90 = 0, .p95 = 0, .p99 = 0 };
+        }
+
+        // Create a sorted copy of samples
+        const len = self.count;
+        var sorted = self.allocator.alloc(i64, len) catch unreachable;
+        defer self.allocator.free(sorted);
+        std.mem.copyForwards(i64, sorted, self.samples[0..len]);
+
+        // Sort the array in-place
+        std.sort.insertion(i64, sorted, {}, struct {
+            pub fn lessThan(_: void, a: i64, b: i64) bool {
+                return a < b;
+            }
+        }.lessThan);
+
+        // Mark as intentionally mutated (sorted in-place)
+        _ = &sorted;
+
+        // Calculate percentiles directly (p50, p90, p95, p99)
+        const p50_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.50));
+        const p90_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.90));
+        const p95_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.95));
+        const p99_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.99));
+
+        return .{
+            .p50 = sorted[p50_idx],
+            .p90 = sorted[p90_idx],
+            .p95 = sorted[p95_idx],
+            .p99 = sorted[p99_idx],
+        };
+    }
+
+    pub fn reportPercentiles(self: *const JitterTracker) void {
+        if (self.count < 2) {
+            printDim("    Percentiles: not enough samples\n", .{});
+            return;
+        }
+
+        const p = self.getPercentiles();
+        // Convert us to ms for display
+        const p50_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+        const p90_ms = @as(f64, @floatFromInt(p.p90)) / 1000.0;
+        const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+        const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+        printInfo("[i] RTT Percentiles:\n", .{});
+        printDim("    p50 (median): {d:.2}ms ({d}us)\n", .{ p50_ms, p.p50 });
+        printDim("    p90: {d:.2}ms ({d}us)\n", .{ p90_ms, p.p90 });
+        printDim("    p95: {d:.2}ms ({d}us)\n", .{ p95_ms, p.p95 });
+        printDim("    p99: {d:.2}ms ({d}us)\n", .{ p99_ms, p.p99 });
     }
 };
 
@@ -1245,7 +1301,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.43           ║
+        \\║      Trinity UART Echo Test v3.44           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1345,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.43):
+        \\Performance Modes (v3.44):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1305,6 +1361,7 @@ fn printUsage() void {
         \\  Simulation Auto-Recovery: Simulated retry logic for simulation mode (v3.41)
         \\  Comprehensive Recovery: Recovery statistics tracking for comprehensive mode (v3.42)
         \\  Stress Error Tracking: Write/read error tracking for stress test mode (v3.43)
+        \\  RTT Percentiles: p50/p90/p95/p99 latency percentiles with jitter tracking (v3.44)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2562,6 +2619,8 @@ fn runSimulation(config: Config) !void {
     // v3.24: Report jitter statistics if enabled
     if (config.measure_jitter) {
         jitter_tracker.report();
+        // v3.44: Report RTT percentiles
+        jitter_tracker.reportPercentiles();
     }
 
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
@@ -2575,6 +2634,8 @@ fn runSimulation(config: Config) !void {
     if (config.measure_jitter) {
         printErr("\n[i] Latency Distribution:\n", .{});
         jitter_tracker.report();
+        // v3.44: Report RTT percentiles
+        jitter_tracker.reportPercentiles();
     }
 }
 
@@ -2664,6 +2725,8 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
     // Jitter report
     if (config.measure_jitter) {
         jitter_tracker.report();
+        // v3.44: Report RTT percentiles
+        jitter_tracker.reportPercentiles();
     }
 
     // v3.42: Auto-recovery statistics summary
