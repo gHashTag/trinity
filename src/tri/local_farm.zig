@@ -290,7 +290,7 @@ pub fn composeUp(allocator: Allocator, compose_file: []const u8, workers: ?[]con
         try args.append(allocator, w);
     }
 
-    return runDocker(allocator, try args.toOwnedSlice(allocator));
+    return runDockerCompose(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composeStop(allocator: Allocator, compose_file: []const u8, workers: ?[]const u8) !DockerResult {
@@ -305,7 +305,7 @@ pub fn composeStop(allocator: Allocator, compose_file: []const u8, workers: ?[]c
         try args.append(allocator, w);
     }
 
-    return runDocker(allocator, try args.toOwnedSlice(allocator));
+    return runDockerCompose(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composeLogs(allocator: Allocator, compose_file: []const u8, worker: []const u8, follow: bool) !DockerResult {
@@ -318,15 +318,15 @@ pub fn composeLogs(allocator: Allocator, compose_file: []const u8, worker: []con
     if (follow) try args.append(allocator, "-f");
     try args.append(allocator, worker);
 
-    return runDocker(allocator, try args.toOwnedSlice(allocator));
+    return runDockerCompose(allocator, try args.toOwnedSlice(allocator));
 }
 
 pub fn composePs(allocator: Allocator, compose_file: []const u8) !DockerResult {
     const args = &[_][]const u8{ "-f", compose_file, "ps" };
-    return runDocker(allocator, args[0..args.len]);
+    return runDockerCompose(allocator, args[0..args.len]);
 }
 
 pub fn containerExec(allocator: Allocator, container: []const u8, cmd: []const u8) !DockerResult {
     const args = &[_][]const u8{ "exec", container, "sh", "-c", cmd };
-    return runDocker(allocator, args[0..args.len]);
+    return runDockerCompose(allocator, args[0..args.len]);
 }
