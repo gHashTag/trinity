@@ -425,7 +425,7 @@ fn ralphStatus(alloc: std.mem.Allocator) !void {
     std.debug.print("─────────────────────────────────────────────────────────────\n", .{});
 
     // Try to read fix_plan.md
-    const file = std.fs.cwd().openFile(".ralph/internal/fix_plan.md", .{}) catch |err| {
+    const file = std.fs.cwd().openFile(".trinity/ralph/internal/fix_plan.md", .{}) catch |err| {
         if (err == error.FileNotFound) {
             std.debug.print("⚠️  fix_plan.md not found\n", .{});
             std.debug.print("   Run 'vibeec ralph help' for usage\n", .{});

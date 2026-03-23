@@ -329,7 +329,7 @@ pub fn logFeedbackToHistory(
     allocator: std.mem.Allocator,
     feedback: *const GeneratorFeedback,
 ) !void {
-    const history_file = ".ralph/memory/SUCCESS_HISTORY.md";
+    const history_file = ".trinity/ralph/memory/SUCCESS_HISTORY.md";
 
     const entry = try std.fmt.allocPrint(allocator,
         \\---

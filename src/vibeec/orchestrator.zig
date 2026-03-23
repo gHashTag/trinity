@@ -144,7 +144,7 @@ pub const Orchestrator = struct {
             .alloc = alloc,
             .loop = loop,
             .config = config,
-            .fix_plan_path = ".ralph/internal/fix_plan.md",
+            .fix_plan_path = ".trinity/ralph/internal/fix_plan.md",
             .branch_prefix = "ralph",
         };
     }

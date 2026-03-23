@@ -40,7 +40,7 @@ pub const NodeConfig = struct {
     port: u16 = 9001,
     daemon: bool = true,
     binary_path: []const u8 = "./zig-out/bin/tri",
-    pid_dir: []const u8 = ".tri-multi",
+    pid_dir: []const u8 = ".trinity/multi",
     max_nodes: u32 = 50,
 };
 

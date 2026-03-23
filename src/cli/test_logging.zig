@@ -43,7 +43,7 @@ pub fn main() !void {
     };
     _ = entry; // Use entry to avoid unused warning
 
-    try logging_mod.log(logging_mod.LogLevel.Info, "Test log write: {s}", .{"sample"}, null);
+    try logging_mod.log(logging_mod.LogLevel.Info, "Test log write: sample", .{}, null);
 
     // Test flush
     const count = try logging_mod.flush();
@@ -58,10 +58,10 @@ pub fn main() !void {
     try logging_mod.init(std.heap.page_allocator, logging_mod.LogLevel.Debug);
     defer logging_mod.close();
 
-    logging_mod.debug("Debug message", .{});
-    logging_mod.info("Info message", .{});
-    logging_mod.warn("Warning message", .{});
-    logging_mod.err("Error message", .{});
+    logging_mod.debug("Debug message");
+    logging_mod.info("Info message");
+    logging_mod.warn("Warning message");
+    logging_mod.err("Error message");
 
     // Summary
     std.debug.print("═\n", .{});

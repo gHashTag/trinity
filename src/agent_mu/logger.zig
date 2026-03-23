@@ -19,7 +19,7 @@ pub fn logSuccess(
     fix_description: []const u8,
     files_modified: [][]const u8,
 ) !void {
-    const history_file = ".ralph/memory/SUCCESS_HISTORY.md";
+    const history_file = ".trinity/ralph/memory/SUCCESS_HISTORY.md";
 
     // Get current timestamp
     const timestamp = try getTimestamp(allocator);
@@ -82,7 +82,7 @@ pub fn logRegression(
     err_info: *const diagnostic.ErrorInfo,
     attempted_fixes: [][]const u8,
 ) !void {
-    const patterns_file = ".ralph/memory/REGRESSION_PATTERNS.md";
+    const patterns_file = ".trinity/ralph/memory/REGRESSION_PATTERNS.md";
 
     // Get current timestamp
     const timestamp = try getTimestamp(allocator);
@@ -259,7 +259,7 @@ pub fn recordFixResult(success: bool) void {
 
 /// Save stats to .ralph/memory/MUTATION_STATS.md
 pub fn saveStats(allocator: std.mem.Allocator) !void {
-    const stats_file = ".ralph/memory/MUTATION_STATS.md";
+    const stats_file = ".trinity/ralph/memory/MUTATION_STATS.md";
 
     const content = try global_stats.format(allocator);
     defer allocator.free(content);
@@ -273,7 +273,7 @@ pub fn saveStats(allocator: std.mem.Allocator) !void {
 
 /// Load stats from .ralph/memory/MUTATION_STATS.md
 pub fn loadStats(allocator: std.mem.Allocator) !void {
-    const stats_file = ".ralph/memory/MUTATION_STATS.md";
+    const stats_file = ".trinity/ralph/memory/MUTATION_STATS.md";
 
     const file = std.fs.cwd().openFile(stats_file, .{}) catch |err| {
         if (err == error.FileNotFound) {

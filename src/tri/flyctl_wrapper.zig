@@ -18,12 +18,11 @@ pub fn deinit(self: *const FlyResult, allocator: Allocator) void {
 }
 
 pub const FlyContext = struct {
-    allocator: Allocator,
     account_id: u8,
 
     pub fn init(allocator: Allocator, account_id: u8) FlyContext {
+        _ = allocator;
         return FlyContext{
-            .allocator = allocator,
             .account_id = account_id,
         };
     }

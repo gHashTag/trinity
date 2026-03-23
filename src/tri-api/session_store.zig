@@ -4,7 +4,7 @@
 const std = @import("std");
 const proto = @import("tool_protocol.zig");
 
-const sessions_subdir = ".tri-api/sessions";
+const sessions_subdir = ".trinity/api/sessions";
 const index_filename = "index.json";
 const max_file_size = 10 * 1024 * 1024; // 10MB per session
 

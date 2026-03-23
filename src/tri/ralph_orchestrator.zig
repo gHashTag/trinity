@@ -230,7 +230,7 @@ pub const RalphOrchestrator = struct {
 
     /// Load Ralph status from .ralph/ directory
     fn loadRalphStatus(self: *RalphOrchestrator) !void {
-        const status_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".ralph", "status_report.json" });
+        const status_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".trinity", "ralph", "status_report.json" });
         defer self.allocator.free(status_file);
 
         const file = std.fs.openFileAbsolute(status_file, .{}) catch |err| {
@@ -251,7 +251,7 @@ pub const RalphOrchestrator = struct {
 
     /// Load fix_plan.md and parse tasks
     fn loadFixPlan(self: *RalphOrchestrator) !void {
-        const fix_plan_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".ralph", "fix_plan.md" });
+        const fix_plan_file = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".trinity", "ralph", "fix_plan.md" });
         defer self.allocator.free(fix_plan_file);
 
         const file = std.fs.openFileAbsolute(fix_plan_file, .{}) catch |err| {
