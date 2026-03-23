@@ -2,7 +2,6 @@
 //!
 //! Sacred mathematics module for Trinity S³AI.
 //!
-
 //! Sacred Formula Expansion: γ as Fundamental Parameter
 //!
 //! This module expands the TRINITY sacred formula to include γ = φ⁻³

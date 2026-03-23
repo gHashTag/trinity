@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN TELEMETRY — v0.2 — Time-series Health Monitoring
 //!
 //! Tracks brain metrics over time for analysis and alerting.

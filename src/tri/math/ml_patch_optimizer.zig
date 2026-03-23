@@ -2,7 +2,6 @@
 //!
 //! Sacred mathematics module for Trinity S³AI.
 //!
-
 //! ML Patch Optimizer - Genetic Algorithm-Based Evolution
 //!
 //! Evolves patches over generations to maximize quality and minimize errors.

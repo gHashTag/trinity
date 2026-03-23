@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! RETICULAR FORMATION — v0.4 — Broadcast Alerting (OPTIMIZED)
 //!
 //! Event streaming system for Trinity agents.

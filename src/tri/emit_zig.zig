@@ -2,7 +2,6 @@
 //!
 //! TRI-27 compiler component or VSA operations for Trinity S³AI.
 //!
-
 //! Zig Backend — Code generation for CPU target
 //! v0.2 — Transpiles Tri AST to Zig source
 

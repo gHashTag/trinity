@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BASAL GANGLIA — v2.0 — Lock-Free Action Selection
 //!
 //! Sharded HashMap design for lock-free reads and minimal contention writes.

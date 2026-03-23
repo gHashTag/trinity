@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN PERFORMANCE BENCHMARK — Simple print-based
 const std = @import("std");
 const basal_ganglia = @import("basal_ganglia.zig");

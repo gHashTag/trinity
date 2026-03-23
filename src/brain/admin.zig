@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN ADMIN — v1.0 — Administrative CLI Commands
 //!
 //! Brain Region: Hypothalamus (Homeostatic Regulation)

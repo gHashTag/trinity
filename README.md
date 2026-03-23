@@ -72,9 +72,9 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 | Resource | Description |
 |----------|-------------|
 | **[Scientific Status 2026](docs/docs/research/trinity-status-2026.md)** | Unified framework overview with 13-level hierarchy, evidence ladder, and honest assessment of rejected hypotheses |
-| **[README for Scientists](docs/docs/research/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
+| **[README for Scientists](docs/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
 | **[DELTA-001 Final Report](docs/docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
-| **[LISA Prediction Roadmap](docs/docs/research/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
+| **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
 
 **Evidence Ladder:**
 - ✅ **Smoking Guns (4):** G (0.09%), N_gen = 3, t_present (382 ms), T_cycles (~97 min)
