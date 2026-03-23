@@ -1,0 +1,6 @@
+{
+  "versionNumber": 1,
+  "name": "trinity_ofc_confidence",
+  "description": "Measure model's confidence calibration.\n\nReturns:\n    Calibration score: 1.0 (perfect) to -1.0 (worst)",
+  "definition": "@kbench.task(name=\"trinity_ofc_confidence\")\ndef confidence_calibration(\n    llm: kbench.llm,\n    question: str,\n    expected_answer: str,\n    ground_truth_confidence: float\n) -> float:\n    \"\"\"\n    Measure model's confidence calibration.\n\n    Returns:\n        Calibration score: 1.0 (perfect) to -1.0 (worst)\n    \"\"\"\n    prompt = f\"\"\"Answer this question and provide your confidence level (0.0 to 1.0).\n\nQuestion: {question}\n\nRespond with your answer and a confidence score.\n\"\"\"\n\n    response = llm.prompt(\n        prompt,\n        schema=ConfidenceResponse\n    )\n\n    # Calculate calibration score\n    confidence_diff = abs(response.confidence - ground_truth_confidence)\n    calibration_score = 1.0 - (confidence_diff * 2)  # Scale to [-1, 1]\n\n    # Ternary adjustment (Trinity unique)\n    ternary = response.ternary_score(ground_truth_confidence)\n\n    # Combine: 70% calibration, 30% ternary\n    final_score = 0.7 * calibration_score + 0.3 * ternary\n\n    return max(-1.0, min(1.0, final_score))\n"
+}

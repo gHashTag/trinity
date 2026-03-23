@@ -235,6 +235,29 @@ pub fn estimateCycles(opcode: Opcode) u64 {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
+// RUN — Execute program until HALT or error
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+pub fn run(cpu: *CPUState, memory: []align(8) u8) ExecError!void {
+    const decodeInstruction = @import("./decoder.zig").decodeInstruction;
+
+    while (!cpu.flags.H) {
+        // Fetch instruction word from memory
+        const byte_addr = cpu.pc * 4;
+        if (byte_addr + 4 > memory.len) return ExecError.InvalidMemory;
+
+        const inst_word: u32 = memory[byte_addr] |
+            @as(u32, memory[byte_addr + 1]) << 8 |
+            @as(u32, memory[byte_addr + 2]) << 16 |
+            @as(u32, memory[byte_addr + 3]) << 24;
+
+        // Decode and execute
+        const inst = decodeInstruction(inst_word);
+        std.debug.print("PC={d}: byte_addr={d}, word=0x{x:0>8}, bytes={x:0>2} {x:0>2} {x:0>2} {x:0>2}, opcode={s}\n", .{ cpu.pc, byte_addr, inst_word, memory[byte_addr], memory[byte_addr + 1], memory[byte_addr + 2], memory[byte_addr + 3], @tagName(inst.opcode) });
+        try execute(cpu, inst, memory);
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════
 

@@ -16,12 +16,17 @@
     },
     {
       "issue": 27,
-      "title": "Full Trinity Pipeline",
-      "priority": "P1",
+      "title": "TRI‑27 Full Stack Integration",
+      "priority": "P0",
       "children": [
         {"issue": 69, "title": "Spec Enricher", "priority": "P1", "prereqs": [], "status": "closed"},
         {"issue": 71, "title": "Spec <-> Code Sync", "priority": "P1", "prereqs": [], "status": "closed"},
-        {"issue": 77, "title": "Batch Pipeline", "priority": "P1", "prereqs": [], "status": "closed"}
+        {"issue": 77, "title": "Batch Pipeline", "priority": "P1", "prereqs": [], "status": "closed"},
+        {"issue": 271, "title": "TRI‑27 CLI Integration", "priority": "P0", "prereqs": [], "status": "completed"},
+        {"issue": 272, "title": "TRI‑27 Zig Backend Completion", "priority": "P1", "prereqs": [271], "status": "blocked"},
+        {"issue": 273, "title": "TRI‑27 Verilog Backend", "priority": "P1", "prereqs": [271], "status": "blocked"},
+        {"issue": 274, "title": "TRI‑27 Experience Integration", "priority": "P1", "prereqs": [271], "status": "completed"},
+        {"issue": 275, "title": "TRI‑27 Documentation & Examples", "priority": "P2", "prereqs": [271], "status": "blocked"}
       ]
     },
     {

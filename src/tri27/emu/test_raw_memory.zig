@@ -14,10 +14,10 @@ test "raw: little endian write read" {
     // Test little-endian encoding: 0x4D (HALT) should be stored as DD CC BB AA
     const test_word: u32 = 0xAABBCCDD;
 
-    mem_bytes[0] = @as(u8, @truncate(test_word));         // 0xDD
-    mem_bytes[1] = @as(u8, @truncate(test_word >> 8));     // 0xCC
-    mem_bytes[2] = @as(u8, @truncate(test_word >> 16));    // 0xBB
-    mem_bytes[3] = @as(u8, @truncate(test_word >> 24));    // 0xAA
+    mem_bytes[0] = @as(u8, @truncate(test_word)); // 0xDD
+    mem_bytes[1] = @as(u8, @truncate(test_word >> 8)); // 0xCC
+    mem_bytes[2] = @as(u8, @truncate(test_word >> 16)); // 0xBB
+    mem_bytes[3] = @as(u8, @truncate(test_word >> 24)); // 0xAA
 
     // Read back
     const read_back = @as(u32, mem_bytes[0]) |
