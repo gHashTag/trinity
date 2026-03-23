@@ -29,6 +29,12 @@ const Config = struct {
     continuous: bool,
 };
 
+// Test result
+const TestResult = struct {
+    success: bool,
+    rtt_ms: i64,
+};
+
 // PING/PONG protocol
 const PING_BYTE: u8 = 0x03; // Send PING
 const PONG_BYTE: u8 = 0x83; // Expect PONG response
@@ -112,7 +118,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.6            ║
+        \\║      Trinity UART Echo Test v3.7            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -260,6 +266,12 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var test_idx: usize = 0;
     var cycle: usize = 1;
 
+    // Overall RTT statistics
+    var overall_rtt_min: i64 = -1;
+    var overall_rtt_max: i64 = 0;
+    var overall_rtt_sum: i64 = 0;
+    var overall_rtt_count: usize = 0;
+
     while (true) {
         if (config.continuous) {
             printErr("\n", .{});
@@ -271,10 +283,28 @@ fn testEcho(port_path: []const u8, config: Config) void {
         var cycle_passed: usize = 0;
         test_idx = 0;
 
+        // RTT statistics for this cycle
+        var rtt_min: i64 = -1;
+        var rtt_max: i64 = 0;
+        var rtt_sum: i64 = 0;
+        var rtt_count: usize = 0;
+
         while (test_idx < tests.len) {
             const testCase = tests[test_idx];
-            if (testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config)) {
+            const result = testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config);
+            if (result.success) {
                 cycle_passed += 1;
+                // Collect RTT statistics
+                if (result.rtt_ms > 0) {
+                    if (rtt_min < 0 or result.rtt_ms < rtt_min) {
+                        rtt_min = result.rtt_ms;
+                    }
+                    if (result.rtt_ms > rtt_max) {
+                        rtt_max = result.rtt_ms;
+                    }
+                    rtt_sum += result.rtt_ms;
+                    rtt_count += 1;
+                }
             }
             std.Thread.sleep(config.delay_ms * 1_000_000);
             test_idx += 1;
@@ -282,24 +312,43 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
         passed += cycle_passed;
 
+        // Update overall RTT statistics
+        if (rtt_min < 0 or rtt_min < overall_rtt_min) {
+            overall_rtt_min = rtt_min;
+        }
+        if (rtt_max > overall_rtt_max) {
+            overall_rtt_max = rtt_max;
+        }
+        overall_rtt_sum += rtt_sum;
+        overall_rtt_count += rtt_count;
+
         if (!config.continuous) {
             printErr("\n", .{});
             printErr("╔══════════════════════════════════════╗\n", .{});
             printErr("║          SUMMARY                      ║\n", .{});
             printErr("╚════════════════════════════════════════╝\n", .{});
             printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
+            if (rtt_count > 0) {
+                const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
+                printErr("  RTT: min={d}ms avg={d:.1}ms max={d}ms\n", .{ rtt_min, rtt_avg, rtt_max });
+            }
             printErr("\n", .{});
             break;
         } else {
             printErr("\n", .{});
-            printErr("  [i] Cycle {d} result: {d}/{d} passed\n", .{ cycle, cycle_passed, tests.len });
+            printErr("  [i] Cycle {d} result: {d}/{d} passed", .{ cycle, cycle_passed, tests.len });
+            if (rtt_count > 0) {
+                const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
+                printErr(", RTT: min={d}ms avg={d:.1}ms max={d}ms", .{ rtt_min, rtt_avg, rtt_max });
+            }
+            printErr("\n", .{});
             cycle += 1;
             std.Thread.sleep(2_000_000); // 2 second delay between cycles
         }
     }
 }
 
-fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) bool {
+fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) TestResult {
     printErr("  [->] Test {d}/{d} Sending data: ", .{ test_num, total });
     for (data) |b| {
         printErr("{x:0>2}", .{b});
@@ -316,7 +365,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
         }
     } else |err| {
         printErr("  [*] Write error: {any}\n", .{err});
-        return false;
+        return TestResult{ .success = false, .rtt_ms = 0 };
     }
     std.Thread.sleep(config.delay_ms * 500_000);
 
@@ -379,14 +428,14 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
                 if (round_trip_ms > 0) std.heap.page_allocator.free(time_msg);
             }
             printErr("  [✓] ECHO SUCCESS!{s}\n", .{time_msg});
-            return true;
+            return TestResult{ .success = true, .rtt_ms = round_trip_ms };
         } else {
             printErr("  [x] ECHO FAIL! Mismatch\n", .{});
-            return false;
+            return TestResult{ .success = false, .rtt_ms = 0 };
         }
     } else {
         printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data_to_send.len });
-        return false;
+        return TestResult{ .success = false, .rtt_ms = 0 };
     }
 }
 
