@@ -2812,6 +2812,32 @@ pub fn build(b: *std.Build) void {
     const tri_error_tests_step = b.step("test-tri-error", "Run TRI Error Tests");
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
 
+    // TRI‑27 Experience Tests
+    const tri27_experience_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/tri27_experience.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_experience_tests = b.addTest(.{
+        .root_module = tri27_experience_mod,
+    });
+    const run_tri27_experience_tests = b.addRunArtifact(tri27_experience_tests);
+    const tri27_experience_tests_step = b.step("test-tri27-experience", "Run TRI‑27 Experience Tests");
+    tri27_experience_tests_step.dependOn(&run_tri27_experience_tests.step);
+
+    // TRI‑27 Golden Test (full cycle: asm → tbin → emulator)
+    const tri27_golden_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/test_golden.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_golden_tests = b.addTest(.{
+        .root_module = tri27_golden_mod,
+    });
+    const run_tri27_golden_tests = b.addRunArtifact(tri27_golden_tests);
+    const tri27_golden_tests_step = b.step("test-tri27-golden", "Run TRI‑27 Golden Test");
+    tri27_golden_tests_step.dependOn(&run_tri27_golden_tests.step);
+
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{
         .root_module = b.createModule(.{

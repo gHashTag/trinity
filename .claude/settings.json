@@ -14,6 +14,8 @@
       "Bash(zig build*)",
       "Bash(zig fmt*)",
       "Bash(zig ast-check*)",
+      "Bash(python *)",
+      "Bash(python3 *)",
       "mcp__zig-docs__*",
       "mcp__railway-mcp-server__*",
       "mcp__perplexity__*"
@@ -22,8 +24,9 @@
       "Bash(rm -rf /)",
       "Bash(rm -rf ~)",
       "Bash(rm -rf /*)",
-      "Bash(python*)",
-      "Bash(node*)"
+      "Bash(python -c *)",
+      "Bash(python3 -c *)",
+      "Bash(node -e *)"
     ]
   },
   "hooks": {

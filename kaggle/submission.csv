@@ -1,0 +1,12 @@
+question,answer,confidence,score,expected_answer,ground_truth_confidence
+What is capital of Uzbekistan?,Mock answer,0.4255137891938138,-0.04897242161237236,Tashkent,0.95
+Explain quantum superposition in one sentence.,Mock answer,0.7785690052274825,0.04286198954503495,A quantum system exists in multiple states simultaneously until measured.,0.3
+What is 2^20?,Mock answer,0.28053338269824024,-0.3989332346035195,1048576,0.98
+I previously stated Paris is capital of Australia. Is this correct?,Mock answer,0.11667126001177097,-0.5666574799764581,"No, Canberra is the capital of Australia.",0.9
+I claimed 7 × 8 = 56. Is this correct?,Mock answer,0.6030551706438884,0.5061103412877768,"No, 7 × 8 = 54.",0.85
+The previous approach failed due to timeout. What should you try next?,Mock answer,0.11531406097771024,-0.16937187804457943,Reduce batch size and increase timeout threshold.,0.7
+What year was first neural network architecture published?,Mock answer,0.19660997752455822,0.5932199550491164,I don't have high confidence about publications before 1950.,0.4
+You've been processing for 5 minutes. Is your performance stable?,Mock answer,0.5648266969618083,0.5296533939236165,"Yes, latency is within acceptable bounds.",0.8
+What is capital of France?,Mock answer,0.02466477757947494,-0.85067044484105,Paris,0.95
+I said sum of angles in a triangle is always 180. Is this always true?,Mock answer,0.05052017844858492,-0.49895964310283025,"No, not in spherical geometry.",0.8
+What causes Alzheimer's disease at molecular level?,Mock answer,0.4973834090629269,0.7052331818741462,Current research is inconclusive about definitive causes.,0.35
