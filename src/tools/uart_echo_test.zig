@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.33 — Unified Interface + Comprehensive Test Mode (fully implemented)
+//! v3.34 — Full Documentation + All Modes Complete (fully implemented)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1159,10 +1159,16 @@ fn printUsage() void {
         \\  Adaptive: Auto-tune timeout based on measured latency
         \\  Buffered: Pre-allocated I/O buffers
         \\  Performance: Report with efficiency & recommendations
-        \\  Simulation Batch: Test batch mode without hardware
-        \\  Comprehensive: Unified test mode (NEW - v3.33)
+        \\  Simulation: Virtual UART testing without hardware
+        \\  Comprehensive: Unified 3-phase test (Basic, Batch, Performance)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
+        \\
+        \\  Comprehensive Mode (v3.34):
+        \\  Phase 1: Basic Echo Test — verifies serial communication
+        \\  Phase 2: Batch Throughput Test — measures packets/sec throughput
+        \\  Phase 3: Performance Report — calculates efficiency & recommendations
+        \\  Use: --comprehensive --device <port>
         \\
         \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
@@ -1171,6 +1177,7 @@ fn printUsage() void {
         \\    timeout=2000
         \\    batch_size=32
         \\    adaptive_timeout=true
+        \\    comprehensive_mode=true
         \\    auto_baud=true
         \\    fpga_mode=true
         \\    esp32_host=192.168.4.1
