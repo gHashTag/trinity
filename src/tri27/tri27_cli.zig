@@ -367,5 +367,5 @@ pub fn main() !void {
         return;
     }
 
-    try runTri27Command(allocator, args[2..]);
+    try runTri27Command(allocator, args[1..]);
 }
