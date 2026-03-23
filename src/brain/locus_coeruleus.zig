@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! LOCUS COERULEUS — v0.4 — Arousal Regulation (OPTIMIZED)
 //!
 //! Exponential backoff policy for agent retry logic.

@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN STATE RECOVERY — v1.0 — Persistence and Crash Recovery
 //!
 //! Brain Region: Hippocampus (Long-term Memory Consolidation)

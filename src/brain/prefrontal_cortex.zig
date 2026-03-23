@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! PREFRONTAL CORTEX — Executive Function v5.1
 //!
 //! Decision making, planning, and cognitive control.

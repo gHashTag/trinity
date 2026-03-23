@@ -2,7 +2,6 @@
 //!
 //! TRI-27 compiler component or VSA operations for Trinity S³AI.
 //!
-
 //! AST — Abstract Syntax Tree for Tri language
 //! v0.2 — Node types for parsed code
 

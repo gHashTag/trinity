@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN BENCHMARKS — v1.1 — Performance Measurement for S³AI Neuroanatomy
 //!
 //! Comprehensive benchmarking suite for all brain regions.

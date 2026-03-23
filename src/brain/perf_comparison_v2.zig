@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN PERFORMANCE COMPARISON v2 — Baseline vs Optimized (Comprehensive)
 //!
 //! Compares performance across all brain regions with detailed metrics.

@@ -2,7 +2,6 @@
 //!
 //! Neuroanatomically inspired brain module for Trinity S³AI.
 //!
-
 //! BRAIN OBSERVABILITY EXPORT — v5.1
 //!
 //! Export brain telemetry for external monitoring systems.
