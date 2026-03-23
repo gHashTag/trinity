@@ -6,8 +6,8 @@
     "action": "Flash uart_echo_top.bit via jtag_program",
     "result": "DIAGNOSED",
     "symptom": "TDO always returns 0x00000000, IDCODE reads as 0x00000000",
-    "root_cause": "CPLD version 0xFFFE \u2014 TDO path through CPLD is dead, cable cannot read back",
-    "lesson": "If IDCODE is all-zeros, check CPLD version first \u2014 it's a hardware path issue, not a software bug",
+    "root_cause": "CPLD version 0xFFFE — TDO path through CPLD is dead, cable cannot read back",
+    "lesson": "If IDCODE is all-zeros, check CPLD version first — it's a hardware path issue, not a software bug",
     "tags": [
       "jtag",
       "cpld",
@@ -63,6 +63,33 @@
       "banner": "LOOPBACK MODE (TX->RX on FT232RL)",
       "instruction": "Short TX to RX with wire (pin 4 -> pin 5 on DB9)",
       "uart_echo_test_version": "v3.10"
+    }
+  },
+  {
+    "id": "FPGA-024",
+    "date": "2026-03-23",
+    "category": "UART",
+    "action": "UART echo test with FT232RL JTAG cable",
+    "result": "BLOCKED",
+    "symptom": "FT232RL JTAG cable cannot do UART - pins wired for JTAG (TCK/TDI/TDO/TMS), not UART (TX/RX)",
+    "root_cause": "FT232RL JTAG cable (PID 0x6001) uses MPSSE mode for JTAG. Physical pins are TDI/TDO/TMS/TCK, not TXD/RXD. Loopback test fails even without FPGA.",
+    "lesson": "USB-to-JTAG cable cannot be used as USB-to-UART. Need dedicated UART adapter (CP2102/CH340/FT232R-UART) or use FPGA's built-in JTAG-UART bridge.",
+    "tags": [
+      "uart",
+      "ftdi",
+      "jtag",
+      "blocked",
+      "hardware-limitation"
+    ],
+    "data": {
+      "device": "/dev/cu.usbserial-2140",
+      "cable_type": "FTDI DLC10 JTAG clone",
+      "pid": "0x6001",
+      "vid": "0x0403",
+      "loopback_test_result": "FAIL - 0/6 passed",
+      "fpga_test_result": "FAIL - 0/6 passed",
+      "pin_wiring": "TCK/TDI/TDO/TMS (JTAG) not TXD/RXD (UART)",
+      "required_adapter": "USB-to-UART (CP2102/CH340/FT232R-UART)"
     }
   }
 ]

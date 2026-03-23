@@ -2688,7 +2688,7 @@ pub fn build(b: *std.Build) void {
     const tri27 = b.addExecutable(.{
         .name = "tri27",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+            .root_source_file = b.path("src/tri27/tri27_cli_fixed.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -3715,6 +3715,24 @@ pub fn build(b: *std.Build) void {
     const run_storm_p5 = b.addRunArtifact(storm_p5_test);
     const storm_p5_step = b.step("storm-p5", "Run STORM P5 integration test");
     storm_p5_step.dependOn(&run_storm_p5.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // WAVE 9 GENERATOR — Docker-compose generator for local training
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const wave9_gen = b.addExecutable(.{
+        .name = "wave9-gen",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/wave9_generator.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(wave9_gen);
+
+    const run_wave9_gen = b.addRunArtifact(wave9_gen);
+    const wave9_gen_step = b.step("wave9-gen", "Generate Wave 9 docker-compose file");
+    wave9_gen_step.dependOn(&run_wave9_gen.step);
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // FPGA SYNTHESIS — Sacred ALU via Docker openXC7

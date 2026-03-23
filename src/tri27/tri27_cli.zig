@@ -11,6 +11,7 @@ const Assembler = @import("emu/tri_asm.zig");
 const Executor = @import("emu/executor.zig");
 const CPUState = @import("emu/cpu_state.zig");
 const tri27_experience = @import("tri27_experience");
+const tri27_experience_jsonl = @import("tri27_experience_jsonl.zig");
 
 const print = std.debug.print;
 
@@ -29,7 +30,7 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "";
 
     if (std.mem.eql(u8, subcmd, "assemble") or std.mem.eql(u8, subcmd, "asm")) {
-        return runAssembleCommand(allocator, args[1..]);
+        return runAssembleCommand(allocator, args);
     } else if (std.mem.eql(u8, subcmd, "disassemble") or std.mem.eql(u8, subcmd, "disasm")) {
         return runDisassembleCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "run")) {
@@ -48,22 +49,21 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
     }
 }
 
-fn runAssembleCommand(allocator: Allocator, args: []const []const u8) !void {
-    if (args.len < 1) {
-        print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n");
+fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
+    if (all_args.len < 1) {
+        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n", .{}, .{});
         return;
     }
 
-    const input_file = args[0];
+    const input_file = all_args[0];
     var output_file: []const u8 = "output.tbin";
 
     var i: usize = 1;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "-o")) {
+    while (i < all_args.len) : (i += 1) {
+        if (std.mem.eql(u8, all_args[i], "-o")) {
             i += 1;
-            if (i < args.len) {
-                output_file = args[i];
+            if (i < all_args.len) {
+                output_file = all_args[i];
             }
         }
     }
@@ -78,18 +78,30 @@ fn runAssembleCommand(allocator: Allocator, args: []const []const u8) !void {
     try std.fs.cwd().writeFileAlloc(allocator, output_file, bytecode);
     allocator.free(bytecode);
 
+    // Save episode to Episode/JSONL
+    try tri27_experience_jsonl.saveTri27Episode(
+        allocator,
+        .assemble,
+        input_file,
+        output_file,
+        .success,
+        0, // cycles
+        bytecode.len / 4, // instructions
+        "", // error_msg
+    );
+
     print("{s}✅ Assembled {d} instructions\n", .{ GREEN, bytecode.len / 4, RESET });
     print("{s}Wrote to: {s}{s}\n", .{ GREEN, output_file, RESET });
 }
 
-fn runDisassembleCommand(allocator: Allocator, args: []const []const u8) !void {
-    if (args.len < 1) {
+fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
+    if (all_args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
         print("  Usage: tri tri27 disassemble <input.tbin>\n\n");
         return;
     }
 
-    const input_file = args[0];
+    const input_file = all_args[0];
     const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
         print("Error reading {s}: {s}\n", .{ RED, input_file, e });
         return;
@@ -127,6 +139,20 @@ fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Execution result: {}{s}\n", .{ BOLD, result, RESET });
     print("{s}PC: 0x{X:0>4}{s}\n", .{ cpu.pc, RESET });
 
+    // Save episode to Episode/JSONL
+    try tri27_experience_jsonl.saveTri27Episode(
+        allocator,
+        .run,
+        input_file,
+        "", // output_file
+        if (result == 0) .success else .failure,
+        cpu.cycles, // cycles from CPU
+        cpu.instructions, // instructions executed
+        "", // error_msg
+    );
+
+    cpu.dumpRegisters();
+
     cpu.dumpRegisters();
 }
 
@@ -145,6 +171,18 @@ fn runValidateCommand(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(tri_content);
 
     print("{s}Validation not yet implemented\n", .{YELLOW});
+
+    // Save episode to Episode/JSONL
+    try tri27_experience_jsonl.saveTri27Episode(
+        allocator,
+        .validate,
+        input_file,
+        "", // output_file
+        .success, // TODO: actual validation result
+        0, // cycles (not tracked for validate)
+        0, // instructions (not tracked for validate)
+        "", // error_msg
+    );
 }
 
 fn runIsaCommand() !void {
