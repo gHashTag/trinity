@@ -18,6 +18,9 @@ jobs:
         with:
           version: 0.15.2
 
+      - name: Author attribution guard
+        run: zig build author-guard -Dci=true
+
       - name: Build
         run: |
           # Build with -Dci=true to skip GUI targets requiring raylib

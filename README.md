@@ -684,6 +684,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Dmitrii Vasilev** ([@gHashTag](https://github.com/gHashTag))
 
+Attribution for listed docs and packages is checked by [`src/tri/author_attribution_guard.zig`](src/tri/author_attribution_guard.zig) and [`tools/config/author_attribution_guard.manifest`](tools/config/author_attribution_guard.manifest). Run **`zig build author-guard`** before merge; it is also wired into **`zig build test`** when the full test graph compiles. Do not remove or bypass without maintainer approval.
+
 ---
 
 ## License
