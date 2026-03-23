@@ -5103,23 +5103,32 @@ struct MultilineInput: NSViewRepresentable {
         scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
 
         context.coordinator.textView = textView
+
+        // Register for textDidEndEditing to sync on focus loss
+        NotificationCenter.default.addObserver(
+            context.coordinator,
+            selector: #selector(Coordinator.textDidEndEditing(_:)),
+            name: NSText.didEndEditingNotification,
+            object: textView
+        )
+
         return scrollView
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
 
-        // FIXED: Only update text if user is NOT actively typing (textView is not first responder)
-        // This prevents race condition where SwiftUI update overwrites user input
-        if textView.window?.firstResponder != textView {
-            if textView.string != text {
-                // Save cursor position before updating
-                let selectedRange = textView.selectedRange()
-                textView.string = text
-                // Restore cursor position if still within bounds
-                if selectedRange.location <= textView.string.count {
-                    textView.setSelectedRange(selectedRange)
-                }
+        // ENHANCED: Check BOTH first responder AND editing state
+        let isFirstResponder = (textView.window?.firstResponder == textView)
+        let shouldUpdate = !isFirstResponder && !context.coordinator.isUserEditing
+
+        if shouldUpdate && textView.string != text {
+            // Save cursor position before updating
+            let selectedRange = textView.selectedRange()
+            textView.string = text
+            // Restore cursor position if still within bounds
+            if selectedRange.location <= textView.string.count {
+                textView.setSelectedRange(selectedRange)
             }
         }
 
@@ -5153,6 +5162,11 @@ struct MultilineInput: NSViewRepresentable {
         weak var textView: NSTextView?
         private var placeholderLayer: CATextLayer?
 
+        // NEW: Track editing state to prevent race with SwiftUI binding
+        fileprivate var isUserEditing: Bool = false
+        private var debounceTimer: Timer?
+        private let debounceDelay: TimeInterval = 0.05  // 50ms
+
         init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String?) -> Void)? = nil, onSlashTrigger: ((String?) -> Void)? = nil) {
             self._text = text
             self.onSubmit = onSubmit
@@ -5164,7 +5178,22 @@ struct MultilineInput: NSViewRepresentable {
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
-            text = textView.string
+
+            // MARK KEY: Set editing flag, DON'T update binding directly
+            isUserEditing = true
+            debounceTimer?.invalidate()
+
+            // Debounce binding update to avoid race with SwiftUI render
+            debounceTimer = Timer.scheduledTimer(withTimeInterval: debounceDelay, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                // Only update if still editing and value changed
+                if self.isUserEditing && textView.string != self.text {
+                    self.text = textView.string
+                }
+                self.isUserEditing = false
+                self.debounceTimer = nil
+            }
+
             updatePlaceholder()
 
             // Detect @mention trigger — show popup on @ and while typing after it
@@ -5224,6 +5253,25 @@ struct MultilineInput: NSViewRepresentable {
                     scrollView.hasVerticalScroller = rect.height > maxHeight
                 }
             }
+        }
+
+        @objc func textDidEndEditing(_ notification: Notification) {
+            // Cancel debounce and immediately sync final state on focus loss
+            debounceTimer?.invalidate()
+            debounceTimer = nil
+
+            guard let textView = notification.object as? NSTextView else { return }
+            isUserEditing = false
+
+            if textView.string != text {
+                text = textView.string
+            }
+        }
+
+        deinit {
+            // CRITICAL: Cleanup timer and notifications to prevent crashes/memory leaks
+            debounceTimer?.invalidate()
+            NotificationCenter.default.removeObserver(self)
         }
 
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
