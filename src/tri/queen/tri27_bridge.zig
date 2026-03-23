@@ -103,23 +103,21 @@ pub fn fromTri27Event(allocator: Allocator, event: Tri27Event, issue_id: ?u64) !
     };
 
     // Map Tri27Status to Result
-    const success = event.status == .success;
-    var result = Result{
-        .success = success,
-        .@"error" = if (event.has_error)
-            try allocator.dupe(u8, event.errorMsg())
-        else
-            null,
-        .timing = Timing{
-            .start_ns = timestamp_ns,
-            .duration_ns = event.cycles * 1000, // Approx: 1 cycle = 1μs
-        },
-        .output = if (success)
-            try allocator.dupe(u8, event.outputFile())
-        else
-            null,
-        .new_senses = SensorsSnapshot{},
+    var result = Result{};
+    result.success = event.status == .success;
+    result.@"error" = if (event.has_error)
+        try allocator.dupe(u8, event.errorMsg())
+    else
+        null;
+    result.timing = Timing{
+        .start_ns = timestamp_ns,
+        .duration_ns = event.cycles * 1000, // Approx: 1 cycle = 1μs
     };
+    result.output = if (event.status == .success)
+        try allocator.dupe(u8, event.outputFile())
+    else
+        null;
+    result.new_senses = SensorsSnapshot{};
 
     // Create episode with TRI-27 source
     return Episode{
