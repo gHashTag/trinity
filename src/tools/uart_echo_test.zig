@@ -1151,9 +1151,11 @@ fn printUsage() void {
         \\  --fpga-timeout MS  FPGA operation timeout in milliseconds (default: 30000)
         \\  --fpga-retries N    Max retries for FPGA operations (default: 3)
         \\  --fpga-verify       Enable FPGA verification mode
+        \\  --diagnostics        Enable detailed error pattern analysis (v3.37)
+        \\  --auto-recovery     Enable exponential backoff auto-recovery (v3.37)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.33):
+        \\Performance Modes (v3.37):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1163,6 +1165,7 @@ fn printUsage() void {
         \\  Comprehensive: Unified 3-phase test (Basic, Batch, Performance)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
+        \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
