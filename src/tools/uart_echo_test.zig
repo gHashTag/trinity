@@ -451,6 +451,12 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
 
+    // v3.18: Simple device type detection from path
+    const device_name = std.fs.path.basename(port_path.?);
+    if (std.mem.indexOf(u8, device_name, "usbserial-")) |_| {
+        printErr("[+] Device type: USB Serial adapter\n", .{});
+    }
+
     // Check if device exists and is accessible
     // O_RDWR | O_NONBLOCK | O_NOCTTY for macOS
     const flags: std.posix.O = @bitCast(@as(u32, 0x0002) | @as(u32, 0x0004) | @as(u32, 0x00020000));
@@ -480,6 +486,7 @@ pub fn main() !void {
         printErr("    adaptive_timeout: {}\n", .{config.adaptive_timeout});
         printErr("    simulation_mode: {}\n", .{config.simulation_mode});
         printErr("    dry_run: {}\n", .{config.dry_run});
+        printErr("    auto_configure: {}\n", .{config.auto_configure});
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
