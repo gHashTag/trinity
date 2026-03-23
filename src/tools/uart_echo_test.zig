@@ -24,6 +24,7 @@ const Config = struct {
     timeout_ms: u32,
     verbose: bool,
     ping_mode: bool,
+    auto_configure: bool,
 };
 
 // PING/PONG protocol
@@ -43,6 +44,7 @@ fn parseArgs() Config {
         .timeout_ms = DEFAULT_TIMEOUT_MS,
         .verbose = false,
         .ping_mode = false,
+        .auto_configure = false,
     };
 
     var i: usize = 1;
@@ -86,6 +88,11 @@ fn parseArgs() Config {
             }
         } else if (std.mem.eql(u8, arg, "--ping-mode")) {
             config.ping_mode = true;
+            if (i + 1 < std.os.argv.len) {
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--auto-configure")) {
+            config.auto_configure = true;
             if (i + 1 < std.os.argv.len) {
                 i += 1;
             }
