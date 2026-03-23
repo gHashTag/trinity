@@ -1634,7 +1634,7 @@ fn localWave9Clean(allocator: Allocator) !void {
     const compose_file = "deploy/docker/docker-compose.wave9.yml";
 
     const args = [_][]const u8{ "-f", compose_file, "down", "-v" };
-    const result = try local_farm_mod.runDocker(allocator, &args);
+    const result = try local_farm_mod.runDockerCompose(allocator, &args);
     defer {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
