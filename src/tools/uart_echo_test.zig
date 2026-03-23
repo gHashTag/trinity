@@ -27,6 +27,7 @@ const Config = struct {
     auto_configure: bool,
     device: ?[]const u8,
     continuous: bool,
+    output_file: ?[]const u8,
 };
 
 // Test result
@@ -55,6 +56,7 @@ fn parseArgs() Config {
         .auto_configure = false,
         .device = null,
         .continuous = false,
+        .output_file = null,
     };
 
     var i: usize = 1;
@@ -106,6 +108,13 @@ fn parseArgs() Config {
             config.auto_configure = true;
         } else if (std.mem.eql(u8, arg, "--continuous")) {
             config.continuous = true;
+        } else if (std.mem.eql(u8, arg, "--output")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --output requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.output_file = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -118,7 +127,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.7            ║
+        \\║      Trinity UART Echo Test v3.8            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -130,6 +139,7 @@ fn printUsage() void {
         \\  -v, --verbose     Enable verbose logging
         \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
         \\  --continuous      Run tests in continuous loop (Ctrl+C to stop)
+        \\  --output <file>   Export results to CSV file
         \\  --help            Show this help message
         \\
         \\Example:
@@ -147,12 +157,16 @@ pub fn main() !void {
         printErr("    delay: {d}ms\n", .{config.delay_ms});
         printErr("    timeout: {d}ms\n", .{config.timeout_ms});
         printErr("    verbose: true\n", .{});
+        if (config.output_file) |f| {
+            printErr("    output_file: {s}\n", .{f});
+        }
+        printErr("\n", .{});
         printErr("\n", .{});
     }
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.6           ║
+        \\║      Trinity UART Echo Test v3.8            ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
