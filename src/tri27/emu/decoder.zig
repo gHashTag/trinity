@@ -179,6 +179,47 @@ pub fn getOpcodeName(opcode: Opcode) []const u8 {
     return @tagName(opcode);
 }
 
+/// Format instruction as assembly string
+pub fn formatInstruction(inst: Instruction, writer: anytype) !void {
+    try writer.print("{s} ", .{getOpcodeName(inst.opcode)});
+
+    // Format destination
+    try writer.print("t{d}", .{inst.dst});
+
+    // Format based on opcode type
+    if (inst.has_imm) {
+        // Immediate instruction
+        try writer.print(", {d}", .{inst.immediate});
+    } else if (inst.opcode == .NOT) {
+        // Unary NOT
+        try writer.print(", t{d}", .{inst.src1});
+    } else if (inst.opcode == .HALT or inst.opcode == .NOP or inst.opcode == .RET) {
+        // No operands
+    } else if (inst.opcode == .BUNDLE3) {
+        // BUNDLE3 has three operands
+        try writer.print(", t{d}, t{d}, t{d}", .{ inst.src1, inst.src2, inst.cond });
+    } else {
+        // Two-operand instruction
+        try writer.print(", t{d}", .{inst.src1});
+        if (inst.opcode == .CALL) {
+            // CALL uses immediate (relative offset)
+            try writer.print(", +{d}", .{inst.immediate});
+        } else if (inst.opcode == .JMP or inst.opcode == .JZ or inst.opcode == .JNZ) {
+            // Branches use immediate (offset)
+            try writer.print(", {d}", .{inst.immediate});
+        } else {
+            try writer.print(", t{d}", .{inst.src2});
+        }
+    }
+}
+
+/// Get short format string for disassembly output
+pub fn formatInstructionShort(inst: Instruction, buffer: []u8) []const u8 {
+    var fbs = std.io.fixedBufferStream(buffer);
+    formatInstruction(inst, fbs.writer()) catch return buffer;
+    return fbs.getWritten();
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ════════════════════════════════════════════════════════════════════════════════════════

@@ -111,7 +111,43 @@ fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !vo
     defer allocator.free(tbin_content);
 
     print("{s}Disassembling {s} ({d} bytes){s}\n", .{ CYAN, input_file, tbin_content.len, RESET });
-    print("{s}TODO: implement disassembly{s}\n", .{ YELLOW, RESET });
+    print("{s}═══════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Skip header if present (first 12 bytes)
+    const header_size: usize = 12;
+    const code_start = if (tbin_content.len > header_size) header_size else 0;
+    const code_data = tbin_content[code_start..];
+
+    var instr_addr: u32 = 0;
+    var i: usize = 0;
+    while (i + 4 <= code_data.len) : (i += 4) {
+        const word_bytes = code_data[i..][0..4];
+        const word: u32 = @as(u32, word_bytes[0]) |
+            @as(u32, word_bytes[1]) << 8 |
+            @as(u32, word_bytes[2]) << 16 |
+            @as(u32, word_bytes[3]) << 24;
+
+        const inst = Decoder.decode(word);
+
+        // Format: 0x0000:  ADD t5, t1, t2
+        const addr_str = try std.fmt.allocPrint(allocator, "0x{x:0>4}", .{instr_addr});
+        defer allocator.free(addr_str);
+
+        var inst_buf: [128]u8 = undefined;
+        const inst_str = Decoder.formatInstructionShort(inst, &inst_buf);
+
+        print("{s}  {s}:  0x{x:0>8}  {s}{s}{s}\n", .{ DIM, addr_str, word, CYAN, inst_str, RESET });
+
+        // Stop at HALT
+        if (inst.opcode == .HALT) {
+            print("{s}*** HALT reached ***{s}\n", .{ YELLOW, RESET });
+            break;
+        }
+
+        instr_addr += 4;
+    }
+
+    print("\n{s}Disassembly complete: {d} instructions{s}\n", .{ GREEN, i / 4, RESET });
 }
 
 fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
