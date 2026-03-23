@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.24 — Auto baud detection, RTS/CTS flow control, stress test mode
+//! v3.26 — FPGA XVC Bridge integration, full test cycle
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -97,6 +97,12 @@ const Config = struct {
     measure_jitter: bool,
     use_pattern: []const u8,
     pattern_length: usize,
+    // v3.26: FPGA XVC Bridge integration
+    fpga_mode: bool,
+    esp32_host: []const u8,
+    esp32_port: u16,
+    bitstream_path: ?[]const u8,
+    fpga_verify_mode: bool,
 };
 
 // Device vendor detection
@@ -573,6 +579,12 @@ fn parseArgs() Config {
         .measure_jitter = false,
         .use_pattern = "default",
         .pattern_length = 256,
+        // v3.26: FPGA XVC Bridge integration
+        .fpga_mode = false,
+        .esp32_host = "esp32-xvc.local",
+        .esp32_port = 2542,
+        .bitstream_path = null,
+        .fpga_verify_mode = false,
     };
 
     var i: usize = 1;
@@ -730,6 +742,34 @@ fn parseArgs() Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--fpga-mode")) {
+            config.fpga_mode = true;
+        } else if (std.mem.eql(u8, arg, "--esp32-host")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --esp32-host requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.esp32_host = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--esp32-port")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --esp32-port requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.esp32_port = std.fmt.parseInt(u16, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid esp32-port value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--bitstream")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --bitstream requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.bitstream_path = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--fpga-verify")) {
+            config.fpga_verify_mode = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
