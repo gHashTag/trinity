@@ -1051,6 +1051,8 @@ pub fn main() !void {
 // =============================================================================
 
 // TODO: isReservedCommand - compiler bug workaround, stub always returns false
+// This is intentionally disabled - reserved commands will be properly implemented in the cell dispatch system
+// See: tri_cell_dispatch.zig for full command handling implementation
 fn isReservedCommand(_: []const u8) bool {
     return false;
 }
