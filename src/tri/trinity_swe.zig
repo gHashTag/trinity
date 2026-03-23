@@ -20,8 +20,6 @@ pub const SWETaskType = enum {
     Document, // Add docs/comments
     Reason, // Chain-of-thought reasoning
     Chat, // Interactive chat mode
-    Search, // Semantic code search
-    Complete, // Code completion
 
     pub fn getName(self: SWETaskType) []const u8 {
         return switch (self) {
@@ -33,8 +31,6 @@ pub const SWETaskType = enum {
             .Document => "Document",
             .Reason => "Reason",
             .Chat => "Chat",
-            .Search => "Search",
-            .Complete => "Complete",
         };
     }
 };
@@ -162,22 +158,6 @@ pub const TrinitySWEAgent = struct {
             .source = "stub",
             .reasoning = null,
         };
-    }
-
-    /// Detect if prompt is asking for code generation
-    pub fn isCodePrompt(text: []const u8) bool {
-        return std.mem.indexOf(u8, text, "code") != null
-            or std.mem.indexOf(u8, text, "function") != null
-            or std.mem.indexOf(u8, text, "fn ") != null
-            or std.mem.indexOf(u8, text, "impl") != null;
-    }
-
-    /// Detect if prompt is conversational
-    pub fn isConversationalPrompt(text: []const u8) bool {
-        return std.mem.indexOf(u8, text, "hello") != null
-            or std.mem.indexOf(u8, text, "hi") != null
-            or std.mem.indexOf(u8, text, "what") != null
-            or std.mem.indexOf(u8, text, "help") != null;
     }
 };
 

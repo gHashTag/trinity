@@ -1,278 +1,213 @@
-// ═════════════════════════════════════════════════════════════════════════
-// TRI-27 DECODER — Opcode Decode for 27 Ternary Opcodes
-// ═══════════════════════════════════════════════════════════════════════════════════════════
+// @origin(spec:tri27_isa.zig) @regen(manual-impl)
+// TRI-27 DECODER — Unified Instruction Format for TRI-27 ISA
+// ═════════════════════════════════════════════════════════════════════════════
+// This is the SINGLE SOURCE OF TRUTH for Instruction encoding/decoding.
+// Both executor.zig and tri_emu_main.zig MUST use this definition.
+//
+// φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
 
-/// ═══════════════════════════════════════════════════════════════════════════
-// TRI-27 OPCODES
-// ═══════════════════════════════════════════════════════════════════════════════════════
-/// Architecture: 27 trinary registers + 3 float registers
-/// Opcodes (0x00-0x1B total)
-/// === ARITHMETIC (0x10-0x13) ===
-pub const OPCODE_NOP: u8 = 0x00;
-pub const OPCODE_ADD: u8 = 0x10;
-pub const OPCODE_SUB: u8 = 0x11;
-pub const OPCODE_MUL: u8 = 0x12;
-pub const OPCODE_DIV: u8 = 0x13;
-pub const OPCODE_INC: u8 = 0x14;
-pub const OPCODE_DEC: u8 = 0x15;
+/// ═══════════════════════════════════════════════════════════════════════════════
+// TRI-27 OPCODE ENUM
+// ═══════════════════════════════════════════════════════════════════════════════════
+pub const Opcode = enum(u8) {
+    // === ARITHMETIC (0x10-0x17) ===
+    NOP = 0x00,
+    ADD = 0x10,
+    SUB = 0x11,
+    MUL = 0x12,
+    DIV = 0x13,
+    INC = 0x14,
+    DEC = 0x15,
 
-/// === LOGIC (0x18-0x1D) ===
-pub const OPCODE_AND: u8 = 0x18;
-pub const OPCODE_OR: u8 = 0x19;
-pub const OPCODE_XOR: u8 = 0x1A;
-pub const OPCODE_NOT: u8 = 0x1B;
-pub const OPCODE_SHL: u8 = 0x1C;
-pub const OPCODE_SHR: u8 = 0x1D;
+    // === LOGIC (0x18-0x1D) ===
+    AND = 0x18,
+    OR = 0x19,
+    XOR = 0x1A,
+    NOT = 0x1B,
+    SHL = 0x1C,
+    SHR = 0x1D,
 
-/// === MEMORY (0x02-0x05) ===
-pub const OPCODE_LD: u8 = 0x02; // Load from memory/register
-pub const OPCODE_ST: u8 = 0x03; // Store to memory
-pub const OPCODE_LDI: u8 = 0x04; // Load immediate
-pub const OPCODE_STI: u8 = 0x05; // Store immediate
+    // === MEMORY (0x02-0x05) ===
+    LD = 0x02,
+    ST = 0x03,
+    LDI = 0x04, // Load immediate
+    STI = 0x05, // Store immediate
 
-/// === CONTROL (0x40-0x4F) ===
-pub const OPCODE_JMP: u8 = 0x40;
-pub const OPCODE_JZ: u8 = 0x41;
-pub const OPCODE_JNZ: u8 = 0x42;
-pub const OPCODE_CALL: u8 = 0x43;
-pub const OPCODE_RET: u8 = 0x4B;
-pub const OPCODE_HALT: u8 = 0x4D;
+    // === CONTROL (0x40-0x4F) ===
+    JMP = 0x40,
+    JZ = 0x41,
+    JNZ = 0x42,
+    CALL = 0x43,
+    RET = 0x4B,
+    HALT = 0x4D,
 
-/// === TERNARY (0x60-0x6D) ===
-pub const OPCODE_DOT: u8 = 0x60; // Dot product (VSA/TF3)
-pub const OPCODE_BIND: u8 = 0x61; // Bind two vectors
-pub const OPCODE_BUNDLE2: u8 = 0x62; // Bundle 2 vectors
-pub const OPCODE_BUNDLE3: u8 = 0x63; // Bundle 3 vectors
+    // === TERNARY (0x60-0x6D) ===
+    DOT = 0x60, // Dot product (VSA/TF3)
+    BIND = 0x61, // Bind two vectors
+    BUNDLE2 = 0x62, // Bundle 2 vectors
+    BUNDLE3 = 0x63, // Bundle 3 vectors
 
-/// === SACRED (0x80-0x92) ===
-pub const OPCODE_PHI_CONST: u8 = 0x80; // Load φ constant
-pub const OPCODE_PI_CONST: u8 = 0x81; // Load π constant
-pub const OPCODE_E_CONST: u8 = 0x82; // Load e constant
-pub const OPCODE_SACR: u8 = 0x83; // Sacred arithmetic operation
+    // === SACRED (0x80-0x92) ===
+    PHI_CONST = 0x80,
+    PI_CONST = 0x81,
+    E_CONST = 0x82,
+    SACR = 0x83, // Sacred arithmetic operation
 
-/// Opcode names for debugging
-pub const opcodeNames: [27][]const u8 = [27]u8{
-    "NOP",      "ADD",     "SUB",  "MUL",  "DIV",     "INC",     "DEC",
-    "AND",      "OR",      "XOR",  "NOT",  "SHL",     "SHR",     "LD",
-    "ST",       "LDI",     "STI",  "JMP",  "JZ",      "JNZ",     "CALL",
-    "RET",      "HALT",    "DOT",  "BIND", "BUNDLE2", "BUNDLE3", "PHI_CONST",
-    "PI_CONST", "E_CONST", "SACR",
+    // === EXECUTOR EXTENSIONS ===
+    LD_IMM = 0x84, // Load immediate (executor compatibility)
+    ADD3 = 0x85, // Ternary add (executor)
+    SUB3 = 0x86, // Ternary sub (executor)
+    CMP3 = 0x87, // Ternary compare (executor)
+    SYSCALL = 0x88, // System call (executor)
 };
 
-/// Get opcode name for debugging
-pub fn getOpcodeName(opcode: u8) []const u8 {
-    if (opcode < opcodeNames.len) {
-        return opcodeNames[opcode];
-    }
-    return "<unknown>";
-}
-
-/// TRI-27 Instruction Format
-/// RRR: rd, rs1, rs2 (3-bit each, up to 27 registers)
-/// RI:  rd, imm16 (8-bit rd, 16-bit immediate)
-/// RRI: rd, rs, imm16 (8-bit rd, 8-bit rs, 16-bit imm)
-/// JMP: cond, addr16 (4-bit cond, 16-bit target)
-/// CALL/RET: addr16 (16-bit target)
-/// SACRED: imm16 (16-bit sacred constant)
+/// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED INSTRUCTION STRUCT
+// ═══════════════════════════════════════════════════════════════════════════════════
+/// Single canonical Instruction format for TRI-27.
+/// Field names chosen for compatibility with executor.zig:
+///   - dst (not rd) : destination register
+///   - src1, src2   : source registers
+///   - immediate    : signed 16-bit immediate value
+///   - has_imm      : whether instruction uses immediate
 pub const Instruction = struct {
-    /// Operation code
-    opcode: u8,
+    /// Operation code (enum for type safety)
+    opcode: Opcode,
 
     /// Destination register (0-26)
-    rd: u8,
+    dst: u8 = 0,
 
     /// Source register 1 (0-26)
-    rs1: u8,
+    src1: u8 = 0,
 
     /// Source register 2 (0-26)
-    rs2: u8,
+    src2: u8 = 0,
 
     /// Immediate value (16-bit signed)
-    imm16: i16,
+    immediate: i16 = 0,
 
-    /// Condition code (for branches)
-    cond: u8,
+    /// Has immediate flag
+    has_imm: bool = false,
+
+    /// Condition code (for branches) - unused in most instructions
+    cond: u8 = 0,
 };
 
-/// Decode register encoding (3 bits: 5 values)
-/// For most RRR/RRI opcodes: reg field contains destination + 2 sources
-pub const RegDecode = packed struct {
-    rd: u8 = 0, // Destination register (t0-t26)
-    rs1: u8 = 0, // Source register 1
-    rs2: u8 = 0, // Source register 2
-};
-
-/// Decode immediate value (16-bit signed)
-/// For RI/RII opcodes
-pub fn decodeImm16(code: []const u8, ip: *u32) u16 {
-    const lo = code[ip.*];
-    const hi = code[ip.* + 1];
-    return (@as(u16, hi) << 8) | @as(u16, lo);
-}
-
-/// Decode single register (3 bits: 8 values)
-/// For R/R/RR opcodes with single register operand
-pub fn decodeReg8(code: []const u8, ip: *u32) u8 {
-    return code[ip.*] & 0x07;
-}
-
-/// Decode register pair (6 bits: dest + src)
-/// For RR opcodes
-pub fn decodeRegPair(code: []const u8, ip: *u32) RegDecode {
-    const byte = code[ip.*];
-    return RegDecode{
-        .rd = byte & 0x07,
-        .rs1 = (byte >> 3) & 0x07,
-        .rs2 = (byte >> 0) & 0x07,
-    };
-}
-
-/// Memory address (16-bit)
-pub fn decodeAddr16(code: []const u8, ip: *u32) u16 {
-    const lo = code[ip.*];
-    const hi = code[ip.* + 1];
-    return (@as(u16, hi) << 8) | @as(u16, lo);
-}
-
-/// Memory address (16-bit) + register offset
-const Addr16Reg = struct { addr: u16, reg: u8 };
-
-pub fn decodeAddr16Reg(code: []const u8, ip: *u32) Addr16Reg {
-    const addr = decodeAddr16(code, ip);
-    const reg = decodeReg8(code, ip);
-    return .{ .addr = addr, .reg = reg };
-}
-
-/// Condition code (4 bits: branch target)
-pub fn decodeCond(code: []const u8, ip: *u32) u16 {
-    const lo = code[ip.*];
-    const hi = code[ip.* + 1];
-    return (@as(u16, hi) << 8) | @as(u16, lo);
-}
-
-test "decoder: opcodeNames coverage" {
-    try std.testing.expectEqual(@as(usize, 27), opcodeNames.len);
-}
-
-test "decoder: decodeReg8" {
-    const code = [_]u8{ 0x20, 0x07 };
-    const rd = decodeReg8(&code, 0);
-    try std.testing.expectEqual(@as(u8, 2), rd);
-}
-
-test "decoder: decodeRegPair" {
-    const code = [_]u8{ 0x01, 0x07 };
-    const pair = decodeRegPair(&code, 0);
-    try std.testing.expectEqual(@as(u8, 0), pair.rd);
-    try std.testing.expectEqual(@as(u8, 1), pair.rs1);
-    try std.testing.expectEqual(@as(u8, 2), pair.rs2);
-}
-
-/// Wrapper for external decode calls
-pub fn decodeInstruction(word: u32) Instruction {
-    return decode(word);
-}
-
-test "decoder: decodeImm16" {
-    const code = [_]u8{ 0x02, 0x80, 0x00 };
-    const imm = decodeImm16(&code, 0);
-    try std.testing.expectEqual(@as(u16, 32768), imm);
-}
-
-test "decoder: decodeAddr16" {
-    const code = [_]u8{ 0x40, 0x80, 0x40, 0x10 };
-    const addr = decodeAddr16(&code, 0);
-    try std.testing.expectEqual(@as(u16, 0x1000), addr);
-}
-
-test "decoder: decodeCond" {
-    const code = [_]u8{ 0x40, 0x00, 0x00 };
-    const cond = decodeCond(&code, 0);
-    try std.testing.expectEqual(@as(u16, 0), cond);
-}
-
-test "decoder: getOpcodeName" {
-    try std.testing.expectEqualStrings("NOP", getOpcodeName(OPCODE_NOP));
-    try std.testing.expectEqualStrings("ADD", getOpcodeName(OPCODE_ADD));
-    try std.testing.expectEqualStrings("DOT", getOpcodeName(OPCODE_DOT));
-    try std.testing.expectEqualStrings("UNKNOWN", getOpcodeName(255));
-}
-
-/// Decode register from 3-bit field (bits 8-10)
-fn decodeRd(word: u32) u8 {
-    return @as(u8, (word >> 8) & 0x1F); // 5 bits for 27 registers
-}
-
-/// Decode register from 3-bit field (bits 11-13)
-fn decodeRs1(word: u32) u8 {
-    return @as(u8, (word >> 11) & 0x1F);
-}
-
-/// Decode register from 3-bit field (bits 14-16)
-fn decodeRs2(word: u32) u8 {
-    return @as(u8, (word >> 14) & 0x1F);
-}
-
-/// Decode 16-bit immediate (bits 16-31)
-fn decodeImm16FromWord(word: u32) i16 {
-    return @as(i16, @truncate((word >> 16) & 0xFFFF));
-}
-
+/// ═══════════════════════════════════════════════════════════════════════════════
+// DECODER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════════
 /// Decode 32-bit instruction word into Instruction struct
+/// Word format:
+///   [7:0]   = opcode
+///   [10:8]  = dst (rd)
+///   [13:11] = src1 (rs1)
+///   [16:14] = src2 (rs2)
+///   [31:17] = immediate (15 bits) + sign extension
 pub fn decode(word: u32) Instruction {
-    const opcode = @as(u8, word & 0xFF);
+    const opcode_val = @as(u8, @truncate(word & 0xFF));
+    const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
 
-    // For most instructions: decode register fields
-    const rd = decodeRd(word);
-    const rs1 = decodeRs1(word);
-    const rs2 = decodeRs2(word);
-    const imm16 = decodeImm16FromWord(word);
+    const dst = @as(u8, @truncate((word >> 8) & 0x1F));
+    const src1 = @as(u8, @truncate((word >> 11) & 0x1F));
+    const src2 = @as(u8, @truncate((word >> 14) & 0x1F));
+
+    // Decode 16-bit immediate (sign-extended)
+    const imm_raw = @as(u16, @truncate(word >> 16));
+    const immediate: i16 = if (imm_raw & 0x8000 != 0)
+        @bitCast(imm_raw)
+    else
+        @intCast(imm_raw);
+
+    // Determine if instruction has immediate
+    const has_imm = switch (opcode) {
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .CALL, .RET => true,
+        else => false,
+    };
 
     return Instruction{
         .opcode = opcode,
-        .rd = rd,
-        .rs1 = rs1,
-        .rs2 = rs2,
-        .imm16 = imm16,
+        .dst = dst,
+        .src1 = src1,
+        .src2 = src2,
+        .immediate = immediate,
+        .has_imm = has_imm,
         .cond = 0,
     };
 }
 
+/// Wrapper for external decode calls (backward compatibility)
+pub fn decodeInstruction(word: u32) Instruction {
+    return decode(word);
+}
+
 /// Encode Instruction to 32-bit word
 pub fn encode(inst: Instruction) u32 {
-    var word: u32 = 0;
-    word |= inst.opcode;
-    word |= @as(u32, inst.rd) << 8;
-    word |= @as(u32, inst.rs1) << 11;
-    word |= @as(u32, inst.rs2) << 14;
-    word |= @as(u32, @as(u16, @bitCast(inst.imm16))) << 16;
+    var word: u32 = @intFromEnum(inst.opcode);
+    word |= @as(u32, inst.dst) << 8;
+    word |= @as(u32, inst.src1) << 11;
+    word |= @as(u32, inst.src2) << 14;
+
+    // Encode immediate (15 bits + sign)
+    const imm_u16: u16 = @bitCast(inst.immediate);
+    word |= @as(u32, imm_u16) << 16;
+
     return word;
 }
 
-test "CPUState compatibility" {
-    const code = [_]u8{ 0x02, 0x03, 0x00, 0x07 }; // LD R0, ST R1, NOP
-
-    // Verify instruction encoding matches CPUState.tbits array
-    // LD: 0x02 + rd(3 bits) → t0
-    const rd = decodeReg8(&code, 0);
-    try std.testing.expectEqual(@as(u8, 0), rd); // Should decode to 0
-
-    // ST: 0x03 + rd(3 bits) → t1
-    const rd2 = decodeReg8(&code, 2);
-    try std.testing.expectEqual(@as(u8, 1), rd2); // Should decode to 1
-
-    // NOP: 0x00 (no operands)
-    try std.testing.expectEqual(@as(u8, 0), decodeReg8(&code, 0));
+/// Get opcode name for debugging
+pub fn getOpcodeName(opcode: Opcode) []const u8 {
+    return @tagName(opcode);
 }
 
-test "CPUState with 27 registers" {
-    const code = [_]u8{ 0x02, 0x07, 0x00, 0x27 }; // LD t0, ST t26, NOP
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ════════════════════════════════════════════════════════════════════════════════════════
 
-    const rd = decodeReg8(&code, 0);
-    try std.testing.expectEqual(@as(u8, 0), rd); // t0
+test "decoder: decode NOP" {
+    const nop_word: u32 = 0x00000000;
+    const inst = decode(nop_word);
+    try std.testing.expectEqual(Opcode.NOP, inst.opcode);
+    try std.testing.expectEqual(@as(u8, 0), inst.dst);
+    try std.testing.expectEqual(@as(u8, 0), inst.src1);
+    try std.testing.expectEqual(@as(u8, 0), inst.src2);
+    try std.testing.expectEqual(@as(i16, 0), inst.immediate);
+    try std.testing.expect(!inst.has_imm);
+}
 
-    const rd2 = decodeReg8(&code, 2);
-    try std.testing.expectEqual(@as(u8, 26), rd2); // t26 (26 = 0x1A, but & 0x07 = 26)
+test "decoder: encode roundtrip ADD" {
+    const inst = Instruction{
+        .opcode = .ADD,
+        .dst = 5,
+        .src1 = 3,
+        .src2 = 7,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.ADD, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 5), decoded.dst);
+    try std.testing.expectEqual(@as(u8, 3), decoded.src1);
+    try std.testing.expectEqual(@as(u8, 7), decoded.src2);
+}
+
+test "decoder: LDI with immediate" {
+    const inst = Instruction{
+        .opcode = .LDI,
+        .dst = 2,
+        .immediate = -42,
+        .has_imm = true,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 2), decoded.dst);
+    try std.testing.expectEqual(@as(i16, -42), decoded.immediate);
+    try std.testing.expect(decoded.has_imm);
+}
+
+test "decoder: getOpcodeName" {
+    try std.testing.expectEqualStrings("NOP", getOpcodeName(Opcode.NOP));
+    try std.testing.expectEqualStrings("ADD", getOpcodeName(Opcode.ADD));
+    try std.testing.expectEqualStrings("HALT", getOpcodeName(Opcode.HALT));
 }

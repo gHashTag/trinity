@@ -1,15 +1,9 @@
-// @origin(spec:tri27_isa.zig) @regen(manual-impl)
-// TRI‑27 EMULATOR — Main CLI Entry Point
-//
-// Command-line interface for tri-emu:
-//   tri-emu <file.tbin> [options]
-//
-// φ² + 1/φ² = 3 | TRINITY
-
 const std = @import("std");
 
-const Memory = @import("tri_memory.zig").Memory;
 const CPUState = @import("cpu_state.zig").CPUState;
+const Instruction = @import("decoder.zig").Instruction;
+const Opcode = @import("decoder.zig").Opcode;
+const Memory = @import("tri_memory.zig").Memory;
 
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
@@ -96,17 +90,19 @@ pub const EmulatorResult = struct {
     final_ip: u32,
 };
 
-/// Run the TRI-27 emulator
+/// Run TRI-27 emulator
 pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: std.mem.Allocator) !EmulatorResult {
-    const Instruction = @import("decoder.zig").Instruction;
+    const decodeInstruction = @import("decoder.zig").decodeInstruction;
+    const execute = @import("executor.zig").execute;
+    const estimateCycles = @import("executor.zig").estimateCycles;
 
     // Initialize memory
     var mem = try Memory.init(allocator);
-    defer mem.deinit(allocator);
+    defer mem.deinit();
 
     // Load program
     const Loader = @import("tri_loader.zig");
-    const load_result = try Loader.load(tbin_path, allocator, &mem);
+    const load_result = try Loader.loadBinary(tbin_path, &mem, allocator);
 
     if (options.verbose) {
         std.debug.print("Loaded: {s}\n", .{tbin_path});
@@ -115,9 +111,9 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
         std.debug.print("  Code size: {} bytes\n", .{load_result.code_size});
     }
 
-    // Initialize CPU
-    var cpu = CPUState.init(allocator);
-    cpu.ip = load_result.entry_point;
+    // Initialize CPU with memory from cpu_state
+    var cpu = try CPUState.init(allocator);
+    cpu.pc = load_result.entry_point;
     cpu.sp = 19683;
 
     if (options.verbose) {
@@ -127,40 +123,41 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
 
     // Main execution loop
     var exit_reason: []const u8 = "normal";
-    const max_cycles: u32 = if (options.max_cycles) |mc| mc else @as(u32, std.math.maxInt(u32));
+    const max_cycles: u32 = if (options.max_cycles) |mc| mc else std.math.maxInt(u32);
 
     while (!cpu.flags.H) {
         // Check cycle limit
-        if (options.max_cycles != null and cpu.cycles >= max_cycles) {
+        if (options.max_cycles != null and cpu.instructions_executed >= max_cycles) {
             exit_reason = "cycle limit reached";
             break;
         }
 
         // Fetch instruction
-        const ip = cpu.ip;
+        const ip = cpu.pc;
 
-        // Check IP bounds
-        const mem_words = mem.data.len / @sizeOf(u32);
+        // Check IP bounds (word-aligned)
+        const memory_bytes = cpu.getBytesMut();
+        const mem_words = memory_bytes.len / 4;
         if (ip >= mem_words) {
             exit_reason = "invalid instruction pointer";
             break;
         }
 
         const inst_word = try mem.readWord(ip);
-        const inst = Instruction.decode(inst_word);
+        const inst = decodeInstruction(inst_word);
 
         if (options.trace) {
-            std.debug.print("  0x{X:0>4}: {s}\n", .{ ip, inst.opcode });
+            std.debug.print("  0x{X:0>4}: {s}\n", .{ ip, @tagName(inst.opcode) });
         }
 
         // Execute instruction
-        execute(&cpu, &inst, mem.data) catch |err| {
+        execute(&cpu, inst, cpu.getBytesMut()) catch |err| {
             exit_reason = @errorName(err);
             break;
         };
 
         // Estimate cycles for this instruction
-        const cycles = @import("tri_exec.zig").estimateCycles(inst.opcode);
+        const cycles = estimateCycles(inst.opcode);
         cpu.cycles += cycles;
 
         // Dump memory if requested at this instruction
@@ -175,136 +172,41 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
         .instructions_executed = cpu.instructions_executed,
         .cycles = cpu.cycles,
         .exit_reason = exit_reason,
-        .final_ip = cpu.ip,
+        .final_ip = cpu.pc,
     };
 }
 
-/// Execute instruction (re-export from tri_exec.zig)
-const execute = @import("tri_exec.zig").execute;
-
 /// Print usage information
 fn printUsage() !void {
-    const stdout_file = std.fs.File.stdout();
-    var write_buf: [4096]u8 = undefined;
-    const stdout = stdout_file.writer(&write_buf);
-
-    const msg =
-        \\TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor
-        \\
-        \\Usage: tri-emu <file.tbin> [options]
-        \\
-        \\Options:
-        \\  -v, --verbose      Verbose output (load info, instruction trace)
-        \\  -t, --trace        Trace every instruction
-        \\  -s, --stats        Print execution statistics
-        \\  -dm, --dump-memory Dump memory state at exit
-        \\  -d <n>, --dump <n> Dump memory after N instructions
-        \\  -m <n>, --max-cycles <n> Stop after N cycles
-        \\  -h, --help         Show this help message
-        \\
-        \\Examples:
-        \\  tri-emu program.tbin                    Run program to completion
-        \\  tri-emu program.tbin -v -t            Run with verbose trace
-        \\  tri-emu program.tbin -s                Show statistics only
-        \\  tri-emu program.tbin -m 100000      Stop after 100K cycles
-        \\  tri-emu program.tbin -d 50           Dump memory after 50 instrs
-        \\
-        \\Exit codes:
-        \\  0  - Success
-        \\  1  - Usage error
-        \\  2  - File not found
-        \\  3  - Invalid .tbin file
-        \\  4  - Emulation error
-        \\
-    ;
-    try stdout.writeAll(msg);
-    try stdout.flush();
+    const msg = "TRI-27 Emulator — Software Emulator for TRI-27 RISC Processor\nUsage: tri-emu <file.tbin> [options]\nOptions:\n  -v, --verbose      Verbose output (load info, instruction trace)\n  -t, --trace        Trace every instruction\n  -s, --stats        Print execution statistics\n  -dm, --dump-memory Dump memory state at exit\n  -d <n>, --dump <n> Dump memory after N instructions\n  -m <n>, --max-cycles <n> Stop after N cycles\n  -h, --help         Show this help message\n\nExamples:\n  tri-emu program.tbin                    Run program to completion\n  tri-emu program.tbin -v -t            Run with verbose trace\n  tri-emu program.tbin -s                Show statistics only\n  tri-emu program.tbin -m 100000      Stop after 100K cycles\n  tri-emu program.tbin -d 50           Dump memory after 50 instrs\n\nExit codes:\n  0  - Success\n  1  - Usage error\n  2  - File not found\n  3  - Invalid .tbin file\n  4  - Emulation error\n";
+    std.debug.print("{s}\n", .{msg});
 }
 
 /// Print execution statistics
 fn printStats(result: *const EmulatorResult) !void {
-    const stdout_file = std.fs.File.stdout();
-    var write_buf: [8192]u8 = undefined;
-    const stdout = stdout_file.writer(&write_buf);
-
     const ipc = if (result.cycles > 0)
         @as(f64, @floatFromInt(result.instructions_executed)) / @as(f64, @floatFromInt(result.cycles))
     else
         0.0;
 
-    const msg = try std.fmt.allocPrint(std.heap.page_allocator,
-        \\n
-        ╔══════════════════════════════════════════════════════════╗
-        ║  TRI-27 EMULATOR — EXECUTION STATISTICS                              ║
-        ╠══════════════════════════════════════════════════════╣
-        ║                                                                  ║
-        ║  Instructions executed:  {:>15}                                ║
-        ║  Cycles completed:      {:>15}                                ║
-        ║  Instructions/cycle:    {:>15.2}                             ║
-        ║  Exit reason:          {:>15s}                                ║
-        ║  Final IP:           0x{X:0>10}                                ║
-        ║                                                                  ║
-        ╚══════════════════════════════════════════════════════════════╝
-    , .{result.instructions_executed, result.cycles, ipc, result.exit_reason, result.final_ip});
-    defer std.heap.page_allocator.free(msg);
-
-    try stdout.writeAll(msg);
-    try stdout.flush();
+    std.debug.print("Instructions: {}\n", .{result.instructions_executed});
+    std.debug.print("Cycles: {}\n", .{result.cycles});
+    std.debug.print("IPC: {d:.2}\n", .{ipc});
+    std.debug.print("Exit reason: {s}\n", .{result.exit_reason});
+    std.debug.print("Final IP: 0x{X:0>8}\n", .{result.final_ip});
 }
 
 /// Dump current memory and CPU state
 fn dumpMemoryState(cpu: CPUState) !void {
-    const stdout_file = std.fs.File.stdout();
-    var write_buf: [8192]u8 = undefined;
-    const stdout = stdout_file.writer(&write_buf);
+    const z_flag: u8 = if (cpu.flags.Z) 1 else 0;
+    const n_flag: u8 = if (cpu.flags.N) 1 else 0;
+    const v_flag: u8 = if (cpu.flags.V) 1 else 0;
+    const h_flag: u8 = if (cpu.flags.H) 1 else 0;
 
-    var msg_list = std.ArrayList(u8).init(std.heap.page_allocator);
-    defer msg_list.deinit();
-
-    const writer = msg_list.writer();
-
-    try writer.writeAll(
-        \\n╔════════════════════════════════════════════════════════════════╗
-        ║  TRI-27 CPU STATE — DUMP                                               ║
-        ╠══════════════════════════════════════════════════════════╣
-        ║  Registers:                                                       ║
-    );
-
-    // Print ternary registers (8 per line)
-    try writer.writeAll("║  t0-t7:  ");
-    for (0..8) |i| {
-        const val = cpu.trits[i];
-        try writer.print("t{d}={d:>3} ", .{ i, val });
-    }
-    try writer.writeAll("               ║\n");
-
-    try writer.writeAll("║  t8-t15: ");
-    for (8..16) |i| {
-        const val = cpu.trits[i];
-        try writer.print("t{d}={d:>3} ", .{ i, val });
-    }
-    try writer.writeAll("               ║\n");
-
-    try writer.writeAll(
-        \\║                                                                  ║
-        \\║  Special registers:                                              ║
-    );
-
-    try writer.print("║    PC = 0x{X:0>8}    SP = 0x{X:0>8}    FP = 0x{X:0>8}    ║\n", .{ cpu.pc, cpu.sp, cpu.fp });
-    try writer.writeAll("║                                                                  ║\n");
-    try writer.writeAll("║  Flags: zero={} negative={} positive={}                                 ║\n", .{
-        if (cpu.flags.zero) 1 else 0,
-        if (cpu.flags.negative) 1 else 0,
-        if (cpu.flags.positive) 1 else 0,
-    });
-    try writer.writeAll("║                                                                  ║\n");
-    try writer.writeAll("║  Metrics:                                                        ║\n");
-    try writer.writeAll("║  Instructions: {}    Cycles: {}                         ║\n", .{
-        cpu.instructions_executed,
-        cpu.cycles,
-    });
-    try writer.writeAll("╚════════════════════════════════════════════════════════╝\n");
-
-    try stdout.writeAll(msg_list.items);
-    try stdout.flush();
+    std.debug.print("PC: 0x{X:0>8}\n", .{cpu.pc});
+    std.debug.print("SP: 0x{X:0>8}\n", .{cpu.sp});
+    std.debug.print("FP: 0x{X:0>8}\n", .{cpu.fp});
+    std.debug.print("Flags: Z={} N={} V={} H={}\n", .{ z_flag, n_flag, v_flag, h_flag });
+    std.debug.print("Instructions executed: {}\n", .{cpu.instructions_executed});
+    std.debug.print("Cycles: {}\n", .{cpu.cycles});
 }

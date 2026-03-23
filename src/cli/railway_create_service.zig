@@ -56,8 +56,8 @@ pub fn main() !void {
     defer allocator.free(auth_header);
 
     const result = execCurl(allocator, &.{
-        "curl", "-s",        "-X",                                       "POST",
-        "-H",   auth_header, "-H",                                       "Content-Type: application/json",
+        "curl", "-s",        "-X",                             "POST",
+        "-H",   auth_header, "-H",                             "Content-Type: application/json",
         "-d",   query,       "https://railway.com/graphql/v2",
     }) catch |err| {
         std.debug.print("❌ Failed to execute curl: {}\n", .{err});

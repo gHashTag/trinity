@@ -1,0 +1,96 @@
+;; UART Test Workflow - FPGA programming and UART echo testing
+;; Trinity FPGA UART test automation workflow
+
+spec: UART-Test-Workflow
+version: 1.0.0
+
+description: |
+  Automated workflow for FPGA UART testing:
+  1. Program FPGA with uart_bridge_fixed.bit
+  2. Run uart_echo_test with various parameters
+  3. Report results
+
+authors:
+  - Trinity Project
+
+steps:
+  - name: program-fpga
+    description: "Program FPGA with uart_bridge_fixed.bit"
+    command: "zig run fpga/program_uart.zig"
+    requires:
+      - sudo
+      - FT232RL JTAG cable
+    outputs:
+      - FPGA programmed
+
+  - name: configure-serial
+    description: "Configure serial port settings"
+    command: "stty -f /dev/cu.usbserial-* 115200 cs8 -parenb -cstopb 1 -hupcl"
+    requires:
+      - serial device connected
+    outputs:
+      - Serial port configured
+
+  - name: build-test
+    description: "Build uart_echo_test"
+    command: "zig build src/tools/uart_echo_test.zig"
+    outputs:
+      - Binary: ./zig-out/bin/uart-echo-test
+
+  - name: run-test
+    description: "Run UART echo test"
+    command: "./zig-out/bin/uart-echo-test --baud 115200 --delay 200 --timeout 3000 -v"
+    requires:
+      - FPGA programmed
+      - Serial port configured
+    outputs:
+      - Test results
+
+  - name: report
+    description: "Generate test report"
+    command: "echo 'Test completed. Check output above for results.'"
+    outputs:
+      - Test summary
+
+test-cases:
+  - name: single-byte
+    data: "0x41"
+    expected: "0x41"
+
+  - name: alternating-1
+    data: "0x55"
+    expected: "0x55"
+
+  - name: alternating-2
+    data: "0xAA"
+    expected: "0xAA"
+
+  - name: zero-byte
+    data: "0x00"
+    expected: "0x00"
+
+  - name: all-ones
+    data: "0xFF"
+    expected: "0xFF"
+
+  - name: hello-string
+    data: "Hello"
+    expected: "Hello"
+
+hardware:
+  fpga: QMTECH XC7A100T-1FGG676C
+  jtag: FT232RL USB-serial
+  pins:
+    clk: M22
+    uart_rx: K20 (J2 pin 6)
+    uart_tx: L20 (J2 pin 5)
+    led: T23
+
+baud-rates:
+  - 9600
+  - 19200
+  - 38400
+  - 57600
+  - 115200
+
+default-baud: 115200

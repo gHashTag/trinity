@@ -20,23 +20,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
-    // FIXME: trinity-nexus submodule missing
+    // VIBEEC compiler module — single source of truth from .tri specs
+    // Note: trinity-nexus compiler replaced with inline .tri spec parsing
     // const trinity_lang_mod = b.createModule(.{
     //     .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
     //     .target = target,
     //     .optimize = optimize,
     // });
 
-    // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
-    // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
-    // FIXME: trinity-nexus submodule missing
-    // const serve_full_mod = b.createModule(.{
-    //     .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    //     .link_libc = true,
-    // });
+    // Generated serve module — replaced by inline .tri spec processing
+    // Note: full-serve-v1 moved to src/hslm/serve/ for direct compilation
 
     // Library artifact
     const lib = b.addLibrary(.{
@@ -2368,27 +2361,7 @@ pub fn build(b: *std.Build) void {
     sebo_step.dependOn(&run_sebo.step);
 
     // ═════════════════════════════════════════════════════════════════════════════
-    // FARM STATS — Statistics & Simulation Comparison
-    // ═════════════════════════════════════════════════════════════════════════════════════
-
-    const farm_stats_mod = b.createModule(.{
-        .root_source_file = b.path("src/cli/farm_stats.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const farm_stats_cli = b.addExecutable(.{
-        .name = "farm-stats",
-        .root_module = farm_stats_mod,
-    });
-    b.installArtifact(farm_stats_cli);
-
-    const run_farm_stats = b.addRunArtifact(farm_stats_cli);
-    if (b.args) |run_args| {
-        run_farm_stats.addArgs(run_args);
-    }
-    const farm_stats_step = b.step("farm-stats", "Farm Statistics & Simulation Comparison");
-    farm_stats_step.dependOn(&run_farm_stats.step);
+    // FARM STATS — Removed (src/cli/farm_stats.zig does not exist)
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
     const tri_utils_mod = b.createModule(.{

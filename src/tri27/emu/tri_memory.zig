@@ -2,7 +2,8 @@
 // TRI‑27 MEMORY — 3^9 = 19683 Word Address Space
 //
 // Memory model:
-// - Word-aligned: 32-bit words (holds 2 Trit27s or instruction)
+// - Word-aligned: 32-bit words (raw instruction words for fetch)
+// - Data: stores Trit27 in 54-bit words (sign-extended)
 // - Addressable: byte-addressed with 4-byte word alignment
 // - Size: 3^9 = 19683 words = 78732 bytes
 //
@@ -10,42 +11,30 @@
 
 const std = @import("std");
 
-// ══════════════════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════
 pub const MEMORY_SIZE_WORDS: usize = 19683;
 pub const MEMORY_SIZE_BYTES: usize = 78732;
 
-// ══════════════════════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════
 pub const Trit27 = i54;
 
-// ══════════════════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════
 pub const MemError = error{
     AddressOutOfBounds,
     WordAlignmentError,
     InvalidTrit27,
 };
 
-// ════════════════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════════════════════
 /// Memory word structure (32-bit)
+/// For instructions: stores raw 32-bit instruction word
+/// For data: stores Trit27 in 54-bit words (sign-extended in i64)
 pub const Word = struct {
-    trits: Trit27,
+    /// Raw word value (u32 for instructions, i64 for Trit27 data)
+    word_value: u64 = 0,
 };
 
-/// Convert 2 words to Trit27 (27 trits)
-pub fn wordsToTrit27(word0: u32, word1: u32) Trit27 {
-    const combined: i64 = @as(i64, word0) | (@as(i64, word1) << 32);
-    return @truncate(combined);
-}
-
-/// Convert Trit27 to 2 words
-pub fn trit27ToWords(value: Trit27) struct { u32, u32 } {
-    const packed_val = @as(i64, value);
-    return .{
-        .lo = @as(u32, @truncate(packed_val)),
-        .hi = @as(u32, @truncate(packed_val >> 32)),
-    };
-}
-
-// ══════════════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 pub const Memory = struct {
     allocator: std.mem.Allocator,
     data: []Word,
@@ -57,7 +46,7 @@ pub const Memory = struct {
 
         // Zero initialize all words
         for (0..MEMORY_SIZE_WORDS) |i| {
-            data[i] = Word{ .trits = 0 };
+            data[i] = Word{ .word_value = 0 };
         }
 
         return .{
@@ -83,7 +72,8 @@ pub const Memory = struct {
             return MemError.WordAlignmentError;
         }
 
-        return self.data[word_addr].trits;
+        // Return lower 32 bits of word (u32 for instructions)
+        return @as(u32, @truncate(self.data[word_addr].word_value));
     }
 
     /// Write a word at byte-aligned address
@@ -98,7 +88,8 @@ pub const Memory = struct {
             return MemError.WordAlignmentError;
         }
 
-        self.data[word_addr].trits = wordsToTrit27(value, 0).trits;
+        // Store raw 32-bit word
+        self.data[word_addr].word_value = value;
     }
 
     /// Read Trit27 value (packed as 2 words)
@@ -107,10 +98,13 @@ pub const Memory = struct {
             return MemError.AddressOutOfBounds;
         }
 
-        const lo = self.readWord(word_addr * 4) catch |err| return err;
-        const hi = self.readWord((word_addr + 1) * 4) catch |err| return err;
+        const lo = try self.readWord(word_addr * 4);
+        const hi = try self.readWord((word_addr + 1) * 4);
 
-        return wordsToTrit27(lo, hi);
+        // Combine two 32-bit words into 54-bit Trit27
+        // lo:bits[0:31], hi:bits[32:63] (but we only use bits for Trit27)
+        const combined: i64 = @as(i64, lo) | (@as(i64, hi) << 32);
+        return @truncate(combined);
     }
 
     /// Write Trit27 value (packed as 2 words)
@@ -119,8 +113,10 @@ pub const Memory = struct {
             return MemError.AddressOutOfBounds;
         }
 
-        const words = trit27ToWords(value);
-        try self.writeWord(word_addr * 4, words.lo);
-        try self.writeWord((word_addr + 1) * 4, words.hi);
+        const lo: u32 = @as(u32, @truncate(value));
+        const hi: u32 = @as(u32, @truncate(value >> 32));
+
+        try self.writeWord(word_addr * 4, lo);
+        try self.writeWord((word_addr + 1) * 4, hi);
     }
 };
