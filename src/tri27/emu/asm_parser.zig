@@ -1,0 +1,398 @@
+// @origin(spec:tri_asm.tri) @regen(manual-impl)
+// TRI-27 ASSEMBLER PARSER — Uses lexer + encoder for .tasm → .tbin
+//
+// φ² + 1/φ² = 3 | TRINITY
+
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+const Lexer = @import("asm_lexer.zig");
+const TokenType = Lexer.TokenType;
+const Token = Lexer.Token;
+const encoder = @import("encoder_simple.zig");
+
+/// Assembler error set
+pub const AsmError = error{
+    InvalidSyntax,
+    UnknownOpcode,
+    InvalidRegister,
+    InvalidImmediate,
+    DuplicateLabel,
+    UndefinedLabel,
+    EmptySource,
+    OutOfMemory,
+};
+
+/// Parsed instruction
+pub const ParsedInstruction = struct {
+    opcode_str: []const u8,
+    operands: std.ArrayList([]const u8),
+    line: u32,
+
+    pub fn deinit(self: *ParsedInstruction, allocator: Allocator) void {
+        self.operands.deinit(allocator);
+    }
+};
+
+/// Assembler state
+pub const Assembler = struct {
+    allocator: Allocator,
+    tokens: []Token,
+    bytecode: std.ArrayList(u8),
+    labels: std.StringHashMap(u32),
+
+    pub fn init(allocator: Allocator, tokens: []Token) Assembler {
+        return .{
+            .allocator = allocator,
+            .tokens = tokens,
+            .bytecode = std.ArrayList(u8).initCapacity(allocator, 128) catch unreachable,
+            .labels = std.StringHashMap(u32).init(allocator),
+        };
+    }
+
+    pub fn deinit(self: *Assembler) void {
+        self.bytecode.deinit(self.allocator);
+        var iter = self.labels.iterator();
+        while (iter.next()) |entry| {
+            self.allocator.free(entry.key_ptr.*);
+        }
+        self.labels.deinit();
+    }
+
+    /// Parse mnemonic and operands from tokens starting at index
+    fn parseOperands(self: *Assembler, start_idx: usize) !ParsedInstruction {
+        const start_token = self.tokens[start_idx];
+        if (start_token.type != .Mnemonic) return AsmError.InvalidSyntax;
+
+        var inst = ParsedInstruction{
+            .opcode_str = start_token.text,
+            .operands = std.ArrayList([]const u8).initCapacity(self.allocator, 8) catch unreachable,
+            .line = start_token.line,
+        };
+
+        var i = start_idx + 1;
+        while (i < self.tokens.len) {
+            const t = self.tokens[i];
+            if (t.type == .EOF or t.type == .Comment) break;
+            if (t.type == .Comma) {
+                i += 1;
+                continue;
+            }
+
+            // Copy token text for operands
+            const text_copy = try self.allocator.dupe(u8, t.text);
+            try inst.operands.append(self.allocator, text_copy);
+            i += 1;
+        }
+
+        return inst;
+    }
+
+    /// Encode mnemonic and operands to u32
+    fn encode(self: *Assembler, mnemonic: []const u8, operands: []const []const u8) !u32 {
+        const op_lower = std.ascii.allocLowerString(self.allocator, mnemonic) catch return AsmError.OutOfMemory;
+        defer self.allocator.free(op_lower);
+
+        if (std.mem.eql(u8, op_lower, "nop")) {
+            return encoder.encode_nop(0);
+        }
+
+        if (std.mem.eql(u8, op_lower, "halt")) {
+            return encoder.encode_halt();
+        }
+
+        // R-type: op dst, src1, src2
+        if (std.mem.eql(u8, op_lower, "add")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_add(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "sub")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_sub(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "mul")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_mul(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "tmul")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_tmul(dst, src1, src2);
+        }
+
+        // I-type: op dst, imm
+        if (std.mem.eql(u8, op_lower, "load_imm") or std.mem.eql(u8, op_lower, "ldi")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const imm = try parseImmediate(operands[1]);
+            if (std.mem.eql(u8, op_lower, "load_imm")) {
+                return encoder.encode_load_imm(dst, imm);
+            } else {
+                return encoder.encode_ldi(dst, imm);
+            }
+        }
+
+        // M-type: op src, addr
+        if (std.mem.eql(u8, op_lower, "store")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const src = try parseRegister(operands[0]);
+            const addr = try parseImmediateU16(operands[1]);
+            return encoder.encode_store(src, addr);
+        }
+
+        if (std.mem.eql(u8, op_lower, "sti")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const imm = try parseImmediate(operands[1]);
+            const addr = try parseImmediateU16(operands[1]);
+            return encoder.encode_sti(imm, addr);
+        }
+
+        if (std.mem.eql(u8, op_lower, "load")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const addr = try parseImmediateU16(operands[1]);
+            return encoder.encode_load_mem(dst, addr);
+        }
+
+        return AsmError.UnknownOpcode;
+    }
+
+    /// Parse register string (r0-r31)
+    fn parseRegister(reg_str: []const u8) !u5 {
+        const trimmed = std.mem.trim(u8, reg_str, &std.ascii.whitespace);
+        const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
+            trimmed[1..]
+        else
+            trimmed;
+
+        const num = std.fmt.parseInt(u8, num_str, 10) catch return AsmError.InvalidRegister;
+        if (num > 31) return AsmError.InvalidRegister;
+        return @as(u5, @intCast(num));
+    }
+
+    /// Parse immediate value (decimal or hex)
+    fn parseImmediate(imm_str: []const u8) !i16 {
+        const trimmed = std.mem.trim(u8, imm_str, &std.ascii.whitespace);
+
+        if (trimmed.len > 2 and trimmed[0] == '0' and (trimmed[1] == 'x' or trimmed[1] == 'X')) {
+            return std.fmt.parseInt(i16, trimmed[2..], 16) catch return AsmError.InvalidImmediate;
+        } else {
+            return std.fmt.parseInt(i16, trimmed, 10) catch return AsmError.InvalidImmediate;
+        }
+    }
+
+    /// Parse unsigned immediate (for addresses)
+    fn parseImmediateU16(imm_str: []const u8) !u16 {
+        const trimmed = std.mem.trim(u8, imm_str, &std.ascii.whitespace);
+
+        if (trimmed.len > 2 and trimmed[0] == '0' and (trimmed[1] == 'x' or trimmed[1] == 'X')) {
+            return std.fmt.parseInt(u16, trimmed[2..], 16) catch return AsmError.InvalidImmediate;
+        } else {
+            return std.fmt.parseInt(u16, trimmed, 10) catch return AsmError.InvalidImmediate;
+        }
+    }
+
+    /// Write u32 as little-endian bytes
+    fn writeWord(self: *Assembler, word: u32) !void {
+        try self.bytecode.append(self.allocator, @as(u8, @truncate(word)));
+        try self.bytecode.append(self.allocator, @as(u8, @truncate(word >> 8)));
+        try self.bytecode.append(self.allocator, @as(u8, @truncate(word >> 16)));
+        try self.bytecode.append(self.allocator, @as(u8, @truncate(word >> 24)));
+    }
+
+    /// Main assemble function
+    pub fn assemble(self: *Assembler) ![]u8 {
+        if (self.tokens.len == 0) return AsmError.EmptySource;
+
+        var i: usize = 0;
+        while (i < self.tokens.len) {
+            const token = self.tokens[i];
+
+            switch (token.type) {
+                .EOF, .Comment, .EOL => {
+                    i += 1;
+                    continue;
+                },
+                .Comma => {
+                    i += 1;
+                    continue;
+                },
+                .LabelDef => {
+                    // Record label at current address
+                    const addr = self.bytecode.items.len;
+                    const label_copy = try self.allocator.dupe(u8, token.text);
+                    try self.labels.put(label_copy, @as(u32, @intCast(addr)));
+                    i += 1;
+                },
+                .Mnemonic => {
+                    // Parse operands
+                    var inst = try self.parseOperands(i);
+                    defer inst.deinit(self.allocator);
+
+                    // Encode instruction
+                    const word = try self.encode(inst.opcode_str, inst.operands.items);
+
+                    // Write to bytecode
+                    try self.writeWord(word);
+
+                    // Skip to next mnemonic or label
+                    i += 1;
+                    while (i < self.tokens.len) {
+                        const t = self.tokens[i];
+                        if (t.type == .Mnemonic or t.type == .LabelDef or t.type == .EOF) break;
+                        i += 1;
+                    }
+                },
+                else => {
+                    i += 1;
+                },
+            }
+        }
+
+        if (self.bytecode.items.len == 0) {
+            return AsmError.EmptySource;
+        }
+
+        return self.bytecode.toOwnedSlice(self.allocator);
+    }
+};
+
+/// Public assemble function
+pub fn assemble(allocator: Allocator, asm_source: []const u8) AsmError![]u8 {
+    if (asm_source.len == 0) return AsmError.EmptySource;
+
+    // Tokenize
+    var lexer = Lexer.Lexer.init(allocator, asm_source);
+    defer lexer.deinit();
+    const tokens = try lexer.tokenize();
+    defer allocator.free(tokens);
+
+    // Assemble
+    var assembler = Assembler.init(allocator, tokens);
+    return assembler.assemble();
+}
+
+// Tests
+test "assembler encodes nop" {
+    const allocator = std.testing.allocator;
+    const asm_source = "nop";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    try std.testing.expectEqual(@as(u8, 0x00), result[0]); // NOP opcode
+}
+
+test "assembler encodes add" {
+    const allocator = std.testing.allocator;
+    const asm_source = "add r5, r10, r15";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x10 | (5 << 8) | (10 << 11) | (15 << 14);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes sub" {
+    const allocator = std.testing.allocator;
+    const asm_source = "sub r1, r2, r3";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x11 | (1 << 8) | (2 << 11) | (3 << 14);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes load_imm" {
+    const allocator = std.testing.allocator;
+    const asm_source = "load_imm r7, -42";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const imm_u16: u16 = @bitCast(@as(i16, -42));
+    const expected: u32 = 0x84 | (7 << 8) | (@as(u32, imm_u16) << 16);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes halt" {
+    const allocator = std.testing.allocator;
+    const asm_source = "halt";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    try std.testing.expectEqual(@as(u8, 0x4D), result[0]); // HALT opcode
+}
+
+test "assembler encodes tmul" {
+    const allocator = std.testing.allocator;
+    const asm_source = "tmul r1, r2, r3";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x60 | (1 << 8) | (2 << 11) | (3 << 14);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler handles comments" {
+    const allocator = std.testing.allocator;
+    const asm_source = "nop ; this is a comment\nhalt";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 8), result.len); // 2 instructions
+    try std.testing.expectEqual(@as(u8, 0x00), result[0]); // NOP
+    try std.testing.expectEqual(@as(u8, 0x4D), result[4]); // HALT
+}
+
+test "assembler handles multi-line" {
+    const allocator = std.testing.allocator;
+    const asm_source = "nop\nadd r1, r2, r3\nhalt";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 12), result.len); // 3 instructions
+}
+
+test "assembler handles labels" {
+    const allocator = std.testing.allocator;
+    const asm_source = "loop: nop\nhalt";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 8), result.len);
+}
+
+test "assembler encodes store" {
+    const allocator = std.testing.allocator;
+    const asm_source = "store r5, 0x1000";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x03 | (5 << 8) | (0x1000 << 16);
+    try std.testing.expectEqual(expected, word);
+}
