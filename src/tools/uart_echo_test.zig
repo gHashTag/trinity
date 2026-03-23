@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.26 — FPGA XVC Bridge integration, full test cycle
+//! v3.27 — FPGA XVC Bridge with timeout and retry logic
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -105,6 +105,9 @@ const Config = struct {
     esp32_port: u16,
     bitstream_path: ?[]const u8,
     fpga_verify_mode: bool,
+    // v3.27: FPGA timeout and retry settings
+    fpga_timeout_ms: u32 = 30000, // 30 seconds default
+    fpga_retries: u32 = 3, // 3 retries default
 };
 
 // Device vendor detection
@@ -1028,6 +1031,9 @@ const FpgaXvcClient = struct {
     host: []const u8,
     port: u16,
     allocator: std.mem.Allocator,
+    // v3.27: Configurable timeout and retry settings
+    timeout_ms: u32 = 30000,
+    max_retries: u32 = 3,
 
     pub fn init(allocator: std.mem.Allocator, host: []const u8, port: u16) FpgaXvcClient {
         return .{
@@ -1039,6 +1045,16 @@ const FpgaXvcClient = struct {
 
     pub fn deinit(self: *const FpgaXvcClient) void {
         _ = self;
+    }
+
+    // v3.27: Set timeout in milliseconds
+    pub fn setTimeout(self: *FpgaXvcClient, timeout_ms: u32) void {
+        self.timeout_ms = timeout_ms;
+    }
+
+    // v3.27: Set max retries
+    pub fn setMaxRetries(self: *FpgaXvcClient, max_retries: u32) void {
+        self.max_retries = max_retries;
     }
 
     // Check ESP32 status
@@ -1063,10 +1079,34 @@ const FpgaXvcClient = struct {
         }
     }
 
-    // Flash bitstream to FPGA
+    // v3.27: Flash bitstream with retry logic
     pub fn flashBitstream(self: *const FpgaXvcClient, bitstream_path: []const u8) !bool {
         printInfo("[XVC] Flashing bitstream: {s}\n", .{bitstream_path});
+        printDim("[XVC] Timeout: {d}ms, Max retries: {d}\n", .{ self.timeout_ms, self.max_retries });
 
+        // Retry loop
+        var retry: u32 = 0;
+        while (retry <= self.max_retries) : (retry += 1) {
+            if (retry > 0) {
+                printWarning("[XVC] Retry {d}/{d}...\n", .{ retry, self.max_retries });
+            }
+
+            const result = self.flashBitstreamOnce(bitstream_path) catch |err| {
+                printWarning("[XVC] Attempt {d} failed: {any}\n", .{ retry + 1, err });
+                continue;
+            };
+
+            if (result) {
+                return true;
+            }
+        }
+
+        printError("[XVC] All {d} attempts failed\n", .{self.max_retries + 1});
+        return false;
+    }
+
+    // v3.27: Single flash attempt with timeout
+    fn flashBitstreamOnce(self: *const FpgaXvcClient, bitstream_path: []const u8) !bool {
         const address = try std.net.Address.parseIp4(self.host, self.port);
         var socket = try std.net.tcpConnectToAddress(address);
         defer socket.close();
@@ -1077,16 +1117,17 @@ const FpgaXvcClient = struct {
         try socket.writeAll(cmd);
         printSuccess("[XVC] Flash command sent\n", .{});
 
-        // Wait for response with timeout
-        var timeout: u32 = 30; // 30 seconds timeout
+        // Wait for response with configurable timeout
+        const timeout_seconds = self.timeout_ms / 1000;
+        var elapsed: u32 = 0;
         var response_buf: [512]u8 = undefined;
 
-        while (timeout > 0) : (timeout -= 1) {
+        while (elapsed < timeout_seconds) : (elapsed += 1) {
             const len = socket.read(&response_buf) catch 0;
             if (len > 0) {
                 const response = response_buf[0..len];
                 if (std.mem.indexOf(u8, response, "OK") != null) {
-                    printSuccess("[XVC] Flash complete\n", .{});
+                    printSuccess("[XVC] Flash complete (took {d}s)\n", .{elapsed});
                     return true;
                 } else if (std.mem.indexOf(u8, response, "BUSY") != null) {
                     printWarning("[XVC] ESP32 busy, waiting...\n", .{});
@@ -1094,14 +1135,14 @@ const FpgaXvcClient = struct {
                     continue;
                 } else if (std.mem.indexOf(u8, response, "ERROR") != null) {
                     printError("[XVC] Flash error: {s}\n", .{response});
-                    return false;
+                    return error.FpgaFlashError;
                 }
             }
             std.Thread.sleep(1 * std.time.ns_per_s);
         }
 
-        printError("[XVC] Flash timeout\n", .{});
-        return false;
+        printError("[XVC] Flash timeout after {d}s\n", .{elapsed});
+        return error.FpgaFlashTimeout;
     }
 
     // Get ESP32 info
