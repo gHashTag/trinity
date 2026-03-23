@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.31 — Performance Report + Recommendations (fully implemented)
+//! v3.32 — Simulation Batch Mode (fully implemented)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1151,12 +1151,13 @@ fn printUsage() void {
         \\  --fpga-verify       Enable FPGA verification mode
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.31):
+        \\Performance Modes (v3.32):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
         \\  Buffered: Pre-allocated I/O buffers
-        \\  Performance: Report with efficiency & recommendations (NEW)
+        \\  Performance: Report with efficiency & recommendations
+        \\  Simulation Batch: Test batch mode without hardware (NEW)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\
@@ -1972,11 +1973,153 @@ const TestByte = struct {
     name: []const u8,
 };
 
+// v3.32: Simulation batch mode - test batch features without hardware
+fn runSimulationBatch(config: Config) !void {
+    printErr(
+        \\╔════════════════════════════════════╗
+        \\║       SIMULATION BATCH MODE (v3.32)      ║
+        \\║  Batch testing without actual hardware        ║
+        \\╚══════════════════════════════════════╝
+        \\
+    , .{});
+
+    const batch_size = config.batch_size;
+    const packet_size = 64;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    // Initialize adaptive timeout if enabled
+    var adaptive_timeout: ?AdaptiveTimeout = null;
+    if (config.adaptive_timeout) {
+        adaptive_timeout = try AdaptiveTimeout.init(allocator, config.timeout_ms);
+        defer if (adaptive_timeout) |*at| at.deinit(allocator);
+    }
+
+    printErr("[i] Simulating batch mode with {d} packets\n", .{batch_size});
+    printErr("[i] Packet size: {d} bytes\n", .{packet_size});
+    printErr("[i] Buffer size: {d} bytes\n", .{config.buffer_size});
+
+    var results = BatchTestResults{};
+    const start_time = std.time.nanoTimestamp();
+
+    // Simulate batch operations - process full packets
+    var packets_sent: usize = 0;
+    while (packets_sent < batch_size) {
+        const bytes_in_packet = packet_size;
+
+        // Simulate random RTT
+        const rtt_ms = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
+
+        // Simulate occasional packet loss
+        const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
+        const should_timeout = std.crypto.random.intRangeAtMost(u8, 0, 100) < 2;
+
+        results.total_sent += bytes_in_packet;
+        results.total_received += bytes_in_packet; // Count received bytes in simulation
+
+        if (should_timeout) {
+            results.timeouts += 1;
+        } else if (should_fail) {
+            results.failed += 1;
+            results.total_received += bytes_in_packet;
+        } else {
+            results.matched += 1;
+            results.total_received += bytes_in_packet;
+            if (adaptive_timeout) |*at| {
+                at.addSample(@intCast(rtt_ms));
+            }
+        }
+
+        packets_sent += 1;
+
+        // Progress indicator
+        if (packets_sent % @max(1, batch_size / 10) == 0) {
+            const progress = @as(f64, @floatFromInt(packets_sent)) / @as(f64, @floatFromInt(batch_size)) * 100.0;
+            printErr("\r[->] Progress: {d:.0}% ({d}/{d})   ", .{ progress, packets_sent, batch_size });
+        }
+    }
+
+    const total_elapsed_ns = std.time.nanoTimestamp() - start_time;
+    results.batch_time_ms = @intCast(@divTrunc(total_elapsed_ns, 1_000_000));
+    results.calculateThroughput();
+
+    printErr("\n\n╔══════════════════════════════════════╗\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.32)   ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+    printErr("  Total packets: {d}\n", .{batch_size});
+    printErr("  Matched: {d}\n", .{results.matched});
+    printErr("  Failed: {d}\n", .{results.failed});
+    printErr("  Timeouts: {d}\n", .{results.timeouts});
+    printErr("  Success rate: {d:.2}%\n", .{results.successRate()});
+    printErr("  Batch time: {d}ms\n", .{results.batch_time_ms});
+    printErr("  Packets/sec: {d:.2}\n", .{results.packets_per_second});
+    printErr("  Bytes/sec: {d:.2}\n", .{results.bytes_per_second});
+
+    // v3.31: Performance report
+    printErr("\n╔══════════════════════════════════════╗\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.31)   ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+    const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
+    const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
+    printErr("  Theoretical throughput: {d:.2} bytes/sec\n", .{theoretical});
+    printErr("  Actual throughput: {d:.2} bytes/sec\n", .{results.bytes_per_second});
+    printErr("  Efficiency: {d:.1}%\n", .{efficiency});
+
+    // Recommendations
+    printErr("\n  Recommendations:\n", .{});
+    PerformanceReport.generateRecommendations(
+        results.successRate(),
+        results.bytes_per_second,
+        config.baud,
+    );
+
+    // Report adaptive timeout stats if enabled
+    if (adaptive_timeout) |*at| {
+        at.report();
+    }
+
+    printErr("\n[i] Simulation complete - no hardware required!\n", .{});
+
+    // Export to JSON if requested
+    if (config.json_output) {
+        var json_buf: [1024]u8 = undefined;
+        const json = try std.fmt.bufPrint(&json_buf,
+            \\{{
+            \\  "mode": "simulation_batch",
+            \\  "batch_size": {d},
+            \\  "matched": {d},
+            \\  "failed": {d},
+            \\  "timeouts": {d},
+            \\  "success_rate": {d:.2},
+            \\  "batch_time_ms": {d},
+            \\  "packets_per_sec": {d:.2},
+            \\  "bytes_per_sec": {d:.2}
+            \\}}
+        , .{
+            batch_size,
+            results.matched,
+            results.failed,
+            results.timeouts,
+            results.successRate(),
+            results.batch_time_ms,
+            results.packets_per_second,
+            results.bytes_per_second,
+        });
+        printErr("\n{s}\n", .{json});
+    }
+}
+
 // v3.14: Simulation mode for testing without hardware
 fn runSimulation(config: Config) !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
+
+    // v3.32: Use batch mode if batch_size > 1
+    if (config.batch_size > 1) {
+        return runSimulationBatch(config);
+    }
 
     // v3.24: Use custom pattern if specified
     const test_pattern = try PatternGenerators.getPattern(allocator, config.use_pattern, config.pattern_length);
@@ -2238,7 +2381,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
     printErr("║          BATCH TEST RESULTS          ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
-    printErr("  Total packets: {d}\n", .{results.total_sent / packet_size});
+    printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
     printErr("  Failed: {d}\n", .{results.failed});
     printErr("  Timeouts: {d}\n", .{results.timeouts});
@@ -2264,14 +2407,11 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // Recommendations
     printErr("\n  Recommendations:\n", .{});
-    const recs = PerformanceReport.generateRecommendations(
+    PerformanceReport.generateRecommendations(
         results.successRate(),
         results.bytes_per_second,
         config.baud,
     );
-    for (recs) |rec| {
-        printErr("    {s}\n", .{rec});
-    }
 
     // Export to JSON if requested
     if (config.json_output) {
@@ -2320,30 +2460,25 @@ const PerformanceReport = struct {
     }
 
     // Generate recommendations based on results
-    pub fn generateRecommendations(success_rate: f64, throughput: f64, baud: u64) []const []const u8 {
-        var recommendations = std.ArrayList([]const u8).empty;
-        defer recommendations.deinit(std.heap.page_allocator);
-
+    pub fn generateRecommendations(success_rate: f64, throughput: f64, baud: u64) void {
         const theoretical = theoreticalThroughput(baud);
         const eff = efficiency(throughput, theoretical);
 
         if (success_rate < 95.0) {
-            recommendations.append(std.heap.page_allocator, "⚠️  Low success rate - check cable/connection") catch {};
+            printErr("    ⚠️  Low success rate - check cable/connection\n", .{});
         }
         if (eff < 50.0) {
-            recommendations.append(std.heap.page_allocator, "⚠️  Low throughput - may need flow control (RTS/CTS)") catch {};
+            printErr("    ⚠️  Low throughput - may need flow control (RTS/CTS)\n", .{});
         }
         if (eff > 95.0) {
-            recommendations.append(std.heap.page_allocator, "✅ Excellent throughput - connection optimal") catch {};
+            printErr("    ✅ Excellent throughput - connection optimal\n", .{});
         }
         if (throughput > 1000.0 and eff > 80.0) {
-            recommendations.append(std.heap.page_allocator, "💡 Consider larger packets for better efficiency") catch {};
+            printErr("    💡 Consider larger packets for better efficiency\n", .{});
         }
         if (baud < 115200) {
-            recommendations.append(std.heap.page_allocator, "💡 Higher baud rate (115200+) recommended") catch {};
+            printErr("    💡 Higher baud rate (115200+) recommended\n", .{});
         }
-
-        return recommendations.items;
     }
 };
 
