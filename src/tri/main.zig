@@ -171,10 +171,8 @@ pub fn main() !void {
         }
     }
 
-    }
-
     // Queen Trinity namespace: route `tri queen <subcommand>` to queen_trinity
-    if (std.mem.eql(u8, first_arg, "queen")) {
+    if (std.mem.eql(u8, args[arg_idx], "queen")) {
         const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
         logAgentCommand(args[arg_idx..]);
         try queen_trinity.runQueenCommand(allocator, queen_args);
@@ -182,13 +180,14 @@ pub fn main() !void {
     }
 
     // TRI-27 namespace: route `tri tri27 <subcommand>` to tri27 commands
-    if (std.mem.eql(u8, first_arg, "tri27")) {
-        const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-        logAgentCommand(args[arg_idx..]);
-        const tri27_mod = @import("tri27/tri27_cli.zig");
-        try tri27_mod.runTri27Command(allocator, tri27_args);
-        return;
-    }
+    // TODO: Uncomment when tri27 module structure is resolved
+    // if (std.mem.eql(u8, args[arg_idx], "tri27")) {
+    //     const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+    //     logAgentCommand(args[arg_idx..]);
+    //     const tri27_mod = @import("../tri27/tri27_cli.zig");
+    //     try tri27_mod.runTri27Command(allocator, tri27_args);
+    //     return;
+    // }
 
     // GitHub Integration: route `tri issue/board/protocol` to github_commands
     if (arg_idx < args.len) {

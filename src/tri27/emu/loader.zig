@@ -38,7 +38,9 @@ pub fn validateMagic(bytes: []const u8) LoadError!void {
     const magic = @as(u32, bytes[0]) |
         @as(u32, bytes[1]) << 8 |
         @as(u32, bytes[2]) << 16 |
-        @as(u32, bytes[3]);
+        @as(u32, bytes[3]) << 24;
+
+    std.debug.print("validateMagic: got 0x{X:0>8}, expect 0x{X:0>8}\n", .{ magic, MAGIC });
 
     if (magic != MAGIC) {
         return LoadError.InvalidMagic;
@@ -155,7 +157,7 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
     }
 
     // Initialize CPU state
-    cpu.pc = 0;
+    cpu.pc = 4; // Start at PC=4 to skip magic+version+header (10 bytes = 4 words)
     cpu.sp = @as(u32, @intCast(cpu.memory_len - 1));
     cpu.fp = 0;
     cpu.instructions_executed = 0;

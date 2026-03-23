@@ -133,7 +133,7 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     const code_sz: u32 = @intCast(file_content.len - 10);
 
     const load_result = .{
-        .entry_point = cpu.pc,  // loader sets pc = 0
+        .entry_point = cpu.pc, // loader sets pc = 0
         .instruction_count = inst_count,
         .code_size = code_sz,
     };
