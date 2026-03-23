@@ -112,6 +112,9 @@ const Config = struct {
     fpga_retries: u32 = 3, // 3 retries default
     // v3.33: Comprehensive test mode
     comprehensive_mode: bool = false,
+    // v3.37: Enhanced error recovery and diagnostics
+    diagnostics_mode: bool = false,
+    auto_recovery: bool = false,
 };
 
 // Device vendor detection
@@ -161,14 +164,32 @@ const ThroughputStats = struct {
 };
 
 // v3.24: Error statistics for tracking test failures by type
+// v3.37: Enhanced with consecutive error tracking
 const ErrorStats = struct {
     timeout_errors: usize = 0,
     mismatch_errors: usize = 0,
     device_errors: usize = 0,
     total_errors: usize = 0,
+    // v3.37: Error pattern tracking
+    consecutive_errors: usize = 0,
+    max_consecutive_errors: usize = 0,
+    last_error_time: i64 = 0,
 
     pub fn recordError(self: *ErrorStats, err_type: []const u8) void {
         self.total_errors += 1;
+        const now: i64 = @intCast(std.time.nanoTimestamp());
+
+        // Track consecutive errors
+        if (self.total_errors > 1 and (now - self.last_error_time) < 1_000_000_000) {
+            self.consecutive_errors += 1;
+            if (self.consecutive_errors > self.max_consecutive_errors) {
+                self.max_consecutive_errors = self.consecutive_errors;
+            }
+        } else {
+            self.consecutive_errors = 1;
+        }
+        self.last_error_time = now;
+
         if (std.mem.eql(u8, err_type, "timeout")) {
             self.timeout_errors += 1;
         } else if (std.mem.eql(u8, err_type, "mismatch")) {
@@ -188,6 +209,105 @@ const ErrorStats = struct {
         printErr("    Timeout errors: {d}\n", .{self.timeout_errors});
         printErr("    Mismatch errors: {d}\n", .{self.mismatch_errors});
         printErr("    Device errors: {d}\n", .{self.device_errors});
+        if (self.max_consecutive_errors > 1) {
+            printErr("    Max consecutive errors: {d}\n", .{self.max_consecutive_errors});
+        }
+    }
+};
+
+// v3.37: Auto-diagnostics for error pattern analysis
+const ErrorDiagnostics = struct {
+    stats: *ErrorStats,
+    total_tests: usize,
+
+    pub fn init(stats: *ErrorStats, total_tests: usize) ErrorDiagnostics {
+        return .{
+            .stats = stats,
+            .total_tests = total_tests,
+        };
+    }
+
+    pub fn analyze(self: *const ErrorDiagnostics) void {
+        if (self.stats.total_errors == 0) {
+            printInfo("[i] No errors to analyze\n", .{});
+            return;
+        }
+
+        printInfo("[i] Error Pattern Analysis:\n", .{});
+
+        // Analyze error rate
+        const error_rate = @as(f64, @floatFromInt(self.stats.total_errors)) /
+            @as(f64, @floatFromInt(self.total_tests)) * 100.0;
+        if (error_rate > 50.0) {
+            printWarning("    ⚠️  High error rate ({d:.1}%) - Check cable/connection\n", .{error_rate});
+        } else if (error_rate > 10.0) {
+            printWarning("    ⚠️  Moderate error rate ({d:.1}%) - May need flow control\n", .{error_rate});
+        } else {
+            printSuccess("    ✓ Low error rate ({d:.1}%)\n", .{error_rate});
+        }
+
+        // Analyze error types
+        if (self.stats.timeout_errors > self.stats.mismatch_errors * 2) {
+            printWarning("    ⚠️  Many timeout errors - Increase timeout or check baud rate\n", .{});
+        }
+        if (self.stats.mismatch_errors > self.stats.total_errors / 2) {
+            printWarning("    ⚠️  Many mismatch errors - Possible data corruption, check cable quality\n", .{});
+        }
+        if (self.stats.device_errors > 0) {
+            printWarning("    ⚠️  Device errors detected - Check permissions and hardware\n", .{});
+        }
+
+        // Analyze consecutive errors
+        if (self.stats.max_consecutive_errors > 5) {
+            printWarning("    ⚠️  Consecutive errors ({d}) - Intermittent connection\n", .{self.stats.max_consecutive_errors});
+        }
+    }
+
+    pub fn suggestFixes(self: *const ErrorDiagnostics) void {
+        if (self.stats.total_errors == 0) return;
+
+        printInfo("[i] Suggested Fixes:\n", .{});
+
+        if (self.stats.timeout_errors > self.stats.total_errors / 2) {
+            printDim("    1. Increase timeout: --timeout <ms>\n", .{});
+            printDim("    2. Try adaptive timeout: --adaptive-timeout\n", .{});
+            printDim("    3. Check baud rate: --baud 115200\n", .{});
+        }
+        if (self.stats.mismatch_errors > self.stats.total_errors / 2) {
+            printDim("    1. Try different cable (USB quality matters)\n", .{});
+            printDim("    2. Enable flow control: --rts-cts\n", .{});
+            printDim("    3. Check for EMI interference\n", .{});
+        }
+        if (self.stats.device_errors > 0) {
+            printDim("    1. Check device permissions\n", .{});
+            printDim("    2. Try different USB port\n", .{});
+            printDim("    3. Run: --list-devices to check availability\n", .{});
+        }
+    }
+};
+
+// v3.37: Auto-recovery with exponential backoff
+const AutoRecovery = struct {
+    max_retries: u32,
+    base_delay_ms: u32,
+    max_delay_ms: u32,
+
+    pub fn init(max_retries: u32, base_delay_ms: u32) AutoRecovery {
+        return .{
+            .max_retries = max_retries,
+            .base_delay_ms = base_delay_ms,
+            .max_delay_ms = 30000, // 30 seconds max
+        };
+    }
+
+    pub fn getDelay(self: *const AutoRecovery, attempt: u32) u32 {
+        // Exponential backoff: delay = base * (2 ^ attempt)
+        const delay = self.base_delay_ms * @as(u32, 1) <<| @as(u5, @intCast(@min(attempt, 8)));
+        return @min(delay, self.max_delay_ms);
+    }
+
+    pub fn shouldRetry(self: *const AutoRecovery, attempt: u32) bool {
+        return attempt < self.max_retries;
     }
 };
 
@@ -1475,6 +1595,18 @@ pub fn main() !void {
         return runFpgaTestCycle(config);
     }
 
+    // v3.37: Check for diagnostics mode (before simulation)
+    if (config.diagnostics_mode) {
+        printErr(
+            \\╔════════════════════════════════════╗
+            \\║        DIAGNOSTICS MODE (v3.37)       ║
+            \\║  Running diagnostic test sequence   ║
+            \\╚════════════════════════════════════╝
+            \\
+        , .{});
+        return runDiagnosticsMode(config) catch {};
+    }
+
     // v3.14: Check for simulation mode
     if (config.simulation_mode) {
         printErr(
@@ -1497,6 +1629,18 @@ pub fn main() !void {
             \\
         , .{});
         return runDryRun(config);
+    }
+
+    // v3.37: Diagnostics mode
+    if (config.diagnostics_mode) {
+        printErr(
+            \\╔════════════════════════════════════╗
+            \\║        DIAGNOSTICS MODE (v3.37)       ║
+            \\║  Running diagnostic test sequence   ║
+            \\╚════════════════════════════════════╝
+            \\
+        , .{});
+        return runDiagnosticsMode(config) catch {};
     }
 
     // v3.33: Comprehensive test mode
@@ -2385,8 +2529,91 @@ fn runBatchTestInternal(config: Config) !void {
     results.batch_time_ms = @intCast(@divTrunc(total_elapsed_ns, 1_000_000));
     results.calculateThroughput();
 
-    printErr("  Matched: {d}/{d}\n", .{results.matched, batch_size});
+    printErr("  Matched: {d}/{d}\n", .{ results.matched, batch_size });
     printErr("  Throughput: {d:.2} packets/sec\n", .{@as(f64, @floatFromInt(batch_size)) / (@as(f64, @floatFromInt(results.batch_time_ms)) / 1000.0)});
+}
+
+// v3.37: Diagnostics mode - error pattern analysis and suggested fixes
+fn runDiagnosticsMode(config: Config) !void {
+    printErr("\n╔══════════════════════════════════════╗\n", .{});
+    printErr("║      DIAGNOSTICS TEST (v3.37)       ║\n", .{});
+    printErr("║  Running diagnostic test sequence   ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+
+    // v3.37: Require device for diagnostics mode
+    if (config.device) |dev| {
+        const flags: u32 = 0x0002 | 0x08000;
+        const fd = std.posix.open(dev, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
+            printErr("[*] Failed to open {s}: {any}\n", .{ dev, err });
+            std.process.exit(1);
+        };
+        defer std.posix.close(fd);
+
+        // Configure port
+        _ = configureSerial(fd, config.baud);
+
+        printErr("[i] Device: {s}\n", .{dev});
+        printErr("[i] Baud rate: {d}\n", .{config.baud});
+        printErr("[i] Running diagnostic tests...\n\n", .{});
+
+        const num_tests = 20;
+        var error_stats = ErrorStats{};
+        var tests_passed: usize = 0;
+
+        for (0..num_tests) |i| {
+            const test_data = [_]u8{@intCast(i)};
+            const result = testEchoByte(fd, &test_data, "diag", i, num_tests, config.delay_ms, config);
+
+            if (result.success) {
+                tests_passed += 1;
+            } else {
+                error_stats.recordError("timeout");
+            }
+        }
+
+        printErr("\n╔══════════════════════════════════════╗\n", .{});
+        printErr("║         DIAGNOSTICS SUMMARY          ║\n", .{});
+        printErr("╚══════════════════════════════════════╝\n", .{});
+        printErr("  Total tests: {d}\n", .{num_tests});
+        printErr("  Passed: {d}\n", .{tests_passed});
+        printErr("  Failed: {d}\n", .{error_stats.total_errors});
+
+        error_stats.report();
+
+        // Error pattern analysis
+        const diagnostics = ErrorDiagnostics.init(&error_stats, num_tests);
+        diagnostics.analyze();
+        diagnostics.suggestFixes();
+
+        // Export to JSON if requested
+        if (config.json_output) {
+            var json_buf: [512]u8 = undefined;
+            const json = try std.fmt.bufPrint(&json_buf,
+                \\{{
+                \\  "mode": "diagnostics",
+                \\  "total_tests": {d},
+                \\  "passed": {d},
+                \\  "total_errors": {d},
+                \\  "timeout_errors": {d},
+                \\  "mismatch_errors": {d},
+                \\  "device_errors": {d},
+                \\  "max_consecutive_errors": {d}
+                \\}}
+            , .{
+                num_tests,
+                tests_passed,
+                error_stats.total_errors,
+                error_stats.timeout_errors,
+                error_stats.mismatch_errors,
+                error_stats.device_errors,
+                error_stats.max_consecutive_errors,
+            });
+            printErr("\n{s}\n", .{json});
+        }
+    } else {
+        printErr("[*] --diagnostics requires --device <port>\n", .{});
+        std.process.exit(1);
+    }
 }
 
 // v3.14: Dry run mode - show what would be sent
