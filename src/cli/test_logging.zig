@@ -28,6 +28,7 @@ pub fn main() !void {
 
     // Test log writing
     std.debug.print("[+] Testing log writing...\n", .{});
+    const timestamp_raw = std.time.nanoTimestamp();
     const entry: logging_mod.LogEntry = .{
         .timestamp = @intCast(timestamp_raw),
         .level = logging_mod.LogLevel.Info,
@@ -52,10 +53,10 @@ pub fn main() !void {
     try logging_mod.init(std.heap.page_allocator, logging_mod.LogLevel.Debug);
     defer logging_mod.close();
 
-    logging_mod.debug("Debug message");
-    logging_mod.info("Info message");
-    logging_mod.warn("Warning message");
-    logging_mod.err("Error message");
+    logging_mod.debug("Debug message", .{});
+    logging_mod.info("Info message", .{});
+    logging_mod.warn("Warning message", .{});
+    logging_mod.err("Error message", .{});
 
     // Summary
     std.debug.print("═\n", .{});
