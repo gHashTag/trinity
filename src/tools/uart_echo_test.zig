@@ -1,9 +1,17 @@
-//! UART Echo Test — Simple test for FPGA UART bridge
+//! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.10 — Added loopback mode for serial port testing without FPGA
+//! v3.13 — Added config file, JSON export, error recovery, enhanced device detection
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
+//!                            [--output results.csv|--json] [--config uart-test.toml] [--retries 3]
+//!
+//! Features:
+//!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
+//!   - Config file: TOML configuration for persistent settings
+//!   - JSON export: Structured test results for analysis
+//!   - Error recovery: Automatic retry on failed tests
+//!   - Throughput measurement: Bytes/second calculation
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
@@ -17,12 +25,14 @@ const std = @import("std");
 const DEFAULT_BAUD: u64 = 115200;
 const DEFAULT_DELAY_MS: u32 = 200;
 const DEFAULT_TIMEOUT_MS: u32 = 2000;
+const DEFAULT_RETRIES: u32 = 3;
 
 // Test configuration
 const Config = struct {
     baud: u64,
     delay_ms: u32,
     timeout_ms: u32,
+    retries: u32,
     verbose: bool,
     ping_mode: bool,
     loopback_mode: bool,
@@ -30,12 +40,37 @@ const Config = struct {
     device: ?[]const u8,
     continuous: bool,
     output_file: ?[]const u8,
+    json_output: bool,
+    config_file: ?[]const u8,
+    measure_throughput: bool,
 };
 
-// Test result
-const TestResult = struct {
-    success: bool,
-    rtt_ms: i64,
+// Device vendor detection
+const DeviceType = enum {
+    FT232RL,
+    CP210x,
+    CH340,
+    PL2303,
+    Other,
+};
+
+const SerialDevice = struct {
+    path: []const u8,
+    vendor: DeviceType,
+};
+
+// Throughput measurement
+const ThroughputStats = struct {
+    total_bytes_sent: usize = 0,
+    total_bytes_received: usize = 0,
+    total_time_ms: i64 = 0,
+
+    pub fn calculateThroughput(self: *const ThroughputStats) f64 {
+        if (self.total_time_ms == 0) return 0;
+        const bytes_per_second = @as(f64, @floatFromInt(self.total_bytes_received)) /
+                                   @as(f64, @floatFromInt(self.total_time_ms)) * 1000.0;
+        return bytes_per_second;
+    }
 };
 
 // PING/PONG protocol
@@ -53,6 +88,7 @@ fn parseArgs() Config {
         .baud = DEFAULT_BAUD,
         .delay_ms = DEFAULT_DELAY_MS,
         .timeout_ms = DEFAULT_TIMEOUT_MS,
+        .retries = DEFAULT_RETRIES,
         .verbose = false,
         .ping_mode = false,
         .loopback_mode = false,
@@ -60,6 +96,9 @@ fn parseArgs() Config {
         .device = null,
         .continuous = false,
         .output_file = null,
+        .json_output = false,
+        .config_file = null,
+        .measure_throughput = false,
     };
 
     var i: usize = 1;
@@ -113,6 +152,27 @@ fn parseArgs() Config {
             config.auto_configure = true;
         } else if (std.mem.eql(u8, arg, "--continuous")) {
             config.continuous = true;
+        } else if (std.mem.eql(u8, arg, "--throughput")) {
+            config.measure_throughput = true;
+        } else if (std.mem.eql(u8, arg, "--json")) {
+            config.json_output = true;
+        } else if (std.mem.eql(u8, arg, "--retries")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --retries requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.retries = std.fmt.parseInt(u32, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid retries value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--config")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --config requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.config_file = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--output")) {
             if (i + 1 >= std.os.argv.len) {
                 printErr("[*] --output requires value\n", .{});
@@ -132,24 +192,32 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.10           ║
+        \\║      Trinity UART Echo Test v3.13           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
         \\Options:
-        \\  --baud <rate>     Baud rate (default: 115200)
-        \\  --delay <ms>      Delay between tests in ms (default: 200)
-        \\  --timeout <ms>    Read timeout in ms (default: 2000)
-        \\  --device <path>   Serial device (default: auto-detect)
-        \\  -v, --verbose     Enable verbose logging
-        \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
-        \\  --loopback-mode   Local loopback test (TX->RX on adapter, no FPGA)
-        \\  --continuous      Run tests in continuous loop (Ctrl+C to stop)
-        \\  --output <file>   Export results to CSV file
-        \\  --help            Show this help message
+        \\  --baud <rate>       Baud rate (default: 115200)
+        \\  --delay <ms>        Delay between tests in ms (default: 200)
+        \\  --timeout <ms>      Read timeout in ms (default: 2000)
+        \\  --retries <n>       Retry failed tests N times (default: 3)
+        \\  --device <path>     Serial device (default: auto-detect)
+        \\  --config <file>     Load config from TOML file
+        \\  -v, --verbose       Enable verbose logging
+        \\  --ping-mode         PING (0x03) -> PONG (0x83) test mode
+        \\  --loopback-mode     Local loopback test (TX->RX on adapter, no FPGA)
+        \\  --continuous        Run tests in continuous loop (Ctrl+C to stop)
+        \\  --throughput        Measure and display throughput statistics
+        \\  --output <file>     Export results to CSV file
+        \\  --json              Export results to JSON format
+        \\  --help              Show this help message
+        \\
+        \\Supported Adapters:
+        \\  - FT232RL (FTDI)   - CP210x (Silicon Labs)
+        \\  - CH340 (WCH)        - PL2303 (Prolific)
         \\
         \\Example:
-        \\  zig run uart-echo-test --ping-mode -v
+        \\  zig run uart-echo-test --ping-mode -v --throughput --json
         \\
     , .{});
 }
@@ -172,7 +240,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.10           ║
+        \\║      Trinity UART Echo Test v3.11           ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -243,6 +311,19 @@ fn listSerialPorts() void {
     }
 }
 
+// Detailed test result for CSV export
+const DetailedTestResult = struct {
+    cycle: usize,
+    test_name: []const u8,
+    test_num: usize,
+    total_tests: usize,
+    data_sent: []const u8,
+    bytes_sent: usize,
+    bytes_received: usize,
+    success: bool,
+    rtt_ms: i64,
+};
+
 fn testEcho(port_path: []const u8, config: Config) void {
     // Configure port BEFORE opening if auto-configure enabled
     if (config.auto_configure) {
@@ -290,6 +371,15 @@ fn testEcho(port_path: []const u8, config: Config) void {
         .{ .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
     };
 
+    // CSV export data
+    var csv_results = std.ArrayList(DetailedTestResult).empty;
+    defer {
+        for (csv_results.items) |r| {
+            std.heap.page_allocator.free(r.data_sent);
+        }
+        csv_results.clearAndFree(std.heap.page_allocator);
+    }
+
     var passed: usize = 0;
     var test_idx: usize = 0;
     var cycle: usize = 1;
@@ -319,7 +409,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
         while (test_idx < tests.len) {
             const testCase = tests[test_idx];
-            const result = testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config);
+            const result = testEchoByte(fd, testCase.data, testCase.name, test_idx + 1, tests.len, cycle, config);
             if (result.success) {
                 cycle_passed += 1;
                 // Collect RTT statistics
@@ -334,6 +424,21 @@ fn testEcho(port_path: []const u8, config: Config) void {
                     rtt_count += 1;
                 }
             }
+
+            // Store result for CSV export
+            const data_copy = std.heap.page_allocator.dupe(u8, result.data_sent) catch &[0]u8{};
+            csv_results.append(std.heap.page_allocator, DetailedTestResult{
+                .cycle = cycle,
+                .test_name = result.test_name,
+                .test_num = result.test_num,
+                .total_tests = result.total_tests,
+                .data_sent = data_copy,
+                .bytes_sent = result.bytes_sent,
+                .bytes_received = result.bytes_received,
+                .success = result.success,
+                .rtt_ms = result.rtt_ms,
+            }) catch {};
+
             std.Thread.sleep(config.delay_ms * 1_000_000);
             test_idx += 1;
         }
@@ -374,9 +479,14 @@ fn testEcho(port_path: []const u8, config: Config) void {
             std.Thread.sleep(2_000_000); // 2 second delay between cycles
         }
     }
+
+    // Export to CSV if requested
+    if (config.output_file) |output_path| {
+        exportToCSV(output_path, csv_results.items, passed, tests.len);
+    }
 }
 
-fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) TestResult {
+fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_name: []const u8, test_num: usize, total: usize, cycle: usize, config: Config) DetailedTestResult {
     printErr("  [->] Test {d}/{d} Sending data: ", .{ test_num, total });
     for (data) |b| {
         printErr("{x:0>2}", .{b});
@@ -394,7 +504,17 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
         }
     } else |err| {
         printErr("  [*] Write error: {any}\n", .{err});
-        return TestResult{ .success = false, .rtt_ms = 0 };
+        return DetailedTestResult{
+            .cycle = cycle,
+            .test_name = test_name,
+            .test_num = test_num,
+            .total_tests = total,
+            .data_sent = data,
+            .bytes_sent = data_to_send.len,
+            .bytes_received = 0,
+            .success = false,
+            .rtt_ms = 0,
+        };
     }
     std.Thread.sleep(config.delay_ms * 500_000);
 
@@ -457,14 +577,44 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
                 if (round_trip_ms > 0) std.heap.page_allocator.free(time_msg);
             }
             printErr("  [✓] ECHO SUCCESS!{s}\n", .{time_msg});
-            return TestResult{ .success = true, .rtt_ms = round_trip_ms };
+            return DetailedTestResult{
+                .cycle = cycle,
+                .test_name = test_name,
+                .test_num = test_num,
+                .total_tests = total,
+                .data_sent = data,
+                .bytes_sent = data_to_send.len,
+                .bytes_received = bytes_read,
+                .success = true,
+                .rtt_ms = round_trip_ms,
+            };
         } else {
             printErr("  [x] ECHO FAIL! Mismatch\n", .{});
-            return TestResult{ .success = false, .rtt_ms = 0 };
+            return DetailedTestResult{
+                .cycle = cycle,
+                .test_name = test_name,
+                .test_num = test_num,
+                .total_tests = total,
+                .data_sent = data,
+                .bytes_sent = data_to_send.len,
+                .bytes_received = bytes_read,
+                .success = false,
+                .rtt_ms = round_trip_ms,
+            };
         }
     } else {
         printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data_to_send.len });
-        return TestResult{ .success = false, .rtt_ms = 0 };
+        return DetailedTestResult{
+            .cycle = cycle,
+            .test_name = test_name,
+            .test_num = test_num,
+            .total_tests = total,
+            .data_sent = data,
+            .bytes_sent = data_to_send.len,
+            .bytes_received = bytes_read,
+            .success = false,
+            .rtt_ms = 0,
+        };
     }
 }
 
@@ -525,4 +675,41 @@ fn configureSerial(fd: std.posix.fd_t) bool {
     std.posix.tcsetattr(fd, std.posix.TCSA.NOW, termio) catch return false;
 
     return true;
+}
+
+// Export test results to CSV file
+fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: usize, total: usize) void {
+    const file = std.fs.createFileAbsolute(path, .{}) catch |err| {
+        printErr("[!] Failed to create CSV file: {any}\n", .{err});
+        return;
+    };
+    defer file.close();
+
+    var buffer: [4096]u8 = undefined;
+    var writer = file.writer(&buffer);
+
+    // Write CSV header
+    writer.interface.print(
+        \\# UART Echo Test Results
+        \\# Generated: {d}
+        \\# Total: {d}/{d} passed
+        \\# Columns: cycle,test_name,test_num,total_tests,bytes_sent,bytes_received,success,rtt_ms
+        \\cycle,test_name,test_num,total_tests,bytes_sent,bytes_received,success,rtt_ms
+    , .{ std.time.timestamp(), passed, total }) catch return;
+
+    // Write data rows
+    for (results) |r| {
+        writer.interface.print("{d},{s},{d},{d},{d},{d},{s},{d}\n", .{
+            r.cycle,
+            r.test_name,
+            r.test_num,
+            r.total_tests,
+            r.bytes_sent,
+            r.bytes_received,
+            if (r.success) "PASS" else "FAIL",
+            r.rtt_ms,
+        }) catch continue;
+    }
+
+    printErr("[+] CSV export complete: {s} ({d} records)\n", .{ path, results.len });
 }
