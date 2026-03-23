@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.49 — Configurable Spike Threshold
+//! v3.50 — Help Text Updates & Spike Threshold Documentation
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1396,7 +1396,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.49           ║
+        \\║      Trinity UART Echo Test v3.50           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1424,6 +1424,7 @@ fn printUsage() void {
         \\  --stress-test       High-throughput stress test mode (v3.24)
         \\  --stress-packets <n> Packets per stress test (default: 10)
         \\  --measure-jitter    Measure RTT jitter variance (v3.24)
+        \\  --spike-threshold N Spike detection threshold multiplier (default: 3.0) (v3.49)
         \\  --pattern <name>    Test pattern: default|prbs7|walk1|walk0|seq|alt
         \\  --pattern-length <n> Length of generated pattern (default: 256)
         \\  --simulation         Simulation mode (no hardware required)
@@ -1441,7 +1442,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.49):
+        \\Performance Modes (v3.50):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1463,6 +1464,7 @@ fn printUsage() void {
         \\  ASCII Histogram Bars: Visual bar chart for latency distribution (v3.47)
         \\  Latency Spike Detection: Identify outliers > 3x median RTT (v3.48)
         \\  Spike Threshold: Configurable via --spike-threshold (v3.49)
+        \\  Help Documentation: Complete help text with all options (v3.50)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
