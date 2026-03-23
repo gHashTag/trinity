@@ -978,15 +978,8 @@ const AdaptiveTimeout = struct {
         variance /= @as(f64, @floatFromInt(self.sample_count));
 
         const std_dev = std.math.sqrt(variance);
-
-        // Adaptive timeout formula: base + (3 * std_dev)
-        // Add 50% margin for safety
-        const adaptive_ms = @as(u32, @intFromFloat(@as(f64, @floatFromInt(self.base_timeout_ms)) + (3.0 * std_dev)));
-
-        // Clamp to reasonable bounds: 50ms minimum, 5x base maximum
-        const min_timeout = @max(MIN_TIMEOUT_MS, self.base_timeout_ms / 2);
-        const max_timeout = self.base_timeout_ms * 5;
-        return @max(min_timeout, @min(adaptive_ms, max_timeout));
+        const timeout_adjustment: u32 = @intFromFloat(3.0 * std_dev);
+        return self.base_timeout_ms + timeout_adjustment;
     }
 
     pub fn report(self: *const AdaptiveTimeout) void {
@@ -997,6 +990,39 @@ const AdaptiveTimeout = struct {
 
         const adaptive = self.calculate();
         printInfo("[i] Adaptive Timeout: {d}ms (base: {d}ms)\n", .{ adaptive, self.base_timeout_ms });
+    }
+};
+
+// v3.55: Quality Alerts - monitors quality and warns on thresholds
+const QualityAlerts = struct {
+    warning_triggered: bool = false,
+    critical_triggered: bool = false,
+    last_warning_count: usize = 0,
+
+    // Alert thresholds
+    warning_threshold: f64 = 60.0, // Below 60 -> warning
+    critical_threshold: f64 = 40.0, // Below 40 -> critical alert
+
+    pub fn check(self: *QualityAlerts, quality_score: f64) void {
+        if (quality_score < self.critical_threshold and !self.critical_triggered) {
+            printErr("\n[!!!] CRITICAL ALERT: Quality score {d:.0} below {d:.0} threshold!\n", .{ quality_score, self.critical_threshold });
+            printErr("      Action: Immediate investigation required\n", .{});
+            self.critical_triggered = true;
+        } else if (quality_score >= self.critical_threshold and self.critical_triggered) {
+            self.critical_triggered = false; // Reset when recovered
+            printErr("\n[i] CRITICAL ALERT CLEARED: Quality recovered to {d:.0}\n", .{ quality_score });
+        } else if (quality_score < self.warning_threshold and !self.warning_triggered) {
+            printErr("\n[!] WARNING: Quality score {d:.0} below {d:.0} threshold\n", .{ quality_score, self.warning_threshold });
+            printErr("      Action: Monitor for further degradation\n", .{});
+            self.warning_triggered = true;
+            self.last_warning_count += 1;
+        } else if (quality_score >= self.warning_threshold) {
+            self.warning_triggered = false; // Reset when recovered
+        }
+    }
+
+    pub fn getAlertCount(self: *const QualityAlerts) usize {
+        return self.last_warning_count;
     }
 };
 
@@ -2919,6 +2945,9 @@ fn runSimulation(config: Config) !void {
     var jitter_tracker = JitterTracker.init(allocator);
     defer jitter_tracker.deinit();
 
+    // v3.55: Quality alerts for real-time monitoring
+    var quality_alerts = QualityAlerts{};
+
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
         .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
@@ -3006,6 +3035,12 @@ fn runSimulation(config: Config) !void {
     if (config.measure_jitter) {
         printErr("\n", .{});
         jitter_tracker.reportRTTSummary(config.spike_threshold);
+
+        // v3.55: Check quality alerts after RTT summary
+        if (jitter_tracker.count >= 5) {
+            const quality = jitter_tracker.getQualityScore(config.spike_threshold);
+            quality_alerts.check(quality.score);
+        }
     }
 }
 
