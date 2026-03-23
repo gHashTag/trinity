@@ -305,3 +305,4 @@ apps/queen/*.swiftdeps
 apps/queen/*.swiftdeps~
 apps/queen/*.png
 data/cells/
+src/tools/uart-echo-test
