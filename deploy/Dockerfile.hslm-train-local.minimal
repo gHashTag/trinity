@@ -1,0 +1,40 @@
+# Trinity HSLM Training — Minimal Local Build
+# Very simple: just copy prebuilt or use existing zig
+#
+# φ² + 1/φ² = 3 = TRINITY
+
+FROM ubuntu:24.04
+
+# Install minimal runtime
+RUN apt-get update && apt-get install -y \
+    ca-certificates wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup data directories
+RUN mkdir -p /data/tinystories /data/checkpoints
+
+# For now, just use a simple placeholder for testing
+# The actual HSLM training binary can be mounted from host
+RUN echo "#!/bin/sh\n\
+echo 'HSLM Local Wave 9 Worker'\n\
+echo 'S3 MultiObj: NTP 50%% + JEPA 25%% + NCA 25%%'\n\
+echo 'Waiting for training data...'\n\
+while true; do\n\
+  sleep 60\n\
+  echo \"[$(date +%Y-%m-%d %H:%M:%S)] Worker alive\"\n\
+done\n" > /usr/local/bin/hslm-entrypoint \
+    && chmod +x /usr/local/bin/hslm-entrypoint
+
+# Create simple training data file
+RUN echo "Once upon a time, in a far-off land..." > /data/tinystories/train_100k.txt \
+    && echo "Dataset placeholder: $(wc -l < /data/tinystories/train_100k.txt) lines" lines
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
+
+LABEL version="2.3.0-local-minimal" \
+      description="Trinity HSLM Training — placeholder for local testing" \
+      trinity.identity="phi^2 + 1/phi^2 = 3" \
+      trinity.service="ai-training" \
+      trinity.purpose="nlp-research"
