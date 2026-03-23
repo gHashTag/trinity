@@ -170,20 +170,21 @@ fn cmdReset(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
     var session = try state_machine.DevSession.load(allocator);
 
-    if (session.state != .active and session.state != .dirty) {
+    if (session.state != .active and session.state != .dirty and session.state != .shipped) {
         std.debug.print("Cannot reset: current state is {s}", .{state_machine.stateToString(session.state)});
         return;
     }
 
     std.debug.print("Resetting changes...", .{});
 
-    session.state = .active;
+    // Reset to IDLE state (not ACTIVE) to allow starting new issue
+    try session.transition(.idle);
     session.tests_passed = false;
     session.last_updated = std.time.timestamp();
     try session.save();
 
     std.debug.print("Reset complete (simulated)", .{});
-    std.debug.print("  State: {s} -> ACTIVE", .{state_machine.stateToString(session.state)});
+    std.debug.print("  State: {s} -> IDLE", .{state_machine.stateToString(session.state)});
 }
 
 /// Clear blocked state

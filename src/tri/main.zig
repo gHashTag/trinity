@@ -1424,12 +1424,20 @@ fn dispatchNamespacedCommand(
             std.mem.eql(u8, cmd_name, "reset") or std.mem.eql(u8, cmd_name, "unblock") or
             std.mem.eql(u8, cmd_name, "log"))
         {
-            try dev_workflow.runDevCommand(allocator, cmd_args);
+            var full_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer full_args.deinit(allocator);
+            try full_args.append(allocator, cmd_name);
+            try full_args.appendSlice(allocator, cmd_args);
+            try dev_workflow.runDevCommand(allocator, full_args.items);
             return;
         }
         // Special case: "tri dev status" routes to state machine, cloud dev uses "tri dev farm-status"
         if (std.mem.eql(u8, cmd_name, "status")) {
-            try dev_workflow.runDevCommand(allocator, cmd_args);
+            var status_args = try std.ArrayList([]const u8).initCapacity(allocator, cmd_args.len + 1);
+            defer status_args.deinit(allocator);
+            try status_args.append(allocator, "status");
+            try status_args.appendSlice(allocator, cmd_args);
+            try dev_workflow.runDevCommand(allocator, status_args.items);
             return;
         }
         // Cloud dev farm: tri dev farm-status for cloud agents (state machine uses "status")
