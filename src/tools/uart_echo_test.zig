@@ -1,12 +1,13 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.27 — FPGA XVC Bridge with timeout and retry logic
+//! v3.28 — FPGA XVC Bridge (hostname support planned - use IP directly)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
 //!                            [--output results.csv|--json] [--config uart-test.toml] [--retries 3]
 //!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout] [--auto-configure]
 //!                            [--fpga-mode] [--esp32-host HOST] [--bitstream PATH]
+//!                            [--fpga-timeout MS] [--fpga-retries N]
 //!
 //! Features:
 //!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
@@ -996,7 +997,7 @@ fn printUsage() void {
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
         \\  Stress: High-throughput continuous testing without wait (v3.24)
-        \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.27)
+        \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\
         \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
@@ -1006,6 +1007,10 @@ fn printUsage() void {
         \\    batch_size=32
         \\    adaptive_timeout=true
         \\    auto_baud=true
+        \\    fpga_mode=true
+        \\    esp32_host=192.168.4.1
+        \\    fpga_timeout_ms=30000
+        \\    fpga_retries=3
         \\    rts_cts_flow=true
         \\    stress_test_mode=true
         \\    stress_packets=100
