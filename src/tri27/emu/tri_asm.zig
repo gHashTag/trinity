@@ -62,9 +62,9 @@ const AssemblerState = struct {
     fn init(allocator: Allocator) AssemblerState {
         return .{
             .allocator = allocator,
-            .instructions = std.ArrayList(Instruction).init(allocator),
+            .instructions = std.ArrayList(Instruction).initCapacity(allocator, 128),
             .labels = std.StringHashMap(u32).init(allocator),
-            .unresolved = std.ArrayList(struct { label: []const u8, line_num: u32, ref_inst: usize }).init(allocator),
+            .unresolved = std.ArrayList(struct { label: []const u8, line_num: u32, ref_inst: usize }).initCapacity(allocator, 16),
         };
     }
 
@@ -146,13 +146,49 @@ fn parseLine(allocator: Allocator, line: []const u8, line_num: u32) !ParsedLine 
 
 /// Parse opcode string to Opcode enum
 fn parseOpcode(str: []const u8) ?Opcode {
-    const upper = str;
-    _ = upper; // TODO: convert to uppercase if needed
+    // Check all opcodes by name
+    const ops = [_]struct { name: []const u8, op: Opcode }{
+        .{ .name = "NOP", .op = .NOP },
+        .{ .name = "ADD", .op = .ADD },
+        .{ .name = "SUB", .op = .SUB },
+        .{ .name = "MUL", .op = .MUL },
+        .{ .name = "DIV", .op = .DIV },
+        .{ .name = "INC", .op = .INC },
+        .{ .name = "DEC", .op = .DEC },
+        .{ .name = "AND", .op = .AND },
+        .{ .name = "OR", .op = .OR },
+        .{ .name = "XOR", .op = .XOR },
+        .{ .name = "NOT", .op = .NOT },
+        .{ .name = "SHL", .op = .SHL },
+        .{ .name = "SHR", .op = .SHR },
+        .{ .name = "LD", .op = .LD },
+        .{ .name = "ST", .op = .ST },
+        .{ .name = "LDI", .op = .LDI },
+        .{ .name = "STI", .op = .STI },
+        .{ .name = "JMP", .op = .JMP },
+        .{ .name = "JZ", .op = .JZ },
+        .{ .name = "JNZ", .op = .JNZ },
+        .{ .name = "CALL", .op = .CALL },
+        .{ .name = "RET", .op = .RET },
+        .{ .name = "HALT", .op = .HALT },
+        .{ .name = "DOT", .op = .DOT },
+        .{ .name = "BIND", .op = .BIND },
+        .{ .name = "BUNDLE2", .op = .BUNDLE2 },
+        .{ .name = "BUNDLE3", .op = .BUNDLE3 },
+        .{ .name = "PHI_CONST", .op = .PHI_CONST },
+        .{ .name = "PI_CONST", .op = .PI_CONST },
+        .{ .name = "E_CONST", .op = .E_CONST },
+        .{ .name = "SACR", .op = .SACR },
+        .{ .name = "LD_IMM", .op = .LD_IMM },
+        .{ .name = "ADD3", .op = .ADD3 },
+        .{ .name = "SUB3", .op = .SUB3 },
+        .{ .name = "CMP3", .op = .CMP3 },
+        .{ .name = "SYSCALL", .op = .SYSCALL },
+    };
 
-    // Direct enum lookup
-    inline for (@typeInfo(Opcode).enum.fields) |field| {
-        if (std.ascii.eqlIgnoreCase(field.name, str)) {
-            return @field(Opcode, field.name);
+    for (ops) |item| {
+        if (std.ascii.eqlIgnoreCase(item.name, str)) {
+            return item.op;
         }
     }
     return null;
