@@ -146,8 +146,8 @@ pub fn decodeInstruction(word: u32) Instruction {
 pub fn encode(inst: Instruction) u32 {
     var word: u32 = @intFromEnum(inst.opcode);
     word |= @as(u32, inst.dst) << 8;
-    word |= @as(u32, inst.src1) << 11;
-    word |= @as(u32, inst.src2) << 14;
+    word |= @as(u32, inst.src1) << 13;
+    word |= @as(u32, inst.src2) << 18;
 
     // Encode 9-bit immediate (bits 23-31), sign-extended to 16 bits
     // imm_raw is truncated to 9 bits, then sign-extended with 0xFE00

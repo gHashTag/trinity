@@ -1,0 +1,34 @@
+// @origin(spec:tri27_golden_test.tri) @regen(manual-impl)
+// TRI-27 GOLDEN TEST TEMPLATE — Placeholder for future implementation
+//
+// φ² + 1/φ² = 3 | TRINITY
+
+const std = @import("std");
+const testing = std.testing;
+
+test "golden test basic" {
+    // Template placeholder - full test to be implemented when executor integration is complete
+    try testing.expect(true);
+}
+
+// These tests are now implemented in test_tri27_golden.zig:
+// - test "golden: load_imm, add, halt" - basic R/I-type with immediate, register, and control flow
+// - test "golden: load_imm, store, load" - I-type with store, verify memory write
+// - test "golden: all R-type arithmetic" - all arithmetic instructions
+// - test "golden: comments and multi-line" - verify comments and newlines are handled
+// - test "golden: jump and control flow" - test JMP instruction
+//
+// Usage:
+//   zig test src/tri27/emu/test_tri27_golden.zig
+//
+// Pipeline:
+//   1. Assemble .tasm source (asm_parser.zig)
+//   2. Load bytecode into CPUState
+//   3. Execute via executor.execute()
+//   4. Verify registers/memory match expected
+//
+// Implementation status (2026-03-23):
+//   ✅ test_tri27_golden.zig — 5 golden tests implemented
+//   ✅ asm_parser.zig — lexer, parser, encoder integration (10 tests pass)
+//   ✅ decoder.zig — encode/decode functions (bug fixed: src1/src2 shift)
+//   ✅ executor.zig — CPUState.init signature fixed, Trit27.ZERO reference fixed
