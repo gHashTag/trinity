@@ -12,6 +12,7 @@ pub const Source = enum {
     external,
     scheduled,
     experience_recall,
+    tri27,
 };
 
 pub const Action = union(enum) {
@@ -34,6 +35,23 @@ pub const Action = union(enum) {
         },
     },
     wait: void,
+    tri27_op: struct {
+        operation: Tri27Operation,
+        input_file: []const u8,
+        output_file: []const u8,
+        cycles: u32,
+        instructions: u32,
+    },
+};
+
+pub const Tri27Operation = enum(u8) {
+    assemble,
+    disassemble,
+    run,
+    @"test",
+    validate,
+    flash,
+    dump,
 };
 
 pub const Episode = struct {
@@ -57,7 +75,23 @@ pub const EpisodeSummary = struct {
     outcome: Outcome,
     success: bool,
     duration_ms: u64,
+    /// For TRI-27 operations: input file path
+    input_file: []const u8 = "",
+    /// For TRI-27 operations: operation type
+    tri27_operation: []const u8 = "",
 };
+
+/// Parse TRI-27 operation string to enum
+fn parseTri27Operation(str: []const u8) Tri27Operation {
+    if (std.mem.eql(u8, str, "assemble")) return .assemble;
+    if (std.mem.eql(u8, str, "disassemble")) return .disassemble;
+    if (std.mem.eql(u8, str, "run")) return .run;
+    if (std.mem.eql(u8, str, "test")) return .@"test";
+    if (std.mem.eql(u8, str, "validate")) return .validate;
+    if (std.mem.eql(u8, str, "flash")) return .flash;
+    if (std.mem.eql(u8, str, "dump")) return .dump;
+    return .assemble; // Default
+}
 
 pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan, result: Result, outcome: Outcome) !Episode {
     _ = allocator;
@@ -95,12 +129,19 @@ pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
 
     // Create simplified summary for JSONL
     const action_name = @tagName(episode.action);
+    var input_file: []const u8 = "";
+    var tri27_operation: []const u8 = "";
     const key = switch (episode.action) {
         .scale_up => |a| a.key,
         .scale_down => |a| a.key,
         .trigger => |a| a.key,
         .set => |a| a.key,
         .wait => "",
+        .tri27_op => |t| blk: {
+            input_file = t.input_file;
+            tri27_operation = @tagName(t.operation);
+            break :blk t.input_file;
+        },
     };
 
     const summary = EpisodeSummary{
@@ -112,6 +153,8 @@ pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
         .outcome = episode.outcome,
         .success = episode.result.success,
         .duration_ms = episode.result.timing.duration_ms,
+        .input_file = input_file,
+        .tri27_operation = tri27_operation,
     };
 
     const json = try std.json.Stringify.valueAlloc(allocator, summary, .{ .whitespace = .minified });
@@ -159,6 +202,16 @@ pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
             Action{ .scale_down = .{ .key = summary.key, .quality_score = 0.0 } }
         else if (std.mem.eql(u8, summary.action_type, "trigger"))
             Action{ .trigger = .{ .key = summary.key } }
+        else if (std.mem.eql(u8, summary.action_type, "tri27_op"))
+            Action{
+                .tri27_op = .{
+                    .operation = parseTri27Operation(summary.tri27_operation),
+                    .input_file = summary.input_file,
+                    .output_file = "",
+                    .cycles = 0,
+                    .instructions = 0,
+                },
+            }
         else
             Action{ .wait = {} };
 
