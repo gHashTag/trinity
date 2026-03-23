@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.38 — Pattern Length Validation
+//! v3.39 — Auto-Recovery Integration
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1245,7 +1245,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.38           ║
+        \\║      Trinity UART Echo Test v3.39           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1289,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.38):
+        \\Performance Modes (v3.39):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1300,7 +1300,9 @@ fn printUsage() void {
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
+        \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
+        \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
@@ -1978,6 +1980,10 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var overall_rtt_sum: i64 = 0;
     var overall_rtt_count: usize = 0;
 
+    // v3.39: Auto-recovery statistics
+    var total_retries: usize = 0;
+    var recovered_tests: usize = 0;
+
     // v3.24: Latency histogram
     var histogram = LatencyHistogram{};
     // v3.25: Jitter tracker for RTT variance measurement
@@ -2002,8 +2008,41 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
         while (test_idx < tests.len) {
             const testCase = tests[test_idx];
-            const result = testEchoByte(fd, testCase.data, testCase.name, test_idx + 1, tests.len, cycle, config);
-            if (result.success) {
+
+            // v3.39: Auto-recovery with exponential backoff
+            var result: DetailedTestResult = undefined;
+            var final_success = false;
+            var retry_count: u32 = 0;
+
+            if (config.auto_recovery) {
+                // Initialize AutoRecovery with config.retries (max retries) and base delay
+                const recovery = AutoRecovery.init(config.retries, 100); // 100ms base delay
+
+                while (!final_success and recovery.shouldRetry(retry_count)) {
+                    result = testEchoByte(fd, testCase.data, testCase.name, test_idx + 1, tests.len, cycle, config);
+                    if (result.success) {
+                        final_success = true;
+                        // v3.39: Track recovered tests (required retries)
+                        if (retry_count > 0) {
+                            recovered_tests += 1;
+                        }
+                    } else {
+                        retry_count += 1;
+                        total_retries += 1;
+                        if (recovery.shouldRetry(retry_count)) {
+                            const delay = recovery.getDelay(retry_count);
+                            printWarning("[i] Auto-recovery: retry {d}/{d} after {d}ms delay\n", .{ retry_count, config.retries, delay });
+                            std.Thread.sleep(delay * 1_000);
+                        }
+                    }
+                }
+            } else {
+                // Normal mode: single attempt
+                result = testEchoByte(fd, testCase.data, testCase.name, test_idx + 1, tests.len, cycle, config);
+                final_success = result.success;
+            }
+
+            if (final_success) {
                 cycle_passed += 1;
                 // Collect RTT statistics
                 if (result.rtt_ms > 0) {
@@ -2035,7 +2074,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
                 .data_sent = data_copy,
                 .bytes_sent = result.bytes_sent,
                 .bytes_received = result.bytes_received,
-                .success = result.success,
+                .success = final_success, // v3.39: Use final success (after retries)
                 .rtt_ms = result.rtt_ms,
                 .rtt_us = 0, // Not available from result
             }) catch {};
@@ -2068,6 +2107,10 @@ fn testEcho(port_path: []const u8, config: Config) void {
             printErr("║          SUMMARY                      ║\n", .{});
             printErr("╚════════════════════════════════════════╝\n", .{});
             printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
+            // v3.39: Auto-recovery statistics
+            if (config.auto_recovery and total_retries > 0) {
+                printErr("  Auto-Recovery: {d} retries, {d} tests recovered\n", .{ total_retries, recovered_tests });
+            }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
                 printErr("  RTT: min={d}ms avg={d:.1}ms max={d}ms\n", .{ rtt_min, rtt_avg, rtt_max });
@@ -2077,6 +2120,10 @@ fn testEcho(port_path: []const u8, config: Config) void {
         } else {
             printErr("\n", .{});
             printErr("  [i] Cycle {d} result: {d}/{d} passed", .{ cycle, cycle_passed, tests.len });
+            // v3.39: Show recovery stats in continuous mode
+            if (config.auto_recovery and total_retries > 0) {
+                printErr(" ({d} retries, {d} recovered)", .{ total_retries, recovered_tests });
+            }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
                 printErr(", RTT: min={d}ms avg={d:.1}ms max={d}ms", .{ rtt_min, rtt_avg, rtt_max });
