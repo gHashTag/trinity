@@ -1,5 +1,5 @@
-# FLY.IO — HSLM Training Configuration (Wave 9)
-# φ² + 1/φ² = 3 = TRINITY
+app = "hslm-w9-mini"
+primary_region = "sin"
 
 [build]
 dockerfile = "Dockerfile.hslm-train"
@@ -17,6 +17,11 @@ interval = "60s"
 method = "GET"
 path = "/health"
 timeout = "30s"
+
+[[vm]]
+cpu_kind = "shared"
+cpus = 2
+memory_mb = 4096
 
 [env]
 HSLM_PROFILE = "s3-multiobj"
