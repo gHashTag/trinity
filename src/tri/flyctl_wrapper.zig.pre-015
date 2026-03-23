@@ -1,0 +1,209 @@
+// @origin(spec:flyctl_wrapper.tri) @regen(manual-impl)
+
+// ═══════════════════════════════════════════════════════════════════════
+// FLYCTL WRAPPER — Zig wrapper for flyctl CLI
+// ═════════════════════════════════════════════════════════════════════
+//
+// Wraps flyctl commands with proper token authentication.
+// Each account uses its own FLY_API_TOKEN_N env var.
+//
+// φ² + 1/φ² = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+pub const FlyResult = struct {
+    stdout: []const u8,
+    stderr: []const u8,
+    exit_code: u32,
+};
+
+pub fn success(self: *const FlyResult) bool {
+    return self.exit_code == 0;
+}
+
+pub fn deinit(self: *const FlyResult, allocator: Allocator) void {
+    allocator.free(self.stdout);
+    allocator.free(self.stderr);
+}
+
+pub const FlyContext = struct {
+    allocator: Allocator,
+    account_id: u8,
+    token_env_var: []const u8,
+    token: []const u8,
+
+    pub fn init(allocator: Allocator, account_id: u8) FlyContext {
+        const env_var = std.fmt.allocPrint(allocator, "FLY_API_TOKEN_{d}", .{account_id}) catch "FLY_API_TOKEN_1";
+        const token = std.process.getEnvVarOwned(allocator, env_var) catch "";
+
+        return FlyContext{
+            .allocator = allocator,
+            .account_id = account_id,
+            .token_env_var = env_var,
+            .token = token,
+        };
+    }
+
+    pub fn deinit(self: *FlyContext) void {
+        self.allocator.free(self.token_env_var);
+        if (self.token.len > 0) {
+            self.allocator.free(self.token);
+        }
+    }
+};
+
+/// Check if flyctl is available and at least one token is set
+pub fn checkPrerequisites(allocator: Allocator) !void {
+    // Check if flyctl exists
+    const check_result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "flyctl", "version" },
+    }) catch {
+        return error.FlyctlNotFound;
+    };
+    defer {
+        allocator.free(check_result.stdout);
+        allocator.free(check_result.stderr);
+    }
+
+    if (check_result.term.Exited != 0) {
+        return error.FlyctlNotFound;
+    }
+
+    // Check if at least one token is set
+    var has_token = false;
+    var i: u8 = 1;
+    while (i <= 4) : (i += 1) {
+        const env_var = try std.fmt.allocPrint(allocator, "FLY_API_TOKEN_{d}", .{i});
+        defer allocator.free(env_var);
+
+        if (std.process.hasEnvVar(env_var)) {
+            has_token = true;
+            break;
+        }
+    }
+
+    if (!has_token) {
+        return error.NoFlyApiToken;
+    }
+}
+
+/// List all apps for this account
+pub fn listApps(ctx: *const FlyContext) !FlyResult {
+    return run(ctx, &[_][]const u8{ "apps", "list", "--json" });
+}
+
+/// Create a new app
+pub fn createApp(ctx: *const FlyContext, app_name: []const u8, org: ?[]const u8, region: []const u8) !FlyResult {
+    var args = std.ArrayList([]const u8).init(ctx.allocator);
+    defer args.deinit();
+
+    try args.append("apps");
+    try args.append("create");
+    try args.append("--name");
+    try args.append(app_name);
+    try args.append("--org");
+    try args.append(if (org) |o| o else "personal");
+    try args.append("--region");
+    try args.append(region);
+    try args.append("--yes");
+
+    return run(ctx, args.items);
+}
+
+/// Deploy an app
+pub fn deploy(ctx: *const FlyContext, app_name: []const u8, config_file: []const u8) !FlyResult {
+    var args = std.ArrayList([]const u8).init(ctx.allocator);
+    defer args.deinit();
+
+    try args.append("deploy");
+    try args.append("--config");
+    try args.append(config_file);
+    try args.append("--app");
+    try args.append(app_name);
+    try args.append("--yes");
+
+    return run(ctx, args.items);
+}
+
+/// Set environment secrets for an app
+pub fn setSecrets(ctx: *const FlyContext, app_name: []const u8, secrets: [][]const u8) !FlyResult {
+    var args = std.ArrayList([]const u8).init(ctx.allocator);
+    defer args.deinit();
+
+    try args.append("secrets");
+    try args.append("set");
+    try args.append("--app");
+    try args.append(app_name);
+    try args.appendSlice(secrets);
+
+    return run(ctx, args.items);
+}
+
+/// Scale an app
+pub fn scaleApp(ctx: *const FlyContext, app_name: []const u8, cpus: u8, memory_mb: u16) !FlyResult {
+    var args = std.ArrayList([]const u8).init(ctx.allocator);
+    defer args.deinit();
+
+    try args.append("scale");
+    try args.append("vm");
+    try args.append("--app");
+    try args.append(app_name);
+    try args.append("--cpus");
+    try args.append(try std.fmt.allocPrint(ctx.allocator, "{d}", .{cpus}));
+    try args.append("--memory");
+    try args.append(try std.fmt.allocPrint(ctx.allocator, "{d}", .{memory_mb}));
+
+    return run(ctx, args.items);
+}
+
+/// Restart an app
+pub fn restartApp(ctx: *const FlyContext, app_name: []const u8) !FlyResult {
+    return run(ctx, &[_][]const u8{ "apps", "restart", app_name });
+}
+
+/// Get app status
+pub fn getAppStatus(ctx: *const FlyContext, app_name: []const u8) !FlyResult {
+    return run(ctx, &[_][]const u8{ "status", "--app", app_name, "--json" });
+}
+
+/// Internal: run flyctl command with proper token
+fn run(ctx: *const FlyContext, args: []const u8) !FlyResult {
+    var child = std.process.Child.init(&[_][]const u8{"flyctl"}, ctx.allocator);
+
+    // Add arguments
+    child.argv = try std.mem.concat(ctx.allocator, []const u8, &[_][]const u8{ child.argv[0] }, args);
+
+    // Set token as environment variable
+    child.env_map = try std.process.EnvMap.init(ctx.allocator);
+    defer child.env_map.deinit();
+    try child.env_map.put("FLY_API_TOKEN", ctx.token);
+
+    child.stdout_behavior = .Pipe;
+    child.stderr_behavior = .Pipe;
+
+    try child.spawn();
+
+    const stdout = try child.stdout.?.reader().readAllAlloc(ctx.allocator, std.math.maxInt(usize));
+    errdefer ctx.allocator.free(stdout);
+
+    const stderr = try child.stderr.?.reader().readAllAlloc(ctx.allocator, std.math.maxInt(usize));
+    errdefer ctx.allocator.free(stderr);
+
+    const term = try child.wait();
+
+    var exit_code: u32 = 0;
+    if (term.Exited != 0) {
+        exit_code = @intCast(term.Exited);
+    } else if (term.Signal != 0) {
+        exit_code = 128 + @as(u32, @intCast(term.Signal));
+    }
+
+    return FlyResult{
+        .stdout = stdout,
+        .stderr = stderr,
+        .exit_code = exit_code,
+    };
+}
