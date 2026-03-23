@@ -15,13 +15,13 @@ const dev_state_machine = @import("dev_state_machine.zig");
 const github_integration = @import("github_integration.zig");
 
 pub fn main() !void {
-    const gpa = std.heap.GeneralPurposeAllocator(.{};
+    const gpa = std.heap.GeneralPurposeAllocator(.{});
     defer {
         const leaked = gpa.deinit();
         if (leaked == 0) {
             std.debug.print("All memory freed successfully", .{});
         }
-    };
+    }
     const allocator = gpa.allocator();
 
     // Get command line arguments
@@ -84,7 +84,7 @@ fn printUsage() void {
     std.debug.print("Usage: test-dev <command> [options]\n\n", .{});
     std.debug.print("Commands:\n", .{});
     std.debug.print("  status              Show dev session status\n", .{});
-    std.debug.print("  start --issue <N>    Start dev session for issue N\n", .{{});
+    std.debug.print("  start --issue <N>    Start dev session for issue N\n", .{});
     std.debug.print("  test                Run tests and mark as passed\n", .{});
     std.debug.print("  commit              Commit changes with issue ID\n", .{});
     std.debug.print("  ship                Mark changes as shipped\n", .{});

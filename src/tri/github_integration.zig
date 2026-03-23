@@ -65,7 +65,6 @@ pub const DevGithub = struct {
             allocator.free(result.stdout);
             allocator.free(result.stderr);
         }
-        _ = result;
     }
 
     /// Post test results comment
@@ -96,12 +95,10 @@ pub const DevGithub = struct {
             allocator.free(result.stdout);
             allocator.free(result.stderr);
         }
-        _ = result;
     }
 
     /// Post commit summary comment
     pub fn postCommitSummary(allocator: Allocator, issue_number: u32, files: []const []const u8, message: []const u8) !void {
-        _ = files;
         var comment_buf = try std.ArrayList(u8).init(allocator);
         defer comment_buf.deinit();
 
@@ -127,7 +124,6 @@ pub const DevGithub = struct {
             allocator.free(result.stdout);
             allocator.free(result.stderr);
         }
-        _ = result;
     }
 };
 

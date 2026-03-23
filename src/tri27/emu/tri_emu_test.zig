@@ -96,7 +96,7 @@ fn runCPUTests(allocator: std.mem.Allocator) ![]const bool {
     var results = std.ArrayList(bool).init(allocator);
     defer results.deinit();
 
-    const TestCase = struct { name: []const u8, test: fn () bool };
+    const TestCase = struct { name: []const u8, test: *const fn () bool };
 
     const test_cases = [_]TestCase{
         .{ .name = "CPUState init", .test = testCpuInit },
