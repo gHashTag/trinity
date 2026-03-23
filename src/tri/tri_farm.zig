@@ -1374,7 +1374,7 @@ fn localWave9Init(allocator: Allocator) !void {
 
     // Ensure directory exists
     const compose_dir = std.fs.path.dirname(compose_file) orelse ".";
-    try std.fs.cwd().makeDir(compose_dir) catch |err| switch (err) {
+    std.fs.cwd().makeDir(compose_dir) catch |err| switch (err) {
         error.PathAlreadyExists => {},
         else => return err,
     };
@@ -1388,7 +1388,7 @@ fn localWave9Init(allocator: Allocator) !void {
 
     // Create data directories
     const wave9_dir = "data/wave9";
-    try std.fs.cwd().makeDir(wave9_dir) catch |err| switch (err) {
+    std.fs.cwd().makeDir(wave9_dir) catch |err| switch (err) {
         error.PathAlreadyExists => {},
         else => return err,
     };
@@ -1396,7 +1396,7 @@ fn localWave9Init(allocator: Allocator) !void {
     for (1..49) |i| {
         const worker_dir = try std.fmt.allocPrint(allocator, "{s}/worker-{d}", .{ wave9_dir, i });
         defer allocator.free(worker_dir);
-        try std.fs.cwd().makeDir(worker_dir) catch |err| switch (err) {
+        std.fs.cwd().makeDir(worker_dir) catch |err| switch (err) {
             error.PathAlreadyExists => {},
             else => return err,
         };
@@ -1466,7 +1466,7 @@ fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
 
     for (1..workers + 1) |j| {
         const worker_name = try std.fmt.allocPrint(allocator, "w9-{d}", .{j});
-        try workers_to_start.append(worker_name);
+        try workers_to_start.append(allocator, worker_name);
     }
 
     const result = try local_farm_mod.composeUp(allocator, compose_file, null);

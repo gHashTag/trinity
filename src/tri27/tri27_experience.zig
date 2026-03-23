@@ -1,12 +1,11 @@
 // TRI‑27 Experience — Episode tracking for TRI‑27 operations
-// Integrates with src/tri/tri_experience.zig for persistent storage
+// Self-contained implementation (no external dependencies)
 // ═════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const tri_experience = @import("../../tri/tri_experience.zig");
-const TriEpisode = tri_experience.Episode;
+const EPISODES_DIR = ".trinity/tri27/episodes";
 
 const print = std.debug.print;
 
@@ -100,6 +99,45 @@ pub const Tri27Event = struct {
     }
 };
 
+// Simple Episode struct for TRI‑27 (self-contained)
+const Episode = struct {
+    issue: u32 = 0,
+    task: [256]u8 = undefined,
+    task_len: u8 = 0,
+    verdict: [16]u8 = undefined,
+    timestamp: i64 = 0,
+
+    pub fn save(self: Episode) !void {
+        // Ensure directory exists
+        std.fs.cwd().makePath(EPISODES_DIR) catch {};
+
+        // Build filename: {issue}_{timestamp}.json
+        var fname_buf: [64]u8 = undefined;
+        const fname = std.fmt.bufPrint(&fname_buf, "{d}_{d}.json", .{
+            self.issue,
+            self.timestamp,
+        }) catch return error.OutOfMemory;
+
+        // Build JSON
+        var buf: [8192]u8 = undefined;
+        var pos: usize = 0;
+
+        pos += (std.fmt.bufPrint(buf[pos..], "{{\"issue\":{d},\"task\":\"{s}\",\"verdict\":\"{s}\",\"timestamp\":{d}}}", .{
+            self.issue,
+            self.task[0..self.task_len],
+            self.verdict[0..],
+            self.timestamp,
+        }) catch return error.OutOfMemory).len;
+
+        // Write to file
+        var dir = try std.fs.cwd().openDir(EPISODES_DIR, .{});
+        defer dir.close();
+        var file = try dir.createFile(fname, .{});
+        defer file.close();
+        try file.writeAll(buf[0..pos]);
+    }
+};
+
 // Circular event buffer for TRI‑27 operations
 var event_buffer: [EventLogSize]Tri27Event = undefined;
 var event_count: usize = 0;
@@ -134,14 +172,14 @@ pub fn logEvent(event: Tri27Event) void {
 
 pub fn getLastEvent() ?*const Tri27Event {
     if (event_count == 0 and !buffer_initialized) {
-        return error.NoEvents;
+        return null;
     }
     const idx = if (event_count == 0) EventLogSize - 1 else event_count - 1;
     return &event_buffer[idx];
 }
 
 pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
-    var episode = TriEpisode{};
+    var episode = Episode{};
     episode.issue = issue;
     episode.timestamp = event.timestamp;
 
@@ -163,34 +201,12 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
         std.mem.eql(u8, event.statusStr(), "COMPLETED");
     if (is_success) {
         std.mem.copyFor(u8, episode.verdict[0..], "SUCCESS");
-        episode.iterations = 1;
     } else {
         std.mem.copyFor(u8, episode.verdict[0..], "FAILURE");
-        episode.iterations = 1;
     }
 
-    // Fitness metrics
-    episode.fitness.test_pass_rate = if (is_success) 1.0 else 0.0;
-    episode.fitness.spec_compliance = if (is_success) 1.0 else 0.0;
-    episode.fitness.time_hours = @as(f32, event.cycles) / 1000000.0; // rough estimate
-    episode.fitness.pr_merged = is_success;
-
-    // Copy mistakes if any
-    const err_msg = event.errorMsg();
-    if (err_msg.len > 0) {
-        var j: usize = 0;
-        while (j < 5) : (j += 1) {
-            if (j < err_msg.len) {
-                episode.mistakes[j][0] = err_msg[j];
-            }
-        }
-        episode.mistakes_count = @intCast(@min(5, err_msg.len));
-    } else {
-        episode.mistakes_count = 0;
-    }
-
-    // Save episode via tri_experience module
-    try tri_experience.saveEpisode(episode);
+    // Save episode directly
+    try episode.save();
 }
 
 pub fn runStatus() !void {
@@ -292,7 +308,7 @@ fn recordCommand(args: []const []const u8) !void {
     print("{s}Episode #{d} recorded for issue #{d}\n", .{ GREEN, event.timestamp, issue_num });
 }
 
-fn parseOperation(str: []const u8) Tri27Operation {
+pub fn parseOperation(str: []const u8) Tri27Operation {
     if (std.mem.eql(u8, str, "ASM")) return .assemble;
     if (std.mem.eql(u8, str, "DISASM")) return .disassemble;
     if (std.mem.eql(u8, str, "RUN")) return .run;
