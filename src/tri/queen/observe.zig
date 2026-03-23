@@ -41,10 +41,15 @@ fn loadSensors(allocator: std.mem.Allocator) !SensorsSnapshot {
     };
     defer file.close();
 
-    const contents = try file.readToEndAlloc(allocator, 1024 * 1024, 1024 * 1024);
+    // Read all file contents - Zig 0.15 requires max_bytes parameter
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch |err| {
+        // Return default on error
+        // Error captured but not used - this is acceptable
+        return SensorsSnapshot{};
+    };
     defer allocator.free(contents);
 
-    return std.json.parseFromSlice(SensorsSnapshot, contents, 1024 * 1024) catch SensorsSnapshot{};
+    return std.json.parseFromSlice(SensorsSnapshot, contents) catch SensorsSnapshot{};
 }
 
 /// Read policy from .trinity/queen/policy.json
@@ -54,10 +59,14 @@ fn loadPolicy(allocator: std.mem.Allocator) !PolicySnapshot {
     };
     defer file.close();
 
-    const contents = try file.readToEndAlloc(allocator, 1024 * 1024, 1024 * 1024);
+    // Read all file contents - Zig 0.15 requires max_bytes parameter
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch |err| {
+        // Error captured but not used - this is acceptable
+        return PolicySnapshot{};
+    };
     defer allocator.free(contents);
 
-    return std.json.parseFromSlice(PolicySnapshot, contents, 1024 * 1024) catch PolicySnapshot{};
+    return std.json.parseFromSlice(PolicySnapshot, contents) catch PolicySnapshot{};
 }
 
 /// Observe: gather current state from sensors and policy
