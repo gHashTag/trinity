@@ -21,7 +21,6 @@ pub const Source = enum {
     /// Recalled from experience
     experience_recall,
     /// TRI-27 operation
-    tri27,
 };
 
 /// Episode action type
@@ -171,16 +170,19 @@ pub fn loadEpisodes(allocator: std.mem.Allocator, options: LoadOptions) ![]Episo
     var loaded: u32 = 0;
 
     while (line_iter.next()) |line| {
-        if (line.len == 0) continue; // Skip empty lines
+        if (line.len == 0) {
+            // Skip empty lines
+            continue;
+        }
 
-        const episode = std.json.parseFromSlice(Episode, line) catch _ {
+        const episode = std.json.parseFromSlice(Episode, line) catch {
             // Skip invalid lines
             continue;
         };
 
         // Apply source filter
         if (options.source_filter) |filter| {
-            if (episode.source != filter) continue;
+            if (episode.source != filter) { continue; }
         }
 
         // Apply outcome filter
@@ -288,71 +290,4 @@ test "episodes: recordEpisode creates valid episode" {
 }
 
 /// Record episode from TRI-27 operation
-pub fn recordTri27Episode(allocator: std.mem.Allocator, tri27_event: anytype, issue_id: ?u64) !Episode {
-    const Bridge = @import("tri27_bridge.zig");
-    const timestamp_ns = std.time.nanoTimestamp();
-
-    // Create default context
-    var context = Context{
-        .timestamp_ns = timestamp_ns,
-        .policy = .{},
-        .senses = .{},
-        .active_issues = if (issue_id) |id|
-            const issues = try allocator.alloc(u64, 1);
-            issues[0] = id;
-            issues
-        else
-            &[_]u64{},
-    };
-
-    // Convert TRI-27 event to Result
-    const is_success = if (@TypeOf(tri27_event.status) == @TypeOf(Bridge.Tri27Status)) {
-        const status: Bridge.Tri27Status = tri27_event.status;
-        status == .success
-    } else if (@TypeOf(tri27_event.status) == @TypeOf(enum(u8))) {
-        const status_raw: u8 = tri27_event.status;
-        status_raw == 0 // SUCCESS = 0
-    } else true;
-
-    var result = Result{
-        .success = is_success,
-        .@"error" = if (@TypeOf(tri27_event.error_msg) == @TypeOf([512]u8))
-            try allocator.dupe(u8, tri27_event.errorMsg())
-        else
-            null,
-        .timing = Timing{
-            .start_ns = timestamp_ns,
-            .duration_ns = if (@TypeOf(tri27_event.cycles) == @TypeOf(u32))
-                tri27_event.cycles * 1000
-            else
-                0,
-        },
-        .output = null,
-        .new_senses = .{},
-    };
-
-    // Create episode with TRI-27 source
-    return Episode{
-        .id = @as(u64, @bitCast(std.time.nanoTimestamp())),
-        .timestamp = timestamp_ns,
-        .source = .tri27,
-        .context = context,
-        .action = if (@TypeOf(tri27_event.operation) == @TypeOf([]const u8))
-            .{
-                .tri27_op = .{
-                    .operation = tri27_event.operation,
-                    .input_file = tri27_event.input_file,
-                    .output_file = tri27_event.output_file,
-                    .cycles = if (@TypeOf(tri27_event.cycles) == @TypeOf(u32)) tri27_event.cycles else 0,
-                    .instructions = if (@TypeOf(tri27_event.instructions) == @TypeOf(u32)) tri27_event.instructions else 0,
-                },
-            }
-        else
-            .wait,
-        },
-        .result = result,
-        .outcome = if (is_success) .success else .failure_unknown,
-    };
-}
-    try std.testing.expect(episode.context.timestamp_ns == 1234567890);
 }
