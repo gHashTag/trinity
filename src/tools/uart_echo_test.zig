@@ -2,7 +2,7 @@
 //! Sends bytes with configurable delay and expects them echoed back
 //!
 //! Usage:
-//!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
+//!     uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
 //!
 //! Dependencies:
 //!     Zig 0.15+ (uses POSIX serial)
@@ -17,6 +17,12 @@ const DEFAULT_BAUD: u64 = 115200;
 const DEFAULT_DELAY_MS: u32 = 200;
 const DEFAULT_TIMEOUT_MS: u32 = 2000;
 
+// Output format
+const OutputFormat = enum {
+    csv,
+    json,
+};
+
 // Test configuration
 const Config = struct {
     baud: u64,
@@ -28,6 +34,7 @@ const Config = struct {
     device: ?[]const u8,
     continuous: bool,
     output_file: ?[]const u8,
+    output_format: OutputFormat,
 };
 
 // Test result
@@ -57,6 +64,7 @@ fn parseArgs() Config {
         .device = null,
         .continuous = false,
         .output_file = null,
+        .output_format = .csv,
     };
 
     var i: usize = 1;
@@ -108,6 +116,25 @@ fn parseArgs() Config {
             config.auto_configure = true;
         } else if (std.mem.eql(u8, arg, "--continuous")) {
             config.continuous = true;
+        } else if (std.mem.eql(u8, arg, "--json")) {
+            config.output_format = .json;
+        } else if (std.mem.eql(u8, arg, "--csv")) {
+            config.output_format = .csv;
+        } else if (std.mem.eql(u8, arg, "--format")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --format requires value (csv|json)\n", .{});
+                std.process.exit(1);
+            }
+            const fmt_arg = std.mem.span(std.os.argv[i + 1]);
+            if (std.mem.eql(u8, fmt_arg, "csv")) {
+                config.output_format = .csv;
+            } else if (std.mem.eql(u8, fmt_arg, "json")) {
+                config.output_format = .json;
+            } else {
+                printErr("[*] Invalid format: {s}. Use csv or json\n", .{fmt_arg});
+                std.process.exit(1);
+            }
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--output")) {
             if (i + 1 >= std.os.argv.len) {
                 printErr("[*] --output requires value\n", .{});
@@ -126,11 +153,11 @@ fn parseArgs() Config {
 
 fn printUsage() void {
     std.debug.print(
-        \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.8            ║
+        \\╔════════════════════════════════╗
+        \\║      Trinity UART Echo Test v3.9            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
-        \\
+        \\        \\
         \\Options:
         \\  --baud <rate>     Baud rate (default: 115200)
         \\  --delay <ms>      Delay between tests in ms (default: 200)
@@ -139,11 +166,13 @@ fn printUsage() void {
         \\  -v, --verbose     Enable verbose logging
         \\  --ping-mode       PING (0x03) -> PONG (0x83) test mode
         \\  --continuous      Run tests in continuous loop (Ctrl+C to stop)
-        \\  --output <file>   Export results to CSV file
+        \\  --output <file>   Export results to file
+        \\  --format <csv|json> Output format (default: csv)
         \\  --help            Show this help message
-        \\
+        \\        \\
         \\Example:
         \\  zig run uart-echo-test --ping-mode -v
+        \\  zig run uart-echo-test --output results.json --format json
         \\
     , .{});
 }
@@ -160,16 +189,19 @@ pub fn main() !void {
         if (config.output_file) |f| {
             printErr("    output_file: {s}\n", .{f});
         }
+        if (config.output_format == .json) {
+            printErr("    format: json\n", .{});
+        }
         printErr("\n", .{});
         printErr("\n", .{});
     }
 
-    printErr(
-        \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.8            ║
+    std.debug.print(
+        \\╔══════════════════════════════════╗
+        \\║      Trinity UART Echo Test v3.9            ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
-        \\╚════════════════════════════════════════╝
+        \\╚══════════════════════════════════════╝
         \\
     , .{});
 
@@ -210,7 +242,7 @@ pub fn main() !void {
     }
 
     printErr("\n", .{});
-    printErr("╔══════════════════════════════════╗\n", .{});
+    printErr("╔════════════════════════════╗\n", .{});
     printErr("║          Testing:                   ║\n", .{});
     printErr("╚══════════════════════════════════╝\n", .{});
 
@@ -229,14 +261,29 @@ fn listSerialPorts() void {
     }
 }
 
-fn testEcho(port_path: []const u8, config: Config) void {
+fn findFT232Device() ?[]const u8 {
+    var dir = std.fs.openDirAbsolute("/dev", .{}) catch return null;
+    defer dir.close();
+    var iterator = dir.iterate();
+    while (iterator.next() catch return) |entry| {
+        const name = entry.name;
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
+            return std.fmt.allocPrint(std.heap.page_allocator, "/dev/{s}", .{name});
+        }
+    }
+    return null;
+}
+
+const TestByte = struct {
+    data: []const u8,
+    name: []const u8,
+};
+
+fn testEcho(port_path: ?[]const u8, config: Config) void {
     // Configure port BEFORE opening if auto-configure enabled
     if (config.auto_configure) {
         printErr("[+] Configuring port: {d} baud 8N1\n", .{config.baud});
-        const stty_cmd = std.fmt.allocPrint(std.heap.page_allocator, "stty -f {s} {d}", .{ port_path, config.baud }) catch {
-            printErr("[!] Failed to allocate stty command string\n", .{});
-            return;
-        };
+        const stty_cmd = std.fmt.allocPrint(std.heap.page_allocator, "stty -f {s} {d}", .{ port_path.?, config.baud });
         defer std.heap.page_allocator.free(stty_cmd);
 
         const result = std.process.Child.run(.{
@@ -258,13 +305,13 @@ fn testEcho(port_path: []const u8, config: Config) void {
     }
 
     const flags: u32 = 0x0002 | 0x08000;
-    const fd = std.posix.open(port_path, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
-        printErr("[*] Failed to open {s}: {any}\n", .{ port_path, err });
+    const fd = std.posix.open(port_path.?, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
+        printErr("[*] Failed to open {s}: {any}\n", .{ port_path.?, err });
         return;
     };
     defer std.posix.close(fd);
 
-    printErr("[+] Opened: {s}\n", .{port_path});
+    printErr("[+] Opened: {s}\n", .{port_path.?});
     _ = configureSerial(fd);
 
     const tests = [_]TestByte{
@@ -286,12 +333,16 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var overall_rtt_sum: i64 = 0;
     var overall_rtt_count: usize = 0;
 
+    // Collect all test results
+    var all_results = std.ArrayList(TestResult).init(std.heap.page_allocator);
+    defer all_results.deinit();
+
     while (true) {
         if (config.continuous) {
             printErr("\n", .{});
-            printErr("╔══════════════════════════════════════╗\n", .{});
+            printErr("╔════════════════════════════════╗\n", .{});
             printErr("║          CYCLE {d}                      ║\n", .{cycle});
-            printErr("╚════════════════════════════════════════╝\n", .{});
+            printErr("╚══════════════════════════════════╝\n", .{});
         }
 
         var cycle_passed: usize = 0;
@@ -308,6 +359,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
             const result = testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config);
             if (result.success) {
                 cycle_passed += 1;
+                all_results.append(result);
                 // Collect RTT statistics
                 if (result.rtt_ms > 0) {
                     if (rtt_min < 0 or result.rtt_ms < rtt_min) {
@@ -338,21 +390,27 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
         if (!config.continuous) {
             printErr("\n", .{});
-            printErr("╔══════════════════════════════════════╗\n", .{});
+            printErr("╔════════════════════════════╗\n", .{});
             printErr("║          SUMMARY                      ║\n", .{});
-            printErr("╚════════════════════════════════════════╝\n", .{});
+            printErr("╚════════════════════════════════╝\n", .{});
             printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
-            if (rtt_count > 0) {
-                const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
-                printErr("  RTT: min={d}ms avg={d:.1}ms max={d}ms\n", .{ rtt_min, rtt_avg, rtt_max });
+            if (overall_rtt_count > 0) {
+                const rtt_avg: f64 = @as(f64, overall_rtt_sum) / @as(f64, overall_rtt_count);
+                printErr("  RTT: min={d}ms avg={d:.1}ms max={d}ms\n", .{ overall_rtt_min, rtt_avg, overall_rtt_max });
             }
             printErr("\n", .{});
+
+            // Export results if output file specified
+            if (config.output_file) |output_path| {
+                exportResults(all_results.items, output_path, config.output_format);
+            }
+
             break;
         } else {
             printErr("\n", .{});
             printErr("  [i] Cycle {d} result: {d}/{d} passed", .{ cycle, cycle_passed, tests.len });
             if (rtt_count > 0) {
-                const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
+                const rtt_avg: f64 = @as(f64, rtt_sum) / @as(f64, rtt_count);
                 printErr(", RTT: min={d}ms avg={d:.1}ms max={d}ms", .{ rtt_min, rtt_avg, rtt_max });
             }
             printErr("\n", .{});
@@ -437,10 +495,8 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
         }
 
         if (match) {
-            const time_msg = if (round_trip_ms > 0) std.fmt.allocPrint(std.heap.page_allocator, " (RTT: {d}ms)", .{round_trip_ms}) catch "" else "";
-            defer {
-                if (round_trip_ms > 0) std.heap.page_allocator.free(time_msg);
-            }
+            const time_msg = if (round_trip_ms > 0) std.fmt.allocPrint(std.heap.page_allocator, " (RTT: {d}ms)", .{round_trip_ms}) else "";
+            defer std.heap.page_allocator.free(time_msg);
             printErr("  [✓] ECHO SUCCESS!{s}\n", .{time_msg});
             return TestResult{ .success = true, .rtt_ms = round_trip_ms };
         } else {
@@ -453,24 +509,42 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     }
 }
 
-const TestByte = struct {
-    data: []const u8,
-    name: []const u8,
-};
+fn exportResults(results: []const TestResult, output_path: []const u8, format: OutputFormat) void {
+    const file = std.fs.createFileAbsolute(output_path, .{}) catch |err| {
+        printErr("[!] Failed to create output file: {any}\n", .{err});
+        return;
+    };
+    defer file.close();
 
-fn findFT232Device() ?[]const u8 {
-    var dir = std.fs.openDirAbsolute("/dev", .{}) catch return null;
-    defer dir.close();
+    var buffer: [4096]u8 = undefined;
+    const writer = file.writer(&buffer);
 
-    var iterator = dir.iterate();
-    while (iterator.next() catch return null) |entry| {
-        const name = entry.name;
-        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
-            return std.fmt.allocPrint(std.heap.page_allocator, "/dev/{s}", .{name}) catch null;
+    if (format == .json) {
+        writer.writeAll("{\"results\":[\n") catch return;
+        for (results, 0..) |result, i| {
+            writer.print("  {{\"test_num\":{d},\"success\":{},\"rtt_ms\":{d}}}", .{
+                i + 1,
+                @intFromBool(result.success),
+                result.rtt_ms,
+            }) catch return;
+            if (i < results.len - 1) {
+                writer.writeAll(",\n") catch return;
+            }
+        }
+        writer.writeAll("\n]}\n") catch return;
+    } else {
+        // CSV format (default)
+        writer.writeAll("test_num,success,rtt_ms\n") catch return;
+        for (results, 0..) |result, i| {
+            writer.print("{d},{d},{d}\n", .{
+                i + 1,
+                @intFromBool(result.success),
+                result.rtt_ms,
+            }) catch return;
         }
     }
 
-    return null;
+    printErr("[+] Exported {d} results to {s}\n", .{results.len, output_path});
 }
 
 fn configureSerial(fd: std.posix.fd_t) bool {
