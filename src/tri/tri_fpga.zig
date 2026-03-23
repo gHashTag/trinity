@@ -733,7 +733,7 @@ fn printSynthUsage() !void {
         \\
         \\EXAMPLES:
         \\  tri fpga synth fpga/openxc7-synth/ternary_matvec.v fpga/openxc7-synth/ternary_matvec_top.v
-        \\  tri fpga synth blink.v --top blink_top -v
+        \\  tri fpga synth hardware/rtl-root/blink.v --top blink_top -v
         \\
     , .{ CYAN, RESET });
 }
@@ -1047,7 +1047,7 @@ fn printBuildUsage() !void {
         \\
         \\EXAMPLES:
         \\  tri fpga build fpga/openxc7-synth/ternary_matvec.v fpga/openxc7-synth/ternary_matvec_top.v
-        \\  tri fpga build blink.v --no-flash
+        \\  tri fpga build hardware/rtl-root/blink.v --no-flash
         \\
     , .{ CYAN, RESET });
 }

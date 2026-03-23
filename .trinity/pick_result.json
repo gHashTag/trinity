@@ -1,0 +1,14 @@
+{
+  "chosen_idx":4,
+  "strategy":"SMART",
+  "final_score":90,
+  "skipped_mnl":0,
+  "picked":{
+    "id":"5 .zig",
+    "title":"Uncommitted .zig files",
+    "priority":"P1",
+    "source":"dirty",
+    "fail_count":0
+  },
+  "timestamp":1774239321
+}

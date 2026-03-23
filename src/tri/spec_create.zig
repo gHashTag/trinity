@@ -114,6 +114,9 @@ pub const SpecCreateResult = struct {
 pub fn parseInput(args: []const []const u8) ?SpecCreateInput {
     if (args.len == 0) return null;
 
+    // Skip name validation if --help flag (handled by caller)
+    if (args.len > 0 and std.mem.eql(u8, args[0], "--help")) return null;
+
     var input = SpecCreateInput{};
     input.setName(args[0]);
 
@@ -146,10 +149,16 @@ pub fn parseInput(args: []const []const u8) ?SpecCreateInput {
     }
 
     // Validate name: lowercase + underscores only
-    for (name) |c| {
-        if (!((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_')) {
-            print("{s}Invalid spec name: '{s}'. Use lowercase + underscores only.{s}\n", .{ RED, name, RESET });
-            return null;
+    // Skip validation for --help flag
+    const name_to_validate = input.nameStr();
+    if (std.mem.eql(u8, name_to_validate, "--help")) {
+        // Help is valid flag, skip name validation
+    } else {
+        for (name_to_validate) |c| {
+            if (!((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '_')) {
+                print("{s}Invalid spec name: '{s}'. Use lowercase + underscores only.{s}\n", .{ RED, name_to_validate, RESET });
+                return null;
+            }
         }
     }
 
@@ -418,6 +427,26 @@ fn renderResult(result: *const SpecCreateResult) void {
     print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
+fn showHelp() void {
+    print("{s}USAGE:{s}\n", .{ GOLDEN, RESET });
+    print("  tri spec create <name> [options]\n", .{});
+    print("\n", .{});
+    print("{s}OPTIONS:{s}\n", .{ GOLDEN, RESET });
+    print("  {s}<name>{s}            Spec name (lowercase + underscores)\n", .{ CYAN, RESET });
+    print("  {s}--issue <N>{s}      Link to GitHub issue\n", .{ CYAN, RESET });
+    print("  {s}--description \"..\"{s}  Spec description\n", .{ CYAN, RESET });
+    print("\n", .{});
+    print("{s}EXAMPLES:{s}\n", .{ GOLDEN, RESET });
+    print("  tri spec create dev_metrics --issue 42 --description \"Track agent performance\"\n", .{});
+    print("  tri spec create test_e2e_pipeline --description \"End-to-end tests\"\n", .{});
+    print("  tri spec create fpga_inference_engine\n", .{});
+    print("\n", .{});
+    print("{s}OUTPUT:{s}\n", .{ GOLDEN, RESET });
+    print("  Creates specs/tri/<name>.tri from best matching template.\n", .{});
+    print("\n", .{});
+    print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC API — CLI entrypoint
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -426,6 +455,13 @@ pub fn runSpecCreateCommand(allocator: Allocator, args: []const []const u8) void
     if (args.len == 0) {
         print("{s}Usage: tri spec create <name> [--issue N] [--description \"...\"]{s}\n", .{ RED, RESET });
         print("Example: tri spec create dev_metrics --issue 42 --description \"Track agent performance\"\n", .{});
+        print("       tri spec create --help — Show detailed help\n", .{});
+        return;
+    }
+
+    // Check for --help flag before parsing
+    if (args.len > 0 and std.mem.eql(u8, args[0], "--help")) {
+        showHelp();
         return;
     }
 

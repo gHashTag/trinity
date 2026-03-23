@@ -54,6 +54,21 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
         return farm_from_issues.runFromIssues(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "watch-daemon")) {
         return runWatchDaemonCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "fly-init")) {
+        return runFlyInit(allocator);
+    } else if (std.mem.eql(u8, subcmd, "fly-deploy")) {
+        const fly_wave9 = @import("fly_wave9.zig");
+        return fly_wave9.deployWave9(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "fly-status")) {
+        const fly_wave9 = @import("fly_wave9.zig");
+        return fly_wave9.showWave9Status(allocator);
+    } else if (std.mem.eql(u8, subcmd, "fly-recycle")) {
+        // TODO: Re-enable after fixing circular import issue
+        // const fly_wave9 = @import("fly_wave9.zig");
+        // return fly_wave9.recycleWave9(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "wave9")) {
+        const fly_wave9 = @import("fly_wave9.zig");
+        return fly_wave9.deployWave9(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -1306,7 +1321,7 @@ fn printHelp() void {
         \\
         \\Usage: tri farm <command> [options]
         \\
-        \\Commands:
+        \\Railway Commands:
         \\  status           Show all services across all Railway accounts (default)
         \\  idle             Show only finished/idle services (for recycling)
         \\  recycle          Set training vars + redeploy all idle services
@@ -1315,7 +1330,13 @@ fn printHelp() void {
         \\  watch-daemon     24/7 autonomous monitoring (start/stop/status)
         \\  from-issues      Execute farm tasks from GitHub Issues (farm-task label)
         \\  stats            Farm statistics & simulation comparison (--farm only, --export csv, --scenario S1|S3|...)
-        \\  help             Show this help
+        \\
+        \\Fly.io Commands (Wave 9 Migration):
+        \\  fly-init         Initialize Fly.io farm (discover accounts)
+        \\  fly-deploy      Deploy Wave 9 to Fly.io (48 services, S3 MultiObj)
+        \\  fly-status       Show all Wave 9 Fly.io training services
+        \\  fly-recycle      Recycle crashed Wave 9 services with S3 MultiObj
+        \\  wave9            Alias for fly-deploy
         \\
         \\Common options:
         \\  --lr <value>           Learning rate (default: 1e-3)
@@ -1332,10 +1353,55 @@ fn printHelp() void {
         \\  --max <N>              Max new services to create (default: 37)
         \\  --dry-run              Show what would be created without doing it
         \\
+        \\Fly.io options:
+        \\  --dry-run              Show what would be deployed without doing it
+        \\  --skip-existing         Skip apps that already exist
+        \\  --seed-start <N>       Starting seed number (default: 901)
+        \\  --region <region>      Primary region (default: iad)
+        \\
         \\Schedule is ALWAYS cosine (hardcoded, never flat).
-        \\Accounts: auto-discovered from env (RAILWAY_API_TOKEN[_N], N=2..8)
+        \\Railway accounts: auto-discovered from env (RAILWAY_API_TOKEN[_N], N=2..8)
+        \\Fly.io accounts: auto-discovered from env (FLY_API_TOKEN[_N], N=1..4)
         \\
     , .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FLY-INIT — Initialize Fly.io farm
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runFlyInit(allocator: Allocator) !void {
+    print("\n{s}✈️  FLY.IO FARM INITIALIZATION{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Check flyctl
+    const flyctl_wrapper = @import("flyctl_wrapper.zig");
+    try flyctl_wrapper.checkPrerequisites(allocator);
+
+    // Initialize farm
+    const fly_farm_mod = @import("fly_farm.zig");
+    var farm = fly_farm_mod.FlyFarm.init();
+    const capacity = farm.totalCapacity();
+
+    print("{s}Farm Status:{s}\n", .{ BOLD, RESET });
+    print("  Accounts discovered: {d}\n", .{farm.account_count});
+    print("  Active apps: {d}\n", .{capacity.total_active});
+    print("  Available slots: {d}\n", .{capacity.total_slots});
+    print("  Daily creates remaining: {d}\n", .{capacity.total_daily_remaining});
+    print("\n", .{});
+
+    // List each account
+    for (farm.accounts[0..farm.account_count]) |*acct| {
+        print("  {s}Account {d}: {s}{s}\n", .{ CYAN, acct.id, acct.getAlias(), RESET });
+        print("    Suffix: {s}\n", .{acct.getSuffix()});
+        print("    Active apps: {d}/{d}\n", .{ acct.active_apps, acct.max_concurrent });
+        print("    Daily creates: {d}/{d}\n", .{ acct.daily_creates, acct.max_daily_creates });
+        print("    Available slots: {d}\n", .{acct.availableSlots()});
+        print("\n", .{});
+    }
+
+    print("{s}✅ Fly.io farm initialized{s}\n", .{ GREEN, RESET });
+    print("   Next: tri farm fly-deploy  (or 'tri farm wave9')\n", .{});
 }
 
 test "farm command help" {
