@@ -77,7 +77,6 @@ pub const LoadOptions = struct {
 pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan, result: Result, outcome: Outcome) !Episode {
     const now_ns = std.time.nanoTimestamp();
 
-    // Build action struct based on plan
     const action = switch (plan.action) {
         .scale_up => Action{
             .scale_up = .{
@@ -112,7 +111,6 @@ pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan,
 
 /// Append episode to JSONL file
 pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
-    // Ensure directory exists
     const episodes_dir = ".trinity/queen";
     std.fs.cwd().makePath(episodes_dir) catch |err| {
         if (err != error.PathAlreadyExists) return err;
@@ -124,15 +122,12 @@ pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
     const file = try std.fs.cwd().openFile(file_path, .{ .mode = .write });
     defer file.close();
 
-    // Seek to end for append
     try file.seekFromEnd(0);
 
-    // Serialize episode to JSONL
     const json = try std.json.stringifyAlloc(allocator, episode, .{ .whitespace = .minified });
     defer allocator.free(json);
 
-    // Write as JSON line
-    const line = try std.fmt.allocPrint(allocator, "{s}\n", .{json});
+    const line = try std.fmt.allocPrint(allocator, "{s}\\n", .{json});
     defer allocator.free(line);
 
     try file.writeAll(line);
@@ -143,13 +138,11 @@ pub fn loadEpisodes(allocator: std.mem.Allocator, options: LoadOptions) ![]Episo
     const file_path = ".trinity/queen/episodes.jsonl";
 
     const file = std.fs.cwd().openFile(file_path, .{}) catch {
-        // File doesn't exist yet
         return try allocator.alloc(Episode, 0);
     };
     defer file.close();
 
-    // Read all file contents - Zig 0.15 requires max_bytes parameter
-    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch |_| {
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch _ {
         return try allocator.alloc(Episode, 0);
     };
     defer allocator.free(contents);
@@ -157,33 +150,35 @@ pub fn loadEpisodes(allocator: std.mem.Allocator, options: LoadOptions) ![]Episo
     var episodes = std.ArrayList(Episode).init(allocator);
     defer episodes.deinit();
 
-    // Parse each line (JSONL format)
-    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+    var line_iter = std.mem.splitScalar(u8, contents, '\\n');
     var loaded: u32 = 0;
 
-    while (line_iter.next()) |line| {
+    outer: while (line_iter.next()) |line| {
         if (line.len == 0) {
-            // Skip empty lines
+            continue :outer;
         }
 
         const episode = std.json.parseFromSlice(Episode, line) catch _ {
-            // Skip invalid lines
+            continue :outer;
         };
 
-        // Apply source filter
         if (options.source_filter) |filter| {
+            if (episode.source != filter) {
+                continue :outer;
+            }
         }
 
-        // Apply outcome filter
         if (options.outcome_filter) |filter| {
+            if (episode.outcome != filter) {
+                continue :outer;
+            }
         }
 
         try episodes.append(episode);
         loaded += 1;
 
-        // Check limit
         if (options.limit > 0 and loaded >= options.limit) {
-            break;
+            break :outer;
         }
     }
 
@@ -202,8 +197,8 @@ pub fn getLastEpisode(allocator: std.mem.Allocator) ?Episode {
 /// Episode statistics
 pub const EpisodeStats = struct {
     total: u32,
-    by_source: [4]u32, // lotus_cycle, external, scheduled, experience_recall
-    by_outcome: [5]u32, // success, partial, failure_learned, failure_unknown, blocked
+    by_source: [4]u32,
+    by_outcome: [5]u32,
     last_24h: u32,
 };
 
@@ -223,15 +218,12 @@ pub fn getEpisodeStats(allocator: std.mem.Allocator) !EpisodeStats {
     };
 
     for (episodes) |ep| {
-        // Count by source
         const source_idx: u3 = @intFromEnum(ep.source);
         stats.by_source[source_idx] += 1;
 
-        // Count by outcome
         const outcome_idx: u3 = @intFromEnum(ep.outcome);
         stats.by_outcome[outcome_idx] += 1;
 
-        // Count last 24h
         if (now_ns - ep.timestamp < day_ns) {
             stats.last_24h += 1;
         }
@@ -275,3 +267,5 @@ test "episodes: recordEpisode creates valid episode" {
 
     try std.testing.expect(episode.timestamp_ns == 1234567890);
     try std.testing.expect(episode.source == .lotus_cycle);
+    try std.testing.expect(episode.context.timestamp_ns == 1234567890);
+}

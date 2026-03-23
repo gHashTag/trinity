@@ -342,6 +342,135 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         }), false };
     }
 
+    // === TERNARY (DOT, BIND, BUNDLE2, BUNDLE3) ===
+    if (std.mem.eql(u8, op_lower, "dot")) {
+        // DOT dst, v1, v2 — ternary dot product
+        const r = try parseThreeOp(rest);
+        return .{ encode(Instruction{
+            .opcode = Opcode.DOT,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "bind")) {
+        // BIND dst, v1, v2 — VSA bind operation
+        const r = try parseThreeOp(rest);
+        return .{ encode(Instruction{
+            .opcode = Opcode.BIND,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "bundle2")) {
+        // BUNDLE2 dst, v1, v2 — majority vote (2 vectors)
+        const r = try parseThreeOp(rest);
+        return .{ encode(Instruction{
+            .opcode = Opcode.BUNDLE2,
+            .dst = r[0],
+            .src1 = r[1],
+            .src2 = r[2],
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "bundle3")) {
+        // BUNDLE3 dst, v1, v2, v3 — majority vote (3 vectors)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const v1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma1_idx = std.mem.indexOfScalar(u8, v1_str, ',') orelse return error.InvalidSyntax;
+        const v2_str = std.mem.trim(u8, v1_str[0..comma1_idx], " \t");
+        const rest_after_v2 = std.mem.trim(u8, v1_str[comma1_idx + 1 ..], " \t");
+
+        const comma2_idx = std.mem.indexOfScalar(u8, rest_after_v2, ',') orelse return error.InvalidSyntax;
+        const v3_str = std.mem.trim(u8, rest_after_v2[0..comma2_idx], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const v1 = try parseRegister(v1_str);
+        const v2 = try parseRegister(v2_str);
+        const v3 = try parseRegister(v3_str);
+
+        // For BUNDLE3, encode v3 in immediate (src2 field for v2)
+        return .{ encode(Instruction{
+            .opcode = Opcode.BUNDLE3,
+            .dst = dst,
+            .src1 = v1,
+            .src2 = v2,
+            .immediate = @as(i16, v3),
+            .has_imm = true,
+        }), false };
+    }
+
+    // === SACRED (PHI_CONST, PI_CONST, E_CONST, SACR) ===
+    if (std.mem.eql(u8, op_lower, "phi_const")) {
+        // PHI_CONST dst — load φ (golden ratio)
+        const dst_str = std.mem.trim(u8, rest, " \t");
+        const dst = try parseRegister(dst_str);
+        return .{ encode(Instruction{
+            .opcode = Opcode.PHI_CONST,
+            .dst = dst,
+            .immediate = 0,
+            .has_imm = true,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "pi_const")) {
+        // PI_CONST dst — load π
+        const dst_str = std.mem.trim(u8, rest, " \t");
+        const dst = try parseRegister(dst_str);
+        return .{ encode(Instruction{
+            .opcode = Opcode.PI_CONST,
+            .dst = dst,
+            .immediate = 0,
+            .has_imm = true,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "e_const")) {
+        // E_CONST dst — load e
+        const dst_str = std.mem.trim(u8, rest, " \t");
+        const dst = try parseRegister(dst_str);
+        return .{ encode(Instruction{
+            .opcode = Opcode.E_CONST,
+            .dst = dst,
+            .immediate = 0,
+            .has_imm = true,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "sacr")) {
+        // SACR op, dst, src — sacred arithmetic operation
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const op_str = std.mem.trim(u8, it2.first(), " \t");
+        const rest_args = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, rest_args, ',') orelse return error.InvalidSyntax;
+        const dst_str = std.mem.trim(u8, rest_args[0..comma_idx], " \t");
+        const src_str = std.mem.trim(u8, rest_args[comma_idx + 1 ..], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src = try parseRegister(src_str);
+
+        // Encode sacred operation type in immediate
+        var sacrop: i16 = 0;
+        if (std.mem.eql(u8, op_str, "add")) sacrop = 1;
+        if (std.mem.eql(u8, op_str, "mul")) sacrop = 2;
+        if (std.mem.eql(u8, op_str, "div")) sacrop = 3;
+        if (std.mem.eql(u8, op_str, "pow")) sacrop = 4;
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.SACR,
+            .dst = dst,
+            .src1 = src,
+            .immediate = sacrop,
+            .has_imm = true,
+        }), false };
+    }
+
     return error.UnknownOpcode;
 }
 
