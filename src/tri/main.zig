@@ -8,6 +8,7 @@ const trinity_workspace = @import("trinity_workspace");
 const utils = @import("tri_utils.zig");
 const tri_config = @import("tri_config.zig");
 const commands = @import("tri_commands.zig");
+const queen_trinity = @import("queen_trinity.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const tri_context = @import("tri_context.zig");
@@ -170,37 +171,22 @@ pub fn main() !void {
         }
     }
 
-    // P0.3: Special handling for "job <subcommand>" commands
-    if (arg_idx < args.len and std.mem.eql(u8, args[arg_idx], "job")) {
-        const subcommand = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
-        const job_cmd: utils.Command = if (std.mem.eql(u8, subcommand, "start"))
-            .job_start
-        else if (std.mem.eql(u8, subcommand, "status"))
-            .job_status
-        else if (std.mem.eql(u8, subcommand, "logs"))
-            .job_logs
-        else if (std.mem.eql(u8, subcommand, "artifacts"))
-            .job_artifacts
-        else if (std.mem.eql(u8, subcommand, "cancel"))
-            .job_cancel
-        else if (std.mem.eql(u8, subcommand, "list"))
-            .job_list
-        else if (subcommand.len == 0)
-            .job_start // "job" alone defaults to job_start
-        else
-            .job_start; // Default for unknown subcommand
+    }
 
-        const cmd_args = if (arg_idx + 2 < args.len) args[arg_idx + 2 ..] else &[_][]const u8{};
+    // Queen Trinity namespace: route `tri queen <subcommand>` to queen_trinity
+    if (std.mem.eql(u8, first_arg, "queen")) {
+        const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        return;
+    }
 
-        switch (job_cmd) {
-            .job_start => try tri_job.runJobStart(allocator, cmd_args),
-            .job_status => try tri_job.runJobStatus(allocator, cmd_args),
-            .job_logs => try tri_job.runJobLogs(allocator, cmd_args),
-            .job_artifacts => try tri_job.runJobArtifacts(allocator, cmd_args),
-            .job_cancel => try tri_job.runJobCancel(allocator, cmd_args),
-            .job_list => try tri_job.runJobList(allocator, cmd_args),
-            else => unreachable,
-        }
+    // TRI-27 namespace: route `tri tri27 <subcommand>` to tri27 commands
+    if (std.mem.eql(u8, first_arg, "tri27")) {
+        const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const tri27_mod = @import("tri27/tri27_cli.zig");
+        try tri27_mod.runTri27Command(allocator, tri27_args);
         return;
     }
 
