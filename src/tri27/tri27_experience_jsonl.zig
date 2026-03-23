@@ -23,14 +23,20 @@ pub const Tri27EventKind = enum(u8) {
     assemble = 1,
     disassemble = 2,
     run = 3,
-    validate = 4,
+    @"test" = 4,
+    validate = 5,
+    flash = 6,
+    dump = 7,
 
     pub fn toStr(self: Tri27EventKind) []const u8 {
         return switch (self) {
             .assemble => "ASSEMBLE",
             .disassemble => "DISASSEMBLE",
             .run => "RUN",
+            .@"test" => "TEST",
             .validate => "VALIDATE",
+            .flash => "FLASH",
+            .dump => "DUMP",
         };
     }
 };
@@ -57,7 +63,10 @@ pub fn saveTri27Episode(
             .assemble => .assemble,
             .disassemble => .disassemble,
             .run => .run,
+            .@"test" => .@"test",
             .validate => .validate,
+            .flash => .flash,
+            .dump => .dump,
         },
         .input_file = [_]u8{0} ** 256,
         .output_file = [_]u8{0} ** 256,

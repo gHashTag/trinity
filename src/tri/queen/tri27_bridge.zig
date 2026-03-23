@@ -19,6 +19,7 @@ pub const Tri27Operation = enum(u8) {
     disassemble,
     run,
     @"test",
+    validate,
     flash,
     dump,
 };
