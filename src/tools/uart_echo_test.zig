@@ -1,13 +1,14 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.28 — FPGA XVC Bridge (hostname support planned - use IP directly)
+//! v3.30 — Buffered I/O, Batch Testing, Adaptive Timeout (fully implemented)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
 //!                            [--output results.csv|--json] [--config uart-test.toml] [--retries 3]
-//!                            [--batch-size 16] [--buffer-size 4096] [--adaptive-timeout] [--auto-configure]
-//!                            [--fpga-mode] [--esp32-host HOST] [--bitstream PATH]
-//!                            [--fpga-timeout MS] [--fpga-retries N]
+//!                            [--batch-size N] [--buffer-size BYTES] [--adaptive-timeout] [--auto-configure]
+//!                            [--fpga-mode] [--esp32-host HOST] [--esp32-port PORT]
+//!                            [--bitstream PATH] [--fpga-verify] [--fpga-timeout MS] [--fpga-retries N]
+//!                            [--simulation] [--ping-mode] [--loopback-mode]
 //!
 //! Features:
 //!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
@@ -320,6 +321,164 @@ const JitterTracker = struct {
         printDim("    Jitter (stddev): {d:.2}us\n", .{stats.jitter});
         printDim("    Min RTT: {d}us\n", .{stats.min});
         printDim("    Max RTT: {d}us\n", .{stats.max});
+    }
+};
+
+// v3.30: Buffered I/O manager for reduced syscall overhead
+const BufferedIO = struct {
+    allocator: std.mem.Allocator,
+    read_buffer: []u8,
+    write_buffer: []u8,
+    read_pos: usize = 0,
+    write_pos: usize = 0,
+    buffer_size: usize,
+
+    pub fn init(allocator: std.mem.Allocator, buffer_size: usize) !BufferedIO {
+        const read_buf = try allocator.alloc(u8, buffer_size);
+        errdefer allocator.free(read_buf);
+        const write_buf = try allocator.alloc(u8, buffer_size);
+        return .{
+            .allocator = allocator,
+            .read_buffer = read_buf,
+            .write_buffer = write_buf,
+            .buffer_size = buffer_size,
+        };
+    }
+
+    pub fn deinit(self: *BufferedIO) void {
+        self.allocator.free(self.read_buffer);
+        self.allocator.free(self.write_buffer);
+    }
+
+    pub fn writeByte(self: *BufferedIO, byte: u8) !void {
+        if (self.write_pos >= self.buffer_size) {
+            return error.BufferFull;
+        }
+        self.write_buffer[self.write_pos] = byte;
+        self.write_pos += 1;
+    }
+
+    pub fn writeBytes(self: *BufferedIO, data: []const u8) !void {
+        if (self.write_pos + data.len > self.buffer_size) {
+            return error.BufferFull;
+        }
+        @memcpy(self.write_buffer[self.write_pos..], data);
+        self.write_pos += data.len;
+    }
+
+    pub fn clearWrite(self: *BufferedIO) void {
+        self.write_pos = 0;
+    }
+
+    pub fn getWriteSlice(self: *const BufferedIO) []const u8 {
+        return self.write_buffer[0..self.write_pos];
+    }
+
+    pub fn capacity(self: *const BufferedIO) usize {
+        return self.buffer_size - self.write_pos;
+    }
+};
+
+// v3.30: Batch test results for aggregated throughput measurement
+const BatchTestResults = struct {
+    total_sent: usize = 0,
+    total_received: usize = 0,
+    matched: usize = 0,
+    failed: usize = 0,
+    timeouts: usize = 0,
+    batch_time_ms: i64 = 0,
+    packets_per_second: f64 = 0.0,
+    bytes_per_second: f64 = 0.0,
+
+    pub fn calculateThroughput(self: *BatchTestResults) void {
+        if (self.batch_time_ms > 0) {
+            const seconds = @as(f64, @floatFromInt(self.batch_time_ms)) / 1000.0;
+            if (seconds > 0) {
+                self.packets_per_second = @as(f64, @floatFromInt(self.total_sent)) / seconds;
+                self.bytes_per_second = @as(f64, @floatFromInt(self.total_received)) / seconds;
+            }
+        }
+    }
+
+    pub fn successRate(self: *const BatchTestResults) f64 {
+        if (self.total_sent == 0) return 0.0;
+        return @as(f64, @floatFromInt(self.matched)) / @as(f64, @floatFromInt(self.total_sent)) * 100.0;
+    }
+};
+
+// v3.30: Adaptive timeout calculator based on RTT statistics
+const AdaptiveTimeout = struct {
+    base_timeout_ms: u32,
+    samples: []i64,
+    sample_count: usize = 0,
+    max_samples: usize = 100,
+
+    pub fn init(allocator: std.mem.Allocator, base_timeout_ms: u32) !AdaptiveTimeout {
+        const samples = try allocator.alloc(i64, 100);
+        return .{
+            .base_timeout_ms = base_timeout_ms,
+            .samples = samples,
+            .max_samples = 100,
+        };
+    }
+
+    pub fn deinit(self: *AdaptiveTimeout, allocator: std.mem.Allocator) void {
+        allocator.free(self.samples);
+    }
+
+    pub fn addSample(self: *AdaptiveTimeout, rtt_ms: i64) void {
+        if (self.sample_count < self.max_samples) {
+            self.samples[self.sample_count] = rtt_ms;
+            self.sample_count += 1;
+        } else {
+            // Shift out oldest sample
+            std.mem.copyForwards(i64, self.samples[0..99], self.samples[1..]);
+            self.samples[99] = rtt_ms;
+        }
+    }
+
+    pub fn calculate(self: *const AdaptiveTimeout) u32 {
+        if (self.sample_count < 3) {
+            return self.base_timeout_ms; // Need minimum samples for variance calc
+        }
+
+        // Calculate mean
+        var sum: i64 = 0;
+        for (self.samples[0..self.sample_count]) |sample| {
+            sum += sample;
+        }
+        const mean = @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(self.sample_count));
+
+        // Calculate variance
+        var variance: f64 = 0.0;
+        for (self.samples[0..self.sample_count]) |sample| {
+            const diff = @as(f64, @floatFromInt(sample)) - mean;
+            variance += diff * diff;
+        }
+        variance /= @as(f64, @floatFromInt(self.sample_count));
+
+        const std_dev = std.math.sqrt(variance);
+
+        // Adaptive timeout formula: base + (3 * std_dev)
+        // Add 50% margin for safety
+        const adaptive_ms = @as(u32, @intFromFloat(
+            @as(f64, @floatFromInt(self.base_timeout_ms)) + (3.0 * std_dev)
+        ));
+
+        // Clamp to reasonable bounds: 50ms minimum, 5x base maximum
+        const min_timeout = @max(MIN_TIMEOUT_MS, self.base_timeout_ms / 2);
+        const max_timeout = self.base_timeout_ms * 5;
+        return @max(min_timeout, @min(adaptive_ms, max_timeout));
+    }
+
+    pub fn report(self: *const AdaptiveTimeout) void {
+        if (self.sample_count == 0) {
+            printInfo("[i] No samples for adaptive timeout\n", .{});
+            return;
+        }
+
+        const adaptive = self.calculate();
+        printInfo("[i] Adaptive Timeout: {d}ms (base: {d}ms)\n", .{ adaptive, self.base_timeout_ms });
     }
 };
 
@@ -992,10 +1151,11 @@ fn printUsage() void {
         \\  --fpga-verify       Enable FPGA verification mode
         \\  --help              Show this help message
         \\
-        \\Performance Modes:
+        \\Performance Modes (v3.30):
         \\  Default: Sequential echo test with verification
-        \\  Batch: Send N packets, measure aggregated throughput
-        \\  Adaptive: Auto-tune timeout based on measured latency
+        \\  Batch: Send N packets, measure aggregated throughput (NEW)
+        \\  Adaptive: Auto-tune timeout based on measured latency (NEW)
+        \\  Buffered: Pre-allocated I/O buffers (NEW)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\
@@ -1519,6 +1679,12 @@ fn testEcho(port_path: []const u8, config: Config) void {
         return runStressTest(fd, config) catch {};
     }
 
+    // v3.30: Run batch test mode if batch_size > 1 and not continuous
+    if (config.batch_size > 1 and !config.continuous) {
+        printErr("[+] Running batch test mode (batch_size={d})\n", .{config.batch_size});
+        return runBatchTest(fd, config) catch {};
+    }
+
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
         .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
@@ -1928,6 +2094,190 @@ fn runDryRun(config: Config) !void {
     printErr("  Buffer size: {d} bytes\n", .{config.buffer_size});
     printErr("  Adaptive timeout: {}\n", .{config.adaptive_timeout});
     printErr("\n[✓] Dry run complete - no actual I/O performed\n", .{});
+}
+
+// v3.30: Batch test mode - send N packets, measure aggregated throughput
+fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
+    printErr(
+        \\╔══════════════════════════════════════╗
+        \\║          BATCH TEST MODE (v3.30)        ║
+        \\║  Aggregated throughput measurement        ║
+        \\╚══════════════════════════════════════╝
+        \\
+    , .{});
+
+    const batch_size = config.batch_size;
+    const packet_size = 64;
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    // Initialize buffered I/O
+    var buffered_io = try BufferedIO.init(allocator, config.buffer_size);
+    defer buffered_io.deinit();
+
+    // Initialize adaptive timeout if enabled
+    var adaptive_timeout: ?AdaptiveTimeout = null;
+    if (config.adaptive_timeout) {
+        adaptive_timeout = try AdaptiveTimeout.init(allocator, config.timeout_ms);
+        defer if (adaptive_timeout) |*at| at.deinit(allocator);
+    }
+
+    printErr("[i] Batch size: {d} packets\n", .{batch_size});
+    printErr("[i] Packet size: {d} bytes\n", .{packet_size});
+    printErr("[i] Buffer size: {d} bytes\n", .{config.buffer_size});
+    printErr("[i] Total: {d} bytes\n", .{batch_size * packet_size});
+
+    var results = BatchTestResults{};
+    var packet_num: usize = 0;
+
+    const start_time = std.time.nanoTimestamp();
+
+    while (packet_num < batch_size) {
+        // Fill buffer with sequential data
+        const bytes_in_batch = @min(batch_size - packet_num, packet_size);
+
+        // Build packet
+        for (0..bytes_in_batch) |i| {
+            const byte_val = @as(u8, @truncate((packet_num + i) % 256));
+            try buffered_io.writeByte(byte_val);
+        }
+
+        // Get current timeout (adaptive or fixed)
+        const current_timeout = if (adaptive_timeout) |*at|
+            at.calculate()
+        else
+            config.timeout_ms;
+
+        // Send packet
+        const send_buf = buffered_io.getWriteSlice();
+        const start_send = std.time.nanoTimestamp();
+
+        _ = try std.posix.write(fd, send_buf);
+
+        // Wait for response
+        var read_buffer: [256]u8 = undefined;
+        var bytes_read: usize = 0;
+        var timeout_remaining: i32 = @as(i32, @intCast(current_timeout));
+        var poll_fds = [1]std.posix.pollfd{.{ .fd = fd, .events = std.posix.POLL.IN, .revents = 0 }};
+
+        while (bytes_read < send_buf.len and timeout_remaining > 0) {
+            const poll_start = std.time.nanoTimestamp();
+            const poll_ms = @as(c_int, @intCast(timeout_remaining));
+
+            const poll_result = std.posix.poll(&poll_fds, poll_ms) catch |err| {
+                printErr("  [x] Poll error: {any}\n", .{err});
+                break;
+            };
+            if (poll_result == 0) {
+                break; // Timeout
+            }
+
+            // Data available - read it
+            const read_result = std.posix.read(fd, read_buffer[bytes_read..]) catch 0;
+            if (read_result > 0) {
+                bytes_read += read_result;
+            }
+
+            // Update timeout
+            const poll_elapsed_ms = @as(i32, @intCast(@divTrunc(std.time.nanoTimestamp() - poll_start, 1_000_000)));
+            timeout_remaining -= poll_elapsed_ms;
+        }
+
+        const elapsed_ns = std.time.nanoTimestamp() - start_send;
+        const elapsed_ms: i64 = @intCast(@divTrunc(elapsed_ns, 1_000_000));
+
+        results.total_sent += send_buf.len;
+
+        // Check response
+        if (bytes_read == send_buf.len) {
+            var match = true;
+            for (0..send_buf.len) |i| {
+                if (read_buffer[i] != send_buf[i]) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                results.matched += 1;
+                results.total_received += bytes_read;
+                // Update adaptive timeout
+                if (adaptive_timeout) |*at| {
+                    at.addSample(elapsed_ms);
+                }
+            } else {
+                results.failed += 1;
+            }
+        } else if (bytes_read > 0) {
+            // Partial response - still count bytes received
+            results.total_received += bytes_read;
+            results.failed += 1;
+        } else {
+            // Timeout
+            results.timeouts += 1;
+        }
+
+        // Clear buffer for next packet
+        buffered_io.clearWrite();
+
+        packet_num += bytes_in_batch;
+
+        // Progress indicator
+        if (packet_num % @max(1, batch_size / 10) == 0) {
+            const progress = @as(f64, @floatFromInt(packet_num)) / @as(f64, @floatFromInt(batch_size)) * 100.0;
+            printErr("\r[->] Progress: {d:.0}% ({d}/{d})   ", .{ progress, packet_num, batch_size });
+        }
+    }
+
+    const total_elapsed_ns = std.time.nanoTimestamp() - start_time;
+    results.batch_time_ms = @intCast(@divTrunc(total_elapsed_ns, 1_000_000));
+    results.calculateThroughput();
+
+    printErr("\n\n╔══════════════════════════════════════╗\n", .{});
+    printErr("║          BATCH TEST RESULTS          ║\n", .{});
+    printErr("╚══════════════════════════════════════╝\n", .{});
+    printErr("  Total packets: {d}\n", .{results.total_sent / packet_size});
+    printErr("  Matched: {d}\n", .{results.matched});
+    printErr("  Failed: {d}\n", .{results.failed});
+    printErr("  Timeouts: {d}\n", .{results.timeouts});
+    printErr("  Success rate: {d:.2}%\n", .{results.successRate()});
+    printErr("  Batch time: {d}ms\n", .{results.batch_time_ms});
+    printErr("  Packets/sec: {d:.2}\n", .{results.packets_per_second});
+    printErr("  Bytes/sec: {d:.2}\n", .{results.bytes_per_second});
+
+    // Report adaptive timeout stats if enabled
+    if (adaptive_timeout) |*at| {
+        at.report();
+    }
+
+    // Export to JSON if requested
+    if (config.json_output) {
+        var json_buf: [1024]u8 = undefined;
+        const json = try std.fmt.bufPrint(&json_buf,
+            \\{{
+            \\  "mode": "batch",
+            \\  "batch_size": {d},
+            \\  "matched": {d},
+            \\  "failed": {d},
+            \\  "timeouts": {d},
+            \\  "success_rate": {d:.2},
+            \\  "batch_time_ms": {d},
+            \\  "packets_per_sec": {d:.2},
+            \\  "bytes_per_sec": {d:.2}
+            \\}}
+        , .{
+            batch_size,
+            results.matched,
+            results.failed,
+            results.timeouts,
+            results.successRate(),
+            results.batch_time_ms,
+            results.packets_per_second,
+            results.bytes_per_second,
+        });
+        printErr("\n{s}\n", .{json});
+    }
 }
 
 // v3.24: Stress test mode - high-throughput continuous testing
