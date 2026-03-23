@@ -12,7 +12,7 @@ app = "hslm-w9-N"  # Replace N with actual number (1-48)
 primary_region = "iad"
 
 [build]
-  dockerfile = "deploy/Dockerfile.hslm-train"
+  dockerfile = "Dockerfile.hslm-train"
 
 [env]
   # S3 MultiObj Profile

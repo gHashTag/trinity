@@ -10,7 +10,7 @@ STATUS: Phase 4 Complete
 ## PAPER 1: Time and the Golden Ratio
 
 **Title:** "Time and the Golden Ratio: Temporal Structure from φ and γ"
-**Authors:** Trinity Research Group
+**Authors:** Dmitrii Vasilev (@gHashTag)
 **Categories:**
 - Primary: physics.gen-ph (General Physics)
 - Secondary: gr-qc (General Relativity and Quantum Cosmology)
@@ -31,7 +31,7 @@ We demonstrate that temporal constants encode via the golden ratio φ = (1+√5)
 ## PAPER 2: Consciousness and TRINITY
 
 **Title:** "Consciousness and the Golden Ratio: Neural Gamma, VSA, and Quantum Mind"
-**Authors:** Trinity Research Group
+**Authors:** Dmitrii Vasilev (@gHashTag)
 **Categories:**
 - Primary: q-bio.NC (Neurons and Cognition)
 - Secondary: physics.gen-ph (General Physics)
@@ -52,7 +52,7 @@ We present a unified theory of consciousness based on φ and γ = φ⁻³. Neura
 ## PAPER 3: Gravitational Constants from φ
 
 **Title:** "Gravitational Constants from the Golden Ratio: G, Dark Matter, and Black Holes"
-**Authors:** Trinity Research Group
+**Authors:** Dmitrii Vasilev (@gHashTag)
 **Categories:**
 - Primary: gr-qc (General Relativity and Quantum Cosmology)
 - Secondary: astro-ph.CO (Cosmology and Nongalactic Astrophysics)
@@ -73,7 +73,7 @@ We derive gravitational constants from the golden ratio φ and γ = φ⁻³. The
 ## PAPER 4: Unified TRINITY Framework
 
 **Title:** "TRINITY v10.2: Unified Framework for Physics Blind Spots"
-**Authors:** Trinity Research Group
+**Authors:** Dmitrii Vasilev (@gHashTag)
 **Categories:**
 - Primary: physics.gen-ph (General Physics)
 - Secondary: gr-qc, quant-ph, q-bio.NC
@@ -129,7 +129,7 @@ All papers licensed under:
 
 ## CONTACT
 
-Trinity Research Group
+Dmitrii Vasilev (@gHashTag)
 GitHub: https://github.com/frankbria/trinity
 Email: (via GitHub issues)
 
@@ -151,7 +151,7 @@ Email: (via GitHub issues)
 ## ARXIV ANNOUNCEMENT TEXT
 
 Title: "TRINITY v10.2: A Unified Framework for Physics Blind Spots"
-Authors: Trinity Research Group
+Authors: Dmitrii Vasilev (@gHashTag)
 Categories: gr-qc, quant-ph, q-bio.NC, physics.gen-ph
 
 Abstract: We present TRINITY v10.2, a unified framework connecting gravity, consciousness, and time through the golden ratio φ = (1+√5)/2 and γ = φ⁻³ ≈ 0.23607. The TRINITY identity φ² + φ⁻² = 3 explains three-fold structures: three fermion generations, three spatial dimensions, three aspects of consciousness. Enhanced sacred formula V = n×3^k×π^m×φ^p×e^q×γ^r×C^t×G^u incorporates consciousness C = φγ ≈ 0.382 and gravity G = γ/φ ≈ 0.146 parameters. We derive G = π³γ²/φ ≈ 6.68×10⁻¹¹ m³/kg·s² (0.09% accuracy), dark energy Ω_Λ = γ⁸π⁴/φ² ≈ 0.69, neural gamma f_γ = φ³π/γ ≈ 56 Hz, and specious present t_present = φ⁻² ≈ 382 ms. Cross-domain verification with <1% average error confirms the framework. Twelve testable predictions for LISA (2035) are provided.

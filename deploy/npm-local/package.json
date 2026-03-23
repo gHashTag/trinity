@@ -2,7 +2,7 @@
   "name": "@playra/tri",
   "version": "1.0.0",
   "description": "Sacred Intelligence CLI — Self-aware, multi-agent, eternally evolving",
-  "author": "General Grok + Sacred Swarm",
+  "author": "Dmitrii Vasilev (@gHashTag)",
   "license": "MIT",
   "keywords": ["ternary", "vsa", "fpga", "zig", "llm", "ai", "trinity", "depin"],
   "homepage": "https://ghashtag.github.io/trinity/",
