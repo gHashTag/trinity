@@ -32,6 +32,8 @@ pub fn main() !void {
         try showStats(allocator);
     } else if (std.mem.eql(u8, command, "test")) {
         try runTests(allocator);
+    } else if (std.mem.eql(u8, command, "health")) {
+        try showHealth(allocator);
     } else if (std.mem.eql(u8, command, "help") or std.mem.eql(u8, command, "-h") or std.mem.eql(u8, command, "--help")) {
         usageAndExit();
     } else {
@@ -53,11 +55,12 @@ fn usageAndExit() noreturn {
         \\  {s}cycle{s}   Alias for 'run'
         \\  {s}stats{s}   Show episode statistics
         \\  {s}test{s}    Run Lotus Cycle tests
+        \\  {s}health{s}   Check Lotus Cycle health
         \\  {s}help{s}    Show this help message
         \\
         \\{s}φ² + 1/φ² = 3 = TRINITY{s}
         \\
-    , .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, CYAN, RESET, CYAN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, DIM, RESET });
+    , .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, CYAN, RESET, CYAN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, GREEN, RESET, DIM, RESET });
     std.process.exit(1);
 }
 
@@ -166,4 +169,34 @@ test "lotus_cli: runCycle executes full cycle" {
     const testing = std.testing;
     _ = testing;
     // Integration test would verify cycle execution
+}
+
+fn showHealth(allocator: std.mem.Allocator) !void {
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n", .{ BOLD, RESET });
+    std.debug.print("{s}Lotus Cycle Health Check{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════════════════{s}\n\n", .{ BOLD, RESET });
+
+    var error_count: usize = 0;
+
+    const episodes = @import("episodes.zig");
+    const lotus_module = @import("lotus_cycle.zig");
+
+    const stats = episodes.getEpisodeStats(allocator) catch |err| {
+        std.debug.print("  {s}Episodes module error: {s}\n", .{ RED, @errorName(err) });
+        error_count += 1;
+        return;
+    };
+    std.debug.print("  {s}Episodes module OK{s}\n", .{ GREEN, RESET });
+
+    _ = lotus_module.runFullCycle(allocator) catch |err| {
+        std.debug.print("  {s}Lotus Cycle module error: {s}\n", .{ RED, @errorName(err) });
+        error_count += 1;
+    };
+    std.debug.print("  {s}Lotus Cycle module OK{s}\n", .{ GREEN, RESET });
+
+    std.debug.print("\n{s}Health Summary{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}Errors:{s}    {d}\n", .{ YELLOW, RESET, error_count });
+    std.debug.print("  {s}Total Episodes:{s} {d}\n", .{ CYAN, RESET, stats.total });
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY{s}\n", .{ DIM, RESET });
 }
