@@ -388,6 +388,9 @@ const JitterTracker = struct {
     samples: []i64,
     count: usize,
     capacity: usize,
+    // v3.53: Consecutive failure tracking
+    consecutive_failures: usize = 0,
+    max_consecutive_failures: usize = 0,
 
     pub fn init(allocator: std.mem.Allocator) JitterTracker {
         const capacity = 1000;
@@ -414,6 +417,26 @@ const JitterTracker = struct {
             self.samples[self.count] = rtt_us;
             self.count += 1;
         }
+    }
+
+    // v3.53: Track test failures for consecutive failure detection
+    pub fn recordFailure(self: *JitterTracker) void {
+        self.consecutive_failures += 1;
+        if (self.consecutive_failures > self.max_consecutive_failures) {
+            self.max_consecutive_failures = self.consecutive_failures;
+        }
+    }
+
+    pub fn recordSuccess(self: *JitterTracker) void {
+        self.consecutive_failures = 0;
+    }
+
+    pub fn getConsecutiveFailures(self: *const JitterTracker) usize {
+        return self.consecutive_failures;
+    }
+
+    pub fn getMaxConsecutiveFailures(self: *const JitterTracker) usize {
+        return self.max_consecutive_failures;
     }
 
     pub fn getJitter(self: *const JitterTracker) f64 {
@@ -639,6 +662,12 @@ const JitterTracker = struct {
         printInfo("  Samples:       {d}\n", .{self.count});
         printInfo("  Mean RTT:      {d:.3}ms\n", .{mean_ms});
         printInfo("  Jitter:        {d:.3}ms\n", .{jitter_ms});
+
+        // v3.53: Consecutive failure tracking
+        if (self.max_consecutive_failures > 0) {
+            printInfo("  Consecutive Failures: max {d}\n", .{self.max_consecutive_failures});
+        }
+
         printInfo("  Min/Max:       {d:.2}ms / {d:.2}ms\n", .{
             @as(f64, @floatFromInt(stats.min)) / 1000.0,
             @as(f64, @floatFromInt(stats.max)) / 1000.0,
@@ -2850,9 +2879,17 @@ fn runSimulation(config: Config) !void {
         const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
         if (should_fail) {
             printErr("[x] SIMULATED FAIL\n", .{});
+            // v3.53: Record failure for consecutive failure tracking
+            if (config.measure_jitter) {
+                jitter_tracker.recordFailure();
+            }
         } else {
             printErr("[✓] PASS\n", .{});
             passed += 1;
+            // v3.53: Record success for consecutive failure tracking
+            if (config.measure_jitter) {
+                jitter_tracker.recordSuccess();
+            }
         }
     }
 
@@ -2936,11 +2973,17 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
             overall_passed += 1;
             if (config.measure_jitter) {
                 try jitter_tracker.addSample(result.rtt_us);
+                // v3.53: Record success for consecutive failure tracking
+                jitter_tracker.recordSuccess();
             }
         } else {
             // v3.42: Track recovery attempts for failed tests
             if (config.auto_recovery) {
                 phase_retries += 1;
+            }
+            // v3.53: Record failure for consecutive failure tracking
+            if (config.measure_jitter) {
+                jitter_tracker.recordFailure();
             }
         }
     }
