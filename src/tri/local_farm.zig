@@ -259,10 +259,10 @@ pub const DockerResult = struct {
     exit_code: u32,
 };
 
-pub fn runDocker(allocator: Allocator, args: []const []const u8) !DockerResult {
+pub fn runDockerCompose(allocator: Allocator, args: []const []const u8) !DockerResult {
     var argv = try std.ArrayListUnmanaged([]const u8).initCapacity(allocator, args.len + 1);
     defer argv.deinit(allocator);
-    try argv.append(allocator, "docker");
+    try argv.append(allocator, "docker-compose");
     try argv.appendSlice(allocator, args);
 
     const result = try std.process.Child.run(.{
