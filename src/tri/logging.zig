@@ -22,14 +22,14 @@ pub const LogLevel = enum {
 
 /// Log entry structure
 pub const LogEntry = struct {
-    timestamp: i128,
+    timestamp: i64,
     level: LogLevel,
     component: []const u8,
     message: []const u8,
     details: ?[]const u8,
 
     /// Format timestamp as [YYYY-MM-DD HH:MM:SS.mmm]
-    pub fn timestampFmt(ts: i128) []const u8 {
+    pub fn timestampFmt(ts: i64) []const u8 {
         // Convert nanoseconds to seconds and milliseconds
         const seconds = @divFloor(ts, 1_000_000_000);
         const millis = @rem(@divFloor(ts, 1_000_000), 1000);
