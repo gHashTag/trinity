@@ -108,7 +108,7 @@ fn parseArgs() Config {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.4            ║
+        \\║      Trinity UART Echo Test v3.5            ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -141,7 +141,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.4           ║
+        \\║      Trinity UART Echo Test v3.5           ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -300,6 +300,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     var read_buffer: [512]u8 = undefined;
     var bytes_read: usize = 0;
     const start_time_ms = std.time.milliTimestamp();
+    var round_trip_ms: i64 = 0;
 
     while (std.time.milliTimestamp() - start_time_ms < config.timeout_ms) {
         const read_result = std.posix.read(fd, read_buffer[bytes_read..]);
@@ -308,6 +309,10 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
             bytes_read += n;
             if (config.verbose) {
                 printErr("  [*] Read {d} bytes (total: {d})\n", .{ n, bytes_read });
+            }
+            // Calculate round-trip time on first byte received
+            if (round_trip_ms == 0) {
+                round_trip_ms = std.time.milliTimestamp() - start_time_ms;
             }
             // In ping mode, expect 1 byte (PONG). In echo mode, expect same as sent.
             if ((config.ping_mode and bytes_read >= 1) or (!config.ping_mode and bytes_read >= data.len)) {
@@ -341,7 +346,11 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
         }
 
         if (match) {
-            printErr("  [✓] ECHO SUCCESS!\n", .{});
+            const time_msg = if (round_trip_ms > 0) std.fmt.allocPrint(std.heap.page_allocator, " (RTT: {d}ms)", .{round_trip_ms}) catch "" else "";
+            defer {
+                if (round_trip_ms > 0) std.heap.page_allocator.free(time_msg);
+            }
+            printErr("  [✓] ECHO SUCCESS!{s}\n", .{time_msg});
             return true;
         } else {
             printErr("  [x] ECHO FAIL! Mismatch\n", .{});
