@@ -100,23 +100,23 @@ pub const Instruction = struct {
 // ═══════════════════════════════════════════════════════════════════════════════════
 /// Decode 32-bit instruction word into Instruction struct
 /// Word format:
-///   [7:0]   = opcode
-///   [10:8]  = dst (rd)
-///   [13:11] = src1 (rs1)
-///   [16:14] = src2 (rs2)
-///   [31:17] = immediate (15 bits) + sign extension
+///   [7:0]   = opcode (8 bits)
+///   [12:8]  = dst (5 bits)
+///   [17:13] = src1 (5 bits)
+///   [22:18] = src2 (5 bits)
+///   [31:23] = immediate (9 bits, sign-extended to 16)
 pub fn decode(word: u32) Instruction {
     const opcode_val = @as(u8, @truncate(word & 0xFF));
     const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
 
     const dst = @as(u8, @truncate((word >> 8) & 0x1F));
-    const src1 = @as(u8, @truncate((word >> 11) & 0x1F));
-    const src2 = @as(u8, @truncate((word >> 14) & 0x1F));
+    const src1 = @as(u8, @truncate((word >> 13) & 0x1F));
+    const src2 = @as(u8, @truncate((word >> 18) & 0x1F));
 
-    // Decode 16-bit immediate (sign-extended)
-    const imm_raw = @as(u16, @truncate(word >> 16));
-    const immediate: i16 = if (imm_raw & 0x8000 != 0)
-        @bitCast(imm_raw)
+    // Decode 9-bit immediate (bits 23-31), sign-extended to 16 bits
+    const imm_raw = @as(u16, @truncate((word >> 23) & 0x1FF));
+    const immediate: i16 = if (imm_raw & 0x100 != 0)
+        @bitCast(imm_raw | 0xFE00) // Sign extend
     else
         @intCast(imm_raw);
 
@@ -149,9 +149,11 @@ pub fn encode(inst: Instruction) u32 {
     word |= @as(u32, inst.src1) << 11;
     word |= @as(u32, inst.src2) << 14;
 
-    // Encode immediate (15 bits + sign)
-    const imm_u16: u16 = @bitCast(inst.immediate);
-    word |= @as(u32, imm_u16) << 16;
+    // Encode 9-bit immediate (bits 23-31), sign-extended to 16 bits
+    // imm_raw is truncated to 9 bits, then sign-extended with 0xFE00
+    var imm_bits: u16 = @bitCast(inst.immediate);
+    imm_bits &= 0x1FF; // Keep only 9 bits (0-255)
+    word |= @as(u32, imm_bits) << 23;
 
     return word;
 }

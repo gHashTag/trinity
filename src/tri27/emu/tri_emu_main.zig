@@ -117,23 +117,34 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     var mem = try Memory.init(allocator);
     defer mem.deinit();
 
-    // Load program
-    const Loader = @import("tri_loader.zig");
-    const load_result = try Loader.loadBinary(tbin_path, &mem, allocator);
+    // Read .tbin file
+    const file_content = try std.fs.cwd().readFileAlloc(allocator, tbin_path, 65536);
+    defer allocator.free(file_content);
+
+    // Initialize CPU
+    var cpu = try CPUState.init(allocator);
+    defer cpu.deinit();
+
+    // Load using loader.zig (full format support)
+    const Loader = @import("loader.zig");
+    try Loader.load(&cpu, file_content, &[_]f64{});
+
+    const inst_count: u32 = @intCast((file_content.len - 10) / 4);
+    const code_sz: u32 = @intCast(file_content.len - 10);
+
+    const load_result = .{
+        .entry_point = cpu.pc,  // loader sets pc = 0
+        .instruction_count = inst_count,
+        .code_size = code_sz,
+    };
+
+    cpu.sp = 19683;
 
     if (options.verbose) {
         std.debug.print("Loaded: {s}\n", .{tbin_path});
         std.debug.print("  Entry point: 0x{X:0>4}\n", .{load_result.entry_point});
         std.debug.print("  Instructions: {d}\n", .{load_result.instruction_count});
         std.debug.print("  Code size: {} bytes\n", .{load_result.code_size});
-    }
-
-    // Initialize CPU with memory from cpu_state
-    var cpu = try CPUState.init(allocator);
-    cpu.pc = load_result.entry_point;
-    cpu.sp = 19683;
-
-    if (options.verbose) {
         std.debug.print("  SP: 0x{X:0>4}\n", .{cpu.sp});
         std.debug.print("  FP: 0x{X:0>4}\n", .{cpu.fp});
     }

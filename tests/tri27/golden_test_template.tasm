@@ -1,0 +1,51 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// TRI-27 GOLDEN TEST TEMPLATE
+// ══════════════════════════════════════════════════════════════
+//
+// This is a minimal golden test for tri-asm pipeline.
+// It includes:
+//   1. Labels (definition and reference)
+//   2. Comments ( ; and #)
+//   3. All supported instructions
+//   4. Register format (r0-r31)
+//   5. Immediate format (decimal and hex 0x...)
+//
+// Usage:
+//   tri-asm input.tasm -o output.tbin
+//   tri-emu output.tbin
+//   Verify that registers/memory match expected values
+//
+// ══════════════════════════════════════════════════════════════════════
+
+; ══════════════════════════════════════════════════════════════════
+; Section: Setup registers
+; ══════════════════════════════════════════════════════════════════════════
+
+load_imm r0, 5       ; Initialize with immediate 5
+load_imm r1, 42      ; r1 = 42
+load_imm r2, 0xFF    ; r2 = 255 (max u8)
+add r3, r0, r1       ; r3 = r0 + r1
+add r4, r3, r2       ; r4 = r3 + r2
+sub r5, r4, r1       ; r5 = r4 - r1
+mul r6, r1, r2       ; r6 = r1 * r2
+tmul r7, r5, r6       ; Ternary multiply
+store r5, 0x1000    ; Store r5 to address 0x1000
+load r6, 0x2000     ; Load from address 0x2000 into r6
+halt                 ; Stop execution
+
+; ════════════════════════════════════════════════════════════════════════
+; Section: Arithmetic operations
+; ════════════════════════════════════════════════════════════════════════
+
+; Expected final state:
+;   r0 = 5
+;   r1 = 42
+;   r2 = 255
+;   r3 = 47  (5 + 42)
+;   r4 = 89  (42 + 47)
+;   r5 = 251 (5 + 42 + 204)
+;   r6 = 2110 (255 * 8)
+;   memory[0x1000] = r5
+;   memory[0x2000] = r6
+
+; ════════════════════════════════════════════════════════════════════════════════════
