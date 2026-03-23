@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.44 — RTT Percentiles (p50, p90, p95, p99)
+//! v3.45 — JSON Export with RTT Percentiles
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1301,7 +1301,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.44           ║
+        \\║      Trinity UART Echo Test v3.45           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1345,7 +1345,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.44):
+        \\Performance Modes (v3.45):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1362,6 +1362,7 @@ fn printUsage() void {
         \\  Comprehensive Recovery: Recovery statistics tracking for comprehensive mode (v3.42)
         \\  Stress Error Tracking: Write/read error tracking for stress test mode (v3.43)
         \\  RTT Percentiles: p50/p90/p95/p99 latency percentiles with jitter tracking (v3.44)
+        \\  JSON Percentiles: Export RTT percentiles in JSON output (v3.45)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\
@@ -2627,7 +2628,8 @@ fn runSimulation(config: Config) !void {
 
     // Export to JSON if requested
     if (config.json_output) {
-        exportSimulationJSON(passed, tests.len, total_time_ms);
+        // v3.45: Pass jitter_tracker for percentile export
+        exportSimulationJSON(passed, tests.len, total_time_ms, &jitter_tracker);
     }
 
     // v3.35: Show latency histogram if measure_jitter is enabled
@@ -3453,10 +3455,11 @@ fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: us
 }
 
 // v3.14: Export simulation results to JSON
-fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
+// v3.45: Export JSON with percentiles
+fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64, jitter_tracker: ?*const JitterTracker) void {
     printErr(
         \\{{
-        \\  "version": "3.23",
+        \\  "version": "3.45",
         \\  "mode": "simulation",
         \\  "timestamp": {d},
         \\  "summary": {{
@@ -3465,7 +3468,6 @@ fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
         \\    "success_rate": {d:.1},
         \\    "total_time_ms": {d}
         \\  }}
-        \\}}
     , .{
         std.time.timestamp(),
         passed,
@@ -3474,5 +3476,29 @@ fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64) void {
         total_time_ms,
     });
 
+    // v3.45: Add percentiles to JSON if jitter tracking enabled
+    if (jitter_tracker) |jt| {
+        if (jt.count > 1) {
+            const p = jt.getPercentiles();
+            const p50_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+            const p90_ms = @as(f64, @floatFromInt(p.p90)) / 1000.0;
+            const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+            const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+            printErr(",\n", .{});
+            printErr("  \"percentiles\": {{\n", .{});
+            printErr("    \"p50_us\": {d},\n", .{p.p50});
+            printErr("    \"p50_ms\": {d:.2},\n", .{p50_ms});
+            printErr("    \"p90_us\": {d},\n", .{p.p90});
+            printErr("    \"p90_ms\": {d:.2},\n", .{p90_ms});
+            printErr("    \"p95_us\": {d},\n", .{p.p95});
+            printErr("    \"p95_ms\": {d:.2},\n", .{p95_ms});
+            printErr("    \"p99_us\": {d},\n", .{p.p99});
+            printErr("    \"p99_ms\": {d:.2}\n", .{p99_ms});
+            printErr("  }}", .{});
+        }
+    }
+
+    printErr("\n}}\n", .{});
     printErr("\n[+] Simulation JSON export complete\n", .{});
 }
