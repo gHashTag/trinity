@@ -164,30 +164,23 @@ fn cmdInit(allocator: std.mem.Allocator) !u8 {
 
 fn printUsage() void {
     std.debug.print(
-        \\
-🌪️  STORM — Self-Organizing Regenerative Task Management
-\\
-Usage: tri storm <subcommand> [options]
-\\
-Subcommands:
-\\  run        Execute STORM operation
-\\  status     Show checkpoint status
-\\  resume     Continue from checkpoint
-\\  init       Initialize STORM structure
-\\
-Options:
-\\  --waves N         Number of waves (default: 5)
-\\  --agents M        Number of agents (default: 32)
-\\  --config PATH     Config file path
-\\  --dry-run         Simulation only
-\\
-\\
-Examples:
-\\  tri storm init                              — Initialize STORM
-\\  tri storm run                               — Run with defaults
-\\  tri storm run --waves=3 --agents=16        — Custom configuration
-\\  tri storm status                            — Show checkpoint status
-\\
-    , .{}
+        \\🌪️  STORM — Self-Organizing Regenerative Task Management\\
+        \\Usage: tri storm <subcommand> [options]\\
+        \\Subcommands:\\
+        \\  run        Execute STORM operation\\
+        \\  status     Show checkpoint status\\
+        \\  resume     Continue from checkpoint\\
+        \\  init       Initialize STORM structure\\
+        \\Options:\\
+        \\  --waves N         Number of waves (default: 5)\\
+        \\  --agents M        Number of agents (default: 32)\\
+        \\  --config PATH     Config file path\\
+        \\  --dry-run         Simulation only\\
+        \\Examples:\\
+        \\  tri storm init                              — Initialize STORM\\
+        \\  tri storm run                               — Run with defaults\\
+        \\  tri storm run --waves=3 --agents=16        — Custom configuration\\
+        \\  tri storm status                            — Show checkpoint status\\
+        , .{}
     );
 }

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // WORKING: Static ON (we verified this works)
 module trinity_top (
     input  wire clk,

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // VSA BITNET TOP — Bind + Bundle + Similarity + BitNet Inference via UART
 // Day 5: Added BITNET command for tiny inference
 //

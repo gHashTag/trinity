@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // CLOCK TEST — Verify 50MHz oscillator is working
 //

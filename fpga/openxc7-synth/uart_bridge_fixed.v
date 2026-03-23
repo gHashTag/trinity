@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // UART Bridge Fixed — FT232RL ↔ FPGA Direct Connection
 // Pin mapping for QMTech XC7A100T-1FGG676C

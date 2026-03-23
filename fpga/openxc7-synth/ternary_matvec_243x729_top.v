@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // TERNARY MATVEC ACCELERATOR — 243x729 BRAM Top Level with Self-Test
 // =============================================================================

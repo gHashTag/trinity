@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // QUANTUM BRIDGE TOP — Test module with hardcoded VIOLATION mode
 // This version demonstrates CGLMP violation (fast ~6 Hz blink)

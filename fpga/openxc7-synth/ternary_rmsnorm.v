@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // TERNARY RMS NORM — Shift-Based Approximation for FPGA
 // =============================================================================

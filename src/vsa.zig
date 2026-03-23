@@ -1,4 +1,8 @@
 // 🤖 TRINITY v0.11.0: Suborbital Order
+//! Strand III: Language & Hardware Bridge
+//!
+//! VSA operations for Trinity S³AI — bind, unbind, bundle, similarity.
+//!
 const std = @import("std");
 
 pub const common = @import("vsa/common.zig");

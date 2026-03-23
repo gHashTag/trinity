@@ -116,7 +116,7 @@ struct FPGAScreen: View {
                     ForEach([
                         "fpga/openxc7-synth/hslm_ternary_mac.v",
                         "fpga/openxc7-synth/hslm_full_top.bit",
-                        "papers/trinity-fpga/fpl2026-paper.tex",
+                        "docs/lab/papers/trinity-fpga/fpl2026-paper.tex",
                     ], id: \.self) { path in
                         Text(path)
                             .font(.caption.monospaced())

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // TMU_TOP — Trinity Block-compatible wrapper for TMU
 // =============================================================================

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ╔════════════════════════════════════════════════════════════════════════════╗
 // ║  TRINITY V2 — UNIFIED TOP MODULE WITH TQNN LAYER 1                           ║
 // ║  Week 2 Day 4: VSA + BitNet + TQNN Quantum Layer + UART                      ║

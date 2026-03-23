@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! ASYNC PROCESSOR — v1.0 — Non-blocking Brain Operations
 //!
 //! Async task processing for high-throughput scenarios.

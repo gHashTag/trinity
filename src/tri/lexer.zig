@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! TRI-27 compiler component or VSA operations for Trinity S³AI.
+//!
+
 //! Lexer — Tokenizer for Tri language
 //! v0.8 — Converts source text to token stream
 

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 `timescale 1ns / 1ps
 
 // LED OFF test - led = 1 means LED OFF (active-low)

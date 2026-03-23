@@ -88,7 +88,7 @@ Each iteration represents 1000 simulated steps per worker.
 
 ## References
 
-- Artix-7 K=16 synthesis: `papers/fpga_synthesis_results.md`
+- Artix-7 K=16 synthesis: `docs/lab/papers/trinity-fpga/synthesis-real-data.md`
 - Wide BRAM discovery: `project_fpga_wide_bram.md`
 - FPGA cost model: `src/brain/evolution_simulation.zig`
 - Energy cost model: `src/brain/evolution_simulation.zig` (energy_cost calculation)

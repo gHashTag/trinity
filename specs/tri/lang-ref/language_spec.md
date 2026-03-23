@@ -282,4 +282,4 @@ Version increments:
 
 - [Trinity S³AI Architecture](../trinity_s3ai_architecture.md)
 - [φ-Structure](../sacred/CHARTER.md)
-- [VSA Paper](../../papers/vsa/draft.md)
+- [VSA module](../../src/vsa/README.md)

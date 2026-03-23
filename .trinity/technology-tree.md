@@ -79,8 +79,8 @@ Key: Ternary {-1, 0, +1} = 1.58 bits/trit, 20x memory savings vs float32.
 |-----------|--------|--------|
 | LR Sweep | v1→v5R, cosine/flat, 1e-4→1e-3 | COMPLETE |
 | Zenodo | DOI 10.5281/zenodo.18950696, v2.0.3 | COMPLETE |
-| HSLM Paper | `papers/hslm/draft.md` | IN PROGRESS |
-| FPGA Paper | `papers/trinity-fpga/draft.md` | IN PROGRESS |
+| HSLM Paper | `docs/lab/papers/hslm/draft.md` | IN PROGRESS |
+| FPGA Paper | `docs/lab/papers/trinity-fpga/draft.md` | IN PROGRESS |
 | arXiv Submission | Not yet submitted | PLANNED |
 | Scaling Experiments | Beyond 1.95M params | PLANNED |
 

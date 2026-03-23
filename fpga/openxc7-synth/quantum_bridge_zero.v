@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // QUANTUM BRIDGE TEMPLATE — Dynamic Quantum State (set during build)
 // phi^2 + 1/phi^2 = 3 = TRINITY

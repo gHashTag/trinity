@@ -103,7 +103,7 @@ Cycle 91 andwith]in:] torandtandchewithtoande :] VIBEE for]and:] and daboutinabo
 
 | :] | :]with | Opandwithanande |
 |---------|----------|-----------|
-| G1 | TODO | :]inandt docs/tri/tri-math-v4.0.md |
+| G1 | TODO | :]inandt specs/tri/lang-ref/tri-math-v4.0.md (planned) |
 | G2 | TODO | :] docs/research/tri-math-v4.0-architecture.md |
 | G3 | TODO | :]inandt TECHNOLOGY_TREE.md (:]inandt Cycle 91) |
 | G4 | TODO | :]inandt entry in sidebars.ts |

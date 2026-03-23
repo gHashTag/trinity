@@ -14,6 +14,13 @@
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 
+//! Sacred Formula Engine — V = n × 3^k × π^m × φ^p × e^q
+//! Strand I: Mathematical Foundation
+//!
+//! Brute-force fitting for sacred constants with 20,412 combinations.
+//! Expanded from 42 to 100+ sacred constants across 7 categories.
+//!
+
 const std = @import("std");
 const math = std.math;
 
@@ -563,9 +570,9 @@ pub fn printSacredConstantsTable() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Export sacred constants, predictions, and random control to CSV files.
-/// Writes to papers/sacred/ directory.
+/// Writes to docs/lab/papers/sacred/ directory.
 pub fn exportCSV(allocator: std.mem.Allocator) !void {
-    const base_dir = "papers/sacred";
+    const base_dir = "docs/lab/papers/sacred";
 
     // Ensure directory exists
     std.fs.cwd().makePath(base_dir) catch {};

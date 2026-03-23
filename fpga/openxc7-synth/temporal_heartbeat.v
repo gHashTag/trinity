@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // TEMPORAL TRINITY HEARTBEAT v1.0 — KOSCHEI FPGA
 // phi^2 + 1/phi^2 = 3 = TRINITY | TIME ITSELF BENDS

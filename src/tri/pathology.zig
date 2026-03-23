@@ -789,7 +789,7 @@ fn readScholarHealth() ScholarHealth {
         }
     } else |_| {}
 
-    // Count real research artifacts: papers/*.md + EXPERIENCE_LOG EXP- entries
+    // Count real research artifacts: docs/lab/papers/*.md + EXPERIENCE_LOG EXP- entries
     var researched: u32 = 0;
 
     // Count papers
@@ -813,7 +813,7 @@ fn readScholarHealth() ScholarHealth {
     } else |_| {}
 
     // Count EXPERIENCE_LOG entries (lines containing "EXP-0")
-    if (std.fs.cwd().openFile("EXPERIENCE_LOG.md", .{})) |efile| {
+    if (std.fs.cwd().openFile("docs/lab/papers/EXPERIENCE_LOG.md", .{})) |efile| {
         defer efile.close();
         var ebuf: [32768]u8 = undefined;
         const en = efile.readAll(&ebuf) catch 0;

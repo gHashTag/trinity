@@ -24,7 +24,7 @@
 ## 📝 Level 2: Язык и VM (Tri + TRI-27)
 
 ### Tri — Текнарный Язык
-- **Спецификация** — `docs/tri/language_spec.md`
+- **Спецификация** — `specs/tri/lang-ref/language_spec.md`
 - **Компилятор** — tric (VIBEE Codegen)
 - **AST** — `.tri` → Zig/Verilog
 - **Типы** — Trit, GF16, TF3
@@ -100,9 +100,9 @@ openxc7 synthesis → .bitstream → .bit файл
 
 #### Ближайшие спецификации
 - **Behavior** — `docs/docs/internal/ACTIONS.md` (словарный формат поведения)
-- **Grammar** — `docs/tri/grammar.tri` (уже есть)
-- **Types** — `docs/tri/types.tri` (уже есть)
-- **Tokens** — `docs/tri/tokens.tri` (уже есть)
+- **Grammar** — `specs/tri/lang-ref/grammar.tri` (уже есть)
+- **Types** — `specs/tri/lang-ref/types.tri` (уже есть)
+- **Tokens** — `specs/tri/lang-ref/tokens.tri` (уже есть)
 
 #### Использование BDD
 ```zig
@@ -401,8 +401,8 @@ Working Memory → VSA → Sacred ALU → Orbital → Amygdala → Decision → 
 
 Для более информации:
 - **Architecture**: `docs/trinity_s3ai_architecture.md` — 3-уровневая архитектура
-- **Language**: `docs/tri/language_spec.md` — спецификация Tri
-- **Hardware**: `docs/tri/fpga/README.md` — FPGA синтез
+- **Language**: `specs/tri/lang-ref/language_spec.md` — спецификация Tri
+- **Hardware**: `fpga/README.md` — FPGA синтез
 - **BDD Docs**: `docs/docs/adr/*` — спецификации поведения
 
 ---

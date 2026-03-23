@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // trinity_v2_top_final v2.1.0 - Generated Verilog from .vibee specification
 // ═══════════════════════════════════════════════════════════════════════════════

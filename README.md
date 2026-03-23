@@ -33,6 +33,22 @@
 
 ---
 
+## Trinity S³AI DNA
+
+### Trinity Identity
+```
+    φ² + 1/φ² = 3 = TRINITY
+```
+
+### Three Strands
+- **Strand I**: Mathematical Foundation — Sacred constants, formulas, VSA
+- **Strand II**: Cognitive Architecture — Brain modules, observability
+- **Strand III**: Language & Hardware Bridge — TRI-27, FPGA backends
+
+[Full Architecture](docs/ARCHITECTURE.md)
+
+---
+
 ## For Scientific Collaborators
 
 **TRINITY is a unified research framework** connecting fundamental physics through a single mathematical identity: `φ² + φ⁻² = 3`. From this root, candidate formulas for gravitational constant **G**, consciousness threshold **C**, temporal perception **t_present**, and fermion generations **N_gen** are derived.
@@ -361,7 +377,7 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 
 **📘 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for comprehensive system design.**
 
-**Repo layout:** Verilog snapshots live in [`hardware/rtl-root/`](hardware/rtl-root/); agents follow [`AGENTS.md`](AGENTS.md). Research drafts live under [`docs/lab/`](docs/lab/); root entries **`papers`**, **`memory`**, **`notebooks`**, **`prebuilt`**, **`build.brain.zig`** are symlinks so old paths and Docker `COPY` keep working.
+**Repo layout:** Verilog snapshots live in [`hardware/rtl-root/`](hardware/rtl-root/); agents follow [`AGENTS.md`](AGENTS.md). Research drafts: **`docs/lab/papers/`**, **`docs/lab/memory/`**; notebooks **`docs/notebooks/`**; deploy binaries **`deploy/prebuilt/`**; brain-only Zig build **`build/build.brain.zig`**.
 
 ### Module Documentation
 

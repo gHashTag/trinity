@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN FEDERATION — v1.0 — Distributed Multi-Instance Coordination
 //!
 //! Brain Region: Corpus Callosum (Inter-Hemispheric Communication)

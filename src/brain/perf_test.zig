@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 const std = @import("std");
 const basal_ganglia = @import("basal_ganglia.zig");
 const reticular = @import("reticular_formation.zig");

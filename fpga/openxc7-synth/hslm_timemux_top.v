@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // HSLM TIME-MULTIPLEXED TOP — Single MatVec, 6 Passes
 // =============================================================================

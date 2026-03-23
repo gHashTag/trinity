@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED MATHEMATICS FRAMEWORK v2.0 — CLI COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -650,7 +655,7 @@ pub fn runSacredCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             std.debug.print("\x1b[31mExport failed: {}\x1b[0m\n", .{err});
             return;
         };
-        std.debug.print("\n\x1b[32mDone. Files in papers/sacred/\x1b[0m\n\n", .{});
+        std.debug.print("\n\x1b[32mDone. Files in docs/lab/papers/sacred/\x1b[0m\n\n", .{});
     } else if (args.len > 0 and std.mem.eql(u8, args[0], "control")) {
         sacred_formula.runRandomControl();
     } else {

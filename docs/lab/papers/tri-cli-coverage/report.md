@@ -211,7 +211,7 @@ This is a separate PR — first make `tri issue list/assign` work, then migrate 
 
 ```bash
 # Report exists
-cat papers/tri-cli-coverage/report.md
+cat docs/lab/papers/tri-cli-coverage/report.md
 
 # Git commands — real subprocess output
 tri git status          # shows actual git status

@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN HEALTH HISTORY — Hippocampal Memory Consolidation
 //!
 //! Records brain health snapshots over time for trend analysis.

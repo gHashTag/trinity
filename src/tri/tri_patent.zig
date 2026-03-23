@@ -124,7 +124,7 @@ fn showAnalysis() void {
     print("    ctx=27 (3^3)   -> PPL 2.96  ON resonance\n", .{});
     print("    ctx=54 (2x3^3) -> PPL 6.05  OFF resonance (WORSE with 2x context!)\n\n", .{});
     print("  {s}Non-obvious{s}: Contradicts Kaplan/Chinchilla scaling laws\n", .{ CYAN, RESET });
-    print("  {s}Files{s}: src/hslm/constants.zig, papers/hslm/training-review-mar10-14.md\n\n", .{ GRAY, RESET });
+    print("  {s}Files{s}: src/hslm/constants.zig, docs/lab/papers/hslm/training-review-mar10-14.md\n\n", .{ GRAY, RESET });
 
     // P1b: Square Attention
     print("  {s}P1b: SQUARE ATTENTION THEOREM (ctx = head_dim){s}\n", .{ GREEN, RESET });
@@ -143,7 +143,7 @@ fn showAnalysis() void {
     print("    LUT: 4,267/63,400 (6.7%%)   FF: 2,449/126,800 (1.9%%)\n\n", .{});
     print("  {s}vs TerEffic (2025){s}: 0 DSP vs 3,041 DSP | $30 vs $5,000 | Yosys vs Vivado\n", .{ CYAN, RESET });
     print("  {s}Zenodo{s}: 63 tok/s @ 92 MHz, ~1W, 16 tokens autoregressive (seed=42)\n", .{ CYAN, RESET });
-    print("  {s}Files{s}: fpga/openxc7-synth/hslm_ternary_mac.v, papers/trinity-fpga/draft.md\n\n", .{ GRAY, RESET });
+    print("  {s}Files{s}: fpga/openxc7-synth/hslm_ternary_mac.v, docs/lab/papers/trinity-fpga/draft.md\n\n", .{ GRAY, RESET });
 
     // P3: Ouroboros
     print("  {s}P3: SELF-EVOLVING OUROBOROS SYSTEM{s}\n", .{ YELLOW, RESET });
@@ -162,7 +162,7 @@ fn showAnalysis() void {
     print("  P5: phi-RoPE: theta_i = phi^(-2i/d) (src/hslm/sacred_attention.zig)\n", .{});
     print("  P6: Branchless ternary matmul 9.2x (src/hslm/sparse_ternary.zig)\n\n", .{});
 
-    print("  {s}Full analysis{s}: papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
+    print("  {s}Full analysis{s}: docs/lab/papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -220,7 +220,7 @@ fn showClaims(filter: []const u8) void {
         print("    rate > phi^(-1) classifies as sustained improvement.\n\n", .{});
     }
 
-    print("  {s}Full claims with evidence{s}: papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
+    print("  {s}Full claims with evidence{s}: docs/lab/papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -321,7 +321,7 @@ fn showDraft(name: []const u8) void {
     print("  {s}Entity status:{s} Micro entity ($320 filing fee)\n", .{ GOLDEN, RESET });
     print("  {s}Validity:{s} 12 months from filing date\n\n", .{ GOLDEN, RESET });
 
-    print("  {s}Full analysis:{s} papers/patent-strategy/full-analysis.md\n", .{ GOLDEN, RESET });
+    print("  {s}Full analysis:{s} docs/lab/papers/patent-strategy/full-analysis.md\n", .{ GOLDEN, RESET });
     print("  {s}View claims:{s}   tri patent claims {s}\n\n", .{ GOLDEN, RESET, name });
 }
 
@@ -367,7 +367,7 @@ fn printHelp() void {
     print("  snapshot [--discovery name]  Git tag + zenodo instructions\n", .{});
     print("  draft [--discovery name]     Provisional patent template\n", .{});
     print("  zenodo               Zenodo DOI records + trigger instructions\n\n", .{});
-    print("  {s}Full analysis:{s} papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
+    print("  {s}Full analysis:{s} docs/lab/papers/patent-strategy/full-analysis.md\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! STRESS TEST — S³AI Brain Circuit Load Testing
 //!
 //! Comprehensive stress testing for all brain regions:

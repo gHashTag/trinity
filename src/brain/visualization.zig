@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN VISUALIZATION — ASCII Art Brain Maps
 //!
 //! Brain Region: Visual Cortex (Spatial Representation)

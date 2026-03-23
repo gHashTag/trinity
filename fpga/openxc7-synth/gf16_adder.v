@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // @origin(spec:gf16_adder.tri) @regen(manual-impl)
 // GF16 Adder — Golden Float 16 Addition Unit
 //

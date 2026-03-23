@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // TMU — Ternary MatMul Unit (K-Parallel Dot Product, Wide BRAM)
 // =============================================================================

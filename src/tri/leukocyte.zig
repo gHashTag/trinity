@@ -961,7 +961,7 @@ const JUNK_ARCHIVE_DIR = "archive/junk-2026-03-15";
 
 const JUNK_WHITELIST = [_][]const u8{
     "archive/",
-    "papers/trinity-fpga/",
+    "docs/lab/papers/trinity-fpga/",
     "reports/",
     "src/hslm/",
     "src/tri/",

@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SELF-EVOLUTION ENGINE v1.0
 // Genetic Algorithm for Sacred Formula Discovery

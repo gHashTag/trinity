@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // VSA VSA TOP — Bind + Bundle Operations via UART
 // Day 3: VSA bind and bundle commands over UART
 //

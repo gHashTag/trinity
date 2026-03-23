@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! EVOLUTION SIMULATION — Deterministic Brain Evolution
 //!
 //! Simulates evolution scenarios with deterministic PPL trends, multi-objective

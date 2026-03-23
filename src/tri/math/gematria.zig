@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // GEMATRIA INTEGRATION MODULE v3.6
 // ═══════════════════════════════════════════════════════════════════════════════
