@@ -2324,8 +2324,6 @@ fn runSimulationBatch(config: Config) !void {
     const start_time = std.time.nanoTimestamp();
 
     // v3.41: Simulated auto-recovery for batch test
-    var total_retries: usize = 0;
-    var recovered_packets: usize = 0;
     var packets_sent: usize = 0;
     while (packets_sent < batch_size) {
         const bytes_in_packet = packet_size;
@@ -2353,7 +2351,7 @@ fn runSimulationBatch(config: Config) !void {
                     total_retries += 1;
                     if (recovery.shouldRetry(retry_count)) {
                         const delay = recovery.getDelay(retry_count);
-                        _ = delay;
+                        // Simulated delay (no actual sleep in simulation)
                         printWarning("[i] Auto-recovery (sim): retry {d}/{d} after {d}ms delay\n", .{ retry_count, config.retries, delay });
                         results.timeouts += 1;
                     }
@@ -2362,7 +2360,7 @@ fn runSimulationBatch(config: Config) !void {
                     total_retries += 1;
                     if (recovery.shouldRetry(retry_count)) {
                         const delay = recovery.getDelay(retry_count);
-                        _ = delay;
+                        // Simulated delay (no actual sleep in simulation)
                         printWarning("[i] Auto-recovery (sim): retry {d}/{d} after {d}ms delay (fail)\n", .{ retry_count, config.retries, delay });
                         results.failed += 1;
                     }
