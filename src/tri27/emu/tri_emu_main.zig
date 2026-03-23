@@ -113,10 +113,6 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
     const execute = @import("executor.zig").execute;
     const estimateCycles = @import("executor.zig").estimateCycles;
 
-    // Initialize memory
-    var mem = try Memory.init(allocator);
-    defer mem.deinit();
-
     // Read .tbin file
     const file_content = try std.fs.cwd().readFileAlloc(allocator, tbin_path, 65536);
     defer allocator.free(file_content);
@@ -162,16 +158,21 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
 
         // Fetch instruction
         const ip = cpu.pc;
+        const memory_bytes = cpu.getBytesMut();
 
         // Check IP bounds (word-aligned)
-        const memory_bytes = cpu.getBytesMut();
-        const mem_words = memory_bytes.len / 4;
-        if (ip >= mem_words) {
+        if (ip * 4 + 4 > memory_bytes.len) {
             exit_reason = "invalid instruction pointer";
             break;
         }
 
-        const inst_word = try mem.readWord(ip);
+        // Fetch instruction word from cpu.memory (little-endian)
+        const byte_addr = ip * 4;
+        const inst_word: u32 =
+            @as(u32, memory_bytes[byte_addr]) |
+            @as(u32, memory_bytes[byte_addr + 1]) << 8 |
+            @as(u32, memory_bytes[byte_addr + 2]) << 16 |
+            @as(u32, memory_bytes[byte_addr + 3]) << 24;
         const inst = decodeInstruction(inst_word);
 
         if (options.trace) {

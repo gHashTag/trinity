@@ -103,15 +103,19 @@ pub const Instruction = struct {
 ///   [7:0]   = opcode (8 bits)
 ///   [12:8]  = dst (5 bits)
 ///   [17:13] = src1 (5 bits)
-///   [22:18] = src2 (5 bits)
-///   [31:23] = immediate (9 bits, sign-extended to 16)
+///   [22:18] = src2 (5 bits) OR v3_reg (for BUNDLE3)
+///   [31:23] = immediate (9 bits, sign-extended to 16) OR v3_reg (for BUNDLE3)
 pub fn decode(word: u32) Instruction {
     const opcode_val = @as(u8, @truncate(word & 0xFF));
     const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
 
     const dst = @as(u8, @truncate((word >> 8) & 0x1F));
     const src1 = @as(u8, @truncate((word >> 13) & 0x1F));
-    const src2 = @as(u8, @truncate((word >> 18) & 0x1F));
+
+    // For BUNDLE3: bits 18-22 = src2, bits 23-27 = v3_reg (upper 5 bits)
+    const src2_or_v3 = @as(u8, @truncate((word >> 18) & 0x3FF));
+    const src2 = src2_or_v3 & 0x1F;
+    const v3_reg = (src2_or_v3 >> 5) & 0x1F;
 
     // Decode 9-bit immediate (bits 23-31), sign-extended to 16 bits
     const imm_raw = @as(u16, @truncate((word >> 23) & 0x1FF));
@@ -122,7 +126,7 @@ pub fn decode(word: u32) Instruction {
 
     // Determine if instruction has immediate
     const has_imm = switch (opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .CALL, .RET => true,
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .CALL, .RET, .BUNDLE3 => true,
         else => false,
     };
 
@@ -133,7 +137,7 @@ pub fn decode(word: u32) Instruction {
         .src2 = src2,
         .immediate = immediate,
         .has_imm = has_imm,
-        .cond = 0,
+        .cond = if (opcode == .BUNDLE3) v3_reg else 0,
     };
 }
 
@@ -144,28 +148,28 @@ pub fn decodeInstruction(word: u32) Instruction {
 
 /// Encode Instruction to 32-bit word
 pub fn encode(inst: Instruction) u32 {
-    // std.debug.print("encode: opcode=0x{x:0>2} dst={d} src1={d} src2={d} imm={d} has_imm={any}\n", .{ @intFromEnum(inst.opcode), inst.dst, inst.src1, inst.src2, inst.immediate, inst.has_imm });
+    std.debug.print("encode: opcode=0x{x:0>2} dst={d} src1={d} src2={d} imm={d} has_imm={any}\n", .{ @intFromEnum(inst.opcode), inst.dst, inst.src1, inst.src2, inst.immediate, inst.has_imm });
 
     var word: u32 = @intFromEnum(inst.opcode);
-    // std.debug.print("  after opcode: 0x{x:0>8}\n", .{word});
+    std.debug.print("  after opcode: 0x{x:0>8}\n", .{word});
     word |= @as(u32, inst.dst) << 8;
-    // std.debug.print("  after dst:   0x{x:0>8}\n", .{word});
+    std.debug.print("  after dst:   0x{x:0>8}\n", .{word});
 
     word |= @as(u32, inst.src1) << 13;
-    // std.debug.print("  after src1:  0x{x:0>8}\n", .{word});
+    std.debug.print("  after src1:  0x{x:0>8}\n", .{word});
 
     word |= @as(u32, inst.src2) << 18;
-    // std.debug.print("  after src2:  0x{x:0>8}\n", .{word});
+    std.debug.print("  after src2:  0x{x:0>8}\n", .{word});
 
     // Encode 9-bit immediate (bits 23-31), sign-extended to 16 bits
     // imm_raw is truncated to 9 bits, then sign-extended with 0xFE00
-    // std.debug.print("  before imm: imm={d}\n", .{inst.immediate});
+    std.debug.print("  before imm: imm={d}\n", .{inst.immediate});
     var imm_bits: u16 = @bitCast(inst.immediate);
-    // std.debug.print("  cast to u16: imm_bits=0x{x:0>4}\n", .{imm_bits});
+    std.debug.print("  cast to u16: imm_bits=0x{x:0>4}\n", .{imm_bits});
     imm_bits &= 0x1FF; // Keep only 9 bits (0-255)
-    // std.debug.print("  masked: imm_bits=0x{x:0>4}\n", .{imm_bits});
+    std.debug.print("  masked: imm_bits=0x{x:0>4}\n", .{imm_bits});
     word |= @as(u32, imm_bits) << 23;
-    // std.debug.print("encode result: 0x{x:0>8}\n", .{word});
+    std.debug.print("encode result: 0x{x:0>8}\n", .{word});
 
     return word;
 }
