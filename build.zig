@@ -2368,6 +2368,28 @@ pub fn build(b: *std.Build) void {
     sebo_step.dependOn(&run_sebo.step);
 
     // ═════════════════════════════════════════════════════════════════════════════
+    // LOGGING TEST — Test centralized logging module
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+
+    const test_logging_mod = b.createModule(.{
+        .root_source_file = b.path("src/cli/test_logging.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const test_logging = b.addExecutable(.{
+        .name = "test-logging",
+        .root_module = test_logging_mod,
+    });
+    b.installArtifact(test_logging);
+
+    const run_test_logging = b.addRunArtifact(test_logging);
+    if (b.args) |run_args| {
+        run_test_logging.addArgs(run_args);
+    }
+    const test_logging_step = b.step("test-logging", "Run logging module test");
+    test_logging_step.dependOn(&run_test_logging.step);
+
+    // ═════════════════════════════════════════════════════════════════════════════
     // FARM STATS — Removed (src/cli/farm_stats.zig does not exist)
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
