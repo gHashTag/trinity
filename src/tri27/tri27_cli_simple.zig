@@ -45,8 +45,6 @@ fn runAssemble(allocator: Allocator, args: []const []const u8) !void {
     const bytecode = Assembler.assemble(allocator, asm_content);
     try file.writeAll(bytecode);
     std.debug.print("Assembled {d} instructions\n", .{bytecode.len / 4});
-}
-
     std.debug.print("Wrote to: {s}\n", .{input_file});
 }
 
