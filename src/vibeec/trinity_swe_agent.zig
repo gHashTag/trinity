@@ -166,18 +166,12 @@ pub const TrinitySWEAgent = struct {
 
     /// Detect if prompt is asking for code generation
     pub fn isCodePrompt(text: []const u8) bool {
-        return std.mem.indexOf(u8, text, "code") != null
-            or std.mem.indexOf(u8, text, "function") != null
-            or std.mem.indexOf(u8, text, "fn ") != null
-            or std.mem.indexOf(u8, text, "impl") != null;
+        return std.mem.indexOf(u8, text, "code") != null or std.mem.indexOf(u8, text, "function") != null or std.mem.indexOf(u8, text, "fn ") != null or std.mem.indexOf(u8, text, "impl") != null;
     }
 
     /// Detect if prompt is conversational
     pub fn isConversationalPrompt(text: []const u8) bool {
-        return std.mem.indexOf(u8, text, "hello") != null
-            or std.mem.indexOf(u8, text, "hi") != null
-            or std.mem.indexOf(u8, text, "what") != null
-            or std.mem.indexOf(u8, text, "help") != null;
+        return std.mem.indexOf(u8, text, "hello") != null or std.mem.indexOf(u8, text, "hi") != null or std.mem.indexOf(u8, text, "what") != null or std.mem.indexOf(u8, text, "help") != null;
     }
 };
 

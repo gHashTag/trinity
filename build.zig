@@ -516,16 +516,16 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
-    // UART Echo Test — FPGA UART bridge test
-    const uart_echo_test = b.addExecutable(.{
-        .name = "uart-echo-test",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tools/uart_echo_test.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(uart_echo_test);
+    // UART Echo Test — FPGA UART bridge test (DISABLED: needs Zig 0.15 port)
+    // const uart_echo_test = b.addExecutable(.{
+    //     .name = "uart-echo-test",
+    //     .root_module = b.createModule(.{
+    //         .root_source_file = b.path("src/tools/uart_echo_test.zig"),
+    //         .target = target,
+    //         .optimize = optimize,
+    //     }),
+    // });
+    // b.installArtifact(uart_echo_test);
 
     // Firebird tests
     const firebird_tests = b.addTest(.{
@@ -1250,23 +1250,23 @@ pub fn build(b: *std.Build) void {
     const claude_ui_step = b.step("claude-ui", "Run Claude UI Demo");
     claude_ui_step.dependOn(&run_claude_ui.step);
 
-    // Trinity CLI - Interactive AI Agent
-    const trinity_cli = b.addExecutable(.{
-        .name = "trinity-cli",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vibeec/trinity_cli.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(trinity_cli);
+    // Trinity CLI - Interactive AI Agent (DISABLED: needs Zig 0.15 port)
+    // const trinity_cli = b.addExecutable(.{
+    //     .name = "trinity-cli",
+    //     .root_module = b.createModule(.{
+    //         .root_source_file = b.path("src/vibeec/trinity_cli.zig"),
+    //         .target = target,
+    //         .optimize = optimize,
+    //     }),
+    // });
+    // b.installArtifact(trinity_cli);
 
-    const run_trinity_cli = b.addRunArtifact(trinity_cli);
-    if (b.args) |args| {
-        run_trinity_cli.addArgs(args);
-    }
-    const trinity_cli_step = b.step("cli", "Run Trinity CLI (Interactive AI Agent)");
-    trinity_cli_step.dependOn(&run_trinity_cli.step);
+    // const run_trinity_cli = b.addRunArtifact(trinity_cli);
+    // if (b.args) |args| {
+    //     run_trinity_cli.addArgs(args);
+    // }
+    // const trinity_cli_step = b.step("cli", "Run Trinity CLI (Interactive AI Agent)");
+    // trinity_cli_step.dependOn(&run_trinity_cli.step);
 
     // Shared chat module (used by fluent CLI, hybrid chat, TRI, etc.)
     const vibeec_chat = b.createModule(.{
@@ -2322,21 +2322,28 @@ pub fn build(b: *std.Build) void {
     const sim_plot_step = b.step("tri-sim-plot", "Visualize simulation CSV results");
     sim_plot_step.dependOn(&run_sim_plot.step);
 
-    // UART Test Tool — Serial communication test without FPGA
-    const uart_test_mod = b.createModule(.{
-        .root_source_file = b.path("src/cli/uart_test.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const uart_test = b.addExecutable(.{
-        .name = "tri-uart-test",
-        .root_module = uart_test_mod,
-    });
-    b.installArtifact(uart_test);
+    // UART Test Tool — Serial communication test without FPGA (DISABLED: needs Zig 0.15 port)
+    // const uart_test_mod = b.createModule({
+    //     .root_source_file = b.path("src/cli/uart_test.zig"),
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
+    // const uart_test = b.addExecutable(.{
+    //     .name = "tri-uart-test",
+    //     .root_module = uart_test_mod,
+    // });
+    // b.installArtifact(uart_test);
 
-    const run_uart_test = b.addRunArtifact(uart_test);
-    const uart_test_step = b.step("tri-uart-test", "Run UART communication test");
-    uart_test_step.dependOn(&run_uart_test.step);
+    // const run_uart_test = b.addRunArtifact(uart_test);
+    // const uart_test_step = b.step("tri-uart-test", "Run UART communication test");
+    // uart_test_step.dependOn(&run_uart_test.step);
+
+    // Also comment out references in default args
+    // if (b.args) |args| {
+    //     run_uart_test.addArgs(args);
+    // }
+    // const uart_test_step = b.step("tri-uart-test", "Run UART communication test");
+    // uart_test_step.dependOn(&run_uart_test.step);
 
     // SEBO CLI — Sacred Evolutionary Bayesian Optimization
     const sebo_cli_mod = b.createModule(.{

@@ -160,10 +160,7 @@ fn printStats(state: *CLIState) void {
 
 fn processQuery(state: *CLIState, query: []const u8) void {
     // Simple heuristic detection - stub module doesn't have isCodePrompt
-    const is_code_query = std.mem.indexOf(u8, query, "code") != null
-        or std.mem.indexOf(u8, query, "function") != null
-        or std.mem.indexOf(u8, query, "fn ") != null
-        or std.mem.indexOf(u8, query, "impl") != null;
+    const is_code_query = std.mem.indexOf(u8, query, "code") != null or std.mem.indexOf(u8, query, "function") != null or std.mem.indexOf(u8, query, "fn ") != null or std.mem.indexOf(u8, query, "impl") != null;
 
     const effective_mode = if (is_code_query)
         SWETaskType.CodeGen // Code prompts take priority

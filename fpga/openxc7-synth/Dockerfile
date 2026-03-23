@@ -1,5 +1,5 @@
 # FPGA Synthesis Tools — Trinity Project
-# Contains Yosys, nextpnr-xilinx, fasm2frames, xc7patch
+# Contains Yosys synthesis pipeline
 
 FROM ubuntu:22.04
 
@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     wget python3 python3-pip make git \
     libffi-dev libreadline-dev bison flex \
     tcl-dev libboost-all-dev clang lld \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Yosys (open source)
@@ -19,14 +20,8 @@ RUN cd /opt && \
     make -j$(nproc) && \
     make install
 
-# Install FPGA synthesis tools from pip
-RUN pip3 install --break-system-packages \
-    nextpnr-xilinx \
-    fasm2frames \
-    xc7patch
-
 # Verify installation
-RUN which yosys nextpnr-xilinx fasm2frames xc7patch
+RUN which yosys
 
 # Create workspace
 WORKDIR /workspace
