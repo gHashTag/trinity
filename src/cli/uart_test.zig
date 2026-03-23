@@ -72,7 +72,7 @@ pub fn main() !void {
 
     const fd = try std.posix.open(
         device,
-        .{ .RDWR = true, .NOCTTY = true },
+        @bitCast(u32, @as(u32, 0x0002) | @as(u32, 0x0004) | @as(u32, 0x08000)), // O_RDWR | O_NOCTTY
         0,
     );
     defer std.os.close(fd);

@@ -18,9 +18,8 @@ const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
-const tri_dev = @import("tri_dev.zig");
-// P3.0: State machine for rigid process framework
 const dev_workflow = @import("dev_commands.zig");
+// P3.0: State machine for rigid process framework
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
 const swe_arena = @import("swe_arena.zig");
 const code_arena = @import("code_arena.zig");
