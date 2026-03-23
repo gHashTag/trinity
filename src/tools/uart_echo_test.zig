@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.23 — Auto baud detection, RTS/CTS flow control, stress test mode
+//! v3.24 — Auto baud detection, RTS/CTS flow control, stress test mode
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -9,9 +9,9 @@
 //!
 //! Features:
 //!   - Multi-adapter support: FT232RL, CP210x, CH340, PL2303
-//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.23)
-//!   - Graceful exit: SIGINT (Ctrl+C) handler for clean shutdown (v3.23)
-//!   - Extended baud rates: Supports 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 (v3.23)
+//!   - Auto-configure: Automatic termios setup via --auto-configure flag (v3.24)
+//!   - Graceful exit: SIGINT (Ctrl+C) handler for clean shutdown (v3.24)
+//!   - Extended baud rates: Supports 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600 (v3.24)
 //!   - Config file: TOML configuration for persistent settings (v3.15)
 //!   - JSON export: Structured test results for analysis
 //!   - Error recovery: Automatic retry on failed tests
@@ -38,15 +38,15 @@ const DEFAULT_BATCH_SIZE: usize = 16;
 const DEFAULT_BUFFER_SIZE: usize = 4096;
 const MIN_TIMEOUT_MS: u32 = 50;
 
-// v3.23: Graceful exit flag
+// v3.24: Graceful exit flag
 var should_exit: std.atomic.Value(bool) = std.atomic.Value(bool).init(false);
 
-// v3.23: Extended baud rates
+// v3.24: Extended baud rates
 const VALID_BAUD_RATES = [_]u64{
     9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600,
 };
 
-// v3.23: ANSI colors for better UX
+// v3.24: ANSI colors for better UX
 const ANSI = struct {
     const RESET = "\x1b[0m";
     const BOLD = "\x1b[1m";
@@ -86,12 +86,12 @@ const Config = struct {
     batch_size: usize,
     buffer_size: usize,
     adaptive_timeout: bool,
-    // v3.23: Auto baud detection and RTS/CTS flow control
+    // v3.24: Auto baud detection and RTS/CTS flow control
     auto_baud: bool,
     rts_cts_flow: bool,
     stress_test_mode: bool,
     stress_packets: usize = 10,
-    // v3.23: Custom test patterns
+    // v3.24: Custom test patterns
     test_patterns_file: ?[]const u8,
 };
 
@@ -141,7 +141,7 @@ const ThroughputStats = struct {
     }
 };
 
-// v3.23: Error statistics for tracking test failures by type
+// v3.24: Error statistics for tracking test failures by type
 const ErrorStats = struct {
     timeout_errors: usize = 0,
     mismatch_errors: usize = 0,
@@ -172,7 +172,7 @@ const ErrorStats = struct {
     }
 };
 
-// v3.23: Latency histogram for distribution analysis
+// v3.24: Latency histogram for distribution analysis
 const LatencyHistogram = struct {
     // Histogram buckets (ms)
     buckets: [8]usize = [_]usize{0} ** 8,
@@ -220,7 +220,7 @@ const LatencyHistogram = struct {
     }
 };
 
-// v3.23: Device detection with VID/PID
+// v3.24: Device detection with VID/PID
 const DeviceInfo = struct {
     path: []const u8,
     vendor_id: u16,
@@ -228,7 +228,7 @@ const DeviceInfo = struct {
     vendor_name: []const u8,
 };
 
-// v3.23: SIGINT handler for graceful exit
+// v3.24: SIGINT handler for graceful exit
 fn setupSignalHandler() void {
     const SIGINT = 2;
     _ = std.posix.sigaction(SIGINT, &.{
@@ -238,7 +238,7 @@ fn setupSignalHandler() void {
     }, null);
 }
 
-// v3.23: Auto baud detection - tries each baud rate and returns working one
+// v3.24: Auto baud detection - tries each baud rate and returns working one
 fn autoDetectBaud(fd: std.posix.fd_t) ?u64 {
     printInfo("[i] Auto-detecting baud rate...\n", .{});
 
@@ -282,7 +282,7 @@ fn handleSIGINT(sig: c_int) callconv(.c) void {
 const PING_BYTE: u8 = 0x03; // Send PING
 const PONG_BYTE: u8 = 0x83; // Expect PONG response
 
-// v3.23: Check if baud rate is valid
+// v3.24: Check if baud rate is valid
 fn isValidBaudRate(baud: u64) bool {
     for (VALID_BAUD_RATES) |rate| {
         if (baud == rate) return true;
@@ -295,7 +295,7 @@ fn printErr(comptime fmt: []const u8, args: anytype) void {
     std.debug.print(fmt, args);
 }
 
-// v3.23: Colored output functions
+// v3.24: Colored output functions
 fn printSuccess(comptime fmt: []const u8, args: anytype) void {
     printErr(ANSI.GREEN ++ fmt ++ ANSI.RESET, args);
 }
@@ -335,7 +335,7 @@ fn parseArgs() Config {
         .buffer_size = DEFAULT_BUFFER_SIZE,
         .adaptive_timeout = false,
         .test_patterns_file = null,
-        // v3.23: Initialize new fields
+        // v3.24: Initialize new fields
         .auto_baud = false,
         .rts_cts_flow = false,
         .stress_test_mode = false,
@@ -603,7 +603,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.23           ║
+        \\║      Trinity UART Echo Test v3.24           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -625,20 +625,20 @@ fn printUsage() void {
         \\  --buffer-size <n>   I/O buffer size in bytes (default: 4096)
         \\  --adaptive-timeout   Dynamically adjust timeout based on RTT
         \\  --auto-configure    Auto-configure port (termios setup)
-        \\  --auto-baud         Auto-detect baud rate (v3.23)
-        \\  --rts-cts           Enable RTS/CTS hardware flow control (v3.23)
-        \\  --stress-test       High-throughput stress test mode (v3.23)
+        \\  --auto-baud         Auto-detect baud rate (v3.24)
+        \\  --rts-cts           Enable RTS/CTS hardware flow control (v3.24)
+        \\  --stress-test       High-throughput stress test mode (v3.24)
         \\  --stress-packets <n> Packets per stress test (default: 10)
         \\  --simulation         Simulation mode (no hardware required)
         \\  --dry-run           Show what would be sent (no actual I/O)
-        \\  --list-devices      List all available serial devices (v3.23)
+        \\  --list-devices      List all available serial devices (v3.24)
         \\  --help              Show this help message
         \\
         \\Performance Modes:
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
-        \\  Stress: High-throughput continuous testing without wait (v3.23)
+        \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\
         \\Config File (v3.15+):
         \\  Supports key=value format (one per line):
@@ -664,13 +664,13 @@ fn printUsage() void {
     , .{});
 }
 
-// v3.23: Health check function - validates serial port before testing
+// v3.24: Health check function - validates serial port before testing
 fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     if (port_path == null) return true; // No port, skip check
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
 
-    // v3.23: Simple device type detection from path
+    // v3.24: Simple device type detection from path
     const device_name = std.fs.path.basename(port_path.?);
     if (std.mem.indexOf(u8, device_name, "usbserial-")) |_| {
         printErr("[+] Device type: USB Serial adapter\n", .{});
@@ -692,7 +692,7 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
 }
 
 pub fn main() !void {
-    // v3.23: Setup graceful exit handler
+    // v3.24: Setup graceful exit handler
     setupSignalHandler();
 
     const config = parseArgs();
@@ -723,7 +723,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.23)         ║
+            \\║         SIMULATION MODE (v3.24)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -745,7 +745,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.23          ║
+        \\║      Trinity UART Echo Test v3.24          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -819,7 +819,7 @@ pub fn main() !void {
     testEcho(port.?, config);
 }
 
-// v3.23: List all available serial devices with detailed info
+// v3.24: List all available serial devices with detailed info
 fn listSerialPorts() void {
     printInfo("\n[*] Scanning for serial devices...\n", .{});
     var dir = std.fs.openDirAbsolute("/dev", .{}) catch |err| {
@@ -914,7 +914,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
 
     printErr("[+] Opened: {s}\n", .{port_path});
 
-    // v3.23: Auto baud detection
+    // v3.24: Auto baud detection
     if (config.auto_baud) {
         printInfo("[i] Auto-baud detection enabled\n", .{});
         if (autoDetectBaud(fd)) |detected_baud| {
@@ -924,14 +924,14 @@ fn testEcho(port_path: []const u8, config: Config) void {
         }
     }
 
-    // v3.23: Configure with or without RTS/CTS flow control
+    // v3.24: Configure with or without RTS/CTS flow control
     if (config.rts_cts_flow) {
         _ = configureSerialWithFlow(fd, config.baud, true);
     } else {
         _ = configureSerial(fd, config.baud);
     }
 
-    // v3.23: Run stress test mode if enabled
+    // v3.24: Run stress test mode if enabled
     if (config.stress_test_mode) {
         return runStressTest(fd, config) catch {};
     }
@@ -964,7 +964,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
     var overall_rtt_sum: i64 = 0;
     var overall_rtt_count: usize = 0;
 
-    // v3.23: Latency histogram
+    // v3.24: Latency histogram
     var histogram = LatencyHistogram{};
 
     while (true) {
@@ -999,7 +999,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
                     }
                     rtt_sum += result.rtt_ms;
                     rtt_count += 1;
-                    // v3.23: Record in histogram
+                    // v3.24: Record in histogram
                     histogram.record(result.rtt_ms);
                 }
             }
@@ -1034,7 +1034,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
         overall_rtt_sum += rtt_sum;
         overall_rtt_count += rtt_count;
 
-        // v3.23: Show latency histogram every 10 cycles in continuous mode
+        // v3.24: Show latency histogram every 10 cycles in continuous mode
         if (config.continuous and cycle % 10 == 0) {
             printInfo("\n[i] Latency Histogram (Cycle {d}):\n", .{cycle});
             histogram.report();
@@ -1298,11 +1298,11 @@ fn runDryRun(config: Config) !void {
     printErr("\n[✓] Dry run complete - no actual I/O performed\n", .{});
 }
 
-// v3.23: Stress test mode - high-throughput continuous testing
+// v3.24: Stress test mode - high-throughput continuous testing
 fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║          STRESS TEST MODE (v3.23)       ║
+        \\║          STRESS TEST MODE (v3.24)       ║
         \\║  High-throughput continuous testing       ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1390,12 +1390,12 @@ fn findFT232Device() ?[]const u8 {
     return null;
 }
 
-// v3.23: Configure serial port with configurable baud rate and flow control
+// v3.24: Configure serial port with configurable baud rate and flow control
 fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
     return configureSerialWithFlow(fd, baud, false);
 }
 
-// v3.23: Configure serial with optional RTS/CTS flow control
+// v3.24: Configure serial with optional RTS/CTS flow control
 fn configureSerialWithFlow(fd: std.posix.fd_t, baud: u64, enable_rtscts: bool) bool {
     var termio = std.posix.tcgetattr(fd) catch return false;
 
@@ -1408,7 +1408,7 @@ fn configureSerialWithFlow(fd: std.posix.fd_t, baud: u64, enable_rtscts: bool) b
     termio.cflag.CREAD = true;
     termio.cflag.CLOCAL = true;
 
-    // v3.23: Enable RTS/CTS hardware flow control if requested
+    // v3.24: Enable RTS/CTS hardware flow control if requested
     if (enable_rtscts) {
         termio.cflag.CRTS_IFLOW = true; // Enable RTS
         // Note: CTS is input-controlled, hardware manages it
@@ -1433,7 +1433,7 @@ fn configureSerialWithFlow(fd: std.posix.fd_t, baud: u64, enable_rtscts: bool) b
     termio.cc[@intFromEnum(std.posix.V.MIN)] = 0;
     termio.cc[@intFromEnum(std.posix.V.TIME)] = 1;
 
-    // Set baud rate (v3.23: configurable)
+    // Set baud rate (v3.24: configurable)
     termio.ispeed = @as(std.c.speed_t, @enumFromInt(baud));
     termio.ospeed = @as(std.c.speed_t, @enumFromInt(baud));
 
