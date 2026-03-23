@@ -2059,9 +2059,9 @@ fn curlGraphQL(allocator: Allocator, token: []const u8, deployment_id: []const u
     defer allocator.free(auth_hdr);
 
     var child = std.process.Child.init(&.{
-        "curl",                                     "-s",     "--max-time", "15",
-        "-X",                                       "POST",   "-H",         "Content-Type: application/json",
-        "-H",                                       auth_hdr, "-d",         body,
+        "curl",                           "-s",     "--max-time", "15",
+        "-X",                             "POST",   "-H",         "Content-Type: application/json",
+        "-H",                             auth_hdr, "-d",         body,
         "https://railway.com/graphql/v2",
     }, allocator);
     child.stdout_behavior = .Pipe;

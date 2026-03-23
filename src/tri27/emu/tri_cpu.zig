@@ -14,7 +14,7 @@ pub const Trit27 = struct {
 
     /// Create Trit27 from i8 value (-1, 0, 1)
     pub fn fromI8(value: i8) Trit27 {
-        const clamped = if (value > 0) 1 else if (value < 0) -1 else 0;
+        const clamped = std.math.clamp(@as(i32, value), @as(i32, -1), @as(i32, 1));
         return .{ .trits = @as(i64, clamped) };
     }
 
