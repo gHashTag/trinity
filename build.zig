@@ -1416,6 +1416,21 @@ pub fn build(b: *std.Build) void {
     self_improve_step.dependOn(&run_self_improve.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // ==========================================
+    // LOTUS-CYCLE — Queen Lotus Cycle CLI
+    // ==========================================
+    const lotus_cycle_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/lotus_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const lotus_cycle_exe = b.addExecutable(.{
+        .name = "lotus-cycle",
+        .root_module = lotus_cycle_mod,
+    });
+    b.installArtifact(lotus_cycle_exe);
+
     // TREE-SITTER MODULE (with C stub for builds without tree-sitter)
     // ═══════════════════════════════════════════════════════════════════════════
     // Used by NEEDLE matcher Tier 1 (AST-based matching)
@@ -2837,6 +2852,19 @@ pub fn build(b: *std.Build) void {
     const run_tri27_golden_tests = b.addRunArtifact(tri27_golden_tests);
     const tri27_golden_tests_step = b.step("test-tri27-golden", "Run TRI‑27 Golden Test");
     tri27_golden_tests_step.dependOn(&run_tri27_golden_tests.step);
+
+    // TRI-27 Comprehensive Tests (all 36 opcodes)
+    const tri27_comprehensive_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/test_comprehensive.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_comprehensive_tests = b.addTest(.{
+        .root_module = tri27_comprehensive_mod,
+    });
+    const run_tri27_comprehensive_tests = b.addRunArtifact(tri27_comprehensive_tests);
+    const tri27_comprehensive_tests_step = b.step("test-tri27-comprehensive", "Run TRI‑27 Comprehensive Tests");
+    tri27_comprehensive_tests_step.dependOn(&run_tri27_comprehensive_tests.step);
 
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{

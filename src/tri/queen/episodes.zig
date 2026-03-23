@@ -137,16 +137,15 @@ pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
     defer allocator.free(contents);
 
     var episodes = try std.ArrayList(Episode).initCapacity(allocator, 0);
-    defer episodes.deinit();
+    defer episodes.deinit(allocator);
 
-    var line_iter = std.mem.splitScalar(u8, contents, "\n");
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
 
     while (line_iter.next()) |line| {
         if (line.len == 0) continue;
 
         // Parse EpisodeSummary instead of full Episode
-        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch |err| {
-            _ = err;
+        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch {
             continue;
         };
         defer parsed.deinit();
@@ -173,7 +172,7 @@ pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
             .outcome = summary.outcome,
         };
 
-        try episodes.append(ep);
+        try episodes.append(allocator, ep);
     }
 
     return try episodes.toOwnedSlice(allocator);
