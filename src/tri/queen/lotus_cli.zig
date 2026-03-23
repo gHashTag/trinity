@@ -116,7 +116,8 @@ fn showStats(allocator: std.mem.Allocator) !void {
     std.debug.print("    lotus_cycle:       {d}\n", .{stats.by_source[0]});
     std.debug.print("    external:           {d}\n", .{stats.by_source[1]});
     std.debug.print("    scheduled:          {d}\n", .{stats.by_source[2]});
-    std.debug.print("    experience_recall:  {d}\n\n", .{stats.by_source[3]});
+    std.debug.print("    experience_recall:  {d}\n", .{stats.by_source[3]});
+    std.debug.print("    tri27:             {d}\n\n", .{stats.by_source[4]});
 
     std.debug.print("  {s}By outcome:{s}\n", .{ DIM, RESET });
     std.debug.print("    success:          {d}\n", .{stats.by_outcome[0]});
