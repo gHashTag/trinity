@@ -41,7 +41,7 @@ pub fn searchRegressionPatterns(
     error_type: diagnostic.FixType,
     error_message: []const u8,
 ) !PatternMatch {
-    const patterns_file = ".ralph/memory/REGRESSION_PATTERNS.md";
+    const patterns_file = ".trinity/ralph/memory/REGRESSION_PATTERNS.md";
 
     // Try to open the file
     const file = std.fs.cwd().openFile(patterns_file, .{}) catch |err| {
@@ -232,7 +232,7 @@ pub fn semanticPatternMatch(
     top_k: usize,
     threshold: f64,
 ) ![]PatternMatch {
-    const patterns_file = ".ralph/memory/REGRESSION_PATTERNS.md";
+    const patterns_file = ".trinity/ralph/memory/REGRESSION_PATTERNS.md";
 
     // Try to open the file
     const file = std.fs.cwd().openFile(patterns_file, .{}) catch |err| {

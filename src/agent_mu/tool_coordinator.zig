@@ -105,7 +105,7 @@ pub const ToolConfig = struct {
     min_confidence: f32 = SacredConstants.MIN_CONFIDENCE,
     max_command_timeout_ms: u64 = SacredConstants.MAX_COMMAND_TIMEOUT_MS,
     max_file_size_bytes: usize = SacredConstants.MAX_FILE_SIZE_BYTES,
-    sacred_log_path: []const u8 = ".ralph/logs/sacred_tool_calls.log",
+    sacred_log_path: []const u8 = ".trinity/ralph/logs/sacred_tool_calls.log",
 };
 
 /// Main tool execution router with safety validation
@@ -336,7 +336,7 @@ fn isSafeCommand(command: []const u8) bool {
 
 /// Write tool call to sacred log
 fn writeToSacredLog(req: ToolRequest, resp: ToolResponse, elapsed_ms: u64) !void {
-    const log_path = ".ralph/logs/sacred_tool_calls.log";
+    const log_path = ".trinity/ralph/logs/sacred_tool_calls.log";
 
     // Ensure log file exists
     _ = std.fs.cwd().openFile(log_path, .{ .mode = .write }) catch |err| {

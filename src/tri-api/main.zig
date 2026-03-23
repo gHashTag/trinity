@@ -431,7 +431,7 @@ fn runAgenticLoop(
 fn loadMcpServers(allocator: std.mem.Allocator, mcp: *mcp_client.McpManager) void {
     // Try project-local .tri-api/settings.json first, then user ~/.tri-api/settings.json
     const settings_data = blk: {
-        break :blk std.fs.cwd().readFileAlloc(allocator, ".tri-api/settings.json", 64 * 1024) catch {
+        break :blk std.fs.cwd().readFileAlloc(allocator, ".trinity/api/settings.json", 64 * 1024) catch {
             const home = std.posix.getenv("HOME") orelse break :blk @as(?[]const u8, null);
             var path_buf: [512]u8 = undefined;
             const path = std.fmt.bufPrint(&path_buf, "{s}/.tri-api/settings.json", .{home}) catch break :blk @as(?[]const u8, null);

@@ -677,13 +677,13 @@ pub fn logRegression(self: *RalphLoop, error_message: []const u8, fix_type: anyt
     defer self.allocator.free(pattern);
 
     const file = try std.fs.cwd().openFile(
-        ".ralph/memory/REGRESSION_PATTERNS.md",
+        ".trinity/ralph/memory/REGRESSION_PATTERNS.md",
         .{ .mode = .write },
     ) catch |err| {
         if (err == error.FileNotFound) {
             // File doesn't exist, create it
-            try std.fs.cwd().makePath(".ralph/memory");
-            return std.fs.cwd().createFile(".ralph/memory/REGRESSION_PATTERNS.md", .{});
+            try std.fs.cwd().makePath(".trinity/ralph/memory");
+            return std.fs.cwd().createFile(".trinity/ralph/memory/REGRESSION_PATTERNS.md", .{});
         }
         return err;
     };

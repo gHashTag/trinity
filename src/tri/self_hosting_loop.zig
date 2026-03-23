@@ -158,7 +158,7 @@ pub const SelfHostingSession = struct {
 
         const start_time = std.time.timestamp();
 
-        const backup_dir = try std.fmt.allocPrint(allocator, ".ralph/self-hosting/{s}", .{session_id});
+        const backup_dir = try std.fmt.allocPrint(allocator, ".trinity/ralph/self-hosting/{s}", .{session_id});
         errdefer allocator.free(backup_dir);
 
         try fs.cwd().makePath(backup_dir);
