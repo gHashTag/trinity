@@ -82,7 +82,7 @@ const Config = struct {
     continuous: bool,
     output_file: ?[]const u8,
     json_output: bool,
-    csv_output: bool,  // v3.46: CSV export
+    csv_output: bool, // v3.46: CSV export
     config_file: ?[]const u8,
     measure_throughput: bool,
     // v3.14 features
@@ -100,7 +100,7 @@ const Config = struct {
     test_patterns_file: ?[]const u8,
     // v3.24: Jitter measurement and pattern generation
     measure_jitter: bool,
-    spike_threshold: f64 = 3.0,  // v3.49: Configurable spike threshold (multiplier of median)
+    spike_threshold: f64 = 3.0, // v3.49: Configurable spike threshold (multiplier of median)
     use_pattern: []const u8,
     pattern_length: usize,
     // v3.26: FPGA XVC Bridge integration
@@ -370,7 +370,8 @@ const LatencyHistogram = struct {
                 // v3.47: ASCII bar (max 40 chars)
                 const bar_len = if (max_count > 0)
                     @as(usize, @intFromFloat(@as(f64, @floatFromInt(count)) * 40.0 / @as(f64, @floatFromInt(max_count))))
-                else 0;
+                else
+                    0;
                 var bar: [41]u8 = undefined;
                 for (0..bar_len) |j| bar[j] = '#';
                 bar[bar_len] = 0;
@@ -578,6 +579,89 @@ const JitterTracker = struct {
                 printDim("{d:.1}ms", .{val_ms});
             }
             printDim("\n", .{});
+        }
+    }
+
+    // v3.51: Comprehensive RTT Statistics Summary
+    // Combines jitter, percentiles, and spike detection into unified report
+    pub fn reportRTTSummary(self: *const JitterTracker, threshold_multiplier: f64) void {
+        if (self.count < 2) {
+            printDim("    RTT Summary: not enough samples\n", .{});
+            return;
+        }
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+
+        printInfo("╔═════════════════════════════════════════╗\n", .{});
+        printInfo("║          RTT STATISTICS SUMMARY           ║\n", .{});
+        printInfo("╚═════════════════════════════════════════╝\n", .{});
+        printInfo("  Samples:       {d}\n", .{self.count});
+        printInfo("  Mean RTT:      {d:.3}ms\n", .{mean_ms});
+        printInfo("  Jitter:        {d:.3}ms\n", .{jitter_ms});
+        printInfo("  Min/Max:       {d:.2}ms / {d:.2}ms\n", .{
+            @as(f64, @floatFromInt(stats.min)) / 1000.0,
+            @as(f64, @floatFromInt(stats.max)) / 1000.0,
+        });
+
+        // Percentiles
+        if (self.count >= 2) {
+            const p = self.getPercentiles();
+            const p50_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+            const p90_ms = @as(f64, @floatFromInt(p.p90)) / 1000.0;
+            const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+            const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+            printInfo("\n  Percentiles:\n", .{});
+            printDim("    p50 (median): {d:.2}ms\n", .{p50_ms});
+            printDim("    p90:         {d:.2}ms\n", .{p90_ms});
+            printDim("    p95:         {d:.2}ms\n", .{p95_ms});
+            printDim("    p99:         {d:.2}ms\n", .{p99_ms});
+        }
+
+        // Spike detection
+        const spikes = self.detectSpikes(threshold_multiplier);
+        if (spikes.count > 0) {
+            const p = self.getPercentiles();
+            const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+            const threshold_ms = median_ms * threshold_multiplier;
+
+            printInfo("\n  ⚠ Latency Spikes:\n", .{});
+            printDim("    Median:       {d:.2}ms\n", .{median_ms});
+            printDim("    Threshold:    {d:.2}ms ({d:.1}x)\n", .{ threshold_ms, threshold_multiplier });
+            printDim("    Spikes:       {d}/{d} samples\n", .{ spikes.count, self.count });
+            printDim("    Spike rate:   {d:.1}%\n", .{@as(f64, @floatFromInt(spikes.count)) / @as(f64, @floatFromInt(self.count)) * 100.0});
+
+            if (spikes.outliers.len > 0) {
+                printDim("    Samples:      ", .{});
+                for (spikes.outliers, 0..) |val, i| {
+                    if (i > 0) printDim(", ", .{});
+                    const val_ms = @as(f64, @floatFromInt(val)) / 1000.0;
+                    printDim("{d:.1}ms", .{val_ms});
+                }
+                printDim("\n", .{});
+            }
+        } else {
+            printDim("\n  ✓ No latency spikes detected (threshold: {d:.1}x)\n", .{threshold_multiplier});
+        }
+
+        // Distribution quality assessment
+        if (self.count >= 5) {
+            const p = self.getPercentiles();
+            const p50_us = p.p50;
+            const p99_us = p.p99;
+            const ratio: f64 = @as(f64, @floatFromInt(p99_us)) / @as(f64, @floatFromInt(p50_us));
+            printDim("\n  Quality:       ", .{});
+            if (ratio < 2.0) {
+                printDim("excellent (p99/p50 < 2x)\n", .{});
+            } else if (ratio < 3.0) {
+                printDim("good (p99/p50 < 3x)\n", .{});
+            } else if (ratio < 5.0) {
+                printDim("acceptable (p99/p50 < 5x)\n", .{});
+            } else {
+                printDim("poor (p99/p50 >= 5x - high variance)\n", .{});
+            }
         }
     }
 };
@@ -984,7 +1068,7 @@ fn parseArgs() Config {
         .continuous = false,
         .output_file = null,
         .json_output = false,
-        .csv_output = false,  // v3.46: CSV export
+        .csv_output = false, // v3.46: CSV export
         .config_file = null,
         .measure_throughput = false,
         .simulation_mode = false,
@@ -999,7 +1083,7 @@ fn parseArgs() Config {
         .stress_test_mode = false,
         .stress_packets = 10,
         .measure_jitter = false,
-        .spike_threshold = 3.0,  // v3.49: Configurable spike threshold
+        .spike_threshold = 3.0, // v3.49: Configurable spike threshold
         .use_pattern = "default",
         .pattern_length = 256,
         // v3.26: FPGA XVC Bridge integration
@@ -2273,7 +2357,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
             printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
             // v3.39: Auto-recovery statistics
             if (config.auto_recovery and total_retries > 0) {
-                printErr("  Auto-Recovery: {d} retries\n", .{ total_retries });
+                printErr("  Auto-Recovery: {d} retries\n", .{total_retries});
             }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
@@ -2286,7 +2370,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
             printErr("  [i] Cycle {d} result: {d}/{d} passed", .{ cycle, cycle_passed, tests.len });
             // v3.39: Show recovery stats in continuous mode
             if (config.auto_recovery and total_retries > 0) {
-                printErr(" ({d} retries)", .{ total_retries });
+                printErr(" ({d} retries)", .{total_retries});
             }
             if (rtt_count > 0) {
                 const rtt_avg: f64 = @as(f64, @floatFromInt(rtt_sum)) / @as(f64, @floatFromInt(rtt_count));
@@ -2719,15 +2803,6 @@ fn runSimulation(config: Config) !void {
     printErr("  Total time: {d}ms\n", .{total_time_ms});
     printErr("  Avg test time: {d:.1}ms\n", .{@as(f64, @floatFromInt(total_time_ms)) / @as(f64, @floatFromInt(tests.len))});
 
-    // v3.24: Report jitter statistics if enabled
-    if (config.measure_jitter) {
-        jitter_tracker.report();
-        // v3.44: Report RTT percentiles
-        jitter_tracker.reportPercentiles();
-        // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes(config.spike_threshold);
-    }
-
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
 
     // Export to JSON if requested
@@ -2741,14 +2816,10 @@ fn runSimulation(config: Config) !void {
         exportSimulationCSV(passed, tests.len, total_time_ms, &jitter_tracker);
     }
 
-    // v3.35: Show latency histogram if measure_jitter is enabled
+    // v3.51: Unified RTT Statistics Summary (at end)
     if (config.measure_jitter) {
-        printErr("\n[i] Latency Distribution:\n", .{});
-        jitter_tracker.report();
-        // v3.44: Report RTT percentiles
-        jitter_tracker.reportPercentiles();
-        // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes(config.spike_threshold);
+        printErr("\n", .{});
+        jitter_tracker.reportRTTSummary(config.spike_threshold);
     }
 }
 
@@ -2835,18 +2906,15 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
     printErr("  Overall passed: {d}\n", .{overall_passed});
     printErr("  Overall success: {d:.1}%\n", .{@as(f64, @floatFromInt(overall_passed)) / @as(f64, @floatFromInt(total_tests)) * 100.0});
 
-    // Jitter report
+    // v3.51: Unified RTT Statistics Summary
     if (config.measure_jitter) {
-        jitter_tracker.report();
-        // v3.44: Report RTT percentiles
-        jitter_tracker.reportPercentiles();
-        // v3.48: Report latency spikes
-        jitter_tracker.reportSpikes(config.spike_threshold);
+        printErr("\n", .{});
+        jitter_tracker.reportRTTSummary(config.spike_threshold);
     }
 
     // v3.42: Auto-recovery statistics summary
     if (config.auto_recovery and total_retries > 0) {
-        printErr(" Auto-Recovery: {d} retries\n", .{ total_retries });
+        printErr(" Auto-Recovery: {d} retries\n", .{total_retries});
     }
 
     // Performance recommendations
@@ -3404,8 +3472,8 @@ fn runStressTest(fd: std.posix.fd_t, config: Config) !void {
 
     var total_sent: usize = 0;
     var total_received: usize = 0;
-    var write_errors: usize = 0;  // v3.43: Track write attempts as retries
-    var read_errors: usize = 0;   // v3.43: Track read errors separately
+    var write_errors: usize = 0; // v3.43: Track write attempts as retries
+    var read_errors: usize = 0; // v3.43: Track read errors separately
     const start_time = std.time.nanoTimestamp();
 
     for (0..config.stress_packets) |i| {
