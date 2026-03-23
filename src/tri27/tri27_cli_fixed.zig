@@ -91,7 +91,10 @@ fn runDisassembleCommand(allocator: Allocator, args: []const []const u8) !void {
 
     const input_file = args[0];
     const tbin_content = std.fs.cwd().readFile(allocator, input_file, 1024 * 1024) catch {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, });
+        print("Error reading {s}: {s}\n", .{
+            RED,
+            input_file,
+        });
         return;
     };
     defer allocator.free(tbin_content);
@@ -108,7 +111,10 @@ fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
 
     const input_file = args[0];
     const tbin_content = std.fs.cwd().readFile(allocator, input_file, 1024 * 1024) catch {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, });
+        print("Error reading {s}: {s}\n", .{
+            RED,
+            input_file,
+        });
         return;
     };
     defer allocator.free(tbin_content);
