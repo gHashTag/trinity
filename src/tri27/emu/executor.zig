@@ -287,7 +287,110 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc += 1;
         },
 
-        // TERNARY INSTRUCTIONS — VSA-style operations on ternary values        // =+        .DOT => {            const a = cpu.t27[inst.src1];            const b = cpu.t27[inst.src2];            const result = @mod(a.trits * b.trits, 19683);            const trit_value = Trit27{ .trits = result };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = result == 0;            cpu.flags.N = result < 0;            cpu.pc += 1;        },        .BIND => {            const a = cpu.t27[inst.src1];            const b = cpu.t27[inst.src2];            const result = if (a.trits == 0) b.trits else if (b.trits == 0) a.trits else @mod(a.trits + b.trits, 19683);            const trit_value = Trit27{ .trits = result };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = result == 0;            cpu.flags.N = result < 0;            cpu.pc += 1;        },        .BUNDLE2 => {            const a = cpu.t27[inst.src1];            const b = cpu.t27[inst.src2];            const result = if (a.trits == 0) b.trits else if (b.trits == 0) a.trits else @divTrunc(a.trits + b.trits, 2);            const trit_value = Trit27{ .trits = result };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = result == 0;            cpu.flags.N = result < 0;            cpu.pc += 1;        },        .BUNDLE3 => {            const a = cpu.t27[inst.src1];            const b = cpu.t27[inst.src2];            const c = cpu.t27[inst.cond]; // v3 from cond field            const result = blk: {                if (a.trits == b.trits) break :blk a.trits;                if (a.trits == c.trits) break :blk a.trits;                if (b.trits == c.trits) break :blk b.trits;                break :blk a.trits;            };            const trit_value = Trit27{ .trits = result };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = result == 0;            cpu.flags.N = result < 0;            cpu.pc += 1;        },        // ══════════════════════════════════════════════════════════        // SACRED INSTRUCTIONS — Load sacred constants and operations        // ═══════════════════════════════════════════════════════════════        .PHI_CONST => {            const phi_trits: i64 = 9842; // phi * 6075 ≈ 9842            const trit_value = Trit27{ .trits = phi_trits };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = false;            cpu.flags.N = false;            cpu.pc += 1;        },        .PI_CONST => {            const pi_trits: i64 = 19088; // pi * 6075 ≈ 19088            const trit_value = Trit27{ .trits = pi_trits };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = false;            cpu.flags.N = false;            cpu.pc += 1;        },        .E_CONST => {            const e_trits: i64 = 16514; // e * 6075 ≈ 16514            const trit_value = Trit27{ .trits = e_trits };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = false;            cpu.flags.N = false;            cpu.pc += 1;        },        .SACR => {            const a = cpu.t27[inst.src1];            const b = cpu.t27[inst.dst]; // dst is also operand            const sacrop = inst.immediate;            const result = switch (sacrop) {                1 => @mod(a.trits + b.trits, 19683),    // SACR ADD                2 => @mod(a.trits * b.trits, 19683),    // SACR MUL                3 => if (b.trits == 0) return ExecError.DivisionByZero; @divTrunc(a.trits, b.trits), // SACR DIV                4 => @mod(std.math.pow(i64, @as(i64, a.trits), @as(i64, b.trits)), 19683), // SACR POW                else => @mod(a.trits + b.trits, 19683),            };            const trit_value = Trit27{ .trits = result };            cpu.t27[inst.dst] = trit_value;            cpu.flags.Z = result == 0;            cpu.flags.N = result < 0;            cpu.pc += 1;        },         // ══════════════════════════════════════════════════════════         // CONTROL FLOW INSTRUCTIONS        // ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════
+        // TERNARY INSTRUCTIONS — VSA-style operations on ternary values
+        // ═══════════════════════════════════════════════════════════════════════════════
+        .DOT => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+            const result = @mod(a.trits * b.trits, 19683);
+            const trit_value = Trit27{ .trits = result };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .BIND => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+            const result = if (a.trits == 0) b.trits else if (b.trits == 0) a.trits else @mod(a.trits + b.trits, 19683);
+            const trit_value = Trit27{ .trits = result };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .BUNDLE2 => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+            const result = if (a.trits == 0) b.trits else if (b.trits == 0) a.trits else @divTrunc(a.trits + b.trits, 2);
+            const trit_value = Trit27{ .trits = result };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .BUNDLE3 => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+            const c = cpu.t27[inst.cond]; // v3 from cond field
+            const result = blk: {
+                if (a.trits == b.trits) break :blk a.trits;
+                if (a.trits == c.trits) break :blk a.trits;
+                if (b.trits == c.trits) break :blk b.trits;
+                break :blk a.trits;
+            };
+            const trit_value = Trit27{ .trits = result };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // SACRED INSTRUCTIONS — Load sacred constants and operations
+        // ═══════════════════════════════════════════════════════════════════════════════
+        .PHI_CONST => {
+            const phi_trits: i64 = 9842; // phi * 6075 ≈ 9842
+            const trit_value = Trit27{ .trits = phi_trits };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = false;
+            cpu.flags.N = false;
+            cpu.pc += 1;
+        },
+
+        .PI_CONST => {
+            const pi_trits: i64 = 19088; // pi * 6075 ≈ 19088
+            const trit_value = Trit27{ .trits = pi_trits };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = false;
+            cpu.flags.N = false;
+            cpu.pc += 1;
+        },
+
+        .E_CONST => {
+            const e_trits: i64 = 16514; // e * 6075 ≈ 16514
+            const trit_value = Trit27{ .trits = e_trits };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = false;
+            cpu.flags.N = false;
+            cpu.pc += 1;
+        },
+
+        .SACR => {
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.dst]; // dst is also operand
+            const sacrop = inst.immediate;
+            const result = switch (sacrop) {
+                1 => @mod(a.trits + b.trits, 19683), // SACR ADD
+                2 => @mod(a.trits * b.trits, 19683), // SACR MUL
+                3 => if (b.trits == 0) return ExecError.DivisionByZero else @divTrunc(a.trits, b.trits), // SACR DIV
+                4 => @mod(std.math.pow(i64, @as(i64, a.trits), @as(i64, b.trits)), 19683), // SACR POW
+                else => @mod(a.trits + b.trits, 19683),
+            };
+            const trit_value = Trit27{ .trits = result };
+            cpu.t27[inst.dst] = trit_value;
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        // ═══════════════════════════════════════════════════════════════
+        // CONTROL FLOW INSTRUCTIONS
+        // ═══════════════════════════════════════════════════════════════════════════════
         // CONTROL FLOW INSTRUCTIONS
         // ═══════════════════════════════════════════════════════════════════
         .JMP => {
