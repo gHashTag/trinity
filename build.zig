@@ -2375,6 +2375,13 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/cli/test_logging.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "logging", .module = b.createModule(.{
+                .root_source_file = b.path("src/tri/logging.zig"),
+                .target = target,
+                .optimize = optimize,
+            })},
+        },
     });
     const test_logging = b.addExecutable(.{
         .name = "test-logging",

@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST_COUNTER — Regression Test: 8-Bit Binary Counter
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Verify bus signal routing and timing
+# Target: QMTECH Artix-7 XC7A100T
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: test_counter
+version: "1.0.0"
+language: varlog
+fpga_target: xilinx
+target_frequency: 50
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+    description: "50 MHz oscillator (U22)"
+
+  - name: led
+    width: 4
+    direction: output
+    description: "4-bit LED output (LEDs D6, D5, D4, D3)"
+
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+
+  # Using first 4 LEDs for 4-bit counter
+  - port: led[0]
+    pin: R23
+    iostandard: LVCMOS33
+    description: "LED D6 (PRIMARY) - MSB"
+
+  - port: led[1]
+    pin: T23
+    iostandard: LVCMOS33
+    description: "LED D5"
+
+  - port: led[2]
+    pin: P24
+    iostandard: LVCMOS33
+    description: "LED D4"
+
+  - port: led[3]
+    pin: N22
+    iostandard: LVCMOS33
+    description: "LED D2 - LSB"
+
+behaviors:
+  - name: counter_4bit
+    description: "4-bit binary counter (0-15)"
+    given: "50 MHz clock input"
+    when: "posedge clk"
+    then: "Count 0-15 repeatedly, displayed on 4 LEDs"
+    implementation: |
+      // 26-bit counter for timing
+      // Bit 24: 2^24 / 50MHz ≈ 0.34 seconds per toggle
+      reg [25:0] counter = 26'h0;
+
+      // 4-bit counter value
+      reg [3:0] count_value;
+
+      always @(posedge clk) begin
+          counter <= counter + 1'b1;
+
+          // Increment 4-bit counter at slower rate
+          if (counter[24] == 1'b1)
+              count_value <= count_value + 1'b1;
+      end
+
+      // LEDs are active-low, so invert
+      // led[0] is MSB, led[3] is LSB
+      assign led = ~{count_value[3], count_value[2], count_value[1], count_value[0]};
+
+test_cases:
+  - name: counter_range_test
+    description: "Verify counter counts 0-15 and wraps"
+    given: "FPGA programmed with bitstream"
+    when: "observing LEDs for 10 seconds"
+    then: "LEDs show binary sequence 0000, 0001, 0010, ..., 1111, then wrap to 0000"
+
+  - name: counter_timing_test
+    description: "Verify counter increments at correct rate"
+    given: "FPGA programmed with bitstream"
+    when: "observing LEDs"
+    then: "Each count lasts approximately 0.34 seconds"

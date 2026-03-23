@@ -1,0 +1,30 @@
+# Simple Test Spec
+name: test_simple
+version: 1.0.0
+description: Simple test for code generation
+
+types:
+  - name: User
+    fields:
+      - name: id
+        type: Int
+      - name: name
+        type: String
+
+functions:
+  - name: create_user
+    signature: create_user(name: String) -> Result(User, String)
+
+behaviors:
+  - name: create_user
+    description: Create a new user
+    given: A name string
+    when: create_user is called
+    then: Returns a User with generated ID
+    test_cases:
+      - name: creates user
+        input:
+          name: "Alice"
+        expected:
+          id: "1"
+          name: "Alice"

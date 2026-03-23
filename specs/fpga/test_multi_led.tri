@@ -1,0 +1,108 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST_MULTI_LED — Regression Test: Multi-Signal Routing
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Verify complex routing with multiple signals at different frequencies
+# Target: QMTECH Artix-7 XC7A100T
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: test_multi_led
+version: "1.0.0"
+language: varlog
+fpga_target: xilinx
+target_frequency: 50
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+    description: "50 MHz oscillator (U22)"
+
+  - name: led
+    width: 7
+    direction: output
+    description: "7-bit LED output (all available LEDs in openXC7)"
+
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+
+  # All 8 LEDs in order
+  - port: led[0]
+    pin: R23
+    iostandard: LVCMOS33
+    description: "LED D6 (PRIMARY)"
+
+  - port: led[1]
+    pin: T23
+    iostandard: LVCMOS33
+
+  - port: led[2]
+    pin: P24
+    iostandard: LVCMOS33
+
+  - port: led[3]
+    pin: N22
+    iostandard: LVCMOS33
+
+  - port: led[4]
+    pin: P22
+    iostandard: LVCMOS33
+
+  - port: led[5]
+    pin: M24
+    iostandard: LVCMOS33
+
+  - port: led[6]
+    pin: N24
+    iostandard: LVCMOS33
+
+behaviors:
+  - name: multi_frequency_pattern
+    description: "Each LED blinks at different frequency (power-of-2 sequence)"
+    given: "50 MHz clock input"
+    when: "posedge clk"
+    then: "LED[0] toggles fastest, LED[7] slowest, all 2^n relationship"
+    implementation: |
+      // 26-bit counter
+      reg [25:0] counter = 26'h0;
+
+      always @(posedge clk) begin
+          counter <= counter + 1'b1;
+      end
+
+      // Each LED uses a different bit of the counter
+      // LED[0] uses bit 20 (fastest: 2^20 / 50MHz ≈ 21ms toggle)
+      // LED[7] uses bit 27 (slowest: 2^27 / 50MHz ≈ 2.7s toggle)
+      // But we only have 26 bits, so adjust:
+      // LED[0] = bit 23, LED[1] = bit 22, etc.
+      //
+      // Actually, let's use a simpler pattern - each LED blinks at power-of-2 rate
+
+      // Generate individual LED signals
+      wire led0 = counter[23];  // Fastest (~0.1s period)
+      wire led1 = counter[22];  // ~0.2s period
+      wire led2 = counter[21];  // ~0.4s period
+      wire led3 = counter[20];  // ~0.8s period
+      wire led4 = counter[19];  // ~1.6s period
+      wire led5 = counter[18];  // ~3.2s period
+      wire led6 = counter[17];  // ~6.4s period
+
+      // Combine into bus (active-low)
+      assign led = ~{led0, led1, led2, led3, led4, led5, led6};
+
+test_cases:
+  - name: frequency_gradient_test
+    description: "Verify LEDs blink at power-of-2 frequency gradient"
+    given: "FPGA programmed with bitstream"
+    when: "observing LEDs for 15 seconds"
+    then: "LED0 blinks fastest, LED6 slowest, each 2x slower than previous"
+
+  - name: timing_test
+    description: "Verify relative timing relationships"
+    given: "FPGA programmed with bitstream"
+    when: "counting LED toggles"
+    then: "Each LED toggles exactly 2x faster than the next LED"
