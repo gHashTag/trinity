@@ -1,12 +1,10 @@
 // TRI‑27 Experience — Episode/JSONL Integration for TRI‑27 operations
-// Integrates TRI‑27 operations with Trinity Episode/JSONL system
 // ══════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const tri27_exp = @import("Tri27_Experience.zig");
-const Episode = tri27_exp.Episode;
+const tri27_exp = @import("tri27_experience.zig");
 
 const print = std.debug.print;
 
@@ -33,7 +31,6 @@ pub const Tri27EventKind = enum(u8) {
             .disassemble => "DISASSEMBLE",
             .run => "RUN",
             .validate => "VALIDATE",
-            else => "UNKNOWN",
         };
     }
 };
@@ -44,60 +41,40 @@ pub fn saveTri27Episode(
     kind: Tri27EventKind,
     input_file: []const u8,
     output_file: []const u8,
-    status: tri27_experience.Tri27Status,
+    status: tri27_exp.Tri27Status,
     cycles: u32,
     instructions: u32,
     error_msg: []const u8,
 ) !void {
-    var episode = Episode{};
+    _ = allocator;
+    _ = output_file;
+    _ = error_msg;
 
-    // Basic fields
-    episode.issue = 27; // TRI‑27 issue
-    episode.timestamp = std.time.timestamp();
-
-    // Build task description
-    var task_buf: [256]u8 = undefined;
-    const task_desc = switch (kind) {
-        .assemble => "ASSEMBLE",
-        .disassemble => "DISASSEMBLE",
-        .run => "RUN",
-        .validate => "VALIDATE",
-        else => "UNKNOWN",
+    // Create event and record via tri27_experience
+    var event = tri27_exp.Tri27Event{
+        .timestamp = std.time.timestamp(),
+        .operation = switch (kind) {
+            .assemble => .assemble,
+            .disassemble => .disassemble,
+            .run => .run,
+            .validate => .validate,
+        },
+        .input_file = [_]u8{0} ** 256,
+        .output_file = [_]u8{0} ** 256,
+        .status = status,
+        .cycles = cycles,
+        .instructions = instructions,
+        .error_msg = [_]u8{0} ** 512,
+        .has_error = false,
     };
-    const task_len = std.fmt.bufPrint(&task_buf, "{s} {s}", .{ task_desc, input_file }) catch {
-        std.mem.copyFor(u8, episode.task[0..task_len], task_buf);
-    };
-    episode.task_len = @intCast(task_len);
 
-    // Set verdict based on status
-    if (status == .success or status == .completed) {
-        std.mem.copyFor(u8, "SUCCESS", episode.verdict[0..]);
-        std.mem.copyFor(u8, episode.verdict[0..7], "SUCCESS\0");
-        episode.iterations = 1;
-    } else {
-        std.mem.copyFor(u8, "FAILURE", episode.verdict[0..]);
-        std.mem.copyFor(u8, episode.verdict[0..7], "FAILURE\0");
-        episode.iterations = 1;
-    }
+    // Copy input file path
+    const copy_len = @min(255, input_file.len);
+    @memcpy(event.input_file[0..copy_len], input_file[0..copy_len]);
+    if (copy_len < 255) event.input_file[copy_len] = 0;
 
-    // Fitness metrics
-    episode.fitness.test_pass_rate = if (status == .success) 1.0 else 0.0;
-    episode.fitness.spec_compliance = if (status == .success) 1.0 else 0.0;
-    episode.fitness.time_hours = @as(f32, cycles) / 1000000.0; // rough estimate
-
-    // Copy error message if any
-    const err_len = @min(error_msg.len, 127);
-    std.mem.copyFor(u8, episode.mistakes[0], error_msg[0..err_len]);
-    episode.mistakes_count = @intCast(@min(8, (err_len + 7) / 8));
-
-    // Set learnings (empty for now)
-    episode.learnings_count = 0;
-
-    // Save via common Episode/JSONL
-    try saveEpisode(episode);
-    print("{s}✅ TRI‑27 episode saved ({s}: {s} → {s}){s}\n", .{
-        GREEN,             kind.toStr(), RESET,
-        episode.timestamp, RESET,        EPISODES_DIR,
-        RESET,
+    tri27_exp.logEvent(event);
+    print("{s}✅ TRI‑27 episode logged ({s} {s}){s}\n", .{
+        GREEN, kind.toStr(), input_file, RESET,
     });
 }
