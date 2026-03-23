@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.40 — Batch Mode Auto-Recovery
+//! v3.41 — Simulation Mode Auto-Recovery
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1245,7 +1245,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.40           ║
+        \\║      Trinity UART Echo Test v3.41           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1289,7 +1289,7 @@ fn printUsage() void {
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.40):
+        \\Performance Modes (v3.41):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1299,6 +1299,10 @@ fn printUsage() void {
         \\  Comprehensive: Unified 3-phase test (Basic, Batch, Performance)
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
+        \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
+        \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
+        \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
+        \\  Simulation Auto-Recovery: Simulated retry logic for simulation mode (v3.41)
         \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
         \\  Auto-Recovery: Exponential backoff retry for failed tests (v3.39)
         \\  Batch Auto-Recovery: Retry logic for batch test mode (v3.40)
@@ -2312,35 +2316,92 @@ fn runSimulationBatch(config: Config) !void {
     printErr("[i] Packet size: {d} bytes\n", .{packet_size});
     printErr("[i] Buffer size: {d} bytes\n", .{config.buffer_size});
 
+    // v3.41: Auto-recovery statistics for simulation
+    var total_retries: usize = 0;
+    var recovered_packets: usize = 0;
+
     var results = BatchTestResults{};
     const start_time = std.time.nanoTimestamp();
 
-    // Simulate batch operations - process full packets
+    // v3.41: Simulated auto-recovery for batch test
+    var total_retries: usize = 0;
+    var recovered_packets: usize = 0;
     var packets_sent: usize = 0;
     while (packets_sent < batch_size) {
         const bytes_in_packet = packet_size;
 
-        // Simulate random RTT
-        _ = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
+        var packet_success = false;
+        var retry_count: u32 = 0;
 
-        // Simulate occasional packet loss
-        const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
-        const should_timeout = std.crypto.random.intRangeAtMost(u8, 0, 100) < 2;
+        if (config.auto_recovery) {
+            const recovery = AutoRecovery.init(config.retries, 100);
 
-        results.total_sent += bytes_in_packet;
-        results.total_received += bytes_in_packet; // Count received bytes in simulation
+            while (!packet_success and recovery.shouldRetry(retry_count)) {
+                // Simulate random RTT
+                _ = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
 
-        if (should_timeout) {
-            results.timeouts += 1;
-        } else if (should_fail) {
-            results.failed += 1;
-            results.total_received += bytes_in_packet;
+                // Simulate occasional packet loss (less likely with each retry)
+                const fail_prob = @max(1, 5 - retry_count * 2);
+                const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < @as(u8, @intCast(fail_prob));
+                const should_timeout = std.crypto.random.intRangeAtMost(u8, 0, 100) < 2;
+
+                results.total_sent += bytes_in_packet;
+                results.total_received += bytes_in_packet;
+
+                if (should_timeout) {
+                    retry_count += 1;
+                    total_retries += 1;
+                    if (recovery.shouldRetry(retry_count)) {
+                        const delay = recovery.getDelay(retry_count);
+                        _ = delay;
+                        printWarning("[i] Auto-recovery (sim): retry {d}/{d} after {d}ms delay\n", .{ retry_count, config.retries, delay });
+                        results.timeouts += 1;
+                    }
+                } else if (should_fail) {
+                    retry_count += 1;
+                    total_retries += 1;
+                    if (recovery.shouldRetry(retry_count)) {
+                        const delay = recovery.getDelay(retry_count);
+                        _ = delay;
+                        printWarning("[i] Auto-recovery (sim): retry {d}/{d} after {d}ms delay (fail)\n", .{ retry_count, config.retries, delay });
+                        results.failed += 1;
+                    }
+                } else {
+                    packet_success = true;
+                    results.matched += 1;
+                    if (retry_count > 0) {
+                        recovered_packets += 1;
+                    }
+                }
+            }
         } else {
-            results.matched += 1;
+            // Normal mode: single attempt
+            // Simulate random RTT
+            _ = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
+
+            // Simulate occasional packet loss
+            const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
+            const should_timeout = std.crypto.random.intRangeAtMost(u8, 0, 100) < 2;
+
+            results.total_sent += bytes_in_packet;
             results.total_received += bytes_in_packet;
+
+            if (should_timeout) {
+                results.timeouts += 1;
+            } else if (should_fail) {
+                results.failed += 1;
+                results.total_received += bytes_in_packet;
+            } else {
+                results.matched += 1;
+                results.total_received += bytes_in_packet;
+            }
+            packet_success = true;
         }
 
-        packets_sent += 1;
+        // Only advance packet counter if packet succeeded
+        if (packet_success or !config.auto_recovery) {
+            packets_sent += 1;
+        }
 
         // Progress indicator
         if (packets_sent % @max(1, batch_size / 10) == 0) {
@@ -2364,6 +2425,10 @@ fn runSimulationBatch(config: Config) !void {
     printErr("  Batch time: {d}ms\n", .{results.batch_time_ms});
     printErr("  Packets/sec: {d:.2}\n", .{results.packets_per_second});
     printErr("  Bytes/sec: {d:.2}\n", .{results.bytes_per_second});
+    // v3.41: Auto-recovery statistics
+    if (config.auto_recovery and total_retries > 0) {
+        printErr("  Auto-Recovery (sim): {d} retries, {d} packets recovered\n", .{ total_retries, recovered_packets });
+    }
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
