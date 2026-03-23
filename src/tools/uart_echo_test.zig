@@ -101,6 +101,9 @@ const Config = struct {
     // v3.24: Jitter measurement and pattern generation
     measure_jitter: bool,
     spike_threshold: f64 = 3.0, // v3.49: Configurable spike threshold (multiplier of median)
+    // v3.57: Configurable alert thresholds
+    alert_warning_threshold: f64 = 60.0,
+    alert_critical_threshold: f64 = 40.0,
     use_pattern: []const u8,
     pattern_length: usize,
     // v3.26: FPGA XVC Bridge integration
@@ -1484,6 +1487,30 @@ fn parseArgs() Config {
             const threshold_str = std.mem.span(std.os.argv[i + 1]);
             config.spike_threshold = std.fmt.parseFloat(f64, threshold_str) catch {
                 printErr("[*] --spike-threshold must be a number\n", .{});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--alert-warning")) {
+            // v3.57: Configurable warning alert threshold
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --alert-warning requires value\n", .{});
+                std.process.exit(1);
+            }
+            const threshold_str = std.mem.span(std.os.argv[i + 1]);
+            config.alert_warning_threshold = std.fmt.parseFloat(f64, threshold_str) catch {
+                printErr("[*] --alert-warning must be a number\n", .{});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--alert-critical")) {
+            // v3.57: Configurable critical alert threshold
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --alert-critical requires value\n", .{});
+                std.process.exit(1);
+            }
+            const threshold_str = std.mem.span(std.os.argv[i + 1]);
+            config.alert_critical_threshold = std.fmt.parseFloat(f64, threshold_str) catch {
+                printErr("[*] --alert-critical must be a number\n", .{});
                 std.process.exit(1);
             };
             i += 1;
@@ -2981,8 +3008,11 @@ fn runSimulation(config: Config) !void {
     var jitter_tracker = JitterTracker.init(allocator);
     defer jitter_tracker.deinit();
 
-    // v3.55: Quality alerts for real-time monitoring
-    var quality_alerts = QualityAlerts{};
+    // v3.55: Quality alerts for real-time monitoring (v3.57: with configurable thresholds)
+    var quality_alerts = QualityAlerts{
+        .warning_threshold = config.alert_warning_threshold,
+        .critical_threshold = config.alert_critical_threshold,
+    };
 
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
