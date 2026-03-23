@@ -1431,6 +1431,13 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(lotus_cycle_exe);
 
+    const run_lotus_cycle = b.addRunArtifact(lotus_cycle_exe);
+    if (b.args) |args| {
+        run_lotus_cycle.addArgs(args);
+    }
+    const lotus_cycle_step = b.step("lotus-cycle", "Run Queen Lotus Cycle (run/stats/health/test)");
+    lotus_cycle_step.dependOn(&run_lotus_cycle.step);
+
     // TREE-SITTER MODULE (with C stub for builds without tree-sitter)
     // ═══════════════════════════════════════════════════════════════════════════
     // Used by NEEDLE matcher Tier 1 (AST-based matching)

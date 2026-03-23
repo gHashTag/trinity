@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.37 — Enhanced Error Recovery & Auto-Diagnostics
+//! v3.38 — Pattern Length Validation
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1026,6 +1026,12 @@ fn parseArgs() Config {
                 printErr("[*] Invalid pattern-length value: {any}\n", .{err});
                 std.process.exit(1);
             };
+            // v3.38: Pattern length validation
+            if (config.pattern_length < 8) {
+                printWarning("[*] Pattern length < 8 may be too short for reliable testing\n", .{});
+            } else if (config.pattern_length > 2048) {
+                printWarning("[*] Pattern length > 2048 may cause memory issues\n", .{});
+            }
             i += 1;
         } else if (std.mem.eql(u8, arg, "--comprehensive")) {
             config.comprehensive_mode = true;
@@ -1232,7 +1238,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.37           ║
+        \\║      Trinity UART Echo Test v3.38           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1275,7 +1281,7 @@ fn printUsage() void {
         \\  --auto-recovery     Enable exponential backoff auto-recovery (v3.37)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.37):
+        \\Performance Modes (v3.38):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1286,6 +1292,7 @@ fn printUsage() void {
         \\  Stress: High-throughput continuous testing without wait (v3.24)
         \\  FPGA: ESP32 XVC Bridge + FPGA + UART test cycle (v3.28)
         \\  Diagnostics: Error pattern analysis with suggested fixes (v3.37)
+        \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
