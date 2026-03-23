@@ -644,6 +644,82 @@ const JitterTracker = struct {
         return .{ .direction = direction, .change_percent = change_percent, .first_half_avg = first_avg, .second_half_avg = second_avg };
     }
 
+    // v3.54: Connection Quality Score (0-100) combining multiple factors
+    pub fn getQualityScore(self: *const JitterTracker, threshold_multiplier: f64) struct { score: f64, grade: []const u8, details: []const u8 } {
+        if (self.count < 5) {
+            return .{ .score = 50.0, .grade = "INSUFFICIENT_DATA", .details = "Need 5+ samples" };
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const spikes = self.detectSpikes(threshold_multiplier);
+
+        // Factor 1: Jitter quality (lower is better, max 30 points)
+        const jitter_ms = stats.jitter / 1000.0;
+        var jitter_score: f64 = 0.0;
+        if (jitter_ms < 5.0) {
+            jitter_score = 30.0;
+        } else if (jitter_ms < 10.0) {
+            jitter_score = 25.0;
+        } else if (jitter_ms < 20.0) {
+            jitter_score = 20.0;
+        } else if (jitter_ms < 50.0) {
+            jitter_score = 10.0;
+        }
+
+        // Factor 2: Consistency quality (p99/p50 ratio, max 25 points)
+        const ratio: f64 = @as(f64, @floatFromInt(p.p99)) / @as(f64, @floatFromInt(p.p50));
+        var consistency_score: f64 = 0.0;
+        if (ratio < 1.5) {
+            consistency_score = 25.0;
+        } else if (ratio < 2.0) {
+            consistency_score = 20.0;
+        } else if (ratio < 3.0) {
+            consistency_score = 15.0;
+        } else if (ratio < 5.0) {
+            consistency_score = 5.0;
+        }
+
+        // Factor 3: Spike rate (fewer spikes is better, max 25 points)
+        const spike_rate: f64 = @as(f64, @floatFromInt(spikes.count)) / @as(f64, @floatFromInt(self.count));
+        var spike_score: f64 = 0.0;
+        if (spike_rate == 0.0) {
+            spike_score = 25.0;
+        } else if (spike_rate < 0.05) {
+            spike_score = 20.0;
+        } else if (spike_rate < 0.10) {
+            spike_score = 10.0;
+        } else if (spike_rate < 0.20) {
+            spike_score = 5.0;
+        }
+
+        // Factor 4: Consecutive failures (fewer is better, max 20 points)
+        var consecutive_score: f64 = 0.0;
+        if (self.max_consecutive_failures == 0) {
+            consecutive_score = 20.0;
+        } else if (self.max_consecutive_failures == 1) {
+            consecutive_score = 15.0;
+        } else if (self.max_consecutive_failures == 2) {
+            consecutive_score = 10.0;
+        }
+
+        // Total score (0-100)
+        const total_score = jitter_score + consistency_score + spike_score + consecutive_score;
+
+        const grade: []const u8 = if (total_score >= 90.0)
+            "EXCELLENT"
+        else if (total_score >= 75.0)
+            "GOOD"
+        else if (total_score >= 60.0)
+            "FAIR"
+        else if (total_score >= 40.0)
+            "POOR"
+        else
+            "CRITICAL";
+
+        return .{ .score = total_score, .grade = grade, .details = "Jitter+Consistency+Spikes+Consecutive" };
+    }
+
     // v3.51: Comprehensive RTT Statistics Summary
     // Combines jitter, percentiles, and spike detection into unified report
     pub fn reportRTTSummary(self: *const JitterTracker, threshold_multiplier: f64) void {
@@ -659,6 +735,19 @@ const JitterTracker = struct {
         printInfo("╔═════════════════════════════════════════╗\n", .{});
         printInfo("║          RTT STATISTICS SUMMARY           ║\n", .{});
         printInfo("╚═════════════════════════════════════════╝\n", .{});
+
+        // v3.54: Connection Quality Score (prominent display)
+        const quality = self.getQualityScore(threshold_multiplier);
+        if (quality.score >= 75.0) {
+            printSuccess("  Quality Score: {d:.0}/100 {s}\n", .{ quality.score, quality.grade });
+        } else if (quality.score >= 60.0) {
+            printInfo("  Quality Score: {d:.0}/100 {s}\n", .{ quality.score, quality.grade });
+        } else if (quality.score >= 40.0) {
+            printWarning("  Quality Score: {d:.0}/100 {s}\n", .{ quality.score, quality.grade });
+        } else {
+            printErr("  Quality Score: {d:.0}/100 {s}\n", .{ quality.score, quality.grade });
+        }
+
         printInfo("  Samples:       {d}\n", .{self.count});
         printInfo("  Mean RTT:      {d:.3}ms\n", .{mean_ms});
         printInfo("  Jitter:        {d:.3}ms\n", .{jitter_ms});
