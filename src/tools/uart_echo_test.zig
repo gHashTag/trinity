@@ -340,7 +340,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.15           ║
+        \\║      Trinity UART Echo Test v3.17           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -390,20 +390,17 @@ fn printUsage() void {
     , .{});
 }
 
-// v3.15: Health check function - validates serial port before testing
-fn healthCheck(port_path: []const u8) !bool {
-    printErr("[i] Running health check on: {s}\n", .{port_path});
+// v3.17: Health check function - validates serial port before testing
+fn healthCheck(port_path: ?[]const u8) !bool {
+    if (port_path == null) return true; // No port, skip check
+
+    printErr("[i] Running health check on: {s}\n", .{port_path.?});
 
     // Check if device exists and is accessible
-    const file = std.fs.openFileAbsolute(port_path, .{ .mode = .read_write }) catch |err| {
-        printErr("[!] Health check failed: {any}\n", .{err});
-        return false;
-    };
-    defer file.close();
-
-    // Try to configure port
-    const fd = std.posix.open(port_path, std.posix.O.RDWR | std.posix.O.NONBLOCK | std.posix.O.NOCTTY, 0) catch {
-        printErr("[!] Health check: Cannot open port\n", .{});
+    // O_RDWR | O_NONBLOCK | O_NOCTTY for macOS
+    const flags: std.posix.O = @bitCast(@as(u32, 0x0002) | @as(u32, 0x0004) | @as(u32, 0x00020000));
+    const fd = std.posix.open(port_path.?, flags, 0) catch |err| {
+        printErr("[!] Health check: Cannot open port: {any}\n", .{err});
         return false;
     };
     defer std.posix.close(fd);
@@ -460,7 +457,7 @@ pub fn main() !void {
 
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.15          ║
+        \\║      Trinity UART Echo Test v3.17          ║
         \\║  Sends bytes with configurable delay/timeout ║
         \\║    phi² + 1/phi² = 3 = TRINITY         ║
         \\╚════════════════════════════════════════╝
@@ -519,6 +516,16 @@ pub fn main() !void {
     } else {
         printErr("║          Testing:                   ║\n", .{});
         printErr("╚══════════════════════════════════╝\n", .{});
+    }
+
+    // v3.15: Run health check before testing (unless in simulation/dry-run mode)
+    if (!config.simulation_mode and !config.dry_run) {
+        const passed = healthCheck(port.?) catch false;
+        if (!passed) {
+            printErr("[!] Health check failed, aborting...\n", .{});
+            std.process.exit(1);
+        }
+        printErr("[+] Health check passed\n", .{});
     }
 
     testEcho(port.?, config);
