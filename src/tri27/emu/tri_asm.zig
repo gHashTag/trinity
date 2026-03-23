@@ -51,15 +51,22 @@ const LabelTable = std.StringHashMap(u32);
 fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: usize) AsmError!struct { u32, bool } {
     const trimmed = std.mem.trim(u8, line, " \t\r");
 
+    // Strip inline comments (starting with ';')
+    var rest_trimmed = trimmed;
+    if (std.mem.indexOfScalar(u8, trimmed, ';')) |comment_idx| {
+        rest_trimmed = trimmed[0..comment_idx];
+    }
+    rest_trimmed = std.mem.trimRight(u8, rest_trimmed, " \t");
+
     // Check for label definition (ends with ':')
-    if (trimmed.len > 0 and trimmed[trimmed.len - 1] == ':') {
-        _ = std.mem.trimRight(u8, trimmed[0 .. trimmed.len - 1], " \t");
+    if (rest_trimmed.len > 0 and rest_trimmed[rest_trimmed.len - 1] == ':') {
+        _ = std.mem.trimRight(u8, rest_trimmed[0 .. rest_trimmed.len - 1], " \t");
         return .{ 0, true }; // Flag that this was a label definition
     }
 
-    if (trimmed.len == 0 or trimmed[0] == ';') return error.EmptyLine;
+    if (rest_trimmed.len == 0 or rest_trimmed[0] == ';') return error.EmptyLine;
 
-    var it = std.mem.splitScalar(u8, trimmed, ' ');
+    var it = std.mem.splitScalar(u8, rest_trimmed, ' ');
     const op_str = it.first();
 
     var op_lower_buf: [32]u8 = undefined;
@@ -445,7 +452,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
     if (std.mem.eql(u8, op_lower, "sacr")) {
         // SACR op, dst, src — sacred arithmetic operation
         var it2 = std.mem.splitScalar(u8, rest, ',');
-        const op_str = std.mem.trim(u8, it2.first(), " \t");
+        const sacrop_str = std.mem.trim(u8, it2.first(), " \t");
         const rest_args = std.mem.trim(u8, it2.rest(), " \t");
 
         const comma_idx = std.mem.indexOfScalar(u8, rest_args, ',') orelse return error.InvalidSyntax;
@@ -457,10 +464,10 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
 
         // Encode sacred operation type in immediate
         var sacrop: i16 = 0;
-        if (std.mem.eql(u8, op_str, "add")) sacrop = 1;
-        if (std.mem.eql(u8, op_str, "mul")) sacrop = 2;
-        if (std.mem.eql(u8, op_str, "div")) sacrop = 3;
-        if (std.mem.eql(u8, op_str, "pow")) sacrop = 4;
+        if (std.mem.eql(u8, sacrop_str, "add")) sacrop = 1;
+        if (std.mem.eql(u8, sacrop_str, "mul")) sacrop = 2;
+        if (std.mem.eql(u8, sacrop_str, "div")) sacrop = 3;
+        if (std.mem.eql(u8, sacrop_str, "pow")) sacrop = 4;
 
         return .{ encode(Instruction{
             .opcode = Opcode.SACR,
