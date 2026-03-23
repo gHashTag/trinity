@@ -84,6 +84,7 @@ fn cmdTest(allocator: Allocator, args: []const []const u8) !void {
 
     std.debug.print("Running tests...", .{});
 
+    try session.transition(.tested);
     session.tests_passed = true;
     session.last_updated = std.time.timestamp();
     try session.save();
