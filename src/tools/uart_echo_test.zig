@@ -25,8 +25,18 @@ const PONG_BYTE: u8 = 0x83;  // Echo response
 
 // Test modes
 const TestMode = enum {
-    echo,   // Simple byte echo
+    echo,       // Simple byte echo
     ping_pong,  // PING/PONG protocol test
+};
+
+// Test statistics
+const Statistics = struct {
+    total_tests: usize = 0,
+    passed: usize = 0,
+    failed: usize = 0,
+    min_time_ms: u64 = std.math.maxInt(u64),
+    max_time_ms: u64 = 0,
+    total_time_ms: u64 = 0,
 };
 
 // Test configuration
@@ -36,6 +46,8 @@ const Config = struct {
     timeout_ms: u32,
     verbose: bool,
     mode: TestMode,
+    json_output: bool = false,  // Output JSON report
+    retry_count: usize = 1,  // Auto-retry on failure
 };
 
 // Parse command line arguments
