@@ -130,7 +130,7 @@ const PILOT_TASKS = [_]CodeArenaTask{
     .{ .id = "CA-02", .task = "Implement tri farm evolve resume --top-k N", .difficulty = .medium },
     .{ .id = "CA-03", .task = "Add diversity quota config to SEVO inject", .difficulty = .medium },
     .{ .id = "CA-04", .task = "Fix: dashboard should show phi_restart and wsd in Schedule column", .difficulty = .easy },
-    .{ .id = "CA-05", .task = "Add SEVO method section to papers/sevo-method.md", .difficulty = .hard },
+    .{ .id = "CA-05", .task = "Add SEVO method section to docs/lab/papers/sevo-method.md", .difficulty = .hard },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

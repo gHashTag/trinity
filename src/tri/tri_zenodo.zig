@@ -129,7 +129,7 @@ const update_records = [_]UpdateRecord{
     .{
         .id = "D001-D003",
         .zenodo_id = "18939352",
-        .file = "papers/patent-strategy/zenodo-descriptions/D001-D003.html",
+        .file = "docs/lab/papers/patent-strategy/zenodo-descriptions/D001-D003.html",
         .title = "Trinity D001-D003: Ternary Resonance Law, Square Attention, Zero-DSP FPGA Inference",
         .keywords = "ternary,FPGA,resonance,attention,zero-DSP,3^k-dimensions,defensive-publication",
         .cpc = "H03K19/20,G06F30/34,G06N3/04,G06F7/544",
@@ -137,7 +137,7 @@ const update_records = [_]UpdateRecord{
     .{
         .id = "D004",
         .zenodo_id = "19020211",
-        .file = "papers/patent-strategy/zenodo-descriptions/D004.html",
+        .file = "docs/lab/papers/patent-strategy/zenodo-descriptions/D004.html",
         .title = "Trinity D004: Self-Evolving Ouroboros — Autonomous 6-Phase Code Improvement System",
         .keywords = "ouroboros,self-evolving,autonomous-code-improvement,toxic-verdict,defensive-publication",
         .cpc = "G06F8/65,G06N20/00,G06F11/36",
@@ -145,7 +145,7 @@ const update_records = [_]UpdateRecord{
     .{
         .id = "D005",
         .zenodo_id = "19020213",
-        .file = "papers/patent-strategy/zenodo-descriptions/D005.html",
+        .file = "docs/lab/papers/patent-strategy/zenodo-descriptions/D005.html",
         .title = "Trinity D005: VSA Balanced Ternary with SIMD — Vector Symbolic Architecture",
         .keywords = "vsa,hyperdimensional,ternary,simd,vector-symbolic-architecture,defensive-publication",
         .cpc = "G06F7/72,G06N3/04,G06F17/16",
@@ -153,7 +153,7 @@ const update_records = [_]UpdateRecord{
     .{
         .id = "D006",
         .zenodo_id = "19020215",
-        .file = "papers/patent-strategy/zenodo-descriptions/D006.html",
+        .file = "docs/lab/papers/patent-strategy/zenodo-descriptions/D006.html",
         .title = "Trinity D006: phi-RoPE — Golden Ratio Rotary Position Encoding for Ternary Attention",
         .keywords = "rope,positional-encoding,golden-ratio,attention,ternary,defensive-publication",
         .cpc = "G06N3/0455,G06F17/14,G06N3/084",
@@ -161,7 +161,7 @@ const update_records = [_]UpdateRecord{
     .{
         .id = "D007",
         .zenodo_id = "19020217",
-        .file = "papers/patent-strategy/zenodo-descriptions/D007.html",
+        .file = "docs/lab/papers/patent-strategy/zenodo-descriptions/D007.html",
         .title = "Trinity D007: Sparse Ternary MatMul — 4-Variant Branchless Multiplication",
         .keywords = "sparse-matmul,branchless,simd,ternary,defensive-publication",
         .cpc = "G06F7/544,G06F7/72,G06F17/16",
@@ -741,7 +741,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
             "README.md",           "CLAUDE.md",              "LICENSE",
             "build.zig",           "build.zig.zon",          "src/hslm/",
             "src/vsa.zig",         "src/vm.zig",             "fpga/README.md",
-            "fpga/openxc7-synth/", "fpga/tools/fpga_eye.py", "papers/",
+            "fpga/openxc7-synth/", "fpga/tools/fpga_eye.py", "docs/lab/papers/",
             "specs/tri/",
         },
     });

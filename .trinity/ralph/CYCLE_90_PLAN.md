@@ -61,7 +61,7 @@ NE pandwith] `.zig` on:] — :]toabout :] `tri gen` andz `.vibee` with]andfVersi
 
 | :] | :]with | Opandwithanande |
 |---------|---------|-----------|
-| D1 | TODO | docs/tri-math-v4.0.md :]inandt |
+| D1 | TODO | specs/tri/lang-ref/tri-math-v4.0.md (planned) :]inandt |
 | D2 | TODO | :]inandt API daboutfor]andyu for naboutinykh dinandzhtoaboutin |
 | D3 | TODO | :]inandt TECHNOLOGY_TREE.md |
 

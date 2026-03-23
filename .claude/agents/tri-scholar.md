@@ -17,7 +17,7 @@ Trinity maintains a prediction registry with testable predictions derived from t
 
 Before searching, read the current state:
 1. Read `data/predictions/registry.json` — current prediction entries
-2. Read `papers/sacred/` directory — existing analysis and context
+2. Read `docs/lab/papers/sacred/` directory — existing analysis and context
 
 ### Key Predictions
 

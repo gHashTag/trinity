@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // BRAM DIAGNOSTIC — Minimal test: read from BRAM, check first value, LED
 // =============================================================================

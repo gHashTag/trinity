@@ -219,7 +219,7 @@ Pure Zig 0.15 implementation:
 ## 📖 References
 
 - [Trinity GitHub](https://github.com/gHashTag/trinity)
-- [VSA Paper](papers/vsa/draft.md)
+- [VSA module](../src/vsa/README.md)
 - [FPGA Synthesis](project_fpga_synthesis_results.md)
 - [Tri Language](specs/tri/README.md)
 - [TRI-27 ISA](docs/tri27/OPCODES.md) (planned)

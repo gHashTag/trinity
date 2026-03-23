@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // Mock DSP48E1 for iverilog simulation
 // Full parameter set for Xilinx DSP48E1 primitive
 

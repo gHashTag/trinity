@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! LOCUS COERULEUS — v0.2 — Optimized Arousal Regulation
 //!
 //! Optimizations:

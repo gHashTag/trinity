@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN PERFORMANCE COMPARISON — Baseline vs Optimized
 const std = @import("std");
 

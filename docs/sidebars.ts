@@ -125,6 +125,9 @@ const sidebars: SidebarsConfig = {
         'concepts/balanced-ternary',
         'concepts/trinity-identity',
         'concepts/glossary',
+        'concepts/phi-distance-formats',
+        'concepts/native-f16-comparison',
+        'concepts/positioning-zighalf-trinity',
         {
           type: 'category',
           label: 'Mathematical Foundations',

@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // Sacred Constants Data — extracted from tri_math.zig
 // All constant definitions for the Sacred Mathematics module.
 // phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL

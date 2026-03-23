@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // Fast LED Blink
 // Blinks LED at approximately 24 Hz (fast visible blink)
 // Using counter[20] at 50 MHz: 50,000,000 / 2^21 = 23.8 Hz

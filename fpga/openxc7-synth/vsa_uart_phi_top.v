@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // VSA UART φ-TOP — Zero-DSP48 VSA Coprocessor
 // ============================================================================

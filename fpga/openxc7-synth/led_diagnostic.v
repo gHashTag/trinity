@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // LED DIAGNOSTIC — Identify which LED is which pin
 // phi^2 + 1/phi^2 = 3 = TRINITY

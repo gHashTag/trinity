@@ -62,6 +62,9 @@ The mathematical justification for all of this traces back to a single identity:
 
 - [Balanced Ternary Arithmetic](/concepts/balanced-ternary) -- deep dive into ternary operations and encoding
 - [The Trinity Identity](/concepts/trinity-identity) -- mathematical proof and significance
+- [φ-Distance and Float Formats](/concepts/phi-distance-formats) -- GF16/TF3 vs IEEE through the golden ratio
+- [Native FP16 Across Languages](/concepts/native-f16-comparison) -- Zig, Rust, LLVM, and ML stacks
+- [zig-half + Trinity Positioning](/concepts/positioning-zighalf-trinity) -- full-stack positioning vs competitors
 - [Constant Approximation Formulas](/math-foundations/formulas) -- physical constants expressed through ternary and the golden ratio
 - [Mathematical Proofs](/math-foundations/proofs) -- rigorous derivations of core results
 - [Glossary](/concepts/glossary) -- quick reference for all Trinity-specific terms

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // POWER MODES — EXP-6: FPGA Power Measurement for Trinity FPGA Level 2
 // =============================================================================

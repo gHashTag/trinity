@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // UART Echo Top Module for QMTech XC7A100T FGG676C
 // Implements PING protocol: 0x03 -> 0x83
 // Pins: M22(clk), K20(RX), L20(TX), T23(LED)

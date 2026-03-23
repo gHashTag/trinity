@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN — S³AI Neuroanatomy v5.1
 //!
 //! Aggregator module for all brain regions. Import this file to get

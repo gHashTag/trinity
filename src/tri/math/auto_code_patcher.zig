@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 //! Auto-Code-Patching Engine for Sacred Mathematics
 //!
 //! This module provides automated code patching capabilities for discovering

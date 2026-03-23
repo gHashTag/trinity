@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y \
 
 # Pre-built binaries — cross-compiled locally for x86_64-linux
 # CACHE-BUST v2: new paths to force Railway rebuild
-COPY prebuilt/v2/train-bin /usr/local/bin/hslm-train
-COPY prebuilt/v2/entrypoint-bin /usr/local/bin/hslm-entrypoint
+COPY deploy/prebuilt/v2/train-bin /usr/local/bin/hslm-train
+COPY deploy/prebuilt/v2/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
 RUN echo "a3c4fdcbd158745bd14880ad1ad3724a57b2d884c502636d94beb90207d7b7a5  /usr/local/bin/hslm-train" | sha256sum -c - \
     && echo "1710417ae16c4b248c3b6b247473f3722b68f53f87912c6aa64d69c034c4b254  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \

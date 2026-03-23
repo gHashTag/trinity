@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // TRINITY BLOCK STEP 1 — MatVec(243->729) + ReLU + Self-Test
 // =============================================================================

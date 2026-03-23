@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN ALERTS — Critical Health State Notification System
 //!
 //! Monitors brain health and sends alerts when thresholds are crossed.

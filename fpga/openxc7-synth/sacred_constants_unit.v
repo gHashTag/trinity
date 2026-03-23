@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // PHI ARITHMETIC — Zero-DSP48 Multiplier using φ² = φ + 1
 // ============================================================================

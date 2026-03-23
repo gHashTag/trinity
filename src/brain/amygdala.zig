@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! AMYGDALA — Emotional Salience Detection v1.2 (OPTIMIZED)
 //!
 //! Detects emotionally significant events and prioritizes them.

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // LED blink for Symbiiflow - MUST use xc7a100t_testbench as top!
 module xc7a100t_testbench (
     input  wire clk,

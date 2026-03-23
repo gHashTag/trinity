@@ -67,6 +67,7 @@ docs/
 | `SOUL.md` | Agent mission template |
 | `BRAIN_ARCHITECTURE.md` | Complete brain architecture overview |
 | `TRINITY_TAMAGOTCHI_*.md` | Queen daemon growth stages |
+| `docs/concepts/phi-distance-formats.md` (+ native-f16, positioning) | Format/stack analysis (Docusaurus **Explanations**); no duplicate copies at `docs/` root |
 
 ## Adding New Documentation
 

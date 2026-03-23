@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // prediction.zig — Sacred Prediction Registry
 //

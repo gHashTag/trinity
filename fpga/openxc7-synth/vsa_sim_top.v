@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // VSA SIMILARITY TOP — Bind + Bundle + Similarity via UART
 // Day 4: Added SIMILARITY command with cosine score
 //

@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! SEBO — Sacred Evolutionary Bayesian Optimization (Simplified)
 //!
 //! Multi-objective hyperparameter optimization using Sacred constants as

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 `default_nettype none
 
 // TRINITY FPGA — QMTECH XC7A100T Core Board LED Blink

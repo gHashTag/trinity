@@ -14,8 +14,6 @@ const std = @import("std");
 
 // Constants
 const DEFAULT_BAUD: u64 = 115200;
-const DEFAULT_DATA_BITS: u8 = 8;
-const DEFAULT_STOP_BITS: u8 = 1;
 const DEFAULT_DELAY_MS: u32 = 200;
 const DEFAULT_TIMEOUT_MS: u32 = 2000;
 
@@ -97,10 +95,10 @@ fn printUsage() void {
     const stderr = std.fs.File{ .handle = std.posix.STDERR_FILENO };
     var writer = stderr.writer(&buffer);
     writer.interface.print(
-        \\╔═══════════════════════════════════════════════════
-        \\║           Trinity UART Echo Test v2.5                       ║
+        \\╔═══════════════════════════════════════
+        \\║           Trinity UART Echo Test v2.6                       ║
         \\║    Usage: uart-echo-test [options]                        ║
-        \\╚══════════════════════════════════════════════════╝
+        \\╚════════════════════════════════════════╝
         \\
         \\Options:
         \\  --baud <rate>     Baud rate (default: 115200)
@@ -128,11 +126,11 @@ pub fn main() !void {
     }
 
     printErr(
-        \\╔══════════════════════════════════════════════════╗
-        \\║           Trinity UART Echo Test v2.5              ║
+        \\╔══════════════════════════════════════╗
+        \\║           Trinity UART Echo Test v2.6              ║
         \\║    Sends bytes with configurable delay/timeout     ║
         \\║    phi² + 1/phi² = 3 = TRINITY                    ║
-        \\╚═══════════════════════════════════════════════════╝
+        \\╚═══════════════════════════════════════╝
         \\
     , .{});
 
@@ -159,9 +157,9 @@ pub fn main() !void {
     }
 
     printErr("\n", .{});
-    printErr("╔════════════════════════════════════════╗", .{});
+    printErr("╔══════════════════════════════════╗", .{});
     printErr("║  Testing:                                          ║", .{});
-    printErr("╚══════════════════════════════════════════════╝", .{});
+    printErr("╚══════════════════════════════════╝", .{});
 
     testEcho(port.?, config);
 }
@@ -178,33 +176,6 @@ fn listSerialPorts() void {
     }
 }
 
-fn configureSerial(fd: std.posix.fd_t, baud: u64) bool {
-    var termios = std.posix.tcgetattr(fd) catch {
-        printErr("[*] tcgetattr failed\n", .{});
-        return true;
-    };
-
-    const baud_const: u32 = switch (baud) {
-        9600 => 0xC,
-        19200 => 0xB,
-        38400 => 0xE,
-        57600 => 0x10,
-        115200 => 0x11,
-        else => {
-            printErr("[*] Unsupported baud rate: {d}\n", .{baud});
-            return true;
-        },
-    };
-
-    termios.cflag = termios.cflag & ~@as(u32, 0xC0C00);
-    termios.cflag = termios.cflag | @as(u32, baud_const);
-    termios.cflag |= @as(u32, std.posix.CREAD | std.posix.CLOCAL);
-
-    _ = std.posix.tcsetattr(fd, .{ .v = termios, .act = .TCSANOW });
-
-    return false;
-}
-
 fn testEcho(port_path: []const u8, config: Config) void {
     const flags: u32 = 0x0002 | 0x08000;
     const fd = std.posix.open(port_path, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
@@ -214,7 +185,7 @@ fn testEcho(port_path: []const u8, config: Config) void {
     defer std.posix.close(fd);
 
     printErr("[+] Opened: {s}\n", .{port_path});
-    _ = configureSerial(fd, DEFAULT_BAUD);
+    _ = configureSerial(fd);
 
     const tests = [_]TestByte{
         .{ .data = &[_]u8{'A'}, .name = "'A'" },
@@ -238,15 +209,15 @@ fn testEcho(port_path: []const u8, config: Config) void {
     }
 
     printErr("\n", .{});
-    printErr("╔══════════════════════════════════════════════════╗", .{});
+    printErr("╔══════════════════════════════════════╗", .{});
     printErr("║  SUMMARY                                         ║", .{});
-    printErr("╚═══════════════════════════════════════════════════╝", .{});
+    printErr("╚═══════════════════════════════════════╝", .{});
     printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
     printErr("\n", .{});
 }
 
 fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) bool {
-    printErr("  [→] Test {d}/{d} Sending data: ", .{ test_num, total });
+    printErr("  [->] Test {d}/{d} Sending data: ", .{ test_num, total });
     for (data) |b| {
         printErr("{x:0>2}", .{b});
     }
@@ -260,7 +231,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
     } else |err| {
         printErr("  [*] Write error: {any}\n", .{err});
         return false;
-    }
+        }
     std.Thread.sleep(config.delay_ms * 500_000);
 
     if (config.verbose) {
@@ -282,14 +253,18 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
             if (bytes_read >= data.len) {
                 break;
             }
-        } else {
+        } else |err| {
+            if (err == error.OperationWouldBlock) {
+                std.Thread.sleep(10_000);
+                continue;
+            }
             if (config.verbose) {
-                printErr("  [*] Read error, retrying...\n", .{});
+                printErr("  [*] Read error: {any}\n", .{err});
             }
         }
     }
 
-    printErr("  [←] Received ", .{});
+    printErr("  [<-] Received ", .{});
     for (read_buffer[0..bytes_read]) |b| {
         printErr("{x:0>2}", .{b});
     }
@@ -300,7 +275,7 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
         for (0..data.len) |i| {
             if (read_buffer[i] != data[i]) {
                 match = false;
-                printErr("  [✗] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, data[i], read_buffer[i] });
+                printErr("  [x] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, data[i], read_buffer[i] });
                 break;
             }
         }
@@ -309,11 +284,11 @@ fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: us
             printErr("  [✓] ECHO SUCCESS!\n", .{});
             return true;
         } else {
-            printErr("  [✗] ECHO FAIL! Mismatch\n", .{});
+            printErr("  [x] ECHO FAIL! Mismatch\n", .{});
             return false;
         }
     } else {
-        printErr("  [✗] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data.len });
+        printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data.len });
         return false;
     }
 }
@@ -328,7 +303,7 @@ fn findFT232Device() ?[]const u8 {
     defer dir.close();
 
     var iterator = dir.iterate();
-    while (iterator.next() catch return null) |entry| {
+    while (iterator.next() catch return) |entry| {
         const name = entry.name;
         if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
             return std.fmt.allocPrint(std.heap.page_allocator, "/dev/{s}", .{name}) catch null;
@@ -337,3 +312,333 @@ fn findFT232Device() ?[]const u8 {
 
     return null;
 }
+
+fn configureSerial(fd: std.posix.fd_t) bool {
+    _ = std.posix.tcgetattr(fd) catch {};
+    return false;
+}
+//! UART Echo Test — Simple test for FPGA UART bridge
+//! Sends bytes with configurable delay and expects them echoed back
+//!
+//! Usage:
+//!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
+//!
+//! Dependencies:
+//!     Zig 0.15+ (uses POSIX serial)
+//!
+//! Note: Configure serial port to 115200 8N1 before running:
+//!   stty -f /dev/cu.usbserial-* 115200 cs8 -parenb -cstopb 1 -hupcl
+
+const std = @import("std");
+
+// Constants
+const DEFAULT_BAUD: u64 = 115200;
+const DEFAULT_DELAY_MS: u32 = 200;
+const DEFAULT_TIMEOUT_MS: u32 = 2000;
+
+// Test configuration
+const Config = struct {
+    baud: u64,
+    delay_ms: u32,
+    timeout_ms: u32,
+    verbose: bool,
+};
+
+// Helper for formatted stderr output
+fn printErr(comptime fmt: []const u8, args: anytype) void {
+    var buffer: [1024]u8 = undefined;
+    const stderr = std.fs.File{ .handle = std.posix.STDERR_FILENO };
+    var writer = stderr.writer(&buffer);
+    writer.interface.print(fmt, args) catch {};
+}
+
+// Parse command line arguments
+fn parseArgs() Config {
+    var config = Config{
+        .baud = DEFAULT_BAUD,
+        .delay_ms = DEFAULT_DELAY_MS,
+        .timeout_ms = DEFAULT_TIMEOUT_MS,
+        .verbose = false,
+    };
+
+    var i: usize = 1;
+    while (i < std.os.argv.len) : (i += 1) {
+        const arg = std.mem.span(std.os.argv[i]);
+
+        if (std.mem.eql(u8, arg, "--baud")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --baud requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.baud = std.fmt.parseInt(u64, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid baud value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--delay")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --delay requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.delay_ms = std.fmt.parseInt(u32, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid delay value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--timeout")) {
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --timeout requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.timeout_ms = std.fmt.parseInt(u32, std.mem.span(std.os.argv[i + 1]), 10) catch |err| {
+                printErr("[*] Invalid timeout value: {any}\n", .{err});
+                std.process.exit(1);
+            };
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--verbose")) {
+            config.verbose = true;
+            if (i + 1 < std.os.argv.len) {
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--help")) {
+            printUsage();
+            std.process.exit(0);
+        }
+    }
+
+    return config;
+}
+
+fn printUsage() void {
+    var buffer: [1024]u8 = undefined;
+    const stderr = std.fs.File{ .handle = std.posix.STDERR_FILENO };
+    var writer = stderr.writer(&buffer);
+    writer.interface.print(
+        \\╔═══════════════════════════════════════
+        \\║           Trinity UART Echo Test v2.6                       ║
+        \\║    Usage: uart-echo-test [options]                        ║
+        \\╚════════════════════════════════════════╝
+        \\
+        \\Options:
+        \\  --baud <rate>     Baud rate (default: 115200)
+        \\  --delay <ms>      Delay between tests in ms (default: 200)
+        \\  --timeout <ms>    Read timeout in ms (default: 2000)
+        \\  -v, --verbose     Enable verbose logging
+        \\  --help            Show this help message
+        \\
+        \\Example:
+        \\  zig run uart-echo-test --baud 115200 --delay 100 -v
+        \\
+    , .{}) catch {};
+}
+
+pub fn main() !void {
+    const config = parseArgs();
+
+    if (config.verbose) {
+        printErr("[*] Configuration:\n", .{});
+        printErr("    baud: {d}\n", .{config.baud});
+        printErr("    delay: {d}ms\n", .{config.delay_ms});
+        printErr("    timeout: {d}ms\n", .{config.timeout_ms});
+        printErr("    verbose: true\n", .{});
+        printErr("\n", .{});
+    }
+
+    printErr(
+        \\╔══════════════════════════════════════╗
+        \\║           Trinity UART Echo Test v2.6              ║
+        \\║    Sends bytes with configurable delay/timeout     ║
+        \\║    phi² + 1/phi² = 3 = TRINITY                    ║
+        \\╚═══════════════════════════════════════╝
+        \\
+    , .{});
+
+    printErr("[+] Scanning for FT232RL device...\n", .{});
+    const port = findFT232Device();
+
+    if (port) |p| {
+        printErr("[+] Found FT232RL: {s}\n", .{p});
+        printErr("\n[!] IMPORTANT: Configure port first:\n", .{});
+        printErr("    stty -f {s} {d} cs8 -parenb -cstopb 1 -hupcl\n", .{ p, config.baud });
+        printErr("\n[Press Enter when ready...]\n", .{});
+
+        var buf: [100]u8 = undefined;
+        const stdin = std.fs.File{ .handle = std.posix.STDIN_FILENO };
+        _ = stdin.read(&buf) catch |err| {
+            printErr("[*] Failed to read input: {any}\n", .{err});
+            std.process.exit(1);
+        };
+    } else {
+        printErr("[!] FT232RL not found!\n", .{});
+        printErr("\nAvailable serial ports:\n", .{});
+        listSerialPorts();
+        std.process.exit(1);
+    }
+
+    printErr("\n", .{});
+    printErr("╔══════════════════════════════════╗", .{});
+    printErr("║  Testing:                                          ║", .{});
+    printErr("╚══════════════════════════════════╝", .{});
+
+    testEcho(port.?, config);
+}
+
+fn listSerialPorts() void {
+    var dir = std.fs.openDirAbsolute("/dev", .{}) catch return;
+    defer dir.close();
+    var iterator = dir.iterate();
+    while (iterator.next() catch return) |entry| {
+        const name = entry.name;
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
+            printErr("  {s}\n", .{name});
+        }
+    }
+}
+
+fn testEcho(port_path: []const u8, config: Config) void {
+    const flags: u32 = 0x0002 | 0x08000;
+    const fd = std.posix.open(port_path, @as(std.posix.O, @bitCast(flags)), 0) catch |err| {
+        printErr("[*] Failed to open {s}: {any}\n", .{ port_path, err });
+        return;
+    };
+    defer std.posix.close(fd);
+
+    printErr("[+] Opened: {s}\n", .{port_path});
+    _ = configureSerial(fd);
+
+    const tests = [_]TestByte{
+        .{ .data = &[_]u8{'A'}, .name = "'A'" },
+        .{ .data = &[_]u8{0x55}, .name = "0x55 (alternating)" },
+        .{ .data = &[_]u8{0xAA}, .name = "0xAA (alternating)" },
+        .{ .data = "Hello", .name = "Hello" },
+        .{ .data = &[_]u8{0x00}, .name = "0x00 (zero)" },
+        .{ .data = &[_]u8{0xFF}, .name = "0xFF (all ones)" },
+    };
+
+    var passed: usize = 0;
+    var test_idx: usize = 0;
+
+    while (test_idx < tests.len) {
+        const testCase = tests[test_idx];
+        if (testEchoByte(fd, testCase.data, test_idx + 1, tests.len, config)) {
+            passed += 1;
+        }
+        std.Thread.sleep(config.delay_ms * 1_000_000);
+        test_idx += 1;
+    }
+
+    printErr("\n", .{});
+    printErr("╔══════════════════════════════════════╗", .{});
+    printErr("║  SUMMARY                                         ║", .{});
+    printErr("╚═══════════════════════════════════════╝", .{});
+    printErr("  Passed: {d}/{d}\n", .{ passed, tests.len });
+    printErr("\n", .{});
+}
+
+fn testEchoByte(fd: std.posix.fd_t, data: []const u8, test_num: usize, total: usize, config: Config) bool {
+    printErr("  [->] Test {d}/{d} Sending data: ", .{ test_num, total });
+    for (data) |b| {
+        printErr("{x:0>2}", .{b});
+    }
+    printErr(" ({d} bytes)\n", .{data.len});
+
+    const write_result = std.posix.write(fd, data);
+    if (write_result) |written| {
+        if (written != data.len) {
+            printErr("  [!] Only wrote {d}/{d} bytes\n", .{ written, data.len });
+        }
+    } else |err| {
+        printErr("  [*] Write error: {any}\n", .{err});
+        return false;
+        }
+    std.Thread.sleep(config.delay_ms * 500_000);
+
+    if (config.verbose) {
+        printErr("  [*] Waiting for echo (timeout: {d}ms)...\n", .{config.timeout_ms});
+    }
+
+    var read_buffer: [512]u8 = undefined;
+    var bytes_read: usize = 0;
+    const start_time = std.time.milliTimestamp();
+
+    while (std.time.milliTimestamp() - start_time < config.timeout_ms) {
+        const read_result = std.posix.read(fd, read_buffer[bytes_read..]);
+
+        if (read_result) |n| {
+            bytes_read += n;
+            if (config.verbose) {
+                printErr("  [*] Read {d} bytes (total: {d})\n", .{ n, bytes_read });
+            }
+            if (bytes_read >= data.len) {
+                break;
+            }
+        } else |err| {
+            if (err == error.OperationWouldBlock) {
+                std.Thread.sleep(10_000);
+                continue;
+            }
+            if (config.verbose) {
+                printErr("  [*] Read error: {any}\n", .{err});
+            }
+        }
+    }
+
+    printErr("  [<-] Received ", .{});
+    for (read_buffer[0..bytes_read]) |b| {
+        printErr("{x:0>2}", .{b});
+    }
+    printErr(" ({d} bytes)\n", .{bytes_read});
+
+    if (bytes_read == data.len) {
+        var match = true;
+        for (0..data.len) |i| {
+            if (read_buffer[i] != data[i]) {
+                match = false;
+                printErr("  [x] Mismatch at index {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, data[i], read_buffer[i] });
+                break;
+            }
+        }
+
+        if (match) {
+            printErr("  [✓] ECHO SUCCESS!\n", .{});
+            return true;
+        } else {
+            printErr("  [x] ECHO FAIL! Mismatch\n", .{});
+            return false;
+        }
+    } else {
+        printErr("  [x] TIMEOUT - Received {d} bytes, expected {d}\n", .{ bytes_read, data.len });
+        return false;
+    }
+}
+
+const TestByte = struct {
+    data: []const u8,
+    name: []const u8,
+};
+
+fn findFT232Device() ?[]const u8 {
+    var dir = std.fs.openDirAbsolute("/dev", .{}) catch return null;
+    defer dir.close();
+
+    var iterator = dir.iterate();
+    while (iterator.next() catch return) |entry| {
+        const name = entry.name;
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
+            return std.fmt.allocPrint(std.heap.page_allocator, "/dev/{s}", .{name}) catch null;
+        }
+    }
+
+    return null;
+}
+
+fn configureSerial(fd: std.posix.fd_t) bool {
+    _ = std.posix.tcgetattr(fd) catch {};
+    return false;
+}
+/    while (iterator.next() catch {}) : |entry| {
+        const name = entry.name;
+        if (std.mem.indexOf(u8, name, "cu.usbserial") != null) {
+            return std.fmt.allocPrint(std.heap.page_allocator, "/dev/{s}", .{name}) catch null;
+        }
+    }

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ╔════════════════════════════════════════════════════════════════════════════╗
 // ║  TRINITY VSA — 10K-DIMENSIONAL BIND + BUNDLE                                   ║
 // ║  Week 2 Day 2: VSA operations with bind + bundle + similarity                   ║

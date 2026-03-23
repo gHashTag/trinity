@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BRAIN SIMULATION — v1.0 — Realistic Workload Testing
 //!
 //! Simulates realistic agent swarm scenarios to validate brain circuit behavior:

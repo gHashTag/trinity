@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! S³AI BRAIN PERFORMANCE DASHBOARD — v1.0
 //!
 //! Unified performance monitoring dashboard for all brain regions.

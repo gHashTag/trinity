@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // @origin(spec:tf3_alu.tri) @regen(manual-impl)
 // TF3 ALU — Ternary Float 9 Arithmetic Unit
 //

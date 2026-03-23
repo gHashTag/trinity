@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! RETICULAR FORMATION — v0.3 — Optimized Broadcast Alerting
 //!
 //! Optimizations:

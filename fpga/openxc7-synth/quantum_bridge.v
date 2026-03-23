@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // QUANTUM BRIDGE v1.0 — LED displays quantum state from CGLMP violation
 // phi^2 + 1/phi^2 = 3 = TRINITY | LED shows quantum entanglement in real-time

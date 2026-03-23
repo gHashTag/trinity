@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! SECURITY TESTS — S³AI Brain Regions
 //!
 //! Comprehensive security testing for all brain regions:

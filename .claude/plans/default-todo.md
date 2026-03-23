@@ -51,7 +51,7 @@
 ## 📋 TODO
 
 ### FPGA Phase 6: Documentation & Benchmarks
-- [ ] Update `papers/trinity-fpga/draft.md` with results
+- [ ] Update `docs/lab/papers/trinity-fpga/draft.md` with results
 - [ ] Benchmarks: HW vs SW (cycles, latency, throughput)
 - [ ] Resource usage table: LUT/FF/DSP summary
 - [ ] Timing screenshots from Vivado/Yosys
