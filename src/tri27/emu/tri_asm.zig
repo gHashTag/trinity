@@ -491,27 +491,21 @@ pub fn main() !void {
     var output_file: []const u8 = args[2];
 
     // Parse -o flag (search for -o anywhere in args)
-    var o_index: ?usize = null;
-    var o_next: ?usize = null;
+    var output_idx: ?usize = null;
     for (args, 0..) |arg, idx| {
-        if (std.mem.eql(u8, arg, "-o")) {
-            if (idx < args.len - 1 and std.mem.eql(u8, args[idx + 1], "-o")) {
-                // Found "-o -o" pattern, use second file as output
-                o_index = idx;
-                o_next = idx + 2;
-            } else {
-                // Found "-o <input>" pattern, use next file as output
-                o_index = idx;
-                o_next = idx + 1;
-            }
+        if (std.mem.eql(u8, arg, "-o") and idx < args.len - 1) {
+            output_idx = idx + 1;
             break;
         }
     }
 
-    if (o_index) |next_o_index| {
-        if (o_next) |o_index| {
-            input_file = args[next_o_index orelse o_next];
-            output_file = args[o_index orelse o_next];
+    if (output_idx) |out_idx| {
+        output_file = args[out_idx];
+        // Find input file (first non-flag argument that's not -o or the output file)
+        for (args[1..], 1..) |arg, idx| {
+            if (std.mem.eql(u8, arg, "-o") or idx == out_idx) continue;
+            input_file = arg;
+            break;
         }
     } else {
         input_file = args[1];

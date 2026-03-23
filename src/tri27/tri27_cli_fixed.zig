@@ -10,7 +10,7 @@ const Instruction = Decoder.Instruction;
 const Assembler = @import("emu/tri_asm.zig");
 const Executor = @import("emu/executor.zig");
 const CPUState = @import("emu/cpu_state.zig");
-const tri27_experience = @import("../tri27_experience.zig");
+const tri27_experience = @import("tri27_experience.zig");
 
 const print = std.debug.print;
 

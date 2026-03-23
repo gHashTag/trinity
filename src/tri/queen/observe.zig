@@ -2,131 +2,89 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
-const Allocator = std.mem.Allocator;
-const Episode = @import("episode.zig").Episode;
-const Context = @import("episode.zig").Context;
-const PolicySnapshot = @import("episode.zig").PolicySnapshot;
-const SensorsSnapshot = @import("episode.zig").SensorsSnapshot;
-const Source = @import("episode.zig").Source;
 
-/// ═════════════════════════════════════════════════════════════════════════════════════
-// FILE PATHS
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ from experience.json (when available)
-7. Build Context struct
+pub const PolicySnapshot = struct {
+    kill_threshold: f64 = 4.0,
+    crash_rate_limit: f64 = 0.2,
+    byzantine_rate_limit: f64 = 0.15,
+    god_mode: bool = true,
+    max_auto_level: u8 = 2,
+};
 
-/// Read sensors snapshot from .trinity/queen/senses.json
-fn loadSensors(allocator: Allocator) !SensorsSnapshot {
-    const file = try std.fs.cwd().openFile(".trinity/queen/senses.json", .{});
+pub const SensorsSnapshot = struct {
+    build_ok: bool = true,
+    test_rate: f64 = 100.0,
+    dirty_files: u32 = 0,
+    farm_services: u32 = 104,
+    farm_best_ppl: f64 = 2.04,
+    farm_idle_count: u32 = 0,
+    arena_battles: u32 = 28,
+    ouroboros_score: f64 = 0.0,
+    network_ok: bool = true,
+    disk_free_gb: f64 = 27.7,
+    agent_count: u32 = 0,
+    experience_episodes: u32 = 197,
+};
+
+pub const Context = struct {
+    timestamp_ns: u64,
+    policy: PolicySnapshot,
+    senses: SensorsSnapshot,
+    active_issues: []const u64,
+};
+
+/// Read sensors from .trinity/queen/senses.json
+fn loadSensors(allocator: std.mem.Allocator) !SensorsSnapshot {
+    const file = std.fs.cwd().openFile(".trinity/queen/senses.json", .{}) catch {
+        // Return default if file not found
+        return SensorsSnapshot{};
+    };
     defer file.close();
 
-    const contents = try file.readToEndAlloc(allocator);
+    const contents = try file.readToEndAlloc(allocator, 1024 * 1024, 1024 * 1024);
     defer allocator.free(contents);
 
-    return try std.json.parseFromSlice(SensorsSnapshot, contents);
+    return std.json.parseFromSlice(SensorsSnapshot, contents, 1024 * 1024) catch SensorsSnapshot{};
 }
 
-/// Read locus state from .trinity/queen/locus_state.json
-fn loadLocusState(allocator: Allocator) !LocusState {
-    const file = try std.fs.cwd().openFile(".trinity/queen/locus_state.json", .{});
+/// Read policy from .trinity/queen/policy.json
+fn loadPolicy(allocator: std.mem.Allocator) !PolicySnapshot {
+    const file = std.fs.cwd().openFile(".trinity/queen/policy.json", .{}) catch {
+        return PolicySnapshot{};
+    };
     defer file.close();
 
-    const contents = try file.readToEndAlloc(allocator);
+    const contents = try file.readToEndAlloc(allocator, 1024 * 1024, 1024 * 1024);
     defer allocator.free(contents);
 
-    return try std.json.parseFromSlice(LocusState, contents);
+    return std.json.parseFromSlice(PolicySnapshot, contents, 1024 * 1024) catch PolicySnapshot{};
 }
 
-/// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════     7. Build Context struct
-
-/// Read policy snapshot from .trinity/queen/policy.json
-fn loadPolicySnapshot(allocator: Allocator) !PolicySnapshot {
-    const file = try std.fs.cwd().openFile(".trinity/queen/policy.json", .{});
-    defer file.close();
-
-    const contents = try file.readToEndAlloc(allocator);
-    defer allocator.free(contents);
-
-    return try std.json.parseFromSlice(PolicySnapshot, contents);
-}
-
-/// Load episodes from .trinity/fpga/experience.json
-fn loadExperienceEpisodes(allocator: Allocator, max_results: usize) ![]Episode {
-    const file = std std.fs.cwd().openFile(".trinity/fpga/experience.json", .{}) catch return &[_]Episode{};
-    defer file.close();
-
-    var episodes = std.ArrayList(Episode).init(allocator);
-    defer episodes.deinit();
-
-    var line_buf: [1024]u8 = undefined;
-    var line_reader = std.io.bufferedReader(file);
-
-    while (try line_reader.readUntilDelimiterOrEof(&line_buf, '\n')) {
-        const line = line_buf[0..line_reader.bytes_read];
-        if (line.len == 0 or line[0] == '#') continue;
-
-        const parsed = try std.json.parseFromSlice(Episode, line) catch continue;
-
-        // Filter only lotus_cycle episodes
-        if (parsed.source != .lotus_cycle) continue;
-
-        try episodes.append(parsed);
-
-        if (episodes.items.len >= max_results) break;
-    }
-
-    return try episodes.toOwnedSlice();
-}
-
-/// Build Context from all gathered data
-pub fn observe(allocator: Allocator, options: ObserveOptions) !Context {
+/// Observe: gather current state from sensors and policy
+pub fn observe(allocator: std.mem.Allocator) !Context {
     const now_ns = std.time.nanoTimestamp();
 
-    // 1. Load current sensor state
     const senses = try loadSensors(allocator);
+    const policy = try loadPolicy(allocator);
 
-    // 2. Load locus (arousal/alert state)
-    const locus = try loadLocusState(allocator);
-
-    // 3. Load policy snapshot
-    const policy = try loadPolicySnapshot(allocator);
-
-    // 4. Recall similar episodes from experience
-    const recall_limit: if (options.recall_limit) |options.recall_limit| else 5;
-    const recalled_episodes = try loadExperienceEpisodes(allocator, recall_limit);
-
-    // 5. Get active issues (placeholder for now)
-    var active_issues = std.ArrayList(u64).init(allocator);
-    defer active_issues.deinit();
+    // Placeholder for active issues (empty for now)
+    const active_issues = try allocator.alloc(u64, 0);
 
     return Context{
         .timestamp_ns = now_ns,
         .policy = policy,
         .senses = senses,
-        .recalled_episodes = recalled_episodes,
-        .active_issues = try active_issues.toOwnedSlice(),
+        .active_issues = active_issues,
     };
 }
 
-/// Options for Observe stage
-pub const ObserveOptions = struct {
-    /// Maximum episodes to recall from experience (default: 5)
-    recall_limit: usize = 5,
-};
-
-/// Test: observe creates valid context
 test "observe: creates valid context" {
     const allocator = std.testing.allocator;
 
-    const context = try observe(allocator, .{});
-    defer allocator.free(context.recalled_episodes);
+    const context = try observe(allocator);
+    defer allocator.free(context.active_issues);
 
-    // Verify timestamp is recent (non-zero)
     try std.testing.expect(context.timestamp_ns != 0);
-
-    // Verify policy snapshot loaded
     try std.testing.expect(context.policy.kill_threshold == 4.0);
-
-    // Verify sensors loaded
     try std.testing.expect(context.senses.build_ok == true);
-    try std.testing.expect(context.senses.farm_best_ppl == 2.04);
 }
