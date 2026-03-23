@@ -5,6 +5,8 @@
 **Status:** Phase 4 — Blind Spots v2 Complete
 **TRINITY Version:** v10.2
 
+**Related:** [README_FOR_SCIENTISTS.md](README_FOR_SCIENTISTS.md) (full mathematical framework, particle-physics relations, cosmology) · [PHASE_4_PUBLICATION_SUMMARY.md](PHASE_4_PUBLICATION_SUMMARY.md)
+
 ---
 
 ## Executive Summary

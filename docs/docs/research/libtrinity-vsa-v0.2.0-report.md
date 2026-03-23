@@ -5,7 +5,7 @@ sidebar_label: libtrinity-vsa v0.2.0
 # libtrinity-vsa v0.2.0 — Ternary VSA SDK
 
 <div className="paper-meta">
-<p><strong>Authors:</strong> Trinity Research Team</p>
+<p><strong>Authors:</strong> Dmitrii Vasilev (@gHashTag)</p>
 <p><strong>Date:</strong> February 16, 2026</p>
 <p><strong>Status:</strong> Production-ready</p>
 </div>

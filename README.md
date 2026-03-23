@@ -680,6 +680,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
+## Maintainer
+
+**Dmitrii Vasilev** ([@gHashTag](https://github.com/gHashTag))
+
+---
+
 ## License
 
 MIT -- see [LICENSE](LICENSE)

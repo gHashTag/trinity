@@ -163,8 +163,8 @@ fn runStrictDisable() void {
         return;
     }
 
-    std.fs.cwd().deleteFile(STRICT_MODE_MARKER) catch |_| {}
-    std.fs.cwd().deleteFile(STRICT_MODE_MARKER_LEGACY) catch |_| {};
+    std.fs.cwd().deleteFile(STRICT_MODE_MARKER) catch {};
+    std.fs.cwd().deleteFile(STRICT_MODE_MARKER_LEGACY) catch {};
 
     std.debug.print("\n{s}STRICT MODE DISABLED{s}\n", .{ RED, RESET });
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ GRAY, RESET });
@@ -275,10 +275,16 @@ fn runStrictCheck(allocator: std.mem.Allocator, args: []const []const u8) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn isProtectedPath(path: []const u8) bool {
+    // Relative + ./relative (repo root as cwd)
     if (std.mem.startsWith(u8, path, "var/trinity/output/")) return true;
-    if (std.mem.startsWith(u8, path, "generated/")) return true;
     if (std.mem.startsWith(u8, path, "./var/trinity/output/")) return true;
+    // Absolute or nested: .../var/trinity/output/...
+    if (std.mem.indexOf(u8, path, "/var/trinity/output/") != null) return true;
+
+    if (std.mem.startsWith(u8, path, "generated/")) return true;
     if (std.mem.startsWith(u8, path, "./generated/")) return true;
+    if (std.mem.indexOf(u8, path, "/generated/") != null) return true;
+
     return false;
 }
 
@@ -566,7 +572,14 @@ fn checkSingleFile(path: []const u8, violations: *usize, warnings: *usize) void 
 // ═════════════════════════════════════════════════════════════════════════════
 
 test "isStrictModeEnabled returns false when marker missing" {
-    _ = isStrictModeEnabled();
+    const has_marker = blk: {
+        std.fs.cwd().access(STRICT_MODE_MARKER, .{}) catch {
+            std.fs.cwd().access(STRICT_MODE_MARKER_LEGACY, .{}) catch break :blk false;
+            break :blk true;
+        };
+        break :blk true;
+    };
+    if (has_marker) return error.SkipZigTest;
     try std.testing.expect(isStrictModeEnabled() == false);
 }
 

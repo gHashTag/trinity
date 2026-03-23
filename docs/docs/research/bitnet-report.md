@@ -5,7 +5,7 @@ sidebar_position: 2
 # BitNet b1.58 Coherence Report
 
 <div className="paper-meta">
-<p><strong>Authors:</strong> Trinity Research Team</p>
+<p><strong>Authors:</strong> Dmitrii Vasilev (@gHashTag)</p>
 <p><strong>Date:</strong> February 5, 2026</p>
 <p><strong>Status:</strong> Technical Report</p>
 <p><strong>Model:</strong> microsoft/bitnet-b1.58-2B-4T</p>

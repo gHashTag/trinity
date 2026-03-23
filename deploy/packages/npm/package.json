@@ -2,7 +2,7 @@
   "name": "@trinity-cli/tri",
   "version": "1.0.0",
   "description": "Unified Trinity CLI — Chat, Code, Vision, Voice, Tools, Autonomous Agents",
-  "author": "Trinity Network",
+  "author": "Dmitrii Vasilev (@gHashTag)",
   "license": "MIT",
   "homepage": "https://github.com/gHashTag/trinity#readme",
   "repository": {
