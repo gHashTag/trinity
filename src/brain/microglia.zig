@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! MICROGLIA — The Constant Gardeners v5.1
 //!
 //! Immune surveillance system of the S³AI Brain

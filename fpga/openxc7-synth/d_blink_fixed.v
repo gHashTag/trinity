@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // D21 LED blinking ~3 Hz (active-low)
 module trinity_top (
     input  wire clk,   // 50 MHz on U22

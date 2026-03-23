@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HSLM TERNARY MAC — Zero-DSP Inference Engine for Artix-7
 // ═══════════════════════════════════════════════════════════════════════════════

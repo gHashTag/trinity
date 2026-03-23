@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // BLIND SPOTS DISCOVERY ENGINE v1.0
 // Registry of Human Knowledge + Anomaly Detection + Hypothesis Generator

@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED MATHEMATICS FRAMEWORK v2.0 — EVAL MODULE
 // ═══════════════════════════════════════════════════════════════════════════════

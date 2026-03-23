@@ -22,9 +22,9 @@
 DOI proves "we were first"; patents grant "only we can use this".
 
 **Published Papers**:
-- `papers/hslm/draft.md` — HSLM architecture and training
-- `papers/trinity-fpga/draft.md` — Zero-DSP FPGA inference
-- `papers/hslm/training-review-mar10-14.md` — Full experiment log (42 Railway services, 6 local runs)
+- `../hslm/draft.md` — HSLM architecture and training
+- `../trinity-fpga/draft.md` — Zero-DSP FPGA inference
+- `../hslm/training-review-mar10-14.md` — Full experiment log (42 Railway services, 6 local runs)
 
 ---
 
@@ -60,8 +60,8 @@ Discovery: all dimensions of a ternary neural network MUST be powers of 3 for op
 
 - `src/hslm/constants.zig` — All dimension constants
 - `src/hslm/sacred_attention.zig` — phi-RoPE, sacred attention scale
-- `papers/hslm/training-review-mar10-14.md` — Full experiment log (discoveries EXP-013, EXP-014)
-- `papers/hslm/draft.md` — Technical paper
+- `../hslm/training-review-mar10-14.md` — Full experiment log (discoveries EXP-013, EXP-014)
+- `../hslm/draft.md` — Technical paper
 
 ### Proposed Claims
 
@@ -191,7 +191,7 @@ LFSR-driven pseudo-random weight patterns with LED pass/fail indication. Verifie
 - `fpga/openxc7-synth/trinity_block.v` — Full block
 - `fpga/openxc7-synth/hslm_full_top.v` — 4-block pipeline top-level
 - `src/hslm/sparse_ternary.zig` — CPU baseline (branchless 9.2x speedup)
-- `papers/trinity-fpga/draft.md` — Technical paper
+- `../trinity-fpga/draft.md` — Technical paper
 
 ### Proposed Claims
 
@@ -335,7 +335,7 @@ Automatic restart vs resume decision: `obj_changed || ctx_changed` → FRESH=1 (
 ### Source Files
 
 - `src/tri/tri_farm_evolve.zig` — Complete SEVO implementation (6,700+ LOC)
-- `papers/sevo-method.md` — Formal method description
+- `../sevo-method.md` — Formal method description
 
 ### Proposed Claims
 
@@ -423,7 +423,7 @@ Each record is tagged with relevant Cooperative Patent Classification codes for 
 
 ### Description Files
 
-HTML descriptions stored in `papers/patent-strategy/zenodo-descriptions/`:
+HTML descriptions stored in `zenodo-descriptions/`:
 - `D001-D003.html` — Ternary Resonance + Square Attention + Zero-DSP FPGA
 - `D004.html` — Self-Evolving Ouroboros
 - `D005.html` — VSA Balanced Ternary + SIMD
@@ -644,7 +644,7 @@ Provisional applications provide 12 months of priority date at minimal cost.
 1. **Zenodo DOI** (2026-03-10) — Irrefutable prior art timestamp
 2. **42 Railway services** — Reproducible experiments with logs
 3. **Open-source toolchain** — FPGA results independently reproducible
-4. **Complete papers** — `papers/hslm/draft.md`, `papers/trinity-fpga/draft.md`
+4. **Complete papers** — `../hslm/draft.md`, `../trinity-fpga/draft.md`
 5. **Git history** — Every experiment documented in commits and issues
 
 ### Risk Mitigation
@@ -689,7 +689,7 @@ Provisional applications provide 12 months of priority date at minimal cost.
 ## Verification
 
 - All source files verified to exist in repository
-- Experimental data cross-referenced with `papers/hslm/training-review-mar10-14.md`
-- FPGA resources confirmed from `papers/trinity-fpga/draft.md`
+- Experimental data cross-referenced with `../hslm/training-review-mar10-14.md`
+- FPGA resources confirmed from `../trinity-fpga/draft.md`
 - Ouroboros code analyzed from `src/tri/tri_ouroboros.zig`
 - Zenodo record confirmed: 18947017 (concept), 18950696 (latest version)

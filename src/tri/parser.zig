@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! TRI-27 compiler component or VSA operations for Trinity S³AI.
+//!
+
 //! Parser — AST builder for Tri language
 //! v0.2 — Converts token stream to AST
 

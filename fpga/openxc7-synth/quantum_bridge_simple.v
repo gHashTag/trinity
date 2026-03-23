@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // QUANTUM BRIDGE v2.0 — Simplified single-module design for FORGE
 // LED displays quantum state: SEPARABLE, VIOLATION, ZERO, NEGATIVE

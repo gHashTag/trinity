@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! TRI-27 compiler component or VSA operations for Trinity S³AI.
+//!
+
 //! Verilog Backend — Code generation for FPGA target
 //! v0.2 — Transpiles Tri AST to Verilog bitstream
 

@@ -155,7 +155,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 | fpga/openxc7-synth/ | docs/docs/fpga/ | LUT, BRAM, DSP, tok/s, synthesis reports |
 | src/tri/tri_commands.zig | docs/docs/cli/ | New CLI commands and usage |
 | src/hslm/ | docs/docs/api/ | HSLM model architecture, training API |
-| papers/hslm/draft.md | docs/docs/benchmarks/ | Published results, golden config |
+| docs/lab/papers/hslm/draft.md | docs/docs/benchmarks/ | Published results, golden config |
 | .trinity/ouroboros_state.json | docs/docs/benchmarks/ | Ouroboros score, system health |
 
 ### Docs Output Format

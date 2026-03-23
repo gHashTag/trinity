@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // VSA QUANTUM TOP — UART Control + Quantum Modes
 // Week 5: Enhanced UART receiver with mode switching
 //

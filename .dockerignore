@@ -9,7 +9,6 @@ src/
 .github/
 docs/
 docsite/
-papers/
 website/
 node_modules/
 .zig-cache/

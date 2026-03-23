@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 // @origin(spec:thalamus_logs.tri) @regen(manual-impl)
 // THALAMUS LOGS — Sensory relay station for Trinity cortex
 //

@@ -121,7 +121,7 @@ for pattern in \
     "src/hslm/*.zig" src/vsa.zig src/vm.zig src/hybrid.zig \
     fpga/README.md "fpga/openxc7-synth/*.v" "fpga/openxc7-synth/*.xdc" \
     "fpga/openxc7-synth/*.bit" fpga/tools/fpga_eye.py \
-    "papers/hslm/*.md" \
+    "docs/lab/papers/hslm/*.md" \
     "specs/tri/*.tri"; do
     # shellcheck disable=SC2086
     FOUND=$(ls $pattern 2>/dev/null || true)

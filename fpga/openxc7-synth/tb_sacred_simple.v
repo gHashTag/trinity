@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // Sacred ALU Benchmark Testbench — No DSP48E1 primitive dependency
 // For cycles/op measurement via iverilog
 

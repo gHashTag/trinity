@@ -86,7 +86,7 @@
 
   12_paper_benchmarks:
     priority: HIGH
-    files: papers/trinity-fpga/draft.md
+    files: docs/lab/papers/trinity-fpga/draft.md
     status: PENDING
     description: Update paper with real Level 1+2 data, BitNet FPGA comparison
 

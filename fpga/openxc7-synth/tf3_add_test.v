@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // Simple TF3 trit addition test
 // Tests just the trit addition logic without full TF3-9 complexity
 `timescale 1ns / 1ps

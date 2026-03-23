@@ -1,3 +1,8 @@
+//! Strand I: Mathematical Foundation
+//!
+//! Sacred mathematics module for Trinity S³AI.
+//!
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MULTILANGUAGE GEMATRIA ENGINE v1.0
 // Hebrew • Greek Isopsephy • Arabic Abjad • Coptic Gematria

@@ -102,7 +102,7 @@ All predictions are timestamped **March 6, 2026**.
 
 **Status Legend:**
 - **CONSISTENT**: Within experimental uncertainty
-- **TENSION**: Outside 1σ but close; may refine with new data
+- **TENSION**: Outside 1-sigma but close; may refine with new data
 - **PENDING**: Awaiting precise experimental verification
 - **FALSIFIED**: Outside 3σ (none as of March 2026)
 
@@ -119,7 +119,7 @@ All expressions derive from the identity:
 **Parameters:**
 - Base constants: φ, 3, π, e
 - Derived: γ = φ⁻³ ≈ 0.236068
-- Exponents: small integers n, k, m, p, q ∈ {-8, ..., +8}
+- Exponents: small integers n, k, m, p, q in range -8 to +8
 
 **General Formula:**
 ```

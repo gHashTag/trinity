@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! Performance Comparison: Lock-Free Sharded HashMap vs Baseline
 //!
 //! Compares three implementations:

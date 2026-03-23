@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // SPI FLASH MASTER — Read weights from W25Q128 SPI Flash
 // =============================================================================

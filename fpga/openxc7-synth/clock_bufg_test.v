@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // ============================================================================
 // CLOCK + BUFG TEST — Add Global Clock Buffer (REQUIRED for Xilinx 7-series)
 //

@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // @origin(spec:sacred_alu.tri) @regen(manual-impl)
 // Sacred ALU Wrapper — Unified GF16/TF3 Arithmetic Unit
 //

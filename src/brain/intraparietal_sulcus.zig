@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! INTRAPARIETAL SULCUS — Numerical Layer v1.0
 //!
 //! Brain region responsible for numerical processing and format conversion.

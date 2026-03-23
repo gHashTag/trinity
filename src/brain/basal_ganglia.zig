@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! BASAL GANGLIA — v2.2 — Lock-Free Action Selection (OPTIMIZED)
 //!
 //! Sharded HashMap design for lock-free reads and minimal contention writes.

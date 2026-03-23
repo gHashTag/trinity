@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // Test multiple LED pins to find actual D6
 // Based on singularity XDC and various tested pins
 module trinity_top (

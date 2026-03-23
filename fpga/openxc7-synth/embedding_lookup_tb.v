@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // =============================================================================
 // EMBEDDING LOOKUP TESTBENCH — Verify BRAM-Based Ternary Token Embedding
 // =============================================================================

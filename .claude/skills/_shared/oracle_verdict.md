@@ -111,7 +111,7 @@ for s in specs:
 print(f'LOOP0_EMPTY:{empty}/{len(specs)}')
 " 2>/dev/null || echo "LOOP0_EMPTY:N/A"
 grep -r "TODO\|FIXME\|HACK" src/ tools/ --include="*.zig" 2>/dev/null | grep -v 'zig-cache\|zig-out' | wc -l
-find specs/archive/ -name "*.tri" 2>/dev/null | wc -l
+find archive/specs-tri/ -name "*.tri" 2>/dev/null | wc -l
 git branch --list | wc -l
 git status --short | wc -l
 ```

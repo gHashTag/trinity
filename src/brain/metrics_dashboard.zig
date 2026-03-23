@@ -1,3 +1,8 @@
+//! Strand II: Cognitive Architecture
+//!
+//! Neuroanatomically inspired brain module for Trinity S³AI.
+//!
+
 //! S³AI BRAIN METRICS DASHBOARD — v5.1
 //!
 //! Command center view of entire brain health at a glance.

@@ -23,7 +23,7 @@ RUN wget -q https://ziglang.org/builds/zig-linux-x86_64-0.15.0-dev.650+2d4c32689
     && rm /tmp/zig.tar.xz
 
 # Pre-built SWE entrypoint binary (cross-compiled for x86_64-linux)
-COPY prebuilt/swe-entrypoint-bin /usr/local/bin/swe-entrypoint
+COPY deploy/prebuilt/swe-entrypoint-bin /usr/local/bin/swe-entrypoint
 
 RUN chmod a+rx /usr/local/bin/swe-entrypoint
 

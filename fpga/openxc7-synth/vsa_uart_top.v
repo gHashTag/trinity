@@ -1,3 +1,8 @@
+//! Strand III: Language \& Hardware Bridge
+//!
+//! FPGA component for Trinity S³AI — synthesizable Verilog module.
+//!
+
 // VSA FPGA Accelerator with UART Interface
 // Week 3: Unified VSA operations with command protocol
 //

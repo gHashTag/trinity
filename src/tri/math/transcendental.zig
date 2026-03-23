@@ -7,6 +7,12 @@
 // Gelfond-Schneider (1934), Nesterenko (1996).
 // ============================================================================
 
+//! Transcendental Numbers — π, e, ln, exp with classical proofs
+//! Strand I: Mathematical Foundation
+//!
+//! All transcendental operations follow from proven classical theorems.
+//!
+
 const std = @import("std");
 const math = std.math;
 
