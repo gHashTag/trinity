@@ -48,7 +48,7 @@ fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
     try buf.writer(allocator).print("{d}:\n", .{worker_id});
     try buf.appendSlice(allocator, "    build:\n");
     try buf.appendSlice(allocator, "      context: ../../\n");
-    try buf.appendSlice(allocator, "      dockerfile: deploy/Dockerfile.hslm-train-local.v4\n");
+    try buf.appendSlice(allocator, "      dockerfile: deploy/Dockerfile.hslm-train-local.minimal\n");
     try buf.appendSlice(allocator, "    container_name: wave9-w");
     try buf.writer(allocator).print("{d}\n", .{worker_id});
     try buf.appendSlice(allocator, "    volumes:\n");

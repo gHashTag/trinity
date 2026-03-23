@@ -1486,7 +1486,12 @@ fn localWave9Start(allocator: Allocator, args: []const []const u8) !void {
     var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
     defer farm.deinit(allocator);
 
+    const BASE_SEED: u32 = 1000;
     for (1..workers + 1) |j| {
+        const seed = BASE_SEED + @as(u32, @intCast(j));
+        if (farm.getWorker(j) == null) {
+            try farm.addWorker(allocator, j, seed);
+        }
         try farm.updateWorkerStatus(j, .starting);
     }
     try farm.save(allocator);
@@ -1531,8 +1536,15 @@ fn localWave9Stop(allocator: Allocator, args: []const []const u8) !void {
 fn localWave9Status(allocator: Allocator) !void {
     const local_farm_mod = @import("local_farm.zig");
 
-    var farm = local_farm_mod.LocalFarm.load(allocator) catch try local_farm_mod.LocalFarm.init(allocator);
+    print(">>> localWave9Status: loading farm...\n", .{});
+    var farm = local_farm_mod.LocalFarm.load(allocator) catch |err| {
+        print("{s}⚠️  Load failed: {s} - using empty farm{s}\n", .{ YELLOW, @errorName(err), RESET });
+        const empty = try local_farm_mod.LocalFarm.init(allocator);
+        empty.displayStatus();
+        return;
+    };
     defer farm.deinit(allocator);
+    print(">>> localWave9Status: loaded farm, displaying...\n", .{});
 
     farm.displayStatus();
 }
