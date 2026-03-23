@@ -242,8 +242,9 @@ pub fn runStatus() !void {
         const status_text = event.statusStr();
 
         print("  [{d}] {s}{s}{s} {s}{s} → {s}{s}{s}\n", .{
-            i + 1,        DIM,               RESET, opToString(event.operation),
-            BOLD,         event.inputFile(), status_color, status_text,       RESET,
+            i + 1, DIM,               RESET,        opToString(event.operation),
+            BOLD,  event.inputFile(), status_color, status_text,
+            RESET,
         });
     }
 }
