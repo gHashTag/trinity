@@ -115,6 +115,8 @@ const Config = struct {
     // v3.37: Enhanced error recovery and diagnostics
     diagnostics_mode: bool = false,
     auto_recovery: bool = false,
+    // v3.38: Enhanced health checks
+    extended_health_check: bool = false,
 };
 
 // Device vendor detection
@@ -1083,6 +1085,8 @@ fn parseArgs() Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--extended-health-check")) {
+            config.extended_health_check = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -1228,6 +1232,9 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
             } else if (std.mem.eql(u8, key, "fpga_retries")) {
                 config.fpga_retries = std.fmt.parseInt(u32, value, 10) catch continue;
                 loaded_any = true;
+            } else if (std.mem.eql(u8, key, "extended_health_check")) {
+                config.extended_health_check = std.ascii.eqlIgnoreCase(value, "true");
+                loaded_any = true;
             }
         }
     }
@@ -1279,6 +1286,7 @@ fn printUsage() void {
         \\  --fpga-verify       Enable FPGA verification mode
         \\  --diagnostics        Enable detailed error pattern analysis (v3.37)
         \\  --auto-recovery     Enable exponential backoff auto-recovery (v3.37)
+        \\  --extended-health-check  Verify framing and echo in health check (v3.38)
         \\  --help              Show this help message
         \\
         \\Performance Modes (v3.38):
@@ -1335,7 +1343,8 @@ fn printUsage() void {
 }
 
 // v3.24: Health check function - validates serial port before testing
-fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
+// v3.38: Extended health checks with framing verification
+fn healthCheck(port_path: ?[]const u8, baud: u64, config: Config) !bool {
     if (port_path == null) return true; // No port, skip check
 
     printErr("[i] Running health check on: {s}\n", .{port_path.?});
@@ -1358,6 +1367,69 @@ fn healthCheck(port_path: ?[]const u8, baud: u64) !bool {
     _ = configureSerial(fd, baud);
 
     printErr("[+] Health check: Port is ready\n", .{});
+
+    // v3.38: Extended health check with framing verification
+    if (config.extended_health_check) {
+        printErr("[i] Extended health check: Verifying framing and echo...\n", .{});
+
+        // Send simple test pattern: 0xAA 0x55 0x00 0xFF (alternating bits + edge cases)
+        const test_pattern = [_]u8{ 0xAA, 0x55, 0x00, 0xFF };
+
+        const write_result = std.posix.write(fd, &test_pattern);
+        if (write_result) |written| {
+            if (written != test_pattern.len) {
+                printErr("[!] Extended health check: Only wrote {d}/{d} bytes\n", .{ written, test_pattern.len });
+                return false;
+            }
+        } else |err| {
+            printErr("[!] Extended health check: Write failed: {any}\n", .{err});
+            return false;
+        }
+
+        // Small delay for echo
+        std.Thread.sleep(50_000); // 50ms
+
+        // Read response with short timeout
+        var read_buffer: [8]u8 = undefined;
+        var bytes_read: usize = 0;
+        const start_time = std.time.milliTimestamp();
+
+        while (bytes_read < test_pattern.len and (std.time.milliTimestamp() - start_time) < 500) {
+            const read_result = std.posix.read(fd, read_buffer[bytes_read..]);
+            if (read_result) |n| {
+                bytes_read += n;
+            } else |err| {
+                if (err == error.OperationWouldBlock) {
+                    std.Thread.sleep(5_000); // 5ms
+                    continue;
+                }
+                printErr("[!] Extended health check: Read error: {any}\n", .{err});
+                return false;
+            }
+        }
+
+        if (bytes_read == test_pattern.len) {
+            var all_match = true;
+            for (0..test_pattern.len) |i| {
+                if (read_buffer[i] != test_pattern[i]) {
+                    all_match = false;
+                    printErr("[!] Extended health check: Mismatch at byte {d}: sent 0x{x:0>2}, got 0x{x:0>2}\n", .{ i, test_pattern[i], read_buffer[i] });
+                    break;
+                }
+            }
+            if (all_match) {
+                printErr("[+] Extended health check: Framing verification PASSED\n", .{});
+            } else {
+                printErr("[!] Extended health check: Framing verification FAILED\n", .{});
+                return false;
+            }
+        } else {
+            printErr("[!] Extended health check: Timeout - expected {d} bytes, got {d}\n", .{ test_pattern.len, bytes_read });
+            printErr("[!] Extended health check: Device may not be in echo mode or is disconnected\n", .{});
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -1742,7 +1814,7 @@ pub fn main() !void {
 
     // v3.15: Run health check before testing (unless in simulation/dry-run mode)
     if (!config.simulation_mode and !config.dry_run) {
-        const passed = healthCheck(port.?, config.baud) catch false;
+        const passed = healthCheck(port.?, config.baud, config) catch false;
         if (!passed) {
             printErr("[!] Health check failed, aborting...\n", .{});
             std.process.exit(1);
