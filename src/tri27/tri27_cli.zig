@@ -68,7 +68,7 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
         }
     }
 
-    const asm_content = std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
+    const asm_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
         print("Error reading {s}: {}\n", .{ input_file, e });
         return error.ReadFileFailed;
     };
@@ -88,7 +88,7 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
         output_file,
         .success,
         0,
-        @intCast(bytecode.len / 4),
+        @as(u32, @intCast(bytecode.len / 4)),
         "",
     );
 
