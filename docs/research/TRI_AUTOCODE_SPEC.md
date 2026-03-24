@@ -1,8 +1,13 @@
 # Trinity Autocodegeneration Specification (TRI_AUTOCODE)
 
-> **Version**: 1.0
+> **Version**: 1.1
 > **Created**: 2026-03-24
+> **Updated**: 2026-03-24
 > **Status**: Draft — Implementation Plan for Issues #407-#418
+>
+> **Changes in v1.1**:
+> - Replaced `.tri-spec` → unified `.tri` with `@spec` annotations
+> - Added Part 4.5: Spec-DSL in .tri (@spec/@require/@ensure/@example/@goal)
 
 ---
 
@@ -555,6 +560,109 @@ fpga_handler(accumulate())
 
 ---
 
+## Part 4.5: Spec-DSL in .tri (Annotations)
+
+> **Principle**: .tri files contain code + spec + tests in one place. No separate .tri-spec files.
+
+### Annotation Syntax
+
+Doc comments above entities in .tri files:
+
+```tri
+/// @spec stabilize_ppl
+/// @desc Clamp PPL using φ-decay within [min,max]
+/// @require 0.0 <= ppl <= 100.0
+/// @require cfg.min <= cfg.max
+/// @ensure  result in [cfg.min, cfg.max]
+/// @metric  ppl_delta = result - ppl
+/// @goal    abs(ppl_delta) < 5.0
+fn stabilize_ppl(ppl: PPL, cfg: PplConfig) -> Result(PPL, Error) ! {Compute} {
+    let decayed = phi_decay(ppl, cfg.phi)
+    let clamped = clamp(decayed, cfg.min, cfg.max)
+    Ok(clamped)
+}
+
+/// @example
+/// input: ppl=12.0, cfg={min=0.0,max=10.0,phi=0.9}
+/// expect: Ok(10.0)
+test stabilize_ppl_example_1() {
+    assert_eq(stabilize_ppl(12.0, cfg), Ok(10.0))
+}
+```
+
+### Annotation Keywords
+
+| Keyword | Purpose |
+|---------|---------|
+| `@spec <name>` | Start spec for function/module |
+| `@desc <text>` | Human-readable description |
+| `@require <logic>` | Preconditions (logic expr) |
+| `@ensure <logic>` | Postconditions |
+| `@metric <name> = <expr>` | Define metric |
+| `@goal <logic>` | Scientific goal (metric constraint) |
+| `@example` | Example block with `input:` / `expect:` |
+
+### Typed Holes for Autogeneration
+
+```tri
+fn stabilize_ppl(ppl: PPL, cfg: PplConfig) -> Result(PPL, Error) ! {Compute} {
+    let decayed: PPL = ?phi_part(ppl, cfg)
+    let clamped: PPL = ?clamp_part(decayed, cfg)
+    Ok(clamped)
+}
+```
+
+- Type checker knows hole types from context
+- Agent gets: signature, annotations, hole types
+- After generation: `tri spec lint` → `tri test` → `tri compile` → `tri canonize`
+
+### Full Example: Queen Lotus Cycle
+
+```tri
+/// @spec lotus_phase_3_evaluate
+/// @desc Evaluate episode window for Quality classification
+/// @require window.size >= 1
+/// @require window.size <= 100
+/// @ensure  result.quality in {good, unstable, bad, unknown}
+/// @ensure  result.success_rate >= 0.0
+/// @ensure  result.success_rate <= 1.0
+/// @metric  crash_rate = result.crashed / result.total_episodes
+/// @goal    crash_rate < 0.05
+fn evaluate_window(episodes: []Episode, window: Window) -> WindowEvaluation {
+    // Implementation...
+}
+
+/// @example
+/// input: episodes=[{ok:true},{ok:false},{ok:true}], window={size:3}
+/// expect: {total:3, successful:2, failed:1, crashed:0, quality:unstable}
+```
+
+### CLI Commands
+
+| Command | Action |
+|---------|--------|
+| `tri spec lint` | Parse `@spec/@require/@ensure/@example`, validate |
+| `tri test` | Generate tests from `@example`, run checks |
+| `tri bdd run <name>` | Map scenario to existing BDD (Queen/HSLM) |
+
+### Implementation Files
+
+| File | Purpose | LOC |
+|------|---------|-----|
+| `src/tri-lang/annotations.zig` | Parse annotations | ~150 |
+| `src/tri/spec_lint.zig` | `tri spec lint` command | ~100 |
+| `src/tri/test_gen.zig` | Generate tests from `@example` | ~200 |
+| `src/tri/bdd_run.zig` | `tri bdd run` command | ~150 |
+
+### Relationship to Existing Code
+
+- **BDD**: Existing Zig tests stay, `tri bdd run` maps to them
+- **NA-R11**: .t27 files auto-generated, signed, separate from .tri spec
+- **Queen**: Can use `@spec` for self-learning metrics
+- **HSLM**: `@goal` maps to training loss/PPL targets
+
+---
+
 ## Part 5: Autocodegeneration Architecture
 
 ### 8 Scientific Patterns
@@ -575,7 +683,7 @@ fpga_handler(accumulate())
 ```
 Natural Language Task
          ↓
-Stage 1: SPEC → .tri-spec (BDD)
+Stage 1: SPEC → annotated .tri (comments + @spec + tests)
          ↓    [Grammar Prompting]
 Stage 2: ARCHITECTURE → Pipeline DAG + types
          ↓    [Multi-Stage]
