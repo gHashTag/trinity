@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.14 — Smart Recommendations (AI-powered action suggestions)
+//! v4.15 — Traffic Flow Analysis (analyze packet flow patterns and detect congestion)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2130,7 +2130,8 @@ const JitterTracker = struct {
             "DECREASING"
         else if (@abs(slope) < 1e-6)
             "STABLE"
-        else "FLAT";
+        else
+            "FLAT";
 
         // Simple seasonality check (autocorrelation for different lags)
         var max_autocorr: f64 = 0;
@@ -2157,7 +2158,8 @@ const JitterTracker = struct {
 
             const autocorr = if (sum_sq > 0 and sum_sq2 > 0)
                 sum_prod / (@sqrt(sum_sq * sum_sq2))
-            else 0;
+            else
+                0;
 
             if (autocorr > max_autocorr) {
                 max_autocorr = autocorr;
@@ -2187,16 +2189,16 @@ const JitterTracker = struct {
         };
 
         printDim("    Trend: {s} (slope: {d:.6} us/sample)\n", .{ decomp.trend_type, decomp.trend_slope });
-        printDim("    Trend Strength: {d:.1}%\n", .{ decomp.trend_strength * 100.0 });
-        printDim("    Volatility: {d:.4} (normalized)\n", .{ decomp.volatility });
+        printDim("    Trend Strength: {d:.1}%\n", .{decomp.trend_strength * 100.0});
+        printDim("    Volatility: {d:.4} (normalized)\n", .{decomp.volatility});
 
         if (decomp.seasonality_detected) {
-            printDim("    Seasonality: DETECTED (period: {d:.1} samples)\n", .{ decomp.dominant_period });
+            printDim("    Seasonality: DETECTED (period: {d:.1} samples)\n", .{decomp.dominant_period});
         } else {
             printDim("    Seasonality: NOT DETECTED (random)\n", .{});
         }
 
-        printDim("    Residual Std Dev: {d:.2} us\n", .{ decomp.residual_std_dev });
+        printDim("    Residual Std Dev: {d:.2} us\n", .{decomp.residual_std_dev});
 
         // Interpretations
         printDim("\n    Interpretations:\n", .{});
@@ -2220,7 +2222,7 @@ const JitterTracker = struct {
         }
 
         if (decomp.seasonality_detected) {
-            printDim("      - Periodic pattern found ({d:.1} sample period)\n", .{ decomp.dominant_period });
+            printDim("      - Periodic pattern found ({d:.1} sample period)\n", .{decomp.dominant_period});
             printDim("      - May indicate recurring load\n", .{});
         }
     }
@@ -2344,7 +2346,7 @@ const JitterTracker = struct {
         printDim("    Method Breakdown:\n", .{});
         printDim("      IQR outliers: {d}\n", .{summary.iqr_outliers});
         printDim("      Z-score outliers: {d}\n", .{summary.z_outliers});
-        printDim("      MA deviation outliers: {d}\n", .{summary.ma_outliers });
+        printDim("      MA deviation outliers: {d}\n", .{summary.ma_outliers});
 
         if (summary.total_outliers > 0) {
             const worst_ms = @as(f64, @floatFromInt(summary.worst_outlier)) / 1000.0;
@@ -2420,10 +2422,12 @@ const JitterTracker = struct {
 
         const avg_limited = if (high_latency_count > 0)
             high_latency_sum / @as(f64, @floatFromInt(high_latency_count))
-        else 0.0;
+        else
+            0.0;
         const avg_normal = if (normal_latency_count > 0)
             normal_latency_sum / @as(f64, @floatFromInt(normal_latency_count))
-        else mean;
+        else
+            mean;
 
         // Check for rate limiting patterns
         const ratio = if (avg_normal > 0) avg_limited / avg_normal else 1.0;
@@ -2434,7 +2438,8 @@ const JitterTracker = struct {
             @min(1.0, (high_latency_ratio - 0.3) * 2.0)
         else if (ratio > 2.0)
             @min(1.0, (ratio - 2.0) / 2.0)
-        else 0.0;
+        else
+            0.0;
 
         const is_rate_limited = confidence > 0.5;
 
@@ -2471,7 +2476,8 @@ const JitterTracker = struct {
             if (detection.avg_normal_rtt > 0) {
                 const ratio = if (detection.avg_normal_rtt > 0)
                     detection.avg_limited_rtt / detection.avg_normal_rtt
-                else 1.0;
+                else
+                    1.0;
                 printDim("    RTT Ratio: {d:.2}x (limited vs normal)\n", .{ratio});
             }
         } else {
@@ -2868,10 +2874,10 @@ const JitterTracker = struct {
 
             var first_sum: f64 = 0;
             var second_sum: f64 = 0;
-            for (self.samples[first_start..first_start + TREND_WINDOW]) |s| {
+            for (self.samples[first_start .. first_start + TREND_WINDOW]) |s| {
                 first_sum += @as(f64, @floatFromInt(s));
             }
-            for (self.samples[second_start..second_start + TREND_WINDOW]) |s| {
+            for (self.samples[second_start .. second_start + TREND_WINDOW]) |s| {
                 second_sum += @as(f64, @floatFromInt(s));
             }
             const first_avg = first_sum / @as(f64, @floatFromInt(TREND_WINDOW));
@@ -3189,7 +3195,8 @@ const JitterTracker = struct {
         const overall_variance = std_dev * std_dev;
         const consistency_score = if (overall_variance > 0)
             @max(0, 100.0 * (1.0 - @min(recent_variance / overall_variance, 1.0)))
-        else 0;
+        else
+            0;
 
         // Calculate weighted SQI (Signal Quality Index)
         // Weights: Latency 40%, Jitter 30%, Stability 20%, Consistency 10%
@@ -3270,7 +3277,7 @@ const JitterTracker = struct {
         const sqi = self.getSignalQualityIndex();
 
         if (sqi) |s| {
-            printDim("    SQI Score: {d:.1}/100 ({s})\n", .{s.sqi_score, s.overall_quality});
+            printDim("    SQI Score: {d:.1}/100 ({s})\n", .{ s.sqi_score, s.overall_quality });
 
             // Recalculate scores for display
             const stats = self.getStats();
@@ -3302,9 +3309,9 @@ const JitterTracker = struct {
             else
                 @max(0, 20.0 - (cv - 0.5) * 20.0);
 
-            printDim("    Latency: {s} ({d:.0}/100)\n", .{s.latency_grade, latency_score});
-            printDim("    Jitter: {s} ({d:.0}/100)\n", .{s.jitter_grade, jitter_score_calc});
-            printDim("    Stability: {s} ({d:.0}/100)\n", .{s.stability_grade, stability_score_calc});
+            printDim("    Latency: {s} ({d:.0}/100)\n", .{ s.latency_grade, latency_score });
+            printDim("    Jitter: {s} ({d:.0}/100)\n", .{ s.jitter_grade, jitter_score_calc });
+            printDim("    Stability: {s} ({d:.0}/100)\n", .{ s.stability_grade, stability_score_calc });
             printDim("    Consistency: {s}\n", .{s.consistency_grade});
             printDim("    {s}\n", .{s.factors});
         } else {
@@ -3372,7 +3379,7 @@ const JitterTracker = struct {
 
         if (sampling) |s| {
             const interval_ms = 100000 / @as(f64, @floatFromInt(s.recommended_rate));
-            printDim("    Recommended Rate: {d} Hz ({d}ms interval)\n", .{s.recommended_rate, interval_ms});
+            printDim("    Recommended Rate: {d} Hz ({d}ms interval)\n", .{ s.recommended_rate, interval_ms });
             printDim("    Current Rate: {d} Hz\n", .{s.current_rate});
             printDim("    Confidence: {d:.0}%\n", .{s.confidence * 100.0});
             printDim("    {s}\n", .{s.justification});
@@ -3452,7 +3459,7 @@ const JitterTracker = struct {
             printDim("    Current Quality: {s}\n", .{c.current_quality});
             printDim("    vs Baseline: {s}\n", .{c.baseline_comparison});
             const delta_sign = if (c.quality_delta_pct >= 0) "+" else "";
-            printDim("    Quality Delta: {s}{d:.1}%\n", .{delta_sign, c.quality_delta_pct});
+            printDim("    Quality Delta: {s}{d:.1}%\n", .{ delta_sign, c.quality_delta_pct });
             printDim("    {s}\n", .{c.recommendation});
         } else {
             printDim("    Insufficient data for comparison\n", .{});
@@ -3514,7 +3521,7 @@ const JitterTracker = struct {
         return .{
             .connection_type = connection_type,
             .confidence = confidence,
-            .latency_range_ms = &.{mean_ms - std_dev / 1000.0, mean_ms, mean_ms + std_dev / 1000.0},
+            .latency_range_ms = &.{ mean_ms - std_dev / 1000.0, mean_ms, mean_ms + std_dev / 1000.0 },
             .jitter_profile = jitter_ms,
             .final_assessment = final_assessment,
         };
@@ -3526,7 +3533,7 @@ const JitterTracker = struct {
         if (fingerprint) |fp| {
             printDim("    Connection Type: {s}\n", .{fp.connection_type});
             printDim("    Confidence: {d:.0}%\n", .{fp.confidence * 100.0});
-            printDim("    Latency Range: {d:.1}ms - {d:.1}ms\n", .{fp.latency_range_ms[0], fp.latency_range_ms[2]});
+            printDim("    Latency Range: {d:.1}ms - {d:.1}ms\n", .{ fp.latency_range_ms[0], fp.latency_range_ms[2] });
             printDim("    Jitter: {d:.2}ms\n", .{fp.jitter_profile});
             printDim("    {s}\n", .{fp.final_assessment});
         } else {
@@ -3561,7 +3568,7 @@ const JitterTracker = struct {
         // Get trend for prediction
         const trend = self.getTrend();
         const is_degrading = std.mem.eql(u8, trend.direction, "DEGRADING") or
-                          std.mem.eql(u8, trend.direction, "WORSE");
+            std.mem.eql(u8, trend.direction, "WORSE");
 
         // Predictive degradation factor
         const degradation_rate = @abs(trend.change_percent) / 100.0; // e.g., 15% -> 0.15
@@ -3846,7 +3853,7 @@ const JitterTracker = struct {
         if (comparison) |c| {
             printDim("    Compared to {d} other sessions\n", .{sessions.len});
             printDim("    Better than: {d}, Worse than: {d}, Stable: {d}\n", .{ c.better_count, c.worse_count, c.stable_count });
-            printDim("    Overall trend: {s}\n", .{c.overall_trend });
+            printDim("    Overall trend: {s}\n", .{c.overall_trend});
             if (c.improvement_pct > 0) {
                 printSuccess("    Improvement rate: {d:.1}%\n", .{c.improvement_pct});
             }
@@ -4270,8 +4277,8 @@ const JitterTracker = struct {
                     ANSI.GREEN;
 
                 printErr("    [{s}{s}] {s}: {s}\n", .{ priority_color, rec.priority, ANSI.RESET, rec.action_type });
-                printDim("    {s}\n", .{ rec.description });
-                printDim("    Confidence: {d:.0}%\n", .{ rec.confidence });
+                printDim("    {s}\n", .{rec.description});
+                printDim("    Confidence: {d:.0}%\n", .{rec.confidence});
             }
         } else {
             printDim("    Insufficient data for recommendations\n", .{});
@@ -5140,10 +5147,10 @@ const JitterTracker = struct {
             break :blk "Very Strong Periodicity (predictable cycles)";
         };
 
-        printDim("    Autocorrelation Peak: {d:.3} at lag {d}\n", .{max_corr, dominant_period});
+        printDim("    Autocorrelation Peak: {d:.3} at lag {d}\n", .{ max_corr, dominant_period });
         printDim("    Periodicity Score: {d:.1}%\n", .{periodicity_score});
         if (dominant_period > 0) {
-            printDim("    Dominant Period: {d:.2}ms ({d} samples)\n", .{dominant_period_ms, dominant_period});
+            printDim("    Dominant Period: {d:.2}ms ({d} samples)\n", .{ dominant_period_ms, dominant_period });
         }
         printDim("    Classification: {s}\n", .{classification});
 
@@ -5365,7 +5372,7 @@ const JitterTracker = struct {
         if (num_recs < 10) {
             const timeout_buf = self.allocator.alloc(u8, 100) catch unreachable;
             defer self.allocator.free(timeout_buf);
-            const timeout_msg = std.fmt.bufPrint(timeout_buf, "⏰  Set timeout to {d:.0}ms (2x max RTT: {d:.1}ms)", .{recommended_timeout, max_ms}) catch "";
+            const timeout_msg = std.fmt.bufPrint(timeout_buf, "⏰  Set timeout to {d:.0}ms (2x max RTT: {d:.1}ms)", .{ recommended_timeout, max_ms }) catch "";
             recommendations[num_recs] = timeout_msg;
             num_recs += 1;
         }
@@ -5414,19 +5421,19 @@ const JitterTracker = struct {
         } else {
             var i: usize = 0;
             while (i < num_recs) : (i += 1) {
-                printDim("    {d}. {s}\n", .{i + 1, recommendations[i]});
+                printDim("    {d}. {s}\n", .{ i + 1, recommendations[i] });
             }
         }
 
         // Summary stats
         printDim("\n    📋 Configuration Summary:\n", .{});
-        printDim("       Mean RTT: {d:.2}ms, Jitter: {d:.2}ms\n", .{mean_ms, stats.jitter / 1000.0});
+        printDim("       Mean RTT: {d:.2}ms, Jitter: {d:.2}ms\n", .{ mean_ms, stats.jitter / 1000.0 });
         printDim("       p50: {d:.2}ms, p99: {d:.2}ms (ratio: {d:.2}x)\n", .{
             @as(f64, @floatFromInt(p.p50)) / 1000.0,
             p99_ms,
             p99_p50_ratio,
         });
-        printDim("       Quality Score: {d:.0}/100 ({s})\n", .{quality.score, quality.grade});
+        printDim("       Quality Score: {d:.0}/100 ({s})\n", .{ quality.score, quality.grade });
     }
 
     // v3.85: Quick Health Check - one-line status summary
@@ -5475,12 +5482,12 @@ const JitterTracker = struct {
         printDim("    Status: {s}\n", .{health_status});
         printDim("    Performance: {s}\n", .{perf_class});
         printDim("    Anomalies: {s}\n", .{anomaly_status});
-        printDim("    Quality: {d:.0}/100 ({s})\n", .{quality.score, quality.grade});
+        printDim("    Quality: {d:.0}/100 ({s})\n", .{ quality.score, quality.grade });
         printDim("    Mean RTT: {d:.2}ms, Range: {d:.1}ms\n", .{
             mean_ms,
             @as(f64, @floatFromInt(stats.max - stats.min)) / 1000.0,
         });
-        printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
+        printDim("    Jitter (CV): {d:.2} ({s})\n", .{ cv, perf_class });
     }
 
     // v4.05: Performance Profile Classification - connection type detection
@@ -5536,7 +5543,7 @@ const JitterTracker = struct {
         printInfo("[i] Performance Profile Classification:\n", .{});
         printDim("    Profile: {s}\n", .{profile.name});
         printDim("    Description: {s}\n", .{profile.description});
-        printDim("    Target Range: {d:.1}ms - {d:.1}ms\n", .{profile.min_ms, profile.max_ms});
+        printDim("    Target Range: {d:.1}ms - {d:.1}ms\n", .{ profile.min_ms, profile.max_ms });
         printDim("    Max Jitter CV: {d:.2}\n", .{profile.max_cv});
 
         // Application recommendations
@@ -5736,31 +5743,19 @@ const JitterTracker = struct {
         const mean_us = stats.mean;
         const jitter_us = stats.jitter; // This is std_dev
         const cv = if (mean_us > 0) jitter_us / mean_us else 0.0;
-        const jitter_stability: f64 = if (cv < 0.1) 100.0
-        else if (cv < 0.2) 85.0
-        else if (cv < 0.3) 70.0
-        else if (cv < 0.5) 50.0
-        else 25.0;
+        const jitter_stability: f64 = if (cv < 0.1) 100.0 else if (cv < 0.2) 85.0 else if (cv < 0.3) 70.0 else if (cv < 0.5) 50.0 else 25.0;
 
         // 2. Consistency Score (based on IQR spread)
         const p = self.getPercentiles();
         const iqr = @as(f64, @floatFromInt(p.p75 - p.p25));
         const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
         const normalized_iqr = if (median_ms > 0) iqr / 1000.0 / median_ms else 0.0;
-        const consistency_score: f64 = if (normalized_iqr < 0.2) 100.0
-        else if (normalized_iqr < 0.4) 80.0
-        else if (normalized_iqr < 0.6) 60.0
-        else if (normalized_iqr < 1.0) 40.0
-        else 20.0;
+        const consistency_score: f64 = if (normalized_iqr < 0.2) 100.0 else if (normalized_iqr < 0.4) 80.0 else if (normalized_iqr < 0.6) 60.0 else if (normalized_iqr < 1.0) 40.0 else 20.0;
 
         // 3. Burst Penalty (inverse of burst severity)
         const burst_result = self.analyzeBursts(2.0);
         const burst_ratio = @as(f64, @floatFromInt(burst_result.total_burst_samples)) / @as(f64, @floatFromInt(self.count));
-        const burst_penalty: f64 = if (burst_result.burst_count == 0) 100.0
-        else if (burst_ratio < 0.05) 90.0
-        else if (burst_ratio < 0.15) 70.0
-        else if (burst_ratio < 0.30) 40.0
-        else 10.0;
+        const burst_penalty: f64 = if (burst_result.burst_count == 0) 100.0 else if (burst_ratio < 0.05) 90.0 else if (burst_ratio < 0.15) 70.0 else if (burst_ratio < 0.30) 40.0 else 10.0;
 
         // 4. Trend Score (based on degradation detection)
         const trend_score: f64 = if (self.count < 6) 75.0 else blk: {
@@ -5786,11 +5781,7 @@ const JitterTracker = struct {
             burst_penalty * 0.25 + trend_score * 0.15);
 
         // Grade assignment
-        const grade = if (overall_score >= 90) "A"
-        else if (overall_score >= 80) "B"
-        else if (overall_score >= 70) "C"
-        else if (overall_score >= 60) "D"
-        else "F";
+        const grade = if (overall_score >= 90) "A" else if (overall_score >= 80) "B" else if (overall_score >= 70) "C" else if (overall_score >= 60) "D" else "F";
 
         // Recommendation
         const recommendation = if (overall_score >= 90)
@@ -5826,10 +5817,7 @@ const JitterTracker = struct {
         printInfo("[i] Connection Stability Score:\n", .{});
 
         // Overall score with color coding
-        const score_emoji = if (score.overall_score >= 90) "🟢"
-        else if (score.overall_score >= 80) "🟡"
-        else if (score.overall_score >= 70) "🟠"
-        else "🔴";
+        const score_emoji = if (score.overall_score >= 90) "🟢" else if (score.overall_score >= 80) "🟡" else if (score.overall_score >= 70) "🟠" else "🔴";
 
         printDim("    {s} Overall: {d:.1}/100 ({s})\n", .{ score_emoji, score.overall_score, score.grade });
 
@@ -5965,10 +5953,7 @@ const JitterTracker = struct {
         // Show example command
         printDim("\n    Example command:\n", .{});
         var cmd_buf: [256]u8 = undefined;
-        const cmd = std.fmt.bufPrint(&cmd_buf,
-            "       uart-echo-test --baud {s} --timeout {d} --delay {d} --batch-size {d}",
-            .{ config.recommended_baud, config.recommended_timeout_ms, config.recommended_delay_ms, config.recommended_batch_size }
-        ) catch "Command too long";
+        const cmd = std.fmt.bufPrint(&cmd_buf, "       uart-echo-test --baud {s} --timeout {d} --delay {d} --batch-size {d}", .{ config.recommended_baud, config.recommended_timeout_ms, config.recommended_delay_ms, config.recommended_batch_size }) catch "Command too long";
         printDim("{s}", .{cmd});
         if (config.use_adaptive_timeout) {
             printDim(" --adaptive-timeout", .{});
@@ -6064,21 +6049,17 @@ const JitterTracker = struct {
         printInfo("[i] Packet Loss Pattern Analysis:\n", .{});
 
         // Severity with emoji
-        const severity_emoji = if (std.mem.eql(u8, pattern.severity, "NONE")) "✅"
-        else if (std.mem.eql(u8, pattern.severity, "LOW")) "🟡"
-        else if (std.mem.eql(u8, pattern.severity, "MODERATE")) "🟠"
-        else if (std.mem.eql(u8, pattern.severity, "HIGH")) "🔴"
-        else "⛔";
+        const severity_emoji = if (std.mem.eql(u8, pattern.severity, "NONE")) "✅" else if (std.mem.eql(u8, pattern.severity, "LOW")) "🟡" else if (std.mem.eql(u8, pattern.severity, "MODERATE")) "🟠" else if (std.mem.eql(u8, pattern.severity, "HIGH")) "🔴" else "⛔";
 
         printDim("    {s} Severity: {s}\n", .{ severity_emoji, pattern.severity });
-        printDim("    Pattern Type: {s}\n", .{ pattern.pattern_type });
-        printDim("    Max Consecutive: {d}\n", .{ pattern.consecutive_max });
-        printDim("    Scattered Losses: {d}\n", .{ pattern.scattered_count });
+        printDim("    Pattern Type: {s}\n", .{pattern.pattern_type});
+        printDim("    Max Consecutive: {d}\n", .{pattern.consecutive_max});
+        printDim("    Scattered Losses: {d}\n", .{pattern.scattered_count});
         if (pattern.periodicity_score > 0) {
-            printDim("    Periodicity Score: {d:.0}/100\n", .{ pattern.periodicity_score });
+            printDim("    Periodicity Score: {d:.0}/100\n", .{pattern.periodicity_score});
         }
 
-        printDim("\n    Description: {s}\n", .{ pattern.description });
+        printDim("\n    Description: {s}\n", .{pattern.description});
 
         // Recommendations based on pattern
         printDim("\n    Recommendations:\n", .{});
@@ -6123,7 +6104,7 @@ const JitterTracker = struct {
         const success_rate = @as(f64, @floatFromInt(passed_tests)) / @as(f64, @floatFromInt(total_tests)) * 100.0;
         printDim("  Test Results:\n", .{});
         printDim("    Passed: {d}/{d} ({d:.1}%)\n", .{ passed_tests, total_tests, success_rate });
-        printDim("    Samples analyzed: {d}\n", .{ self.count });
+        printDim("    Samples analyzed: {d}\n", .{self.count});
         if (self.consecutive_failures > 0) {
             printDim("    Failures: {d} (max consecutive: {d})\n", .{ self.consecutive_failures, self.max_consecutive_failures });
         }
@@ -6132,30 +6113,21 @@ const JitterTracker = struct {
         const mean_ms = stats.mean / 1000.0;
         const jitter_ms = stats.jitter / 1000.0;
         printDim("\n  Latency Summary:\n", .{});
-        printDim("    Mean RTT: {d:.2}ms\n", .{ mean_ms });
-        printDim("    Jitter (σ): {d:.2}ms\n", .{ jitter_ms });
+        printDim("    Mean RTT: {d:.2}ms\n", .{mean_ms});
+        printDim("    Jitter (σ): {d:.2}ms\n", .{jitter_ms});
         printDim("    Min: {d:.2}ms, Max: {d:.2}ms\n", .{ @as(f64, @floatFromInt(p.min)) / 1000.0, @as(f64, @floatFromInt(p.max)) / 1000.0 });
         printDim("    p50: {d:.2}ms, p99: {d:.2}ms\n", .{ @as(f64, @floatFromInt(p.p50)) / 1000.0, @as(f64, @floatFromInt(p.p99)) / 1000.0 });
 
         // Quality assessment
         printDim("\n  Quality Assessment:\n", .{});
-        const quality_emoji = if (stability.overall_score >= 90) "🟢"
-        else if (stability.overall_score >= 80) "🟡"
-        else if (stability.overall_score >= 70) "🟠"
-        else "🔴";
+        const quality_emoji = if (stability.overall_score >= 90) "🟢" else if (stability.overall_score >= 80) "🟡" else if (stability.overall_score >= 70) "🟠" else "🔴";
         printDim("    {s} Stability Score: {d:.1}/100 ({s})\n", .{ quality_emoji, stability.overall_score, stability.grade });
 
-        const burst_emoji = if (burst.burst_count == 0) "✅"
-        else if (std.mem.eql(u8, burst.burst_severity, "LOW")) "🟡"
-        else if (std.mem.eql(u8, burst.burst_severity, "MODERATE")) "🟠"
-        else "🔴";
+        const burst_emoji = if (burst.burst_count == 0) "✅" else if (std.mem.eql(u8, burst.burst_severity, "LOW")) "🟡" else if (std.mem.eql(u8, burst.burst_severity, "MODERATE")) "🟠" else "🔴";
         printDim("    {s} Burst Severity: {s} ({d} bursts)\n", .{ burst_emoji, burst.burst_severity, burst.burst_count });
 
         if (self.consecutive_failures > 0) {
-            const loss_emoji = if (std.mem.eql(u8, loss_pattern.severity, "LOW")) "🟡"
-            else if (std.mem.eql(u8, loss_pattern.severity, "MODERATE")) "🟠"
-            else if (std.mem.eql(u8, loss_pattern.severity, "HIGH")) "🔴"
-            else "⛔";
+            const loss_emoji = if (std.mem.eql(u8, loss_pattern.severity, "LOW")) "🟡" else if (std.mem.eql(u8, loss_pattern.severity, "MODERATE")) "🟠" else if (std.mem.eql(u8, loss_pattern.severity, "HIGH")) "🔴" else "⛔";
             printDim("    {s} Loss Pattern: {s} ({s})\n", .{ loss_emoji, loss_pattern.pattern_type, loss_pattern.severity });
         }
 
@@ -6318,7 +6290,7 @@ const JitterTracker = struct {
 
         // Additional insight
         const conf_level = (1.0 - result.alpha) * 100.0;
-        printDim("\n    Confidence: {d:.0}%\n", .{ conf_level });
+        printDim("\n    Confidence: {d:.0}%\n", .{conf_level});
         if (result.is_significant) {
             printDim("    ⚠️  Performance difference is statistically real\n", .{});
             printDim("       Consider investigating the cause\n", .{});
@@ -6379,6 +6351,165 @@ const JitterTracker = struct {
             printDim("    [{d:.1}-{d:.1}ms] {s} ({d})\n", .{ @as(i32, @intFromFloat(bin_start)), @as(i32, @intFromFloat(bin_end)), bar_str, count });
         }
         printDim("\n", .{});
+    }
+
+    // v4.15: Traffic Flow Analysis - analyze packet flow patterns and detect congestion
+    pub const TrafficFlowResult = struct {
+        flow_state: []const u8,
+        congestion_level: []const u8,
+        throughput_score: f64,
+        efficiency_ratio: f64,
+        bottleneck_detected: bool,
+        recommendation: []const u8,
+    };
+
+    pub fn analyzeTrafficFlow(self: *const JitterTracker) TrafficFlowResult {
+        if (self.count < 10) {
+            return .{
+                .flow_state = "INSUFFICIENT_DATA",
+                .congestion_level = "UNKNOWN",
+                .throughput_score = 0.0,
+                .efficiency_ratio = 0.0,
+                .bottleneck_detected = false,
+                .recommendation = "Need at least 10 samples for flow analysis",
+            };
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const burst = self.analyzeBursts(2.0);
+
+        // Calculate throughput score based on mean RTT
+        const mean_ms = stats.mean / 1000.0;
+        const throughput_score: f64 = if (mean_ms < 5)
+            100.0 // Excellent throughput
+        else if (mean_ms < 15)
+            90.0
+        else if (mean_ms < 30)
+            75.0
+        else if (mean_ms < 60)
+            60.0
+        else if (mean_ms < 120)
+            40.0
+        else
+            20.0; // Poor throughput
+
+        // Calculate efficiency ratio (ideal vs actual)
+        // Ideal: min RTT with no jitter
+        // Actual: mean RTT with jitter
+        const min_ms = @as(f64, @floatFromInt(stats.min)) / 1000.0;
+        const efficiency_ratio = if (mean_ms > 0) (min_ms / mean_ms) * 100.0 else 0.0;
+
+        // Detect bottleneck
+        const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+        const tail_ratio = if (mean_ms > 0) (p99_ms - mean_ms) / mean_ms else 0.0;
+        const bottleneck_detected = tail_ratio > 1.0 or burst.burst_count > 2;
+
+        // Determine flow state
+        const cv = if (mean_ms > 0) (stats.jitter / mean_ms) else 0.0;
+        const flow_state: []const u8 = if (cv < 0.15 and burst.burst_count == 0)
+            "LAMINAR" // Smooth flow
+        else if (cv < 0.3 and burst.burst_count <= 1)
+            "TURBULENT" // Some variation
+        else if (cv < 0.5)
+            "UNSTEADY" // Significant variation
+        else
+            "CHAOTIC"; // Highly unpredictable
+
+        // Determine congestion level
+        const congestion_level: []const u8 = if (burst.burst_count == 0 and efficiency_ratio > 80)
+            "NONE"
+        else if (burst.burst_count <= 1 and efficiency_ratio > 60)
+            "LOW"
+        else if (burst.burst_count <= 3 and efficiency_ratio > 40)
+            "MODERATE"
+        else if (burst.burst_count <= 5)
+            "HIGH"
+        else
+            "SEVERE";
+
+        // Generate recommendation
+        const recommendation: []const u8 = if (std.mem.eql(u8, congestion_level, "NONE"))
+            "Flow is optimal - no action needed"
+        else if (std.mem.eql(u8, congestion_level, "LOW"))
+            "Monitor for changes - current flow is acceptable"
+        else if (std.mem.eql(u8, congestion_level, "MODERATE"))
+            "Consider reducing batch size or increasing delay"
+        else if (std.mem.eql(u8, congestion_level, "HIGH"))
+            "Reduce throughput - try lower baud rate or smaller batches"
+        else
+            "Critical congestion - reduce load or check for hardware issues";
+
+        return .{
+            .flow_state = flow_state,
+            .congestion_level = congestion_level,
+            .throughput_score = throughput_score,
+            .efficiency_ratio = efficiency_ratio,
+            .bottleneck_detected = bottleneck_detected,
+            .recommendation = recommendation,
+        };
+    }
+
+    pub fn showTrafficFlowAnalysis(self: *const JitterTracker) void {
+        const result = self.analyzeTrafficFlow();
+
+        printInfo("[i] Traffic Flow Analysis (v4.15):\n", .{});
+
+        // Flow state with emoji
+        const flow_emoji = if (std.mem.eql(u8, result.flow_state, "LAMINAR"))
+            "🟢"
+        else if (std.mem.eql(u8, result.flow_state, "TURBULENT"))
+            "🟡"
+        else if (std.mem.eql(u8, result.flow_state, "UNSTEADY"))
+            "🟠"
+        else
+            "🔴";
+
+        printDim("    {s} Flow State: {s}\n", .{ flow_emoji, result.flow_state });
+
+        // Congestion level
+        const congestion_emoji = if (std.mem.eql(u8, result.congestion_level, "NONE"))
+            "✅"
+        else if (std.mem.eql(u8, result.congestion_level, "LOW"))
+            "🟢"
+        else if (std.mem.eql(u8, result.congestion_level, "MODERATE"))
+            "🟡"
+        else if (std.mem.eql(u8, result.congestion_level, "HIGH"))
+            "🟠"
+        else
+            "🔴";
+
+        printDim("    {s} Congestion: {s}\n", .{ congestion_emoji, result.congestion_level });
+        printDim("    Throughput Score: {d:.0}/100\n", .{result.throughput_score});
+        printDim("    Efficiency Ratio: {d:.1}%\n", .{result.efficiency_ratio});
+
+        if (result.bottleneck_detected) {
+            printErr("    ⚠️  Bottleneck detected\n", .{});
+        } else {
+            printDim("    ✅ No bottlenecks detected\n", .{});
+        }
+
+        printDim("\n    Recommendation: {s}\n", .{result.recommendation});
+
+        // Flow characteristics
+        printDim("\n    Flow Characteristics:\n", .{});
+        if (std.mem.eql(u8, result.flow_state, "LAMINAR")) {
+            printDim("       - Smooth, predictable flow\n", .{});
+            printDim("       - Ideal for real-time applications\n", .{});
+            printDim("       - Minimal packet reordering\n", .{});
+        } else if (std.mem.eql(u8, result.flow_state, "TURBULENT")) {
+            printDim("       - Some variation in latency\n", .{});
+            printDim("       - Acceptable for most applications\n", .{});
+            printDim("       - May cause occasional jitter\n", .{});
+        } else if (std.mem.eql(u8, result.flow_state, "UNSTEADY")) {
+            printDim("       - Significant latency variation\n", .{});
+            printDim("       - Not suitable for real-time\n", .{});
+            printDim("       - Consider flow control\n", .{});
+        } else {
+            printDim("       - Highly unpredictable flow\n", .{});
+            printDim("       - Check for interference\n", .{});
+            printDim("       - Reduce load immediately\n", .{});
+        }
     }
 };
 
@@ -7290,7 +7421,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.14           ║
+        \\║      Trinity UART Echo Test v4.15           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7760,7 +7891,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.14)         ║
+            \\║         SIMULATION MODE (v4.15)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8355,7 +8486,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.14)      ║
+        \\║       SIMULATION BATCH MODE (v4.15)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8489,7 +8620,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.14)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.15)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8506,7 +8637,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.14)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.15)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9445,7 +9576,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.14)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.15)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);

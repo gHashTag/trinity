@@ -437,3 +437,64 @@ test "episodes: parseTri27Operation" {
     try std.testing.expectEqual(Tri27Operation.dump, parseTri27Operation("dump"));
     try std.testing.expectEqual(Tri27Operation.assemble, parseTri27Operation("unknown")); // Default
 }
+
+test "episodes: recordTri27Episode maps Tri27Event to EpisodeSummary" {
+    const allocator = std.testing.allocator;
+
+    // Create Tri27Event: {.op = .assemble, .status = .success, .cycles = 42}
+    const tri27_event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .assemble,
+        .input_file = "test.tasm",
+        .output_file = "test.tbin",
+        .status = .success,
+        .cycles = 42,
+        .instructions = 10,
+        .error_msg = "",
+        .has_error = false,
+    };
+
+    // Map to EpisodeSummary via recordTri27Episode
+    const summary = try recordTri27Episode(allocator, tri27_event);
+    defer {
+        if (summary.key.len > 0) allocator.free(@constCast(summary.key));
+        if (summary.input_file.len > 0) allocator.free(@constCast(summary.input_file));
+    }
+
+    // Verify EpisodeSummary fields
+    try std.testing.expectEqual(Source.tri27, summary.source);
+    try std.testing.expectEqualStrings("tri27_op", summary.action_type);
+    try std.testing.expect(summary.success);
+    try std.testing.expectEqual(Outcome.success, summary.outcome);
+    try std.testing.expectEqual(@as(u64, 0), summary.duration_ms); // 42 cycles / 1000 = 0
+    try std.testing.expectEqualStrings("test.tasm", summary.input_file);
+    try std.testing.expectEqualStrings("assemble", summary.tri27_operation);
+}
+
+test "episodes: recordTri27Episode maps failed operation" {
+    const allocator = std.testing.allocator;
+
+    const tri27_event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .run,
+        .input_file = "bad.tasm",
+        .output_file = "",
+        .status = .failed,
+        .cycles = 10,
+        .instructions = 2,
+        .error_msg = "Syntax error at line 5",
+        .has_error = true,
+    };
+
+    const summary = try recordTri27Episode(allocator, tri27_event);
+    defer {
+        if (summary.key.len > 0) allocator.free(@constCast(summary.key));
+        if (summary.input_file.len > 0) allocator.free(@constCast(summary.input_file));
+    }
+
+    try std.testing.expectEqual(Source.tri27, summary.source);
+    try std.testing.expect(!summary.success);
+    try std.testing.expectEqual(Outcome.failure_learned, summary.outcome);
+    try std.testing.expectEqualStrings("bad.tasm", summary.input_file);
+    try std.testing.expectEqualStrings("run", summary.tri27_operation);
+}
