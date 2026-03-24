@@ -3,10 +3,10 @@
 //
 // Instruction format (32-bit):
 //   [7:0]   = opcode (8 bits)
-//   [10:8]  = dst (rd) - 5 bits
-//   [13:11] = src1 (rs1) - 5 bits
-//   [16:14] = src2 (rs2) - 5 bits
-//   [31:17] = immediate (16 bits, signed)
+//   [12:8]  = dst (rd) - 5 bits
+//   [17:13] = src1 (rs1) - 5 bits
+//   [22:18] = src2 (rs2) - 5 bits
+//   [31:16] = immediate (16 bits, signed)
 //
 // φ² + 1/φ² = 3 | TRINITY
 
@@ -66,7 +66,7 @@ pub fn encode_nop(rd: u5) u32 {
 }
 
 /// Encode ADD (Add registers)
-/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+/// Format: opcode | (dst << 8) | (src1 << 13) | (src2 << 18)
 pub fn encode_add(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.ADD);
     word |= @as(u32, dst) << 8;
@@ -76,7 +76,7 @@ pub fn encode_add(dst: u5, src1: u5, src2: u5) u32 {
 }
 
 /// Encode SUB (Subtract registers)
-/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+/// Format: opcode | (dst << 8) | (src1 << 13) | (src2 << 18)
 pub fn encode_sub(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.SUB);
     word |= @as(u32, dst) << 8;
@@ -86,7 +86,7 @@ pub fn encode_sub(dst: u5, src1: u5, src2: u5) u32 {
 }
 
 /// Encode MUL (Multiply registers)
-/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+/// Format: opcode | (dst << 8) | (src1 << 13) | (src2 << 18)
 pub fn encode_mul(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.MUL);
     word |= @as(u32, dst) << 8;
@@ -118,46 +118,45 @@ pub fn encode_load_imm(dst: u5, imm: i16) u32 {
 }
 
 /// Encode LDI (Load Immediate alternate)
-/// Format: opcode | (dst << 8) | (imm15 << 17)
-/// Immediate is 15-bit signed (-16384 to 16383)
+/// Format: opcode | (dst << 8) | (imm16 << 16)
+/// Immediate is 16-bit signed
 pub fn encode_ldi(dst: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.LDI);
     word |= @as(u32, dst) << 8;
-    // Encode as 15-bit immediate: bitcast i16->u16, widen to u32, mask
     const imm_u16: u16 = @bitCast(imm);
     const imm_u32: u32 = imm_u16;
-    word |= (imm_u32 & 0x7FFF) << 17;
+    word |= imm_u32 << 16;
     return word;
 }
 
 /// Encode STORE (Store register to memory address)
-/// Format: opcode | (dst << 8) | (addr << 17)
+/// Format: opcode | (dst << 8) | (addr << 16)
 /// Note: dst contains source register, addr is 16-bit memory address
 pub fn encode_store(src: u5, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.ST);
     word |= @as(u32, src) << 8;
-    word |= @as(u32, addr) << 17;
+    word |= @as(u32, addr) << 16;
     return word;
 }
 
 /// Encode STI (Store Immediate to memory address)
-/// Format: opcode | (imm15 << 8) | (addr << 17)
+/// Format: opcode | (imm16 << 8) | (addr << 24)
 /// Immediate value stored directly to address
-pub fn encode_sti(imm: i16, addr: u16) u32 {
+pub fn encode_sti(imm: i16, addr: u8) u32 {
     var word: u32 = @intFromEnum(Opcode.STI);
     const imm_u16: u16 = @bitCast(imm);
     const imm_u32: u32 = imm_u16;
-    word |= (imm_u32 & 0x7FFF) << 8;
-    word |= @as(u32, addr) << 17;
+    word |= imm_u32 << 8;
+    word |= @as(u32, addr) << 24;
     return word;
 }
 
 /// Encode LOAD_MEM (Load from memory address to register)
-/// Format: opcode | (dst << 8) | (addr << 17)
+/// Format: opcode | (dst << 8) | (addr << 16)
 pub fn encode_load_mem(dst: u5, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.LD);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, addr) << 17;
+    word |= @as(u32, addr) << 16;
     return word;
 }
 
@@ -172,24 +171,24 @@ pub fn encode_jmp(imm: i16) u32 {
 }
 
 /// Encode JZ (Jump if Zero)
-/// Format: opcode | (rd << 8) | (imm16 << 17)
+/// Format: opcode | (rd << 8) | (imm16 << 16)
 /// Jumps if register rd == 0
 pub fn encode_jz(rd: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.JZ);
     word |= @as(u32, rd) << 8;
     const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 17;
+    word |= @as(u32, imm_u16) << 16;
     return word;
 }
 
 /// Encode JNZ (Jump if Not Zero)
-/// Format: opcode | (rd << 8) | (imm16 << 17)
+/// Format: opcode | (rd << 8) | (imm16 << 16)
 /// Jumps if register rd != 0
 pub fn encode_jnz(rd: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.JNZ);
     word |= @as(u32, rd) << 8;
     const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 17;
+    word |= @as(u32, imm_u16) << 16;
     return word;
 }
 
@@ -319,14 +318,14 @@ test "encode_add_basic" {
 test "encode_add_with_registers" {
     // dst=1, src1=2, src2=3
     const encoded = encode_add(1, 2, 3);
-    const expected: u32 = 0x10 | (1 << 8) | (2 << 11) | (3 << 14);
+    const expected: u32 = 0x10 | (1 << 8) | (2 << 13) | (3 << 18);
     try std.testing.expectEqual(expected, encoded);
 }
 
 test "encode_add_max_registers" {
     // All registers at max (31 = 0x1F)
     const encoded = encode_add(31, 31, 31);
-    const expected: u32 = 0x10 | (31 << 8) | (31 << 11) | (31 << 14);
+    const expected: u32 = 0x10 | (31 << 8) | (31 << 13) | (31 << 18);
     try std.testing.expectEqual(expected, encoded);
 }
 
@@ -337,7 +336,7 @@ test "encode_sub_basic" {
 
 test "encode_sub_with_registers" {
     const encoded = encode_sub(5, 3, 1);
-    const expected: u32 = 0x11 | (5 << 8) | (3 << 11) | (1 << 14);
+    const expected: u32 = 0x11 | (5 << 8) | (3 << 13) | (1 << 18);
     try std.testing.expectEqual(expected, encoded);
 }
 
@@ -348,7 +347,7 @@ test "encode_mul_basic" {
 
 test "encode_mul_with_registers" {
     const encoded = encode_mul(2, 4, 6);
-    const expected: u32 = 0x12 | (2 << 8) | (4 << 11) | (6 << 14);
+    const expected: u32 = 0x12 | (2 << 8) | (4 << 13) | (6 << 18);
     try std.testing.expectEqual(expected, encoded);
 }
 
@@ -359,7 +358,7 @@ test "encode_tmul_basic" {
 
 test "encode_tmul_with_registers" {
     const encoded = encode_tmul(7, 11, 13);
-    const expected: u32 = 0x60 | (7 << 8) | (11 << 11) | (13 << 14);
+    const expected: u32 = 0x60 | (7 << 8) | (11 << 13) | (13 << 18);
     try std.testing.expectEqual(expected, encoded);
 }
 
@@ -462,16 +461,16 @@ test "encode_sti_basic" {
 }
 
 test "encode_sti_with_values" {
-    const encoded = encode_sti(42, 0x0800);
+    const encoded = encode_sti(42, 0x08);
     const imm_u16: u16 = @bitCast(@as(i16, 42));
-    const expected: u32 = 0x05 | (@as(u32, imm_u16) << 8) | (0x0800 << 16);
+    const expected: u32 = 0x05 | (@as(u32, imm_u16) << 8) | (@as(u32, 0x08) << 24);
     try std.testing.expectEqual(expected, encoded);
 }
 
 test "encode_sti_negative" {
-    const encoded = encode_sti(-55, 0x1234);
+    const encoded = encode_sti(-55, 0x34);
     const imm_u16: u16 = @bitCast(@as(i16, -55));
-    const expected: u32 = 0x05 | (@as(u32, imm_u16) << 8) | (0x1234 << 16);
+    const expected: u32 = 0x05 | (@as(u32, imm_u16) << 8) | (@as(u32, 0x34) << 24);
     try std.testing.expectEqual(expected, encoded);
 }
 
