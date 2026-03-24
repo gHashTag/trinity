@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.70 — Trend Prediction (linear regression-based RTT forecast)
+//! v3.71 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1844,6 +1844,12 @@ const JitterTracker = struct {
             printInfo("\n  📈 Trend Prediction:\n", .{});
             self.predictTrend();
         }
+
+        // v3.71: Adaptive Thresholds - recommend optimal thresholds based on statistics
+        if (self.count >= 20) {
+            printInfo("\n  🔧 Adaptive Thresholds:\n", .{});
+            self.recommendThresholds();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -1919,6 +1925,48 @@ const JitterTracker = struct {
         printDim("    Direction: {s}\n", .{trend});
         printDim("    Projected change: {d:.1}%\n", .{change_pct});
         printDim("    Severity: {s}\n", .{severity});
+    }
+
+    // v3.71: Recommend optimal thresholds based on statistical analysis
+    pub fn recommendThresholds(self: *const JitterTracker) void {
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+
+        // Calculate adaptive spike threshold (default: 3x median)
+        const adaptive_spike = @divFloor(p.p99 + p.p50, 2); // Average of p99 and p50
+        const spike_multiplier = @as(f64, @floatFromInt(adaptive_spike)) / @as(f64, @floatFromInt(p.p50));
+
+        // Calculate adaptive timeout based on max RTT + safety margin
+        const max_rtt_ms = @as(f64, @floatFromInt(stats.max)) / 1000.0;
+        const recommended_timeout = @as(u32, @intFromFloat(max_rtt_ms * 2.5));
+
+        // Calculate adaptive batch size based on jitter stability
+        const jitter_coefficient = if (stats.mean > 0) stats.jitter / stats.mean else 0;
+        const recommended_batch = if (jitter_coefficient < 0.2)
+            @as(usize, 32)
+        else if (jitter_coefficient < 0.4)
+            @as(usize, 16)
+        else if (jitter_coefficient < 0.6)
+            @as(usize, 8)
+        else
+            @as(usize, 4);
+
+        // Calculate adaptive delay based on RTT
+        const mean_rtt_ms = stats.mean / 1000.0;
+        const recommended_delay = @as(u32, @intFromFloat(mean_rtt_ms * 1.5));
+
+        printDim("    Current spike threshold: {d:.2}x median\n", .{3.0});
+        printDim("    Recommended spike threshold: {d:.2}x (p50={d:.2}ms, p99={d:.2}ms)\n", .{ spike_multiplier, @as(f64, @floatFromInt(p.p50)) / 1000.0, @as(f64, @floatFromInt(p.p99)) / 1000.0 });
+        printDim("    Recommended timeout: {d}ms (current max: {d:.2}ms + 150%% margin)\n", .{ recommended_timeout, max_rtt_ms });
+        printDim("    Recommended batch size: {d} (jitter coefficient: {d:.2})\n", .{ recommended_batch, jitter_coefficient });
+        printDim("    Recommended delay: {d}ms (1.5x mean RTT: {d:.2}ms)\n", .{ recommended_delay, mean_rtt_ms });
+
+        // Show CLI commands to apply recommendations
+        printInfo("\n    Apply with:\n", .{});
+        printDim("      --spike-threshold {d:.2}\n", .{spike_multiplier});
+        printDim("      --timeout {d}\n", .{recommended_timeout});
+        printDim("      --batch-size {d}\n", .{recommended_batch});
+        printDim("      --delay {d}\n", .{recommended_delay});
     }
 
     // v3.69: Plot histogram of RTT distribution
@@ -3354,7 +3402,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.24)         ║
+            \\║         SIMULATION MODE (v3.71)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -3949,7 +3997,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.32)      ║
+        \\║       SIMULATION BATCH MODE (v3.71)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -4083,7 +4131,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.32)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.71)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -4100,7 +4148,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.31)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.71)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -4778,7 +4826,7 @@ fn runDryRun(config: Config) !void {
 fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║          BATCH TEST MODE (v3.30)        ║
+        \\║          BATCH TEST MODE (v3.71)        ║
         \\║  Aggregated throughput measurement        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -5033,7 +5081,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.31)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.71)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
