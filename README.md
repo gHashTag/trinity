@@ -188,6 +188,15 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 | **AUR** | `yay -S trinity-cli` |
 | **Docker** | `docker pull ghcr.io/ghashtag/trinity:latest` |
 
+### Platform-Specific Guides
+
+| Platform | Guide |
+|----------|-------|
+| **macOS** | [docs/quickstart_macos.md](docs/quickstart_macos.md) |
+| **Linux** | [docs/quickstart_linux.md](docs/quickstart_linux.md) |
+| **Windows** | [docs/quickstart_windows.md](docs/quickstart_windows.md) |
+| **Docker** | See container image: `ghcr.io/ghashtag/trinity:latest` |
+
 ### Verify Installation
 
 ```bash
@@ -731,15 +740,17 @@ trinity/
 | Resource | URL |
 |----------|-----|
 | **Documentation Index** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) — Central documentation hub |
-| **For Researchers** | [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) |
-| **Command Reference** | [docs/command_registry.md](docs/command_registry.md) (auto-generated) |
+| **API Reference** | [docs/api_reference.md](docs/api_reference.md) — HTTP API, CLI, MCP servers |
+| **Glossary** | [docs/glossary.md](docs/glossary.md) — Technical terms and acronyms |
 | **Troubleshooting** | [docs/troubleshooting.md](docs/troubleshooting.md) — Common issues & solutions |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) — Development guidelines |
 | **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Community guidelines |
+| **Changelog** | [CHANGELOG.md](CHANGELOG.md) — Version history |
+| **For Researchers** | [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) |
+| **Command Reference** | [docs/command_registry.md](docs/command_registry.md) (auto-generated) |
 | **DePIN Overview** | [gHashTag.github.io/trinity/docs/depin](https://gHashTag.github.io/trinity/docs/depin) |
 | **Quick Start** | [gHashTag.github.io/trinity/docs/depin/quickstart](https://gHashTag.github.io/trinity/docs/depin/quickstart) |
 | **Tokenomics** | [gHashTag.github.io/trinity/docs/depin/tokenomics](https://gHashTag.github.io/trinity/docs/depin/tokenomics) |
-| **API Reference** | [gHashTag.github.io/trinity/docs/depin/api](https://gHashTag.github.io/trinity/docs/depin/api) |
 | **Architecture** | [gHashTag.github.io/trinity/docs/depin/architecture](https://gHashTag.github.io/trinity/docs/depin/architecture) |
 | **Research** | [gHashTag.github.io/trinity/docs/research](https://gHashTag.github.io/trinity/docs/research) |
 | **Website** | [gHashTag.github.io/trinity](https://gHashTag.github.io/trinity) |
