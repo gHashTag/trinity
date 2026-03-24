@@ -1899,6 +1899,12 @@ const JitterTracker = struct {
             printInfo("\n  🌊 Periodicity Analysis:\n", .{});
             self.analyzePeriodicity();
         }
+
+        // v3.83: Multi-modal Distribution Detection - identify multiple peaks
+        if (self.count >= 30) {
+            printInfo("\n  🔀 Multi-modal Analysis:\n", .{});
+            self.detectMultimodalDistribution();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -2785,6 +2791,139 @@ const JitterTracker = struct {
             } else {
                 printDim("       - Long-running background processes\n", .{});
                 printDim("       - Resource exhaustion cycles\n", .{});
+            }
+        }
+    }
+
+    // v3.83: Multi-modal Distribution Detection - identify multiple peaks in RTT
+    pub fn detectMultimodalDistribution(self: *const JitterTracker) void {
+        const MIN_SAMPLES: usize = 30;
+        if (self.count < MIN_SAMPLES) {
+            printDim("    Need at least {d} samples\n", .{MIN_SAMPLES});
+            return;
+        }
+
+        // Use histogram-based mode detection
+        const NUM_BINS: usize = 20;
+        var bins: [NUM_BINS]usize = [_]usize{0} ** NUM_BINS;
+
+        // Find min and max for binning
+        var min_val: i64 = self.samples[0];
+        var max_val: i64 = self.samples[0];
+        for (self.samples[0..self.count]) |s| {
+            if (s < min_val) min_val = s;
+            if (s > max_val) max_val = s;
+        }
+
+        const range = @as(f64, @floatFromInt(max_val - min_val));
+        const bin_width = if (range > 0) range / @as(f64, @floatFromInt(NUM_BINS)) else 1.0;
+
+        // Bin the data
+        for (self.samples[0..self.count]) |s| {
+            const val_f = @as(f64, @floatFromInt(s - min_val));
+            const bin_idx = @min(NUM_BINS - 1, @as(usize, @intFromFloat(@floor(val_f / bin_width))));
+            bins[bin_idx] += 1;
+        }
+
+        // Find local peaks in histogram
+        var peaks: [5]struct { bin: usize, count: usize, value: f64 } = undefined;
+        var num_peaks: usize = 0;
+        const min_bin_count = @max(2, @divFloor(self.count, 20)); // At least 2 or 5% of total
+
+        for (1..NUM_BINS - 1) |i| {
+            if (bins[i] > bins[i - 1] and bins[i] > bins[i + 1] and bins[i] >= min_bin_count) {
+                if (num_peaks < 5) {
+                    const bin_center_f = @as(f64, @floatFromInt(i)) + 0.5;
+                    const bin_offset = @as(i64, @intFromFloat(bin_center_f * bin_width));
+                    const bin_center = min_val + bin_offset;
+                    peaks[num_peaks] = .{
+                        .bin = i,
+                        .count = bins[i],
+                        .value = @as(f64, @floatFromInt(bin_center)) / 1000.0, // Convert to ms
+                    };
+                    num_peaks += 1;
+                }
+            }
+        }
+
+        // Check for edge peaks (first and last bins)
+        if (bins[0] > bins[1] and bins[0] >= min_bin_count and num_peaks < 5) {
+            const bin_offset = @as(i64, @intFromFloat(0.5 * bin_width));
+            const bin_center = min_val + bin_offset;
+            peaks[num_peaks] = .{
+                .bin = 0,
+                .count = bins[0],
+                .value = @as(f64, @floatFromInt(bin_center)) / 1000.0,
+            };
+            num_peaks += 1;
+        }
+        if (bins[NUM_BINS - 1] > bins[NUM_BINS - 2] and bins[NUM_BINS - 1] >= min_bin_count and num_peaks < 5) {
+            const bin_center_f = @as(f64, @floatFromInt(NUM_BINS - 1)) - 0.5;
+            const bin_offset = @as(i64, @intFromFloat(bin_center_f * bin_width));
+            const bin_center = min_val + bin_offset;
+            peaks[num_peaks] = .{
+                .bin = NUM_BINS - 1,
+                .count = bins[NUM_BINS - 1],
+                .value = @as(f64, @floatFromInt(bin_center)) / 1000.0,
+            };
+            num_peaks += 1;
+        }
+
+        // Sort peaks by count
+        var i: usize = 0;
+        while (i < num_peaks) : (i += 1) {
+            var j: usize = i + 1;
+            while (j < num_peaks) : (j += 1) {
+                if (peaks[j].count > peaks[i].count) {
+                    const tmp = peaks[i];
+                    peaks[i] = peaks[j];
+                    peaks[j] = tmp;
+                }
+            }
+        }
+
+        // Interpretation based on peak count
+        const classification = blk: {
+            if (num_peaks == 0) break :blk "Uniform (no distinct peaks)";
+            if (num_peaks == 1) break :blk "Unimodal (single dominant peak)";
+            if (num_peaks == 2) break :blk "Bimodal (two distinct paths/modes)";
+            if (num_peaks == 3) break :blk "Trimodal (three distinct modes)";
+            break :blk "Multimodal (multiple distinct modes)";
+        };
+
+        printDim("    Number of modes detected: {d}\n", .{num_peaks});
+        printDim("    Distribution type: {s}\n", .{classification});
+
+        // Show peaks
+        if (num_peaks > 0) {
+            printDim("\n    Detected peaks:\n", .{});
+            var peak_idx: usize = 0;
+            while (peak_idx < @min(3, num_peaks)) : (peak_idx += 1) {
+                const peak_pct = @as(f64, @floatFromInt(peaks[peak_idx].count)) / @as(f64, @floatFromInt(self.count)) * 100.0;
+                printDim("      Peak {d}: {d:.2}ms ({d:.1}% of samples)\n", .{
+                    peak_idx + 1,
+                    peaks[peak_idx].value,
+                    peak_pct,
+                });
+            }
+        }
+
+        // Interpretation hints
+        if (num_peaks >= 2) {
+            printDim("\n    ⚠️  Possible causes for multiple modes:\n", .{});
+            const fastest_peak = if (num_peaks > 0) peaks[0].value else 0;
+            const slowest_peak = if (num_peaks > 1) peaks[num_peaks - 1].value else 0;
+            const ratio = if (slowest_peak > 0) slowest_peak / fastest_peak else 1;
+
+            if (ratio < 1.5) {
+                printDim("       - Slight mode variation (minor path differences)\n", .{});
+            } else if (ratio < 3) {
+                printDim("       - Moderate mode separation (e.g., cache hit vs miss)\n", .{});
+                printDim("       - Multiple network paths with different latencies\n", .{});
+            } else {
+                printDim("       - Large mode separation (e.g., WiFi vs Ethernet)\n", .{});
+                printDim("       - TCP slow-start vs established connection\n", .{});
+                printDim("       - Different processing paths (fast vs slow path)\n", .{});
             }
         }
     }
