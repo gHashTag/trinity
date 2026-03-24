@@ -149,7 +149,8 @@ pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan,
 
 /// Record TRI-27 operation as Episode
 pub fn recordTri27Episode(allocator: std.mem.Allocator, tri27_event: Tri27Event) !EpisodeSummary {
-    const now_ns = std.time.nanoTimestamp();
+    const now_ns_i128 = std.time.nanoTimestamp();
+    const now_ns = @as(u64, @intCast(@abs(now_ns_i128)));
 
     // Create minimal context
     const context = Context{
@@ -221,7 +222,14 @@ pub fn recordTri27Episode(allocator: std.mem.Allocator, tri27_event: Tri27Event)
         .tri27_operation = @tagName(tri27_event.operation),
     };
 
+    // Write to JSONL (episode takes ownership of allocated strings)
     _ = try appendEpisode(episode, allocator);
+
+    // Clean up allocated memory
+    allocator.free(episode.action.tri27_op.input_file);
+    allocator.free(episode.action.tri27_op.output_file);
+    if (episode.result.@"error") |err| allocator.free(err);
+    if (episode.result.output) |out| allocator.free(out);
 
     return summary;
 }
@@ -456,10 +464,6 @@ test "episodes: recordTri27Episode maps Tri27Event to EpisodeSummary" {
 
     // Map to EpisodeSummary via recordTri27Episode
     const summary = try recordTri27Episode(allocator, tri27_event);
-    defer {
-        if (summary.key.len > 0) allocator.free(@constCast(summary.key));
-        if (summary.input_file.len > 0) allocator.free(@constCast(summary.input_file));
-    }
 
     // Verify EpisodeSummary fields
     try std.testing.expectEqual(Source.tri27, summary.source);
@@ -487,10 +491,6 @@ test "episodes: recordTri27Episode maps failed operation" {
     };
 
     const summary = try recordTri27Episode(allocator, tri27_event);
-    defer {
-        if (summary.key.len > 0) allocator.free(@constCast(summary.key));
-        if (summary.input_file.len > 0) allocator.free(@constCast(summary.input_file));
-    }
 
     try std.testing.expectEqual(Source.tri27, summary.source);
     try std.testing.expect(!summary.success);
