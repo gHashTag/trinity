@@ -74,7 +74,7 @@ pub const LocalFarm = struct {
     }
 
     pub fn load(allocator: Allocator) !Self {
-        const file = std.fs.openFileAbsolute(STATE_FILE, .{}) catch |err| switch (err) {
+        const file = std.fs.cwd().openFile(STATE_FILE, .{}) catch |err| switch (err) {
             error.FileNotFound => return init(allocator),
             else => return err,
         };

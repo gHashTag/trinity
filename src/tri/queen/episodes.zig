@@ -30,35 +30,6 @@ pub const Action = union(enum) {
     },
 };
 
-pub const Action = union(enum) {
-    scale_up: struct {
-        key: []const u8,
-        quality_score: f64,
-    },
-    scale_down: struct {
-        key: []const u8,
-        quality_score: f64,
-    },
-    trigger: struct {
-        key: []const u8,
-    },
-    set: struct {
-        key: []const u8,
-        value: union {
-            bool: bool,
-            f64: f64,
-        },
-    },
-    wait: void,
-    tri27_op: struct {
-        operation: Tri27Operation,
-        input_file: []const u8,
-        output_file: []const u8,
-        cycles: u32,
-        instructions: u32,
-    },
-};
-
 pub const Tri27Operation = enum(u8) {
     assemble,
     disassemble,
@@ -293,7 +264,24 @@ pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
         .tri27_operation = tri27_operation,
     };
 
-    const json = try std.json.Stringify.valueAlloc(allocator, summary, .{ .whitespace = .minified });
+    // Build JSON manually to ensure []const u8 fields serialize as strings
+    // Zig 0.15 JSON treats []const u8 as byte array, so we use manual formatting
+    const outcome_str = @tagName(summary.outcome);
+    const source_str = @tagName(summary.source);
+    const json = try std.fmt.allocPrint(allocator,
+        \\{{"id":{d},"timestamp":{d},"source":"{s}","action_type":"{s}","key":"{s}","outcome":"{s}","success":{s},"duration_ms":{d},"input_file":"{s}","tri27_operation":"{s}"}}
+    , .{
+        summary.id,
+        summary.timestamp,
+        source_str,
+        summary.action_type,
+        summary.key,
+        outcome_str,
+        if (summary.success) "true" else "false",
+        summary.duration_ms,
+        summary.input_file,
+        summary.tri27_operation,
+    });
     defer allocator.free(json);
 
     const line = try std.fmt.allocPrint(allocator, "{s}\n", .{json});
