@@ -1,6 +1,6 @@
 {
   "state": "COMMITTED",
-  "issue_number": 411,
-  "branch": "feat/issue-411-linear-types-ownership",
+  "issue_number": 412,
+  "branch": "feat/issue-412-effects-handlers",
   "tests_passed": true
 }

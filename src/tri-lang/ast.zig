@@ -7,6 +7,7 @@
 //
 // Issue #408: ADT Enum + Exhaustive Match + Pipe
 // Issue #411: Linear Types + Ownership Modes
+// Issue #412: Effects + Handlers
 //
 // NOTE:
 // - Чётко разделены уровни: Program / Declaration / Statement / Expr / Pattern / Type
@@ -15,6 +16,7 @@
 // - Ownership modes: let/inout/sink/set (Hylo-style)
 // - Linear types enforce consume-once semantics (Austral-style)
 // - Banked types provide Coptic register safety via phantom types
+// - Algebraic effects and handlers (Koka/Roc style)
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -120,6 +122,7 @@ pub const Statement = union(enum) {
     While: WhileStmt,
     For: ForStmt,
     Expression: ExprStmt,
+    Effect: EffectStmt,
 };
 
 /// Return statement: return expr
@@ -168,12 +171,65 @@ pub const ExprStmt = struct {
     loc: SourceLocation,
 };
 
+/// Effect statement — perform effect with handler
+/// perform effect { operation }
+pub const EffectStmt = struct {
+    /// Effect to perform
+    effect_id: EffectId,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    /// Handler body (clauses for each operation)
+    handler: HandlerBody,
+    loc: SourceLocation,
+};
+
 /// Loop range
 pub const Range = union(enum) {
     /// start..end
     To: struct { start: Expr, end: Expr },
     /// start..=end (inclusive)
     ToEq: struct { start: Expr, end: Expr },
+};
+
+/// Effect identifier (for algebraic effects)
+pub const EffectId = enum(u8) {
+    /// I/O effects
+    IO,
+    File,
+    Network,
+    Database,
+    /// State effects
+    State,
+    Mutable,
+    /// Error effects
+    Error,
+    Fail,
+    /// Platform effects (dual-target)
+    PlatformCPU,
+    PlatformFPGA,
+    PlatformVM,
+    /// Async effects
+    Async,
+    /// Custom user effects
+    User = 128,
+};
+
+/// Handler body — clauses for handling effect operations
+pub const HandlerBody = struct {
+    /// Handler clauses (operation + body)
+    clauses: []const HandlerClause,
+};
+
+/// Handler clause — pattern for operation + body
+pub const HandlerClause = struct {
+    /// Operation name
+    operation: []const u8,
+    /// Parameter pattern
+    param_pattern: Pattern,
+    /// Handler body expression
+    body: Expr,
 };
 
 // ╔════════════════════════════════════════════════════════════════════════╗
@@ -209,6 +265,10 @@ pub const Expr = union(enum) {
     Match: MatchExpr,
     PipelineRef: PipelineRefExpr,
 
+    // Effects (algebraic effects and handlers)
+    Effect: EffectExpr,
+    Try: TryExpr,
+
     // Typed hole (for autocode generation)
     Hole: HoleExpr,
 };
@@ -222,6 +282,28 @@ pub const IntLiteralExpr = struct {
 /// Float literal
 pub const FloatLiteralExpr = struct {
     value: f64,
+    loc: SourceLocation,
+};
+
+/// Effect expression — perform effect { operation }
+pub const EffectExpr = struct {
+    /// Effect to perform
+    effect_id: EffectId,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    /// Optional handler
+    handler: ?HandlerBody,
+    loc: SourceLocation,
+};
+
+/// Try expression — perform effect with handler
+pub const TryExpr = struct {
+    /// Computation that may perform effects
+    computation: Expr,
+    /// Handler clauses (operation + body)
+    handlers: []const HandlerClause,
     loc: SourceLocation,
 };
 
