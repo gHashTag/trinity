@@ -122,6 +122,9 @@ const Config = struct {
     auto_recovery: bool = false,
     // v3.38: Enhanced health checks
     extended_health_check: bool = false,
+    // v3.58: Performance baseline comparison
+    baseline_file: ?[]const u8 = null,
+    compare_baseline: bool = false,
 };
 
 // Device vendor detection
@@ -167,6 +170,163 @@ const ThroughputStats = struct {
     pub fn getPacketSuccessRate(self: *const ThroughputStats) f64 {
         if (self.packets_sent == 0) return 0;
         return @as(f64, @floatFromInt(self.packets_received)) / @as(f64, @floatFromInt(self.packets_sent)) * 100.0;
+    }
+};
+
+// v3.58: Performance Baseline for comparison across test runs
+const Baseline = struct {
+    timestamp: i64,
+    version: []const u8,
+    mean_rtt_us: f64,
+    jitter_us: f64,
+    min_rtt_us: f64,
+    max_rtt_us: f64,
+    p50_us: f64,
+    p90_us: f64,
+    p95_us: f64,
+    p99_us: f64,
+    quality_score: f64,
+    spike_count: usize,
+    sample_count: usize,
+
+    pub fn formatJson(self: *const Baseline, allocator: std.mem.Allocator) ![]const u8 {
+        var buffer: [1024]u8 = undefined;
+        const json = try std.fmt.bufPrint(&buffer,
+            \\{{"timestamp":{d},"version":"{s}","mean_rtt_us":{d:.2},"jitter_us":{d:.2},
+            \\"min_rtt_us":{d:.2},"max_rtt_us":{d:.2},"p50_us":{d:.2},"p90_us":{d:.2},
+            \\"p95_us":{d:.2},"p99_us":{d:.2},"quality_score":{d:.1},
+            \\"spike_count":{d},"sample_count":{d}}}
+        , .{
+            self.timestamp,
+            self.version,
+            self.mean_rtt_us,
+            self.jitter_us,
+            self.min_rtt_us,
+            self.max_rtt_us,
+            self.p50_us,
+            self.p90_us,
+            self.p95_us,
+            self.p99_us,
+            self.quality_score,
+            self.spike_count,
+            self.sample_count,
+        });
+        return try allocator.dupe(u8, json);
+    }
+
+    pub fn saveToFile(self: *const Baseline, file_path: []const u8) !void {
+        const file = try std.fs.cwd().createFile(file_path, .{ .read = true });
+        defer file.close();
+
+        const json = try self.formatJson(std.heap.page_allocator);
+        defer std.heap.page_allocator.free(json);
+
+        try file.writeAll(json);
+    }
+
+    pub fn loadFromFile(allocator: std.mem.Allocator, file_path: []const u8) !Baseline {
+        const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 4096);
+        defer allocator.free(content);
+
+        var baseline: Baseline = undefined;
+        baseline.version = "v3.58";
+
+        // Simple JSON parser for baseline file
+        var it = std.mem.tokenizeAny(u8, content, "{:,}\n\r ");
+        while (it.next()) |token| {
+            if (std.mem.eql(u8, token, "\"timestamp\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.timestamp = try std.fmt.parseInt(i64, val, 10);
+            } else if (std.mem.eql(u8, token, "\"version\"")) {
+                _ = it.next(); // skip value
+                baseline.version = "v3.58";
+            } else if (std.mem.eql(u8, token, "\"mean_rtt_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.mean_rtt_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"jitter_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.jitter_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"min_rtt_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.min_rtt_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"max_rtt_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.max_rtt_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"p50_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.p50_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"p90_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.p90_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"p95_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.p95_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"p99_us\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.p99_us = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"quality_score\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.quality_score = try std.fmt.parseFloat(f64, val);
+            } else if (std.mem.eql(u8, token, "\"spike_count\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.spike_count = try std.fmt.parseInt(usize, val, 10);
+            } else if (std.mem.eql(u8, token, "\"sample_count\"")) {
+                const val = it.next() orelse return error.InvalidJson;
+                baseline.sample_count = try std.fmt.parseInt(usize, val, 10);
+            }
+        }
+
+        return baseline;
+    }
+
+    pub fn compare(self: *const Baseline, current_mean: f64, current_jitter: f64, current_quality: f64) void {
+        printErr("\n{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+        printErr("{s}         BASELINE COMPARISON (v3.58)         {s}\n", .{ ANSI.BOLD, ANSI.RESET });
+        printErr("{s}═══════════════════════════════════════════════════{s}\n\n", .{ ANSI.CYAN, ANSI.RESET });
+
+        const mean_delta = current_mean - self.mean_rtt_us;
+        const mean_pct = if (self.mean_rtt_us > 0) (mean_delta / self.mean_rtt_us) * 100.0 else 0.0;
+        const jitter_delta = current_jitter - self.jitter_us;
+        const jitter_pct = if (self.jitter_us > 0) (jitter_delta / self.jitter_us) * 100.0 else 0.0;
+        const quality_delta = current_quality - self.quality_score;
+
+        // Mean RTT comparison
+        printErr("{s}Mean RTT:{s} ", .{ ANSI.BLUE, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us → ", .{ ANSI.DIM, self.mean_rtt_us, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us ", .{ ANSI.BOLD, current_mean, ANSI.RESET });
+        if (@abs(mean_pct) < 5.0) {
+            printErr("{s}(~{d:.1}%){s}\n", .{ ANSI.GREEN, @abs(mean_pct), ANSI.RESET });
+        } else if (mean_pct > 0) {
+            printErr("{s}(+{d:.1}%){s}\n", .{ ANSI.RED, mean_pct, ANSI.RESET });
+        } else {
+            printErr("{s}({d:.1}%){s}\n", .{ ANSI.GREEN, @abs(mean_pct), ANSI.RESET });
+        }
+
+        // Jitter comparison
+        printErr("{s}Jitter: {s}", .{ ANSI.BLUE, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us → ", .{ ANSI.DIM, self.jitter_us, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us ", .{ ANSI.BOLD, current_jitter, ANSI.RESET });
+        if (@abs(jitter_pct) < 5.0) {
+            printErr("{s}(~{d:.1}%){s}\n", .{ ANSI.GREEN, @abs(jitter_pct), ANSI.RESET });
+        } else if (jitter_pct > 0) {
+            printErr("{s}(+{d:.1}%){s}\n", .{ ANSI.RED, jitter_pct, ANSI.RESET });
+        } else {
+            printErr("{s}({d:.1}%){s}\n", .{ ANSI.GREEN, @abs(jitter_pct), ANSI.RESET });
+        }
+
+        // Quality score comparison
+        printErr("{s}Quality: {s}", .{ ANSI.BLUE, ANSI.RESET });
+        printErr("{s}{d:.1}{s} → ", .{ ANSI.DIM, self.quality_score, ANSI.RESET });
+        printErr("{s}{d:.1}{s} ", .{ ANSI.BOLD, current_quality, ANSI.RESET });
+        if (quality_delta > 5.0) {
+            printErr("{s}(+{d:.1}){s}\n", .{ ANSI.GREEN, quality_delta, ANSI.RESET });
+        } else if (quality_delta < -5.0) {
+            printErr("{s}({d:.1}){s}\n", .{ ANSI.RED, quality_delta, ANSI.RESET });
+        } else {
+            printErr("{s}(~){s}\n", .{ ANSI.YELLOW, ANSI.RESET });
+        }
+
+        printErr("\n", .{});
     }
 };
 
@@ -1589,6 +1749,23 @@ fn parseArgs() Config {
             i += 1;
         } else if (std.mem.eql(u8, arg, "--extended-health-check")) {
             config.extended_health_check = true;
+        } else if (std.mem.eql(u8, arg, "--save-baseline")) {
+            // v3.58: Save baseline file
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --save-baseline requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.baseline_file = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
+        } else if (std.mem.eql(u8, arg, "--compare-baseline")) {
+            // v3.58: Compare against baseline file
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --compare-baseline requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.baseline_file = std.mem.span(std.os.argv[i + 1]);
+            config.compare_baseline = true;
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -2821,6 +2998,14 @@ fn runSimulationBatch(config: Config) !void {
         defer if (adaptive_timeout) |*at| at.deinit(allocator);
     }
 
+    // v3.58: Jitter tracker and quality alerts
+    var jitter_tracker = JitterTracker.init(allocator);
+    defer jitter_tracker.deinit();
+    var quality_alerts = QualityAlerts{
+        .warning_threshold = config.alert_warning_threshold,
+        .critical_threshold = config.alert_critical_threshold,
+    };
+
     printErr("[i] Simulating batch mode with {d} packets\n", .{batch_size});
     printErr("[i] Packet size: {d} bytes\n", .{packet_size});
     printErr("[i] Buffer size: {d} bytes\n", .{config.buffer_size});
@@ -2845,7 +3030,10 @@ fn runSimulationBatch(config: Config) !void {
 
             while (!packet_success and recovery.shouldRetry(retry_count)) {
                 // Simulate random RTT
-                _ = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
+                const rtt_us = 10_000 + std.crypto.random.intRangeAtMost(u32, 0, 50_000);
+                if (config.measure_jitter) {
+                    try jitter_tracker.addSample(@as(i64, rtt_us));
+                }
 
                 // Simulate occasional packet loss (less likely with each retry)
                 const fail_prob = @max(1, 5 - retry_count * 2);
@@ -2884,7 +3072,10 @@ fn runSimulationBatch(config: Config) !void {
         } else {
             // Normal mode: single attempt
             // Simulate random RTT
-            _ = 10 + std.crypto.random.intRangeAtMost(u32, 0, 50);
+            const rtt_us = 10_000 + std.crypto.random.intRangeAtMost(u32, 0, 50_000);
+            if (config.measure_jitter) {
+                try jitter_tracker.addSample(@as(i64, rtt_us));
+            }
 
             // Simulate occasional packet loss
             const should_fail = std.crypto.random.intRangeAtMost(u8, 0, 100) < 5;
@@ -2988,6 +3179,52 @@ fn runSimulationBatch(config: Config) !void {
             results.bytes_per_second,
         });
         printErr("\n{s}\n", .{json});
+    }
+
+    // v3.58: Baseline save/compare support
+    if (config.measure_jitter and jitter_tracker.count >= 5) {
+        printErr("\n", .{});
+        jitter_tracker.reportRTTSummary(config.spike_threshold);
+
+        const quality = jitter_tracker.getQualityScore(config.spike_threshold);
+        quality_alerts.check(quality.score);
+
+        if (config.baseline_file) |baseline_path| {
+            if (config.compare_baseline) {
+                const baseline = Baseline.loadFromFile(allocator, baseline_path) catch |err| {
+                    printErr("[!] Failed to load baseline: {any}\n", .{err});
+                    return;
+                };
+                const stats = jitter_tracker.getStats();
+                baseline.compare(stats.mean, stats.jitter, quality.score);
+            } else {
+                const stats = jitter_tracker.getStats();
+                const percentiles = jitter_tracker.getPercentiles();
+                const spikes = jitter_tracker.detectSpikes(config.spike_threshold);
+
+                var new_baseline = Baseline{
+                    .timestamp = std.time.timestamp(),
+                    .version = "v3.58",
+                    .mean_rtt_us = stats.mean,
+                    .jitter_us = stats.jitter,
+                    .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
+                    .max_rtt_us = @as(f64, @floatFromInt(stats.max)),
+                    .p50_us = @as(f64, @floatFromInt(percentiles.p50)),
+                    .p90_us = @as(f64, @floatFromInt(percentiles.p90)),
+                    .p95_us = @as(f64, @floatFromInt(percentiles.p95)),
+                    .p99_us = @as(f64, @floatFromInt(percentiles.p99)),
+                    .quality_score = quality.score,
+                    .spike_count = spikes.count,
+                    .sample_count = jitter_tracker.count,
+                };
+
+                new_baseline.saveToFile(baseline_path) catch |err| {
+                    printErr("[!] Failed to save baseline: {any}\n", .{err});
+                    return;
+                };
+                printErr("{s}[✓] Baseline saved to: {s}{s}\n", .{ ANSI.GREEN, baseline_path, ANSI.RESET });
+            }
+        }
     }
 }
 
@@ -3106,6 +3343,47 @@ fn runSimulation(config: Config) !void {
         if (jitter_tracker.count >= 5) {
             const quality = jitter_tracker.getQualityScore(config.spike_threshold);
             quality_alerts.check(quality.score);
+
+            // v3.58: Baseline comparison
+            if (config.baseline_file) |baseline_path| {
+                if (config.compare_baseline) {
+                    // Load and compare against baseline
+                    const baseline = Baseline.loadFromFile(allocator, baseline_path) catch |err| {
+                        printErr("[!] Failed to load baseline: {any}\n", .{err});
+                        return;
+                    };
+
+                    const stats = jitter_tracker.getStats();
+                    baseline.compare(stats.mean, stats.jitter, quality.score);
+                } else {
+                    // Save current results as baseline
+                    const stats = jitter_tracker.getStats();
+                    const percentiles = jitter_tracker.getPercentiles();
+                    const spikes = jitter_tracker.detectSpikes(config.spike_threshold);
+
+                    var new_baseline = Baseline{
+                        .timestamp = std.time.timestamp(),
+                        .version = "v3.58",
+                        .mean_rtt_us = stats.mean,
+                        .jitter_us = stats.jitter,
+                        .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
+                        .max_rtt_us = @as(f64, @floatFromInt(stats.max)),
+                        .p50_us = @as(f64, @floatFromInt(percentiles.p50)),
+                        .p90_us = @as(f64, @floatFromInt(percentiles.p90)),
+                        .p95_us = @as(f64, @floatFromInt(percentiles.p95)),
+                        .p99_us = @as(f64, @floatFromInt(percentiles.p99)),
+                        .quality_score = quality.score,
+                        .spike_count = spikes.count,
+                        .sample_count = jitter_tracker.count,
+                    };
+
+                    new_baseline.saveToFile(baseline_path) catch |err| {
+                        printErr("[!] Failed to save baseline: {any}\n", .{err});
+                        return;
+                    };
+                    printErr("{s}[✓] Baseline saved to: {s}{s}\n", .{ ANSI.GREEN, baseline_path, ANSI.RESET });
+                }
+            }
         }
     }
 }
