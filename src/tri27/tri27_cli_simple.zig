@@ -37,7 +37,7 @@ pub fn runSimpleTri27(allocator: Allocator, args: []const []const u8) !void {
 fn runAssemble(allocator: Allocator, args: []const []const u8) !void {
     const input_file = args[0];
     const asm_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
-        std.debug.print("Error reading {s}: {s}\n", .{input_file, e});
+        std.debug.print("Error reading {s}: {s}\n", .{ input_file, e });
         return;
     };
     defer allocator.free(asm_content);
@@ -51,7 +51,7 @@ fn runAssemble(allocator: Allocator, args: []const []const u8) !void {
 fn runVm(allocator: Allocator, args: []const []const u8) !void {
     const tbin_file = args[0];
     const tbin_content = try std.fs.cwd().readFileAlloc(allocator, tbin_file, 1024 * 1024) catch |e| {
-        std.debug.print("Error reading {s}: {s}\n", .{tbin_file, e});
+        std.debug.print("Error reading {s}: {s}\n", .{ tbin_file, e });
         return;
     };
     defer allocator.free(tbin_content);
@@ -80,7 +80,7 @@ fn runDisasm(allocator: Allocator, args: []const []const u8) !void {
 
     const input_file = args[0];
     const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
-        std.debug.print("Error reading {s}: {}\n", .{input_file, e});
+        std.debug.print("Error reading {s}: {}\n", .{ input_file, e });
         return;
     };
     defer allocator.free(tbin_content);
@@ -111,7 +111,7 @@ fn runDisasm(allocator: Allocator, args: []const []const u8) !void {
         const word = std.mem.readInt(u32, word_bytes, .little);
 
         const inst = Decoder.decode(word) catch |err| {
-            std.debug.print("0x{X:0>4}: 0x{X:0>8} ; DECODE ERROR: {}\n", .{pc, word, err});
+            std.debug.print("0x{X:0>4}: 0x{X:0>8} ; DECODE ERROR: {}\n", .{ pc, word, err });
             pc += 1;
             continue;
         };
@@ -120,7 +120,7 @@ fn runDisasm(allocator: Allocator, args: []const []const u8) !void {
         var buf: [128]u8 = undefined;
         const formatted = Decoder.formatInstructionShort(inst, &buf);
 
-        std.debug.print("0x{X:0>4}: 0x{X:0>8}    {s}\n", .{pc, word, formatted});
+        std.debug.print("0x{X:0>4}: 0x{X:0>8}    {s}\n", .{ pc, word, formatted });
         pc += 1;
 
         // Stop at HALT
