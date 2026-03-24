@@ -154,7 +154,7 @@ fn cmdCreate(allocator: std.mem.Allocator, env_map: std.StringHashMap([]const u8
     const base = try std.fmt.allocPrint(allocator, "w{s}", .{wave});
 
     var created: usize = 0;
-    for (5..=8) |i| {
+    for (5..9) |i| {
         const svc_name = try std.fmt.allocPrint(allocator, "{s}-{d}", .{ base, i });
         defer allocator.free(svc_name);
 
@@ -290,11 +290,9 @@ fn execCurl(allocator: std.mem.Allocator, token: []const u8, body: []const u8) !
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl", "-s", "-X", "POST",
-            "-H",   auth_header,
-            "-H",   "Content-Type: application/json",
-            "-d",   body,
-            "https://railway.com/graphql/v2",
+            "curl", "-s",        "-X",                             "POST",
+            "-H",   auth_header, "-H",                             "Content-Type: application/json",
+            "-d",   body,        "https://railway.com/graphql/v2",
         },
     });
     defer {
