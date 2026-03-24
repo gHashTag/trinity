@@ -1911,6 +1911,12 @@ const JitterTracker = struct {
             printInfo("\n  🎯 Auto-tuning Recommendations:\n", .{});
             self.showAutoTuningRecommendations();
         }
+
+        // v3.85: Quick Health Check - one-line status summary
+        if (self.count >= 5) {
+            printInfo("\n  🏥 Quick Health Check:\n", .{});
+            self.showQuickHealthCheck();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3062,6 +3068,60 @@ const JitterTracker = struct {
             p99_p50_ratio,
         });
         printDim("       Quality Score: {d:.0}/100 ({s})\n", .{quality.score, quality.grade});
+    }
+
+    // v3.85: Quick Health Check - one-line status summary
+    pub fn showQuickHealthCheck(self: *const JitterTracker) void {
+        if (self.count < 5) {
+            printDim("    Need at least 5 samples\n", .{});
+            return;
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const quality = self.getQualityScore(3.0);
+
+        // Calculate health indicators
+        const cv = if (stats.mean > 0) stats.jitter / stats.mean else 0;
+        _ = if (p.p50 > 0) @as(f64, @floatFromInt(p.p99)) / @as(f64, @floatFromInt(p.p50)) else 1; // Reserved for future use
+        const anomalies = self.detectAnomalies(1.5, 2.0);
+
+        // Health status
+        const health_status = blk: {
+            if (quality.score >= 90) break :blk "✅ EXCELLENT";
+            if (quality.score >= 75) break :blk "✅ GOOD";
+            if (quality.score >= 60) break :blk "⚠️  FAIR";
+            if (quality.score >= 40) break :blk "❌ POOR";
+            break :blk "🔴 CRITICAL";
+        };
+
+        // Performance classification
+        const perf_class = blk: {
+            if (cv < 0.15) break :blk "Stable";
+            if (cv < 0.3) break :blk "Low Variability";
+            if (cv < 0.5) break :blk "Moderate Variability";
+            break :blk "High Variability";
+        };
+
+        // Anomaly status
+        const anomaly_status = blk: {
+            if (anomalies.count == 0) break :blk "No anomalies";
+            if (anomalies.count < 2) break :blk "Few anomalies";
+            if (anomalies.count < 5) break :blk "Some anomalies";
+            break :blk "Many anomalies";
+        };
+
+        const mean_ms = stats.mean / 1000.0;
+        printInfo("[i] Quick Health Check:\n", .{});
+        printDim("    Status: {s}\n", .{health_status});
+        printDim("    Performance: {s}\n", .{perf_class});
+        printDim("    Anomalies: {s}\n", .{anomaly_status});
+        printDim("    Quality: {d:.0}/100 ({s})\n", .{quality.score, quality.grade});
+        printDim("    Mean RTT: {d:.2}ms, Range: {d:.1}ms\n", .{
+            mean_ms,
+            @as(f64, @floatFromInt(stats.max - stats.min)) / 1000.0,
+        });
+        printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
     // v3.69: Plot histogram of RTT distribution
