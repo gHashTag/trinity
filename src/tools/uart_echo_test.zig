@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.11 — Advanced Pattern Recognition (network pattern detection)
+//! v4.12 — Adaptive Threshold Auto-tuning (dynamic threshold adjustment)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2055,6 +2055,12 @@ const JitterTracker = struct {
             printInfo("\n  🔮 Advanced Patterns:\n", .{});
             self.showNetworkPatterns();
         }
+
+        // v4.12: Adaptive Threshold Auto-tuning - dynamically adjust thresholds
+        if (self.count >= 20) {
+            printInfo("\n  ⚙️  Adaptive Thresholds:\n", .{});
+            self.showAdaptiveThresholds();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3999,6 +4005,85 @@ const JitterTracker = struct {
             }
         } else {
             printDim("    Insufficient data for pattern detection\n", .{});
+        }
+    }
+
+    // v4.12: Adaptive Threshold Auto-tuning - dynamically adjust thresholds
+    pub const AdaptiveThresholds = struct {
+        recommended_spike_multiplier: f64,
+        recommended_high_latency_ms: f64,
+        recommended_high_jitter_ms: f64,
+        adaptation_reason: []const u8,
+    };
+
+    pub fn calculateAdaptiveThresholds(self: *const JitterTracker) ?AdaptiveThresholds {
+        if (self.count < 20) return null;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        const cv = if (mean_ms > 0) (jitter_ms / mean_ms) * 100.0 else 0;
+
+        // Base spike multiplier (default 2.0) - use const for each branch
+        const spike_mult: f64 = if (cv < 10) 1.5 else if (cv < 20) 2.0 else if (cv < 30) 2.5 else 3.0;
+
+        // High latency threshold (default 100ms)
+        var high_latency: f64 = 100.0;
+
+        // Adapt based on observed latency
+        if (mean_ms < 10) {
+            // Very fast connection - lower threshold
+            high_latency = 20.0;
+        } else if (mean_ms < 30) {
+            high_latency = 50.0;
+        } else if (mean_ms < 50) {
+            high_latency = 100.0;
+        } else if (mean_ms < 100) {
+            high_latency = 150.0;
+        } else {
+            // High latency connection - threshold should be higher
+            high_latency = mean_ms * 1.5;
+        }
+
+        // High jitter threshold (default 10ms)
+        var high_jitter: f64 = 10.0;
+
+        // Adapt based on observed jitter
+        if (jitter_ms < 2) {
+            // Very stable - low threshold
+            high_jitter = 3.0;
+        } else if (jitter_ms < 5) {
+            high_jitter = 5.0;
+        } else if (jitter_ms < 10) {
+            high_jitter = 10.0;
+        } else if (jitter_ms < 20) {
+            high_jitter = 20.0;
+        } else {
+            // High jitter - threshold should be higher
+            high_jitter = jitter_ms * 1.3;
+        }
+
+        // Use simple reason strings (runtime selection)
+        const reason_str: []const u8 = if (cv < 10) "CV: low" else if (cv < 20) "CV: medium" else if (cv < 30) "CV: high" else "CV: very high";
+
+        return .{
+            .recommended_spike_multiplier = spike_mult,
+            .recommended_high_latency_ms = high_latency,
+            .recommended_high_jitter_ms = high_jitter,
+            .adaptation_reason = reason_str,
+        };
+    }
+
+    pub fn showAdaptiveThresholds(self: *const JitterTracker) void {
+        const thresholds = self.calculateAdaptiveThresholds();
+
+        if (thresholds) |t| {
+            printDim("    Spike Multiplier: {d:.1}x\n", .{t.recommended_spike_multiplier});
+            printDim("    High Latency Threshold: {d:.1}ms\n", .{t.recommended_high_latency_ms});
+            printDim("    High Jitter Threshold: {d:.1}ms\n", .{t.recommended_high_jitter_ms});
+            printDim("    Reason: {s}\n", .{t.adaptation_reason});
+        } else {
+            printDim("    Insufficient data for adaptive thresholds\n", .{});
         }
     }
 
@@ -7014,7 +7099,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.11           ║
+        \\║      Trinity UART Echo Test v4.12           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7484,7 +7569,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.11)         ║
+            \\║         SIMULATION MODE (v4.12)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8079,7 +8164,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.11)      ║
+        \\║       SIMULATION BATCH MODE (v4.12)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8213,7 +8298,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.11)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.12)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8230,7 +8315,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.11)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.12)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9169,7 +9254,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.11)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.12)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
