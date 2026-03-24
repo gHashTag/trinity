@@ -11,6 +11,29 @@ const TokenType = Lexer.TokenType;
 const Token = Lexer.Token;
 const encoder = @import("encoder_simple.zig");
 
+// Coptic glyph name parsing (27 registers: alpha0-shmima26)
+const COPTIC_NAMES = [27][]const u8{
+    "alpha0", "beta1", "gamma2", "delta3", "epsilon4", "zeta5", "theta6", "eta7", "theta8",
+    "iota9", "kappa10", "lambda11", "mu12", "nu13", "xi14", "omicron15", "pi16", "rho17",
+    "sigma18", "tau19", "upsilon20", "phi21", "chi22", "psi23", "omega24", "omega25", "shmima26",
+};
+
+fn copticNameToNum(name: []const u8) ?u5 {
+    // Case-insensitive comparison without allocator
+    for (COPTIC_NAMES, 0..) |coptic_name, i| {
+        if (name.len != coptic_name.len) continue;
+        var match = true;
+        for (coptic_name, 0..) |c, j| {
+            if (std.ascii.toLower(name[j]) != c) {
+                match = false;
+                break;
+            }
+        }
+        if (match) return @as(u5, @intCast(i));
+    }
+    return null;
+}
+
 /// Assembler error set
 pub const AsmError = error{
     InvalidSyntax,
@@ -308,9 +331,16 @@ pub const Assembler = struct {
         return AsmError.UnknownOpcode;
     }
 
-    /// Parse register string (r0-r31)
+    /// Parse register string (r0-r31, t0-t31, or Coptic names like alpha0, beta1, etc.)
     fn parseRegister(reg_str: []const u8) !u5 {
         const trimmed = std.mem.trim(u8, reg_str, &std.ascii.whitespace);
+
+        // Try Coptic glyph names first (alpha0, beta1, etc.)
+        if (copticNameToNum(trimmed)) |reg_num| {
+            return reg_num;
+        }
+
+        // Standard register format: r0-r31, R0-R31, t0-t31, T0-T31
         const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
             trimmed[1..]
         else
@@ -719,4 +749,28 @@ test "assembler handles control flow with labels" {
 
     // Should have 4 instructions (4 bytes each) = 16 bytes
     try std.testing.expectEqual(@as(usize, 16), result.len);
+}
+
+
+test "assembler handles Coptic register names" {
+    const allocator = std.testing.allocator;
+    const asm_source = "add alpha0, beta1, gamma2";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+    try std.testing.expectEqual(@as(usize, 12), result.len); // 3 instructions * 4 bytes
+    try std.testing.expectEqual(@as(u8, 0x10), result[0]); // ADD opcode
+    try std.testing.expectEqual(@as(u8, 0), result[4]); // alpha0 = 0
+    try std.testing.expectEqual(@as(u8, 1), result[8]); // beta1 = 1
+    try std.testing.expectEqual(@as(u8, 2), result[12]); // gamma2 = 2
+}
+
+test "assembler handles mixed register formats" {
+    const allocator = std.testing.allocator;
+    const asm_source = "add r0, iota9, theta8";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+    try std.testing.expectEqual(@as(usize, 12), result.len); // 3 instructions
+    try std.testing.expectEqual(@as(u8, 0), result[4]); // r0 = 0
+    try std.testing.expectEqual(@as(u8, 9), result[8]); // iota9 = 9
+    try std.testing.expectEqual(@as(u8, 8), result[12]); // theta8 = 8
 }
