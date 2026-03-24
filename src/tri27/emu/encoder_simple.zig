@@ -212,6 +212,88 @@ pub fn encode_halt() u32 {
     return @intFromEnum(Opcode.HALT);
 }
 
+/// Encode AND (Bitwise AND)
+/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+pub fn encode_and(dst: u5, src1: u5, src2: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.AND);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 11;
+    word |= @as(u32, src2) << 14;
+    return word;
+}
+
+/// Encode OR (Bitwise OR)
+/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+pub fn encode_or(dst: u5, src1: u5, src2: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.OR);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 11;
+    word |= @as(u32, src2) << 14;
+    return word;
+}
+
+/// Encode XOR (Bitwise XOR)
+/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+pub fn encode_xor(dst: u5, src1: u5, src2: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.XOR);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 11;
+    word |= @as(u32, src2) << 14;
+    return word;
+}
+
+/// Encode NOT (Bitwise NOT)
+/// Format: opcode | (dst << 8)
+pub fn encode_not(dst: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.NOT);
+    word |= @as(u32, dst) << 8;
+    return word;
+}
+
+/// Encode SHL (Shift Left)
+/// Format: opcode | (dst << 8) | (shift_amt << 11)
+pub fn encode_shl(dst: u5, shift_amt: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.SHL);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, shift_amt) << 11;
+    return word;
+}
+
+/// Encode SHR (Shift Right)
+/// Format: opcode | (dst << 8) | (shift_amt << 11)
+pub fn encode_shr(dst: u5, shift_amt: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.SHR);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, shift_amt) << 11;
+    return word;
+}
+
+/// Encode DIV (Divide)
+/// Format: opcode | (dst << 8) | (src1 << 11) | (src2 << 14)
+pub fn encode_div(dst: u5, src1: u5, src2: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.DIV);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 11;
+    word |= @as(u32, src2) << 14;
+    return word;
+}
+
+/// Encode INC (Increment)
+/// Format: opcode | (dst << 8)
+pub fn encode_inc(dst: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.INC);
+    word |= @as(u32, dst) << 8;
+    return word;
+}
+
+/// Encode DEC (Decrement)
+/// Format: opcode | (dst << 8)
+pub fn encode_dec(dst: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.DEC);
+    word |= @as(u32, dst) << 8;
+    return word;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
