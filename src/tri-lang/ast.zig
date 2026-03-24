@@ -8,6 +8,7 @@
 // Issue #408: ADT Enum + Exhaustive Match + Pipe
 // Issue #411: Linear Types + Ownership Modes
 // Issue #412: Effects + Handlers
+// Issue #413: Array Combinators
 //
 // NOTE:
 // - Чётко разделены уровни: Program / Declaration / Statement / Expr / Pattern / Type
@@ -269,6 +270,14 @@ pub const Expr = union(enum) {
     Effect: EffectExpr,
     Try: TryExpr,
 
+    // Array combinators (Futhark-style)
+    Map: MapExpr,
+    Reduce: ReduceExpr,
+    Scan: ScanExpr,
+    Filter: FilterExpr,
+    FlatMap: FlatMapExpr,
+    Zip: ZipExpr,
+
     // Typed hole (for autocode generation)
     Hole: HoleExpr,
 };
@@ -304,6 +313,80 @@ pub const TryExpr = struct {
     computation: Expr,
     /// Handler clauses (operation + body)
     handlers: []const HandlerClause,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Array Combinator Expressions                                            ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Map expression: map(array, func) -> [func(x) for x in array]
+pub const MapExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Function to apply (lambda or identifier)
+    func: Expr,
+    loc: SourceLocation,
+};
+
+/// Reduce expression: reduce(array, init, op) -> folded value
+pub const ReduceExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Initial value
+    init: Expr,
+    /// Binary operation ( associative)
+    operation: BinaryOperator,
+    loc: SourceLocation,
+};
+
+/// Scan expression: scan(array, init, op) -> prefix scan
+pub const ScanExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Initial value
+    init: Expr,
+    /// Binary operation
+    operation: BinaryOperator,
+    /// Scan type: inclusive, exclusive, or default
+    scan_type: ScanType,
+    loc: SourceLocation,
+};
+
+/// Scan type variant
+pub const ScanType = enum {
+    /// Standard prefix scan (includes current element)
+    Prefix,
+    /// Inclusive scan (includes current element in result)
+    Inclusive,
+    /// Exclusive scan (excludes current element from result)
+    Exclusive,
+};
+
+/// Filter expression: filter(array, pred) -> [x for x in array if pred(x)]
+pub const FilterExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Predicate function (returns bool)
+    predicate: Expr,
+    loc: SourceLocation,
+};
+
+/// FlatMap expression: flatMap(array, func) -> concat([func(x) for x in array])
+pub const FlatMapExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Function that returns array
+    func: Expr,
+    loc: SourceLocation,
+};
+
+/// Zip expression: zip(arr1, arr2) -> [(arr1[i], arr2[i])]
+pub const ZipExpr = struct {
+    /// First array
+    array1: Expr,
+    /// Second array
+    array2: Expr,
     loc: SourceLocation,
 };
 
