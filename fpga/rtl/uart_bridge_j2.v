@@ -1,6 +1,15 @@
 // ============================================================================
-// UART Bridge for J2 Header (FT232RL → K20/L20)
+// UART Bridge for J2 Header (FT232RL → D26/E26)
 // QMTECH XC7A100T-1FGG676C
+// ============================================================================
+// Source: Schematic U2 (HDR_32x2), Bank 15
+//
+// FT232RL Wiring:
+//   🟢 RXD (green)  → J2 pin 5  → FPGA D26 (uart_tx from FPGA)
+//   ⬜ TXD (white)  → J2 pin 6  → FPGA E26 (uart_rx to FPGA)
+//   ⬛ GND (black)  → J2 pin 1  → GND
+//
+// ⚠️ LEGACY WARNING: K20/L20 were INCORRECT pins (pre-Iteration 7)
 // ============================================================================
 // Protocol:
 //   - PING:  0x03 → 0x83 (PONG)
@@ -10,8 +19,8 @@
 
 module uart_bridge_top (
     input  wire clk,       // M22, 50 MHz oscillator
-    input  wire uart_rx,   // L20 (from FT232RL TXD)
-    output wire uart_tx,   // K20 (to FT232RL RXD)
+    input  wire uart_rx,   // E26 (from FT232RL TXD → J2 pin 6)
+    output wire uart_tx,   // D26 (to FT232RL RXD ← J2 pin 5)
     output wire led        // T23, active-low LED
 );
 

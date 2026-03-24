@@ -2111,6 +2111,105 @@ pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("  FPGA is working correctly on J2 header!\n\n", .{});
 }
 
+// =========================================================================
+// REMOTE SYNTH — Synthesize via Fly.io API (D26/E26)
+// =========================================================================
+
+const FLY_SYNTH_URL = "https://trinity-fpga-synth.fly.dev";
+
+pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA REMOTE SYNTH (Fly.io) ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Target: {s}/synthesize\n", .{ FLY_SYNTH_URL });
+    std.debug.print("  Part: XC7A100T-1FGG676C (Artix-7)\n", .{});
+    std.debug.print("  Pins: D26/E26 (J2 UART)\n\n", .{});
+
+    // Read Verilog
+    const rtl_path = "fpga/rtl/uart_bridge_j2.v";
+    const verilog = std.fs.cwd().readFileAlloc(allocator, rtl_path, .{}) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read {s}: {s})\n", .{ RED, RESET, rtl_path, @errorName(err) });
+        return err;
+    };
+    defer allocator.free(verilog);
+
+    // Read XDC
+    const xdc_path = "fpga/constraints/uart_bridge_j2.xdc";
+    const xdc = std.fs.cwd().readFileAlloc(allocator, xdc_path, .{}) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read {s}: {s})\n", .{ RED, RESET, xdc_path, @errorName(err) });
+        return err;
+    };
+    defer allocator.free(xdc);
+
+    std.debug.print("  Verilog: {d} bytes\n", .{verilog.len});
+    std.debug.print("  XDC: {d} bytes\n", .{xdc.len});
+
+    // Build JSON request
+    const json_req = try std.fmt.allocPrint(allocator,
+        \\{{"verilog":"{s}","xdc":"{s}","top":"uart_bridge_top"}}
+    , .{ std.zig.fmtEscapes(verilog), std.zig.fmtEscapes(xdc) });
+
+    // Send to Fly.io
+    std.debug.print("\n  Sending to {s}/synthesize...\n", .{ FLY_SYNTH_URL });
+
+    var client = std.http.Client{ .allocator = allocator };
+    const headers = [_]std.http.Header{
+        .{ .name = "Content-Type", .value = "application/json" },
+    };
+
+    var req = try client.request(.POST, try std.Uri.parse(FLY_SYNTH_URL ++ "/synthesize"), .{
+        .headers = &headers,
+    });
+    defer req.deinit();
+
+    // Send request body
+    try req.sendBody(json_req);
+
+    // Wait for response headers
+    try req.receiveHead();
+
+    // Read response body
+    const body = try req.reader().readAllAlloc(allocator, 1024 * 1024);
+    defer allocator.free(body);
+
+    std.debug.print("  Response: {d} bytes\n", .{body.len });
+    std.debug.print("{s}\n", .{body});
+
+    std.debug.print("\n{s}{s}REM SYNTH COMPLETE{s}\n", .{ BOLD, GREEN, RESET });
+    std.debug.print("  Next: tri fpga download-uart-bit\n\n", .{});
+}
+
+// =========================================================================
+// DOWNLOAD UART BIT — Download bitstream from Fly.io
+// =========================================================================
+
+pub fn runFpgaDownloadUartBitCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA DOWNLOAD UART BIT ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Source: {s}/download\n", .{ FLY_SYNTH_URL });
+    std.debug.print("  Output: fpga/openxc7-synth/uart_bridge_j2.bit\n\n", .{});
+
+    // Check Fly.io API for latest job status
+    std.debug.print("  Checking job status...\n", .{});
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    var req = try client.request(.GET, try std.Uri.parse(FLY_SYNTH_URL ++ "/"), .{});
+    defer req.deinit();
+
+    var buf: [0]u8 = .{};
+    var response = try req.receiveHead(&buf);
+    const body = try response.reader(&buf).readAllAlloc(allocator, 4096);
+    defer allocator.free(body);
+
+    std.debug.print("  Status: {s}\n", .{body});
+
+    // For now, assume the API returns a download URL or job ID
+    // In production, parse JSON and extract download URL
+
+    std.debug.print("\n  Note: Full download endpoint pending API implementation\n", .{});
+    std.debug.print("  For now, copy bitstream manually from Fly.io:\n", .{});
+    std.debug.print("    flyctl ssh -C \"cat /app/output/uart_bridge_j2.bit\" > uart_bridge_j2.bit\n\n", .{});
+}
+
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
 

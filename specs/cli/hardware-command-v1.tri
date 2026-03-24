@@ -54,26 +54,56 @@ types:
 
 behaviors:
   - name: deploySingleNode
+    spec: deploy_single_node
+    require: "Hardware available and port 9001 not in use"
+    ensure: "Node starts successfully on port 9001"
+    example:
+      input: "platform=macos port=9001"
+      expect: "success=true node_started=true port=9001"
     given: Hardware available
     when: User runs `tri hardware deploy`
     then: Detect hardware, start single node on port 9001
 
   - name: deployMultiCluster
+    spec: deploy_multi_cluster
+    require: "Hardware available and ports 9001-N not in use"
+    ensure: "N nodes start on sequential ports"
+    example:
+      input: "count=5"
+      expect: "nodes_started=5 port_range=9001-9005 all_healthy=true"
     given: Hardware available
     when: User runs `tri hardware deploy multi [count]`
     then: Start N nodes on ports 9001-N
 
   - name: showClusterStatus
+    spec: cluster_status_display
+    require: "PID files exist or cluster is running"
+    ensure: "All nodes displayed with PID, port, status"
+    example:
+      input: "running_nodes=3"
+      expect: "shows_all_nodes=true includes_pids=true includes_status=true"
     given: Running or stopped cluster
     when: User runs `tri hardware status`
     then: Show all nodes with PID, port, status
 
   - name: stopAllNodes
+    spec: stop_all_nodes
+    require: "At least one node is running"
+    ensure: "All nodes stopped and PID files cleaned"
+    example:
+      input: "running_nodes=3"
+      expect: "all_stopped=true pid_files_cleaned=true"
     given: Running cluster
     when: User runs `tri hardware stop-all`
     then: Stop all running nodes, clean PID files
 
   - name: showHardwareInfo
+    spec: hardware_info_display
+    require: "System is accessible"
+    ensure: "Platform, arch, CPU, memory detected and displayed"
+    example:
+      input: "system=macos"
+      expect: "platform=macos arch=arm64 cpu_cores>0 memory_mb>0"
     given: Any system
     when: User runs `tri hardware info`
     then: Display platform, arch, CPU, memory detection

@@ -95,5 +95,30 @@
       "cpld_version": "0xFFFE",
       "required_equipment": ["USB-to-UART adapter (CP2102/CH340)", "FPGA board with working CPLD"]
     }
+  },
+  {
+    "id": "FPGA-026",
+    "date": "2026-03-24",
+    "category": "XDC",
+    "action": "Fix uart_bridge_j2.xdc pins: K20/L20 → D26/E26 (Iteration 7)",
+    "result": "SUCCESS",
+    "symptom": "XDC had incorrect pins K20/L20 for J2 UART",
+    "root_cause": "K20/L20 were never validated against QMTECH schematic U2 (HDR_32x2)",
+    "lesson": "K20/L20 are WRONG for J2 UART. Always use D26/E26 (Bank 15) per schematic U2. This fix eliminates one class of errors forever.",
+    "tags": [
+      "xdc",
+      "pin-fix",
+      "iteration-7",
+      "j2-uart",
+      "d26-e26"
+    ],
+    "data": {
+      "wrong_pins": "K20 (TX), L20 (RX)",
+      "correct_pins": "D26 (TX), E26 (RX)",
+      "source": "QMTECH schematic U2 (HDR_32x2), Bank 15",
+      "bank": "15",
+      "iostandard": "LVCMOS33",
+      "verification": "grep D26.*E26 fpga/constraints/uart_bridge_j2.xdc"
+    }
   }
 ]

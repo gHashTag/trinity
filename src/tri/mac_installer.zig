@@ -129,8 +129,8 @@ fn displayCluster(cluster: *const MacCluster) void {
         const role_emoji = node.role.emoji();
         const status_emoji = if (node.online) "🟢" else "🔴";
 
-        print("  {s}{s} {s} {s}mac-{d:2} {s}{s}\n", .{
-            role_emoji, status_emoji, BOLD, node.hostname, RESET, node.id, DIM, RESET,
+        print("  {s}{s} mac-{d:2} {s}{s}\n", .{
+            role_emoji, status_emoji, BOLD, node.id, DIM, RESET,
         });
 
         if (node.workers_count > 0) {
@@ -194,8 +194,8 @@ fn doInstall(allocator: Allocator, device_id: usize, role: NodeRole, workers_cou
     const actual_workers = workers_count orelse role.defaultWorkers();
 
     print("  {s}Device ID:{s} {d}\n", .{ CYAN, RESET, device_id });
-    print("  {s}Role:{s} {s} ({d} workers){s}\n", .{ CYAN, RESET, role.toString(), role.defaultWorkers() });
-    print("  {s}Workers:{s} {d}{s}\n", .{ CYAN, RESET, actual_workers });
+    print("  {s}Role:{s} {s} ({d} workers){s}\n", .{ CYAN, RESET, role.toString(), role.defaultWorkers(), actual_workers });
+    print("  {s}Workers:{s} {d}\n", .{ CYAN, RESET, actual_workers });
 
     // Check if device already exists
     if (device_id < cluster.nodes.items.len) {
@@ -270,8 +270,8 @@ fn runPlan(allocator: Allocator, args: []const []const u8) !void {
     try mac_cluster_module.assignWorkers(&cluster, total_workers);
 
     print("\n  {s}✅{s} Workers assigned\n", .{ GREEN, RESET });
-    print("  {s}Total:{s} {d} {s}| Capacity: {d}{s}\n", .{
-        CYAN, RESET, cluster.total_workers, DIM, RESET, mac_cluster_module.totalCapacity(&cluster), RESET,
+    print("  {s}Total:{s} {d} | Capacity: {d}\n", .{
+        CYAN, RESET, cluster.total_workers, mac_cluster_module.totalCapacity(&cluster),
     });
 
     // Save cluster state

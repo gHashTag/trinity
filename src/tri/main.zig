@@ -4,6 +4,9 @@
 const std = @import("std");
 const trinity_workspace = @import("trinity_workspace");
 
+// Build options for conditional compilation (tiered build)
+const build_options = @import("build_options");
+
 // Decomposed modules
 const utils = @import("tri_utils.zig");
 const tri_config = @import("tri_config.zig");
@@ -15,12 +18,16 @@ const tri_context = @import("tri_context.zig");
 const orchestrator = @import("hypothalamus.zig");
 const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
-const sacred_fpga = @import("tri_sacred_fpga.zig");
+// const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
+const dev_workflow = @import("dev_commands.zig");
+
+// Conditional worker modules (graceful degradation)
+// If enable_cloud=false, the L2 'tri' build will still try to import tri_cloud
+// Use L1 'queens' build for supervisor-only functionality when workers fail
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
-const dev_workflow = @import("dev_commands.zig");
 // P3.0: State machine for rigid process framework
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
 const swe_arena = @import("swe_arena.zig");
@@ -170,11 +177,12 @@ pub fn main() !void {
         }
     }
 
-    // Queen Trinity namespace: route `tri queen <subcommand>` to queen_trinity
+    // Queen Trinity namespace: route `tri queen <subcommand>` to queen
     if (std.mem.eql(u8, args[arg_idx], "queen")) {
         const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
         logAgentCommand(args[arg_idx..]);
-        try queen_trinity.runQueenCommand(allocator, queen_args);
+        const queen_mod = @import("queen.zig");
+        try queen_mod.runQueenCommand(allocator, queen_args);
         return;
     }
 
@@ -298,7 +306,7 @@ pub fn main() !void {
             try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
             return;
         }
-        // Spec namespace: route `tri spec create <name>` to spec_create, bare `tri spec` → specexec demo
+        // Spec namespace: route `tri spec <subcommand>` to tri_spec_command
         if (std.mem.eql(u8, first_arg, "spec")) {
             const spec_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
             if (std.mem.eql(u8, spec_sub, "create")) {
@@ -307,9 +315,10 @@ pub fn main() !void {
                 pipeline.runSpecCreateCommand(allocator, spec_args);
                 return;
             }
-            // bare `tri spec` → specexec demo (existing behavior)
+            // Route spec subcommands (audit, apply, help) via tri_spec_command
             logAgentCommand(args[arg_idx..]);
-            demos.runSpecExecDemo();
+            const spec_command = @import("tri_spec_command.zig");
+            try spec_command.runSpecCommand(allocator, args[arg_idx + 1 ..]);
             return;
         }
         // Bench namespace: route `tri bench compare/record/history` to perf_benchmark
@@ -838,7 +847,6 @@ pub fn main() !void {
         .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
-        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
@@ -1608,7 +1616,6 @@ fn dispatchCommand(
         .reason => utils.runSWECommand(state, .Reason, cmd_args),
         // FPGA commands (forge namespace)
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
-        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         // Spec Linter (dev namespace)
         .lint => commands.runLintCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Lint error: {}\n", .{err});

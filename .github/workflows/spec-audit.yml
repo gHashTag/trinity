@@ -1,0 +1,49 @@
+# ═════════════════════════════════════════════════════════════════════════════════════════════
+# SPEC AUDIT CI — TRI-27 Idiom 11 Coverage Check
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════
+#
+# Blocks PRs if annotation coverage falls below threshold
+# Runs on every push and pull request
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+
+name: Spec Audit
+
+on:
+  push:
+    branches: [ main, feat/*, fix/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit:
+    name: Check Idiom 11 Coverage
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Zig
+        run: |
+          brew install zig
+          zig version
+
+      - name: Build tri
+        run: |
+          zig build tri
+
+      - name: Run spec audit
+        run: |
+          ./zig-out/bin/tri spec audit --fail-below 80
+
+      - name: Annotate results
+        if: failure()
+        run: |
+          echo "::error::Spec annotation coverage below 80%::Please add @spec, @require, @ensure, and @example annotations to your behaviors."
+
+      - name: Success message
+        if: success()
+        run: |
+          echo "::notice::All behaviors properly annotated::TRI-27 Idiom 11 compliance satisfied"

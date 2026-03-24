@@ -1,0 +1,129 @@
+services:
+  wave9-worker-1:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-1
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-2:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-2
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-3:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-3
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-4:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-4
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-5:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-5
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-6:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-6
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-7:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-7
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9
+  wave9-worker-8:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.hslm-train
+    container_name: wave9-worker-8
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_BATCH=66
+    volumes:
+      - ./data/wave9:/data/wave9

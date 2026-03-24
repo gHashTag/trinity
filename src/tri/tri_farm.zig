@@ -1842,10 +1842,9 @@ fn multiMacInit(allocator: Allocator) !void {
 }
 
 fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
     print("\n{s}🚀 MULTI-MAC WAVE 9 — START{s}\n", .{ BOLD, RESET });
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
-
-    const stdout = std.io.getStdOut().writer();
 
     // Start devices 1-3
     var start_count: usize = 0;
@@ -1854,7 +1853,7 @@ fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
         defer allocator.free(compose_file);
 
         // Check if compose file exists
-        std.fs.cwd().access(compose_file, .{}) catch |err| {
+        std.fs.cwd().access(compose_file, .{}) catch {
             print("  {s}⏭️{s} Device {d}: compose file not found (skipped)\n", .{ YELLOW, RESET, device_id });
             continue;
         };
@@ -1895,8 +1894,6 @@ fn multiMacStop(allocator: Allocator) !void {
     print("\n{s}⏹️  MULTI-MAC WAVE 9 — STOP{s}\n", .{ BOLD, RESET });
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
-    const stdout = std.io.getStdOut().writer();
-
     // Stop devices 1-3
     var stop_count: usize = 0;
     for (1..4) |device_id| {
@@ -1904,7 +1901,7 @@ fn multiMacStop(allocator: Allocator) !void {
         defer allocator.free(compose_file);
 
         // Check if compose file exists
-        std.fs.cwd().access(compose_file, .{}) catch |err| {
+        std.fs.cwd().access(compose_file, .{}) catch {
             print("  {s}⏭️{s} Device {d}: compose file not found (skipped)\n", .{ YELLOW, RESET, device_id });
             continue;
         };
@@ -1943,8 +1940,6 @@ fn multiMacStatus(allocator: Allocator) !void {
     print("\n{s}📊 MULTI-MAC WAVE 9 — STATUS{s}\n", .{ BOLD, RESET });
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
-    const stdout = std.io.getStdOut().writer();
-
     var total_running: usize = 0;
     var total_containers: usize = 0;
 
@@ -1953,7 +1948,7 @@ fn multiMacStatus(allocator: Allocator) !void {
         const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
         defer allocator.free(compose_file);
 
-        std.fs.cwd().access(compose_file, .{}) catch |err| {
+        std.fs.cwd().access(compose_file, .{}) catch {
             continue; // Skip if compose file doesn't exist
         };
 
@@ -1968,7 +1963,7 @@ fn multiMacStatus(allocator: Allocator) !void {
         const result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = argv,
-        }) catch |err| {
+        }) catch {
             print("  {s}⏭️{s} Device {d}: not accessible\n", .{ YELLOW, RESET, device_id });
             continue;
         };
@@ -2007,8 +2002,6 @@ fn multiMacVerify(allocator: Allocator) !void {
     print("\n{s}🔍 MULTI-MAC WAVE 9 — VERIFICATION{s}\n", .{ BOLD, RESET });
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
-    const stdout = std.io.getStdOut().writer();
-
     // Collect all seeds
     var seeds = std.ArrayList([]const u8).init(allocator);
     defer seeds.deinit();
@@ -2020,7 +2013,7 @@ fn multiMacVerify(allocator: Allocator) !void {
         const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
         defer allocator.free(compose_file);
 
-        std.fs.cwd().access(compose_file, .{}) catch |err| {
+        std.fs.cwd().access(compose_file, .{}) catch {
             continue;
         };
 
@@ -2037,7 +2030,7 @@ fn multiMacVerify(allocator: Allocator) !void {
         const result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = argv,
-        }) catch |err| {
+        }) catch {
             continue;
         };
 
@@ -2058,7 +2051,7 @@ fn multiMacVerify(allocator: Allocator) !void {
                 const seed_result = std.process.Child.run(.{
                     .allocator = allocator,
                     .argv = seed_argv,
-                }) catch |err| {
+                }) catch {
                     continue;
                 };
 
@@ -2129,7 +2122,7 @@ fn multiMacVerify(allocator: Allocator) !void {
         const result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = argv,
-        }) catch |err| {
+        }) catch {
             print("  {s}⏭️{s} Could not verify config (container not running)\n", .{ YELLOW, RESET });
             return;
         };

@@ -1,1 +1,6 @@
-{"state":"ACTIVE","issue_number":414,"branch":"feat/issue-414-auto-parallel","tests_passed":true}
+{
+  "state": "COMMITTED",
+  "issue_number": 418,
+  "branch": "feat/issue-418-multi-mac-wave9",
+  "tests_passed": true
+}

@@ -146,7 +146,9 @@ pub fn save(self: *const MacCluster, allocator: Allocator) !void {
     const file = try std.fs.cwd().createFile(".trinity/mac_cluster.json", .{});
     defer file.close();
 
-    try std.json.stringify(file.writer(), self, .{ .whitespace = .indent_2 });
+    const json_str = try std.json.Stringify.valueAlloc(allocator, self, .{ .whitespace = .indent_2 });
+    defer allocator.free(json_str);
+    try file.writeAll(json_str);
 }
 
 pub fn discover(allocator: Allocator) !MacCluster {
@@ -232,7 +234,8 @@ pub fn assignWorkers(self: *MacCluster, total: usize) !void {
         for (self.nodes.items) |*node| {
             if (node.role == .coordinator) continue;
 
-            const node_workers = per_node + if (node.id < extra) 1 else 0;
+            const has_extra = if (extra > 0) node.id < extra else false;
+            const node_workers = per_node + if (has_extra) @as(usize, 1) else 0;
             node.workers_count = @min(node_workers, node.role.maxWorkers());
             node.workers_start = worker_id;
             worker_id += node.workers_count;
@@ -256,7 +259,7 @@ pub fn displayStatus(self: *const MacCluster) void {
     print("{s}═══════════════════════════════════════════{s}\n", .{ DIM, RESET });
 
     print("{s}Nodes: {d}  {s}│{s}  Total Workers: {d}  {s}│{s}  Capacity: {d}\n\n", .{
-        CYAN, self.nodes.items.len, RESET, CYAN, self.total_workers, RESET, DIM, self.totalCapacity(), RESET,
+        CYAN, self.nodes.items.len, RESET, CYAN, self.total_workers, RESET, DIM, totalCapacity(self), RESET,
     });
 
     if (self.nodes.items.len == 0) {

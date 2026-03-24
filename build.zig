@@ -13,6 +13,24 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // TIERED BUILD OPTIONS — Graceful Degradation Architecture
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // L0: temple_exe  — Always compiles (sacred core only)
+    // L1: queens_exe    — Always compiles (supervisors, no workers)
+    // L2: tri           — Full build (all workers enabled)
+    const enable_farm = b.option(bool, "farm", "Enable tri_farm worker") orelse true;
+    const enable_cloud = b.option(bool, "cloud", "Enable tri_cloud worker") orelse true;
+    const enable_fpga = b.option(bool, "fpga", "Enable tri_fpga worker") orelse true;
+    const enable_spec = b.option(bool, "spec", "Enable spec audit tools") orelse true;
+
+    // Build options module for conditional compilation
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "enable_farm", enable_farm);
+    build_options.addOption(bool, "enable_cloud", enable_cloud);
+    build_options.addOption(bool, "enable_fpga", enable_fpga);
+    build_options.addOption(bool, "enable_spec", enable_spec);
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
@@ -288,6 +306,85 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_vm_memory_tests.step);
     test_step.dependOn(&run_vm_dispatch_tests.step);
     test_step.dependOn(&run_vm_test_utils_tests.step);
+
+    // ═════════════════════════════════════════════════════════════
+    // TTT — Trusted Tri Temple — L0 Sacred Layer
+    // ═════════════════════════════════════════════════════════════════════════
+
+    // TTT build target — sacred layer only
+    const exe_temple = b.addExecutable(.{
+        .name = "temple",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/temple/tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const temple_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/temple/tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const temple_step = b.step("temple", "Build and test Trusted Tri Temple");
+    temple_step.dependOn(&exe_temple.step);
+    temple_step.dependOn(&temple_tests.step);
+
+    // Add TTT tests to main test step
+    test_step.dependOn(&temple_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CASTE SYSTEM — L0/L1/L2/L3 Independence Enforcement (TDGS-2)
+    // ════════════════════════════════════════════════════════════════════════════════════════════
+
+    // L0: TTT (Trusted Tri Temple) — Sacred layer, always compiles
+    var l0_step = b.step("l0", "Build L0 TTT (sacred core only)");
+    l0_step.dependOn(&exe_temple.step);
+    l0_step.dependOn(&temple_tests.step);
+
+    // L1: Queens (Supervisors) — Queen CLI + Doctor CLI, no L2 Workers
+    const exe_queen_lotus = b.addExecutable(.{
+        .name = "queen-lotus",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/queen/lotus_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_queen_lotus);
+
+    const exe_doctor = b.addExecutable(.{
+        .name = "doctor",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/doctor/doctor_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_doctor);
+
+    // Unified L1 entry point (all queens in one binary)
+    const exe_queens = b.addExecutable(.{
+        .name = "queens",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_queens.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_queens);
+
+    var queens_step = b.step("queens", "Build L1 Queens (Queen + Doctor) — independent of L2 Workers");
+    queens_step.dependOn(&exe_queen_lotus.step);
+    queens_step.dependOn(&exe_doctor.step);
+    queens_step.dependOn(&exe_queens.step);
+
+    const l1_step = b.step("l1", "Build L1 Queens (supervisors)");
+    l1_step.dependOn(l0_step);
+    l1_step.dependOn(queens_step);
 
     // E2E + Benchmarks + Verdict tests (Phase 4)
     const e2e_tests = b.addTest(.{
@@ -2666,6 +2763,10 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
+
+    // Build options for conditional compilation (tiered build)
+    tri.root_module.addOptions("build_options", build_options);
+
     b.installArtifact(tri);
 
     const run_tri = b.addRunArtifact(tri);
@@ -2675,7 +2776,53 @@ pub fn build(b: *std.Build) void {
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
 
-    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    // TIERED BUILD TARGETS — Graceful Degradation Architecture
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    // L0: TEMPLE-CORE (sacred core — always compiles)
+    const temple_core_exe = b.addExecutable(.{
+        .name = "temple-core",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_temple.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+    b.installArtifact(temple_core_exe);
+
+    const run_temple_core = b.addRunArtifact(temple_core_exe);
+    if (b.args) |args| {
+        run_temple_core.addArgs(args);
+    }
+    const tier_temple_step = b.step("tier-temple", "Build L0 Temple (sacred core)");
+    tier_temple_step.dependOn(&run_temple_core.step);
+
+    // L1: TRI-QUEENS (supervisors — always compiles)
+    const tri_queens_exe = b.addExecutable(.{
+        .name = "tri-queens",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_queens.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+    b.installArtifact(tri_queens_exe);
+
+    const run_tri_queens = b.addRunArtifact(tri_queens_exe);
+    if (b.args) |args| {
+        run_tri_queens.addArgs(args);
+    }
+    const tier_queens_step = b.step("tier-queens", "Build L1 Queens (supervisors)");
+    tier_queens_step.dependOn(&run_tri_queens.step);
+
+    // ═════════════════════════════════════════════════════════════════════════════════════════════════════
     // TRI‑27 EMULATOR — Ternary RISC Processor Emulator
     // ═══════════════════════════════════════════════════════════════════════════════════════════
     const tri_emu = b.addExecutable(.{
@@ -3841,3 +3988,4 @@ pub fn build(b: *std.Build) void {
     // Note: fpga-synth is optional (requires Docker) - not auto-included
 
 }
+

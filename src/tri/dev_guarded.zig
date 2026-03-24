@@ -30,6 +30,17 @@ const DIM = "\x1b[2m";
 const MAGENTA = "\x1b[35m";
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AUDIT MODES — For tri dev core audit
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AuditMode = enum {
+    normal,   // Display formatted table
+    changed,  // Read paths from stdin, output JSON
+    verify,   // Check signatures, exit 0/1
+    strict,   // Full validation, exit 0/1
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // GUARDED SCOPE — Files that can only be modified via tri dev
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -175,6 +186,10 @@ pub fn runCoreCommand(allocator: Allocator, args: []const []const u8) !void {
 
     if (std.mem.eql(u8, subcmd, "audit")) {
         try runCoreAudit(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "install-hook")) {
+        try runCoreInstallHook(allocator);
+    } else if (std.mem.eql(u8, subcmd, "pre-commit")) {
+        try runCorePreCommit(allocator);
     } else if (std.mem.eql(u8, subcmd, "edit-ast")) {
         try runCoreEditAst(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "edit-parser")) {
@@ -192,7 +207,130 @@ pub fn runCoreCommand(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runCoreAudit(allocator: Allocator, args: []const []const u8) !void {
-    _ = args;
+    // Check for audit mode flags
+    var mode: AuditMode = .normal;
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--changed")) {
+            mode = .changed;
+        } else if (std.mem.eql(u8, arg, "--verify")) {
+            mode = .verify;
+        } else if (std.mem.eql(u8, arg, "--strict")) {
+            mode = .strict;
+        }
+    }
+
+    switch (mode) {
+        .changed => return runCoreAuditChanged(allocator),
+        .verify => return runCoreAuditVerify(allocator),
+        .strict => return runCoreAuditStrict(allocator),
+        .normal => return runCoreAuditNormal(allocator),
+    }
+}
+
+// tri dev core audit --changed: Read paths from stdin, output JSON of guarded files
+fn runCoreAuditChanged(allocator: Allocator) !void {
+    var guarded = try GuardedSet.init(allocator);
+    defer guarded.deinit();
+    try guarded.scan();
+
+    const stdin = std.io.getStdIn();
+    const reader = stdin.reader();
+
+    var matched = std.ArrayListUnmanaged([]const u8){};
+    defer matched.deinit(allocator);
+
+    // Read paths from stdin (one per line)
+    var buf: [1024]u8 = undefined;
+    while (try reader.readUntilDelimiterOrEof(&buf, '\n')) |line| {
+        const trimmed = std.mem.trimRight(u8, line, "\r\n");
+        if (trimmed.len == 0) continue;
+
+        // Check if path is in GuardedSet
+        for (guarded.files) |f| {
+            if (std.mem.eql(u8, f.path, trimmed)) {
+                try matched.append(allocator, f.path);
+                break;
+            }
+        }
+    }
+
+    // Output JSON result
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("[", .{});
+    for (matched.items, 0..) |path, i| {
+        if (i > 0) try stdout.print(", ", .{});
+        try stdout.print("\"{s}\"", .{path});
+    }
+    try stdout.print("]\n", .{});
+}
+
+// tri dev core audit --verify: Check signatures, exit 0/1
+fn runCoreAuditVerify(allocator: Allocator) !void {
+    var guarded = try GuardedSet.init(allocator);
+    defer guarded.deinit();
+    try guarded.scan();
+
+    var all_valid = true;
+    for (guarded.files) |f| {
+        if (!f.exists) continue;
+
+        const content = try fs.cwd().readFileAlloc(allocator, f.path, 1024 * 1024);
+        defer allocator.free(content);
+
+        // Recalculate SHA256 hash
+        var hash_buf: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(content, &hash_buf, .{});
+        const hash_hex = try std.fmt.allocPrint(allocator, "{s}", .{std.fmt.bytesToHex(&hash_buf, .lower)});
+        defer allocator.free(hash_hex);
+
+        // Verify signature matches
+        const valid = f.has_signature and std.mem.indexOf(u8, f.signature_hash, hash_hex) != null;
+        if (!valid) {
+            std.debug.print("{s}✗ {s}: signature invalid{s}\n", .{ RED, f.path, RESET });
+            all_valid = false;
+        }
+    }
+
+    if (!all_valid) {
+        return error.SignatureInvalid;
+    }
+}
+
+// tri dev core audit --strict: Full audit (LOC + signatures + scope), exit 0/1
+fn runCoreAuditStrict(allocator: Allocator) !void {
+    var guarded = try GuardedSet.init(allocator);
+    defer guarded.deinit();
+    try guarded.scan();
+
+    var all_valid = true;
+
+    for (guarded.files) |f| {
+        if (!f.exists) {
+            std.debug.print("{s}✗ {s}: missing{ s}\n", .{ RED, f.path, RESET });
+            all_valid = false;
+            continue;
+        }
+
+        // Check LOC limit
+        if (f.loc > MAX_TTC_LOC) {
+            std.debug.print("{s}✗ {s}: LOC {d} > {d} max{s}\n", .{ RED, f.path, f.loc, MAX_TTC_LOC, RESET });
+            all_valid = false;
+        }
+
+        // Check signature
+        if (!f.has_signature) {
+            std.debug.print("{s}✗ {s}: missing signature{s}\n", .{ RED, f.path, RESET });
+            all_valid = false;
+        }
+    }
+
+    if (!all_valid) {
+        return error.StrictAuditFailed;
+    }
+}
+
+// tri dev core audit (normal): Display formatted table
+fn runCoreAuditNormal(allocator: Allocator) !void {
     print("\n{s}🔍 TRI DEV CORE AUDIT{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
@@ -260,6 +398,98 @@ fn runCoreAudit(allocator: Allocator, args: []const []const u8) !void {
         print("\n  {s}⚠️  Issues found! Run 'tri dev core sign' to fix.{s}\n\n", .{ YELLOW, RESET });
     } else {
         print("\n  {s}✅ All TTC files healthy!{s}\n\n", .{ GREEN, RESET });
+    }
+}
+
+// tri dev core install-hook: Create .git/hooks/pre-commit
+fn runCoreInstallHook(allocator: Allocator) !void {
+    const hook_path = ".git/hooks/pre-commit";
+
+    // Check if hook already exists
+    if (fs.cwd().openFile(hook_path, .{})) |file| {
+        file.close();
+        print("{s}⚠️  Pre-commit hook already exists at {s}{s}\n", .{ YELLOW, hook_path, RESET });
+        print("  Backing up to {s}.old{s}\n\n", .{ hook_path, RESET });
+
+        // Backup existing hook
+        _ = fs.cwd().copyFile(hook_path, hook_path ++ ".old", .{});
+    } else |_| {}
+
+    const hook_content =
+        \\#!/bin/sh
+        \\# TRI DEV GUARDED STACK pre-commit hook
+        \\# Generated by 'tri dev core install-hook'
+        \\
+        \\# Run pre-commit validation
+        \\tri dev core pre-commit || {{
+        \\    echo ""
+        \\    echo "TDGS-1 VIOLATION: Commit blocked"
+        \\    echo "   Run 'tri dev core sign' to fix signatures"
+        \\    echo "   Or use 'git commit --no-verify' to bypass (NOT RECOMMENDED)"
+        \\    exit 1
+        \\}}
+        \\
+
+
+    try fs.cwd().writeFile(.{ .sub_path = hook_path, .data = hook_content });
+
+    // Make hook executable
+    if (builtin.os.tag == .linux or builtin.os.tag == .macos) {
+        _ = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &[_][]const u8{ "chmod", "+x", hook_path },
+        });
+    }
+
+    print("{s}✓{s} Pre-commit hook installed at {s}\n", .{ GREEN, RESET, hook_path });
+    print("  This hook will block commits that violate TDGS-1 rules\n\n", .{});
+}
+
+// tri dev core pre-commit: Validate staged files
+fn runCorePreCommit(allocator: Allocator) !void {
+    // Get list of staged files
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "diff", "--cached", "--name-only" },
+    });
+
+    const staged_files = std.mem.trim(u8, result.stdout);
+    if (staged_files.len == 0) {
+        return; // Nothing to check
+    }
+
+    var guarded = try GuardedSet.init(allocator);
+    defer guarded.deinit();
+    try guarded.scan();
+
+    var violations: usize = 0;
+
+    var iter = std.mem.splitScalar(u8, staged_files, '\n');
+    while (iter.next()) |file_path| {
+        const trimmed = std.mem.trimRight(u8, file_path, "\r\n");
+        if (trimmed.len == 0) continue;
+
+        // Check if file is in GuardedSet
+        for (guarded.files) |f| {
+            if (std.mem.eql(u8, f.path, trimmed)) {
+                if (!f.has_signature or f.loc > MAX_TTC_LOC) {
+                    std.debug.print("{s}✗ {s}: violates TDGS-1 ({s}){s}\n", .{
+                        RED, trimmed,
+                        if (!f.has_signature) "no signature" else "LOC > 3000",
+                        RESET,
+                    });
+                    violations += 1;
+                }
+                break;
+            }
+        }
+    }
+
+    if (violations > 0) {
+        std.debug.print("\n{s}❌ TDGS-1 VIOLATION: {d} file(s) violate Core Development Law{s}\n", .{
+            RED, violations, RESET,
+        });
+        return error.PreCommitFailed;
     }
 }
 
@@ -331,7 +561,9 @@ fn runCoreSign(allocator: Allocator, args: []const []const u8) !void {
         signed += 1;
     }
 
-    print("\n  {s}✅ Signed {d} TTC files{d}{s}\n\n", .{ GREEN, signed, if (skipped > 0) skipped else "", RESET });
+    const skipped_msg = if (skipped > 0) try std.fmt.allocPrint(allocator, " ({d} skipped)", .{skipped}) else "";
+    defer allocator.free(skipped_msg);
+    print("\n  {s}✅ Signed {d} TTC files{s}{s}\n\n", .{ GREEN, signed, skipped_msg, RESET });
 }
 
 fn runCoreEditAst(allocator: Allocator, args: []const []const u8) !void {
@@ -361,7 +593,7 @@ fn runCoreEditEmit(allocator: Allocator, args: []const []const u8) !void {
     print("  This will read emit spec and regenerate emit_t27.zig / emit_zig.zig\n\n", .{});
 }
 
-fn printCoreHelp() void {
+pub fn printCoreHelp() void {
     print("\n{s}TRI DEV CORE — Trusted Tri Core Commands{s}\n\n", .{ BOLD, RESET });
     print("  {s}tri dev core audit{s}    Check TTC health (LOC, signatures)\n", .{ CYAN, RESET });
     print("  {s}tri dev core sign{s}     Add/update TRI_CORE_SIGNATURE to all TTC files\n", .{ CYAN, RESET });

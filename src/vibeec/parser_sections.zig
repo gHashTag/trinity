@@ -1276,6 +1276,120 @@ pub fn parseFSMOutputs(source: []const u8, pos: usize, line: usize, allocator: A
     return s;
 }
 
+/// Parse spec annotations (@spec, @require, @ensure, @example) for behaviors.
+/// Format: spec: name, require: condition, ensure: condition, example: {input, expect}
+pub fn parseSpecAnnotations(
+    source: []const u8,
+    pos: usize,
+    line: usize,
+    allocator: Allocator,
+    spec_annotation: *?[]const u8,
+    requires: *ArrayList([]const u8),
+    ensures: *ArrayList([]const u8),
+    examples: *ArrayList(TestCase),
+) !ScanState {
+    var s = ScanState{ .pos = pos, .line = line };
+
+    // Parse spec annotation (optional)
+    while (s.pos < source.len) {
+        const sk = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+        s = sk;
+        if (s.pos >= source.len) break;
+
+        const indent = pu.countIndent(source, s.pos);
+        if (indent < 4) break;
+        s.pos += indent;
+
+        const kr = pu.readKey(source, s.pos);
+        if (kr.key.len == 0) break;
+
+        s.pos = kr.new_pos;
+        s.pos = pu.skipColon(source, s.pos);
+        s.pos = pu.skipInlineWhitespace(source, s.pos);
+
+        if (std.mem.eql(u8, kr.key, "spec")) {
+            const vr = pu.readValue(source, s.pos);
+            if (vr.value.len > 0) {
+                spec_annotation.* = vr.value;
+            }
+            s.pos = vr.new_pos;
+        } else if (std.mem.eql(u8, kr.key, "require")) {
+            const qr = pu.readQuotedOrValue(source, s.pos, s.line);
+            if (qr.value.len > 0) {
+                try requires.append(allocator, qr.value);
+            }
+            s.pos = qr.new_pos;
+            s.line = qr.new_line;
+        } else if (std.mem.eql(u8, kr.key, "ensure")) {
+            const qr = pu.readQuotedOrValue(source, s.pos, s.line);
+            if (qr.value.len > 0) {
+                try ensures.append(allocator, qr.value);
+            }
+            s.pos = qr.new_pos;
+            s.line = qr.new_line;
+        } else if (std.mem.eql(u8, kr.key, "example")) {
+            // Parse example with input/expect fields
+            var example = TestCase{
+                .name = "",
+                .input = "",
+                .expected = "",
+                .tolerance = null,
+            };
+
+            const ns = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns;
+            s = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+
+            // Read example subfields at indent 6+
+            while (s.pos < source.len) {
+                const sk2 = pu.skipEmptyLinesAndComments(source, s.pos, s.line);
+                s = sk2;
+                if (s.pos >= source.len) break;
+
+                const ex_indent = pu.countIndent(source, s.pos);
+                if (ex_indent < 6) break;
+                s.pos += ex_indent;
+
+                const ekr = pu.readKey(source, s.pos);
+                if (ekr.key.len == 0) break;
+                s.pos = ekr.new_pos;
+                s.pos = pu.skipColon(source, s.pos);
+
+                if (std.mem.eql(u8, ekr.key, "input")) {
+                    const vr = pu.readQuotedOrValue(source, s.pos, s.line);
+                    example.input = vr.value;
+                    s.pos = vr.new_pos;
+                    s.line = vr.new_line;
+                } else if (std.mem.eql(u8, ekr.key, "expect")) {
+                    const vr = pu.readQuotedOrValue(source, s.pos, s.line);
+                    example.expected = vr.value;
+                    s.pos = vr.new_pos;
+                    s.line = vr.new_line;
+                } else if (std.mem.eql(u8, ekr.key, "tolerance")) {
+                    const vr = pu.readValue(source, s.pos);
+                    if (vr.value.len > 0) {
+                        example.tolerance = std.fmt.parseFloat(f64, vr.value) catch null;
+                    }
+                    s.pos = vr.new_pos;
+                }
+
+                const ens = pu.skipToNextLine(source, s.pos, s.line);
+                s = ens;
+            }
+
+            if (example.input.len > 0) {
+                try examples.append(allocator, example);
+            }
+        } else {
+            // Unknown key, skip line
+            const ns = pu.skipToNextLine(source, s.pos, s.line);
+            s = ns;
+        }
+    }
+
+    return s;
+}
+
 /// Parse top-level test_cases section (indent 2+, dash items).
 /// Fields: name, given/input, expected, tolerance.
 pub fn parseTopLevelTestCases(source: []const u8, pos: usize, line: usize, allocator: Allocator, test_cases: *ArrayList(TestCase)) !ScanState {
@@ -1485,6 +1599,37 @@ test "parseTargets reads dash items" {
     try std.testing.expectEqualStrings("zig", targets.items[0]);
     try std.testing.expectEqualStrings("varlog", targets.items[1]);
     _ = s;
+}
+
+test "parseSpecAnnotations reads spec annotations" {
+    const source =
+        \\    spec: test_spec
+        \\    require: "x >= 0"
+        \\    require: "y > 0"
+        \\    ensure: "result > 0"
+        \\    example:
+        \\      input: "x=5"
+        \\      expect: "result=25"
+        \\
+    ;
+    var spec_annotation: ?[]const u8 = null;
+    var requires: ArrayList([]const u8) = .{};
+    defer requires.deinit(std.testing.allocator);
+    var ensures: ArrayList([]const u8) = .{};
+    defer ensures.deinit(std.testing.allocator);
+    var examples: ArrayList(TestCase) = .{};
+    defer examples.deinit(std.testing.allocator);
+
+    const s = try parseSpecAnnotations(source, 0, 1, std.testing.allocator, &spec_annotation, &requires, &ensures, &examples);
+    _ = s;
+
+    try std.testing.expect(spec_annotation != null);
+    try std.testing.expectEqualStrings("test_spec", spec_annotation.?);
+    try std.testing.expectEqual(@as(usize, 2), requires.items.len);
+    try std.testing.expectEqualStrings("x >= 0", requires.items[0]);
+    try std.testing.expectEqual(@as(usize, 1), ensures.items.len);
+    try std.testing.expectEqual(@as(usize, 1), examples.items.len);
+    try std.testing.expectEqualStrings("x=5", examples.items[0].input);
 }
 
 test "parseAlgorithmSteps reads step list" {

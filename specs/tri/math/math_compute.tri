@@ -231,7 +231,13 @@ types:
 
 behaviors:
   - name: computeSpiral
+    spec: compute_spiral_coordinates
     description: "Compute φ-spiral coordinates for n"
+    require: "n >= 0"
+    ensure: "angle in [0, 2π] and radius > 0"
+    example:
+      input: "n=0"
+      expect: "angle=0° r=30 x=30.000 y=0.000"
     params:
       - name: n
         type: "u32"

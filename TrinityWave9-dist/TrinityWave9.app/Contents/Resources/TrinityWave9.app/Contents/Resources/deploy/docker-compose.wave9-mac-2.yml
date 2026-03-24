@@ -1,0 +1,208 @@
+services:
+  wave9-worker-1:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-1
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+    - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-2:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-2
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-3:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-3
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-4:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-4
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-5:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-5
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-6:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-6
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-7:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-7
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure
+
+  wave9-worker-8:
+    image: ghcr.io/trinity/wave9-train:latest
+    container_name: wave9-worker-8
+    environment:
+      - HSLM_PROFILE=s3multiobj
+      - HSLM_NTP_WEIGHT=0.5
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_JEPA_ENABLED=true
+      - HSLM_CTX=81
+      - HSLM_LR=0.001
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_STEPS=100000
+    volumes:
+      - ../data/wave9:/data/wave9
+    command: ["hslm-train"]
+    deploy:
+      resources:
+        reservations:
+          memory: 8192M
+          cpus: "4.0"
+        restart_policy: on-failure

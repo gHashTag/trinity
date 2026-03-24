@@ -620,13 +620,11 @@ pub fn runNotifyCommand(allocator: std.mem.Allocator, msg: []const u8, chat_id_o
     std.debug.print("{s}⚠️  notify: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
     std.debug.print("  Message: {s}\n", .{msg});
 }
-/// Doctor Command - Health and migration tool
+/// Doctor Command - Health monitor and Queen watchdog
 /// Usage: tri doctor [subcommand] [args]
 pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-    std.debug.print("{s}⚠️  doctor: TODO - not implemented yet{s}\n", .{ YELLOW, RESET });
-    std.debug.print("  Use: tri doctor [init|scan|mark|report|plan|heal|enforce]\n", .{});
+    const doctor_cli = @import("doctor/doctor_cli.zig");
+    try doctor_cli.runDoctorCommand(allocator, args);
 }
 /// Sim Command - Simulation commands
 /// Usage: tri sim <subcommand> [args]

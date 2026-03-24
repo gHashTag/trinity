@@ -169,7 +169,8 @@ pub const Dag = struct {
         const to_node = &self.nodes_by_id.items[to_idx.?];
 
         // Update entry/exit tracking BEFORE updating dependencies
-        if (from_node.dependencies.len == 0) {
+        // Check: if 'from' had 0 dependencies before, remove it from entries
+        if (old_deps.len == 0) {
             // 'from' was an entry, remove it
             for (self.entries.items, 0..) |entry_id, i| {
                 if (entry_id == from_id) {
@@ -562,8 +563,9 @@ test "dag_add_dependency" {
     const id2 = try dag.addNode("b", "expr2", 10, .{ .line = 0, .column = 0 });
     const id3 = try dag.addNode("c", "expr3", 10, .{ .line = 0, .column = 0 });
 
-    // After adding nodes: all 3 are entries (no dependencies yet)
+    // After adding nodes: all 3 are entries and exits (no deps/dependents)
     try std.testing.expectEqual(@as(usize, 3), dag.entries.items.len);
+    try std.testing.expectEqual(@as(usize, 3), dag.exits.items.len);
 
     // a -> b (a depends on b)
     try dag.addDependencyByName("a", "b");
@@ -572,12 +574,13 @@ test "dag_add_dependency" {
     // b removed from exits (now has dependent a), a and c remain as exits
     try std.testing.expectEqual(@as(usize, 2), dag.exits.items.len);
     try std.testing.expectEqual(id1, dag.exits.items[0]); // a is exit
+    try std.testing.expectEqual(id3, dag.exits.items[1]); // c is exit
 
     // b -> c (b depends on c)
     try dag.addDependencyByName("b", "c");
     // b removed from entries, only c remains
     try std.testing.expectEqual(@as(usize, 1), dag.entries.items.len);
-    // c removed from exits (now has dependent b)
+    // c removed from exits (now has dependent b), only a remains as exit
     try std.testing.expectEqual(@as(usize, 1), dag.exits.items.len);
     try std.testing.expectEqual(id1, dag.exits.items[0]); // a is still exit
 
@@ -618,22 +621,26 @@ test "dag_linear_chain" {
     const id2 = try dag.addNode("b", "expr2", 10, .{ .line = 0, .column = 0 });
     const id3 = try dag.addNode("c", "expr3", 10, .{ .line = 0, .column = 0 });
 
-    // Initially: all 3 are entries
+    // Initially: all 3 are entries AND exits (no deps/dependents)
     try std.testing.expectEqual(@as(usize, 3), dag.entries.items.len);
+    try std.testing.expectEqual(@as(usize, 3), dag.exits.items.len);
 
     // a -> b
     try dag.addDependencyByName("a", "b");
     // a removed from entries, b and c remain
     try std.testing.expectEqual(@as(usize, 2), dag.entries.items.len);
-    // a is now an exit (no dependents)
-    try std.testing.expectEqual(@as(usize, 1), dag.exits.items.len);
+    // b removed from exits (now has dependent a), a and c remain as exits
+    try std.testing.expectEqual(@as(usize, 2), dag.exits.items.len);
+    try std.testing.expectEqual(id1, dag.exits.items[0]); // a is exit
+    try std.testing.expectEqual(id3, dag.exits.items[1]); // c is exit
 
     // b -> c
     try dag.addDependencyByName("b", "c");
     // b removed from entries, only c remains (no dependencies)
     try std.testing.expectEqual(@as(usize, 1), dag.entries.items.len);
-    // a is still the only exit (no dependents)
+    // c removed from exits (now has dependent b), only a remains as exit
     try std.testing.expectEqual(@as(usize, 1), dag.exits.items.len);
+    try std.testing.expectEqual(id1, dag.exits.items[0]); // a is exit
 
     // Verify linear structure
     const node_a = dag.getNodeById(id1).?;

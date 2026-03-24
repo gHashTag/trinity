@@ -9,14 +9,13 @@ const print = std.debug.print;
 pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
-    const stdout = std.io.getStdOut().writer();
     const env = try std.process.getEnvMap(allocator);
     defer env.deinit();
 
     // Get Fly.io token from .env
     const fly_token = env.get("FLY_API_TOKEN_1") orelse env.get("FLY_API_TOKEN") orelse {
-        try stdout.print("❌ FLY_API_TOKEN not found in .env\n", .{});
-        try stdout.print("Add: FLY_API_TOKEN_1=your_token to .env\n", .{});
+        std.debug.print("❌ FLY_API_TOKEN not found in .env\n", .{});
+        std.debug.print("Add: FLY_API_TOKEN_1=your_token to .env\n", .{});
         return error.FlyTokenNotFound;
     };
 
@@ -28,7 +27,7 @@ pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []con
     // Set FLY_API_TOKEN for flyctl
     try std.process.setEnvVar(allocator, "FLY_API_TOKEN", fly_token);
 
-    try stdout.print("🚀 Deploying trinity-fpga-synth to Fly.io...\n", .{});
+    std.debug.print("🚀 Deploying trinity-fpga-synth to Fly.io...\n", .{});
 
     // Deploy command (VM size configured in fly.toml)
     const deploy_argv = &[_][]const u8{
@@ -44,8 +43,8 @@ pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []con
     });
 
     if (deploy_result.term.Exited != 0 and deploy_result.term.Exited != 0) {
-        try stdout.print("Deploy stdout:\n{s}\n", .{deploy_result.stdout});
-        try stdout.print("Deploy stderr:\n{s}\n", .{deploy_result.stderr});
+        std.debug.print("Deploy stdout:\n{s}\n", .{deploy_result.stdout});
+        std.debug.print("Deploy stderr:\n{s}\n", .{deploy_result.stderr});
         return error.DeployFailed;
     }
 
