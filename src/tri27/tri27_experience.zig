@@ -396,35 +396,21 @@ test "Tri27Operation toStr roundtrip" {
 test "tri27_experience: recordToQueenEpisodes integration" {
     const allocator = std.testing.allocator;
 
-    // Create test event - use zero-filled arrays with explicit string copy
-    var input_buf: [256]u8 = undefined;
-    var output_buf: [256]u8 = undefined;
-    @memset(&input_buf, 0);
-    @memset(&output_buf, 0);
-    const input_str = "test.tasm";
-    const output_str = "test.tbin";
-    @memcpy(input_buf[0..input_str.len], input_str);
-    @memcpy(output_buf[0..output_str.len], output_str);
-
-    const event = Tri27Event{
+    // Create test event directly with queen_episodes.Tri27Event
+    const queen_event = queen_episodes.Tri27Event{
         .timestamp = 1234567890,
         .operation = .assemble,
-        .input_file = input_buf,
-        .output_file = output_buf,
+        .input_file = "test.tasm",
+        .output_file = "test.tbin",
         .status = .success,
         .cycles = 42,
         .instructions = 10,
-        .error_msg = [_]u8{0} ** 512,
+        .error_msg = "",
         .has_error = false,
     };
 
-    // Verify input_file before conversion
-    const input_check = event.inputFile();
-    try std.testing.expectEqual(@as(usize, 8), input_check.len);
-    try std.testing.expectEqualStrings("test.tasm", input_check);
-
     // Record to Queen episodes
-    _ = try recordToQueenEpisodes(allocator, event);
+    _ = try queen_episodes.recordTri27Episode(allocator, queen_event);
 
     // Verify episodes.jsonl was created and contains the event
     const file_path = ".trinity/queen/episodes.jsonl";
