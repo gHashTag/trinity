@@ -101,6 +101,8 @@ const Config = struct {
     // v3.24: Jitter measurement and pattern generation
     measure_jitter: bool,
     spike_threshold: f64 = 3.0, // v3.49: Configurable spike threshold (multiplier of median)
+    // v3.63: Outlier detection method (fixed or iqr)
+    outlier_method: []const u8 = "fixed", // fixed=3x median, iqr=statistical method
     // v3.57: Configurable alert thresholds
     alert_warning_threshold: f64 = 60.0,
     alert_critical_threshold: f64 = 40.0,
@@ -621,9 +623,9 @@ const BaselineHistory = struct {
             }
             avg_pct /= @as(f64, @floatFromInt(self.count));
 
-            const trend_sym = if (improving > degrading) '↓' else if (degrading > improving) '↑' else '→';
-            printErr("\n    {s}Overall Trend: {c}{d:.1}% avg across {} baselines{s}\n", .{
-                ANSI.DIM, trend_sym, ANSI.BOLD, avg_pct, ANSI.BOLD, self.count, ANSI.RESET,
+            const trend_sym: u8 = if (improving > degrading) 'v' else if (degrading > improving) '^' else '~';
+            printErr("\n    {s}Overall Trend: {c} {d:.1}% avg across {d} baselines{s}\n", .{
+                ANSI.DIM, trend_sym, avg_pct, self.count, ANSI.RESET,
             });
         }
 
@@ -1202,15 +1204,13 @@ const JitterTracker = struct {
     }
 
     // v3.48: Spike detection (outliers > 3x median)
-    pub fn detectSpikes(self: *const JitterTracker, threshold_multiplier: f64) struct { count: usize, outliers: []usize } {
+    pub fn detectSpikes(self: *const JitterTracker, threshold_multiplier: f64) struct { count: usize } {
         if (self.count < 5) {
-            return .{ .count = 0, .outliers = &[_]usize{} };
+            return .{ .count = 0 };
         }
 
         const len = self.count;
         var spikes: usize = 0;
-        var outliers: [10]usize = undefined;
-        var outlier_idx: usize = 0;
 
         // Use p50 (median) as baseline
         const p = self.getPercentiles();
@@ -1219,15 +1219,11 @@ const JitterTracker = struct {
 
         for (self.samples[0..len]) |sample| {
             if (sample > @as(i64, @intFromFloat(spike_threshold))) {
-                if (outlier_idx < 10) {
-                    outliers[outlier_idx] = @intCast(sample);
-                    outlier_idx += 1;
-                }
                 spikes += 1;
             }
         }
 
-        return .{ .count = spikes, .outliers = outliers[0..outlier_idx] };
+        return .{ .count = spikes };
     }
 
     pub fn reportSpikes(self: *const JitterTracker, threshold_multiplier: f64) void {
@@ -1257,6 +1253,92 @@ const JitterTracker = struct {
             }
             printDim("\n", .{});
         }
+    }
+
+    // v3.63: IQR (Interquartile Range) Outlier Detection - statistical method
+    // Uses Q1 - 1.5*IQR and Q3 + 1.5*IQR as bounds (standard box plot method)
+    pub fn detectOutliersIQR(self: *const JitterTracker, iqr_multiplier: f64) struct {
+        count: usize,
+        q1: i64,
+        q3: i64,
+        iqr: i64,
+        lower_bound: i64,
+        upper_bound: i64,
+    } {
+        if (self.count < 5) {
+            return .{ .count = 0, .q1 = 0, .q3 = 0, .iqr = 0, .lower_bound = 0, .upper_bound = 0 };
+        }
+
+        // Copy samples to local array and sort
+        var sorted: [1024]i64 = undefined;
+        const sort_len = @min(self.count, sorted.len);
+        for (self.samples[0..sort_len], 0..) |s, i| {
+            sorted[i] = s;
+        }
+
+        // Simple insertion sort for small arrays
+        var i: usize = 1;
+        while (i < sort_len) : (i += 1) {
+            const key = sorted[i];
+            var j: usize = i;
+            while (j > 0 and sorted[j - 1] > key) : (j -= 1) {
+                sorted[j] = sorted[j - 1];
+            }
+            sorted[j] = key;
+        }
+
+        // Calculate Q1 (25th percentile) and Q3 (75th percentile)
+        const n = sort_len;
+        const q1_idx = n / 4;
+        const q3_idx = (3 * n) / 4;
+        const q1 = sorted[q1_idx];
+        const q3 = sorted[q3_idx];
+        const iqr_val = q3 - q1;
+
+        // Calculate bounds with multiplier (default 1.5 for standard box plot)
+        const lower_bound = q1 - @as(i64, @intFromFloat(@as(f64, @floatFromInt(iqr_val)) * iqr_multiplier));
+        const upper_bound = q3 + @as(i64, @intFromFloat(@as(f64, @floatFromInt(iqr_val)) * iqr_multiplier));
+
+        // Count outliers
+        var outlier_count: usize = 0;
+        for (self.samples[0..self.count]) |sample| {
+            if (sample < lower_bound or sample > upper_bound) {
+                outlier_count += 1;
+            }
+        }
+
+        return .{
+            .count = outlier_count,
+            .q1 = q1,
+            .q3 = q3,
+            .iqr = iqr_val,
+            .lower_bound = lower_bound,
+            .upper_bound = upper_bound,
+        };
+    }
+
+    pub fn reportOutliersIQR(self: *const JitterTracker, iqr_multiplier: f64) void {
+        if (self.count < 5) {
+            return;
+        }
+
+        const result = self.detectOutliersIQR(iqr_multiplier);
+        if (result.count == 0) {
+            return;
+        }
+
+        const q1_ms = @as(f64, @floatFromInt(result.q1)) / 1000.0;
+        const q3_ms = @as(f64, @floatFromInt(result.q3)) / 1000.0;
+        const iqr_ms = @as(f64, @floatFromInt(result.iqr)) / 1000.0;
+        const lower_ms = @as(f64, @floatFromInt(result.lower_bound)) / 1000.0;
+        const upper_ms = @as(f64, @floatFromInt(result.upper_bound)) / 1000.0;
+
+        printInfo("\n  ⚠ IQR Outliers (statistical method):\n", .{});
+        printDim("    Q1 (25%): {d:.2}ms, Q3 (75%): {d:.2}ms\n", .{ q1_ms, q3_ms });
+        printDim("    IQR: {d:.2}ms, Multiplier: {d:.1}x\n", .{ iqr_ms, iqr_multiplier });
+        printDim("    Bounds: [{d:.2}ms, {d:.2}ms]\n", .{ lower_ms, upper_ms });
+        printDim("    Outliers: {d}/{d} samples outside bounds\n", .{ result.count, self.count });
+        printDim("    Outlier rate: {d:.1}%\n", .{@as(f64, @floatFromInt(result.count)) / @as(f64, @floatFromInt(self.count)) * 100.0});
     }
 
     // v3.52: RTT Trend Analysis - detects if latency is improving/degrading/stable
@@ -1376,7 +1458,8 @@ const JitterTracker = struct {
 
     // v3.51: Comprehensive RTT Statistics Summary
     // Combines jitter, percentiles, and spike detection into unified report
-    pub fn reportRTTSummary(self: *const JitterTracker, threshold_multiplier: f64) void {
+    // v3.63: Added outlier_method parameter for IQR vs fixed method selection
+    pub fn reportRTTSummary(self: *const JitterTracker, threshold_multiplier: f64, outlier_method: []const u8) void {
         if (self.count < 2) {
             printDim("    RTT Summary: not enough samples\n", .{});
             return;
@@ -1432,30 +1515,22 @@ const JitterTracker = struct {
             printDim("    p99:         {d:.2}ms\n", .{p99_ms});
         }
 
-        // Spike detection
-        const spikes = self.detectSpikes(threshold_multiplier);
-        if (spikes.count > 0) {
-            const p = self.getPercentiles();
-            const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
-            const threshold_ms = median_ms * threshold_multiplier;
-
-            printInfo("\n  ⚠ Latency Spikes:\n", .{});
-            printDim("    Median:       {d:.2}ms\n", .{median_ms});
-            printDim("    Threshold:    {d:.2}ms ({d:.1}x)\n", .{ threshold_ms, threshold_multiplier });
-            printDim("    Spikes:       {d}/{d} samples\n", .{ spikes.count, self.count });
-            printDim("    Spike rate:   {d:.1}%\n", .{@as(f64, @floatFromInt(spikes.count)) / @as(f64, @floatFromInt(self.count)) * 100.0});
-
-            if (spikes.outliers.len > 0) {
-                printDim("    Samples:      ", .{});
-                for (spikes.outliers, 0..) |val, i| {
-                    if (i > 0) printDim(", ", .{});
-                    const val_ms = @as(f64, @floatFromInt(val)) / 1000.0;
-                    printDim("{d:.1}ms", .{val_ms});
-                }
-                printDim("\n", .{});
-            }
+        // v3.63: Outlier detection using selected method (fixed or iqr)
+        if (std.mem.eql(u8, outlier_method, "iqr")) {
+            self.reportOutliersIQR(1.5); // Standard IQR multiplier (box plot)
         } else {
-            printDim("\n  ✓ No latency spikes detected (threshold: {d:.1}x)\n", .{threshold_multiplier});
+            const spikes = self.detectSpikes(threshold_multiplier);
+            if (spikes.count > 0) {
+                const p = self.getPercentiles();
+                const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+                const threshold_ms = median_ms * threshold_multiplier;
+
+                printInfo("\n  ⚠ Latency Spikes:\n", .{});
+                printDim("    Median:       {d:.2}ms\n", .{median_ms});
+                printDim("    Threshold:    {d:.2}ms ({d:.1}x)\n", .{ threshold_ms, threshold_multiplier });
+                printDim("    Spikes:       {d}/{d} samples\n", .{ spikes.count, self.count });
+                printDim("    Spike rate:   {d:.1}%\n", .{@as(f64, @floatFromInt(spikes.count)) / @as(f64, @floatFromInt(self.count)) * 100.0});
+            }
         }
 
         // Distribution quality assessment
@@ -2106,6 +2181,19 @@ fn parseArgs() Config {
                 std.process.exit(1);
             };
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--outlier-method")) {
+            // v3.63: Outlier detection method (fixed or iqr)
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --outlier-method requires value (fixed or iqr)\n", .{});
+                std.process.exit(1);
+            }
+            const method = std.mem.span(std.os.argv[i + 1]);
+            if (!std.mem.eql(u8, method, "fixed") and !std.mem.eql(u8, method, "iqr")) {
+                printErr("[*] --outlier-method must be 'fixed' or 'iqr'\n", .{});
+                std.process.exit(1);
+            }
+            config.outlier_method = method;
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--alert-warning")) {
             // v3.57: Configurable warning alert threshold
             if (i + 1 >= std.os.argv.len) {
@@ -2423,6 +2511,7 @@ fn printUsage() void {
         \\  --stress-packets <n> Packets per stress test (default: 10)
         \\  --measure-jitter    Measure RTT jitter variance (v3.24)
         \\  --spike-threshold N Spike detection threshold multiplier (default: 3.0) (v3.49)
+        \\  --outlier-method <m> Outlier detection: fixed|iqr (default: fixed) (v3.63)
         \\  --pattern <name>    Test pattern: default|prbs7|walk1|walk0|seq|alt
         \\  --pattern-length <n> Length of generated pattern (default: 256)
         \\  --simulation         Simulation mode (no hardware required)
@@ -3663,7 +3752,7 @@ fn runSimulationBatch(config: Config) !void {
     // v3.58: Baseline save/compare support
     if (config.measure_jitter and jitter_tracker.count >= 5) {
         printErr("\n", .{});
-        jitter_tracker.reportRTTSummary(config.spike_threshold);
+        jitter_tracker.reportRTTSummary(config.spike_threshold, config.outlier_method);
 
         const quality = jitter_tracker.getQualityScore(config.spike_threshold);
         quality_alerts.check(quality.score);
@@ -3838,7 +3927,7 @@ fn runSimulation(config: Config) !void {
     // v3.51: Unified RTT Statistics Summary (at end)
     if (config.measure_jitter) {
         printErr("\n", .{});
-        jitter_tracker.reportRTTSummary(config.spike_threshold);
+        jitter_tracker.reportRTTSummary(config.spike_threshold, config.outlier_method);
 
         // v3.55: Check quality alerts after RTT summary
         if (jitter_tracker.count >= 5) {
@@ -4003,7 +4092,7 @@ fn runComprehensiveTest(fd: std.posix.fd_t, config: Config) !void {
     // v3.51: Unified RTT Statistics Summary
     if (config.measure_jitter) {
         printErr("\n", .{});
-        jitter_tracker.reportRTTSummary(config.spike_threshold);
+        jitter_tracker.reportRTTSummary(config.spike_threshold, config.outlier_method);
     }
 
     // v3.42: Auto-recovery statistics summary
