@@ -1953,6 +1953,157 @@ const JitterTracker = struct {
             printInfo("\n  🧪 Significance Test:\n", .{});
             self.showSignificanceTest();
         }
+
+        // v3.95: Outlier Summary - comprehensive outlier analysis
+        if (self.count >= 5) {
+            printInfo("\n  📊 Outlier Summary:\n", .{});
+            self.showOutlierSummary();
+        }
+    }
+
+    // v3.95: Outlier Summary - comprehensive outlier analysis
+    pub const OutlierSummary = struct {
+        iqr_outliers: usize,
+        z_outliers: usize,
+        ma_outliers: usize,
+        total_outliers: usize,
+        outlier_rate: f64,
+        worst_outlier: i64,
+        outlier_severity: []const u8,
+    };
+
+    pub fn getOutlierSummary(self: *const JitterTracker) OutlierSummary {
+        if (self.count < 5) {
+            return .{
+                .iqr_outliers = 0,
+                .z_outliers = 0,
+                .ma_outliers = 0,
+                .total_outliers = 0,
+                .outlier_rate = 0.0,
+                .worst_outlier = 0,
+                .outlier_severity = "NONE",
+            };
+        }
+
+        const iqr_result = self.detectOutliersIQR(1.5);
+        const iqr_outliers = iqr_result.count;
+
+        // Z-score outliers
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = if (stats.jitter > 0) stats.jitter else 1.0;
+        const z_threshold = 3.0;
+
+        var z_outliers: usize = 0;
+        var worst_outlier: i64 = 0;
+        var max_z_score: f64 = 0;
+
+        for (self.samples[0..self.count]) |s| {
+            const z_score = if (std_dev > 0) (@as(f64, @floatFromInt(s)) - mean) / std_dev else 0;
+            if (@abs(z_score) > z_threshold) {
+                z_outliers += 1;
+                if (z_score > max_z_score or z_score < -max_z_score) {
+                    max_z_score = if (z_score > 0) z_score else -z_score;
+                    worst_outlier = s;
+                }
+            }
+        }
+
+        // Moving average outliers
+        const ma_window = @min(10, self.count);
+        var ma_outliers: usize = 0;
+        var ma_outlier_set = std.bit_set.IntegerBitSet(@bitSizeOf(usize)).initEmpty();
+        for (ma_window..self.count) |i| {
+            var sum: f64 = 0;
+            const start = i - ma_window;
+            const end = i;
+            for (@max(0, start)..end) |j| {
+                sum += @as(f64, @floatFromInt(self.samples[j]));
+            }
+            const ma = sum / @as(f64, @floatFromInt(end - start));
+            const actual = @as(f64, @floatFromInt(self.samples[i]));
+            const deviation = @abs(actual - ma);
+            const threshold = @max(1.0, ma * 0.3);
+
+            if (deviation > threshold and !ma_outlier_set.isSet(i)) {
+                ma_outliers += 1;
+                ma_outlier_set.set(i);
+            }
+        }
+
+        // Combined outliers
+        var outlier_set = std.bit_set.IntegerBitSet(@bitSizeOf(usize)).initEmpty();
+        for (self.samples[0..self.count], 0..) |s, i| {
+            const z_score = if (std_dev > 0) (@as(f64, @floatFromInt(s)) - mean) / std_dev else 0;
+            if (@abs(z_score) > z_threshold) {
+                outlier_set.set(i);
+            }
+        }
+
+        var total_outliers: usize = 0;
+        for (ma_window..self.count) |i| {
+            if (ma_outlier_set.isSet(i)) {
+                outlier_set.set(i);
+            }
+        }
+
+        total_outliers = outlier_set.count();
+
+        const outlier_rate = @as(f64, @floatFromInt(total_outliers)) / @as(f64, @floatFromInt(self.count));
+
+        const outlier_severity = if (total_outliers == 0)
+            "NONE"
+        else if (outlier_rate < 0.05)
+            "LOW"
+        else if (outlier_rate < 0.15)
+            "MODERATE"
+        else if (outlier_rate < 0.30)
+            "HIGH"
+        else
+            "SEVERE";
+
+        return .{
+            .iqr_outliers = iqr_outliers,
+            .z_outliers = z_outliers,
+            .ma_outliers = ma_outliers,
+            .total_outliers = total_outliers,
+            .outlier_rate = outlier_rate,
+            .worst_outlier = worst_outlier,
+            .outlier_severity = outlier_severity,
+        };
+    }
+
+    pub fn showOutlierSummary(self: *const JitterTracker) void {
+        const summary = self.getOutlierSummary();
+
+        printDim("    Total Outliers: {d} ({d:.1}% of samples)\n", .{ summary.total_outliers, summary.outlier_rate * 100.0 });
+        printDim("    Method Breakdown:\n", .{});
+        printDim("      IQR outliers: {d}\n", .{summary.iqr_outliers});
+        printDim("      Z-score outliers: {d}\n", .{summary.z_outliers});
+        printDim("      MA deviation outliers: {d}\n", .{summary.ma_outliers });
+
+        if (summary.total_outliers > 0) {
+            const worst_ms = @as(f64, @floatFromInt(summary.worst_outlier)) / 1000.0;
+            printDim("\n    Worst Outlier: {d:.2}ms\n", .{worst_ms});
+            printDim("    Severity: {s}\n", .{summary.outlier_severity});
+
+            printDim("\n    Recommendations:\n", .{});
+            if (std.mem.eql(u8, summary.outlier_severity, "SEVERE")) {
+                printDim("      - Investigate immediately\n", .{});
+                printDim("      - Check for hardware issues\n", .{});
+            } else if (std.mem.eql(u8, summary.outlier_severity, "HIGH")) {
+                printDim("      - Monitor connection closely\n", .{});
+                printDim("      - Consider retry mechanism\n", .{});
+            } else if (std.mem.eql(u8, summary.outlier_severity, "MODERATE")) {
+                printDim("      - Acceptable for most applications\n", .{});
+                printDim("      - Consider adaptive threshold\n", .{});
+            } else {
+                printDim("      - No action needed\n", .{});
+            }
+        } else {
+            printDim("\n    Status: No outliers detected\n", .{});
+            printDim("    Connection appears stable\n", .{});
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
