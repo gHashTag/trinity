@@ -6,11 +6,15 @@
 // Golden identity: φ² + 1/φ² = 3
 //
 // Issue #408: ADT Enum + Exhaustive Match + Pipe
+// Issue #411: Linear Types + Ownership Modes
 //
 // NOTE:
 // - Чётко разделены уровни: Program / Declaration / Statement / Expr / Pattern / Type
 // - Все рекурсивные ссылки идут через *const (указатели), чтобы избежать бесконечных типов
 // - BinaryOperator uses enum(u5), чтобы влезли все варианты
+// - Ownership modes: let/inout/sink/set (Hylo-style)
+// - Linear types enforce consume-once semantics (Austral-style)
+// - Banked types provide Coptic register safety via phantom types
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -124,9 +128,13 @@ pub const ReturnStmt = struct {
     loc: SourceLocation,
 };
 
-/// Let binding: let name = expr
+/// Let binding: let name = expr (supports let/inout/sink/set)
 pub const LetStmt = struct {
+    /// Variable name
     name: []const u8,
+    /// Ownership mode (default: Let)
+    ownership: OwnershipMode = .Let,
+    /// Value expression
     value: Expr,
     loc: SourceLocation,
 };
@@ -457,6 +465,10 @@ pub const Type = union(enum) {
     Function: TypeFunction,
     /// Result type: Result(T, E) - no exceptions
     Result: TypeResult,
+    /// Linear type: linear T (consume-once)
+    Linear: TypeLinear,
+    /// Banked type: Banked<T, Bank> (phantom type for Coptic safety)
+    Banked: TypeBanked,
     /// Struct type (name of struct)
     Struct: TypeStruct,
     /// Enum type (name of enum)
@@ -475,6 +487,17 @@ pub const TypeTrit = enum(u2) {
     Trit9 = 2,
     /// 27 trits packed
     Trit27 = 3,
+};
+
+/// Bank identifier for Coptic register safety
+/// Bank 0: ALU registers (t0-t8), Bank 1: Sacred (t9-t17), Bank 2: Constants (t18-t26)
+pub const Bank = enum(u2) {
+    /// Bank 0: ALU registers (t0-t8, Ⲁ-Ⲑ)
+    ALU = 0,
+    /// Bank 1: Sacred accumulators (t9-t17, Ⲓ-Ⲣ)
+    Sacred = 1,
+    /// Bank 2: Constants (t18-t26, Ⲥ-Ϥ) — immutable
+    Constant = 2,
 };
 
 /// Integer types
@@ -515,6 +538,32 @@ pub const TypeFunction = struct {
 pub const TypeResult = struct {
     ok_type: *const Type,
     err_type: *const Type,
+};
+
+/// Linear type: linear T (consume-once semantics from Austral)
+pub const TypeLinear = struct {
+    /// The inner type that must be consumed exactly once
+    inner_type: *const Type,
+};
+
+/// Banked type: Banked<T, Bank> (phantom type for Copic register safety)
+pub const TypeBanked = struct {
+    /// The value type
+    value_type: *const Type,
+    /// The bank (0=ALU, 1=Sacred, 2=Constant)
+    bank: Bank,
+};
+
+/// Ownership mode for variables (Hylo-style)
+pub const OwnershipMode = enum(u2) {
+    /// let x = ... — immutable, can be read multiple times
+    Let = 0,
+    /// inout x = ... — mutable reference
+    Inout = 1,
+    /// sink x = ... — consumes value, must be used exactly once
+    Sink = 2,
+    /// set x = ... — mutable owned value
+    Set = 3,
 };
 
 /// Struct type
