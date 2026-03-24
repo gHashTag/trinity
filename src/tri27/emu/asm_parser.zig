@@ -480,7 +480,9 @@ pub fn assemble(allocator: Allocator, asm_source: []const u8) AsmError![]u8 {
 
     // Assemble
     var assembler = Assembler.init(allocator, tokens);
-    return assembler.assemble();
+    const result = try assembler.assemble();
+    assembler.deinit(); // Clean up assembler resources before returning
+    return result;
 }
 
 // Tests
