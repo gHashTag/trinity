@@ -30,7 +30,7 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "";
 
     if (std.mem.eql(u8, subcmd, "assemble") or std.mem.eql(u8, subcmd, "asm")) {
-        return runAssembleCommand(allocator, args);
+        return runAssembleCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "disassemble") or std.mem.eql(u8, subcmd, "disasm")) {
         return runDisassembleCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "run")) {
@@ -113,10 +113,8 @@ fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !vo
     print("{s}Disassembling {s} ({d} bytes){s}\n", .{ CYAN, input_file, tbin_content.len, RESET });
     print("{s}═══════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
-    // Skip header if present (first 12 bytes)
-    const header_size: usize = 12;
-    const code_start = if (tbin_content.len > header_size) header_size else 0;
-    const code_data = tbin_content[code_start..];
+    // Raw .tbin files have no header - all bytes are instructions
+    const code_data = tbin_content;
 
     var instr_addr: u32 = 0;
     var i: usize = 0;

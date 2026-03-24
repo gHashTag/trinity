@@ -1160,10 +1160,10 @@ const JitterTracker = struct {
         }
     }
 
-    // v3.44: Percentile calculation (p50, p90, p95, p99)
-    pub fn getPercentiles(self: *const JitterTracker) struct { p50: i64, p90: i64, p95: i64, p99: i64 } {
+    // v3.81: Extended Percentile calculation (min, p25, p50, p75, p90, p95, p99, max)
+    pub fn getPercentiles(self: *const JitterTracker) struct { min: i64, p25: i64, p50: i64, p75: i64, p90: i64, p95: i64, p99: i64, max: i64 } {
         if (self.count == 0) {
-            return .{ .p50 = 0, .p90 = 0, .p95 = 0, .p99 = 0 };
+            return .{ .min = 0, .p25 = 0, .p50 = 0, .p75 = 0, .p90 = 0, .p95 = 0, .p99 = 0, .max = 0 };
         }
 
         // Create a sorted copy of samples
@@ -1182,17 +1182,23 @@ const JitterTracker = struct {
         // Mark as intentionally mutated (sorted in-place)
         _ = &sorted;
 
-        // Calculate percentiles directly (p50, p90, p95, p99)
+        // Calculate percentiles (p25, p50, p75, p90, p95, p99)
+        const p25_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.25));
         const p50_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.50));
+        const p75_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.75));
         const p90_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.90));
         const p95_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.95));
         const p99_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(len - 1)) * 0.99));
 
         return .{
+            .min = sorted[0],
+            .p25 = sorted[p25_idx],
             .p50 = sorted[p50_idx],
+            .p75 = sorted[p75_idx],
             .p90 = sorted[p90_idx],
             .p95 = sorted[p95_idx],
             .p99 = sorted[p99_idx],
+            .max = sorted[len - 1],
         };
     }
 
@@ -1880,6 +1886,12 @@ const JitterTracker = struct {
         if (self.count >= 5) {
             printInfo("\n  🔔 Anomaly Alerts:\n", .{});
             self.checkAnomalyAlerts();
+        }
+
+        // v3.81: Percentile Band Analysis - distribution across quartiles
+        if (self.count >= 4) {
+            printInfo("\n  📊 Percentile Bands:\n", .{});
+            self.showPercentileBands();
         }
     }
 
