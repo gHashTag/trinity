@@ -468,6 +468,22 @@ pub const Assembler = struct {
     }
 };
 
+test "assembler handles t-registers with LDI" {
+    const allocator = std.testing.allocator;
+    const source = "LDI t0, 1";
+    const bytecode = try assemble(allocator, source);
+    defer allocator.free(bytecode);
+    try std.testing.expect(true); // If we got here without error, it worked
+}
+
+test "assembler handles t-registers with INC" {
+    const allocator = std.testing.allocator;
+    const source = "INC t0";
+    const bytecode = try assemble(allocator, source);
+    defer allocator.free(bytecode);
+    try std.testing.expect(true); // If we got here without error, it worked
+}
+
 /// Public assemble function
 pub fn assemble(allocator: Allocator, asm_source: []const u8) AsmError![]u8 {
     if (asm_source.len == 0) return AsmError.EmptySource;
