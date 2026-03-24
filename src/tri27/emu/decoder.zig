@@ -104,7 +104,7 @@ pub const Instruction = struct {
 ///   [12:8]  = dst (5 bits)
 ///   [17:13] = src1 (5 bits)
 ///   [22:18] = src2 (5 bits) OR v3_reg (for BUNDLE3)
-///   [31:23] = immediate (9 bits, sign-extended to 16) OR v3_reg (for BUNDLE3)
+///   [31:17] = immediate (16 bits, signed) OR v3_reg (for BUNDLE3)
 pub fn decode(word: u32) Instruction {
     const opcode_val = @as(u8, @truncate(word & 0xFF));
     const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
@@ -113,16 +113,12 @@ pub fn decode(word: u32) Instruction {
     const src1 = @as(u8, @truncate((word >> 13) & 0x1F));
 
     // For BUNDLE3: bits 18-22 = src2, bits 23-27 = v3_reg (upper 5 bits)
-    const src2_or_v3 = @as(u8, @truncate((word >> 18) & 0x3FF));
-    const src2 = src2_or_v3 & 0x1F;
-    const v3_reg = (src2_or_v3 >> 5) & 0x1F;
+    const src2_or_v3 = @as(u16, @truncate((word >> 18) & 0x3FFF));
+    const src2 = @as(u8, @truncate(src2_or_v3 & 0x1F));
+    const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
 
-    // Decode 9-bit immediate (bits 23-31), sign-extended to 16 bits
-    const imm_raw = @as(u16, @truncate((word >> 23) & 0x1FF));
-    const immediate: i16 = if (imm_raw & 0x100 != 0)
-        @bitCast(imm_raw | 0xFE00) // Sign extend
-    else
-        @intCast(imm_raw);
+    // Decode 16-bit immediate (bits 31-17), already in 16-bit format
+    const immediate: i16 = @bitCast(@as(u16, @truncate((word >> 17) & 0xFFFF)));
 
     // Determine if instruction has immediate
     const has_imm = switch (opcode) {

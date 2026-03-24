@@ -214,10 +214,10 @@ pub const AssemblerState = struct {
 
             // Process instruction or label
             const word = try state.encodeInstruction(token);
-            try state.bytecode.append(self.allocator, @as(u8, @truncate(word >> 24)));
-            try state.bytecode.append(self.allocator, @as(u8, @truncate(word >> 16)));
-            try state.bytecode.append(self.allocator, @as(u8, @truncate(word >> 8)));
-            try state.bytecode.append(self.allocator, @as(u8, @truncate(word)));
+            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 24)));
+            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 16)));
+            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 8)));
+            try state.bytecode.append(allocator, @as(u8, @truncate(word)));
 
             token_idx += 1;
         }
