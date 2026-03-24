@@ -17,6 +17,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+
+// Import DIM for styling (debug print colors)
+const DIM = std.debug.print;
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const railway_ssh = @import("railway_ssh.zig");
@@ -85,6 +88,8 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return cloudMerge(allocator, sub_args);
     } else if (eql(u8, subcmd, "api-check")) {
         return cloudApiCheck(allocator);
+    } else if (eql(u8, subcmd, "generate-domain")) {
+        return generateDomain(allocator, sub_args);
     } else if (eql(u8, subcmd, "redeploy")) {
         return cloudRedeploy(allocator, sub_args);
     } else if (eql(u8, subcmd, "diagnose")) {
@@ -129,6 +134,63 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SUBCOMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/// tri cloud generate-domain [service-id] — Generate public domain for service
+/// Uses Railway GraphQL mutation to create a service domain
+fn generateDomain(allocator: Allocator, args: []const []const u8) !void {
+    const service_id = if (args.len > 0) args[0] else "";
+
+    if (service_id.len == 0) {
+        print("{s}Usage: tri cloud generate-domain <service-id>{s}\n", .{ YELLOW, RESET });
+        print("\n  Get service ID from: tri cloud status\n", .{});
+        print("  Or: Railway Dashboard → Service → Settings\n", .{});
+        return;
+    }
+
+    print("\n{s}🌐 Generating Domain for Service{s}\n", .{ BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+    print("  Service ID: {s}\n\n", .{service_id});
+
+    var api = railway_api.RailwayApi.init(allocator) catch |err| {
+        printApiInitError(err);
+        return;
+    };
+    defer api.deinit();
+
+    // GraphQL mutation to create service domain
+    const gql = "mutation($input: ServiceDomainInput!) { serviceDomainCreate(input: $input) { serviceDomain { id domain } } }";
+
+    const vars_json = std.fmt.allocPrint(allocator, "{{\"input\":{{\"serviceId\":\"{s}\"}}}}", .{service_id}) catch return;
+    defer allocator.free(vars_json);
+
+    const resp = api.query(gql, vars_json) catch |err| {
+        print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer allocator.free(resp);
+
+    print("  {s}Response:{s}\n", .{ "\x1b[2m", RESET });
+    print("  {s}\n\n", .{resp});
+
+    // Try to extract domain from response
+    if (std.mem.indexOf(u8, resp, "\"domain\":")) |idx| {
+        const start = idx + 9; // Skip "domain":
+        var end = start;
+        while (end < resp.len and resp[end] != '\"' and resp[end] != ',' and resp[end] != '}') : (end += 1) {}
+
+        if (end > start) {
+            const domain = resp[start..end];
+            // Clean up quotes/whitespace
+            const clean_domain = std.mem.trim(u8, domain, "\" \t\n\r");
+            print("  {s}✅ Domain: https://{s}{s}\n\n", .{ GREEN, clean_domain, RESET });
+            print("  {s}⏳ Domain may take 1-2 minutes to become active{s}\n", .{ YELLOW, RESET });
+            return;
+        }
+    }
+
+    print("  {s}⚠️  Domain created but URL not found in response{s}\n", .{ YELLOW, RESET });
+    print("  Check Railway Dashboard for the domain URL\n\n", .{});
+}
 
 /// tri cloud status — Print agent service count and health
 fn cloudStatus(allocator: Allocator) !void {
@@ -2170,6 +2232,7 @@ fn printUsage() void {
     print("  {s}tri cloud exec <command>{s}      Run command via SSH\n", .{ GREEN, RESET });
     print("  {s}tri cloud pull{s}                Pull latest code on Railway\n", .{ GREEN, RESET });
     print("  {s}tri cloud ssh-status{s}          Quick SSH server status\n", .{ GREEN, RESET });
+    print("  {s}tri cloud generate-domain <svc>{s} Generate public domain\n", .{ GREEN, RESET });
     print("\n  {s}Agent Orchestration:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud spawn <issue>{s}       Spawn agent container for issue\n", .{ GREEN, RESET });
     print("  {s}tri cloud spawn-all{s}           Spawn agents for all labeled issues\n", .{ GREEN, RESET });

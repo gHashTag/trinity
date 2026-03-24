@@ -245,7 +245,9 @@ See: [`docs/docs/api/`](docs/docs/api/) for detailed API documentation
 
 | File | Description |
 |------|-------------|
-| [`docs/docs/contributing.md`](docs/docs/contributing.md) | Contribution guidelines |
+| [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Complete contribution guidelines |
+| [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Community code of conduct |
+| [`troubleshooting.md`](troubleshooting.md) | Troubleshooting guide |
 | [`CLAUDE.md`](../CLAUDE.md) | Project instructions for AI agents |
 | [`AGENTS.md`](../AGENTS.md) | Agent documentation |
 
