@@ -1,7 +1,7 @@
 # Wave 1: TRI-27 Reference Implementation (reticularraphe.t27)
 
 ## Step 1: reticularraphe.t27 → VM ✅ COMPLETED
-- [x] Проверить что TRI-27 VM в src/temple/tri27_core.zig поддерживает все opcodes из reticularraphe.t27
+- [x] Проверить что TRI-27 VM в src/temple/tri27_core.zig поддерживает все opcodes из reticular_raphe.t27
 - [x] Убедиться что все opcodes реализованы в executor.zig
 - [x] Создать unit тесты для новых opcodes
 
@@ -25,13 +25,38 @@
 - All encoder tests: ✅ PASS (40 tests)
 - All asm_parser tests: ✅ PASS (67 tests)
 
+## Step 2: Coptic alphabet + 3-bank validation ✅ COMPLETED
+- [x] Создать src/tri27/coptic.zig с CopticReg enum(u5)
+- [x] 27 вариантов (alpha0-shmima26)
+- [x] bank() → u2 method (возвращает номер банка 0-2)
+- [x] Обновить asm_parser.zig для разбора Coptic регистров
+- [x] Добавить unit тесты
+
+### Результат
+
+✅ **CopticReg implementation:**
+- 27 registers across 3 banks (0-8, 9-17, 18-26)
+- Bank 0 (ALU): alpha0-theta8
+- Bank 1 (Sacred): iota9-rho17
+- Bank 2 (Const): sigma18-shmima26
+- Added shmima26 (27th Coptic letter)
+
+✅ **Tests verified:**
+- All coptic tests: ✅ PASS (2 tests)
+- All asm_parser tests: ✅ PASS (67 tests)
+- Coptic name parsing: case-insensitive, no allocator needed
+
+✅ **Files modified:**
+- `src/tri27/coptic.zig` — complete CopticReg enum with 27 variants
+- `src/tri27/emu/asm_parser.zig` — COPTIC_NAMES array lookup, case-insensitive
+
 ### Inварианты
 - L0 (Temple): ✅ GREEN
 - L1 (Queens): ✅ GREEN
 
 ### Коммиты
 - feat(tri27): Add MOV, JGT, JLT opcodes for reticularraphe.t27 (#411)
+- fix(tri27): Fix coptic name parsing - use COPTIC_NAMES array, fix deprecated allocator (#418)
 
 ## Следующие шаги
-- Step 2: Coptic alphabet + 3-bank validation
 - Step 3: ADT enum + exhaustive match
