@@ -74,7 +74,17 @@ pub fn scanBehaviorAnnotations(_: Allocator, content: []const u8) !FileAudit {
 
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line);
+        // Simple trim - skip leading whitespace
+        var start: usize = 0;
+        while (start < line.len and (line[start] == ' ' or line[start] == '\t' or line[start] == '\r')) {
+            start += 1;
+        }
+        // Skip trailing whitespace
+        var end: usize = line.len;
+        while (end > start and (line[end - 1] == ' ' or line[end - 1] == '\t' or line[end - 1] == '\r')) {
+            end -= 1;
+        }
+        const trimmed = line[start..end];
         if (trimmed.len == 0 or trimmed[0] == '#') continue;
 
         if (std.mem.eql(u8, trimmed, "@spec")) {
@@ -92,10 +102,8 @@ pub fn scanBehaviorAnnotations(_: Allocator, content: []const u8) !FileAudit {
     return file_audit;
 }
 
-pub fn auditSpecDirectory(_: Allocator, dir_path: []const u8) !SpecAuditReport {
-    _ = dir_path;
-    // TODO: Implement directory scanning for Zig 0.15
-    return SpecAuditReport{
+pub fn auditSpecDirectory(allocator: Allocator, dir_path: []const u8) !SpecAuditReport {
+    var report = SpecAuditReport{
         .total_files = 0,
         .total_behaviors = 0,
         .with_spec = 0,
@@ -108,13 +116,115 @@ pub fn auditSpecDirectory(_: Allocator, dir_path: []const u8) !SpecAuditReport {
         .example_coverage = 0.0,
         .files_missing_annotations = .{},
     };
+    var missing_list = std.ArrayListUnmanaged(MissingAnnotation){};
+
+    // Use openDir with iterate for Zig 0.15
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch {
+        // If directory doesn't exist or can't be opened, return empty report
+        return report;
+    };
+    defer dir.close();
+
+    var walker = dir.walk(allocator) catch {
+        // If walk fails, return empty report
+        return report;
+    };
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        if (entry.kind != .file) continue;
+
+        const ext = std.fs.path.extension(entry.path);
+        if (!std.mem.eql(u8, ext, ".tri")) continue;
+
+        report.total_files += 1;
+
+        const full_path = try std.fs.path.join(allocator, &.{ dir_path, "/", entry.path });
+        defer allocator.free(full_path);
+
+        const content = std.fs.cwd().readFileAlloc(allocator, full_path, 1024 * 1024) catch continue;
+        defer allocator.free(content);
+
+        const file_audit = try scanBehaviorAnnotations(allocator, content);
+        report.total_behaviors += file_audit.behavior_count;
+
+        if (file_audit.has_spec) report.with_spec += 1;
+        if (file_audit.has_require) report.with_require += 1;
+        if (file_audit.has_ensure) report.with_ensure += 1;
+        if (file_audit.has_example) report.with_example += 1;
+
+        // Track missing annotations
+        var missing_types = std.ArrayListUnmanaged(AnnotationType){};
+        if (!file_audit.has_spec and file_audit.behavior_count > 0) {
+            try missing_types.append(allocator, .spec);
+        }
+        if (!file_audit.has_require and file_audit.behavior_count > 0) {
+            try missing_types.append(allocator, .require);
+        }
+        if (!file_audit.has_ensure and file_audit.behavior_count > 0) {
+            try missing_types.append(allocator, .ensure);
+        }
+        if (!file_audit.has_example and file_audit.behavior_count > 0) {
+            try missing_types.append(allocator, .example);
+        }
+
+        if (missing_types.items.len > 0) {
+            try missing_list.append(allocator, .{
+                .file_path = try allocator.dupe(u8, full_path),
+                .behavior_name = try allocator.dupe(u8, entry.path),
+                .missing = missing_types,
+                .recommendation = "Add @spec, @require, @ensure, @example annotations",
+            });
+        }
+    }
+
+    report.files_missing_annotations = missing_list;
+
+    if (report.total_behaviors > 0) {
+        report.spec_coverage = @as(f64, @floatFromInt(report.with_spec)) * 100.0 / @as(f64, @floatFromInt(report.total_behaviors));
+        report.require_coverage = @as(f64, @floatFromInt(report.with_require)) * 100.0 / @as(f64, @floatFromInt(report.total_behaviors));
+        report.ensure_coverage = @as(f64, @floatFromInt(report.with_ensure)) * 100.0 / @as(f64, @floatFromInt(report.total_behaviors));
+        report.example_coverage = @as(f64, @floatFromInt(report.with_example)) * 100.0 / @as(f64, @floatFromInt(report.total_behaviors));
+    }
+
+    return report;
 }
 
 pub fn printAuditReport(report: SpecAuditReport) void {
     std.debug.print("\n{s}TRI-27 IDIOM 11 — SPEC ANNOTATION AUDIT{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}══════════════════════════════════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("\n{s}TODO: Implement audit report printing{s}\n", .{ YELLOW, RESET });
-    std.debug.print("Files: {d}, Behaviors: {d}\n", .{ report.total_files, report.total_behaviors });
+
+    std.debug.print("\n{s}Summary{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Files scanned: {d}\n", .{report.total_files});
+    std.debug.print("  Behaviors: {d}\n", .{report.total_behaviors});
+
+    std.debug.print("\n{s}Coverage{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}@spec{s}:    {s} {d:.1}%\n", .{ GREEN, RESET, gradeEmoji(report.spec_coverage), report.spec_coverage });
+    std.debug.print("  {s}@require{s}: {s} {d:.1}%\n", .{ GREEN, RESET, gradeEmoji(report.require_coverage), report.require_coverage });
+    std.debug.print("  {s}@ensure{s}:  {s} {d:.1}%\n", .{ GREEN, RESET, gradeEmoji(report.ensure_coverage), report.ensure_coverage });
+    std.debug.print("  {s}@example{s}: {s} {d:.1}%\n", .{ GREEN, RESET, gradeEmoji(report.example_coverage), report.example_coverage });
+
+    if (report.files_missing_annotations.items.len > 0) {
+        std.debug.print("\n{s}Files Missing Annotations{s}\n", .{ YELLOW, RESET });
+        for (report.files_missing_annotations.items) |missing| {
+            std.debug.print("  {s}<--{s} {s}\n", .{ GRAY, RESET, missing.file_path });
+            std.debug.print("    Missing: ", .{});
+            for (missing.missing.items) |t| {
+                const label = switch (t) {
+                    .spec => "@spec",
+                    .require => "@require",
+                    .ensure => "@ensure",
+                    .example => "@example",
+                };
+                std.debug.print("{s}{s}{s} ", .{ RED, label, RESET });
+            }
+            std.debug.print("\n\n", .{});
+        }
+    }
+
+    const overall = (report.spec_coverage + report.require_coverage + report.ensure_coverage + report.example_coverage) / 4.0;
+    std.debug.print("\n{s}Overall: {s} {d:.1}%{s}\n", .{ GOLDEN, gradeEmoji(overall), overall, RESET });
+    std.debug.print("{s}══════════════════════════════════════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
     std.debug.print("\n", .{});
 }
 
