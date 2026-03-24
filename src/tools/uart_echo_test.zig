@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.71 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
+//! v3.72 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1845,10 +1845,16 @@ const JitterTracker = struct {
             self.predictTrend();
         }
 
-        // v3.71: Adaptive Thresholds - recommend optimal thresholds based on statistics
+        // v3.72: Adaptive Thresholds - recommend optimal thresholds based on statistics
         if (self.count >= 20) {
             printInfo("\n  🔧 Adaptive Thresholds:\n", .{});
             self.recommendThresholds();
+        }
+
+        // v3.72: Confidence Intervals - uncertainty bounds for predictions
+        if (self.count >= 5) {
+            printInfo("\n  📊 Confidence Intervals:\n", .{});
+            self.showConfidenceInterval();
         }
     }
 
@@ -1927,7 +1933,7 @@ const JitterTracker = struct {
         printDim("    Severity: {s}\n", .{severity});
     }
 
-    // v3.71: Recommend optimal thresholds based on statistical analysis
+    // v3.72: Recommend optimal thresholds based on statistical analysis
     pub fn recommendThresholds(self: *const JitterTracker) void {
         const stats = self.getStats();
         const p = self.getPercentiles();
@@ -1967,6 +1973,70 @@ const JitterTracker = struct {
         printDim("      --timeout {d}\n", .{recommended_timeout});
         printDim("      --batch-size {d}\n", .{recommended_batch});
         printDim("      --delay {d}\n", .{recommended_delay});
+    }
+
+    // v3.72: Calculate confidence intervals for predictions
+    pub fn showConfidenceInterval(self: *const JitterTracker) void {
+        if (self.count < 5) {
+            printDim("    Not enough samples for CI (need >=5)\n", .{});
+            return;
+        }
+
+        // Calculate mean and standard deviation
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = stats.jitter; // jitter is standard deviation
+
+        // For small samples (n < 30), use t-distribution approximation
+        // For 95% confidence with n=5-30, t ≈ 2.0-2.8
+        const n = @as(f64, @floatFromInt(self.count));
+
+        // Get t-value based on sample size
+        const t_value: f64 = blk: {
+            if (n < 10) {
+                break :blk 2.57; // ~95% CI for n=5-10
+            } else if (n < 20) {
+                break :blk 2.09; // ~95% CI for n=10-20
+            } else {
+                break :blk 1.96; // Normal distribution for n>=20
+            }
+        };
+
+        // Standard error of the mean
+        const sem = if (n > 1) std_dev / @sqrt(n) else 0;
+
+        // 95% Confidence Interval
+        const ci_margin = t_value * sem;
+        const ci_lower = if (mean > ci_margin) mean - ci_margin else 0;
+        const ci_upper = mean + ci_margin;
+
+        // Prediction interval (wider, for individual predictions)
+        const pi_margin = t_value * std_dev * @sqrt(1.0 + 1.0 / n);
+        const pi_lower = if (mean > pi_margin) mean - pi_margin else 0;
+        const pi_upper = mean + pi_margin;
+
+        printDim("    Mean RTT: {d:.2}ms\n", .{mean / 1000.0});
+        printDim("    Std Dev: {d:.2}ms\n", .{std_dev / 1000.0});
+        printDim("    Sample size: {d}\n", .{n});
+        printDim("    95% Confidence Interval: [{d:.2}ms, {d:.2}ms]\n", .{ ci_lower / 1000.0, ci_upper / 1000.0 });
+        printDim("    95% Prediction Interval: [{d:.2}ms, {d:.2}ms]\n", .{ pi_lower / 1000.0, pi_upper / 1000.0 });
+
+        // Coefficient of variation (relative variability)
+        const cv = if (mean > 0) (std_dev / mean) * 100.0 else 0;
+        printDim("    Coefficient of variation: {d:.1}%\n", .{cv});
+
+        // Interpretation
+        const stability = if (cv < 10)
+            "Very Stable"
+        else if (cv < 20)
+            "Stable"
+        else if (cv < 40)
+            "Moderate variability"
+        else if (cv < 60)
+            "High variability"
+        else
+            "Very unstable";
+        printDim("    Stability: {s}\n", .{stability});
     }
 
     // v3.69: Plot histogram of RTT distribution
@@ -3402,7 +3472,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.71)         ║
+            \\║         SIMULATION MODE (v3.72)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -3997,7 +4067,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.71)      ║
+        \\║       SIMULATION BATCH MODE (v3.72)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -4131,7 +4201,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.71)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.72)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -4148,7 +4218,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.71)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.72)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -4826,7 +4896,7 @@ fn runDryRun(config: Config) !void {
 fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║          BATCH TEST MODE (v3.71)        ║
+        \\║          BATCH TEST MODE (v3.72)        ║
         \\║  Aggregated throughput measurement        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -5081,7 +5151,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.71)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.72)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
