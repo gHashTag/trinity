@@ -1947,6 +1947,12 @@ const JitterTracker = struct {
             printInfo("\n  📉 Packet Loss Pattern:\n", .{});
             self.showLossPattern();
         }
+
+        // v3.93: Statistical Significance Tests - validate differences between sample groups
+        if (self.count >= 10) {
+            printInfo("\n  🧪 Significance Test:\n", .{});
+            self.showSignificanceTest();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3864,6 +3870,138 @@ const JitterTracker = struct {
         }
 
         printDim("\n  ══════════════════════════════════════════\n", .{});
+    }
+
+    // v3.93: Statistical Significance Tests - validate differences between sample groups
+    pub const SignificanceTest = struct {
+        test_name: []const u8,
+        statistic: f64,
+        p_value: f64,
+        is_significant: bool,
+        alpha: f64,
+        interpretation: []const u8,
+    };
+
+    pub fn runSignificanceTest(self: *const JitterTracker) ?SignificanceTest {
+        if (self.count < 10) return null;
+
+        // Split samples into two halves
+        const half = @divFloor(self.count, 2);
+        var sum1: i64 = 0;
+        var sum2: i64 = 0;
+        var sum1_sq: f64 = 0;
+        var sum2_sq: f64 = 0;
+
+        for (self.samples[0..half]) |s| {
+            const s_f = @as(f64, @floatFromInt(s));
+            sum1 += s;
+            sum1_sq += s_f * s_f;
+        }
+
+        for (self.samples[half..self.count]) |s| {
+            const s_f = @as(f64, @floatFromInt(s));
+            sum2 += s;
+            sum2_sq += s_f * s_f;
+        }
+
+        const n1: f64 = @floatFromInt(half);
+        const n2: f64 = @floatFromInt(self.count - half);
+
+        const mean1 = @as(f64, @floatFromInt(sum1)) / n1;
+        const mean2 = @as(f64, @floatFromInt(sum2)) / n2;
+
+        const var1 = (sum1_sq - @as(f64, @floatFromInt(sum1 * sum1)) / n1) / (n1 - 1);
+        const var2 = (sum2_sq - @as(f64, @floatFromInt(sum2 * sum2)) / n2) / (n2 - 1);
+
+        // Pooled variance
+        const pooled_var = ((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2);
+
+        // Standard error
+        const se = @sqrt(pooled_var * (1.0 / n1 + 1.0 / n2));
+
+        // t-statistic
+        const t_statistic = if (se > 0) (mean1 - mean2) / se else 0.0;
+
+        // Degrees of freedom (Welch-Satterthwaite approximation)
+        const df = @round(((var1 / n1 + var2 / n2) * (var1 / n1 + var2 / n2)) /
+            (((var1 / n1) * (var1 / n1)) / (n1 - 1) + ((var2 / n2) * (var2 / n2)) / (n2 - 1)));
+
+        // For large df, approximate p-value using normal distribution
+        // Two-tailed test
+        const abs_t = if (t_statistic < 0) -t_statistic else t_statistic;
+        const p_value: f64 = if (df > 30)
+            // Normal approximation for large df
+            2.0 * (1.0 - normalCDF(abs_t))
+        else
+            // For small df, would need t-distribution CDF
+            // Using approximation
+            2.0 * (1.0 - normalCDF(abs_t / @sqrt(1.0 + abs_t * abs_t / (2.0 * @max(df, 1.0)))));
+
+        const alpha = 0.05; // 5% significance level
+        const is_significant = p_value < alpha;
+
+        const interpretation = if (!is_significant)
+            "No significant difference - both halves perform similarly"
+        else if (mean1 > mean2)
+            "Significant degradation - second half is slower"
+        else
+            "Significant improvement - second half is faster";
+
+        return .{
+            .test_name = "Welch's t-test (two-sample)",
+            .statistic = t_statistic,
+            .p_value = p_value,
+            .is_significant = is_significant,
+            .alpha = alpha,
+            .interpretation = interpretation,
+        };
+    }
+
+    // Helper function: normal CDF approximation
+    fn normalCDF(x: f64) f64 {
+        const a1: f64 = 0.254829592;
+        const a2: f64 = -0.284496736;
+        const a3: f64 = 1.421413741;
+        const a4: f64 = -1.453152027;
+        const a5: f64 = 1.061405429;
+        const p: f64 = 0.3275911;
+
+        const sign: f64 = if (x < 0) -1.0 else 1.0;
+        const x_abs: f64 = if (x < 0) -x else x;
+
+        const k: f64 = 1.0 / (1.0 + p * x_abs);
+        const y: f64 = 1.0 - (((((a5 * k + a4) * k) + a3) * k + a2) * k + a1) * k * @exp(-x_abs * x_abs / 2.0);
+
+        return 0.5 * (1.0 + sign * y);
+    }
+
+    pub fn showSignificanceTest(self: *const JitterTracker) void {
+        const result = self.runSignificanceTest() orelse {
+            printInfo("[i] Significance Test: insufficient data (need 10+ samples)\n", .{});
+            return;
+        };
+
+        printInfo("[i] Statistical Significance Test:\n", .{});
+        printDim("    Test: {s}\n", .{result.test_name});
+        printDim("    t-statistic: {d:.4}\n", .{result.statistic});
+        printDim("    p-value: {d:.6}\n", .{result.p_value});
+        printDim("    α (alpha): {d:.2}\n", .{result.alpha});
+
+        const sig_emoji = if (result.is_significant) "⚠️" else "✅";
+        const sig_text = if (result.is_significant) "SIGNIFICANT" else "NOT SIGNIFICANT";
+        printDim("    {s} Result: {s}\n", .{ sig_emoji, sig_text });
+
+        printDim("\n    Interpretation: {s}\n", .{result.interpretation});
+
+        // Additional insight
+        const conf_level = (1.0 - result.alpha) * 100.0;
+        printDim("\n    Confidence: {d:.0}%\n", .{ conf_level });
+        if (result.is_significant) {
+            printDim("    ⚠️  Performance difference is statistically real\n", .{});
+            printDim("       Consider investigating the cause\n", .{});
+        } else {
+            printDim("    ✅ Performance is consistent across test run\n", .{});
+        }
     }
 
     // v3.69: Plot histogram of RTT distribution
