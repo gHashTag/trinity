@@ -1,7 +1,7 @@
 # Wave 9 — S3 MultiObj Local Training
 # φ² + 1/φ² = 3 = TRINITY
 #
-# 2 workers with NTP 50% + JEPA 25% + NCA 25% objective
+# 48 workers with NTP 50% + JEPA 25% + NCA 25% objective
 #
 # Usage:
 #   docker-compose -f docker-compose.wave9.yml up -d              # Start all
@@ -16,7 +16,7 @@ services:
   w9-1:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v4
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
     container_name: wave9-w1
     volumes:
       - ../../data/wave9/worker-1:/data/checkpoints
@@ -46,7 +46,7 @@ services:
   w9-2:
     build:
       context: ../../
-      dockerfile: deploy/Dockerfile.hslm-train-local.v4
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
     container_name: wave9-w2
     volumes:
       - ../../data/wave9/worker-2:/data/checkpoints
@@ -69,6 +69,1386 @@ services:
       - HSLM_GRAD_CLIP=1.0
       - HSLM_FRESH=0
       - HSLM_SEED=1002
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-3:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w3
+    volumes:
+      - ../../data/wave9/worker-3:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1003
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-4:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w4
+    volumes:
+      - ../../data/wave9/worker-4:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1004
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-5:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w5
+    volumes:
+      - ../../data/wave9/worker-5:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1005
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-6:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w6
+    volumes:
+      - ../../data/wave9/worker-6:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1006
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-7:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w7
+    volumes:
+      - ../../data/wave9/worker-7:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1007
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-8:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w8
+    volumes:
+      - ../../data/wave9/worker-8:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1008
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-9:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w9
+    volumes:
+      - ../../data/wave9/worker-9:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1009
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-10:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w10
+    volumes:
+      - ../../data/wave9/worker-10:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1010
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-11:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w11
+    volumes:
+      - ../../data/wave9/worker-11:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1011
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-12:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w12
+    volumes:
+      - ../../data/wave9/worker-12:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1012
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-13:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w13
+    volumes:
+      - ../../data/wave9/worker-13:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1013
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-14:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w14
+    volumes:
+      - ../../data/wave9/worker-14:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1014
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-15:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w15
+    volumes:
+      - ../../data/wave9/worker-15:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1015
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-16:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w16
+    volumes:
+      - ../../data/wave9/worker-16:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1016
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-17:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w17
+    volumes:
+      - ../../data/wave9/worker-17:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1017
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-18:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w18
+    volumes:
+      - ../../data/wave9/worker-18:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1018
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-19:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w19
+    volumes:
+      - ../../data/wave9/worker-19:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1019
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-20:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w20
+    volumes:
+      - ../../data/wave9/worker-20:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1020
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-21:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w21
+    volumes:
+      - ../../data/wave9/worker-21:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1021
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-22:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w22
+    volumes:
+      - ../../data/wave9/worker-22:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1022
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-23:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w23
+    volumes:
+      - ../../data/wave9/worker-23:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1023
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-24:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w24
+    volumes:
+      - ../../data/wave9/worker-24:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1024
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-25:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w25
+    volumes:
+      - ../../data/wave9/worker-25:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1025
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-26:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w26
+    volumes:
+      - ../../data/wave9/worker-26:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1026
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-27:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w27
+    volumes:
+      - ../../data/wave9/worker-27:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1027
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-28:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w28
+    volumes:
+      - ../../data/wave9/worker-28:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1028
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-29:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w29
+    volumes:
+      - ../../data/wave9/worker-29:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1029
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-30:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w30
+    volumes:
+      - ../../data/wave9/worker-30:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1030
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-31:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w31
+    volumes:
+      - ../../data/wave9/worker-31:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1031
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-32:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w32
+    volumes:
+      - ../../data/wave9/worker-32:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1032
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-33:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w33
+    volumes:
+      - ../../data/wave9/worker-33:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1033
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-34:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w34
+    volumes:
+      - ../../data/wave9/worker-34:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1034
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-35:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w35
+    volumes:
+      - ../../data/wave9/worker-35:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1035
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-36:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w36
+    volumes:
+      - ../../data/wave9/worker-36:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1036
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-37:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w37
+    volumes:
+      - ../../data/wave9/worker-37:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1037
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-38:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w38
+    volumes:
+      - ../../data/wave9/worker-38:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1038
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-39:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w39
+    volumes:
+      - ../../data/wave9/worker-39:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1039
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-40:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w40
+    volumes:
+      - ../../data/wave9/worker-40:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1040
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-41:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w41
+    volumes:
+      - ../../data/wave9/worker-41:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1041
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-42:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w42
+    volumes:
+      - ../../data/wave9/worker-42:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1042
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-43:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w43
+    volumes:
+      - ../../data/wave9/worker-43:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1043
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-44:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w44
+    volumes:
+      - ../../data/wave9/worker-44:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1044
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-45:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w45
+    volumes:
+      - ../../data/wave9/worker-45:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1045
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-46:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w46
+    volumes:
+      - ../../data/wave9/worker-46:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1046
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-47:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w47
+    volumes:
+      - ../../data/wave9/worker-47:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1047
+    restart: unless-stopped
+    networks:
+      - wave9-net
+
+  w9-48:
+    build:
+      context: ../../
+      dockerfile: deploy/Dockerfile.hslm-train-local.v5
+    container_name: wave9-w48
+    volumes:
+      - ../../data/wave9/worker-48:/data/checkpoints
+      - ../../data/tinystories:/data/tinystories:ro
+    environment:
+      - HSLM_PROFILE=s3-multiobj
+      - HSLM_CTX=81
+      - HSLM_NTP_WEIGHT=0.50
+      - HSLM_JEPA_WEIGHT=0.25
+      - HSLM_NCA_WEIGHT=0.25
+      - HSLM_CRASH_TOLERANCE=0.05
+      - HSLM_WAVE=9
+      - HSLM_LR=1e-3
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_OPTIMIZER=lamb
+      - HSLM_BATCH=66
+      - HSLM_STEPS=100000
+      - HSLM_WARMUP=2000
+      - HSLM_WD=0.01
+      - HSLM_GRAD_CLIP=1.0
+      - HSLM_FRESH=0
+      - HSLM_SEED=1048
     restart: unless-stopped
     networks:
       - wave9-net
