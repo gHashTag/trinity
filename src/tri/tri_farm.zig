@@ -1756,7 +1756,7 @@ fn multiMacInit(allocator: Allocator) !void {
     const config_path = ".trinity/wave9_multi_mac.yaml";
     const config_content = std.fs.cwd().readFileAlloc(allocator, config_path, 1024 * 1024) catch |err| {
         print("{s}❌ Config file not found: {s}{s}\n", .{ RED, config_path, RESET });
-        print("   Create .trinity/wave9_multi_mac.yaml with device definitions\n");
+        print("   Create .trinity/wave9_multi_mac.yaml with device definitions\n", .{});
         return err;
     };
     defer allocator.free(config_content);
@@ -1764,7 +1764,6 @@ fn multiMacInit(allocator: Allocator) !void {
     // Parse YAML config (simple line-by-line parsing)
     var device_count: usize = 0;
     var lines = std.mem.splitScalar(u8, config_content, '\n');
-    defer lines.deinit(allocator);
 
     while (lines.next()) |line| {
         if (std.mem.startsWith(u8, line, "- id:")) {
@@ -1778,7 +1777,6 @@ fn multiMacInit(allocator: Allocator) !void {
     const wave9_device = @import("wave9_device.zig");
 
     var lines2 = std.mem.splitScalar(u8, config_content, '\n');
-    defer lines2.deinit(allocator);
 
     while (lines2.next()) |line| {
         if (std.mem.startsWith(u8, line, "- id:")) {
@@ -1835,10 +1833,10 @@ fn multiMacInit(allocator: Allocator) !void {
     }
 
     print("\n{s}✅ All devices initialized!{s}\n", .{ GREEN, RESET });
-    print("\nNext steps on each Mac:\n");
-    print("  1. Pull latest: git pull && zig build tri\n");
-    print("  2. Copy compose files to each Mac\n");
-    print("  3. Start: tri farm local-wave9 multi-mac start\n");
+    print("\nNext steps on each Mac:\n", .{});
+    print("  1. Pull latest: git pull && zig build tri\n", .{});
+    print("  2. Copy compose files to each Mac\n", .{});
+    print("  3. Start: tri farm local-wave9 multi-mac start\n", .{});
 }
 
 fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
@@ -2002,8 +2000,8 @@ fn multiMacVerify(allocator: Allocator) !void {
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
     // Collect all seeds
-    var seeds = std.ArrayList([]const u8).init(allocator, 0);
-    defer seeds.deinit();
+    var seeds: std.ArrayListUnmanaged([]const u8) = .empty;
+    defer seeds.deinit(allocator);
 
     var worker_count: usize = 0;
 
@@ -2035,7 +2033,6 @@ fn multiMacVerify(allocator: Allocator) !void {
 
         // Extract seeds from each container
         var lines = std.mem.splitScalar(u8, result.stdout, '\n');
-        defer lines.deinit(allocator);
         while (lines.next()) |container| {
             if (container.len > 0) {
                 // Get HSLM_SEED from container
@@ -2056,7 +2053,7 @@ fn multiMacVerify(allocator: Allocator) !void {
 
                 const seed = std.mem.trim(u8, seed_result.stdout, &std.ascii.whitespace);
                 if (seed.len > 0) {
-                    try seeds.append(seed);
+                    try seeds.append(allocator, seed);
                     worker_count += 1;
                 }
             }

@@ -33,10 +33,13 @@ pub const Opcode = enum(u8) {
     NOT = 0x1B,
     SHL = 0x1C,
     SHR = 0x1D,
+    MOV = 0x1E, // Move register to register
     JMP = 0x40,
     JZ = 0x41,
     JNZ = 0x42,
     CALL = 0x43,
+    JGT = 0x44, // Jump if Greater Than
+    JLT = 0x45, // Jump if Less Than
     RET = 0x4B,
     HALT = 0x4D,
     DOT = 0x60,
@@ -297,6 +300,37 @@ pub fn encode_dec(dst: u5) u32 {
     return word;
 }
 
+/// Encode MOV (Move register to register)
+/// Format: opcode | (dst << 8) | (src1 << 13)
+pub fn encode_mov(dst: u5, src1: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.MOV);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 13;
+    return word;
+}
+
+/// Encode JGT (Jump if Greater Than)
+/// Format: opcode | (src1 << 8) | (src2 << 13) | (imm << 16)
+pub fn encode_jgt(src1: u5, src2: u5, imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.JGT);
+    word |= @as(u32, src1) << 8;
+    word |= @as(u32, src2) << 13;
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 16;
+    return word;
+}
+
+/// Encode JLT (Jump if Less Than)
+/// Format: opcode | (src1 << 8) | (src2 << 13) | (imm << 16)
+pub fn encode_jlt(src1: u5, src2: u5, imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.JLT);
+    word |= @as(u32, src1) << 8;
+    word |= @as(u32, src2) << 13;
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 16;
+    return word;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -494,6 +528,43 @@ test "encode_load_mem_max_address" {
 test "encode_halt" {
     const encoded = encode_halt();
     try std.testing.expectEqual(@as(u32, 0x4D), encoded); // HALT opcode = 0x4D
+}
+
+test "encode_mov_basic" {
+    const encoded = encode_mov(1, 5);
+    const expected: u32 = 0x1E | (1 << 8) | (5 << 13);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jgt_basic" {
+    const encoded = encode_jgt(0, 1, 100);
+    // JGT opcode = 0x44, src1=0, src2=1, imm=100
+    const imm_u16: u16 = @bitCast(@as(i16, 100));
+    const expected: u32 = 0x44 | (0 << 8) | (1 << 13) | (@as(u32, imm_u16) << 16);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jgt_negative" {
+    const encoded = encode_jgt(5, 10, -50);
+    // JGT opcode = 0x44, src1=5, src2=10, imm=-50
+    const imm_u16: u16 = @bitCast(@as(i16, -50));
+    const expected: u32 = 0x44 | (5 << 8) | (10 << 13) | (@as(u32, imm_u16) << 16);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jlt_basic" {
+    const encoded = encode_jlt(2, 3, 0x100);
+    // JLT opcode = 0x45, src1=2, src2=3, imm=0x100
+    const expected: u32 = 0x45 | (2 << 8) | (3 << 13) | (0x100 << 16);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jlt_negative" {
+    const encoded = encode_jlt(15, 0, -10);
+    // JLT opcode = 0x45, src1=15, src2=0, imm=-10
+    const imm_u16: u16 = @bitCast(@as(i16, -10));
+    const expected: u32 = 0x45 | (15 << 8) | (0 << 13) | (@as(u32, imm_u16) << 16);
+    try std.testing.expectEqual(expected, encoded);
 }
 
 test "encoder_produces_correct_opcodes" {

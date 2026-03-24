@@ -504,6 +504,44 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc += 1;
         },
 
+        // ═════════════════════════════════════════════════════════════════════
+        // MOVE INSTRUCTION
+        // ═════════════════════════════════════════════════════════════════════════════════════
+        .MOV => {
+            // Move src1 register to dst register
+            cpu.t27[inst.dst] = cpu.t27[inst.src1];
+            cpu.flags.Z = cpu.t27[inst.dst].trits == 0;
+            cpu.flags.N = cpu.t27[inst.dst].trits < 0;
+            cpu.pc += 1;
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CONDITIONAL JUMP INSTRUCTIONS
+        // ═════════════════════════════════════════════════════════════════════════════
+        .JGT => {
+            // Jump if src1 > src2 (signed comparison)
+            const src1_val = cpu.t27[inst.src1];
+            const src2_val = cpu.t27[inst.src2];
+            const target = @as(u32, @abs(inst.immediate));
+            if (src1_val.trits > src2_val.trits) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
+        .JLT => {
+            // Jump if src1 < src2 (signed comparison)
+            const src1_val = cpu.t27[inst.src1];
+            const src2_val = cpu.t27[inst.src2];
+            const target = @as(u32, @abs(inst.immediate));
+            if (src1_val.trits < src2_val.trits) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
         else => {
             return ExecError.InvalidOpcode;
         },
@@ -519,7 +557,8 @@ pub fn estimateCycles(opcode: Opcode) u64 {
         .LD_IMM, .LDI, .LD => 1,
         .ST, .STI => 2, // Memory write
         .ADD, .SUB => 2, // Ternary arithmetic
-        .JMP, .JZ, .JNZ => 1, // Control flow
+        .MOV => 1, // Register to register
+        .JMP, .JZ, .JNZ, .JGT, .JLT => 1, // Control flow
         .CALL => 3, // Stack push + jump
         .RET => 3, // Stack pop + jump
         .HALT => 1,

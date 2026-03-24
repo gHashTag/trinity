@@ -195,6 +195,13 @@ pub const Assembler = struct {
             return encoder.encode_jnz(rd, imm);
         }
 
+        if (std.mem.eql(u8, op_lower, "jump")) {
+            // JUMP is an alias for JMP
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const imm = try resolveImmediateOrLabel(self, operands[0]);
+            return encoder.encode_jmp(imm);
+        }
+
         if (std.mem.eql(u8, op_lower, "call")) {
             if (operands.len != 1) return AsmError.InvalidSyntax;
             const imm = try resolveImmediateOrLabel(self, operands[0]);
@@ -270,6 +277,32 @@ pub const Assembler = struct {
             if (operands.len != 1) return AsmError.InvalidSyntax;
             const dst = try parseRegister(operands[0]);
             return encoder.encode_dec(dst);
+        }
+
+        // Move instruction
+        if (std.mem.eql(u8, op_lower, "mov")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            return encoder.encode_mov(dst, src1);
+        }
+
+        // Conditional jump: greater than
+        if (std.mem.eql(u8, op_lower, "jgt")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const src1 = try parseRegister(operands[0]);
+            const src2 = try parseRegister(operands[1]);
+            const imm = try resolveImmediateOrLabel(self, operands[2]);
+            return encoder.encode_jgt(src1, src2, imm);
+        }
+
+        // Conditional jump: less than
+        if (std.mem.eql(u8, op_lower, "jlt")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const src1 = try parseRegister(operands[0]);
+            const src2 = try parseRegister(operands[1]);
+            const imm = try resolveImmediateOrLabel(self, operands[2]);
+            return encoder.encode_jlt(src1, src2, imm);
         }
 
         return AsmError.UnknownOpcode;

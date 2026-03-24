@@ -21,13 +21,14 @@ pub const Opcode = enum(u8) {
     INC = 0x14,
     DEC = 0x15,
 
-    // === LOGIC (0x18-0x1D) ===
+    // === LOGIC (0x18-0x1E) ===
     AND = 0x18,
     OR = 0x19,
     XOR = 0x1A,
     NOT = 0x1B,
     SHL = 0x1C,
     SHR = 0x1D,
+    MOV = 0x1E, // Move register to register
 
     // === MEMORY (0x02-0x05) ===
     LD = 0x02,
@@ -35,11 +36,13 @@ pub const Opcode = enum(u8) {
     LDI = 0x04, // Load immediate
     STI = 0x05, // Store immediate
 
-    // === CONTROL (0x40-0x4F) ===
+    // === CONTROL (0x40-0x47) ===
     JMP = 0x40,
     JZ = 0x41,
     JNZ = 0x42,
     CALL = 0x43,
+    JGT = 0x44, // Jump if Greater Than (src1 > src2)
+    JLT = 0x45, // Jump if Less Than (src1 < src2)
     RET = 0x4B,
     HALT = 0x4D,
 
@@ -126,7 +129,7 @@ pub fn decode(word: u32) Instruction {
 
     // Determine if instruction has immediate
     const has_imm = switch (opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .CALL, .RET, .BUNDLE3 => true,
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .CALL, .RET, .BUNDLE3, .JGT, .JLT => true,
         else => false,
     };
 
