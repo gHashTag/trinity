@@ -569,38 +569,6 @@ const BaselineHistory = struct {
         return history;
     }
 
-    pub fn loadFromDirDebug(allocator: std.mem.Allocator, dir_path: []const u8) !BaselineHistory {
-        printErr("[DEBUG] Loading baselines from: {s}\n", .{dir_path});
-        var history = BaselineHistory.init();
-
-        var dir = try std.fs.cwd().openDir(dir_path, .{ .iterate = true });
-        defer dir.close();
-
-        var iterator = dir.iterate();
-        var file_count: usize = 0;
-
-        while (try iterator.next()) |entry| {
-            printErr("[DEBUG] Found entry: {s} kind: {}\n", .{ entry.name, entry.kind });
-            if (entry.kind != .file) continue;
-            if (!std.mem.endsWith(u8, entry.name, ".json")) {
-                printErr("[DEBUG] Skipping {s} (not .json)\n", .{entry.name});
-                continue;
-            }
-
-            file_count += 1;
-            const file_path = try std.fs.path.join(allocator, &[_][]const u8{ dir_path, entry.name });
-            defer allocator.free(file_path);
-
-            printErr("[DEBUG] Loading baseline from: {s}\n", .{file_path});
-            const baseline = try Baseline.loadFromFile(allocator, file_path);
-            printErr("[DEBUG] Loaded baseline: mean_rtt_us={d:.2}\n", .{baseline.mean_rtt_us});
-            try history.add(baseline);
-        }
-
-        printErr("[DEBUG] Loaded {} baselines from {} files\n", .{ history.count, file_count });
-        return history;
-    }
-
     pub fn compareAll(self: *const BaselineHistory, current_mean: f64, current_jitter: f64, current_quality: f64) void {
         if (self.count == 0) {
             printErr("{s}[!] No historical baselines found{s}\n", .{ ANSI.YELLOW, ANSI.RESET });
@@ -3476,9 +3444,6 @@ fn runSimulationBatch(config: Config) !void {
         \\
     , .{});
 
-    printErr("[DEBUG] runSimulationBatch: multi_baseline_dir={any}\n", .{config.multi_baseline_dir});
-    printErr("[DEBUG] runSimulationBatch: measure_jitter={}\n", .{config.measure_jitter});
-
     const batch_size = config.batch_size;
     const packet_size = 64;
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -3725,6 +3690,17 @@ fn runSimulationBatch(config: Config) !void {
             }
         }
 
+        // v3.62: Multi-baseline comparison (independent of single baseline)
+        if (config.multi_baseline_dir) |dir_path| {
+            const history = BaselineHistory.loadFromDir(allocator, dir_path) catch |err| {
+                printErr("[!] Failed to load baseline history: {any}\n", .{err});
+                printErr("[i] Looking in: {s}\n", .{dir_path});
+                return;
+            };
+            const stats = jitter_tracker.getStats();
+            history.compareAll(stats.mean, stats.jitter, quality.score);
+        }
+
         // v3.61: Time series visualization
         if (config.time_series_plot and jitter_tracker.count > 0) {
             TimeSeries.plotRTTSeries(jitter_tracker.samples[0..jitter_tracker.count], "RTT TIME SERIES");
@@ -3903,7 +3879,7 @@ fn runSimulation(config: Config) !void {
 
             // v3.62: Multi-baseline comparison (independent of single baseline)
             if (config.multi_baseline_dir) |dir_path| {
-                const history = BaselineHistory.loadFromDirDebug(allocator, dir_path) catch |err| {
+                const history = BaselineHistory.loadFromDir(allocator, dir_path) catch |err| {
                     printErr("[!] Failed to load baseline history: {any}\n", .{err});
                     printErr("[i] Looking in: {s}\n", .{dir_path});
                     return;
