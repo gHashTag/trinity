@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.06 — Connection Fingerprinting (identify connection types)
+//! v4.07 — Predictive Health Score (predict future connection health)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2025,6 +2025,12 @@ const JitterTracker = struct {
             printInfo("\n  🔍 Connection Fingerprint:\n", .{});
             self.showConnectionFingerprinting();
         }
+
+        // v4.07: Predictive Health Score - predict future connection health
+        if (self.count >= 20) {
+            printInfo("\n  🏥 Predictive Health:\n", .{});
+            self.showPredictiveHealth();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3489,6 +3495,132 @@ const JitterTracker = struct {
             printDim("    {s}\n", .{fp.final_assessment});
         } else {
             printDim("    Insufficient data for fingerprinting\n", .{});
+        }
+    }
+
+    // v4.07: Predictive Health Score - predict future connection health
+    pub const PredictiveHealthScore = struct {
+        current_health: f64,
+        predicted_health_10s: f64,
+        predicted_health_60s: f64,
+        health_trend: []const u8,
+        risk_factors: []const u8,
+        recommendation: []const u8,
+    };
+
+    pub fn getPredictiveHealth(self: *const JitterTracker) ?PredictiveHealthScore {
+        if (self.count < 20) return null;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        const cv = if (mean_ms > 0) (jitter_ms / mean_ms) * 100.0 else 0;
+
+        // Current health score (0-100)
+        const latency_score = @max(0.0, 100.0 - (mean_ms / 5.0)); // 5ms penalty per 1ms latency
+        const jitter_score = @max(0.0, 100.0 - (jitter_ms * 10.0)); // 10 penalty per 1ms jitter
+        const cv_score: f64 = if (cv < 10) 100.0 else if (cv < 20) 75.0 else if (cv < 30) 50.0 else 25.0;
+        const current_health = (latency_score + jitter_score + cv_score) / 3.0;
+
+        // Get trend for prediction
+        const trend = self.getTrend();
+        const is_degrading = std.mem.eql(u8, trend.direction, "DEGRADING") or
+                          std.mem.eql(u8, trend.direction, "WORSE");
+
+        // Predictive degradation factor
+        const degradation_rate = @abs(trend.change_percent) / 100.0; // e.g., 15% -> 0.15
+
+        // Predict future health (exponential decay based on degradation)
+        const decay_factor_10s = if (is_degrading) std.math.exp(-degradation_rate * 1.0) else 1.0;
+        const decay_factor_60s = if (is_degrading) std.math.exp(-degradation_rate * 6.0) else 1.0;
+
+        const predicted_10s = current_health * decay_factor_10s;
+        const predicted_60s = current_health * decay_factor_60s;
+
+        // Health trend classification
+        const health_trend: []const u8 = if (!is_degrading)
+            "STABLE"
+        else if (current_health - predicted_60s < 10)
+            "SLOW DECLINE"
+        else if (current_health - predicted_60s < 25)
+            "MODERATE DECLINE"
+        else
+            "RAPID DECLINE";
+
+        // Risk factors analysis
+        var risk_buffer: [256]u8 = undefined;
+        var risk_offset: usize = 0;
+
+        if (mean_ms > 50) {
+            const text = "HIGH LATENCY";
+            @memcpy(risk_buffer[risk_offset..][0..text.len], text);
+            risk_offset += text.len;
+        }
+        if (jitter_ms > 10) {
+            if (risk_offset > 0) {
+                risk_buffer[risk_offset] = ',';
+                risk_offset += 1;
+            }
+            const text = "HIGH JITTER";
+            @memcpy(risk_buffer[risk_offset..][0..text.len], text);
+            risk_offset += text.len;
+        }
+        if (cv > 30) {
+            if (risk_offset > 0) {
+                risk_buffer[risk_offset] = ',';
+                risk_offset += 1;
+            }
+            const text = "HIGH VARIABILITY";
+            @memcpy(risk_buffer[risk_offset..][0..text.len], text);
+            risk_offset += text.len;
+        }
+        if (is_degrading) {
+            if (risk_offset > 0) {
+                risk_buffer[risk_offset] = ',';
+                risk_offset += 1;
+            }
+            const text = "DEGRADING TREND";
+            @memcpy(risk_buffer[risk_offset..][0..text.len], text);
+            risk_offset += text.len;
+        }
+        if (risk_offset == 0) {
+            const text = "NONE";
+            @memcpy(risk_buffer[0..text.len], text);
+            risk_offset = text.len;
+        }
+
+        // Recommendation
+        const recommendation: []const u8 = if (predicted_60s > 80)
+            "No action needed"
+        else if (predicted_60s > 60)
+            "Monitor closely"
+        else if (predicted_60s > 40)
+            "Consider investigation"
+        else
+            "Action recommended: check connection";
+
+        return .{
+            .current_health = @min(100, current_health),
+            .predicted_health_10s = @min(100, predicted_10s),
+            .predicted_health_60s = @min(100, predicted_60s),
+            .health_trend = health_trend,
+            .risk_factors = risk_buffer[0..risk_offset],
+            .recommendation = recommendation,
+        };
+    }
+
+    pub fn showPredictiveHealth(self: *const JitterTracker) void {
+        const health = self.getPredictiveHealth();
+
+        if (health) |h| {
+            printDim("    Current Health: {d:.0}/100\n", .{h.current_health});
+            printDim("    Predicted (10s): {d:.0}/100\n", .{h.predicted_health_10s});
+            printDim("    Predicted (60s): {d:.0}/100\n", .{h.predicted_health_60s});
+            printDim("    Trend: {s}\n", .{h.health_trend});
+            printDim("    Risk Factors: {s}\n", .{h.risk_factors});
+            printDim("    {s}\n", .{h.recommendation});
+        } else {
+            printDim("    Insufficient data for prediction\n", .{});
         }
     }
 
@@ -6504,7 +6636,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.06           ║
+        \\║      Trinity UART Echo Test v4.07           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6974,7 +7106,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.06)         ║
+            \\║         SIMULATION MODE (v4.07)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7569,7 +7701,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.06)      ║
+        \\║       SIMULATION BATCH MODE (v4.07)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7703,7 +7835,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.06)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.07)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7720,7 +7852,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.06)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.07)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8659,7 +8791,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.06)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.07)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
