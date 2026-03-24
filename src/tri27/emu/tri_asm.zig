@@ -538,16 +538,16 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     }
 
     // === PASS 2: Parse and encode instructions ===
-    // Header: Magic (4) + Version (4) + Section Count (4) = 12 bytes
+    // Header: Magic (4) + Version (1) + Section Count (1) = 6 bytes
+    // Section header: type (1) + padding (1) + size (2) = 4 bytes
+    // Total header: 10 bytes (matches loader.zig format)
     bytecode.appendSliceAssumeCapacity(&.{ 0x32, 0x49, 0x52, 0x54 }); // Magic: "2IRT" little-endian
-    // Version: 0x00010001 = v1.1 (major.minor), little-endian
-    try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x01, 0x00 });
-    // Section count: 1 (code section), little-endian, 3 bytes padding
-    try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x00, 0x00 });
-    // Code section header starts here (offset 0x0C = 12)
-    try bytecode.appendSlice(allocator, &.{ 0x04, 0x01, 0x00, 0x00 }); // Section ID=CODE(4), v1, flags=0, pad=0
-    // Code size placeholder (updated after encoding)
-    try bytecode.appendSlice(allocator, &.{ 0, 0 });
+    // Version: 1 byte (v1)
+    try bytecode.appendSlice(allocator, &.{0x01});
+    // Section count: 1 byte
+    try bytecode.appendSlice(allocator, &.{0x01});
+    // Code section header: type (1) + padding (1) + size placeholder (2)
+    try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x00, 0x00 }); // Section ID=CODE(1), pad=0, size=0
 
     lines_iter = std.mem.splitScalar(u8, source, '\n');
     line_num = 1;
@@ -588,11 +588,10 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
         line_num += 1;
     }
 
-    // Fill in code section header
+    // Fill in code section size (offset 8: 6 bytes main header + 2 bytes into section header)
     const code_size: u16 = instr_count * 4;
-    bytecode.items[12] = @as(u8, @truncate(code_size));     // Code size (little-endian)
-    bytecode.items[13] = @as(u8, @truncate(code_size >> 8)); // Code size >> 8
-    bytecode.items[14] = 0;                                      // Padding (3 bytes to align)
+    bytecode.items[8] = @as(u8, @truncate(code_size)); // Code size LSB
+    bytecode.items[9] = @as(u8, @truncate(code_size >> 8)); // Code size MSB
 
     return try bytecode.toOwnedSlice(allocator);
 }
