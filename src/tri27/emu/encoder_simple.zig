@@ -70,8 +70,8 @@ pub fn encode_nop(rd: u5) u32 {
 pub fn encode_add(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.ADD);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -80,8 +80,8 @@ pub fn encode_add(dst: u5, src1: u5, src2: u5) u32 {
 pub fn encode_sub(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.SUB);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -90,8 +90,8 @@ pub fn encode_sub(dst: u5, src1: u5, src2: u5) u32 {
 pub fn encode_mul(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.MUL);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -101,8 +101,8 @@ pub fn encode_mul(dst: u5, src1: u5, src2: u5) u32 {
 pub fn encode_tmul(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.DOT);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -118,42 +118,42 @@ pub fn encode_load_imm(dst: u5, imm: i16) u32 {
 }
 
 /// Encode LDI (Load Immediate alternate)
-/// Format: opcode | (dst << 8) | (imm16 << 16)
+/// Format: opcode | (dst << 8) | (imm16 << 17)
 pub fn encode_ldi(dst: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.LDI);
     word |= @as(u32, dst) << 8;
     const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 16;
+    word |= @as(u32, imm_u16) << 17;
     return word;
 }
 
 /// Encode STORE (Store register to memory address)
-/// Format: opcode | (dst << 8) | (addr << 16)
+/// Format: opcode | (dst << 8) | (addr << 17)
 /// Note: dst contains source register, addr is 16-bit memory address
 pub fn encode_store(src: u5, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.ST);
     word |= @as(u32, src) << 8;
-    word |= @as(u32, addr) << 16;
+    word |= @as(u32, addr) << 17;
     return word;
 }
 
 /// Encode STI (Store Immediate to memory address)
-/// Format: opcode | (imm << 8) | (addr << 16)
+/// Format: opcode | (imm << 8) | (addr << 17)
 /// Immediate value stored directly to address
 pub fn encode_sti(imm: i16, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.STI);
     const imm_u16: u16 = @bitCast(imm);
     word |= @as(u32, imm_u16) << 8;
-    word |= @as(u32, addr) << 16;
+    word |= @as(u32, addr) << 17;
     return word;
 }
 
 /// Encode LOAD_MEM (Load from memory address to register)
-/// Format: opcode | (dst << 8) | (addr << 16)
+/// Format: opcode | (dst << 8) | (addr << 17)
 pub fn encode_load_mem(dst: u5, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.LD);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, addr) << 16;
+    word |= @as(u32, addr) << 17;
     return word;
 }
 
@@ -168,24 +168,24 @@ pub fn encode_jmp(imm: i16) u32 {
 }
 
 /// Encode JZ (Jump if Zero)
-/// Format: opcode | (rd << 8) | (imm16 << 16)
+/// Format: opcode | (rd << 8) | (imm16 << 17)
 /// Jumps if register rd == 0
 pub fn encode_jz(rd: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.JZ);
     word |= @as(u32, rd) << 8;
     const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 16;
+    word |= @as(u32, imm_u16) << 17;
     return word;
 }
 
 /// Encode JNZ (Jump if Not Zero)
-/// Format: opcode | (rd << 8) | (imm16 << 16)
+/// Format: opcode | (rd << 8) | (imm16 << 17)
 /// Jumps if register rd != 0
 pub fn encode_jnz(rd: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.JNZ);
     word |= @as(u32, rd) << 8;
     const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 16;
+    word |= @as(u32, imm_u16) << 17;
     return word;
 }
 
@@ -217,8 +217,8 @@ pub fn encode_halt() u32 {
 pub fn encode_and(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.AND);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -227,8 +227,8 @@ pub fn encode_and(dst: u5, src1: u5, src2: u5) u32 {
 pub fn encode_or(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.OR);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -237,8 +237,8 @@ pub fn encode_or(dst: u5, src1: u5, src2: u5) u32 {
 pub fn encode_xor(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.XOR);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
@@ -251,20 +251,20 @@ pub fn encode_not(dst: u5) u32 {
 }
 
 /// Encode SHL (Shift Left)
-/// Format: opcode | (dst << 8) | (shift_amt << 11)
+/// Format: opcode | (dst << 8) | (shift_amt << 13)
 pub fn encode_shl(dst: u5, shift_amt: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.SHL);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, shift_amt) << 11;
+    word |= @as(u32, shift_amt) << 13;
     return word;
 }
 
 /// Encode SHR (Shift Right)
-/// Format: opcode | (dst << 8) | (shift_amt << 11)
+/// Format: opcode | (dst << 8) | (shift_amt << 13)
 pub fn encode_shr(dst: u5, shift_amt: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.SHR);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, shift_amt) << 11;
+    word |= @as(u32, shift_amt) << 13;
     return word;
 }
 
@@ -273,8 +273,8 @@ pub fn encode_shr(dst: u5, shift_amt: u5) u32 {
 pub fn encode_div(dst: u5, src1: u5, src2: u5) u32 {
     var word: u32 = @intFromEnum(Opcode.DIV);
     word |= @as(u32, dst) << 8;
-    word |= @as(u32, src1) << 11;
-    word |= @as(u32, src2) << 14;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
     return word;
 }
 
