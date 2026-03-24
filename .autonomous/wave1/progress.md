@@ -1,13 +1,12 @@
-## Task: TDGS-1 (Tri Dev Guarded Stack)
-- Current step: TRI-27 Idiom 11 spec-in-code annotations — Core implementation COMPLETE
-- Last commit: b62dcc979e
-- Build: l0=OK, l1=OK, tri=OK
-- Completed:
-  - ✅ asm_lexer.zig Zig 0.15 fix
-  - ✅ tri_spec_audit.zig directory scanning + report printing
-  - ✅ contract_dsl.zig (457 LOC)
-  - ✅ contract_checker.zig (253 LOC)
-  - ✅ tri_spec_apply.zig (379 LOC)
-  - ✅ main.zig spec subcommand routing
-- Pending: CI workflow (.github/workflows/spec-audit.yml)
-- Last iteration: 2026-03-25T09:40+07
+## Task: TDGS-2 (Trinity Caste System — Enforce L0/L1 Independence)
+- Current step: Verification — All caste targets working
+- Last commit: 8e56eaa24d
+- Build: l0=OK, l1=OK, queens=OK, temple=OK
+- Tests:
+  - ✅ `zig build temple` — 0.562s (well under 5s requirement)
+  - ✅ `zig build queens` — builds cleanly
+  - ✅ `zig build l0` — Temple only (TTT, math, VSA)
+  - ✅ `zig build l1` — Queens only (Queen, Doctor, Scheduler)
+- Verified: Caste independence tested (L1 builds even with broken tri_farm.zig)
+- Blockers: None
+- Last iteration: 2026-03-25T10:00+07
