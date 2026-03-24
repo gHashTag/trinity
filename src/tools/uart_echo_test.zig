@@ -1893,6 +1893,12 @@ const JitterTracker = struct {
             printInfo("\n  📊 Percentile Bands:\n", .{});
             self.showPercentileBands();
         }
+
+        // v3.82: Spectral Periodicity Detection - detect periodic patterns
+        if (self.count >= 20) {
+            printInfo("\n  🌊 Periodicity Analysis:\n", .{});
+            self.analyzePeriodicity();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -2671,6 +2677,116 @@ const JitterTracker = struct {
         printDim("    IAT Range: {d:.2}us\n", .{iat_range});
         printDim("    Consistency: {d:.1}%\n", .{consistency_score});
         printDim("    Rating: {s}\n", .{rating});
+    }
+
+    // v3.82: Spectral Periodicity Detection - detect periodic patterns in RTT
+    pub fn analyzePeriodicity(self: *const JitterTracker) void {
+        const MIN_SAMPLES: usize = 20;
+        if (self.count < MIN_SAMPLES) {
+            printDim("    Need at least {d} samples\n", .{MIN_SAMPLES});
+            return;
+        }
+
+        const stats = self.getStats();
+        const n = self.count;
+
+        // Calculate autocorrelation for lag values 1 to n/2
+        const MAX_LAG = @min(50, @divFloor(n, 2));
+
+        var mean: f64 = 0;
+        for (self.samples[0..n]) |s| {
+            mean += @as(f64, @floatFromInt(s));
+        }
+        mean /= @as(f64, @floatFromInt(n));
+
+        // Subtract mean for autocorrelation
+        var detrended = self.allocator.alloc(f64, n) catch unreachable;
+        defer self.allocator.free(detrended);
+        for (self.samples[0..n], 0..) |s, i| {
+            detrended[i] = @as(f64, @floatFromInt(s)) - mean;
+        }
+
+        // Calculate autocorrelation for each lag
+        var autocorr = self.allocator.alloc(f64, MAX_LAG) catch unreachable;
+        defer self.allocator.free(autocorr);
+
+        const norm = blk: {
+            var sum_sq: f64 = 0;
+            for (detrended) |x| sum_sq += x * x;
+            break :blk sum_sq;
+        };
+
+        var lag_idx: usize = 0;
+        while (lag_idx < MAX_LAG) : (lag_idx += 1) {
+            var sum: f64 = 0;
+            const lag = lag_idx + 1;
+            var i: usize = lag;
+            while (i < n) : (i += 1) {
+                sum += detrended[i] * detrended[i - lag];
+            }
+            autocorr[lag_idx] = if (norm > 0) sum / norm else 0;
+        }
+
+        // Find dominant periods (high autocorrelation)
+        var max_corr: f64 = 0;
+        var dominant_period: usize = 0;
+        for (autocorr[1..], 1..) |c, p| { // Skip lag=0 (always 1.0)
+            if (c > max_corr) {
+                max_corr = c;
+                dominant_period = p;
+            }
+        }
+
+        // Count how many lags have high correlation (> 0.3)
+        var high_corr_count: usize = 0;
+        for (autocorr) |c| {
+            if (c > 0.3) high_corr_count += 1;
+        }
+
+        const periodicity_score = if (MAX_LAG > 0)
+            @as(f64, @floatFromInt(high_corr_count)) / @as(f64, @floatFromInt(MAX_LAG)) * 100.0
+        else
+            0.0;
+
+        const ms_per_sample = stats.mean / 1000.0;
+        const dominant_period_ms = if (dominant_period > 0)
+            @as(f64, @floatFromInt(dominant_period)) * ms_per_sample
+        else
+            0;
+
+        // Interpretation
+        const classification = blk: {
+            if (max_corr < 0.2) break :blk "Random (no periodic pattern detected)";
+            if (max_corr < 0.4) break :blk "Weak Periodicity (minor cycles)";
+            if (max_corr < 0.6) break :blk "Moderate Periodicity (noticeable cycles)";
+            if (max_corr < 0.8) break :blk "Strong Periodicity (clear cycles)";
+            break :blk "Very Strong Periodicity (predictable cycles)";
+        };
+
+        printDim("    Autocorrelation Peak: {d:.3} at lag {d}\n", .{max_corr, dominant_period});
+        printDim("    Periodicity Score: {d:.1}%\n", .{periodicity_score});
+        if (dominant_period > 0) {
+            printDim("    Dominant Period: {d:.2}ms ({d} samples)\n", .{dominant_period_ms, dominant_period});
+        }
+        printDim("    Classification: {s}\n", .{classification});
+
+        // Provide interpretation hints
+        if (max_corr >= 0.5) {
+            printDim("    ⚠️  Possible causes:\n", .{});
+            if (dominant_period_ms < 5) {
+                printDim("       - CPU scheduler tick\n", .{});
+                printDim("       - Interrupt handling\n", .{});
+            } else if (dominant_period_ms < 50) {
+                printDim("       - Garbage collection cycles\n", .{});
+                printDim("       - Background task scheduling\n", .{});
+            } else if (dominant_period_ms < 500) {
+                printDim("       - Network congestion waves\n", .{});
+                printDim("       - TCP timer granularity\n", .{});
+            } else {
+                printDim("       - Long-running background processes\n", .{});
+                printDim("       - Resource exhaustion cycles\n", .{});
+            }
+        }
     }
 
     // v3.69: Plot histogram of RTT distribution
