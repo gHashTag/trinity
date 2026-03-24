@@ -1,7 +1,13 @@
 ## Task: TDGS-1 (Tri Dev Guarded Stack)
-- Current step: Fixed Zig 0.15.x error discard in asm_lexer.zig
-- Last commit: pending
+- Current step: TRI-27 Idiom 11 spec-in-code annotations — Core implementation COMPLETE
+- Last commit: b62dcc979e
 - Build: l0=OK, l1=OK, tri=OK
-- Tests: zig build tri passed
-- Blockers: None
-- Last iteration: 2026-03-25T09:30+07
+- Completed:
+  - ✅ asm_lexer.zig Zig 0.15 fix
+  - ✅ tri_spec_audit.zig directory scanning + report printing
+  - ✅ contract_dsl.zig (457 LOC)
+  - ✅ contract_checker.zig (253 LOC)
+  - ✅ tri_spec_apply.zig (379 LOC)
+  - ✅ main.zig spec subcommand routing
+- Pending: CI workflow (.github/workflows/spec-audit.yml)
+- Last iteration: 2026-03-25T09:40+07

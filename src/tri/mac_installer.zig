@@ -115,13 +115,13 @@ fn runDiscover(allocator: Allocator) !void {
 }
 
 fn displayCluster(cluster: *const MacCluster) void {
-    print("{s}Cluster Size:{s} {d} nodes\n", .{ CYAN, cluster.nodes.items.len, RESET });
+    print("{s}Cluster Size:{s} {d} nodes\n", .{ CYAN, RESET, cluster.nodes.items.len });
     print("{s}Total Workers:{s} {d} / {d} capacity\n\n", .{
-        CYAN, cluster.total_workers, mac_cluster_module.totalCapacity(cluster), RESET,
+        CYAN, RESET, cluster.total_workers, mac_cluster_module.totalCapacity(cluster),
     });
-    print("{s}Coordinator:{s} {s}\n", .{
-        if (cluster.coordinator_id) |cid| cluster.nodes.items[cid].hostname else "None",
-        RESET,
+    print("{s}Coordinator:{s} {s}{s}\n", .{
+        CYAN,                                                                            RESET,
+        if (cluster.coordinator_id) |cid| cluster.nodes.items[cid].hostname else "None", "",
     });
 
     print("\n{s}Nodes:{s}\n", .{ BOLD, RESET });
@@ -130,12 +130,12 @@ fn displayCluster(cluster: *const MacCluster) void {
         const status_emoji = if (node.online) "🟢" else "🔴";
 
         print("  {s}{s} mac-{d:2} {s}{s}{s}\n", .{
-            role_emoji, status_emoji, node.id, BOLD, DIM, RESET,
+            role_emoji, status_emoji, node.id, BOLD, "", RESET,
         });
 
         if (node.workers_count > 0) {
-            print("    {s}Workers:{s} {d}-{d} ({d})\n", .{
-                DIM, node.workers_start, node.workers_start + node.workers_count - 1, node.workers_count, RESET,
+            print("    {s}Workers:{s} {d}-{d} ({d}){s}\n", .{
+                DIM, "", node.workers_start, node.workers_start + node.workers_count - 1, node.workers_count, RESET,
             });
         }
     }
@@ -194,7 +194,7 @@ fn doInstall(allocator: Allocator, device_id: usize, role: NodeRole, workers_cou
     const actual_workers = workers_count orelse role.defaultWorkers();
 
     print("  {s}Device ID:{s} {d}\n", .{ CYAN, RESET, device_id });
-    print("  {s}Role:{s} {s} ({d} workers){s}\n", .{ CYAN, RESET, role.toString(), role.defaultWorkers(), actual_workers });
+    print("  {s}Role:{s} {s} ({d} workers){d}{s}\n", .{ CYAN, RESET, role.toString(), role.defaultWorkers(), actual_workers, "" });
     print("  {s}Workers:{s} {d}\n", .{ CYAN, RESET, actual_workers });
 
     // Check if device already exists

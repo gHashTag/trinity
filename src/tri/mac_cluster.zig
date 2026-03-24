@@ -274,8 +274,8 @@ pub fn displayStatus(self: *const MacCluster) void {
         const coord_mark = if (self.coordinator_id) |cid| cid == node.id else false;
         const coord_str = if (coord_mark) " [COORDINATOR]" else "";
 
-        print("  {s}{s} {s}{s} {s}mac-{d:2} {s}{s}\n", .{
-            role_emoji, status_emoji, BOLD, node.hostname, RESET, node.id, DIM,
+        print("  {s}{s} {s}{s}mac-{d:2} {s}{s}\n", .{
+            role_emoji, status_emoji, BOLD, node.hostname, node.id, DIM, RESET,
         });
 
         if (coord_mark) {
