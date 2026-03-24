@@ -118,12 +118,14 @@ pub fn encode_load_imm(dst: u5, imm: i16) u32 {
 }
 
 /// Encode LDI (Load Immediate alternate)
-/// Format: opcode | (dst << 8) | (imm16 << 17)
+/// Format: opcode | (dst << 8) | (imm15 << 17)
+/// Immediate is 15-bit signed (-16384 to 16383)
 pub fn encode_ldi(dst: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.LDI);
     word |= @as(u32, dst) << 8;
-    const imm_u16: u16 = @bitCast(imm);
-    word |= @as(u32, imm_u16) << 17;
+    // Mask to 15 bits and sign-extend properly
+    const imm_bits: u32 = @bitCast(@as(u15, @bitCast(imm)));
+    word |= imm_bits << 17;
     return word;
 }
 

@@ -1905,6 +1905,12 @@ const JitterTracker = struct {
             printInfo("\n  🔀 Multi-modal Analysis:\n", .{});
             self.detectMultimodalDistribution();
         }
+
+        // v3.84: Auto-tuning Recommendations - actionable configuration suggestions
+        if (self.count >= 10) {
+            printInfo("\n  🎯 Auto-tuning Recommendations:\n", .{});
+            self.showAutoTuningRecommendations();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -2926,6 +2932,136 @@ const JitterTracker = struct {
                 printDim("       - Different processing paths (fast vs slow path)\n", .{});
             }
         }
+    }
+
+    // v3.84: Auto-tuning Recommendations - actionable configuration suggestions
+    pub fn showAutoTuningRecommendations(self: *const JitterTracker) void {
+        if (self.count < 10) {
+            printDim("    Need at least 10 samples for recommendations\n", .{});
+            return;
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const anomalies = self.detectAnomalies(1.5, 2.0);
+        const quality = self.getQualityScore(3.0);
+
+        printInfo("\n  🎯 Auto-tuning Recommendations:\n", .{});
+
+        var recommendations: [10][]const u8 = undefined;
+        var num_recs: usize = 0;
+
+        // Batch size recommendation
+        const cv = if (stats.mean > 0) stats.jitter / stats.mean else 0;
+        if (cv > 0.5) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "⬇️  Reduce batch size (high jitter detected)";
+                num_recs += 1;
+            }
+        } else if (cv < 0.2 and self.count > 50) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "⬆️  Increase batch size (stable latency, capacity available)";
+                num_recs += 1;
+            }
+        }
+
+        // Delay recommendation
+        const mean_ms = stats.mean / 1000.0;
+        const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+        if (mean_ms < 10) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "⏱️  Consider increasing delay (very fast responses, may need spacing)";
+                num_recs += 1;
+            }
+        } else if (mean_ms > 100) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "⏱️  Consider decreasing delay (slow responses, spacing may not be needed)";
+                num_recs += 1;
+            }
+        }
+
+        // Spike threshold recommendation
+        const p99_p50_ratio = if (p.p50 > 0) @as(f64, @floatFromInt(p.p99)) / @as(f64, @floatFromInt(p.p50)) else 1;
+        if (p99_p50_ratio > 4) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "🎚️  Increase spike threshold (high tail variance detected)";
+                num_recs += 1;
+            }
+        } else if (p99_p50_ratio < 1.5) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "🎚️  Decrease spike threshold (low variance, sensitive detection possible)";
+                num_recs += 1;
+            }
+        }
+
+        // Timeout recommendation
+        const max_ms = @as(f64, @floatFromInt(stats.max)) / 1000.0;
+        const recommended_timeout = max_ms * 2.0;
+        if (num_recs < 10) {
+            const timeout_buf = self.allocator.alloc(u8, 100) catch unreachable;
+            defer self.allocator.free(timeout_buf);
+            const timeout_msg = std.fmt.bufPrint(timeout_buf, "⏰  Set timeout to {d:.0}ms (2x max RTT: {d:.1}ms)", .{recommended_timeout, max_ms}) catch "";
+            recommendations[num_recs] = timeout_msg;
+            num_recs += 1;
+        }
+
+        // Anomaly-based recommendations
+        if (anomalies.count > @divFloor(self.count, 10)) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "🔍 Investigate anomaly sources (10%+ samples are outliers)";
+                num_recs += 1;
+            }
+        }
+
+        // Quality score recommendations
+        if (quality.score < 50) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "⚠️  Poor quality detected - check hardware/connection";
+                num_recs += 1;
+            }
+        } else if (quality.score >= 90) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "✅ Excellent quality - current configuration is optimal";
+                num_recs += 1;
+            }
+        }
+
+        // Trend-based recommendations
+        const trend = self.getTrend();
+        if (std.mem.eql(u8, trend.direction, "DEGRADING") and trend.change_percent > 30) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "📈 Performance degrading - investigate system load/network";
+                num_recs += 1;
+            }
+        }
+
+        // Sample count recommendations
+        if (self.count < 30) {
+            if (num_recs < 10) {
+                recommendations[num_recs] = "📊 Increase sample count for better statistical confidence";
+                num_recs += 1;
+            }
+        }
+
+        // Print recommendations
+        if (num_recs == 0) {
+            printDim("    No specific recommendations - configuration looks good\n", .{});
+        } else {
+            var i: usize = 0;
+            while (i < num_recs) : (i += 1) {
+                printDim("    {d}. {s}\n", .{i + 1, recommendations[i]});
+            }
+        }
+
+        // Summary stats
+        printDim("\n    📋 Configuration Summary:\n", .{});
+        printDim("       Mean RTT: {d:.2}ms, Jitter: {d:.2}ms\n", .{mean_ms, stats.jitter / 1000.0});
+        printDim("       p50: {d:.2}ms, p99: {d:.2}ms (ratio: {d:.2}x)\n", .{
+            @as(f64, @floatFromInt(p.p50)) / 1000.0,
+            p99_ms,
+            p99_p50_ratio,
+        });
+        printDim("       Quality Score: {d:.0}/100 ({s})\n", .{quality.score, quality.grade});
     }
 
     // v3.69: Plot histogram of RTT distribution
