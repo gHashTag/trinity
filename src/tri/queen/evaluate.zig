@@ -242,3 +242,20 @@ test "evaluate: evaluateWindow high failure rate" {
     try std.testing.expectEqual(Quality.bad, result.quality);
     try std.testing.expectEqual(@as(u32, 3), result.failure_count);
 }
+
+test "evaluate: evaluateWindow 80% success unstable" {
+    const allocator = std.testing.allocator;
+    // 80% success rate = unstable (not >= 95%, not <= 70%)
+    const episodes = &[_]Episode{
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .failure_learned),
+    };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.unstable, result.quality);
+    try std.testing.expectEqual(@as(u32, 1), result.failure_count);
+    try std.testing.expect(result.success_rate > 0.70 and result.success_rate < 0.95);
+}

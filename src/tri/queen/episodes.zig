@@ -386,6 +386,125 @@ pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
     return try episodes.toOwnedSlice(allocator);
 }
 
+/// Load the most recent N episodes from episodes.jsonl
+/// Returns episodes in reverse chronological order (newest first)
+pub fn loadRecentEpisodes(allocator: std.mem.Allocator, max_count: usize) ![]Episode {
+    const file_path = ".trinity/queen/episodes.jsonl";
+
+    const file = std.fs.cwd().openFile(file_path, .{}) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer allocator.free(contents);
+
+    // Use a ring buffer to keep only the most recent episodes
+    var buffer = try std.ArrayList(?Episode).initCapacity(allocator, @min(max_count, 1024));
+    defer {
+        for (buffer.items) |maybe_ep| {
+            if (maybe_ep) |ep| {
+                if (ep.context.active_issues.len > 0) allocator.free(ep.context.active_issues);
+            }
+        }
+        buffer.deinit(allocator);
+    }
+
+    var buf_idx: usize = 0;
+    var filled = false;
+
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+
+    while (line_iter.next()) |line| {
+        if (line.len == 0) continue;
+
+        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch {
+            continue;
+        };
+        defer parsed.deinit();
+
+        const summary = parsed.value;
+        const action: Action = if (std.mem.eql(u8, summary.action_type, "scale_up"))
+            Action{ .scale_up = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "scale_down"))
+            Action{ .scale_down = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "trigger"))
+            Action{ .trigger = .{ .key = summary.key } }
+        else if (std.mem.eql(u8, summary.action_type, "tri27_op"))
+            Action{
+                .tri27_op = .{
+                    .operation = parseTri27Operation(summary.tri27_operation),
+                    .input_file = summary.input_file,
+                    .output_file = "",
+                    .cycles = 0,
+                    .instructions = 0,
+                },
+            }
+        else
+            Action{ .wait = {} };
+
+        const ep = Episode{
+            .id = summary.id,
+            .timestamp = summary.timestamp,
+            .source = summary.source,
+            .context = undefined,
+            .action = action,
+            .result = undefined,
+            .outcome = summary.outcome,
+        };
+
+        // Ring buffer insertion
+        if (buffer.items.len < max_count) {
+            try buffer.append(allocator, ep);
+        } else {
+            // Replace old entry
+            buf_idx = buf_idx % max_count;
+            const old = buffer.items[buf_idx];
+            if (old) |o| {
+                if (o.context.active_issues.len > 0) allocator.free(o.context.active_issues);
+            }
+            buffer.items[buf_idx] = ep;
+            buf_idx += 1;
+            filled = true;
+        }
+    }
+
+    // Extract episodes in reverse order (newest first)
+    const result_count = if (filled) max_count else buffer.items.len;
+    var result = try allocator.alloc(Episode, result_count);
+
+    if (filled) {
+        // Buffer is a ring - start from buf_idx (oldest) and wrap around
+        for (0..result_count) |i| {
+            const idx = (buf_idx + i) % max_count;
+            result[i] = buffer.items[idx].?;
+        }
+        // Reverse to get newest first
+        for (0..result_count / 2) |i| {
+            const j = result_count - 1 - i;
+            const tmp = result[i];
+            result[i] = result[j];
+            result[j] = tmp;
+        }
+    } else {
+        // Buffer not filled - copy as-is (newest last, so reverse)
+        for (0..result_count) |i| {
+            result[i] = buffer.items[i].?;
+        }
+        // Reverse to get newest first
+        for (0..result_count / 2) |i| {
+            const j = result_count - 1 - i;
+            const tmp = result[i];
+            result[i] = result[j];
+            result[j] = tmp;
+        }
+    }
+
+    return result;
+}
+
 pub fn getLastEpisode(allocator: std.mem.Allocator) !?Episode {
     const episodes = try loadEpisodes(allocator);
     defer allocator.free(episodes);
