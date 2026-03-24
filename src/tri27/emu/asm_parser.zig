@@ -203,6 +203,72 @@ pub const Assembler = struct {
             return encoder.encode_ret();
         }
 
+        // Logic opcodes (R-type like arithmetic)
+        if (std.mem.eql(u8, op_lower, "and")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_and(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "or")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_or(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "xor")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_xor(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "not")) {
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            return encoder.encode_not(dst);
+        }
+
+        if (std.mem.eql(u8, op_lower, "shl")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const shift_amt = try parseRegister(operands[1]); // Use register for shift amount
+            return encoder.encode_shl(dst, shift_amt);
+        }
+
+        if (std.mem.eql(u8, op_lower, "shr")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const shift_amt = try parseRegister(operands[1]); // Use register for shift amount
+            return encoder.encode_shr(dst, shift_amt);
+        }
+
+        // Additional arithmetic opcodes
+        if (std.mem.eql(u8, op_lower, "div")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            return encoder.encode_div(dst, src1, src2);
+        }
+
+        if (std.mem.eql(u8, op_lower, "inc")) {
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            return encoder.encode_inc(dst);
+        }
+
+        if (std.mem.eql(u8, op_lower, "dec")) {
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            return encoder.encode_dec(dst);
+        }
+
         return AsmError.UnknownOpcode;
     }
 
