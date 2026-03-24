@@ -18,6 +18,7 @@ const GRAY = colors.GRAY;
 const RED = colors.RED;
 const CYAN = colors.CYAN;
 const PURPLE = colors.PURPLE;
+const YELLOW = colors.YELLOW;
 const RESET = colors.RESET;
 
 // Sacred constants
@@ -104,6 +105,14 @@ pub fn runNeuroCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         try cmdSynapse(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "neurons")) {
         try cmdNeurons(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "audit")) {
+        try cmdNeuroAudit(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "map")) {
+        try cmdNeuroMap(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "validate")) {
+        try cmdNeuroValidate(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "flow")) {
+        try cmdNeuroFlow(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showNeuroHelp();
     } else {
@@ -600,6 +609,26 @@ test "isFibonacci" {
     try std.testing.expect(!isFibonacci(4));
     try std.testing.expect(!isFibonacci(10));
     try std.testing.expect(!isFibonacci(0));
+}
+
+fn cmdNeuroAudit(_: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}Audit command not yet implemented{s}\n", .{ YELLOW, RESET });
+}
+
+fn cmdNeuroMap(_: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}Map command not yet implemented{s}\n", .{ YELLOW, RESET });
+}
+
+fn cmdNeuroValidate(_: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}Validate command not yet implemented{s}\n", .{ YELLOW, RESET });
+}
+
+fn cmdNeuroFlow(_: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}Flow command not yet implemented{s}\n", .{ YELLOW, RESET });
 }
 
 test "FIBONACCI sequence" {
