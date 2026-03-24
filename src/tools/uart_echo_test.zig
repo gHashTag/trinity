@@ -126,6 +126,7 @@ const Config = struct {
     baseline_file: ?[]const u8 = null,
     compare_baseline: bool = false,
     statistical_mode: bool = false, // v3.60: Statistical significance testing
+    time_series_plot: bool = false, // v3.61: Time series visualization
 };
 
 // Device vendor detection
@@ -499,6 +500,146 @@ fn calculateTwoTailedPValue(t_abs: f64, df: f64) f64 {
     const cumulative = 1.0 - 0.5 * (num / den) * @sqrt(x);
     return 2.0 * (1.0 - cumulative);
 }
+
+// v3.61: Time series visualization with ASCII plots
+const TimeSeries = struct {
+    const PLOT_WIDTH = 60;
+    const PLOT_HEIGHT = 12;
+
+    // Plot RTT samples as ASCII time series
+    pub fn plotRTTSeries(samples: []const i64, title: []const u8) void {
+        if (samples.len == 0) return;
+
+        const min_val = findMin(samples);
+        const max_val = findMax(samples);
+        const range = @as(f64, @floatFromInt(max_val - min_val));
+
+        printErr("\n{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+        printErr("{s}  {s} (v3.61)  {s}\n", .{ ANSI.BOLD, title, ANSI.RESET });
+        printErr("{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+
+        printErr("    Min: {d:.3}ms | Max: {d:.3}ms | Samples: {d}\n\n", .{ @as(f64, @floatFromInt(min_val)) / 1000.0, @as(f64, @floatFromInt(max_val)) / 1000.0, samples.len });
+
+        // Plot from top to bottom (highest RTT at top)
+        var y: usize = 0;
+        while (y < PLOT_HEIGHT) : (y += 1) {
+            const y_ratio = @as(f64, @floatFromInt(y)) / @as(f64, @floatFromInt(PLOT_HEIGHT));
+            const range_scaled = range * y_ratio;
+            const threshold = max_val - @as(i64, @intFromFloat(range_scaled));
+
+            // Y-axis label
+            if (y == 0) {
+                printErr("{d:5.1}ms │", .{@as(f64, @floatFromInt(max_val)) / 1000.0});
+            } else if (y == PLOT_HEIGHT - 1) {
+                printErr("{d:5.1}ms │", .{@as(f64, @floatFromInt(min_val)) / 1000.0});
+            } else {
+                printErr("       │", .{});
+            }
+
+            // Plot points at this Y level
+            var x: usize = 0;
+            while (x < PLOT_WIDTH) : (x += 1) {
+                const idx = (x * samples.len) / PLOT_WIDTH;
+                if (idx >= samples.len) break;
+
+                const val = samples[idx];
+                const val_diff = if (val > threshold) val - threshold else threshold - val;
+                const step_size_f = range / @as(f64, @floatFromInt(PLOT_HEIGHT));
+                const is_near_threshold = if (range > 0)
+                    @as(f64, @floatFromInt(@abs(val_diff))) < step_size_f
+                else
+                    val == threshold;
+
+                if (is_near_threshold) {
+                    // Color based on value (red=high, green=low)
+                    const pct = if (range > 0) @as(f64, @floatFromInt(val - min_val)) / range else 0;
+                    if (pct > 0.8) {
+                        printErr("{s}█{s}", .{ ANSI.RED, ANSI.RESET });
+                    } else if (pct > 0.5) {
+                        printErr("{s}█{s}", .{ ANSI.YELLOW, ANSI.RESET });
+                    } else {
+                        printErr("{s}█{s}", .{ ANSI.GREEN, ANSI.RESET });
+                    }
+                } else {
+                    printErr(" ", .{});
+                }
+            }
+            printErr("\n", .{});
+        }
+
+        // X-axis
+        printErr("       └", .{});
+        var x: usize = 1;
+        while (x < PLOT_WIDTH) : (x += 1) {
+            printErr("─", .{});
+        }
+        printErr("→\n", .{});
+        printErr("       0                                    {d:>5.0}%\n", .{@as(f64, @floatFromInt(samples.len - 1)) / @as(f64, @floatFromInt(samples.len - 1)) * 100.0});
+        printErr("\n", .{});
+    }
+
+    // Plot jitter trend (derivative of RTT)
+    pub fn plotJitterTrend(samples: []const i64) void {
+        if (samples.len < 2) return;
+
+        // Calculate jitter (absolute differences)
+        var jitter_vals = std.heap.page_allocator.alloc(i64, samples.len - 1) catch return;
+        defer std.heap.page_allocator.free(jitter_vals);
+
+        for (samples[0 .. samples.len - 1], 0..) |val, i| {
+            const diff = samples[i + 1] - val;
+            jitter_vals[i] = if (diff > 0) diff else -diff;
+        }
+
+        printErr("\n{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+        printErr("{s}      JITTER TREND (v3.61)      {s}\n", .{ ANSI.BOLD, ANSI.RESET });
+        printErr("{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+
+        const max_jitter = findMax(jitter_vals);
+        const avg_jitter = average(jitter_vals);
+
+        printErr("    Avg: {d:.3}ms | Max: {d:.3}ms\n\n", .{ avg_jitter / 1000.0, @as(f64, @floatFromInt(max_jitter)) / 1000.0 });
+
+        // Simple sparkline-style jitter plot
+        printErr("    ", .{});
+        for (jitter_vals) |j| {
+            const norm = if (max_jitter > 0) @as(f64, @floatFromInt(j)) / @as(f64, @floatFromInt(max_jitter)) else 0;
+            if (norm > 0.8) {
+                printErr("{s}�{s}", .{ ANSI.RED, ANSI.RESET });
+            } else if (norm > 0.5) {
+                printErr("{s}▴{s}", .{ ANSI.YELLOW, ANSI.RESET });
+            } else if (norm > 0.2) {
+                printErr("{s}─{s}", .{ ANSI.CYAN, ANSI.RESET });
+            } else {
+                printErr("{s}.{s}", .{ ANSI.DIM, ANSI.RESET });
+            }
+        }
+        printErr("\n\n", .{});
+    }
+
+    fn findMin(arr: []const i64) i64 {
+        var min_val = arr[0];
+        for (arr[1..]) |v| {
+            if (v < min_val) min_val = v;
+        }
+        return min_val;
+    }
+
+    fn findMax(arr: []const i64) i64 {
+        var max_val = arr[0];
+        for (arr[1..]) |v| {
+            if (v > max_val) max_val = v;
+        }
+        return max_val;
+    }
+
+    fn average(arr: []const i64) f64 {
+        if (arr.len == 0) return 0;
+        var sum: i64 = 0;
+        for (arr) |v| sum += v;
+        return @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(arr.len));
+    }
+};
 
 // v3.24: Error statistics for tracking test failures by type
 // v3.37: Enhanced with consecutive error tracking
@@ -1939,6 +2080,9 @@ fn parseArgs() Config {
         } else if (std.mem.eql(u8, arg, "--statistical")) {
             // v3.60: Statistical significance testing
             config.statistical_mode = true;
+        } else if (std.mem.eql(u8, arg, "--time-series")) {
+            // v3.61: Time series visualization
+            config.time_series_plot = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -2097,7 +2241,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.60           ║
+        \\║      Trinity UART Echo Test v3.61           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -2144,6 +2288,7 @@ fn printUsage() void {
         \\  --save-baseline <file>     Save current run as performance baseline (v3.58)
         \\  --compare-baseline <file>  Compare current run against saved baseline (v3.58)
         \\  --statistical       Statistical significance testing (Welch's t-test, CI) (v3.60)
+        \\  --time-series       Time series visualization (ASCII RTT/jitter plots) (v3.61)
         \\  --help              Show this help message
         \\
         \\Performance Modes (v3.60):
@@ -2173,6 +2318,7 @@ fn printUsage() void {
         \\  Extended Health Check: Framing verification before tests (v3.38)
         \\  Performance Baseline: Save/compare performance runs (v3.58)
         \\  Statistical Significance: Welch's t-test, CI, Cohen's d (v3.60)
+        \\  Time Series Plots: ASCII visualization of RTT/jitter over time (v3.61)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
@@ -3387,7 +3533,7 @@ fn runSimulationBatch(config: Config) !void {
 
                 var new_baseline = Baseline{
                     .timestamp = std.time.timestamp(),
-                    .version = "v3.60",
+                    .version = "v3.61",
                     .mean_rtt_us = stats.mean,
                     .jitter_us = stats.jitter,
                     .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
@@ -3407,6 +3553,12 @@ fn runSimulationBatch(config: Config) !void {
                 };
                 printErr("{s}[✓] Baseline saved to: {s}{s}\n", .{ ANSI.GREEN, baseline_path, ANSI.RESET });
             }
+        }
+
+        // v3.61: Time series visualization
+        if (config.time_series_plot and jitter_tracker.count > 0) {
+            TimeSeries.plotRTTSeries(jitter_tracker.samples[0..jitter_tracker.count], "RTT TIME SERIES");
+            TimeSeries.plotJitterTrend(jitter_tracker.samples[0..jitter_tracker.count]);
         }
     }
 }
@@ -3551,7 +3703,7 @@ fn runSimulation(config: Config) !void {
 
                     var new_baseline = Baseline{
                         .timestamp = std.time.timestamp(),
-                        .version = "v3.60",
+                        .version = "v3.61",
                         .mean_rtt_us = stats.mean,
                         .jitter_us = stats.jitter,
                         .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
@@ -3571,6 +3723,12 @@ fn runSimulation(config: Config) !void {
                     };
                     printErr("{s}[✓] Baseline saved to: {s}{s}\n", .{ ANSI.GREEN, baseline_path, ANSI.RESET });
                 }
+            }
+
+            // v3.61: Time series visualization
+            if (config.time_series_plot and jitter_tracker.count > 0) {
+                TimeSeries.plotRTTSeries(jitter_tracker.samples[0..jitter_tracker.count], "RTT TIME SERIES");
+                TimeSeries.plotJitterTrend(jitter_tracker.samples[0..jitter_tracker.count]);
             }
         }
     }
