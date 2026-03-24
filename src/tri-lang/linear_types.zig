@@ -405,8 +405,8 @@ test "linear_type_move" {
 }
 
 test "bank_from_reg" {
-    try std.testing.expectEqual(Bank.ALU, Bank.fromReg(0));   // t0
-    try std.testing.expectEqual(Bank.ALU, Bank.fromReg(8));   // t8
+    try std.testing.expectEqual(Bank.ALU, Bank.fromReg(0)); // t0
+    try std.testing.expectEqual(Bank.ALU, Bank.fromReg(8)); // t8
     try std.testing.expectEqual(Bank.Sacred, Bank.fromReg(9)); // t9
     try std.testing.expectEqual(Bank.Sacred, Bank.fromReg(17)); // t17
     try std.testing.expectEqual(Bank.Constant, Bank.fromReg(18)); // t18
