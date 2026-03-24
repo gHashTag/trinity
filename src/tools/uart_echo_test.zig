@@ -1145,6 +1145,19 @@ const JitterTracker = struct {
         printDim("    Jitter (stddev): {d:.2}us\n", .{stats.jitter});
         printDim("    Min RTT: {d}us\n", .{stats.min});
         printDim("    Max RTT: {d}us\n", .{stats.max});
+
+        // v3.79: Call statistical analysis
+        self.showStatisticalReport();
+
+        // v3.80: Sample Rate Analysis - timing consistency
+        if (self.count >= 10) {
+            self.analyzeSampleRate();
+        }
+
+        // v3.79: Call percentile bands analysis
+        if (self.count >= 5) {
+            self.showPercentileBands();
+        }
     }
 
     // v3.44: Percentile calculation (p50, p90, p95, p99)
