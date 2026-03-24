@@ -1917,6 +1917,12 @@ const JitterTracker = struct {
             printInfo("\n  🏥 Quick Health Check:\n", .{});
             self.showQuickHealthCheck();
         }
+
+        // v3.86: Performance Profile Classification - connection type detection
+        if (self.count >= 10) {
+            printInfo("\n  📊 Performance Profile:\n", .{});
+            self.showPerformanceProfile();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3122,6 +3128,97 @@ const JitterTracker = struct {
             @as(f64, @floatFromInt(stats.max - stats.min)) / 1000.0,
         });
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
+    }
+
+    // v3.86: Performance Profile Classification - connection type detection
+    pub const PerformanceProfile = struct {
+        name: []const u8,
+        min_ms: f64,
+        max_ms: f64,
+        max_cv: f64,
+        description: []const u8,
+    };
+
+    pub fn classifyPerformanceProfile(self: *const JitterTracker) ?PerformanceProfile {
+        if (self.count < 10) return null;
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const cv = if (stats.mean > 0) stats.jitter / stats.mean else 0;
+        const mean_ms = stats.mean / 1000.0;
+        const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+        // Standard profiles
+        const profiles = [_]PerformanceProfile{
+            .{ .name = "Real-time", .min_ms = 0.1, .max_ms = 2.0, .max_cv = 0.1, .description = "Hard real-time (audio, video, control)" },
+            .{ .name = "Interactive", .min_ms = 2.0, .max_ms = 10.0, .max_cv = 0.2, .description = "Interactive (gaming, UI response)" },
+            .{ .name = "Fast Local", .min_ms = 5.0, .max_ms = 20.0, .max_cv = 0.3, .description = "Fast local (LAN, USB)" },
+            .{ .name = "Standard", .min_ms = 10.0, .max_ms = 50.0, .max_cv = 0.4, .description = "Standard (network, cloud)" },
+            .{ .name = "Moderate", .min_ms = 30.0, .max_ms = 100.0, .max_cv = 0.5, .description = "Moderate (WAN, remote)" },
+            .{ .name = "High Latency", .min_ms = 50.0, .max_ms = 200.0, .max_cv = 0.6, .description = "High latency (satellite, cellular)" },
+            .{ .name = "Variable", .min_ms = 0.0, .max_ms = 1000.0, .max_cv = 1.0, .description = "Variable (unpredictable)" },
+        };
+
+        for (profiles) |profile| {
+            const in_range = mean_ms >= profile.min_ms and mean_ms <= profile.max_ms;
+            const cv_ok = cv <= profile.max_cv;
+            if (in_range and cv_ok) {
+                return profile;
+            }
+        }
+
+        // Fallback classification
+        if (cv > 0.6) return profiles[6]; // Variable
+        if (p99_ms > 100.0) return profiles[5]; // High Latency
+        if (p99_ms > 50.0) return profiles[4]; // Moderate
+        return profiles[3]; // Standard
+    }
+
+    pub fn showPerformanceProfile(self: *const JitterTracker) void {
+        const profile = self.classifyPerformanceProfile() orelse {
+            printDim("    Need at least 10 samples for profile classification\n", .{});
+            return;
+        };
+
+        printInfo("[i] Performance Profile Classification:\n", .{});
+        printDim("    Profile: {s}\n", .{profile.name});
+        printDim("    Description: {s}\n", .{profile.description});
+        printDim("    Target Range: {d:.1}ms - {d:.1}ms\n", .{profile.min_ms, profile.max_ms});
+        printDim("    Max Jitter CV: {d:.2}\n", .{profile.max_cv});
+
+        // Application recommendations
+        printDim("\n    Suitable for:\n", .{});
+        if (std.mem.eql(u8, profile.name, "Real-time")) {
+            printDim("       - Audio processing\n", .{});
+            printDim("       - Video streaming\n", .{});
+            printDim("       - Control systems\n", .{});
+            printDim("       - Gaming (competitive)\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "Interactive")) {
+            printDim("       - Web browsing\n", .{});
+            printDim("       - Gaming (casual)\n", .{});
+            printDim("       - Terminal sessions\n", .{});
+            printDim("       - Database queries\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "Fast Local")) {
+            printDim("       - File transfers\n", .{});
+            printDim("       - Local API calls\n", .{});
+            printDim("       - USB devices\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "Standard")) {
+            printDim("       - Cloud services\n", .{});
+            printDim("       - Database operations\n", .{});
+            printDim("       - Web applications\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "Moderate")) {
+            printDim("       - Remote desktop\n", .{});
+            printDim("       - WAN connections\n", .{});
+            printDim("       - API calls over internet\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "High Latency")) {
+            printDim("       - Satellite links\n", .{});
+            printDim("       - Cellular networks\n", .{});
+            printDim("       - International connections\n", .{});
+        } else if (std.mem.eql(u8, profile.name, "Variable")) {
+            printDim("       - Best-effort traffic\n", .{});
+            printDim("       - Unreliable networks\n", .{});
+            printDim("       - Congested connections\n", .{});
+        }
     }
 
     // v3.69: Plot histogram of RTT distribution
