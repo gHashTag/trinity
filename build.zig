@@ -2586,6 +2586,13 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // TRI-27 CLI module for tri binary
+    const tri27_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2654,6 +2661,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "intraparietal", .module = intraparietal_mod },
                 // STORM Golden Chain — 28-link pipeline
                 .{ .name = "golden_chain", .module = golden_chain_mod },
+                // TRI-27 CLI module
+                .{ .name = "tri27_cli", .module = tri27_cli_mod },
             },
         }),
     });
@@ -2717,7 +2726,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    // b.installArtifact(tri27); // Disabled: 5 Zig 0.15 errors in CLI wrapper
+    b.installArtifact(tri27);
     const run_tri27 = b.addRunArtifact(tri27);
     if (b.args) |args| {
         run_tri27.addArgs(args);
@@ -2848,6 +2857,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     tri27_experience_mod.addImport("queen_episodes", queen_episodes_mod);
+
     const tri27_experience_tests = b.addTest(.{
         .root_module = tri27_experience_mod,
     });
@@ -2867,6 +2877,21 @@ pub fn build(b: *std.Build) void {
     const run_tri27_golden_tests = b.addRunArtifact(tri27_golden_tests);
     const tri27_golden_tests_step = b.step("test-tri27-golden", "Run TRI‑27 Golden Test");
     tri27_golden_tests_step.dependOn(&run_tri27_golden_tests.step);
+
+    // Queen Self-Learning Tests (Phase 5)
+    const queen_self_learning_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/self_learning.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    queen_self_learning_mod.addImport("queen_episodes", queen_episodes_mod);
+
+    const queen_self_learning_tests = b.addTest(.{
+        .root_module = queen_self_learning_mod,
+    });
+    const run_queen_self_learning_tests = b.addRunArtifact(queen_self_learning_tests);
+    const queen_self_learning_tests_step = b.step("test-queen-self-learning", "Run Queen Self-Learning Tests");
+    queen_self_learning_tests_step.dependOn(&run_queen_self_learning_tests.step);
 
     // TRI-27 Comprehensive Tests (all 36 opcodes)
     const tri27_comprehensive_mod = b.createModule(.{
