@@ -63,6 +63,31 @@ pub const Tri27Status = enum(u8) {
     cancelled,
 };
 
+pub const Tri27Event = struct {
+    timestamp: i64,
+    operation: Tri27Operation,
+    input_file: []const u8,
+    output_file: []const u8,
+    status: Tri27Status,
+    cycles: u32,
+    instructions: u32,
+    error_msg: []const u8,
+    has_error: bool,
+
+    pub fn inputFile(self: Tri27Event) []const u8 {
+        return self.input_file;
+    }
+
+    pub fn outputFile(self: Tri27Event) []const u8 {
+        return self.output_file;
+    }
+
+    pub fn errorMsg(self: Tri27Event) []const u8 {
+        if (!self.has_error) return "";
+        return self.error_msg;
+    }
+};
+
 pub const Episode = struct {
     id: u64,
     timestamp: u64,
@@ -120,6 +145,85 @@ pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan,
         .result = result,
         .outcome = outcome,
     };
+}
+
+/// Record TRI-27 operation as Episode
+pub fn recordTri27Episode(allocator: std.mem.Allocator, tri27_event: Tri27Event) !EpisodeSummary {
+    const now_ns = std.time.nanoTimestamp();
+
+    // Create minimal context
+    const context = Context{
+        .timestamp_ns = now_ns,
+        .policy = .{},
+        .senses = .{},
+        .active_issues = &[_]u64{},
+        .recalled_episodes = &[_]Episode{},
+    };
+
+    // Map Tri27Status to Outcome
+    const outcome: Outcome = switch (tri27_event.status) {
+        .success => .success,
+        .failed => if (tri27_event.has_error) .failure_learned else .failure_unknown,
+        .timeout => .blocked,
+        .cancelled => .blocked,
+        .queued, .running => .partial,
+    };
+
+    // Create result
+    const result = Result{
+        .success = tri27_event.status == .success,
+        .@"error" = if (tri27_event.has_error)
+            try allocator.dupe(u8, tri27_event.errorMsg())
+        else
+            null,
+        .timing = .{
+            .start_ns = now_ns,
+            .end_ns = now_ns + tri27_event.cycles * 1000,
+            .duration_ms = tri27_event.cycles / 1000,
+        },
+        .output = if (tri27_event.status == .success)
+            try allocator.dupe(u8, tri27_event.outputFile())
+        else
+            null,
+        .new_senses = .{},
+    };
+
+    // Create Episode with tri27_op action
+    const episode = Episode{
+        .id = @as(u64, @intCast(now_ns)),
+        .timestamp = @as(u64, @intCast(now_ns)),
+        .source = .tri27,
+        .context = context,
+        .action = .{
+            .tri27_op = .{
+                .operation = tri27_event.operation,
+                .input_file = try allocator.dupe(u8, tri27_event.inputFile()),
+                .output_file = try allocator.dupe(u8, tri27_event.outputFile()),
+                .cycles = tri27_event.cycles,
+                .instructions = tri27_event.instructions,
+            },
+        },
+        .result = result,
+        .outcome = outcome,
+    };
+
+    // Convert to EpisodeSummary for JSONL persistence
+    const summary = EpisodeSummary{
+        .id = episode.id,
+        .timestamp = episode.timestamp,
+        .source = episode.source,
+        .action_type = "tri27_op",
+        .key = tri27_event.inputFile(),
+        .outcome = episode.outcome,
+        .success = episode.result.success,
+        .duration_ms = episode.result.timing.duration_ms,
+        .input_file = tri27_event.inputFile(),
+        .tri27_operation = @tagName(tri27_event.operation),
+    };
+
+    _ = try appendEpisode(episode, allocator);
+
+    return summary;
 }
 
 pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
