@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.16 — Network Health Index (comprehensive health scoring system)
+//! v4.17 — Latency Prediction Engine (predict future RTT using weighted exponential regression)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -6718,6 +6718,215 @@ const JitterTracker = struct {
             printDim("       Check hardware, cables, and configuration\n", .{});
         }
     }
+
+    // v4.17: Latency Prediction Engine - predict future RTT using advanced algorithms
+    pub const LatencyPrediction = struct {
+        predicted_next_ms: f64, // Next predicted RTT
+        confidence_interval_low: f64, // 95% CI lower bound
+        confidence_interval_high: f64, // 95% CI upper bound
+        prediction_method: []const u8, // Algorithm used
+        prediction_confidence: f64, // 0-100 confidence score
+        trend_direction: []const u8, // INCREASING/DECREASING/STABLE
+        volatility_estimate: []const u8, // LOW/MEDIUM/HIGH
+        sample_window_used: usize, // Number of samples in prediction
+    };
+
+    pub fn predictLatency(self: *const JitterTracker) LatencyPrediction {
+        if (self.count < 10) {
+            return .{
+                .predicted_next_ms = 0.0,
+                .confidence_interval_low = 0.0,
+                .confidence_interval_high = 0.0,
+                .prediction_method = "INSUFFICIENT_DATA",
+                .prediction_confidence = 0.0,
+                .trend_direction = "UNKNOWN",
+                .volatility_estimate = "UNKNOWN",
+                .sample_window_used = 0,
+            };
+        }
+
+        const PREDICTION_WINDOW: usize = @min(30, self.count);
+        const start_idx = self.count - PREDICTION_WINDOW;
+
+        // Use weighted regression for better accuracy (recent samples weighted more)
+        var sum_x: f64 = 0;
+        var sum_y: f64 = 0;
+        var sum_xy: f64 = 0;
+        var sum_x2: f64 = 0;
+
+        const n = @as(f64, @floatFromInt(PREDICTION_WINDOW));
+        var i: usize = 0;
+        while (i < PREDICTION_WINDOW) : (i += 1) {
+            const sample_idx = start_idx + i;
+            const x = @as(f64, @floatFromInt(i));
+            const y = @as(f64, @floatFromInt(self.samples[sample_idx]));
+
+            // Exponential weighting (recent = more important)
+            const weight = @exp(@as(f64, @floatFromInt(i - PREDICTION_WINDOW + 1)) / 5.0);
+
+            sum_x += x * weight;
+            sum_y += y * weight;
+            sum_xy += x * y * weight;
+            sum_x2 += x * x * weight;
+        }
+
+        const total_weight = @exp(0) * (1.0 - @exp(-@as(f64, @floatFromInt(PREDICTION_WINDOW)) / 5.0)) / (1.0 - @exp(-1.0));
+
+        const weighted_mean_x = sum_x / total_weight;
+        const weighted_mean_y = sum_y / total_weight;
+
+        // Calculate slope (trend) from weighted data
+        const numerator = sum_xy - weighted_mean_x * weighted_mean_y * total_weight;
+        const denominator = sum_x2 - weighted_mean_x * weighted_mean_x * total_weight;
+        const slope = if (denominator != 0) numerator / denominator else 0.0;
+        const intercept = weighted_mean_y - slope * weighted_mean_x;
+
+        // Predict next value
+        const next_x = n;
+        const predicted_next_us = slope * next_x + intercept;
+        const predicted_next_ms = predicted_next_us / 1000.0;
+
+        // Calculate confidence interval (95%)
+        const residuals_sum: f64 = blk: {
+            var sum_sq: f64 = 0;
+            for (self.samples[start_idx..self.count], 0..) |s, j| {
+                const predicted = slope * @as(f64, @floatFromInt(j)) + intercept;
+                const residual = @as(f64, @floatFromInt(s)) - predicted;
+                sum_sq += residual * residual;
+            }
+            break :blk sum_sq;
+        };
+        const mse = residuals_sum / n;
+        const std_error = @sqrt(mse);
+
+        // 95% CI ≈ prediction ± 1.96 * std_error
+        const ci_margin = 1.96 * std_error;
+        const ci_low_ms = predicted_next_ms - ci_margin / 1000.0;
+        const ci_high_ms = predicted_next_ms + ci_margin / 1000.0;
+
+        // Determine trend direction
+        const trend_direction: []const u8 = if (slope > 50)
+            "INCREASING (DEGRADING)"
+        else if (slope > 10)
+            "SLIGHTLY INCREASING"
+        else if (slope < -50)
+            "DECREASING (IMPROVING)"
+        else if (slope < -10)
+            "SLIGHTLY DECREASING"
+        else
+            "STABLE";
+
+        // Estimate volatility
+        const stats = self.getStats();
+        const cv = if (stats.mean > 0) (stats.jitter / stats.mean) * 100.0 else 0.0;
+        const volatility_estimate: []const u8 = if (cv < 15)
+            "LOW"
+        else if (cv < 30)
+            "MEDIUM"
+        else
+            "HIGH";
+
+        // Calculate prediction confidence based on volatility and sample size
+        const volatility_penalty = if (std.mem.eql(u8, volatility_estimate, "LOW"))
+            0.0
+        else if (std.mem.eql(u8, volatility_estimate, "MEDIUM"))
+            15.0
+        else
+            30.0;
+
+        const sample_bonus = if (PREDICTION_WINDOW >= 20)
+            20.0
+        else if (PREDICTION_WINDOW >= 10)
+            10.0
+        else
+            5.0;
+
+        const prediction_confidence = @max(0.0, 100.0 - volatility_penalty + sample_bonus);
+
+        // Determine prediction method description
+        const prediction_method: []const u8 = "Weighted Exponential Regression";
+
+        return .{
+            .predicted_next_ms = predicted_next_ms,
+            .confidence_interval_low = ci_low_ms,
+            .confidence_interval_high = ci_high_ms,
+            .prediction_method = prediction_method,
+            .prediction_confidence = prediction_confidence,
+            .trend_direction = trend_direction,
+            .volatility_estimate = volatility_estimate,
+            .sample_window_used = PREDICTION_WINDOW,
+        };
+    }
+
+    pub fn showLatencyPrediction(self: *const JitterTracker) void {
+        const prediction = self.predictLatency();
+
+        printInfo("[i] Latency Prediction Engine (v4.17):\n", .{});
+
+        // Prediction with emoji
+        const confidence_emoji = if (prediction.prediction_confidence >= 80) "🟢" else if (prediction.prediction_confidence >= 60) "🟡" else if (prediction.prediction_confidence >= 40) "🟠" else "🔴";
+
+        printInfo("    {s} Prediction: {d:.2}ms ±{d:.2}ms (95% CI)\n", .{
+            confidence_emoji,
+            prediction.predicted_next_ms,
+            (prediction.confidence_interval_high - prediction.predicted_next_ms),
+        });
+
+        // Prediction method
+        printDim("    Method: {s}\n", .{prediction.prediction_method});
+        printDim("    Samples used: {d}\n", .{prediction.sample_window_used});
+
+        // Confidence score
+        printDim("    Confidence: {d:.0}/100 {s}\n", .{
+            prediction.prediction_confidence,
+            if (prediction.prediction_confidence >= 80) "✅ High" else if (prediction.prediction_confidence >= 60) "✓ Good" else if (prediction.prediction_confidence >= 40) "⚠ Fair" else "✗ Low",
+        });
+
+        // Trend analysis
+        printDim("\n    Trend Analysis:\n", .{});
+        const trend_emoji = if (std.mem.eql(u8, prediction.trend_direction, "INCREASING"))
+            "📈"
+        else if (std.mem.eql(u8, prediction.trend_direction, "DECREASING"))
+            "📉"
+        else
+            "➡️";
+
+        printDim("    {s} Direction: {s}\n", .{ trend_emoji, prediction.trend_direction });
+
+        // Volatility
+        const volatility_emoji = if (std.mem.eql(u8, prediction.volatility_estimate, "LOW"))
+            "🟢"
+        else if (std.mem.eql(u8, prediction.volatility_estimate, "MEDIUM"))
+            "🟡"
+        else
+            "🔴";
+
+        printDim("    {s} Volatility: {s}\n", .{ volatility_emoji, prediction.volatility_estimate });
+
+        // Confidence interval details
+        printDim("\n    Confidence Interval (95%):\n", .{});
+        printDim("    Lower bound: {d:.2}ms\n", .{prediction.confidence_interval_low});
+        printDim("    Upper bound: {d:.2}ms\n", .{prediction.confidence_interval_high});
+        printDim("    Range width: {d:.2}ms\n", .{prediction.confidence_interval_high - prediction.confidence_interval_low});
+
+        // Recommendations
+        printDim("\n    Recommendations:\n", .{});
+        if (std.mem.eql(u8, prediction.trend_direction, "INCREASING")) {
+            printDim("       • Investigate degradation cause\n", .{});
+            printDim("       • Consider reducing system load\n", .{});
+            printDim("       • Check for congestion sources\n", .{});
+        } else if (std.mem.eql(u8, prediction.trend_direction, "STABLE")) {
+            printDim("       • Current configuration appears optimal\n", .{});
+            printDim("       • Continue monitoring for changes\n", .{});
+        } else {
+            printDim("       • Performance is improving - maintain current approach\n", .{});
+        }
+
+        if (std.mem.eql(u8, prediction.volatility_estimate, "HIGH")) {
+            printDim("       • High volatility detected - increase prediction window\n", .{});
+            printDim("       • Consider adaptive timeout values\n", .{});
+        }
+    }
 };
 
 // v3.30: Buffered I/O manager for reduced syscall overhead
@@ -7628,7 +7837,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.16           ║
+        \\║      Trinity UART Echo Test v4.17           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8098,7 +8307,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.16)         ║
+            \\║         SIMULATION MODE (v4.17)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8693,7 +8902,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.16)      ║
+        \\║       SIMULATION BATCH MODE (v4.17)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8827,7 +9036,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.16)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.17)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8844,7 +9053,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.16)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.17)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9783,7 +9992,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.16)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.17)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);

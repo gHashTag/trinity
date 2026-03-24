@@ -2837,11 +2837,17 @@ pub fn build(b: *std.Build) void {
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
 
     // TRI‑27 Experience Tests
+    const queen_episodes_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/episodes.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const tri27_experience_mod = b.createModule(.{
         .root_source_file = b.path("src/tri27/tri27_experience.zig"),
         .target = target,
         .optimize = optimize,
     });
+    tri27_experience_mod.addImport("queen_episodes", queen_episodes_mod);
     const tri27_experience_tests = b.addTest(.{
         .root_module = tri27_experience_mod,
     });

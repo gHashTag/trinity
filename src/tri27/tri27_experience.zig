@@ -5,8 +5,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// Queen episode integration (optional)
-const queen_episodes = @import("../tri/queen/episodes.zig");
+// Queen episode integration
+const queen_episodes = @import("queen_episodes");
 
 const EPISODES_DIR = ".trinity/tri27/episodes";
 
@@ -224,7 +224,7 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
     try episode.save();
 }
 
-/// Record TRI‑27 event to Queen episode system (unified JSONL)
+/// Record TRI‑27 event to Queen episode system
 /// This integrates tri27_experience with Queen Episode framework
 pub fn recordToQueenEpisodes(allocator: Allocator, event: Tri27Event) !void {
     // Convert to Queen Tri27Event format
@@ -392,13 +392,11 @@ test "Tri27Operation toStr roundtrip" {
 test "tri27_experience: recordToQueenEpisodes integration" {
     const allocator = std.testing.allocator;
 
-    // Create test event
-    var input_buf: [256]u8 = undefined;
-    var output_buf: [256]u8 = undefined;
-    @memcpy(input_buf[0..9], "test.tasm");
-    input_buf[8] = 0;
-    @memcpy(output_buf[0..9], "test.tbin");
-    output_buf[8] = 0;
+    // Create test event with zero-initialized buffers
+    var input_buf: [256]u8 = [_]u8{0} ** 256;
+    var output_buf: [256]u8 = [_]u8{0} ** 256;
+    @memcpy(input_buf[0..9], "test.tasm"); // 9 chars including null
+    @memcpy(output_buf[0..9], "test.tbin"); // 9 chars including null
 
     const event = Tri27Event{
         .timestamp = 1234567890,
