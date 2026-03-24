@@ -2073,14 +2073,14 @@ fn multiMacVerify(allocator: Allocator) !void {
         }
     }.lessThan);
 
-    var duplicates = std.ArrayList([]const u8).init(allocator);
-    defer duplicates.deinit();
+    var duplicates: std.ArrayListUnmanaged([]const u8) = .empty;
+    defer duplicates.deinit(allocator);
 
     if (sorted.len > 0) {
         var prev = sorted[0];
         for (sorted[1..]) |seed| {
             if (std.mem.eql(u8, prev, seed)) {
-                try duplicates.append(seed);
+                try duplicates.append(allocator, seed);
             }
             prev = seed;
         }
@@ -2088,7 +2088,7 @@ fn multiMacVerify(allocator: Allocator) !void {
 
     if (duplicates.items.len > 0) {
         print("  {s}❌{s} DUPLICATE SEEDS FOUND: {d}\n", .{ RED, RESET, duplicates.items.len });
-        print("  Duplicates:\n");
+        print("  Duplicates:\n", .{});
         for (duplicates.items) |dup| {
             print("    {s}\n", .{dup});
         }
@@ -2098,7 +2098,7 @@ fn multiMacVerify(allocator: Allocator) !void {
     }
 
     // Verify S3 MultiObj configuration
-    print("\n  Verifying S3 MultiObj config...\n");
+    print("\n  Verifying S3 MultiObj config...\n", .{});
 
     var profile_check: ?[]const u8 = null;
     var ntp_weight_check: ?[]const u8 = null;
@@ -2124,13 +2124,14 @@ fn multiMacVerify(allocator: Allocator) !void {
         };
 
         var lines = std.mem.splitScalar(u8, result.stdout, '\n');
-        defer lines.deinit(allocator);
         if (lines.next()) |container| {
             const profile_argv = &[_][]const u8{
                 "docker", "exec", container, "printenv", "HSLM_PROFILE",
             };
             if (std.process.Child.run(.{ .allocator = allocator, .argv = profile_argv })) |r| {
                 profile_check = r.stdout;
+            } else |err| {
+                print("  {s}⚠️{s} Failed to check HSLM_PROFILE: {s}\n", .{ YELLOW, RESET, @errorName(err) });
             }
 
             const ntp_argv = &[_][]const u8{
@@ -2138,6 +2139,8 @@ fn multiMacVerify(allocator: Allocator) !void {
             };
             if (std.process.Child.run(.{ .allocator = allocator, .argv = ntp_argv })) |r| {
                 ntp_weight_check = r.stdout;
+            } else |err| {
+                print("  {s}⚠️{s} Failed to check HSLM_NTP_WEIGHT: {s}\n", .{ YELLOW, RESET, @errorName(err) });
             }
 
             const jepa_argv = &[_][]const u8{
@@ -2145,6 +2148,8 @@ fn multiMacVerify(allocator: Allocator) !void {
             };
             if (std.process.Child.run(.{ .allocator = allocator, .argv = jepa_argv })) |r| {
                 jepa_enabled_check = r.stdout;
+            } else |err| {
+                print("  {s}⚠️{s} Failed to check HSLM_JEPA_ENABLED: {s}\n", .{ YELLOW, RESET, @errorName(err) });
             }
         }
     }
