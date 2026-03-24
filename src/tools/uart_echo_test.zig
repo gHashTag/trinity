@@ -6546,7 +6546,7 @@ const JitterTracker = struct {
 
         // 1. Latency Health (based on mean RTT and percentiles)
         const mean_ms = stats.mean / 1000.0;
-        const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+        _ = @as(f64, @floatFromInt(p.p95)) / 1000.0; // Reserved for future enhancements
         const latency_health: f64 = if (mean_ms < 10)
             100.0 // Excellent latency
         else if (mean_ms < 30)
@@ -6661,18 +6661,14 @@ const JitterTracker = struct {
         printInfo("[i] Network Health Index (v4.16):\n", .{});
 
         // Overall health with emoji
-        const health_emoji = if (health.overall_health >= 90) "🟢"
-        else if (health.overall_health >= 75) "🟡"
-        else if (health.overall_health >= 60) "🟠"
-        else if (health.overall_health >= 40) "🔴"
-        else "⛔";
+        const health_emoji = if (health.overall_health >= 90) "🟢" else if (health.overall_health >= 75) "🟡" else if (health.overall_health >= 60) "🟠" else if (health.overall_health >= 40) "🔴" else "⛔";
 
         printInfo("    {s} Overall Health: {d:.1}/100 ({s})\n", .{
             health_emoji,
             health.overall_health,
             health.grade,
         });
-        printDim("    Category: {s}\n", .{health.health_category });
+        printDim("    Category: {s}\n", .{health.health_category});
 
         // Component scores
         printDim("\n    Component Scores:\n", .{});

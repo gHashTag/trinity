@@ -5,6 +5,9 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
+// Queen episode integration (optional)
+const queen_episodes = @import("../tri/queen/episodes.zig");
+
 const EPISODES_DIR = ".trinity/tri27/episodes";
 
 const print = std.debug.print;
@@ -221,6 +224,41 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
     try episode.save();
 }
 
+/// Record TRI‑27 event to Queen episode system (unified JSONL)
+/// This integrates tri27_experience with Queen Episode framework
+pub fn recordToQueenEpisodes(allocator: Allocator, event: Tri27Event) !void {
+    // Convert to Queen Tri27Event format
+    const queen_event = queen_episodes.Tri27Event{
+        .timestamp = event.timestamp,
+        .operation = switch (event.operation) {
+            .assemble => .assemble,
+            .disassemble => .disassemble,
+            .run => .run,
+            .@"test" => .@"test",
+            .validate => .validate,
+            .flash => .flash,
+            .dump => .dump,
+        },
+        .input_file = event.inputFile(),
+        .output_file = event.outputFile(),
+        .status = switch (event.status) {
+            .queued => .queued,
+            .running => .running,
+            .success => .success,
+            .failed => .failed,
+            .timeout => .timeout,
+            .cancelled => .cancelled,
+        },
+        .cycles = event.cycles,
+        .instructions = event.instructions,
+        .error_msg = event.errorMsg(),
+        .has_error = event.has_error,
+    };
+
+    // Record to Queen episodes.jsonl
+    _ = try queen_episodes.recordTri27Episode(allocator, queen_event);
+}
+
 pub fn runStatus() !void {
     if (event_count == 0) {
         print("{s}No TRI‑27 events recorded\n", .{CYAN});
@@ -349,4 +387,53 @@ test "Tri27Operation toStr roundtrip" {
     const op = Tri27Operation.assemble;
     const str = op.toStr();
     try std.testing.expectEqualStrings("ASSEMBLE", str);
+}
+
+test "tri27_experience: recordToQueenEpisodes integration" {
+    const allocator = std.testing.allocator;
+
+    // Create test event
+    var input_buf: [256]u8 = undefined;
+    var output_buf: [256]u8 = undefined;
+    @memcpy(input_buf[0..9], "test.tasm");
+    input_buf[8] = 0;
+    @memcpy(output_buf[0..9], "test.tbin");
+    output_buf[8] = 0;
+
+    const event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .assemble,
+        .input_file = input_buf,
+        .output_file = output_buf,
+        .status = .success,
+        .cycles = 42,
+        .instructions = 10,
+        .error_msg = [_]u8{0} ** 512,
+        .has_error = false,
+    };
+
+    // Record to Queen episodes
+    try recordToQueenEpisodes(allocator, event);
+
+    // Verify episodes.jsonl was created and contains the event
+    const file_path = ".trinity/queen/episodes.jsonl";
+    const file = std.fs.cwd().openFile(file_path, .{}) catch {
+        std.debug.print("Error: episodes.jsonl not created\n", .{});
+        return error.FileNotFound;
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 4096) catch "";
+    defer allocator.free(contents);
+
+    // Verify JSON contains expected fields
+    const has_input = std.mem.indexOf(u8, contents, "test.tasm") != null;
+    const has_operation = std.mem.indexOf(u8, contents, "assemble") != null;
+    const has_source = std.mem.indexOf(u8, contents, "tri27") != null;
+    const has_success = std.mem.indexOf(u8, contents, "\"success\":true") != null;
+
+    try std.testing.expect(has_input);
+    try std.testing.expect(has_operation);
+    try std.testing.expect(has_source);
+    try std.testing.expect(has_success);
 }

@@ -16,6 +16,21 @@ pub const Source = enum {
 };
 
 pub const Action = union(enum) {
+    scale_up: struct { key: []const u8, quality_score: f64 },
+    scale_down: struct { key: []const u8, quality_score: f64 },
+    trigger: struct { key: []const u8 },
+    set: struct { key: []const u8, value: union { bool: bool, f64: f64 } },
+    wait: void,
+    tri27_op: struct {
+        operation: Tri27Operation,
+        input_file: []const u8,
+        output_file: []const u8,
+        cycles: u32,
+        instructions: u32,
+    },
+};
+
+pub const Action = union(enum) {
     scale_up: struct {
         key: []const u8,
         quality_score: f64,
