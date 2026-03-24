@@ -1923,6 +1923,12 @@ const JitterTracker = struct {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
         }
+
+        // v3.88: Burst Analysis - detect grouped latency spikes
+        if (self.count >= 5) {
+            printInfo("\n  💥 Burst Analysis:\n", .{});
+            self.showBurstAnalysis();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3218,6 +3224,139 @@ const JitterTracker = struct {
             printDim("       - Best-effort traffic\n", .{});
             printDim("       - Unreliable networks\n", .{});
             printDim("       - Congested connections\n", .{});
+        }
+    }
+
+    // v3.88: Burst Analysis - detect grouped latency spikes
+    pub const BurstAnalysisResult = struct {
+        burst_count: usize,
+        total_burst_samples: usize,
+        longest_burst: usize,
+        avg_burst_length: f64,
+        burst_severity: []const u8,
+    };
+
+    pub fn analyzeBursts(self: *const JitterTracker, threshold_multiplier: f64) BurstAnalysisResult {
+        if (self.count < 5) {
+            return .{
+                .burst_count = 0,
+                .total_burst_samples = 0,
+                .longest_burst = 0,
+                .avg_burst_length = 0.0,
+                .burst_severity = "INSUFFICIENT_DATA",
+            };
+        }
+
+        // Calculate median as baseline using sorted copy
+        const sorted_buf = self.allocator.alloc(i64, self.count) catch unreachable;
+        defer self.allocator.free(sorted_buf);
+        @memcpy(sorted_buf, self.samples[0..self.count]);
+        std.sort.insertion(i64, sorted_buf, {}, comptime std.sort.asc(i64));
+        const median = sorted_buf[@divFloor(self.count, 2)];
+
+        // Calculate MAD (Median Absolute Deviation)
+        const mads = self.allocator.alloc(i64, self.count) catch unreachable;
+        defer self.allocator.free(mads);
+        for (self.samples[0..self.count], 0..) |s, i| {
+            mads[i] = if (s > median) s - median else median - s;
+        }
+        std.sort.insertion(i64, mads, {}, comptime std.sort.asc(i64));
+        const mad = mads[@divFloor(self.count, 2)];
+
+        // Threshold for "high latency" samples
+        const threshold = median + @as(i64, @intFromFloat(@as(f64, @floatFromInt(mad)) * threshold_multiplier));
+
+        // Detect bursts (consecutive high-latency samples)
+        var burst_count: usize = 0;
+        var total_burst_samples: usize = 0;
+        var longest_burst: usize = 0;
+        var current_burst: usize = 0;
+        var in_burst = false;
+
+        for (self.samples[0..self.count]) |s| {
+            if (s > threshold) {
+                if (!in_burst) {
+                    in_burst = true;
+                    current_burst = 0;
+                    burst_count += 1;
+                }
+                current_burst += 1;
+                total_burst_samples += 1;
+            } else {
+                if (in_burst) {
+                    if (current_burst > longest_burst) {
+                        longest_burst = current_burst;
+                    }
+                    in_burst = false;
+                }
+            }
+        }
+
+        // Handle case where burst extends to end
+        if (in_burst and current_burst > longest_burst) {
+            longest_burst = current_burst;
+        }
+
+        // Calculate average burst length
+        const avg_burst_length = if (burst_count > 0)
+            @as(f64, @floatFromInt(total_burst_samples)) / @as(f64, @floatFromInt(burst_count))
+        else
+            0.0;
+
+        // Classify burst severity
+        const burst_ratio = @as(f64, @floatFromInt(total_burst_samples)) / @as(f64, @floatFromInt(self.count));
+        const burst_severity = if (burst_count == 0)
+            "NONE"
+        else if (burst_ratio < 0.05)
+            "LOW"
+        else if (burst_ratio < 0.15)
+            "MODERATE"
+        else if (burst_ratio < 0.30)
+            "HIGH"
+        else
+            "SEVERE";
+
+        return .{
+            .burst_count = burst_count,
+            .total_burst_samples = total_burst_samples,
+            .longest_burst = longest_burst,
+            .avg_burst_length = avg_burst_length,
+            .burst_severity = burst_severity,
+        };
+    }
+
+    pub fn showBurstAnalysis(self: *const JitterTracker) void {
+        if (self.count < 5) {
+            printInfo("[i] Burst Analysis: insufficient data (need 5+ samples)\n", .{});
+            return;
+        }
+
+        const result = self.analyzeBursts(2.0);
+
+        printInfo("[i] Burst Analysis:\n", .{});
+        printDim("    Bursts detected: {d}\n", .{result.burst_count});
+        printDim("    Affected samples: {d}/{d} ({d:.1}%)\n", .{
+            result.total_burst_samples,
+            self.count,
+            @as(f64, @floatFromInt(result.total_burst_samples)) / @as(f64, @floatFromInt(self.count)) * 100.0,
+        });
+        if (result.burst_count > 0) {
+            printDim("    Longest burst: {d} samples\n", .{result.longest_burst});
+            printDim("    Avg burst length: {d:.1} samples\n", .{result.avg_burst_length});
+        }
+        printDim("    Severity: {s}\n", .{result.burst_severity});
+
+        // Interpretation
+        if (std.mem.eql(u8, result.burst_severity, "NONE")) {
+            printDim("\n    Interpretation: Latency is stable, no bursts detected\n", .{});
+        } else if (std.mem.eql(u8, result.burst_severity, "LOW")) {
+            printDim("\n    Interpretation: Occasional latency spikes, acceptable for most applications\n", .{});
+        } else if (std.mem.eql(u8, result.burst_severity, "MODERATE")) {
+            printDim("\n    Interpretation: Some burst activity, may affect real-time applications\n", .{});
+        } else if (std.mem.eql(u8, result.burst_severity, "HIGH")) {
+            printDim("\n    Interpretation: Significant bursting, real-time performance degraded\n", .{});
+        } else {
+            printDim("\n    Interpretation: Severe congestion or system overload detected\n", .{});
         }
     }
 
