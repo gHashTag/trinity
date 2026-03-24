@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.15 — Traffic Flow Analysis (analyze packet flow patterns and detect congestion)
+//! v4.16 — Network Health Index (comprehensive health scoring system)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -6511,6 +6511,217 @@ const JitterTracker = struct {
             printDim("       - Reduce load immediately\n", .{});
         }
     }
+
+    // v4.16: Network Health Index - comprehensive health scoring system
+    pub const NetworkHealthIndex = struct {
+        overall_health: f64, // 0-100
+        latency_health: f64, // 0-100
+        stability_health: f64, // 0-100
+        reliability_health: f64, // 0-100
+        performance_health: f64, // 0-100
+        grade: []const u8, // A+/A/B/C/D/F
+        health_category: []const u8, // EXCELLENT/GOOD/FAIR/POOR/CRITICAL
+        actionable_insights: []const []const u8,
+    };
+
+    pub fn calculateNetworkHealthIndex(self: *const JitterTracker) NetworkHealthIndex {
+        if (self.count < 10) {
+            return .{
+                .overall_health = 0.0,
+                .latency_health = 0.0,
+                .stability_health = 0.0,
+                .reliability_health = 0.0,
+                .performance_health = 0.0,
+                .grade = "N/A",
+                .health_category = "INSUFFICIENT_DATA",
+                .actionable_insights = &[1][]const u8{"Need 10+ samples"},
+            };
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const stability = self.calculateStabilityScore();
+        const burst = self.analyzeBursts(2.0);
+        const flow = self.analyzeTrafficFlow();
+
+        // 1. Latency Health (based on mean RTT and percentiles)
+        const mean_ms = stats.mean / 1000.0;
+        const p95_ms = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+        const latency_health: f64 = if (mean_ms < 10)
+            100.0 // Excellent latency
+        else if (mean_ms < 30)
+            90.0
+        else if (mean_ms < 60)
+            75.0
+        else if (mean_ms < 120)
+            60.0
+        else if (mean_ms < 250)
+            40.0
+        else
+            20.0; // Poor latency
+
+        // 2. Stability Health (from StabilityScore)
+        const stability_health = stability.overall_score;
+
+        // 3. Reliability Health (based on failures and anomalies)
+        const anomalies = self.detectAnomalies(3.0, 2.0);
+        const failure_rate = if (self.count > 0)
+            @as(f64, @floatFromInt(self.consecutive_failures)) / @as(f64, @floatFromInt(self.count))
+        else
+            0.0;
+        const anomaly_rate = if (self.count > 0)
+            @as(f64, @floatFromInt(anomalies.count)) / @as(f64, @floatFromInt(self.count))
+        else
+            0.0;
+        const reliability_health: f64 = 100.0 - (failure_rate * 50.0 + anomaly_rate * 30.0);
+
+        // 4. Performance Health (based on throughput and efficiency)
+        const performance_health: f64 = (flow.throughput_score * 0.5 + flow.efficiency_ratio * 0.5);
+
+        // Overall Health (weighted average)
+        const overall_health = (latency_health * 0.25 +
+            stability_health * 0.35 +
+            reliability_health * 0.25 +
+            performance_health * 0.15);
+
+        // Grade assignment
+        const grade: []const u8 = if (overall_health >= 95)
+            "A+"
+        else if (overall_health >= 90)
+            "A"
+        else if (overall_health >= 80)
+            "B"
+        else if (overall_health >= 70)
+            "C"
+        else if (overall_health >= 60)
+            "D"
+        else
+            "F";
+
+        // Health category
+        const health_category: []const u8 = if (overall_health >= 90)
+            "EXCELLENT"
+        else if (overall_health >= 75)
+            "GOOD"
+        else if (overall_health >= 60)
+            "FAIR"
+        else if (overall_health >= 40)
+            "POOR"
+        else
+            "CRITICAL";
+
+        // Generate actionable insights
+        var insights: [5][]const u8 = undefined;
+        var insight_count: usize = 0;
+
+        if (latency_health < 70 and insight_count < 5) {
+            insights[insight_count] = "High latency detected - investigate network path";
+            insight_count += 1;
+        }
+        if (stability_health < 70 and insight_count < 5) {
+            insights[insight_count] = "High instability - reduce system load";
+            insight_count += 1;
+        }
+        if (reliability_health < 70 and insight_count < 5) {
+            insights[insight_count] = "Poor reliability - check hardware/cables";
+            insight_count += 1;
+        }
+        if (performance_health < 70 and insight_count < 5) {
+            insights[insight_count] = "Low performance - optimize configuration";
+            insight_count += 1;
+        }
+        if (burst.burst_count > 2 and insight_count < 5) {
+            insights[insight_count] = "Frequent bursts - implement flow control";
+            insight_count += 1;
+        }
+
+        // If no issues found
+        if (insight_count == 0) {
+            insights[0] = "All metrics healthy - maintain current configuration";
+            insight_count = 1;
+        }
+
+        const actionable_insights = insights[0..insight_count];
+
+        return .{
+            .overall_health = overall_health,
+            .latency_health = latency_health,
+            .stability_health = stability_health,
+            .reliability_health = reliability_health,
+            .performance_health = performance_health,
+            .grade = grade,
+            .health_category = health_category,
+            .actionable_insights = actionable_insights,
+        };
+    }
+
+    pub fn showNetworkHealthIndex(self: *const JitterTracker) void {
+        const health = self.calculateNetworkHealthIndex();
+
+        printInfo("[i] Network Health Index (v4.16):\n", .{});
+
+        // Overall health with emoji
+        const health_emoji = if (health.overall_health >= 90) "🟢"
+        else if (health.overall_health >= 75) "🟡"
+        else if (health.overall_health >= 60) "🟠"
+        else if (health.overall_health >= 40) "🔴"
+        else "⛔";
+
+        printInfo("    {s} Overall Health: {d:.1}/100 ({s})\n", .{
+            health_emoji,
+            health.overall_health,
+            health.grade,
+        });
+        printDim("    Category: {s}\n", .{health.health_category });
+
+        // Component scores
+        printDim("\n    Component Scores:\n", .{});
+        printDim("       Latency:      {d:.0}/100  {s}\n", .{
+            health.latency_health,
+            if (health.latency_health >= 80) "✅" else if (health.latency_health >= 60) "🟡" else "🔴",
+        });
+        printDim("       Stability:    {d:.0}/100  {s}\n", .{
+            health.stability_health,
+            if (health.stability_health >= 80) "✅" else if (health.stability_health >= 60) "🟡" else "🔴",
+        });
+        printDim("       Reliability:  {d:.0}/100  {s}\n", .{
+            health.reliability_health,
+            if (health.reliability_health >= 80) "✅" else if (health.reliability_health >= 60) "🟡" else "🔴",
+        });
+        printDim("       Performance:  {d:.0}/100  {s}\n", .{
+            health.performance_health,
+            if (health.performance_health >= 80) "✅" else if (health.performance_health >= 60) "🟡" else "🔴",
+        });
+
+        // Actionable insights
+        printDim("\n    Actionable Insights:\n", .{});
+        for (health.actionable_insights) |insight| {
+            printDim("       • {s}\n", .{insight});
+        }
+
+        // Recommendations based on overall health
+        printDim("\n    Overall Assessment:\n", .{});
+        if (std.mem.eql(u8, health.health_category, "EXCELLENT")) {
+            printDim("       Network is in excellent condition\n", .{});
+            printDim("       Suitable for real-time and latency-sensitive applications\n", .{});
+        } else if (std.mem.eql(u8, health.health_category, "GOOD")) {
+            printDim("       Network is in good condition\n", .{});
+            printDim("       Suitable for most applications\n", .{});
+            printDim("       Monitor for degradation\n", .{});
+        } else if (std.mem.eql(u8, health.health_category, "FAIR")) {
+            printDim("       Network needs attention\n", .{});
+            printDim("       Consider optimization\n", .{});
+            printDim("       May not be suitable for real-time\n", .{});
+        } else if (std.mem.eql(u8, health.health_category, "POOR")) {
+            printDim("       Network quality is poor\n", .{});
+            printDim("       Investigate infrastructure issues\n", .{});
+            printDim("       Consider alternative routes\n", .{});
+        } else {
+            printDim("       Network is in critical state\n", .{});
+            printDim("       Immediate action required\n", .{});
+            printDim("       Check hardware, cables, and configuration\n", .{});
+        }
+    }
 };
 
 // v3.30: Buffered I/O manager for reduced syscall overhead
@@ -7421,7 +7632,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.15           ║
+        \\║      Trinity UART Echo Test v4.16           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7891,7 +8102,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.15)         ║
+            \\║         SIMULATION MODE (v4.16)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8486,7 +8697,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.15)      ║
+        \\║       SIMULATION BATCH MODE (v4.16)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8620,7 +8831,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.15)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.16)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8637,7 +8848,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.15)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.16)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9576,7 +9787,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.15)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.16)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);

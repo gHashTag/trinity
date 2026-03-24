@@ -15,11 +15,11 @@ const MAGIC: u32 = 0x54524937; // 'T' << 24 | 'R' << 16 | 'I' << 8 | '2' (big-en
 
 /// .tbin header structure
 const TbinHeader = extern struct {
-    magic: [4]u8,     // Bytes 0-3
-    version: u8,           // Byte 4
-    section_count: u8,     // Byte 5
-    reserved: [3]u8,        // Bytes 6-8
-    size: u32,             // Bytes 9-12 (little-endian)
+    magic: [4]u8, // Bytes 0-3
+    version: u8, // Byte 4
+    section_count: u8, // Byte 5
+    reserved: [3]u8, // Bytes 6-8
+    size: u32, // Bytes 9-12 (little-endian)
 };
 
 /// Assembler error set
@@ -114,7 +114,8 @@ pub const AssemblerState = struct {
                     return encoder.encode_tmul(dst, src1, src2);
                 }
                 if (std.ascii.eqlIgnoreCase(opcode_str, "load_imm") or
-                    std.ascii.eqlIgnoreCase(opcode_str, "ldi")) {
+                    std.ascii.eqlIgnoreCase(opcode_str, "ldi"))
+                {
                     const dst = try getRegister(self, token, token.line, 1);
                     const imm = try getImmediate(self, token, token.line, 2);
                     if (std.ascii.eqlIgnoreCase(opcode_str, "load_imm")) {
@@ -124,7 +125,8 @@ pub const AssemblerState = struct {
                     }
                 }
                 if (std.ascii.eqlIgnoreCase(opcode_str, "store") or
-                    std.ascii.eqlIgnoreCase(opcode_str, "sti")) {
+                    std.ascii.eqlIgnoreCase(opcode_str, "sti"))
+                {
                     if (std.ascii.eqlIgnoreCase(opcode_str, "store")) {
                         const src = try getRegister(self, token, token.line, 1);
                         const addr = try getImmediate(self, token, token.line, 2);
@@ -186,44 +188,44 @@ pub const AssemblerState = struct {
         if (num > 31) return AsmError.InvalidRegister;
         return num;
     }
+};
 
-    /// Assemble .tasm source to .tbin bytecode
-    pub fn assemble(allocator: Allocator, asm_source: []const u8) AsmError![]u8 {
-        if (asm_source.len == 0) return AsmError.EmptySource;
+/// Assemble .tasm source to .tbin bytecode
+pub fn assemble(allocator: Allocator, asm_source: []const u8) AsmError![]u8 {
+    if (asm_source.len == 0) return AsmError.EmptySource;
 
-        // Tokenize source
-        var lexer = Lexer.init(allocator, asm_source);
-        defer lexer.deinit();
-        const tokens = try lexer.tokenize();
+    // Tokenize source
+    var lexer = Lexer.init(allocator, asm_source);
+    defer lexer.deinit();
+    const tokens = try lexer.tokenize();
 
-        if (tokens.len == 0) return AsmError.EmptySource;
+    if (tokens.len == 0) return AsmError.EmptySource;
 
-        // Process tokens
-        var state = AssemblerState.init(allocator, tokens);
-        defer state.deinit();
+    // Process tokens
+    var state = AssemblerState.init(allocator, tokens);
+    defer state.deinit();
 
-        var token_idx: usize = 0;
-        while (token_idx < tokens.len) {
-            const token = tokens[token_idx];
+    var token_idx: usize = 0;
+    while (token_idx < tokens.len) {
+        const token = tokens[token_idx];
 
-            // Skip commas
-            if (token.type == .Comma) {
-                token_idx += 1;
-                continue;
-            }
-
-            // Process instruction or label
-            const word = try state.encodeInstruction(token);
-            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 24)));
-            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 16)));
-            try state.bytecode.append(allocator, @as(u8, @truncate(word >> 8)));
-            try state.bytecode.append(allocator, @as(u8, @truncate(word)));
-
+        // Skip commas
+        if (token.type == .Comma) {
             token_idx += 1;
+            continue;
         }
 
-        return state.bytecode.toOwnedSlice(state.allocator);
+        // Process instruction or label
+        const word = try state.encodeInstruction(token);
+        try state.bytecode.append(allocator, @as(u8, @truncate(word >> 24)));
+        try state.bytecode.append(allocator, @as(u8, @truncate(word >> 16)));
+        try state.bytecode.append(allocator, @as(u8, @truncate(word >> 8)));
+        try state.bytecode.append(allocator, @as(u8, @truncate(word)));
+
+        token_idx += 1;
     }
+
+    return state.bytecode.toOwnedSlice(state.allocator);
 }
 
 // Tests
@@ -244,8 +246,10 @@ test "assembler encodes add" {
     defer allocator.free(result);
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
-    try std.testing.expectEqual(@as(u32, 0x10 | (5 << 8) | (10 << 11) | (15 << 14),
-        (@as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3])));
+    try std.testing.expectEqual(
+        @as(u32, 0x10 | (5 << 8) | (10 << 11) | (15 << 14)),
+        @as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3]),
+    );
 }
 
 test "assembler encodes load_imm" {
@@ -257,8 +261,7 @@ test "assembler encodes load_imm" {
     try std.testing.expectEqual(@as(usize, 4), result.len);
     // LD_IMM opcode = 0x84, r7 << 8, -42 immediate
     const expected: u32 = 0x84 | (7 << 8) | @as(u32, @bitCast(@as(i16, -42)) << 16);
-    try std.testing.expectEqual(@as(u32, expected),
-        (@as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3])));
+    try std.testing.expectEqual(@as(u32, expected), (@as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3])));
 }
 
 test "assembler encodes halt" {
@@ -300,6 +303,5 @@ test "assembler encodes tmul" {
     try std.testing.expectEqual(@as(usize, 4), result.len);
     // DOT opcode = 0x60
     const expected: u32 = 0x60 | (1 << 8) | (2 << 11) | (3 << 14);
-    try std.testing.expectEqual(@as(u32, expected),
-        (@as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3])));
+    try std.testing.expectEqual(@as(u32, expected), (@as(u32, result[0]) << 24 | @as(u32, result[1]) << 16 | @as(u32, result[2]) << 8 | @as(u32, result[3])));
 }
