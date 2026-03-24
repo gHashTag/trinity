@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.67 — Anomaly Detection (combination of IQR, Z-score, and MA deviation)
+//! v3.68 — Anomaly Export (JSON/CSV anomaly detection results)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1792,8 +1792,8 @@ const JitterTracker = struct {
         if (ma.count > 0) {
             printDim("\n  Moving Average (window={d}):\n", .{10});
             printDim("    Samples smoothed: {d}\n", .{ma.count});
-            printDim("    Original std: {d:.3}ms\n", .{ma.original_std / 1000.0 });
-            printDim("    Smoothed std: {d:.3}ms\n", .{ma.smoothed_std / 1000.0 });
+            printDim("    Original std: {d:.3}ms\n", .{ma.original_std / 1000.0});
+            printDim("    Smoothed std: {d:.3}ms\n", .{ma.smoothed_std / 1000.0});
             const reduction_txt = if (ma.reduction_pct > 10)
                 "significant"
             else if (ma.reduction_pct > 0)
@@ -1830,7 +1830,7 @@ const JitterTracker = struct {
             printDim("    Z-score outliers: {d}/{d} samples\n", .{ anomalies.z_score_outliers, self.count });
             printDim("    MA deviations: {d}/{d} samples\n", .{ anomalies.ma_deviations, self.count });
             printDim("    Total anomalies: {d}/{d} samples\n", .{ anomalies.count, self.count });
-            printDim("    Severity: {s}\n", .{ severity });
+            printDim("    Severity: {s}\n", .{severity});
         }
     }
 };
@@ -3983,31 +3983,116 @@ fn runSimulationBatch(config: Config) !void {
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
 
     // Export to JSON if requested
+    // v3.68: Updated to version 3.68
     if (config.json_output) {
-        var json_buf: [1024]u8 = undefined;
-        const json = try std.fmt.bufPrint(&json_buf,
-            \\{{
-            \\  "mode": "simulation_batch",
-            \\  "batch_size": {d},
-            \\  "matched": {d},
-            \\  "failed": {d},
-            \\  "timeouts": {d},
-            \\  "success_rate": {d:.2},
-            \\  "batch_time_ms": {d},
-            \\  "packets_per_sec": {d:.2},
-            \\  "bytes_per_sec": {d:.2}
-            \\}}
-        , .{
-            batch_size,
-            results.matched,
-            results.failed,
-            results.timeouts,
-            results.successRate(),
-            results.batch_time_ms,
-            results.packets_per_second,
-            results.bytes_per_second,
-        });
-        printErr("\n{s}\n", .{json});
+        printErr("\n{{\n", .{});
+        printErr("  \"version\": \"3.68\",\n", .{});
+        printErr("  \"mode\": \"simulation_batch\",\n", .{});
+        printErr("  \"batch_size\": {d},\n", .{batch_size});
+        printErr("  \"matched\": {d},\n", .{results.matched});
+        printErr("  \"failed\": {d},\n", .{results.failed});
+        printErr("  \"timeouts\": {d},\n", .{results.timeouts});
+        printErr("  \"success_rate\": {d:.2},\n", .{results.successRate()});
+        printErr("  \"batch_time_ms\": {d},\n", .{results.batch_time_ms});
+        printErr("  \"packets_per_sec\": {d:.2},\n", .{results.packets_per_second});
+        printErr("  \"bytes_per_sec\": {d:.2}\n", .{results.bytes_per_second});
+
+        // v3.68: Add anomalies if jitter tracking enabled
+        if (config.measure_jitter and jitter_tracker.count >= 10) {
+            const anomalies = jitter_tracker.detectAnomalies(1.5, 2.0);
+            const severity = if (anomalies.anomaly_score >= 50.0)
+                "CRITICAL"
+            else if (anomalies.anomaly_score >= 30.0)
+                "HIGH"
+            else if (anomalies.anomaly_score >= 15.0)
+                "MODERATE"
+            else
+                "LOW";
+            printErr(",\n", .{});
+            printErr("  \"anomalies\": {{\n", .{});
+            printErr("    \"score\": {d:.1},\n", .{anomalies.anomaly_score});
+            printErr("    \"severity\": \"{s}\",\n", .{severity});
+            printErr("    \"iqr_outliers\": {d},\n", .{anomalies.iqr_outliers});
+            printErr("    \"z_score_outliers\": {d},\n", .{anomalies.z_score_outliers});
+            printErr("    \"ma_deviations\": {d},\n", .{anomalies.ma_deviations});
+            printErr("    \"total_anomalies\": {d},\n", .{anomalies.count});
+            printErr("    \"samples_analyzed\": {d}\n", .{jitter_tracker.count});
+            printErr("  }}", .{});
+        }
+
+        printErr("\n}}\n", .{});
+    }
+
+    // v3.68: Export to CSV if requested
+    if (config.csv_output) {
+        const timestamp = std.time.timestamp();
+        const success_rate = results.successRate();
+        printErr("timestamp,version,mode,batch_size,matched,failed,timeouts,success_rate,batch_time_ms,packets_per_sec,bytes_per_sec", .{});
+
+        // v3.68: Prepare percentile and anomaly data once
+        var p50_ms_val: f64 = 0;
+        var p90_ms_val: f64 = 0;
+        var p95_ms_val: f64 = 0;
+        var p99_ms_val: f64 = 0;
+        var p50_us_val: i64 = 0;
+        var p90_us_val: i64 = 0;
+        var p95_us_val: i64 = 0;
+        var p99_us_val: i64 = 0;
+        var anomaly_score_val: f64 = 0;
+        var severity_val: []const u8 = "";
+        var iqr_outliers_val: usize = 0;
+        var z_score_outliers_val: usize = 0;
+        var ma_deviations_val: usize = 0;
+        var total_anomalies_val: usize = 0;
+
+        // v3.68: Get percentiles if jitter tracking enabled
+        if (config.measure_jitter and jitter_tracker.count > 1) {
+            const p = jitter_tracker.getPercentiles();
+            p50_ms_val = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+            p90_ms_val = @as(f64, @floatFromInt(p.p90)) / 1000.0;
+            p95_ms_val = @as(f64, @floatFromInt(p.p95)) / 1000.0;
+            p99_ms_val = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+            p50_us_val = p.p50;
+            p90_us_val = p.p90;
+            p95_us_val = p.p95;
+            p99_us_val = p.p99;
+            printErr(",p50_us,p50_ms,p90_us,p90_ms,p95_us,p95_ms,p99_us,p99_ms", .{});
+        }
+
+        // v3.68: Get anomaly data
+        if (config.measure_jitter and jitter_tracker.count >= 10) {
+            const anomalies = jitter_tracker.detectAnomalies(1.5, 2.0);
+            anomaly_score_val = anomalies.anomaly_score;
+            severity_val = if (anomalies.anomaly_score >= 50.0)
+                "CRITICAL"
+            else if (anomalies.anomaly_score >= 30.0)
+                "HIGH"
+            else if (anomalies.anomaly_score >= 15.0)
+                "MODERATE"
+            else
+                "LOW";
+            iqr_outliers_val = anomalies.iqr_outliers;
+            z_score_outliers_val = anomalies.z_score_outliers;
+            ma_deviations_val = anomalies.ma_deviations;
+            total_anomalies_val = anomalies.count;
+            printErr(",anomaly_score,severity,iqr_outliers,z_score_outliers,ma_deviations,total_anomalies,samples_analyzed", .{});
+        }
+
+        printErr("\n", .{});
+        printErr("{d},3.68,simulation_batch,{d},{d},{d},{d},{d:.2},{d},{d:.2},{d:.2}", .{ timestamp, batch_size, results.matched, results.failed, results.timeouts, success_rate, results.batch_time_ms, results.packets_per_second, results.bytes_per_second });
+
+        // v3.68: Write percentile data
+        if (config.measure_jitter and jitter_tracker.count > 1) {
+            printErr(",{d},{d:.2},{d},{d:.2},{d},{d:.2},{d},{d:.2}", .{ p50_us_val, p50_ms_val, p90_us_val, p90_ms_val, p95_us_val, p95_ms_val, p99_us_val, p99_ms_val });
+        }
+
+        // v3.68: Write anomaly data
+        if (config.measure_jitter and jitter_tracker.count >= 10) {
+            printErr(",{d:.1},{s},{d},{d},{d},{d},{d}", .{ anomaly_score_val, severity_val, iqr_outliers_val, z_score_outliers_val, ma_deviations_val, total_anomalies_val, jitter_tracker.count });
+        }
+
+        printErr("\n", .{});
+        printErr("\n[+] CSV export complete\n", .{});
     }
 
     // v3.58: Baseline save/compare support
@@ -5081,10 +5166,11 @@ fn exportToCSV(path: []const u8, results: []const DetailedTestResult, passed: us
 
 // v3.14: Export simulation results to JSON
 // v3.45: Export JSON with percentiles
+// v3.68: Export JSON with anomalies
 fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64, jitter_tracker: ?*const JitterTracker) void {
     printErr(
         \\{{
-        \\  "version": "3.45",
+        \\  "version": "3.68",
         \\  "mode": "simulation",
         \\  "timestamp": {d},
         \\  "summary": {{
@@ -5124,11 +5210,38 @@ fn exportSimulationJSON(passed: usize, total: usize, total_time_ms: i64, jitter_
         }
     }
 
+    // v3.68: Add anomaly detection to JSON if available
+    if (jitter_tracker) |jt| {
+        if (jt.count >= 10) {
+            const anomalies = jt.detectAnomalies(1.5, 2.0);
+            const severity = if (anomalies.anomaly_score >= 50.0)
+                "CRITICAL"
+            else if (anomalies.anomaly_score >= 30.0)
+                "HIGH"
+            else if (anomalies.anomaly_score >= 15.0)
+                "MODERATE"
+            else
+                "LOW";
+
+            printErr(",\n", .{});
+            printErr("  \"anomalies\": {{\n", .{});
+            printErr("    \"score\": {d:.1},\n", .{anomalies.anomaly_score});
+            printErr("    \"severity\": \"{s}\",\n", .{severity});
+            printErr("    \"iqr_outliers\": {d},\n", .{anomalies.iqr_outliers});
+            printErr("    \"z_score_outliers\": {d},\n", .{anomalies.z_score_outliers});
+            printErr("    \"ma_deviations\": {d},\n", .{anomalies.ma_deviations});
+            printErr("    \"total_anomalies\": {d},\n", .{anomalies.count});
+            printErr("    \"samples_analyzed\": {d}\n", .{jt.count});
+            printErr("  }}", .{});
+        }
+    }
+
     printErr("\n}}\n", .{});
     printErr("\n[+] Simulation JSON export complete\n", .{});
 }
 
 // v3.46: Export CSV with percentiles
+// v3.68: Export CSV with anomalies
 fn exportSimulationCSV(passed: usize, total: usize, total_time_ms: i64, jitter_tracker: ?*const JitterTracker) void {
     // CSV Header
     printErr("timestamp,version,mode,passed,total,success_rate,total_time_ms", .{});
@@ -5137,13 +5250,19 @@ fn exportSimulationCSV(passed: usize, total: usize, total_time_ms: i64, jitter_t
             printErr(",p50_us,p50_ms,p90_us,p90_ms,p95_us,p95_ms,p99_us,p99_ms", .{});
         }
     }
+    // v3.68: Add anomaly columns to header
+    if (jitter_tracker) |jt| {
+        if (jt.count >= 10) {
+            printErr(",anomaly_score,severity,iqr_outliers,z_score_outliers,ma_deviations,total_anomalies", .{});
+        }
+    }
     printErr("\n", .{});
 
     // CSV Data
     const timestamp = std.time.timestamp();
     const success_rate = @as(f64, @floatFromInt(passed)) / @as(f64, @floatFromInt(total)) * 100.0;
 
-    printErr("{d},3.46,simulation,{d},{d},{d:.1},{d}", .{ timestamp, passed, total, success_rate, total_time_ms });
+    printErr("{d},3.68,simulation,{d},{d},{d:.1},{d}", .{ timestamp, passed, total, success_rate, total_time_ms });
 
     if (jitter_tracker) |jt| {
         if (jt.count > 1) {
@@ -5154,6 +5273,23 @@ fn exportSimulationCSV(passed: usize, total: usize, total_time_ms: i64, jitter_t
             const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
 
             printErr(",{d},{d:.2},{d},{d:.2},{d},{d:.2},{d},{d:.2}", .{ p.p50, p50_ms, p.p90, p90_ms, p.p95, p95_ms, p.p99, p99_ms });
+        }
+    }
+
+    // v3.68: Add anomaly data
+    if (jitter_tracker) |jt| {
+        if (jt.count >= 10) {
+            const anomalies = jt.detectAnomalies(1.5, 2.0);
+            const severity = if (anomalies.anomaly_score >= 50.0)
+                "CRITICAL"
+            else if (anomalies.anomaly_score >= 30.0)
+                "HIGH"
+            else if (anomalies.anomaly_score >= 15.0)
+                "MODERATE"
+            else
+                "LOW";
+
+            printErr(",{d:.1},{s},{d},{d},{d},{d}", .{ anomalies.anomaly_score, severity, anomalies.iqr_outliers, anomalies.z_score_outliers, anomalies.ma_deviations, anomalies.count });
         }
     }
 

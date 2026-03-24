@@ -380,10 +380,17 @@ test "lexer tokenizes comment" {
     defer lexer.deinit();
 
     const tokens = try lexer.tokenize();
-    try std.testing.expectEqual(@as(usize, 7), tokens.len);
+    // nop, comment, add, r1, comma, r2, comma, r3, EOF = 9 tokens
+    try std.testing.expectEqual(@as(usize, 9), tokens.len);
+    try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
     try std.testing.expectEqual(TokenType.Comment, tokens[1].type);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[2].type);
-    try std.testing.expectEqual(TokenType.EOF, tokens[6].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[3].type);
+    try std.testing.expectEqual(TokenType.Comma, tokens[4].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[5].type);
+    try std.testing.expectEqual(TokenType.Comma, tokens[6].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[7].type);
+    try std.testing.expectEqual(TokenType.EOF, tokens[8].type);
 }
 
 test "lexer handles hex immediates" {
@@ -404,7 +411,8 @@ test "lexer handles newlines" {
     defer lexer.deinit();
 
     const tokens = try lexer.tokenize();
-    try std.testing.expectEqual(@as(usize, 5), tokens.len);
+    // nop, add, r1, comma, r2, EOF = 6 tokens
+    try std.testing.expectEqual(@as(usize, 6), tokens.len);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[1].type);
     try std.testing.expectEqual(TokenType.Register, tokens[2].type);
