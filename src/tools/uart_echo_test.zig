@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.13 — Connection Benchmarking (industry standards comparison)
+//! v4.14 — Smart Recommendations (AI-powered action suggestions)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -4175,6 +4175,109 @@ const JitterTracker = struct {
         }
     }
 
+    // v4.14: Smart Recommendations - AI-powered action suggestions
+    pub const SmartRecommendation = struct {
+        action_type: []const u8,
+        priority: []const u8,
+        description: []const u8,
+        confidence: f64,
+    };
+
+    pub fn getSmartRecommendations(self: *const JitterTracker) ?[5]SmartRecommendation {
+        if (self.count < 10) return null;
+
+        var recommendations: [5]SmartRecommendation = undefined;
+        var rec_count: usize = 0;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        const cv = if (mean_ms > 0) (jitter_ms / mean_ms) * 100.0 else 0;
+
+        // Rule 1: High consecutive failures
+        if (self.consecutive_failures >= 3 and rec_count < 5) {
+            recommendations[rec_count] = .{
+                .action_type = "RETEST_CONNECTION",
+                .priority = "CRITICAL",
+                .description = "Consecutive failures detected - verify hardware and cables",
+                .confidence = 95.0,
+            };
+            rec_count += 1;
+        }
+
+        // Rule 2: High jitter with high latency
+        if (cv > 40 and mean_ms > 50 and rec_count < 5) {
+            recommendations[rec_count] = .{
+                .action_type = "CHECK_INTERFERENCE",
+                .priority = "HIGH",
+                .description = "High jitter detected - possible EMI or shared medium",
+                .confidence = 80.0,
+            };
+            rec_count += 1;
+        }
+
+        // Rule 3: Degraded quality trend
+        const trend = self.getTrend();
+        if (std.mem.eql(u8, trend.direction, "DEGRADING") and @abs(trend.change_percent) > 25 and rec_count < 5) {
+            recommendations[rec_count] = .{
+                .action_type = "INVESTIGATE_DEGRADATION",
+                .priority = "HIGH",
+                .description = "Significant quality decline - check for connection issues",
+                .confidence = 85.0,
+            };
+            rec_count += 1;
+        }
+
+        // Rule 4: Optimize throughput for good connections
+        if (cv < 15 and mean_ms < 50 and rec_count < 5) {
+            recommendations[rec_count] = .{
+                .action_type = "OPTIMIZE_THROUGHPUT",
+                .priority = "LOW",
+                .description = "Connection quality is excellent - can increase packet size for testing",
+                .confidence = 90.0,
+            };
+            rec_count += 1;
+        }
+
+        if (rec_count == 0) {
+            recommendations[0] = .{
+                .action_type = "NO_ACTION",
+                .priority = "LOW",
+                .description = "Connection appears healthy - continue normal testing",
+                .confidence = 100.0,
+            };
+            rec_count = 1;
+        }
+
+        return recommendations[0..rec_count].*;
+    }
+
+    pub fn showSmartRecommendations(self: *const JitterTracker) void {
+        const recommendations = self.getSmartRecommendations();
+
+        if (recommendations) |recs| {
+            printDim("    Smart Recommendations:\n", .{});
+            for (recs) |rec| {
+                if (rec.action_type.len == 0) continue;
+
+                const priority_color = if (std.mem.eql(u8, rec.priority, "CRITICAL"))
+                    ANSI.RED
+                else if (std.mem.eql(u8, rec.priority, "HIGH"))
+                    ANSI.YELLOW
+                else if (std.mem.eql(u8, rec.priority, "MEDIUM"))
+                    ANSI.CYAN
+                else
+                    ANSI.GREEN;
+
+                printErr("    [{s}{s}] {s}: {s}\n", .{ priority_color, rec.priority, ANSI.RESET, rec.action_type });
+                printDim("    {s}\n", .{ rec.description });
+                printDim("    Confidence: {d:.0}%\n", .{ rec.confidence });
+            }
+        } else {
+            printDim("    Insufficient data for recommendations\n", .{});
+        }
+    }
+
     // v3.70: Predict RTT trend based on linear regression of recent samples
     pub fn predictTrend(self: *const JitterTracker) void {
         const PREDICTION_WINDOW: usize = 10;
@@ -7187,7 +7290,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.13           ║
+        \\║      Trinity UART Echo Test v4.14           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7657,7 +7760,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.13)         ║
+            \\║         SIMULATION MODE (v4.14)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8252,7 +8355,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.13)      ║
+        \\║       SIMULATION BATCH MODE (v4.14)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8386,7 +8489,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.13)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.14)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8403,7 +8506,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.13)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.14)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9342,7 +9445,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.13)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.14)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
