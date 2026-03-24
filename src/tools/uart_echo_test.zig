@@ -3773,6 +3773,99 @@ const JitterTracker = struct {
         }
     }
 
+    // v3.92: Session Summary - comprehensive report with recommendations
+    pub fn showSessionSummary(self: *const JitterTracker, total_tests: usize, passed_tests: usize) void {
+        if (self.count < 5) {
+            printInfo("[i] Session Summary: insufficient data (need 5+ samples)\n", .{});
+            return;
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const stability = self.calculateStabilityScore();
+        const burst = self.analyzeBursts(2.0);
+        const loss_pattern = self.detectLossPattern();
+
+        printInfo("\n  ══════════════════════════════════════════\n", .{});
+        printInfo("  📋 SESSION SUMMARY\n", .{});
+        printInfo("  ══════════════════════════════════════════\n", .{});
+
+        // Test results
+        const success_rate = @as(f64, @floatFromInt(passed_tests)) / @as(f64, @floatFromInt(total_tests)) * 100.0;
+        printDim("  Test Results:\n", .{});
+        printDim("    Passed: {d}/{d} ({d:.1}%)\n", .{ passed_tests, total_tests, success_rate });
+        printDim("    Samples analyzed: {d}\n", .{ self.count });
+        if (self.consecutive_failures > 0) {
+            printDim("    Failures: {d} (max consecutive: {d})\n", .{ self.consecutive_failures, self.max_consecutive_failures });
+        }
+
+        // Latency summary
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        printDim("\n  Latency Summary:\n", .{});
+        printDim("    Mean RTT: {d:.2}ms\n", .{ mean_ms });
+        printDim("    Jitter (σ): {d:.2}ms\n", .{ jitter_ms });
+        printDim("    Min: {d:.2}ms, Max: {d:.2}ms\n", .{ @as(f64, @floatFromInt(p.min)) / 1000.0, @as(f64, @floatFromInt(p.max)) / 1000.0 });
+        printDim("    p50: {d:.2}ms, p99: {d:.2}ms\n", .{ @as(f64, @floatFromInt(p.p50)) / 1000.0, @as(f64, @floatFromInt(p.p99)) / 1000.0 });
+
+        // Quality assessment
+        printDim("\n  Quality Assessment:\n", .{});
+        const quality_emoji = if (stability.overall_score >= 90) "🟢"
+        else if (stability.overall_score >= 80) "🟡"
+        else if (stability.overall_score >= 70) "🟠"
+        else "🔴";
+        printDim("    {s} Stability Score: {d:.1}/100 ({s})\n", .{ quality_emoji, stability.overall_score, stability.grade });
+
+        const burst_emoji = if (burst.burst_count == 0) "✅"
+        else if (std.mem.eql(u8, burst.burst_severity, "LOW")) "🟡"
+        else if (std.mem.eql(u8, burst.burst_severity, "MODERATE")) "🟠"
+        else "🔴";
+        printDim("    {s} Burst Severity: {s} ({d} bursts)\n", .{ burst_emoji, burst.burst_severity, burst.burst_count });
+
+        if (self.consecutive_failures > 0) {
+            const loss_emoji = if (std.mem.eql(u8, loss_pattern.severity, "LOW")) "🟡"
+            else if (std.mem.eql(u8, loss_pattern.severity, "MODERATE")) "🟠"
+            else if (std.mem.eql(u8, loss_pattern.severity, "HIGH")) "🔴"
+            else "⛔";
+            printDim("    {s} Loss Pattern: {s} ({s})\n", .{ loss_emoji, loss_pattern.pattern_type, loss_pattern.severity });
+        }
+
+        // Recommendations
+        printDim("\n  Recommendations:\n", .{});
+        if (stability.overall_score >= 85) {
+            printDim("    ✅ Connection is excellent\n", .{});
+            printDim("       - Suitable for real-time applications\n", .{});
+            printDim("       - No configuration changes needed\n", .{});
+        } else if (stability.overall_score >= 70) {
+            printDim("    🟡 Connection is good\n", .{});
+            printDim("       - Consider adaptive timeout for sensitive apps\n", .{});
+            printDim("       - Monitor for degradation over time\n", .{});
+        } else if (stability.overall_score >= 50) {
+            printDim("    🟠 Connection has issues\n", .{});
+            printDim("       - Try different baud rate\n", .{});
+            printDim("       - Increase timeout values\n", .{});
+            printDim("       - Check cable quality\n", .{});
+        } else {
+            printDim("    🔴 Connection is unstable\n", .{});
+            printDim("       - Investigate hardware issues\n", .{});
+            printDim("       - Consider flow control\n", .{});
+            printDim("       - Reduce throughput requirements\n", .{});
+        }
+
+        const burst_ratio = if (self.count > 0)
+            @as(f64, @floatFromInt(burst.total_burst_samples)) / @as(f64, @floatFromInt(self.count))
+        else
+            0.0;
+
+        if (burst.burst_count > 0 and burst_ratio > 0.1) {
+            printDim("    ⚠️  Frequent bursts detected\n", .{});
+            printDim("       - Check for background processes\n", .{});
+            printDim("       - Reduce concurrent operations\n", .{});
+        }
+
+        printDim("\n  ══════════════════════════════════════════\n", .{});
+    }
+
     // v3.69: Plot histogram of RTT distribution
     pub fn plotHistogram(self: *const JitterTracker) void {
         const NUM_BINS: usize = 10;
@@ -5971,6 +6064,12 @@ fn runSimulationBatch(config: Config) !void {
     // Report adaptive timeout stats if enabled
     if (adaptive_timeout) |*at| {
         at.report();
+    }
+
+    // v3.92: Session Summary
+    if (config.measure_jitter and jitter_tracker.count >= 5) {
+        printErr("\n", .{});
+        jitter_tracker.showSessionSummary(batch_size, results.matched);
     }
 
     printErr("\n[i] Simulation complete - no hardware required!\n", .{});
