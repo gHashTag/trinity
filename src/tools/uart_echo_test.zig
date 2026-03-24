@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.17 — Latency Prediction Engine (predict future RTT using weighted exponential regression)
+//! v4.18 — Connection Quality Dashboard (comprehensive connection metrics display)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -6982,6 +6982,194 @@ const BufferedIO = struct {
     pub fn capacity(self: *const BufferedIO) usize {
         return self.buffer_size - self.write_pos;
     }
+
+    // v4.18: Connection Quality Dashboard - comprehensive connection metrics display
+    pub const ConnectionQualityDashboard = struct {
+        latency_score: f64, // 0-100 (based on mean RTT and percentiles)
+        jitter_score: f64, // 0-100 (based on coefficient of variation)
+        reliability_score: f64, // 0-100 (based on success rate and anomalies)
+        throughput_score: f64, // 0-100 (based on packets/sec)
+        overall_quality: f64, // 0-100 (weighted average)
+        quality_grade: []const u8, // A/B/C/D/F
+        quality_category: []const u8, // EXCELLENT/GOOD/FAIR/POOR/CRITICAL
+        recommendation: []const u8, // Actionable recommendation
+    };
+
+    pub fn generateConnectionDashboard(self: *const JitterTracker) ConnectionQualityDashboard {
+        if (self.count < 10) {
+            return .{
+                .latency_score = 0.0,
+                .jitter_score = 0.0,
+                .reliability_score = 0.0,
+                .throughput_score = 0.0,
+                .overall_quality = 0.0,
+                .quality_grade = "N/A",
+                .quality_category = "INSUFFICIENT_DATA",
+                .recommendation = "Need 10+ samples for dashboard",
+            };
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const stability = self.calculateStabilityScore();
+        const anomalies = self.detectAnomalies(3.0, 2.0);
+        const burst = self.analyzeBursts(2.0);
+
+        // 1. Latency Score (0-100)
+        // Lower mean = better score
+        const mean_ms = stats.mean / 1000.0;
+        const latency_score: f64 = if (mean_ms < 5)
+            100.0
+        else if (mean_ms < 15)
+            95.0
+        else if (mean_ms < 30)
+            85.0
+        else if (mean_ms < 60)
+            70.0
+        else if (mean_ms < 120)
+            50.0
+        else if (mean_ms < 250)
+            30.0
+        else
+            15.0;
+
+        // 2. Jitter Score (0-100)
+        // Lower CV = better score
+        const cv = if (stats.mean > 0) (stats.jitter / stats.mean) * 100.0 else 0.0;
+        const jitter_score: f64 = if (cv < 10)
+            100.0
+        else if (cv < 20)
+            90.0
+        else if (cv < 30)
+            75.0
+        else if (cv < 50)
+            60.0
+        else
+            30.0;
+
+        // 3. Reliability Score (0-100)
+        // Based on anomalies and consecutive failures
+        const anomaly_ratio = @as(f64, @floatFromInt(anomalies.count)) / @as(f64, @floatFromInt(self.count));
+        const failure_ratio = @as(f64, @floatFromInt(self.consecutive_failures)) / @as(f64, @floatFromInt(self.count));
+        const reliability_score: f64 = 100.0 - (anomaly_ratio * 40.0 + failure_ratio * 60.0);
+
+        // 4. Throughput Score (0-100)
+        // Estimate based on RTT (lower = better throughput)
+        // Assuming 100ms baseline for perfect throughput
+        const throughput_estimate = if (mean_ms > 0) 100.0 - (mean_ms / 100.0) else 0.0;
+        const throughput_score: f64 = @max(0.0, @min(100.0, throughput_estimate));
+
+        // 5. Overall Quality (weighted average)
+        const overall_quality = (latency_score * 0.30 +
+            jitter_score * 0.25 +
+            reliability_score * 0.30 +
+            throughput_score * 0.15);
+
+        // Grade assignment
+        const quality_grade: []const u8 = if (overall_quality >= 90)
+            "A"
+        else if (overall_quality >= 80)
+            "B"
+        else if (overall_quality >= 70)
+            "C"
+        else if (overall_quality >= 60)
+            "D"
+        else
+            "F";
+
+        // Quality category
+        const quality_category: []const u8 = if (overall_quality >= 90)
+            "EXCELLENT"
+        else if (overall_quality >= 80)
+            "GOOD"
+        else if (overall_quality >= 70)
+            "FAIR"
+        else if (overall_quality >= 60)
+            "POOR"
+        else
+            "CRITICAL";
+
+        // Generate recommendation
+        const recommendation: []const u8 = blk: {
+            if (overall_quality >= 85) break :blk "Connection is excellent - no changes needed";
+            if (reliability_score < 70 and jitter_score < 70) break :blk "Consider investigating jitter spikes";
+            if (latency_score < 60) break :blk "Investigate high latency - check network path";
+            if (burst.burst_count > 2) break :blk "Implement flow control to reduce bursts";
+            break :blk "Monitor connection and optimize configuration";
+        };
+
+        return .{
+            .latency_score = latency_score,
+            .jitter_score = jitter_score,
+            .reliability_score = reliability_score,
+            .throughput_score = throughput_score,
+            .overall_quality = overall_quality,
+            .quality_grade = quality_grade,
+            .quality_category = quality_category,
+            .recommendation = recommendation,
+        };
+    }
+
+    pub fn showConnectionDashboard(self: *const JitterTracker) void {
+        const dashboard = self.generateConnectionDashboard();
+
+        printInfo("\n  ══════════════════════════════════════╗\n", .{});
+        printInfo("  📊 CONNECTION QUALITY DASHBOARD (v4.18)\n", .{});
+        printInfo("  ══════════════════════════════════════╝\n", .{});
+
+        // Overall quality with emoji
+        const quality_emoji = if (dashboard.overall_quality >= 90) "🟢"
+        else if (dashboard.overall_quality >= 80) "🟡"
+        else if (dashboard.overall_quality >= 70) "🟠"
+        else if (dashboard.overall_quality >= 60) "🔴"
+        else "⛔";
+
+        printInfo("\n  Overall Quality: {s} {d:.1}/100 ({s})\n", .{
+            quality_emoji,
+            dashboard.quality_grade,
+            dashboard.overall_quality,
+            dashboard.quality_category,
+        });
+
+        // Component scores
+        printInfo("\n  Component Scores:\n", .{});
+        printInfo("  Latency:      {d:.0}/100  ", .{dashboard.latency_score});
+        _ = if (dashboard.latency_score >= 80) printInfo("✅") else if (dashboard.latency_score >= 60) printInfo("🟡") else if (dashboard.latency_score >= 40) printInfo("🟠") else printInfo("🔴");
+        printInfo("  Jitter:       {d:.0}/100  ", .{dashboard.jitter_score});
+        _ = if (dashboard.jitter_score >= 80) printInfo("✅") else if (dashboard.jitter_score >= 60) printInfo("🟡") else if (dashboard.jitter_score >= 40) printInfo("🟠") else printInfo("🔴");
+        printInfo("  Reliability:  {d:.0}/100  ", .{dashboard.reliability_score});
+        _ = if (dashboard.reliability_score >= 80) printInfo("✅") else if (dashboard.reliability_score >= 60) printInfo("🟡") else if (dashboard.reliability_score >= 40) printInfo("🟠") else printInfo("🔴");
+        printInfo("  Throughput:    {d:.0}/100  ", .{dashboard.throughput_score});
+        _ = if (dashboard.throughput_score >= 80) printInfo("✅") else if (dashboard.throughput_score >= 60) printInfo("🟡") else if (dashboard.throughput_score >= 40) printInfo("🟠") else printInfo("🔴");
+
+        // Raw metrics
+        printInfo("\n  Raw Metrics:\n", .{});
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        printInfo("  Mean RTT:  {d:.2}ms\n", .{stats.mean / 1000.0});
+        printInfo("  Jitter (CV): {d:.1}%\n", .{if (stats.mean > 0) (stats.jitter / stats.mean) * 100.0 else 0.0});
+        printInfo("  Min:       {d:.2}ms\n", .{@as(f64, @floatFromInt(p.min)) / 1000.0});
+        printInfo("  Max:       {d:.2}ms\n", .{@as(f64, @floatFromInt(p.max)) / 1000.0});
+        printInfo("  p50:       {d:.2}ms\n", .{@as(f64, @floatFromInt(p.p50)) / 1000.0});
+        printInfo("  p95:       {d:.2}ms\n", .{@as(f64, @floatFromInt(p.p95)) / 1000.0});
+        printInfo("  Success:    {d}/{d} ({d:.1}%)\n", .{
+            self.count - @as(usize, @intFromFloat(stats.failed + stats.timeouts)),
+            self.count,
+            @as(f64, @floatFromInt(self.count - stats.failed - stats.timeouts)) / @as(f64, @floatFromInt(self.count)) * 100.0,
+        });
+
+        // Recommendation
+        printInfo("\n  Recommendation: {s}\n", .{dashboard.recommendation});
+
+        // Quality assessment
+        printInfo("\n  Assessment: {s} - {s}\n", .{
+            dashboard.quality_category,
+            if (dashboard.overall_quality >= 85) "suitable for real-time applications"
+            else if (dashboard.overall_quality >= 70) "suitable for most applications"
+            else if (dashboard.overall_quality >= 60) "needs optimization"
+            else "requires investigation",
+        });
+    }
 };
 
 // v3.30: Batch test results for aggregated throughput measurement
@@ -7837,7 +8025,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.17           ║
+        \\║      Trinity UART Echo Test v4.18           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8307,7 +8495,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.17)         ║
+            \\║         SIMULATION MODE (v4.18)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8902,7 +9090,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.17)      ║
+        \\║       SIMULATION BATCH MODE (v4.18)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -9036,7 +9224,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.17)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.18)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});

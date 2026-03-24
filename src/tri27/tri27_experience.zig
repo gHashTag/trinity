@@ -395,8 +395,14 @@ test "tri27_experience: recordToQueenEpisodes integration" {
     // Create test event with zero-initialized buffers
     var input_buf: [256]u8 = [_]u8{0} ** 256;
     var output_buf: [256]u8 = [_]u8{0} ** 256;
-    @memcpy(input_buf[0..9], "test.tasm"); // 9 chars including null
-    @memcpy(output_buf[0..9], "test.tbin"); // 9 chars including null
+    @memcpy(input_buf[0..8], "test.tasm"); // 8 chars (without null)
+    @memcpy(output_buf[0..8], "test.tbin"); // 8 chars (without null)
+
+    std.debug.print("input_buf[0..10] = ", .{});
+    for (input_buf[0..10]) |b| {
+        std.debug.print("{d} ", .{b});
+    }
+    std.debug.print("\n", .{});
 
     const event = Tri27Event{
         .timestamp = 1234567890,
@@ -409,6 +415,10 @@ test "tri27_experience: recordToQueenEpisodes integration" {
         .error_msg = [_]u8{0} ** 512,
         .has_error = false,
     };
+
+    // Debug: verify inputFile() returns correct slice (without null)
+    const input_slice = event.inputFile();
+    std.debug.print("input_slice.len = {d}, content: '{s}'\n", .{ input_slice.len, input_slice });
 
     // Record to Queen episodes
     try recordToQueenEpisodes(allocator, event);
