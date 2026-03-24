@@ -149,10 +149,9 @@ pub fn encode(inst: Instruction) u32 {
     word |= @as(u32, inst.src1) << 13;
     word |= @as(u32, inst.src2) << 18;
 
-    // Encode 9-bit immediate (bits 23-31), sign-extended to 16 bits
-    var imm_bits: u16 = @bitCast(inst.immediate);
-    imm_bits &= 0x1FF; // Keep only 9 bits (0-255)
-    word |= @as(u32, imm_bits) << 23;
+    // Encode 16-bit immediate (bits 31-17)
+    const imm_bits: u16 = @bitCast(inst.immediate);
+    word |= @as(u32, imm_bits) << 17;
 
     return word;
 }
