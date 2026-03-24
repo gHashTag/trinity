@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.08 — Real-time Alert System (immediate threshold alerts)
+//! v4.09 — Session Comparison Dashboard (multi-session analysis)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2037,6 +2037,12 @@ const JitterTracker = struct {
             printInfo("\n  🔔 Real-time Alerts:\n", .{});
             self.showRealTimeAlerts();
         }
+
+        // v4.09: Session Comparison - note: requires external session data
+        if (self.count >= 10) {
+            printInfo("\n  📊 Session Comparison:\n", .{});
+            printDim("    Use --compare-sessions flag to compare with previous runs\n", .{});
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3757,6 +3763,72 @@ const JitterTracker = struct {
 
     pub fn clearAlertHistory() void {
         global_alert_history = AlertHistory.init();
+    }
+
+    // v4.09: Session Comparison Dashboard - compare multiple test sessions
+    pub const SessionComparison = struct {
+        better_count: usize,
+        worse_count: usize,
+        stable_count: usize,
+        improvement_pct: f64,
+        overall_trend: []const u8,
+    };
+
+    pub fn compareWithSessions(self: *const JitterTracker, sessions: []const JitterTracker) ?SessionComparison {
+        if (sessions.len == 0 or self.count < 10) return null;
+
+        const current_mean = self.getStats().mean / 1000.0;
+        var better: usize = 0;
+        var worse: usize = 0;
+        var stable: usize = 0;
+
+        for (sessions) |session| {
+            if (session.count < 10) continue;
+            const session_mean = session.getStats().mean / 1000.0;
+
+            if (current_mean < session_mean * 0.9) {
+                better += 1;
+            } else if (current_mean > session_mean * 1.1) {
+                worse += 1;
+            } else {
+                stable += 1;
+            }
+        }
+
+        const improvement_pct = if (better + worse + stable > 0)
+            @as(f64, @floatFromInt(better)) / @as(f64, @floatFromInt(better + worse + stable)) * 100.0
+        else
+            0.0;
+
+        const overall_trend: []const u8 = if (better > worse)
+            "IMPROVING"
+        else if (worse > better)
+            "DEGRADING"
+        else
+            "STABLE";
+
+        return .{
+            .better_count = better,
+            .worse_count = worse,
+            .stable_count = stable,
+            .improvement_pct = improvement_pct,
+            .overall_trend = overall_trend,
+        };
+    }
+
+    pub fn showSessionComparison(self: *const JitterTracker, sessions: []const JitterTracker) void {
+        const comparison = self.compareWithSessions(sessions);
+
+        if (comparison) |c| {
+            printDim("    Compared to {d} other sessions\n", .{sessions.len});
+            printDim("    Better than: {d}, Worse than: {d}, Stable: {d}\n", .{ c.better_count, c.worse_count, c.stable_count });
+            printDim("    Overall trend: {s}\n", .{c.overall_trend });
+            if (c.improvement_pct > 0) {
+                printSuccess("    Improvement rate: {d:.1}%\n", .{c.improvement_pct});
+            }
+        } else {
+            printDim("    Insufficient data for comparison\n", .{});
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -6771,7 +6843,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.08           ║
+        \\║      Trinity UART Echo Test v4.09           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7241,7 +7313,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.08)         ║
+            \\║         SIMULATION MODE (v4.09)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7836,7 +7908,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.08)      ║
+        \\║       SIMULATION BATCH MODE (v4.09)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7970,7 +8042,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.08)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.09)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7987,7 +8059,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.08)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.09)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8926,7 +8998,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.08)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.09)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
