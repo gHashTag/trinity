@@ -1839,7 +1839,7 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
     @memcpy(yosys_cmd[pos..][0..read_verilog.len], read_verilog);
     pos += read_verilog.len;
 
-    const synth = "synth_xilinx -flatten -abc9 -arch xc7 -top uart_bridge -xdc fpga/constraints/uart_bridge_j2.xdc; delete t:$scopeinfo; write_json fpga/openxc7-synth/uart_bridge_j2.json";
+    const synth = "synth_xilinx -flatten -abc9 -family xc7 -top uart_bridge; delete t:$scopeinfo; write_json fpga/openxc7-synth/uart_bridge_j2.json";
     @memcpy(yosys_cmd[pos..][0..synth.len], synth);
     pos += synth.len;
 

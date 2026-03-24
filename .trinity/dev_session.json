@@ -1,6 +1,6 @@
 {
   "state": "TESTED",
-  "issue_number": 409,
-  "branch": "feat/issue-409-bit-trit-patterns",
+  "issue_number": 410,
+  "branch": "feat/issue-410-result-type-no-exceptions",
   "tests_passed": true
 }

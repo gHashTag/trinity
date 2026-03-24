@@ -316,7 +316,7 @@ pub const PipelineRefExpr = struct {
 /// Typed hole expression: ?hole_name
 pub const HoleExpr = struct {
     name: []const u8,
-    expected_type: ?Type,
+    expected_type: ?*const Type,
     loc: SourceLocation,
 };
 
@@ -455,6 +455,8 @@ pub const Type = union(enum) {
     Array: TypeArray,
     /// Function type: fn(args) -> return
     Function: TypeFunction,
+    /// Result type: Result(T, E) - no exceptions
+    Result: TypeResult,
     /// Struct type (name of struct)
     Struct: TypeStruct,
     /// Enum type (name of enum)
@@ -507,6 +509,12 @@ pub const TypeArray = struct {
 pub const TypeFunction = struct {
     params: []const Type,
     return_type: *const Type,
+};
+
+/// Result type: Result(T, E) - no exceptions
+pub const TypeResult = struct {
+    ok_type: *const Type,
+    err_type: *const Type,
 };
 
 /// Struct type
