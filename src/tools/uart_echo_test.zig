@@ -7118,11 +7118,7 @@ const BufferedIO = struct {
         printInfo("  ══════════════════════════════════════╝\n", .{});
 
         // Overall quality with emoji
-        const quality_emoji = if (dashboard.overall_quality >= 90) "🟢"
-        else if (dashboard.overall_quality >= 80) "🟡"
-        else if (dashboard.overall_quality >= 70) "🟠"
-        else if (dashboard.overall_quality >= 60) "🔴"
-        else "⛔";
+        const quality_emoji = if (dashboard.overall_quality >= 90) "🟢" else if (dashboard.overall_quality >= 80) "🟡" else if (dashboard.overall_quality >= 70) "🟠" else if (dashboard.overall_quality >= 60) "🔴" else "⛔";
 
         printInfo("\n  Overall Quality: {s} {d:.1}/100 ({s})\n", .{
             quality_emoji,
@@ -7164,10 +7160,7 @@ const BufferedIO = struct {
         // Quality assessment
         printInfo("\n  Assessment: {s} - {s}\n", .{
             dashboard.quality_category,
-            if (dashboard.overall_quality >= 85) "suitable for real-time applications"
-            else if (dashboard.overall_quality >= 70) "suitable for most applications"
-            else if (dashboard.overall_quality >= 60) "needs optimization"
-            else "requires investigation",
+            if (dashboard.overall_quality >= 85) "suitable for real-time applications" else if (dashboard.overall_quality >= 70) "suitable for most applications" else if (dashboard.overall_quality >= 60) "needs optimization" else "requires investigation",
         });
     }
 };
@@ -9241,7 +9234,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.17)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.18)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -10180,7 +10173,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.17)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.18)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);

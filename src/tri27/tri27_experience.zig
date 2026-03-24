@@ -227,6 +227,10 @@ pub fn recordEpisodeFromEvent(event: Tri27Event, issue: u32) !void {
 /// Record TRI‑27 event to Queen episode system
 /// This integrates tri27_experience with Queen Episode framework
 pub fn recordToQueenEpisodes(allocator: Allocator, event: Tri27Event) !void {
+    // Debug: check what inputFile() returns
+    const input_slice = event.inputFile();
+    std.debug.print("DEBUG: inputFile() len={d}, content='{s}'\n", .{ input_slice.len, input_slice });
+
     // Convert to Queen Tri27Event format
     const queen_event = queen_episodes.Tri27Event{
         .timestamp = event.timestamp,
@@ -392,17 +396,15 @@ test "Tri27Operation toStr roundtrip" {
 test "tri27_experience: recordToQueenEpisodes integration" {
     const allocator = std.testing.allocator;
 
-    // Create test event with zero-initialized buffers
-    var input_buf: [256]u8 = [_]u8{0} ** 256;
-    var output_buf: [256]u8 = [_]u8{0} ** 256;
-    @memcpy(input_buf[0..8], "test.tasm"); // 8 chars (without null)
-    @memcpy(output_buf[0..8], "test.tbin"); // 8 chars (without null)
-
-    std.debug.print("input_buf[0..10] = ", .{});
-    for (input_buf[0..10]) |b| {
-        std.debug.print("{d} ", .{b});
-    }
-    std.debug.print("\n", .{});
+    // Create test event - use zero-filled arrays with explicit string copy
+    var input_buf: [256]u8 = undefined;
+    var output_buf: [256]u8 = undefined;
+    @memset(&input_buf, 0);
+    @memset(&output_buf, 0);
+    const input_str = "test.tasm";
+    const output_str = "test.tbin";
+    @memcpy(input_buf[0..input_str.len], input_str);
+    @memcpy(output_buf[0..output_str.len], output_str);
 
     const event = Tri27Event{
         .timestamp = 1234567890,
@@ -416,12 +418,13 @@ test "tri27_experience: recordToQueenEpisodes integration" {
         .has_error = false,
     };
 
-    // Debug: verify inputFile() returns correct slice (without null)
-    const input_slice = event.inputFile();
-    std.debug.print("input_slice.len = {d}, content: '{s}'\n", .{ input_slice.len, input_slice });
+    // Verify input_file before conversion
+    const input_check = event.inputFile();
+    try std.testing.expectEqual(@as(usize, 8), input_check.len);
+    try std.testing.expectEqualStrings("test.tasm", input_check);
 
     // Record to Queen episodes
-    try recordToQueenEpisodes(allocator, event);
+    _ = try recordToQueenEpisodes(allocator, event);
 
     // Verify episodes.jsonl was created and contains the event
     const file_path = ".trinity/queen/episodes.jsonl";
