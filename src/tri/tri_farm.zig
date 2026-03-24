@@ -1353,6 +1353,10 @@ fn runLocalWave9Command(allocator: Allocator, args: []const []const u8) !void {
         return localWave9Recycle(allocator, args[1..]);
     } else if (std.mem.eql(u8, action, "clean")) {
         return localWave9Clean(allocator);
+    } else if (std.mem.eql(u8, action, "device-init")) {
+        return localWave9DeviceInit(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "multi-mac")) {
+        return runMultiMacCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, action, "help") or std.mem.eql(u8, action, "--help")) {
         printLocalWave9Help();
     } else {
@@ -1648,6 +1652,565 @@ fn localWave9Clean(allocator: Allocator) !void {
     print("  {s}✅{s} Removed all containers and volumes\n", .{ GREEN, RESET });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEVICE-INIT — Generate device-specific compose for Multi-Mac Wave 9
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn localWave9DeviceInit(allocator: Allocator, args: []const []const u8) !void {
+    var device_id: usize = 1;
+    var workers_start: usize = 1;
+    var workers_count: usize = 16;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--device-id") and i + 1 < args.len) {
+            i += 1;
+            device_id = std.fmt.parseInt(usize, args[i], 10) catch 1;
+        } else if (std.mem.eql(u8, args[i], "--workers-start") and i + 1 < args.len) {
+            i += 1;
+            workers_start = std.fmt.parseInt(usize, args[i], 10) catch 1;
+        } else if (std.mem.eql(u8, args[i], "--workers-count") and i + 1 < args.len) {
+            i += 1;
+            workers_count = std.fmt.parseInt(usize, args[i], 10) catch 16;
+        }
+    }
+
+    print("\n{s}🖥️  WAVE 9 DEVICE {d} — INITIALIZATION{s}\n", .{ BOLD, device_id, RESET });
+    print("{s}════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("  Worker range: {d}-{d} ({d} workers)\n\n", .{ workers_start, workers_start + workers_count - 1, workers_count });
+
+    const wave9_device = @import("wave9_device.zig");
+
+    const compose = try wave9_device.generateDeviceCompose(allocator, device_id, .{
+        .start = workers_start,
+        .count = workers_count,
+    });
+    defer allocator.free(compose);
+
+    const output_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+    defer allocator.free(output_file);
+
+    const output_dir = std.fs.path.dirname(output_file) orelse ".";
+    std.fs.cwd().makeDir(output_dir) catch |err| switch (err) {
+        error.PathAlreadyExists => {},
+        else => return err,
+    };
+
+    const file = try std.fs.cwd().createFile(output_file, .{});
+    defer file.close();
+    try file.writeAll(compose);
+
+    print("  {s}✅{s} Generated: {s}\n", .{ GREEN, RESET, output_file });
+
+    const wave9_dir = "data/wave9";
+    std.fs.cwd().makeDir(wave9_dir) catch |err| switch (err) {
+        error.PathAlreadyExists => {},
+        else => return err,
+    };
+
+    for (0..workers_count) |j| {
+        const worker_id = workers_start + j;
+        const worker_dir = try std.fmt.allocPrint(allocator, "{s}/worker-{d}", .{ wave9_dir, worker_id });
+        defer allocator.free(worker_dir);
+        std.fs.cwd().makeDir(worker_dir) catch |err| switch (err) {
+            error.PathAlreadyExists => {},
+            else => return err,
+        };
+    }
+
+    print("  {s}✅{s} Created worker directories\n", .{ GREEN, RESET });
+
+    print("\n{s}✅ Device {d} ready!{s}\n", .{ GREEN, device_id, RESET });
+    print("   Next: docker-compose -f {s} up -d\n", .{output_file});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-MAC — Multi-Mac Wave 9 Management
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runMultiMacCommand(allocator: Allocator, args: []const []const u8) !void {
+    const action = if (args.len > 0) args[0] else "status";
+
+    if (std.mem.eql(u8, action, "init")) {
+        return multiMacInit(allocator);
+    } else if (std.mem.eql(u8, action, "start")) {
+        return multiMacStart(allocator, args[1..]);
+    } else if (std.mem.eql(u8, action, "stop")) {
+        return multiMacStop(allocator);
+    } else if (std.mem.eql(u8, action, "status")) {
+        return multiMacStatus(allocator);
+    } else if (std.mem.eql(u8, action, "verify")) {
+        return multiMacVerify(allocator);
+    } else if (std.mem.eql(u8, action, "help") or std.mem.eql(u8, action, "--help")) {
+        printMultiMacHelp();
+    } else {
+        print("{s}Unknown multi-mac action: {s}{s}\n", .{ RED, action, RESET });
+        printMultiMacHelp();
+    }
+}
+
+fn multiMacInit(allocator: Allocator) !void {
+    print("\n{s}🖥️  MULTI-MAC WAVE 9 — INITIALIZATION{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const config_path = ".trinity/wave9_multi_mac.yaml";
+    const config_content = std.fs.cwd().readFileAlloc(allocator, config_path) catch |err| {
+        print("{s}❌ Config file not found: {s}{s}\n", .{ RED, config_path, RESET });
+        print("   Create .trinity/wave9_multi_mac.yaml with device definitions\n");
+        return err;
+    };
+    defer allocator.free(config_content);
+
+    // Parse YAML config (simple line-by-line parsing)
+    var device_count: usize = 0;
+    var lines = std.mem.splitScalar(u8, config_content, '\n');
+    defer lines.deinit(allocator);
+
+    while (lines.next()) |line| {
+        if (std.mem.startsWith(u8, line, "- id:")) {
+            device_count += 1;
+        }
+    }
+
+    print("  Devices found: {d}\n\n", .{device_count });
+
+    // Initialize each device
+    const wave9_device = @import("wave9_device.zig");
+
+    var lines2 = std.mem.splitScalar(u8, config_content, '\n');
+    defer lines2.deinit(allocator);
+
+    while (lines2.next()) |line| {
+        if (std.mem.startsWith(u8, line, "- id:")) {
+            // Extract device id
+            const id_part = line["- id:".len..];
+            const id_str = std.mem.trim(u8, id_part, &std.ascii.whitespace);
+            const device_id = std.fmt.parseInt(usize, id_str, 10) catch continue;
+
+            // Find hostname
+            var hostname: []const u8 = "unknown";
+            var workers_start: usize = 1;
+            var workers_count: usize = 16;
+
+            // Look ahead for hostname, workers_start, workers_count
+            var lookahead = lines2;
+            while (lookahead.next()) |next_line| {
+                if (std.mem.startsWith(u8, next_line, "hostname:")) {
+                    hostname = std.mem.trim(u8, next_line["hostname:".len..], &std.ascii.whitespace);
+                } else if (std.mem.startsWith(u8, next_line, "workers_start:")) {
+                    const ws_str = std.mem.trim(u8, next_line["workers_start:".len..], &std.ascii.whitespace);
+                    workers_start = std.fmt.parseInt(usize, ws_str, 10) catch 1;
+                } else if (std.mem.startsWith(u8, next_line, "workers_count:")) {
+                    const wc_str = std.mem.trim(u8, next_line["workers_count:".len..], &std.ascii.whitespace);
+                    workers_count = std.fmt.parseInt(usize, wc_str, 10) catch 16;
+                } else if (std.mem.startsWith(u8, next_line, "- id:") or
+                           std.mem.startsWith(u8, next_line, "devices:")) {
+                    break; // Next device
+                }
+            }
+
+            // Generate compose for this device
+            const compose = try wave9_device.generateDeviceCompose(allocator, device_id, .{
+                .start = workers_start,
+                .count = workers_count,
+            });
+            defer allocator.free(compose);
+
+            const output_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+            defer allocator.free(output_file);
+
+            const output_dir = std.fs.path.dirname(output_file) orelse ".";
+            std.fs.cwd().makeDir(output_dir) catch |err| switch (err) {
+                error.PathAlreadyExists => {},
+                else => return err,
+            };
+
+            const file = try std.fs.cwd().createFile(output_file, .{});
+            defer file.close();
+            try file.writeAll(compose);
+
+            print("  {s}✅{s} Device {d}: {s} (workers {d}-{d})\n",
+                .{ GREEN, RESET, device_id, hostname, workers_start, workers_start + workers_count - 1 });
+        }
+    }
+
+    print("\n{s}✅ All devices initialized!{s}\n", .{ GREEN, RESET });
+    print("\nNext steps on each Mac:\n");
+    print("  1. Pull latest: git pull && zig build tri\n");
+    print("  2. Copy compose files to each Mac\n");
+    print("  3. Start: tri farm local-wave9 multi-mac start\n");
+}
+
+fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
+    print("\n{s}🚀 MULTI-MAC WAVE 9 — START{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stdout = std.io.getStdOut().writer();
+
+    // Start devices 1-3
+    var start_count: usize = 0;
+    for (1..4) |device_id| {
+        const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+        defer allocator.free(compose_file);
+
+        // Check if compose file exists
+        std.fs.cwd().access(compose_file, .{}) catch |err| {
+            print("  {s}⏭️{s} Device {d}: compose file not found (skipped)\n", .{ YELLOW, RESET, device_id });
+            continue;
+        };
+
+        // Run docker-compose up
+        const argv = &[_][]const u8{
+            "docker-compose",
+            "-f",
+            compose_file,
+            "up",
+            "-d",
+        };
+
+        print("  {s}▶️{s} Starting device {d}...\n", .{ CYAN, RESET, device_id });
+
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+        }) catch |err| {
+            print("  {s}❌{s} Device {d}: failed to start: {s}\n", .{ RED, RESET, device_id, @errorName(err) });
+            continue;
+        };
+
+        if (result.term.Exited != 0 and result.term.Exited != 0) {
+            print("  {s}❌{s} Device {d}: docker-compose failed\n", .{ RED, RESET, device_id });
+            print("     {s}\n", .{result.stderr });
+        } else {
+            print("  {s}✅{s} Device {d}: started\n", .{ GREEN, RESET, device_id });
+            start_count += 1;
+        }
+    }
+
+    print("\n{s}✅ Started {d} devices{s}\n", .{ GREEN, start_count, RESET });
+    print("   Run: tri farm local-wave9 multi-mac status\n");
+}
+
+fn multiMacStop(allocator: Allocator) !void {
+    print("\n{s}⏹️  MULTI-MAC WAVE 9 — STOP{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stdout = std.io.getStdOut().writer();
+
+    // Stop devices 1-3
+    var stop_count: usize = 0;
+    for (1..4) |device_id| {
+        const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+        defer allocator.free(compose_file);
+
+        // Check if compose file exists
+        std.fs.cwd().access(compose_file, .{}) catch |err| {
+            print("  {s}⏭️{s} Device {d}: compose file not found (skipped)\n", .{ YELLOW, RESET, device_id });
+            continue;
+        };
+
+        // Run docker-compose down
+        const argv = &[_][]const u8{
+            "docker-compose",
+            "-f",
+            compose_file,
+            "down",
+        };
+
+        print("  {s}⏹️{s} Stopping device {d}...\n", .{ YELLOW, RESET, device_id });
+
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+        }) catch |err| {
+            print("  {s}❌{s} Device {d}: failed to stop: {s}\n", .{ RED, RESET, device_id, @errorName(err) });
+            continue;
+        };
+
+        if (result.term.Exited != 0 and result.term.Exited != 0) {
+            print("  {s}❌{s} Device {d}: docker-compose failed\n", .{ RED, RESET, device_id });
+            print("     {s}\n", .{result.stderr });
+        } else {
+            print("  {s}✅{s} Device {d}: stopped\n", .{ GREEN, RESET, device_id });
+            stop_count += 1;
+        }
+    }
+
+    print("\n{s}✅ Stopped {d} devices{s}\n", .{ GREEN, stop_count, RESET });
+}
+
+fn multiMacStatus(allocator: Allocator) !void {
+    print("\n{s}📊 MULTI-MAC WAVE 9 — STATUS{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stdout = std.io.getStdOut().writer();
+
+    var total_running: usize = 0;
+    var total_containers: usize = 0;
+
+    // Check each device
+    for (1..4) |device_id| {
+        const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+        defer allocator.free(compose_file);
+
+        std.fs.cwd().access(compose_file, .{}) catch |err| {
+            continue; // Skip if compose file doesn't exist
+        };
+
+        // Get container status
+        const argv = &[_][]const u8{
+            "docker-compose",
+            "-f",
+            compose_file,
+            "ps",
+        };
+
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+        }) catch |err| {
+            print("  {s}⏭️{s} Device {d}: not accessible\n", .{ YELLOW, RESET, device_id });
+            continue;
+        };
+
+        // Count running containers from output
+        var device_running: usize = 0;
+        var device_total: usize = 0;
+        var lines = std.mem.splitScalar(u8, result.stdout, '\n');
+        defer lines.deinit(allocator);
+        _ = lines.next(); // Skip header
+        while (lines.next()) |line| {
+            if (line.len > 0) {
+                device_total += 1;
+                // Check if "Up" in line
+                if (std.mem.indexOf(u8, line, "Up")) |_| {
+                    device_running += 1;
+                }
+            }
+        }
+
+        if (device_total > 0) {
+            const device_color = if (device_running == device_total) GREEN else YELLOW;
+            print("  {s}Device {d}: {d}/{d} running{s}\n",
+                .{ device_color, device_id, device_running, device_total, RESET });
+            total_running += device_running;
+            total_containers += device_total;
+        }
+    }
+
+    const total_color = if (total_running == total_containers) GREEN else YELLOW;
+    print("\n  Total: {s}{d}/{d}{s} containers running\n\n",
+        .{ total_color, total_running, total_containers, RESET });
+}
+
+fn multiMacVerify(allocator: Allocator) !void {
+    print("\n{s}🔍 MULTI-MAC WAVE 9 — VERIFICATION{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stdout = std.io.getStdOut().writer();
+
+    // Collect all seeds
+    var seeds = std.ArrayList([]const u8).init(allocator);
+    defer seeds.deinit();
+
+    var worker_count: usize = 0;
+
+    // Check each device
+    for (1..4) |device_id| {
+        const compose_file = try std.fmt.allocPrint(allocator, "deploy/docker/docker-compose.wave9-mac-{d}.yml", .{device_id});
+        defer allocator.free(compose_file);
+
+        std.fs.cwd().access(compose_file, .{}) catch |err| {
+            continue;
+        };
+
+        // Get container names
+        const argv = &[_][]const u8{
+            "docker-compose",
+            "-f",
+            compose_file,
+            "ps",
+            "--format",
+            "{{.Names}}",
+        };
+
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+        }) catch |err| {
+            continue;
+        };
+
+        // Extract seeds from each container
+        var lines = std.mem.splitScalar(u8, result.stdout, '\n');
+        defer lines.deinit(allocator);
+        while (lines.next()) |container| {
+            if (container.len > 0) {
+                // Get HSLM_SEED from container
+                const seed_argv = &[_][]const u8{
+                    "docker",
+                    "exec",
+                    container,
+                    "printenv",
+                    "HSLM_SEED",
+                };
+
+                const seed_result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = seed_argv,
+                }) catch |err| {
+                    continue;
+                };
+
+                const seed = std.mem.trim(u8, seed_result.stdout, &std.ascii.whitespace);
+                if (seed.len > 0) {
+                    try seeds.append(seed);
+                    worker_count += 1;
+                }
+            }
+        }
+    }
+
+    print("  Total workers: {d}\n", .{worker_count });
+    print("  Unique seeds collected: {d}\n", .{seeds.items.len });
+
+    // Check for duplicates
+    var sorted = try allocator.dupe([]const u8, seeds.items);
+    defer allocator.free(sorted);
+
+    std.sort.insertion([]const u8, sorted, {}, struct {
+        pub fn lessThan(_: void, a: []const u8, b: []const u8) bool {
+            return std.mem.lessThan(u8, a, b);
+        }
+    }.lessThan);
+
+    var duplicates = std.ArrayList([]const u8).init(allocator);
+    defer duplicates.deinit();
+
+    if (sorted.len > 0) {
+        var prev = sorted[0];
+        for (sorted[1..]) |seed| {
+            if (std.mem.eql(u8, prev, seed)) {
+                try duplicates.append(seed);
+            }
+            prev = seed;
+        }
+    }
+
+    if (duplicates.items.len > 0) {
+        print("  {s}❌{s} DUPLICATE SEEDS FOUND: {d}\n", .{ RED, RESET, duplicates.items.len });
+        print("  Duplicates:\n");
+        for (duplicates.items) |dup| {
+            print("    {s}\n", .{dup});
+        }
+        print("\n  {s}⚠️{s} Workers with duplicate seeds will train identical models!\n", .{ YELLOW, RESET });
+    } else {
+        print("  {s}✅{s} All seeds are unique!\n", .{ GREEN, RESET });
+    }
+
+    // Verify S3 MultiObj configuration
+    print("\n  Verifying S3 MultiObj config...\n");
+
+    var profile_check: ?[]const u8 = null;
+    var ntp_weight_check: ?[]const u8 = null;
+    var jepa_enabled_check: ?[]const u8 = null;
+
+    // Check first container for config
+    if (seeds.items.len > 0) {
+        const argv = &[_][]const u8{
+            "docker",
+            "ps",
+            "--format",
+            "{{.Names}}",
+            "--filter",
+            "name=wave9-worker-1",
+        };
+
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+        }) catch |err| {
+            print("  {s}⏭️{s} Could not verify config (container not running)\n", .{ YELLOW, RESET });
+            return;
+        };
+
+        var lines = std.mem.splitScalar(u8, result.stdout, '\n');
+        defer lines.deinit(allocator);
+        if (lines.next()) |container| {
+            const profile_argv = &[_][]const u8{
+                "docker", "exec", container, "printenv", "HSLM_PROFILE",
+            };
+            if (std.process.Child.run(.{ .allocator = allocator, .argv = profile_argv })) |r| {
+                profile_check = r.stdout;
+            }
+
+            const ntp_argv = &[_][]const u8{
+                "docker", "exec", container, "printenv", "HSLM_NTP_WEIGHT",
+            };
+            if (std.process.Child.run(.{ .allocator = allocator, .argv = ntp_argv })) |r| {
+                ntp_weight_check = r.stdout;
+            }
+
+            const jepa_argv = &[_][]const u8{
+                "docker", "exec", container, "printenv", "HSLM_JEPA_ENABLED",
+            };
+            if (std.process.Child.run(.{ .allocator = allocator, .argv = jepa_argv })) |r| {
+                jepa_enabled_check = r.stdout;
+            }
+        }
+    }
+
+    if (profile_check) |p| {
+        const profile = std.mem.trim(u8, p, &std.ascii.whitespace);
+        if (std.mem.eql(u8, profile, "s3multiobj")) {
+            print("  {s}✅{s} HSLM_PROFILE: {s}\n", .{ GREEN, RESET, profile });
+        } else {
+            print("  {s}⚠️{s} HSLM_PROFILE: {s} (expected: s3multiobj)\n", .{ YELLOW, RESET, profile });
+        }
+    }
+
+    if (ntp_weight_check) |w| {
+        print("  {s}✅{s} HSLM_NTP_WEIGHT: {s}\n", .{ GREEN, RESET, std.mem.trim(u8, w, &std.ascii.whitespace) });
+    }
+
+    if (jepa_enabled_check) |e| {
+        const enabled = std.mem.trim(u8, e, &std.ascii.whitespace);
+        if (std.mem.eql(u8, enabled, "true")) {
+            print("  {s}✅{s} HSLM_JEPA_ENABLED: {s}\n", .{ GREEN, RESET, enabled });
+        } else {
+            print("  {s}⚠️{s} HSLM_JEPA_ENABLED: {s} (expected: true)\n", .{ YELLOW, RESET, enabled });
+        }
+    }
+}
+
+fn printMultiMacHelp() void {
+    print(
+        \\Usage: tri farm local-wave9 multi-mac <action>
+        \\
+        \\Actions:
+        \\  init              Initialize all devices from .trinity/wave9_multi_mac.yaml
+        \\                   Generates compose files for all configured devices
+        \\  start            Start all devices (docker-compose up -d)
+        \\                   Starts wave9-worker containers on each device
+        \\  stop             Stop all devices (docker-compose down)
+        \\                   Gracefully stops all workers
+        \\  status            Show status across all devices
+        \\                   Container count and running status
+        \\  verify            Verify seeds and S3 MultiObj configuration
+        \\                   Check for duplicate seeds and correct profile
+        \\
+        \\Configuration file: .trinity/wave9_multi_mac.yaml
+        \\
+        \\Examples:
+        \\  tri farm local-wave9 multi-mac init
+        \\  tri farm local-wave9 multi-mac start
+        \\  tri farm local-wave9 multi-mac status
+        \\  tri farm local-wave9 multi-mac verify
+        \\  tri farm local-wave9 multi-mac stop
+        \\
+    , .{});
+}
+
 fn printLocalWave9Help() void {
     print(
         \\
@@ -1662,6 +2225,8 @@ fn printLocalWave9Help() void {
         \\  logs <worker>     Show logs for worker (e.g., w9-1)
         \\  recycle           Recycle crashed workers
         \\  clean             Remove all containers and volumes
+        \\  device-init       Generate device-specific compose for Multi-Mac Wave 9
+        \\  multi-mac         Multi-Mac Wave 9 management (init/start/stop/status/verify)
         \\
         \\Configuration:
         \\  S3 MultiObj profile:
@@ -1675,6 +2240,12 @@ fn printLocalWave9Help() void {
         \\
         \\Examples:
         \\  tri farm local-wave9 init
+        \\  tri farm local-wave9 device-init --device-id 1 --workers-start 1 --workers-count 16
+        \\  tri farm local-wave9 device-init --device-id 2 --workers-start 17 --workers-count 16
+        \\  tri farm local-wave9 multi-mac init
+        \\  tri farm local-wave9 multi-mac start
+        \\  tri farm local-wave9 multi-mac status
+        \\  tri farm local-wave9 multi-mac verify
         \\  tri farm local-wave9 start --workers 8
         \\  tri farm local-wave9 status
         \\  tri farm local-wave9 logs w9-1

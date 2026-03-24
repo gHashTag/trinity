@@ -1,0 +1,38 @@
+# Wave 9 Multi-Mac Configuration
+# ═════════════════════════════════════════════════════════════════════
+#
+# Device-specific worker distribution for 48 workers across 2-3 Mac machines.
+#
+# Usage:
+#   On Mac 1 (mac-1.local):
+#     tri farm local-wave9 device-init --device-id 1 --workers-start 1 --workers-count 16
+#     docker-compose -f deploy/docker/docker-compose.wave9-mac-1.yml up -d
+#
+#   On Mac 2 (mac-2.local):
+#     tri farm local-wave9 device-init --device-id 2 --workers-start 17 --workers-count 16
+#     docker-compose -f deploy/docker/docker-compose.wave9-mac-2.yml up -d
+#
+#   On Mac 3 (optional, mac-3.local):
+#     tri farm local-wave9 device-init --device-id 3 --workers-start 33 --workers-count 16
+#     docker-compose -f deploy/docker/docker-compose.wave9-mac-3.yml up -d
+#
+# ═════════════════════════════════════════════════════════════════════
+
+devices:
+  # Mac 1: 16 workers (w9-1 to w9-16)
+  - id: 1
+    hostname: mac-1.local
+    workers_start: 1
+    workers_count: 16
+
+  # Mac 2: 16 workers (w9-17 to w9-32)
+  - id: 2
+    hostname: mac-2.local
+    workers_start: 17
+    workers_count: 16
+
+  # Mac 3: 16 workers (w9-33 to w9-48) - optional
+  - id: 3
+    hostname: mac-3.local
+    workers_start: 33
+    workers_count: 16

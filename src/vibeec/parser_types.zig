@@ -133,8 +133,13 @@ pub const Behavior = struct {
     implementation: []const u8, // Zig code for function body
     test_cases: ArrayList(TestCase),
 
-    pub fn init(allocator: Allocator) Behavior {
-        _ = allocator;
+    // Idiom 11 fields — spec-in-code annotations
+    spec_annotation: ?[]const u8,        // @spec name
+    requires: ArrayList([]const u8),     // @require clauses
+    ensures: ArrayList([]const u8),      // @ensure clauses
+    examples: ArrayList(TestCase),       // @example cases
+
+    pub fn init(_: Allocator) Behavior {
         return Behavior{
             .name = "",
             .owner = null,
@@ -143,6 +148,10 @@ pub const Behavior = struct {
             .then = "",
             .implementation = "",
             .test_cases = .{},
+            .spec_annotation = null,
+            .requires = .{},
+            .ensures = .{},
+            .examples = .{},
         };
     }
 };

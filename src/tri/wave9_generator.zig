@@ -36,7 +36,7 @@ const S3MultiObjConfig = &[_]EnvVar{
     .{ .name = "HSLM_FRESH", .value = "0" },
 };
 
-fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
+pub fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
     const seed = BASE_SEED + worker_id;
     const seed_str = try std.fmt.allocPrint(allocator, "{d}", .{seed});
     defer allocator.free(seed_str);

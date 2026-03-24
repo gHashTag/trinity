@@ -3817,6 +3817,20 @@ pub fn build(b: *std.Build) void {
     const fpga_synth_step = b.step("fpga-synth", "Synthesize Sacred ALU with Yosys via Docker");
     fpga_synth_step.dependOn(&fpga_synth.step);
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // MAC INSTALLER CLI — Multi-Mac Wave 9 Cluster Installer
+    // ═════════════════════════════════════════════════════════════════════════
+
+    const mac_installer = b.addExecutable(.{
+        .name = "tri-mac-installer",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/mac_installer.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(mac_installer);
+
     // ═══════════════════════════════════════════════════════════════════════════════
     // SACRED TRINITY COMPREHENSIVE STEP
     // ═══════════════════════════════════════════════════════════════════════════════

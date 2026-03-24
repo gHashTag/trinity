@@ -1269,6 +1269,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 // Import real tri_fpga commands (VIBEE + openXC7 Pipeline)
 const tri_fpga = @import("tri_fpga.zig");
 const tri_fpga_experience = @import("tri_fpga_experience.zig");
+const tri_fpga_fly = @import("fpga_fly.zig");
 
 const fpga_commands = struct {
     pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -1335,7 +1336,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommands\":[", .{});
         const subcommands = &[_][]const u8{
-            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag", "uart", "power",
+            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag", "uart", "power", "deploy-fly",
         };
         for (subcommands, 0..) |sc, i| {
             if (i > 0) try data_json.append(allocator, ',');
@@ -1394,6 +1395,8 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaFlashUart(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "uart-test")) {
         return fpga_commands.runFpgaUartTest(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "deploy-fly")) {
+        return tri_fpga_fly.runFpgaDeployFlyCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "power")) {
         return tri_fpga.runFpgaPowerCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {
