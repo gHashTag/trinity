@@ -538,9 +538,16 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     }
 
     // === PASS 2: Parse and encode instructions ===
-    bytecode.appendSliceAssumeCapacity(&.{ 0x32, 0x49, 0x52, 0x54 }); // Magic
-    try bytecode.appendSlice(allocator, &.{ 1, 1, 1, 0 }); // Header
-    try bytecode.appendSlice(allocator, &.{ 0, 0 }); // Size placeholder
+    // Header: Magic (4) + Version (4) + Section Count (4) = 12 bytes
+    bytecode.appendSliceAssumeCapacity(&.{ 0x32, 0x49, 0x52, 0x54 }); // Magic: "2IRT" little-endian
+    // Version: 0x00010001 = v1.1 (major.minor), little-endian
+    try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x01, 0x00 });
+    // Section count: 1 (code section), little-endian, 3 bytes padding
+    try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x00, 0x00 });
+    // Code section header starts here (offset 0x0C = 12)
+    try bytecode.appendSlice(allocator, &.{ 0x04, 0x01, 0x00, 0x00 }); // Section ID=CODE(4), v1, flags=0, pad=0
+    // Code size placeholder (updated after encoding)
+    try bytecode.appendSlice(allocator, &.{ 0, 0 });
 
     lines_iter = std.mem.splitScalar(u8, source, '\n');
     line_num = 1;
@@ -581,10 +588,11 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
         line_num += 1;
     }
 
-    // Fill in size field
+    // Fill in code section header
     const code_size: u16 = instr_count * 4;
-    bytecode.items[8] = @as(u8, @truncate(code_size));
-    bytecode.items[9] = @as(u8, @truncate(code_size >> 8));
+    bytecode.items[12] = @as(u8, @truncate(code_size));     // Code size (little-endian)
+    bytecode.items[13] = @as(u8, @truncate(code_size >> 8)); // Code size >> 8
+    bytecode.items[14] = 0;                                      // Padding (3 bytes to align)
 
     return try bytecode.toOwnedSlice(allocator);
 }
