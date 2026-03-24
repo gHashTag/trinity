@@ -1823,9 +1823,7 @@ fn printPowerUsage() !void {
 // UART BUILD — Build uart_bridge_j2.bit for J2 header (FT232RL)
 // =========================================================================
 
-pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
 
     std.debug.print("\n{s}{s}=== TRI FPGA BUILD UART (J2) ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Source: fpga/openxc7-synth/uart_bridge_v2.v\n", .{});
@@ -1965,9 +1963,7 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator, args: []const []con
 // UART FLASH — Flash uart_bridge_j2.bit via flash_no_sudo.sh
 // =========================================================================
 
-pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
 
     const bit_path = "fpga/openxc7-synth/uart_bridge_j2.bit";
 
@@ -2009,9 +2005,7 @@ pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator, args: []const []con
 // UART TEST — Test PING/ECHO/byte via UART
 // =========================================================================
 
-pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
 
     std.debug.print("\n{s}{s}=== TRI FPGA UART TEST ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Protocol: PING/PONG + ECHO + BYTE\n", .{});
@@ -2079,7 +2073,7 @@ pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator, args: []const []cons
         std.debug.print(" {s}EMPTY{s} (got {d} bytes: ", .{ YELLOW, RESET, n2 });
         for (resp[0..n2]) |b| {
             if (b >= 0x20 and b < 0x7f) std.debug.print("{c}", .{b})
-            else std.debug.print(".");
+            else std.debug.print(".", .{});
         }
         std.debug.print("\n", .{});
         return;

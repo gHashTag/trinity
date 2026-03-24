@@ -1302,13 +1302,16 @@ const fpga_commands = struct {
         return tri_fpga.runFpgaEyeCommand(allocator, args);
     }
     pub fn runFpgaBuildUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        return tri_fpga.runFpgaBuildUartCommand(allocator, args);
+        _ = args;
+        return tri_fpga.runFpgaBuildUartCommand(allocator);
     }
     pub fn runFpgaFlashUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        return tri_fpga.runFpgaFlashUartCommand(allocator, args);
+        _ = args;
+        return tri_fpga.runFpgaFlashUartCommand(allocator);
     }
     pub fn runFpgaUartTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
-        return tri_fpga.runFpgaUartTestCommand(allocator, args);
+        _ = args;
+        return tri_fpga.runFpgaUartTestCommand(allocator);
     }
 };
 

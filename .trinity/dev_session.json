@@ -1,6 +1,6 @@
 {
-  "state": "COMMITTED",
-  "issue_number": 408,
-  "branch": "feat/issue-408-adt-enum-match-pipe",
+  "state": "TESTED",
+  "issue_number": 409,
+  "branch": "feat/issue-409-bit-trit-patterns",
   "tests_passed": true
 }
