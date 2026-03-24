@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.50 — Help Text Updates & Spike Threshold Documentation
+//! v3.64 — Correlation Analysis (Pearson correlation between RTT and time)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1380,6 +1380,70 @@ const JitterTracker = struct {
         return .{ .direction = direction, .change_percent = change_percent, .first_half_avg = first_avg, .second_half_avg = second_avg };
     }
 
+    // v3.64: Correlation Analysis - computes Pearson correlation between RTT and time
+    // Returns correlation coefficient r in [-1, 1]:
+    //   r > 0.5: Strong positive correlation (RTT increasing over time - degrading)
+    //   r < -0.5: Strong negative correlation (RTT decreasing over time - improving)
+    //   -0.5 <= r <= 0.5: Weak or no correlation (stable)
+    pub fn getCorrelation(self: *const JitterTracker) struct { coefficient: f64, strength: []const u8, interpretation: []const u8 } {
+        if (self.count < 3) {
+            return .{ .coefficient = 0.0, .strength = "insufficient_data", .interpretation = "Need 3+ samples" };
+        }
+
+        const n = @as(f64, @floatFromInt(self.count));
+
+        // Calculate mean of x (indices) and y (RTT values)
+        var sum_x: f64 = 0;
+        var sum_y: f64 = 0;
+        for (self.samples[0..self.count], 0..) |s, i| {
+            sum_x += @as(f64, @floatFromInt(i));
+            sum_y += @as(f64, @floatFromInt(s));
+        }
+        const mean_x = sum_x / n;
+        const mean_y = sum_y / n;
+
+        // Calculate Pearson correlation coefficient
+        var sum_xy_diff: f64 = 0;
+        var sum_x_diff2: f64 = 0;
+        var sum_y_diff2: f64 = 0;
+
+        for (self.samples[0..self.count], 0..) |s, i| {
+            const x = @as(f64, @floatFromInt(i));
+            const y = @as(f64, @floatFromInt(s));
+            const x_diff = x - mean_x;
+            const y_diff = y - mean_y;
+            sum_xy_diff += x_diff * y_diff;
+            sum_x_diff2 += x_diff * x_diff;
+            sum_y_diff2 += y_diff * y_diff;
+        }
+
+        const denominator = @sqrt(sum_x_diff2 * sum_y_diff2);
+        const r = if (denominator > 0.0001)
+            sum_xy_diff / denominator
+        else
+            0.0;
+
+        // Interpret correlation strength
+        const abs_r = @abs(r);
+        const strength: []const u8 = if (abs_r >= 0.7)
+            "strong"
+        else if (abs_r >= 0.5)
+            "moderate"
+        else if (abs_r >= 0.3)
+            "weak"
+        else
+            "negligible";
+
+        const interpretation: []const u8 = if (r >= 0.5)
+            "positive trend (degrading)"
+        else if (r <= -0.5)
+            "negative trend (improving)"
+        else
+            "no clear trend (stable)";
+
+        return .{ .coefficient = r, .strength = strength, .interpretation = interpretation };
+    }
+
     // v3.54: Connection Quality Score (0-100) combining multiple factors
     pub fn getQualityScore(self: *const JitterTracker, threshold_multiplier: f64) struct { score: f64, grade: []const u8, details: []const u8 } {
         if (self.count < 5) {
@@ -1570,6 +1634,19 @@ const JitterTracker = struct {
                 printDim("- STABLE\n", .{});
             }
             printDim("    First half: {d:.2}ms, Second half: {d:.2}ms\n", .{ first_ms, second_ms });
+        }
+
+        // v3.64: Correlation analysis
+        const corr = self.getCorrelation();
+        if (!std.mem.eql(u8, corr.strength, "insufficient_data")) {
+            printDim("\n  Correlation:   ", .{});
+            if (corr.coefficient >= 0.5) {
+                printWarning("{d:.3} ({s}, {s})\n", .{ corr.coefficient, corr.strength, corr.interpretation });
+            } else if (corr.coefficient <= -0.5) {
+                printSuccess("{d:.3} ({s}, {s})\n", .{ corr.coefficient, corr.strength, corr.interpretation });
+            } else {
+                printDim("{d:.3} ({s}, {s})\n", .{ corr.coefficient, corr.strength, corr.interpretation });
+            }
         }
     }
 };
