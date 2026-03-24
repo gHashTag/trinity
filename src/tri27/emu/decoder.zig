@@ -117,8 +117,9 @@ pub fn decode(word: u32) Instruction {
     const src2 = @as(u8, @truncate(src2_or_v3 & 0x1F));
     const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
 
-    // Decode 16-bit immediate (bits 31-17), already in 16-bit format
-    const immediate: i16 = @bitCast(@as(u16, @truncate((word >> 17) & 0xFFFF)));
+    // Decode 16-bit immediate (bits 31-17), sign-extend properly
+    const imm_raw = @as(u16, @truncate((word >> 17) & 0xFFFF));
+    const immediate: i16 = @bitCast(imm_raw);
 
     // Determine if instruction has immediate
     const has_imm = switch (opcode) {
@@ -232,7 +233,7 @@ test "decoder: encode roundtrip ADD" {
     try std.testing.expectEqual(@as(u8, 7), decoded.src2);
 }
 
-test "decoder: LDI with immediate" {
+test "encoder_simple: LDI encodes correctly" {
     const inst = Instruction{
         .opcode = .LDI,
         .dst = 2,
