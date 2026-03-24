@@ -641,7 +641,9 @@ pub fn main() !void {
         .test_cmd => {
             std.debug.print("Test command not yet implemented in REPL. Use 'zig build test' instead.\n", .{});
         },
-        .sacred_const => utils.runSacredFullCycleCommand(allocator, cmd_args),
+        .sacred_const => {
+            std.debug.print("🔱 Sacred Constants\n  φ = 1.6180339887498948482\n  φ² = 2.6180339887498948482\n  1/φ² = 0.3819660112501051518\n  φ² + 1/φ² = 3 = TRINITY\n", .{});
+        },
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),
