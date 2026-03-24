@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.10 — Connection Quality Timeline (ASCII visualization)
+//! v4.11 — Advanced Pattern Recognition (network pattern detection)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2049,6 +2049,12 @@ const JitterTracker = struct {
             printInfo("\n  📈 Quality Timeline:\n", .{});
             self.showQualityTimeline();
         }
+
+        // v4.11: Advanced Pattern Recognition - detect network patterns
+        if (self.count >= 20) {
+            printInfo("\n  🔮 Advanced Patterns:\n", .{});
+            self.showNetworkPatterns();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3834,6 +3840,165 @@ const JitterTracker = struct {
             }
         } else {
             printDim("    Insufficient data for comparison\n", .{});
+        }
+    }
+
+    // v4.11: Advanced Pattern Recognition - detect network patterns
+    pub const NetworkPattern = struct {
+        pattern_type: []const u8,
+        confidence: f64,
+        description: []const u8,
+        affected_samples: usize,
+    };
+
+    pub fn detectNetworkPatterns(self: *const JitterTracker) ?[5]NetworkPattern {
+        if (self.count < 20) return null;
+
+        var patterns: [5]NetworkPattern = undefined;
+        var pattern_count: usize = 0;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const std_ms = stats.jitter / 1000.0;
+
+        // Pattern 1: Congestion detection (step increase in latency)
+        if (self.count >= 30 and pattern_count < 5) {
+            const mid = self.count / 2;
+            var first_half_sum: f64 = 0;
+            var second_half_sum: f64 = 0;
+
+            for (self.samples[0..mid]) |s| {
+                first_half_sum += @as(f64, @floatFromInt(s));
+            }
+            for (self.samples[mid..]) |s| {
+                second_half_sum += @as(f64, @floatFromInt(s));
+            }
+
+            const first_avg = (first_half_sum / @as(f64, @floatFromInt(mid))) / 1000.0;
+            const second_avg = (second_half_sum / @as(f64, @floatFromInt(self.count - mid))) / 1000.0;
+
+            if (second_avg > first_avg * 1.5 and second_avg > mean_ms * 1.3) {
+                patterns[pattern_count] = .{
+                    .pattern_type = "CONGESTION",
+                    .confidence = @min(100.0, (second_avg / first_avg - 1.0) * 100.0),
+                    .description = "Significant latency increase detected - possible network congestion",
+                    .affected_samples = self.count - mid,
+                };
+                pattern_count += 1;
+            }
+        }
+
+        // Pattern 2: Packet loss burst detection
+        if (self.consecutive_failures >= 3 and pattern_count < 5) {
+            patterns[pattern_count] = .{
+                .pattern_type = "LOSS_BURST",
+                .confidence = @min(100.0, @as(f64, @floatFromInt(self.consecutive_failures)) * 20.0),
+                .description = "Consecutive packet failures detected - possible link instability",
+                .affected_samples = self.consecutive_failures,
+            };
+            pattern_count += 1;
+        }
+
+        // Pattern 3: High jitter pattern (variable latency)
+        const cv = if (mean_ms > 0) (std_ms / mean_ms) * 100.0 else 0;
+        if (cv > 40 and self.count >= 20 and pattern_count < 5) {
+            patterns[pattern_count] = .{
+                .pattern_type = "HIGH_JITTER",
+                .confidence = @min(100.0, cv),
+                .description = "High latency variability detected - possible shared medium or contention",
+                .affected_samples = self.count,
+            };
+            pattern_count += 1;
+        }
+
+        // Pattern 4: Periodic spike detection (possible interference)
+        var spike_count: usize = 0;
+        const spike_threshold = stats.mean + stats.jitter * 3.0;
+        for (self.samples) |s| {
+            if (@as(f64, @floatFromInt(s)) > spike_threshold) {
+                spike_count += 1;
+            }
+        }
+
+        if (spike_count >= 3 and spike_count < @divTrunc(self.count, 3) and pattern_count < 5) {
+            patterns[pattern_count] = .{
+                .pattern_type = "PERIODIC_SPIKES",
+                .confidence = @min(100.0, @as(f64, @floatFromInt(spike_count)) * 15.0),
+                .description = "Periodic latency spikes detected - possible interference or background load",
+                .affected_samples = spike_count,
+            };
+            pattern_count += 1;
+        }
+
+        // Pattern 5: Recovery detection (latency returning to normal after spike)
+        if (self.count >= 10 and pattern_count < 5) {
+            const last_5 = @min(5, self.count);
+            var recent_sum: f64 = 0;
+            for (self.samples[self.count - last_5 ..]) |s| {
+                recent_sum += @as(f64, @floatFromInt(s));
+            }
+            const recent_avg = recent_sum / @as(f64, @floatFromInt(last_5));
+
+            if (recent_avg < mean_ms * 0.8) {
+                patterns[pattern_count] = .{
+                    .pattern_type = "RECOVERY",
+                    .confidence = 75.0,
+                    .description = "Latency returning to normal - connection recovering",
+                    .affected_samples = last_5,
+                };
+                pattern_count += 1;
+            }
+        }
+
+        if (pattern_count == 0) {
+            // No patterns detected - add a "NORMAL" pattern
+            patterns[0] = .{
+                .pattern_type = "NORMAL",
+                .confidence = 100.0,
+                .description = "Connection appears stable with no significant patterns",
+                .affected_samples = self.count,
+            };
+            pattern_count = 1;
+        }
+
+        // Fill remaining slots with empty patterns
+        while (pattern_count < 5) : (pattern_count += 1) {
+            patterns[pattern_count] = .{
+                .pattern_type = "",
+                .confidence = 0,
+                .description = "",
+                .affected_samples = 0,
+            };
+        }
+
+        return patterns;
+    }
+
+    pub fn showNetworkPatterns(self: *const JitterTracker) void {
+        const patterns_array = self.detectNetworkPatterns();
+
+        if (patterns_array) |pats| {
+            var shown: usize = 0;
+            for (pats) |pat| {
+                if (pat.pattern_type.len == 0) continue; // Skip empty patterns
+                shown += 1;
+
+                const icon = if (std.mem.eql(u8, pat.pattern_type, "NORMAL"))
+                    "✅"
+                else if (std.mem.eql(u8, pat.pattern_type, "CONGESTION") or std.mem.eql(u8, pat.pattern_type, "LOSS_BURST"))
+                    "⚠️"
+                else
+                    "📊";
+
+                printDim("    {s} {s}: {s}\n", .{ icon, pat.pattern_type, pat.description });
+                printDim("        Confidence: {d:.0}%, Affected: {d} samples\n", .{ pat.confidence, pat.affected_samples });
+            }
+
+            if (shown == 0) {
+                printDim("    Insufficient data for pattern detection\n", .{});
+            }
+        } else {
+            printDim("    Insufficient data for pattern detection\n", .{});
         }
     }
 
@@ -6849,7 +7014,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.10           ║
+        \\║      Trinity UART Echo Test v4.11           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7319,7 +7484,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.10)         ║
+            \\║         SIMULATION MODE (v4.11)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7914,7 +8079,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.10)      ║
+        \\║       SIMULATION BATCH MODE (v4.11)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8048,7 +8213,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.10)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.11)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8065,7 +8230,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.10)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.11)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9004,7 +9169,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.10)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.11)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
