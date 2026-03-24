@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.68 — Anomaly Export (JSON/CSV anomaly detection results)
+//! v3.69 — Histogram Visualization (RTT distribution ASCII histogram)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1832,6 +1832,66 @@ const JitterTracker = struct {
             printDim("    Total anomalies: {d}/{d} samples\n", .{ anomalies.count, self.count });
             printDim("    Severity: {s}\n", .{severity});
         }
+
+        // v3.69: Histogram Visualization - RTT distribution
+        if (self.count >= 5) {
+            printInfo("\n  📊 RTT Distribution Histogram:\n", .{});
+            self.plotHistogram();
+        }
+    }
+
+    // v3.69: Plot histogram of RTT distribution
+    pub fn plotHistogram(self: *const JitterTracker) void {
+        const NUM_BINS: usize = 10;
+        var bins: [NUM_BINS]usize = [_]usize{0} ** NUM_BINS;
+
+        // Find min and max RTT values
+        var min_val: i64 = self.samples[0];
+        var max_val: i64 = self.samples[0];
+        for (self.samples[0..self.count]) |s| {
+            if (s < min_val) min_val = s;
+            if (s > max_val) max_val = s;
+        }
+
+        const range = @as(f64, @floatFromInt(max_val - min_val));
+        const bin_width = if (range > 0) range / @as(f64, @floatFromInt(NUM_BINS)) else 1.0;
+
+        // Assign samples to bins
+        for (self.samples[0..self.count]) |s| {
+            const val_f = @as(f64, @floatFromInt(s - min_val));
+            const bin_idx = @min(NUM_BINS - 1, @as(usize, @intFromFloat(@floor(val_f / bin_width))));
+            bins[bin_idx] += 1;
+        }
+
+        // Find max bin count for scaling
+        var max_count: usize = 0;
+        for (bins) |c| {
+            if (c > max_count) max_count = c;
+        }
+
+        const BAR_WIDTH: usize = 30;
+        printDim("\n", .{});
+        for (bins, 0..) |count, i| {
+            const bin_start = @as(f64, @floatFromInt(min_val)) / 1000.0 + @as(f64, @floatFromInt(i)) * bin_width / 1000.0;
+            const bin_end = bin_start + bin_width / 1000.0;
+
+            // Color code based on count (red=high, yellow=medium, green=low)
+            const intensity = if (max_count > 0) @as(f64, @floatFromInt(count)) / @as(f64, @floatFromInt(max_count)) else 0;
+            const bar_char: u8 = if (intensity > 0.6) '#' else if (intensity > 0.3) '=' else '.';
+
+            // Draw bar
+            const bar_len = if (max_count > 0) @as(usize, @intFromFloat(@as(f64, @floatFromInt(count)) / @as(f64, @floatFromInt(max_count)) * @as(f64, @floatFromInt(BAR_WIDTH)))) else 0;
+
+            // Simple bar output
+            var bar_str: [BAR_WIDTH]u8 = [_]u8{' '} ** BAR_WIDTH;
+            var j: usize = 0;
+            while (j < bar_len) : (j += 1) {
+                bar_str[j] = bar_char;
+            }
+
+            printDim("    [{d:.1}-{d:.1}ms] {s} ({d})\n", .{ @as(i32, @intFromFloat(bin_start)), @as(i32, @intFromFloat(bin_end)), bar_str, count });
+        }
+        printDim("\n", .{});
     }
 };
 
