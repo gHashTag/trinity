@@ -6,6 +6,10 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
+const coptic = @import("../coptic.zig");
+const CopticReg = coptic.CopticReg;
+const glyphToReg = coptic.glyphToReg;
+
 const Lexer = @import("asm_lexer.zig");
 const TokenType = Lexer.TokenType;
 const Token = Lexer.Token;
@@ -21,6 +25,10 @@ pub const AsmError = error{
     UndefinedLabel,
     EmptySource,
     OutOfMemory,
+    // Bank validation errors (Issue #407)
+    SacredOpRequiresBank1,    // FADD/FMUL require Bank 1
+    AluOpRequiresBank0,       // ADD/SUB require Bank 0
+    CannotStoreToConstantBank, // ST_F rejects Bank 2
 };
 
 /// Parsed instruction
@@ -60,6 +68,7 @@ pub const Assembler = struct {
     }
 
     /// Parse mnemonic and operands from tokens starting at index
+    /// Supports Coptic glyph names (Ⲁ-Ϥ) as register aliases
     fn parseOperands(self: *Assembler, start_idx: usize) !ParsedInstruction {
         const start_token = self.tokens[start_idx];
         if (start_token.type != .Mnemonic) return AsmError.InvalidSyntax;
@@ -275,17 +284,50 @@ pub const Assembler = struct {
         return AsmError.UnknownOpcode;
     }
 
-    /// Parse register string (r0-r31)
+    /// Parse register string (r0-r31, t0-t26, or Coptic glyph Ⲁ-Ϥ)
     fn parseRegister(reg_str: []const u8) !u5 {
         const trimmed = std.mem.trim(u8, reg_str, &std.ascii.whitespace);
-        const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
-            trimmed[1..]
-        else
-            trimmed;
 
-        const num = std.fmt.parseInt(u8, num_str, 10) catch return AsmError.InvalidRegister;
-        if (num > 31) return AsmError.InvalidRegister;
-        return @as(u5, @intCast(num));
+        // Try Coptic glyph first (Issue #407)
+        if (glyphToReg(trim)) |reg| {
+            return reg.regIndex();
+        } else |_| {
+            // Not a Coptic glyph, try ASCII format
+            const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
+                trimmed[1..]
+            else
+                trimmed;
+
+            const num = std.fmt.parseInt(u8, num_str, 10) catch return AsmError.InvalidRegister;
+            if (num > 31) return AsmError.InvalidRegister;
+            return @as(u5, @intCast(num));
+        }
+    }
+
+    /// Get bank for register number (0-26)
+    fn getBank(reg: u5) u2 {
+        return @intCast(reg / 9);
+    }
+
+    /// Validate sacred operation (FADD/FMUL require Bank 1)
+    fn validateSacredOp(dst: u5, src: u5) !void {
+        if (getBank(dst) != 1 or getBank(src) != 1) {
+            return AsmError.SacredOpRequiresBank1;
+        }
+    }
+
+    /// Validate ALU operation (ADD/SUB require Bank 0)
+    fn validateAluOp(dst: u5, src1: u5, src2: u5) !void {
+        if (getBank(dst) != 0 or getBank(src1) != 0 or getBank(src2) != 0) {
+            return AsmError.AluOpRequiresBank0;
+        }
+    }
+
+    /// Validate store to register (cannot store to Bank 2 constants)
+    fn validateStore(dst: u5) !void {
+        if (getBank(dst) == 2) {
+            return AsmError.CannotStoreToConstantBank;
+        }
     }
 
     /// Parse immediate value (decimal or hex)
