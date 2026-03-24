@@ -1,4 +1,3 @@
-
 const std = @import("std");
 
 pub const TestCase = struct {
@@ -17,3 +16,21 @@ pub fn runTests() !void {
         .{ .name = "LDI src1, dst", .test_fn = testLdiSrc1 },
     };
 
+    for (test_cases) |tc| {
+        const result = tc.test_fn();
+        try results.append(result);
+    }
+}
+
+// Stub test functions
+fn testCpuInit() bool {
+    return true;
+}
+
+fn testLdiImmediate() bool {
+    return true;
+}
+
+fn testLdiSrc1() bool {
+    return true;
+}
