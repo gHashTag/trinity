@@ -641,6 +641,7 @@ pub fn main() !void {
         .test_cmd => {
             std.debug.print("Test command not yet implemented in REPL. Use 'zig build test' instead.\n", .{});
         },
+        .sacred_const => utils.runSacredFullCycleCommand(allocator, cmd_args),
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),

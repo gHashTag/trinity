@@ -233,8 +233,8 @@ fn doInstall(allocator: Allocator, device_id: usize, role: NodeRole, workers_cou
 
     print("\n  {s}✅{s} Node configured\n", .{ GREEN, RESET });
     print("\nNext steps:\n", .{});
-    print("  1. {s}Run 'tri mac-cluster plan 48' to assign workers\n", .{ CYAN });
-    print("  2. {s}Run 'tri mac-cluster generate-all' to create compose files\n", .{ CYAN });
+    print("  1. {s}Run 'tri mac-cluster plan 48' to assign workers\n", .{CYAN});
+    print("  2. {s}Run 'tri mac-cluster generate-all' to create compose files\n", .{CYAN});
     print("  3. {s}On this Mac: docker-compose -f deploy/docker/docker-compose.wave9-mac-{d}.yml up -d\n", .{ CYAN, device_id });
 }
 
@@ -258,7 +258,7 @@ fn runPlan(allocator: Allocator, args: []const []const u8) !void {
     defer mac_cluster_module.deinit(&cluster, allocator);
 
     if (cluster.nodes.items.len == 0) {
-        print("{s}⚠️  No nodes in cluster. Run 'tri mac-cluster discover' first.\n", .{ YELLOW });
+        print("{s}⚠️  No nodes in cluster. Run 'tri mac-cluster discover' first.\n", .{YELLOW});
         return;
     }
 

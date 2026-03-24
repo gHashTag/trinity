@@ -1754,7 +1754,7 @@ fn multiMacInit(allocator: Allocator) !void {
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
     const config_path = ".trinity/wave9_multi_mac.yaml";
-    const config_content = std.fs.cwd().readFileAlloc(allocator, config_path) catch |err| {
+    const config_content = std.fs.cwd().readFileAlloc(allocator, config_path, 1024 * 1024) catch |err| {
         print("{s}❌ Config file not found: {s}{s}\n", .{ RED, config_path, RESET });
         print("   Create .trinity/wave9_multi_mac.yaml with device definitions\n");
         return err;
@@ -1887,7 +1887,7 @@ fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
     }
 
     print("\n{s}✅ Started {d} devices{s}\n", .{ GREEN, start_count, RESET });
-    print("   Run: tri farm local-wave9 multi-mac status\n");
+    print("   Run: tri farm local-wave9 multi-mac status\n", .{});
 }
 
 fn multiMacStop(allocator: Allocator) !void {
@@ -1972,7 +1972,6 @@ fn multiMacStatus(allocator: Allocator) !void {
         var device_running: usize = 0;
         var device_total: usize = 0;
         var lines = std.mem.splitScalar(u8, result.stdout, '\n');
-        defer lines.deinit(allocator);
         _ = lines.next(); // Skip header
         while (lines.next()) |line| {
             if (line.len > 0) {
@@ -2003,7 +2002,7 @@ fn multiMacVerify(allocator: Allocator) !void {
     print("{s}══════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
     // Collect all seeds
-    var seeds = std.ArrayList([]const u8).init(allocator);
+    var seeds = std.ArrayList([]const u8).init(allocator, 0);
     defer seeds.deinit();
 
     var worker_count: usize = 0;

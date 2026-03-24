@@ -1824,7 +1824,6 @@ fn printPowerUsage() !void {
 // =========================================================================
 
 pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
-
     std.debug.print("\n{s}{s}=== TRI FPGA BUILD UART (J2) ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Source: fpga/openxc7-synth/uart_bridge_v2.v\n", .{});
     std.debug.print("  Constraints: fpga/constraints/uart_bridge_j2.xdc\n", .{});
@@ -1870,11 +1869,16 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
     var nextpnr_child = std.process.Child.init(
         &[_][]const u8{
             NEXTPNR,
-            "--chipdb", CHIPDB,
-            "--xdc", "fpga/constraints/uart_bridge_j2.xdc",
-            "--json", "fpga/openxc7-synth/uart_bridge_j2.json",
-            "--fasm", "fpga/openxc7-synth/uart_bridge_j2.fasm",
-            "--seed", "1",
+            "--chipdb",
+            CHIPDB,
+            "--xdc",
+            "fpga/constraints/uart_bridge_j2.xdc",
+            "--json",
+            "fpga/openxc7-synth/uart_bridge_j2.json",
+            "--fasm",
+            "fpga/openxc7-synth/uart_bridge_j2.fasm",
+            "--seed",
+            "1",
         },
         allocator,
     );
@@ -1901,9 +1905,12 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
         &[_][]const u8{
             "python3",
             FASM2FRAMES,
-            "--db-root", PRJXRAY_DB,
-            "--part", "xc7a100tfgg676-1",
-            "--sparse", "fpga/openxc7-synth/uart_bridge_j2.fasm",
+            "--db-root",
+            PRJXRAY_DB,
+            "--part",
+            "xc7a100tfgg676-1",
+            "--sparse",
+            "fpga/openxc7-synth/uart_bridge_j2.fasm",
             "fpga/openxc7-synth/uart_bridge_j2.frames",
         },
         allocator,
@@ -1932,9 +1939,12 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
             XC7FRAMES2BIT,
             "--part_file",
             PRJXRAY_DB ++ "/xc7a100tfgg676-1/part.yaml",
-            "--part_name", "xc7a100tfgg676-1",
-            "--frm_file", "fpga/openxc7-synth/uart_bridge_j2.frames",
-            "--output_file", "fpga/openxc7-synth/uart_bridge_j2.bit",
+            "--part_name",
+            "xc7a100tfgg676-1",
+            "--frm_file",
+            "fpga/openxc7-synth/uart_bridge_j2.frames",
+            "--output_file",
+            "fpga/openxc7-synth/uart_bridge_j2.bit",
         },
         allocator,
     );
@@ -1964,7 +1974,6 @@ pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
 // =========================================================================
 
 pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
-
     const bit_path = "fpga/openxc7-synth/uart_bridge_j2.bit";
 
     std.fs.cwd().access(bit_path, .{}) catch {
@@ -1974,7 +1983,7 @@ pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
     };
 
     std.debug.print("\n{s}{s}=== TRI FPGA FLASH UART (J2) ==={s}\n", .{ BOLD, CYAN, RESET });
-    std.debug.print("  Bitstream: {s}\n", .{bit_path });
+    std.debug.print("  Bitstream: {s}\n", .{bit_path});
     std.debug.print("\n  Programming via flash_no_sudo.sh...\n", .{});
 
     var child = std.process.Child.init(
@@ -2006,7 +2015,6 @@ pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
 // =========================================================================
 
 pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
-
     std.debug.print("\n{s}{s}=== TRI FPGA UART TEST ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Protocol: PING/PONG + ECHO + BYTE\n", .{});
     std.debug.print("  Wiring: J2 header (K20=TX, L20=RX)\n\n", .{});
@@ -2020,7 +2028,7 @@ pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
     };
     defer allocator.free(dev_path);
 
-    std.debug.print("  Device: {s}\n", .{dev_path });
+    std.debug.print("  Device: {s}\n", .{dev_path});
 
     var port = SerialPort.open(dev_path) catch |err| {
         std.debug.print(" {s}FAIL{s} (open: {s})\n", .{ RED, RESET, @errorName(err) });
@@ -2072,8 +2080,7 @@ pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
     } else if (n2 > 0) {
         std.debug.print(" {s}EMPTY{s} (got {d} bytes: ", .{ YELLOW, RESET, n2 });
         for (resp[0..n2]) |b| {
-            if (b >= 0x20 and b < 0x7f) std.debug.print("{c}", .{b})
-            else std.debug.print(".", .{});
+            if (b >= 0x20 and b < 0x7f) std.debug.print("{c}", .{b}) else std.debug.print(".", .{});
         }
         std.debug.print("\n", .{});
         return;
@@ -2119,7 +2126,7 @@ const FLY_SYNTH_URL = "https://trinity-fpga-synth.fly.dev";
 
 pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("\n{s}{s}=== TRI FPGA REMOTE SYNTH (Fly.io) ==={s}\n", .{ BOLD, CYAN, RESET });
-    std.debug.print("  Target: {s}/synthesize\n", .{ FLY_SYNTH_URL });
+    std.debug.print("  Target: {s}/synthesize\n", .{FLY_SYNTH_URL});
     std.debug.print("  Part: XC7A100T-1FGG676C (Artix-7)\n", .{});
     std.debug.print("  Pins: D26/E26 (J2 UART)\n\n", .{});
 
@@ -2148,7 +2155,7 @@ pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
     , .{ std.zig.fmtEscapes(verilog), std.zig.fmtEscapes(xdc) });
 
     // Send to Fly.io
-    std.debug.print("\n  Sending to {s}/synthesize...\n", .{ FLY_SYNTH_URL });
+    std.debug.print("\n  Sending to {s}/synthesize...\n", .{FLY_SYNTH_URL});
 
     var client = std.http.Client{ .allocator = allocator };
     const headers = [_]std.http.Header{
@@ -2167,10 +2174,10 @@ pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
     try req.receiveHead();
 
     // Read response body
-    const body = try req.reader().readAllAlloc(allocator, 1024 * 1024);
+    const body = try req.reader().readAll(allocator, 1024 * 1024);
     defer allocator.free(body);
 
-    std.debug.print("  Response: {d} bytes\n", .{body.len });
+    std.debug.print("  Response: {d} bytes\n", .{body.len});
     std.debug.print("{s}\n", .{body});
 
     std.debug.print("\n{s}{s}REM SYNTH COMPLETE{s}\n", .{ BOLD, GREEN, RESET });
@@ -2183,7 +2190,7 @@ pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
 
 pub fn runFpgaDownloadUartBitCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("\n{s}{s}=== TRI FPGA DOWNLOAD UART BIT ==={s}\n", .{ BOLD, CYAN, RESET });
-    std.debug.print("  Source: {s}/download\n", .{ FLY_SYNTH_URL });
+    std.debug.print("  Source: {s}/download\n", .{FLY_SYNTH_URL});
     std.debug.print("  Output: fpga/openxc7-synth/uart_bridge_j2.bit\n\n", .{});
 
     // Check Fly.io API for latest job status
@@ -2192,12 +2199,17 @@ pub fn runFpgaDownloadUartBitCommand(allocator: std.mem.Allocator) !void {
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    var req = try client.request(.GET, try std.Uri.parse(FLY_SYNTH_URL ++ "/"), .{});
+    const uri = try std.Uri.parse(FLY_SYNTH_URL ++ "/");
+
+    var req = try client.request(.GET, uri, .{});
     defer req.deinit();
 
     var buf: [0]u8 = .{};
     var response = try req.receiveHead(&buf);
-    const body = try response.reader(&buf).readAllAlloc(allocator, 4096);
+
+    var transfer_buffer: [4096]u8 = undefined;
+    var reader = response.reader(&transfer_buffer);
+    const body = try reader.allocRemaining(allocator, std.Io.Limit.limited(4096));
     defer allocator.free(body);
 
     std.debug.print("  Status: {s}\n", .{body});
