@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.07 — Predictive Health Score (predict future connection health)
+//! v4.08 — Real-time Alert System (immediate threshold alerts)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2031,6 +2031,12 @@ const JitterTracker = struct {
             printInfo("\n  🏥 Predictive Health:\n", .{});
             self.showPredictiveHealth();
         }
+
+        // v4.08: Real-time Alert System - show triggered alerts
+        if (self.count >= 5) {
+            printInfo("\n  🔔 Real-time Alerts:\n", .{});
+            self.showRealTimeAlerts();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3622,6 +3628,135 @@ const JitterTracker = struct {
         } else {
             printDim("    Insufficient data for prediction\n", .{});
         }
+    }
+
+    // v4.08: Real-time Alert System - immediate alerts when thresholds exceeded
+    pub const RealTimeAlert = struct {
+        alert_type: []const u8,
+        severity: []const u8,
+        message: []const u8,
+        value: f64,
+        threshold: f64,
+        timestamp_ms: u64,
+    };
+
+    pub const AlertHistory = struct {
+        alerts: [10]RealTimeAlert,
+        count: usize,
+        last_alert_type: []const u8,
+
+        fn init() AlertHistory {
+            return .{
+                .alerts = undefined,
+                .count = 0,
+                .last_alert_type = "",
+            };
+        }
+
+        fn add(self: *AlertHistory, alert: RealTimeAlert) void {
+            if (self.count < 10) {
+                self.alerts[self.count] = alert;
+                self.count += 1;
+            } else {
+                // Shift left and add new alert
+                var i: usize = 0;
+                while (i < 9) : (i += 1) {
+                    self.alerts[i] = self.alerts[i + 1];
+                }
+                self.alerts[9] = alert;
+            }
+            self.last_alert_type = alert.alert_type;
+        }
+    };
+
+    var global_alert_history = AlertHistory.init();
+
+    pub fn checkRealTimeAlerts(self: *const JitterTracker, rtt_us: u64) ?RealTimeAlert {
+        if (self.count < 5) return null;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const rtt_ms = @as(f64, @floatFromInt(rtt_us)) / 1000.0;
+
+        // Check for extreme latency spike
+        if (rtt_ms > mean_ms * 5 and rtt_ms > 50) {
+            return .{
+                .alert_type = "LATENCY_SPIKE",
+                .severity = "CRITICAL",
+                .message = "Extreme latency spike detected",
+                .value = rtt_ms,
+                .threshold = mean_ms * 5,
+                .timestamp_ms = @intCast(std.time.milliTimestamp()),
+            };
+        }
+
+        // Check for high latency
+        if (rtt_ms > 100 and mean_ms < 80) {
+            return .{
+                .alert_type = "HIGH_LATENCY",
+                .severity = "WARNING",
+                .message = "Latency exceeds 100ms threshold",
+                .value = rtt_ms,
+                .threshold = 100,
+                .timestamp_ms = @intCast(std.time.milliTimestamp()),
+            };
+        }
+
+        // Check for consecutive failures
+        if (self.consecutive_failures >= 3) {
+            return .{
+                .alert_type = "CONSECUTIVE_FAILURES",
+                .severity = "ERROR",
+                .message = "Multiple consecutive packet failures",
+                .value = @floatFromInt(self.consecutive_failures),
+                .threshold = 3,
+                .timestamp_ms = @intCast(std.time.milliTimestamp()),
+            };
+        }
+
+        // Check for degradation trend
+        if (self.count >= 10) {
+            const trend = self.getTrend();
+            if (std.mem.eql(u8, trend.direction, "DEGRADING") and trend.change_percent > 20) {
+                return .{
+                    .alert_type = "DEGRADATION_TREND",
+                    .severity = "WARNING",
+                    .message = "Significant degradation trend detected",
+                    .value = trend.change_percent,
+                    .threshold = 20,
+                    .timestamp_ms = @intCast(std.time.milliTimestamp()),
+                };
+            }
+        }
+
+        return null;
+    }
+
+    pub fn showRealTimeAlerts(_: *const JitterTracker) void {
+        if (global_alert_history.count == 0) {
+            printDim("    No alerts triggered\n", .{});
+            return;
+        }
+
+        printDim("    Recent Alerts ({d}/{d}):\n", .{ global_alert_history.count, 10 });
+        var i: usize = 0;
+        while (i < global_alert_history.count) : (i += 1) {
+            const alert = global_alert_history.alerts[i];
+
+            // Print severity with appropriate color
+            if (std.mem.eql(u8, alert.severity, "CRITICAL") or std.mem.eql(u8, alert.severity, "ERROR")) {
+                printErr("      [{s}{s}{s}] {s}: {s}\n", .{ ANSI.RED, alert.severity, ANSI.RESET, alert.alert_type, alert.message });
+            } else if (std.mem.eql(u8, alert.severity, "WARNING")) {
+                printErr("      [{s}{s}{s}] {s}: {s}\n", .{ ANSI.YELLOW, alert.severity, ANSI.RESET, alert.alert_type, alert.message });
+            } else {
+                printErr("      [{s}{s}{s}] {s}: {s}\n", .{ ANSI.GREEN, alert.severity, ANSI.RESET, alert.alert_type, alert.message });
+            }
+            printDim("        Value: {d:.1}, Threshold: {d:.1}\n", .{ alert.value, alert.threshold });
+        }
+    }
+
+    pub fn clearAlertHistory() void {
+        global_alert_history = AlertHistory.init();
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -6636,7 +6771,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.07           ║
+        \\║      Trinity UART Echo Test v4.08           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7106,7 +7241,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.07)         ║
+            \\║         SIMULATION MODE (v4.08)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7701,7 +7836,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.07)      ║
+        \\║       SIMULATION BATCH MODE (v4.08)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7835,7 +7970,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.07)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.08)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7852,7 +7987,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.07)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.08)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8791,7 +8926,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.07)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.08)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
