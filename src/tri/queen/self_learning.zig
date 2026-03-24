@@ -17,19 +17,19 @@ const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 
 /// Environment status for TRI-27
 pub const EnvStatus = enum {
-    active,       // Normal operation
-    degraded,    // Reduced capacity but functional
-    maintenance,  // Under maintenance
+    active, // Normal operation
+    degraded, // Reduced capacity but functional
+    maintenance, // Under maintenance
 };
 
 /// TRI-27 configuration with self-learning parameters
 pub const Tri27Config = struct {
-    kill_threshold: f64 = 5.0,        // PPL threshold for recycling workers
-    crash_rate_limit: f64 = 0.1,      // Maximum acceptable crash rate (0.0-1.0)
-    byzantine_rate_limit: f64 = 0.1,  // Maximum byzantine ratio (0.0-1.0)
-    env_status: EnvStatus = .active,      // Current environment status
-    max_retries: u32 = 3,               // Maximum retry attempts
-    auto_adapt: bool = true,             // Enable/disable self-learning
+    kill_threshold: f64 = 5.0, // PPL threshold for recycling workers
+    crash_rate_limit: f64 = 0.1, // Maximum acceptable crash rate (0.0-1.0)
+    byzantine_rate_limit: f64 = 0.1, // Maximum byzantine ratio (0.0-1.0)
+    env_status: EnvStatus = .active, // Current environment status
+    max_retries: u32 = 3, // Maximum retry attempts
+    auto_adapt: bool = true, // Enable/disable self-learning
 };
 
 /// Self-learning cycle result
@@ -182,13 +182,13 @@ pub fn runSelfLearningCycle(allocator: std.mem.Allocator, window_size: usize) !S
 
     // 7. Record episode about self-learning cycle
     // Create minimal episode for self-learning
-    const now_ns = std.time.nanoTimestamp();
-    const now_sec = @as(u64, @intCast(@divTrunc(now_ns, 1_000_000_000)));
+    const now_ns_i128 = std.time.nanoTimestamp();
+    const now_ns: u64 = @as(u64, @intCast(@abs(now_ns_i128)));
     const now_ms = std.time.milliTimestamp();
     const timestamp: u64 = @intCast(@divTrunc(now_ms, 1000));
 
     const episode = Episode{
-        .id = @as(u64, @intCast(now_ns)),
+        .id = now_ns,
         .timestamp = timestamp,
         .source = .external, // Self-learning comes from external system
         .context = Context{
@@ -269,9 +269,7 @@ test "self_learning: loadConfig creates defaults when file missing" {
 
 test "self_learning: applyPolicyDelta set operation" {
     var config = Tri27Config{ .kill_threshold = 5.0 };
-    const delta = PolicyDelta{
-        .set = .{ .key = "kill_threshold", .value = 7.0 }
-    };
+    const delta = PolicyDelta{ .set = .{ .key = "kill_threshold", .value = 7.0 } };
 
     const modified = try applyPolicyDelta(&config, delta);
 
@@ -281,9 +279,7 @@ test "self_learning: applyPolicyDelta set operation" {
 
 test "self_learning: applyPolicyDelta clamps kill_threshold at 10.0" {
     var config = Tri27Config{ .kill_threshold = 9.5 };
-    const delta = PolicyDelta{
-        .scale_up = .{ .key = "kill_threshold", .factor = 1.2 }
-    };
+    const delta = PolicyDelta{ .scale_up = .{ .key = "kill_threshold", .factor = 1.2 } };
 
     _ = try applyPolicyDelta(&config, delta);
 
