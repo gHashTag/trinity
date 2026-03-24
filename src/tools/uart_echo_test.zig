@@ -227,54 +227,77 @@ const Baseline = struct {
         try file.writeAll(json);
     }
 
+    // Helper to strip quotes from a JSON string value
+    fn unquote(token: []const u8) []const u8 {
+        if (token.len >= 2 and token[0] == '"' and token[token.len - 1] == '"') {
+            return token[1 .. token.len - 1];
+        }
+        return token;
+    }
+
     pub fn loadFromFile(allocator: std.mem.Allocator, file_path: []const u8) !Baseline {
-        const content = try std.fs.cwd().readFileAlloc(allocator, file_path, 4096);
-        defer allocator.free(content);
+        _ = allocator;
+        const content = try std.fs.cwd().readFileAlloc(std.heap.page_allocator, file_path, 4096);
+        defer std.heap.page_allocator.free(content);
 
         var baseline: Baseline = undefined;
-        baseline.version = "v3.58";
+        baseline.version = "v3.62";
 
-        // Simple JSON parser for baseline file
+        // v3.62: Improved JSON parser - handles quoted strings properly
         var it = std.mem.tokenizeAny(u8, content, "{:,}\n\r ");
         while (it.next()) |token| {
-            if (std.mem.eql(u8, token, "\"timestamp\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            const key = unquote(token);
+
+            if (std.mem.eql(u8, key, "timestamp")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.timestamp = try std.fmt.parseInt(i64, val, 10);
-            } else if (std.mem.eql(u8, token, "\"version\"")) {
-                _ = it.next(); // skip value
-                baseline.version = "v3.58";
-            } else if (std.mem.eql(u8, token, "\"mean_rtt_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "version")) {
+                _ = it.next(); // skip value (use hardcoded version)
+                baseline.version = "v3.62";
+            } else if (std.mem.eql(u8, key, "mean_rtt_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.mean_rtt_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"jitter_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "jitter_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.jitter_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"min_rtt_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "min_rtt_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.min_rtt_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"max_rtt_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "max_rtt_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.max_rtt_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"p50_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "p50_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.p50_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"p90_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "p90_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.p90_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"p95_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "p95_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.p95_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"p99_us\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "p99_us")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.p99_us = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"quality_score\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "quality_score")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.quality_score = try std.fmt.parseFloat(f64, val);
-            } else if (std.mem.eql(u8, token, "\"spike_count\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "spike_count")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.spike_count = try std.fmt.parseInt(usize, val, 10);
-            } else if (std.mem.eql(u8, token, "\"sample_count\"")) {
-                const val = it.next() orelse return error.InvalidJson;
+            } else if (std.mem.eql(u8, key, "sample_count")) {
+                const val_str = it.next() orelse return error.InvalidJson;
+                const val = unquote(val_str);
                 baseline.sample_count = try std.fmt.parseInt(usize, val, 10);
             }
         }
@@ -543,6 +566,38 @@ const BaselineHistory = struct {
             try history.add(baseline);
         }
 
+        return history;
+    }
+
+    pub fn loadFromDirDebug(allocator: std.mem.Allocator, dir_path: []const u8) !BaselineHistory {
+        printErr("[DEBUG] Loading baselines from: {s}\n", .{dir_path});
+        var history = BaselineHistory.init();
+
+        var dir = try std.fs.cwd().openDir(dir_path, .{ .iterate = true });
+        defer dir.close();
+
+        var iterator = dir.iterate();
+        var file_count: usize = 0;
+
+        while (try iterator.next()) |entry| {
+            printErr("[DEBUG] Found entry: {s} kind: {}\n", .{ entry.name, entry.kind });
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.name, ".json")) {
+                printErr("[DEBUG] Skipping {s} (not .json)\n", .{entry.name});
+                continue;
+            }
+
+            file_count += 1;
+            const file_path = try std.fs.path.join(allocator, &[_][]const u8{ dir_path, entry.name });
+            defer allocator.free(file_path);
+
+            printErr("[DEBUG] Loading baseline from: {s}\n", .{file_path});
+            const baseline = try Baseline.loadFromFile(allocator, file_path);
+            printErr("[DEBUG] Loaded baseline: mean_rtt_us={d:.2}\n", .{baseline.mean_rtt_us});
+            try history.add(baseline);
+        }
+
+        printErr("[DEBUG] Loaded {} baselines from {} files\n", .{ history.count, file_count });
         return history;
     }
 
@@ -3421,6 +3476,9 @@ fn runSimulationBatch(config: Config) !void {
         \\
     , .{});
 
+    printErr("[DEBUG] runSimulationBatch: multi_baseline_dir={any}\n", .{config.multi_baseline_dir});
+    printErr("[DEBUG] runSimulationBatch: measure_jitter={}\n", .{config.measure_jitter});
+
     const batch_size = config.batch_size;
     const packet_size = 64;
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -3837,21 +3895,21 @@ fn runSimulation(config: Config) !void {
                 }
             }
 
-            // v3.62: Multi-baseline comparison
+            // v3.61: Time series visualization
+            if (config.time_series_plot and jitter_tracker.count > 0) {
+                TimeSeries.plotRTTSeries(jitter_tracker.samples[0..jitter_tracker.count], "RTT TIME SERIES");
+                TimeSeries.plotJitterTrend(jitter_tracker.samples[0..jitter_tracker.count]);
+            }
+
+            // v3.62: Multi-baseline comparison (independent of single baseline)
             if (config.multi_baseline_dir) |dir_path| {
-                const history = BaselineHistory.loadFromDir(allocator, dir_path) catch |err| {
+                const history = BaselineHistory.loadFromDirDebug(allocator, dir_path) catch |err| {
                     printErr("[!] Failed to load baseline history: {any}\n", .{err});
                     printErr("[i] Looking in: {s}\n", .{dir_path});
                     return;
                 };
                 const stats = jitter_tracker.getStats();
                 history.compareAll(stats.mean, stats.jitter, quality.score);
-            }
-
-            // v3.61: Time series visualization
-            if (config.time_series_plot and jitter_tracker.count > 0) {
-                TimeSeries.plotRTTSeries(jitter_tracker.samples[0..jitter_tracker.count], "RTT TIME SERIES");
-                TimeSeries.plotJitterTrend(jitter_tracker.samples[0..jitter_tracker.count]);
             }
         }
     }
