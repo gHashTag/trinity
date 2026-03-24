@@ -123,10 +123,10 @@ pub fn encode_load_imm(dst: u5, imm: i16) u32 {
 pub fn encode_ldi(dst: u5, imm: i16) u32 {
     var word: u32 = @intFromEnum(Opcode.LDI);
     word |= @as(u32, dst) << 8;
-    // Encode as 15-bit, mask to 15 bits
-    const imm_masked: i16 = imm & 0x7FFF;
-    const imm_u15: u15 = @intCast(imm_masked);
-    word |= @as(u32, imm_u15) << 17;
+    // Encode as 15-bit immediate: bitcast i16->u16, widen to u32, mask
+    const imm_u16: u16 = @bitCast(imm);
+    const imm_u32: u32 = imm_u16;
+    word |= (imm_u32 & 0x7FFF) << 17;
     return word;
 }
 
@@ -141,14 +141,13 @@ pub fn encode_store(src: u5, addr: u16) u32 {
 }
 
 /// Encode STI (Store Immediate to memory address)
-/// Format: opcode | (imm << 8) | (addr << 17)
+/// Format: opcode | (imm15 << 8) | (addr << 17)
 /// Immediate value stored directly to address
 pub fn encode_sti(imm: i16, addr: u16) u32 {
     var word: u32 = @intFromEnum(Opcode.STI);
-    const imm_masked: i16 = imm & 0x7FFF;
-    const imm_u15: u15 = @intCast(imm_masked);
-    const imm_bits: u32 = @as(u32, imm_u15);
-    word |= imm_bits << 8;
+    const imm_u16: u16 = @bitCast(imm);
+    const imm_u32: u32 = imm_u16;
+    word |= (imm_u32 & 0x7FFF) << 8;
     word |= @as(u32, addr) << 17;
     return word;
 }
