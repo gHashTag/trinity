@@ -7010,8 +7010,6 @@ const BufferedIO = struct {
         }
 
         const stats = self.getStats();
-        const p = self.getPercentiles();
-        const stability = self.calculateStabilityScore();
         const anomalies = self.detectAnomalies(3.0, 2.0);
         const burst = self.analyzeBursts(2.0);
 

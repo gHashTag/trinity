@@ -36,125 +36,125 @@ pub fn generateZigFromBytecode(allocator: Allocator, bytecode: []const u8) ![]co
         \\
         \\    DO NOT EDIT - Auto-generated from emit_zig spec
         \\
-    , 2026-03-24
-    ,\\n
-        ,} catch |err| {
-            print("Error writing header: {s}\n", .{ RED, err });
-            return;
-        });
+    ) catch |err| {
+        print("Error writing header: {s}\\n", .{ RED, err });
+        return;
+    };
+
+    // Date header
+    try generated.writer().print(allocator, "// Generated: 2026-03-24\\n") catch |err| {
+        print("Error writing date: {s}\\n", .{ RED, err });
+        return;
+    };
 
     // Register declarations
     try generated.writer().print(allocator,
         \\    // 27 ternary registers (t0-t26)
         \\    // Also accessible as r0-r26
-        ,    var t: [27]i32 = undefined;
-        ,, i: usize = 0;
-        , while (i < 27) : (i += 1) {
-        ,    try generated.writer().print(allocator, "    t{d} = undefined;", .{ i, BOLD });
-        ,} catch |err| {};
+        \\    var t: [27]i32 = undefined;
+        \\    var i: usize = 0;
+        \\    while (i < 27) : (i += 1) {
+        \\        t[i] = undefined;
+        \\    }
+        \\    // Also accessible as r0-r26 alias for clarity
+        \\    const r0 = @as(i32, t[0]);
+        \\    const r26 = @as(i32, t[26]);
+        \\
+        \\    // 3 sacred constant registers (φ, π, e)
+        \\    var phi_const: f32 = @floatFromInt(0x3F9E3779C0); // φ = 1.61803398875
+        \\    var pi_const: f32 = @floatFromInt(0x408F4197938); // π = 3.14159265359
+        \\    var e_const: f32 = @floatFromInt(0x451E6); // e = 2.718281828
+        \\
+
+    // Vectors (8 GF16, 3 float, 8 T-word)
+    var v: [8]std.ArrayList(f32).initCapacity(allocator, 32);
+    var i_vec: usize = 0;
+    while (i_vec.len < 8) : (i_vec.len += 1) {
+    try v[i_vec.len].append(allocator, @as(f32, i_vec.len));
+} catch |err| {};
         }
-    ,\\n
-        ,
-        ,    // Also accessible as r0-r26 alias for clarity
-        ,    const r0 = @as(i32, t[0]);
-        ,    const r26 = @as(i32, t[26]);
-        ,\\n
-        ,
-        ,    // 3 sacred constant registers (φ, π, e)
-        ,    var phi_const: f32 = @floatFromInt(0x3F9E3779C0); // φ = 1.61803398875
-        ,    var pi_const: f32 = @floatFromInt(0x408F4197938);    π = 3.14159265359
-        ,    var e_const: f32 = @floatFromInt(0x451E6); // e = 2.718281828
-        ,\\n
-        ,
-        ,    // Vectors (8 GF16, 3 float, 8 T-word)
-        ,    var v: [8]std.ArrayList(f32).initCapacity(allocator, 32);
-        ,    var i_vec: usize = 0;
-        ,    while (i_vec.len < 8) : (i_vec.len += 1) {
-        ,    try v[i_vec.len].append(allocator, @as(f32, i_vec.len));
-        ,} catch |err| {};
+\\n
+
+    // Stack
+    var s: [16]i32 = undefined; // 8-word return address stack (4 trits = 64 bits)
+    const stack_size: usize = @as(usize, s.len);
+\\n
+
+    // Program counter
+    var pc: usize = 0;
+    const pc_limit: usize = @as(usize, bytecode.len / 4);
+\\n
+
+    // Flags
+    var flags: u8 = 0;
+    const FLAG_H: u8 = 1 << 0;
+    const FLAG_Z: u8 = 1 << 6;
+    const FLAG_N: u8 = 1 << 7;
+    const FLAG_V: u8 = 1 << 2;
+    const FLAG_C: u8 = 1 << 5;
+    const FLAG_O: u8 = 1 << 3;
+    const FLAG_CF: u8 = 1 << 0;
+    const FLAG_PF: u8 = 1 << 2;
+\\n
+
+    // Memory map
+    var memory: [256]i32 = undefined;
+    // 256 words = 1024 bytes (4 bytes per word)
+    \\n
+
+    // Load bytecode into memory
+    const prog_words: usize = @divExact(bytecode.len, 4);
+    var word_idx: usize = 0;
+    while (word_idx < prog_words) : (word_idx += 1) {
+    const word_bytes = bytecode[word_idx * 4 ..][0..4];
+    var word: i32 = @as(i32, @as(i32, word_bytes[0]) << 24 | @as(i32, word_bytes[1]) << 16 | @as(i32, word_bytes[2]) << 8);
+    word = @as(i32, word | word);
+    const base_addr: usize = @as(usize, word_idx) * 4;
+    if (base_addr < 256) {
+        memory[base_addr] = word;
+        word_idx += 1;
+    }
+}
+\\n
+
+    // Reset
+    pc = 0;
+    flags = 0;
+\\n
+
+    // Execute loop
+    var exec_result: ExecuteResult = .halted;
+    while (true) {
+        // Fetch
+        const opcode_byte = if (pc < pc_limit) bytecode[pc] else 0xFF;
+        if (opcode_byte == 0xFF) break;
+        const opcode: Opcode = @intToEnum(Opcode, opcode_byte >> 2);
+        const instr: Instruction = decodeInstruction(opcode, &pc, memory, &flags);
+        // Execute instruction
+        exec_result = executeInstruction(instr, &pc, memory, &flags, &s);
+        pc += 1;
+        if (exec_result == .halted) break;
+}
+\\n
+
+    // Result
+    switch (exec_result) {
+            .halted => {
+                print("{s}Execution halted at PC={d} after {d} cycles{s}\n", .{ GREEN, pc, pc_limit, RESET });
+            },
+            .timeout => {
+                print("{s}Timeout after {d} cycles{s}\n", .{ YELLOW, pc, pc_limit, RESET });
+            },
+            .invalid => {
+                print("{s}Invalid instruction at PC={d}: {s}\n", .{ RED, pc, opcode, RESET });
+            },
         }
-        ,\\n
-        ,
-        ,    // Stack
-        ,    var s: [16]i32 = undefined; // 8-word return address stack (4 trits = 64 bits)
-        ,    const stack_size: usize = @as(usize, s.len);
-        ,\\n
-        ,
-        ,    // Program counter
-        ,    var pc: usize = 0;
-        ,    const pc_limit: usize = @as(usize, bytecode.len / 4);
-        ,\\n
-        ,
-        ,    // Flags
-        ,    var flags: u8 = 0;
-        ,    const FLAG_H: u8 = 1 << 0;
-        ,    const FLAG_Z: u8 = 1 << 6;
-        ,    const FLAG_N: u8 = 1 << 7;
-        ,    const FLAG_V: u8 = 1 << 2;
-        ,    const FLAG_C: u8 = 1 << 5;
-        ,    const FLAG_O: u8 = 1 << 3;
-        ,    const FLAG_CF: u8 = 1 << 0;
-        ,    const FLAG_PF: u8 = 1 << 2;
-        ,\\n
-        ,
-        ,    // Memory map
-        ,    var memory: [256]i32 = undefined;
-        ,    // 256 words = 1024 bytes (4 bytes per word)
-        ,    \\n
-        ,
-        ,    // Load bytecode into memory
-        ,    const prog_words: usize = @divExact(bytecode.len, 4);
-        ,    var word_idx: usize = 0;
-        ,    while (word_idx < prog_words) : (word_idx += 1) {
-        ,    const word_bytes = bytecode[word_idx * 4 ..][0..4];
-        ,    var word: i32 = @as(i32, @as(i32, word_bytes[0]) << 24 | @as(i32, word_bytes[1]) << 16 | @as(i32, word_bytes[2]) << 8);
-        ,    word = @as(i32, word | word);
-        ,    const base_addr: usize = @as(usize, word_idx) * 4;
-        ,    if (base_addr < 256) {
-        ,        memory[base_addr] = word;
-        ,        word_idx += 1;
-        ,    }
-        ,}
-        ,\\n
-        ,
-        ,    // Reset
-        ,    pc = 0;
-        ,    flags = 0;
-        ,\\n
-        ,
-        ,    // Execute loop
-        ,    var exec_result: ExecuteResult = .halted;
-        ,    while (true) {
-        ,        // Fetch
-        ,        const opcode_byte = if (pc < pc_limit) bytecode[pc] else 0xFF;
-        ,        if (opcode_byte == 0xFF) break;
-        ,        const opcode: Opcode = @intToEnum(Opcode, opcode_byte >> 2);
-        ,        const instr: Instruction = decodeInstruction(opcode, &pc, memory, &flags);
-        ,        // Execute instruction
-        ,        exec_result = executeInstruction(instr, &pc, memory, &flags, &s);
-        ,        pc += 1;
-        ,        if (exec_result == .halted) break;
-        ,}
-        ,\\n
-        ,
-        ,    // Result
-        ,    switch (exec_result) {
-        ,            .halted => {
-        ,                print("{s}Execution halted at PC={d} after {d} cycles{s}\n", .{ GREEN, pc, pc_limit, RESET });
-        ,            },
-        ,            .timeout => {
-        ,                print("{s}Timeout after {d} cycles{s}\n", .{ YELLOW, pc, pc_limit, RESET });
-        ,            },
-        ,            .invalid => {
-        ,                print("{s}Invalid instruction at PC={d}: {s}\n", .{ RED, pc, opcode, RESET });
-        ,            },
-        ,        }
-        ,    }
-        ,    try generated.toOwnedSlice(allocator);
-        ,} catch |err| {
-        ,        print("Error generating output: {s}\n", .{ RED, err });
-        ,        return;
-        ,}
+    }
+    try generated.toOwnedSlice(allocator);
+} catch |err| {
+        print("Error generating output: {s}\n", .{ RED, err });
+        return;
+}
 }
 
 // ══════════════════════════════════════════════════════
