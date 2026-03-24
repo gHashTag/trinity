@@ -243,13 +243,145 @@ tri lucas 10           # Lucas L(10)
 tri spiral 5           # φ-spiral coordinates
 ```
 
-### All Commands (203 total)
+### All Commands (30+ command groups)
+
+> **Note:** `tri test` has limited functionality. Use `zig build test` for full testing.
 
 ```bash
 tri help               # Show all commands by category
 tri help --search test # Search commands
 tri help fix           # Detailed command help
 ```
+
+#### Development Workflow
+
+| Command | Description |
+|---------|-------------|
+| `tri dev status` | Show development session status |
+| `tri dev start --issue <N>` | Start session for GitHub issue |
+| `tri dev test` | Run tests and mark as passed |
+| `tri dev commit "msg"` | Commit with issue ID |
+| `tri dev ship` | Mark changes as delivered |
+| `tri dev reset` | Reset changes back to ACTIVE state |
+| `tri dev unblock` | Clear BLOCKED state |
+| `tri dev log` | Show state history |
+
+#### Git & GitHub Integration
+
+| Command | Description |
+|---------|-------------|
+| `tri git status` | Working tree status |
+| `tri git commit "msg"` | Commit with auto-format |
+| `tri git diff` | Show changes |
+| `tri git log` | Commit history |
+| `tri issue list` | List GitHub issues |
+| `tri issue create` | Create new issue |
+| `tri board <action>` | Project board operations |
+| `tri pr <action>` | Pull request management |
+| `tri agent run <N>` | Autonomous issue resolution (8-step cycle) |
+| `tri graphql <query>` | Run GitHub GraphQL query |
+
+#### Cloud & Training Farm
+
+| Command | Description |
+|---------|-------------|
+| `tri cloud status` | Cloud containers overview |
+| `tri cloud spawn <N>` | Spawn container for issue |
+| `tri cloud kill <N>` | Destroy container |
+| `tri cloud agents` | List active agents |
+| `tri cloud sync` | Reconcile with Railway |
+| `tri farm status` | Training farm overview |
+| `tri farm recycle` | Recycle underperforming services |
+| `tri farm evolve` | SEBO hyperparameter optimization |
+| `tri farm inject` | Inject new configurations |
+| `tri deploy <action>` | Deployment management |
+| `tri train <action>` | Training operations |
+
+#### Pipeline & Code Generation
+
+| Command | Description |
+|---------|-------------|
+| `tri pipeline run "<task>"` | Golden Chain 28-link pipeline |
+| `tri chain` | Run chain command |
+| `tri vibee` | VIBEE compiler CLI |
+| `tri spec create <name>` | Create .tri specification |
+| `tri spec-match` | Match issue to spec template |
+| `tri gen` | Generate code from spec |
+
+#### Agents & Swarms
+
+| Command | Description |
+|---------|-------------|
+| `tri faculty` | Agent status dashboard (A2A) |
+| `tri swarm <action>` | Swarm management |
+| `tri queen <subcommand>` | Queen Trinity UI |
+| `tri phoenix <subcommand>` | Phoenix cell system |
+| `tri mu <command>` | Agent TRI (Memory Unit) |
+| `tri notify "msg"` | Telegram notification |
+
+#### FPGA & Hardware
+
+| Command | Description |
+|---------|-------------|
+| `tri fpga build` | Build FPGA bitstream |
+| `tri fpga flash` | Flash bitstream to FPGA |
+| `tri fpga uart` | UART communication test |
+| `tri sacred-const` | Show sacred constants (φ, π, e) |
+
+#### Mathematical & Research
+
+| Command | Description |
+|---------|-------------|
+| `tri constants` | Show φ, π, e, Lucas, Fibonacci |
+| `tri phi <n>` | Compute φ^n |
+| `tri lucas <n>` | Lucas L(n) |
+| `tri spiral <n>` | φ-spiral coordinates |
+| `tri formula <name>` | Evaluate sacred formula |
+| `tri sebo` | Sacred EVolutionary Objective Search |
+| `tri research <action>` | Research operations |
+
+#### Memory & Learning
+
+| Command | Description |
+|---------|-------------|
+| `tri memory list` | List stored memories |
+| `tri memory read <key>` | Read memory entry |
+| `tri memory write <key> <value>` | Store memory |
+| `tri memory search <query>` | Semantic search |
+| `tri experience save` | Save experience |
+| `tri experience recall` | Recall experiences |
+
+#### Utilities
+
+| Command | Description |
+|---------|-------------|
+| `tri doctor` | Codebase health scanner |
+| `tri clean` | Clean build artifacts |
+| `tri fmt` | Format code (zig fmt) |
+| `tri stats` | Codebase metrics |
+| `tri ui [build\|kill]` | Queen UI launcher |
+| `tri version` | Show version info |
+| `tri autocomplete` | Shell autocomplete setup |
+
+#### Testing
+
+| Command | Description |
+|---------|-------------|
+| `tri test` | ⚠️ Limited - use `zig build test` instead |
+| `tri test e2e` | Run E2E toxic test suite |
+| `tri test --repl` | Run REPL tests |
+
+#### Namespaced Commands
+
+Namespace-aware syntax: `tri <namespace> <command>`
+
+| Namespace | Example Commands |
+|-----------|-----------------|
+| `tri dev` | `tri dev status`, `tri dev test`, `tri dev commit` |
+| `tri mcp` | `tri mcp tools`, `tri mcp export` |
+| `tri agent` | `tri agent issue`, `tri agent board` |
+| `tri system` | `tri system doctor`, `tri system clean` |
+| `tri forge` | FPGA commands (via `tri fpga`) |
 
 ### Build from Source
 
