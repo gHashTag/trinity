@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v4.00: Performance Profile Classification - connection type detection
+        // v4.01: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,28 +1966,34 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v4.00: Rate Limiting Detection - detect throttling patterns
+        // v4.01: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
         }
 
-        // v4.00: Latency Distribution Fitting - statistical distribution analysis
+        // v4.01: Latency Distribution Fitting - statistical distribution analysis
         if (self.count >= 30) {
             printInfo("\n  📐 Distribution Fit:\n", .{});
             self.showDistributionFit();
         }
 
-        // v4.00: Packet Drift Detection - detect gradual RTT changes
+        // v4.01: Packet Drift Detection - detect gradual RTT changes
         if (self.count >= 20) {
             printInfo("\n  📈 Packet Drift:\n", .{});
             self.showPacketDrift();
         }
 
-        // v4.00: Anomaly Prediction System - predict future anomalies
+        // v4.01: Anomaly Prediction System - predict future anomalies
         if (self.count >= 30) {
             printInfo("\n  🔮 Anomaly Prediction:\n", .{});
             self.showAnomalyPrediction();
+        }
+
+        // v4.01: Quick Diagnostics - one-line summary (always shown)
+        if (self.count >= 5) {
+            printInfo("\n  ⚡ Quick Diagnostics:\n", .{});
+            self.showQuickDiagnostics();
         }
     }
 
@@ -2292,7 +2298,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.00: Rate Limiting Detection - detect throttling patterns
+    // v4.01: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2415,7 +2421,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.00: Latency Distribution Fitting - fit RTT to statistical distributions
+    // v4.01: Latency Distribution Fitting - fit RTT to statistical distributions
     pub const DistributionFit = struct {
         distribution: []const u8,
         mean: f64,
@@ -2654,7 +2660,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.00: Packet Drift Detection - detect gradual RTT changes over time
+    // v4.01: Packet Drift Detection - detect gradual RTT changes over time
     pub const PacketDrift = struct {
         drift_type: []const u8,
         drift_rate: f64,
@@ -2739,7 +2745,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.00: Anomaly Prediction System - predict likelihood of future anomalies
+    // v4.01: Anomaly Prediction System - predict likelihood of future anomalies
     pub const AnomalyPrediction = struct {
         anomaly_probability: f64,
         prediction_horizon: usize,
@@ -2889,6 +2895,64 @@ const JitterTracker = struct {
         } else {
             printDim("    Insufficient data for anomaly prediction\n", .{});
         }
+    }
+
+    // v4.01: Quick Diagnostics - one-line summary of key metrics
+    pub const QuickDiagnostics = struct {
+        health_status: []const u8,
+        samples: usize,
+        mean_rtt_ms: f64,
+        jitter_ms: f64,
+        success_rate_pct: f64,
+        summary: []const u8,
+    };
+
+    pub fn getQuickDiagnostics(self: *const JitterTracker) QuickDiagnostics {
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+
+        // Health status based on jitter only
+        const health_status: []const u8 = if (jitter_ms < 10)
+            "EXCELLENT"
+        else if (jitter_ms < 20)
+            "GOOD"
+        else if (jitter_ms < 50)
+            "FAIR"
+        else if (jitter_ms < 100)
+            "POOR"
+        else
+            "CRITICAL";
+
+        // Summary message based on jitter
+        const summary: []const u8 = if (jitter_ms < 10)
+            "Excellent: minimal jitter"
+        else if (jitter_ms < 20)
+            "Good: stable low latency"
+        else if (jitter_ms < 50)
+            "Fair: moderate jitter, acceptable"
+        else if (jitter_ms < 100)
+            "Poor: high jitter, investigate"
+        else
+            "Critical: very high jitter, needs attention";
+
+        return .{
+            .health_status = health_status,
+            .samples = self.count,
+            .mean_rtt_ms = mean_ms,
+            .jitter_ms = jitter_ms,
+            .success_rate_pct = 0.0,
+            .summary = summary,
+        };
+    }
+
+    pub fn showQuickDiagnostics(self: *const JitterTracker) void {
+        const diag = self.getQuickDiagnostics();
+
+        printInfo("  Health: {s} ({d} samples, {d:.1}ms RTT, {d:.1}ms jitter)\n", .{
+            diag.health_status, diag.samples, diag.mean_rtt_ms, diag.jitter_ms,
+        });
+        printDim("  {s}\n", .{diag.summary});
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -4096,7 +4160,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v4.00: Performance Profile Classification - connection type detection
+    // v4.01: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -5903,7 +5967,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.00           ║
+        \\║      Trinity UART Echo Test v4.01           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6373,7 +6437,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.00)         ║
+            \\║         SIMULATION MODE (v4.01)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -6968,7 +7032,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.00)      ║
+        \\║       SIMULATION BATCH MODE (v4.01)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7102,7 +7166,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.00)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.01)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7119,7 +7183,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.00)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.01)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8058,7 +8122,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.00)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.01)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
