@@ -222,7 +222,7 @@ pub const AssemblerState = struct {
             token_idx += 1;
         }
 
-        return state.bytecode.toOwnedSlice(self.allocator);
+        return state.bytecode.toOwnedSlice(state.allocator);
     }
 }
 
