@@ -161,8 +161,9 @@ pub const Assembler = struct {
 
         if (std.mem.eql(u8, op_lower, "sti")) {
             if (operands.len != 2) return AsmError.InvalidSyntax;
-            const imm = try parseImmediate(operands[1]);
-            const addr = try parseImmediateU16(operands[1]);
+            const imm = try parseImmediate(operands[0]);
+            const addr_u16 = try parseImmediateU16(operands[1]);
+            const addr: u8 = @intCast(addr_u16 & 0xFF);
             return encoder.encode_sti(imm, addr);
         }
 
@@ -520,7 +521,7 @@ test "assembler encodes add" {
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
-    const expected: u32 = 0x10 | (5 << 8) | (10 << 11) | (15 << 14);
+    const expected: u32 = 0x10 | (5 << 8) | (10 << 13) | (15 << 18);
     try std.testing.expectEqual(expected, word);
 }
 
@@ -532,7 +533,7 @@ test "assembler encodes sub" {
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
-    const expected: u32 = 0x11 | (1 << 8) | (2 << 11) | (3 << 14);
+    const expected: u32 = 0x11 | (1 << 8) | (2 << 13) | (3 << 18);
     try std.testing.expectEqual(expected, word);
 }
 
@@ -567,7 +568,7 @@ test "assembler encodes tmul" {
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
-    const expected: u32 = 0x60 | (1 << 8) | (2 << 11) | (3 << 14);
+    const expected: u32 = 0x60 | (1 << 8) | (2 << 13) | (3 << 18);
     try std.testing.expectEqual(expected, word);
 }
 
