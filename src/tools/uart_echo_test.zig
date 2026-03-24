@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.76 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
+//! v3.77 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1845,25 +1845,25 @@ const JitterTracker = struct {
             self.predictTrend();
         }
 
-        // v3.76: Adaptive Thresholds - recommend optimal thresholds based on statistics
+        // v3.77: Adaptive Thresholds - recommend optimal thresholds based on statistics
         if (self.count >= 20) {
             printInfo("\n  🔧 Adaptive Thresholds:\n", .{});
             self.recommendThresholds();
         }
 
-        // v3.76: Confidence Intervals - uncertainty bounds for predictions
+        // v3.77: Confidence Intervals - uncertainty bounds for predictions
         if (self.count >= 5) {
             printInfo("\n  📊 Confidence Intervals:\n", .{});
             self.showConfidenceInterval();
         }
 
-        // v3.76: Performance Degradation - detect if RTT is getting worse
+        // v3.77: Performance Degradation - detect if RTT is getting worse
         if (self.count >= 10) {
             printInfo("\n  ⚠️  Performance Degradation:\n", .{});
             self.detectDegradation();
         }
 
-        // v3.76: Anomaly Alert System - severity-based alerting
+        // v3.77: Anomaly Alert System - severity-based alerting
         if (self.count >= 5) {
             printInfo("\n  🔔 Anomaly Alerts:\n", .{});
             self.checkAnomalyAlerts();
@@ -1945,7 +1945,7 @@ const JitterTracker = struct {
         printDim("    Severity: {s}\n", .{severity});
     }
 
-    // v3.76: Recommend optimal thresholds based on statistical analysis
+    // v3.77: Recommend optimal thresholds based on statistical analysis
     pub fn recommendThresholds(self: *const JitterTracker) void {
         const stats = self.getStats();
         const p = self.getPercentiles();
@@ -1987,7 +1987,7 @@ const JitterTracker = struct {
         printDim("      --delay {d}\n", .{recommended_delay});
     }
 
-    // v3.76: Calculate confidence intervals for predictions
+    // v3.77: Calculate confidence intervals for predictions
     pub fn showConfidenceInterval(self: *const JitterTracker) void {
         if (self.count < 5) {
             printDim("    Not enough samples for CI (need >=5)\n", .{});
@@ -2051,7 +2051,7 @@ const JitterTracker = struct {
         printDim("    Stability: {s}\n", .{stability});
     }
 
-    // v3.76: Performance degradation detection
+    // v3.77: Performance degradation detection
     pub fn detectDegradation(self: *const JitterTracker) void {
         if (self.count < 10) {
             printDim("    Not enough samples for degradation analysis (need >=10)\n", .{});
@@ -2110,7 +2110,7 @@ const JitterTracker = struct {
         printDim("    Direction: {s}\n", .{direction});
     }
 
-    // v3.76: Anomaly Alert System with severity levels
+    // v3.77: Anomaly Alert System with severity levels
     pub fn checkAnomalyAlerts(self: *const JitterTracker) void {
         if (self.count < 5) return;
 
@@ -2167,7 +2167,7 @@ const JitterTracker = struct {
         printDim("      - Anomaly severity: {d:.1}/20\n", .{@min(20.0, anomalies.anomaly_score / 5.0)});
     }
 
-    // v3.76: Historical Baseline structure
+    // v3.77: Historical Baseline structure
     pub const HistoricalBaseline = struct {
         mean: f64 = 0,
         median: f64 = 0,
@@ -2183,7 +2183,7 @@ const JitterTracker = struct {
         }
     };
 
-    // v3.76: Compare current stats against historical baseline
+    // v3.77: Compare current stats against historical baseline
     pub fn compareBaseline(self: *const JitterTracker, baseline: HistoricalBaseline) void {
         if (baseline.sample_count == 0) {
             printDim("    No baseline data available\n", .{});
@@ -2257,7 +2257,7 @@ const JitterTracker = struct {
         printDim("    Overall: {s}\n", .{overall});
     }
 
-    // v3.76: Anomaly Export - write anomalies to separate file
+    // v3.77: Anomaly Export - write anomalies to separate file
     pub fn exportAnomalies(self: *const JitterTracker, filename: []const u8) !void {
         const anomalies = self.detectAnomalies(3.0, 2.0);
         if (anomalies.count == 0) {
@@ -2316,6 +2316,88 @@ const JitterTracker = struct {
         }
 
         printInfo("  Exported {d} anomalies to {s}\n", .{ anomalies.count, filename });
+    }
+
+    // v3.77: Real-time Monitoring Summary - dashboard-style display
+    pub fn showMonitoringSummary(self: *const JitterTracker) void {
+        if (self.count == 0) {
+            printDim("    No data for monitoring\n", .{});
+            return;
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+
+        // Health score calculation (0-100)
+        const health_score: f64 = blk: {
+            // Factor 1: Sample count (target >= 30)
+            const sample_factor = @min(100.0, @as(f64, @floatFromInt(self.count)) / 30.0 * 100.0);
+
+            // Factor 2: Stability (low jitter)
+            const cv = if (stats.mean > 0) stats.jitter / stats.mean else 0;
+            const stability_factor = @max(0.0, 30.0 - cv * 30.0);
+
+            // Factor 3: Anomaly rate (target <= 5%)
+            const anomalies = self.detectAnomalies(3.0, 2.0);
+            const anomaly_factor = @max(0.0, 25.0 - @as(f64, @floatFromInt(anomalies.count)) / @as(f64, @floatFromInt(self.count)) * 100.0);
+
+            break :blk @min(100.0, (sample_factor * 0.3 + stability_factor * 0.4 + anomaly_factor * 0.3));
+        };
+
+        // Health level
+        const health_level = if (health_score >= 80)
+            "🟢 EXCELLENT"
+        else if (health_score >= 60)
+            "🟢 GOOD"
+        else if (health_score >= 40)
+            "🟡 FAIR"
+        else if (health_score >= 20)
+            "🟠 POOR"
+        else
+            "🔴 CRITICAL";
+
+        // Real-time indicators
+        printDim("    Health Score: {d:.1}/100\n", .{health_score});
+        printDim("    Health Level: {s}\n", .{health_level});
+        printDim("    Samples: {d}\n", .{self.count});
+        printDim("    Mean RTT: {d:.2}ms\n", .{stats.mean / 1000.0});
+        printDim("    Jitter: {d:.2}ms\n", .{stats.jitter / 1000.0});
+        printDim("    Min/Max: {d:.2}ms / {d:.2}ms\n", .{ @as(f64, @floatFromInt(stats.min)) / 1000.0, @as(f64, @floatFromInt(stats.max)) / 1000.0 });
+        printDim("    p50/p95/p99: {d:.2}ms / {d:.2}ms / {d:.2}ms\n", .{
+            @as(f64, @floatFromInt(p.p50)) / 1000.0,
+            @as(f64, @floatFromInt(p.p95)) / 1000.0,
+            @as(f64, @floatFromInt(p.p99)) / 1000.0,
+        });
+
+        // Trend indicator
+        const trend = blk: {
+            if (self.count < 10) {
+                break :blk "insufficient data";
+            }
+            const half = @divFloor(self.count, 2);
+            var first_sum: i64 = 0;
+            var second_sum: i64 = 0;
+            for (self.samples[0..half]) |s| {
+                first_sum += s;
+            }
+            for (self.samples[half..self.count]) |s| {
+                second_sum += s;
+            }
+            const first_mean = @as(f64, @floatFromInt(first_sum)) / @as(f64, @floatFromInt(half));
+            const second_mean = @as(f64, @floatFromInt(second_sum)) / @as(f64, @floatFromInt(self.count - half));
+            const change = ((second_mean - first_mean) / first_mean) * 100.0;
+            if (change > 10) {
+                break :blk "increasing";
+            } else if (change < -10) {
+                break :blk "decreasing";
+            } else {
+                break :blk "stable";
+            }
+        };
+
+        const trend_icon = if (std.mem.eql(u8, trend, "increasing")) "⬆️" else if (std.mem.eql(u8, trend, "decreasing")) "⬇️" else "➡️";
+
+        printDim("    Trend: {s} {s}\n", .{ trend_icon, trend });
     }
 
     // v3.69: Plot histogram of RTT distribution
@@ -3751,7 +3833,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.76)         ║
+            \\║         SIMULATION MODE (v3.77)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -4346,7 +4428,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.76)      ║
+        \\║       SIMULATION BATCH MODE (v3.77)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -4480,7 +4562,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.76)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.77)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -4497,7 +4579,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.76)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.77)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -5175,7 +5257,7 @@ fn runDryRun(config: Config) !void {
 fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
     printErr(
         \\╔══════════════════════════════════════╗
-        \\║          BATCH TEST MODE (v3.76)        ║
+        \\║          BATCH TEST MODE (v3.77)        ║
         \\║  Aggregated throughput measurement        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -5430,7 +5512,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.76)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.77)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
