@@ -56,6 +56,31 @@ const BrainRegion = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// NEUROANATOMICAL MODULES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const NeuroModule = struct {
+    file: []const u8,
+    neuro_region: []const u8,
+    neuro_function: []const u8,
+    tri27_source: []const u8,
+};
+
+const NEURO_MODULES = [_]NeuroModule{
+    .{ .file = "queen_dlpfc.zig", .neuro_region = "DLPFC", .neuro_function = "working_memory_planning", .tri27_source = "src/tri27/queen_dlpfc.t27" },
+    .{ .file = "queen_vmpfc.zig", .neuro_region = "VMPFC", .neuro_function = "value_assessment", .tri27_source = "src/tri27/queen_vmpfc.t27" },
+    .{ .file = "queen_ofc.zig", .neuro_region = "OFC", .neuro_function = "telegram_voice", .tri27_source = "src/tri27/queen_ofc.t27" },
+    .{ .file = "queen_vlpfc.zig", .neuro_region = "VLPFC", .neuro_function = "attention_filter", .tri27_source = "src/tri27/queen_vlpfc.t27" },
+    .{ .file = "queen_dmpfc.zig", .neuro_region = "DMPFC", .neuro_function = "self_monitor", .tri27_source = "src/tri27/queen_dmpfc.t27" },
+    .{ .file = "phoenix_medulla.zig", .neuro_region = "Medulla", .neuro_function = "basic_survival", .tri27_source = "src/tri27/phoenix_medulla.t27" },
+    .{ .file = "phoenix_pons.zig", .neuro_region = "Pons", .neuro_function = "sleep_cycle", .tri27_source = "src/tri27/phoenix_pons.t27" },
+    .{ .file = "phoenix_locus_coeruleus.zig", .neuro_region = "Locus Coeruleus", .neuro_function = "arousal_level", .tri27_source = "src/tri27/phoenix_lc.t27" },
+    .{ .file = "reticular_aras.zig", .neuro_region = "ARAS", .neuro_function = "vigilance_sweep", .tri27_source = "src/tri27/reticular_aras.t27" },
+    .{ .file = "reticular_raphe.zig", .neuro_region = "Raphe", .neuro_function = "ppl_stabilization", .tri27_source = "src/tri27/reticular_raphe.t27" },
+    .{ .file = "reticular_gigantocellular.zig", .neuro_region = "Gigantocellular", .neuro_function = "motor_command", .tri27_source = "src/tri27/reticular_giganto.t27" },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // DATA TABLES
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -567,6 +592,13 @@ fn showNeuroHelp() !void {
     std.debug.print("\n", .{});
     std.debug.print("  {s}neurons              {s}Show brain statistics and sacred constants{s}\n", .{ GOLDEN, GRAY, RESET });
     std.debug.print("\n", .{});
+
+    std.debug.print("{s}NEUROANATOMICAL COMMANDS{s}\n", .{ PURPLE, RESET });
+    std.debug.print("  {s}audit                {s}Check all neuro modules exist{s}\n", .{ GOLDEN, GRAY, RESET });
+    std.debug.print("  {s}map                  {s}Show module -> brain structure mapping{s}\n", .{ GOLDEN, GRAY, RESET });
+    std.debug.print("  {s}validate <module>     {s}Validate single module{s}\n", .{ GOLDEN, GRAY, RESET });
+    std.debug.print("  {s}flow                 {s}Show signal flow diagram{s}\n", .{ GOLDEN, GRAY, RESET });
+    std.debug.print("\n", .{});
     std.debug.print("  {s}help                 {s}Show this help message{s}\n", .{ GOLDEN, GRAY, RESET });
 
     std.debug.print("\n{s}EXAMPLES{s}\n", .{ WHITE, RESET });
@@ -576,6 +608,12 @@ fn showNeuroHelp() !void {
     std.debug.print("  {s}tri neuro consciousness 70 3 25{s}   {s}Custom consciousness computation{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
     std.debug.print("  {s}tri neuro network 784 144 233 10{s}  {s}Analyze Golden MLP{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
     std.debug.print("  {s}tri neuro network 3 9 27 9 3{s}      {s}Analyze Trinitary network{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
+
+    std.debug.print("\n", .{});
+    std.debug.print("  {s}tri neuro audit{s}               {s}Check all neuro modules exist{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
+    std.debug.print("  {s}tri neuro map{s}                  {s}Show module -> brain structure mapping{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
+    std.debug.print("  {s}tri neuro validate queen_dlpfc{s}  {s}Validate specific module{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
+    std.debug.print("  {s}tri neuro flow{s}                 {s}Show signal flow diagram{s}\n", .{ GOLDEN, GRAY, GRAY, RESET });
 
     std.debug.print("\n{s}CONSCIOUSNESS FORMULA{s}\n", .{ WHITE, RESET });
     std.debug.print("  {s}Ψ = n × 3^k × π^m × φ^p × e^q{s}\n\n", .{ GOLDEN, RESET });
@@ -587,11 +625,28 @@ fn showNeuroHelp() !void {
     std.debug.print("  {s}β Beta:   13-30 Hz    ≈ φ × 20      (Focus){s}\n", .{ GRAY, RESET });
     std.debug.print("  {s}γ Gamma:  30-100 Hz   ≈ φ² × 16     (Peak){s}\n", .{ GRAY, RESET });
 
+    std.debug.print("\n{s}NEUROANATOMICAL ARCHITECTURE{s}\n", .{ WHITE, RESET });
+    std.debug.print("  {s}All code in src/tri/ follows real brain structure mapping.{s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}Queen (Prefrontal Cortex), Phoenix (Brainstem), Reticular Formation{s}\n", .{ GRAY, RESET });
+
     std.debug.print("\n{s}φ² + 1/φ² = 3 = TRINITY | THE OBSERVER IS HERE{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UTILITIES
+
+fn checkModuleFile(filename: []const u8) bool {
+    const path = "src/tri/";
+    var buf: [128]u8 = undefined;
+    const full_path = std.fmt.bufPrintZ(&buf, "{s}{s}", .{ path, filename }) catch return false;
+    _ = std.fs.cwd().access(full_path, .{}) catch return false;
+    return true;
+}
+
+fn checkFile(path: []const u8) bool {
+    _ = std.fs.cwd().access(path, .{}) catch return false;
+    return true;
+}
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn isFibonacci(n: usize) bool {
@@ -613,22 +668,132 @@ test "isFibonacci" {
 
 fn cmdNeuroAudit(_: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
-    std.debug.print("{s}Audit command not yet implemented{s}\n", .{ YELLOW, RESET });
+
+    std.debug.print("\n{s}NEUROANATOMICAL AUDIT{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}══════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    var queen_ok: usize = 0;
+    var phoenix_ok: usize = 0;
+    var reticular_ok: usize = 0;
+    var tri27_ok: usize = 0;
+
+    std.debug.print("{s}Queen (Prefrontal Cortex):{s}\n", .{ CYAN, RESET });
+    for (0..5) |i| {
+        const m = NEURO_MODULES[i];
+        const exists = checkModuleFile(m.file);
+        const tri27_exists = checkFile(m.tri27_source);
+        const icon = if (exists) "[OK]" else "[MISS]";
+        const tri27_icon = if (tri27_exists) "[TRI27]" else "[NO-TRI27]";
+        std.debug.print("  {s} {s} -> {s} {s}\n", .{ icon, m.file, m.neuro_region, tri27_icon });
+        if (exists) queen_ok += 1;
+        if (tri27_exists) tri27_ok += 1;
+    }
+
+    std.debug.print("\n{s}Phoenix (Brainstem):{s}\n", .{ CYAN, RESET });
+    for (5..8) |i| {
+        const m = NEURO_MODULES[i];
+        const exists = checkModuleFile(m.file);
+        const tri27_exists = checkFile(m.tri27_source);
+        const icon = if (exists) "[OK]" else "[MISS]";
+        const tri27_icon = if (tri27_exists) "[TRI27]" else "[NO-TRI27]";
+        std.debug.print("  {s} {s} -> {s} {s}\n", .{ icon, m.file, m.neuro_region, tri27_icon });
+        if (exists) phoenix_ok += 1;
+        if (tri27_exists) tri27_ok += 1;
+    }
+
+    std.debug.print("\n{s}Reticular Formation:{s}\n", .{ CYAN, RESET });
+    for (8..11) |i| {
+        const m = NEURO_MODULES[i];
+        const exists = checkModuleFile(m.file);
+        const tri27_exists = checkFile(m.tri27_source);
+        const icon = if (exists) "[OK]" else "[MISS]";
+        const tri27_icon = if (tri27_exists) "[TRI27]" else "[NO-TRI27]";
+        std.debug.print("  {s} {s} -> {s} {s}\n", .{ icon, m.file, m.neuro_region, tri27_icon });
+        if (exists) reticular_ok += 1;
+        if (tri27_exists) tri27_ok += 1;
+    }
+
+    const total_ok = queen_ok + phoenix_ok + reticular_ok;
+    std.debug.print("\n{s}SUMMARY: {d}/{d} modules present{s}\n", .{ WHITE, total_ok, 11, RESET });
+    std.debug.print("{s}TRI-27: {d}/11 backend files{s}\n", .{ GRAY, tri27_ok, RESET });
 }
 
 fn cmdNeuroMap(_: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
-    std.debug.print("{s}Map command not yet implemented{s}\n", .{ YELLOW, RESET });
+
+    std.debug.print("\n{s}NEUROANATOMICAL MAP{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Module -> Region -> Function{s}\n", .{ WHITE, RESET });
+    std.debug.print("{s}────────────────────────────────{s}\n\n", .{ GRAY, RESET });
+
+    for (NEURO_MODULES) |m| {
+        const exists = checkModuleFile(m.file);
+        const icon = if (exists) "[OK]" else "[MISS]";
+        std.debug.print("{s} {s} -> {s} -> {s}\n", .{ icon, m.file, m.neuro_region, m.neuro_function });
+    }
 }
 
 fn cmdNeuroValidate(_: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
-    std.debug.print("{s}Validate command not yet implemented{s}\n", .{ YELLOW, RESET });
+    if (args.len < 1) {
+        std.debug.print("{s}Usage: tri neuro validate <module_name>{s}\n", .{ RED, RESET });
+        return;
+    }
+    const module_name = args[0];
+
+    std.debug.print("\n{s}NEURO VALIDATION: {s}{s}\n", .{ GOLDEN, module_name, RESET });
+    std.debug.print("{s}═══════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const target_idx = for (NEURO_MODULES, 0..) |m, i| {
+        if (std.mem.indexOf(u8, m.file, module_name) != null) break i;
+    } else null;
+
+    if (target_idx == null) {
+        std.debug.print("{s}Module not found in neuroanatomical map{s}\n", .{ GRAY, RESET });
+        std.debug.print("{s}Run 'tri neuro map' to see all modules{s}\n", .{ GRAY, RESET });
+        return;
+    }
+
+    const m = NEURO_MODULES[target_idx.?];
+    const exists = checkModuleFile(m.file);
+    const tri27_exists = checkFile(m.tri27_source);
+
+    const exists_icon = if (exists) "[OK]" else "[MISS]";
+    const tri27_icon = if (tri27_exists) "[OK]" else "[MISS]";
+
+    std.debug.print("{s}File Check: {s} src/tri/{s}{s}\n", .{ exists_icon, RESET, m.file, RESET });
+    std.debug.print("{s}Region: {s}{s}\n", .{ GRAY, m.neuro_region, RESET });
+    std.debug.print("{s}Function: {s}{s}\n", .{ GRAY, m.neuro_function, RESET });
+    std.debug.print("{s}TRI-27 Backend: {s} {s}{s}\n", .{ tri27_icon, RESET, m.tri27_source, RESET });
+
+    if (exists) {
+        std.debug.print("\n{s}Module file exists{s}\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("\n{s}FAIL: Module not found{s}\n", .{ RED, RESET });
+    }
 }
 
 fn cmdNeuroFlow(_: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
-    std.debug.print("{s}Flow command not yet implemented{s}\n", .{ YELLOW, RESET });
+
+    std.debug.print("\n{s}SIGNAL FLOW DIAGRAM{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}══════════════════════{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}SENSORY INPUT (Telegram){s}\n", .{ WHITE, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}VLPFC (Attention Filter) -> filter noise{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}DLPFC (Working Memory) -> hold context{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}VMPFC (Value Assessment) -> assess value{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}DMPFC (Self-Monitor) -> meta-check{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}OFC (Telegram Voice) -> form response{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}ARAS (Vigilance Sweep) -> maintain wakefulness{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}Raphe (PPL Stabilizer) -> stabilize PPL{s}\n", .{ CYAN, RESET });
+    std.debug.print("        ↓\n", .{});
+    std.debug.print("{s}Medulla (Basic Survival) -> basic functions{s}\n", .{ CYAN, RESET });
 }
 
 test "FIBONACCI sequence" {
