@@ -577,7 +577,7 @@ const BaselineHistory = struct {
             const jitter_symbol: u8 = if (jitter_delta > 0) '^' else 'v';
             const quality_symbol: u8 = if (quality_delta > 5.0) '^' else if (quality_delta < -5.0) 'v' else '~';
 
-            printErr("      vs {s}: {c}{d:+.1}%   {c}{d:+.1}%      {c}{d:+.1}\n", .{
+            printErr("      vs {s}: {c}{d:.1}%   {c}{d:.1}%      {c}{d:.1}\n", .{
                 baseline.version,                            mean_symbol,    mean_pct,      jitter_symbol,
                 (jitter_delta / baseline.jitter_us) * 100.0, quality_symbol, quality_delta,
             });
