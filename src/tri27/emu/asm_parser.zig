@@ -55,10 +55,7 @@ pub const Assembler = struct {
 
     pub fn deinit(self: *Assembler) void {
         self.bytecode.deinit(self.allocator);
-        var iter = self.labels.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.key_ptr.*);
-        }
+        // StringHashMap.deinit() frees all keys automatically
         self.labels.deinit();
     }
 
@@ -76,7 +73,8 @@ pub const Assembler = struct {
         var i = start_idx + 1;
         while (i < self.tokens.len) {
             const t = self.tokens[i];
-            if (t.type == .EOF or t.type == .Comment) break;
+            // Stop at end of input, comments, or next instruction
+            if (t.type == .EOF or t.type == .Comment or t.type == .Mnemonic or t.type == .LabelDef) break;
             if (t.type == .Comma) {
                 i += 1;
                 continue;
@@ -334,9 +332,9 @@ pub const Assembler = struct {
                 },
                 .LabelDef => {
                     // Record label at current address
+                    // StringHashMap.put() makes its own copy of the key
                     const addr = self.bytecode.items.len;
-                    const label_copy = try self.allocator.dupe(u8, token.text);
-                    try self.labels.put(label_copy, @as(u32, @intCast(addr)));
+                    try self.labels.put(token.text, @as(u32, @intCast(addr)));
                     i += 1;
                 },
                 .Mnemonic => {
@@ -513,7 +511,7 @@ test "assembler encodes jz" {
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
-    const expected: u32 = 0x41 | (10 << 8);
+    const expected: u32 = 0x41 | (10 << 16); // JZ opcode = 0x41, rd=0, imm=10 at bit 16
     try std.testing.expectEqual(expected, word);
 }
 
