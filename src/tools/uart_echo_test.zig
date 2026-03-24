@@ -1959,6 +1959,168 @@ const JitterTracker = struct {
             printInfo("\n  📊 Outlier Summary:\n", .{});
             self.showOutlierSummary();
         }
+
+        // v3.96: Time Series Decomposition - trend + seasonality + residual
+        if (self.count >= 20) {
+            printInfo("\n  📈 Time Series Decomposition:\n", .{});
+            self.showTimeSeriesDecomposition();
+        }
+    }
+
+    // v3.96: Time Series Decomposition - trend + seasonality + residual
+    pub const TimeSeriesDecomposition = struct {
+        trend_type: []const u8,
+        trend_slope: f64,
+        trend_intercept: f64,
+        trend_strength: f64,
+        volatility: f64,
+        seasonality_detected: bool,
+        dominant_period: f64,
+        residual_std_dev: f64,
+    };
+
+    pub fn decomposeTimeSeries(self: *const JitterTracker) ?TimeSeriesDecomposition {
+        if (self.count < 20) return null;
+
+        const n = self.count;
+
+        // Linear trend using least squares
+        var sum_x: f64 = 0;
+        var sum_y: f64 = 0;
+        var sum_xy: f64 = 0;
+        var sum_xx: f64 = 0;
+
+        for (0..n) |i| {
+            const x = @as(f64, @floatFromInt(i));
+            const y = @as(f64, @floatFromInt(self.samples[i]));
+            sum_x += x;
+            sum_y += y;
+            sum_xy += x * y;
+            sum_xx += x * x;
+        }
+
+        const mean_x = sum_x / @as(f64, @floatFromInt(n));
+        const mean_y = sum_y / @as(f64, @floatFromInt(n));
+        const n_f = @as(f64, @floatFromInt(n));
+
+        const slope = (sum_xy - n_f * mean_x * mean_y) / (sum_xx - n_f * mean_x * mean_x);
+        const intercept = mean_y - slope * mean_x;
+
+        // Calculate residuals
+        var residuals_sq_sum: f64 = 0;
+        for (0..n) |i| {
+            const predicted = slope * @as(f64, @floatFromInt(i)) + intercept;
+            const residual = @as(f64, @floatFromInt(self.samples[i])) - predicted;
+            residuals_sq_sum += residual * residual;
+        }
+
+        const residual_std_dev = @sqrt(residuals_sq_sum / @as(f64, @floatFromInt(n)));
+        const trend_strength = @max(0.0, 1.0 - residual_std_dev / (mean_y + 1e-6));
+
+        // Trend type classification
+        const trend_type = if (slope > 0.01)
+            "STRONGLY INCREASING"
+        else if (slope > 0.001)
+            "INCREASING"
+        else if (slope < -0.01)
+            "STRONGLY DECREASING"
+        else if (slope < -0.001)
+            "DECREASING"
+        else if (@abs(slope) < 1e-6)
+            "STABLE"
+        else "FLAT";
+
+        // Simple seasonality check (autocorrelation for different lags)
+        var max_autocorr: f64 = 0;
+        var dominant_period: f64 = 1.0;
+
+        const MIN_PERIOD: usize = 3;
+        const MAX_PERIOD: usize = @divFloor(n, 3);
+
+        for (MIN_PERIOD..MAX_PERIOD) |period| {
+            const period_f = @as(f64, @floatFromInt(period));
+
+            // Calculate autocorrelation for this period
+            var sum_prod: f64 = 0;
+            var sum_sq: f64 = 0;
+            var sum_sq2: f64 = 0;
+
+            for (0..(n - period - 1)) |i| {
+                const val1 = @as(f64, @floatFromInt(self.samples[i]));
+                const val2 = @as(f64, @floatFromInt(self.samples[i + period]));
+                sum_prod += val1 * val2;
+                sum_sq += val1 * val1;
+                sum_sq2 += val2 * val2;
+            }
+
+            const autocorr = if (sum_sq > 0 and sum_sq2 > 0)
+                sum_prod / (@sqrt(sum_sq * sum_sq2))
+            else 0;
+
+            if (autocorr > max_autocorr) {
+                max_autocorr = autocorr;
+                dominant_period = period_f;
+            }
+        }
+
+        const seasonality_detected = max_autocorr > 0.5;
+        const volatility = residual_std_dev / (mean_y + 1e-6);
+
+        return .{
+            .trend_type = trend_type,
+            .trend_slope = slope,
+            .trend_intercept = intercept,
+            .trend_strength = trend_strength,
+            .volatility = volatility,
+            .seasonality_detected = seasonality_detected,
+            .dominant_period = dominant_period,
+            .residual_std_dev = residual_std_dev,
+        };
+    }
+
+    pub fn showTimeSeriesDecomposition(self: *const JitterTracker) void {
+        const decomp = self.decomposeTimeSeries() orelse {
+            printDim("    Insufficient data for decomposition (need 20+ samples)\n", .{});
+            return;
+        };
+
+        printDim("    Trend: {s} (slope: {d:.6} us/sample)\n", .{ decomp.trend_type, decomp.trend_slope });
+        printDim("    Trend Strength: {d:.1}%\n", .{ decomp.trend_strength * 100.0 });
+        printDim("    Volatility: {d:.4} (normalized)\n", .{ decomp.volatility });
+
+        if (decomp.seasonality_detected) {
+            printDim("    Seasonality: DETECTED (period: {d:.1} samples)\n", .{ decomp.dominant_period });
+        } else {
+            printDim("    Seasonality: NOT DETECTED (random)\n", .{});
+        }
+
+        printDim("    Residual Std Dev: {d:.2} us\n", .{ decomp.residual_std_dev });
+
+        // Interpretations
+        printDim("\n    Interpretations:\n", .{});
+
+        if (decomp.trend_strength > 0.8) {
+            printDim("      - Strong trend dominates - data is predictable\n", .{});
+            printDim("      - Good for forecasting\n", .{});
+        } else if (decomp.trend_strength > 0.5) {
+            printDim("      - Moderate trend present\n", .{});
+        } else {
+            printDim("      - Weak trend - noise dominates\n", .{});
+        }
+
+        if (decomp.volatility > 0.5) {
+            printDim("      - High volatility detected\n", .{});
+            printDim("      - Unpredictable behavior\n", .{});
+        } else if (decomp.volatility > 0.2) {
+            printDim("      - Moderate volatility\n", .{});
+        } else {
+            printDim("      - Low volatility - stable\n", .{});
+        }
+
+        if (decomp.seasonality_detected) {
+            printDim("      - Periodic pattern found ({d:.1} sample period)\n", .{ decomp.dominant_period });
+            printDim("      - May indicate recurring load\n", .{});
+        }
     }
 
     // v3.95: Outlier Summary - comprehensive outlier analysis
