@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.64 — Correlation Analysis (Pearson correlation between RTT and time)
+//! v3.65 — Standard Deviation Bands (Mean ± σ intervals)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1647,6 +1647,20 @@ const JitterTracker = struct {
             } else {
                 printDim("{d:.3} ({s}, {s})\n", .{ corr.coefficient, corr.strength, corr.interpretation });
             }
+        }
+
+        // v3.65: Standard Deviation Bands
+        if (self.count >= 10) {
+            const band_stats = self.getStats();
+            const band_mean_ms = band_stats.mean / 1000.0;
+            const std_dev_ms = band_stats.jitter / 1000.0;
+
+            printDim("\n  Std Dev Bands:\n", .{});
+            printDim("    Mean: {d:.3}ms\n", .{band_mean_ms});
+            printDim("    Std Dev: {d:.3}ms\n", .{std_dev_ms});
+            printDim("    +-1σ (68%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - std_dev_ms, band_mean_ms + std_dev_ms });
+            printDim("    +-2σ (95%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - 2.0 * std_dev_ms, band_mean_ms + 2.0 * std_dev_ms });
+            printDim("    +-3σ (99.7%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - 3.0 * std_dev_ms, band_mean_ms + 3.0 * std_dev_ms });
         }
     }
 };
