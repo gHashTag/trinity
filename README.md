@@ -730,8 +730,12 @@ trinity/
 
 | Resource | URL |
 |----------|-----|
+| **Documentation Index** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) — Central documentation hub |
 | **For Researchers** | [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) |
 | **Command Reference** | [docs/command_registry.md](docs/command_registry.md) (auto-generated) |
+| **Troubleshooting** | [docs/troubleshooting.md](docs/troubleshooting.md) — Common issues & solutions |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) — Development guidelines |
+| **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Community guidelines |
 | **DePIN Overview** | [gHashTag.github.io/trinity/docs/depin](https://gHashTag.github.io/trinity/docs/depin) |
 | **Quick Start** | [gHashTag.github.io/trinity/docs/depin/quickstart](https://gHashTag.github.io/trinity/docs/depin/quickstart) |
 | **Tokenomics** | [gHashTag.github.io/trinity/docs/depin/tokenomics](https://gHashTag.github.io/trinity/docs/depin/tokenomics) |
@@ -809,6 +813,17 @@ zig build test               # Run all tests before submitting PRs
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Troubleshooting
+
+| Issue | Solution | Documentation |
+|-------|----------|----------------|
+| Build fails on Zig 0.15.x | Check API migration | [CONTRIBUTING.md](CONTRIBUTING.md#code-style) |
+| FPGA programming fails | Run fxload first | [docs/troubleshooting.md](docs/troubleshooting.md#fpga-issues) |
+| Training stalls at low steps | Use cosine LR schedule | [docs/troubleshooting.md](docs/troubleshooting.md#training-issues) |
+| Railway deployment errors | Check env vars, Dockerfile | [docs/troubleshooting.md](docs/troubleshooting.md#cloud--deployment-issues) |
+
+See [docs/troubleshooting.md](docs/troubleshooting.md) for complete troubleshooting guide.
 
 ---
 
