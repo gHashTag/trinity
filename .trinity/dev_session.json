@@ -1,5 +1,5 @@
 {
-  "state": "TESTED",
+  "state": "COMMITTED",
   "issue_number": 418,
   "branch": "feat/issue-411-linear-types-ownership",
   "tests_passed": true
