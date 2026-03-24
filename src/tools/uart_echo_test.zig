@@ -1941,6 +1941,12 @@ const JitterTracker = struct {
             printInfo("\n  ⚙️  Adaptive Configuration:\n", .{});
             self.showAdaptiveConfig();
         }
+
+        // v3.91: Packet Loss Pattern Detection - analyze failure patterns
+        if (self.consecutive_failures > 0 or self.max_consecutive_failures > 0) {
+            printInfo("\n  📉 Packet Loss Pattern:\n", .{});
+            self.showLossPattern();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3642,6 +3648,129 @@ const JitterTracker = struct {
             printDim(" --rts-cts", .{});
         }
         printDim("\n", .{});
+    }
+
+    // v3.91: Packet Loss Pattern Detection - analyze failure patterns
+    pub const LossPattern = struct {
+        pattern_type: []const u8,
+        consecutive_max: usize,
+        scattered_count: usize,
+        periodicity_score: f64,
+        severity: []const u8,
+        description: []const u8,
+    };
+
+    pub fn detectLossPattern(self: *const JitterTracker) LossPattern {
+        if (self.consecutive_failures == 0) {
+            return .{
+                .pattern_type = "NO_LOSS",
+                .consecutive_max = 0,
+                .scattered_count = 0,
+                .periodicity_score = 0.0,
+                .severity = "NONE",
+                .description = "No packet loss detected",
+            };
+        }
+
+        // Analyze failure patterns based on consecutive_failures tracking
+        const consecutive_max = self.max_consecutive_failures;
+        const scattered_count = if (consecutive_max > 0)
+            @divFloor(self.consecutive_failures, consecutive_max + 1)
+        else
+            0;
+
+        // Calculate periodicity score (0-100)
+        // Higher score = more periodic/structured pattern
+        const periodicity_score: f64 = if (self.consecutive_failures >= 3) blk: {
+            if (consecutive_max >= 3) break :blk 80.0;
+            if (consecutive_max == 2) break :blk 60.0;
+            break :blk 40.0;
+        } else 0.0;
+
+        // Classify pattern type
+        const pattern_type: []const u8 = if (consecutive_max >= 5)
+            "BURST"
+        else if (consecutive_max >= 3)
+            "GROUPED"
+        else if (scattered_count > 2)
+            "SCATTERED"
+        else
+            "ISOLATED";
+
+        // Severity classification
+        const severity: []const u8 = if (self.consecutive_failures == 0)
+            "NONE"
+        else if (self.consecutive_failures < 3)
+            "LOW"
+        else if (self.consecutive_failures < 10)
+            "MODERATE"
+        else if (self.consecutive_failures < 25)
+            "HIGH"
+        else
+            "SEVERE";
+
+        // Description
+        const description: []const u8 = if (std.mem.eql(u8, pattern_type, "BURST"))
+            "Consecutive failures indicate burst loss - possible buffer overflow"
+        else if (std.mem.eql(u8, pattern_type, "GROUPED"))
+            "Grouped failures suggest intermittent issues - check for loose connections"
+        else if (std.mem.eql(u8, pattern_type, "SCATTERED"))
+            "Scattered failures indicate random noise - normal for some links"
+        else
+            "Isolated failures - acceptable for most applications";
+
+        return .{
+            .pattern_type = pattern_type,
+            .consecutive_max = consecutive_max,
+            .scattered_count = scattered_count,
+            .periodicity_score = periodicity_score,
+            .severity = severity,
+            .description = description,
+        };
+    }
+
+    pub fn showLossPattern(self: *const JitterTracker) void {
+        const pattern = self.detectLossPattern();
+
+        printInfo("[i] Packet Loss Pattern Analysis:\n", .{});
+
+        // Severity with emoji
+        const severity_emoji = if (std.mem.eql(u8, pattern.severity, "NONE")) "✅"
+        else if (std.mem.eql(u8, pattern.severity, "LOW")) "🟡"
+        else if (std.mem.eql(u8, pattern.severity, "MODERATE")) "🟠"
+        else if (std.mem.eql(u8, pattern.severity, "HIGH")) "🔴"
+        else "⛔";
+
+        printDim("    {s} Severity: {s}\n", .{ severity_emoji, pattern.severity });
+        printDim("    Pattern Type: {s}\n", .{ pattern.pattern_type });
+        printDim("    Max Consecutive: {d}\n", .{ pattern.consecutive_max });
+        printDim("    Scattered Losses: {d}\n", .{ pattern.scattered_count });
+        if (pattern.periodicity_score > 0) {
+            printDim("    Periodicity Score: {d:.0}/100\n", .{ pattern.periodicity_score });
+        }
+
+        printDim("\n    Description: {s}\n", .{ pattern.description });
+
+        // Recommendations based on pattern
+        printDim("\n    Recommendations:\n", .{});
+        if (std.mem.eql(u8, pattern.pattern_type, "BURST")) {
+            printDim("       - Check for buffer overflows\n", .{});
+            printDim("       - Reduce batch size\n", .{});
+            printDim("       - Increase delay between tests\n", .{});
+            printDim("       - Consider flow control (RTS/CTS)\n", .{});
+        } else if (std.mem.eql(u8, pattern.pattern_type, "GROUPED")) {
+            printDim("       - Check for loose connections\n", .{});
+            printDim("       - Verify cable integrity\n", .{});
+            printDim("       - Try different baud rate\n", .{});
+            printDim("       - Check for interference\n", .{});
+        } else if (std.mem.eql(u8, pattern.pattern_type, "SCATTERED")) {
+            printDim("       - Normal behavior for some links\n", .{});
+            printDim("       - May indicate background noise\n", .{});
+            printDim("       - Consider error correction\n", .{});
+        } else {
+            printDim("       - Connection is stable\n", .{});
+            printDim("       - No action required\n", .{});
+        }
     }
 
     // v3.69: Plot histogram of RTT distribution
