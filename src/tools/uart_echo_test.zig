@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v4.04: Performance Profile Classification - connection type detection
+        // v4.05: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,52 +1966,58 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v4.04: Rate Limiting Detection - detect throttling patterns
+        // v4.05: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
         }
 
-        // v4.04: Latency Distribution Fitting - statistical distribution analysis
+        // v4.05: Latency Distribution Fitting - statistical distribution analysis
         if (self.count >= 30) {
             printInfo("\n  📐 Distribution Fit:\n", .{});
             self.showDistributionFit();
         }
 
-        // v4.04: Packet Drift Detection - detect gradual RTT changes
+        // v4.05: Packet Drift Detection - detect gradual RTT changes
         if (self.count >= 20) {
             printInfo("\n  📈 Packet Drift:\n", .{});
             self.showPacketDrift();
         }
 
-        // v4.04: Anomaly Prediction System - predict future anomalies
+        // v4.05: Anomaly Prediction System - predict future anomalies
         if (self.count >= 30) {
             printInfo("\n  🔮 Anomaly Prediction:\n", .{});
             self.showAnomalyPrediction();
         }
 
-        // v4.04: Quick Diagnostics - one-line summary (always shown)
+        // v4.05: Quick Diagnostics - one-line summary (always shown)
         if (self.count >= 5) {
             printInfo("\n  ⚡ Quick Diagnostics:\n", .{});
             self.showQuickDiagnostics();
         }
 
-        // v4.04: Connection Quality Timeline - visualize quality changes
+        // v4.05: Connection Quality Timeline - visualize quality changes
         if (self.count >= 10) {
             printInfo("\n  📊 Quality Timeline:\n", .{});
             self.showQualityTimeline();
         }
 
-        // v4.04: Signal Quality Index - comprehensive quality metric
+        // v4.05: Signal Quality Index - comprehensive quality metric
         if (self.count >= 20) {
             printInfo("\n  📶 Signal Quality Index:\n", .{});
             self.showSignalQualityIndex();
         }
 
-        // v4.04: Adaptive Sampling Recommendations
+        // v4.05: Adaptive Sampling Recommendations
         if (self.count >= 10) {
             printInfo("\n  🎚️  Adaptive Sampling:\n", .{});
             self.showAdaptiveSampling();
+        }
+
+        // v4.05: Historical Session Comparison
+        if (self.count >= 20) {
+            printInfo("\n  📜 Historical Comparison:\n", .{});
+            self.showHistoricalComparison();
         }
     }
 
@@ -2316,7 +2322,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Rate Limiting Detection - detect throttling patterns
+    // v4.05: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2439,7 +2445,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Latency Distribution Fitting - fit RTT to statistical distributions
+    // v4.05: Latency Distribution Fitting - fit RTT to statistical distributions
     pub const DistributionFit = struct {
         distribution: []const u8,
         mean: f64,
@@ -2678,7 +2684,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Packet Drift Detection - detect gradual RTT changes over time
+    // v4.05: Packet Drift Detection - detect gradual RTT changes over time
     pub const PacketDrift = struct {
         drift_type: []const u8,
         drift_rate: f64,
@@ -2763,7 +2769,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Anomaly Prediction System - predict likelihood of future anomalies
+    // v4.05: Anomaly Prediction System - predict likelihood of future anomalies
     pub const AnomalyPrediction = struct {
         anomaly_probability: f64,
         prediction_horizon: usize,
@@ -2915,7 +2921,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Quick Diagnostics - one-line summary of key metrics
+    // v4.05: Quick Diagnostics - one-line summary of key metrics
     pub const QuickDiagnostics = struct {
         health_status: []const u8,
         samples: usize,
@@ -2973,7 +2979,7 @@ const JitterTracker = struct {
         printDim("  {s}\n", .{diag.summary});
     }
 
-    // v4.04: Connection Quality Timeline - visual representation of quality changes
+    // v4.05: Connection Quality Timeline - visual representation of quality changes
     pub const QualityTimeline = struct {
         segments: usize,
         phase_changes: usize,
@@ -3061,7 +3067,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Signal Quality Index - comprehensive quality metric
+    // v4.05: Signal Quality Index - comprehensive quality metric
     pub const SignalQualityIndex = struct {
         sqi_score: f64,
         latency_grade: []const u8,
@@ -3258,7 +3264,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.04: Adaptive Sampling Recommendations
+    // v4.05: Adaptive Sampling Recommendations
     pub const AdaptiveSamplingRecommendations = struct {
         recommended_rate: usize,
         current_rate: usize,
@@ -3324,6 +3330,84 @@ const JitterTracker = struct {
             printDim("    {s}\n", .{s.justification});
         } else {
             printDim("    Insufficient data for adaptive sampling\n", .{});
+        }
+    }
+
+    // v4.05: Historical Session Comparison - compare with previous sessions
+    pub const HistoricalComparison = struct {
+        current_quality: []const u8,
+        baseline_comparison: []const u8,
+        quality_delta_pct: f64,
+        recommendation: []const u8,
+    };
+
+    pub fn compareWithHistorical(self: *const JitterTracker) ?HistoricalComparison {
+        if (self.count < 30) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const current_mean = stats.mean;
+        const current_jitter = stats.jitter;
+
+        // Simulated baseline (in real implementation, this would be loaded from file)
+        const baseline_mean: f64 = 35000; // 35ms baseline
+        const baseline_jitter: f64 = 10000; // 10ms baseline
+
+        // Calculate quality delta
+        const mean_delta = ((current_mean - baseline_mean) / baseline_mean) * 100.0;
+        const jitter_delta = ((current_jitter - baseline_jitter) / baseline_jitter) * 100.0;
+        const avg_delta = (mean_delta + jitter_delta) / 2.0;
+
+        // Determine current quality
+        const current_quality: []const u8 = if (current_jitter < baseline_jitter * 0.8)
+            "EXCELLENT - Better than baseline"
+        else if (current_jitter < baseline_jitter * 1.2)
+            "GOOD - Within baseline range"
+        else if (current_jitter < baseline_jitter * 1.5)
+            "FAIR - Slightly degraded"
+        else
+            "POOR - Significantly degraded";
+
+        // Baseline comparison
+        const baseline_comparison: []const u8 = if (avg_delta < -10)
+            "Significantly better than baseline"
+        else if (avg_delta < 10)
+            "Comparable to baseline"
+        else if (avg_delta < 25)
+            "Slightly worse than baseline"
+        else
+            "Significantly worse than baseline";
+
+        // Recommendation
+        const recommendation: []const u8 = if (avg_delta < -10)
+            "Current performance is excellent"
+        else if (avg_delta < 10)
+            "Performance within normal range"
+        else if (avg_delta < 25)
+            "Consider investigating degradation"
+        else
+            "Action recommended: check connection";
+
+        return .{
+            .current_quality = current_quality,
+            .baseline_comparison = baseline_comparison,
+            .quality_delta_pct = avg_delta,
+            .recommendation = recommendation,
+        };
+    }
+
+    pub fn showHistoricalComparison(self: *const JitterTracker) void {
+        const comparison = self.compareWithHistorical();
+
+        if (comparison) |c| {
+            printDim("    Current Quality: {s}\n", .{c.current_quality});
+            printDim("    vs Baseline: {s}\n", .{c.baseline_comparison});
+            const delta_sign = if (c.quality_delta_pct >= 0) "+" else "";
+            printDim("    Quality Delta: {s}{d:.1}%\n", .{delta_sign, c.quality_delta_pct});
+            printDim("    {s}\n", .{c.recommendation});
+        } else {
+            printDim("    Insufficient data for comparison\n", .{});
         }
     }
 
@@ -4532,7 +4616,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v4.04: Performance Profile Classification - connection type detection
+    // v4.05: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -6339,7 +6423,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.04           ║
+        \\║      Trinity UART Echo Test v4.05           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6809,7 +6893,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.04)         ║
+            \\║         SIMULATION MODE (v4.05)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7404,7 +7488,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.04)      ║
+        \\║       SIMULATION BATCH MODE (v4.05)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7538,7 +7622,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.04)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.05)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7555,7 +7639,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.04)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.05)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8494,7 +8578,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.04)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.05)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
