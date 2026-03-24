@@ -2707,6 +2707,8 @@ pub fn build(b: *std.Build) void {
     tri_asm_step.dependOn(&run_tri_asm.step);
 
     // TRI‑27 CLI — TRI-27 language toolchain (assemble/disassemble/run/validate/isa)
+    // TEMP: Disabled from default build due to 5 Zig 0.15 compatibility errors (tracked in #403)
+    // Core works: zig build tri-asm, zig build tri-emu, zig build test-tri27-golden
     const tri27 = b.addExecutable(.{
         .name = "tri27",
         .root_module = b.createModule(.{
@@ -2715,7 +2717,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
-    b.installArtifact(tri27);
+    // b.installArtifact(tri27); // Disabled: 5 Zig 0.15 errors in CLI wrapper
     const run_tri27 = b.addRunArtifact(tri27);
     if (b.args) |args| {
         run_tri27.addArgs(args);

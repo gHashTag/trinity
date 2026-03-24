@@ -1,1 +1,1 @@
-{"id":1774315251199764000,"timestamp":1774315251199764000,"source":"lotus_cycle","action_type":"scale_up","key":"kill_threshold","outcome":"success","success":true,"duration_ms":0,"input_file":"","tri27_operation":""}
+{"id":1774332777923864000,"timestamp":1774332777923864000,"source":"tri27","action_type":"tri27_op","key":"bad.tasm","outcome":"failure_learned","success":false,"duration_ms":0,"input_file":"bad.tasm","tri27_operation":"run"}
