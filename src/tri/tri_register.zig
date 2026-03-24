@@ -1301,6 +1301,15 @@ const fpga_commands = struct {
     pub fn runFpgaEye(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return tri_fpga.runFpgaEyeCommand(allocator, args);
     }
+    pub fn runFpgaBuildUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaBuildUartCommand(allocator, args);
+    }
+    pub fn runFpgaFlashUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaFlashUartCommand(allocator, args);
+    }
+    pub fn runFpgaUartTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        return tri_fpga.runFpgaUartTestCommand(allocator, args);
+    }
 };
 
 /// Run fpga command - dispatches to gen/verdict/flash/gen-tri/synth subcommands
@@ -1376,6 +1385,12 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaEye(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "uart")) {
         return tri_fpga.runFpgaUartCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "build-uart")) {
+        return fpga_commands.runFpgaBuildUart(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "flash-uart")) {
+        return fpga_commands.runFpgaFlashUart(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "uart-test")) {
+        return fpga_commands.runFpgaUartTest(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "power")) {
         return tri_fpga.runFpgaPowerCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {
@@ -1409,7 +1424,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount", "uart", "power" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount", "uart", "build-uart", "flash-uart", "uart-test", "power" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});
