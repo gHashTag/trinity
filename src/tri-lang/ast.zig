@@ -7,6 +7,11 @@
 //
 // Issue #408: ADT Enum + Exhaustive Match + Pipe
 //
+// NOTE:
+// - Чётко разделены уровни: Program / Declaration / Statement / Expr / Pattern / Type
+// - Все рекурсивные ссылки идут через *const (указатели), чтобы избежать бесконечных типов
+// - BinaryOperator uses enum(u5), чтобы влезли все варианты
+//
 // ═══════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -17,100 +22,29 @@ pub const SourceLocation = struct {
     column: usize,
 };
 
-/// All AST node types
-pub const Node = union(enum) {
-    // ═════════════════════════════════════════════════════════════════════
-    // ADT ENUM (Rust-style) - Data-carrying enums
-    // ═════════════════════════════════════════════════════════════════════════
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Program and Declarations                                                ║
+// ╚════════════════════════════════════════════════════════════════════════╝
 
-    /// Function definition: fn name(params) -> return_type { body }
-    Function: FunctionDecl,
-
-    /// Struct definition: struct Name { fields }
-    StructDef: StructDecl,
-
-    /// Enum definition: enum Name { Variant(data), Variant, ... }
-    EnumDef: EnumDecl,
-
-    /// Type alias: type NewType = BaseType
-    TypeAlias: TypeAliasDecl,
-
-    // ═════════════════════════════════════════════════════════════════════════════
-    // STATEMENTS
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    /// Return statement: return expr
-    Return: ReturnStmt,
-
-    /// Let binding: let name = expr
-    Let: LetStmt,
-
-    /// If statement with optional else
-    If: IfStmt,
-
-    /// While loop
-    While: WhileStmt,
-
-    /// For loop: for var in start..end { body }
-    For: ForStmt,
-
-    /// Expression statement (function call, etc.)
-    Expression: ExprStmt,
-
-    // ═════════════════════════════════════════════════════════════════════════════════════
-    // EXPRESSIONS (with ADT variants)
-    // ═════════════════════════════════════════════════════════════════════════════════════════════
-
-    /// Integer literal
-    IntLiteral: IntLiteralExpr,
-
-    /// Float literal
-    FloatLiteral: FloatLiteralExpr,
-
-    /// String literal
-    StringLiteral: StringLiteralExpr,
-
-    /// Character literal (trit literal 'tr')
-    CharLiteral: CharLiteralExpr,
-
-    /// Boolean literal (true/false)
-    BoolLiteral: BoolLiteralExpr,
-
-    /// Identifier reference
-    Identifier: IdentifierExpr,
-
-    /// Binary operation: a op b
-    BinaryOp: BinaryOpExpr,
-
-    /// Unary operation: op a
-    UnaryOp: UnaryOpExpr,
-
-    /// Function call: func(arg1, arg2, ...)
-    Call: CallExpr,
-
-    /// Field access: obj.field
-    FieldAccess: FieldAccessExpr,
-
-    /// Array access: arr[index]
-    ArrayAccess: ArrayAccessExpr,
-
-    /// PIPE EXPRESSION: expr |> func |> func2 |> ...
-    Pipe: PipeExpr,
-
-    /// MATCH EXPRESSION (exhaustive match)
-    Match: MatchExpr,
-
-    /// ARRAY literal: [a, b, c, ...]
-    ArrayLiteral: ArrayLiteralExpr,
-
-    /// Named pipeline reference: pipeline_name
-    PipelineRef: PipelineRefExpr,
+/// Top-level program
+pub const Program = struct {
+    declarations: []const Declaration,
 };
 
-/// Function declaration
+/// Top-level declarations
+pub const Declaration = union(enum) {
+    Function: FunctionDecl,
+    StructDef: StructDecl,
+    EnumDef: EnumDecl,
+    TypeAlias: TypeAliasDecl,
+    Pipeline: PipelineDecl,
+    // Later: EffectDecl, TestDecl, etc.
+};
+
+/// Function declaration: fn name(params) -> return_type { body }
 pub const FunctionDecl = struct {
     name: []const u8,
-    params: []Param,
+    params: []const Param,
     return_type: Type,
     body: []const Statement,
     loc: SourceLocation,
@@ -126,7 +60,7 @@ pub const Param = struct {
 /// Struct declaration
 pub const StructDecl = struct {
     name: []const u8,
-    fields: []Field,
+    fields: []const Field,
     loc: SourceLocation,
 };
 
@@ -140,7 +74,7 @@ pub const Field = struct {
 /// Enum declaration
 pub const EnumDecl = struct {
     name: []const u8,
-    variants: []EnumVariant,
+    variants: []const EnumVariant,
     loc: SourceLocation,
 };
 
@@ -159,49 +93,20 @@ pub const TypeAliasDecl = struct {
     loc: SourceLocation,
 };
 
-/// Return statement
-pub const ReturnStmt = struct {
-    value: Expression,
-    loc: SourceLocation,
-};
-
-/// Let statement
-pub const LetStmt = struct {
+/// Named pipeline definition
+/// pipeline flow = input |> filter |> map |> output
+pub const PipelineDecl = struct {
     name: []const u8,
-    value: Expression,
+    /// Parameters (optional)
+    params: []const Param,
+    /// Pipeline body (pipe expression or identifier)
+    body: Expr,
     loc: SourceLocation,
 };
 
-/// If statement
-pub const IfStmt = struct {
-    condition: Expression,
-    then_branch: []const Statement,
-    else_branch: ?[]const Statement,
-    loc: SourceLocation,
-};
-
-/// While loop
-pub const WhileStmt = struct {
-    condition: Expression,
-    body: []const Statement,
-    loc: SourceLocation,
-};
-
-/// For loop
-pub const ForStmt = struct {
-    var_name: []const u8,
-    range: Range,
-    body: []const Statement,
-    loc: SourceLocation,
-};
-
-/// Loop range
-pub const Range = union(enum) {
-    /// start..end
-    To: struct { start: Expression, end: Expression },
-    /// start..=end (inclusive)
-    ToEq: struct { start: Expression, end: Expression },
-};
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Statements                                                              ║
+// ╚════════════════════════════════════════════════════════════════════════╝
 
 /// All statement types
 pub const Statement = union(enum) {
@@ -210,7 +115,94 @@ pub const Statement = union(enum) {
     If: IfStmt,
     While: WhileStmt,
     For: ForStmt,
-    Expression: ExpressionStmt,
+    Expression: ExprStmt,
+};
+
+/// Return statement: return expr
+pub const ReturnStmt = struct {
+    value: Expr,
+    loc: SourceLocation,
+};
+
+/// Let binding: let name = expr
+pub const LetStmt = struct {
+    name: []const u8,
+    value: Expr,
+    loc: SourceLocation,
+};
+
+/// If statement with optional else
+pub const IfStmt = struct {
+    condition: Expr,
+    then_branch: []const Statement,
+    else_branch: ?[]const Statement,
+    loc: SourceLocation,
+};
+
+/// While loop
+pub const WhileStmt = struct {
+    condition: Expr,
+    body: []const Statement,
+    loc: SourceLocation,
+};
+
+/// For loop: for var in start..end { body }
+pub const ForStmt = struct {
+    var_name: []const u8,
+    range: Range,
+    body: []const Statement,
+    loc: SourceLocation,
+};
+
+/// Expression statement (function call, etc.)
+pub const ExprStmt = struct {
+    expr: Expr,
+    loc: SourceLocation,
+};
+
+/// Loop range
+pub const Range = union(enum) {
+    /// start..end
+    To: struct { start: Expr, end: Expr },
+    /// start..=end (inclusive)
+    ToEq: struct { start: Expr, end: Expr },
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Expressions                                                            ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// All expressions
+pub const Expr = union(enum) {
+    // Literals
+    IntLiteral: IntLiteralExpr,
+    FloatLiteral: FloatLiteralExpr,
+    StringLiteral: StringLiteralExpr,
+    CharLiteral: CharLiteralExpr,
+    BoolLiteral: BoolLiteralExpr,
+
+    // Identifiers and calls
+    Identifier: IdentifierExpr,
+    Call: CallExpr,
+
+    // Operations
+    BinaryOp: BinaryOpExpr,
+    UnaryOp: UnaryOpExpr,
+
+    // Access
+    FieldAccess: FieldAccessExpr,
+    ArrayAccess: ArrayAccessExpr,
+
+    // Collections
+    ArrayLiteral: ArrayLiteralExpr,
+
+    // Pipe / Match / Pipeline
+    Pipe: PipeExpr,
+    Match: MatchExpr,
+    PipelineRef: PipelineRefExpr,
+
+    // Typed hole (for autocode generation)
+    Hole: HoleExpr,
 };
 
 /// Integer literal
@@ -251,37 +243,37 @@ pub const IdentifierExpr = struct {
 
 /// Binary operator expression
 pub const BinaryOpExpr = struct {
-    left: Expression,
+    left: Expr,
     op: BinaryOperator,
-    right: Expression,
+    right: Expr,
     loc: SourceLocation,
 };
 
 /// Unary operator expression
 pub const UnaryOpExpr = struct {
     op: UnaryOperator,
-    operand: Expression,
+    operand: Expr,
     loc: SourceLocation,
 };
 
-/// Function call expression
+/// Function call expression: callee(args...)
 pub const CallExpr = struct {
-    callee: Expression,
-    args: []Expression,
+    callee: Expr,
+    args: []const Expr,
     loc: SourceLocation,
 };
 
-/// Field access expression
+/// Field access expression: obj.field
 pub const FieldAccessExpr = struct {
-    object: Expression,
+    object: Expr,
     field: []const u8,
     loc: SourceLocation,
 };
 
-/// Array access expression
+/// Array access expression: arr[index]
 pub const ArrayAccessExpr = struct {
-    array: Expression,
-    index: Expression,
+    array: Expr,
+    index: Expr,
     loc: SourceLocation,
 };
 
@@ -289,9 +281,9 @@ pub const ArrayAccessExpr = struct {
 /// expr |> func1 |> func2 |> ... |> funcN
 pub const PipeExpr = struct {
     /// Initial value
-    source: Expression,
-    /// Pipeline stages (functions to pipe through)
-    stages: []Expression,
+    source: Expr,
+    /// Pipeline stages (functions or identifiers to pipe through)
+    stages: []const Expr,
     loc: SourceLocation,
 };
 
@@ -299,38 +291,19 @@ pub const PipeExpr = struct {
 /// match value {
 ///     Variant1(data) => action1,
 ///     Variant2        => action2,
-///     Variant3(data) => action3,
+///     Variant3(data)  => action3,
 /// }
 pub const MatchExpr = struct {
     /// Value to match against
-    value: Expression,
+    value: Expr,
     /// Match arms (pattern + guard + body)
-    arms: []MatchArm,
-    loc: SourceLocation,
-};
-
-/// Single match arm
-pub const MatchArm = struct {
-    /// Pattern to match (ADT variant, literal, wildcard, etc.)
-    pattern: Pattern,
-    /// Optional guard: | condition = expr
-    guard: ?Guard,
-    /// Body expression if pattern matches (and guard passes)
-    body: Expression,
-    loc: SourceLocation,
-};
-
-/// Guard condition - Haskell-style
-/// | condition = expr
-pub const Guard = struct {
-    /// Boolean expression (must evaluate to true)
-    condition: Expression,
+    arms: []const MatchArm,
     loc: SourceLocation,
 };
 
 /// Array literal expression
 pub const ArrayLiteralExpr = struct {
-    elements: []Expression,
+    elements: []const Expr,
     loc: SourceLocation,
 };
 
@@ -339,6 +312,132 @@ pub const PipelineRefExpr = struct {
     name: []const u8,
     loc: SourceLocation,
 };
+
+/// Typed hole expression: ?hole_name
+pub const HoleExpr = struct {
+    name: []const u8,
+    expected_type: ?Type,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Match Arms, Guards, Patterns                                           ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Single match arm
+pub const MatchArm = struct {
+    /// Pattern to match (ADT variant, literal, wildcard, etc.)
+    pattern: Pattern,
+    /// Optional guard: | condition
+    guard: ?Guard,
+    /// Body expression if pattern matches (and guard passes)
+    body: Expr,
+    loc: SourceLocation,
+};
+
+/// Guard condition - Haskell-style
+/// | condition
+pub const Guard = struct {
+    /// Boolean expression (must evaluate to true)
+    condition: Expr,
+    loc: SourceLocation,
+};
+
+/// Pattern for matching (ADT variant, literal, wildcard, etc.)
+pub const Pattern = union(enum) {
+    /// Wildcard pattern: _ (matches anything)
+    Wildcard: PatternWildcard,
+
+    /// Literal pattern: 42, true, 'tr', "string"
+    Literal: PatternLiteral,
+
+    /// Identifier pattern (binds name)
+    Identifier: PatternIdentifier,
+
+    /// Enum variant pattern: Enum.Variant(data)
+    EnumVariant: PatternEnumVariant,
+
+    /// Struct pattern: Struct { field: pattern, ... }
+    Struct: PatternStruct,
+
+    /// Array pattern: [p1, p2, ...]
+    Array: PatternArray,
+
+    /// Range pattern: start..=end
+    Range: PatternRange,
+
+    /// Typed hole in pattern (for synthesis)
+    Hole: PatternHole,
+};
+
+/// Wildcard pattern
+pub const PatternWildcard = void;
+
+/// Literal pattern
+pub const PatternLiteral = struct {
+    value: LiteralValue,
+};
+
+/// Literal values for patterns
+pub const LiteralValue = union(enum) {
+    Int: i64,
+    Float: f64,
+    String: []const u8,
+    Char: u8,
+    Bool: bool,
+    // Later: BitPattern, TritPattern
+};
+
+/// Identifier pattern
+pub const PatternIdentifier = struct {
+    name: []const u8,
+};
+
+/// Enum variant pattern
+pub const PatternEnumVariant = struct {
+    /// Name of enum (optional; may be inferred)
+    enum_name: ?[]const u8,
+    /// Name of variant
+    variant_name: []const u8,
+    /// Optional nested pattern for variant data
+    data_pattern: ?*const Pattern,
+};
+
+/// Struct pattern
+pub const PatternStruct = struct {
+    /// Name of struct
+    struct_name: []const u8,
+    /// Field patterns: name => pattern
+    field_patterns: []const FieldPattern,
+};
+
+/// Field pattern in struct match
+pub const FieldPattern = struct {
+    field_name: []const u8,
+    pattern: Pattern,
+};
+
+/// Array pattern
+pub const PatternArray = struct {
+    elements: []const Pattern,
+};
+
+/// Range pattern
+pub const PatternRange = struct {
+    start: Expr,
+    end: Expr,
+    inclusive: bool,
+};
+
+/// Typed hole pattern: ?name
+pub const PatternHole = struct {
+    name: []const u8,
+    expected_type: ?Type,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Types                                                                  ║
+// ╚════════════════════════════════════════════════════════════════════════╝
 
 /// All types in Tri
 pub const Type = union(enum) {
@@ -352,7 +451,7 @@ pub const Type = union(enum) {
     String: TypeString,
     /// Boolean type
     Bool: TypeBool,
-    /// Array type: [T]
+    /// Array type: [T] or [N]T
     Array: TypeArray,
     /// Function type: fn(args) -> return
     Function: TypeFunction,
@@ -360,7 +459,7 @@ pub const Type = union(enum) {
     Struct: TypeStruct,
     /// Enum type (name of enum)
     Enum: TypeEnum,
-    /// Reference to defined type
+    /// Named type reference / alias
     Named: TypeNamed,
 };
 
@@ -397,17 +496,17 @@ pub const TypeString = void;
 /// Boolean type
 pub const TypeBool = void;
 
-/// Array type [T]
+/// Array type [T] or [N]T
 pub const TypeArray = struct {
-    element_type: Type,
+    element_type: *const Type,
     /// Optional fixed size (e.g., [8]trit)
     size: ?usize,
 };
 
 /// Function type fn(args) -> return
 pub const TypeFunction = struct {
-    params: []Type,
-    return_type: Type,
+    params: []const Type,
+    return_type: *const Type,
 };
 
 /// Struct type
@@ -425,8 +524,12 @@ pub const TypeNamed = struct {
     name: []const u8,
 };
 
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Operators                                                              ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
 /// Binary operators
-pub const BinaryOperator = enum(u4) {
+pub const BinaryOperator = enum(u5) {
     // Arithmetic
     Add,
     Sub,
@@ -434,11 +537,10 @@ pub const BinaryOperator = enum(u4) {
     Div,
     Mod,
 
-    // Logic
+    // Bitwise / ternary logic (some reserved for ternary ops later)
     BitAnd,
     BitOr,
     BitXor,
-    BitNot,
     ShiftLeft,
     ShiftRight,
 
@@ -453,7 +555,7 @@ pub const BinaryOperator = enum(u4) {
     // Sacred operations (dot product)
     Dot,
 
-    // Ternary logic
+    // Ternary logic (placeholders)
     TernaryAnd,
     TernaryOr,
     TernaryNot,
@@ -465,105 +567,4 @@ pub const UnaryOperator = enum(u3) {
     Neg,
     BitNot,
     Deref,
-};
-
-/// ═════════════════════════════════════════════════════════════════════════
-// PATTERNS (for match arms)
-// ═════════════════════════════════════════════════════════════════════════════════════
-
-/// Pattern for matching (ADT variant, literal, wildcard, etc.)
-pub const Pattern = union(enum) {
-    /// Wildcard pattern: _ (matches anything)
-    Wildcard: PatternWildcard,
-
-    /// Literal pattern: 42, true, 'tr', "string"
-    Literal: PatternLiteral,
-
-    /// Identifier pattern (binds name)
-    Identifier: PatternIdentifier,
-
-    /// Enum variant pattern: Variant(data)
-    EnumVariant: PatternEnumVariant,
-
-    /// Struct pattern: Struct { field: pattern, ... }
-    Struct: PatternStruct,
-
-    /// Array pattern: [p1, p2, ...]
-    Array: PatternArray,
-
-    /// Range pattern: start..=end
-    Range: PatternRange,
-};
-
-/// Wildcard pattern
-pub const PatternWildcard = void;
-
-/// Literal pattern
-pub const PatternLiteral = struct {
-    value: LiteralValue,
-};
-
-/// Literal values for patterns
-pub const LiteralValue = union(enum) {
-    Int: i64,
-    Float: f64,
-    String: []const u8,
-    Char: u8,
-    Bool: bool,
-};
-
-/// Identifier pattern
-pub const PatternIdentifier = struct {
-    name: []const u8,
-};
-
-/// Enum variant pattern
-pub const PatternEnumVariant = struct {
-    /// Name of enum
-    enum_name: []const u8,
-    /// Name of variant
-    variant_name: []const u8,
-    /// Optional nested pattern for variant data
-    data_pattern: ?Pattern,
-};
-
-/// Struct pattern
-pub const PatternStruct = struct {
-    /// Name of struct
-    struct_name: []const u8,
-    /// Field patterns: name => pattern
-    field_patterns: []FieldPattern,
-};
-
-/// Field pattern in struct match
-pub const FieldPattern = struct {
-    field_name: []const u8,
-    pattern: Pattern,
-};
-
-/// Array pattern
-pub const PatternArray = struct {
-    elements: []Pattern,
-};
-
-/// Range pattern
-pub const PatternRange = struct {
-    start: Expression,
-    end: Expression,
-    inclusive: bool,
-};
-
-/// ═══════════════════════════════════════════════════════════════════════
-// NAMED PIPELINES (Elixir-style reusable pipe chains)
-// ═════════════════════════════════════════════════════════════════════════════════════
-
-/// Named pipeline definition
-/// pipeline flow = input |> filter |> map |> output
-pub const PipelineDecl = struct {
-    name: []const u8,
-    /// Parameters (optional)
-    params: []Param,
-    /// Pipeline body (must be a pipe expression or identifier)
-    body: Expression,
-    loc: SourceLocation,
 };
