@@ -151,8 +151,9 @@ pub fn encode(inst: Instruction) u32 {
     word |= @as(u32, inst.src2) << 18;
 
     // Encode 16-bit immediate (bits 31-17)
-    const imm_bits: u16 = @bitCast(inst.immediate);
-    word |= @as(u32, imm_bits) << 17;
+    // Bitcast to u16 preserves 2's complement, then extend to u32
+    const imm_u16: u16 = @bitCast(inst.immediate);
+    word |= @as(u32, imm_u16) << 17;
 
     return word;
 }
