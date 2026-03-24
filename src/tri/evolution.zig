@@ -256,22 +256,22 @@ const ServiceEntry = struct {
 
     // Multi-objective fitness: 60% PPL + 40% IGLA with penalty
     fn computeIGLAFitness(svc: *const ServiceEntry) f32 {
-        const ppl_weight = 0.6;
-        const igla_weight = 0.4;
+        const ppl_weight: f32 = 0.6;
+        const igla_weight: f32 = 0.4;
 
         // Normalize PPL: 999 -> 0, 2.0 -> 1
         const ppl_normalized = if (svc.current_ppl >= 999.0)
-            0.0
+            @as(f32, 0.0)
         else
-            @max(0.0, 1.0 - (svc.current_ppl - 2.0) / 997.0);
+            @max(@as(f32, 0.0), @as(f32, 1.0) - (svc.current_ppl - 2.0) / 997.0);
 
         // IGLA score: [0,1]
-        const igla_score = @max(0.0, @min(1.0, svc.igla_score));
+        const igla_score = @max(@as(f32, 0.0), @min(@as(f32, 1.0), svc.igla_score));
 
         // Penalty: if IGLA < 0.5, fitness cut in half
-        const penalty = if (igla_score < 0.5) 0.5 else 0.0;
+        const penalty: f32 = if (igla_score < 0.5) 0.5 else 0.0;
 
-        return (ppl_weight * ppl_normalized + igla_weight * igla_score) * (1.0 - penalty);
+        return (ppl_weight * ppl_normalized + igla_weight * igla_score) * (@as(f32, 1.0) - penalty);
     }
 
     fn parentName(self: *const ServiceEntry) []const u8 {
@@ -3691,8 +3691,8 @@ fn printDashboard(state: *const EvolutionState) void {
     }
 
     print("  {s}LEADERBOARD:{s}\n", .{ BOLD, RESET });
-    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard   | Fmt   | IGLA{s}\n", .{ DIM, RESET });
-    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼───────┼─────{s}\n", .{ DIM, RESET });
+    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard   | Fmt   | IGLA | Fit{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼───────┼─────┼──────{s}\n", .{ DIM, RESET });
 
     const show = @min(sorted_count, 10);
     for (0..show) |rank| {
@@ -3727,7 +3727,14 @@ fn printDashboard(state: *const EvolutionState) void {
         }
         // IGLA score (as percentage)
         if (svc.igla_score > 0) {
-            print("| {d:.0}\n", .{svc.igla_score * 100});
+            print("| {d:.0}", .{svc.igla_score * 100});
+        } else {
+            print("| {s}-{s}", .{ DIM, RESET });
+        }
+        // Multi-objective fitness: 60% PPL + 40% IGLA + penalty
+        const fitness = svc.computeIGLAFitness();
+        if (svc.igla_score > 0) {
+            print("| {d:.0}\n", .{fitness * 100});
         } else {
             print("| {s}-{s}\n", .{ DIM, RESET });
         }
