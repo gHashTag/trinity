@@ -117,9 +117,12 @@ pub fn decode(word: u32) Instruction {
     const src2 = @as(u8, @truncate(src2_or_v3 & 0x1F));
     const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
 
-    // Decode 16-bit immediate (bits 31-17), sign-extend properly
-    const imm_raw = @as(u16, @truncate((word >> 17) & 0xFFFF));
-    const immediate: i16 = @bitCast(imm_raw);
+    // Decode 15-bit immediate (bits 31-17), sign-extend to 16 bits
+    const imm_raw = @as(u16, @truncate((word >> 17) & 0x7FFF));
+    const immediate: i16 = if (imm_raw & 0x4000 != 0)
+        @bitCast(imm_raw | 0x8000) // Sign extend negative values
+    else
+        @intCast(imm_raw);
 
     // Determine if instruction has immediate
     const has_imm = switch (opcode) {
@@ -234,18 +237,33 @@ test "decoder: encode roundtrip ADD" {
     try std.testing.expectEqual(@as(u8, 7), decoded.src2);
 }
 
-test "encoder_simple: LDI encodes correctly" {
+test "encoder: LDI roundtrip with 15-bit immediate" {
     const inst = Instruction{
         .opcode = .LDI,
         .dst = 2,
-        .immediate = -42,
+        .immediate = 42, // Positive value within 15-bit range
         .has_imm = true,
     };
     const word = encode(inst);
     const decoded = decode(word);
     try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
     try std.testing.expectEqual(@as(u8, 2), decoded.dst);
-    try std.testing.expectEqual(@as(i16, -42), decoded.immediate);
+    try std.testing.expectEqual(@as(i16, 42), decoded.immediate);
+    try std.testing.expect(decoded.has_imm);
+}
+
+test "encoder: LDI roundtrip with negative 15-bit immediate" {
+    const inst = Instruction{
+        .opcode = .LDI,
+        .dst = 3,
+        .immediate = -1000, // Negative value within 15-bit range (-16384 to 16383)
+        .has_imm = true,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 3), decoded.dst);
+    try std.testing.expectEqual(@as(i16, -1000), decoded.immediate);
     try std.testing.expect(decoded.has_imm);
 }
 
