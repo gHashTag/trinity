@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v4.01: Performance Profile Classification - connection type detection
+        // v4.02: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,34 +1966,40 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v4.01: Rate Limiting Detection - detect throttling patterns
+        // v4.02: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
         }
 
-        // v4.01: Latency Distribution Fitting - statistical distribution analysis
+        // v4.02: Latency Distribution Fitting - statistical distribution analysis
         if (self.count >= 30) {
             printInfo("\n  📐 Distribution Fit:\n", .{});
             self.showDistributionFit();
         }
 
-        // v4.01: Packet Drift Detection - detect gradual RTT changes
+        // v4.02: Packet Drift Detection - detect gradual RTT changes
         if (self.count >= 20) {
             printInfo("\n  📈 Packet Drift:\n", .{});
             self.showPacketDrift();
         }
 
-        // v4.01: Anomaly Prediction System - predict future anomalies
+        // v4.02: Anomaly Prediction System - predict future anomalies
         if (self.count >= 30) {
             printInfo("\n  🔮 Anomaly Prediction:\n", .{});
             self.showAnomalyPrediction();
         }
 
-        // v4.01: Quick Diagnostics - one-line summary (always shown)
+        // v4.02: Quick Diagnostics - one-line summary (always shown)
         if (self.count >= 5) {
             printInfo("\n  ⚡ Quick Diagnostics:\n", .{});
             self.showQuickDiagnostics();
+        }
+
+        // v4.02: Connection Quality Timeline - visualize quality changes
+        if (self.count >= 10) {
+            printInfo("\n  📊 Quality Timeline:\n", .{});
+            self.showQualityTimeline();
         }
     }
 
@@ -2298,7 +2304,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.01: Rate Limiting Detection - detect throttling patterns
+    // v4.02: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2421,7 +2427,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.01: Latency Distribution Fitting - fit RTT to statistical distributions
+    // v4.02: Latency Distribution Fitting - fit RTT to statistical distributions
     pub const DistributionFit = struct {
         distribution: []const u8,
         mean: f64,
@@ -2660,7 +2666,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.01: Packet Drift Detection - detect gradual RTT changes over time
+    // v4.02: Packet Drift Detection - detect gradual RTT changes over time
     pub const PacketDrift = struct {
         drift_type: []const u8,
         drift_rate: f64,
@@ -2745,7 +2751,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.01: Anomaly Prediction System - predict likelihood of future anomalies
+    // v4.02: Anomaly Prediction System - predict likelihood of future anomalies
     pub const AnomalyPrediction = struct {
         anomaly_probability: f64,
         prediction_horizon: usize,
@@ -2897,7 +2903,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.01: Quick Diagnostics - one-line summary of key metrics
+    // v4.02: Quick Diagnostics - one-line summary of key metrics
     pub const QuickDiagnostics = struct {
         health_status: []const u8,
         samples: usize,
@@ -2953,6 +2959,94 @@ const JitterTracker = struct {
             diag.health_status, diag.samples, diag.mean_rtt_ms, diag.jitter_ms,
         });
         printDim("  {s}\n", .{diag.summary});
+    }
+
+    // v4.02: Connection Quality Timeline - visual representation of quality changes
+    pub const QualityTimeline = struct {
+        segments: usize,
+        phase_changes: usize,
+        quality_trend: []const u8,
+        final_quality: []const u8,
+    };
+
+    pub fn generateQualityTimeline(self: *const JitterTracker) ?QualityTimeline {
+        if (self.count < 10) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = stats.jitter;
+
+        // Divide into 5 quality segments
+        const SEGMENT_SIZE = @max(1, self.count / 5);
+        var phase_count: usize = 0;
+
+        // Calculate mean for each segment
+        var segment_means = [1]f64{0} ** 5;
+
+        for (0..5) |seg| {
+            const start_idx = seg * SEGMENT_SIZE;
+            const end_idx = @min(start_idx + SEGMENT_SIZE, self.count);
+            if (end_idx > start_idx) {
+                var seg_sum: f64 = 0;
+                for (self.samples[start_idx..end_idx]) |s| {
+                    seg_sum += @as(f64, @floatFromInt(s));
+                }
+                segment_means[seg] = seg_sum / @as(f64, @floatFromInt(end_idx - start_idx));
+            }
+        }
+
+        // Count quality phase changes (significant mean shifts)
+        for (1..5) |seg| {
+            if (segment_means[seg] > 0) {
+                const diff = @abs(segment_means[seg] - mean);
+                if (diff > std_dev) {
+                    phase_count += 1;
+                }
+            }
+        }
+
+        // Determine overall quality trend
+        const quality_trend: []const u8 = if (phase_count >= 3)
+            "DEGRADING - quality decreasing significantly"
+        else if (phase_count >= 1)
+            "FLUCTUATING - quality varies significantly"
+        else
+            "STABLE - quality remains consistent";
+
+        // Final quality based on last segment
+        const last_mean = segment_means[4];
+        const last_quality: []const u8 = if (last_mean < mean * 0.7)
+            "POOR - high latency degradation"
+        else if (last_mean < mean * 0.9)
+            "FAIR - some degradation over time"
+        else if (last_mean < mean * 1.2)
+            "GOOD - stable quality throughout"
+        else if (last_mean <= mean * 1.5 and last_mean >= mean * 0.8)
+            "EXCELLENT - minimal quality variation"
+        else
+            "IMPRAVING - quality improving";
+
+        return .{
+            .segments = 5,
+            .phase_changes = phase_count,
+            .quality_trend = quality_trend,
+            .final_quality = last_quality,
+        };
+    }
+
+    pub fn showQualityTimeline(self: *const JitterTracker) void {
+        const timeline = self.generateQualityTimeline();
+
+        if (timeline) |t| {
+            printDim("    Segments Analyzed: {d}\n", .{t.segments});
+            printDim("    Phase Changes: {d}\n", .{t.phase_changes});
+            printDim("    Quality Trend: {s}\n", .{t.quality_trend});
+            printDim("    Final Quality: {s}\n", .{t.final_quality});
+        } else {
+            printDim("    Insufficient data for quality timeline\n", .{});
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -4160,7 +4254,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v4.01: Performance Profile Classification - connection type detection
+    // v4.02: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -5967,7 +6061,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.01           ║
+        \\║      Trinity UART Echo Test v4.02           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6437,7 +6531,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.01)         ║
+            \\║         SIMULATION MODE (v4.02)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7032,7 +7126,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.01)      ║
+        \\║       SIMULATION BATCH MODE (v4.02)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7166,7 +7260,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.01)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.02)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7183,7 +7277,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.01)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.02)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8122,7 +8216,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.01)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.02)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
