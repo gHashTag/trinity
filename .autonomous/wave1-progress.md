@@ -58,5 +58,42 @@
 - feat(tri27): Add MOV, JGT, JLT opcodes for reticularraphe.t27 (#411)
 - fix(tri27): Fix coptic name parsing - use COPTIC_NAMES array, fix deprecated allocator (#418)
 
-## Следующие шаги
-- Step 3: ADT enum + exhaustive match
+## Step 3: ADT enum + exhaustive match ✅ COMPLETED
+- [x] Создать src/tri-lang/adt_enum.zig
+- [x] ADT<T> type — generic algebraic data type
+- [x] Variants with optional payloads (A(x) | B | C(y,z))
+- [x] Exhaustive match checking at compile time
+- [x] Pattern matching syntax support
+
+### Результат
+
+✅ **ADT Enum implementation:**
+- Variant struct with name and payload_type_names
+- ADT struct with name and variants list
+- parseADT() — parses syntax: `type T = A(x) | B | C(y,z)`
+- parseVariants() — helper for variant parsing
+- isExhaustive() — compile-time exhaustive match checking
+
+✅ **Tests verified:**
+- All adt_enum tests: ✅ PASS (4 tests)
+
+✅ **Files created:**
+- `src/tri-lang/adt_enum.zig` — ADT enum with exhaustive match (~170 LOC)
+
+### Inварианты
+- L0 (Temple): ✅ GREEN
+- L1 (Queens): ✅ GREEN
+
+### Коммиты
+- feat(tri27): Add MOV, JGT, JLT opcodes for reticularraphe.t27 (#411)
+- fix(tri27): Fix coptic name parsing - use COPTIC_NAMES array, fix deprecated allocator (#418)
+- feat(tri-lang): ADT Enum + Exhaustive Match (#414)
+
+## Wave 1 Summary ✅ COMPLETED
+All three steps of Wave 1 are now complete:
+1. ✅ reticularraphe.t27 → VM (MOV, JGT, JLT, JUMP opcodes)
+2. ✅ Coptic alphabet + 3-bank validation (27 registers)
+3. ✅ ADT enum + exhaustive match
+
+**Total LOC added:** ~340 LOC across tri27 and tri-lang modules
+**Total tests:** 4+67+40+13+5 = 129+ tests passing

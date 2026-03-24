@@ -332,8 +332,7 @@ fn runGenerateAll(allocator: Allocator) !void {
 
 fn printHelp() void {
     print(
-        \\{}
-        \\Usage: tri mac-cluster <command> [options]
+        \\{s}Usage: tri mac-cluster <command> [options]
         \\
         \\Commands:
         \\  discover           List all Macs in cluster
@@ -360,7 +359,7 @@ fn printHelp() void {
         \\  LR: 1e-3, Schedule: cosine, Optimizer: lamb
         \\  Seed: 1000 + worker_id for each worker
         \\
-    , .{});
+    , .{RESET});
 }
 
 pub fn main() !void {

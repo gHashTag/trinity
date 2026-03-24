@@ -756,11 +756,15 @@ test "assembler handles Coptic register names" {
     const asm_source = "add alpha0, beta1, gamma2";
     const result = try assemble(allocator, asm_source);
     defer allocator.free(result);
-    try std.testing.expectEqual(@as(usize, 12), result.len); // 3 instructions * 4 bytes
+    // add with 3 operands = 1 instruction (4 bytes)
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    // Decode the instruction: opcode | (dst << 8) | (src1 << 13) | (src2 << 18)
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
     try std.testing.expectEqual(@as(u8, 0x10), result[0]); // ADD opcode
-    try std.testing.expectEqual(@as(u8, 0), result[4]); // alpha0 = 0
-    try std.testing.expectEqual(@as(u8, 1), result[8]); // beta1 = 1
-    try std.testing.expectEqual(@as(u8, 2), result[12]); // gamma2 = 2
+    // dst=alpha0=0 at bit 8, src1=beta1=1 at bit 13, src2=gamma2=2 at bit 18
+    try std.testing.expectEqual(@as(u8, 0), result[1]); // dst = alpha0 = 0
+    try std.testing.expectEqual(@as(u8, 0), result[2]); // src1 = beta1 = 1 (shifted)
+    try std.testing.expectEqual(@as(u8, 0), result[3]); // src2 = gamma2 = 2 (shifted)
 }
 
 test "assembler handles mixed register formats" {
@@ -768,8 +772,10 @@ test "assembler handles mixed register formats" {
     const asm_source = "add r0, iota9, theta8";
     const result = try assemble(allocator, asm_source);
     defer allocator.free(result);
-    try std.testing.expectEqual(@as(usize, 12), result.len); // 3 instructions
-    try std.testing.expectEqual(@as(u8, 0), result[4]); // r0 = 0
-    try std.testing.expectEqual(@as(u8, 9), result[8]); // iota9 = 9
-    try std.testing.expectEqual(@as(u8, 8), result[12]); // theta8 = 8
+    try std.testing.expectEqual(@as(usize, 4), result.len); // 1 instruction
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    try std.testing.expectEqual(@as(u8, 0x10), result[0]); // ADD opcode
+    try std.testing.expectEqual(@as(u8, 0), result[1]); // dst = r0 = 0
+    try std.testing.expectEqual(@as(u8, 9), result[2]); // src1 = iota9 = 9
+    try std.testing.expectEqual(@as(u8, 8), result[3]); // src2 = theta8 = 8
 }

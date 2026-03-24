@@ -258,7 +258,7 @@ pub fn displayStatus(self: *const MacCluster) void {
     print("{s}MAC CLUSTER — Wave 9 Distributed Training{s}\n", .{ BOLD, RESET });
     print("{s}═══════════════════════════════════════════{s}\n", .{ DIM, RESET });
 
-    print("{s}Nodes: {d}  {s}│{s}  Total Workers: {d}  {s}│{s}  Capacity: {d}\n\n", .{
+    print("{s}Nodes: {d}  {s}│{s}  Total Workers: {d}  {s}│{s}  Capacity: {d}{s}\n\n", .{
         CYAN, self.nodes.items.len, RESET, CYAN, self.total_workers, RESET, DIM, totalCapacity(self), RESET,
     });
 
@@ -272,11 +272,10 @@ pub fn displayStatus(self: *const MacCluster) void {
         const status_emoji = if (node.online) "🟢" else "🔴";
         const role_emoji = node.role.emoji();
         const coord_mark = if (self.coordinator_id) |cid| cid == node.id else false;
-        const coord_str = if (coord_mark) " {s}[COORDINATOR]{s}" else "";
+        const coord_str = if (coord_mark) " [COORDINATOR]" else "";
 
-        print("  {s}{s} {s}{s} {s}mac-{d:2} {s}{s} ({s})\n", .{
-            role_emoji, status_emoji, BOLD, node.hostname, RESET, node.id, DIM, RESET,
-            node.ip, node.arch.toString(), RESET,
+        print("  {s}{s} {s}{s} {s}mac-{d:2} {s}{s}\n", .{
+            role_emoji, status_emoji, BOLD, node.hostname, RESET, node.id, DIM,
         });
 
         if (coord_mark) {

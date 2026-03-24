@@ -798,6 +798,82 @@ For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)** and **[docs/d
 
 ---
 
+## Multi-Agent Trinity Protocol — Ant & Bee Inspired
+
+Trinity uses a **swarm development model**: multiple agents work in parallel, like ants and bees, coordinating through the environment (stigmergy), not direct commands.
+
+### 1. Roles and Castes
+
+- **Queen / Doctor (L1)** — Aggregate colony state, publish signals (COLONY_STATUS.md), don't depend on Workers.
+- **Workers / Foragers (L2–L3)** — Execute specific tasks (TDGS, tri:dev), coordinate through logs and statuses.
+- **Temple (TTT, L0)** — Sacred layer, agents never touch it.
+
+Each agent has:
+```text
+agent_id: <name or hash>
+specialties: [tri27, queens, build, hslm, docs, ...]
+thresholds:
+  prefers_tasks_with: [build_errors, test_failures, docs, ...]
+```
+
+This defines its **response thresholds** — which tasks it responds to first.
+
+### 2. Stigmergy: Coordination Through Environment
+
+Agents communicate through modified environment, not directly:
+
+- `.autonomous/HIVELOG.md` — Global hive-log
+- `.autonomous/<TASK_ID>/progress.md` — Per-task state
+- `COLONY_STATUS.md` — Aggregated colony state (written by Queen/Doctor)
+
+**HIVELOG format:**
+```text
+2026-03-25T02:44:00Z | agent:<ID> | task:TDGS-2 | phase:IMPLEMENT | scope:build.l1 | action:"migrated queens target to Zig 0.15" | commit:abcd1234
+```
+
+**Rules:**
+1. Each cycle, agent reads: last 20 HIVELOG lines + COLONY_STATUS.md + relevant progress.md
+2. Agent **never repeats** actions already done by another in same task + scope
+
+### 3. Responsibility Zones & Conflict Avoidance
+
+- One TDGS/tri:dev issue = **one coding-agent** by default
+- If two agents work on same TASK_ID: second takes auxiliary role (tests, docs, analysis), doesn't modify code
+- Zones:
+  - `src/temple/**` — TTT, forbidden for agents
+  - `build.zig` and core-build files — only for specially assigned tasks
+  - Other dirs (tri27, tri, hslm, etc.) — assigned by tasks and agents
+
+### 4. Agent Lifecycle (each /loop)
+
+1. **Input:**
+   - Read `COLONY_STATUS.md`
+   - Read `HIVELOG.md` (last 20 entries)
+   - Read `.autonomous/<TASK_ID>/progress.md`
+   - Select ONE task + ONE subphase (SPEC/IMPLEMENT/TEST/REFINE) without active conflict
+
+2. **Work:**
+   - Execute minimal subtask within current phase and scope
+   - Maintain invariants: `zig build l0` and `zig build l1` always green; TTT untouched
+
+3. **Output:**
+   - Update `progress.md` (phase, build_status, tests_status, blockers)
+   - Append HIVELOG entry with time/agent/task/phase/scope/action/commit
+   - Make meaningful commit (only when green)
+
+### 5. Queen / Doctor Role
+
+- **Queen:**
+  - Aggregates TDGS/tri:dev statuses and writes `COLONY_STATUS.md`:
+    - `L0: OK`, `L1: OK`, `Workers: DEGRADED (tri_farm)`
+    - Per TASK_ID: `TODO / IN_PROGRESS (agent:ID) / BLOCKED / DONE`
+- **Doctor:**
+  - Monitors health layers and writes metrics/alerts that agents consider when selecting tasks
+
+Thus, Trinity distributes tasks swarm-style and avoids conflicts without centralized micromanagement: agents read each other's traces and the Queen's signals, then adaptively choose what to do next.
+
+---
+
 ## Build Commands
 
 ```bash
