@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.65 — Standard Deviation Bands (Mean ± σ intervals)
+//! v3.66 — Moving Average Smoothing (noise reduction analysis)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1380,6 +1380,67 @@ const JitterTracker = struct {
         return .{ .direction = direction, .change_percent = change_percent, .first_half_avg = first_avg, .second_half_avg = second_avg };
     }
 
+    // v3.66: Moving Average Smoothing - computes smoothed RTT curve
+    // Returns smoothed values and statistics about the smoothing effect
+    pub fn getMovingAverage(self: *const JitterTracker, window: usize) struct {
+        smoothed: [20]f64,
+        count: usize,
+        original_std: f64,
+        smoothed_std: f64,
+        reduction_pct: f64,
+    } {
+        if (self.count < 3 or window < 2) {
+            return .{ .smoothed = [_]f64{0} ** 20, .count = 0, .original_std = 0, .smoothed_std = 0, .reduction_pct = 0 };
+        }
+
+        const effective_window = @min(window, self.count);
+        var smoothed: [20]f64 = undefined;
+        var smoothed_count: usize = 0;
+
+        // Calculate original standard deviation
+        const stats = self.getStats();
+        const original_std = stats.jitter;
+
+        // Compute moving average (simplified - use every Nth point)
+        const step = @max(1, self.count / 20);
+        var idx: usize = 0;
+        while (idx < self.count and smoothed_count < 20) : (idx += step) {
+            // Average of window samples centered at idx
+            var sum: i64 = 0;
+            var window_count: usize = 0;
+            const start = if (idx >= effective_window / 2) idx - effective_window / 2 else 0;
+            const end = @min(idx + effective_window / 2 + 1, self.count);
+
+            for (self.samples[start..end]) |s| {
+                sum += s;
+                window_count += 1;
+            }
+
+            if (window_count > 0) {
+                smoothed[smoothed_count] = @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(window_count));
+                smoothed_count += 1;
+            }
+        }
+
+        // Calculate smoothed standard deviation
+        var sum_diff: f64 = 0;
+        for (smoothed[0..smoothed_count]) |s| {
+            const diff = s - stats.mean;
+            sum_diff += diff * diff;
+        }
+        const smoothed_std = if (smoothed_count > 1)
+            @sqrt(sum_diff / @as(f64, @floatFromInt(smoothed_count - 1)))
+        else
+            original_std;
+
+        const reduction_pct = if (original_std > 0)
+            ((original_std - smoothed_std) / original_std) * 100.0
+        else
+            0.0;
+
+        return .{ .smoothed = smoothed, .count = smoothed_count, .original_std = original_std, .smoothed_std = smoothed_std, .reduction_pct = reduction_pct };
+    }
+
     // v3.64: Correlation Analysis - computes Pearson correlation between RTT and time
     // Returns correlation coefficient r in [-1, 1]:
     //   r > 0.5: Strong positive correlation (RTT increasing over time - degrading)
@@ -1661,6 +1722,26 @@ const JitterTracker = struct {
             printDim("    +-1σ (68%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - std_dev_ms, band_mean_ms + std_dev_ms });
             printDim("    +-2σ (95%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - 2.0 * std_dev_ms, band_mean_ms + 2.0 * std_dev_ms });
             printDim("    +-3σ (99.7%): [{d:.3}ms, {d:.3}ms]\n", .{ band_mean_ms - 3.0 * std_dev_ms, band_mean_ms + 3.0 * std_dev_ms });
+        }
+
+        // v3.66: Moving Average Smoothing
+        const ma = self.getMovingAverage(10);
+        if (ma.count > 0) {
+            printDim("\n  Moving Average (window={d}):\n", .{10});
+            printDim("    Samples smoothed: {d}\n", .{ma.count});
+            printDim("    Original std: {d:.3}ms\n", .{ma.original_std / 1000.0 });
+            printDim("    Smoothed std: {d:.3}ms\n", .{ma.smoothed_std / 1000.0 });
+            const reduction_txt = if (ma.reduction_pct > 10)
+                "significant"
+            else if (ma.reduction_pct > 0)
+                "modest"
+            else
+                "none";
+            printDim("    Effect: {s}", .{reduction_txt});
+            if (ma.reduction_pct > 0) {
+                printDim(" ({d:.1}% noise reduction)", .{ma.reduction_pct});
+            }
+            printDim("\n", .{});
         }
     }
 };
