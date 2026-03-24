@@ -86,13 +86,14 @@ pub const Lexer = struct {
             }
         }
 
-        if (c == '-' or (c >= '0' and c <= '9')) {
-            try self.lexImmediate();
+        // Check hex immediate BEFORE decimal immediate
+        if (c == '0' and self.pos + 1 < self.source.len and self.source[self.pos + 1] == 'x') {
+            try self.lexHexImmediate();
             return;
         }
 
-        if (c == '0' and self.pos + 1 < self.source.len and self.source[self.pos + 1] == 'x') {
-            try self.lexHexImmediate();
+        if (c == '-' or (c >= '0' and c <= '9')) {
+            try self.lexImmediate();
             return;
         }
 
