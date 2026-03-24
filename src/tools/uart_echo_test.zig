@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v3.99: Performance Profile Classification - connection type detection
+        // v4.00: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,22 +1966,28 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v3.99: Rate Limiting Detection - detect throttling patterns
+        // v4.00: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
         }
 
-        // v3.99: Latency Distribution Fitting - statistical distribution analysis
+        // v4.00: Latency Distribution Fitting - statistical distribution analysis
         if (self.count >= 30) {
             printInfo("\n  📐 Distribution Fit:\n", .{});
             self.showDistributionFit();
         }
 
-        // v3.99: Packet Drift Detection - detect gradual RTT changes
+        // v4.00: Packet Drift Detection - detect gradual RTT changes
         if (self.count >= 20) {
             printInfo("\n  📈 Packet Drift:\n", .{});
             self.showPacketDrift();
+        }
+
+        // v4.00: Anomaly Prediction System - predict future anomalies
+        if (self.count >= 30) {
+            printInfo("\n  🔮 Anomaly Prediction:\n", .{});
+            self.showAnomalyPrediction();
         }
     }
 
@@ -2286,7 +2292,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v3.99: Rate Limiting Detection - detect throttling patterns
+    // v4.00: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2409,7 +2415,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v3.99: Latency Distribution Fitting - fit RTT to statistical distributions
+    // v4.00: Latency Distribution Fitting - fit RTT to statistical distributions
     pub const DistributionFit = struct {
         distribution: []const u8,
         mean: f64,
@@ -2648,7 +2654,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v3.99: Packet Drift Detection - detect gradual RTT changes over time
+    // v4.00: Packet Drift Detection - detect gradual RTT changes over time
     pub const PacketDrift = struct {
         drift_type: []const u8,
         drift_rate: f64,
@@ -2730,6 +2736,158 @@ const JitterTracker = struct {
             printDim("    {s}\n", .{d.recommendation});
         } else {
             printDim("    Insufficient data for drift detection\n", .{});
+        }
+    }
+
+    // v4.00: Anomaly Prediction System - predict likelihood of future anomalies
+    pub const AnomalyPrediction = struct {
+        anomaly_probability: f64,
+        prediction_horizon: usize,
+        risk_level: []const u8,
+        warning_signs: []const u8,
+        action_needed: bool,
+    };
+
+    pub fn predictAnomalies(self: *const JitterTracker) ?AnomalyPrediction {
+        if (self.count < 30) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = stats.jitter;
+
+        // Analyze recent samples for warning signs
+        const RECENT_WINDOW: usize = 10;
+        const recent_start = if (self.count > RECENT_WINDOW) self.count - RECENT_WINDOW else 0;
+        const recent_count = self.count - recent_start;
+
+        // Calculate recent statistics
+        var recent_sum: f64 = 0;
+        var recent_sum_sq: f64 = 0;
+        for (self.samples[recent_start..self.count]) |s| {
+            const s_f = @as(f64, @floatFromInt(s));
+            recent_sum += s_f;
+            recent_sum_sq += s_f * s_f;
+        }
+        const recent_mean = recent_sum / @as(f64, @floatFromInt(recent_count));
+        const recent_variance = (recent_sum_sq - (recent_sum * recent_sum) / @as(f64, @floatFromInt(recent_count))) / @as(f64, @floatFromInt(recent_count));
+        const recent_std_dev = if (recent_variance > 0) @sqrt(recent_variance) else 0;
+
+        // Warning sign 1: Mean shift (recent mean vs overall mean)
+        const mean_shift = @abs(recent_mean - mean);
+        const mean_shift_ratio = if (std_dev > 0) mean_shift / std_dev else 0;
+
+        // Warning sign 2: Volatility increase (recent std vs overall std)
+        const volatility_increase = if (std_dev > 0) (recent_std_dev - std_dev) / std_dev else 0;
+
+        // Warning sign 3: Trend acceleration (second derivative)
+        const TREND_WINDOW: usize = 10;
+        var acceleration: f64 = 0;
+        if (self.count >= TREND_WINDOW * 2) {
+            const first_start = self.count - TREND_WINDOW * 2;
+            const second_start = self.count - TREND_WINDOW;
+
+            var first_sum: f64 = 0;
+            var second_sum: f64 = 0;
+            for (self.samples[first_start..first_start + TREND_WINDOW]) |s| {
+                first_sum += @as(f64, @floatFromInt(s));
+            }
+            for (self.samples[second_start..second_start + TREND_WINDOW]) |s| {
+                second_sum += @as(f64, @floatFromInt(s));
+            }
+            const first_avg = first_sum / @as(f64, @floatFromInt(TREND_WINDOW));
+            const second_avg = second_sum / @as(f64, @floatFromInt(TREND_WINDOW));
+            const first_trend = first_avg / @as(f64, @floatFromInt(TREND_WINDOW));
+            const second_trend = second_avg / @as(f64, @floatFromInt(TREND_WINDOW));
+            acceleration = if (first_trend != 0) (second_trend - first_trend) / @abs(first_trend) else 0;
+        }
+
+        // Warning sign 4: Sample concentration (how close are recent samples to thresholds)
+        const p = self.getPercentiles();
+        const p90 = @as(f64, @floatFromInt(p.p90));
+        var samples_near_threshold: usize = 0;
+        for (self.samples[recent_start..self.count]) |s| {
+            const s_f = @as(f64, @floatFromInt(s));
+            if (s_f > p90 * 0.8) {
+                samples_near_threshold += 1;
+            }
+        }
+        const threshold_pressure = @as(f64, @floatFromInt(samples_near_threshold)) / @as(f64, @floatFromInt(recent_count));
+
+        // Combine warning signs into anomaly probability
+        var risk_score: f64 = 0;
+        var warning_count: usize = 0;
+
+        if (mean_shift_ratio > 0.5) {
+            risk_score += @min(mean_shift_ratio, 1.0) * 25.0;
+            warning_count += 1;
+        }
+        if (volatility_increase > 0.3) {
+            risk_score += @min(volatility_increase * 2.0, 1.0) * 30.0;
+            warning_count += 1;
+        }
+        if (@abs(acceleration) > 0.2) {
+            risk_score += @min(@abs(acceleration) * 2.0, 1.0) * 25.0;
+            warning_count += 1;
+        }
+        if (threshold_pressure > 0.3) {
+            risk_score += threshold_pressure * 20.0;
+            warning_count += 1;
+        }
+
+        const anomaly_probability = @min(risk_score, 100.0) / 100.0;
+        const prediction_horizon = 20; // Predict for next 20 samples
+
+        // Risk level classification
+        const risk_level: []const u8 = if (anomaly_probability > 0.7)
+            "CRITICAL"
+        else if (anomaly_probability > 0.5)
+            "HIGH"
+        else if (anomaly_probability > 0.3)
+            "MODERATE"
+        else if (anomaly_probability > 0.1)
+            "LOW"
+        else
+            "MINIMAL";
+
+        // Warning signs description
+        const warning_signs: []const u8 = if (warning_count == 0)
+            "No warning signs detected"
+        else if (warning_count == 1)
+            "One early warning sign"
+        else if (warning_count == 2)
+            "Two warning signs - monitoring advised"
+        else if (warning_count == 3)
+            "Multiple warning signs - caution needed"
+        else
+            "All warning signs present - high risk";
+
+        const action_needed = anomaly_probability > 0.4;
+
+        return .{
+            .anomaly_probability = anomaly_probability,
+            .prediction_horizon = prediction_horizon,
+            .risk_level = risk_level,
+            .warning_signs = warning_signs,
+            .action_needed = action_needed,
+        };
+    }
+
+    pub fn showAnomalyPrediction(self: *const JitterTracker) void {
+        const prediction = self.predictAnomalies();
+
+        if (prediction) |p| {
+            const prob_pct = p.anomaly_probability * 100.0;
+            printDim("    Risk Level: {s}\n", .{p.risk_level});
+            printDim("    Anomaly Probability: {d:.1}%\n", .{prob_pct});
+            printDim("    Prediction Horizon: next {d} samples\n", .{p.prediction_horizon});
+            printDim("    Warning Signs: {s}\n", .{p.warning_signs});
+            if (p.action_needed) {
+                printErr("    ⚠️  ACTION RECOMMENDED: Consider adjusting test parameters\n", .{});
+            }
+        } else {
+            printDim("    Insufficient data for anomaly prediction\n", .{});
         }
     }
 
@@ -3938,7 +4096,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v3.99: Performance Profile Classification - connection type detection
+    // v4.00: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -5745,7 +5903,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.99           ║
+        \\║      Trinity UART Echo Test v4.00           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6215,7 +6373,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.99)         ║
+            \\║         SIMULATION MODE (v4.00)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -6810,7 +6968,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.99)      ║
+        \\║       SIMULATION BATCH MODE (v4.00)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6944,7 +7102,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.99)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.00)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -6961,7 +7119,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.99)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.00)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -7900,7 +8058,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.99)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.00)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
