@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v3.86: Performance Profile Classification - connection type detection
+        // v3.97: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1964,6 +1964,12 @@ const JitterTracker = struct {
         if (self.count >= 20) {
             printInfo("\n  📈 Time Series Decomposition:\n", .{});
             self.showTimeSeriesDecomposition();
+        }
+
+        // v3.97: Rate Limiting Detection - detect throttling patterns
+        if (self.count >= 10) {
+            printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
+            self.showRateLimitingDetection();
         }
     }
 
@@ -2265,6 +2271,129 @@ const JitterTracker = struct {
         } else {
             printDim("\n    Status: No outliers detected\n", .{});
             printDim("    Connection appears stable\n", .{});
+        }
+    }
+
+    // v3.97: Rate Limiting Detection - detect throttling patterns
+    pub const RateLimitingDetection = struct {
+        is_rate_limited: bool,
+        confidence: f64,
+        limiting_pattern: []const u8,
+        affected_samples: usize,
+        avg_limited_rtt: f64,
+        avg_normal_rtt: f64,
+    };
+
+    pub fn detectRateLimiting(self: *const JitterTracker) RateLimitingDetection {
+        if (self.count < 10) {
+            return .{
+                .is_rate_limited = false,
+                .confidence = 0.0,
+                .limiting_pattern = "INSUFFICIENT_DATA",
+                .affected_samples = 0,
+                .avg_limited_rtt = 0.0,
+                .avg_normal_rtt = 0.0,
+            };
+        }
+
+        const stats = self.getStats();
+        const mean = stats.mean;
+
+        // Calculate RTT percentiles
+        const p = self.getPercentiles();
+        const p90 = @as(f64, @floatFromInt(p.p90));
+
+        // Threshold for "high latency" samples (above p90)
+        const high_latency_threshold = p90;
+
+        var high_latency_count: usize = 0;
+        var high_latency_sum: f64 = 0;
+        var normal_latency_sum: f64 = 0;
+        var normal_latency_count: usize = 0;
+
+        for (self.samples[0..self.count]) |s| {
+            const s_f = @as(f64, @floatFromInt(s));
+            if (s_f > high_latency_threshold) {
+                high_latency_count += 1;
+                high_latency_sum += s_f;
+            } else {
+                normal_latency_count += 1;
+                normal_latency_sum += s_f;
+            }
+        }
+
+        const avg_limited = if (high_latency_count > 0)
+            high_latency_sum / @as(f64, @floatFromInt(high_latency_count))
+        else 0.0;
+        const avg_normal = if (normal_latency_count > 0)
+            normal_latency_sum / @as(f64, @floatFromInt(normal_latency_count))
+        else mean;
+
+        // Check for rate limiting patterns
+        const ratio = if (avg_normal > 0) avg_limited / avg_normal else 1.0;
+        const high_latency_ratio = @as(f64, @floatFromInt(high_latency_count)) / @as(f64, @floatFromInt(self.count));
+
+        // Confidence based on how clear the pattern is
+        const confidence = if (high_latency_ratio > 0.3)
+            @min(1.0, (high_latency_ratio - 0.3) * 2.0)
+        else if (ratio > 2.0)
+            @min(1.0, (ratio - 2.0) / 2.0)
+        else 0.0;
+
+        const is_rate_limited = confidence > 0.5;
+
+        const limiting_pattern = if (!is_rate_limited)
+            "NONE"
+        else if (ratio > 3.0)
+            "SEVERE - Samples delayed >3x normal"
+        else if (ratio > 2.0)
+            "HIGH - Samples delayed >2x normal"
+        else if (ratio > 1.5)
+            "MODERATE - Samples delayed >1.5x normal"
+        else
+            "LOW - Slight delay increase";
+
+        return .{
+            .is_rate_limited = is_rate_limited,
+            .confidence = confidence,
+            .limiting_pattern = limiting_pattern,
+            .affected_samples = high_latency_count,
+            .avg_limited_rtt = avg_limited,
+            .avg_normal_rtt = avg_normal,
+        };
+    }
+
+    pub fn showRateLimitingDetection(self: *const JitterTracker) void {
+        const detection = self.detectRateLimiting();
+
+        printDim("    Status: {s}\n", .{if (detection.is_rate_limited) "DETECTED" else "NOT DETECTED"});
+        if (detection.is_rate_limited) {
+            printDim("    Confidence: {d:.1}%\n", .{detection.confidence * 100.0});
+            printDim("    Pattern: {s}\n", .{detection.limiting_pattern});
+            printDim("    Affected: {d}/{d} samples\n", .{ detection.affected_samples, self.count });
+
+            if (detection.avg_normal_rtt > 0) {
+                const ratio = if (detection.avg_normal_rtt > 0)
+                    detection.avg_limited_rtt / detection.avg_normal_rtt
+                else 1.0;
+                printDim("    RTT Ratio: {d:.2}x (limited vs normal)\n", .{ratio});
+            }
+        } else {
+            printDim("    No rate limiting patterns detected\n", .{});
+        }
+
+        // Recommendations
+        printDim("\n    Recommendations:\n", .{});
+        if (!detection.is_rate_limited) {
+            printDim("      - Connection is healthy\n", .{});
+            printDim("      - No throttling observed\n", .{});
+        } else if (detection.confidence > 0.8) {
+            printDim("      - Strong rate limiting detected\n", .{});
+            printDim("      - Reduce request rate\n", .{});
+            printDim("      - Implement exponential backoff\n", .{});
+        } else if (detection.confidence > 0.5) {
+            printDim("      - Possible rate limiting\n", .{});
+            printDim("      - Monitor for patterns\n", .{});
         }
     }
 
@@ -3473,7 +3602,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v3.86: Performance Profile Classification - connection type detection
+    // v3.97: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -5280,7 +5409,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.86           ║
+        \\║      Trinity UART Echo Test v3.97           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -5750,7 +5879,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.86)         ║
+            \\║         SIMULATION MODE (v3.97)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -6345,7 +6474,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.86)      ║
+        \\║       SIMULATION BATCH MODE (v3.97)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6479,7 +6608,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.86)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.97)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -6496,7 +6625,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.86)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.97)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -7435,7 +7564,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.86)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.97)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
