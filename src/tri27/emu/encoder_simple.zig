@@ -157,6 +157,55 @@ pub fn encode_load_mem(dst: u5, addr: u16) u32 {
     return word;
 }
 
+/// Encode JMP (Unconditional Jump)
+/// Format: opcode | (imm16 << 8)
+/// Jumps to immediate address (PC = imm)
+pub fn encode_jmp(imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.JMP);
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 8;
+    return word;
+}
+
+/// Encode JZ (Jump if Zero)
+/// Format: opcode | (rd << 8) | (imm16 << 16)
+/// Jumps if register rd == 0
+pub fn encode_jz(rd: u5, imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.JZ);
+    word |= @as(u32, rd) << 8;
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 16;
+    return word;
+}
+
+/// Encode JNZ (Jump if Not Zero)
+/// Format: opcode | (rd << 8) | (imm16 << 16)
+/// Jumps if register rd != 0
+pub fn encode_jnz(rd: u5, imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.JNZ);
+    word |= @as(u32, rd) << 8;
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 16;
+    return word;
+}
+
+/// Encode CALL (Call subroutine)
+/// Format: opcode | (imm16 << 8)
+/// Pushes PC+1 to stack, jumps to immediate address
+pub fn encode_call(imm: i16) u32 {
+    var word: u32 = @intFromEnum(Opcode.CALL);
+    const imm_u16: u16 = @bitCast(imm);
+    word |= @as(u32, imm_u16) << 8;
+    return word;
+}
+
+/// Encode RET (Return from subroutine)
+/// Format: opcode only
+/// Pops return address from stack
+pub fn encode_ret() u32 {
+    return @intFromEnum(Opcode.RET);
+}
+
 /// Encode HALT (Stop execution)
 /// Format: opcode only
 pub fn encode_halt() u32 {
@@ -280,6 +329,39 @@ test "encode_store_with_address" {
     const encoded = encode_store(5, 0x1000);
     const expected: u32 = 0x03 | (5 << 8) | (0x1000 << 16);
     try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jmp_basic" {
+    const encoded = encode_jmp(100);
+    try std.testing.expectEqual(@as(u32, 0x40 | (100 << 8)), encoded); // JMP opcode = 0x40
+}
+
+test "encode_jmp_negative" {
+    const encoded = encode_jmp(-50);
+    const imm_u16: u16 = @bitCast(@as(i16, -50));
+    const expected: u32 = 0x40 | (@as(u32, imm_u16) << 8);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jz_basic" {
+    const encoded = encode_jz(0, 10);
+    const expected: u32 = 0x41 | (10 << 16); // JZ opcode = 0x41, rd=0, imm=10 at bit 16
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_jnz_basic" {
+    const encoded = encode_jnz(5, 20);
+    try std.testing.expectEqual(@as(u32, 0x42 | (5 << 8) | (20 << 16)), encoded); // JNZ opcode = 0x42
+}
+
+test "encode_call_basic" {
+    const encoded = encode_call(100);
+    try std.testing.expectEqual(@as(u32, 0x43 | (100 << 8)), encoded); // CALL opcode = 0x43
+}
+
+test "encode_ret" {
+    const encoded = encode_ret();
+    try std.testing.expectEqual(@as(u32, 0x4B), encoded); // RET opcode = 0x4B
 }
 
 test "encode_store_max_address" {

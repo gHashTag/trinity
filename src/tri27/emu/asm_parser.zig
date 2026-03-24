@@ -30,6 +30,9 @@ pub const ParsedInstruction = struct {
     line: u32,
 
     pub fn deinit(self: *ParsedInstruction, allocator: Allocator) void {
+        for (self.operands.items) |op| {
+            allocator.free(op);
+        }
         self.operands.deinit(allocator);
     }
 };
@@ -168,6 +171,38 @@ pub const Assembler = struct {
             return encoder.encode_load_mem(dst, addr);
         }
 
+        // J-type: Jump instructions
+        if (std.mem.eql(u8, op_lower, "jmp")) {
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const imm = try parseImmediate(operands[0]);
+            return encoder.encode_jmp(imm);
+        }
+
+        if (std.mem.eql(u8, op_lower, "jz")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const rd = try parseRegister(operands[0]);
+            const imm = try parseImmediate(operands[1]);
+            return encoder.encode_jz(rd, imm);
+        }
+
+        if (std.mem.eql(u8, op_lower, "jnz")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const rd = try parseRegister(operands[0]);
+            const imm = try parseImmediate(operands[1]);
+            return encoder.encode_jnz(rd, imm);
+        }
+
+        if (std.mem.eql(u8, op_lower, "call")) {
+            if (operands.len != 1) return AsmError.InvalidSyntax;
+            const imm = try parseImmediate(operands[0]);
+            return encoder.encode_call(imm);
+        }
+
+        if (std.mem.eql(u8, op_lower, "ret")) {
+            if (operands.len != 0) return AsmError.InvalidSyntax;
+            return encoder.encode_ret();
+        }
+
         return AsmError.UnknownOpcode;
     }
 
@@ -249,13 +284,8 @@ pub const Assembler = struct {
                     // Write to bytecode
                     try self.writeWord(word);
 
-                    // Skip to next mnemonic or label
+                    // Move to next token
                     i += 1;
-                    while (i < self.tokens.len) {
-                        const t = self.tokens[i];
-                        if (t.type == .Mnemonic or t.type == .LabelDef or t.type == .EOF) break;
-                        i += 1;
-                    }
                 },
                 else => {
                     i += 1;
@@ -395,4 +425,79 @@ test "assembler encodes store" {
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
     const expected: u32 = 0x03 | (5 << 8) | (0x1000 << 16);
     try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes jmp" {
+    const allocator = std.testing.allocator;
+    const asm_source = "jmp 100";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x40 | (100 << 8);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes jz" {
+    const allocator = std.testing.allocator;
+    const asm_source = "jz r0, 10";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x41 | (10 << 8);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes jnz" {
+    const allocator = std.testing.allocator;
+    const asm_source = "jnz r5, 20";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x42 | (5 << 8) | (20 << 16);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes call" {
+    const allocator = std.testing.allocator;
+    const asm_source = "call 50";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    const expected: u32 = 0x43 | (50 << 8);
+    try std.testing.expectEqual(expected, word);
+}
+
+test "assembler encodes ret" {
+    const allocator = std.testing.allocator;
+    const asm_source = "ret";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    try std.testing.expectEqual(@as(u32, 0x4B), word);
+}
+
+test "assembler handles control flow with labels" {
+    const allocator = std.testing.allocator;
+    const asm_source =
+        \\ldi r0, 1
+        \\loop:
+        \\ldi r1, 0
+        \\jz r1, loop
+        \\halt
+    ;
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    // Should have 5 instructions (4 bytes each)
+    try std.testing.expectEqual(@as(usize, 20), result.len);
 }
