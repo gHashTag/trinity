@@ -1,6 +1,6 @@
 {
   "state": "COMMITTED",
-  "issue_number": 412,
-  "branch": "feat/issue-412-effects-handlers",
+  "issue_number": 413,
+  "branch": "feat/issue-413-array-combinators",
   "tests_passed": true
 }
