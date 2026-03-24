@@ -2,12 +2,15 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 /// Import types from Observe stage
 pub const Context = @import("observe.zig").Context;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const SensorsSnapshot = @import("observe.zig").SensorsSnapshot;
 const Episode = @import("episodes.zig").Episode;
+const createTestEpisode = @import("episodes.zig").createTestEpisode;
+pub const Outcome = @import("act.zig").Outcome;
 
 /// Action that can be taken
 pub const Action = enum {
@@ -130,4 +133,112 @@ test "evaluate: generates valid evaluation" {
 
     try std.testing.expect(result.action == .scale_up or result.action == .wait);
     try std.testing.expect(result.quality_score >= 0.0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 3: Episode Window Evaluation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Quality rating based on success rate
+pub const Quality = enum {
+    unknown,
+    good, // success_rate >= 0.95
+    unstable, // 0.70 < success_rate < 0.95
+    bad, // success_rate <= 0.70
+};
+
+/// Window evaluation result
+pub const WindowEvaluation = struct {
+    quality: Quality,
+    success_rate: f64,
+    failure_count: u32,
+    window_size: u32,
+};
+
+/// Evaluate a window of episodes to determine quality
+pub fn evaluateWindow(episodes: []const Episode) WindowEvaluation {
+    if (episodes.len == 0) {
+        return WindowEvaluation{
+            .quality = .unknown,
+            .success_rate = 0.0,
+            .failure_count = 0,
+            .window_size = 0,
+        };
+    }
+
+    var success_count: u32 = 0;
+    var failure_count: u32 = 0;
+
+    for (episodes) |ep| {
+        switch (ep.outcome) {
+            .success => success_count += 1,
+            .partial => failure_count += 1,
+            .failure_learned, .failure_unknown, .blocked => failure_count += 1,
+        }
+    }
+
+    const total: u32 = @intCast(episodes.len);
+    const success_rate = if (total > 0)
+        @as(f64, @floatFromInt(success_count)) / @as(f64, @floatFromInt(total))
+    else
+        0.0;
+
+    const quality: Quality = if (success_rate >= 0.95)
+        .good
+    else if (success_rate <= 0.70)
+        .bad
+    else
+        .unstable;
+
+    return WindowEvaluation{
+        .quality = quality,
+        .success_rate = success_rate,
+        .failure_count = failure_count,
+        .window_size = total,
+    };
+}
+
+test "evaluate: evaluateWindow empty episodes" {
+    const episodes = &[_]Episode{};
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.unknown, result.quality);
+    try std.testing.expectEqual(@as(u32, 0), result.window_size);
+}
+
+test "evaluate: evaluateWindow all success" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .success);
+    const episodes = &[_]Episode{ episode1, episode2 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.good, result.quality);
+    try std.testing.expectEqual(@as(f64, 1.0), result.success_rate);
+}
+
+test "evaluate: evaluateWindow mixed outcomes" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .success);
+    const episode3 = try createTestEpisode(allocator, .failure_learned);
+    const episode4 = try createTestEpisode(allocator, .success);
+    const episodes = &[_]Episode{ episode1, episode2, episode3, episode4 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.unstable, result.quality); // 0.75
+    try std.testing.expectEqual(@as(u32, 1), result.failure_count);
+}
+
+test "evaluate: evaluateWindow high failure rate" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .failure_learned);
+    const episode3 = try createTestEpisode(allocator, .failure_learned);
+    const episode4 = try createTestEpisode(allocator, .blocked);
+    const episodes = &[_]Episode{ episode1, episode2, episode3, episode4 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.bad, result.quality);
+    try std.testing.expectEqual(@as(u32, 3), result.failure_count);
 }

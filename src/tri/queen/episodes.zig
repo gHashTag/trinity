@@ -1,5 +1,6 @@
 // Queen Episodes — Episode Management & JSONL Persistence
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 pub const Context = @import("observe.zig").Context;
 pub const Plan = @import("plan.zig").Plan;
@@ -111,6 +112,36 @@ fn parseTri27Operation(str: []const u8) Tri27Operation {
     if (std.mem.eql(u8, str, "flash")) return .flash;
     if (std.mem.eql(u8, str, "dump")) return .dump;
     return .assemble; // Default
+}
+
+/// Helper function for creating test Episode with minimal fields
+pub fn createTestEpisode(allocator: Allocator, outcome: Outcome) !Episode {
+    const now_ns = std.time.nanoTimestamp();
+    const id: u64 = @as(u64, @intCast(@mod(now_ns, 1_000_000_000_000_000_000)));
+    const ms = std.time.milliTimestamp();
+    const timestamp: u64 = @intCast(@divTrunc(ms, 1000));
+
+    return Episode{
+        .id = id,
+        .timestamp = timestamp,
+        .source = .lotus_cycle,
+        .context = Context{
+            .timestamp_ns = timestamp * 1_000_000,
+            .policy = .{},
+            .senses = .{},
+            .active_issues = try allocator.alloc(u64, 0),
+            .recalled_episodes = &[_]Episode{},
+        },
+        .action = .wait,
+        .result = Result{
+            .success = true,
+            .@"error" = null,
+            .timing = .{ .start_ns = timestamp * 1_000_000, .end_ns = timestamp * 1_000_000, .duration_ms = 0 },
+            .output = null,
+            .new_senses = .{},
+        },
+        .outcome = outcome,
+    };
 }
 
 pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan, result: Result, outcome: Outcome) !Episode {
