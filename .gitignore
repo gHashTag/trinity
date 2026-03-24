@@ -37,6 +37,7 @@ Thumbs.db
 docs/node_modules/
 docs/.docusaurus/
 docs/build/
+docs/docsite/node_modules/
 
 # Test artifacts
 *.log
