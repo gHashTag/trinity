@@ -1,7 +1,7 @@
 {
-  "state": "COMMITTED",
-  "issue_number": 397,
-  "branch": "",
+  "state": "TESTED",
+  "issue_number": 403,
+  "branch": "fix/issue-403",
   "issue_title_len": 0,
   "issue_title": "",
   "files_count": 1,
