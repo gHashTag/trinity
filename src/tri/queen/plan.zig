@@ -8,6 +8,16 @@ pub const Evaluation = @import("evaluate.zig").Evaluation;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const Action = @import("evaluate.zig").Action;
 pub const Context = @import("observe.zig").Context;
+pub const WindowEvaluation = @import("evaluate.zig").WindowEvaluation;
+pub const Quality = @import("evaluate.zig").Quality;
+
+/// Policy delta — action to modify policy
+pub const PolicyDelta = union(enum) {
+    scale_up: struct { key: []const u8, factor: f64 },
+    scale_down: struct { key: []const u8, factor: f64 },
+    set: struct { key: []const u8, value: f64 },
+    wait: void,
+};
 
 /// Plan step
 pub const Step = struct {
@@ -117,6 +127,73 @@ pub fn plan(eval: Evaluation, policy: PolicySnapshot) !Plan {
     };
 }
 
+/// Generate policy deltas from window evaluation
+/// Phase 3 function: analyzes quality and recommends policy changes
+pub fn generatePlan(eval: WindowEvaluation, allocator: std.mem.Allocator) ![]PolicyDelta {
+    var deltas = try std.ArrayList(PolicyDelta).initCapacity(allocator, 0);
+    defer deltas.deinit(allocator);
+
+    switch (eval.quality) {
+        .good => {
+            // Quality is good - consider scaling up
+            try deltas.append(allocator, PolicyDelta{
+                .scale_up = .{
+                    .key = "kill_threshold",
+                    .factor = 1.1, // 10% increase
+                },
+            });
+
+            // Also set higher PPL target
+            try deltas.append(allocator, PolicyDelta{
+                .set = .{
+                    .key = "target_ppl",
+                    .value = eval.success_rate * 0.95, // Slightly better
+                },
+            });
+        },
+
+        .unstable => {
+            // Quality is unstable - wait and observe
+            try deltas.append(allocator, PolicyDelta{
+                .scale_down = .{
+                    .key = "kill_threshold",
+                    .factor = 0.95, // 5% decrease
+                },
+            });
+
+            try deltas.append(allocator, PolicyDelta{
+                .wait = {},
+            });
+        },
+
+        .bad => {
+            // Quality is bad - aggressive scaling down
+            try deltas.append(allocator, PolicyDelta{
+                .scale_down = .{
+                    .key = "kill_threshold",
+                    .factor = 0.8, // 20% decrease
+                },
+            });
+
+            try deltas.append(allocator, PolicyDelta{
+                .set = .{
+                    .key = "target_ppl",
+                    .value = 0.0, // Reset target
+                },
+            });
+        },
+
+        .unknown => {
+            // No data - wait
+            try deltas.append(allocator, PolicyDelta{
+                .wait = {},
+            });
+        },
+    }
+
+    return try deltas.toOwnedSlice(allocator);
+}
+
 test "plan: generates valid plan for scale_up" {
     const eval = Evaluation{
         .action = .scale_up,
@@ -132,4 +209,82 @@ test "plan: generates valid plan for scale_up" {
     try std.testing.expect(plan_result.action == .scale_up);
     try std.testing.expect(plan_result.steps.len > 0);
     try std.testing.expect(plan_result.rollback != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 3: generatePlan() Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "plan: generatePlan good quality scales up" {
+    const allocator = std.testing.allocator;
+
+    const eval = WindowEvaluation{
+        .quality = .good,
+        .success_rate = 0.98,
+        .failure_count = 1,
+        .window_size = 50,
+    };
+
+    const deltas = try generatePlan(eval, allocator);
+    defer allocator.free(deltas);
+
+    try std.testing.expect(deltas.len >= 1);
+    try std.testing.expect(deltas[0] == .scale_up);
+    try std.testing.expectEqual(@as(f64, 1.1), deltas[0].scale_up.factor);
+}
+
+test "plan: generatePlan unstable quality scales down slightly" {
+    const allocator = std.testing.allocator;
+
+    const eval = WindowEvaluation{
+        .quality = .unstable,
+        .success_rate = 0.85,
+        .failure_count = 8,
+        .window_size = 50,
+    };
+
+    const deltas = try generatePlan(eval, allocator);
+    defer allocator.free(deltas);
+
+    try std.testing.expect(deltas.len >= 2);
+    try std.testing.expect(deltas[0] == .scale_down);
+    try std.testing.expectEqual(@as(f64, 0.95), deltas[0].scale_down.factor);
+    try std.testing.expect(deltas[1] == .wait);
+}
+
+test "plan: generatePlan bad quality scales down aggressively" {
+    const allocator = std.testing.allocator;
+
+    const eval = WindowEvaluation{
+        .quality = .bad,
+        .success_rate = 0.65,
+        .failure_count = 18,
+        .window_size = 50,
+    };
+
+    const deltas = try generatePlan(eval, allocator);
+    defer allocator.free(deltas);
+
+    try std.testing.expect(deltas.len >= 2);
+    try std.testing.expect(deltas[0] == .scale_down);
+    try std.testing.expectEqual(@as(f64, 0.8), deltas[0].scale_down.factor);
+    try std.testing.expect(deltas[1] == .set);
+    try std.testing.expectEqual(@as(f64, 0.0), deltas[1].set.value);
+}
+
+test "plan: generatePlan unknown quality waits" {
+    const allocator = std.testing.allocator;
+
+    const eval = WindowEvaluation{
+        .quality = .unknown,
+        .success_rate = 0.0,
+        .failure_count = 0,
+        .window_size = 0,
+    };
+
+    const deltas = try generatePlan(eval, allocator);
+    defer allocator.free(deltas);
+
+    try std.testing.expectEqual(@as(usize, 1), deltas.len);
+    try std.testing.expect(deltas[0] == .wait);
 }
