@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-24T20:30:00Z",
+  "modules": [
+    {
+      "path": "src/tri/queen_dlpfc.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "DLPFC",
+      "neuro_function": "working_memory_planning",
+      "tri27_source": "src/tri27/queen_dlpfc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/queen_vmpfc.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "VMPFC",
+      "neuro_function": "value_assessment",
+      "tri27_source": "src/tri27/queen_vmpfc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/queen_ofc.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "OFC",
+      "neuro_function": "telegram_voice",
+      "tri27_source": "src/tri27/queen_ofc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/queen_vlpfc.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "VLPFC",
+      "neuro_function": "attention_filter",
+      "tri27_source": "src/tri27/queen_vlpfc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/queen_dmpfc.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "DMPFC",
+      "neuro_function": "self_monitor",
+      "tri27_source": "src/tri27/queen_dmpfc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/phoenix_medulla.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "Medulla",
+      "neuro_function": "basic_survival",
+      "tri27_source": "src/tri27/phoenix_medulla.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/phoenix_pons.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "Pons",
+      "neuro_function": "sleep_cycle",
+      "tri27_source": "src/tri27/phoenix_pons.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/phoenix_locus_coeruleus.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "Locus Coeruleus",
+      "neuro_function": "arousal_level",
+      "tri27_source": "src/tri27/phoenix_lc.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/reticular_aras.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "ARAS",
+      "neuro_function": "vigilance_sweep",
+      "tri27_source": "src/tri27/reticular_aras.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/reticular_raphe.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "Raphe",
+      "neuro_function": "ppl_stabilization",
+      "tri27_source": "src/tri27/reticular_raphe.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    },
+    {
+      "path": "src/tri/reticular_gigantocellular.zig",
+      "canon": false,
+      "source": "manual",
+      "neuro_region": "Gigantocellular",
+      "neuro_function": "motor_command",
+      "tri27_source": "src/tri27/reticular_giganto.t27",
+      "zig_shell": true,
+      "prod_critical": true
+    }
+  ]
+}
