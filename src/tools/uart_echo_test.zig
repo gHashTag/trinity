@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v3.97: Performance Profile Classification - connection type detection
+        // v3.98: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,10 +1966,16 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v3.97: Rate Limiting Detection - detect throttling patterns
+        // v3.98: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
+        }
+
+        // v3.98: Latency Distribution Fitting - statistical distribution analysis
+        if (self.count >= 30) {
+            printInfo("\n  📐 Distribution Fit:\n", .{});
+            self.showDistributionFit();
         }
     }
 
@@ -2274,7 +2280,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v3.97: Rate Limiting Detection - detect throttling patterns
+    // v3.98: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2394,6 +2400,245 @@ const JitterTracker = struct {
         } else if (detection.confidence > 0.5) {
             printDim("      - Possible rate limiting\n", .{});
             printDim("      - Monitor for patterns\n", .{});
+        }
+    }
+
+    // v3.98: Latency Distribution Fitting - fit RTT to statistical distributions
+    pub const DistributionFit = struct {
+        distribution: []const u8,
+        mean: f64,
+        std_dev: f64,
+        goodness_of_fit: f64,
+        interpretation: []const u8,
+    };
+
+    pub fn fitLatencyDistribution(self: *const JitterTracker) !?DistributionFit {
+        if (self.count < 30) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = stats.jitter;
+
+        // Calculate empirical CDF for K-S test
+        var sorted_samples = std.ArrayList(i64){};
+        defer sorted_samples.deinit(self.allocator);
+        try sorted_samples.appendSlice(self.allocator, self.samples[0..self.count]);
+
+        const lessThanFn = struct {
+            fn lessThan(_: void, a: i64, b: i64) bool {
+                return a < b;
+            }
+        }.lessThan;
+
+        std.sort.insertion(i64, sorted_samples.items, {}, lessThanFn);
+
+        // Test against Normal distribution
+        const normal_fit = testNormalDistribution(sorted_samples.items, mean, std_dev);
+
+        // Test against Log-Normal distribution
+        const log_normal_fit = testLogNormalDistribution(sorted_samples.items);
+
+        // Test against Exponential distribution
+        const exponential_fit = testExponentialDistribution(sorted_samples.items, mean);
+
+        // Select best fit by maximum goodness of fit
+        var best_fit = normal_fit;
+        if (log_normal_fit.goodness_of_fit > best_fit.goodness_of_fit) {
+            best_fit = log_normal_fit;
+        }
+        if (exponential_fit.goodness_of_fit > best_fit.goodness_of_fit) {
+            best_fit = exponential_fit;
+        }
+
+        return best_fit;
+    }
+
+    // Test if data fits Normal distribution using Kolmogorov-Smirnov statistic
+    fn testNormalDistribution(sorted_samples: []const i64, mean: f64, std_dev: f64) DistributionFit {
+        if (std_dev == 0) {
+            return .{
+                .distribution = "Normal",
+                .mean = mean,
+                .std_dev = 0,
+                .goodness_of_fit = 0,
+                .interpretation = "INSUFFICIENT_VARIANCE",
+            };
+        }
+
+        // Calculate K-S statistic
+        const n_f = @as(f64, @floatFromInt(sorted_samples.len));
+        var max_diff: f64 = 0;
+
+        for (sorted_samples, 0..) |x, i| {
+            // Empirical CDF at this point
+            const empirical_cdf = @as(f64, @floatFromInt(i + 1)) / n_f;
+
+            // Normal CDF at this point (using approximation)
+            const z = (@as(f64, @floatFromInt(x)) - mean) / std_dev;
+            const normal_cdf = normalCDFApprox(z);
+
+            const diff = @abs(empirical_cdf - normal_cdf);
+            if (diff > max_diff) {
+                max_diff = diff;
+            }
+        }
+
+        // Critical value for 95% confidence (approximate)
+        const critical_value = 1.36 / @sqrt(n_f);
+        const fits = max_diff <= critical_value;
+
+        return .{
+            .distribution = "Normal",
+            .mean = mean,
+            .std_dev = std_dev,
+            .goodness_of_fit = if (fits) 1.0 - max_diff else max_diff,
+            .interpretation = if (fits)
+                "Fits normal distribution - typical network latency"
+            else
+                "Does not fit normal - consider alternative distributions",
+        };
+    }
+
+    // Test if data fits Log-Normal distribution
+    fn testLogNormalDistribution(sorted_samples: []const i64) DistributionFit {
+        // Transform to log space
+        var log_sum: f64 = 0;
+        var log_sum_sq: f64 = 0;
+        const n_f = @as(f64, @floatFromInt(sorted_samples.len));
+
+        for (sorted_samples) |x| {
+            // Shift by 1 to avoid log(0)
+            const log_x = @log(@as(f64, @floatFromInt(x)) + 1.0);
+            log_sum += log_x;
+            log_sum_sq += log_x * log_x;
+        }
+
+        const log_mean = log_sum / n_f;
+        const log_var = (log_sum_sq - (log_sum * log_sum) / n_f) / n_f;
+        const log_std = if (log_var > 0) @sqrt(log_var) else 0;
+
+        // Calculate K-S statistic for log-normal
+        var max_diff: f64 = 0;
+        for (sorted_samples, 0..) |x, i| {
+            const empirical_cdf = @as(f64, @floatFromInt(i + 1)) / n_f;
+
+            const log_x = @log(@as(f64, @floatFromInt(x)) + 1.0);
+            const z = (log_x - log_mean) / if (log_std > 0) log_std else 1.0;
+            const log_normal_cdf = normalCDFApprox(z);
+
+            const diff = @abs(empirical_cdf - log_normal_cdf);
+            if (diff > max_diff) {
+                max_diff = diff;
+            }
+        }
+
+        // Transform back to original scale
+        const mean_original = @exp(log_mean + log_std * log_std / 2.0) - 1.0;
+
+        const critical_value = 1.36 / @sqrt(n_f);
+        const fits = max_diff <= critical_value;
+
+        return .{
+            .distribution = "Log-Normal",
+            .mean = mean_original,
+            .std_dev = log_std * mean_original,
+            .goodness_of_fit = if (fits) 1.0 - max_diff else max_diff,
+            .interpretation = if (fits)
+                "Fits log-normal - skewed latency distribution"
+            else
+                "Does not fit log-normal - low skewness",
+        };
+    }
+
+    // Test if data fits Exponential distribution
+    fn testExponentialDistribution(sorted_samples: []const i64, mean: f64) DistributionFit {
+        const lambda = if (mean > 0) 1.0 / mean else 0.001;
+
+        var max_diff: f64 = 0;
+        const n_f = @as(f64, @floatFromInt(sorted_samples.len));
+
+        for (sorted_samples, 0..) |x, i| {
+            const empirical_cdf = @as(f64, @floatFromInt(i + 1)) / n_f;
+
+            // Exponential CDF: 1 - exp(-lambda * x)
+            const x_f = @as(f64, @floatFromInt(x));
+            const exp_cdf = 1.0 - @exp(-lambda * x_f);
+
+            const diff = @abs(empirical_cdf - exp_cdf);
+            if (diff > max_diff) {
+                max_diff = diff;
+            }
+        }
+
+        // Exponential distribution std = 1/lambda = mean
+        const std_dev = if (lambda > 0) 1.0 / lambda else 0;
+
+        const critical_value = 1.36 / @sqrt(n_f);
+        const fits = max_diff <= critical_value;
+
+        return .{
+            .distribution = "Exponential",
+            .mean = mean,
+            .std_dev = std_dev,
+            .goodness_of_fit = if (fits) 1.0 - max_diff else max_diff,
+            .interpretation = if (fits)
+                "Fits exponential - memoryless arrival pattern"
+            else
+                "Does not fit exponential - has memory",
+        };
+    }
+
+    // Normal CDF approximation (Abramowitz & Stegun formula)
+    fn normalCDFApprox(z: f64) f64 {
+        const sign: f64 = if (z >= 0) 1.0 else -1.0;
+        const a = @abs(z) / @sqrt(2.0);
+
+        const p = 0.3275911;
+
+        const t = 1.0 / (1.0 + p * a);
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const t4 = t3 * t;
+        const t5 = t4 * t;
+
+        // Abramowitz & Stegun approximation for erf
+        const term1 = 0.254829592 * t5;
+        const term2 = -0.284496736 * t4;
+        const term3 = 1.421413741 * t3;
+        const term4 = -1.453152027 * t2;
+        const term5 = 1.061405429 * t;
+        const term6 = 0.3275911 * t5;
+
+        const inner1 = term1 + term2;
+        const inner2 = inner1 + term3 * t3 + term4;
+        const inner3 = inner2 * t2 + term5;
+        const erf_approx = inner3 * t + term6;
+
+        const erf = 1.0 - erf_approx;
+
+        return 0.5 * (1.0 + sign * erf);
+    }
+
+    pub fn showDistributionFit(self: *const JitterTracker) void {
+        const fit = self.fitLatencyDistribution() catch |err| {
+            printDim("    Error: {any}\n", .{err});
+            return;
+        };
+
+        if (fit) |f| {
+            const mean_ms = f.mean / 1000.0;
+            const std_ms = f.std_dev / 1000.0;
+            const gof_pct = f.goodness_of_fit * 100.0;
+
+            printDim("    Distribution: {s}\n", .{f.distribution});
+            printDim("    Mean: {d:.3}ms\n", .{mean_ms});
+            printDim("    Std Dev: {d:.3}ms\n", .{std_ms});
+            printDim("    Goodness of fit: {d:.1}%\n", .{gof_pct});
+            printDim("    {s}\n", .{f.interpretation});
+        } else {
+            printDim("    Insufficient data for distribution fitting\n", .{});
         }
     }
 
@@ -3602,7 +3847,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v3.97: Performance Profile Classification - connection type detection
+    // v3.98: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -5409,7 +5654,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.97           ║
+        \\║      Trinity UART Echo Test v3.98           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -5879,7 +6124,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v3.97)         ║
+            \\║         SIMULATION MODE (v3.98)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -6474,7 +6719,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v3.97)      ║
+        \\║       SIMULATION BATCH MODE (v3.98)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6608,7 +6853,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v3.97)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v3.98)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -6625,7 +6870,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.97)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.98)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -7564,7 +7809,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v3.97)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v3.98)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
