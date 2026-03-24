@@ -13,9 +13,9 @@ const encoder = @import("encoder_simple.zig");
 
 // Coptic glyph name parsing (27 registers: alpha0-shmima26)
 const COPTIC_NAMES = [27][]const u8{
-    "alpha0", "beta1", "gamma2", "delta3", "epsilon4", "zeta5", "theta6", "eta7", "theta8",
-    "iota9", "kappa10", "lambda11", "mu12", "nu13", "xi14", "omicron15", "pi16", "rho17",
-    "sigma18", "tau19", "upsilon20", "phi21", "chi22", "psi23", "omega24", "omega25", "shmima26",
+    "alpha0",  "beta1",   "gamma2",    "delta3", "epsilon4", "zeta5", "theta6",    "eta7",    "theta8",
+    "iota9",   "kappa10", "lambda11",  "mu12",   "nu13",     "xi14",  "omicron15", "pi16",    "rho17",
+    "sigma18", "tau19",   "upsilon20", "phi21",  "chi22",    "psi23", "omega24",   "omega25", "shmima26",
 };
 
 fn copticNameToNum(name: []const u8) ?u5 {
@@ -750,7 +750,6 @@ test "assembler handles control flow with labels" {
     // Should have 4 instructions (4 bytes each) = 16 bytes
     try std.testing.expectEqual(@as(usize, 16), result.len);
 }
-
 
 test "assembler handles Coptic register names" {
     const allocator = std.testing.allocator;
