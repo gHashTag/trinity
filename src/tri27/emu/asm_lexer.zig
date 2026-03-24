@@ -86,7 +86,25 @@ pub const Lexer = struct {
             }
         }
 
-        // Check hex immediate BEFORE decimal immediate
+        // Coptic register names: alpha0, beta1, ..., shmima26
+        // Check if we have alphabetic characters followed by digits
+        if (std.ascii.isAlphabetic(c)) {
+            var i = self.pos + 1;
+            // Skip all alphabetic characters
+            while (i < self.source.len and std.ascii.isAlphabetic(self.source[i])) {
+                i += 1;
+            }
+            // Check if followed by digits
+            if (i < self.source.len and self.source[i] >= '0' and self.source[i] <= '9') {
+                // Could be a Coptic register - try to lex it
+                if (self.tryLexCopticRegister()) {
+                    return; // Successfully lexed as Coptic register
+                }
+                // Not a Coptic register, fall through to mnemonic
+            }
+        }
+
+        // Check hex immediate
         if (c == '0' and self.pos + 1 < self.source.len and self.source[self.pos + 1] == 'x') {
             try self.lexHexImmediate();
             return;
@@ -192,6 +210,129 @@ pub const Lexer = struct {
             .line = start_line,
             .column = start_col,
         });
+    }
+
+    fn lexCopticRegister(self: *Lexer) !void {
+        const start = self.pos;
+        const start_line = self.line;
+        const start_col = self.column;
+
+        // Parse Coptic name: alpha0, beta1, ..., shmima26
+        // Find the end of the alphabetic part
+        var name_end = self.pos;
+        while (name_end < self.source.len and std.ascii.isAlphabetic(self.source[name_end])) {
+            name_end += 1;
+        }
+
+        if (name_end == self.pos) return error.InvalidRegister; // No letters
+
+        // Check for numeric suffix (0-26)
+        var num_end = name_end;
+        while (num_end < self.source.len and self.source[num_end] >= '0' and self.source[num_end] <= '9') {
+            num_end += 1;
+        }
+
+        if (num_end == name_end) return error.InvalidRegister; // No digits
+
+        const name = self.source[self.pos..name_end];
+        const suffix = self.source[name_end..num_end];
+
+        // Validate it's a known Coptic name
+        const lower = std.ascii.allocLowerString(self.allocator, name) catch return error.InvalidRegister;
+        defer self.allocator.free(lower);
+
+        const CopticNames = [_][]const u8{
+            "alpha",  "beta",  "gamma",  "delta",   "epsilon", "zeta", "theta",   "eta",
+            "iota",   "kappa", "lambda", "mu",      "nu",      "xi",   "omicron", "pi",
+            "rho",    "sigma", "tau",    "upsilon", "phi",     "chi",  "psi",     "omega",
+            "shmima",
+        };
+
+        var is_coptic = false;
+        for (CopticNames) |optic_name| {
+            if (std.mem.eql(u8, lower, optic_name)) {
+                is_coptic = true;
+                break;
+            }
+        }
+
+        if (!is_coptic) return error.InvalidRegister;
+
+        // Parse suffix digit
+        const suffix_num = std.fmt.parseInt(u8, suffix, 10) catch return error.InvalidRegister;
+        if (suffix_num > 26) return error.InvalidRegister; // 0-26 for Coptic
+
+        try self.tokens.append(self.allocator, Token{
+            .type = .Register,
+            .text = self.source[start..num_end],
+            .line = start_line,
+            .column = start_col,
+        });
+
+        self.pos = num_end;
+        self.column = start_col + @as(u32, @intCast(num_end - start));
+    }
+
+    /// Try to lex a Coptic register, returning true if successful, false if not
+    fn tryLexCopticRegister(self: *Lexer) bool {
+        const start = self.pos;
+        const start_line = self.line;
+        const start_col = self.column;
+
+        // Find the end of the alphabetic part
+        var name_end = self.pos;
+        while (name_end < self.source.len and std.ascii.isAlphabetic(self.source[name_end])) {
+            name_end += 1;
+        }
+
+        if (name_end == self.pos) return false; // No letters
+
+        // Check for numeric suffix (0-26)
+        var num_end = name_end;
+        while (num_end < self.source.len and self.source[num_end] >= '0' and self.source[num_end] <= '9') {
+            num_end += 1;
+        }
+
+        if (num_end == name_end) return false; // No digits
+
+        const name = self.source[self.pos..name_end];
+        const suffix = self.source[name_end..num_end];
+
+        // Validate it's a known Coptic name
+        const lower = std.ascii.allocLowerString(self.allocator, name) catch return false;
+        defer self.allocator.free(lower);
+
+        const CopticNames = [_][]const u8{
+            "alpha",  "beta",  "gamma",  "delta",   "epsilon", "zeta", "theta",   "eta",
+            "iota",   "kappa", "lambda", "mu",      "nu",      "xi",   "omicron", "pi",
+            "rho",    "sigma", "tau",    "upsilon", "phi",     "chi",  "psi",     "omega",
+            "shmima",
+        };
+
+        var is_coptic = false;
+        for (CopticNames) |optic_name| {
+            if (std.mem.eql(u8, lower, optic_name)) {
+                is_coptic = true;
+                break;
+            }
+        }
+
+        if (!is_coptic) return false;
+
+        // Parse suffix digit
+        const suffix_num = std.fmt.parseInt(u8, suffix, 10) catch return false;
+        if (suffix_num > 26) return false; // 0-26 for Coptic
+
+        self.tokens.append(self.allocator, Token{
+            .type = .Register,
+            .text = self.source[start..num_end],
+            .line = start_line,
+            .column = start_col,
+        }) catch return false;
+
+        self.pos = num_end;
+        self.column = start_col + @as(u32, @intCast(num_end - start));
+        return true;
     }
 
     fn lexImmediate(self: *Lexer) !void {
