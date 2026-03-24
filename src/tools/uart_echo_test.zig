@@ -1929,6 +1929,12 @@ const JitterTracker = struct {
             printInfo("\n  💥 Burst Analysis:\n", .{});
             self.showBurstAnalysis();
         }
+
+        // v3.89: Connection Stability Score - comprehensive stability indicator
+        if (self.count >= 10) {
+            printInfo("\n  📈 Connection Stability Score:\n", .{});
+            self.showStabilityScore();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3358,6 +3364,143 @@ const JitterTracker = struct {
         } else {
             printDim("\n    Interpretation: Severe congestion or system overload detected\n", .{});
         }
+    }
+
+    // v3.89: Connection Stability Score - comprehensive stability indicator
+    pub const StabilityScore = struct {
+        overall_score: f64, // 0-100
+        jitter_stability: f64, // 0-100
+        consistency_score: f64, // 0-100
+        burst_penalty: f64, // 0-100
+        trend_score: f64, // 0-100
+        grade: []const u8, // A/B/C/D/F
+        recommendation: []const u8,
+    };
+
+    pub fn calculateStabilityScore(self: *const JitterTracker) StabilityScore {
+        if (self.count < 10) {
+            return .{
+                .overall_score = 0.0,
+                .jitter_stability = 0.0,
+                .consistency_score = 0.0,
+                .burst_penalty = 0.0,
+                .trend_score = 0.0,
+                .grade = "N/A",
+                .recommendation = "Insufficient data (need 10+ samples)",
+            };
+        }
+
+        // 1. Jitter Stability (based on coefficient of variation)
+        const stats = self.getStats();
+        const mean_us = stats.mean;
+        const jitter_us = stats.jitter; // This is std_dev
+        const cv = if (mean_us > 0) jitter_us / mean_us else 0.0;
+        const jitter_stability: f64 = if (cv < 0.1) 100.0
+        else if (cv < 0.2) 85.0
+        else if (cv < 0.3) 70.0
+        else if (cv < 0.5) 50.0
+        else 25.0;
+
+        // 2. Consistency Score (based on IQR spread)
+        const p = self.getPercentiles();
+        const iqr = @as(f64, @floatFromInt(p.p75 - p.p25));
+        const median_ms = @as(f64, @floatFromInt(p.p50)) / 1000.0;
+        const normalized_iqr = if (median_ms > 0) iqr / 1000.0 / median_ms else 0.0;
+        const consistency_score: f64 = if (normalized_iqr < 0.2) 100.0
+        else if (normalized_iqr < 0.4) 80.0
+        else if (normalized_iqr < 0.6) 60.0
+        else if (normalized_iqr < 1.0) 40.0
+        else 20.0;
+
+        // 3. Burst Penalty (inverse of burst severity)
+        const burst_result = self.analyzeBursts(2.0);
+        const burst_ratio = @as(f64, @floatFromInt(burst_result.total_burst_samples)) / @as(f64, @floatFromInt(self.count));
+        const burst_penalty: f64 = if (burst_result.burst_count == 0) 100.0
+        else if (burst_ratio < 0.05) 90.0
+        else if (burst_ratio < 0.15) 70.0
+        else if (burst_ratio < 0.30) 40.0
+        else 10.0;
+
+        // 4. Trend Score (based on degradation detection)
+        const trend_score: f64 = if (self.count < 6) 75.0 else blk: {
+            const half = @divFloor(self.count, 2);
+            var first_sum: i64 = 0;
+            var second_sum: i64 = 0;
+            for (self.samples[0..half]) |s| first_sum += s;
+            for (self.samples[half..self.count]) |s| second_sum += s;
+            const first_avg = @as(f64, @floatFromInt(first_sum)) / @as(f64, @floatFromInt(half));
+            const second_avg = @as(f64, @floatFromInt(second_sum)) / @as(f64, @floatFromInt(self.count - half));
+            const change_ratio = if (first_avg > 0) (second_avg - first_avg) / first_avg else 0.0;
+
+            if (change_ratio < -0.1) break :blk 100.0; // Improved
+            if (change_ratio < 0.0) break :blk 90.0; // Slightly improved
+            if (change_ratio < 0.1) break :blk 80.0; // Stable
+            if (change_ratio < 0.25) break :blk 60.0; // Mild degradation
+            if (change_ratio < 0.5) break :blk 40.0; // Moderate degradation
+            break :blk 20.0; // Severe degradation
+        };
+
+        // Overall score (weighted average)
+        const overall_score = (jitter_stability * 0.35 + consistency_score * 0.25 +
+            burst_penalty * 0.25 + trend_score * 0.15);
+
+        // Grade assignment
+        const grade = if (overall_score >= 90) "A"
+        else if (overall_score >= 80) "B"
+        else if (overall_score >= 70) "C"
+        else if (overall_score >= 60) "D"
+        else "F";
+
+        // Recommendation
+        const recommendation = if (overall_score >= 90)
+            "Excellent stability - suitable for real-time applications"
+        else if (overall_score >= 80)
+            "Good stability - suitable for most applications"
+        else if (overall_score >= 70)
+            "Acceptable stability - may need tuning for sensitive applications"
+        else if (overall_score >= 60)
+            "Poor stability - not recommended for real-time use"
+        else
+            "Unstable connection - investigate network/hardware issues";
+
+        return .{
+            .overall_score = overall_score,
+            .jitter_stability = jitter_stability,
+            .consistency_score = consistency_score,
+            .burst_penalty = burst_penalty,
+            .trend_score = trend_score,
+            .grade = grade,
+            .recommendation = recommendation,
+        };
+    }
+
+    pub fn showStabilityScore(self: *const JitterTracker) void {
+        if (self.count < 10) {
+            printInfo("[i] Stability Score: insufficient data (need 10+ samples)\n", .{});
+            return;
+        }
+
+        const score = self.calculateStabilityScore();
+
+        printInfo("[i] Connection Stability Score:\n", .{});
+
+        // Overall score with color coding
+        const score_emoji = if (score.overall_score >= 90) "🟢"
+        else if (score.overall_score >= 80) "🟡"
+        else if (score.overall_score >= 70) "🟠"
+        else "🔴";
+
+        printDim("    {s} Overall: {d:.1}/100 ({s})\n", .{ score_emoji, score.overall_score, score.grade });
+
+        // Component scores
+        printDim("\n    Components:\n", .{});
+        printDim("       Jitter Stability:  {d:.0}/100\n", .{score.jitter_stability});
+        printDim("       Consistency:       {d:.0}/100\n", .{score.consistency_score});
+        printDim("       Burst Resistance:  {d:.0}/100\n", .{score.burst_penalty});
+        printDim("       Trend Score:       {d:.0}/100\n", .{score.trend_score});
+
+        // Recommendation
+        printDim("\n    Recommendation: {s}\n", .{score.recommendation});
     }
 
     // v3.69: Plot histogram of RTT distribution
