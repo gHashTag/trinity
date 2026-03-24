@@ -114,9 +114,19 @@ pub const Lexer = struct {
     fn skipWhitespace(self: *Lexer) void {
         while (self.pos < self.source.len) {
             const c = self.source[self.pos];
-            if (c != ' ' and c != '\t') break;
-            self.pos += 1;
-            self.column += 1;
+            if (c == '\n') {
+                self.pos += 1;
+                self.line += 1;
+                self.column = 1;
+            } else if (c == '\r') {
+                self.pos += 1;
+                // Skip CR, next will be LF handled above
+            } else if (c == ' ' or c == '\t') {
+                self.pos += 1;
+                self.column += 1;
+            } else {
+                break;
+            }
         }
     }
 
