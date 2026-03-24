@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.66 — Moving Average Smoothing (noise reduction analysis)
+//! v3.67 — Anomaly Detection (combination of IQR, Z-score, and MA deviation)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1441,6 +1441,69 @@ const JitterTracker = struct {
         return .{ .smoothed = smoothed, .count = smoothed_count, .original_std = original_std, .smoothed_std = smoothed_std, .reduction_pct = reduction_pct };
     }
 
+    // v3.67: Anomaly Detection - combines multiple statistical methods to detect anomalies
+    // Returns count and details of detected anomalies using: IQR outliers, z-score, and MA deviation
+    pub fn detectAnomalies(self: *const JitterTracker, iqr_threshold: f64, z_threshold: f64) struct {
+        count: usize,
+        iqr_outliers: usize,
+        z_score_outliers: usize,
+        ma_deviations: usize,
+        anomaly_score: f64, // 0-100, higher = more anomalous
+    } {
+        if (self.count < 10) {
+            return .{ .count = 0, .iqr_outliers = 0, .z_score_outliers = 0, .ma_deviations = 0, .anomaly_score = 0 };
+        }
+
+        const stats = self.getStats();
+        const mean = stats.mean;
+        const std_dev = stats.jitter;
+
+        // Method 1: IQR outliers (already implemented)
+        const iqr_result = self.detectOutliersIQR(iqr_threshold);
+        const iqr_count = iqr_result.count;
+
+        // Method 2: Z-score outliers (|value - mean| / std_dev > threshold)
+        var z_score_count: usize = 0;
+        for (self.samples[0..self.count]) |s| {
+            if (std_dev > 0) {
+                const z_score = @abs(@as(f64, @floatFromInt(s)) - mean) / std_dev;
+                if (z_score > z_threshold) {
+                    z_score_count += 1;
+                }
+            }
+        }
+
+        // Method 3: Moving average deviation
+        const ma = self.getMovingAverage(10);
+        var ma_dev_count: usize = 0;
+        if (ma.count > 0) {
+            const ma_mean = mean / 1000.0; // convert to ms for comparison
+            for (ma.smoothed[0..ma.count]) |smoothed_val| {
+                const smoothed_ms = smoothed_val / 1000.0;
+                const deviation = @abs(smoothed_ms - ma_mean);
+                if (deviation > 2.0 * std_dev / 1000.0) { // > 2σ from mean
+                    ma_dev_count += 1;
+                }
+            }
+        }
+
+        // Calculate anomaly score (0-100)
+        // Score = weighted sum of (outliers / total) * weights
+        const total_samples = @as(f64, @floatFromInt(self.count));
+        const iqr_ratio = @as(f64, @floatFromInt(iqr_count)) / total_samples;
+        const z_ratio = @as(f64, @floatFromInt(z_score_count)) / total_samples;
+
+        const anomaly_score = @min(100.0, (iqr_ratio * 40.0) + (z_ratio * 60.0));
+
+        return .{
+            .count = @max(iqr_count, @max(z_score_count, ma_dev_count)), // Max of all methods
+            .iqr_outliers = iqr_count,
+            .z_score_outliers = z_score_count,
+            .ma_deviations = ma_dev_count,
+            .anomaly_score = anomaly_score,
+        };
+    }
+
     // v3.64: Correlation Analysis - computes Pearson correlation between RTT and time
     // Returns correlation coefficient r in [-1, 1]:
     //   r > 0.5: Strong positive correlation (RTT increasing over time - degrading)
@@ -1742,6 +1805,32 @@ const JitterTracker = struct {
                 printDim(" ({d:.1}% noise reduction)", .{ma.reduction_pct});
             }
             printDim("\n", .{});
+            if (ma.reduction_pct > 0) {
+                printDim(" ({d:.1}% noise reduction)", .{ma.reduction_pct});
+            }
+            printDim("\n", .{});
+        }
+
+        // v3.67: Anomaly Detection - statistical pattern recognition
+        const anomalies = self.detectAnomalies(1.5, 2.0);
+        if (anomalies.count > 0) {
+            const score = anomalies.anomaly_score;
+            const severity = if (score >= 50.0)
+                "CRITICAL"
+            else if (score >= 30.0)
+                "HIGH"
+            else if (score >= 15.0)
+                "MODERATE"
+            else
+                "LOW";
+
+            printInfo("\n  ⚠ Anomaly Detection:\n", .{});
+            printDim("    Score: {d:.1}/100 ({s})\n", .{ score, severity });
+            printDim("    IQR outliers: {d}/{d} samples\n", .{ anomalies.iqr_outliers, self.count });
+            printDim("    Z-score outliers: {d}/{d} samples\n", .{ anomalies.z_score_outliers, self.count });
+            printDim("    MA deviations: {d}/{d} samples\n", .{ anomalies.ma_deviations, self.count });
+            printDim("    Total anomalies: {d}/{d} samples\n", .{ anomalies.count, self.count });
+            printDim("    Severity: {s}\n", .{ severity });
         }
     }
 };
