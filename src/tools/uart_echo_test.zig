@@ -127,6 +127,7 @@ const Config = struct {
     compare_baseline: bool = false,
     statistical_mode: bool = false, // v3.60: Statistical significance testing
     time_series_plot: bool = false, // v3.61: Time series visualization
+    multi_baseline_dir: ?[]const u8 = null, // v3.62: Multi-baseline comparison directory
 };
 
 // Device vendor detection
@@ -294,7 +295,7 @@ const Baseline = struct {
 
         // Mean RTT comparison
         printErr("{s}Mean RTT:{s} ", .{ ANSI.BLUE, ANSI.RESET });
-        printErr("{s}{d:.2}{s} us → ", .{ ANSI.DIM, self.mean_rtt_us, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us -> ", .{ ANSI.DIM, self.mean_rtt_us, ANSI.RESET });
         printErr("{s}{d:.2}{s} us ", .{ ANSI.BOLD, current_mean, ANSI.RESET });
         if (@abs(mean_pct) < 5.0) {
             printErr("{s}(~{d:.1}%){s}\n", .{ ANSI.GREEN, @abs(mean_pct), ANSI.RESET });
@@ -306,7 +307,7 @@ const Baseline = struct {
 
         // Jitter comparison
         printErr("{s}Jitter: {s}", .{ ANSI.BLUE, ANSI.RESET });
-        printErr("{s}{d:.2}{s} us → ", .{ ANSI.DIM, self.jitter_us, ANSI.RESET });
+        printErr("{s}{d:.2}{s} us -> ", .{ ANSI.DIM, self.jitter_us, ANSI.RESET });
         printErr("{s}{d:.2}{s} us ", .{ ANSI.BOLD, current_jitter, ANSI.RESET });
         if (@abs(jitter_pct) < 5.0) {
             printErr("{s}(~{d:.1}%){s}\n", .{ ANSI.GREEN, @abs(jitter_pct), ANSI.RESET });
@@ -318,7 +319,7 @@ const Baseline = struct {
 
         // Quality score comparison
         printErr("{s}Quality: {s}", .{ ANSI.BLUE, ANSI.RESET });
-        printErr("{s}{d:.1}{s} → ", .{ ANSI.DIM, self.quality_score, ANSI.RESET });
+        printErr("{s}{d:.1}{s} -> ", .{ ANSI.DIM, self.quality_score, ANSI.RESET });
         printErr("{s}{d:.1}{s} ", .{ ANSI.BOLD, current_quality, ANSI.RESET });
         if (quality_delta > 5.0) {
             printErr("{s}(+{d:.1}){s}\n", .{ ANSI.GREEN, quality_delta, ANSI.RESET });
@@ -501,6 +502,107 @@ fn calculateTwoTailedPValue(t_abs: f64, df: f64) f64 {
     return 2.0 * (1.0 - cumulative);
 }
 
+// v3.62: Multi-baseline history management
+const BaselineHistory = struct {
+    const MAX_BASELINES = 10;
+
+    baselines: [MAX_BASELINES]?Baseline,
+    count: usize = 0,
+
+    pub fn init() BaselineHistory {
+        return .{
+            .baselines = [_]?Baseline{null} ** MAX_BASELINES,
+            .count = 0,
+        };
+    }
+
+    pub fn add(self: *BaselineHistory, baseline: Baseline) !void {
+        if (self.count >= MAX_BASELINES) {
+            return error.BaselineLimitReached;
+        }
+        self.baselines[self.count] = baseline;
+        self.count += 1;
+    }
+
+    pub fn loadFromDir(allocator: std.mem.Allocator, dir_path: []const u8) !BaselineHistory {
+        var history = BaselineHistory.init();
+
+        var dir = try std.fs.cwd().openDir(dir_path, .{ .iterate = true });
+        defer dir.close();
+
+        var iterator = dir.iterate();
+
+        while (try iterator.next()) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+            const file_path = try std.fs.path.join(allocator, &[_][]const u8{ dir_path, entry.name });
+            defer allocator.free(file_path);
+
+            const baseline = try Baseline.loadFromFile(allocator, file_path);
+            try history.add(baseline);
+        }
+
+        return history;
+    }
+
+    pub fn compareAll(self: *const BaselineHistory, current_mean: f64, current_jitter: f64, current_quality: f64) void {
+        if (self.count == 0) {
+            printErr("{s}[!] No historical baselines found{s}\n", .{ ANSI.YELLOW, ANSI.RESET });
+            return;
+        }
+
+        printErr("\n{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+        printErr("{s}    MULTI-BASELINE COMPARISON (v3.62)         {s}\n", .{ ANSI.BOLD, ANSI.RESET });
+        printErr("{s}═══════════════════════════════════════════════════{s}\n\n", .{ ANSI.CYAN, ANSI.RESET });
+
+        printErr(" {s}Timestamp{s}       {s}Mean RTT{s}    {s}Jitter{s}     {s}Quality{s}\n", .{ ANSI.BOLD, ANSI.RESET, ANSI.BOLD, ANSI.RESET, ANSI.BOLD, ANSI.RESET, ANSI.BOLD, ANSI.RESET });
+        printErr(" {s}────────────────────────────────────────────────────────{s}\n", .{ ANSI.DIM, ANSI.RESET });
+
+        for (self.baselines[0..self.count]) |baseline_opt| {
+            const baseline = baseline_opt orelse continue;
+
+            const timestamp = baseline.timestamp;
+            const date_str = formatDate(timestamp);
+            const mean_delta = current_mean - baseline.mean_rtt_us;
+            const mean_pct = if (baseline.mean_rtt_us > 0) (mean_delta / baseline.mean_rtt_us) * 100.0 else 0.0;
+            const jitter_delta = current_jitter - baseline.jitter_us;
+            const quality_delta = current_quality - baseline.quality_score;
+
+            printErr(" {s} {s}     {d:7.2}ms     {d:6.2}ms       {d:5.1}\n", .{
+                ANSI.DIM, date_str, current_mean / 1000.0, current_jitter / 1000.0, current_quality,
+            });
+
+            const mean_symbol: u8 = if (@abs(mean_pct) < 5.0) '~' else if (mean_pct > 0) '^' else 'v';
+            const jitter_symbol: u8 = if (jitter_delta > 0) '^' else 'v';
+            const quality_symbol: u8 = if (quality_delta > 5.0) '^' else if (quality_delta < -5.0) 'v' else '~';
+
+            printErr("      vs {s}: {c}{d:+.1}%   {c}{d:+.1}%      {c}{d:+.1}\n", .{
+                baseline.version,                            mean_symbol,    mean_pct,      jitter_symbol,
+                (jitter_delta / baseline.jitter_us) * 100.0, quality_symbol, quality_delta,
+            });
+            printErr("      ────────────────────────────────────────────────\n", .{});
+        }
+
+        printErr("\n", .{});
+    }
+
+    fn formatDate(timestamp: i64) []const u8 {
+        // Simple date formatting (returns static string for display)
+        const ts = @abs(timestamp);
+        _ = ts;
+        // For brevity, just show relative time
+        if (timestamp < 0) {
+            return "past";
+        }
+        const now = std.time.timestamp();
+        const diff_hours = @divFloor(now - timestamp, 3600);
+        if (diff_hours < 1) return "<1h ago";
+        if (diff_hours < 24) return "<1d ago";
+        return "older";
+    }
+};
+
 // v3.61: Time series visualization with ASCII plots
 const TimeSeries = struct {
     const PLOT_WIDTH = 60;
@@ -571,9 +673,9 @@ const TimeSeries = struct {
         printErr("       └", .{});
         var x: usize = 1;
         while (x < PLOT_WIDTH) : (x += 1) {
-            printErr("─", .{});
+            printErr(" ", .{});
         }
-        printErr("→\n", .{});
+        printErr("->\n", .{});
         printErr("       0                                    {d:>5.0}%\n", .{@as(f64, @floatFromInt(samples.len - 1)) / @as(f64, @floatFromInt(samples.len - 1)) * 100.0});
         printErr("\n", .{});
     }
@@ -2083,6 +2185,14 @@ fn parseArgs() Config {
         } else if (std.mem.eql(u8, arg, "--time-series")) {
             // v3.61: Time series visualization
             config.time_series_plot = true;
+        } else if (std.mem.eql(u8, arg, "--multi-baseline")) {
+            // v3.62: Multi-baseline comparison
+            if (i + 1 >= std.os.argv.len) {
+                printErr("[*] --multi-baseline requires value\n", .{});
+                std.process.exit(1);
+            }
+            config.multi_baseline_dir = std.mem.span(std.os.argv[i + 1]);
+            i += 1;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -2241,7 +2351,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.61           ║
+        \\║      Trinity UART Echo Test v3.62           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -2289,6 +2399,7 @@ fn printUsage() void {
         \\  --compare-baseline <file>  Compare current run against saved baseline (v3.58)
         \\  --statistical       Statistical significance testing (Welch's t-test, CI) (v3.60)
         \\  --time-series       Time series visualization (ASCII RTT/jitter plots) (v3.61)
+        \\  --multi-baseline <dir>  Compare against all historical baselines (v3.62)
         \\  --help              Show this help message
         \\
         \\Performance Modes (v3.60):
@@ -2319,6 +2430,7 @@ fn printUsage() void {
         \\  Performance Baseline: Save/compare performance runs (v3.58)
         \\  Statistical Significance: Welch's t-test, CI, Cohen's d (v3.60)
         \\  Time Series Plots: ASCII visualization of RTT/jitter over time (v3.61)
+        \\  Multi-Baseline Comparison: Compare against historical baselines (v3.62)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
@@ -3533,7 +3645,7 @@ fn runSimulationBatch(config: Config) !void {
 
                 var new_baseline = Baseline{
                     .timestamp = std.time.timestamp(),
-                    .version = "v3.61",
+                    .version = "v3.62",
                     .mean_rtt_us = stats.mean,
                     .jitter_us = stats.jitter,
                     .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
@@ -3703,7 +3815,7 @@ fn runSimulation(config: Config) !void {
 
                     var new_baseline = Baseline{
                         .timestamp = std.time.timestamp(),
-                        .version = "v3.61",
+                        .version = "v3.62",
                         .mean_rtt_us = stats.mean,
                         .jitter_us = stats.jitter,
                         .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
@@ -3723,6 +3835,17 @@ fn runSimulation(config: Config) !void {
                     };
                     printErr("{s}[✓] Baseline saved to: {s}{s}\n", .{ ANSI.GREEN, baseline_path, ANSI.RESET });
                 }
+            }
+
+            // v3.62: Multi-baseline comparison
+            if (config.multi_baseline_dir) |dir_path| {
+                const history = BaselineHistory.loadFromDir(allocator, dir_path) catch |err| {
+                    printErr("[!] Failed to load baseline history: {any}\n", .{err});
+                    printErr("[i] Looking in: {s}\n", .{dir_path});
+                    return;
+                };
+                const stats = jitter_tracker.getStats();
+                history.compareAll(stats.mean, stats.jitter, quality.score);
             }
 
             // v3.61: Time series visualization
