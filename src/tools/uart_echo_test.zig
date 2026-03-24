@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.80 — Adaptive Thresholds (auto-configurable thresholds based on statistics)
+//! v4.06 — Connection Fingerprinting (identify connection types)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2019,6 +2019,12 @@ const JitterTracker = struct {
             printInfo("\n  📜 Historical Comparison:\n", .{});
             self.showHistoricalComparison();
         }
+
+        // v4.06: Connection Fingerprinting - identify connection types
+        if (self.count >= 20) {
+            printInfo("\n  🔍 Connection Fingerprint:\n", .{});
+            self.showConnectionFingerprinting();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -3408,6 +3414,81 @@ const JitterTracker = struct {
             printDim("    {s}\n", .{c.recommendation});
         } else {
             printDim("    Insufficient data for comparison\n", .{});
+        }
+    }
+
+    // v4.06: Connection Fingerprinting - identify connection types
+    pub const ConnectionFingerprint = struct {
+        connection_type: []const u8,
+        confidence: f64,
+        latency_range_ms: []const f64,
+        jitter_profile: f64,
+        final_assessment: []const u8,
+    };
+
+    pub fn getConnectionFingerprint(self: *const JitterTracker) ?ConnectionFingerprint {
+        if (self.count < 20) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        const std_dev = stats.jitter;
+
+        // Determine connection type based on latency/jitter characteristics
+        var connection_type: []const u8 = "UNKNOWN";
+        var confidence: f64 = 0;
+
+        if (mean_ms < 5.0 and jitter_ms < 1.0) {
+            connection_type = "DIRECT";
+            confidence = 0.95;
+        } else if (mean_ms < 20.0 and jitter_ms < 5.0) {
+            connection_type = "ETHERNET";
+            confidence = 0.80;
+        } else if (mean_ms < 50.0 and jitter_ms < 15.0) {
+            connection_type = "WIFI";
+            confidence = 0.70;
+        } else if (mean_ms < 100.0 and jitter_ms < 30.0) {
+            connection_type = "CELLULAR";
+            confidence = 0.60;
+        } else if (mean_ms < 200.0 and jitter_ms < 50.0) {
+            connection_type = "VPN";
+            confidence = 0.50;
+        } else {
+            connection_type = "MULTI-HOP";
+            confidence = 0.30;
+        }
+
+        const final_assessment: []const u8 = if (confidence >= 0.8)
+            "EXCELLENT - Reliable connection"
+        else if (confidence >= 0.6)
+            "GOOD - Stable connection"
+        else if (confidence >= 0.4)
+            "FAIR - Usable with caution"
+        else
+            "POOR - Unreliable";
+
+        return .{
+            .connection_type = connection_type,
+            .confidence = confidence,
+            .latency_range_ms = &.{mean_ms - std_dev / 1000.0, mean_ms, mean_ms + std_dev / 1000.0},
+            .jitter_profile = jitter_ms,
+            .final_assessment = final_assessment,
+        };
+    }
+
+    pub fn showConnectionFingerprinting(self: *const JitterTracker) void {
+        const fingerprint = self.getConnectionFingerprint();
+
+        if (fingerprint) |fp| {
+            printDim("    Connection Type: {s}\n", .{fp.connection_type});
+            printDim("    Confidence: {d:.0}%\n", .{fp.confidence * 100.0});
+            printDim("    Latency Range: {d:.1}ms - {d:.1}ms\n", .{fp.latency_range_ms[0], fp.latency_range_ms[2]});
+            printDim("    Jitter: {d:.2}ms\n", .{fp.jitter_profile});
+            printDim("    {s}\n", .{fp.final_assessment});
+        } else {
+            printDim("    Insufficient data for fingerprinting\n", .{});
         }
     }
 
@@ -6423,7 +6504,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.05           ║
+        \\║      Trinity UART Echo Test v4.06           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6893,7 +6974,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.05)         ║
+            \\║         SIMULATION MODE (v4.06)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7488,7 +7569,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.05)      ║
+        \\║       SIMULATION BATCH MODE (v4.06)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7622,7 +7703,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.05)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.06)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7639,7 +7720,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.05)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.06)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8578,7 +8659,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.05)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.06)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
