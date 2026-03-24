@@ -162,27 +162,161 @@ tri tri27 run test.tbin
 
 ---
 
-## Научные гипотезы
+## Paper 1: Queen Self-Learning (H1-H3)
 
-### H1: Self-Learning снижает crash rate
-**Утверждение**: Tri27Config с `auto_adapt=true` показывает <5% crash rate vs ~15% с фиксированным конфигом.
+### H1: Self-Learning reduces crash rate
+**Claim**: Tri27Config with `auto_adapt=true` achieves <5% crash rate vs ~15% with fixed config.
 
-**Переменные**:
-- Независимая: `auto_adapt` (bool)
-- Зависимая: `crash_rate` = crashes / total_episodes
-- Контролируемые: `kill_threshold`, `crash_rate_limit`, `byzantine_rate_limit`
+**Variables**:
+- Independent: `auto_adapt` (bool)
+- Dependent: `crash_rate` = crashes / total_episodes
+- Controlled: `kill_threshold`, `crash_rate_limit`, `byzantine_rate_limit`
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# A/B тест на Railway farm
+# A/B test on Railway farm
 tri farm spawn --config queen_enabled.json --count 10
 tri farm spawn --config queen_disabled.json --count 10
 tri farm monitor --duration 24h --metrics crash_rate,success_rate
 ```
 
-**Ожидаемый результат**:
+**Expected result**:
 - Queen enabled: crash_rate < 0.05
 - Queen disabled: crash_rate ~ 0.15
+
+### H2: Feedback loop accelerates stabilization
+**Claim**: Systems with self-learning reach stable mode (quality=good) in 2× faster.
+
+**Variables**:
+- Independent: `auto_adapt` (bool)
+- Dependent: `time_to_stable` = steps until quality=good
+- Controlled: initial configuration
+
+**Experiment**:
+```bash
+# Monitor convergence
+tri queen self-learning --window 20 --monitor
+tri plot convergence.jsonl --x steps --y quality
+```
+
+**Expected result**:
+- Queen enabled: time_to_stable ~ 100 episodes
+- Queen disabled: time_to_stable ~ 200 episodes
+
+### H3: Auto-adapt prevents byzantine failure
+**Claim**: `byzantine_rate_limit` with auto-adapt reduces byzantine ratio to <5%.
+
+**Variables**:
+- Independent: `auto_adapt` × `byzantine_rate_limit`
+- Dependent: `byzantine_rate` = byzantine / total_episodes
+
+**Experiment**:
+```bash
+tri farm inject --config byzantine_stress.json
+tri queen self-learning --window 50
+tri farm metrics --filter byzantine_rate
+```
+
+---
+
+## Paper 2: TRI-27 + Queen (H4-H6)
+
+### Overview
+
+Paper 2 integrates TRI-27 assembly with Queen Self-Learning to enable automated PPL tracking and φ-based metrics. Key contribution: **Reticular Raphe** reference implementation showing rolling average with φ-decay.
+
+### H4: Reticular Raphe validation
+**Claim**: TRI-27 implementation of Reticular Raphe computes correct rolling PPL within error margin <1% vs reference Python implementation.
+
+**Variables**:
+- Independent: Implementation language (TRI-27 vs Python)
+- Dependent: `rolling_ppl_error` = |ppl_tri27 - ppl_reference| / ppl_reference
+
+**Reference implementation**: `src/tri27/reticular_raphe.t27` — TRI-27 binary computes φ^decay rolling average.
+
+**Validation CLI**:
+```bash
+# Assemble reference implementation
+tri tri27 assemble src/tri27/reticular_raphe.t27 -o reticular_raphe.tbin
+
+# Execute on TRI-27 VM
+tri tri27 run reticular_raphe.tbin --benchmark
+
+# Capture rolling_ppl from t0 register
+tri tri27 run reticular_raphe.tbin --dump-registers t0 | jq '.[0]'
+```
+
+**Metrics**:
+| Metric | Target | Measurement Method |
+|---------|--------|---------------------|
+| rolling_ppl_accuracy | >99% | Compare t0 value vs reference Python |
+| instructions_per_update | <50 | Count instructions per PPL update |
+| memory_utilization | <256 bytes | .data + .const sections |
+| cycle_efficiency | >0.8 | Useful cycles / total cycles |
+
+**Expected result**:
+- TRI-27: rolling_ppl error < 1% vs reference
+- Reference: `docs/tri27/t27_format.md` validated
+
+### H5: φ-decay factor optimization
+**Claim**: φ^decay = 0.990 (≈1/φ) achieves optimal PPL convergence speed without overshoot.
+
+**Variables**:
+- Independent: φ^decay value
+- Dependent: `convergence_time` = episodes to reach stable PPL
+- Controlled: `ppl_overshoot` = |final_ppl - target_ppl| / target_ppl
+
+**Experiment**:
+```bash
+# Grid search for φ-decay
+for decay in 0.90 0.95 0.99 1.05; do
+    tri queen config set phi_decay $decay
+    tri farm inject --config ppl_stress_test.json
+    tri queen self-learning --window 50
+done
+
+tri plot convergence_comparison.jsonl --x decay --y convergence_time
+```
+
+**Metrics table**:
+| Decay | Convergence | Overshoot | Final PPL |
+|-------|-------------|----------|-----------|
+| 0.90 | 100 episodes | 0.5% | 12.5 |
+| 0.95 | 120 episodes | 0.2% | 12.3 |
+| 0.99 | 200 episodes | <0.1% | 12.7 |
+
+**Expected result**:
+- Optimal φ^decay: 0.990
+- Convergence time: <150 episodes
+
+### H6: PPL clamping prevents Queen panic
+**Claim**: PPL clamping to [MIN_PPL, MAX_PPL] prevents Queen from triggering `kill_threshold` on transient spikes.
+
+**Variables**:
+- Independent: `enable_clamping` (bool)
+- Dependent: `queen_trigger_rate` = kill actions / total evaluations
+- Controlled: `kill_threshold`, `MIN_PPL`, `MAX_PPL`
+
+**Experiment**:
+```bash
+# A/B test: clamping enabled vs disabled
+tri farm spawn --config clamping_enabled.json --count 10
+tri farm spawn --config clamping_disabled.json --count 10
+
+tri farm monitor --duration 48h --metrics queen_trigger_rate,kill_count
+```
+
+**Expected result**:
+- Clamping enabled: queen_trigger_rate < 0.01
+- Clamping disabled: queen_trigger_rate ~ 0.15
+
+### CLI Commands Summary
+
+| Hypothesis | CLI Command | Metric |
+|-------------|--------------|--------|
+| H4: Reticular Raphe | `tri tri27 assemble <file.t27> -o <file.tbin>` | rolling_ppl_error |
+| H5: φ-decay optimization | `tri queen config set phi_decay <value>` | convergence_time |
+| H6: PPL clamping | `tri queen config set max_ppl <value>` | queen_trigger_rate |
 
 ### H2: Feedback loop ускоряет стабилизацию
 **Утверждение**: Системы с self-learning достигают стабильного режима (quality=good) в 2× быстрее.
