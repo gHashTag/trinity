@@ -1918,7 +1918,7 @@ const JitterTracker = struct {
             self.showQuickHealthCheck();
         }
 
-        // v4.02: Performance Profile Classification - connection type detection
+        // v4.03: Performance Profile Classification - connection type detection
         if (self.count >= 10) {
             printInfo("\n  📊 Performance Profile:\n", .{});
             self.showPerformanceProfile();
@@ -1966,40 +1966,46 @@ const JitterTracker = struct {
             self.showTimeSeriesDecomposition();
         }
 
-        // v4.02: Rate Limiting Detection - detect throttling patterns
+        // v4.03: Rate Limiting Detection - detect throttling patterns
         if (self.count >= 10) {
             printInfo("\n  🚦 Rate Limiting Detection:\n", .{});
             self.showRateLimitingDetection();
         }
 
-        // v4.02: Latency Distribution Fitting - statistical distribution analysis
+        // v4.03: Latency Distribution Fitting - statistical distribution analysis
         if (self.count >= 30) {
             printInfo("\n  📐 Distribution Fit:\n", .{});
             self.showDistributionFit();
         }
 
-        // v4.02: Packet Drift Detection - detect gradual RTT changes
+        // v4.03: Packet Drift Detection - detect gradual RTT changes
         if (self.count >= 20) {
             printInfo("\n  📈 Packet Drift:\n", .{});
             self.showPacketDrift();
         }
 
-        // v4.02: Anomaly Prediction System - predict future anomalies
+        // v4.03: Anomaly Prediction System - predict future anomalies
         if (self.count >= 30) {
             printInfo("\n  🔮 Anomaly Prediction:\n", .{});
             self.showAnomalyPrediction();
         }
 
-        // v4.02: Quick Diagnostics - one-line summary (always shown)
+        // v4.03: Quick Diagnostics - one-line summary (always shown)
         if (self.count >= 5) {
             printInfo("\n  ⚡ Quick Diagnostics:\n", .{});
             self.showQuickDiagnostics();
         }
 
-        // v4.02: Connection Quality Timeline - visualize quality changes
+        // v4.03: Connection Quality Timeline - visualize quality changes
         if (self.count >= 10) {
             printInfo("\n  📊 Quality Timeline:\n", .{});
             self.showQualityTimeline();
+        }
+
+        // v4.03: Signal Quality Index - comprehensive quality metric
+        if (self.count >= 20) {
+            printInfo("\n  📶 Signal Quality Index:\n", .{});
+            self.showSignalQualityIndex();
         }
     }
 
@@ -2304,7 +2310,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.02: Rate Limiting Detection - detect throttling patterns
+    // v4.03: Rate Limiting Detection - detect throttling patterns
     pub const RateLimitingDetection = struct {
         is_rate_limited: bool,
         confidence: f64,
@@ -2427,7 +2433,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.02: Latency Distribution Fitting - fit RTT to statistical distributions
+    // v4.03: Latency Distribution Fitting - fit RTT to statistical distributions
     pub const DistributionFit = struct {
         distribution: []const u8,
         mean: f64,
@@ -2666,7 +2672,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.02: Packet Drift Detection - detect gradual RTT changes over time
+    // v4.03: Packet Drift Detection - detect gradual RTT changes over time
     pub const PacketDrift = struct {
         drift_type: []const u8,
         drift_rate: f64,
@@ -2751,7 +2757,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.02: Anomaly Prediction System - predict likelihood of future anomalies
+    // v4.03: Anomaly Prediction System - predict likelihood of future anomalies
     pub const AnomalyPrediction = struct {
         anomaly_probability: f64,
         prediction_horizon: usize,
@@ -2903,7 +2909,7 @@ const JitterTracker = struct {
         }
     }
 
-    // v4.02: Quick Diagnostics - one-line summary of key metrics
+    // v4.03: Quick Diagnostics - one-line summary of key metrics
     pub const QuickDiagnostics = struct {
         health_status: []const u8,
         samples: usize,
@@ -2961,7 +2967,7 @@ const JitterTracker = struct {
         printDim("  {s}\n", .{diag.summary});
     }
 
-    // v4.02: Connection Quality Timeline - visual representation of quality changes
+    // v4.03: Connection Quality Timeline - visual representation of quality changes
     pub const QualityTimeline = struct {
         segments: usize,
         phase_changes: usize,
@@ -3046,6 +3052,203 @@ const JitterTracker = struct {
             printDim("    Final Quality: {s}\n", .{t.final_quality});
         } else {
             printDim("    Insufficient data for quality timeline\n", .{});
+        }
+    }
+
+    // v4.03: Signal Quality Index - comprehensive quality metric
+    pub const SignalQualityIndex = struct {
+        sqi_score: f64,
+        latency_grade: []const u8,
+        jitter_grade: []const u8,
+        stability_grade: []const u8,
+        consistency_grade: []const u8,
+        overall_quality: []const u8,
+        factors: []const u8,
+    };
+
+    pub fn getSignalQualityIndex(self: *const JitterTracker) ?SignalQualityIndex {
+        if (self.count < 20) {
+            return null;
+        }
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+        const jitter_ms = stats.jitter / 1000.0;
+        const std_dev = stats.jitter;
+
+        // Factor 1: Latency Score (0-100, lower is better)
+        const latency_score: f64 = 100.0 - @min(100.0, mean_ms);
+
+        // Factor 2: Jitter Score (0-100, lower is better)
+        // Using logarithmic scale: jitter < 1ms = 100, jitter > 100ms = 0
+        const jitter_score: f64 = if (jitter_ms < 1.0)
+            100.0
+        else if (jitter_ms < 5.0)
+            90.0 - (jitter_ms - 1.0) * 22.5
+        else if (jitter_ms < 10.0)
+            67.5 - (jitter_ms - 5.0) * 7.5
+        else if (jitter_ms < 20.0)
+            45.0 - (jitter_ms - 10.0) * 3.75
+        else if (jitter_ms < 50.0)
+            22.5 - (jitter_ms - 20.0) * 1.5
+        else
+            15.0 - (jitter_ms - 50.0) * 0.375;
+
+        // Factor 3: Stability Score (coefficient of variation)
+        // CV = std_dev / mean, lower is more stable
+        const cv = if (mean_ms > 0) std_dev / mean_ms else 0;
+        const stability_score = @max(0, if (cv < 0.1)
+            100.0
+        else if (cv < 0.2)
+            80.0 - (cv - 0.1) * 200.0
+        else if (cv < 0.3)
+            60.0 - (cv - 0.2) * 100.0
+        else if (cv < 0.5)
+            40.0 - (cv - 0.3) * 50.0
+        else
+            @max(0, 20.0 - (cv - 0.5) * 20.0));
+
+        // Factor 4: Consistency (ratio of recent variance to overall)
+        const RECENT_WINDOW: usize = 10;
+        const recent_start = if (self.count > RECENT_WINDOW) self.count - RECENT_WINDOW else 0;
+
+        var recent_variance: f64 = 0;
+        if (recent_start > 0) {
+            var recent_sum: f64 = 0;
+            var recent_sum_sq: f64 = 0;
+            for (self.samples[recent_start..self.count]) |s| {
+                const s_f = @as(f64, @floatFromInt(s));
+                recent_sum += s_f;
+                recent_sum_sq += s_f * s_f;
+            }
+            const recent_count_f = @as(f64, @floatFromInt(self.count - recent_start));
+            const recent_mean = recent_sum / recent_count_f;
+            recent_variance = (recent_sum_sq - (recent_sum * recent_mean)) / (recent_count_f - 1.0);
+        }
+
+        const overall_variance = std_dev * std_dev;
+        const consistency_score = if (overall_variance > 0)
+            @max(0, 100.0 * (1.0 - @min(recent_variance / overall_variance, 1.0)))
+        else 0;
+
+        // Calculate weighted SQI (Signal Quality Index)
+        // Weights: Latency 40%, Jitter 30%, Stability 20%, Consistency 10%
+        const sqi = (latency_score * 0.4 + jitter_score * 0.3 + stability_score * 0.2 + consistency_score * 0.1);
+
+        // Grade classifications
+        const latency_grade: []const u8 = if (latency_score >= 80)
+            "EXCELLENT"
+        else if (latency_score >= 60)
+            "GOOD"
+        else if (latency_score >= 40)
+            "FAIR"
+        else if (latency_score >= 20)
+            "POOR"
+        else
+            "CRITICAL";
+
+        const jitter_grade: []const u8 = if (jitter_score >= 80)
+            "EXCELLENT"
+        else if (jitter_score >= 60)
+            "GOOD"
+        else if (jitter_score >= 40)
+            "FAIR"
+        else if (jitter_score >= 20)
+            "POOR"
+        else
+            "CRITICAL";
+
+        const stability_grade: []const u8 = if (stability_score >= 80)
+            "EXCELLENT"
+        else if (stability_score >= 60)
+            "GOOD"
+        else if (stability_score >= 40)
+            "FAIR"
+        else
+            "POOR";
+
+        const consistency_grade: []const u8 = if (consistency_score >= 80)
+            "EXCELLENT"
+        else if (consistency_score >= 60)
+            "GOOD"
+        else if (consistency_score >= 40)
+            "FAIR"
+        else
+            "POOR";
+
+        const overall_quality: []const u8 = if (sqi >= 80)
+            "EXCELLENT"
+        else if (sqi >= 60)
+            "GOOD"
+        else if (sqi >= 40)
+            "FAIR"
+        else
+            "POOR";
+
+        // Factor description
+        const factors = if (sqi < 40)
+            "Latency and jitter critical"
+        else if (sqi < 60)
+            "Multiple factors degrading"
+        else if (sqi < 80)
+            "Good with room for improvement"
+        else
+            "Excellent signal quality";
+
+        return .{
+            .sqi_score = sqi,
+            .latency_grade = latency_grade,
+            .jitter_grade = jitter_grade,
+            .stability_grade = stability_grade,
+            .consistency_grade = consistency_grade,
+            .overall_quality = overall_quality,
+            .factors = factors,
+        };
+    }
+
+    pub fn showSignalQualityIndex(self: *const JitterTracker) void {
+        const sqi = self.getSignalQualityIndex();
+
+        if (sqi) |s| {
+            printDim("    SQI Score: {d:.1}/100 ({s})\n", .{s.sqi_score, s.overall_quality});
+
+            // Recalculate scores for display
+            const stats = self.getStats();
+            const mean_ms = stats.mean / 1000.0;
+            const jitter_ms = stats.jitter / 1000.0;
+            const latency_score = @max(0, 100.0 - @min(100.0, mean_ms));
+            const jitter_score_calc: f64 = if (jitter_ms < 1.0)
+                100.0
+            else if (jitter_ms < 5.0)
+                90.0 - (jitter_ms - 1.0) * 22.5
+            else if (jitter_ms < 10.0)
+                67.5 - (jitter_ms - 5.0) * 7.5
+            else if (jitter_ms < 20.0)
+                45.0 - (jitter_ms - 10.0) * 3.75
+            else if (jitter_ms < 50.0)
+                22.5 - (jitter_ms - 20.0) * 1.5
+            else
+                15.0 - @max(0, jitter_ms - 50.0) * 0.375;
+
+            const cv = if (mean_ms > 0) (stats.jitter / 1000.0) / mean_ms else 0;
+            const stability_score_calc: f64 = if (cv < 0.1)
+                100.0
+            else if (cv < 0.2)
+                80.0 - (cv - 0.1) * 200.0
+            else if (cv < 0.3)
+                60.0 - (cv - 0.2) * 100.0
+            else if (cv < 0.5)
+                40.0 - (cv - 0.3) * 50.0
+            else
+                @max(0, 20.0 - (cv - 0.5) * 20.0);
+
+            printDim("    Latency: {s} ({d:.0}/100)\n", .{s.latency_grade, latency_score});
+            printDim("    Jitter: {s} ({d:.0}/100)\n", .{s.jitter_grade, jitter_score_calc});
+            printDim("    Stability: {s} ({d:.0}/100)\n", .{s.stability_grade, stability_score_calc});
+            printDim("    Consistency: {s}\n", .{s.consistency_grade});
+            printDim("    {s}\n", .{s.factors});
+        } else {
+            printDim("    Insufficient data for signal quality\n", .{});
         }
     }
 
@@ -4254,7 +4457,7 @@ const JitterTracker = struct {
         printDim("    Jitter (CV): {d:.2} ({s})\n", .{cv, perf_class});
     }
 
-    // v4.02: Performance Profile Classification - connection type detection
+    // v4.03: Performance Profile Classification - connection type detection
     pub const PerformanceProfile = struct {
         name: []const u8,
         min_ms: f64,
@@ -6061,7 +6264,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.02           ║
+        \\║      Trinity UART Echo Test v4.03           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -6531,7 +6734,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.02)         ║
+            \\║         SIMULATION MODE (v4.03)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -7126,7 +7329,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.02)      ║
+        \\║       SIMULATION BATCH MODE (v4.03)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7260,7 +7463,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.02)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.03)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -7277,7 +7480,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.02)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.03)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -8216,7 +8419,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.02)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.03)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
