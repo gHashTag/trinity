@@ -129,8 +129,8 @@ fn displayCluster(cluster: *const MacCluster) void {
         const role_emoji = node.role.emoji();
         const status_emoji = if (node.online) "🟢" else "🔴";
 
-        print("  {s}{s} mac-{d:2} {s}{s}\n", .{
-            role_emoji, status_emoji, BOLD, node.id, DIM, RESET,
+        print("  {s}{s} mac-{d:2} {s}{s}{s}\n", .{
+            role_emoji, status_emoji, node.id, BOLD, DIM, RESET,
         });
 
         if (node.workers_count > 0) {
@@ -316,7 +316,7 @@ fn runGenerateAll(allocator: Allocator) !void {
 
     try mac_cluster_module.generateComposeFiles(&cluster, allocator);
 
-    print("\n  {s}✅{s} Generated compose files for {d} nodes\n", .{ GREEN, RESET });
+    print("\n  {s}✅{s} Generated compose files for {d} nodes\n", .{ GREEN, RESET, cluster.nodes.items.len });
     print("\nDeployment commands:\n", .{});
     for (cluster.nodes.items) |node| {
         if (node.workers_count == 0) continue;
