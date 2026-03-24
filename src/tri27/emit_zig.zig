@@ -64,7 +64,10 @@ pub fn generateZigFromBytecode(allocator: Allocator, bytecode: []const u8) ![]co
         \\    var phi_const: f32 = @floatFromInt(0x3F9E3779C0); // φ = 1.61803398875
         \\    var pi_const: f32 = @floatFromInt(0x408F4197938); // π = 3.14159265359
         \\    var e_const: f32 = @floatFromInt(0x451E6); // e = 2.718281828
-        \\
+    ) catch |err| {
+        print("Error writing sacred constants: {s}\\n", .{ RED, err });
+        return;
+    };
 
     // Vectors (8 GF16, 3 float, 8 T-word)
     var v: [8]std.ArrayList(f32).initCapacity(allocator, 32);
