@@ -1,12 +1,1 @@
-{
-  "state": "COMMITTED",
-  "issue_number": 403,
-  "branch": "fix/issue-403",
-  "issue_title_len": 0,
-  "issue_title": "",
-  "files_count": 1,
-  "tests_passed": true,
-  "commit_hash": "",
-  "started_at": 1774301114,
-  "last_updated": 1774301114
-}
+{"state":"COMMITTED","issue_number":403,"branch":"fix/issue-403","tests_passed":true}
