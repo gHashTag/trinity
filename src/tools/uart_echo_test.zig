@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v4.12 — Adaptive Threshold Auto-tuning (dynamic threshold adjustment)
+//! v4.13 — Connection Benchmarking (industry standards comparison)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -2061,6 +2061,12 @@ const JitterTracker = struct {
             printInfo("\n  ⚙️  Adaptive Thresholds:\n", .{});
             self.showAdaptiveThresholds();
         }
+
+        // v4.13: Connection Benchmarking - compare against industry standards
+        if (self.count >= 20) {
+            printInfo("\n  📊 Connection Benchmarking:\n", .{});
+            self.showIndustryBenchmarks();
+        }
     }
 
     // v3.96: Time Series Decomposition - trend + seasonality + residual
@@ -4084,6 +4090,88 @@ const JitterTracker = struct {
             printDim("    Reason: {s}\n", .{t.adaptation_reason});
         } else {
             printDim("    Insufficient data for adaptive thresholds\n", .{});
+        }
+    }
+
+    // v4.13: Connection Benchmarking - compare against industry standards
+    pub const IndustryBenchmark = struct {
+        category: []const u8,
+        target_latency_ms: f64,
+        actual_latency_ms: f64,
+        grade: []const u8,
+        percentile: f64,
+    };
+
+    pub fn compareWithIndustryBenchmarks(self: *const JitterTracker) ?[4]IndustryBenchmark {
+        if (self.count < 10) return null;
+
+        const stats = self.getStats();
+        const mean_ms = stats.mean / 1000.0;
+
+        // Industry benchmarks for different categories
+        var benchmarks: [4]IndustryBenchmark = undefined;
+
+        // Gaming (target: <20ms, 1% packet loss)
+        const gaming_score = if (mean_ms <= 10) @as(f64, 100) else if (mean_ms <= 20) @as(f64, 90) else if (mean_ms <= 50) @as(f64, 70) else @as(f64, 40);
+        benchmarks[0] = .{
+            .category = "Gaming",
+            .target_latency_ms = 20.0,
+            .actual_latency_ms = mean_ms,
+            .grade = if (gaming_score >= 90) "EXCELLENT" else if (gaming_score >= 70) "GOOD" else if (gaming_score >= 50) "FAIR" else "POOR",
+            .percentile = gaming_score,
+        };
+
+        // Video Streaming (target: <100ms, 0.1% packet loss)
+        const video_score = if (mean_ms <= 50) @as(f64, 100) else if (mean_ms <= 100) @as(f64, 90) else if (mean_ms <= 200) @as(f64, 70) else @as(f64, 40);
+        benchmarks[1] = .{
+            .category = "Video Streaming",
+            .target_latency_ms = 100.0,
+            .actual_latency_ms = mean_ms,
+            .grade = if (video_score >= 90) "EXCELLENT" else if (video_score >= 70) "GOOD" else if (video_score >= 50) "FAIR" else "POOR",
+            .percentile = video_score,
+        };
+
+        // Voice/Video Call (target: <150ms, <1% jitter)
+        const voip_score = if (mean_ms <= 75) @as(f64, 100) else if (mean_ms <= 150) @as(f64, 90) else if (mean_ms <= 300) @as(f64, 70) else @as(f64, 40);
+        benchmarks[2] = .{
+            .category = "VoIP / Video Call",
+            .target_latency_ms = 150.0,
+            .actual_latency_ms = mean_ms,
+            .grade = if (voip_score >= 90) "EXCELLENT" else if (voip_score >= 70) "GOOD" else if (voip_score >= 50) "FAIR" else "POOR",
+            .percentile = voip_score,
+        };
+
+        // General Data (target: <200ms)
+        const data_score = if (mean_ms <= 100) @as(f64, 100) else if (mean_ms <= 200) @as(f64, 90) else if (mean_ms <= 500) @as(f64, 70) else @as(f64, 40);
+        benchmarks[3] = .{
+            .category = "General Data",
+            .target_latency_ms = 200.0,
+            .actual_latency_ms = mean_ms,
+            .grade = if (data_score >= 90) "EXCELLENT" else if (data_score >= 70) "GOOD" else if (data_score >= 50) "FAIR" else "POOR",
+            .percentile = data_score,
+        };
+
+        return benchmarks;
+    }
+
+    pub fn showIndustryBenchmarks(self: *const JitterTracker) void {
+        const benchmarks = self.compareWithIndustryBenchmarks();
+
+        if (benchmarks) |bmk| {
+            for (bmk) |b| {
+                const grade_color = if (std.mem.eql(u8, b.grade, "EXCELLENT"))
+                    ANSI.GREEN
+                else if (std.mem.eql(u8, b.grade, "GOOD"))
+                    ANSI.CYAN
+                else if (std.mem.eql(u8, b.grade, "FAIR"))
+                    ANSI.YELLOW
+                else
+                    ANSI.RED;
+
+                printErr("    [{s}{s}{s}] {s}: {d:.1}ms (target: <{d:.0}ms)\n", .{ grade_color, b.grade, ANSI.RESET, b.category, b.actual_latency_ms, b.target_latency_ms });
+            }
+        } else {
+            printDim("    Insufficient data for benchmarking\n", .{});
         }
     }
 
@@ -7099,7 +7187,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v4.12           ║
+        \\║      Trinity UART Echo Test v4.13           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -7569,7 +7657,7 @@ pub fn main() !void {
     if (config.simulation_mode) {
         printErr(
             \\╔══════════════════════════════════════╗
-            \\║         SIMULATION MODE (v4.12)         ║
+            \\║         SIMULATION MODE (v4.13)         ║
             \\║  No hardware required - virtual UART      ║
             \\╚══════════════════════════════════════╝
             \\
@@ -8164,7 +8252,7 @@ const TestByte = struct {
 fn runSimulationBatch(config: Config) !void {
     printErr(
         \\╔════════════════════════════════════╗
-        \\║       SIMULATION BATCH MODE (v4.12)      ║
+        \\║       SIMULATION BATCH MODE (v4.13)      ║
         \\║  Batch testing without actual hardware        ║
         \\╚══════════════════════════════════════╝
         \\
@@ -8298,7 +8386,7 @@ fn runSimulationBatch(config: Config) !void {
     results.calculateThroughput();
 
     printErr("\n\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║     SIMULATION BATCH RESULTS (v4.12)   ║\n", .{});
+    printErr("║     SIMULATION BATCH RESULTS (v4.13)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     printErr("  Total packets: {d}\n", .{batch_size});
     printErr("  Matched: {d}\n", .{results.matched});
@@ -8315,7 +8403,7 @@ fn runSimulationBatch(config: Config) !void {
 
     // v3.31: Performance report
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.12)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.13)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
@@ -9254,7 +9342,7 @@ fn runBatchTest(fd: std.posix.fd_t, config: Config) !void {
 
     // v3.31: Performance report with recommendations
     printErr("\n╔══════════════════════════════════════╗\n", .{});
-    printErr("║          PERFORMANCE REPORT (v4.12)   ║\n", .{});
+    printErr("║          PERFORMANCE REPORT (v4.13)   ║\n", .{});
     printErr("╚══════════════════════════════════════╝\n", .{});
     const theoretical = PerformanceReport.theoreticalThroughput(config.baud);
     const efficiency = PerformanceReport.efficiency(results.bytes_per_second, theoretical);
