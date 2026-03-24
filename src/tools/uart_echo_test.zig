@@ -607,6 +607,26 @@ const BaselineHistory = struct {
             printErr("      ────────────────────────────────────────────────\n", .{});
         }
 
+        // v3.63: Overall trend summary across all baselines
+        if (self.count >= 2) {
+            var avg_pct: f64 = 0.0;
+            var improving: usize = 0;
+            var degrading: usize = 0;
+
+            for (self.baselines[0..self.count]) |baseline_opt| {
+                const baseline = baseline_opt orelse continue;
+                const delta = (current_mean - baseline.mean_rtt_us) / baseline.mean_rtt_us * 100.0;
+                avg_pct += delta;
+                if (delta < -5.0) improving += 1 else if (delta > 5.0) degrading += 1;
+            }
+            avg_pct /= @as(f64, @floatFromInt(self.count));
+
+            const trend_sym = if (improving > degrading) '↓' else if (degrading > improving) '↑' else '→';
+            printErr("\n    {s}Overall Trend: {c}{d:.1}% avg across {} baselines{s}\n", .{
+                ANSI.DIM, trend_sym, ANSI.BOLD, avg_pct, ANSI.BOLD, self.count, ANSI.RESET,
+            });
+        }
+
         printErr("\n", .{});
     }
 
