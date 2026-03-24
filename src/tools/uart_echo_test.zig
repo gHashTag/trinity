@@ -1935,6 +1935,12 @@ const JitterTracker = struct {
             printInfo("\n  📈 Connection Stability Score:\n", .{});
             self.showStabilityScore();
         }
+
+        // v3.90: Adaptive Configuration Generator - optimal parameters based on analysis
+        if (self.count >= 5) {
+            printInfo("\n  ⚙️  Adaptive Configuration:\n", .{});
+            self.showAdaptiveConfig();
+        }
     }
 
     // v3.70: Predict RTT trend based on linear regression of recent samples
@@ -3501,6 +3507,141 @@ const JitterTracker = struct {
 
         // Recommendation
         printDim("\n    Recommendation: {s}\n", .{score.recommendation});
+    }
+
+    // v3.90: Adaptive Configuration Generator - optimal parameters based on analysis
+    pub const AdaptiveConfig = struct {
+        recommended_baud: []const u8,
+        recommended_timeout_ms: u32,
+        recommended_delay_ms: u32,
+        recommended_batch_size: usize,
+        recommended_spike_threshold: f64,
+        use_adaptive_timeout: bool,
+        use_rts_cts: bool,
+        reason: []const u8,
+    };
+
+    pub fn generateAdaptiveConfig(self: *const JitterTracker) AdaptiveConfig {
+        if (self.count < 5) {
+            return .{
+                .recommended_baud = "115200",
+                .recommended_timeout_ms = 2000,
+                .recommended_delay_ms = 200,
+                .recommended_batch_size = 16,
+                .recommended_spike_threshold = 3.0,
+                .use_adaptive_timeout = false,
+                .use_rts_cts = false,
+                .reason = "Insufficient data - using defaults",
+            };
+        }
+
+        const stats = self.getStats();
+        const p = self.getPercentiles();
+        const stability = self.calculateStabilityScore();
+
+        // Calculate optimal parameters based on observed behavior
+        const mean_ms = stats.mean / 1000.0;
+        const p99_ms = @as(f64, @floatFromInt(p.p99)) / 1000.0;
+
+        // Timeout: 2x p99 + 50% margin, minimum 500ms
+        const recommended_timeout_ms: u32 = @max(500, @as(u32, @intFromFloat(p99_ms * 3.0)));
+
+        // Delay: 1.5x mean RTT, minimum 50ms
+        const recommended_delay_ms: u32 = @max(50, @as(u32, @intFromFloat(mean_ms * 1.5)));
+
+        // Batch size based on stability
+        const recommended_batch_size: usize = if (stability.overall_score >= 80)
+            32 // High stability - larger batches
+        else if (stability.overall_score >= 60)
+            16 // Medium stability
+        else
+            8; // Low stability - smaller batches
+
+        // Spike threshold based on jitter
+        const cv = if (mean_ms > 0) (stats.jitter / stats.mean) else 0.0;
+        const recommended_spike_threshold: f64 = if (cv < 0.2)
+            2.0 // Low jitter - sensitive detection
+        else if (cv < 0.4)
+            3.0 // Medium jitter
+        else
+            4.0; // High jitter - less sensitive
+
+        // Adaptive timeout based on variability
+        const use_adaptive_timeout = cv > 0.3;
+
+        // RTS/CTS for high-throughput scenarios
+        const use_rts_cts = recommended_batch_size >= 16;
+
+        // Baud rate based on latency profile
+        const recommended_baud: []const u8 = if (p99_ms < 10.0)
+            "921600" // Very low latency - max speed
+        else if (p99_ms < 50.0)
+            "460800" // Low latency
+        else if (p99_ms < 100.0)
+            "115200" // Standard
+        else
+            "57600"; // High latency - conservative
+
+        // Reason explanation
+        const reason = if (stability.overall_score >= 80)
+            "High stability detected - using optimal settings for throughput"
+        else if (stability.overall_score >= 60)
+            "Medium stability - balanced configuration"
+        else
+            "Low stability - conservative settings for reliability";
+
+        return .{
+            .recommended_baud = recommended_baud,
+            .recommended_timeout_ms = recommended_timeout_ms,
+            .recommended_delay_ms = recommended_delay_ms,
+            .recommended_batch_size = recommended_batch_size,
+            .recommended_spike_threshold = recommended_spike_threshold,
+            .use_adaptive_timeout = use_adaptive_timeout,
+            .use_rts_cts = use_rts_cts,
+            .reason = reason,
+        };
+    }
+
+    pub fn showAdaptiveConfig(self: *const JitterTracker) void {
+        if (self.count < 5) {
+            printInfo("[i] Adaptive Configuration: insufficient data (need 5+ samples)\n", .{});
+            return;
+        }
+
+        const config = self.generateAdaptiveConfig();
+
+        printInfo("[i] Adaptive Configuration Generator:\n", .{});
+        printDim("\n    Recommended Parameters:\n", .{});
+        printDim("       --baud {s}          # Baud rate\n", .{config.recommended_baud});
+        printDim("       --timeout {d}        # Read timeout (ms)\n", .{config.recommended_timeout_ms});
+        printDim("       --delay {d}          # Inter-test delay (ms)\n", .{config.recommended_delay_ms});
+        printDim("       --batch-size {d}     # Packets per batch\n", .{config.recommended_batch_size});
+        printDim("       --spike-threshold {d:.1}  # Spike detection multiplier\n", .{config.recommended_spike_threshold});
+
+        if (config.use_adaptive_timeout) {
+            printDim("       --adaptive-timeout   # Enable (high variability detected)\n", .{});
+        }
+        if (config.use_rts_cts) {
+            printDim("       --rts-cts           # Enable flow control (high throughput)\n", .{});
+        }
+
+        printDim("\n    Reason: {s}\n", .{config.reason});
+
+        // Show example command
+        printDim("\n    Example command:\n", .{});
+        var cmd_buf: [256]u8 = undefined;
+        const cmd = std.fmt.bufPrint(&cmd_buf,
+            "       uart-echo-test --baud {s} --timeout {d} --delay {d} --batch-size {d}",
+            .{ config.recommended_baud, config.recommended_timeout_ms, config.recommended_delay_ms, config.recommended_batch_size }
+        ) catch "Command too long";
+        printDim("{s}", .{cmd});
+        if (config.use_adaptive_timeout) {
+            printDim(" --adaptive-timeout", .{});
+        }
+        if (config.use_rts_cts) {
+            printDim(" --rts-cts", .{});
+        }
+        printDim("\n", .{});
     }
 
     // v3.69: Plot histogram of RTT distribution
