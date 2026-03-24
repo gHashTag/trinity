@@ -71,12 +71,15 @@ pub const Assembler = struct {
         };
 
         var i = start_idx + 1;
+        var prev_was_comma = false;
         while (i < self.tokens.len) {
             const t = self.tokens[i];
-            // Stop at end of input, comments, or next instruction
-            if (t.type == .EOF or t.type == .Comment or t.type == .Mnemonic or t.type == .LabelDef) break;
+            // Stop at end of input, comments, or next instruction (but allow one mnemonic after comma as label ref)
+            if (t.type == .EOF or t.type == .Comment or t.type == .LabelDef) break;
+            if (t.type == .Mnemonic and !prev_was_comma) break;
             if (t.type == .Comma) {
                 i += 1;
+                prev_was_comma = true;
                 continue;
             }
 
@@ -84,6 +87,7 @@ pub const Assembler = struct {
             const text_copy = try self.allocator.dupe(u8, t.text);
             try inst.operands.append(self.allocator, text_copy);
             i += 1;
+            prev_was_comma = false;
         }
 
         return inst;
@@ -172,27 +176,27 @@ pub const Assembler = struct {
         // J-type: Jump instructions
         if (std.mem.eql(u8, op_lower, "jmp")) {
             if (operands.len != 1) return AsmError.InvalidSyntax;
-            const imm = try parseImmediate(operands[0]);
+            const imm = try resolveImmediateOrLabel(self, operands[0]);
             return encoder.encode_jmp(imm);
         }
 
         if (std.mem.eql(u8, op_lower, "jz")) {
             if (operands.len != 2) return AsmError.InvalidSyntax;
             const rd = try parseRegister(operands[0]);
-            const imm = try parseImmediate(operands[1]);
+            const imm = try resolveImmediateOrLabel(self, operands[1]);
             return encoder.encode_jz(rd, imm);
         }
 
         if (std.mem.eql(u8, op_lower, "jnz")) {
             if (operands.len != 2) return AsmError.InvalidSyntax;
             const rd = try parseRegister(operands[0]);
-            const imm = try parseImmediate(operands[1]);
+            const imm = try resolveImmediateOrLabel(self, operands[1]);
             return encoder.encode_jnz(rd, imm);
         }
 
         if (std.mem.eql(u8, op_lower, "call")) {
             if (operands.len != 1) return AsmError.InvalidSyntax;
-            const imm = try parseImmediate(operands[0]);
+            const imm = try resolveImmediateOrLabel(self, operands[0]);
             return encoder.encode_call(imm);
         }
 
@@ -305,6 +309,29 @@ pub const Assembler = struct {
         }
     }
 
+    /// Resolve immediate or label reference
+    fn resolveImmediateOrLabel(self: *Assembler, imm_str: []const u8) !i16 {
+        const trimmed = std.mem.trim(u8, imm_str, &std.ascii.whitespace);
+
+        // First try as immediate value
+        if (trimmed.len > 2 and trimmed[0] == '0' and (trimmed[1] == 'x' or trimmed[1] == 'X')) {
+            return std.fmt.parseInt(i16, trimmed[2..], 16) catch return AsmError.InvalidImmediate;
+        }
+
+        if (std.fmt.parseInt(i16, trimmed, 10)) |parsed| {
+            return parsed;
+        } else |_| {
+            // If parsing as number fails, try as label
+            if (self.labels.get(trimmed)) |addr| {
+                // Calculate relative offset
+                const current_addr: i32 = @intCast(self.bytecode.items.len);
+                const target_addr: i32 = @intCast(addr);
+                return @as(i16, @intCast(target_addr - current_addr));
+            }
+            return AsmError.UndefinedLabel;
+        }
+    }
+
     /// Write u32 as little-endian bytes
     fn writeWord(self: *Assembler, word: u32) !void {
         try self.bytecode.append(self.allocator, @as(u8, @truncate(word)));
@@ -313,11 +340,19 @@ pub const Assembler = struct {
         try self.bytecode.append(self.allocator, @as(u8, @truncate(word >> 24)));
     }
 
-    /// Main assemble function
-    pub fn assemble(self: *Assembler) ![]u8 {
-        if (self.tokens.len == 0) return AsmError.EmptySource;
+    /// Count instruction size without encoding (for label resolution)
+    fn countInstructionSize(self: *Assembler, start_idx: usize) !usize {
+        _ = self;
+        _ = start_idx;
+        // All instructions are 4 bytes
+        return 4;
+    }
 
+    /// First pass: collect all labels and their addresses
+    fn firstPass(self: *Assembler) !void {
         var i: usize = 0;
+        var addr: u32 = 0;
+
         while (i < self.tokens.len) {
             const token = self.tokens[i];
 
@@ -332,9 +367,53 @@ pub const Assembler = struct {
                 },
                 .LabelDef => {
                     // Record label at current address
-                    // StringHashMap.put() makes its own copy of the key
-                    const addr = self.bytecode.items.len;
-                    try self.labels.put(token.text, @as(u32, @intCast(addr)));
+                    try self.labels.put(token.text, addr);
+                    i += 1;
+                },
+                .Mnemonic => {
+                    // Each instruction is 4 bytes
+                    addr += 4;
+                    i += 1;
+                    // Skip operands (including potential label references which are Mnemonic tokens)
+                    var prev_was_comma = false;
+                    while (i < self.tokens.len) {
+                        const t = self.tokens[i];
+                        if (t.type == .EOF or t.type == .Comment or t.type == .LabelDef) break;
+                        if (t.type == .Mnemonic and !prev_was_comma) break;
+                        if (t.type == .Comma) {
+                            i += 1;
+                            prev_was_comma = true;
+                            continue;
+                        }
+                        i += 1;
+                        prev_was_comma = false;
+                    }
+                },
+                else => {
+                    i += 1;
+                },
+            }
+        }
+    }
+
+    /// Second pass: encode all instructions with resolved labels
+    fn secondPass(self: *Assembler) !void {
+        var i: usize = 0;
+
+        while (i < self.tokens.len) {
+            const token = self.tokens[i];
+
+            switch (token.type) {
+                .EOF, .Comment, .EOL => {
+                    i += 1;
+                    continue;
+                },
+                .Comma => {
+                    i += 1;
+                    continue;
+                },
+                .LabelDef => {
+                    // Skip labels in second pass
                     i += 1;
                 },
                 .Mnemonic => {
@@ -342,20 +421,44 @@ pub const Assembler = struct {
                     var inst = try self.parseOperands(i);
                     defer inst.deinit(self.allocator);
 
-                    // Encode instruction
+                    // Encode instruction (with label resolution)
                     const word = try self.encode(inst.opcode_str, inst.operands.items);
 
                     // Write to bytecode
                     try self.writeWord(word);
 
-                    // Move to next token
+                    // Move to next token and skip operands
                     i += 1;
+                    var prev_was_comma = false;
+                    while (i < self.tokens.len) {
+                        const t = self.tokens[i];
+                        if (t.type == .EOF or t.type == .Comment or t.type == .LabelDef) break;
+                        if (t.type == .Mnemonic and !prev_was_comma) break;
+                        if (t.type == .Comma) {
+                            i += 1;
+                            prev_was_comma = true;
+                            continue;
+                        }
+                        i += 1;
+                        prev_was_comma = false;
+                    }
                 },
                 else => {
                     i += 1;
                 },
             }
         }
+    }
+
+    /// Main assemble function - two-pass for label resolution
+    pub fn assemble(self: *Assembler) ![]u8 {
+        if (self.tokens.len == 0) return AsmError.EmptySource;
+
+        // First pass: collect all labels
+        try self.firstPass();
+
+        // Second pass: encode with resolved labels
+        try self.secondPass();
 
         if (self.bytecode.items.len == 0) {
             return AsmError.EmptySource;
@@ -562,6 +665,6 @@ test "assembler handles control flow with labels" {
     const result = try assemble(allocator, asm_source);
     defer allocator.free(result);
 
-    // Should have 5 instructions (4 bytes each)
-    try std.testing.expectEqual(@as(usize, 20), result.len);
+    // Should have 4 instructions (4 bytes each) = 16 bytes
+    try std.testing.expectEqual(@as(usize, 16), result.len);
 }

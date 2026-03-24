@@ -1,6 +1,6 @@
 //! UART Echo Test — Advanced FPGA UART bridge test tool
 //! Sends bytes with configurable delay and expects them echoed back
-//! v3.69 — Histogram Visualization (RTT distribution ASCII histogram)
+//! v3.70 — Trend Prediction (linear regression-based RTT forecast)
 //!
 //! Usage:
 //!     zig run uart-echo-test [--baud 115200] [--delay 200] [--timeout 2000] [-v|--verbose]
@@ -1838,6 +1838,87 @@ const JitterTracker = struct {
             printInfo("\n  📊 RTT Distribution Histogram:\n", .{});
             self.plotHistogram();
         }
+
+        // v3.70: Trend Prediction - predict future RTT direction
+        if (self.count >= 10) {
+            printInfo("\n  📈 Trend Prediction:\n", .{});
+            self.predictTrend();
+        }
+    }
+
+    // v3.70: Predict RTT trend based on linear regression of recent samples
+    pub fn predictTrend(self: *const JitterTracker) void {
+        const PREDICTION_WINDOW: usize = 10;
+        const prediction_samples = @min(PREDICTION_WINDOW, self.count);
+        const start_idx = self.count - prediction_samples;
+
+        // Calculate linear regression (y = mx + b)
+        var sum_x: f64 = 0;
+        var sum_y: f64 = 0;
+        var sum_xy: f64 = 0;
+        var sum_x2: f64 = 0;
+
+        const n = @as(f64, @floatFromInt(prediction_samples));
+        for (self.samples[start_idx..self.count], 0..) |s, i| {
+            const x = @as(f64, @floatFromInt(i));
+            const y = @as(f64, @floatFromInt(s));
+            sum_x += x;
+            sum_y += y;
+            sum_xy += x * y;
+            sum_x2 += x * x;
+        }
+
+        const mean_x = sum_x / n;
+        const mean_y = sum_y / n;
+
+        const numerator = sum_xy - n * mean_x * mean_y;
+        const denominator = sum_x2 - n * mean_x * mean_x;
+
+        const slope = if (denominator != 0) numerator / denominator else 0;
+        const intercept = mean_y - slope * mean_x;
+
+        // Predict next value
+        const next_x = n;
+        const predicted_us = slope * next_x + intercept;
+        const current_us = @as(f64, @floatFromInt(self.samples[self.count - 1]));
+        const change_pct = if (current_us > 0) ((predicted_us - current_us) / current_us) * 100.0 else 0;
+
+        // Determine trend direction (in us/sample)
+        const trend = if (slope > 100)
+            "INCREASING (degrading)"
+        else if (slope < -100)
+            "DECREASING (improving)"
+        else if (slope > 10)
+            "SLIGHTLY INCREASING"
+        else if (slope < -10)
+            "SLIGHTLY DECREASING"
+        else
+            "STABLE";
+
+        var severity: []const u8 = "NEUTRAL";
+        if (slope > 500) {
+            severity = "CRITICAL";
+        } else if (slope > 200) {
+            severity = "HIGH";
+        } else if (slope > 100) {
+            severity = "MODERATE";
+        } else if (slope < -500) {
+            severity = "EXCELLENT";
+        } else if (slope < -200) {
+            severity = "GOOD";
+        } else if (slope < -100) {
+            severity = "FAIR";
+        } else {
+            severity = "NEUTRAL";
+        }
+
+        printDim("    Prediction window: last {d} samples\n", .{prediction_samples});
+        printDim("    Current RTT: {d:.2}ms\n", .{current_us / 1000.0});
+        printDim("    Predicted next: {d:.2}ms\n", .{predicted_us / 1000.0});
+        printDim("    Trend slope: {d:.4}us/sample\n", .{slope});
+        printDim("    Direction: {s}\n", .{trend});
+        printDim("    Projected change: {d:.1}%\n", .{change_pct});
+        printDim("    Severity: {s}\n", .{severity});
     }
 
     // v3.69: Plot histogram of RTT distribution
