@@ -125,6 +125,7 @@ const Config = struct {
     // v3.58: Performance baseline comparison
     baseline_file: ?[]const u8 = null,
     compare_baseline: bool = false,
+    statistical_mode: bool = false, // v3.60: Statistical significance testing
 };
 
 // Device vendor detection
@@ -328,7 +329,176 @@ const Baseline = struct {
 
         printErr("\n", .{});
     }
+
+    // v3.60: Statistical significance testing with Welch's t-test
+    pub fn compareStatistical(
+        self: *const Baseline,
+        current_mean: f64,
+        current_jitter: f64,
+        current_quality: f64,
+        current_samples: usize,
+        current_stddev: f64,
+    ) void {
+        _ = current_jitter; // Currently unused, reserved for future analysis
+        _ = current_quality; // Currently unused, reserved for future analysis
+
+        printErr("\n{s}═══════════════════════════════════════════════════{s}\n", .{ ANSI.CYAN, ANSI.RESET });
+        printErr("{s}    STATISTICAL SIGNIFICANCE (v3.60)         {s}\n", .{ ANSI.BOLD, ANSI.RESET });
+        printErr("{s}═══════════════════════════════════════════════════{s}\n\n", .{ ANSI.CYAN, ANSI.RESET });
+
+        // Welch's t-test for mean RTT comparison
+        const baseline_n = @as(f64, @floatFromInt(self.sample_count));
+        const current_n = @as(f64, @floatFromInt(current_samples));
+        const min_samples = 5.0;
+
+        if (baseline_n < min_samples or current_n < min_samples) {
+            printErr("{s}[!] Need at least {d:.0} samples per test for significance testing{s}\n", .{ ANSI.YELLOW, min_samples, ANSI.RESET });
+            printErr("    Baseline: {d:.0} samples, Current: {d:.0} samples\n\n", .{ baseline_n, current_n });
+            return;
+        }
+
+        // Assume baseline stddev ≈ jitter (reasonable approximation for RTT)
+        const baseline_stddev = self.jitter_us;
+
+        // Welch's t-statistic
+        const se_baseline_sq = (baseline_stddev * baseline_stddev) / baseline_n;
+        const se_current_sq = (current_stddev * current_stddev) / current_n;
+        const se_diff = @sqrt(se_baseline_sq + se_current_sq);
+
+        const t_stat = if (se_diff > 0.001)
+            (current_mean - self.mean_rtt_us) / se_diff
+        else
+            0.0;
+
+        // Degrees of freedom (Welch-Satterthwaite equation)
+        const df_numerator = (se_baseline_sq + se_current_sq) * (se_baseline_sq + se_current_sq);
+        const df_denominator = (se_baseline_sq * se_baseline_sq) / (baseline_n - 1.0) +
+            (se_current_sq * se_current_sq) / (current_n - 1.0);
+        const df = if (df_denominator > 0.001)
+            df_numerator / df_denominator
+        else if (baseline_n < current_n)
+            baseline_n - 1.0
+        else
+            current_n - 1.0;
+
+        // Two-tailed p-value approximation using t-distribution
+        const p_value = calculateTwoTailedPValue(@abs(t_stat), df);
+
+        // Effect size (Cohen's d for independent samples)
+        const pooled_stddev = @sqrt(((baseline_n - 1.0) * baseline_stddev * baseline_stddev +
+            (current_n - 1.0) * current_stddev * current_stddev) /
+            (baseline_n + current_n - 2.0));
+        const cohens_d = if (pooled_stddev > 0.001)
+            (current_mean - self.mean_rtt_us) / pooled_stddev
+        else
+            0.0;
+
+        // 95% Confidence Interval for the difference
+        const ci_95 = 1.96 * se_diff;
+        const diff = current_mean - self.mean_rtt_us;
+        const ci_lower = diff - ci_95;
+        const ci_upper = diff + ci_95;
+
+        // 99% Confidence Interval
+        const ci_99 = 2.576 * se_diff;
+        const ci_99_lower = diff - ci_99;
+        const ci_99_upper = diff + ci_99;
+
+        // Display results
+        printErr("{s}Welch's t-test (two-tailed):{s}\n", .{ ANSI.BLUE, ANSI.RESET });
+        printErr("  t-statistic: {d:.3}, df: {d:.1}\n", .{ t_stat, df });
+
+        // P-value formatting
+        if (p_value < 0.001) {
+            printErr("  p-value: {s}p < 0.001{s} ***\n", .{ ANSI.RED, ANSI.RESET });
+        } else if (p_value < 0.01) {
+            printErr("  p-value: {s}p < 0.01{s} **\n", .{ ANSI.YELLOW, ANSI.RESET });
+        } else if (p_value < 0.05) {
+            printErr("  p-value: {s}p < 0.05{s} *\n", .{ ANSI.GREEN, ANSI.RESET });
+        } else {
+            printErr("  p-value: p = {d:.3} (ns)\n", .{p_value});
+        }
+
+        printErr("\n{s}Effect Size (Cohen's d):{s} ", .{ ANSI.BLUE, ANSI.RESET });
+        if (@abs(cohens_d) < 0.2) {
+            printErr("{s}{d:.3} (negligible){s}\n", .{ ANSI.GREEN, cohens_d, ANSI.RESET });
+        } else if (@abs(cohens_d) < 0.5) {
+            printErr("{s}{d:.3} (small){s}\n", .{ ANSI.CYAN, cohens_d, ANSI.RESET });
+        } else if (@abs(cohens_d) < 0.8) {
+            printErr("{s}{d:.3} (medium){s}\n", .{ ANSI.YELLOW, cohens_d, ANSI.RESET });
+        } else {
+            printErr("{s}{d:.3} (large){s}\n", .{ ANSI.RED, cohens_d, ANSI.RESET });
+        }
+
+        printErr("\n{s}95% CI for difference: [{d:.2}, {d:.2}] us{s}\n", .{ ANSI.BLUE, ci_lower, ci_upper, ANSI.RESET });
+        printErr("{s}99% CI for difference: [{d:.2}, {d:.2}] us{s}\n", .{ ANSI.BLUE, ci_99_lower, ci_99_upper, ANSI.RESET });
+
+        // Verdict
+        printErr("\n{s}Verdict:{s} ", .{ ANSI.BOLD, ANSI.RESET });
+        if (p_value < 0.05) {
+            if (diff > 0) {
+                printErr("{s}SIGNIFICANTLY WORSE (+{d:.1}%){s}\n", .{ ANSI.RED, (diff / self.mean_rtt_us) * 100.0, ANSI.RESET });
+            } else {
+                printErr("{s}SIGNIFICANTLY BETTER ({d:.1}%){s}\n", .{ ANSI.GREEN, @abs(diff / self.mean_rtt_us) * 100.0, ANSI.RESET });
+            }
+        } else {
+            printErr("{s}NOT SIGNIFICANT (within noise){s}\n", .{ ANSI.YELLOW, ANSI.RESET });
+        }
+
+        printErr("\n", .{});
+    }
+
+    // Approximate two-tailed p-value for t-distribution
+    fn calculateTwoTailPValue(t_abs: f64, df: f64) f64 {
+        // Use approximation formula for t-distribution cumulative probability
+        // Based on Abramowitz and Stegun 26.7.1
+        if (df < 1.0) return 1.0;
+
+        const x = (df / (df + t_abs * t_abs));
+        const a = [6]f64{ 0.08397953176865916, -0.10185705458399195, 0.43572024890517834, -0.2089608410801306, -0.6315464435895652, 1.4080627412093787 };
+        const b = [6]f64{ 1.0, 1.9745297182046658, 2.4408759466685203, 2.1270679660816484, 0.8290150647066794, 0.12595868612646525 };
+
+        var x_pow = x;
+        var num = a[5] * x_pow;
+        var den = b[5] * x_pow;
+        var i: usize = 4;
+        while (i >= 1) : (i -= 1) {
+            x_pow *= x;
+            num += a[i] * x_pow;
+            den += b[i] * x_pow;
+        }
+        num += a[0];
+        den += b[0];
+
+        const cumulative = 1.0 - 0.5 * (num / den) * @sqrt(x);
+        return 2.0 * (1.0 - cumulative);
+    }
 };
+
+// v3.60: Helper function to calculate p-value (externally callable)
+fn calculateTwoTailedPValue(t_abs: f64, df: f64) f64 {
+    if (df < 1.0) return 1.0;
+    const x = (df / (df + t_abs * t_abs));
+
+    // Polynomial approximation for t-distribution
+    const a = [6]f64{ 0.08397953176865916, -0.10185705458399195, 0.43572024890517834, -0.2089608410801306, -0.6315464435895652, 1.4080627412093787 };
+    const b = [6]f64{ 1.0, 1.9745297182046658, 2.4408759466685203, 2.1270679660816484, 0.8290150647066794, 0.12595868612646525 };
+
+    var x_pow = x;
+    var num = a[5] * x_pow;
+    var den = b[5] * x_pow;
+    var i: usize = 4;
+    while (i >= 1) : (i -= 1) {
+        x_pow *= x;
+        num += a[i] * x_pow;
+        den += b[i] * x_pow;
+    }
+    num += a[0];
+    den += b[0];
+
+    const cumulative = 1.0 - 0.5 * (num / den) * @sqrt(x);
+    return 2.0 * (1.0 - cumulative);
+}
 
 // v3.24: Error statistics for tracking test failures by type
 // v3.37: Enhanced with consecutive error tracking
@@ -1766,6 +1936,9 @@ fn parseArgs() Config {
             config.baseline_file = std.mem.span(std.os.argv[i + 1]);
             config.compare_baseline = true;
             i += 1;
+        } else if (std.mem.eql(u8, arg, "--statistical")) {
+            // v3.60: Statistical significance testing
+            config.statistical_mode = true;
         } else if (std.mem.eql(u8, arg, "--help")) {
             printUsage();
             std.process.exit(0);
@@ -1924,7 +2097,7 @@ fn loadConfigFile(path: []const u8, config: *Config) !bool {
 fn printUsage() void {
     std.debug.print(
         \\╔════════════════════════════════════╗
-        \\║      Trinity UART Echo Test v3.50           ║
+        \\║      Trinity UART Echo Test v3.60           ║
         \\║    Usage: uart-echo-test [options]          ║
         \\╚══════════════════════════════════════╝
         \\
@@ -1968,9 +2141,12 @@ fn printUsage() void {
         \\  --diagnostics        Enable detailed error pattern analysis (v3.37)
         \\  --auto-recovery     Enable exponential backoff auto-recovery (v3.37)
         \\  --extended-health-check  Verify framing and echo in health check (v3.38)
+        \\  --save-baseline <file>     Save current run as performance baseline (v3.58)
+        \\  --compare-baseline <file>  Compare current run against saved baseline (v3.58)
+        \\  --statistical       Statistical significance testing (Welch's t-test, CI) (v3.60)
         \\  --help              Show this help message
         \\
-        \\Performance Modes (v3.50):
+        \\Performance Modes (v3.60):
         \\  Default: Sequential echo test with verification
         \\  Batch: Send N packets, measure aggregated throughput
         \\  Adaptive: Auto-tune timeout based on measured latency
@@ -1995,6 +2171,8 @@ fn printUsage() void {
         \\  Help Documentation: Complete help text with all options (v3.50)
         \\  Pattern Validation: Length validation for test patterns (v3.38)
         \\  Extended Health Check: Framing verification before tests (v3.38)
+        \\  Performance Baseline: Save/compare performance runs (v3.58)
+        \\  Statistical Significance: Welch's t-test, CI, Cohen's d (v3.60)
         \\
         \\  Comprehensive Mode (v3.34):
         \\  Phase 1: Basic Echo Test — verifies serial communication
@@ -3196,7 +3374,12 @@ fn runSimulationBatch(config: Config) !void {
                     return;
                 };
                 const stats = jitter_tracker.getStats();
-                baseline.compare(stats.mean, stats.jitter, quality.score);
+                // v3.60: Use statistical comparison when enabled
+                if (config.statistical_mode) {
+                    baseline.compareStatistical(stats.mean, stats.jitter, quality.score, jitter_tracker.count, stats.jitter);
+                } else {
+                    baseline.compare(stats.mean, stats.jitter, quality.score);
+                }
             } else {
                 const stats = jitter_tracker.getStats();
                 const percentiles = jitter_tracker.getPercentiles();
@@ -3204,7 +3387,7 @@ fn runSimulationBatch(config: Config) !void {
 
                 var new_baseline = Baseline{
                     .timestamp = std.time.timestamp(),
-                    .version = "v3.58",
+                    .version = "v3.60",
                     .mean_rtt_us = stats.mean,
                     .jitter_us = stats.jitter,
                     .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
@@ -3354,7 +3537,12 @@ fn runSimulation(config: Config) !void {
                     };
 
                     const stats = jitter_tracker.getStats();
-                    baseline.compare(stats.mean, stats.jitter, quality.score);
+                    // v3.60: Use statistical comparison when enabled
+                    if (config.statistical_mode) {
+                        baseline.compareStatistical(stats.mean, stats.jitter, quality.score, jitter_tracker.count, stats.jitter);
+                    } else {
+                        baseline.compare(stats.mean, stats.jitter, quality.score);
+                    }
                 } else {
                     // Save current results as baseline
                     const stats = jitter_tracker.getStats();
@@ -3363,7 +3551,7 @@ fn runSimulation(config: Config) !void {
 
                     var new_baseline = Baseline{
                         .timestamp = std.time.timestamp(),
-                        .version = "v3.58",
+                        .version = "v3.60",
                         .mean_rtt_us = stats.mean,
                         .jitter_us = stats.jitter,
                         .min_rtt_us = @as(f64, @floatFromInt(stats.min)),
