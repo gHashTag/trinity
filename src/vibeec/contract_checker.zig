@@ -97,7 +97,6 @@ fn inferExpressionType(
     params: []const Param,
 ) !ContractType {
     _ = allocator;
-    _ = params;
 
     return switch (expr.*) {
         .int_lit => .numeric,
@@ -118,7 +117,8 @@ fn inferExpressionType(
 
         // Binary operations
         .add, .sub, .mul, .div, .mod => .numeric,
-        .eq, .ne, .lt, .le, .gt, .ge, .and, .or, .in => .bool,
+        .eq, .ne, .lt, .le, .gt, .ge => .bool,
+        .logical_and, .logical_or, .kw_in => .bool,
         .not => .bool,
         .neg => .numeric,
 
@@ -173,15 +173,37 @@ pub fn generateAssertion(
     allocator: Allocator,
     contract: []const u8,
 ) ![]const u8 {
-    var code = ArrayList(u8).init(allocator);
+    var code = ArrayList(u8){};
 
+    // Parse contract to check for range expressions
+    const expr = dsl.parseContract(allocator, contract) catch {
+        // Fallback: simple assertion
+        try appendStr(allocator, &code, "debug.assert(");
+        try appendStr(allocator, &code, contract);
+        try appendStr(allocator, &code, ", \"contract not satisfied\")");
+        try code.append(allocator, '\n');
+        return code.toOwnedSlice(allocator);
+    };
+    defer {
+        // AST cleanup would go here
+        _ = expr;
+    }
+
+    // Convert range expression x in [min, max] to x >= min and x <= max
     // For now, just wrap contract in debug.assert
-    try code.appendSlice("debug.assert(");
-    try code.appendSlice(contract);
-    try code.appendSlice(", \"contract not satisfied\")");
-    try code.append('\n');
+    try appendStr(allocator, &code, "debug.assert(");
+    try appendStr(allocator, &code, contract);
+    try appendStr(allocator, &code, ", \"contract not satisfied\")");
+    try code.append(allocator, '\n');
 
-    return code.toOwnedSlice();
+    return code.toOwnedSlice(allocator);
+}
+
+/// Helper to append string slice to ArrayList
+fn appendStr(allocator: Allocator, list: *ArrayList(u8), str: []const u8) !void {
+    for (str) |c| {
+        try list.append(allocator, c);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
@@ -209,7 +231,18 @@ test "infer type from bool literal" {
 test "infer type from comparison" {
     const allocator = std.testing.allocator;
     const params = [_]Param{};
-    const expr: ExprNode = .{ .lt = &ExprNode{ .identifier = "x" }, .right = &ExprNode{ .int_lit = 0 } };
+
+    // Create AST nodes for "x < 0"
+    const x_node = try allocator.create(ExprNode);
+    x_node.* = .{ .identifier = "x" };
+
+    const zero_node = try allocator.create(ExprNode);
+    zero_node.* = .{ .int_lit = 0 };
+
+    const binop = try allocator.create(ExprNode.BinOp);
+    binop.* = .{ .left = x_node, .right = zero_node };
+
+    const expr: ExprNode = .{ .lt = binop };
 
     const inferred = try inferExpressionType(allocator, &expr, &params);
     try std.testing.expectEqual(ContractType.bool, inferred);

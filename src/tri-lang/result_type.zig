@@ -70,7 +70,7 @@ pub const ParseError = enum(u8) {
     UnexpectedToken = 1,
     InvalidSyntax = 2,
     InvalidLiteral = 3,
-}
+};
 
 /// EpisodeError - errors for episode operations
 pub const EpisodeError = enum(u8) {
@@ -87,16 +87,16 @@ pub const EpisodeError = enum(u8) {
 /// Map over the Ok value, keep Err unchanged
 pub fn map(comptime T: type, comptime U: type, comptime E: type, result: Result(T, E), mapper: fn (T) U) Result(U, E) {
     return switch (result) {
-        .Ok => |v| .Ok { mapper(v) },
-        .Err => |e| .Err { e },
+        .Ok => |v| .{ .Ok = mapper(v) },
+        .Err => |e| .{ .Err = e },
     };
 }
 
 /// Map over the error value, keep Ok unchanged
 pub fn mapError(comptime T: type, comptime E: type, comptime F: type, result: Result(T, E), mapper: fn (E) F) Result(T, F) {
     return switch (result) {
-        .Ok => |v| .Ok { v },
-        .Err => |e| .Err { mapper(e) },
+        .Ok => |v| .{ .Ok = v },
+        .Err => |e| .{ .Err = mapper(e) },
     };
 }
 
@@ -104,7 +104,7 @@ pub fn mapError(comptime T: type, comptime E: type, comptime F: type, result: Re
 pub fn andThen(comptime T: type, comptime U: type, comptime E: type, result: Result(T, E), mapper: fn (T) Result(U, E)) Result(U, E) {
     return switch (result) {
         .Ok => |v| mapper(v),
-        .Err => |e| .Err { e },
+        .Err => |e| .{ .Err = e },
     };
 }
 
@@ -168,7 +168,7 @@ pub fn isErr(comptime T: type, comptime E: type, result: Result(T, E)) bool {
 pub fn tryMacro(comptime T: type, comptime E: type, result: Result(T, E)) T {
     return switch (result) {
         .Ok => |v| v,
-        .Err => |e| return .Err { e },
+        .Err => |e| return .Err{e},
     };
 }
 
@@ -217,6 +217,21 @@ pub fn tryMacro(comptime T: type, comptime E: type, result: Result(T, E)) T {
 // TESTS
 // ═════════════════════════════════════════════════════════════════════════════════════
 
+// Helper functions for tests
+fn castI32ToI64(x: i32) i64 {
+    return @intCast(x);
+}
+
+fn neuroToParse(e: NeuroError) ParseError {
+    _ = e;
+    return .UnexpectedToken;
+}
+
+fn alwaysOk(x: i32) Result(bool, NeuroError) {
+    _ = x;
+    return .{ .Ok = true };
+}
+
 test "result_ok" {
     const result: Result(i32, NeuroError) = .{ .Ok = 42 };
     try std.testing.expectEqual(@as(i32, 42), result.Ok);
@@ -233,25 +248,25 @@ test "result_err" {
 
 test "result_map" {
     const result: Result(i32, NeuroError) = .{ .Ok = 41 };
-    const mapped = map(i32, i64, NeuroError, result, struct { fn inner(x: i32) i64 { return @intCast(x); }.inner);
+    const mapped = map(i32, i64, NeuroError, result, castI32ToI64);
     try std.testing.expectEqual(@as(i64, 41), mapped.Ok);
 }
 
 test "result_map_error" {
     const result: Result(i32, NeuroError) = .{ .Err = .InvalidInput };
-    const mapped = mapError(i32, NeuroError, ParseError, result, struct { fn inner(x: NeuroError) ParseError { return .UnexpectedToken; }.inner);
+    const mapped = mapError(i32, NeuroError, ParseError, result, neuroToParse);
     try std.testing.expectEqual(ParseError.UnexpectedToken, mapped.Err);
 }
 
 test "result_and_then_ok" {
     const result: Result(i32, NeuroError) = .{ .Ok = 42 };
-    const chained = andThen(i32, bool, NeuroError, result, struct { fn inner(x: i32) Result(bool, NeuroError) { return .{ .Ok = true }; }.inner);
+    const chained = andThen(i32, bool, NeuroError, result, alwaysOk);
     try std.testing.expect(chained.Ok);
 }
 
 test "result_and_then_err" {
     const result: Result(i32, NeuroError) = .{ .Err = .InvalidInput };
-    const chained = andThen(i32, bool, NeuroError, result, struct { fn inner(x: i32) Result(bool, NeuroError) { return .{ .Ok = true }; }.inner);
+    const chained = andThen(i32, bool, NeuroError, result, alwaysOk);
     try std.testing.expectEqual(NeuroError.InvalidInput, chained.Err);
 }
 
