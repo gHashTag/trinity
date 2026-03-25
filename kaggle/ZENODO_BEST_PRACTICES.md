@@ -104,7 +104,7 @@ publication_type: technicalnote
 {
   "creators": [
     {
-      "name": "Trinity Cognitive Probes Team",
+      "name": "Vasilev, Dmitrii",
       "affiliation": "Trinity S³AI",
       "orcid": "0000-0000-0000-0000"
     }
@@ -422,8 +422,8 @@ title: "Scientific Metrics v7.4: Statistical Validity and Reproducibility"
 message: "If you use this bundle, please cite it as below."
 type: software
 authors:
-  - family-names: "Trinity Team"
-    given-names: "Cognitive Probes"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
     affiliation: "Trinity S³AI"
     orcid: "https://orcid.org/0000-0000-0000-0000"
 version: "7.4"
@@ -603,7 +603,7 @@ if __name__ == "__main__":
 
 ```bibtex
 @software{trinity_scientific_metrics_v7_4,
-  author       = {Trinity Cognitive Probes Team},
+  author       = {Vasilev, Dmitrii},
   title        = {Scientific Metrics v7.4: Statistical Validity and Reproducibility},
   year         = {2026},
   publisher    = {Zenodo},
@@ -616,7 +616,7 @@ if __name__ == "__main__":
 ### APA Citation
 
 ```
-Trinity Cognitive Probes Team. (2026). Scientific metrics v7.4: Statistical validity
+Vasilev, Dmitrii. (2026). Scientific metrics v7.4: Statistical validity
 and reproducibility artifacts (Version 7.4) [Computer software]. Zenodo.
 https://doi.org/10.5281/zenodo.19223952
 ```
@@ -631,7 +631,7 @@ Reproducibility Artifacts*. Version 7.4, Zenodo, 2026, doi:10.5281/zenodo.192239
 ### In-Text Citation
 
 ```
-Recent work on LLM calibration (Trinity Cognitive Probes Team, 2026) demonstrates
+Recent work on LLM calibration (Vasilev, 2026) demonstrates
 that temperature scaling can improve ECE by up to 15%.
 
 According to the Scientific Metrics v7.4 bundle (10.5281/zenodo.19223952),
@@ -651,4 +651,4 @@ proper calibration requires...
 
 **Document Version**: 1.0
 **Last Updated**: 2026-03-26
-**Maintainer**: Trinity Cognitive Probes Team
+**Maintainer**: Dmitrii Vasilev
