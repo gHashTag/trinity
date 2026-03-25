@@ -89,29 +89,34 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 Trinity publishes key innovations as **defensive publications** to establish prior art and prevent patenting. All research is documented with Zenodo DOIs.
 
-| Discovery | Zenodo DOI | Status |
-|-----------|------------|--------|
-| **HSLM** (1.95M ternary LLM) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
-| **Sacred GF16/TF3** (φ-based arithmetic) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
-| **Zero-DSP FPGA** (ternary inference) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
-| **TRI-27** (ternary ISA) | TBD | 🔄 arXiv planned |
-| **Queen** (self-learning system) | TBD | 🔄 arXiv planned |
-| **Tri Language** (DSL codegen) | TBD | 📋 PLDI 2026 |
+### Published v4.0 Bundles (2026-03-26)
+
+| Bundle | Discovery | Zenodo DOI | Status |
+|--------|-----------|------------|--------|
+| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227733](https://doi.org/10.5281/zenodo.19227733) | ✅ Published |
+| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227735](https://doi.org/10.5281/zenodo.19227735) | ✅ Published |
+| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | ✅ Published |
+| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | ✅ Published |
+| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | ✅ Published |
+| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | ✅ Published |
+| **B007** | VSA Operations (ternary computing) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | ✅ Published |
+| **PARENT** | Trinity S³AI Framework | [10.5281/zenodo.19227751](https://doi.org/10.5281/zenodo.19227751) | ✅ Published |
 
 ### How to Cite
 
 ```bibtex
-@misc{trinity2025s3ai,
-  title = {Trinity S³AI: Pure Zig Autonomous AI Agent Swarm},
-  author = {{Trinity Project}},
-  year = {2025},
-  doi = {10.5281/zenodo.18939352},
-  url = {https://github.com/gHashTag/trinity},
-  note = {Defensive Publication}
+@software{trinity_s3ai_2026,
+  title        = {Trinity S³AI Framework: Ternary Computing for Edge AI},
+  author       = {Vasilev, Dmitrii},
+  year         = 2026,
+  version      = {4.0},
+  doi          = {10.5281/zenodo.19227751},
+  url          = {https://doi.org/10.5281/zenodo.19227751},
+  publisher    = {Zenodo}
 }
 ```
 
-**Research Documentation:** See [`docs/research/README.md`](docs/research/README.md) for complete defensive publication network, including cross-references and citation templates.
+**Research Documentation:** See [`docs/research/INDEX.md`](docs/research/INDEX.md) for complete research documentation index.
 
 ---
 
