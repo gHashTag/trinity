@@ -1,10 +1,9 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// VSA Core — Operations (GENERATED from .tri spec)
-// TTT Dogfood v0.1: Self-hosted codegen
-// DO NOT EDIT — Generated from specs/vsa/ops.tri
+// VSA Core — Operations
+// Pure VSA operations on trit arrays (no HybridBigInt dependency)
+//
+// Operations: bind, unbind, bundle, similarity, permute
 //
 // φ² + 1/φ² = 3 | TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const common = @import("common.zig");
