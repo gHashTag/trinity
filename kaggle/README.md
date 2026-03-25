@@ -352,6 +352,13 @@ For the Google DeepMind AGI Hackathon, see:
   - Thermometer (unsupervised calibration)
   - Focal Temperature Scaling
   - Contextual Calibration
+- **[HACKATHON_ARC_AGI_2025.md](HACKATHON_ARC_AGI_2025.md)** — AGI benchmarking with ARC-AGI:
+  - ARC-AGI-2 format and evaluation (Pass@2)
+  - Winning approaches: DL-guided synthesis, Test-Time Training, PoE ensemble, NCA
+  - Efficiency measurement (cost per task metrics)
+  - ARC-AGI-3 preview (interactive reasoning)
+  - Knowledge coverage analysis
+  - Synthetic data arms race findings
 
 ### Quick Start for Competition
 ```bash
