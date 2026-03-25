@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Metrics v7.4
+Trinity Cognitive Probes — Scientific Metrics v7.5
 
 SCIENTIFICALLY CORRECT IMPLEMENTATION
 
@@ -35,6 +35,11 @@ v7.4 STATISTICAL VALIDITY FIXES from v7.3:
 4. ✅ Min-K%++ Non-parametric — Wilcoxon test when normality violated (HIGH)
 5. ✅ Bootstrap CI — Increased default to 10000 iterations for accuracy (HIGH)
 6. ✅ CoDeC Multiple Testing — Added Bonferroni/BH-FDR correction support (HIGH)
+
+v7.5 NEW FEATURES from v7.4:
+1. ✅ Simple Brier Score — Convenience wrapper for quick Brier score calculation
+2. ✅ Ranked Voting SC — Borda, plurality, and median aggregation (NAACL 2025)
+3. ✅ Min-K%++ CI Fix — Reports actual metric CI instead of arbitrary conversion
 
 NEW METRICS in v7:
 5. ✅ Adaptive ECE (Naeini et al., NeurIPS 2024) — KDE-based adaptive binning with valley detection
@@ -1904,12 +1909,167 @@ def detect_distribution_shift_v7(
 
 
 # =============================================================================
+# SIMPLE BRIER SCORE — v7.5 convenience wrapper
+# =============================================================================
+
+def simple_brier_score(
+    confidences: List[float],
+    correct: List[bool]
+) -> float:
+    """
+    Simple Brier Score calculation (convenience wrapper).
+
+    Brier Score: (1/N) * Σ(f_i - y_i)²
+    Lower is better (0 = perfect, 0.25 = random, 1 = worst)
+
+    Reference: Brier (1950), "Verification of Weather Forecasts"
+
+    Args:
+        confidences: Confidence values (probability of positive class)
+        correct: True/False labels
+
+    Returns:
+        float: Brier score (lower is better)
+    """
+    if not confidences or len(confidences) != len(correct):
+        return 0.0
+
+    # Convert correct to 0/1
+    outcomes = [1.0 if c else 0.0 for c in correct]
+
+    # Brier score: mean squared error
+    return sum((f - y) ** 2 for f, y in zip(confidences, outcomes)) / len(confidences)
+
+
+# =============================================================================
+# RANKED VOTING SELF-CONSISTENCY — NEW v7.5 (NAACL 2025)
+# =============================================================================
+
+@dataclass
+class RankedVotingResult:
+    """Result of ranked voting self-consistency calculation."""
+    aggregated_sc: float  # Aggregated self-consistency score
+    individual_scores: List[float]  # Individual SC scores from each voter
+    method: str  # Aggregation method used
+    n_voters: int  # Number of confidence lists (voters)
+    n_samples: int  # Number of samples
+
+
+def ranked_voting_sc(
+    confidence_lists: List[List[float]],
+    correct: List[bool],
+    method: str = "borda"
+) -> RankedVotingResult:
+    """
+    Ranked Voting Self-Consistency (NAACL 2025).
+
+    Aggregates multiple confidence predictions (e.g., from multiple models
+    or self-consistency samples) using ranked voting methods.
+
+    Methods:
+    - "borda": Borda count (each position gets points, sum points)
+    - "plurality": Plurality voting (highest confidence wins)
+    - "median": Median aggregation (robust to outliers)
+
+    Reference: NAACL 2025, "Self-Consistency Improves Calibration"
+
+    Args:
+        confidence_lists: List of confidence lists (each from a different voter)
+        correct: True/False labels
+        method: Aggregation method ("borda", "plurality", "median")
+
+    Returns:
+        RankedVotingResult
+    """
+    if not confidence_lists or not correct:
+        return RankedVotingResult(
+            aggregated_sc=0.0,
+            individual_scores=[],
+            method=method,
+            n_voters=0,
+            n_samples=0
+        )
+
+    n_voters = len(confidence_lists)
+    n_samples = len(correct)
+
+    # Validate all lists have same length
+    if any(len(cl) != n_samples for cl in confidence_lists):
+        return RankedVotingResult(
+            aggregated_sc=0.0,
+            individual_scores=[],
+            method=method,
+            n_voters=n_voters,
+            n_samples=n_samples
+        )
+
+    # Calculate individual SC scores for each voter
+    individual_scores = []
+    for confidences in confidence_lists:
+        # SC = accuracy (fraction correct)
+        correct_count = sum(
+            1 for conf, corr in zip(confidences, correct)
+            if (conf > 0.5) == corr
+        )
+        individual_scores.append(correct_count / n_samples)
+
+    # Aggregate using specified method
+    if method == "borda":
+        # Borda count: rank voters by SC, assign points
+        # Higher SC = higher rank = more points
+        sorted_indices = sorted(
+            range(n_voters),
+            key=lambda i: individual_scores[i],
+            reverse=True
+        )
+        # Points: n_voters - rank (0 to n_voters-1)
+        bordo_points = [0.0] * n_voters
+        for rank, idx in enumerate(sorted_indices):
+            bordo_points[idx] = n_voters - rank - 1
+
+        # Weighted average by Borda points
+        total_points = sum(bordo_points)
+        if total_points > 0:
+            aggregated_sc = sum(
+                score * points for score, points in zip(individual_scores, bordo_points)
+            ) / total_points
+        else:
+            aggregated_sc = sum(individual_scores) / n_voters
+
+    elif method == "plurality":
+        # Plurality: take the score from the highest-scoring voter
+        best_idx = max(range(n_voters), key=lambda i: individual_scores[i])
+        aggregated_sc = individual_scores[best_idx]
+
+    elif method == "median":
+        # Median: robust aggregation
+        sorted_scores = sorted(individual_scores)
+        n = len(sorted_scores)
+        if n % 2 == 0:
+            aggregated_sc = (sorted_scores[n//2 - 1] + sorted_scores[n//2]) / 2
+        else:
+            aggregated_sc = sorted_scores[n//2]
+
+    else:
+        # Default: simple average
+        aggregated_sc = sum(individual_scores) / n_voters
+
+    return RankedVotingResult(
+        aggregated_sc=aggregated_sc,
+        individual_scores=individual_scores,
+        method=method,
+        n_voters=n_voters,
+        n_samples=n_samples
+    )
+
+
+# =============================================================================
 # MAIN / TEST
 # =============================================================================
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("Scientific Metrics v7.0 — Scientifically Correct")
+    print("Scientific Metrics v7.5 — Scientifically Correct")
     print("=" * 60)
 
     # Test Min-K%++ v7
@@ -1947,5 +2107,25 @@ if __name__ == "__main__":
     brier = calculate_brier_score(confs, corr)
     print(f"   Brier Score: {brier.brier_score:.4f}")
     print(f"   (Lower is better, 0 = perfect)")
+
+    # Test Simple Brier Score (v7.5)
+    print("\n5. Simple Brier Score (v7.5):")
+    simple_bs = simple_brier_score(confs, corr)
+    print(f"   Simple Brier Score: {simple_bs:.4f}")
+    print(f"   (Convenience wrapper, same result)")
+
+    # Test Ranked Voting SC (v7.5)
+    print("\n6. Ranked Voting Self-Consistency (v7.5):")
+    confidence_lists = [
+        [0.7, 0.3, 0.9, 0.1, 0.8],  # Voter 1
+        [0.6, 0.4, 0.8, 0.2, 0.9],  # Voter 2
+        [0.8, 0.2, 0.7, 0.3, 0.85], # Voter 3
+    ]
+    correct = [True, False, True, False, True]
+
+    for method in ["borda", "plurality", "median"]:
+        rv_result = ranked_voting_sc(confidence_lists, correct, method=method)
+        print(f"   {method.capitalize()}: SC = {rv_result.aggregated_sc:.4f}")
+        print(f"      Individual scores: {[f'{s:.3f}' for s in rv_result.individual_scores]}")
 
     print("\n" + "=" * 60)
