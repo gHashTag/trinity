@@ -2255,6 +2255,27 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Firebird module — F-zone LLM Engine
+    const firebird_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+
+    // Queen module — Q-zone Coordination
+    const queen_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+        },
+    });
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
