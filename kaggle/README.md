@@ -75,7 +75,7 @@ kaggle/
 │   └── ru/               # Russian ✨ NEW
 ├── eval/                 # Unified evaluation framework
 │   ├── scorer_v2.py      # ✨ Scientific metrics (ECE, meta-d')
-│   ├── scientific_metrics_v7.py  # ✨ v7.4: Full-ECE, CoDeC, Min-K%++
+│   ├── scientific_metrics_v7.py  # ✨ v7.5: Full-ECE, CoDeC, Min-K%++, BCa bootstrap
 │   ├── calibration.py    # ✨ Temperature scaling, Platt, Isotonic
 │   ├── runner.py         # Benchmark runner
 │   ├── api_client.py     # Multi-provider LLM client
@@ -286,7 +286,7 @@ wget https://zenodo.org/record/19223956/files/bundle_b002.zip
 
 **Citation:**
 ```bibtex
-@software{trinity_scientific_metrics_v7_4,
+@software{trinity_scientific_metrics_v7_5,
   author = {Trinity Cognitive Probes Team},
   title = {Scientific Metrics v7.4: Statistical Validity and Reproducibility},
   year = {2026},
