@@ -797,16 +797,18 @@ def detect_contamination_mink_pp_v7(
     else:
         confidence_score = max(0.0, 1.0 - abs(t_statistic) / 3.0)
 
-    # Bootstrap CI
+    # Bootstrap CI (v7.5 FIX: Report CI for actual metric, not arbitrary conversion)
     n_below_threshold = sum(1 for s in sample_min_k_scores if s < mean_min_k_score - 2 * sigma)
 
     if len(sample_min_k_scores) >= 10:
-        _, ci_lower, ci_upper = _bootstrap_confidence_interval(
+        _, score_ci_lower, score_ci_upper = _bootstrap_confidence_interval(
             sample_min_k_scores, n_bootstrap=n_bootstrap
         )
-        # Convert score CI to confidence CI
-        ci_lower = max(0.0, min(1.0, confidence_score - abs(ci_upper - mean_min_k_score) * 0.1))
-        ci_upper = min(1.0, max(0.0, confidence_score + abs(ci_upper - mean_min_k_score) * 0.1))
+        # v7.5: Report CI for the actual metric (mean_min_k_score)
+        # The old code arbitrarily converted this to a "confidence" CI with factor 0.1
+        # Instead, we store the actual score CI and can transform it if needed
+        ci_lower = score_ci_lower  # CI for mean_min_k_score
+        ci_upper = score_ci_upper  # CI for mean_min_k_score
     else:
         ci_lower, ci_upper = 0.0, 1.0
 
