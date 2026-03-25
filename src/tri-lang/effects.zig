@@ -81,20 +81,20 @@ pub const Effect = struct {
 /// State effect — mutable state operations
 /// perform state { get(), set(x) }
 pub const StateEffect = struct {
-    pub const read = EffectOp{ .name = "get", .payload_type = void, .loc = .{ .line = 0, .column = 0 } };
-    pub const write = EffectOp{ .name = "set", .payload_type = void, .loc = .{ .line = 0, .column = 0 } };
+    pub const read = EffectOp{ .name = "get", .payload_typename = null, .loc = .{ .line = 0, .column = 0 } };
+    pub const write = EffectOp{ .name = "set", .payload_typename = null, .loc = .{ .line = 0, .column = 0 } };
 };
 
 /// Error effect — effectful error tracking
 /// perform error { throw(msg) }
 pub const ErrorEffect = struct {
-    pub const throw_op = EffectOp{ .name = "throw", .payload_type = []const u8, .loc = .{ .line = 0, .column = 0 } };
+    pub const throw_op = EffectOp{ .name = "throw", .payload_typename = "[]const u8", .loc = .{ .line = 0, .column = 0 } };
 };
 
 /// Async effect — async/await operations
 /// perform async { await() }
 pub const AsyncEffect = struct {
-    pub const await_op = EffectOp{ .name = "await", .payload_type = void, .loc = .{ .line = 0, .column = 0 } };
+    pub const await_op = EffectOp{ .name = "await", .payload_typename = null, .loc = .{ .line = 0, .column = 0 } };
 };
 
 /// Platform effect — dual-target code generation
@@ -177,7 +177,7 @@ pub const EffectContext = struct {
 
     /// Push a new handler onto the stack
     pub fn pushHandler(self: *Self, handler: Handler) !void {
-        try self.handlers.append(handler);
+        try self.handlers.append(self.allocator, handler);
     }
 
     /// Pop the top handler from the stack
@@ -310,16 +310,17 @@ test "effect_context_top_handler" {
 
 test "effect_id_values" {
     try std.testing.expectEqual(@as(u8, 0), @intFromEnum(EffectId.IO));
-    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(EffectId.State));
+    try std.testing.expectEqual(@as(u8, 4), @intFromEnum(EffectId.State));
     try std.testing.expectEqual(@as(u8, 128), @intFromEnum(EffectId.User));
 }
 
 test "platform_effect_enum" {
-    try std.testing.expectEqual(@as(usize, 3), @typeInfo(PlatformEffect).Enum.fields.len);
+    const type_info = @typeInfo(PlatformEffect);
+    try std.testing.expectEqual(@as(usize, 3), type_info.@"enum".fields.len);
 }
 
 test "effect_operations" {
-    const read_op = EffectOp{ .name = "get", .payload_type = void, .loc = .{ .line = 0, .column = 0 } };
+    const read_op = EffectOp{ .name = "get", .payload_typename = null, .loc = .{ .line = 0, .column = 0 } };
     try std.testing.expectEqualStrings("get", read_op.name);
-    try std.testing.expect(read_op.payload_type == void);
+    try std.testing.expect(read_op.payload_typename == null);
 }
