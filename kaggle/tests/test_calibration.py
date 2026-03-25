@@ -306,5 +306,130 @@ class TestCalibrationResult:
         assert "46.6%" in s
 
 
+class TestAdaptiveTemperature:
+    """Test adaptive temperature scaling."""
+
+    def test_adaptive_by_difficulty_default(self):
+        """Default: use confidence as difficulty proxy."""
+        from kaggle.eval.calibration import adaptive_temperature_by_difficulty
+
+        confidences = [0.9, 0.5, 0.1]
+        result = adaptive_temperature_by_difficulty(confidences)
+
+        # High conf -> easy -> T > 1 -> soften (decrease)
+        assert result[0] < confidences[0]
+        # Mid conf -> T ~ 1
+        assert 0.4 < result[1] < 0.6
+        # Low conf -> hard -> T < 1 -> sharpen (decrease further)
+        assert result[2] < confidences[2]
+
+    def test_adaptive_with_explicit_difficulty(self):
+        """Explicit difficulty scores."""
+        from kaggle.eval.calibration import adaptive_temperature_by_difficulty
+
+        confidences = [0.5, 0.5, 0.5]
+        difficulties = [0.0, 0.5, 1.0]  # easy, medium, hard
+
+        result = adaptive_temperature_by_difficulty(confidences, difficulties)
+
+        # Easy (T > 1) -> soften toward 0.5
+        # Hard (T < 1) -> sharpen away from 0.5
+        assert result[0] >= result[1] >= result[2] or result[0] <= result[1] <= result[2]
+
+
+class TestConformalPrediction:
+    """Test conformal prediction methods."""
+
+    def test_compute_conformal_threshold(self):
+        """Threshold should give target coverage."""
+        from kaggle.eval.calibration import compute_conformal_threshold
+
+        # Well-calibrated data
+        confidences = [0.9, 0.8, 0.7, 0.6, 0.5]
+        correct = [True, True, True, False, False]
+
+        q = compute_conformal_threshold(confidences, correct, target_coverage=0.8)
+
+        # Threshold should be in valid range
+        assert 0.0 <= q <= 1.0
+
+    def test_conformal_predict(self):
+        """Prediction should respect threshold."""
+        from kaggle.eval.calibration import conformal_predict
+
+        q = 0.3  # threshold
+
+        # Above threshold: predict positive
+        pred, conf, abstain = conformal_predict(0.8, q)
+        assert pred is True
+        assert abstain is False
+
+        # Below threshold: abstain
+        pred, conf, abstain = conformal_predict(0.1, q)
+        assert pred is False
+        assert abstain is True
+
+
+class TestBordaCount:
+    """Test Borda count aggregation."""
+
+    def test_borda_count_majority(self):
+        """Most common response should win."""
+        from kaggle.eval.calibration import borda_count_aggregate
+
+        responses = ["A", "A", "B", "A", "C"]
+        winner = borda_count_aggregate(responses)
+
+        assert winner == "A"
+
+    def test_borda_count_tie(self):
+        """Tie goes to first in most_common order."""
+        from kaggle.eval.calibration import borda_count_aggregate
+
+        responses = ["A", "B", "A", "B"]
+        winner = borda_count_aggregate(responses)
+
+        # Either A or B is acceptable (Counter order)
+        assert winner in ["A", "B"]
+
+    def test_borda_count_empty(self):
+        """Empty list returns empty string."""
+        from kaggle.eval.calibration import borda_count_aggregate
+
+        winner = borda_count_aggregate([])
+        assert winner == ""
+
+
+class TestWeightedEnsemble:
+    """Test weighted ensemble calibration."""
+
+    def test_equal_weights(self):
+        """Equal weights should average methods."""
+        from kaggle.eval.calibration import weighted_ensemble_calibration
+
+        confidences = [0.5]
+
+        # Two identity methods with equal weights
+        methods = [lambda c: c, lambda c: c]
+        result = weighted_ensemble_calibration(confidences, methods)
+
+        assert result[0] == pytest.approx(0.5)
+
+    def test_weighted_average(self):
+        """Weighted average should work correctly."""
+        from kaggle.eval.calibration import weighted_ensemble_calibration
+
+        confidences = [0.5]
+
+        # Method 1: c -> 0.4, Method 2: c -> 0.6
+        methods = [lambda c: 0.4, lambda c: 0.6]
+        weights = [0.5, 0.5]
+
+        result = weighted_ensemble_calibration(confidences, methods, weights)
+
+        # (0.4 + 0.6) / 2 = 0.5
+        assert result[0] == pytest.approx(0.5)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

@@ -280,7 +280,9 @@ wget https://zenodo.org/record/19223956/files/bundle_b002.zip
 # ... etc
 ```
 
-📖 **Full Documentation**: See [ZENODO_BUNDLES.md](ZENODO_BUNDLES.md)
+📖 **Documentation**:
+- [ZENODO_BUNDLES.md](ZENODO_BUNDLES.md) — Bundle catalog and contents
+- [ZENODO_BEST_PRACTICES.md](ZENODO_BEST_PRACTICES.md) — FAIR-compliant publishing guide
 
 **Citation:**
 ```bibtex
@@ -312,13 +314,16 @@ wget https://zenodo.org/record/19223956/files/bundle_b002.zip
 ## 🚀 Hackathon Preparation
 
 ### Gap Analysis
-For the Google DeepMind AGI Hackathon, see [HACKATHON_GAP_ANALYSIS.md](HACKATHON_GAP_ANALYSIS.md) for:
-- Priority matrix (P0-P2 improvements)
-- Temperature scaling for +15% ECE improvement
-- v7.4 metrics integration
-- Pass@2 ensemble strategies
-- Submission validation
-- 3-week implementation timeline
+For the Google DeepMind AGI Hackathon, see:
+- **[HACKATHON_GAP_ANALYSIS.md](HACKATHON_GAP_ANALYSIS.md)** — Priority matrix (P0-P2 improvements), temperature scaling for +15% ECE, v7.4 metrics, Pass@2 ensembles
+- **[HACKATHON_ADDITIONAL_IMPROVEMENTS.md](HACKATHON_ADDITIONAL_IMPROVEMENTS.md)** — Cutting-edge 2024-2025 research methods:
+  - Adaptive Temperature Scaling (token-level)
+  - Ranked Voting Self-Consistency (Borda, IRV, MRR)
+  - Conformal Prediction (distribution-free uncertainty)
+  - Semantic Self-Consistency (embedding-based)
+  - Thermometer (unsupervised calibration)
+  - Focal Temperature Scaling
+  - Contextual Calibration
 
 ### Quick Start for Competition
 ```bash

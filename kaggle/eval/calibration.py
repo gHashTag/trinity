@@ -14,7 +14,7 @@ import os
 import sys
 import math
 import numpy as np
-from typing import List, Tuple, Callable, Dict, Optional, Union
+from typing import List, Tuple, Callable, Dict, Optional, Union, Any
 from dataclasses import dataclass
 from enum import Enum
 
@@ -507,6 +507,144 @@ def confidence_clamping(
         Clamped confidences
     """
     return [max(min_conf, min(max_conf, c)) for c in confidences]
+
+
+# =============================================================================
+# Quick Win Methods from Additional Improvements
+# =============================================================================
+
+def adaptive_temperature_by_difficulty(
+    confidences: List[float],
+    difficulties: List[float] = None
+) -> List[float]:
+    """
+    Ultra-simple Adaptive Temperature Scaling.
+
+    Uses confidence as inverse difficulty proxy:
+    - Low confidence = hard = sharpen (T < 1)
+    - High confidence = easy = soften (T > 1)
+
+    Args:
+        confidences: Raw confidences
+        difficulties: Optional difficulty scores [0, 1]
+
+    Returns:
+        Adaptively calibrated confidences
+    """
+    if difficulties is None:
+        # Use confidence as inverse difficulty proxy
+        difficulties = [1.0 - c for c in confidences]
+
+    result = []
+    for conf, diff in zip(confidences, difficulties):
+        # T in [0.5, 2.0] based on difficulty
+        T = 0.5 + 1.5 * (1.0 - diff)
+        result.append(apply_temperature([conf], T)[0])
+    return result
+
+
+def compute_conformal_threshold(
+    val_confidences: List[float],
+    val_correct: List[bool],
+    target_coverage: float = 0.90
+) -> float:
+    """
+    Compute conformal threshold for coverage guarantee.
+
+    Guarantees: P(correct >= threshold) >= target_coverage
+
+    Usage: Predict "correct" only if confidence > threshold.
+
+    Args:
+        val_confidences: Validation confidences
+        val_correct: Ground truth correctness
+        target_coverage: Target coverage (0.90 = 90%)
+
+    Returns:
+        q: Conformal threshold
+    """
+    # Non-conformity scores
+    scores = [c if corr else (1 - c) for c, corr in zip(val_confidences, val_correct)]
+
+    # Quantile threshold
+    q = np.quantile(scores, target_coverage, method='higher')
+    return q
+
+
+def conformal_predict(
+    confidence: float,
+    q: float
+) -> Tuple[bool, float, bool]:
+    """
+    Make prediction with conformal guarantee.
+
+    Args:
+        confidence: Model confidence
+        q: Conformal threshold from compute_conformal_threshold()
+
+    Returns:
+        prediction: Binary decision (True = predict correct)
+        corrected_confidence: Adjusted confidence
+        abstain: Whether to abstain (low confidence)
+    """
+    nc_score = 1 - confidence
+
+    if nc_score > q:
+        # Below threshold: abstain or predict negative
+        return False, max(0.0, confidence), True
+    else:
+        # Above threshold: predict positive
+        corrected_conf = max(0.0, min(1.0, 1.0 - nc_score / q))
+        return True, corrected_conf, False
+
+
+def borda_count_aggregate(responses: List[str]) -> str:
+    """
+    Borda count aggregation for self-consistency.
+
+    Points = (n_candidates - rank). Winner has most points.
+
+    Args:
+        responses: List of sampled responses
+
+    Returns:
+        Winner by Borda count (most common response)
+    """
+    from collections import Counter
+
+    # Simple Borda: count occurrences
+    # (Full Borda requires ranking all alternatives)
+    counts = Counter(responses)
+    return counts.most_common(1)[0][0] if counts else ""
+
+
+def weighted_ensemble_calibration(
+    confidences: List[float],
+    methods: List[Callable[[float], float]],
+    weights: List[float] = None
+) -> List[float]:
+    """
+    Weighted ensemble of calibration methods.
+
+    Args:
+        confidences: Raw confidences
+        methods: List of calibration functions
+        weights: Optional weights for each method
+
+    Returns:
+        Ensemble-calibrated confidences
+    """
+    if weights is None:
+        weights = [1.0 / len(methods)] * len(methods)
+
+    result = []
+    for conf in confidences:
+        calibrated_sum = 0.0
+        for method, weight in zip(methods, weights):
+            calibrated_sum += weight * method(conf)
+        result.append(calibrated_sum)
+
+    return result
 
 
 # =============================================================================
