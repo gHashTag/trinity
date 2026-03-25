@@ -768,6 +768,27 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Firebird App State module (DePIN global state)
+    const firebird_app_state_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/app_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Reputation module (Neuroanatomical health scoring)
+    const firebird_reputation_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/reputation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Staking module (DePIN staking logic)
+    const firebird_staking_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/staking.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // DePIN tests
     const depin_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -785,6 +806,28 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
     test_step.dependOn(&run_depin_network_tests.step);
+
+    // === TRINITY dePIN Testnet v4 Modules ===
+    // AppState: mutex-protected emission tracking
+    const app_state_tests = b.addTest(.{
+        .root_module = firebird_app_state_mod,
+    });
+    const run_app_state_tests = b.addRunArtifact(app_state_tests);
+    test_step.dependOn(&run_app_state_tests.step);
+
+    // Reputation: neuroanatomical health scoring
+    const firebird_reputation_tests = b.addTest(.{
+        .root_module = firebird_reputation_mod,
+    });
+    const run_firebird_reputation_tests = b.addRunArtifact(firebird_reputation_tests);
+    test_step.dependOn(&run_firebird_reputation_tests.step);
+
+    // Staking: lock periods and multipliers
+    const staking_tests = b.addTest(.{
+        .root_module = firebird_staking_mod,
+    });
+    const run_staking_tests = b.addRunArtifact(staking_tests);
+    test_step.dependOn(&run_staking_tests.step);
 
     // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
     const api_tests = b.addTest(.{
@@ -2620,27 +2663,6 @@ pub fn build(b: *std.Build) void {
     // Firebird Slashing module (DePIN slashing conditions)
     const firebird_slashing_mod = b.createModule(.{
         .root_source_file = b.path("src/firebird/slashing.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    // Firebird App State module (DePIN global state)
-    const firebird_app_state_mod = b.createModule(.{
-        .root_source_file = b.path("src/firebird/app_state.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    // Firebird Reputation module (Neuroanatomical health scoring)
-    const firebird_reputation_mod = b.createModule(.{
-        .root_source_file = b.path("src/firebird/reputation.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    // Firebird Staking module (DePIN staking logic)
-    const firebird_staking_mod = b.createModule(.{
-        .root_source_file = b.path("src/firebird/staking.zig"),
         .target = target,
         .optimize = optimize,
     });
