@@ -303,6 +303,14 @@ const bundle_v4_records = [_]UpdateRecord{
         .keywords = "VSA,vector-symbolic,architecture,bind,unbind,bundle,ternary,dot-product,permutation,FHRR,BSD",
         .cpc = "G06F7/72,G06F17/16,G06N3/00",
     },
+    .{
+        .id = "PARENT",
+        .zenodo_id = "18947017",
+        .file = "docs/research/zenodo_parent_collection_enhanced_v4.md",
+        .title = "Trinity S³AI Framework — Unified Scientific Architecture for Ternary Computing v4.0",
+        .keywords = "Trinity,S3AI,ternary,computing,framework,HSLM,FPGA,TRI-27,Queen,Tri-language,GF16,TF3,VSA,phi-based,sacred,neural,network,instruction,set,orchestration,linear,types,effects,handlers,pattern,matching",
+        .cpc = "G06N3/00,G06N20/00,G06F7/52,G06F9/30,G06F8/30,G06F7/72,G06F17/16",
+    },
 };
 
 fn updateAllRecords(allocator: std.mem.Allocator) !void {
@@ -673,7 +681,7 @@ fn updateOneBundleV4(allocator: std.mem.Allocator, bundle_id: []const u8) !void 
             return;
         }
     }
-    print("{s}Unknown bundle: {s}. Valid: B001-B007{s}\n", .{ RED, bundle_id, RESET });
+    print("{s}Unknown bundle: {s}. Valid: B001-B007, PARENT{s}\n", .{ RED, bundle_id, RESET });
 }
 
 fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
@@ -864,7 +872,7 @@ fn publishBundleV4(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
             return;
         }
     }
-    print("{s}Unknown bundle: {s}. Valid: B001-B007{s}\n", .{ RED, bundle_id, RESET });
+    print("{s}Unknown bundle: {s}. Valid: B001-B007, PARENT{s}\n", .{ RED, bundle_id, RESET });
 }
 
 fn publishBundleV4Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
