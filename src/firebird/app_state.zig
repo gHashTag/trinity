@@ -173,11 +173,11 @@ test "AppState emission cap calculation" {
 
 test "AppState initialization" {
     const allocator = std.testing.allocator;
-    var state = AppState.init(allocator);
+    const state = AppState.init(allocator);
     try std.testing.expectEqual(@as(u128, 0), state.emission_total);
     try std.testing.expectEqual(EMISSION_CAP, state.emission_cap);
     try std.testing.expectEqual(@as(u64, 0), state.block_number);
-    try std.testing.expectEqual(NetworkStatus.initializing, state.status);
+    try std.testing.expectEqual(AppState.NetworkStatus.initializing, state.status);
 }
 
 test "AppState addEmission" {
