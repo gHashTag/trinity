@@ -229,9 +229,9 @@ pub fn calculateDelta(prev: *const FacultySnapshot, curr: FacultySnapshot, prev_
     return FacultyDelta{
         .has_prev = true,
         .seconds_ago = seconds_ago,
-        .compile_rate_delta = @intCast(curr.compile_rate) - @intCast(prev.compile_rate),
-        .active_delta = @intCast(curr.activeFaculty()) - @intCast(prev.activeFaculty()),
-        .dirty_delta = @intCast(curr.dirty_files) - @intCast(prev.dirty_files),
+        .compile_rate_delta = @as(i16, @intCast(curr.compile_rate)) - @as(i16, @intCast(prev.compile_rate)),
+        .active_delta = @as(i8, @intCast(curr.activeFaculty())) - @as(i8, @intCast(prev.activeFaculty())),
+        .dirty_delta = @as(i32, @intCast(curr.dirty_files)) - @as(i32, @intCast(prev.dirty_files)),
         .prev_compile_rate = prev.compile_rate,
         .prev_active = prev.activeFaculty(),
         .prev_dirty = prev.dirty_files,
@@ -245,7 +245,7 @@ test "faculty history load/save roundtrip" {
     const allocator = std.testing.allocator;
 
     // Save a test entry
-    var test_snapshot: FacultySnapshot = .{
+    const test_snapshot: FacultySnapshot = .{
         .agents = undefined, // Would need full init
         .build_ok = true,
         .binaries = 50,
