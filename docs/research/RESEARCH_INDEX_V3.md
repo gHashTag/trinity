@@ -1,7 +1,7 @@
 # Trinity Research Documentation Index — v3.0
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 64
+**Total Documents:** 67
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -27,17 +27,20 @@
 | `DEFENSIVE_PUB_IMPLEMENTATION_SUMMARY.md` | Implementation guide | ✅ Complete |
 | `PRIOR_ART_NETWORK.md` | Cross-reference matrix | ✅ Complete |
 
-### 3. Experimental Results & Validation (10 documents)
+### 3. Experimental Results & Validation (13 documents)
 
 | Document | Purpose | Coverage |
 |----------|---------|----------|
 | `EXPERIMENTAL_RESULTS.md` | All 7 bundles experimental data | B001-B007 |
-| `BENCHMARK_AGGREGATOR.md` | Complete benchmark results | All bundles ✅ NEW |
-| `HYPOTHESIS_VALIDATION_REPORT.md` | H1-H6 validation status | 5/6 validated ✅ NEW |
-| `VSA_SCIENTIFIC_VALIDATION.md` | VSA math + SIMD validation | 11.87× speedup ✅ NEW |
-| `TRI27_SCIENTIFIC_VALIDATION.md` | Ternary ISA validation | 1.7× density ✅ NEW |
-| `FPGA_SCIENTIFIC_VALIDATION.md` | Hardware validation results | Zero-DSP ✅ NEW |
-| `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests ✅ NEW |
+| `BENCHMARK_AGGREGATOR.md` | Complete benchmark results | All bundles |
+| `HYPOTHESIS_VALIDATION_REPORT.md` | H1-H6 validation status | 5/6 validated |
+| `VSA_SCIENTIFIC_VALIDATION.md` | VSA math + SIMD validation | 11.87× speedup |
+| `TRI27_SCIENTIFIC_VALIDATION.md` | Ternary ISA validation | 1.7× density |
+| `TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md` | Tri type system | Result/ADT/Linear/Effects |
+| `QUEEN_ORCHESTRATION_VALIDATION.md` | Self-learning system | 78% policy success |
+| `FPGA_SCIENTIFIC_VALIDATION.md` | Hardware validation results | Zero-DSP |
+| `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests |
+| `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` | Master summary | All hypotheses |
 | `REPRODUCIBLE_RESEARCH.md` | Scientific rigor guidelines | ✅ Complete |
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
@@ -110,12 +113,13 @@
 TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 ├── H1 (Sacred) → sacred_formats_fpga.md, EXPERIMENTAL_RESULTS.md (B001, B006)
 ├── H2 (Sacred) → FPGA_SCIENTIFIC_VALIDATION.md, EXPERIMENTAL_RESULTS.md (B002)
-├── H3 (Superhuman) → queen_lotus_experiments.md, HYPOTHESIS_VALIDATION_REPORT.md
-├── H4 (Superhuman) → QUEEN_SELF_LEARNING_REPORT.md
-├── H5 (Specialized) → TRI27_SCIENTIFIC_VALIDATION.md, EXPERIMENTAL_RESULTS.md (B003, B005)
+├── H3 (Superhuman) → QUEEN_ORCHESTRATION_VALIDATION.md, queen_lotus_experiments.md
+├── H4 (Superhuman) → QUEEN_SELF_LEARNING_REPORT.md, HYPOTHESIS_VALIDATION_REPORT.md
+├── H5 (Specialized) → TRI27_SCIENTIFIC_VALIDATION.md, TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md
 ├── H6 (Cross-Axis) → PERFORMANCE_BENCHMARKS.md, BENCHMARK_AGGREGATOR.md
 ├── VSA → VSA_SCIENTIFIC_VALIDATION.md, statistical_analysis_toolkit.py
-└── All → PRIOR_ART_NETWORK.md, ZENODO_MASTER_INDEX.md
+├── Type System → TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md
+└── All → TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md, PRIOR_ART_NETWORK.md
 ```
 
 ---
@@ -147,9 +151,12 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 1. **VSA:** `VSA_SCIENTIFIC_VALIDATION.md` — bind/unbind/bundle, 11.87× SIMD
 2. **TRI-27:** `TRI27_SCIENTIFIC_VALIDATION.md` — ternary ISA, 1.7× code density
-3. **FPGA:** `FPGA_SCIENTIFIC_VALIDATION.md` — Zero-DSP, φ-timing validation
-4. **Statistics:** `statistical_analysis_toolkit.py` — 10+ statistical tests
-5. **All Benchmarks:** `BENCHMARK_AGGREGATOR.md` — complete experimental results
+3. **Tri Language:** `TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md` — Result/ADT/Linear/Effects
+4. **Queen:** `QUEEN_ORCHESTRATION_VALIDATION.md` — self-learning, 78% policy success
+5. **FPGA:** `FPGA_SCIENTIFIC_VALIDATION.md` — Zero-DSP, φ-timing validation
+6. **Statistics:** `statistical_analysis_toolkit.py` — 10+ statistical tests
+7. **Master:** `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` — all hypotheses summary
+8. **All Benchmarks:** `BENCHMARK_AGGREGATOR.md` — complete experimental results
 
 ---
 
@@ -157,6 +164,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.2 | 2026-03-26 | Added Tri Language, Queen Orchestration validation docs |
 | 3.1 | 2026-03-26 | Added VSA/TRI-27/FPGA validation docs, statistical toolkit |
 | 3.0 | 2026-03-26 | Added HYPOTHESIS_VALIDATION_REPORT.md, quality tools |
 | 2.0 | 2026-03-25 | Added 66 discovery files, mathematical appendix |
