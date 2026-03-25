@@ -19,7 +19,8 @@ pub const vm = @import("vm.zig");
 // SDK modules (high-level API)
 pub const sdk = @import("sdk.zig");
 pub const science = @import("science.zig");
-pub const sparse = @import("sparse.zig");
+// sparse is now exported through vsa module to avoid module conflict
+pub const sparse = vsa.sparse;
 pub const jit = @import("jit.zig");
 
 // Re-export main types

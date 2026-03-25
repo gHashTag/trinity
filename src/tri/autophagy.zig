@@ -19,7 +19,8 @@ const verdict = @import("pathology.zig");
 const colors = @import("tri_colors.zig");
 const experience = @import("experience_hooks.zig");
 const cloud = @import("cloud_orchestrator.zig");
-const github_client = @import("github_client.zig");
+const github = @import("github");
+const github_client = github.github_client;
 
 const print = std.debug.print;
 const GREEN = colors.GREEN;

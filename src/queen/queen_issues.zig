@@ -7,10 +7,10 @@
 
 const std = @import("std");
 const qt = @import("queen_types.zig");
-// Import via tri module to avoid module conflicts
-const tri = @import("tri");
-const github_client = tri.github_client;
-const github_app_auth = tri.github_app_auth;
+// Import via github module (Wave 3: zone separation)
+const github = @import("github");
+const github_client = github.github_client;
+const github_app_auth = github.github_app_auth;
 
 const Allocator = std.mem.Allocator;
 const GITHUB_API_HOST = "api.github.com";

@@ -686,7 +686,7 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
         // FIXME: Full token health check requires Railway API validation (401/403 detection)
         // For now, just count env vars - this doesn't detect expired tokens, only missing ones
         {
-            const farm_accounts = @import("../tri/farm_accounts.zig");
+            const farm_accounts = tri.farm_accounts;
             var account_buf: [farm_accounts.MAX_ACCOUNTS]farm_accounts.Account = undefined;
             const token_count = farm_accounts.discoverAccounts(ctx.allocator, &account_buf);
             farm_accounts.deinitAccounts(ctx.allocator, &account_buf, token_count);

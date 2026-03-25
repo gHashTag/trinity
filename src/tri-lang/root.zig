@@ -13,6 +13,10 @@ pub const phantom_types = @import("phantom_types.zig");
 pub const array_combinators = @import("array_combinators.zig");
 pub const auto_parallel = @import("auto_parallel.zig");
 
+// Wave 1 features
+pub const pipe = @import("pipe.zig");
+pub const guards = @import("guards.zig");
+
 // Compiler pipeline
 pub const lexer = @import("lexer.zig");
 pub const parser = @import("parser.zig");

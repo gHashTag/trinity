@@ -1721,6 +1721,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "treesitter_zig", .module = ts_zig_mod },
+            .{ .name = "vsa", .module = vsa_tri },
         },
     });
 
@@ -2377,6 +2378,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // GitHub module — G-zone (Wave 3: zone separation)
+    const github_mod = b.createModule(.{
+        .root_source_file = b.path("src/github/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // Queen module — Q-zone Coordination
     // NOTE: Individual brain and tri modules added to avoid file ownership conflicts
     const queen_mod = b.createModule(.{
@@ -2964,6 +2971,42 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // TRI-27 Coptic alphabet register naming (27 letters, 3 banks)
+    const coptic_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/coptic.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI-27 .t27 module wrappers (DOGFOOD-1 Phase 2)
+    // TODO: Add to tri executable imports when enforcement hook is ready
+    const reticular_raphe_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/reticular_raphe_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
+    const phoenix_medulla_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/phoenix_medulla_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
+    const queen_vmpfc_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/queen_vmpfc_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -3043,6 +3086,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tri_compile", .module = tri_compile_mod },
                 // Queen module (Q-zone Coordination)
                 .{ .name = "queen", .module = queen_mod },
+                // GitHub module (G-zone)
+                .{ .name = "github", .module = github_mod },
                 // Q-zone modules (individual imports for tri compatibility)
                 .{ .name = "cortex", .module = cortex_mod },
                 .{ .name = "faculty_types", .module = faculty_types_mod },
@@ -3174,6 +3219,10 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "tri_lang", .module = tri_lang_mod },
                 .{ .name = "emu", .module = emu_mod },
+                .{ .name = "coptic", .module = coptic_mod },
+                .{ .name = "reticular_raphe", .module = reticular_raphe_mod },
+                .{ .name = "phoenix_medulla", .module = phoenix_medulla_mod },
+                .{ .name = "queen_vmpfc", .module = queen_vmpfc_mod },
             },
         }),
     });
@@ -3356,6 +3405,49 @@ pub fn build(b: *std.Build) void {
     const run_tri27_comprehensive_tests = b.addRunArtifact(tri27_comprehensive_tests);
     const tri27_comprehensive_tests_step = b.step("test-tri27-comprehensive", "Run TRI‑27 Comprehensive Tests");
     tri27_comprehensive_tests_step.dependOn(&run_tri27_comprehensive_tests.step);
+
+    // TRI-27 .t27 Module Wrapper Tests (DOGFOOD-1 Phase 2)
+    const reticular_raphe_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/reticular_raphe_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_reticular_raphe_tests = b.addRunArtifact(reticular_raphe_tests);
+    const reticular_raphe_tests_step = b.step("test-reticular-raphe", "Run Reticular Raphe Tests");
+    reticular_raphe_tests_step.dependOn(&run_reticular_raphe_tests.step);
+
+    const phoenix_medulla_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/phoenix_medulla_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_phoenix_medulla_tests = b.addRunArtifact(phoenix_medulla_tests);
+    const phoenix_medulla_tests_step = b.step("test-phoenix-medulla", "Run Phoenix Medulla Tests");
+    phoenix_medulla_tests_step.dependOn(&run_phoenix_medulla_tests.step);
+
+    const queen_vmpfc_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/queen_vmpfc_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_queen_vmpfc_tests = b.addRunArtifact(queen_vmpfc_tests);
+    const queen_vmpfc_tests_step = b.step("test-queen-vmpfc", "Run Queen VMPFC Tests");
+    queen_vmpfc_tests_step.dependOn(&run_queen_vmpfc_tests.step);
 
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{

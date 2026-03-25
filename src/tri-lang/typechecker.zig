@@ -42,6 +42,7 @@ pub const TypedExpr = union(enum) {
     FnCall: FnCallExpr,
     ADT: ADTExpr,
     Match: MatchExpr,
+    Pipe: PipeExpr,
 };
 
 pub const IntExpr = struct { value: i64 };
@@ -89,6 +90,11 @@ pub const MatchExpr = struct {
     arms: []const MatchArm,
 };
 
+pub const PipeExpr = struct {
+    source: *const TypedExpr,
+    stages: []const *const TypedExpr,
+};
+
 pub const MatchArm = struct {
     pattern: MatchPattern,
     body: *const TypedExpr,
@@ -117,6 +123,17 @@ pub const TypeError = error{
     OccursCheckFailed,
     ArityMismatch,
     OutOfMemory,
+    // Wave 2: Result type errors
+    ResultNotExhaustive,
+    MissingOkPattern,
+    MissingErrPattern,
+    // Wave 2: Linear type errors
+    LinearValueNotConsumed,
+    LinearValueAlreadyConsumed,
+    LinearValueUsedMultipleTimes,
+    // Wave 2: Bank safety errors
+    BankMismatch,
+    CrossBankOperationNotAllowed,
 };
 
 pub const InferResult = struct {
@@ -136,6 +153,7 @@ pub fn infer(allocator: Allocator, expr: *const TypedExpr, env: *const TypeEnv) 
         .FnCall => |e| inferFnCall(allocator, e, env),
         .ADT => |e| inferADT(allocator, e, env),
         .Match => |e| inferMatch(allocator, e, env),
+        .Pipe => |e| inferPipe(allocator, e, env),
     };
 }
 
@@ -256,6 +274,37 @@ fn inferMatch(allocator: Allocator, expr: MatchExpr, env: *const TypeEnv) TypeEr
     }
 
     return InferResult{ .type = Type{ .Int = {} }, .subst = Subst.init(allocator) };
+}
+
+fn inferPipe(allocator: Allocator, expr: PipeExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Typecheck source expression
+    const source_res = try infer(allocator, expr.source, env);
+    var current_type = source_res.type;
+
+    // Typecheck each pipeline stage
+    // Each stage must be callable with the previous output type
+    for (expr.stages) |stage| {
+        const stage_res = try infer(allocator, stage, env);
+
+        // Check if stage is a function type
+        if (stage_res.type != .Fn) {
+            return error.TypeMismatch;
+        }
+
+        const fn_data = stage_res.type.Fn;
+        if (fn_data.params.items.len != 1) {
+            return error.ArityMismatch;
+        }
+
+        // The stage must accept the current type as input
+        // For now, we skip unification and just propagate the return type
+        current_type = fn_data.return_type.*;
+    }
+
+    return InferResult{
+        .type = current_type,
+        .subst = source_res.subst,
+    };
 }
 
 fn bindPattern(allocator: Allocator, pat: *const MatchPattern, env: *TypeEnv) TypeError!void {
@@ -491,4 +540,348 @@ test "infer match var pattern" {
     const env = TypeEnv.init(a);
     const r = try infer(a, &e, &env);
     try std.testing.expect(r.type == .Int);
+}
+
+test "infer pipe single stage" {
+    const a = std.testing.allocator;
+    const src = try a.create(TypedExpr);
+    defer a.destroy(src);
+    src.* = TypedExpr{ .Int = .{ .value = 42 } };
+
+    const p = try a.dupe(u8, "x");
+    defer a.free(p);
+    const body = try a.create(TypedExpr);
+    defer a.destroy(body);
+    body.* = TypedExpr{ .Var = .{ .name = "x" } };
+
+    const fn_stage = try a.create(TypedExpr);
+    defer a.destroy(fn_stage);
+    fn_stage.* = TypedExpr{ .Fn = .{ .params = &.{p}, .body = body } };
+
+    const stages = &[_]*const TypedExpr{fn_stage};
+    const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
+    const env = TypeEnv.init(a);
+    const r = try infer(a, &e, &env);
+    try std.testing.expect(r.type == .Var or r.type == .Int);
+}
+
+test "infer pipe multiple stages" {
+    const a = std.testing.allocator;
+    const src = try a.create(TypedExpr);
+    defer a.destroy(src);
+    src.* = TypedExpr{ .Int = .{ .value = 42 } };
+
+    const p1 = try a.dupe(u8, "x");
+    defer a.free(p1);
+    const body1 = try a.create(TypedExpr);
+    defer a.destroy(body1);
+    body1.* = TypedExpr{ .Var = .{ .name = "x" } };
+
+    const fn_stage1 = try a.create(TypedExpr);
+    defer a.destroy(fn_stage1);
+    fn_stage1.* = TypedExpr{ .Fn = .{ .params = &.{p1}, .body = body1 } };
+
+    const p2 = try a.dupe(u8, "y");
+    defer a.free(p2);
+    const body2 = try a.create(TypedExpr);
+    defer a.destroy(body2);
+    body2.* = TypedExpr{ .Var = .{ .name = "y" } };
+
+    const fn_stage2 = try a.create(TypedExpr);
+    defer a.destroy(fn_stage2);
+    fn_stage2.* = TypedExpr{ .Fn = .{ .params = &.{p2}, .body = body2 } };
+
+    const stages = &[_]*const TypedExpr{ fn_stage1, fn_stage2 };
+    const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
+    const env = TypeEnv.init(a);
+    const r = try infer(a, &e, &env);
+    try std.testing.expect(r.type == .Var or r.type == .Int);
+}
+
+test "infer pipe stage not_function fails" {
+    const a = std.testing.allocator;
+    const src = try a.create(TypedExpr);
+    defer a.destroy(src);
+    src.* = TypedExpr{ .Int = .{ .value = 42 } };
+
+    const stage = try a.create(TypedExpr);
+    defer a.destroy(stage);
+    stage.* = TypedExpr{ .Int = .{ .value = 99 } };
+
+    const stages = &[_]*const TypedExpr{stage};
+    const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
+    const env = TypeEnv.init(a);
+    const r = infer(a, &e, &env);
+    try std.testing.expectError(error.TypeMismatch, r);
+}
+
+test "infer pipe stage arity_mismatch fails" {
+    const a = std.testing.allocator;
+    const src = try a.create(TypedExpr);
+    defer a.destroy(src);
+    src.* = TypedExpr{ .Int = .{ .value = 42 } };
+
+    const p1 = try a.dupe(u8, "x");
+    defer a.free(p1);
+    const p2 = try a.dupe(u8, "y");
+    defer a.free(p2);
+    const body = try a.create(TypedExpr);
+    defer a.destroy(body);
+    body.* = TypedExpr{ .Int = .{ .value = 0 } };
+
+    // Function with 2 parameters
+    const fn_stage = try a.create(TypedExpr);
+    defer a.destroy(fn_stage);
+    fn_stage.* = TypedExpr{ .Fn = .{ .params = &.{ p1, p2 }, .body = body } };
+
+    const stages = &[_]*const TypedExpr{fn_stage};
+    const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
+    const env = TypeEnv.init(a);
+    const r = infer(a, &e, &env);
+    try std.testing.expectError(error.ArityMismatch, r);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: RESULT TYPE EXHAUSTIVENESS CHECKING
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+/// Check if Result type match is exhaustive
+/// Must have patterns for both Ok and Err variants
+pub fn checkResultExhaustive(match_arms: []const MatchArm) TypeError!void {
+    var has_ok: bool = false;
+    var has_err: bool = false;
+    var has_wildcard: bool = false;
+
+    for (match_arms) |arm| {
+        if (arm.pattern == .Wildcard) {
+            has_wildcard = true;
+            break; // Wildcard covers everything
+        }
+
+        if (arm.pattern == .ADTVariant) {
+            const variant = arm.pattern.ADTVariant.variant;
+            if (std.mem.eql(u8, variant, "Ok") or std.mem.eql(u8, variant, "Some")) {
+                has_ok = true;
+            } else if (std.mem.eql(u8, variant, "Err") or std.mem.eql(u8, variant, "None")) {
+                has_err = true;
+            }
+        }
+    }
+
+    // If wildcard is present, match is exhaustive
+    if (has_wildcard) return;
+
+    // Otherwise, must have both Ok and Err patterns
+    if (!has_ok) return error.MissingOkPattern;
+    if (!has_err) return error.MissingErrPattern;
+}
+
+/// Check if match expression on Result type is exhaustive
+pub fn checkResultMatch(value_type: Type, match_arms: []const MatchArm) TypeError!void {
+    // For now, assume any ADT match might be a Result
+    // Full implementation would check if value_type is Result(T, E)
+    _ = value_type;
+    try checkResultExhaustive(match_arms);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: BANK SAFETY CHECKING
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+/// Bank identifier for Coptic register safety
+pub const Bank = enum(u2) {
+    /// Bank 0: ALU registers (t0-t8)
+    ALU = 0,
+    /// Bank 1: Sacred accumulators (t9-t17)
+    Sacred = 1,
+    /// Bank 2: Constants (t18-t26)
+    Constant = 2,
+};
+
+/// Check if operation respects bank boundaries
+/// Operations on banked values must be in the same bank
+pub fn checkBankSafety(left_bank: ?Bank, right_bank: ?Bank) TypeError!void {
+    // If either side has no bank constraint, operation is allowed
+    if (left_bank == null or right_bank == null) return;
+
+    // Both sides must be from the same bank
+    if (left_bank.? != right_bank.?) {
+        return error.BankMismatch;
+    }
+}
+
+/// Get bank from type (if it's a Banked type)
+pub fn getBankFromType(t: Type) ?Bank {
+    _ = t;
+    // Full implementation would inspect the type and return the bank
+    // For now, return null (no bank constraint)
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: LINEAR TYPE CONSUMPTION TRACKING
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+/// Track linear variable usage during compilation
+pub const LinearTracker = struct {
+    allocator: Allocator,
+    /// Map from variable name to consumption state
+    /// false = not consumed, true = consumed
+    variables: std.StringHashMap(bool),
+
+    const Self = @This();
+
+    pub fn init(allocator: Allocator) Self {
+        return Self{
+            .allocator = allocator,
+            .variables = std.StringHashMap(bool).init(allocator),
+        };
+    }
+
+    pub fn deinit(self: *Self) void {
+        self.variables.deinit();
+    }
+
+    /// Declare a linear variable
+    pub fn declare(self: *Self, name: []const u8) !void {
+        try self.variables.put(name, false);
+    }
+
+    /// Mark variable as consumed
+    pub fn consume(self: *Self, name: []const u8) !void {
+        const entry = self.variables.get(name) orelse return error.UndeclaredVariable;
+        if (entry) return error.LinearValueAlreadyConsumed;
+        try self.variables.put(name, true);
+    }
+
+    /// Check if variable is consumed
+    pub fn isConsumed(self: *const Self, name: []const u8) bool {
+        const entry = self.variables.get(name) orelse return false;
+        return entry;
+    }
+
+    /// Check if all linear variables are consumed (end of scope)
+    pub fn checkAllConsumed(self: *const Self) !void {
+        var iter = self.variables.iterator();
+        while (iter.next()) |entry| {
+            if (!entry.value_ptr.*) {
+                // Variable not consumed
+                return error.LinearValueNotConsumed;
+            }
+        }
+    }
+
+    /// Get list of unconsumed variables
+    pub fn getUnconsumed(self: *Self, allocator: Allocator) ![][]const u8 {
+        var result = std.ArrayList([]const u8).init(allocator);
+        var iter = self.variables.iterator();
+        while (iter.next()) |entry| {
+            if (!entry.value_ptr.*) {
+                try result.append(allocator, entry.key_ptr.*);
+            }
+        }
+        return result.toOwnedSlice();
+    }
+};
+
+/// Check if expression uses linear variables correctly
+pub fn checkLinearUsage(expr: *const TypedExpr, tracker: *LinearTracker) TypeError!void {
+    _ = expr;
+    _ = tracker;
+    // Full implementation would:
+    // - Track which variables are marked as linear
+    // - Mark variables as consumed when used
+    // - Error if linear variable used multiple times
+    // - Error if linear variable not consumed at end of scope
+    return;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: TESTS
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+test "Result exhaustiveness with both patterns" {
+    const arms = &[_]MatchArm{
+        .{ .pattern = .{ .ADTVariant = .{ .variant = "Ok", .data_pattern = null } }, .body = undefined },
+        .{ .pattern = .{ .ADTVariant = .{ .variant = "Err", .data_pattern = null } }, .body = undefined },
+    };
+    try checkResultExhaustive(arms);
+}
+
+test "Result exhaustiveness with wildcard" {
+    const arms = &[_]MatchArm{
+        .{ .pattern = .Wildcard, .body = undefined },
+    };
+    try checkResultExhaustive(arms);
+}
+
+test "Result exhaustiveness missing Ok fails" {
+    const arms = &[_]MatchArm{
+        .{ .pattern = .{ .ADTVariant = .{ .variant = "Err", .data_pattern = null } }, .body = undefined },
+    };
+    try std.testing.expectError(error.MissingOkPattern, checkResultExhaustive(arms));
+}
+
+test "Result exhaustiveness missing Err fails" {
+    const arms = &[_]MatchArm{
+        .{ .pattern = .{ .ADTVariant = .{ .variant = "Ok", .data_pattern = null } }, .body = undefined },
+    };
+    try std.testing.expectError(error.MissingErrPattern, checkResultExhaustive(arms));
+}
+
+test "Bank safety same bank" {
+    try checkBankSafety(.ALU, .ALU);
+}
+
+test "Bank safety null bank" {
+    try checkBankSafety(.ALU, null);
+    try checkBankSafety(null, .ALU);
+    try checkBankSafety(null, null);
+}
+
+test "Bank safety different banks fails" {
+    try std.testing.expectError(error.BankMismatch, checkBankSafety(.ALU, .Sacred));
+}
+
+test "LinearTracker declare and consume" {
+    var tracker = LinearTracker.init(std.testing.allocator);
+    defer tracker.deinit();
+
+    try tracker.declare("x");
+    try std.testing.expect(!tracker.isConsumed("x"));
+
+    try tracker.consume("x");
+    try std.testing.expect(tracker.isConsumed("x"));
+}
+
+test "LinearTracker consume twice fails" {
+    var tracker = LinearTracker.init(std.testing.allocator);
+    defer tracker.deinit();
+
+    try tracker.declare("x");
+    try tracker.consume("x");
+    try std.testing.expectError(error.LinearValueAlreadyConsumed, tracker.consume("x"));
+}
+
+test "LinearTracker all consumed" {
+    var tracker = LinearTracker.init(std.testing.allocator);
+    defer tracker.deinit();
+
+    try tracker.declare("x");
+    try tracker.declare("y");
+    try tracker.consume("x");
+    try tracker.consume("y");
+
+    try tracker.checkAllConsumed();
+}
+
+test "LinearTracker not all consumed fails" {
+    var tracker = LinearTracker.init(std.testing.allocator);
+    defer tracker.deinit();
+
+    try tracker.declare("x");
+    try tracker.declare("y");
+    try tracker.consume("x");
+
+    try std.testing.expectError(error.LinearValueNotConsumed, tracker.checkAllConsumed());
 }

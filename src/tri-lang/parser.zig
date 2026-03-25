@@ -625,6 +625,26 @@ pub const Parser = struct {
             return ast.Type{ .Int = .I32 }; // Placeholder for TF3
         }
 
+        // Wave 2: Result type: Result(T, E)
+        if (self.isKeyword(.Result)) {
+            return self.parseResultType();
+        }
+
+        // Wave 2: Linear type: linear T
+        if (self.isKeyword(.Linear)) {
+            return self.parseLinearType();
+        }
+
+        // Wave 2: Banked type: Banked(T, Bank)
+        if (self.isKeyword(.Banked)) {
+            return self.parseBankedType();
+        }
+
+        // Wave 2: Fixed-size array: [N]T
+        if (self.current_token == .LeftBracket) {
+            return self.parseArrayType();
+        }
+
         // Named type (struct or enum)
         if (self.current_token == .Identifier) {
             const name = self.current_token.Identifier;
@@ -633,6 +653,114 @@ pub const Parser = struct {
         }
 
         return error.ExpectedType;
+    }
+
+    /// Parse Result type: Result(T, E)
+    fn parseResultType(self: *Self) ParseError!ast.Type {
+        try self.expectKeyword(.Result);
+        try self.expectToken(.LeftParen);
+
+        const ok_type_ptr = try self.allocator.create(ast.Type);
+        ok_type_ptr.* = try self.parseType();
+
+        try self.expectToken(.Comma);
+
+        const err_type_ptr = try self.allocator.create(ast.Type);
+        err_type_ptr.* = try self.parseType();
+
+        try self.expectToken(.RightParen);
+
+        return ast.Type{
+            .Result = .{
+                .ok_type = ok_type_ptr,
+                .err_type = err_type_ptr,
+            },
+        };
+    }
+
+    /// Parse Linear type: linear T
+    fn parseLinearType(self: *Self) ParseError!ast.Type {
+        try self.expectKeyword(.Linear);
+        const inner_type_ptr = try self.allocator.create(ast.Type);
+        inner_type_ptr.* = try self.parseType();
+        return ast.Type{
+            .Linear = .{
+                .inner_type = inner_type_ptr,
+            },
+        };
+    }
+
+    /// Parse Banked type: Banked(T, BankN)
+    fn parseBankedType(self: *Self) ParseError!ast.Type {
+        try self.expectKeyword(.Banked);
+        try self.expectToken(.LeftParen);
+
+        const value_type_ptr = try self.allocator.create(ast.Type);
+        value_type_ptr.* = try self.parseType();
+
+        try self.expectToken(.Comma);
+
+        // Parse bank: Bank0, Bank1, ..., Bank8
+        const bank: ast.Bank = if (self.isKeyword(.Bank0)) blk: {
+            try self.advance();
+            break :blk .ALU;
+        } else if (self.isKeyword(.Bank1)) blk: {
+            try self.advance();
+            break :blk .Sacred;
+        } else if (self.isKeyword(.Bank2)) blk: {
+            try self.advance();
+            break :blk .Constant;
+        } else blk: {
+            // For now, default to ALU for Bank3-8
+            try self.advance();
+            break :blk .ALU;
+        };
+
+        try self.expectToken(.RightParen);
+
+        return ast.Type{
+            .Banked = .{
+                .value_type = value_type_ptr,
+                .bank = bank,
+            },
+        };
+    }
+
+    /// Parse array type: [T] or [N]T (fixed-size)
+    fn parseArrayType(self: *Self) ParseError!ast.Type {
+        try self.expectToken(.LeftBracket);
+
+        // Check if this is a fixed-size array [N]T or dynamic [T]
+        if (self.current_token == .IntLiteral) {
+            // Fixed-size array: [N]T
+            const size = @as(usize, @intCast(self.current_token.IntLiteral));
+            try self.advance();
+
+            const element_type_ptr = try self.allocator.create(ast.Type);
+            element_type_ptr.* = try self.parseType();
+
+            try self.expectToken(.RightBracket);
+
+            return ast.Type{
+                .ArrayFixed = .{
+                    .element_type = element_type_ptr,
+                    .size = size,
+                },
+            };
+        } else {
+            // Dynamic array: [T]
+            const element_type_ptr = try self.allocator.create(ast.Type);
+            element_type_ptr.* = try self.parseType();
+
+            try self.expectToken(.RightBracket);
+
+            return ast.Type{
+                .Array = .{
+                    .element_type = element_type_ptr,
+                    .size = null,
+                },
+            };
+        }
     }
 
     /// Expect identifier, return its name

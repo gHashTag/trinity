@@ -1329,7 +1329,8 @@ fn cloudVerifyPR(allocator: Allocator, issue_num: u32) !bool {
 
 /// Merge PR for issue using native GitHubClient
 fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
-    const github_client = @import("github_client.zig");
+    const github = @import("github");
+    const github_client = github.github_client;
 
     var client = github_client.GitHubClient.init(allocator, false) catch |err| {
         print("  {s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });

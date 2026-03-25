@@ -23,9 +23,10 @@ pub const insula = @import("insula.zig");
 pub const phoenix_medulla = @import("phoenix_medulla.zig");
 pub const phoenix_pons = @import("phoenix_pons.zig");
 
-// GitHub integration (for queen issues)
-pub const github_client = @import("github_client.zig");
-pub const github_app_auth = @import("github_app_auth.zig");
+// GitHub integration (for queen issues) — now in github zone (Wave 3)
+const github = @import("github");
+pub const github_client = github.github_client;
+pub const github_app_auth = github.github_app_auth;
 
 // Farm management
 pub const farm_accounts = @import("farm_accounts.zig");

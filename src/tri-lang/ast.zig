@@ -626,6 +626,8 @@ pub const Type = union(enum) {
     Bool: TypeBool,
     /// Array type: [T] or [N]T
     Array: TypeArray,
+    /// Fixed-size array: [N]T with compile-time bounds checking
+    ArrayFixed: TypeArrayFixed,
     /// Function type: fn(args) -> return
     Function: TypeFunction,
     /// Result type: Result(T, E) - no exceptions
@@ -691,6 +693,15 @@ pub const TypeArray = struct {
     element_type: *const Type,
     /// Optional fixed size (e.g., [8]trit)
     size: ?usize,
+};
+
+/// Fixed-size array with compile-time bounds checking
+/// ArrayFixed(N, T) — array of N elements of type T
+pub const TypeArrayFixed = struct {
+    /// Element type
+    element_type: *const Type,
+    /// Fixed size (compile-time constant)
+    size: usize,
 };
 
 /// Function type fn(args) -> return

@@ -10,7 +10,7 @@
 
 const std = @import("std");
 const tri_lang = @import("tri_lang");
-const compileFile = tri_lang.compileFile;
+const compileFile = tri_lang.pipeline.compileFile;
 
 pub fn run(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {

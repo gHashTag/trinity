@@ -120,6 +120,32 @@ pub const Keyword = enum(u16) {
     // Modifiers
     Pub,
     Export,
+
+    // Wave 2: Type System keywords
+    // Result type
+    Result,
+    Ok,
+    Err,
+
+    // Linear types
+    Linear,
+
+    // Phantom types (banked values)
+    Banked,
+    Bank0,
+    Bank1,
+    Bank2,
+    Bank3,
+    Bank4,
+    Bank5,
+    Bank6,
+    Bank7,
+    Bank8,
+
+    // Ownership modes
+    Inout,
+    Sink,
+    Set,
 };
 
 /// Operators
@@ -583,6 +609,24 @@ pub const Lexer = struct {
                 if (std.mem.eql(u8, str, "pipeline")) return .Pipeline;
                 if (std.mem.eql(u8, str, "pub")) return .Pub;
                 if (std.mem.eql(u8, str, "export")) return .Export;
+                // Wave 2: Type System keywords
+                if (std.mem.eql(u8, str, "Result")) return .Result;
+                if (std.mem.eql(u8, str, "Ok")) return .Ok;
+                if (std.mem.eql(u8, str, "Err")) return .Err;
+                if (std.mem.eql(u8, str, "linear")) return .Linear;
+                if (std.mem.eql(u8, str, "Banked")) return .Banked;
+                if (std.mem.eql(u8, str, "Bank0")) return .Bank0;
+                if (std.mem.eql(u8, str, "Bank1")) return .Bank1;
+                if (std.mem.eql(u8, str, "Bank2")) return .Bank2;
+                if (std.mem.eql(u8, str, "Bank3")) return .Bank3;
+                if (std.mem.eql(u8, str, "Bank4")) return .Bank4;
+                if (std.mem.eql(u8, str, "Bank5")) return .Bank5;
+                if (std.mem.eql(u8, str, "Bank6")) return .Bank6;
+                if (std.mem.eql(u8, str, "Bank7")) return .Bank7;
+                if (std.mem.eql(u8, str, "Bank8")) return .Bank8;
+                if (std.mem.eql(u8, str, "inout")) return .Inout;
+                if (std.mem.eql(u8, str, "sink")) return .Sink;
+                if (std.mem.eql(u8, str, "set")) return .Set;
                 return null;
             }
         };

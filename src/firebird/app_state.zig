@@ -187,9 +187,9 @@ pub const AppState = struct {
         /// Get total revenue from all sources
         pub fn getTotal(self: *const RevenueTracker) u128 {
             return self.transaction_fees +
-                   self.staking_rewards +
-                   self.service_fees +
-                   self.data_compute_fees;
+                self.staking_rewards +
+                self.service_fees +
+                self.data_compute_fees;
         }
 
         /// Add revenue from a specific source

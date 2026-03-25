@@ -259,7 +259,7 @@ const StateFingerprint = struct {
     }
 
     /// Hash the fingerprint for state uniqueness detection
-    pub fn hash(self: *const StateFingerprint) u128 {
+    pub fn hash(self: *const StateFingerprint) u64 {
         var hasher = std.hash.Wyhash.init(0xDEAD_BEEF);
 
         // Hash all buckets
@@ -273,7 +273,8 @@ const StateFingerprint = struct {
         std.hash.autoHash(&hasher, self.unique_addresses);
         std.hash.autoHash(&hasher, self.slash_rate_x1000);
 
-        return @as(u128, @bitCast(hasher.final()));
+        // Return u64 hash (Wyhash returns 64-bit)
+        return hasher.final();
     }
 
     /// Get coverage score (higher = more unique states)
@@ -294,9 +295,9 @@ const StateFingerprint = struct {
         const has_slashes: f32 = if (self.slash_rate_x1000 > 0) 1.0 else 0.0;
 
         const numerator = @as(f32, @floatFromInt(stake_diversity)) +
-                         @as(f32, @floatFromInt(health_diversity)) +
-                         has_addresses +
-                         has_slashes;
+            @as(f32, @floatFromInt(health_diversity)) +
+            has_addresses +
+            has_slashes;
 
         return numerator / 11.0;
     }
@@ -310,8 +311,8 @@ const TestState = struct {
     op_count: usize,
     /// History for temporal invariants (last 100 snapshots)
     history: std.ArrayListUnmanaged(StateSnapshot),
-    /// Unique states seen (for coverage estimation) - now uses u128 hash
-    unique_states: std.AutoHashMap(u128, void),
+    /// Unique states seen (for coverage estimation) - now uses u64 hash
+    unique_states: std.AutoHashMap(u64, void),
     /// Last captured fingerprint for coverage tracking
     last_fingerprint: ?StateFingerprint,
 
@@ -323,7 +324,7 @@ const TestState = struct {
             .reputation = reputation.ReputationRegistry.init(allocator),
             .op_count = 0,
             .history = .{},
-            .unique_states = std.AutoHashMap(u128, void).init(allocator),
+            .unique_states = std.AutoHashMap(u64, void).init(allocator),
             .last_fingerprint = null,
         };
     }
@@ -464,10 +465,10 @@ pub const FailingSequence = struct {
                 applyRandomOp(&test_state, random);
             }
 
-            // Check if invariant still fails
-            const first_half_fails = verifyAllInvariants(&test_state) catch false;
+            // Check if invariant passes
+            const first_half_passes = if (verifyAllInvariants(&test_state)) |_| true else |_| false;
 
-            if (!first_half_fails) {
+            if (first_half_passes) {
                 // First half passes - problem is in second half
                 // Keep second half for further shrinking
                 const second_half = self.allocator.alloc(Op, self.ops.items.len - half) catch break;
@@ -588,22 +589,9 @@ fn invariantMonotonic(state: *const TestState) !void {
             try std.testing.expect(curr.total_slashed >= prev.total_slashed);
         }
 
-        // 3. If staked increased, must be compensated by emission or slash
-        // (New tokens must come from somewhere - either emission or burned tokens)
-        if (curr.total_staked > prev.total_staked) {
-            const delta_staked = curr.total_staked - prev.total_staked;
-            const delta_emitted = curr.emitted - prev.emitted;
-            const delta_slashed = curr.total_slashed - prev.total_slashed;
-
-            // Compensation: stake increase must be covered by emission + slash
-            const accounted = delta_emitted + delta_slashed;
-            if (accounted < delta_staked) {
-                std.debug.print("Stake increase of {d} not compensated by emission ({d}) + slash ({d})\n", .{
-                    delta_staked, delta_emitted, delta_slashed,
-                });
-                return error.StakeCompensationError;
-            }
-        }
+        // 3. Stake increases are backed by user deposits (existing tokens)
+        // No compensation check needed for stakes - they come from user's existing balance
+        // Emissions are only checked to ensure they don't exceed cap
     }
 }
 

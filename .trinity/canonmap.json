@@ -18,7 +18,13 @@
       "brain_region": "Prefrontal Cortex",
       "trio27_bank": "sacred",
       "superpower": "Coordinates swarm: reads thalamus, assigns tasks, resolves conflicts",
-      "sealed": false
+      "sealed": false,
+      "implementation_law": {
+        "mode": "t27_only",
+        "wave": 1,
+        "since": "2026-03-25",
+        "exceptions": []
+      }
     },
     {
       "letter": "P",
@@ -28,7 +34,13 @@
       "brain_region": "Brainstem",
       "trio27_bank": "const",
       "superpower": "Holds lifecycle: heartbeats, sleep/wake, reboot/repair",
-      "sealed": false
+      "sealed": false,
+      "implementation_law": {
+        "mode": "t27_only",
+        "wave": 1,
+        "since": "2026-03-25",
+        "exceptions": []
+      }
     },
     {
       "letter": "H",
@@ -48,7 +60,13 @@
       "brain_region": "Reticular Formation",
       "trio27_bank": "nu13-xi14",
       "superpower": "Vigilance: watch-daemon, arousal levels, wake/sleep sweep",
-      "sealed": false
+      "sealed": false,
+      "implementation_law": {
+        "mode": "t27_only",
+        "wave": 1,
+        "since": "2026-03-25",
+        "exceptions": []
+      }
     },
     {
       "letter": "A",
@@ -263,6 +281,39 @@
   ],
   "alphabet_canon_version": "1.0.0",
   "canon_date": "2026-03-25",
+  "tri27_modules": [
+    {
+      "file": "src/tri27/reticular_raphe.t27",
+      "zone": "R",
+      "brain_region": "Raphe",
+      "function": "ppl_stabilization",
+      "wrapper": "src/tri27/reticular_raphe_wrapper.zig",
+      "description": "PPL Rolling Average with φ-Decay (H4-H6 validation)"
+    },
+    {
+      "file": "src/tri27/phoenix_medulla.t27",
+      "zone": "P",
+      "brain_region": "Medulla",
+      "function": "sleep_phase_detection",
+      "wrapper": "src/tri27/phoenix_medulla_wrapper.zig",
+      "description": "Sleep Phase Detection (AWAKE/LIGHT/DEEP/REM)"
+    },
+    {
+      "file": "src/tri27/queen_vmpfc.t27",
+      "zone": "Q",
+      "brain_region": "VMPFC",
+      "function": "value_assessment",
+      "wrapper": "src/tri27/queen_vmpfc_wrapper.zig",
+      "description": "ROI Scoring based on cost, reward, confidence"
+    }
+  ],
+  "tri27_support": [
+    {
+      "file": "src/tri27/coptic.zig",
+      "function": "register_naming",
+      "description": "Coptic alphabet to TRI-27 register mapping (27 letters, 3 banks)"
+    }
+  ],
   "migration_debt": {
     "q_zone": {
       "status": "partial",
@@ -273,6 +324,24 @@
       "estimated_locs": 500,
       "affected_files": 30,
       "blocking": ["zig build tri"]
+    },
+    "dogfood_law": {
+      "status": "implemented_but_blocked",
+      "wave": 3,
+      "blocked_by": ["queen_cortex_dual_module", "emit_t27_zig_0_15_migration"],
+      "infrastructure": [
+        "src/tri/dogfood_guard.zig",
+        "src/tri/dogfood_check.zig",
+        "src/tri/dev_guarded.zig (hook integration)",
+        "src/tri/main.zig (command registration)",
+        ".trinity/canonmap.json (implementation_law fields)"
+      ],
+      "gated_by": [
+        "zig build test",
+        "zig build tri27",
+        "zig build tri"
+      ],
+      "notes": "Law written, court built, but not connected to power grid yet. Activate after Wave 3 Q/G/M/F zone refactor."
     }
   }
 }

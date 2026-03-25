@@ -19,8 +19,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const tri = @import("tri");
-const agent_roles = tri.agent_roles;
+const agent_roles = @import("agent_roles.zig");
 
 const print = std.debug.print;
 

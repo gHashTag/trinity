@@ -14,7 +14,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const print = std.debug.print;
 
-const github_client = @import("github_client.zig");
+const github = @import("github");
+const github_client = github.github_client;
 const GitHubClient = github_client.GitHubClient;
 const farm_telegram = @import("farm_telegram.zig");
 const issue_planner = @import("issue_planner.zig");

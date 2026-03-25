@@ -44,7 +44,7 @@ const tri_research = @import("tri_research.zig");
 const tri_experiment = @import("tri_experiment.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
-const faculty_board = queen.cortex; // cortex module from src/queen/
+const faculty_board = queen.cortex; // faculty board module from src/queen/
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -192,6 +192,15 @@ pub fn main() !void {
         logAgentCommand(args[arg_idx..]);
         const tri27_mod = @import("tri27_cli");
         try tri27_mod.runTri27Command(allocator, tri27_args);
+        return;
+    }
+
+    // DOGFOOD-1 enforcement: route `tri dogfood <subcommand>` to dogfood_check
+    if (std.mem.eql(u8, args[arg_idx], "dogfood")) {
+        const dogfood_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const dogfood_check = @import("dogfood_check.zig");
+        try dogfood_check.runDogfoodCheckCommand(allocator, dogfood_args);
         return;
     }
 

@@ -10,6 +10,7 @@ const temple = @import("temple");
 pub const queen_acc = @import("queen_acc.zig");
 pub const queen_actions = @import("queen_actions.zig");
 pub const queen_cortex = @import("queen_cortex.zig");
+pub const cortex = @import("cortex.zig");  // Faculty board
 pub const queen_cron = @import("queen_cron.zig");
 pub const queen_dlpfc = @import("queen_dlpfc.zig");   // Dorsolateral PFC
 pub const queen_dmpfc = @import("queen_dmpfc.zig");   // Dorsomedial PFC
@@ -30,6 +31,9 @@ pub const queen_vmpfc = @import("queen_vmpfc.zig");   // Ventromedial PFC
 // Re-export core types
 pub const QueenPolicy = queen_policy.QueenPolicy;
 pub const QueenTypes = queen_types.QueenTypes;
+
+// Re-export main entry point
+pub const runQueenCommand = queen_trinity.runQueenCommand;
 
 // Import queen_policy and queen_types
 pub const queen_policy = @import("queen_policy.zig");

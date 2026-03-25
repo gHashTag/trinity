@@ -18,3 +18,4 @@ pub const tri_exec = @import("tri_exec.zig");
 // Assembly tooling
 pub const asm_lexer = @import("asm_lexer.zig");
 pub const encoder_simple = @import("encoder_simple.zig");
+pub const tri_asm = @import("tri_asm.zig");

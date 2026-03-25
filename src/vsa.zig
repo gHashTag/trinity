@@ -21,6 +21,9 @@ pub const photon = @import("vsa/photon.zig");
 pub const quantum_transition = @import("vsa/quantum_transition.zig");
 pub const tests = @import("vsa/tests.zig");
 
+// Sparse hypervectors (imported to avoid module conflict)
+pub const sparse = @import("sparse.zig");
+
 // Re-export common types for convenience
 pub const HybridBigInt = common.HybridBigInt;
 pub const Trit = common.Trit;
