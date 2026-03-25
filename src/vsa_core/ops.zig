@@ -300,11 +300,12 @@ pub fn encodeSequence(allocator: std.mem.Allocator, vectors: []const []const Tri
 }
 
 /// Probe sequence (find best match)
-pub fn probeSequence(allocator: std.mem.Allocator, encoded: []const Trit, query_vectors: []const []const Trit) !usize {
+/// query_sequences: list of sequences to match against encoded
+pub fn probeSequence(allocator: std.mem.Allocator, encoded: []const Trit, query_sequences: []const []const []const Trit) !usize {
     var best_idx: usize = 0;
     var best_sim: f64 = -1.0;
 
-    for (query_vectors, 0..) |query_seq, idx| {
+    for (query_sequences, 0..) |query_seq, idx| {
         const query_encoded = try encodeSequence(allocator, query_seq);
         defer allocator.free(query_encoded);
 

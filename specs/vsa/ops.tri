@@ -1,0 +1,326 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VSA CORE OPERATIONS — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Pure VSA operations on trit arrays (no HybridBigInt dependency)
+# Source of truth for vsa_core/ops.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: vsa_ops
+version: "0.1.0"
+module: vsa_core.ops
+description: "Core VSA operations (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  Trit:
+    description: "Balanced ternary value {-1, 0, 1}"
+    underlying: "i8"
+    enum: [-1, 0, 1]
+
+  Vec32i8:
+    description: "SIMD vector for 32 i8 operations"
+    underlying: "@Vector(32, i8)"
+
+  Vec32i16:
+    description: "SIMD vector for 32 i16 operations (accumulation)"
+    underlying: "@Vector(32, i16)"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PURE OPERATIONS (no allocator)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+functions:
+  cosineSimilarity:
+    description: "Cosine similarity in [-1, 1]"
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "f64"
+    simd: true
+    implementation: |
+      Uses SIMD for chunked processing:
+      - Load 32 trits into Vec32i8
+      - Compute dot product via @reduce(.Add, ...)
+      - Compute norms separately
+      - Returns dot / (norm_a * norm_product)
+
+  hammingDistance:
+    description: "Count of differing positions"
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "usize"
+    simd: false
+    implementation: |
+      Simple element-wise comparison:
+      - Iterates through min(a.len, b.len)
+      - Counts positions where a[i] != b[i]
+
+  hammingSimilarity:
+    description: "1 - normalized hamming distance"
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "f64"
+    simd: false
+    implementation: |
+      Normalized hamming distance:
+      - Calls hammingDistance(a, b)
+      - Returns 1.0 - (dist / len)
+
+  dotSimilarity:
+    description: "Dot product similarity"
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "i64"
+    simd: true
+    implementation: |
+      SIMD-optimized dot product:
+      - Process 32 trits at once
+      - Use Vec32i16 for accumulated products
+      - @reduce for final sum
+
+  vectorNorm:
+    description: "L2 vector norm"
+    params:
+      - name: v
+        type: "[]const Trit"
+    returns: "f64"
+    simd: true
+    implementation: |
+      SIMD-optimized L2 norm:
+      - Square elements in SIMD chunks
+      - Sum via @reduce(.Add, ...)
+      - Return sqrt of sum
+
+  countNonZero:
+    description: "Count non-zero trits"
+    params:
+      - name: v
+        type: "[]const Trit"
+    returns: "usize"
+    simd: false
+    implementation: |
+      Simple iteration counting v[i] != 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ALLOCATING OPERATIONS (require allocator)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  bind:
+    description: "XOR-like binding (allocates result)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "[]Trit"
+    simd: true
+    implementation: |
+      Element-wise multiplication (XOR-like for ternary):
+      - SIMD chunks: Vec32i8 multiplication
+      - Remainder: scalar multiplication
+      - Pads shorter vector with zeros
+
+  unbind:
+    description: "Same as bind for XOR-like binding"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: bound
+        type: "[]const Trit"
+      - name: key
+        type: "[]const Trit"
+    returns: "[]Trit"
+    simd: true
+    implementation: |
+      Calls bind(allocator, bound, key)
+
+  bundle2:
+    description: "Majority vote for 2 vectors"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Majority vote for 2 inputs:
+      - Sum: a[i] + b[i]
+      - Result: sum > 0 ? 1 : sum < 0 ? -1 : 0
+
+  bundle3:
+    description: "Majority vote for 3 vectors"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+      - name: c
+        type: "[]const Trit"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Majority vote for 3 inputs:
+      - Sum: a[i] + b[i] + c[i]
+      - Result: sum > 0 ? 1 : sum < 0 ? -1 : 0
+
+  bundleN:
+    description: "Majority vote for N vectors"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: vectors
+        type: "[][]const Trit"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Majority vote for N inputs:
+      - Sum all vectors at each position
+      - Result: sum > 0 ? 1 : sum < 0 ? -1 : 0
+      - Error if vectors list is empty
+
+  permute:
+    description: "Cyclic permutation (rotate left)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: v
+        type: "[]const Trit"
+      - name: n
+        type: "usize"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Cyclic left rotation:
+      - effective_n = n % v.len
+      - result[i] = v[(i + effective_n) % len]
+      - Returns copy if effective_n == 0
+
+  inversePermute:
+    description: "Inverse permutation (rotate right)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: v
+        type: "[]const Trit"
+      - name: n
+        type: "usize"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Cyclic right rotation:
+      - Calls permute with len - effective_n
+
+  randomVector:
+    description: "Generate random trit vector (Xorshift64)"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: len
+        type: "usize"
+      - name: seed
+        type: "u64"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Xorshift64 RNG:
+      - Maps random values to {-1, 0, 1}
+      - Uses modulo 3 for ternary mapping
+
+  encodeSequence:
+    description: "Encode sequence with position binding"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: vectors
+        type: "[][]const Trit"
+    returns: "[]Trit"
+    simd: false
+    implementation: |
+      Sequential encoding:
+      - Starts with first vector
+      - For each subsequent vector: permute(v, i) then bundle2
+      - Error if vectors is empty
+
+  probeSequence:
+    description: "Find best match in query vectors"
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: encoded
+        type: "[]const Trit"
+      - name: query_vectors
+        type: "[][]const Trit"
+    returns: "usize"
+    simd: false
+    implementation: |
+      Best match search:
+      - Encodes each query sequence
+      - Finds max cosineSimilarity
+      - Returns index of best match
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  - name: SIMD_WIDTH
+    value: 32
+    type: "usize"
+    description: "SIMD vector width for Vec32i8 operations"
+
+  - name: MAX_TRITS
+    value: 59049
+    type: "usize"
+    description: "3^10 maximum trit count"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS (implementation hints)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: simd_bind
+    description: "SIMD-optimized bind operation"
+    implementation: |
+      Load 32 trits into Vec32i8
+      Multiply element-wise
+      Use @reduce for accumulation
+
+  - name: simd_similarity
+    description: "SIMD-optimized similarity metrics"
+    implementation: |
+      Process 32 trits at once
+      Use Vec32i16 for accumulated products
+      @reduce for final sum
+
+  - name: majority_vote
+    description: "Majority vote for bundling"
+    implementation: |
+      Sum all inputs at each position
+      Sign determines result: positive->1, negative->-1, zero->0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# END OF SPECIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
