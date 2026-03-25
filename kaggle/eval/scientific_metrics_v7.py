@@ -326,6 +326,166 @@ def _bootstrap_confidence_interval(
     return mean_val, ci_lower, ci_upper
 
 
+def _bootstrap_bca_ci(
+    values: List[float],
+    alpha: float = 0.05,
+    n_bootstrap: int = 10000,
+    seed: Optional[int] = None,
+    min_samples: int = 10
+) -> Tuple[float, float, float]:
+    """
+    Calculate Bias-Corrected and Accelerated (BCa) bootstrap confidence interval.
+
+    BCa bootstrap is superior to simple percentile method because it:
+    1. Corrects for bias in the bootstrap distribution
+    2. Adjusts for the acceleration (skewness) of the statistic
+
+    Reference: Efron (1987), "Better Bootstrap Confidence Intervals"
+
+    Args:
+        values: Data values
+        alpha: Significance level (default 0.05 for 95% CI)
+        n_bootstrap: Number of bootstrap samples
+        seed: Random seed for reproducibility
+        min_samples: Minimum samples required for bootstrap
+
+    Returns:
+        (mean, ci_lower, ci_upper)
+    """
+    if not values or len(values) < 2:
+        return 0.0, 0.0, 0.0
+
+    n = len(values)
+
+    if len(values) < min_samples:
+        warnings.warn(
+            f"BCa bootstrap with n={len(values)} < {min_samples} may be unreliable. "
+            f"Consider using parametric CI instead.",
+            UserWarning,
+            stacklevel=2
+        )
+
+    if seed is not None:
+        random.seed(seed)
+
+    # Original statistic (mean in this case)
+    theta_hat = sum(values) / n
+
+    # Step 1: Calculate bias correction factor z0
+    # z0 = Φ^(-1)(proportion of boot_means < theta_hat)
+    boot_means = []
+    for _ in range(n_bootstrap):
+        sample = [random.choice(values) for _ in range(n)]
+        boot_means.append(sum(sample) / len(sample))
+
+    # Proportion of bootstrap means less than original estimate
+    prop_less = sum(1 for bm in boot_means if bm < theta_hat) / n_bootstrap
+
+    # Bias correction z0 (avoid log(0))
+    import math
+    if prop_less == 0:
+        z0 = -10  # Large negative
+    elif prop_less == 1:
+        z0 = 10   # Large positive
+    else:
+        # Use scipy.stats.norm.ppf if available, otherwise approximate
+        try:
+            from scipy.stats import norm
+            z0 = norm.ppf(prop_less)
+        except ImportError:
+            # Approximation for Φ^(-1) using Beasley-Springer-Moro algorithm
+            # Simplified version for central region
+            if prop_less > 0.5:
+                z0 = math.sqrt(-2 * math.log(1 - prop_less))
+            else:
+                z0 = -math.sqrt(-2 * math.log(prop_less))
+
+    # Step 2: Calculate acceleration factor a
+    # a = (1/6) * Σ(θ_(.) - θ_i)³ / [Σ(θ_(.) - θ_i)²]^(3/2)
+    # where θ_(.) is the jackknife estimate
+
+    # Jackknife estimates
+    theta_dot = 0.0
+    theta_i = []
+
+    for i in range(n):
+        # Leave-one-out mean
+        leave_one_out = values[:i] + values[i+1:]
+        theta_i.append(sum(leave_one_out) / len(leave_one_out))
+
+    theta_dot = sum(theta_i) / n
+
+    # Numerator and denominator for acceleration
+    numerator = 0.0
+    denominator = 0.0
+
+    for ti in theta_i:
+        diff = ti - theta_dot
+        numerator += diff ** 3
+        denominator += diff ** 2
+
+    # Acceleration factor
+    if denominator > 0:
+        a = numerator / (6 * (denominator ** 1.5))
+    else:
+        a = 0.0
+
+    # Step 3: Calculate adjusted percentiles
+    # α1 = Φ(z0 + (z0 + z^α) / (1 - a*(z0 + z^α)))
+    # α2 = Φ(z0 + (z0 + z^(1-α)) / (1 - a*(z0 + z^(1-α)))
+
+    # Standard normal quantiles
+    try:
+        from scipy.stats import norm
+        z_alpha = norm.ppf(alpha / 2)
+        z_1minus_alpha = norm.ppf(1 - alpha / 2)
+    except ImportError:
+        # Approximate: 95% CI uses z = 1.96
+        z_alpha = -1.96
+        z_1minus_alpha = 1.96
+
+    def adjust_percentile(z):
+        """Adjust percentile using BCa formula."""
+        denom = 1 - a * (z0 + z)
+        if denom == 0:
+            return 0.5  # Edge case
+        z_adjusted = z0 + (z0 + z) / denom
+        # Convert back to percentile using Φ
+        try:
+            from scipy.stats import norm
+            return norm.cdf(z_adjusted)
+        except ImportError:
+            # Simple approximation
+            if z_adjusted > 3:
+                return 0.999
+            elif z_adjusted < -3:
+                return 0.001
+            else:
+                # Linear approximation in [-3, 3]
+                return 0.5 + z_adjusted * 0.1667  # Approx Φ(0)=0.5, Φ(3)≈1
+
+    alpha1 = adjust_percentile(z_alpha)
+    alpha2 = adjust_percentile(z_1minus_alpha)
+
+    # Clamp to valid range
+    alpha1 = max(0.001, min(0.999, alpha1))
+    alpha2 = max(0.001, min(0.999, alpha2))
+
+    # Get BCa confidence interval
+    boot_means.sort()
+    lower_idx = int(alpha1 * n_bootstrap)
+    upper_idx = int(alpha2 * n_bootstrap)
+
+    # Clamp indices
+    lower_idx = max(0, min(lower_idx, n_bootstrap - 1))
+    upper_idx = max(0, min(upper_idx, n_bootstrap - 1))
+
+    ci_lower = boot_means[lower_idx]
+    ci_upper = boot_means[upper_idx]
+
+    return theta_hat, ci_lower, ci_upper
+
+
 # =============================================================================
 # MULTIPLE TESTING CORRECTION (v7.4)
 # =============================================================================

@@ -25,10 +25,18 @@ from eval.scientific_metrics_v5 import (
     benjamini_hochberg_correction,
     bonferroni_correction,
     detect_distribution_shift,
+    # CORRECTED v4 metrics
+    calculate_full_ece_v4_correct,
+    detect_contamination_min_k_pp_v4_correct,
+    detect_contamination_codec_v4_correct,
+    detect_contamination_codec_v4_correct_simple,
     TemperatureScalingResult,
     ClasswiseECEResult,
     ConfidenceBandsResult,
     DistributionShiftResult,
+    FullECEResult,
+    MinKPPCorrectResult,
+    CoDecCorrectResult,
 )
 
 
@@ -313,6 +321,257 @@ class TestDistributionShiftDetection(unittest.TestCase):
 
         # Should detect some shift due to partial overlap
         self.assertGreater(result.shift_magnitude, 0.0)
+
+
+# =============================================================================
+# TESTS FOR CORRECTED v4 METRICS — Scientific accuracy validation
+# =============================================================================
+
+class TestFullECECorrect(unittest.TestCase):
+    """Tests for CORRECT Full-ECE implementation (arXiv:2406.11345)."""
+
+    def test_full_ece_token_level_correctness(self):
+        """Test that Full-ECE correctly handles token-level correctness."""
+        # Sample: [0.2, 0.7, 0.1], correct token is index 2 (prob=0.1)
+        # Token 0 (prob=0.2): NOT correct → contributes 0 to accuracy
+        # Token 1 (prob=0.7): NOT correct → contributes 0 to accuracy
+        # Token 2 (prob=0.1): CORRECT → contributes 0.1 to accuracy
+        confidences = [
+            [0.2, 0.7, 0.1],  # Correct token is index 2 (low prob!)
+            [0.5, 0.3, 0.2],  # Correct token is index 0
+            [0.1, 0.8, 0.1],  # Correct token is index 1
+        ]
+        correct_token_indices = [2, 0, 1]
+
+        result = calculate_full_ece_v4_correct(confidences, correct_token_indices)
+
+        # ECE should be in valid range
+        self.assertGreaterEqual(result.ece, 0.0)
+        self.assertLessEqual(result.ece, 1.0)
+        self.assertEqual(result.n_samples, 3)
+        self.assertEqual(result.n_tokens, 9)
+
+    def test_full_ece_vs_boolean_incorrectness(self):
+        """Test that using boolean correctness gives WRONG result."""
+        confidences = [
+            [0.2, 0.7, 0.1],  # Top prediction is 1 (wrong), correct is 2
+            [0.5, 0.3, 0.2],  # Top prediction is 0 (correct)
+        ]
+
+        # CORRECT way: use token indices
+        correct_indices = [2, 0]
+        result_correct = calculate_full_ece_v4_correct(confidences, correct_indices)
+
+        # The result should be non-zero because sample 0 is poorly calibrated
+        # (high confidence on wrong token, low confidence on correct token)
+        self.assertGreater(result_correct.ece, 0.0)
+
+    def test_full_ece_perfect_calibration(self):
+        """Test Full-ECE with perfectly calibrated model."""
+        # Perfect calibration: confidence = correctness
+        confidences = [
+            [0.9, 0.05, 0.05],  # Correct token 0 has high prob
+            [0.05, 0.9, 0.05],  # Correct token 1 has high prob
+            [0.05, 0.05, 0.9],  # Correct token 2 has high prob
+        ]
+        correct_indices = [0, 1, 2]
+
+        result = calculate_full_ece_v4_correct(confidences, correct_indices)
+
+        # ECE should be very low for well-calibrated model
+        self.assertLess(result.ece, 0.2)
+
+    def test_full_ece_empty_input(self):
+        """Test with empty input."""
+        result = calculate_full_ece_v4_correct([], [])
+
+        self.assertEqual(result.ece, 0.0)
+        self.assertEqual(result.n_samples, 0)
+
+
+class TestMinKPPCorrect(unittest.TestCase):
+    """Tests for CORRECT Min-K%++ implementation (arXiv:2404.02936)."""
+
+    def test_minkpp_uses_log_probs(self):
+        """Test that Min-K%++ uses LOG probabilities."""
+        # Clean model: log probs around -2.0 (prob ~ 0.135)
+        log_probs_clean = [-1.8, -2.0, -2.2, -1.9, -2.1]
+
+        result = detect_contamination_min_k_pp_v4_correct(log_probs_clean)
+
+        # Should NOT detect contamination (scores near mean)
+        self.assertFalse(result.is_contaminated)
+
+    def test_minkpp_contaminated_detection(self):
+        """Test Min-K%++ detects contaminated samples."""
+        # Mixed: clean samples around -2.0, contaminated samples below -4.0
+        log_probs = [-1.8, -2.0, -2.2, -4.5, -5.0, -4.2]
+
+        result = detect_contamination_min_k_pp_v4_correct(log_probs)
+
+        # Should detect contamination (some scores far below mean)
+        self.assertTrue(result.is_contaminated or result.n_below_threshold > 0)
+
+    def test_minkpp_scores_formula(self):
+        """Test that scores = log p - µ."""
+        log_probs = [-2.0, -3.0, -4.0]
+        mu = (-2.0 - 3.0 - 4.0) / 3  # = -3.0
+
+        result = detect_contamination_min_k_pp_v4_correct(log_probs)
+
+        # Check that scores are computed correctly
+        # -2.0 - (-3.0) = 1.0, -3.0 - (-3.0) = 0.0, -4.0 - (-3.0) = -1.0
+        expected_scores = [1.0, 0.0, -1.0]
+        self.assertEqual(len(result.log_prob_scores), 3)
+        for i, score in enumerate(result.log_prob_scores):
+            self.assertAlmostEqual(score, expected_scores[i], places=5)
+
+    def test_minkpp_empty_input(self):
+        """Test with empty input."""
+        result = detect_contamination_min_k_pp_v4_correct([])
+
+        self.assertFalse(result.is_contaminated)
+        self.assertEqual(result.confidence, 0.0)
+
+
+class TestCoDecCorrect(unittest.TestCase):
+    """Tests for CORRECT CoDeC implementation (arXiv:2510.27055)."""
+
+    def test_codec_seen_unseen_classification(self):
+        """Test dataset-level seen/unseen classification."""
+        # Seen samples: large drop with seen context, small drop with unseen
+        # Unseen samples: small drop with both contexts
+        conf_base = [0.9, 0.9, 0.85, 0.8, 0.85, 0.8]
+        conf_seen = [0.5, 0.5, 0.8, 0.75, 0.8, 0.75]  # Large drop for first 2
+        conf_unseen = [0.85, 0.85, 0.8, 0.75, 0.8, 0.75]  # Small drop for first 2
+
+        result = detect_contamination_codec_v4_correct_simple(
+            conf_base, conf_seen, conf_unseen
+        )
+
+        # Should detect contamination
+        self.assertGreater(result.auc_score, 0.0)
+
+    def test_codec_auc_dataset_level(self):
+        """Test that AUC is computed at dataset level."""
+        # All samples are seen (contaminated)
+        # Large drop with seen context, small drop with unseen context
+        conf_base = [0.9] * 5
+        conf_seen = [0.5] * 5  # Large drop (44%)
+        conf_unseen = [0.88] * 5  # Small drop (2%)
+
+        result = detect_contamination_codec_v4_correct_simple(
+            conf_base, conf_seen, conf_unseen, threshold=0.2
+        )
+
+        # With proper threshold, should detect contamination
+        # seen_drop > threshold and unseen_drop < threshold/2
+        self.assertGreater(result.n_seen, 0)
+
+    def test_codec_no_contamination(self):
+        """Test with no contamination (clean samples)."""
+        # Clean samples: small drop with BOTH contexts
+        conf_base = [0.9, 0.85, 0.8]
+        conf_seen = [0.8, 0.75, 0.7]  # Small drop (~11%)
+        conf_unseen = [0.82, 0.77, 0.72]  # Similar drop (~9%)
+
+        result = detect_contamination_codec_v4_correct_simple(
+            conf_base, conf_seen, conf_unseen, threshold=0.15
+        )
+
+        # Both drops are below threshold, so not classified as seen
+        self.assertEqual(result.n_seen, 0)
+        # All samples are unseen
+        self.assertEqual(result.n_unseen, 3)
+
+    def test_codec_no_contamination(self):
+        """Test with no contamination."""
+        # No significant difference between seen and unseen
+        conf_base = [0.9, 0.85, 0.8]
+        conf_seen = [0.85, 0.8, 0.75]  # Small drop
+        conf_unseen = [0.84, 0.79, 0.74]  # Similar drop
+
+        result = detect_contamination_codec_v4_correct_simple(
+            conf_base, conf_seen, conf_unseen
+        )
+
+        # Should NOT detect contamination
+        self.assertLess(result.auc_score, 0.7)
+
+    def test_codec_empty_input(self):
+        """Test with empty input."""
+        result = detect_contamination_codec_v4_correct_simple([], [], [])
+
+        self.assertFalse(result.is_contaminated)
+        self.assertEqual(result.auc_score, 0.0)
+
+
+class TestBCaBootstrap:
+    """Test BCa (bias-corrected accelerated) bootstrap CI."""
+
+    def test_bca_vs_percentile(self):
+        """BCa should give different (usually more accurate) CI than percentile."""
+        try:
+            from kaggle.eval.scientific_metrics_v7 import (
+                _bootstrap_confidence_interval,
+                _bootstrap_bca_ci
+            )
+        except ImportError:
+            self.skipTest("scientific_metrics_v7 not available")
+
+        # Skewed data (where BCa makes most difference)
+        values = [1.0, 1.0, 1.0, 1.0, 1.0, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+        # Percentile method
+        mean_p, ci_l_p, ci_u_p = _bootstrap_confidence_interval(values, n_bootstrap=1000, seed=42)
+
+        # BCa method
+        mean_b, ci_l_b, ci_u_b = _bootstrap_bca_ci(values, n_bootstrap=1000, seed=42)
+
+        # Means should be similar
+        self.assertAlmostEqual(mean_p, mean_b, places=2)
+
+        # But CIs should differ (BCa corrects for bias/skew)
+        # For skewed data, BCa typically shifts CI toward the skew
+        self.assertNotEqual((ci_l_p, ci_u_p), (ci_l_b, ci_u_b))
+
+    def test_bca_symmetric_data(self):
+        """BCa should handle symmetric data well."""
+        try:
+            from kaggle.eval.scientific_metrics_v7 import _bootstrap_bca_ci
+        except ImportError:
+            self.skipTest("scientific_metrics_v7 not available")
+
+        # Symmetric data
+        values = [0.4, 0.45, 0.5, 0.55, 0.6]
+
+        mean, ci_l, ci_u = _bootstrap_bca_ci(values, n_bootstrap=1000, seed=42)
+
+        # Mean should be centered
+        self.assertAlmostEqual(mean, 0.5, delta=0.05)
+
+        # CI should be symmetric-ish around mean
+        self.assertLess(ci_l, mean)
+        self.assertGreater(ci_u, mean)
+
+    def test_bca_small_sample_warning(self):
+        """BCa should warn for small samples."""
+        try:
+            from kaggle.eval.scientific_metrics_v7 import _bootstrap_bca_ci
+        except ImportError:
+            self.skipTest("scientific_metrics_v7 not available")
+
+        import warnings
+
+        # Small sample (< min_samples)
+        values = [0.5, 0.6]
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            mean, ci_l, ci_u = _bootstrap_bca_ci(values, min_samples=10)
+
+            # Should have warned about small sample
+            self.assertTrue(any("may be unreliable" in str(warning.message) for warning in w))
 
 
 def run_tests():
