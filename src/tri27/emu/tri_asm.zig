@@ -140,6 +140,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
     if (std.mem.eql(u8, op_lower, "jgt")) {
         // JGT src1, src2, offset/label (jump if greater than)
+        // NOTE: Encode src1 in dst, src2 in src2 field (NOT src1, to avoid corrupting immediate!)
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src1_str = std.mem.trim(u8, it2.first(), " \t");
         const rest2 = std.mem.trim(u8, it2.rest(), " \t");
@@ -152,17 +153,22 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
         const src2 = try parseRegister(src2_str);
         const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
-        return .{ encode(Instruction{
-            .opcode = Opcode.JGT,
-            .dst = src1,
-            .src1 = src2,
-            .immediate = offset,
-            .has_imm = true,
-        }), false };
+        return .{
+            encode(Instruction{
+                .opcode = Opcode.JGT,
+                .dst = src1, // First comparison operand
+                .src1 = 0, // Don't use src1 field (overlaps immediate!)
+                .src2 = src2, // Second comparison operand
+                .immediate = offset,
+                .has_imm = true,
+            }),
+            false,
+        };
     }
 
     if (std.mem.eql(u8, op_lower, "jlt")) {
         // JLT src1, src2, offset/label (jump if less than)
+        // NOTE: Encode src1 in dst, src2 in src2 field (NOT src1, to avoid corrupting immediate!)
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src1_str = std.mem.trim(u8, it2.first(), " \t");
         const rest2 = std.mem.trim(u8, it2.rest(), " \t");
@@ -175,13 +181,17 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
         const src2 = try parseRegister(src2_str);
         const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
-        return .{ encode(Instruction{
-            .opcode = Opcode.JLT,
-            .dst = src1,
-            .src1 = src2,
-            .immediate = offset,
-            .has_imm = true,
-        }), false };
+        return .{
+            encode(Instruction{
+                .opcode = Opcode.JLT,
+                .dst = src1, // First comparison operand
+                .src1 = 0, // Don't use src1 field (overlaps immediate!)
+                .src2 = src2, // Second comparison operand
+                .immediate = offset,
+                .has_imm = true,
+            }),
+            false,
+        };
     }
 
     if (std.mem.eql(u8, op_lower, "call")) {
@@ -657,7 +667,7 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
 
     lines_iter = std.mem.splitScalar(u8, source, '\n');
     var line_num: usize = 1;
-    var instr_idx: u32 = 2; // Instructions start at PC=2 (magic + header)
+    var instr_idx: u32 = 0; // Instructions start at PC=0 (loader sets pc=0)
     section_mode = .BeforeFirstSection;
 
     while (lines_iter.next()) |line| {

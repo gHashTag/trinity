@@ -566,8 +566,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         // CONDITIONAL JUMP INSTRUCTIONS
         // ═════════════════════════════════════════════════════════════════════════════
         .JGT => {
-            // Jump if src1 > src2 (signed comparison)
-            const src1_val = cpu.t27[inst.src1];
+            // Jump if dst > src2 (signed comparison)
+            // NOTE: src1 field overlaps immediate, so we use dst for first operand
+            const src1_val = cpu.t27[inst.dst];
             const src2_val = cpu.t27[inst.src2];
             const target = @as(u32, @abs(inst.immediate));
             if (src1_val.trits > src2_val.trits) {
@@ -578,8 +579,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         .JLT => {
-            // Jump if src1 < src2 (signed comparison)
-            const src1_val = cpu.t27[inst.src1];
+            // Jump if dst < src2 (signed comparison)
+            // NOTE: src1 field overlaps immediate, so we use dst for first operand
+            const src1_val = cpu.t27[inst.dst];
             const src2_val = cpu.t27[inst.src2];
             const target = @as(u32, @abs(inst.immediate));
             if (src1_val.trits < src2_val.trits) {
