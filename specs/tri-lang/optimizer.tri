@@ -1,0 +1,270 @@
+# ═══════════════════════════════════════════════════════
+# OPTIMIZER — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Core Optimizer Framework for Tri Language
+# Source of truth for tri-lang/optimizer.zig codegen
+# Wave 5: Optimizer Passes
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_optimizer
+version: "0.1.0"
+module: tri_lang.optimizer
+description: "Core Optimizer Framework for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  OptimizerResult:
+    description: "Result of applying an optimizer pass"
+    underlying: "enum"
+    variants:
+      - Continue: "Pass made no changes, continue to next pass"
+      - Replace: "Pass replaced expression with optimized version"
+      - Stop: "Pass signaled to stop optimization"
+
+  OptimizerPass:
+    description: "Single optimizer pass"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Human-readable name for logging"
+      - name: description
+        type: "[]const u8"
+        description: "Description of what this pass does"
+      - name: run
+        type: "*const fn (Allocator, *const TypedExpr, *const TypeEnv) ?TypedExpr"
+        description: "Run the pass on an expression"
+
+  OptimizerStats:
+    description: "Statistics for optimizer runs"
+    fields:
+      - name: passes_run
+        type: "usize"
+        description: "Number of passes executed"
+      - name: expressions_modified
+        type: "usize"
+        description: "Number of expressions modified"
+      - name: iterations
+        type: "usize"
+        description: "Number of fixed-point iterations"
+    methods:
+      - name: init
+        returns: "OptimizerStats"
+        description: "Create empty stats"
+
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Format stats as string"
+        errors:
+          - OutOfMemory
+
+  OptimizerConfig:
+    description: "Optimizer configuration options"
+    fields:
+      - name: max_iterations
+        type: "usize"
+        description: "Maximum fixed-point iterations"
+      - name: enable_verbose
+        type: "bool"
+        description: "Enable verbose logging"
+      - name: enable_stats
+        type: "bool"
+        description: "Enable statistics collection"
+
+  Optimizer:
+    description: "Optimizer with pass registry"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: passes
+        type: "std.ArrayList(OptimizerPass)"
+        description: "Registered passes"
+      - name: config
+        type: "OptimizerConfig"
+        description: "Configuration"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: config
+            type: "OptimizerConfig"
+        returns: "Optimizer"
+        description: "Create optimizer"
+
+      - name: deinit
+        returns: "void"
+        description: "Free optimizer"
+
+      - name: addPass
+        params:
+          - name: pass
+            type: "OptimizerPass"
+        returns: "!void"
+        description: "Add pass to registry"
+        errors:
+          - OutOfMemory
+
+      - name: optimize
+        params:
+          - name: expr
+            type: "*const TypedExpr"
+          - name: env
+            type: "*const TypeEnv"
+        returns: "!OptimizerResult"
+        description: "Run all passes on expression"
+        errors:
+          - OutOfMemory
+
+      - name: getStats
+        returns: "OptimizerStats"
+        description: "Get statistics from last run"
+
+  OptimizerBuilder:
+    description: "Builder for creating configured optimizers"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: passes
+        type: "std.ArrayList(OptimizerPass)"
+        description: "Passes to include"
+      - name: max_iterations
+        type: "usize"
+        description: "Max iterations"
+      - name: verbose
+        type: "bool"
+        description: "Verbose logging"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "OptimizerBuilder"
+        description: "Create builder"
+
+      - name: deinit
+        returns: "void"
+        description: "Free builder"
+
+      - name: addPass
+        params:
+          - name: pass
+            type: "OptimizerPass"
+        returns: "!void"
+        description: "Add pass"
+        errors:
+          - OutOfMemory
+
+      - name: maxIterations
+        params:
+          - name: n
+            type: "usize"
+        returns: "*Self"
+        description: "Set max iterations"
+
+      - name: verbose
+        params:
+          - name: v
+            type: "bool"
+        returns: "*Self"
+        description: "Enable verbose"
+
+      - name: build
+        returns: "!Optimizer"
+        description: "Build optimizer"
+        errors:
+          - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  standardPasses:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const OptimizerPass"
+    description: "Get standard optimization passes"
+    errors:
+      - OutOfMemory
+
+  aggressivePasses:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const OptimizerPass"
+    description: "Get aggressive optimization passes"
+    errors:
+      - OutOfMemory
+
+  minimalPasses:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const OptimizerPass"
+    description: "Get minimal optimization passes"
+    errors:
+      - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════
+
+tests:
+  - name: "optimizer init"
+    description: "Create optimizer with default config"
+    given: "New optimizer"
+    when: "initialized"
+    then: "has empty pass registry"
+
+  - name: "optimizer add pass"
+    description: "Add pass to registry"
+    given: "Optimizer and pass"
+    when: "adding pass"
+    then: "pass is in registry"
+
+  - name: "optimizer run"
+    description: "Run optimizer on expression"
+    given: "Optimizer with passes and expression"
+    when: "optimizing"
+    then: "returns optimized expression"
+
+  - name: "optimizer stats"
+    description: "Collect statistics"
+    given: "Optimizer after run"
+    when: "getting stats"
+    then: "returns pass count and modifications"
+
+  - name: "builder pattern"
+    description: "Use builder to create optimizer"
+    given: "OptimizerBuilder"
+    when: "adding passes and building"
+    then: "returns configured optimizer"
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Optimizer framework:
+# - Pass registry with sequential execution
+# - Fixed-point iteration (repeat until no changes)
+# - Pass result: Continue (no change), Replace (new expr), Stop (error)
+# - Statistics tracking: passes run, expressions modified, iterations
+# - Builder pattern for easy configuration
+# - Preset pass lists: standard, aggressive, minimal
+#
+# Pass contract:
+# - Each pass receives (allocator, expr, env)
+# - Returns null if no change, or new TypedExpr if optimized
+# - Passes are pure (no side effects)
+# - Passes can signal stop to abort optimization
