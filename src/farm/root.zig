@@ -7,7 +7,8 @@ const std = @import("std");
 
 // Core farm modules
 pub const farm_accounts = @import("farm_accounts.zig");
-pub const evolution = @import("evolution.zig");
+// TODO: evolution module has local import issues when used through module system
+// pub const evolution = @import("evolution.zig");
 
 // Farm utility modules (re-exported for tri module)
 pub const railway_api = @import("railway_api.zig");

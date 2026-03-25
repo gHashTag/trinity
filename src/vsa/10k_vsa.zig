@@ -14,9 +14,11 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const common = @import("common.zig");
+// Import HybridBigInt from hybrid module via module system
+const hybrid_mod = @import("hybrid");
 
 pub const Trit = common.Trit; // i8: -1, 0, +1
-pub const HybridBigInt = common.HybridBigInt;
+pub const HybridBigInt = hybrid_mod.HybridBigInt;
 
 //==========================================================================
 // CONSTANTS
