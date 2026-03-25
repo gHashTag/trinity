@@ -204,8 +204,11 @@ pub const ReputationRegistry = struct {
             self.allocator.free(entry.key_ptr.*);
             entry.value_ptr.* = metrics;
             entry.value_ptr.*.node_id = duped_id;
+            entry.value_ptr.*.health_score = health; // Update cached health
         } else {
-            try self.metrics.put(self.allocator, duped_id, metrics);
+            var new_metrics = metrics;
+            new_metrics.health_score = health; // Update cached health
+            try self.metrics.put(self.allocator, duped_id, new_metrics);
             self.total_nodes += 1;
         }
 
@@ -398,6 +401,7 @@ test "NodeMetrics getHealthGrade" {
         .hippocampus_memory = 65535,
         .basal_action = 65535,
     };
+    metrics.updateHealth(); // Update cached health_score
 
     try std.testing.expectEqual(@as(u8, 'A'), metrics.getHealthGrade());
 
@@ -412,7 +416,7 @@ test "ReputationRegistry update and get" {
     var registry = ReputationRegistry.init(allocator);
     defer registry.deinit();
 
-    var metrics = NodeMetrics.init("node1");
+    const metrics = NodeMetrics.init("node1");
     try registry.updateMetrics("node1", metrics);
 
     const retrieved = registry.getMetrics("node1");
@@ -443,7 +447,7 @@ test "ReputationRegistry updateRegion" {
     var registry = ReputationRegistry.init(allocator);
     defer registry.deinit();
 
-    var metrics = NodeMetrics.init("node1");
+    const metrics = NodeMetrics.init("node1");
     try registry.updateMetrics("node1", metrics);
 
     try registry.updateRegion("node1", .prefrontal, 65535);
