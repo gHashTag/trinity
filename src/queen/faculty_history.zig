@@ -240,7 +240,7 @@ fn parseVZone(zone: []const u8) faculty_types.VZone {
 }
 
 /// Calculate delta between two snapshots
-fn calculateDelta(prev: *const FacultySnapshot, curr: FacultySnapshot, prev_ts: i64) !FacultyDelta {
+pub fn calculateDelta(prev: *const FacultySnapshot, curr: FacultySnapshot, prev_ts: i64) !FacultyDelta {
     const now = std.time.timestamp();
     const seconds_ago = now - prev_ts;
 
