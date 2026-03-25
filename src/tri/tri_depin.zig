@@ -33,6 +33,74 @@ const depin_bootstrap = @import("depin_bootstrap");
 const depin_persistence = @import("depin_persistence");
 const firebird_slashing = @import("firebird_slashing");
 
+// Firebird modules for staking and reputation
+// TODO: Fix module imports for Zig 0.15 - relative imports not allowed
+// Stub definitions for now to allow compilation
+const firebird_staking = struct {
+    pub const LockPeriod = enum {
+        one_month,
+        three_months,
+        six_months,
+        one_year,
+
+        pub fn fromString(s: []const u8) ?LockPeriod {
+            if (std.mem.eql(u8, s, "1M") or std.mem.eql(u8, s, "1m")) return .one_month;
+            if (std.mem.eql(u8, s, "3M") or std.mem.eql(u8, s, "3m")) return .three_months;
+            if (std.mem.eql(u8, s, "6M") or std.mem.eql(u8, s, "6m")) return .six_months;
+            if (std.mem.eql(u8, s, "1Y") or std.mem.eql(u8, s, "1y")) return .one_year;
+            return null;
+        }
+
+        pub fn getMultiplier(self: LockPeriod) f64 {
+            return switch (self) {
+                .one_month => 1.0,
+                .three_months => 1.2,
+                .six_months => 1.5,
+                .one_year => 2.0,
+            };
+        }
+
+        pub fn getSeconds(self: LockPeriod) u64 {
+            return switch (self) {
+                .one_month => 30 * 86400,
+                .three_months => 90 * 86400,
+                .six_months => 180 * 86400,
+                .one_year => 365 * 86400,
+            };
+        }
+    };
+
+    pub const StakingManager = struct {
+        pub const MIN_STAKE: u128 = 100 * 1_000_000_000_000_000_000;
+    };
+};
+
+const firebird_depin = struct {
+    pub const TRI_WEI: u128 = 1_000_000_000_000_000_000;
+};
+
+const firebird_reputation = struct {
+    pub const BrainRegion = enum {
+        prefrontal,
+        cerebellum,
+        hippocampus,
+        basal_ganglia,
+        cortex,
+
+        pub fn emoji(self: BrainRegion) []const u8 {
+            return switch (self) {
+                .prefrontal => "🧠",
+                .cerebellum => "⚡",
+                .hippocampus => "🔮",
+                .basal_ganglia => "⚙️",
+                .cortex => "🌐",
+            };
+        }
+    };
+};
+
+// const firebird_app_state = @import("../firebird/app_state.zig"); // Unused
+
 const print = std.debug.print;
 
 // ANSI colors
@@ -86,6 +154,16 @@ pub fn runDepinCommand(allocator: Allocator, args: []const []const u8) !void {
         try runDepinPeers(allocator);
     } else if (std.mem.eql(u8, subcmd, "slash")) {
         try runDepinSlash(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "stake")) {
+        try runStakeCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "unstake")) {
+        try runUnstakeCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "claim")) {
+        try runClaimCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "rewards")) {
+        try runRewardsCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "health")) {
+        try runHealthCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -366,25 +444,43 @@ fn classifyNode(name: []const u8) NodeType {
 }
 
 fn printHelp() void {
-    print("\n{s}🌐 DePIN NODE PROTOCOL (Phase 2 - Security Layer){s}\n", .{ BOLD, RESET });
+    print("\n{s}🌐 DePIN NODE PROTOCOL (Genesis Block: 26 March 2026){s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
-    print("  {s}status{s}    Network overview dashboard\n", .{ CYAN, RESET });
-    print("  {s}nodes{s}     List all nodes with type/status\n", .{ CYAN, RESET });
-    print("  {s}fitness{s}   Aggregate fitness by node type\n", .{ CYAN, RESET });
-    print("  {s}discover{s}  Directed discovery to bootstrap peer\n", .{ CYAN, RESET });
-    print("  {s}peers{s}     List known peers with quality scores\n", .{ CYAN, RESET });
-    print("  {s}slash{s}     Apply penalty to a node\n", .{ RED, RESET });
-    print("\n  Usage: {s}tri depin <command>{s}\n", .{ BOLD, RESET });
+
+    print("  {s}Network Commands:{s}\n", .{ BOLD, RESET });
+    print("    {s}status{s}    Network overview dashboard\n", .{ CYAN, RESET });
+    print("    {s}nodes{s}     List all nodes with type/status\n", .{ CYAN, RESET });
+    print("    {s}fitness{s}   Aggregate fitness by node type\n", .{ CYAN, RESET });
+    print("    {s}discover{s}  Directed discovery to bootstrap peer\n", .{ CYAN, RESET });
+    print("    {s}peers{s}     List known peers with quality scores\n", .{ CYAN, RESET });
+    print("    {s}health{s}    Show neuroanatomical health scores\n", .{ CYAN, RESET });
+
+    print("\n  {s}Staking Commands:{s}\n", .{ BOLD, RESET });
+    print("    {s}stake{s}     Create new stake position\n", .{ GREEN, RESET });
+    print("    {s}unstake{s}   Withdraw staked tokens\n", .{ YELLOW, RESET });
+    print("    {s}claim{s}     Claim accumulated rewards\n", .{ GREEN, RESET });
+    print("    {s}rewards{s}   Show pending rewards\n", .{ CYAN, RESET });
+
+    print("\n  {s}Security Commands:{s}\n", .{ BOLD, RESET });
+    print("    {s}slash{s}     Apply penalty to a node\n", .{ RED, RESET });
+
+    print("\n  Usage: {s}tri depin <command> [args]{s}\n", .{ BOLD, RESET });
+
     print("\n  {s}Examples:{s}\n", .{ DIM, RESET });
-    print("    tri depin discover --bootstrap 1.2.3.4:9333\n", .{});
-    print("    tri depin peers\n", .{});
+    print("    tri depin stake --amount 1000 --lock 6M\n", .{});
+    print("    tri depin claim --stake stake_123abc\n", .{});
+    print("    tri depin health --node node123\n", .{});
     print("    tri depin slash --node abc123 --reason downtime\n", .{});
-    print("\n  {s}Violation types:{s}\n", .{ DIM, RESET });
-    print("    downtime           - Temporary downtime (5%% penalty)\n", .{});
-    print("    repeated_downtime - Repeated downtime (10%% penalty)\n", .{});
-    print("    extended_downtime  - Extended downtime (20%% penalty)\n", .{});
-    print("    double_spend       - Double-spending (50%% penalty)\n", .{});
-    print("    fraud              - Fraud (100%% penalty)\n", .{});
+
+    print("\n  {s}Lock Periods:{s}\n", .{ DIM, RESET });
+    print("    1M   - 1 month (1.0x multiplier)\n", .{});
+    print("    3M   - 3 months (1.2x multiplier)\n", .{});
+    print("    6M   - 6 months (1.5x multiplier)\n", .{});
+    print("    12M  - 12 months (2.0x multiplier)\n", .{});
+
+    print("\n  {s}⚠️  MOCK IMPLEMENTATION NOTICE:{s}\n", .{ YELLOW, RESET });
+    print("    - claim/rewards use mock math (pending = stake / 1000)\n", .{});
+    print("    - verifyAdmin returns true (Ed25519 verification TODO)\n", .{});
     print("\n", .{});
 }
 
@@ -637,6 +733,282 @@ fn runDepinPeers(allocator: Allocator) !void {
         RESET,
     });
     print("    Avg quality:  {d:.2}/1.0\n\n", .{avg_quality});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STAKE — Create new stake position
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runStakeCommand(allocator: Allocator, args: []const []const u8) !void {
+    print("\n{s}💰 CREATE STAKE POSITION{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Parse arguments
+    var amount_str: ?[]const u8 = null;
+    var lock_str: ?[]const u8 = null;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--amount") and i + 1 < args.len) {
+            amount_str = args[i + 1];
+            i += 1;
+        } else if (std.mem.eql(u8, args[i], "--lock") and i + 1 < args.len) {
+            lock_str = args[i + 1];
+            i += 1;
+        }
+    }
+
+    const amount_tri = if (amount_str) |s|
+        try std.fmt.parseFloat(f64, s)
+    else
+        100.0; // Default: 100 TRI
+
+    const lock_period = if (lock_str) |s|
+        firebird_staking.LockPeriod.fromString(s) orelse .one_month
+    else
+        .one_month;
+
+    // Convert to wei
+    const amount_wei: u128 = @intFromFloat(amount_tri * @as(f64, @floatFromInt(firebird_depin.TRI_WEI)));
+
+    print("  {s}Amount:{s}       {d:.2} TRI ({d} wei)\n", .{ CYAN, RESET, amount_tri, amount_wei });
+    print("  {s}Lock Period:{s}  {s} ({d:.1}x multiplier){s}\n", .{
+        CYAN, RESET, lock_str orelse "1M", lock_period.getMultiplier(), RESET,
+    });
+    print("  {s}Unlock Time:{s}  {d} days from now{s}\n\n", .{
+        CYAN, RESET, lock_period.getSeconds() / 86400, RESET,
+    });
+
+    // Check minimum stake
+    const min_stake = firebird_staking.StakingManager.MIN_STAKE;
+    if (amount_wei < min_stake) {
+        print("{s}Error: Minimum stake is {d} TRI{s}\n\n", .{
+            RED, @as(f64, @floatFromInt(min_stake)) / @as(f64, @floatFromInt(firebird_depin.TRI_WEI)), RESET,
+        });
+        return;
+    }
+
+    // Simulate stake creation
+    const now = std.time.timestamp();
+    const stake_id = try std.fmt.allocPrint(allocator, "stake_{d}", .{now});
+    defer allocator.free(stake_id);
+
+    print("  {s}✓ Stake position created!{s}\n", .{ GREEN, RESET });
+    print("  {s}Stake ID:{s}    {s}{s}{s}\n", .{ CYAN, RESET, BOLD, stake_id, RESET });
+    print("\n", .{});
+
+    print("  {s}⚠️  SIMULATION MODE - No actual stake created{s}\n", .{ YELLOW, RESET });
+    print("  {s}In production, this would:{s}\n", .{ DIM, RESET });
+    print("    1. Lock tokens in smart contract\n", .{});
+    print("    2. Record stake position in blockchain\n", .{});
+    print("    3. Start reward accumulation\n", .{});
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNSTAKE — Withdraw staked tokens
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runUnstakeCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator; // Currently unused
+    print("\n{s}💸 WITHDRAW STAKE{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stake_id = if (args.len > 0)
+        args[0]
+    else {
+        print("{s}Error: stake_id argument is required{s}\n", .{ RED, RESET });
+        print("{s}Usage: tri depin unstake <stake_id>{s}\n\n", .{ YELLOW, RESET });
+        return;
+    };
+
+    print("  {s}Stake ID:{s}  {s}{s}{s}\n", .{ CYAN, RESET, BOLD, stake_id, RESET });
+    print("\n", .{});
+
+    print("  {s}⚠️  SIMULATION MODE - No actual unstake performed{s}\n", .{ YELLOW, RESET });
+    print("  {s}In production, this would:{s}\n", .{ DIM, RESET });
+    print("    1. Check lock period has expired\n", .{});
+    print("    2. Claim pending rewards\n", .{});
+    print("    3. Return staked tokens to wallet\n", .{});
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLAIM — Claim accumulated rewards (MOCK MATH)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runClaimCommand(_: Allocator, args: []const []const u8) !void {
+    print("\n{s}🎁 CLAIM REWARDS{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const stake_id = if (args.len > 0)
+        args[0]
+    else {
+        print("{s}Error: stake_id argument is required{s}\n", .{ RED, RESET });
+        print("{s}Usage: tri depin claim <stake_id>{s}\n\n", .{ YELLOW, RESET });
+        return;
+    };
+
+    print("  {s}Stake ID:{s}  {s}{s}{s}\n", .{ CYAN, RESET, BOLD, stake_id, RESET });
+    print("\n", .{});
+
+    // MOCK MATH: pending = stake / 1000 (arbitrary for testnet)
+    const mock_stake_amount: u128 = 1000 * firebird_depin.TRI_WEI;
+    const mock_pending = mock_stake_amount / 1000; // 1 TRI
+
+    const pending_tri = @as(f64, @floatFromInt(mock_pending)) / @as(f64, @floatFromInt(firebird_depin.TRI_WEI));
+
+    print("  {s}Pending Rewards:{s} {s}{d:.6} TRI{s}\n", .{
+        CYAN, RESET, GREEN, pending_tri, RESET,
+    });
+    print("  {s}Wei Amount:{s}     {d} wei\n", .{
+        CYAN, RESET, mock_pending,
+    });
+    print("\n", .{});
+
+    print("  {s}✓ Rewards claimed!{s}\n", .{ GREEN, RESET });
+    print("\n", .{});
+
+    print("  {s}⚠️  MOCK MATH - Using pending = stake / 1000{s}\n", .{ YELLOW, RESET });
+    print("  {s}TODO: Implement real reward accumulation{s}\n", .{ DIM, RESET });
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REWARDS — Show pending rewards
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runRewardsCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    print("\n{s}💎 PENDING REWARDS{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // MOCK DATA for demonstration
+    const mock_rewards = [_]struct {
+        stake_id: []const u8,
+        amount_tri: f64,
+        lock_mult: f64,
+    }{
+        .{ .stake_id = "stake_001", .amount_tri = 1.234567, .lock_mult = 1.5 },
+        .{ .stake_id = "stake_002", .amount_tri = 0.987654, .lock_mult = 1.2 },
+        .{ .stake_id = "stake_003", .amount_tri = 2.345678, .lock_mult = 2.0 },
+    };
+
+    print("  {s}Stake ID       Pending TRI   Lock Multiplier{s}\n", .{ DIM, RESET });
+    print("  {s}─────────────  ────────────  ───────────────{s}\n", .{ DIM, RESET });
+
+    var total_pending: f64 = 0.0;
+    for (mock_rewards) |r| {
+        print("  {s:<14}  {s}{d:>10.6f}{s}   {d:.1f}x\n", .{
+            r.stake_id, GREEN, r.amount_tri, RESET, r.lock_mult,
+        });
+        total_pending += r.amount_tri;
+    }
+
+    print("  {s}─────────────  ────────────  ───────────────{s}\n", .{ DIM, RESET });
+    print("  {s}TOTAL:         {s}{d:>10.6f} TRI{s}\n\n", .{
+        BOLD, GREEN, total_pending, RESET,
+    });
+
+    print("  {s}⚠️  MOCK DATA - Not from real blockchain{s}\n", .{ YELLOW, RESET });
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HEALTH — Show neuroanatomical health scores
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runHealthCommand(_: Allocator, args: []const []const u8) !void {
+    print("\n{s}🧠 NEUROANATOMICAL HEALTH SCORES{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Parse --node argument
+    var node_id: ?[]const u8 = null;
+    if (args.len >= 2 and std.mem.eql(u8, args[0], "--node")) {
+        node_id = args[1];
+    }
+
+    if (node_id) |nid| {
+        // Show health for specific node
+        print("  {s}Node ID:{s}  {s}{s}{s}\n\n", .{ CYAN, RESET, BOLD, nid, RESET });
+
+        // Mock metrics for demo
+        print("  {s}Brain Region:{s}\n", .{ BOLD, RESET });
+        print("    {s}Prefrontal Cortex:{s}  {s}{d:.1}%{s} (Executive Function, 35%% weight)\n", .{
+            firebird_reputation.BrainRegion.prefrontal.emoji(),
+            RESET,
+            GREEN,
+            85.0,
+            RESET,
+        });
+        print("    {s}Cerebellum:{s}         {s}{d:.1}%{s} (Consistency, 30%% weight)\n", .{
+            firebird_reputation.BrainRegion.cerebellum.emoji(),
+            RESET,
+            GREEN,
+            92.0,
+            RESET,
+        });
+        print("    {s}Hippocampus:{s}        {s}{d:.1}%{s} (Memory, 20%% weight)\n", .{
+            firebird_reputation.BrainRegion.hippocampus.emoji(),
+            RESET,
+            YELLOW,
+            78.0,
+            RESET,
+        });
+        print("    {s}Basal Ganglia:{s}      {s}{d:.1}%{s} (Action Selection, 15%% weight)\n", .{
+            firebird_reputation.BrainRegion.basal_ganglia.emoji(),
+            RESET,
+            GREEN,
+            88.0,
+            RESET,
+        });
+        print("\n", .{});
+
+        // Calculate weighted health
+        const health = 0.35 * 85.0 + 0.30 * 92.0 + 0.20 * 78.0 + 0.15 * 88.0;
+        const grade = if (health >= 90) 'A' else if (health >= 80) 'B' else if (health >= 70) 'C' else if (health >= 60) 'D' else 'F';
+
+        print("  {s}Overall Health:{s}  {s}{d:.1}%{s} ({s}{c}{s} grade)\n\n", .{
+            BOLD, RESET, GREEN, health, RESET, BOLD, grade, RESET,
+        });
+    } else {
+        // Show aggregate health
+        print("  {s}Node ID                    Health   Grade   Status{s}\n", .{ DIM, RESET });
+        print("  {s}──────────────────────────  ───────  ──────  ───────{s}\n", .{ DIM, RESET });
+
+        const mock_nodes = [_]struct {
+            id: []const u8,
+            health: f64,
+        }{
+            .{ .id = "hslm-train-001", .health = 92.5 },
+            .{ .id = "agent-code-042", .health = 78.3 },
+            .{ .id = "infer-api-007", .health = 65.1 },
+        };
+
+        for (mock_nodes) |node| {
+            const grade: u8 = if (node.health >= 90) 'A' else if (node.health >= 80) 'B' else if (node.health >= 70) 'C' else if (node.health >= 60) 'D' else 'F';
+            const status_color = if (node.health >= 70) GREEN else if (node.health >= 50) YELLOW else RED;
+            const status_text = if (node.health >= 70) "HEALTHY" else if (node.health >= 50) "DEGRADED" else "CRITICAL";
+
+            print("  {s:<26}  {s}{d:>5.1}%{s}   {c}      {s}{s}{s}\n", .{
+                node.id,
+                if (node.health >= 80) GREEN else YELLOW,
+                node.health,
+                RESET,
+                grade,
+                status_color,
+                status_text,
+                RESET,
+            });
+        }
+
+        print("\n", .{});
+    }
+
+    print("  {s}⚠️  MOCK DATA - Not from real blockchain{s}\n", .{ YELLOW, RESET });
+    print("\n", .{});
 }
 
 test "NodeType toString" {
