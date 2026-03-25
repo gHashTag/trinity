@@ -256,6 +256,22 @@ See `docs/LEADERBOARD_STRATEGIES.md` for detailed strategies.
 
 ## 📚 Scientific Validation
 
+### 🆕 Zenodo Research Bundles
+
+All scientific metrics and validation data are archived on Zenodo:
+
+| Bundle | DOI | Contents |
+|--------|-----|----------|
+| **B001** | [10.5281/zenodo.19223952](https://zenodo.org/record/19223952) | Scientific Metrics v7.4 Base Implementation |
+| **B002** | [10.5281/zenodo.19223956](https://zenodo.org/record/19223956) | Contamination Detection Benchmarks |
+| **B003** | [10.5281/zenodo.19223959](https://zenodo.org/record/19223959) | Calibration Error Validation |
+| **B004** | [10.5281/zenodo.19223961](https://zenodo.org/record/19223961) | Statistical Reference Values |
+| **B005** | [10.5281/zenodo.19223963](https://zenodo.org/record/19223963) | Bootstrap CI Reproducibility |
+| **B006** | [10.5281/zenodo.19223965](https://zenodo.org/record/19223965) | Multiple Testing Corrections |
+| **B007** | [10.5281/zenodo.19223967](https://zenodo.org/record/19223967) | Adaptive Binning Algorithms |
+
+📖 **Full Documentation**: See [ZENODO_BUNDLES.md](ZENODO_BUNDLES.md)
+
 ### Baseline Results (n=1000 per model)
 
 | Model | Accuracy | ECE | meta-d' | M-ratio | Score |
