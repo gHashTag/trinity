@@ -1,0 +1,108 @@
+# ═══════════════════════════════════════════════════════════════════
+# INTEGRATION_TEST — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Integration Tests for Tri Language
+# Source of truth for tri-lang/integration_test.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_integration_test
+version: "0.1.0"
+module: tri_lang.integration_test
+description: "Integration Tests for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# DESCRIPTION
+# ═══════════════════════════════════════════════════════════════════
+
+# Integration tests for the Tri language compiler pipeline.
+# Tests end-to-end compilation from expressions to bytecode.
+#
+# Test helpers:
+# - buildReticularRapheExpr: Build nested let/if expression
+# - buildPerformExpr: Build perform state.get() expression
+# - buildHandleExpr: Build handle expression with clause
+# - buildTryExpr: Build try expression with perform/handle
+#
+# Test categories:
+# - Basic compilation: reticular raphe expression compiles
+# - Bytecode verification: Check for specific opcodes
+# - File I/O: Write and read .t27 files
+# - Effects: perform, handle, try expressions
+# - Effect opcodes: EFFECT_PERFORM (0x7A), EFFECT_HANDLE (0x7B)
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "integration: reticular raphe compiles"
+    description: "Nested let/if expression compiles to bytecode"
+    given: "Expression: let x = 42 in let y = 10 in if true then x + y else x - y"
+    when: "compiling"
+    then: "bytecode is non-empty and type is Int"
+
+  - name: "integration: bytecode has LOADI"
+    description: "Bytecode contains LOADI opcode (0x10)"
+    given: "Reticular raphe expression"
+    when: "inspecting bytecode"
+    then: "contains 0x10 opcode"
+
+  - name: "integration: write .t27 file"
+    description: "Bytecode can be written and read from file"
+    given: "Compiled bytecode"
+    when: "writing to tmp_reticular_raphe.t27"
+    then: "file content matches bytecode"
+
+  - name: "integration: perform expression compiles"
+    description: "Perform expression compiles"
+    given: "Expression: perform state.get()"
+    when: "compiling"
+    then: "bytecode is non-empty"
+
+  - name: "integration: perform bytecode has EFFECT_PERFORM"
+    description: "Perform bytecode contains EFFECT_PERFORM opcode"
+    given: "Expression: perform state.get()"
+    when: "inspecting bytecode"
+    then: "contains 0x7A opcode"
+
+  - name: "integration: handle expression compiles"
+    description: "Handle expression compiles"
+    given: "Expression: handle state { get(x) => x }"
+    when: "compiling"
+    then: "bytecode is non-empty"
+
+  - name: "integration: try expression compiles"
+    description: "Try expression compiles"
+    given: "Expression: try { perform state.get() } with { get(x) => x }"
+    when: "compiling"
+    then: "bytecode is non-empty"
+
+  - name: "integration: try bytecode has both opcodes"
+    description: "Try bytecode contains both EFFECT_PERFORM and EFFECT_HANDLE"
+    given: "Try expression with perform"
+    when: "inspecting bytecode"
+    then: "contains both 0x7A and 0x7B opcodes"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Integration test helpers build TypedExpr AST nodes directly,
+# then run through compile() pipeline from typechecker.zig.
+#
+# Reticular raphe expression: nested let with if/then/else
+# - let x = 42 in
+# -   let y = 10 in
+# -     if true then x + y else x - y
+#
+# Effects integration:
+# - perform: effect_name + operation + args
+# - handle: effect_name + clauses (operation, param_pattern, body)
+# - try: computation + handlers (combined perform/handle)
+#
+# Opcodes tested:
+# - LOADI (0x10): Load integer immediate
+# - EFFECT_PERFORM (0x7A): Perform effect operation
+# - EFFECT_HANDLE (0x7B): Handle effect

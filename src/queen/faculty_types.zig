@@ -119,6 +119,7 @@ pub const FacultySnapshot = struct {
     open_issues: u16,
     mu_patterns: u16,
     cycle: CycleType,
+    timestamp: i64 = 0, // When snapshot was collected
 
     pub fn activeFaculty(self: FacultySnapshot) u8 {
         var count: u8 = 0;

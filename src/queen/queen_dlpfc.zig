@@ -40,11 +40,12 @@ const phoenix_locus_coeruleus = brain.phoenix_locus_coeruleus;
 const medulla = brain.phoenix_medulla;
 const pons = brain.phoenix_pons;
 
-// Queen zone imports
+// Q-zone imports
 const queen_actions = @import("queen_actions.zig");
 const queen_ofc = @import("queen_ofc.zig");
 const queen_policy = @import("queen_policy.zig");
 const queen_vmpfc = @import("queen_vmpfc.zig");
+const faculty_history = @import("faculty_history.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DECISION — What Queen wants to do
@@ -218,18 +219,33 @@ pub fn getFacultyMetrics(allocator: Allocator) !FacultyMetrics {
     const now = std.time.timestamp();
 
     // Collect current snapshot from faculty_board
-    const snapshot = try faculty_cortex.collectSnapshot(allocator);
+    var snapshot = try faculty_cortex.collectSnapshot(allocator);
+    snapshot.timestamp = now;
 
-    // FIXME: Implement history tracking for proper trend analysis
-    // Need to persist FacultyMetrics to disk and compare with previous snapshot
-    // to populate delta fields (compile_rate_delta, dirty_delta, active_delta, etc.)
-    // History storage: ~/.tri-queen/faculty_history.jsonl (append-only, last 100 entries)
-    // Delta calculation requires previous snapshot - without it, all trends are .stable
-    return FacultyMetrics{
+    // Load previous metrics from history
+    const history = try faculty_history.loadHistory(allocator);
+    defer allocator.free(history);
+
+    // Calculate delta from previous snapshot
+    var delta: faculty_types.FacultyDelta = .{};
+    if (history.len > 0) {
+        const prev = &history[history.len - 1];
+        delta = try faculty_history.calculateDelta(&prev.snapshot, snapshot, prev.collected_at);
+    }
+
+    const metrics = FacultyMetrics{
         .snapshot = snapshot,
-        .delta = .{}, // Empty delta = no change detected (history not implemented)
+        .delta = delta,
         .collected_at = now,
     };
+
+    // Append current metrics to history (for future trend analysis)
+    try faculty_history.appendToHistory(allocator, metrics);
+
+    // Rotate history if exceeds MAX_HISTORY
+    try faculty_history.rotateHistory(allocator);
+
+    return metrics;
 }
 
 /// Analyze trends and predict problems before they occur
