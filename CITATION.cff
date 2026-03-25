@@ -3,14 +3,10 @@ message: "If you use any Trinity discoveries, please cite our defensive publicat
 title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm with Ternary Computing and FPGA Inference"
 abstract: "Trinity S³AI is a pure Zig autonomous AI agent swarm implementing: (1) HSLM - 1.95M parameter ternary language model achieving 1.58 bits/trit (20x memory compression vs binary); (2) TRI-27 - balanced ternary instruction set with 27 registers encoding 3^21 unique states; (3) Queen - self-learning orchestration with biological inspiration; (4) Sacred GF16/TF3 - 3.3-bit dense formats for zero-DSP FPGA inference; (5) $TRI token v3.1 - production-ready DeFi staking with 7 security improvements from 2025 research. All innovations published as defensive prior art with Zenodo DOIs. Key metrics: 20x memory reduction, 5-10x inference speedup, 99.9% uptime across 152 Railway workers. Codebase: 50+ binaries, 0 TypeScript/Python, pure Zig 0.15.x, zero external dependencies."
 authors:
-  - family-names: "Project"
-    given-names: "Trinity"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
     affiliation: "Trinity Open Source Project"
-  - family-names: "Contributors"
-    given-names: "Various"
-    orcid: "https://orcid.org/0009-0000-0000-0001"
-    affiliation: "Open Source Community"
 type: software
 version: 3.1.0
 doi: 10.5281/zenodo.18939352
@@ -80,11 +76,9 @@ preferred-citation:
   type: article
   title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm with Ternary Computing and FPGA Inference"
   authors:
-    - family-names: "Project"
-      given-names: "Trinity"
-      orcid: "https://orcid.org/0009-0000-0000-0000"
-    - family-names: "Contributors"
-      given-names: "Various"
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
   year: 2026
   month: 3
   journal: "Zenodo"

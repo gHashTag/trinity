@@ -3,14 +3,16 @@ message: "If you use any Trinity ternary neural network discoveries, please cite
 title: "Ternary Neural Networks: Theory to Training Farm"
 abstract: "This bundle presents Trinity's comprehensive research on ternary neural networks, spanning theoretical foundations (T-JEPA, cosine scheduling with phi-warmup), implementation (HSLM 1.95M parameter model with PPL=125), training infrastructure (gradient accumulation, checkpoint compression, wave-based multi-account training), and evaluation (Cognitive Probes v7 with Min-K%++, Full-ECE calibration, temperature scaling v5, ROC/AUC analysis, contamination detection). All innovations published as defensive prior art with Zenodo DOIs."
 authors:
-  - family-names: "Trinity"
-    given-names: "Project"
-    affiliation: "Open Source"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
 version: 1.0.0
 doi: TBD
-date-released: 2026-03-25
+date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
 keywords:
   - "ternary neural network"
   - "HSLM"
@@ -36,27 +38,44 @@ keywords:
   - "ternary inference"
 license: CC-BY-4.0
 identifiers:
-  - description: "Zenodo DOI for main defensive publication"
-    type: "doi"
+  - description: "Zenodo DOI for ternary neural network defensive publication"
+    type: doi
     value: "TBD"
   - description: "GitHub repository"
-    type: "url"
+    type: url
     value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
 related-resources:
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "HSLM Training Report"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/fpga-autoregressive-llm-report.md"
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Scientific Metrics v7"
     uri: "https://github.com/gHashTag/trinity/blob/main/kaggle/eval/scientific_metrics_v7.py"
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Prior Art Network"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Ternary Neural Networks: Theory to Training Farm"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
 references:
-  - type: "article"
+  - type: article
     authors:
       - family-names: "Ma"
         given-names: "D."
@@ -66,7 +85,8 @@ references:
     year: 2024
     journal: "arXiv"
     volume: "arXiv:2402.17764"
-  - type: "article"
+    doi: "10.48550/arXiv.2402.17764"
+  - type: article
     authors:
       - family-names: "Eldan"
         given-names: "R."
@@ -76,7 +96,8 @@ references:
     year: 2023
     journal: "arXiv"
     volume: "arXiv:2305.07759"
-  - type: "article"
+    doi: "10.48550/arXiv.2305.07759"
+  - type: article
     authors:
       - family-names: "Wei"
         given-names: "M."
@@ -86,3 +107,4 @@ references:
     year: 2024
     journal: "arXiv"
     volume: "arXiv:2409.05452"
+    doi: "10.48550/arXiv.2409.05452"

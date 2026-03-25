@@ -3,14 +3,16 @@ message: "If you use any Queen orchestration discoveries, please cite our defens
 title: "Autonomous Orchestration: Queen Lotus Cycle"
 abstract: "This bundle presents Trinity's Queen self-learning orchestration system, featuring the Queen Lotus Cycle (6-phase autonomous adaptation: OBSERVE-ANALYZE-PLAN-EXECUTE-EVALUATE-ADAPT), Episode Jaccard similarity for experience recall, Quality classification with 4 states (UNKNOWN, GOOD, BAD, SACRED), PolicyDelta actions for configuration scaling (scale_up, scale_down, scale_out, scale_in), Tri27Config auto-adaptation with kill_threshold, Byzantine fault detection for crash monitoring, Service recycling based on kill events, SEVO (Sacred Evolution) with phi-based hyperparameter optimization, ASHA+PBT hybrid for successive halving with population-based training, and Railway farm integration for serverless ML training. All innovations published as defensive prior art with Zenodo DOIs."
 authors:
-  - family-names: "Trinity"
-    given-names: "Project"
-    affiliation: "Open Source"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
 version: 1.0.0
 doi: TBD
-date-released: 2026-03-25
+date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
 keywords:
   - "Queen self-learning"
   - "autonomous orchestration"
@@ -38,23 +40,40 @@ keywords:
   - "training farm"
 license: CC-BY-4.0
 identifiers:
-  - description: "Zenodo DOI for main defensive publication"
-    type: "doi"
+  - description: "Zenodo DOI for Queen orchestration defensive publication"
+    type: doi
     value: "TBD"
   - description: "GitHub repository"
-    type: "url"
+    type: url
     value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
 related-resources:
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Queen Lotus Experiments"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/queen_lotus_experiments.md"
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Prior Art Network"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Autonomous Orchestration: Queen Lotus Cycle"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
 references:
-  - type: "article"
+  - type: article
     authors:
       - family-names: "Li"
         given-names: "L."
@@ -71,7 +90,8 @@ references:
     journal: "Journal of Machine Learning Research"
     volume: "18"
     pages: "1-52"
-  - type: "article"
+    doi: "10.5555/3238000.3238002"
+  - type: article
     authors:
       - family-names: "Jaderberg"
         given-names: "M."
@@ -101,3 +121,4 @@ references:
     year: 2017
     journal: "arXiv"
     volume: "arXiv:1711.09846"
+    doi: "10.48550/arXiv.1711.09846"

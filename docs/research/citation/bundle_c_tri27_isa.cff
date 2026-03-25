@@ -3,14 +3,16 @@ message: "If you use any TRI-27 ISA discoveries, please cite our defensive publi
 title: "TRI-27: Ternary ISA with Coptic Encoding"
 abstract: "This bundle presents Trinity's TRI-27 ternary instruction set architecture, featuring 36 opcodes for balanced ternary computation, 27 registers organized in 3 banks (alpha-eta: baseline, iota-rho: workspace, sigma-sampi: sacred), Coptic alphabet encoding for human-readable ternary (3 trits per Coptic letter), cross-bank validation preventing invalid state transitions, T27 binary episode format for experience replay, and neuro-inspired wrapper interfaces (Reticular Raphe for phi-decay rolling, Phoenix Medulla for resilience, Queen vmPFC for prefrontal orchestration). All innovations published as defensive prior art with Zenodo DOIs."
 authors:
-  - family-names: "Trinity"
-    given-names: "Project"
-    affiliation: "Open Source"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
 version: 1.0.0
 doi: TBD
-date-released: 2026-03-25
+date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
 keywords:
   - "TRI-27"
   - "ternary ISA"
@@ -36,34 +38,52 @@ keywords:
   - "resilience"
 license: CC-BY-4.0
 identifiers:
-  - description: "Zenodo DOI for main defensive publication"
-    type: "doi"
+  - description: "Zenodo DOI for TRI-27 ISA defensive publication"
+    type: doi
     value: "TBD"
   - description: "GitHub repository"
-    type: "url"
+    type: url
     value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
 related-resources:
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "TRI-27 Platform Specification"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/tri27_platform.md"
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Prior Art Network"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "TRI-27: Ternary ISA with Coptic Encoding"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
 references:
-  - type: "article"
+  - type: book
     authors:
       - family-names: "Knuth"
-        given-names: "D."
+        given-names: "D. E."
     title: "The Art of Computer Programming, Volume 2: Seminumerical Algorithms"
     year: 1997
-    journal: "Addison-Wesley"
+    publisher: "Addison-Wesley"
     edition: "3rd"
-  - type: "article"
+    isbn: "0-201-89684-2"
+  - type: book
     authors:
       - family-names: "Frazer"
         given-names: "W."
     title: "The Coptic Version of the New Testament in the Southern Dialect"
-    year: "1898"
-    journal: "Oxford University Press"
+    year: 1898
+    publisher: "Oxford University Press"

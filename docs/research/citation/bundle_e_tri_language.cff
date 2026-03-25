@@ -3,14 +3,16 @@ message: "If you use any Tri Language discoveries, please cite our defensive pub
 title: "Tri Language: Linear Types, Effects, Dual-Target Code Generation"
 abstract: "This bundle presents Trinity's Tri language, a pure Zig DSL for hardware-software co-design, featuring Linear Types with ownership modes (Let, Inout, Sink, Set) for resource safety, Algebraic Effects with Handlers for platform-aware error handling, Bit/Trit-level pattern matching for hardware optimization, Content-Addressed Functions using SHA256 AST hashing for reproducible builds, Austral-style Result Type for exception-free error handling, Array Combinators (map, filter, fold) for functional programming, and Pipe Operator for chaining operations. Includes VIBEE compiler components: Ternary JSON Parser (3-valued, 100M ops/s), Coptic Code Generation (T27 bytecode), Memory-Tiered Inference (Hippocampus), and VIBEE Benchmark Suite. All innovations published as defensive prior art with Zenodo DOIs."
 authors:
-  - family-names: "Trinity"
-    given-names: "Project"
-    affiliation: "Open Source"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
 version: 1.0.0
 doi: TBD
-date-released: 2026-03-25
+date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
 keywords:
   - "Tri language"
   - "DSL"
@@ -49,19 +51,36 @@ keywords:
   - "HNSW"
 license: CC-BY-4.0
 identifiers:
-  - description: "Zenodo DOI for main defensive publication"
-    type: "doi"
+  - description: "Zenodo DOI for Tri Language defensive publication"
+    type: doi
     value: "TBD"
   - description: "GitHub repository"
-    type: "url"
+    type: url
     value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
 related-resources:
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Prior Art Network"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Tri Language: Linear Types, Effects, Dual-Target Code Generation"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
 references:
-  - type: "article"
+  - type: article
     authors:
       - family-names: "Tate"
         given-names: "A."
@@ -71,7 +90,8 @@ references:
     year: 2021
     journal: "arXiv"
     volume: "arXiv:2107.05568"
-  - type: "article"
+    doi: "10.48550/arXiv.2107.05568"
+  - type: article
     authors:
       - family-names: "Bauer"
         given-names: "L."
@@ -79,7 +99,8 @@ references:
     year: 2022
     journal: "Journal of Functional Programming"
     volume: "32"
-  - type: "article"
+    doi: "10.1017/S0956796822000034"
+  - type: article
     authors:
       - family-names: "Bainomugisha"
         given-names: "E."
@@ -97,3 +118,4 @@ references:
     volume: "45"
     issue: "4"
     pages: "1-34"
+    doi: "10.1145/2501654.2501669"

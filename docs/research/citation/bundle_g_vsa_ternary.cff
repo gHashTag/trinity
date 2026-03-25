@@ -3,14 +3,16 @@ message: "If you use any Trinity VSA discoveries, please cite our defensive publ
 title: "VSA Operations for Ternary Computing"
 abstract: "This bundle presents Trinity's Vector Symbolic Architecture (VSA) operations adapted for ternary computing, featuring bind/unbind operations using HybridBigInt SIMD for efficient associative memory, bundle operations (2-ary, 3-ary) for majority voting and noise resilience, ternary dot-product for {-1,0,+1} vector operations, cyclic permutation encoding for position-independent representation, cosine similarity for ternary vector comparison, and text encoding mapping characters to Vec32i8 VSA representations. All innovations published as defensive prior art with Zenodo DOIs."
 authors:
-  - family-names: "Trinity"
-    given-names: "Project"
-    affiliation: "Open Source"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
 version: 1.0.0
 doi: TBD
-date-released: 2026-03-25
+date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
 keywords:
   - "VSA"
   - "Vector Symbolic Architecture"
@@ -33,19 +35,36 @@ keywords:
   - "hyperdimensional computing"
 license: CC-BY-4.0
 identifiers:
-  - description: "Zenodo DOI for main defensive publication"
-    type: "doi"
+  - description: "Zenodo DOI for VSA ternary defensive publication"
+    type: doi
     value: "TBD"
   - description: "GitHub repository"
-    type: "url"
+    type: url
     value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
 related-resources:
-  - type: "documentation"
-    relationship: "documents"
+  - type: documentation
+    relationship: documents
     title: "Prior Art Network"
     uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "VSA Operations for Ternary Computing"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
 references:
-  - type: "article"
+  - type: article
     authors:
       - family-names: "Kanerva"
         given-names: "P."
@@ -55,7 +74,8 @@ references:
     volume: "1"
     issue: "2"
     pages: "139-159"
-  - type: "article"
+    doi: "10.1007/s12559-009-9008-3"
+  - type: article
     authors:
       - family-names: "Plate"
         given-names: "T. A."
@@ -65,7 +85,8 @@ references:
     volume: "6"
     issue: "3"
     pages: "623-641"
-  - type: "article"
+    doi: "10.1109/72.387005"
+  - type: article
     authors:
       - family-names: "Gayler"
         given-names: "R. W."
