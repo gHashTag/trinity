@@ -258,19 +258,38 @@ See `docs/LEADERBOARD_STRATEGIES.md` for detailed strategies.
 
 ### 🆕 Zenodo Research Bundles
 
-All scientific metrics and validation data are archived on Zenodo:
+All scientific metrics and validation data are archived on Zenodo with DOI citations:
 
-| Bundle | DOI | Contents |
-|--------|-----|----------|
-| **B001** | [10.5281/zenodo.19223952](https://zenodo.org/record/19223952) | Scientific Metrics v7.4 Base Implementation |
-| **B002** | [10.5281/zenodo.19223956](https://zenodo.org/record/19223956) | Contamination Detection Benchmarks |
-| **B003** | [10.5281/zenodo.19223959](https://zenodo.org/record/19223959) | Calibration Error Validation |
-| **B004** | [10.5281/zenodo.19223961](https://zenodo.org/record/19223961) | Statistical Reference Values |
-| **B005** | [10.5281/zenodo.19223963](https://zenodo.org/record/19223963) | Bootstrap CI Reproducibility |
-| **B006** | [10.5281/zenodo.19223965](https://zenodo.org/record/19223965) | Multiple Testing Corrections |
-| **B007** | [10.5281/zenodo.19223967](https://zenodo.org/record/19223967) | Adaptive Binning Algorithms |
+| Bundle | DOI | Contents | Paper Reference |
+|--------|-----|----------|------------------|
+| **B001** | [10.5281/zenodo.19223952](https://zenodo.org/record/19223952) | Scientific Metrics v7.4 Code + Tests | arXiv:2404.02936, arXiv:2406.11345 |
+| **B002** | [10.5281/zenodo.19223956](https://zenodo.org/record/19223956) | Min-K%++ & CoDeC Benchmarks | arXiv:2404.02936, arXiv:2510.27055 |
+| **B003** | [10.5281/zenodo.19223959](https://zenodo.org/record/19223959) | ECE Validation Data | Naeini et al. AAAI 2015, NeurIPS 2024 |
+| **B004** | [10.5281/zenodo.19223961](https://zenodo.org/record/19223961) | DeLong CI, t-test, Concentration Bounds | DeLong et al. 1988, Hoeffding 1963 |
+| **B005** | [10.5281/zenodo.19223963](https://zenodo.org/record/19223963) | Bootstrap Reproducibility Artifacts | Efron 1979, BCa Method |
+| **B006** | [10.5281/zenodo.19223965](https://zenodo.org/record/19223965) | FDR Correction Tables | Bonferroni 1936, Benjamini-Hochberg 1995 |
+| **B007** | [10.5281/zenodo.19223967](https://zenodo.org/record/19223967) | Adaptive Binning KDE | Rosenblatt 1956, scipy.signal.find_peaks |
+
+**Quick Access:**
+```bash
+# Download all bundles
+wget https://zenodo.org/record/19223952/files/bundle_b001.zip
+wget https://zenodo.org/record/19223956/files/bundle_b002.zip
+# ... etc
+```
 
 📖 **Full Documentation**: See [ZENODO_BUNDLES.md](ZENODO_BUNDLES.md)
+
+**Citation:**
+```bibtex
+@software{trinity_scientific_metrics_v7_4,
+  author = {Trinity Cognitive Probes Team},
+  title = {Scientific Metrics v7.4: Statistical Validity and Reproducibility},
+  year = {2026},
+  doi = {10.5281/zenodo.19223952},
+  url = {https://github.com/gHashTag/trinity}
+}
+```
 
 ### Baseline Results (n=1000 per model)
 
