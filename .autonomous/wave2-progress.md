@@ -150,3 +150,14 @@ Build a production-ready type system and TRI-27 bytecode emitter on top of Wave 
 - Wave 1: `.autonomous/wave1-progress.md`
 - Issue #418: TDGS-3 tracking
 - Temple: `src/temple/tri_lang_core.zig` (do NOT modify)
+
+### 2.1 Expression Typing ✅ COMPLETE
+- [x] `src/tri-lang/typechecker.zig` — expression type inference
+  - [x] `infer(expr, env)` — infer expression type
+  - [x] Lit<int> → Int
+  - [x] Lit<bool> → Bool
+  - [x] Var(x) → lookup in env
+  - [x] Binop(e1, op, e2) → unify operand types
+  - [x] If(cond, t, f) — bool condition, unify branches
+  - [x] Let(x, v, body) — generalize + extend env
+  - [x] Tests: 7/7 passing
