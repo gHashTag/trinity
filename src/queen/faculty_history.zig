@@ -27,15 +27,22 @@ pub fn loadHistory(allocator: Allocator) ![]FacultyMetrics {
 
     // Try to open history file
     const file = cwd.openFile(HISTORY_PATH, .{}) catch |err| switch (err) {
-        error.FileNotFound => return &.{};
-        else => return err;
+        error.FileNotFound => {
+            // Return empty slice
+            const empty: []FacultyMetrics = &.{};
+            return empty;
+        },
+        else => return err,
     };
     defer file.close();
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024); // Max 1MB
     defer allocator.free(content);
 
-    if (content.len == 0) return &.{};
+    if (content.len == 0) {
+        const empty: []FacultyMetrics = &.{};
+        return empty;
+    }
 
     // Parse JSONL (one JSON object per line)
     var history = std.ArrayList(FacultyMetrics).init(allocator);
@@ -84,7 +91,7 @@ pub fn appendToHistory(allocator: Allocator, metrics: FacultyMetrics) !void {
 
         while (parts.next()) |part| {
             if (part.len == 0) continue;
-            const path = path_buf[0..accumulated + part.len];
+            const path = path_buf[0 .. accumulated + part.len];
             @memcpy(path, part);
             accumulated += part.len;
 
@@ -110,12 +117,7 @@ pub fn appendToHistory(allocator: Allocator, metrics: FacultyMetrics) !void {
 /// Rotate history if exceeds MAX_HISTORY
 pub fn rotateHistory(allocator: Allocator) !void {
     const history = try loadHistory(allocator);
-    defer {
-        for (history) |h| {
-            allocator.free(h.snapshot.json_raw);
-        }
-        allocator.free(history);
-    };
+    defer allocator.free(history);
 
     if (history.len <= MAX_HISTORY) return;
 
@@ -182,61 +184,41 @@ fn parseFacultySnapshot(allocator: Allocator, value: std.json.Value) !FacultySna
 }
 
 fn parseAgent(name: []const u8) faculty_types.Agent {
-    return std.mem.eql(u8, name, "ralph") or
-        std.mem.indexOf(u8, name, "ralph") != null
-    {
-        .ralph
-    } else std.mem.eql(u8, name, "scholar") or
-        std.mem.indexOf(u8, name, "scholar") != null
-    {
-        .scholar
-    } else std.mem.eql(u8, name, "mu") or
-        std.mem.indexOf(u8, name, "mu") != null
-    {
-        .mu
-    } else std.mem.eql(u8, name, "oracle") or
-        std.mem.indexOf(u8, name, "oracle") != null
-    {
-        .oracle
-    } else std.mem.eql(u8, name, "swarm") or
-        std.mem.indexOf(u8, name, "swarm") != null
-    {
-        .swarm
+    if (std.mem.eql(u8, name, "ralph") or std.mem.indexOf(u8, name, "ralph") != null) {
+        return .ralph;
+    } else if (std.mem.eql(u8, name, "scholar") or std.mem.indexOf(u8, name, "scholar") != null) {
+        return .scholar;
+    } else if (std.mem.eql(u8, name, "mu") or std.mem.indexOf(u8, name, "mu") != null) {
+        return .mu;
+    } else if (std.mem.eql(u8, name, "oracle") or std.mem.indexOf(u8, name, "oracle") != null) {
+        return .oracle;
+    } else if (std.mem.eql(u8, name, "swarm") or std.mem.indexOf(u8, name, "swarm") != null) {
+        return .swarm;
     } else {
-        .linter
-    };
+        return .linter;
+    }
 }
 
 fn parseAgentStatus(status: []const u8) faculty_types.AgentStatus {
-    return std.mem.eql(u8, status, "up") or
-        std.mem.indexOf(u8, status, "up") != null
-    {
-        .up
-    } else std.mem.eql(u8, status, "down") or
-        std.mem.indexOf(u8, status, "down") != null
-    {
-        .down
-    } else std.mem.eql(u8, status, "stub") or
-        std.mem.indexOf(u8, status, "stub") != null
-    {
-        .stub
+    if (std.mem.eql(u8, status, "up") or std.mem.indexOf(u8, status, "up") != null) {
+        return .up;
+    } else if (std.mem.eql(u8, status, "down") or std.mem.indexOf(u8, status, "down") != null) {
+        return .down;
+    } else if (std.mem.eql(u8, status, "stub") or std.mem.indexOf(u8, status, "stub") != null) {
+        return .stub;
     } else {
-        .tbd
-    };
+        return .tbd;
+    }
 }
 
 fn parseVZone(zone: []const u8) faculty_types.VZone {
-    return std.mem.eql(u8, zone, "gold") or
-        std.mem.indexOf(u8, zone, "gold") != null
-    {
-        .gold
-    } else std.mem.eql(u8, zone, "stable") or
-        std.mem.indexOf(u8, zone, "stable") != null
-    {
-        .stable
+    if (std.mem.eql(u8, zone, "gold") or std.mem.indexOf(u8, zone, "gold") != null) {
+        return .gold;
+    } else if (std.mem.eql(u8, zone, "stable") or std.mem.indexOf(u8, zone, "stable") != null) {
+        return .stable;
     } else {
-        .drift
-    };
+        return .drift;
+    }
 }
 
 /// Calculate delta between two snapshots

@@ -1,0 +1,269 @@
+# ═══════════════════════════════════════════════════════
+# AUTO_PARALLEL — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Auto-Parallelism (DAG Extraction) for Tri Language
+# Source of truth for tri-lang/auto_parallel.zig codegen
+# Issue #414: Auto-parallelism (DAG extraction)
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_auto_parallel
+version: "0.1.0"
+module: tri_lang.auto_parallel
+description: "Auto-Parallelism (DAG Extraction) for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file for error reporting"
+    fields:
+      - name: line
+        type: "usize"
+        description: "Line number"
+      - name: column
+        type: "usize"
+        description: "Column number"
+
+  DagNode:
+    description: "Node in execution DAG"
+    fields:
+      - name: id
+        type: "u32"
+        description: "Unique node ID"
+      - name: expr
+        type: "[]const u8"
+        description: "Node expression"
+      - name: dependencies
+        type: "[]const u32"
+        description: "Dependencies (node IDs this node depends on)"
+      - name: dependents
+        type: "[]const u32"
+        description: "Dependents (nodes that depend on this node)"
+      - name: deps_allocated
+        type: "bool"
+        description: "Was dependencies dynamically allocated"
+      - name: dependents_allocated
+        type: "bool"
+        description: "Was dependents dynamically allocated"
+      - name: cost
+        type: "u32"
+        description: "Estimated execution cost"
+      - name: worker
+        type: "?u32"
+        description: "Assigned worker ID"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  Dag:
+    description: "DAG for parallel execution"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: nodes_by_id
+        type: "std.ArrayList(DagNode)"
+        description: "All nodes in DAG (indexed by ID)"
+      - name: name_to_id
+        type: "std.StringHashMap(u32)"
+        description: "Map from node name to ID"
+      - name: entries
+        type: "std.ArrayList(u32)"
+        description: "Entry points (nodes with no dependencies)"
+      - name: exits
+        type: "std.ArrayList(u32)"
+        description: "Exit points (nodes with no dependents)"
+      - name: next_id
+        type: "u32"
+        description: "Node counter for ID generation"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Dag"
+        description: "Create empty DAG"
+
+      - name: deinit
+        returns: "void"
+        description: "Free DAG and all nodes"
+
+      - name: addNode
+        params:
+          - name: name
+            type: "[]const u8"
+          - name: expr
+            type: "[]const u8"
+          - name: cost
+            type: "u32"
+          - name: loc
+            type: "SourceLocation"
+        returns: "!u32"
+        description: "Add node to DAG, return node ID"
+        errors:
+          - OutOfMemory
+
+      - name: addDependency
+        params:
+          - name: from_id
+            type: "u32"
+          - name: to_id
+            type: "u32"
+        returns: "!void"
+        description: "Add dependency from_id -> to_id"
+        errors:
+          - OutOfMemory
+          - "Cycle detected"
+
+      - name: extractParallelism
+        returns: "!Dag"
+        description: "Extract parallel DAG from expression"
+        errors:
+          - OutOfMemory
+
+  DepAnalyzer:
+    description: "Dependency analyzer for extracting DAGs"
+    fields:
+      - name: dag
+        type: "*Dag"
+        description: "DAG being built"
+      - name: visited
+        type: "std.ArrayList(bool)"
+        description: "Visited nodes"
+
+  Scheduler:
+    description: "Parallel task scheduler (Bend-style)"
+    fields:
+      - name: dag
+        type: "*const Dag"
+        description: "DAG to schedule"
+      - name: num_workers
+        type: "u32"
+        description: "Number of workers"
+
+  WorkerStatus:
+    description: "Worker status"
+    underlying: "enum"
+    variants:
+      - Idle: "Worker is idle"
+      - Busy: "Worker is busy"
+      - Blocked: "Worker is blocked (waiting for dependencies)"
+
+  Worker:
+    description: "Parallel worker"
+    fields:
+      - name: id
+        type: "u32"
+        description: "Worker ID"
+      - name: status
+        type: "WorkerStatus"
+        description: "Current status"
+      - name: current_task
+        type: "?u32"
+        description: "Current task ID (null if idle)"
+
+  RaceDetector:
+    description: "Race detection for shared variable access"
+    fields:
+      - name: var_accesses
+        type: "std.ArrayList(VarAccess)"
+        description: "Variable accesses"
+
+  VarAccess:
+    description: "Variable access record"
+    fields:
+      - name: var_name
+        type: "[]const u8"
+        description: "Variable name"
+      - name: node_id
+        type: "u32"
+        description: "Node ID"
+      - name: access_type
+        type: "AccessType"
+        description: "Read or write"
+
+  AccessType:
+    description: "Variable access type"
+    underlying: "enum"
+    variants:
+      - Read: "Read access"
+      - Write: "Write access"
+
+  Race:
+    description: "Race condition"
+    fields:
+      - name: node_ids
+        type: "[2]u32"
+        description: "Conflicting node IDs"
+      - name: var_name
+        type: "[]const u8"
+        description: "Variable name"
+
+  RaceType:
+    description: "Race type"
+    underlying: "enum"
+    variants:
+      - WriteWrite: "Two writes to same variable"
+      - WriteRead: "Write followed by read"
+      - ReadWrite: "Read followed by write"
+
+  PipelineStage:
+    description: "Pipeline stage for parallel execution"
+    fields:
+      - name: stage_id
+        type: "u32"
+        description: "Stage ID"
+      - name: node_ids
+        type: "[]const u32"
+        description: "Node IDs in this stage"
+
+  StageFn:
+    description: "Stage function type"
+    underlying: "enum"
+    variants:
+      - Map: "Map stage"
+      - Reduce: "Reduce stage"
+      - Filter: "Filter stage"
+      - Scan: "Scan stage"
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  extractPipeline:
+    params:
+      - name: dag
+        type: "*const Dag"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]PipelineStage"
+    description: "Extract parallel pipeline stages from DAG"
+    errors:
+      - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Auto-parallelism for array combinators:
+# - DAG extraction from expressions
+# - Dependency analysis (what depends on what)
+# - Parallel scheduling (Bend-style list scheduling)
+# - Race detection (read/write conflicts on shared variables)
+# - Pipeline extraction (map, reduce, filter, scan stages)
+#
+# Key operations:
+# - Dag.addNode: Add node to DAG with cost and location
+# - Dag.addDependency: Add edge between nodes (cycle detection)
+# - extractParallelism: Extract parallel DAG from expression
+# - extractPipeline: Extract pipeline stages for parallel execution
+#
+# Worker model:
+# - Workers have status: Idle, Busy, Blocked
+# - Scheduler assigns nodes to workers based on dependencies
+# - Race detector monitors variable accesses for conflicts
