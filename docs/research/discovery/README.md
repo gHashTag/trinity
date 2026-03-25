@@ -1,22 +1,26 @@
 # Trinity Defensive Publications — Discovery Index
 
 > **Complete Inventory: 66 Discoveries | 7 Bundled Collections**
-> **Last Updated:** 2026-03-25
+> **Last Updated:** 2026-03-26
 > **Purpose:** Defensive prior art for all Trinity innovations
+> **Author:** Dmitrii Vasilev
 
 ---
 
 ## Quick Reference
 
-| Bundle | Discoveries | Status | CITATION.cff |
-|--------|-------------|--------|--------------|
-| **A: Ternary Neural Networks** | P1,P8-P12,P28,P55-P58 (14) | 🔄 Draft | `citation/bundle_a_ternary_nn.cff` |
-| **B: Zero-DSP FPGA** | P3,P17-P27,P20,P31 (13) | 🔄 Draft | `citation/bundle_b_zero_dsp_fpga.cff` |
-| **C: TRI-27 ISA** | P4,P32-P34,P64-P66 (7) | 🔄 Draft | `citation/bundle_c_tri27_isa.cff` |
-| **D: Queen Orchestration** | P5,P35-P40,P52-P54 (10) | 🔄 Draft | `citation/bundle_d_queen_orchestration.cff` |
-| **E: Tri Language** | P6,P41-P51,P62,P63 (13) | 🔄 Draft | `citation/bundle_e_tri_language.cff` |
-| **F: Sacred Formats** | P2,P13-P16,P59-P61 (9) | ✅ Published | `../CITATION.cff` |
-| **G: VSA Operations** | P7,P29-P30 (3) | 📝 Draft | `citation/bundle_g_vsa_ternary.cff` |
+| Bundle | Discoveries | Files | Status |
+|--------|-------------|-------|--------|
+| **A: Ternary Neural Networks** | P1,P8-P11,P34-P41 (11) | 11 files | ✅ Complete |
+| **B: Zero-DSP FPGA** | P12,P17-P27,P57 (12) | 12 files | ✅ Complete |
+| **C: TRI-27 ISA** | P4,P27-P28,P54,P66 (5) | 5 files | ✅ Complete |
+| **D: Queen Orchestration** | P5,P29-P31,P51,P58-P59 (10) | 10 files | ✅ Complete |
+| **E: Tri Language** | P6,P42-P50,P62,P63 (10) | 10 files | ✅ Complete |
+| **F: Sacred Math** | P2,P13-P16,P23,P24,P55,P56 (9) | 9 files | ✅ Complete |
+| **G: VSA Operations** | P7,P52-P53 (3) | 3 files | ✅ Complete |
+| **H: Additional** | P14,P32-P33,P44-P49 (6) | 6 files | ✅ Complete |
+
+**Total: 66 discovery files across 8 bundles**
 
 ---
 
