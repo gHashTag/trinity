@@ -1,15 +1,16 @@
-# Trinity Zenodo Publications — Master Index (v2.7)
+# Trinity Zenodo Publications — Master Index (v2.8)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v2.7
+## What's New in v2.8
 
-- Added **TRAINING_DYNAMICS.md** — Comprehensive training analysis, convergence, hyperparameter sensitivity
-- Added **SOTA_COMPARISON.md** — State-of-the-art comparison across all 7 domains
-- Updated **ZENODO_MASTER_INDEX.md** to v2.7
-- Total documentation: 75+ KB of scientific content across 20 files
+- Added **PUBLICATION_CHECKLIST.md** — Complete publication readiness checklist
+- All 26 files verified and ready for Zenodo upload
+- 8 DOIs confirmed and cross-referenced
+- Total documentation: 150+ KB across 26 files
+- **Status: ✅ READY FOR PUBLICATION**
 
 ## Main Documentation
 
@@ -18,6 +19,7 @@
 - **[EXPERIMENTAL_RESULTS.md](./EXPERIMENTAL_RESULTS.md)** — Supporting experimental data
 - **[ZENODO_SCIENTIFIC_GUIDE_V2.md](./ZENODO_SCIENTIFIC_GUIDE_V2.md)** — Best practices guide
 - **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
+- **[PUBLICATION_CHECKLIST.md](./PUBLICATION_CHECKLIST.md)** — Publication readiness checklist (NEW v2.8)
 
 ### Scientific Foundations
 - **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
