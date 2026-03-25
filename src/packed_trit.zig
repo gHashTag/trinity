@@ -1,7 +1,7 @@
 // @origin(spec:packed_trit.tri) @regen(manual-impl)
 // @origin(manual) @regen(pending)
 const std = @import("std");
-const tvc_bigint = @import("bigint.zig");
+const tvc_bigint = @import("bigint");
 
 pub const TRITS_PER_BYTE: usize = 5;
 /// towithand 12000 andin (2400 ) - beforewith for and VSA (1000-10000 and)

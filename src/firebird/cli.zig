@@ -10,8 +10,7 @@ const firebird_vsa = @import("vsa.zig");
 const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
-const farm = @import("farm");
-const evolution = farm.evolution;
+const evolution = @import("evolution.zig");
 const parallel = @import("parallel.zig");
 const b2t = @import("b2t_integration.zig");
 const wasm_parser = @import("wasm_parser.zig");
@@ -461,14 +460,14 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     defer initial.deinit();
 
     // Configure evolution
-    const config = parallel.ParallelConfig{
-        .base_config = .{
-            .population_size = opts.pop,
-            .max_generations = @intCast(opts.gen),
-            .target_fitness = opts.target,
-            .tournament_size = 3,
-        },
-        .num_threads = opts.threads,
+    const config = evolution.EvolutionConfig{
+        .population_size = opts.pop,
+        .max_generations = @intCast(opts.gen),
+        .target_fitness = opts.target,
+        .tournament_size = 3,
+        .elitism_ratio = 0.1,
+        .mutation_rate = 0.05,
+        .crossover_rate = 0.8,
     };
 
     // Initialize population
@@ -486,7 +485,7 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var rng = std.Random.DefaultPrng.init(seed +% 3);
 
     while (population.generation < opts.gen) {
-        try parallel.evolveGenerationParallel(allocator, &population, &human, &config, &rng);
+        try evolution.evolveGeneration(allocator, &population, &human, &config, &rng);
 
         if (!opts.quiet and (population.generation % 10 == 0 or population.generation == 1)) {
             const best = population.getBest();

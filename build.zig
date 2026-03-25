@@ -31,12 +31,31 @@ pub fn build(b: *std.Build) void {
     build_options.addOption(bool, "enable_fpga", enable_fpga);
     build_options.addOption(bool, "enable_spec", enable_spec);
 
-    // VSA module — V-zone Vector Symbolic Architecture (moved early for trinity_mod)
+    // Core types modules (must come before hybrid since hybrid depends on them)
+    const bigint_mod = b.createModule(.{
+        .root_source_file = b.path("src/bigint.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const packed_trit_mod = b.createModule(.{
+        .root_source_file = b.path("src/packed_trit.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+        },
+    });
+
     // Hybrid types module (TVC HybridBigInt, Trit, Vec32i8)
     const hybrid_mod = b.createModule(.{
         .root_source_file = b.path("src/hybrid.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
+        },
     });
 
     const vsa_tri = b.createModule(.{
@@ -48,14 +67,27 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    const vm_mod = b.createModule(.{
+        .root_source_file = b.path("src/vm.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
             .{ .name = "hybrid", .module = hybrid_mod },
             .{ .name = "vsa", .module = vsa_tri },
+            .{ .name = "vm", .module = vm_mod },
         },
     });
 
@@ -262,7 +294,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "vsa", .module = vsa_tri }},
         }),
     });
     const run_bench_tests = b.addRunArtifact(bench_tests);
@@ -577,7 +609,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "vsa", .module = vsa_tri }},
         }),
     });
     b.installArtifact(bench_core);
@@ -1564,8 +1596,11 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
             .{ .name = "hybrid", .module = hybrid_mod },
             .{ .name = "vsa", .module = vsa_tri },
+            .{ .name = "vm", .module = vm_mod },
         },
     });
 
@@ -1632,6 +1667,7 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Inject build options and optional tree-sitter modules
     vibee.root_module.addOptions("build_options", ts_options);
     vibee.root_module.addImport("agent_mu", agent_mu_mod);
+    vibee.root_module.addImport("vsa", vsa_tri);
     if (enable_treesitter) {
         const ts_zig_mod = b.createModule(.{
             .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
@@ -2307,25 +2343,24 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // TRI CLI module — for queen to access tri CLI modules (tri_colors, voice_engine, etc.)
+    const tri_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // TRI modules needed by queen — individual modules to avoid file ownership conflicts
     const tri_colors_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_colors.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const agent_roles_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/agent_roles.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
+    // NOTE: agent_roles removed — unused module
+    // NOTE: faculty_types, thalamus, cerebellum, insula,
     // phoenix_medulla, phoenix_pons are in src/queen/
     // (Q-zone migration debt). Queen files import them directly.
-    const cortex_mod = b.createModule(.{
-        .root_source_file = b.path("src/queen/cortex.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // cortex is defined later as cortex_for_tri to avoid circular dependency
     const faculty_types_mod = b.createModule(.{
         .root_source_file = b.path("src/queen/faculty_types.zig"),
         .target = target,
@@ -2347,6 +2382,47 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Additional tri modules needed by cortex
+    const tri_state_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const train_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/train_types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const hippocampus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/hippocampus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const analysis_engine_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/analysis_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const three_paths_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/three_paths.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const phi_poetry_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/phi_poetry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // cortex_for_tri: special version that imports tri module to access tri CLI modules
+    const cortex_for_tri = b.createModule(.{
+        .root_source_file = b.path("src/queen/cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri", .module = tri_cli_mod },
+        },
+    });
+
     // Railway API module — shared between tri and farm
     const railway_api_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/railway_api.zig"),
@@ -2363,7 +2439,6 @@ pub fn build(b: *std.Build) void {
             .{ .name = "temple", .module = temple_mod },
         },
     });
-
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // S³AI Brain Modules (Neuroanatomy v5.1) — Additional modules (unique ones only)
@@ -2455,16 +2530,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "temple", .module = temple_mod },
+            .{ .name = "tri", .module = tri_cli_mod },
             // Brain modules
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
-            // TRI modules (files that exist in src/tri/)
-            .{ .name = "agent_roles", .module = agent_roles_mod },
-            .{ .name = "voice_engine", .module = voice_engine_mod },
-            // NOTE: github_client, github_app_auth, farm_accounts, tri_colors, hippocampus
-            // cause module conflicts with tri executable
-            // Queen files import them via relative paths to avoid conflicts
+            // NOTE: Queen files import tri modules via "tri" namespace
+            // Individual tri modules NOT imported here to avoid conflicts
             // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
             // phoenix_medulla, phoenix_pons are in src/queen/
             // Queen files import them directly from same directory
@@ -2568,7 +2640,7 @@ pub fn build(b: *std.Build) void {
     // TRI Utils module (Cycle 100: for testing)
 
     // ═══════════════════════════════════════════════════════════════════════════════
-// Duplicate brain module definitions removed - moved before queen_mod
+    // Duplicate brain module definitions removed - moved before queen_mod
     const microglia_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/microglia.zig"),
         .target = target,
@@ -3153,8 +3225,20 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "github", .module = github_mod },
                 // Farm module (F-zone)
                 .{ .name = "farm", .module = farm_mod },
+                // NOTE: tri CLI module NOT imported here - causes ownership conflicts with tri_colors
+                // Individual tri modules imported instead:
+                // TRI individual modules (to avoid ownership conflicts)
+                .{ .name = "tri_utils", .module = tri_utils_mod },
+                .{ .name = "tri_colors", .module = tri_colors_mod },
+                .{ .name = "voice_engine", .module = voice_engine_mod },
+                .{ .name = "tri_state", .module = tri_state_mod },
+                .{ .name = "train_types", .module = train_types_mod },
+                .{ .name = "hippocampus", .module = hippocampus_mod },
+                .{ .name = "analysis_engine", .module = analysis_engine_mod },
+                .{ .name = "three_paths", .module = three_paths_mod },
+                .{ .name = "phi_poetry", .module = phi_poetry_mod },
                 // Q-zone modules (individual imports for tri compatibility)
-                .{ .name = "cortex", .module = cortex_mod },
+                .{ .name = "cortex", .module = cortex_for_tri },
                 .{ .name = "faculty_types", .module = faculty_types_mod },
                 .{ .name = "thalamus", .module = thalamus_mod },
                 .{ .name = "queen_ofc", .module = queen_ofc_mod },

@@ -3733,7 +3733,7 @@ fn runHealth(allocator: Allocator, args: []const []const u8) !void {
             hippocampus.writeCellHealth(allocator, .{
                 .cell_id = cell.id,
                 .cell_name = if (cell.name.len > 0) cell.name else cell.id,
-                .health_score = @as(u8, @intFromFloat(@min(100, score))),
+                .health_score = if (score > 100) @as(u8, 100) else @intCast(score),
                 .health_delta = 0, // TODO: track previous score for delta
                 .bio_system = bio_name,
                 .trigger = "scan",
@@ -3881,7 +3881,7 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
         cell_id_len: usize,
         cell_name: []const u8,
         health_score: u8,
-        ts: u64,
+        ts: i64,
     }).initCapacity(allocator, 0);
     defer parsed_records.deinit(allocator);
 
@@ -3951,7 +3951,7 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
         const oldest = cell_records.items[cell_records.items.len - 1];
 
         // Calculate days spanned
-        const days_spanned = @max(1, (newest.ts - oldest.ts) / (24 * 3600));
+        const days_spanned = @max(1, @divTrunc(newest.ts - oldest.ts, @as(i64, 24 * 3600)));
 
         // Calculate slope
         const health_delta = @as(i32, newest.health_score) - @as(i32, oldest.health_score);

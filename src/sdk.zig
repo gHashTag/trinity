@@ -5,10 +5,12 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa_mod = @import("vsa.zig");
 
 pub const HybridBigInt = trinity.HybridBigInt;
 pub const Trit = trinity.Trit;
+
+// Use VSA through trinity to avoid module ownership conflicts
+const vsa_mod = trinity.vsa;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HYPERVECTOR - Main abstraction for developers

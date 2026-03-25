@@ -145,6 +145,27 @@ pub const CellHealthRecord = struct {
     tests_passing: bool = false,
 };
 
+// Parsed cell health (for cytoplasm compatibility)
+pub const ParsedCellHealth = struct {
+    cell_id: [64]u8 = [_]u8{0} ** 64,
+    cell_name: []const u8 = "",
+    health_score: u8 = 0,
+    health_delta: i8 = 0,
+    bio_system: []const u8 = "",
+    ts: i64 = 0,
+
+    pub fn fromRecord(rec: *const CellHealthRecord) !ParsedCellHealth {
+        var self: ParsedCellHealth = .{};
+        @memcpy(self.cell_id[0..@min(rec.cell_id.len, 64)], rec.cell_id);
+        self.cell_name = rec.cell_name;
+        self.health_score = rec.health_score;
+        self.health_delta = rec.health_delta;
+        self.bio_system = rec.bio_system;
+        self.ts = std.time.timestamp();
+        return self;
+    }
+};
+
 // Cell health list type
 pub const CellHealthList = struct {
     items: []CellHealthRecord = &[_]CellHealthRecord{},

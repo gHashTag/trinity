@@ -8,13 +8,15 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa_mod = @import("vsa.zig");
 const sdk = @import("sdk.zig");
 
 pub const HybridBigInt = trinity.HybridBigInt;
 pub const Trit = trinity.Trit;
 pub const Hypervector = sdk.Hypervector;
-pub const MAX_TRITS = vsa_mod.MAX_TRITS;
+pub const MAX_TRITS = trinity.vsa.MAX_TRITS;
+
+// Use VSA through trinity to avoid module ownership conflicts
+const vsa_mod = trinity.vsa;
 
 // Mathematical constants
 pub const PHI: f64 = 1.6180339887498948482; // Golden ratio
