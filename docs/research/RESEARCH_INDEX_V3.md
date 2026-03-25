@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v4.1
+# Trinity Research Documentation Index — v4.2
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 96
+**Total Documents:** 98
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -64,7 +64,7 @@
 | `CITATION.cff` | Main citation file | v1.0 |
 | `7× citation/bundle_*.cff` | Per-bundle citations | v1.1 ✅ Enhanced |
 
-### 5. Mathematical Foundations (4 documents)
+### 5. Mathematical Foundations (5 documents)
 
 | Document | Purpose | Theorems |
 |----------|---------|----------|
@@ -72,6 +72,7 @@
 | `SACRED_CONSTANTS.md` | φ, π, e in ternary | 15 constants |
 | `sacred_formats_fpga.md` | GF16/TF3 specifications | Complete |
 | `verify_trinity_math.py` | Automated verification | 5 tests passing |
+| `SACRED_MATHEMATICS_PROOFS.md` | Trinity identity, temporal theorem | 5 theorems ✨ NEW |
 
 ### 6. Queen & Orchestration (4 documents)
 
@@ -102,7 +103,7 @@
 | `verify_trinity_math.py` | Mathematical verification | Python |
 | `TODO_PRIORITIZATION.md` | 285 TODO analysis + roadmap | Markdown ✅ NEW |
 
-### 9. Specialized Research (7 documents)
+### 9. Specialized Research (9 documents)
 
 | Document | Topic | Depth |
 |----------|-------|-------|
@@ -113,6 +114,8 @@
 | `SCALING_ANALYSIS.md` | Multi-FPGA scaling | Complete |
 | `COST_ANALYSIS.md` | FPGA vs CPU cost | Complete |
 | `PERFORMANCE_BENCHMARKS.md` | All benchmarks | Complete |
+| `VSA_OPTIMIZATION_DEEP_DIVE.md` | SIMD analysis, 9.28× speedup | Complete ✨ NEW |
+| `VSA_SACRED_OPTIMIZATION_PROPOSAL.md` | φ-aligned optimization roadmap | 4-week plan ✨ NEW |
 
 ---
 
@@ -174,6 +177,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 4.2 | 2026-03-26 | Added VSA Sacred Optimization Proposal (φ-aligned 4-week roadmap), VSA Optimization Deep Dive |
 | 4.1 | 2026-03-26 | Updated document count to 96 (added sacred math proofs, zenodo collection enhancements) |
 | 4.0 | 2026-03-26 | Corrected total document count (93 .md files), added version history entry |
 | 3.9 | 2026-03-26 | Added TODO_PRIORITIZATION.md (285 TODOs analysis, 27-week roadmap) |
