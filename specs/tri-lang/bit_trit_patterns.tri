@@ -1,0 +1,316 @@
+# ═══════════════════════════════════════════════════════════════════
+# BIT/TRIT PATTERNS — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Bit/Trit-Level Pattern Matching for Tri Language
+# Source of truth for tri-lang/bit_trit_patterns.zig codegen
+# Issue #409: Bit/Trit-Level Pattern Matching
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_bit_trit_patterns
+version: "0.1.0"
+module: tri_lang.bit_trit_patterns
+description: "Bit/Trit-level pattern matching (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file for error reporting"
+    fields:
+      - name: line
+        type: "usize"
+      - name: column
+        type: "usize"
+
+  BitPattern:
+    description: "Bit-level pattern: 0b0010xxxx with don't-care bits"
+    fields:
+      - name: bits
+        type: "u64"
+        description: "Actual bits (x = 0 in don't-care positions)"
+      - name: mask
+        type: "u64"
+        description: "Mask: 1 = must match, 0 = don't-care"
+      - name: width
+        type: "u8"
+        description: "Width of pattern in bits (max 64)"
+      - name: loc
+        type: "SourceLocation"
+    methods:
+      - name: init
+        params:
+          - name: bits
+            type: "u64"
+          - name: mask
+            type: "u64"
+          - name: width
+            type: "u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "BitPattern"
+        description: "Create a new bit pattern"
+
+      - name: parse
+        params:
+          - name: str
+            type: "[]const u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "BitPattern"
+        description: "Parse from string: 0b0010xxxx"
+        errors:
+          - InvalidPattern
+          - PatternTooWide
+
+      - name: matches
+        params:
+          - name: value
+            type: "u64"
+        returns: "bool"
+        description: "Check if value matches this pattern"
+
+      - name: extract
+        params:
+          - name: value
+            type: "u64"
+        returns: "u64"
+        description: "Extract matched bits from value"
+
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "[]u8"
+        description: "Format pattern as string"
+
+  Trit:
+    description: "Trit value: -1, 0, +1"
+    underlying: "enum(i2)"
+    values:
+      - Neg = -1
+      - Zero = 0
+      - Pos = 1
+    methods:
+      - name: fromChar
+        params:
+          - name: c
+            type: "u8"
+        returns: "Trit"
+        description: "Parse char to trit"
+        errors:
+          - InvalidTrit
+
+      - name: toChar
+        returns: "u8"
+        description: "Convert trit to char"
+
+  TritPattern:
+    description: "Trit-level pattern: 0tPPN with wildcards"
+    fields:
+      - name: trits
+        type: "[27]i2"
+        description: "Trit values (max 27)"
+      - name: mask
+        type: "[27]bool"
+        description: "Mask: true = must match, false = wildcard"
+      - name: width
+        type: "u8"
+        description: "Width in trits (max 27)"
+      - name: loc
+        type: "SourceLocation"
+    methods:
+      - name: init
+        params:
+          - name: width
+            type: "u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "TritPattern"
+        description: "Create new trit pattern"
+
+      - name: parse
+        params:
+          - name: str
+            type: "[]const u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "TritPattern"
+        description: "Parse from string: 0tPPN"
+        errors:
+          - InvalidPattern
+          - PatternTooWide
+
+      - name: matches
+        params:
+          - name: value
+            type: "[]const i2"
+        returns: "bool"
+        description: "Check if value matches pattern"
+
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "[]u8"
+        description: "Format pattern as string"
+
+  Hole:
+    description: "Typed hole: ?name for autocode generation"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Hole name (empty for anonymous)"
+      - name: expected_type
+        type: "?[]const u8"
+        description: "Expected type (may be inferred)"
+      - name: context
+        type: "?[]const u8"
+        description: "Context hints for generation"
+      - name: loc
+        type: "SourceLocation"
+    methods:
+      - name: init
+        params:
+          - name: name
+            type: "[]const u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "Hole"
+        description: "Create new hole"
+
+      - name: parse
+        params:
+          - name: str
+            type: "[]const u8"
+          - name: loc
+            type: "SourceLocation"
+        returns: "Hole"
+        description: "Parse from string: ?name or ?"
+        errors:
+          - InvalidPattern
+
+      - name: isAnonymous
+        returns: "bool"
+        description: "Check if anonymous hole"
+
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "[]u8"
+        description: "Format hole as string"
+
+  PatternMatcher:
+    description: "Pattern matcher for bit and trit patterns"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+    methods:
+      - name: matchBit
+        params:
+          - name: value
+            type: "u64"
+          - name: patterns
+            type: "[]const BitPattern"
+        returns: "?usize"
+        description: "Match value against patterns, return index"
+
+      - name: matchTrit
+        params:
+          - name: value
+            type: "[]const i2"
+          - name: patterns
+            type: "[]const TritPattern"
+        returns: "?usize"
+        description: "Match ternary value against patterns"
+
+      - name: extractBits
+        params:
+          - name: pattern
+            type: "BitPattern"
+          - name: value
+            type: "u64"
+        returns: "u64"
+        description: "Extract bits from value based on pattern"
+
+  OpcodePatterns:
+    description: "Precompiled TRI-27 opcode patterns"
+    constants:
+      - name: ADD
+        type: "BitPattern"
+        value: "00000_000000000"
+      - name: SUB
+        type: "BitPattern"
+        value: "00001_000000000"
+      - name: FADD
+        type: "BitPattern"
+        value: "00010_000000000"
+      - name: DOT
+        type: "BitPattern"
+        value: "00110_000000000"
+    methods:
+      - name: matchOpcode
+        params:
+          - name: bits
+            type: "u18"
+        returns: "?[]const u8"
+        description: "Match opcode by bits, return name"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "bit_pattern_parse_simple"
+    given: "pattern 0b1010"
+    when: "parsing"
+    then: "width=4, bits=0b1010, mask=0b1111"
+
+  - name: "bit_pattern_parse_wildcard"
+    given: "pattern 0b10xx"
+    when: "parsing"
+    then: "xx treated as don't-care"
+
+  - name: "bit_pattern_matches"
+    given: "pattern 0b10xx"
+    when: "matching values"
+    then: "matches 1000, 1001, 1010, 1011"
+
+  - name: "trit_pattern_parse_simple"
+    given: "pattern 0t+0-"
+    when: "parsing"
+    then: "trits are [1, 0, -1]"
+
+  - name: "trit_pattern_parse_wildcard"
+    given: "pattern 0t+??"
+    when: "parsing"
+    then: "? treated as wildcard"
+
+  - name: "trit_pattern_matches"
+    given: "pattern 0t+0-"
+    when: "matching [1,0,-1]"
+    then: "matches"
+
+  - name: "hole_parse_anonymous"
+    given: "hole ?"
+    when: "parsing"
+    then: "isAnonymous returns true"
+
+  - name: "hole_parse_named"
+    given: "hole ?phi_part"
+    when: "parsing"
+    then: "name is phi_part"
+
+  - name: "opcode_patterns_add"
+    given: "opcode bits 00000_000000000"
+    when: "matching"
+    then: "returns ADD"
+
+  - name: "opcode_patterns_fadd"
+    given: "opcode bits 00010_000000000"
+    when: "matching"
+    then: "returns FADD"
