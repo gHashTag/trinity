@@ -154,7 +154,7 @@ pub fn flatMap(comptime T: type, comptime U: type, allocator: std.mem.Allocator,
     var idx: usize = 0;
     for (array) |item| {
         const mapped = f(item);
-        @memcpy(result[idx..], mapped);
+        @memcpy(result[idx..idx + mapped.len], mapped);
         idx += mapped.len;
     }
     return result;
@@ -453,8 +453,8 @@ test "zip_arrays" {
     const result = try zip(i32, i32, allocator, &a, &b);
 
     try std.testing.expectEqual(@as(usize, 3), result.len);
-    try std.testing.expectEqual(@as(i32, 1), result[0].T);
-    try std.testing.expectEqual(@as(i32, 4), result[0].U);
+    try std.testing.expectEqual(@as(i32, 1), result[0].first);
+    try std.testing.expectEqual(@as(i32, 4), result[0].second);
 }
 
 test "partition_even_odd" {
