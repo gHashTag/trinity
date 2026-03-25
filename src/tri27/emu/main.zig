@@ -41,7 +41,6 @@ pub fn main() !void {
     }
 
     // Print execution statistics
-    const time_ns = cpu.getExecutionTimeNs();
     const ips = cpu.getIPS();
 
     std.debug.print("\n=== TRI-27 Execution Complete ===\n", .{});

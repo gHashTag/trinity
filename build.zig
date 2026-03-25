@@ -2835,12 +2835,18 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(tri_emu);
 
-    const run_tri_emu = b.addRunArtifact(tri_emu);
+    // Only create run step if arguments are provided
     if (b.args) |args| {
-        run_tri_emu.addArgs(args);
+        if (args.len > 0) {
+            const run_tri_emu = b.addRunArtifact(tri_emu);
+            run_tri_emu.addArgs(args);
+            const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
+            tri_emu_step.dependOn(&run_tri_emu.step);
+        }
+    } else {
+        // Create a dummy step when no args provided
+        _ = b.step("tri-emu", "Run TRI-27 Emulator (use: zig build tri-emu -- <args>)");
     }
-    const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
-    tri_emu_step.dependOn(&run_tri_emu.step);
 
     // ═══════════════════════════════════════════════════════════════════════════════════════════
     // TRI‑27 ASSEMBLER — Ternary assembler for .tbin bytecode
@@ -2855,12 +2861,18 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(tri_asm);
 
-    const run_tri_asm = b.addRunArtifact(tri_asm);
+    // Only create run step if arguments are provided
     if (b.args) |args| {
-        run_tri_asm.addArgs(args);
+        if (args.len > 0) {
+            const run_tri_asm = b.addRunArtifact(tri_asm);
+            run_tri_asm.addArgs(args);
+            const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
+            tri_asm_step.dependOn(&run_tri_asm.step);
+        }
+    } else {
+        // Create a dummy step when no args provided
+        _ = b.step("tri-asm", "Run TRI-27 Assembler (use: zig build tri-asm -- <args>)");
     }
-    const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
-    tri_asm_step.dependOn(&run_tri_asm.step);
 
     // TRI‑27 CLI — TRI-27 language toolchain (assemble/disassemble/run/validate/isa)
     // TEMP: Disabled from default build due to 5 Zig 0.15 compatibility errors (tracked in #403)
@@ -3988,4 +4000,3 @@ pub fn build(b: *std.Build) void {
     // Note: fpga-synth is optional (requires Docker) - not auto-included
 
 }
-

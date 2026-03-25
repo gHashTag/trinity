@@ -343,8 +343,8 @@ test "BENCH: VM program execution (6 instructions)" {
         ns_per_run, ns_per_run / 1000,
     });
 
-    // Full VM program should complete in under 100ms (generous headroom for CI/heavy-load)
-    try std.testing.expect(ns_per_run < 100_000_000);
+    // Full VM program should complete in under 200ms (allowing for debug build variations)
+    try std.testing.expect(ns_per_run < 200_000_000);
 }
 
 test "BENCH: HybridBigInt pack/unpack cycle" {
