@@ -76,10 +76,10 @@ Ternary HRR addresses all gaps.
 The key novelty is **balanced ternary HRR format**:
 
 1. **Claim 1**: Circular convolution binding for ternary vectors
-2. **Claim 2}: Invertibility with near-perfect recovery
-3. **Claim 3}: Ternary {-1,0,+1} HRR with sparsity
-4. **Claim 4}: Lucas number dimensions (L_n = φⁿ + 1/φⁿ)
-5. **Claim 5}: Hardware-friendly binding operations
+2. **Claim 2:** Invertibility with near-perfect recovery
+3. **Claim 3:** Ternary {-1,0,+1} HRR with sparsity
+4. **Claim 4:** Lucas number dimensions (L_n = φⁿ + 1/φⁿ)
+5. **Claim 5:** Hardware-friendly binding operations
 
 ---
 

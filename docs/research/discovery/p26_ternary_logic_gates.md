@@ -76,10 +76,10 @@ Balanced ternary gates address all gaps.
 The key novelty is **complete balanced ternary gate set**:
 
 1. **Claim 1**: T-NAND as universal ternary gate
-2. **Claim 2}: Minimal gate set: {T-NOT, T-NAND}
-3. **Claim 3}: 2-bit encoding: 00=-1, 01=0, 10=+1
-4. **Claim 4}: Truth tables for all 27 unary functions
-5. **Claim 5}: Efficient hardware implementation
+2. **Claim 2:** Minimal gate set: {T-NOT, T-NAND}
+3. **Claim 3:** 2-bit encoding: 00=-1, 01=0, 10=+1
+4. **Claim 4:** Truth tables for all 27 unary functions
+5. **Claim 5:** Efficient hardware implementation
 
 ---
 

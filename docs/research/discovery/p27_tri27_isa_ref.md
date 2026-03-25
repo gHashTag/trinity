@@ -76,10 +76,10 @@ TRI-27 addresses all gaps.
 The key novelty is **27-register ternary ISA**:
 
 1. **Claim 1**: Exactly 27 registers (3^3) mapped to Coptic alphabet
-2. **Claim 2}: 3 banks of 9 registers (Alpha, Beta, Gamma)
-3. **Claim 3}: 36 opcodes covering ternary, VSA, sacred ops
-4. **Claim 4}: Fixed 27-bit encoding (9 trits)
-5. **Claim 5}: Memory operations for TF3 data
+2. **Claim 2:** 3 banks of 9 registers (Alpha, Beta, Gamma)
+3. **Claim 3:** 36 opcodes covering ternary, VSA, sacred ops
+4. **Claim 4:** Fixed 27-bit encoding (9 trits)
+5. **Claim 5:** Memory operations for TF3 data
 
 ---
 

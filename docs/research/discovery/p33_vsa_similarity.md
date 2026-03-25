@@ -76,8 +76,8 @@ Ternary VSA similarity addresses all gaps.
 The key novelty is **hardware-friendly ternary similarity**:
 
 1. **Claim 1**: Dot-product similarity without division
-2. **Claim 2}: Hamming distance for sparse ternary vectors
-3. **Claim 3}: φ-scaled distance for better accuracy
+2. **Claim 2:** Hamming distance for sparse ternary vectors
+3. **Claim 3:** φ-scaled distance for better accuracy
 4. **Claim 4): LUT-only implementation
 5. **Claim 5**: 95%+ correlation with cosine similarity
 

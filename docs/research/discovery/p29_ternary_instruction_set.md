@@ -76,10 +76,10 @@ TRI-27 complete instruction set addresses all gaps.
 The key novelty is **complete 36-opcode ternary ISA**:
 
 1. **Claim 1**: 6 categories × 6 opcodes = 36 instructions
-2. **Claim 2}: Native VSA operations (BIND, UNBIND, BUNDLE, SIM)
-3. **Claim 3}: Sacred math ops (MAGIC for φ-based calc)
-4. **Claim 4}: TF3-optimized memory ops
-5. **Claim 5}: 27-bit fixed encoding
+2. **Claim 2:** Native VSA operations (BIND, UNBIND, BUNDLE, SIM)
+3. **Claim 3:** Sacred math ops (MAGIC for φ-based calc)
+4. **Claim 4:** TF3-optimized memory ops
+5. **Claim 5:** 27-bit fixed encoding
 
 ---
 

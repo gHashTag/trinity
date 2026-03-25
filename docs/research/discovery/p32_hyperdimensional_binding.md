@@ -76,7 +76,7 @@ Ternary hyperdimensional binding addresses all gaps.
 The key novelty is **ternary hyperdimensional binding**:
 
 1. **Claim 1**: Circular convolution binding for ternary HRR
-2. **Claim 2}: Self-inverse property for approximate unbinding
+2. **Claim 2:** Self-inverse property for approximate unbinding
 3. **Claim 3): Sparse ternary vectors (60% zeros)
 4. **Claim 4): Hardware-friendly parallel implementation
 5. **Claim 5): 98%+ symbol recovery after unbind

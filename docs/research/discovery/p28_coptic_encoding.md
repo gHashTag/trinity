@@ -76,10 +76,10 @@ Coptic encoding addresses all gaps.
 The key novelty is **27-symbol Coptic register mapping**:
 
 1. **Claim 1**: Complete Coptic alphabet maps to 27 registers
-2. **Claim 2}: Three banks of 9 (Alpha, Beta, Gamma)
-3. **Claim 3}: Visual assembly syntax with Greek letters
-4. **Claim 4}: Unicode support for tooling
-5. **Claim 5}: Sacred computing connection
+2. **Claim 2:** Three banks of 9 (Alpha, Beta, Gamma)
+3. **Claim 3:** Visual assembly syntax with Greek letters
+4. **Claim 4:** Unicode support for tooling
+5. **Claim 5:** Sacred computing connection
 
 ---
 

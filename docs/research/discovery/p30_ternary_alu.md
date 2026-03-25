@@ -76,10 +76,10 @@ Balanced ternary ALU addresses all gaps.
 The key novelty is **carry-free balanced ternary ALU**:
 
 1. **Claim 1**: Carry-free addition using balanced ternary properties
-2. **Claim 2}: Sign-based multiplication (MUX only, no DSP)
-3. **Claim 3}: Unified datapath for logic and arithmetic
-4. **Claim 4}: LUT-only implementation (<50 LUTs per ALU)
-5. **Claim 5}: Pipelined for 100+ MHz operation
+2. **Claim 2:** Sign-based multiplication (MUX only, no DSP)
+3. **Claim 3:** Unified datapath for logic and arithmetic
+4. **Claim 4:** LUT-only implementation (<50 LUTs per ALU)
+5. **Claim 5:** Pipelined for 100+ MHz operation
 
 ---
 
