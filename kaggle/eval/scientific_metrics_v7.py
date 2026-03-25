@@ -239,16 +239,36 @@ def _bootstrap_confidence_interval(
     values: List[float],
     alpha: float = 0.05,
     n_bootstrap: int = 1000,
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
+    min_samples: int = 10
 ) -> Tuple[float, float, float]:
     """
     Calculate bootstrap confidence interval.
+
+    v7.2: Added min_samples parameter for statistical validity.
+    Bootstrap requires sufficient samples for reliable CI estimation.
+
+    Args:
+        values: Data values
+        alpha: Significance level (default 0.05 for 95% CI)
+        n_bootstrap: Number of bootstrap samples
+        seed: Random seed for reproducibility
+        min_samples: Minimum samples required for bootstrap
 
     Returns:
         (mean, ci_lower, ci_upper)
     """
     if not values or len(values) < 2:
         return 0.0, 0.0, 0.0
+
+    # v7.2: Warn if insufficient samples for reliable bootstrap
+    if len(values) < min_samples:
+        warnings.warn(
+            f"Bootstrap with n={len(values)} < {min_samples} may be unreliable. "
+            f"Consider using parametric CI instead.",
+            UserWarning,
+            stacklevel=2
+        )
 
     if seed is not None:
         random.seed(seed)
