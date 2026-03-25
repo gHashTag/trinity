@@ -481,7 +481,7 @@ pub const Lexer = struct {
     }
 
     /// Read number literal (integer or float)
-    fn readNumberLiteral(self: *Self, start_col: usize) !Token {
+    fn readNumberLiteral(self: *Self, _: usize) !Token {
         const start = self.pos;
         var is_float = false;
 

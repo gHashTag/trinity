@@ -361,19 +361,37 @@ pub fn findIndex(comptime T: type, array: []const T, value: T) ?usize {
 // TESTS
 // ═════════════════════════════════════════════════════════════════════════════════════
 
+// Helper functions for tests
+fn double(x: i32) i32 {
+    return x * 2;
+}
+
+fn isEven(x: i32) bool {
+    return x % 2 == 0;
+}
+
+fn dup(x: i32) []const i32 {
+    return &[_]i32{x, x};
+}
 test "map_identity" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3, 4, 5 };
-    const result = try map(i32, i32, allocator, &input, struct { fn inner(x: i32) i32 { return x * 2; }.inner);
+
+
+    const result = try map(i32, i32, allocator, &input, double);
 
     try std.testing.expectEqual(@as(usize, 5), result.len);
     try std.testing.expectEqual(@as(i32, 2), result[0]);
     try std.testing.expectEqual(@as(i32, 10), result[4]);
 }
 
+fn add(a: i32, b: i32) i32 {
+    return a + b;
+}
+
 test "reduce_sum" {
     const input = [_]i32{ 1, 2, 3, 4, 5 };
-    const result = reduce(i32, &input, 0, struct { fn inner(a: i32, b: i32) i32 { return a + b; }.inner);
+    const result = reduce(i32, &input, 0, add);
 
     try std.testing.expectEqual(@as(i32, 15), result);
 }
@@ -381,7 +399,7 @@ test "reduce_sum" {
 test "scan_prefix_sum" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3, 4, 5 };
-    const result = try scan(i32, allocator, &input, 0, struct { fn inner(a: i32, b: i32) i32 { return a + b; }.inner);
+    const result = try scan(i32, allocator, &input, 0, add);
 
     try std.testing.expectEqual(@as(usize, 5), result.len);
     try std.testing.expectEqual(@as(i32, 1), result[0]);
@@ -394,7 +412,7 @@ test "scan_prefix_sum" {
 test "filter_even" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3, 4, 5, 6 };
-    const result = try filter(i32, allocator, &input, struct { fn inner(x: i32) bool { return x % 2 == 0; }.inner);
+    const result = try filter(i32, allocator, &input, isEven);
 
     try std.testing.expectEqual(@as(usize, 3), result.len);
     try std.testing.expectEqual(@as(i32, 2), result[0]);
@@ -405,7 +423,7 @@ test "filter_even" {
 test "flatMap_duplicate" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3 };
-    const result = try flatMap(i32, i32, allocator, &input, struct { fn inner(x: i32) []const i32 { return &[_]i32{x, x}; }.inner);
+    const result = try flatMap(i32, i32, allocator, &input, dup);
 
     try std.testing.expectEqual(@as(usize, 6), result.len);
     try std.testing.expectEqual(@as(i32, 1), result[0]);
@@ -416,8 +434,8 @@ test "flatMap_duplicate" {
 
 test "foldLeft_vs_foldRight" {
     const input = [_]i32{ 1, 2, 3 };
-    const left = foldLeft(i32, &input, 0, struct { fn inner(a: i32, b: i32) i32 { return a - b; }.inner);
-    const right = foldRight(i32, &input, 0, struct { fn inner(a: i32, b: i32) i32 { return a - b; }.inner);
+    const left = foldLeft(i32, &input, 0, sub);
+    const right = foldRight(i32, &input, 0, sub);
 
     // left: ((0 - 1) - 2) - 3 = -6
     // right: 1 - (2 - (3 - 0)) = 2
@@ -439,7 +457,7 @@ test "zip_arrays" {
 test "partition_even_odd" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3, 4, 5 };
-    const result = try partition(i32, allocator, &input, struct { fn inner(x: i32) bool { return x % 2 == 0; }.inner);
+    const result = try partition(i32, allocator, &input, isEven);
 
     try std.testing.expectEqual(@as(usize, 2), result.passing.len);
     try std.testing.expectEqual(@as(i32, 2), result.passing[0]);
@@ -481,10 +499,10 @@ test "take_drop" {
 test "find_predicate" {
     const input = [_]i32{ 1, 2, 3, 4, 5 };
 
-    const found = find(i32, &input, struct { fn inner(x: i32) bool { return x > 3; }.inner);
+    const found = find(i32, &input, gt3);
     try std.testing.expectEqual(@as(usize, 3), found.?);
 
-    const not_found = find(i32, &input, struct { fn inner(x: i32) bool { return x > 10; }.inner);
+    const not_found = find(i32, &input, gt10);
     try std.testing.expect(not_found == null);
 }
 
@@ -496,4 +514,16 @@ test "findIndex_value" {
 
     const not_found = findIndex(i32, &input, 10);
     try std.testing.expect(not_found == null);
+}
+
+fn gt3(x: i32) bool {
+    return x > 3;
+}
+
+fn gt10(x: i32) bool {
+    return x > 10;
+}
+
+fn sub(a: i32, b: i32) i32 {
+    return a - b;
 }

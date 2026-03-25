@@ -163,14 +163,16 @@ pub const EffectContext = struct {
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) Self {
+        var handlers = std.ArrayList(Handler){};
+        handlers.ensureTotalCapacity(allocator, 4) catch {};
         return Self{
             .allocator = allocator,
-            .handlers = std.ArrayList(Handler).init(allocator),
+            .handlers = handlers,
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.handlers.deinit();
+        self.handlers.deinit(self.allocator);
     }
 
     /// Push a new handler onto the stack
@@ -282,7 +284,7 @@ test "effect_context_push_pop" {
     var ctx = EffectContext.init(allocator);
     defer ctx.deinit();
 
-    var handler = Handler{ .allocator = allocator };
+    const handler = Handler{ .allocator = allocator };
     try ctx.pushHandler(handler);
 
     try std.testing.expectEqual(@as(usize, 1), ctx.handlers.items.len);
@@ -299,7 +301,7 @@ test "effect_context_top_handler" {
 
     try std.testing.expect(ctx.topHandler() == null);
 
-    var handler = Handler{ .allocator = allocator };
+    const handler = Handler{ .allocator = allocator };
     try ctx.pushHandler(handler);
 
     const top = ctx.topHandler();

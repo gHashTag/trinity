@@ -168,7 +168,13 @@ pub const Dag = struct {
         const from_node = &self.nodes_by_id.items[from_idx.?];
         const to_node = &self.nodes_by_id.items[to_idx.?];
 
-        // Update entry/exit tracking BEFORE updating dependencies
+        // Save old arrays before allocating new ones (use-after-free bug fix)
+        const old_deps = from_node.dependencies;
+        const old_dependents = to_node.dependents;
+        const old_deps_allocated = from_node.deps_allocated;
+        const old_dependents_allocated = to_node.dependents_allocated;
+
+        // Update entry/exit tracking AFTER saving old dependencies
         // Check: if 'from' had 0 dependencies before, remove it from entries
         if (old_deps.len == 0) {
             // 'from' was an entry, remove it
@@ -179,12 +185,6 @@ pub const Dag = struct {
                 }
             }
         }
-
-        // Save old arrays before allocating new ones (use-after-free bug fix)
-        const old_deps = from_node.dependencies;
-        const old_dependents = to_node.dependents;
-        const old_deps_allocated = from_node.deps_allocated;
-        const old_dependents_allocated = to_node.dependents_allocated;
 
         // Create new dependency list for 'from' node
         const new_deps = try self.allocator.alloc(u32, old_deps.len + 1);

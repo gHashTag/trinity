@@ -39,8 +39,8 @@ pub const BitPattern = struct {
 
     /// Create a new bit pattern
     pub fn init(bits: u64, mask: u64, width: u8, loc: SourceLocation) BitPattern {
-        std.debug.assert(width <= 64, "BitPattern width cannot exceed 64 bits");
-        std.debug.assert(mask < (@as(u64, 1) << @intCast(width)), "Mask exceeds pattern width");
+        std.debug.assert(width <= 64);
+        std.debug.assert(mask < (@as(u64, 1) << @intCast(width)));
 
         return .{
             .bits = bits & ((@as(u64, 1) << @intCast(width)) - 1),
@@ -165,7 +165,7 @@ pub const TritPattern = struct {
 
     /// Create a new trit pattern
     pub fn init(width: u8, loc: SourceLocation) TritPattern {
-        std.debug.assert(width <= 27, "TritPattern width cannot exceed 27 trits");
+        std.debug.assert(width <= 27);
 
         return .{
             .trits = [_]i2{0} ** 27,
@@ -190,7 +190,7 @@ pub const TritPattern = struct {
             }
 
             pattern.mask[i] = true; // must match by default
-            pattern.trits[i] = try Trit.fromChar(c);
+            pattern.trits[i] = @intFromEnum(try Trit.fromChar(c));
             pattern.width = @intCast(i + 1);
         }
 
@@ -295,7 +295,7 @@ pub const PatternMatcher = struct {
     const Self = @This();
 
     /// Match a value against a list of patterns
-    pub fn matchBit(self: Self, value: u64, patterns: []const BitPattern) ?usize {
+    pub fn matchBit(_: Self, value: u64, patterns: []const BitPattern) ?usize {
         for (patterns, 0..) |pattern, i| {
             if (pattern.matches(value)) {
                 return i;
@@ -305,7 +305,7 @@ pub const PatternMatcher = struct {
     }
 
     /// Match a ternary value against a list of patterns
-    pub fn matchTrit(self: Self, value: []const i2, patterns: []const TritPattern) ?usize {
+    pub fn matchTrit(_: Self, value: []const i2, patterns: []const TritPattern) ?usize {
         for (patterns, 0..) |pattern, i| {
             if (pattern.matches(value)) {
                 return i;
@@ -315,7 +315,7 @@ pub const PatternMatcher = struct {
     }
 
     /// Extract bits from value based on pattern
-    pub fn extractBits(self: Self, pattern: BitPattern, value: u64) u64 {
+    pub fn extractBits(_: Self, pattern: BitPattern, value: u64) u64 {
         return pattern.extract(value);
     }
 };

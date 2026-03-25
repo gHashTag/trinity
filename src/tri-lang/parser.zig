@@ -261,7 +261,7 @@ pub const Parser = struct {
         try self.expectToken(.Equal);
 
         // Pipeline body is an expression (usually a pipe expression)
-        const body = try self.parseExpr();
+        _ = try self.parseExpr();
 
         return ast.Node{
             .PipelineRef = .{ // Reusing existing node type
@@ -446,7 +446,7 @@ pub const Parser = struct {
     /// Parse pipe expression (Elixir-style: a |> b |> c)
     fn parsePipeExpr(self: *Self) ParseError!ast.Expression {
         const loc = self.lexer.location();
-        var source = try self.parseUnaryExpr();
+        const source = try self.parseUnaryExpr();
 
         var stages = std.ArrayList(ast.Expression).init(self.allocator);
 
@@ -716,7 +716,7 @@ pub const Parser = struct {
 
     /// Parse pattern
     fn parsePattern(self: *Self) ParseError!ast.Pattern {
-        const loc = self.lexer.location();
+        _ = self.lexer.location();
 
         if (self.current_token == .Wildcard) {
             try self.advance();
