@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v6.0
+# Trinity Research Documentation Index — v6.1
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 118
+**Total Documents:** 127
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -193,6 +193,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 6.1 | 2026-03-26 | Updated document count to 127 (9 new research documents added) |
 | 6.0 | 2026-03-26 | Added HSLM Training Optimization Analysis (φ-warmup, layer-wise EMA, SIMD RoPE, 13% speedup) ✨ NEW |
 | 5.9 | 2026-03-26 | Updated VSA Optimization Deep Dive (10.17×→14.59× path, 43% potential) ✨ |
 | 5.8 | 2026-03-26 | Added TTT Sacred Layer Analysis (L0 analysis, TEMPLE_RITUAL protection) ✨ NEW |
