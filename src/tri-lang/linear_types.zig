@@ -52,7 +52,7 @@ pub const OwnershipMode = enum(u2) {
         return self == .Inout or self == .Set;
     }
 
-    pub fn canRead(self: OwnershipMode) bool {
+    pub fn canRead(_: OwnershipMode) bool {
         return true; // All modes allow reading
     }
 
@@ -124,7 +124,7 @@ pub const Bank = enum(u2) {
     Constant = 2,
 
     pub fn fromReg(reg: u5) Bank {
-        return @intCast(reg / 9);
+        return @as(Bank, @enumFromInt(reg / 9));
     }
 };
 
@@ -222,7 +222,8 @@ pub const LinearTracker = struct {
 
     /// Get list of unconsumed variables
     pub fn getUnconsumed(self: *Self, allocator: std.mem.Allocator) ![][]const u8 {
-        var list = std.ArrayList([]const u8).init(allocator);
+        var list = std.array_list.AlignedManaged([]const u8, null).init(allocator);
+        defer list.deinit();
         var iter = self.variables.iterator();
         while (iter.next()) |entry| {
             if (!entry.value_ptr.*) {
@@ -316,14 +317,14 @@ pub const BorrowKind = enum {
 pub const BorrowChecker = struct {
     allocator: std.mem.Allocator,
     /// Track active borrows: variable -> list of borrow kinds
-    borrows: std.StringHashMap(std.ArrayList(BorrowKind)),
+    borrows: std.StringHashMap(std.array_list.AlignedManaged(BorrowKind, null)),
 
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator) Self {
         return Self{
             .allocator = allocator,
-            .borrows = std.StringHashMap(std.ArrayList(BorrowKind)).init(allocator),
+            .borrows = std.StringHashMap(std.array_list.AlignedManaged(BorrowKind, null)).init(allocator),
         };
     }
 
@@ -340,7 +341,7 @@ pub const BorrowChecker = struct {
         const entry = try self.borrows.getOrPut(var_name);
 
         if (!entry.found_existing) {
-            entry.value_ptr.* = std.ArrayList(BorrowKind).init(self.allocator);
+            entry.value_ptr.* = std.array_list.AlignedManaged(BorrowKind, null).init(self.allocator);
         }
 
         // Check borrow rules
@@ -356,12 +357,13 @@ pub const BorrowChecker = struct {
 
     /// Release a borrow
     pub fn release(self: *Self, var_name: []const u8) !void {
-        const entry = self.borrows.get(var_name) orelse return error.BorrowNotFound;
-        if (entry.items.len == 0) return error.NoActiveBorrow;
-        _ = entry.orderedRemove(entry.items.len - 1);
+        const entry_ptr = self.borrows.getPtr(var_name) orelse return error.BorrowNotFound;
+        if (entry_ptr.items.len == 0) return error.NoActiveBorrow;
+        _ = entry_ptr.orderedRemove(entry_ptr.items.len - 1);
 
         // Clean up if no more borrows
-        if (entry.items.len == 0) {
+        if (entry_ptr.items.len == 0) {
+            entry_ptr.deinit();
             _ = self.borrows.remove(var_name);
         }
     }
@@ -398,10 +400,10 @@ test "linear_type_move" {
     const Lin = Linear(i32);
     var val1 = Lin.init(42);
 
-    const val2 = try val1.move();
+    var val2 = try val1.move();
     try std.testing.expect(!val1.isAvailable());
     try std.testing.expect(val2.isAvailable());
-    try std.testing.expectEqual(@as(i32, 42), val2.consume());
+    try std.testing.expectEqual(@as(i32, 42), try val2.consume());
 }
 
 test "bank_from_reg" {
@@ -473,10 +475,8 @@ test "linear_tracker_get_unconsumed" {
     try tracker.consume("y");
 
     const unconsumed = try tracker.getUnconsumed(allocator);
-    defer {
-        for (unconsumed) |u| allocator.free(u);
-        allocator.free(unconsumed);
-    }
+    defer allocator.free(unconsumed);
+    // Note: strings in unconsumed are owned by the hashmap, don't free them
 
     try std.testing.expectEqual(@as(usize, 2), unconsumed.len);
 }
