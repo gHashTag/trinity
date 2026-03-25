@@ -8,7 +8,8 @@
 
 const std = @import("std");
 const math = std.math;
-const ips = @import("intraparietal_sulcus.zig");
+const temple = @import("temple");
+const ips = temple.intraparietal_sulcus;
 const angular = @import("angular_gyrus.zig");
 
 const Allocator = std.mem.Allocator;

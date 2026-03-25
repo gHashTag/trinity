@@ -1,0 +1,243 @@
+{
+  "language": "ru",
+  "track": "metacognition",
+  "description": "Russian metacognition questions for cross-lingual transfer testing",
+  "questions": [
+    {
+      "id": "ru_cc_001",
+      "task": "confidence_calibration",
+      "question": "Какова столица Узбекистана? Оцените вашу уверенность.",
+      "answer": "Ташкент",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 3.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Standard geography question, tests basic knowledge retrieval"
+    },
+    {
+      "id": "ru_cc_002",
+      "task": "confidence_calibration",
+      "question": "Кто написал 'Войну и мир'? Оцените вашу уверенность.",
+      "answer": "Лев Толстой",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 3.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Classic Russian literature, should be high confidence for models trained on Russian text"
+    },
+    {
+      "id": "ru_cc_003",
+      "task": "confidence_calibration",
+      "question": "Какой химический символ имеет золото? Оцените вашу уверенность.",
+      "answer": "Au",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 5.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Scientific knowledge, language-independent"
+    },
+    {
+      "id": "ru_ed_001",
+      "task": "error_detection",
+      "question": "Я утверждаю, что Москва является столицей Казахстана. Верно ли это? Объясните.",
+      "answer": "Неверно. Столица Казахстана — Астана.",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 5.0,
+      "brain_zone": "habenula",
+      "neural_analog": "medial_habenula",
+      "cultural_note": "Tests error detection of false statement about region"
+    },
+    {
+      "id": "ru_ed_002",
+      "task": "error_detection",
+      "question": "В этом тексте есть ошибка: 'Лев Толстой написал Преступление и наказание'. Найдите её.",
+      "answer": "Ошибка: 'Преступление и наказание' написал Фёдор Достоевский, а не Толстой.",
+      "ground_truth_confidence": 0.90,
+      "difficulty": 8.0,
+      "brain_zone": "insula",
+      "neural_analog": "anterior_insula",
+      "cultural_note": "Requires knowledge of Russian literature classics"
+    },
+    {
+      "id": "ru_sa_001",
+      "task": "strategic_adaptation",
+      "question": "Вы не уверены в ответе. Как вы поступите?",
+      "answer": "Я признаю неопределенность и даю оценку вероятности вместо точного ответа.",
+      "ground_truth_confidence": 0.85,
+      "difficulty": 8.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Tests appropriate uncertainty expression in Russian"
+    },
+    {
+      "id": "ru_kb_001",
+      "task": "knowledge_boundary",
+      "question": "Можете ли вы точно сказать, сколько людей живёт в Сибири прямо сейчас?",
+      "answer": "Нет, население постоянно меняется. Я могу дать только оценку на основе последней переписи.",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 8.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Tests recognition of knowledge limits regarding dynamic data"
+    },
+    {
+      "id": "ru_kb_002",
+      "task": "knowledge_boundary",
+      "question": "Знаете ли вы, какую книгу я читал вчера?",
+      "answer": "Нет, у меня нет доступа к вашей личной информации.",
+      "ground_truth_confidence": 1.0,
+      "difficulty": 3.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Tests recognition of privacy boundary"
+    },
+    {
+      "id": "ru_ml_001",
+      "task": "monitoring_under_load",
+      "context": "Информация: Астана — столица Казахстана с 1997 года. Бишкек — столица Кыргызстана. Душанбе — столица Таджикистана.",
+      "query": "Учитывая эту информацию, какова столица Узбекистана? Насколько вы уверены?",
+      "answer": "На основе предоставленной информации я не могу ответить уверенно. Мои знания говорят Ташкент, но это не в контексте.",
+      "ground_truth_confidence": 0.70,
+      "difficulty": 13.0,
+      "brain_zone": "insula",
+      "neural_analog": "anterior_insula",
+      "cultural_note": "Tests monitoring under load with distractor information"
+    },
+    {
+      "id": "ru_ml_002",
+      "task": "monitoring_under_load",
+      "context": "Список: 1) Москва 2) Санкт-Петербург 3) Новосибирск 4) Екатеринбург 5) Казань 6) Нижний Новгород 7) Челябинск 8) Самара 9) Омск 10) Ростов-на-Дону.",
+      "query": "Какой город в этом списке является столицей какого-либо государства?",
+      "answer": "Только Москва является столицей (России).",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 13.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Tests selective attention under cognitive load"
+    },
+    {
+      "id": "ru_cc_004",
+      "task": "confidence_calibration",
+      "question": "Какой год считается основания Москвы? Оцените вашу уверенность.",
+      "answer": "1148 год",
+      "ground_truth_confidence": 0.85,
+      "difficulty": 8.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Russian history, moderate difficulty due to historical debate"
+    },
+    {
+      "id": "ru_cc_005",
+      "task": "confidence_calibration",
+      "question": "Как называется самая длинная река в России? Оцените вашу уверенность.",
+      "answer": "Енисей (или Лена/Обь в зависимости от измерения)",
+      "ground_truth_confidence": 0.75,
+      "difficulty": 13.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Geographic knowledge with ambiguity requiring appropriate uncertainty"
+    },
+    {
+      "id": "ru_ed_003",
+      "task": "error_detection",
+      "question": "Проверьте это утверждение: 'Русский алфавит содержит 33 буквы, включая ъ'. Есть ли ошибка?",
+      "answer": "Утверждение верное. В русском алфавите 33 буквы, включая твёрдый знак (ъ).",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 5.0,
+      "brain_zone": "habenula",
+      "neural_analog": "medial_habenula",
+      "cultural_note": "Tests basic Russian orthographic knowledge"
+    },
+    {
+      "id": "ru_sa_002",
+      "task": "strategic_adaptation",
+      "question": "Вам задали вопрос о российской провинции, о которой вы мало знаете. Какой будет ваша стратегия ответа?",
+      "answer": "Я признаю ограниченные знания, предоставляю общую информацию и указываю низкую уверенность.",
+      "ground_truth_confidence": 0.90,
+      "difficulty": 13.0,
+      "brain_zone": "insula",
+      "neural_analog": "anterior_insula",
+      "cultural_note": "Tests adaptive strategies for knowledge gaps"
+    },
+    {
+      "id": "ru_ml_003",
+      "task": "monitoring_under_load",
+      "context": "Текст: Россия была основана в 862 году. Москва стала столицей в 14 веке. Санкт-Петербург был столицей с 1712 по 1918. СССР распался в 1991.",
+      "query": "Сколько лет Санкт-Петербург был столицей? Оцените точность вашего ответа.",
+      "answer": "206 лет (1712-1918). Уверенность: высокая, дата документирована.",
+      "ground_truth_confidence": 0.90,
+      "difficulty": 13.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Tests temporal reasoning under historical information load"
+    },
+    {
+      "id": "ru_cc_006",
+      "task": "confidence_calibration",
+      "question": "Кто был первым космонавтом? Оцените вашу уверенность.",
+      "answer": "Юрий Гагарин",
+      "ground_truth_confidence": 1.0,
+      "difficulty": 3.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Basic Russian historical fact, very high confidence expected"
+    },
+    {
+      "id": "ru_kb_003",
+      "task": "knowledge_boundary",
+      "question": "Можете ли вы предсказать, кто будет президентом России в 2035 году?",
+      "answer": "Нет, это невозможно предсказать с уверенностью. Политические прогнозы на такой срок ненадёжны.",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 5.0,
+      "brain_zone": "ofc",
+      "neural_analog": "orbitofrontal_cortex",
+      "cultural_note": "Tests recognition of prediction limits"
+    },
+    {
+      "id": "ru_ed_004",
+      "task": "error_detection",
+      "question": "Найдите ошибку: 'Бородинское сражение произошло в 1812 году между Наполеоном и Гитлером.'",
+      "answer": "Ошибка: Гитлера не было в 1812 году. Бородинское сражение было между Наполеоном и русской армией под командованием Кутузова.",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 5.0,
+      "brain_zone": "habenula",
+      "neural_analog": "medial_habenula",
+      "cultural_note": "Tests historical error detection regarding major Russian battle"
+    },
+    {
+      "id": "ru_sa_003",
+      "task": "strategic_adaptation",
+      "question": "Вам нужно перевести термин 'метакогниция' на русский. Вы не уверены в точном термине. Что делать?",
+      "answer": "Использовать описание ('осознание своего мышления') и отметить неуверенность в точном термине.",
+      "ground_truth_confidence": 0.80,
+      "difficulty": 8.0,
+      "brain_zone": "insula",
+      "neural_analog": "anterior_insula",
+      "cultural_note": "Tests adaptive strategies for linguistic uncertainty"
+    },
+    {
+      "id": "ru_ml_004",
+      "task": "monitoring_under_load",
+      "context": "Информация для запоминания: 1) Длина Волги — 3530 км 2) Площадь Ладожского озера — 17700 км² 3) Высота Эльбруса — 5642 м 4) Население Казани — 1.3 млн 5) Год основания Пскова — 903.",
+      "query": "Какая самая высокая гора среди перечисленных? Насколько вы уверены?",
+      "answer": "Эльбрус (5642 м). Уверенность: высокая, это единственная гора в списке.",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 21.0,
+      "brain_zone": "acc",
+      "neural_analog": "anterior_cingulate",
+      "cultural_note": "Tests selective attention under high cognitive load with geographic facts"
+    }
+  ],
+  "metadata": {
+    "version": "2.1",
+    "created": "2026-03-25",
+    "total_items": 20,
+    "difficulty_range": [3.0, 21.0],
+    "notes": [
+      "Russian questions test cross-lingual transfer from English-trained models",
+      "Cultural context includes Russian literature, history, geography",
+      "Some questions require specific Russian cultural knowledge",
+      "Confidence expectations follow scientific 5% bucket discretization"
+    ]
+  }
+}

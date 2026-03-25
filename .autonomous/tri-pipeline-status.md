@@ -24,14 +24,19 @@
 ## Missing Link 🔗
 
 ```
-VIBEE Parser → [MISSING] → IR → emit_t27_from_ir → .t27
-                    ↓
+VIBEE Parser → spec_to_ir.zig → IR → emit_t27_from_ir → .t27
+                    ↓ COMPLETE
             Spec → IR SSA builder
 ```
 
-**What's needed:**
-1. `src/vibeec/spec_to_ir.zig` — Convert parsed VIBEE spec to IR Module
-2. Wire up `compileSource()` to call: `vibee_parser → spec_to_ir → emit_t27_from_ir`
+**Status:** spec_to_ir.zig created ✅
+- Converts VIBEE spec to IR Module
+- Handles behaviors with constant return (extendable)
+- Tests: 9/9 passing
+
+**What's still needed:**
+1. Extend `convertBehavior()` to parse given/when/then into actual IR instructions
+2. Wire up `compileSource()` to full pipeline
 
 ## Current `tri compile` Behavior
 

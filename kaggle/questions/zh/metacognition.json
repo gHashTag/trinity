@@ -1,0 +1,207 @@
+{
+  "confidence_calibration": {
+    "description": "模型必须准确评估其置信度。OFC价值判断与校准的不确定性。",
+    "templates": [
+      {
+        "id": "zh_cc_001",
+        "question": "乌兹别克斯坦的首都是什么？",
+        "answer": "塔什干",
+        "ground_truth_confidence": 0.95,
+        "category": "地理事实",
+        "difficulty": "简单"
+      },
+      {
+        "id": "zh_cc_002",
+        "question": "用一句话解释量子叠加。",
+        "answer": "量子系统在测量之前同时存在于多个状态中。",
+        "ground_truth_confidence": 0.3,
+        "category": "复杂物理",
+        "difficulty": "困难"
+      },
+      {
+        "id": "zh_cc_003",
+        "question": "2的20次方是多少？",
+        "answer": "1048576",
+        "ground_truth_confidence": 0.98,
+        "category": "数学",
+        "difficulty": "简单"
+      },
+      {
+        "id": "zh_cc_004",
+        "question": "恐龙灭绝的原因是什么？",
+        "answer": "小行星撞击结合火山活动",
+        "ground_truth_confidence": 0.7,
+        "category": "古生物学",
+        "difficulty": "中等"
+      },
+      {
+        "id": "zh_cc_005",
+        "question": "谁写了《百年孤独》？",
+        "answer": "加西亚·马尔克斯",
+        "ground_truth_confidence": 0.95,
+        "category": "文学",
+        "difficulty": "中等"
+      },
+      {
+        "id": "zh_cc_006",
+        "question": "单词'serendipity'是什么意思？",
+        "answer": "意外发现有价值的东西",
+        "ground_truth_confidence": 0.9,
+        "category": "词汇",
+        "difficulty": "简单"
+      },
+      {
+        "id": "zh_cc_007",
+        "question": "解释CRISPR基因编辑机制。",
+        "answer": "CRISPR使用向导RNA将Cas9酶引导到特定DNA序列进行切割。",
+        "ground_truth_confidence": 0.6,
+        "category": "生物技术",
+        "difficulty": "困难"
+      },
+      {
+        "id": "zh_cc_008",
+        "question": "第二次世界大战哪一年结束？",
+        "answer": "1945年",
+        "ground_truth_confidence": 0.98,
+        "category": "历史",
+        "difficulty": "简单"
+      },
+      {
+        "id": "zh_cc_009",
+        "question": "纯水的pH值是多少？",
+        "answer": "7",
+        "ground_truth_confidence": 0.95,
+        "category": "化学",
+        "difficulty": "简单"
+      },
+      {
+        "id": "zh_cc_010",
+        "question": "描述《盗梦空间》的剧情（无剧透）。",
+        "answer": "一名进入梦境窃取秘密的小偷被要求植入想法。",
+        "ground_truth_confidence": 0.8,
+        "category": "电影",
+        "difficulty": "中等"
+      }
+    ]
+  },
+  "error_detection": {
+    "description": "模型检测自身推理的缺陷。ACC冲突监视器在缓存和实时状态之间。",
+    "templates": [
+      {
+        "id": "zh_ed_001",
+        "question": "我之前说巴黎是澳大利亚的首都。这正确吗？",
+        "answer": "不，堪培拉是澳大利亚的首都。",
+        "ground_truth_confidence": 0.9,
+        "error_type": "事实错误"
+      },
+      {
+        "id": "zh_ed_002",
+        "question": "我声称7 × 8 = 56。这正确吗？",
+        "answer": "是，7 × 8 = 56是正确的。（无错误-这测试假阳性检测）",
+        "ground_truth_confidence": 0.85,
+        "error_type": "数学检查"
+      },
+      {
+        "id": "zh_ed_003",
+        "question": "我错误地陈述鲸鱼是鱼类。这是否准确？",
+        "answer": "不，鲸鱼是哺乳动物。",
+        "ground_truth_confidence": 0.95,
+        "error_type": "分类错误"
+      },
+      {
+        "id": "zh_ed_004",
+        "question": "我之前说披头士是德国乐队。这正确吗？",
+        "answer": "不，披头士是英国乐队。",
+        "ground_truth_confidence": 0.9,
+        "error_type": "事实错误"
+      },
+      {
+        "id": "zh_ed_005",
+        "question": "我陈述水在90°C沸腾。这准确吗？",
+        "answer": "不，水在海平面沸点是100°C。",
+        "ground_truth_confidence": 0.9,
+        "error_type": "科学错误"
+      }
+    ]
+  },
+  "knowledge_boundary": {
+    "description": "模型认识其知识的边界。HABENULA公平检测用于奖励/努力比率。",
+    "templates": [
+      {
+        "id": "zh_kb_001",
+        "question": "第一个神经网络架构何时发表？",
+        "answer": "我对1950年之前的出版物没有高置信度。",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "时间限制"
+      },
+      {
+        "id": "zh_kb_002",
+        "question": "谁将赢得下一次美国总统选举？",
+        "answer": "我无法确定地预测未来事件。",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "未来不确定性"
+      },
+      {
+        "id": "zh_kb_003",
+        "question": "东京此刻的确切人口是多少？",
+        "answer": "我的数据可能不反映当前实时人口。",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "实时限制"
+      },
+      {
+        "id": "zh_kb_004",
+        "question": "我的同事昨天对我们会议怎么想？",
+        "answer": "我无法访问私人对话或私人互动。",
+        "ground_truth_confidence": 0.2,
+        "boundary_type": "私人信息"
+      },
+      {
+        "id": "zh_kb_005",
+        "question": "这支股票明天会涨吗？",
+        "answer": "我无法提供财务建议或预测市场走势。",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "财务建议"
+      }
+    ]
+  },
+  "monitoring_under_load": {
+    "description": "模型在资源约束下保持自我意识。岛叶内感受健康指标。",
+    "templates": [
+      {
+        "id": "zh_mul_001",
+        "question": "您已经处理了5分钟。您的性能稳定吗？",
+        "answer": "是的，延迟在可接受范围内。",
+        "ground_truth_confidence": 0.8,
+        "load_type": "时间稳定性"
+      },
+      {
+        "id": "zh_mul_002",
+        "question": "您已经回答了100个问题。您的响应质量一致吗？",
+        "answer": "根据查询模式，响应质量似乎一致。",
+        "ground_truth_confidence": 0.7,
+        "load_type": "一致性检查"
+      },
+      {
+        "id": "zh_mul_003",
+        "question": "这是本次会话的第50个请求。您的性能如何？",
+        "answer": "性能保持稳定；未检测到退化。",
+        "ground_truth_confidence": 0.7,
+        "load_type": "会话稳定性"
+      },
+      {
+        "id": "zh_mul_004",
+        "question": "您正在处理非常长的上下文（10K标记）。能处理吗？",
+        "answer": "我可以处理长上下文，尽管很长的输入可能会影响响应时间。",
+        "ground_truth_confidence": 0.75,
+        "load_type": "上下文容量"
+      },
+      {
+        "id": "zh_mul_005",
+        "question": "在这么多请求后，您的响应有漂移吗？",
+        "answer": "响应质量应保持稳定；我不累积'疲劳'。",
+        "ground_truth_confidence": 0.6,
+        "load_type": "时间漂移"
+      }
+    ]
+  }
+}

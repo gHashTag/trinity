@@ -349,6 +349,55 @@ pub const ActionResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// AGENT REPORT — Structured report from agent cycle
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const AgentReport = struct {
+    id: [64]u8 = undefined,
+    id_len: usize = 0,
+    agent: [32]u8 = undefined,
+    agent_len: usize = 0,
+    issue: [16]u8 = undefined,
+    issue_len: usize = 0,
+    task: [128]u8 = undefined,
+    task_len: usize = 0,
+    status: [16]u8 = undefined,
+    status_len: usize = 0,
+    files_modified: [8][128]u8 = undefined,
+    files_modified_count: u8 = 0,
+    tests_passing: u16 = 0,
+    tests_total: u16 = 0,
+    commit_hash: [64]u8 = undefined,
+    commit_hash_len: usize = 0,
+    timestamp: i64 = 0,
+    ttt_touched: bool = false,
+
+    pub fn idStr(self: *const AgentReport) []const u8 {
+        return self.id[0..self.id_len];
+    }
+
+    pub fn agentStr(self: *const AgentReport) []const u8 {
+        return self.agent[0..self.agent_len];
+    }
+
+    pub fn issueStr(self: *const AgentReport) []const u8 {
+        return self.issue[0..self.issue_len];
+    }
+
+    pub fn taskStr(self: *const AgentReport) []const u8 {
+        return self.task[0..self.task_len];
+    }
+
+    pub fn statusStr(self: *const AgentReport) []const u8 {
+        return self.status[0..self.status_len];
+    }
+
+    pub fn commitHashStr(self: *const AgentReport) []const u8 {
+        return self.commit_hash[0..self.commit_hash_len];
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // JSON HELPERS (minimal, no allocator needed)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -828,4 +877,80 @@ test "Queen types — ActionResult duration defaults to 0" {
 test "Queen types — ActionKind COUNT matches enum size" {
     // ActionKind.COUNT should be 30
     try std.testing.expectEqual(@as(u8, 30), ActionKind.COUNT);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AGENT REPORT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen types — AgentReport default values" {
+    const report = AgentReport{};
+    try std.testing.expectEqual(@as(usize, 0), report.id_len);
+    try std.testing.expectEqual(@as(usize, 0), report.agent_len);
+    try std.testing.expectEqual(@as(usize, 0), report.issue_len);
+    try std.testing.expectEqual(@as(usize, 0), report.task_len);
+    try std.testing.expectEqual(@as(usize, 0), report.status_len);
+    try std.testing.expectEqual(@as(u8, 0), report.files_modified_count);
+    try std.testing.expectEqual(@as(u16, 0), report.tests_passing);
+    try std.testing.expectEqual(@as(u16, 0), report.tests_total);
+    try std.testing.expectEqual(@as(usize, 0), report.commit_hash_len);
+    try std.testing.expectEqual(@as(i64, 0), report.timestamp);
+    try std.testing.expect(!report.ttt_touched);
+}
+
+test "Queen types — AgentReport string accessors" {
+    var report = AgentReport{};
+    @memcpy(report.id[0.."test_id_123".len], "test_id_123");
+    report.id_len = "test_id_123".len;
+
+    @memcpy(report.agent[0.."ralph".len], "ralph");
+    report.agent_len = "ralph".len;
+
+    @memcpy(report.issue[0.."411".len], "411");
+    report.issue_len = "411".len;
+
+    @memcpy(report.task[0.."test task".len], "test task");
+    report.task_len = "test task".len;
+
+    @memcpy(report.status[0.."completed".len], "completed");
+    report.status_len = "completed".len;
+
+    @memcpy(report.commit_hash[0.."abc123def".len], "abc123def");
+    report.commit_hash_len = "abc123def".len;
+
+    try std.testing.expectEqualStrings("test_id_123", report.idStr());
+    try std.testing.expectEqualStrings("ralph", report.agentStr());
+    try std.testing.expectEqualStrings("411", report.issueStr());
+    try std.testing.expectEqualStrings("test task", report.taskStr());
+    try std.testing.expectEqualStrings("completed", report.statusStr());
+    try std.testing.expectEqualStrings("abc123def", report.commitHashStr());
+}
+
+test "Queen types — AgentReport files_modified array" {
+    var report = AgentReport{};
+    @memcpy(report.files_modified[0][0.."src/file1.zig".len], "src/file1.zig");
+    report.files_modified[0]["src/file1.zig".len] = 0;
+    report.files_modified_count = 1;
+
+    try std.testing.expectEqual(@as(u8, 1), report.files_modified_count);
+    try std.testing.expectEqualStrings("src/file1.zig", report.files_modified[0][0.."src/file1.zig".len]);
+}
+
+test "Queen types — AgentReport ttt_touched flag" {
+    var report = AgentReport{};
+    try std.testing.expect(!report.ttt_touched);
+
+    report.ttt_touched = true;
+    try std.testing.expect(report.ttt_touched);
+}
+
+test "Queen types — AgentReport tests counting" {
+    const report = AgentReport{ .tests_passing = 42, .tests_total = 42 };
+    try std.testing.expectEqual(@as(u16, 42), report.tests_passing);
+    try std.testing.expectEqual(@as(u16, 42), report.tests_total);
+}
+
+test "Queen types — AgentReport timestamp" {
+    const report = AgentReport{ .timestamp = 1742812800 };
+    try std.testing.expectEqual(@as(i64, 1742812800), report.timestamp);
 }

@@ -105,7 +105,7 @@ pub const GuardedSet = struct {
             .scope = .ttc,
         });
         try list.append(allocator, GuardedFile{
-            .path = "src/tri27/coptic.zig",
+            .path = "src/temple/coptic.zig",
             .scope = .ttc,
         });
 

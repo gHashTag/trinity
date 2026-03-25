@@ -64,3 +64,7 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | agent:claude-opus | task:TDGS-3 | scope:t
 2026-03-25T05:25:56Z | agent:claude-opus | task:TDGS-3 | scope:types,zig-0.15 | action:"Fixed ArrayList API, Wave2 Phase 1.1 COMPLETE" | commit:a81b053e7a
 2026-03-25T05:29:15Z | agent:claude-opus | task:TDGS-3 | scope:tri-lang.types | action:"Fixed Zig 0.15 ArrayList API - use Managed for allocator storage" | commit:94aaa4dfd2
 2026-03-25T05:31:01Z | agent:claude-opus | task:TDGS-3 | scope:wave2 | action:"Phase 1.1 COMPLETE, documented Zig 0.15 solution" | commit:197f06e341
+2026-03-25T14:50:00Z | agent:claude-opus | task:TDGS-3 | scope:wave2 | action:"TDGS-3 Wave 2 COMPLETE - Type System + emit_t27 (~2500 LOC, 70+ tests)" | commit:a556bd6708
+2026-03-25T16:20:00Z | agent:claude-opus | task:TDGS-3 | scope:ir,emit_t27 | action:"Fixed Zig 0.15 ArrayList API in ir.zig, IR→TRI-27 converter complete (20/20 tests)" | commit:df415a0e66
+2026-03-25T16:40:00Z | agent:claude-opus | task:TDGS-3 | scope:pipeline | action:"Created example .tri modules + documented pipeline status. IR→TRI-27 complete, VIBEE→IR bridge pending" | commit:1e35f7655d
+2026-03-25T17:00:00Z | agent:claude-opus | task:TDGS-3 | scope:vibeec,spec_to_ir | action:"Created spec_to_ir.zig - VIBEE spec → IR Module converter (143 LOC, 9/9 tests)" | commit:fc364d66e5

@@ -325,6 +325,37 @@ pub const StakingManager = struct {
         return self_mut.total_slashed;
     }
 
+    /// Get total rewards accumulated across all stakes
+    /// For economic invariant testing (real yield calculation)
+    pub fn getTotalRewards(self: *const StakingManager) u128 {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+
+        var total: u128 = 0;
+        var stake_iter = self_mut.stakes.iterator();
+        while (stake_iter.next()) |entry| {
+            total += entry.value_ptr.rewards;
+        }
+        return total;
+    }
+
+    /// Get count of active stakes
+    pub fn getActiveStakeCount(self: *const StakingManager) usize {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+
+        var count: usize = 0;
+        var stake_iter = self_mut.stakes.iterator();
+        while (stake_iter.next()) |entry| {
+            if (entry.value_ptr.is_active and !entry.value_ptr.is_slashed) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
     pub fn deinit(self: *StakingManager) void {
         var stake_iter = self.stakes.iterator();
         while (stake_iter.next()) |entry| {

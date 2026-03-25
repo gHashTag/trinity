@@ -2017,7 +2017,9 @@ pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
 pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("\n{s}{s}=== TRI FPGA UART TEST ==={s}\n", .{ BOLD, CYAN, RESET });
     std.debug.print("  Protocol: PING/PONG + ECHO + BYTE\n", .{});
-    std.debug.print("  Wiring: J2 header (K20=TX, L20=RX)\n\n", .{});
+    std.debug.print("  Wiring: J2 header (D26=TX, E26=RX)\n", .{});
+    std.debug.print("    FT232RL RXD (green)  → J2 pin 5  → FPGA D26 (uart_tx)\n", .{});
+    std.debug.print("    FT232RL TXD (white)  → J2 pin 6  → FPGA E26 (uart_rx)\n\n", .{});
 
     const dev_path = blk: {
         const found = try findSerialDevice(allocator);

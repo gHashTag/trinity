@@ -1,0 +1,7 @@
+{
+  "issuer": "Queen",
+  "reason": "TDGS-4 Wave 1 T-zone migration: moving sacred types from src/hslm/ and src/tri27/ to src/temple/",
+  "expires_at": "2026-03-26T00:00:00Z",
+  "files": ["src/temple/intraparietal_sulcus.zig", "src/temple/weber_tuning.zig", "src/temple/coptic.zig", "src/temple/root.zig"],
+  "approved_by": "user"
+}

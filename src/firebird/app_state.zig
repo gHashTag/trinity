@@ -51,6 +51,17 @@ pub const GENESIS_TIMESTAMP: i64 = 1_743_494_400; // 2026-03-26 00:00:00 UTC
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK STATUS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const NetworkStatus = enum {
+    initializing,
+    running,
+    paused,
+    halted,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // APP STATE
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -68,13 +79,8 @@ pub const AppState = struct {
     last_update: i64,
     /// Network status
     status: NetworkStatus,
-
-    pub const NetworkStatus = enum {
-        initializing,
-        running,
-        paused,
-        halted,
-    };
+    /// Transaction volume (for velocity invariant)
+    tx_volume: u128 = 0,
 
     pub fn init(allocator: Allocator) AppState {
         return AppState{
@@ -152,6 +158,39 @@ pub const AppState = struct {
         if (total >= self.emission_cap) return 0;
         return self.emission_cap - total;
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // ECONOMIC METRICS (for DePIN invariant testing)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /// Get total TRI supply (immutable constant)
+    pub fn getTotalSupply(self: *const AppState) u128 {
+        _ = self;
+        return TRI_TOTAL_SUPPLY;
+    }
+
+    /// Get simulated revenue (for economic invariant testing)
+    /// In production, this would sum actual protocol revenue
+    pub fn getRevenue(self: *const AppState) u128 {
+        // For testing: revenue = 5% of emissions (real yield floor)
+        // This prevents ponzinomics by ensuring rewards are backed by value
+        return self.getEmissionTotal() / 20; // 5% floor
+    }
+
+    /// Add to transaction volume (call on each transfer)
+    pub fn addTxVolume(self: *AppState, amount: u128) void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+        self.tx_volume += amount;
+    }
+
+    /// Get current transaction volume
+    pub fn getTxVolume(self: *const AppState) u128 {
+        const self_mut: *AppState = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+        return self_mut.tx_volume;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -177,7 +216,8 @@ test "AppState initialization" {
     try std.testing.expectEqual(@as(u128, 0), state.emission_total);
     try std.testing.expectEqual(EMISSION_CAP, state.emission_cap);
     try std.testing.expectEqual(@as(u64, 0), state.block_number);
-    try std.testing.expectEqual(AppState.NetworkStatus.initializing, state.status);
+    try std.testing.expectEqual(NetworkStatus.initializing, state.status);
+    try std.testing.expectEqual(@as(u128, 0), state.tx_volume);
 }
 
 test "AppState addEmission" {

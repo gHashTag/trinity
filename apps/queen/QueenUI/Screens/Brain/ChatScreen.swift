@@ -5084,22 +5084,24 @@ struct MultilineInput: NSViewRepresentable {
         textView.isHorizontallyResizable = false
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // FIXED: container size - reasonable bounds for chat input
-        textView.textContainer?.containerSize = NSSize(width: 600, height: 200)
+        // FIXED: container size - sufficient height for multiline text (~20 lines)
+        textView.textContainer?.containerSize = NSSize(width: 600, height: 1000)
         textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // FIXED: NO fixed frame size - let SwiftUI control sizing via layout
+        // FIXED: constrain initial size, allow expansion via autoresizing
+        textView.setFrameSize(NSSize(width: 600, height: ParietalSpacing.inputBarHeight))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // FIXED: NO fixed frame size - let SwiftUI control sizing
+        // FIXED: constrain initial size, allow expansion via autoresizing
+        scrollView.setFrameSize(NSSize(width: 600, height: ParietalSpacing.inputBarHeight))
         scrollView.autohidesScrollers = true
 
         context.coordinator.textView = textView

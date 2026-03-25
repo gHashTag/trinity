@@ -1265,6 +1265,82 @@ test "Policy — PendingAction reasonStr truncates" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TTT ζ-SEALED PROTECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ZetaSealedPath = struct {
+    path: []const u8,
+    reason: []const u8,
+};
+
+pub const ZETA_SEALED_PATHS = [_]ZetaSealedPath{
+    .{ .path = "src/temple", .reason = "TTT — Sacred Core" },
+    .{ .path = "src/tri-lang", .reason = "Tri Lang Core — Result, Patterns, Linear, Effects" },
+    .{ .path = "src/vibeec", .reason = "VIBEE — Compiler infrastructure" },
+    .{ .path = "src/tri27/emu", .reason = "TRI-27 VM — Sacred emulation" },
+};
+
+pub fn isZetaSealed(path: []const u8) bool {
+    for (ZETA_SEALED_PATHS) |sealed| {
+        if (std.mem.indexOf(u8, path, sealed.path) != null) {
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn checkTempleRitual() bool {
+    // Check for TEMPLE_RITUAL=1 env var
+    const ritual_env = std.posix.getenv("TEMPLE_RITUAL") orelse return false;
+    if (!std.mem.eql(u8, ritual_env, "1")) return false;
+
+    // TODO: Check for TEMPLE_RITUAL label on current GitHub issue
+    // For now, env var is sufficient
+    return true;
+}
+
+pub fn canAgentWrite(agent: []const u8, path: []const u8) !bool {
+    _ = agent; // Future: per-agent permissions
+
+    // Rule 1: Check if ζ-sealed
+    if (isZetaSealed(path)) {
+        if (!checkTempleRitual()) {
+            return error.TTTSealedViolation;
+        }
+    }
+
+    return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TTT ζ-SEALED TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — isZetaSealed detects sacred paths" {
+    try std.testing.expect(isZetaSealed("src/temple/sacred_math.zig"));
+    try std.testing.expect(isZetaSealed("src/tri-lang/result_type.zig"));
+    try std.testing.expect(isZetaSealed("src/vibeec/emit_t27.zig"));
+    try std.testing.expect(isZetaSealed("src/tri27/emu/vm.zig"));
+    try std.testing.expect(!isZetaSealed("src/tri/queen.zig"));
+    try std.testing.expect(!isZetaSealed("specs/tri/test.tri"));
+}
+
+test "Policy — canAgentWrite blocks TTT without ritual" {
+    const result = canAgentWrite("ralph", "src/temple/sacred_math.zig");
+    try std.testing.expectError(error.TTTSealedViolation, result);
+}
+
+test "Policy — canAgentWrite allows non-TTT paths" {
+    const result = canAgentWrite("ralph", "src/tri/queen.zig");
+    try std.testing.expect(try result);
+}
+
+test "Policy — checkTempleRitual returns false without env" {
+    // Clear env var for test
+    try std.testing.expect(!checkTempleRitual());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ActionCounters window edge cases
 // ═══════════════════════════════════════════════════════════════════════════════
 

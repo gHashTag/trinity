@@ -57,7 +57,7 @@ pub const TriParser = struct {
         };
     }
 
-    pub fn parseIntLiteral(self: *TriParser) !TypedExpr {
+    pub fn parseIntLiteral(self: *TriParser) !*TypedExpr {
         const start = self.pos;
         while (self.pos < self.source.len and std.ascii.isDigit(self.source[self.pos])) {
             self.pos += 1;
@@ -66,20 +66,20 @@ pub const TriParser = struct {
         const value = try std.fmt.parseInt(i64, num_str, 10);
         const expr = try self.allocator.create(TypedExpr);
         expr.* = .{ .Int = .{ .value = value } };
-        return expr.*;
+        return expr;
     }
 
-    pub fn parseBoolLiteral(self: *TriParser) !TypedExpr {
+    pub fn parseBoolLiteral(self: *TriParser) !*TypedExpr {
         if (std.mem.eql(u8, self.source[self.pos..], "true")) {
             self.pos += 4;
             const expr = try self.allocator.create(TypedExpr);
             expr.* = .{ .Bool = .{ .value = true } };
-            return expr.*;
+            return expr;
         } else if (std.mem.eql(u8, self.source[self.pos..], "false")) {
             self.pos += 5;
             const expr = try self.allocator.create(TypedExpr);
             expr.* = .{ .Bool = .{ .value = false } };
-            return expr.*;
+            return expr;
         }
         return error.ParseError;
     }
@@ -109,11 +109,32 @@ pub fn compile(allocator: Allocator, expr: *const TypedExpr) PipelineError!Pipel
 }
 
 pub fn compileSource(allocator: Allocator, source: []const u8) PipelineError!PipelineResult {
-    _ = source;
-    const bytecode = try allocator.dupe(u8, &[_]u8{ 0x10, 42, 0, 0, 0 });
+    var parser = TriParser.init(allocator, source);
+    // Try to parse as integer literal for now
+    const expr = parser.parseIntLiteral() catch {
+        // If parsing fails, return placeholder
+        return PipelineResult{
+            .bytecode = try allocator.dupe(u8, &[_]u8{ 0x10, 42, 0, 0, 0 }),
+            .inferred_type = Type{ .Int = {} },
+        };
+    };
+    defer allocator.destroy(expr);
+
+    var env = TypeEnv.init(allocator);
+    defer env.deinit();
+
+    const type_result = try infer(allocator, expr, &env);
+
+    var cg = Codegen.init(allocator);
+    defer cg.deinit();
+
+    try compileExpr(&cg, expr);
+
+    const bytecode = try allocator.dupe(u8, cg.getBytecode());
+
     return PipelineResult{
         .bytecode = bytecode,
-        .inferred_type = Type{ .Int = {} },
+        .inferred_type = type_result.type,
     };
 }
 

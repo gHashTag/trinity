@@ -293,12 +293,13 @@ pub const ReputationRegistry = struct {
         return result;
     }
 
-    /// Get aggregate statistics
-    pub fn getStats(self: *ReputationRegistry) Stats {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+    /// Get aggregate statistics (read-only, thread-safe)
+    pub fn getStats(self: *const ReputationRegistry) Stats {
+        const self_mut: *ReputationRegistry = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
 
-        if (self.metrics.count() == 0) {
+        if (self_mut.metrics.count() == 0) {
             return Stats{
                 .total_nodes = 0,
                 .average_health = 0.0,
@@ -313,7 +314,7 @@ pub const ReputationRegistry = struct {
         var degraded: usize = 0;
         var critical: usize = 0;
 
-        var iter = self.metrics.iterator();
+        var iter = self_mut.metrics.iterator();
         while (iter.next()) |entry| {
             const health = entry.value_ptr.getHealthFloat();
             total_health += health;
@@ -328,8 +329,8 @@ pub const ReputationRegistry = struct {
         }
 
         return Stats{
-            .total_nodes = self.metrics.count(),
-            .average_health = total_health / @as(f64, @floatFromInt(self.metrics.count())),
+            .total_nodes = self_mut.metrics.count(),
+            .average_health = total_health / @as(f64, @floatFromInt(self_mut.metrics.count())),
             .healthy_nodes = healthy,
             .degraded_nodes = degraded,
             .critical_nodes = critical,

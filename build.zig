@@ -872,6 +872,39 @@ pub fn build(b: *std.Build) void {
     const run_depin_invariants_tests = b.addRunArtifact(depin_invariants_tests);
     test_step.dependOn(&run_depin_invariants_tests.step);
 
+    // dePIN State Machine Tests — Erlang QuickCheck style
+    const depin_state_machine_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/state_machine.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+            .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+        },
+    });
+    const depin_state_machine_tests = b.addTest(.{
+        .root_module = depin_state_machine_mod,
+    });
+    const run_depin_state_machine_tests = b.addRunArtifact(depin_state_machine_tests);
+    test_step.dependOn(&run_depin_state_machine_tests.step);
+
+    // dePIN Economic Invariants Tests — Ponzi resistance & tokenomics
+    const depin_economic_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/economic.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+        },
+    });
+    const depin_economic_tests = b.addTest(.{
+        .root_module = depin_economic_mod,
+    });
+    const run_depin_economic_tests = b.addRunArtifact(depin_economic_tests);
+    test_step.dependOn(&run_depin_economic_tests.step);
+
     // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
     const api_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -2205,12 +2238,22 @@ pub fn build(b: *std.Build) void {
     const swe_deploy_step = b.step("swe-deploy", "Build swe-entrypoint for Railway dev agent deploy");
     swe_deploy_step.dependOn(&swe_entrypoint.step);
 
+    // Temple module — T-zone sacred types (GF16, TF3, Coptic)
+    const temple_mod = b.createModule(.{
+        .root_source_file = b.path("src/temple/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/hslm/root.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "temple", .module = temple_mod },
+            },
         }),
     });
     const run_hslm_tests = b.addRunArtifact(hslm_tests);
@@ -2485,6 +2528,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },

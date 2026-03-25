@@ -156,9 +156,8 @@ pub fn compileExpr(cg: *Codegen, expr: *const TypedExpr) CodegenError!void {
 }
 
 fn compileIntLiteral(cg: *Codegen, expr: IntExpr) CodegenError!void {
-    _ = expr;
     try cg.code.emit(Opcode.LOADI);
-    try cg.code.emitWord(42);
+    try cg.code.emitWord(@intCast(expr.value));
 }
 
 fn compileBoolLiteral(cg: *Codegen, expr: BoolExpr) CodegenError!void {
@@ -211,8 +210,11 @@ fn compileIf(cg: *Codegen, expr: IfExpr) CodegenError!void {
 }
 
 fn compileLet(cg: *Codegen, expr: LetExpr) CodegenError!void {
-    _ = expr;
-    try cg.code.emit(Opcode.NOP);
+    // Compile the value expression first
+    try compileExpr(cg, expr.value);
+    // For now, just emit the value and continue with body
+    // In a full implementation, we'd store the value in a register/stack slot
+    try compileExpr(cg, expr.body);
 }
 
 fn compileFn(cg: *Codegen, expr: FnExpr) CodegenError!void {

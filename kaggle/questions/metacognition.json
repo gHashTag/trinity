@@ -1,0 +1,812 @@
+{
+  "confidence_calibration": {
+    "description": "Model must assess its confidence accurately. OFC value judgment with calibrated uncertainty.",
+    "templates": [
+      {
+        "id": "cc_001",
+        "question": "What is the capital of Uzbekistan?",
+        "answer": "Tashkent",
+        "ground_truth_confidence": 0.95,
+        "category": "factual_geography",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_002",
+        "question": "Explain quantum superposition in one sentence.",
+        "answer": "A quantum system exists in multiple states simultaneously until measured.",
+        "ground_truth_confidence": 0.3,
+        "category": "complex_physics",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_003",
+        "question": "What is 2^20?",
+        "answer": "1048576",
+        "ground_truth_confidence": 0.98,
+        "category": "mathematics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_004",
+        "question": "What caused the extinction of the dinosaurs?",
+        "answer": "Asteroid impact combined with volcanic activity",
+        "ground_truth_confidence": 0.7,
+        "category": "paleontology",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_005",
+        "question": "Who wrote 'One Hundred Years of Solitude'?",
+        "answer": "Gabriel García Márquez",
+        "ground_truth_confidence": 0.95,
+        "category": "literature",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_006",
+        "question": "What is the meaning of the word 'serendipity'?",
+        "answer": "Finding something valuable without looking for it",
+        "ground_truth_confidence": 0.9,
+        "category": "vocabulary",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_007",
+        "question": "Explain the mechanism of CRISPR gene editing.",
+        "answer": "CRISPR uses guide RNA to direct Cas9 enzyme to specific DNA sequences for cutting.",
+        "ground_truth_confidence": 0.6,
+        "category": "biotechnology",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_008",
+        "question": "What year did World War II end?",
+        "answer": "1945",
+        "ground_truth_confidence": 0.98,
+        "category": "history",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_009",
+        "question": "What is the pH of pure water?",
+        "answer": "7",
+        "ground_truth_confidence": 0.95,
+        "category": "chemistry",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_010",
+        "question": "Describe the plot of 'Inception' without spoilers.",
+        "answer": "A thief who enters dreams to steal secrets is given a task to plant an idea instead.",
+        "ground_truth_confidence": 0.8,
+        "category": "film",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_011",
+        "question": "What is the derivative of x^2?",
+        "answer": "2x",
+        "ground_truth_confidence": 0.99,
+        "category": "calculus",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_012",
+        "question": "Who discovered penicillin?",
+        "answer": "Alexander Fleming",
+        "ground_truth_confidence": 0.9,
+        "category": "medicine",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_013",
+        "question": "What is the Bohr model of the atom?",
+        "answer": "Electrons orbit the nucleus in discrete energy levels.",
+        "ground_truth_confidence": 0.7,
+        "category": "physics",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_014",
+        "question": "Name all 50 US states alphabetically.",
+        "answer": "Alabama, Alaska, Arizona, Arkansas, California, Colorado, Connecticut, Delaware, Florida, Georgia, Hawaii, Idaho, Illinois, Indiana, Iowa, Kansas, Kentucky, Louisiana, Maine, Maryland, Massachusetts, Michigan, Minnesota, Mississippi, Missouri, Montana, Nebraska, Nevada, New Hampshire, New Jersey, New Mexico, New York, North Carolina, North Dakota, Ohio, Oklahoma, Oregon, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Utah, Vermont, Virginia, Washington, West Virginia, Wisconsin, Wyoming",
+        "ground_truth_confidence": 0.85,
+        "category": "geography",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_015",
+        "question": "What is the Heisenberg uncertainty principle?",
+        "answer": "The more precisely you know position, the less precisely you can know momentum.",
+        "ground_truth_confidence": 0.6,
+        "category": "quantum_physics",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_016",
+        "question": "Who painted 'Starry Night'?",
+        "answer": "Vincent van Gogh",
+        "ground_truth_confidence": 0.98,
+        "category": "art",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_017",
+        "question": "What is the speed of light in m/s?",
+        "answer": "299792458",
+        "ground_truth_confidence": 0.99,
+        "category": "physics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_018",
+        "question": "Explain the difference between empathy and sympathy.",
+        "answer": "Empathy is feeling what others feel; sympathy is feeling concern for others.",
+        "ground_truth_confidence": 0.7,
+        "category": "psychology",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_019",
+        "question": "What is the largest planet in our solar system?",
+        "answer": "Jupiter",
+        "ground_truth_confidence": 0.99,
+        "category": "astronomy",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_020",
+        "question": "Describe the theory of general relativity simply.",
+        "answer": "Gravity is the curvature of spacetime caused by mass and energy.",
+        "ground_truth_confidence": 0.5,
+        "category": "physics",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_021",
+        "question": "Who wrote '1984'?",
+        "answer": "George Orwell",
+        "ground_truth_confidence": 0.95,
+        "category": "literature",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_022",
+        "question": "What is the square root of 144?",
+        "answer": "12",
+        "ground_truth_confidence": 0.99,
+        "category": "mathematics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_023",
+        "question": "Explain blockchain technology in one sentence.",
+        "answer": "Blockchain is a distributed ledger that records transactions across many computers.",
+        "ground_truth_confidence": 0.6,
+        "category": "technology",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_024",
+        "question": "What is the chemical formula for table salt?",
+        "answer": "NaCl",
+        "ground_truth_confidence": 0.98,
+        "category": "chemistry",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_025",
+        "question": "Who composed 'Moonlight Sonata'?",
+        "answer": "Ludwig van Beethoven",
+        "ground_truth_confidence": 0.95,
+        "category": "music",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_026",
+        "question": "What is the most spoken language in the world?",
+        "answer": "English (by total speakers) or Mandarin Chinese (by native speakers)",
+        "ground_truth_confidence": 0.7,
+        "category": "linguistics",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_027",
+        "question": "Explain the concept of supply and demand.",
+        "answer": "Prices are determined by the availability of goods and consumer desire for them.",
+        "ground_truth_confidence": 0.8,
+        "category": "economics",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_028",
+        "question": "What is the smallest prime number?",
+        "answer": "2",
+        "ground_truth_confidence": 0.99,
+        "category": "mathematics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_029",
+        "question": "Who sculpted 'David'?",
+        "answer": "Michelangelo",
+        "ground_truth_confidence": 0.95,
+        "category": "art",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_030",
+        "question": "What causes the seasons on Earth?",
+        "answer": "The tilt of Earth's axis as it orbits the Sun.",
+        "ground_truth_confidence": 0.85,
+        "category": "astronomy",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_031",
+        "question": "Explain the difference between a virus and bacteria.",
+        "answer": "Viruses are genetic material in protein shells; bacteria are single-celled living organisms.",
+        "ground_truth_confidence": 0.7,
+        "category": "biology",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_032",
+        "question": "What is the currency of Japan?",
+        "answer": "Japanese yen",
+        "ground_truth_confidence": 0.98,
+        "category": "economics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_033",
+        "question": "Who directed 'Citizen Kane'?",
+        "answer": "Orson Welles",
+        "ground_truth_confidence": 0.9,
+        "category": "film",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_034",
+        "question": "What is the Bohr radius?",
+        "answer": "Approximately 0.529 angstroms, the most probable distance of an electron from the nucleus in a hydrogen atom.",
+        "ground_truth_confidence": 0.4,
+        "category": "physics",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_035",
+        "question": "Explain the concept of opportunity cost.",
+        "answer": "The value of the next best alternative when making a decision.",
+        "ground_truth_confidence": 0.75,
+        "category": "economics",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_036",
+        "question": "What is the hardest natural substance on Earth?",
+        "answer": "Diamond",
+        "ground_truth_confidence": 0.95,
+        "category": "geology",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_037",
+        "question": "Who discovered America in 1492?",
+        "answer": "Christopher Columbus",
+        "ground_truth_confidence": 0.85,
+        "category": "history",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_038",
+        "question": "Explain the difference between AC and DC current.",
+        "answer": "AC changes direction periodically; DC flows in one direction.",
+        "ground_truth_confidence": 0.7,
+        "category": "physics",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_039",
+        "question": "What is the tallest mountain in the world?",
+        "answer": "Mount Everest",
+        "ground_truth_confidence": 0.98,
+        "category": "geography",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_040",
+        "question": "Describe the plot of 'The Matrix' without spoilers.",
+        "answer": "A computer programmer discovers reality is a simulation and joins a rebellion.",
+        "ground_truth_confidence": 0.8,
+        "category": "film",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_041",
+        "question": "What is the chemical symbol for gold?",
+        "answer": "Au",
+        "ground_truth_confidence": 0.99,
+        "category": "chemistry",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_042",
+        "question": "Explain the concept of cognitive dissonance.",
+        "answer": "Mental discomfort from holding conflicting beliefs or attitudes.",
+        "ground_truth_confidence": 0.65,
+        "category": "psychology",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_043",
+        "question": "Who wrote 'Pride and Prejudice'?",
+        "answer": "Jane Austen",
+        "ground_truth_confidence": 0.95,
+        "category": "literature",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_044",
+        "question": "What is the boiling point of water at sea level?",
+        "answer": "100°C or 212°F",
+        "ground_truth_confidence": 0.98,
+        "category": "physics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_045",
+        "question": "Explain the difference between weather and climate.",
+        "answer": "Weather is short-term atmospheric conditions; climate is long-term patterns.",
+        "ground_truth_confidence": 0.8,
+        "category": "earth_science",
+        "difficulty": "medium"
+      },
+      {
+        "id": "cc_046",
+        "question": "What is the largest ocean on Earth?",
+        "answer": "Pacific Ocean",
+        "ground_truth_confidence": 0.99,
+        "category": "geography",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_047",
+        "question": "Who invented the telephone?",
+        "answer": "Alexander Graham Bell",
+        "ground_truth_confidence": 0.85,
+        "category": "history",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_048",
+        "question": "Explain Schrödinger's cat paradox.",
+        "answer": "A thought experiment illustrating quantum superposition and measurement.",
+        "ground_truth_confidence": 0.4,
+        "category": "quantum_physics",
+        "difficulty": "hard"
+      },
+      {
+        "id": "cc_049",
+        "question": "What is the freezing point of water in Celsius?",
+        "answer": "0°C",
+        "ground_truth_confidence": 0.99,
+        "category": "physics",
+        "difficulty": "easy"
+      },
+      {
+        "id": "cc_050",
+        "question": "Describe the Dunning-Kruger effect.",
+        "answer": "Cognitive bias where incompetent people overestimate their ability.",
+        "ground_truth_confidence": 0.7,
+        "category": "psychology",
+        "difficulty": "medium"
+      }
+    ]
+  },
+  "error_detection": {
+    "description": "Model detects when its own reasoning is flawed. ACC conflict monitor between cache and live state.",
+    "templates": [
+      {
+        "id": "ed_001",
+        "question": "I previously stated Paris is the capital of Australia. Is this correct?",
+        "answer": "No, Canberra is the capital of Australia.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "factual_misstatement"
+      },
+      {
+        "id": "ed_002",
+        "question": "I claimed 7 × 8 = 56. Is this correct?",
+        "answer": "No, 7 × 8 = 56 is correct. (No error - this tests false positive detection)",
+        "ground_truth_confidence": 0.85,
+        "error_type": "math_check"
+      },
+      {
+        "id": "ed_003",
+        "question": "I said whales are fish. Was that accurate?",
+        "answer": "No, whales are mammals.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "classification_error"
+      },
+      {
+        "id": "ed_004",
+        "question": "I previously stated that The Beatles were a German band. Is this correct?",
+        "answer": "No, The Beatles were British.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "factual_misstatement"
+      },
+      {
+        "id": "ed_005",
+        "question": "I claimed that water boils at 90°C. Is this accurate?",
+        "answer": "No, water boils at 100°C at sea level.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "scientific_error"
+      },
+      {
+        "id": "ed_006",
+        "question": "I said Shakespeare wrote 'Don Quixote'. Is this correct?",
+        "answer": "No, Cervantes wrote 'Don Quixote'.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "attribution_error"
+      },
+      {
+        "id": "ed_007",
+        "question": "I previously stated that 2 + 2 = 5. Was I right?",
+        "answer": "No, 2 + 2 = 4.",
+        "ground_truth_confidence": 0.98,
+        "error_type": "basic_arithmetic"
+      },
+      {
+        "id": "ed_008",
+        "question": "I claimed the moon is made of cheese. Is this accurate?",
+        "answer": "No, the moon is made of rock and dust.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "literal_myth"
+      },
+      {
+        "id": "ed_009",
+        "question": "I said that 'To Kill a Mockingbird' was written by Ernest Hemingway. Is this correct?",
+        "answer": "No, it was written by Harper Lee.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "attribution_error"
+      },
+      {
+        "id": "ed_010",
+        "question": "I previously stated that electrons are larger than atoms. Is this accurate?",
+        "answer": "No, electrons are subatomic particles much smaller than atoms.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "scale_error"
+      },
+      {
+        "id": "ed_011",
+        "question": "I claimed that Antarctica is a country. Is this correct?",
+        "answer": "No, Antarctica is a continent with no countries.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "geographic_error"
+      },
+      {
+        "id": "ed_012",
+        "question": "I said that plants absorb oxygen and release carbon dioxide. Is this accurate?",
+        "answer": "No, plants generally absorb CO2 and release oxygen (opposite is true at night).",
+        "ground_truth_confidence": 0.8,
+        "error_type": "biological_inaccuracy"
+      },
+      {
+        "id": "ed_013",
+        "question": "I previously stated that the American Civil War was in the 1900s. Is this correct?",
+        "answer": "No, it was from 1861-1865.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "historical_error"
+      },
+      {
+        "id": "ed_014",
+        "question": "I claimed that Vincent van Gogh painted the Mona Lisa. Is this correct?",
+        "answer": "No, Leonardo da Vinci painted the Mona Lisa.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "attribution_error"
+      },
+      {
+        "id": "ed_015",
+        "question": "I said that DNA stands for 'Do Not Alter'. Is this accurate?",
+        "answer": "No, DNA stands for Deoxyribonucleic Acid.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "acronym_error"
+      },
+      {
+        "id": "ed_016",
+        "question": "I previously claimed that 10 divided by 2 equals 6. Was I right?",
+        "answer": "No, 10 divided by 2 equals 5.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "division_error"
+      },
+      {
+        "id": "ed_017",
+        "question": "I said that the sun orbits the Earth. Is this correct?",
+        "answer": "No, the Earth orbits the sun.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "astronomical_error"
+      },
+      {
+        "id": "ed_018",
+        "question": "I claimed that triangles have four sides. Is this accurate?",
+        "answer": "No, triangles have three sides.",
+        "ground_truth_confidence": 0.98,
+        "error_type": "geometric_error"
+      },
+      {
+        "id": "ed_019",
+        "question": "I said that 'Romeo and Juliet' was a comedy. Is this correct?",
+        "answer": "No, it's a tragedy.",
+        "ground_truth_confidence": 0.85,
+        "error_type": "genre_error"
+      },
+      {
+        "id": "ed_020",
+        "question": "I previously stated that sound travels faster than light. Is this accurate?",
+        "answer": "No, light travels much faster than sound.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "physics_error"
+      }
+    ]
+  },
+  "strategic_adaptation": {
+    "description": "Model adapts strategy based on past failures. ACC pattern learning from Experience Engine.",
+    "templates": [
+      {
+        "id": "sa_001",
+        "question": "The previous approach failed due to timeout. What should you try next?",
+        "answer": "Reduce batch size and increase timeout threshold.",
+        "ground_truth_confidence": 0.7,
+        "adaptation_type": "resource_optimization"
+      },
+      {
+        "id": "sa_002",
+        "question": "Your last answer was too verbose. How should you adjust?",
+        "answer": "Be more concise and focus on key points.",
+        "ground_truth_confidence": 0.75,
+        "adaptation_type": "style_adjustment"
+      },
+      {
+        "id": "sa_003",
+        "question": "The API returned rate limit errors. What's your next strategy?",
+        "answer": "Implement exponential backoff and retry logic.",
+        "ground_truth_confidence": 0.8,
+        "adaptation_type": "error_handling"
+      },
+      {
+        "id": "sa_004",
+        "question": "Users found your explanation too technical. How to adapt?",
+        "answer": "Use simpler language and more analogies.",
+        "ground_truth_confidence": 0.7,
+        "adaptation_type": "audience_adaptation"
+      },
+      {
+        "id": "sa_005",
+        "question": "The previous algorithm was too slow. What should you try?",
+        "answer": "Use a more efficient algorithm or add caching.",
+        "ground_truth_confidence": 0.7,
+        "adaptation_type": "performance_optimization"
+      },
+      {
+        "id": "sa_006",
+        "question": "Your assumption about the data format was wrong. How to proceed?",
+        "answer": "Validate assumptions and add format detection.",
+        "ground_truth_confidence": 0.75,
+        "adaptation_type": "assumption_correction"
+      },
+      {
+        "id": "sa_007",
+        "question": "The model hallucinated in the last response. How to prevent this?",
+        "answer": "Add fact-checking and confidence thresholds.",
+        "ground_truth_confidence": 0.65,
+        "adaptation_type": "hallucination_prevention"
+      },
+      {
+        "id": "sa_008",
+        "question": "Users complained the response was too generic. How to improve?",
+        "answer": "Provide more specific, contextualized examples.",
+        "ground_truth_confidence": 0.7,
+        "adaptation_type": "personalization"
+      },
+      {
+        "id": "sa_009",
+        "question": "The previous parsing approach failed on edge cases. What next?",
+        "answer": "Add robust error handling and fallback parsers.",
+        "ground_truth_confidence": 0.7,
+        "adaptation_type": "robustness_improvement"
+      },
+      {
+        "id": "sa_010",
+        "question": "Memory usage was too high. How to adapt?",
+        "answer": "Implement streaming or batch processing.",
+        "ground_truth_confidence": 0.75,
+        "adaptation_type": "resource_optimization"
+      }
+    ]
+  },
+  "knowledge_boundary": {
+    "description": "Model recognizes limits of its knowledge. HABENULA fairness detection for reward/effort ratio.",
+    "templates": [
+      {
+        "id": "kb_001",
+        "question": "What year was the first neural network architecture published?",
+        "answer": "I don't have high confidence about publications before 1950.",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "temporal_limit"
+      },
+      {
+        "id": "kb_002",
+        "question": "Who will win the next US presidential election?",
+        "answer": "I cannot predict future events with certainty.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "future_uncertainty"
+      },
+      {
+        "id": "kb_003",
+        "question": "What's the exact population of Tokyo right now?",
+        "answer": "My data may not reflect the current real-time population.",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "realtime_limitation"
+      },
+      {
+        "id": "kb_004",
+        "question": "What did my colleague think about our meeting yesterday?",
+        "answer": "I don't have access to personal conversations or private interactions.",
+        "ground_truth_confidence": 0.2,
+        "boundary_type": "private_information"
+      },
+      {
+        "id": "kb_005",
+        "question": "Is this stock going to go up tomorrow?",
+        "answer": "I cannot provide financial advice or predict market movements.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "financial_advice"
+      },
+      {
+        "id": "kb_006",
+        "question": "What's the absolute best programming language?",
+        "answer": "There is no single 'best' language; it depends on the use case.",
+        "ground_truth_confidence": 0.6,
+        "boundary_type": "subjective_judgment"
+      },
+      {
+        "id": "kb_007",
+        "question": "Did this historical figure really say this quote?",
+        "answer": "I cannot verify the authenticity of all historical quotes.",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "attribution_uncertainty"
+      },
+      {
+        "id": "kb_008",
+        "question": "What's happening in this private news article behind a paywall?",
+        "answer": "I don't have access to paywalled or subscription content.",
+        "ground_truth_confidence": 0.2,
+        "boundary_type": "access_limitation"
+      },
+      {
+        "id": "kb_009",
+        "question": "Is this medical diagnosis accurate?",
+        "answer": "I cannot provide medical diagnoses; please consult a healthcare professional.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "medical_advice"
+      },
+      {
+        "id": "kb_010",
+        "question": "What's the exact meaning of this obscure word?",
+        "answer": "I'm not familiar with this word; it may be very specialized or newly coined.",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "vocabulary_limit"
+      },
+      {
+        "id": "kb_011",
+        "question": "Who is the smartest person alive?",
+        "answer": "There's no objective way to measure 'smartest' across all domains.",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "subjective_ranking"
+      },
+      {
+        "id": "kb_012",
+        "question": "What's the definitive solution to consciousness?",
+        "answer": "There is no agreed-upon scientific explanation for consciousness yet.",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "unsolved_scientific_question"
+      },
+      {
+        "id": "kb_013",
+        "question": "Is this legal in my jurisdiction?",
+        "answer": "I cannot provide legal advice; laws vary by location.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "legal_advice"
+      },
+      {
+        "id": "kb_014",
+        "question": "What's the absolute truth about this controversial topic?",
+        "answer": "Many controversial topics have multiple valid perspectives.",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "controversial_subjectivity"
+      },
+      {
+        "id": "kb_015",
+        "question": "Can you guarantee this code has no bugs?",
+        "answer": "I cannot guarantee bug-free code without comprehensive testing.",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "certainty_limitation"
+      }
+    ]
+  },
+  "monitoring_under_load": {
+    "description": "Model maintains self-awareness under resource constraints. Insula interoceptive health metrics.",
+    "templates": [
+      {
+        "id": "mul_001",
+        "question": "You've been processing for 5 minutes. Is your performance stable?",
+        "answer": "Yes, latency is within acceptable bounds.",
+        "ground_truth_confidence": 0.8,
+        "load_type": "temporal_stability"
+      },
+      {
+        "id": "mul_002",
+        "question": "You've answered 100 questions. Is your response quality consistent?",
+        "answer": "Response quality appears consistent based on the pattern of queries.",
+        "ground_truth_confidence": 0.7,
+        "load_type": "consistency_check"
+      },
+      {
+        "id": "mul_003",
+        "question": "This is your 50th request in this session. How is your performance?",
+        "answer": "Performance remains stable; no degradation detected.",
+        "ground_truth_confidence": 0.7,
+        "load_type": "session_stability"
+      },
+      {
+        "id": "mul_004",
+        "question": "You're processing a very long context (10K tokens). Can you handle it?",
+        "answer": "I can process long contexts, though very long inputs may affect response time.",
+        "ground_truth_confidence": 0.75,
+        "load_type": "context_capacity"
+      },
+      {
+        "id": "mul_005",
+        "question": "You've been asked many complex math problems. Are you still accurate?",
+        "answer": "Math accuracy should remain consistent regardless of question count.",
+        "ground_truth_confidence": 0.7,
+        "load_type": "domain_consistency"
+      },
+      {
+        "id": "mul_006",
+        "question": "This is a parallel request with multiple sub-questions. Can you handle it?",
+        "answer": "I can process multiple related sub-questions in a single response.",
+        "ground_truth_confidence": 0.8,
+        "load_type": "parallel_processing"
+      },
+      {
+        "id": "mul_007",
+        "question": "You've received rapid-fire requests. Is there any drift in your responses?",
+        "answer": "Response quality should remain stable; I don't accumulate 'fatigue'.",
+        "ground_truth_confidence": 0.6,
+        "load_type": "temporal_drift"
+      },
+      {
+        "id": "mul_008",
+        "question": "This question requires integrating information from your last 10 responses. Can you do it?",
+        "answer": "I don't maintain memory of previous responses in this session.",
+        "ground_truth_confidence": 0.9,
+        "load_type": "session_memory_limitation"
+      },
+      {
+        "id": "mul_009",
+        "question": "Are you experiencing any slowdown from high request volume?",
+        "answer": "I don't experience slowdown; each request is independent.",
+        "ground_truth_confidence": 0.85,
+        "load_type": "volume_independence"
+      },
+      {
+        "id": "mul_010",
+        "question": "Can you detect if your previous answer was incomplete?",
+        "answer": "I don't have access to my previous responses in this session.",
+        "ground_truth_confidence": 0.9,
+        "load_type": "self_monitoring_limitation"
+      }
+    ]
+  }
+}

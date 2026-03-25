@@ -8,7 +8,8 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
-const ips = @import("intraparietal_sulcus.zig");
+const temple = @import("temple");
+const ips = temple.intraparietal_sulcus;
 const f16_utils = @import("f16_utils.zig");
 const simd_config = @import("simd_config.zig");
 

@@ -16,7 +16,7 @@ emit_t27 = "src/tri-lang/emit_t27.zig"
 emit_zig = "src/tri-lang/emit_zig.zig"
 cell = "src/tri/cell.zig"
 t27_cli = "src/tri/t27_cli.zig"
-coptic = "src/tri27/coptic.zig"
+coptic = "src/temple/coptic.zig"
 
 [enforcement]
 # Maximum allowed LOC for TTC (to prevent scope creep)
