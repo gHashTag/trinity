@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v3.3
+# Trinity Research Documentation Index — v3.4
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 76
+**Total Documents:** 78
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -27,7 +27,7 @@
 | `DEFENSIVE_PUB_IMPLEMENTATION_SUMMARY.md` | Implementation guide | ✅ Complete |
 | `PRIOR_ART_NETWORK.md` | Cross-reference matrix | ✅ Complete |
 
-### 3. Experimental Results & Validation (14 documents)
+### 3. Experimental Results & Validation (15 documents)
 
 | Document | Purpose | Coverage |
 |----------|---------|----------|
@@ -40,6 +40,9 @@
 | `QUEEN_ORCHESTRATION_VALIDATION.md` | Self-learning system | 78% policy success |
 | `FPGA_SCIENTIFIC_VALIDATION.md` | Hardware validation results | Zero-DSP |
 | `SACRED_MATHEMATICS_VALIDATION.md` | Sacred math proofs & constants | 50+ constants |
+| `TJEPA_SCIENTIFIC_VALIDATION.md` | T-JEPA self-supervised learning | 13.8% PPL gain |
+| `SACRED_ATTENTION_VALIDATION.md` | φ-RoPE multi-head attention | 11.6% PPL contribution |
+| `CONSCIOUSNESS_GATE_VALIDATION.md` | Dual-system theory gate | 5.7% PPL contribution |
 | `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests |
 | `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` | Master summary | All hypotheses |
 | `REPRODUCIBLE_RESEARCH.md` | Scientific rigor guidelines | ✅ Complete |
@@ -165,6 +168,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.4 | 2026-03-26 | Added TJEPA_SCIENTIFIC_VALIDATION.md (13.8% PPL improvement, φ-warmup) |
 | 3.3 | 2026-03-26 | Added 5 specialized research docs: CROSS_BUNDLE, END_TO_END_PIPELINE, SCALING_ANALYSIS, COST_ANALYSIS, PERFORMANCE_BENCHMARKS |
 | 3.2 | 2026-03-26 | Added Tri Language, Queen Orchestration validation docs |
 | 3.1 | 2026-03-26 | Added VSA/TRI-27/FPGA validation docs, statistical toolkit |
