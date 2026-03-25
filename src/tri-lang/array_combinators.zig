@@ -186,10 +186,13 @@ pub fn foldRight(comptime T: type, array: []const T, init: T, op: fn (T, T) T) T
 
 /// Zip two arrays into pairs
 /// zip([a1, a2], [b1, b2]) -> [(a1, b1), (a2, b2)]
-pub fn zip(comptime T: type, comptime U: type, allocator: std.mem.Allocator, a: []const T, b: []const U) ![]struct { first: T, second: U } {
-    const Pair = struct { first: T, second: U };
+pub fn Zip(comptime T: type, comptime U: type) type {
+    return struct { first: T, second: U };
+}
+
+pub fn zip(comptime T: type, comptime U: type, allocator: std.mem.Allocator, a: []const T, b: []const U) ![]Zip(T, U) {
     const len = @min(a.len, b.len);
-    const result = try allocator.alloc(Pair, len);
+    const result = try allocator.alloc(Zip(T, U), len);
 
     for (0..len) |i| {
         result[i] = .{ .first = a[i], .second = b[i] };
@@ -236,9 +239,9 @@ pub fn partition(comptime T: type, allocator: std.mem.Allocator, array: []const 
 
 /// Chunk array into fixed-size groups
 /// chunk([1,2,3,4,5], 2) -> [[1,2], [3,4], [5]]
-pub fn chunk(comptime T: type, allocator: std.mem.Allocator, array: []const T, size: usize) ![][]T {
+pub fn chunk(comptime T: type, allocator: std.mem.Allocator, array: []const T, size: usize) ![][]const T {
     const chunk_count = (array.len + size - 1) / size;
-    const result = try allocator.alloc([]T, chunk_count);
+    const result = try allocator.alloc([]const T, chunk_count);
 
     for (0..chunk_count) |i| {
         const start = i * size;
@@ -250,8 +253,8 @@ pub fn chunk(comptime T: type, allocator: std.mem.Allocator, array: []const T, s
 }
 
 /// ChunkWithPredicate: chunk by predicate boundary
-pub fn chunkBy(comptime T: type, allocator: std.mem.Allocator, array: []const T, pred: fn (T, T) bool) ![][]T {
-    var chunks = std.ArrayList([]T).init(allocator);
+pub fn chunkBy(comptime T: type, allocator: std.mem.Allocator, array: []const T, pred: fn (T, T) bool) ![][]const T {
+    var chunks = std.ArrayList([]const T).init(allocator);
 
     if (array.len == 0) {
         try chunks.append(array[0..0]);
