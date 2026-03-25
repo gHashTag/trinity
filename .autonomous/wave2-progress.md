@@ -20,12 +20,14 @@ Build a production-ready type system and TRI-27 bytecode emitter on top of Wave 
 
 **Solution:** Used `std.array_list.Managed(T)` instead of `std.ArrayList(T)` for Zig 0.15 compatibility.
 
-### 1.2 Type Environment
-- [ ] `src/tri-lang/type_env.zig` — typing context
-  - [ ] `TypeEnv` — map from names to Type schemes
-  - [ ] `TypeEnv.extend()` — add binding
-  - [ ] `TypeEnv.lookup()` — resolve name
-  - [ ] `TypeEnv.instantiate()` — instantiate scheme
+### 1.2 Type Environment ✅ COMPLETE
+- [x] `src/tri-lang/type_env.zig` — typing context
+  - [x] `TypeEnv` — map from names to Type schemes
+  - [x] `TypeEnv.extend()` — add binding
+  - [x] `TypeEnv.lookup()` — resolve name
+  - [x] `TypeEnv.instantiate()` — instantiate scheme
+  - [x] `Subst` — type variable substitution map
+  - [x] Tests: 12/12 passing
 
 ### 1.3 Unification
 - [ ] `src/tri-lang/unify.zig` — Hindley-Milner unification
