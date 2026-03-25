@@ -161,13 +161,13 @@ pub fn runEmulator(tbin_path: []const u8, options: *const Options, allocator: st
         const memory_bytes = cpu.getBytesMut();
 
         // Check IP bounds (word-aligned)
-        if (ip * 4 + 4 > memory_bytes.len) {
+        if (ip * 8 + 4 > memory_bytes.len) {
             exit_reason = "invalid instruction pointer";
             break;
         }
 
         // Fetch instruction word from cpu.memory (little-endian)
-        const byte_addr = ip * 4;
+        const byte_addr = ip * 8;
         const inst_word: u32 =
             @as(u32, memory_bytes[byte_addr]) |
             @as(u32, memory_bytes[byte_addr + 1]) << 8 |
