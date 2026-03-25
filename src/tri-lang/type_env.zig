@@ -183,11 +183,95 @@ pub const Subst = struct {
     }
 
     /// Apply substitution to type
+    /// Recursively replaces type variables with their substitutions
+    /// Returns Type by value. For Fn/ADT types, contains heap-allocated data that needs deinit.
+    /// For primitive/Var types, returned by value, no deinit needed.
     pub fn apply(self: *const Self, allocator: Allocator, t: Type) !Type {
-        _ = allocator;
-        _ = self;
-        // TODO: implement full type traversal
-        return t; // Placeholder
+        switch (t) {
+            // Type variables: look up in substitution
+            .Var => |var_id| {
+                if (self.get(var_id)) |sub| {
+                    // Recursively apply in case substitution contains variables
+                    return self.apply(allocator, sub);
+                }
+                // No substitution found, return the var as-is
+                return t;
+            },
+            // Function types: apply to params and return type
+            .Fn => |fn_data| {
+                var new_params = std.ArrayList(Type).empty;
+                defer {
+                    for (new_params.items) |*p| {
+                        cleanupType(allocator, p);
+                    }
+                    new_params.deinit(allocator);
+                }
+
+                for (fn_data.params.items) |param| {
+                    const new_param = try self.apply(allocator, param);
+                    try new_params.append(allocator, new_param);
+                }
+
+                const new_return = try self.apply(allocator, fn_data.return_type.*);
+                const return_ptr = try allocator.create(Type);
+                return_ptr.* = new_return;
+
+                return Type{
+                    .Fn = .{
+                        .params = new_params,
+                        .return_type = return_ptr,
+                    },
+                };
+            },
+            // ADT types: apply to type arguments
+            .ADT => |adt_data| {
+                var new_args = std.ArrayList(Type).empty;
+                defer {
+                    for (new_args.items) |*a| {
+                        cleanupType(allocator, a);
+                    }
+                    new_args.deinit(allocator);
+                }
+
+                for (adt_data.type_args.items) |arg| {
+                    const new_arg = try self.apply(allocator, arg);
+                    try new_args.append(allocator, new_arg);
+                }
+
+                const name_copy = try allocator.dupe(u8, adt_data.name);
+
+                return Type{
+                    .ADT = .{
+                        .name = name_copy,
+                        .type_args = new_args,
+                    },
+                };
+            },
+            // Primitive types: unchanged
+            .Unit, .Bool, .Int, .Float => return t,
+        }
+    }
+
+    /// Helper: cleanup Type if it has internal allocations
+    /// Only calls deinit on Fn/ADT types
+    fn cleanupType(allocator: Allocator, t: *Type) void {
+        switch (t.*) {
+            .Fn => |*fn_data| {
+                for (fn_data.params.items) |*p| {
+                    cleanupType(allocator, p);
+                }
+                fn_data.params.deinit(allocator);
+                allocator.destroy(fn_data.return_type);
+            },
+            .ADT => |*adt_data| {
+                allocator.free(adt_data.name);
+                for (adt_data.type_args.items) |*a| {
+                    cleanupType(allocator, a);
+                }
+                adt_data.type_args.deinit(allocator);
+            },
+            .Unit, .Bool, .Int, .Float, .Var => {},
+        }
     }
 };
 
@@ -289,4 +373,45 @@ test "subst_extend" {
     if (found) |t| {
         try std.testing.expect(t.eq(&int_type));
     }
+}
+
+test "subst_apply_var" {
+    const allocator = std.testing.allocator;
+    var subst = Subst.init(allocator);
+    defer subst.deinit();
+
+    const var_id: TypeId = 1;
+    const int_type = Type{ .Int = {} };
+    try subst.extend(var_id, int_type);
+
+    const var_type = Type{ .Var = var_id };
+    const result = try subst.apply(allocator, var_type);
+    // Primitive type, no cleanup needed
+
+    try std.testing.expect(result.eq(&int_type));
+}
+
+test "subst_apply_primitive" {
+    const allocator = std.testing.allocator;
+    var subst = Subst.init(allocator);
+    defer subst.deinit();
+
+    const int_type = Type{ .Int = {} };
+    const result = try subst.apply(allocator, int_type);
+    // Primitive type, no cleanup needed
+
+    try std.testing.expect(result.eq(&int_type));
+}
+
+test "subst_apply_no_binding" {
+    const allocator = std.testing.allocator;
+    var subst = Subst.init(allocator);
+    defer subst.deinit();
+
+    const var_id: TypeId = 999;
+    const var_type = Type{ .Var = var_id };
+    const result = try subst.apply(allocator, var_type);
+    // Var type, no cleanup needed
+
+    try std.testing.expect(result.eq(&var_type));
 }
