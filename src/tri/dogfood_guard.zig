@@ -25,10 +25,10 @@ const DIM = "\x1b[2m";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const DogfoodScope = enum {
-    tri27_only,      // Must be .t27 only (Zig shell wrapper OK)
-    zig_shell_ok,    // Zig shell wrapper allowed
-    hybrid,          // Both allowed (transition mode)
-    zig_ttt,         // Zig = Temple/Tool/Transport only
+    tri27_only, // Must be .t27 only (Zig shell wrapper OK)
+    zig_shell_ok, // Zig shell wrapper allowed
+    hybrid, // Both allowed (transition mode)
+    zig_ttt, // Zig = Temple/Tool/Transport only
 };
 
 pub const DogfoodFile = struct {
@@ -116,13 +116,13 @@ pub const DogfoodSet = struct {
     }
 
     pub fn checkNewZig(self: *DogfoodSet, staged_files: [][]const u8) ![]Violation {
-        var violations = std.ArrayList(Violation).init(self.allocator);
+        var violations = std.ArrayList(Violation).initCapacity(self.allocator, 0) catch @panic("OOM");
         errdefer {
             for (violations.items) |v| {
                 self.allocator.free(v.path);
                 self.allocator.free(v.reason);
             }
-            violations.deinit();
+            violations.deinit(self.allocator);
         }
 
         for (staged_files) |file_path| {
@@ -140,10 +140,11 @@ pub const DogfoodSet = struct {
                         const reason = try std.fmt.allocPrint(
                             self.allocator,
                             "New Zig file in tri27_only zone. Write .t27 or use _shell.zig wrapper instead.",
+                            .{},
                         );
                         errdefer self.allocator.free(reason);
 
-                        try violations.append(Violation{
+                        try violations.append(self.allocator, Violation{
                             .path = path_copy,
                             .reason = reason,
                         });
@@ -172,10 +173,11 @@ pub const DogfoodSet = struct {
                             const reason = try std.fmt.allocPrint(
                                 self.allocator,
                                 "DOGFOOD VIOLATION: Zig business logic forbidden. Write .t27 or use _shell.zig wrapper.",
+                                .{},
                             );
                             errdefer self.allocator.free(reason);
 
-                            try violations.append(Violation{
+                            try violations.append(self.allocator, Violation{
                                 .path = path_copy,
                                 .reason = reason,
                             });
@@ -204,7 +206,7 @@ pub const DogfoodSet = struct {
             print("  {s}✗{s} Missing .t27 equivalent\n", .{ RED, RESET });
         }
         total += 1;
-        print("\n");
+        print("\n", .{});
 
         print("{s}Zone P (Phoenix):{s} phoenix_medulla\n", .{ CYAN, RESET });
         if (self.files[1].has_t27_equivalent) {
@@ -214,7 +216,7 @@ pub const DogfoodSet = struct {
             print("  {s}✗{s} Missing .t27 equivalent\n", .{ RED, RESET });
         }
         total += 1;
-        print("\n");
+        print("\n", .{});
 
         print("{s}Zone Q (Queen):{s} queen_vmpfc\n", .{ CYAN, RESET });
         if (self.files[2].has_t27_equivalent) {
@@ -224,10 +226,10 @@ pub const DogfoodSet = struct {
             print("  {s}✗{s} Missing .t27 equivalent\n", .{ RED, RESET });
         }
         total += 1;
-        print("\n");
+        print("\n", .{});
 
         print("Progress: {d}/{d} ({d:.0}%)\n", .{ converted, total, @as(f32, @floatFromInt(converted)) * 100.0 / @as(f32, @floatFromInt(total)) });
-        print("\n");
+        print("\n", .{});
     }
 };
 

@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Metrics v4.2
+Trinity Cognitive Probes — Scientific Metrics v4.3
 
-Phase 4.2 Critical Implementation Fixes (2026-03-25):
+Phase 4.3 Critical Bug Fixes (2026-03-25):
 
-CRITICAL FIXES:
-1. ✅ BCa method: Fixed CDF → inverse CDF bug (v4.0)
-2. ✅ ΔConf: Reliable metacognitive metric for n<100 (Rahn et al. 2023)
-3. ✅ TH-Score: Threshold-weighted calibration (NeurIPS 2024)
-4. 🔴 Full-ECE: FIXED - Now aggregates across ALL tokens (v4.2)
-5. ✅ Adaptive confidence threshold: Median-based instead of fixed 0.5
-6. 🔴 Weighted ECE: FIXED - Now properly uses sample weights (v4.2)
-7. ✅ Improved norm_cdf: Using scipy for accuracy
-8. 🔴 norm_inverse: Moved to utils.py - no more duplication (v4.2)
+CRITICAL FIXES v4.3:
+1. ✅ Full-ECE: FIXED double-counting bug (was prob * prob, now just prob)
+2. ✅ LS-ECE: Added bounds checking for numerical stability
+3. ✅ meta-uncertainty: Added distribution check with MAD fallback
+4. ✅ Weighted bootstrap CI: Fixed weight propagation
 
-NEW METRICS v4.2:
-9. 🔴 meta-uncertainty: Bias-free metacognitive measure (Rahn 2023)
-10. 🔴 LS-ECE: Logit-smoothed continuous calibration (ICML 2024)
+PREVIOUS FIXES (v4.0-v4.2):
+5. ✅ BCa method: Fixed CDF → inverse CDF bug (v4.0)
+6. ✅ ΔConf: Reliable metacognitive metric for n<100 (Rahn et al. 2023)
+7. ✅ TH-Score: Threshold-weighted calibration (NeurIPS 2024)
+8. ✅ Adaptive confidence threshold: Median-based instead of fixed 0.5
+9. ✅ Weighted ECE: Now properly uses sample weights (v4.2)
+10. ✅ Improved norm_cdf: Using scipy for accuracy
+11. ✅ norm_inverse: Moved to utils.py - no more duplication (v4.2)
+
+METRICS:
+- meta-uncertainty: Bias-free metacognitive measure (Rahn 2023)
+- LS-ECE: Logit-smoothed continuous calibration (ICML 2024)
+- Full-ECE: Token-level calibration for LLMs (arXiv 2024)
 
 References:
 - Rahn et al. (2023) — ΔConf reliability (ICC=0.39 at 50 trials)
@@ -45,10 +51,15 @@ except ImportError:
 # =============================================================================
 
 def calculate_meta_uncertainty(
-    confidences: List[float]
+    confidences: List[float],
+    use_mad_fallback: bool = True
 ) -> float:
     """
     Calculate meta-uncertainty: standard deviation of confidences.
+
+    CRITICAL FIX v4.3: Now checks for normality and uses MAD if distribution
+    is non-normal. Standard deviation assumes normal distribution, which
+    is often violated in confidence data.
 
     CRITICAL NEW METRIC v4.2: meta-uncertainty has HIGH reliability
     (ICC > 0.5) compared to M-ratio (ICC = 0.16 at 50 trials).
@@ -67,19 +78,50 @@ def calculate_meta_uncertainty(
 
     Args:
         confidences: List of confidence values (0-1)
+        use_mad_fallback: If True, use MAD when distribution is non-normal
 
     Returns:
-        meta-uncertainty value (standard deviation, ≥ 0)
+        meta-uncertainty value (standard deviation or MAD, ≥ 0)
     """
     if not confidences or len(confidences) < 2:
         return 0.0
 
     n = len(confidences)
+
+    # Calculate median for MAD
+    sorted_conf = sorted(confidences)
+    if n % 2 == 0:
+        median = (sorted_conf[n // 2 - 1] + sorted_conf[n // 2]) / 2
+    else:
+        median = sorted_conf[n // 2]
+
+    # Calculate MAD (Median Absolute Deviation)
+    abs_deviations = [abs(c - median) for c in confidences]
+    mad = sorted(abs_deviations)[len(abs_deviations) // 2]
+
+    # MAD to std conversion factor for normal distribution
+    MAD_TO_STD = 1.4826
+
+    # CRITICAL v4.3 FIX: Check for normality using skewness approximation
+    # If distribution is highly skewed, use MAD instead of std
     mean_conf = sum(confidences) / n
 
-    # Calculate variance
-    variance = sum((c - mean_conf) ** 2 for c in confidences) / n
+    # Simple skewness check (using Pearson's moment coefficient)
+    if n >= 3:
+        variance = sum((c - mean_conf) ** 2 for c in confidences) / n
+        if variance > 0:
+            std_dev = math.sqrt(variance)
+            # Third moment (skewness)
+            m3 = sum((c - mean_conf) ** 3 for c in confidences) / n
+            skewness = m3 / (std_dev ** 3)
 
+            # If |skewness| > 1, distribution is significantly non-normal
+            # Use MAD as robust measure
+            if use_mad_fallback and abs(skewness) > 1.0:
+                return mad * MAD_TO_STD
+
+    # Default: use standard deviation
+    variance = sum((c - mean_conf) ** 2 for c in confidences) / n
     return math.sqrt(variance)
 
 
@@ -155,12 +197,22 @@ def calculate_ls_ece(
     n = len(confidences)
 
     # Clip confidences to avoid log(0)
-    eps = 1e-7
+    # CRITICAL v4.3 FIX: More conservative clipping for numerical stability
+    eps = 1e-6  # Increased from 1e-7 for better stability
     confidences_clipped = [max(eps, min(1 - eps, c)) for c in confidences]
 
-    # Convert to logit scale
+    # Convert to logit scale with bounds checking
+    # CRITICAL v4.3 FIX: Added bounds checking to prevent extreme values
     def logit(p: float) -> float:
-        return math.log(p) - math.log(1 - p)
+        """Logit transform with bounds checking for numerical stability."""
+        logit_val = math.log(p) - math.log(1 - p)
+        # Reasonable bounds: logit should be in [-10, 10] for p in [1e-6, 1-1e-6]
+        # This prevents numerical overflow in subsequent calculations
+        if logit_val > 10:
+            return 10.0
+        if logit_val < -10:
+            return -10.0
+        return logit_val
 
     logits = [logit(c) for c in confidences_clipped]
 
@@ -450,7 +502,8 @@ def calculate_full_ece(
         if not probs:
             continue
 
-        # CRITICAL: Iterate over ALL tokens, not just top-1
+        # CRITICAL v4.3 FIX: Iterate over ALL tokens, not just top-1
+        # FIXED: No more double-counting (was prob * weight where weight=prob)
         for token_idx, prob in enumerate(probs):
             if prob <= 0:
                 continue  # Skip zero-probability tokens
@@ -458,15 +511,13 @@ def calculate_full_ece(
             # Assign this token's probability to a bin based on its value
             bin_idx = min(int(prob * n_bins), n_bins - 1)
 
-            # Weight by probability mass (this is the key Full-ECE insight)
-            weight = prob
-
-            # For correct samples: token contributes positively to accuracy
-            # For incorrect samples: token contributes negatively
-            # The probability mass IS the weight
-            bin_conf_weighted_sum[bin_idx] += prob * weight
-            bin_acc_weighted_sum[bin_idx] += weight if is_correct else 0.0
-            bin_total_weight[bin_idx] += weight
+            # CRITICAL FIX v4.3: Aggregate probability mass directly, NOT prob * prob!
+            # The probability mass itself is the contribution to confidence
+            bin_conf_weighted_sum[bin_idx] += prob  # FIXED: was prob * weight
+            # For accuracy: weight by probability mass and correctness
+            bin_acc_weighted_sum[bin_idx] += prob if is_correct else 0.0  # FIXED: was weight
+            # Track total probability mass in this bin
+            bin_total_weight[bin_idx] += prob
 
     # Calculate Full-ECE
     ece = 0.0

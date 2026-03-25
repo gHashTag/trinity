@@ -19,7 +19,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
-const farm_accounts_mod = @import("farm_accounts.zig");
+const farm_mod = @import("farm");
+const farm_accounts_mod = farm_mod.farm_accounts;
 const Account = farm_accounts_mod.Account;
 
 const print = std.debug.print;
@@ -47,7 +48,7 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "stats")) {
         return runFarmStatsCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "evolve")) {
-        const tri_farm_evolve = @import("evolution.zig");
+        const tri_farm_evolve = @import("farm").evolution;
         return tri_farm_evolve.runEvolveCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "from-issues")) {
         const farm_from_issues = @import("farm_from_issues.zig");
@@ -1111,7 +1112,7 @@ fn daemonStart(allocator: Allocator) !void {
     print("\n", .{});
 
     // Main daemon loop
-    const tri_farm_evolve = @import("evolution.zig");
+    const tri_farm_evolve = farm_mod.evolution;
     var sweep_count: u32 = 0;
 
     while (true) {
@@ -1771,7 +1772,7 @@ fn multiMacInit(allocator: Allocator) !void {
         }
     }
 
-    print("  Devices found: {d}\n\n", .{device_count });
+    print("  Devices found: {d}\n\n", .{device_count});
 
     // Initialize each device
     const wave9_device = @import("wave9_device.zig");
@@ -1802,7 +1803,8 @@ fn multiMacInit(allocator: Allocator) !void {
                     const wc_str = std.mem.trim(u8, next_line["workers_count:".len..], &std.ascii.whitespace);
                     workers_count = std.fmt.parseInt(usize, wc_str, 10) catch 16;
                 } else if (std.mem.startsWith(u8, next_line, "- id:") or
-                           std.mem.startsWith(u8, next_line, "devices:")) {
+                    std.mem.startsWith(u8, next_line, "devices:"))
+                {
                     break; // Next device
                 }
             }
@@ -1827,8 +1829,7 @@ fn multiMacInit(allocator: Allocator) !void {
             defer file.close();
             try file.writeAll(compose);
 
-            print("  {s}✅{s} Device {d}: {s} (workers {d}-{d})\n",
-                .{ GREEN, RESET, device_id, hostname, workers_start, workers_start + workers_count - 1 });
+            print("  {s}✅{s} Device {d}: {s} (workers {d}-{d})\n", .{ GREEN, RESET, device_id, hostname, workers_start, workers_start + workers_count - 1 });
         }
     }
 
@@ -1877,7 +1878,7 @@ fn multiMacStart(allocator: Allocator, args: []const []const u8) !void {
 
         if (result.term.Exited != 0 and result.term.Exited != 0) {
             print("  {s}❌{s} Device {d}: docker-compose failed\n", .{ RED, RESET, device_id });
-            print("     {s}\n", .{result.stderr });
+            print("     {s}\n", .{result.stderr});
         } else {
             print("  {s}✅{s} Device {d}: started\n", .{ GREEN, RESET, device_id });
             start_count += 1;
@@ -1924,7 +1925,7 @@ fn multiMacStop(allocator: Allocator) !void {
 
         if (result.term.Exited != 0 and result.term.Exited != 0) {
             print("  {s}❌{s} Device {d}: docker-compose failed\n", .{ RED, RESET, device_id });
-            print("     {s}\n", .{result.stderr });
+            print("     {s}\n", .{result.stderr});
         } else {
             print("  {s}✅{s} Device {d}: stopped\n", .{ GREEN, RESET, device_id });
             stop_count += 1;
@@ -1983,16 +1984,14 @@ fn multiMacStatus(allocator: Allocator) !void {
 
         if (device_total > 0) {
             const device_color = if (device_running == device_total) GREEN else YELLOW;
-            print("  {s}Device {d}: {d}/{d} running{s}\n",
-                .{ device_color, device_id, device_running, device_total, RESET });
+            print("  {s}Device {d}: {d}/{d} running{s}\n", .{ device_color, device_id, device_running, device_total, RESET });
             total_running += device_running;
             total_containers += device_total;
         }
     }
 
     const total_color = if (total_running == total_containers) GREEN else YELLOW;
-    print("\n  Total: {s}{d}/{d}{s} containers running\n\n",
-        .{ total_color, total_running, total_containers, RESET });
+    print("\n  Total: {s}{d}/{d}{s} containers running\n\n", .{ total_color, total_running, total_containers, RESET });
 }
 
 fn multiMacVerify(allocator: Allocator) !void {
@@ -2060,8 +2059,8 @@ fn multiMacVerify(allocator: Allocator) !void {
         }
     }
 
-    print("  Total workers: {d}\n", .{worker_count });
-    print("  Unique seeds collected: {d}\n", .{seeds.items.len });
+    print("  Total workers: {d}\n", .{worker_count});
+    print("  Unique seeds collected: {d}\n", .{seeds.items.len});
 
     // Check for duplicates
     var sorted = try allocator.dupe([]const u8, seeds.items);

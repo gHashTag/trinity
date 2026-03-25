@@ -28,8 +28,18 @@ const github = @import("github");
 pub const github_client = github.github_client;
 pub const github_app_auth = github.github_app_auth;
 
-// Farm management
-pub const farm_accounts = @import("farm_accounts.zig");
+// Farm management — now in farm zone (Wave 3)
+const farm = @import("farm");
+pub const farm_accounts = farm.farm_accounts;
+pub const evolution = farm.evolution;
+
+// Farm utilities (re-exported from farm zone for tri consumers)
+pub const railway_api = farm.railway_api;
+pub const tri_farm_ws = farm.tri_farm_ws;
+pub const hippocampus = farm.hippocampus;
+pub const experience_hooks = farm.experience_hooks;
+pub const tri_experience = farm.tri_experience;
+pub const sevo = farm.sevo;
 
 // Re-export commonly used types
 pub const TriColors = tri_colors.TriColors;

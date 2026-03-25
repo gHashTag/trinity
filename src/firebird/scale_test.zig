@@ -9,7 +9,8 @@ const std = @import("std");
 const firebird_vsa = @import("vsa.zig");
 const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
-const evolution = @import("evolution.zig");
+const farm = @import("farm");
+const evolution = farm.evolution;
 
 const TritVec = firebird_vsa.TritVec;
 

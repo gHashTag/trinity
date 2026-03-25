@@ -80,3 +80,145 @@ test "integration: write .t27 file" {
 
     try std.testing.expectEqualStrings(result.bytecode, content);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// WAVE 3: EFFECTS + HANDLERS INTEGRATION TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+fn buildPerformExpr(allocator: std.mem.Allocator) !*TypedExpr {
+    // perform state.get()
+    const arg = try allocator.create(TypedExpr);
+    arg.* = .{ .Int = .{ .value = 42 } };
+
+    const args = try allocator.alloc(*const TypedExpr, 1);
+    args[0] = arg;
+
+    const perform = try allocator.create(TypedExpr);
+    perform.* = .{ .Perform = .{
+        .effect_name = "State",
+        .operation = "get",
+        .args = args,
+    } };
+
+    return perform;
+}
+
+fn buildHandleExpr(allocator: std.mem.Allocator) !*TypedExpr {
+    // handle state { get(x) => x }
+    const body = try allocator.create(TypedExpr);
+    body.* = .{ .Int = .{ .value = 0 } };
+
+    const param = try allocator.create(TypedExpr);
+    param.* = .{ .Var = .{ .name = "x" } };
+
+    const handler_body = try allocator.create(TypedExpr);
+    handler_body.* = .{ .Var = .{ .name = "x" } };
+
+    const clauses = try allocator.create(@import("typechecker.zig").HandlerClauseTyped);
+    clauses.* = .{
+        .operation = "get",
+        .param_pattern = .{ .Var = "x" },
+        .body = handler_body,
+    };
+
+    const clause_slice = try allocator.alloc(@import("typechecker.zig").HandlerClauseTyped, 1);
+    clause_slice[0] = clauses.*;
+
+    const handle = try allocator.create(TypedExpr);
+    handle.* = .{ .Handle = .{
+        .effect_name = "State",
+        .clauses = clause_slice,
+        .body = body,
+    } };
+
+    return handle;
+}
+
+fn buildTryExpr(allocator: std.mem.Allocator) !*TypedExpr {
+    // try { perform state.get() } with { get(x) => x }
+    const perform = try buildPerformExpr(allocator);
+
+    const handler_body = try allocator.create(TypedExpr);
+    handler_body.* = .{ .Var = .{ .name = "x" } };
+
+    const clauses = try allocator.create(@import("typechecker.zig").HandlerClauseTyped);
+    clauses.* = .{
+        .operation = "get",
+        .param_pattern = .{ .Var = "x" },
+        .body = handler_body,
+    };
+
+    const clause_slice = try allocator.alloc(@import("typechecker.zig").HandlerClauseTyped, 1);
+    clause_slice[0] = clauses.*;
+
+    const try_expr = try allocator.create(TypedExpr);
+    try_expr.* = .{ .Try = .{
+        .computation = perform,
+        .handlers = clause_slice,
+    } };
+
+    return try_expr;
+}
+
+test "integration: perform expression compiles" {
+    const a = std.testing.allocator;
+    const expr = try buildPerformExpr(a);
+
+    const result = try compile(a, expr);
+    defer result.deinit(a);
+
+    try std.testing.expect(result.bytecode.len > 0);
+}
+
+test "integration: perform bytecode has EFFECT_PERFORM" {
+    const a = std.testing.allocator;
+    const expr = try buildPerformExpr(a);
+
+    const result = try compile(a, expr);
+    defer result.deinit(a);
+
+    // Check for EFFECT_PERFORM opcode (0x7A)
+    var has_effect_perform = false;
+    for (result.bytecode) |byte| {
+        if (byte == 0x7A) has_effect_perform = true;
+    }
+    try std.testing.expect(has_effect_perform);
+}
+
+test "integration: handle expression compiles" {
+    const a = std.testing.allocator;
+    const expr = try buildHandleExpr(a);
+
+    const result = try compile(a, expr);
+    defer result.deinit(a);
+
+    try std.testing.expect(result.bytecode.len > 0);
+}
+
+test "integration: try expression compiles" {
+    const a = std.testing.allocator;
+    const expr = try buildTryExpr(a);
+
+    const result = try compile(a, expr);
+    defer result.deinit(a);
+
+    try std.testing.expect(result.bytecode.len > 0);
+}
+
+test "integration: try bytecode has both opcodes" {
+    const a = std.testing.allocator;
+    const expr = try buildTryExpr(a);
+
+    const result = try compile(a, expr);
+    defer result.deinit(a);
+
+    // Check for EFFECT_PERFORM (0x7A) and EFFECT_HANDLE (0x7B)
+    var has_perform = false;
+    var has_handle = false;
+    for (result.bytecode) |byte| {
+        if (byte == 0x7A) has_perform = true;
+        if (byte == 0x7B) has_handle = true;
+    }
+    try std.testing.expect(has_perform);
+    try std.testing.expect(has_handle);
+}

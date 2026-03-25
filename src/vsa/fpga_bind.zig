@@ -7,7 +7,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const common = @import("common.zig");
-const HybridBigInt = common.HybridBigInt;
+// Import HybridBigInt from hybrid module via module system
+const hybrid_mod = @import("hybrid");
+const HybridBigInt = hybrid_mod.HybridBigInt;
 const Trit = common.Trit;
 
 pub const Config = struct {

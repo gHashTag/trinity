@@ -53,7 +53,7 @@ fn runScan(allocator: Allocator) !void {
     // Scan for .zig files in protected zones
     var violations: usize = 0;
 
-    const zones = [_][]const u8{"src/queen/", "src/brain/", "src/hslm/"};
+    const zones = [_][]const u8{ "src/queen/", "src/brain/", "src/hslm/" };
     for (zones) |zone| {
         var dir = std.fs.cwd().openDir(zone, .{ .iterate = true }) catch |err| {
             if (err == error.FileNotFound) continue;
@@ -72,7 +72,7 @@ fn runScan(allocator: Allocator) !void {
             if (std.mem.endsWith(u8, entry.path, "_shell.zig")) continue;
 
             // Check if .t27 equivalent exists
-            const full_path = try std.fs.path.join(allocator, &[_][]const u8{zone, entry.path});
+            const full_path = try std.fs.path.join(allocator, &[_][]const u8{ zone, entry.path });
             defer allocator.free(full_path);
 
             const t27_path = getT27PathFor(full_path);
@@ -127,8 +127,8 @@ fn runVerify(allocator: Allocator) !void {
         if (trimmed.len == 0) continue;
 
         // Check this single file
-        const file_slice = &[1][]const u8{trimmed};
-        const violations = try dogfood.checkNewZig(file_slice);
+        var file_array: [1][]const u8 = .{trimmed};
+        const violations = try dogfood.checkNewZig(file_array[0..]);
         defer {
             for (violations) |v| {
                 allocator.free(v.path);
@@ -151,17 +151,6 @@ fn runVerify(allocator: Allocator) !void {
         return;
     } else {
         std.debug.print("\n{s}❌ DOGFOOD VIOLATION: {d} file(s){s}\n", .{ RED, violation_count, RESET });
-        return DogfoodError.DogfoodViolation;
-    }
-
-    if (violations.len == 0) {
-        std.debug.print("{s}✅ All staged files pass dogfood check!{s}\n", .{ GREEN, RESET });
-    } else {
-        std.debug.print("\n{s}❌ DOGFOOD VIOLATION: {d} file(s){s}\n", .{ RED, violations.len, RESET });
-        for (violations) |v| {
-            std.debug.print("  {s}: {s}{s}\n", .{ RED, v.path, RESET });
-            std.debug.print("    {s}\n", .{v.reason});
-        }
         return DogfoodError.DogfoodViolation;
     }
 }

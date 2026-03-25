@@ -10,7 +10,8 @@ const firebird_vsa = @import("vsa.zig");
 const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
-const evolution = @import("evolution.zig");
+const farm = @import("farm");
+const evolution = farm.evolution;
 const parallel = @import("parallel.zig");
 const b2t = @import("b2t_integration.zig");
 const wasm_parser = @import("wasm_parser.zig");
@@ -463,7 +464,7 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const config = parallel.ParallelConfig{
         .base_config = .{
             .population_size = opts.pop,
-            .max_generations = opts.gen,
+            .max_generations = @intCast(opts.gen),
             .target_fitness = opts.target,
             .tournament_size = 3,
         },

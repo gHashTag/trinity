@@ -20,7 +20,8 @@ const GitHubClient = github_client.GitHubClient;
 const farm_telegram = @import("farm_telegram.zig");
 const issue_planner = @import("issue_planner.zig");
 const FarmTask = issue_planner.FarmTask;
-const evolution_mod = @import("evolution.zig");
+const farm = @import("farm");
+const evolution_mod = farm.evolution;
 
 // ANSI colors
 const RESET = "\x1b[0m";

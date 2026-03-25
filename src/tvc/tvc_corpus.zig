@@ -14,8 +14,9 @@
 
 const std = @import("std");
 const vsa = @import("vsa");
+const hybrid_mod = @import("hybrid");
 
-const HybridBigInt = vsa.HybridBigInt;
+const HybridBigInt = hybrid_mod.HybridBigInt;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

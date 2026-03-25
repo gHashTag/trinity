@@ -23,6 +23,15 @@ const MatchExpr = @import("typechecker.zig").MatchExpr;
 const PipeExpr = @import("typechecker.zig").PipeExpr;
 const MatchPattern = @import("typechecker.zig").MatchPattern;
 const MatchArm = @import("typechecker.zig").MatchArm;
+const PerformExpr = @import("typechecker.zig").PerformExpr;
+const HandleExpr = @import("typechecker.zig").HandleExpr;
+const TryExpr = @import("typechecker.zig").TryExpr;
+const MapExpr = @import("typechecker.zig").MapExpr;
+const ReduceExpr = @import("typechecker.zig").ReduceExpr;
+const ScanExpr = @import("typechecker.zig").ScanExpr;
+const FilterExpr = @import("typechecker.zig").FilterExpr;
+const FlatMapExpr = @import("typechecker.zig").FlatMapExpr;
+const ZipExpr = @import("typechecker.zig").ZipExpr;
 
 const BinaryOperator = @import("ast.zig").BinaryOperator;
 
@@ -65,6 +74,19 @@ pub const Opcode = enum(u8) {
     ARRAY_GET = 0x77, // Bounds-checked get
     ARRAY_LEN = 0x78, // Get compile-time length
     ARRAY_SET = 0x79, // Bounds-checked set
+
+    // Wave 2: Effects + Handlers opcodes
+    EFFECT_PERFORM = 0x7A, // Perform effect operation
+    EFFECT_HANDLE = 0x7B, // Handle effect
+    EFFECT_RESUME = 0x7C, // Resume from handler
+
+    // Wave 4: Array Combinator opcodes
+    ARRAY_MAP = 0x80, // Apply function to each element
+    ARRAY_REDUCE = 0x81, // Fold array with binary operation
+    ARRAY_SCAN = 0x82, // Prefix scan
+    ARRAY_FILTER = 0x83, // Filter by predicate
+    ARRAY_FLATMAP = 0x84, // Map and concatenate
+    ARRAY_ZIP = 0x85, // Pair two arrays
 
     HALT = 0xFF,
 };
@@ -171,6 +193,17 @@ pub fn compileExpr(cg: *Codegen, expr: *const TypedExpr) CodegenError!void {
         .ADT => |e| try compileADT(cg, e),
         .Match => |e| try compileMatch(cg, e),
         .Pipe => |e| try compilePipe(cg, e),
+        // Wave 2: Effects + Handlers
+        .Perform => |e| try compilePerformExpr(cg, e),
+        .Handle => |e| try compileHandleExpr(cg, e),
+        .Try => |e| try compileTryExpr(cg, e),
+        // Wave 4: Array Combinators
+        .Map => |e| try compileMapExpr(cg, e),
+        .Reduce => |e| try compileReduceExpr(cg, e),
+        .Scan => |e| try compileScanExpr(cg, e),
+        .Filter => |e| try compileFilterExpr(cg, e),
+        .FlatMap => |e| try compileFlatMapExpr(cg, e),
+        .Zip => |e| try compileZipExpr(cg, e),
     }
 }
 
@@ -398,6 +431,163 @@ pub fn compileArrayLen(cg: *Codegen, size: usize) CodegenError!void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: EFFECTS + HANDLERS COMPILATION
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+/// Compile perform expression: perform effect.operation(args)
+/// Desugars to pushing args and emitting EFFECT_PERFORM
+fn compilePerformExpr(cg: *Codegen, expr: PerformExpr) CodegenError!void {
+    // Push arguments in reverse order
+    var i: usize = expr.args.len;
+    while (i > 0) {
+        i -= 1;
+        try compileExpr(cg, expr.args[i]);
+        try cg.code.emit(Opcode.PUSH);
+    }
+
+    // Emit perform opcode
+    try cg.code.emit(Opcode.EFFECT_PERFORM);
+
+    // For now, we encode operation as a literal (simplified)
+    // Full implementation would encode effect_id and operation
+}
+
+/// Compile handle expression: handle effect { clauses }
+/// Desugars to a jump table with handler bodies
+fn compileHandleExpr(cg: *Codegen, expr: HandleExpr) CodegenError!void {
+    // Compile the body computation
+    try compileExpr(cg, expr.body);
+
+    // For each handler clause, generate a jump target
+    // Full implementation would:
+    // 1. Generate a jump table for operations
+    // 2. Compile each handler body
+    // 3. Emit EFFECT_RESUME after each handler
+    _ = expr.clauses;
+}
+
+/// Compile try expression: try { computation } with { handlers }
+/// Desugars to handle expression
+fn compileTryExpr(cg: *Codegen, expr: TryExpr) CodegenError!void {
+    // Compile the computation
+    try compileExpr(cg, expr.computation);
+
+    // Compile handler clauses
+    // Similar to handle expression
+    _ = expr.handlers;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// WAVE 4: ARRAY COMBINATOR COMPILATION
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+/// Compile map expression: map(array, func)
+/// Applies function to each element of array
+fn compileMapExpr(cg: *Codegen, expr: MapExpr) CodegenError!void {
+    // Compile array expression
+    try compileExpr(cg, expr.array);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile function expression
+    try compileExpr(cg, expr.func);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit MAP opcode
+    try cg.code.emit(Opcode.ARRAY_MAP);
+}
+
+/// Compile reduce expression: reduce(array, init, op)
+/// Folds array with binary operation starting from init
+fn compileReduceExpr(cg: *Codegen, expr: ReduceExpr) CodegenError!void {
+    // Compile array expression
+    try compileExpr(cg, expr.array);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile init expression
+    try compileExpr(cg, expr.init);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit operation as a byte
+    const op_byte = @as(u8, @intFromEnum(expr.operation));
+    try cg.code.emitByte(op_byte);
+
+    // Emit REDUCE opcode
+    try cg.code.emit(Opcode.ARRAY_REDUCE);
+}
+
+/// Compile scan expression: scan(array, init, op, scan_type)
+/// Computes prefix scan of array
+fn compileScanExpr(cg: *Codegen, expr: ScanExpr) CodegenError!void {
+    // Compile array expression
+    try compileExpr(cg, expr.array);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile init expression
+    try compileExpr(cg, expr.init);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit operation as a byte
+    const op_byte = @as(u8, @intFromEnum(expr.operation));
+    try cg.code.emitByte(op_byte);
+
+    // Emit scan type as a byte (0=Prefix, 1=Inclusive, 2=Exclusive)
+    const scan_type_byte: u8 = switch (expr.scan_type) {
+        .Prefix => 0,
+        .Inclusive => 1,
+        .Exclusive => 2,
+    };
+    try cg.code.emitByte(scan_type_byte);
+
+    // Emit SCAN opcode
+    try cg.code.emit(Opcode.ARRAY_SCAN);
+}
+
+/// Compile filter expression: filter(array, pred)
+/// Filters array elements by predicate
+fn compileFilterExpr(cg: *Codegen, expr: FilterExpr) CodegenError!void {
+    // Compile array expression
+    try compileExpr(cg, expr.array);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile predicate expression
+    try compileExpr(cg, expr.predicate);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit FILTER opcode
+    try cg.code.emit(Opcode.ARRAY_FILTER);
+}
+
+/// Compile flatMap expression: flatMap(array, func)
+/// Applies function to each element and concatenates results
+fn compileFlatMapExpr(cg: *Codegen, expr: FlatMapExpr) CodegenError!void {
+    // Compile array expression
+    try compileExpr(cg, expr.array);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile function expression
+    try compileExpr(cg, expr.func);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit FLATMAP opcode
+    try cg.code.emit(Opcode.ARRAY_FLATMAP);
+}
+
+/// Compile zip expression: zip(arr1, arr2)
+/// Pairs elements from two arrays
+fn compileZipExpr(cg: *Codegen, expr: ZipExpr) CodegenError!void {
+    // Compile first array
+    try compileExpr(cg, expr.array1);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Compile second array
+    try compileExpr(cg, expr.array2);
+    try cg.code.emit(Opcode.PUSH);
+
+    // Emit ZIP opcode
+    try cg.code.emit(Opcode.ARRAY_ZIP);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
@@ -636,4 +826,37 @@ test "Wave 2 opcodes are distinct" {
     try std.testing.expectEqual(@as(u8, 0x77), @intFromEnum(Opcode.ARRAY_GET));
     try std.testing.expectEqual(@as(u8, 0x78), @intFromEnum(Opcode.ARRAY_LEN));
     try std.testing.expectEqual(@as(u8, 0x79), @intFromEnum(Opcode.ARRAY_SET));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: EFFECTS + HANDLERS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+test "Wave 2 effect opcodes are distinct" {
+    try std.testing.expectEqual(@as(u8, 0x7A), @intFromEnum(Opcode.EFFECT_PERFORM));
+    try std.testing.expectEqual(@as(u8, 0x7B), @intFromEnum(Opcode.EFFECT_HANDLE));
+    try std.testing.expectEqual(@as(u8, 0x7C), @intFromEnum(Opcode.EFFECT_RESUME));
+}
+
+test "compile Perform expression" {
+    const a = std.testing.allocator;
+    const arg = try a.create(TypedExpr);
+    defer a.destroy(arg);
+    arg.* = TypedExpr{ .Int = .{ .value = 42 } };
+
+    const args = &[_]*const TypedExpr{arg};
+    const expr = TypedExpr{ .Perform = .{
+        .effect_name = "State",
+        .operation = "get",
+        .args = args,
+    } };
+
+    var cg = Codegen.init(a);
+    defer cg.deinit();
+
+    try compileExpr(&cg, &expr);
+
+    try std.testing.expect(cg.code.bytes.items.len > 0);
+    // Last byte should be EFFECT_PERFORM
+    try std.testing.expectEqual(@as(u8, @intFromEnum(Opcode.EFFECT_PERFORM)), cg.code.bytes.items[cg.code.bytes.items.len - 1]);
 }

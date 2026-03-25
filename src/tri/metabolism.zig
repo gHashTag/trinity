@@ -718,23 +718,15 @@ const DIM = "\x1b[2m";
 const WHITE = "\x1b[97m";
 const BG_RED = "\x1b[41m";
 
-const farm_evolve = @import("evolution.zig");
+// evolution module disabled - cross-import dependencies
 
 fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     // ═══════ AUTO-REFRESH: poll Railway for fresh data ═══════
     if (quick) {
         print("{s}⚡ Quick mode — using cached data{s}\n\n", .{ YELLOW, RESET });
     } else {
-        print("{s}🔄 Refreshing farm data...{s}", .{ DIM, RESET });
-        if (farm_evolve.loadState(allocator)) |state| {
-            var mutable_state = state;
-            var api_calls: u32 = 0;
-            farm_evolve.collectMetricsParallel(allocator, &mutable_state, &api_calls);
-            farm_evolve.saveState(mutable_state) catch {};
-            print(" {s}done ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
-        } else |_| {
-            print(" {s}(no state — run: tri farm evolve init){s}\n\n", .{ YELLOW, RESET });
-        }
+        // TODO: evolution module disabled due to cross-import dependencies
+        print("{s}🔄 Farm data refresh disabled (cross-module imports){s}\n\n", .{ YELLOW, RESET });
     }
 
     // ═══════ HEADER ═══════

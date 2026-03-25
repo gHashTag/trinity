@@ -323,43 +323,11 @@ pub const PhoenixCore = struct {
     }
 
     /// Query hippocampus for recent errors and create tasks for them
+    /// TODO: Stubbed - hippocampus interface needs update
     fn queryHippocampusErrors(self: *PhoenixCore) !void {
-        var errors = hippocampus.read(self.allocator, .{
-            .kind = .@"error",
-            .limit = 5,
-        }) catch return;
-        defer errors.deinit(self.allocator);
-
-        for (errors.items) |err| {
-            // Deduplicate: skip if we already have a task with similar summary
-            var duplicate = false;
-            for (self.tasks.items) |existing| {
-                if (std.mem.indexOf(u8, existing.description, err.summary()) != null) {
-                    duplicate = true;
-                    break;
-                }
-            }
-            if (duplicate) continue;
-
-            var id_buf: [32]u8 = undefined;
-            const task_id = std.fmt.bufPrint(&id_buf, "HIPP-ERR-{d}", .{err.ts}) catch continue;
-            const id_copy = self.allocator.dupe(u8, task_id) catch continue;
-            const desc_copy = self.allocator.dupe(u8, err.summary()) catch {
-                self.allocator.free(id_copy);
-                continue;
-            };
-
-            self.tasks.append(self.allocator, PhoenixTask{
-                .id = id_copy,
-                .description = desc_copy,
-                .priority = .p2_high,
-                .status = .pending,
-                .tech_tree_id = null,
-                .acceptance_criteria = self.allocator.dupe(u8, "") catch continue,
-                .files = .{},
-                .blocked_by = .{},
-            }) catch continue;
-        }
+        _ = self;
+        // TODO: Re-enable when hippocampus.read() interface is available
+        return;
     }
 
     /// Select next task based on priority and dependencies
@@ -488,7 +456,8 @@ pub const PhoenixCore = struct {
         }) catch return;
         defer self.allocator.free(data);
 
-        hippocampus.writeHeartbeat(self.allocator, "phoenix", data) catch {};
+        // TODO: Stubbed - hippocampus.writeHeartbeat() interface needs update
+        _ = data;
     }
 
     /// Schedule next wake time
@@ -523,58 +492,17 @@ pub const PhoenixCore = struct {
         // === NREM: Consolidation (episodes → rules) ===
         std.debug.print("{s}NREM phase:{s} Consolidating episodes → rules...\n", .{ CYAN, RESET });
 
-        var old_episodes = hippocampus.read(self.allocator, .{
-            .kind = .episode,
-            .limit = 100,
-        }) catch |err| {
-            std.debug.print("  {s}⚠️  Failed to read episodes: {}{s}\n", .{ YELLOW, err, RESET });
-            return;
-        };
-        defer old_episodes.deinit(self.allocator);
+        // TODO: Stubbed - hippocampus.read() interface needs update
+        const old_count: u32 = 0;
+        const rules_created: u32 = 0;
 
-        const now_ts: u64 = @intCast(std.time.timestamp());
-        const week_ago = now_ts -| (7 * 24 * 3600);
-        var old_count: u32 = 0;
-        for (old_episodes.items) |ep| {
-            if (ep.ts < week_ago) old_count += 1;
-        }
-
-        // Group by agent and create summary rules
-        var rules_created: u32 = 0;
-        if (old_count > 0) {
-            var agent_groups = std.StringHashMap(u32).init(self.allocator);
-            defer agent_groups.deinit();
-
-            for (old_episodes.items) |ep| {
-                if (ep.ts >= week_ago) continue;
-                const gop = try agent_groups.getOrPut(ep.agent());
-                gop.value_ptr.* += 1;
-            }
-
-            var iter = agent_groups.iterator();
-            while (iter.next()) |entry| {
-                var buf: [256]u8 = undefined;
-                var data_buf: [128]u8 = undefined;
-                const summary = std.fmt.bufPrint(&buf, "Week summary {s}: {d} episodes consolidated (sleep cycle)", .{ entry.key_ptr.*, entry.value_ptr.* }) catch "consolidated";
-                const data = std.fmt.bufPrint(&data_buf, "{{\"episodes\":{d},\"consolidated_at\":{d}}}", .{ entry.value_ptr.*, now_ts }) catch "{}";
-                try hippocampus.writeRule(self.allocator, entry.key_ptr.*, summary, data);
-                rules_created += 1;
-            }
-        }
-
-        std.debug.print("  {s}✅{s} Consolidated {d} old episodes → {d} rules\n\n", .{ GREEN, RESET, old_count, rules_created });
+        std.debug.print("  {s}⊙{s} NREM phase skipped (hippocampus stub)\n\n", .{ DIM, RESET });
 
         // === REM: Dream Replay (errors → fix_plan tasks) ===
         std.debug.print("{s}REM phase:{s} Dream replay — errors → fix_plan.md...\n", .{ MAGENTA, RESET });
 
-        var recent_errors = hippocampus.read(self.allocator, .{
-            .kind = .@"error",
-            .limit = 10,
-        }) catch |err| {
-            std.debug.print("  {s}⚠️  Failed to read errors: {}{s}\n", .{ YELLOW, err, RESET });
-            return;
-        };
-        defer recent_errors.deinit(self.allocator);
+        // TODO: Stubbed - hippocampus.read() interface needs update
+        const recent_errors_len: u32 = 0;
 
         // === Corpus Callosum: Import arena memories ===
         std.debug.print("{s}Corpus Callosum:{s} Importing arena memories...\n", .{ CYAN, RESET });
@@ -582,35 +510,7 @@ pub const PhoenixCore = struct {
             std.debug.print("  {s}⚠️  Arena import failed: {}{s}\n", .{ YELLOW, err, RESET });
         };
 
-        // Write errors to fix_plan.md
-        if (recent_errors.items.len > 0) {
-            var written: u32 = 0;
-            for (recent_errors.items) |err| {
-                if (try self.isAlreadyInFixPlan(err.summary())) continue;
-
-                const fix_plan_path = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".phoenix", "fix_plan.md" });
-                defer self.allocator.free(fix_plan_path);
-
-                const fix_file = std.fs.cwd().openFile(fix_plan_path, .{ .mode = .write_only }) catch {
-                    // Create directory and file if not exists
-                    try std.fs.cwd().makePath(".phoenix");
-                    const file = try std.fs.cwd().createFile(fix_plan_path, .{});
-                    try file.writeAll("# Phoenix Fix Plan (Dream Replay)\n\n");
-                    file.close();
-                    return error.FileNotFound; // Force retry
-                };
-
-                defer fix_file.close();
-                try fix_file.seekFromEnd(0);
-                var line_buf: [512]u8 = undefined;
-                const line = std.fmt.bufPrint(&line_buf, "- [ ] 💭 DREAM: {s}\n", .{err.summary()}) catch continue;
-                try fix_file.writeAll(line);
-                written += 1;
-            }
-            std.debug.print("  {s}✅{s} Dreamed {d} errors → fix_plan.md\n\n", .{ GREEN, RESET, written });
-        } else {
-            std.debug.print("  {s}⊙{s} No recent errors to dream about\n\n", .{ DIM, RESET });
-        }
+        std.debug.print("  {s}⊙{s} REM phase skipped (hippocampus stub)\n\n", .{ DIM, RESET });
 
         // === IMMUNE RESPONSE: Auto-heal (Wave 5) ===
         std.debug.print("{s}Immune phase:{s} Analyzing and healing...\n", .{ GREEN, RESET });
@@ -631,11 +531,11 @@ pub const PhoenixCore = struct {
         }
 
         // Log sleep event
-        var buf: [256]u8 = undefined;
-        var data_buf: [128]u8 = undefined;
-        const sleep_summary = std.fmt.bufPrint(&buf, "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena, healed {d}", .{ old_count, rules_created, recent_errors.items.len, immune_healed }) catch "sleep";
-        const sleep_data = std.fmt.bufPrint(&data_buf, "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d},\"immune_healed\":{d}}}", .{ old_count, rules_created, recent_errors.items.len, immune_healed }) catch "{}";
-        try hippocampus.writeObservation(self.allocator, "phoenix", sleep_summary, sleep_data);
+        // TODO: Stubbed - hippocampus.writeObservation() interface needs update
+        _ = old_count;
+        _ = rules_created;
+        _ = recent_errors_len;
+        _ = immune_healed;
 
         std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     }

@@ -6,7 +6,9 @@ const std = @import("std");
 const common = @import("common.zig");
 const core = @import("core.zig");
 const encoding = @import("encoding.zig");
-const HybridBigInt = common.HybridBigInt;
+// Import HybridBigInt from hybrid module via module system
+const hybrid_mod = @import("hybrid");
+const HybridBigInt = hybrid_mod.HybridBigInt;
 const Trit = common.Trit;
 const MAX_TRITS = common.MAX_TRITS;
 

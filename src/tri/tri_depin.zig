@@ -24,7 +24,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
-const farm_accounts_mod = @import("farm_accounts.zig");
+const farm = @import("farm");
+const farm_accounts_mod = farm.farm_accounts;
 const Account = farm_accounts_mod.Account;
 
 // DePIN modules for directed discovery (imported via build.zig)

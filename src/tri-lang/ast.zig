@@ -45,7 +45,18 @@ pub const Declaration = union(enum) {
     EnumDef: EnumDecl,
     TypeAlias: TypeAliasDecl,
     Pipeline: PipelineDecl,
-    // Later: EffectDecl, TestDecl, etc.
+    EffectDef: EffectDecl,
+    // Later: TestDecl, etc.
+};
+
+/// Top-level AST node (unified type for all declarations)
+pub const Node = union(enum) {
+    Function: FunctionDecl,
+    StructDef: StructDecl,
+    EnumDef: EnumDecl,
+    TypeAlias: TypeAliasDecl,
+    PipelineRef: PipelineRefExpr,
+    EffectDef: EffectDecl,
 };
 
 /// Function declaration: fn name(params) -> return_type { body }
@@ -108,6 +119,20 @@ pub const PipelineDecl = struct {
     params: []const Param,
     /// Pipeline body (pipe expression or identifier)
     body: Expr,
+    loc: SourceLocation,
+};
+
+/// Effect declaration: effect State { get, set(value) }
+pub const EffectDecl = struct {
+    name: []const u8,
+    operations: []const EffectOperation,
+    loc: SourceLocation,
+};
+
+/// Effect operation declaration
+pub const EffectOperation = struct {
+    name: []const u8,
+    payload_type: ?Type,
     loc: SourceLocation,
 };
 
@@ -231,6 +256,7 @@ pub const HandlerClause = struct {
     param_pattern: Pattern,
     /// Handler body expression
     body: Expr,
+    loc: SourceLocation,
 };
 
 // ╔════════════════════════════════════════════════════════════════════════╗
@@ -267,8 +293,10 @@ pub const Expr = union(enum) {
     PipelineRef: PipelineRefExpr,
 
     // Effects (algebraic effects and handlers)
-    Effect: EffectExpr,
+    Perform: PerformExpr,
+    Handle: HandleExpr,
     Try: TryExpr,
+    Effect: EffectExpr,
 
     // Array combinators (Futhark-style)
     Map: MapExpr,
@@ -281,6 +309,9 @@ pub const Expr = union(enum) {
     // Typed hole (for autocode generation)
     Hole: HoleExpr,
 };
+
+/// Alias for Expr (used by parser)
+pub const Expression = Expr;
 
 /// Integer literal
 pub const IntLiteralExpr = struct {
@@ -304,6 +335,26 @@ pub const EffectExpr = struct {
     args: []const Expr,
     /// Optional handler
     handler: ?HandlerBody,
+    loc: SourceLocation,
+};
+
+/// Perform expression: perform effect.operation(args)
+pub const PerformExpr = struct {
+    /// Effect name (may be empty for inferred effects)
+    effect_name: []const u8,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    loc: SourceLocation,
+};
+
+/// Handle expression: handle effect { op1(pattern) => body, ... }
+pub const HandleExpr = struct {
+    /// Effect name to handle
+    effect_name: []const u8,
+    /// Handler clauses
+    clauses: []const HandlerClause,
     loc: SourceLocation,
 };
 
@@ -642,6 +693,8 @@ pub const Type = union(enum) {
     Enum: TypeEnum,
     /// Named type reference / alias
     Named: TypeNamed,
+    /// Platform target for dual-target codegen
+    Platform: TypePlatform,
 };
 
 /// Trit types (native)
@@ -755,6 +808,25 @@ pub const TypeEnum = struct {
 /// Named type reference
 pub const TypeNamed = struct {
     name: []const u8,
+};
+
+/// Platform type for dual-target codegen
+pub const TypePlatform = struct {
+    /// Platform target
+    target: PlatformTarget,
+};
+
+/// Platform target for dual-target codegen (Roc-style)
+/// Allows specifying which backend to compile for
+pub const PlatformTarget = enum(u2) {
+    /// CPU target - generates Zig code
+    CPU = 0,
+    /// FPGA target - generates Verilog
+    FPGA = 1,
+    /// VM target - generates TRI-27 bytecode
+    VM = 2,
+    /// Auto - let the compiler decide
+    Auto = 3,
 };
 
 // ╔════════════════════════════════════════════════════════════════════════╗

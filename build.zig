@@ -209,6 +209,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
 
@@ -413,6 +417,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_e2e_tests = b.addRunArtifact(e2e_tests);
@@ -426,6 +434,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
@@ -2334,6 +2346,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Railway API module — shared between tri and farm
+    const railway_api_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/railway_api.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Eval module — E-zone type checking, validation
     const eval_mod = b.createModule(.{
         .root_source_file = b.path("src/eval/type_checker.zig"),
@@ -2384,6 +2403,49 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    // Dev modules (shared between tri and farm) - must be defined before farm_mod
+    const dev_pipeline_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_pipeline.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_farm_evolve_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_farm_evolve.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_scan_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_scan.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_pick_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_pick.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_loop_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_loop.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Farm module — F-zone (Wave 3: zone separation)
+    const farm_mod = b.createModule(.{
+        .root_source_file = b.path("src/farm/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "railway_api", .module = railway_api_mod },
+            .{ .name = "dev_pipeline", .module = dev_pipeline_mod },
+            .{ .name = "dev_farm_evolve", .module = dev_farm_evolve_mod },
+            .{ .name = "dev_scan", .module = dev_scan_mod },
+            .{ .name = "dev_pick", .module = dev_pick_mod },
+            .{ .name = "dev_loop", .module = dev_loop_mod },
+        },
+    });
+
     // Queen module — Q-zone Coordination
     // NOTE: Individual brain and tri modules added to avoid file ownership conflicts
     const queen_mod = b.createModule(.{
@@ -3088,6 +3150,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "queen", .module = queen_mod },
                 // GitHub module (G-zone)
                 .{ .name = "github", .module = github_mod },
+                // Farm module (F-zone)
+                .{ .name = "farm", .module = farm_mod },
                 // Q-zone modules (individual imports for tri compatibility)
                 .{ .name = "cortex", .module = cortex_mod },
                 .{ .name = "faculty_types", .module = faculty_types_mod },
@@ -3263,6 +3327,32 @@ pub fn build(b: *std.Build) void {
                 // Railway Circuit Breaker — 3-tier production-grade protection
                 .{ .name = "railway_circuit_breaker", .module = b.createModule(.{
                     .root_source_file = b.path("src/tri/railway_circuit_breaker.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // Dev modules (shared between tri and farm)
+                .{ .name = "dev_pipeline", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_pipeline.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_farm_evolve", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_farm_evolve.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_scan", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_scan.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_pick", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_pick.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_loop", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_loop.zig"),
                     .target = target,
                     .optimize = optimize,
                 }) },

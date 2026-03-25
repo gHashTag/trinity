@@ -81,7 +81,7 @@ pub const Parser = struct {
         return nodes.toOwnedSlice();
     }
 
-    /// Parse a declaration (function, struct, enum, type alias, pipeline)
+    /// Parse a declaration (function, struct, enum, type alias, pipeline, effect)
     fn parseDecl(self: *Self) ParseError!ast.Node {
         // Check for visibility modifier
         var is_pub = false;
@@ -104,6 +104,10 @@ pub const Parser = struct {
         }
         if (self.isKeyword(.Pipeline)) {
             return self.parsePipelineDecl(is_pub);
+        }
+        // Wave 2: Effects + Handlers
+        if (self.isKeyword(.Effect)) {
+            return self.parseEffectDecl(is_pub);
         }
 
         return error.UnexpectedToken;
@@ -321,6 +325,16 @@ pub const Parser = struct {
         if (self.isKeyword(.Match)) {
             return self.parseMatchExpr();
         }
+        // Wave 2: Effects + Handlers
+        if (self.isKeyword(.Perform)) {
+            return self.parsePerformExpr();
+        }
+        if (self.isKeyword(.Handle)) {
+            return self.parseHandleExpr();
+        }
+        if (self.isKeyword(.Try)) {
+            return self.parseTryExpr();
+        }
 
         // Expression statement
         const expr = try self.parseExpr();
@@ -498,6 +512,14 @@ pub const Parser = struct {
     fn parsePrimaryExpr(self: *Self) ParseError!ast.Expression {
         const loc = self.lexer.location();
 
+        // Wave 4: Check for array combinators first
+        if (self.isKeyword(.Map)) return self.parseMapExpr();
+        if (self.isKeyword(.Reduce)) return self.parseReduceExpr();
+        if (self.isKeyword(.Scan)) return self.parseScanExpr();
+        if (self.isKeyword(.Filter)) return self.parseFilterExpr();
+        if (self.isKeyword(.FlatMap)) return self.parseFlatMapExpr();
+        if (self.isKeyword(.Zip)) return self.parseZipExpr();
+
         switch (self.current_token) {
             .IntLiteral => |v| {
                 try self.advance();
@@ -557,6 +579,194 @@ pub const Parser = struct {
         return ast.Expression{
             .ArrayLiteral = .{
                 .elements = try elements.toOwnedSlice(),
+                .loc = loc,
+            },
+        };
+    }
+
+    /// ═══════════════════════════════════════════════════════════════════════
+    // WAVE 4: ARRAY COMBINATORS
+    // ═════════════════════════════════════════════════════════════════════════════════════
+
+    /// Parse map expression: map(array, func)
+    fn parseMapExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.Map);
+        try self.expectToken(.LeftParen);
+
+        const array = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const func = try self.parseExpr();
+        try self.expectToken(.RightParen);
+
+        return ast.Expression{
+            .Map = .{
+                .array = array,
+                .func = func,
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse reduce expression: reduce(array, init, op)
+    fn parseReduceExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.Reduce);
+        try self.expectToken(.LeftParen);
+
+        const array = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const init_val = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        // Parse operator (binary operator token)
+        if (self.current_token != .Operator) {
+            return error.UnexpectedToken;
+        }
+        const op_token = self.current_token.Operator;
+        try self.advance();
+
+        try self.expectToken(.RightParen);
+
+        // Map operator token to AST BinaryOperator
+        const op: ast.BinaryOperator = switch (op_token) {
+            .Add => .Add,
+            .Sub => .Sub,
+            .Mul => .Mul,
+            .Div => .Div,
+            .Mod => .Mod,
+            .BitAnd => .BitAnd,
+            .BitOr => .BitOr,
+            .BitXor => .BitXor,
+            else => .Add, // Default to Add
+        };
+
+        return ast.Expression{
+            .Reduce = .{
+                .array = array,
+                .init = init_val,
+                .operation = op,
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse scan expression: scan(array, init, op, scan_type?)
+    fn parseScanExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.Scan);
+        try self.expectToken(.LeftParen);
+
+        const array = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const init_val = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        // Parse operator
+        if (self.current_token != .Operator) {
+            return error.UnexpectedToken;
+        }
+        const op_token = self.current_token.Operator;
+        try self.advance();
+
+        // Optional scan type specifier
+        var scan_type: ast.ScanType = .Prefix;
+        if (self.current_token == .Comma) {
+            try self.advance();
+            if (self.isKeyword(.Inclusive)) {
+                scan_type = .Inclusive;
+                try self.advance();
+            } else if (self.isKeyword(.Exclusive)) {
+                scan_type = .Exclusive;
+                try self.advance();
+            } else if (self.isKeyword(.Prefix)) {
+                scan_type = .Prefix;
+                try self.advance();
+            }
+        }
+
+        try self.expectToken(.RightParen);
+
+        const op: ast.BinaryOperator = switch (op_token) {
+            .Add => .Add,
+            .Sub => .Sub,
+            .Mul => .Mul,
+            .Div => .Div,
+            else => .Add,
+        };
+
+        return ast.Expression{
+            .Scan = .{
+                .array = array,
+                .init = init_val,
+                .operation = op,
+                .scan_type = scan_type,
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse filter expression: filter(array, pred)
+    fn parseFilterExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.Filter);
+        try self.expectToken(.LeftParen);
+
+        const array = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const predicate = try self.parseExpr();
+        try self.expectToken(.RightParen);
+
+        return ast.Expression{
+            .Filter = .{
+                .array = array,
+                .predicate = predicate,
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse flatMap expression: flatMap(array, func)
+    fn parseFlatMapExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.FlatMap);
+        try self.expectToken(.LeftParen);
+
+        const array = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const func = try self.parseExpr();
+        try self.expectToken(.RightParen);
+
+        return ast.Expression{
+            .FlatMap = .{
+                .array = array,
+                .func = func,
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse zip expression: zip(arr1, arr2)
+    fn parseZipExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+        try self.expectKeyword(.Zip);
+        try self.expectToken(.LeftParen);
+
+        const array1 = try self.parseExpr();
+        try self.expectToken(.Comma);
+
+        const array2 = try self.parseExpr();
+        try self.expectToken(.RightParen);
+
+        return ast.Expression{
+            .Zip = .{
+                .array1 = array1,
+                .array2 = array2,
                 .loc = loc,
             },
         };
@@ -643,6 +853,24 @@ pub const Parser = struct {
         // Wave 2: Fixed-size array: [N]T
         if (self.current_token == .LeftBracket) {
             return self.parseArrayType();
+        }
+
+        // Wave 4: Platform type: CPU, FPGA, VM, Auto
+        if (self.isKeyword(.CPU)) {
+            try self.advance();
+            return ast.Type{ .Platform = .{ .target = .CPU } };
+        }
+        if (self.isKeyword(.FPGA)) {
+            try self.advance();
+            return ast.Type{ .Platform = .{ .target = .FPGA } };
+        }
+        if (self.isKeyword(.VM)) {
+            try self.advance();
+            return ast.Type{ .Platform = .{ .target = .VM } };
+        }
+        if (self.isKeyword(.Auto)) {
+            try self.advance();
+            return ast.Type{ .Platform = .{ .target = .Auto } };
         }
 
         // Named type (struct or enum)
@@ -920,5 +1148,213 @@ pub const Parser = struct {
         }
 
         return error.UnexpectedToken;
+    }
+
+    /// ═══════════════════════════════════════════════════════════════════════
+    // WAVE 2: EFFECTS + HANDLERS
+    // ═════════════════════════════════════════════════════════════════════════════════════
+
+    /// Parse effect declaration: effect State { get, set(value) }
+    fn parseEffectDecl(self: *Self, is_pub: bool) ParseError!ast.Node {
+        _ = is_pub;
+        const loc = self.lexer.location();
+
+        try self.expectKeyword(.Effect);
+        const name = try self.expectIdentifier();
+
+        try self.expectToken(.LeftBrace);
+
+        var operations = std.ArrayList(ast.EffectOperation).init(self.allocator);
+        while (self.current_token != .RightBrace) {
+            const op_name = try self.expectIdentifier();
+
+            // Check for payload: op(value)
+            var payload_type: ?ast.Type = null;
+            if (self.current_token == .LeftParen) {
+                try self.advance();
+                payload_type = try self.parseType();
+                try self.expectToken(.RightParen);
+            }
+
+            try operations.append(.{
+                .name = op_name,
+                .payload_type = payload_type,
+                .loc = loc,
+            });
+
+            if (self.current_token == .Comma) {
+                try self.advance();
+            }
+        }
+
+        try self.expectToken(.RightBrace);
+
+        return ast.Node{
+            .EffectDef = .{
+                .name = name,
+                .operations = try operations.toOwnedSlice(),
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse perform expression: perform effect.operation(args)
+    fn parsePerformExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+
+        try self.expectKeyword(.Perform);
+
+        // Parse effect name or direct operation
+        const effect_or_op = try self.expectIdentifier();
+
+        // Check for effect.operation syntax
+        var effect_name: []const u8 = undefined;
+        var op_name: []const u8 = undefined;
+
+        if (self.current_token == .Dot) {
+            // effect.operation syntax
+            effect_name = effect_or_op;
+            try self.advance(); // consume .
+            op_name = try self.expectIdentifier();
+        } else {
+            // Direct operation name (infer effect from context)
+            effect_name = "";
+            op_name = effect_or_op;
+        }
+
+        // Parse arguments
+        var args = std.ArrayList(ast.Expression).init(self.allocator);
+        if (self.current_token == .LeftParen) {
+            try self.advance();
+            while (self.current_token != .RightParen) {
+                const arg = try self.parseExpr();
+                try args.append(arg);
+
+                if (self.current_token == .Comma) {
+                    try self.advance();
+                }
+            }
+            try self.expectToken(.RightParen);
+        }
+
+        return ast.Expression{
+            .Perform = .{
+                .effect_name = effect_name,
+                .operation = op_name,
+                .args = try args.toOwnedSlice(),
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse handle expression: handle effect { computation }
+    fn parseHandleExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+
+        try self.expectKeyword(.Handle);
+
+        // Parse effect name
+        const effect_name = try self.expectIdentifier();
+
+        // Parse handler clauses: { op1(pattern) => body, op2(pattern) => body }
+        try self.expectToken(.LeftBrace);
+
+        var clauses = std.ArrayList(ast.HandlerClause).init(self.allocator);
+        while (self.current_token != .RightBrace) {
+            const op_name = try self.expectIdentifier();
+
+            // Parse parameter pattern
+            var param_pattern: ast.Pattern = undefined;
+            if (self.current_token == .LeftParen) {
+                try self.advance();
+                param_pattern = try self.parsePattern();
+                try self.expectToken(.RightParen);
+            } else {
+                // No parameter, use wildcard
+                param_pattern = ast.Pattern{ .Wildcard = {} };
+            }
+
+            try self.expectToken(.Arrow);
+            const body = try self.parseExpr();
+
+            try clauses.append(.{
+                .operation = op_name,
+                .param_pattern = param_pattern,
+                .body = body,
+                .loc = loc,
+            });
+
+            if (self.current_token == .Comma) {
+                try self.advance();
+            }
+        }
+
+        try self.expectToken(.RightBrace);
+
+        return ast.Expression{
+            .Handle = .{
+                .effect_name = effect_name,
+                .clauses = try clauses.toOwnedSlice(),
+                .loc = loc,
+            },
+        };
+    }
+
+    /// Parse try expression: try { computation } with { handlers }
+    fn parseTryExpr(self: *Self) ParseError!ast.Expression {
+        const loc = self.lexer.location();
+
+        try self.expectKeyword(.Try);
+
+        // Parse computation block
+        try self.expectToken(.LeftBrace);
+        const computation = try self.parseExpr();
+        try self.expectToken(.RightBrace);
+
+        // Parse with clause (optional)
+        var handlers: []ast.HandlerClause = &[_]ast.HandlerClause{};
+        if (self.current_token == .LeftBrace) {
+            try self.advance();
+
+            var clauses = std.ArrayList(ast.HandlerClause).init(self.allocator);
+            while (self.current_token != .RightBrace) {
+                const op_name = try self.expectIdentifier();
+
+                // Parse parameter pattern
+                var param_pattern: ast.Pattern = undefined;
+                if (self.current_token == .LeftParen) {
+                    try self.advance();
+                    param_pattern = try self.parsePattern();
+                    try self.expectToken(.RightParen);
+                } else {
+                    param_pattern = ast.Pattern{ .Wildcard = {} };
+                }
+
+                try self.expectToken(.Arrow);
+                const body = try self.parseExpr();
+
+                try clauses.append(.{
+                    .operation = op_name,
+                    .param_pattern = param_pattern,
+                    .body = body,
+                    .loc = loc,
+                });
+
+                if (self.current_token == .Comma) {
+                    try self.advance();
+                }
+            }
+
+            try self.expectToken(.RightBrace);
+            handlers = try clauses.toOwnedSlice();
+        }
+
+        return ast.Expression{
+            .Try = .{
+                .computation = computation,
+                .handlers = handlers,
+                .loc = loc,
+            },
+        };
     }
 };

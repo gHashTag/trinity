@@ -13,9 +13,9 @@
 
 const std = @import("std");
 const vsa = @import("vsa");
-const hybrid = @import("hybrid.zig");
+const hybrid_mod = @import("hybrid");
 
-const HybridBigInt = hybrid.HybridBigInt;
+const HybridBigInt = hybrid_mod.HybridBigInt;
 
 const MAX_RESULTS = 100;
 const MAX_LINES = 10000;

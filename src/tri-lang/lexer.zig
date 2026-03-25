@@ -146,6 +146,32 @@ pub const Keyword = enum(u16) {
     Inout,
     Sink,
     Set,
+
+    // Wave 2: Effects + Handlers
+    Effect,
+    Perform,
+    Handle,
+    Try,
+    State,
+    Error,
+    Async,
+
+    // Wave 4: Array Combinators
+    Map,
+    Reduce,
+    Scan,
+    Filter,
+    FlatMap,
+    Zip,
+    Inclusive,
+    Exclusive,
+    Prefix,
+
+    // Wave 4: Platform types
+    CPU,
+    FPGA,
+    VM,
+    Auto,
 };
 
 /// Operators
@@ -627,6 +653,29 @@ pub const Lexer = struct {
                 if (std.mem.eql(u8, str, "inout")) return .Inout;
                 if (std.mem.eql(u8, str, "sink")) return .Sink;
                 if (std.mem.eql(u8, str, "set")) return .Set;
+                // Wave 2: Effects + Handlers
+                if (std.mem.eql(u8, str, "Effect")) return .Effect;
+                if (std.mem.eql(u8, str, "perform")) return .Perform;
+                if (std.mem.eql(u8, str, "handle")) return .Handle;
+                if (std.mem.eql(u8, str, "try")) return .Try;
+                if (std.mem.eql(u8, str, "State")) return .State;
+                if (std.mem.eql(u8, str, "Error")) return .Error;
+                if (std.mem.eql(u8, str, "Async")) return .Async;
+                // Wave 4: Array Combinators
+                if (std.mem.eql(u8, str, "map")) return .Map;
+                if (std.mem.eql(u8, str, "reduce")) return .Reduce;
+                if (std.mem.eql(u8, str, "scan")) return .Scan;
+                if (std.mem.eql(u8, str, "filter")) return .Filter;
+                if (std.mem.eql(u8, str, "flatMap")) return .FlatMap;
+                if (std.mem.eql(u8, str, "zip")) return .Zip;
+                if (std.mem.eql(u8, str, "inclusive")) return .Inclusive;
+                if (std.mem.eql(u8, str, "exclusive")) return .Exclusive;
+                if (std.mem.eql(u8, str, "prefix")) return .Prefix;
+                // Wave 4: Platform types
+                if (std.mem.eql(u8, str, "CPU")) return .CPU;
+                if (std.mem.eql(u8, str, "FPGA")) return .FPGA;
+                if (std.mem.eql(u8, str, "VM")) return .VM;
+                if (std.mem.eql(u8, str, "Auto")) return .Auto;
                 return null;
             }
         };

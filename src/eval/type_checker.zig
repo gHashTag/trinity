@@ -20,27 +20,28 @@ pub const TypeError = error{
     InvalidEffect,
 };
 
+/// Type checker error entry
+pub const ErrorEntry = struct {
+    kind: TypeError,
+    message: []const u8,
+    line: u32,
+    column: u32,
+};
+
 /// Type checker state
 pub const TypeChecker = struct {
     allocator: std.mem.Allocator,
-    errors: std.ArrayList(Error),
-
-    const Error = struct {
-        kind: TypeError,
-        message: []const u8,
-        line: u32,
-        column: u32,
-    };
+    errors: std.ArrayList(ErrorEntry),
 
     pub fn init(allocator: std.mem.Allocator) TypeChecker {
         return .{
             .allocator = allocator,
-            .errors = std.ArrayList(Error).init(allocator, 0),
+            .errors = std.ArrayList(ErrorEntry).init(allocator),
         };
     }
 
     pub fn deinit(self: *TypeChecker) void {
-        self.errors.deinit();
+        self.errors.deinit(self.allocator);
     }
 
     /// Check if there are any errors
@@ -50,7 +51,7 @@ pub const TypeChecker = struct {
 
     /// Add a type error
     pub fn addError(self: *TypeChecker, kind: TypeError, message: []const u8, line: u32, column: u32) !void {
-        try self.errors.append(.{
+        try self.errors.append(self.allocator, .{
             .kind = kind,
             .message = message,
             .line = line,
@@ -76,7 +77,7 @@ test "type checker add error" {
     var checker = TypeChecker.init(std.testing.allocator);
     defer checker.deinit();
 
-    try checker.addError(.Mismatch, "type mismatch", 10, 5);
+    try checker.addError(TypeError.Mismatch, "type mismatch", 10, 5);
     try std.testing.expect(checker.hasErrors());
 }
 
@@ -84,7 +85,7 @@ test "type checker reset" {
     var checker = TypeChecker.init(std.testing.allocator);
     defer checker.deinit();
 
-    try checker.addError(.Mismatch, "error", 1, 1);
+    try checker.addError(TypeError.Mismatch, "error", 1, 1);
     try std.testing.expect(checker.hasErrors());
 
     checker.reset();

@@ -12,8 +12,9 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const farm = @import("farm");
 const tri_experience = @import("tri_experience.zig");
-const tri_dev = @import("tri_dev.zig");
+const tri_dev = farm.tri_dev;
 const hippocampus = @import("hippocampus.zig");
 const print = std.debug.print;
 

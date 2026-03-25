@@ -33,7 +33,8 @@ pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []con
     const deploy_argv = &[_][]const u8{
         "flyctl",
         "deploy",
-        "--dockerfile",   "Dockerfile.fly",
+        "--dockerfile",
+        "Dockerfile.fly",
     };
 
     const deploy_result = try std.process.Child.run(.{

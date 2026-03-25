@@ -154,7 +154,7 @@ pub fn flatMap(comptime T: type, comptime U: type, allocator: std.mem.Allocator,
     var idx: usize = 0;
     for (array) |item| {
         const mapped = f(item);
-        @memcpy(result[idx..idx + mapped.len], mapped);
+        @memcpy(result[idx .. idx + mapped.len], mapped);
         idx += mapped.len;
     }
     return result;

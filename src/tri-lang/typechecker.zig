@@ -43,6 +43,17 @@ pub const TypedExpr = union(enum) {
     ADT: ADTExpr,
     Match: MatchExpr,
     Pipe: PipeExpr,
+    // Wave 2: Effects + Handlers
+    Perform: PerformExpr,
+    Handle: HandleExpr,
+    Try: TryExpr,
+    // Wave 4: Array Combinators
+    Map: MapExpr,
+    Reduce: ReduceExpr,
+    Scan: ScanExpr,
+    Filter: FilterExpr,
+    FlatMap: FlatMapExpr,
+    Zip: ZipExpr,
 };
 
 pub const IntExpr = struct { value: i64 };
@@ -93,6 +104,72 @@ pub const MatchExpr = struct {
 pub const PipeExpr = struct {
     source: *const TypedExpr,
     stages: []const *const TypedExpr,
+};
+
+pub const PerformExpr = struct {
+    effect_name: []const u8,
+    operation: []const u8,
+    args: []const *const TypedExpr,
+};
+
+pub const HandleExpr = struct {
+    effect_name: []const u8,
+    clauses: []const HandlerClauseTyped,
+    body: *const TypedExpr,
+};
+
+pub const TryExpr = struct {
+    computation: *const TypedExpr,
+    handlers: []const HandlerClauseTyped,
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// WAVE 4: ARRAY COMBINATOR EXPRESSIONS
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+pub const MapExpr = struct {
+    array: *const TypedExpr,
+    func: *const TypedExpr,
+};
+
+pub const ReduceExpr = struct {
+    array: *const TypedExpr,
+    init: *const TypedExpr,
+    operation: BinaryOperator,
+};
+
+pub const ScanExpr = struct {
+    array: *const TypedExpr,
+    init: *const TypedExpr,
+    operation: BinaryOperator,
+    scan_type: ScanType,
+};
+
+pub const ScanType = enum {
+    Prefix,
+    Inclusive,
+    Exclusive,
+};
+
+pub const FilterExpr = struct {
+    array: *const TypedExpr,
+    predicate: *const TypedExpr,
+};
+
+pub const FlatMapExpr = struct {
+    array: *const TypedExpr,
+    func: *const TypedExpr,
+};
+
+pub const ZipExpr = struct {
+    array1: *const TypedExpr,
+    array2: *const TypedExpr,
+};
+
+pub const HandlerClauseTyped = struct {
+    operation: []const u8,
+    param_pattern: MatchPattern,
+    body: *const TypedExpr,
 };
 
 pub const MatchArm = struct {
@@ -154,6 +231,17 @@ pub fn infer(allocator: Allocator, expr: *const TypedExpr, env: *const TypeEnv) 
         .ADT => |e| inferADT(allocator, e, env),
         .Match => |e| inferMatch(allocator, e, env),
         .Pipe => |e| inferPipe(allocator, e, env),
+        // Wave 2: Effects + Handlers
+        .Perform => |e| inferPerform(allocator, e, env),
+        .Handle => |e| inferHandle(allocator, e, env),
+        .Try => |e| inferTry(allocator, e, env),
+        // Wave 4: Array Combinators
+        .Map => |e| inferMap(allocator, e, env),
+        .Reduce => |e| inferReduce(allocator, e, env),
+        .Scan => |e| inferScan(allocator, e, env),
+        .Filter => |e| inferFilter(allocator, e, env),
+        .FlatMap => |e| inferFlatMap(allocator, e, env),
+        .Zip => |e| inferZip(allocator, e, env),
     };
 }
 
@@ -794,6 +882,224 @@ pub fn checkLinearUsage(expr: *const TypedExpr, tracker: *LinearTracker) TypeErr
     // - Error if linear variable used multiple times
     // - Error if linear variable not consumed at end of scope
     return;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAVE 2: EFFECTS + HANDLERS TYPE CHECKING
+// ═══════════════════════════════════════════════════════════════════════════════════════════
+
+/// Type check perform expression: perform effect.operation(args)
+fn inferPerform(allocator: Allocator, expr: PerformExpr, env: *const TypeEnv) TypeError!InferResult {
+    _ = expr.effect_name;
+    _ = expr.operation;
+
+    // Type check all arguments
+    for (expr.args) |arg| {
+        _ = try infer(allocator, arg, env);
+    }
+
+    // For now, perform expressions have a polymorphic return type
+    // The actual type depends on the handler
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
+}
+
+/// Type check handle expression: handle effect { clauses }
+fn inferHandle(allocator: Allocator, expr: HandleExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check the body computation
+    const body_result = try infer(allocator, expr.body, env);
+
+    // Type check each handler clause
+    for (expr.clauses) |clause| {
+        _ = clause.operation;
+        _ = clause.param_pattern;
+
+        // Type check the handler body
+        _ = try infer(allocator, clause.body, env);
+    }
+
+    return InferResult{
+        .type = body_result.type,
+        .subst = body_result.subst,
+    };
+}
+
+/// Type check try expression: try { computation } with { handlers }
+fn inferTry(allocator: Allocator, expr: TryExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check the computation
+    const comp_result = try infer(allocator, expr.computation, env);
+
+    // Type check each handler clause
+    for (expr.handlers) |clause| {
+        _ = clause.operation;
+        _ = clause.param_pattern;
+
+        // Type check the handler body
+        _ = try infer(allocator, clause.body, env);
+    }
+
+    return InferResult{
+        .type = comp_result.type,
+        .subst = comp_result.subst,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// WAVE 4: ARRAY COMBINATOR TYPE INFERENCE
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+/// Type check map expression: map(array, func) -> [func(x) for x in array]
+/// Input: array of type [A], func of type A -> B
+/// Output: array of type [B]
+fn inferMap(allocator: Allocator, expr: MapExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check array expression
+    const array_result = try infer(allocator, expr.array, env);
+
+    // Type check function expression
+    const func_result = try infer(allocator, expr.func, env);
+
+    _ = array_result;
+    _ = func_result;
+
+    // For now, return a fresh array type
+    // Full implementation would:
+    // 1. Check that array_result.type is an array type [A]
+    // 2. Check that func_result.type is a function type A -> B
+    // 3. Return array type [B]
+
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
+}
+
+/// Type check reduce expression: reduce(array, init, op) -> folded value
+/// Input: array of type [A], init of type B, op of type (B, A) -> B or (B, B) -> B
+/// Output: value of type B
+fn inferReduce(allocator: Allocator, expr: ReduceExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check array expression
+    const array_result = try infer(allocator, expr.array, env);
+
+    // Type check init expression
+    const init_result = try infer(allocator, expr.init, env);
+
+    _ = array_result;
+    _ = expr.operation;
+
+    // For now, return the type of init
+    // Full implementation would:
+    // 1. Check that array_result.type is an array type
+    // 2. Check that operation is associative
+    // 3. Check that operation can combine init type with array element type
+
+    return InferResult{
+        .type = init_result.type,
+        .subst = init_result.subst,
+    };
+}
+
+/// Type check scan expression: scan(array, init, op) -> prefix scan array
+/// Input: array of type [A], init of type B, op of type (B, A) -> B
+/// Output: array of type [B]
+fn inferScan(allocator: Allocator, expr: ScanExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check array expression
+    const array_result = try infer(allocator, expr.array, env);
+
+    // Type check init expression
+    const init_result = try infer(allocator, expr.init, env);
+
+    _ = array_result;
+    _ = init_result;
+    _ = expr.operation;
+    _ = expr.scan_type;
+
+    // For now, return a fresh array type
+    // Full implementation would:
+    // 1. Check that array_result.type is an array type [A]
+    // 2. Check that operation can combine init type with array element type
+    // 3. Return array type [B] where B is the type of init
+
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
+}
+
+/// Type check filter expression: filter(array, pred) -> filtered array
+/// Input: array of type [A], pred of type A -> Bool
+/// Output: array of type [A]
+fn inferFilter(allocator: Allocator, expr: FilterExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check array expression
+    const array_result = try infer(allocator, expr.array, env);
+
+    // Type check predicate expression
+    const pred_result = try infer(allocator, expr.predicate, env);
+
+    _ = array_result;
+    _ = pred_result;
+
+    // For now, return the input array type
+    // Full implementation would:
+    // 1. Check that array_result.type is an array type [A]
+    // 2. Check that pred_result.type is a function A -> Bool
+    // 3. Return array type [A]
+
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
+}
+
+/// Type check flatMap expression: flatMap(array, func) -> concatenated array
+/// Input: array of type [A], func of type A -> [B]
+/// Output: array of type [B]
+fn inferFlatMap(allocator: Allocator, expr: FlatMapExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check array expression
+    const array_result = try infer(allocator, expr.array, env);
+
+    // Type check function expression
+    const func_result = try infer(allocator, expr.func, env);
+
+    _ = array_result;
+    _ = func_result;
+
+    // For now, return a fresh array type
+    // Full implementation would:
+    // 1. Check that array_result.type is an array type [A]
+    // 2. Check that func_result.type is a function A -> [B]
+    // 3. Return array type [B]
+
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
+}
+
+/// Type check zip expression: zip(arr1, arr2) -> paired array
+/// Input: arr1 of type [A], arr2 of type [B]
+/// Output: array of type [(A, B)]
+fn inferZip(allocator: Allocator, expr: ZipExpr, env: *const TypeEnv) TypeError!InferResult {
+    // Type check first array
+    const arr1_result = try infer(allocator, expr.array1, env);
+
+    // Type check second array
+    const arr2_result = try infer(allocator, expr.array2, env);
+
+    _ = arr1_result;
+    _ = arr2_result;
+
+    // For now, return a fresh array type
+    // Full implementation would:
+    // 1. Check that both expressions are array types
+    // 2. Check that arrays have the same length (if known at compile time)
+    // 3. Return array type of tuples [(A, B)]
+
+    return InferResult{
+        .type = Type{ .Var = freshTypeVar() },
+        .subst = Subst.init(allocator),
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

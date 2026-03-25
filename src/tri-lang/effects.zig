@@ -112,41 +112,93 @@ pub const PlatformEffect = enum {
 // ═════════════════════════════════════════════════════════════════════════════════════
 
 /// Effect handler — resumes computation with result
+/// Generic handler that can handle multiple effect types
 pub const Handler = struct {
     allocator: std.mem.Allocator,
+    /// Optional state storage for State effect
+    state_storage: ?i64,
+    /// Optional error message for Error effect
+    error_msg: ?[]const u8,
 
     const Self = @This();
 
+    pub fn init(allocator: std.mem.Allocator) Self {
+        return .{
+            .allocator = allocator,
+            .state_storage = null,
+            .error_msg = null,
+        };
+    }
+
     /// Handle State.get operation
-    pub fn handleStateGet(self: *Self, state: anytype) !void {
-        _ = self;
-        _ = state;
-        // Implementation: return current state value
-        return error.NotImplemented;
+    /// Returns the current state value
+    pub fn handleStateGet(self: *Self) !i64 {
+        if (self.state_storage) |value| {
+            return value;
+        }
+        return error.StateNotInitialized;
     }
 
     /// Handle State.set operation
-    pub fn handleStateSet(self: *Self, state: anytype, value: anytype) !void {
-        _ = self;
-        _ = state;
-        _ = value;
-        // Implementation: update state and resume
-        return error.NotImplemented;
+    /// Updates state and signals to resume
+    pub fn handleStateSet(self: *Self, value: i64) !void {
+        self.state_storage = value;
     }
 
     /// Handle Error.throw operation
+    /// Stores error message and returns error
     pub fn handleErrorThrow(self: *Self, msg: []const u8) !void {
-        _ = self;
-        _ = msg;
-        // Implementation: propagate error with context
-        return error.NotImplemented;
+        // Store the error message
+        self.error_msg = try self.allocator.dupe(u8, msg);
+        return error.EffectThrown;
     }
 
     /// Handle Async.await operation
+    /// Placeholder for async effect handling
     pub fn handleAsyncAwait(self: *Self) !void {
         _ = self;
-        // Implementation: suspend until async operation completes
-        return error.NotImplemented;
+        // Full implementation would suspend until async operation completes
+        return error.AsyncNotSupported;
+    }
+
+    /// Clean up allocated resources
+    pub fn deinit(self: *Self) void {
+        if (self.error_msg) |msg| {
+            self.allocator.free(msg);
+            self.error_msg = null;
+        }
+    }
+};
+
+/// Effect-specific errors
+pub const EffectError = error{
+    StateNotInitialized,
+    EffectThrown,
+    AsyncNotSupported,
+    UnhandledEffect,
+    NoHandler,
+};
+
+/// State handler implementation with actual state storage
+pub const StateHandler = struct {
+    allocator: std.mem.Allocator,
+    state: i64,
+
+    const Self = @This();
+
+    pub fn init(allocator: std.mem.Allocator, initial_state: i64) Self {
+        return Self{
+            .allocator = allocator,
+            .state = initial_state,
+        };
+    }
+
+    pub fn handleGet(self: *Self) !i64 {
+        return self.state;
+    }
+
+    pub fn handleSet(self: *Self, value: i64) !void {
+        self.state = value;
     }
 };
 
@@ -192,81 +244,69 @@ pub const EffectContext = struct {
         return self.handlers.items[self.handlers.items.len - 1];
     }
 
-    /// Handle an effect operation
-    pub fn handle(self: *Self, comptime effect_id: EffectId, op: []const u8) !void {
-        const handler = self.topHandler() orelse return error.UnhandledEffect;
-        _ = effect_id;
-        _ = op;
-        _ = handler;
-        // Implementation: dispatch to handler based on effect_id and op
-        return error.NotImplemented;
+    /// Handle an effect operation by dispatching to the appropriate handler
+    pub fn handle(self: *Self, comptime effect_id: EffectId, op: []const u8, args: anytype) !?i64 {
+        _ = self.topHandler() orelse return error.NoHandler;
+
+        // Need mutable reference for handler methods
+        // Get index and modify in-place
+        const idx = self.handlers.items.len - 1;
+        const handler = &self.handlers.items[idx];
+
+        // Dispatch based on effect_id and operation name
+        switch (effect_id) {
+            .State => {
+                if (std.mem.eql(u8, op, "get")) {
+                    const value = try handler.handleStateGet();
+                    return value;
+                } else if (std.mem.eql(u8, op, "set")) {
+                    // Extract value from args - assume struct with .value field
+                    // For tests with empty struct, this will return 0
+                    const value: i64 = blk: {
+                        // Use @field with string - if field doesn't exist, catch at compile time
+                        const T = @TypeOf(args);
+                        if (comptime @typeInfo(T) == .@"struct") {
+                            break :blk @field(args, "value");
+                        }
+                        break :blk 0;
+                    };
+                    try handler.handleStateSet(value);
+                    return null;
+                }
+            },
+            .Error => {
+                if (std.mem.eql(u8, op, "throw")) {
+                    const msg: []const u8 = blk: {
+                        const T = @TypeOf(args);
+                        if (comptime @typeInfo(T) == .@"struct") {
+                            break :blk @field(args, "msg");
+                        }
+                        break :blk "unknown error";
+                    };
+                    try handler.handleErrorThrow(msg);
+                    return null;
+                }
+            },
+            .Async => {
+                if (std.mem.eql(u8, op, "await")) {
+                    try handler.handleAsyncAwait();
+                    return null;
+                }
+            },
+            else => {},
+        }
+
+        return error.UnhandledEffect;
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════
 // AST NODES FOR EFFECTS
 // ═════════════════════════════════════════════════════════════════════════════════════
-
-/// Perform expression — perform effect { operation }
-pub const PerformExpr = struct {
-    /// Effect to perform
-    effect_id: EffectId,
-    /// Operation name
-    operation: []const u8,
-    /// Operation arguments
-    args: []const Expr,
-    loc: SourceLocation,
-};
-
-/// Handle expression — handle effect with handler
-pub const HandleExpr = struct {
-    /// Effect to handle
-    effect_id: EffectId,
-    /// Handler body (clauses for each operation)
-    clauses: []const HandlerClause,
-    /// Computation to run under this handler
-    body: Expr,
-    loc: SourceLocation,
-};
-
-/// Handler clause — pattern for operation + body
-pub const HandlerClause = struct {
-    /// Operation name pattern
-    operation: []const u8,
-    /// Parameter pattern (e.g., "msg" for throw(msg))
-    param_pattern: Pattern,
-    /// Handler body
-    body: Expr,
-    loc: SourceLocation,
-};
-
-/// Try expression — perform effect { ... } with handler
-pub const TryExpr = struct {
-    /// Computation that may perform effects
-    computation: Expr,
-    /// Handler clauses
-    handlers: []const HandlerClause,
-    loc: SourceLocation,
-};
-
-// ═══════════════════════════════════════════════════════════════════════
-// SUPPORTING TYPES (forward references)
-// ═════════════════════════════════════════════════════════════════════════════════════
-
-/// Expression (minimal definition to avoid circular dependency)
-pub const Expr = union(enum) {
-    Perform: PerformExpr,
-    Handle: HandleExpr,
-    Try: TryExpr,
-    // ... other expression types
-};
-
-/// Pattern (minimal definition)
-pub const Pattern = union(enum) {
-    Identifier: []const u8,
-    // ... other pattern types
-};
-
+//
+// Note: AST nodes for effects (PerformExpr, HandleExpr, TryExpr, HandlerClause)
+// are defined in ast.zig to avoid circular dependencies.
+// This module provides the runtime support for effect handling.
 // ═══════════════════════════════════════════════════════════════════════
 // TESTS
 // ═════════════════════════════════════════════════════════════════════════════════════
@@ -284,7 +324,7 @@ test "effect_context_push_pop" {
     var ctx = EffectContext.init(allocator);
     defer ctx.deinit();
 
-    const handler = Handler{ .allocator = allocator };
+    const handler = Handler.init(allocator);
     try ctx.pushHandler(handler);
 
     try std.testing.expectEqual(@as(usize, 1), ctx.handlers.items.len);
@@ -301,7 +341,7 @@ test "effect_context_top_handler" {
 
     try std.testing.expect(ctx.topHandler() == null);
 
-    const handler = Handler{ .allocator = allocator };
+    const handler = Handler.init(allocator);
     try ctx.pushHandler(handler);
 
     const top = ctx.topHandler();
@@ -323,4 +363,177 @@ test "effect_operations" {
     const read_op = EffectOp{ .name = "get", .payload_typename = null, .loc = .{ .line = 0, .column = 0 } };
     try std.testing.expectEqualStrings("get", read_op.name);
     try std.testing.expect(read_op.payload_typename == null);
+}
+
+test "StateHandler init and get" {
+    const allocator = std.testing.allocator;
+    var handler = StateHandler.init(allocator, 42);
+
+    const value = try handler.handleGet();
+    try std.testing.expectEqual(@as(i64, 42), value);
+}
+
+test "StateHandler set and get" {
+    const allocator = std.testing.allocator;
+    var handler = StateHandler.init(allocator, 0);
+
+    try handler.handleSet(99);
+    const value = try handler.handleGet();
+    try std.testing.expectEqual(@as(i64, 99), value);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// WAVE 3: EFFECT HANDLER IMPLEMENTATION TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+test "Handler init and deinit" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    try std.testing.expect(handler.state_storage == null);
+    try std.testing.expect(handler.error_msg == null);
+}
+
+test "Handler handleStateGet returns initial value" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    handler.state_storage = 42;
+    const value = try handler.handleStateGet();
+    try std.testing.expectEqual(@as(i64, 42), value);
+}
+
+test "Handler handleStateGet uninitialized fails" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    const result = handler.handleStateGet();
+    try std.testing.expectError(error.StateNotInitialized, result);
+}
+
+test "Handler handleStateSet updates state" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    try handler.handleStateSet(100);
+    try std.testing.expectEqual(@as(?i64, 100), handler.state_storage);
+
+    // Verify we can get the value back
+    const value = try handler.handleStateGet();
+    try std.testing.expectEqual(@as(i64, 100), value);
+}
+
+test "Handler handleErrorThrow stores message" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    const msg = "test error message";
+    const result = handler.handleErrorThrow(msg);
+
+    try std.testing.expectError(error.EffectThrown, result);
+    try std.testing.expect(handler.error_msg != null);
+    if (handler.error_msg) |stored_msg| {
+        try std.testing.expectEqualStrings(msg, stored_msg);
+    }
+}
+
+test "Handler handleAsyncAwait returns not supported" {
+    const allocator = std.testing.allocator;
+    var handler = Handler.init(allocator);
+    defer handler.deinit();
+
+    const result = handler.handleAsyncAwait();
+    try std.testing.expectError(error.AsyncNotSupported, result);
+}
+
+test "EffectContext handle State.get" {
+    const allocator = std.testing.allocator;
+    var ctx = EffectContext.init(allocator);
+    defer ctx.deinit();
+
+    // Add a handler with initial state
+    var handler = Handler.init(allocator);
+    handler.state_storage = 42;
+    try ctx.pushHandler(handler);
+
+    const args = struct {};
+    const result = try ctx.handle(.State, "get", args);
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(i64, 42), result.?);
+}
+
+test "EffectContext handle State.set" {
+    const allocator = std.testing.allocator;
+    var ctx = EffectContext.init(allocator);
+    defer ctx.deinit();
+
+    const handler = Handler.init(allocator);
+    try ctx.pushHandler(handler);
+
+    const args = struct { value: i64 }{ .value = 99 };
+    const result = try ctx.handle(.State, "set", args);
+    try std.testing.expect(result == null); // set returns void
+
+    // Verify state was updated via the handler
+    const top = ctx.topHandler();
+    try std.testing.expect(top != null);
+    if (top) |h| {
+        try std.testing.expectEqual(@as(?i64, 99), h.state_storage);
+    }
+}
+
+test "EffectContext handle no handler fails" {
+    const allocator = std.testing.allocator;
+    var ctx = EffectContext.init(allocator);
+    defer ctx.deinit();
+
+    const args = struct {};
+    const result = ctx.handle(.State, "get", args);
+    try std.testing.expectError(error.NoHandler, result);
+}
+
+test "EffectContext handle unknown operation fails" {
+    const allocator = std.testing.allocator;
+    var ctx = EffectContext.init(allocator);
+    defer ctx.deinit();
+
+    const handler = Handler.init(allocator);
+    try ctx.pushHandler(handler);
+
+    const args = struct {};
+    const result = ctx.handle(.State, "unknown_op", args);
+    try std.testing.expectError(error.UnhandledEffect, result);
+}
+
+test "EffectContext handle Error.throw" {
+    const allocator = std.testing.allocator;
+    var ctx = EffectContext.init(allocator);
+    defer ctx.deinit();
+
+    const handler = Handler.init(allocator);
+    try ctx.pushHandler(handler);
+
+    const msg = "something went wrong";
+    const args = struct { msg: []const u8 }{ .msg = msg };
+    const result = ctx.handle(.Error, "throw", args);
+    try std.testing.expectError(error.EffectThrown, result);
+
+    // Verify error message was stored and clean up to prevent leak
+    // Get mutable reference to handler from context
+    if (ctx.handlers.items.len > 0) {
+        const idx = ctx.handlers.items.len - 1;
+        const h = &ctx.handlers.items[idx];
+        try std.testing.expect(h.error_msg != null);
+        if (h.error_msg) |stored_msg| {
+            try std.testing.expectEqualStrings(msg, stored_msg);
+            // Clean up the allocated error message to prevent leak
+            allocator.free(stored_msg);
+            h.error_msg = null;
+        }
+    }
 }
