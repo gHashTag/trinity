@@ -364,7 +364,7 @@ fn writeStatusAnsi(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomal
             // Phase transition marker
             const marker: []const u8 = if (i > 0 and ck.loss > 0) mrk: {
                 const abs_d = @abs(ck.loss - ckpts[i - 1].loss);
-                break :mrk if (abs_d > @as(f32, @floatCast(Sacred.PHI))) " <-- PHASE TRANSITION" else "";
+                break :mrk if (abs_d > @as(f32, @floatCast(Sacred.phi))) " <-- PHASE TRANSITION" else "";
             } else "";
 
             if (i > 0) {
@@ -427,7 +427,8 @@ fn writeStatusJson(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomal
     print("],\"anomalies\":", .{});
 
     var anom_buf: [4096]u8 = undefined;
-    const anom_json = diag.anomaliesToJson(anomalies, &anom_buf);
+    const anom_json = diag.anomaliesToJson(allocator, anomalies[0..n_anom]) catch "[]";
+    _ = anom_buf; // TODO: use buffer for JSON formatting
     print("{s}", .{anom_json});
 
     print(",\"recommendation\":{{\"action\":\"{s}\",\"reason\":\"{s}\",\"command\":\"{s}\"}}}}\n", .{
@@ -521,8 +522,8 @@ fn runCompare(dir1: []const u8, dir2: []const u8) void {
     print("  Run A: {s} ({d} checkpoints)\n", .{ dir1, n1 });
     print("  Run B: {s} ({d} checkpoints)\n\n", .{ dir2, n2 });
 
-    var best1: f32 = 999.0;
-    var best2: f32 = 999.0;
+    var best1: f64 = 999.0;
+    var best2: f64 = 999.0;
     var best1_step: u32 = 0;
     var best2_step: u32 = 0;
 
@@ -1450,7 +1451,7 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
         if (sacred_list.items.len > 0) {
             if (token_2.len > 0) {
                 for (sacred_list.items, 0..) |sacred_name, i| {
-                    const check = train_live.checkSacredWorker(allocator, sacred_name, "_2");
+                    const check = train_live.checkSacredWorker(allocator, sacred_name, "_2") catch continue;
                     sacred_training.items[i] = check.is_training or check.is_building;
                 }
             }

@@ -88,8 +88,8 @@ fn runChart(args: []const []const u8) void {
     }
 
     // Find global min/max PPL and step range
-    var min_ppl: f32 = 999999.0;
-    var max_ppl: f32 = 0.0;
+    var min_ppl: f64 = 999999.0;
+    var max_ppl: f64 = 0.0;
     var max_step: u32 = 0;
 
     for (0..n_dirs) |i| {

@@ -3733,7 +3733,7 @@ fn runHealth(allocator: Allocator, args: []const []const u8) !void {
             hippocampus.writeCellHealth(allocator, .{
                 .cell_id = cell.id,
                 .cell_name = if (cell.name.len > 0) cell.name else cell.id,
-                .health_score = @intCast(@min(100, score)),
+                .health_score = @as(u8, @intFromFloat(@min(100, score))),
                 .health_delta = 0, // TODO: track previous score for delta
                 .bio_system = bio_name,
                 .trigger = "scan",

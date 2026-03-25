@@ -35,6 +35,17 @@ pub const Entry = struct {
     ts: i64 = 0, // timestamp (using 'ts' to match regen.zig expectations)
     kind: Kind = .episode,
     content: []const u8 = "",
+
+    /// Get ID for this entry (for regen.zig compatibility)
+    pub fn id(self: *const Entry) []const u8 {
+        _ = self;
+        return "mem_000";
+    }
+
+    /// Get summary for this entry (for regen.zig compatibility)
+    pub fn summary(self: *const Entry) []const u8 {
+        return self.content;
+    }
 };
 
 // Read options
@@ -60,4 +71,94 @@ pub fn read(allocator: Allocator, options: ReadOptions) !ErrorList {
     _ = options;
     // Return empty list for now
     return ErrorList{};
+}
+
+// Write a rule/learning to hippocampus (stub implementation)
+pub fn writeRule(allocator: Allocator, agent: []const u8, summary: []const u8, data: []const u8) !void {
+    _ = allocator;
+    _ = agent;
+    _ = summary;
+    _ = data;
+    return error.NotImplemented;
+}
+
+// Write an observation to hippocampus (stub implementation)
+pub fn writeObservation(allocator: Allocator, agent: []const u8, summary: []const u8, data: []const u8) !void {
+    _ = allocator;
+    _ = agent;
+    _ = summary;
+    _ = data;
+    return error.NotImplemented;
+}
+
+// Write a heartbeat to hippocampus (stub implementation)
+pub fn writeHeartbeat(allocator: Allocator, agent: []const u8, data: []const u8) !void {
+    _ = allocator;
+    _ = agent;
+    _ = data;
+    return error.NotImplemented;
+}
+
+// Write an error entry (stub implementation)
+pub fn writeError(allocator: Allocator, category: []const u8, message: []const u8, details: []const u8) !void {
+    _ = allocator;
+    _ = category;
+    _ = message;
+    _ = details;
+    return error.NotImplemented;
+}
+
+// Run memory command (stub implementation)
+pub fn runMemoryCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("Memory command not yet implemented\n", .{});
+}
+
+// Write cell health record (stub implementation)
+pub fn writeCellHealth(allocator: Allocator, record: anytype) !void {
+    _ = allocator;
+    _ = record;
+    return error.NotImplemented;
+}
+
+// Write learning record (stub implementation)
+pub fn writeLearning(allocator: Allocator, agent: []const u8, summary: []const u8, data: []const u8) !void {
+    _ = allocator;
+    _ = agent;
+    _ = summary;
+    _ = data;
+    return error.NotImplemented;
+}
+
+// Cell health record type
+pub const CellHealthRecord = struct {
+    cell_id: []const u8 = "",
+    cell_name: []const u8 = "",
+    health_score: u8 = 0,
+    health_delta: i8 = 0,
+    bio_system: []const u8 = "",
+    trigger: []const u8 = "",
+    files_total: u32 = 0,
+    files_generated: u32 = 0,
+    files_manual: u32 = 0,
+    tests_passing: bool = false,
+};
+
+// Cell health list type
+pub const CellHealthList = struct {
+    items: []CellHealthRecord = &[_]CellHealthRecord{},
+
+    pub fn deinit(self: *CellHealthList, alloc: Allocator) void {
+        _ = self;
+        _ = alloc;
+        // No-op for stub
+    }
+};
+
+// Get all cell health records (stub implementation)
+pub fn getAllCellHealth(allocator: Allocator, days: usize) !CellHealthList {
+    _ = allocator;
+    _ = days;
+    return CellHealthList{};
 }

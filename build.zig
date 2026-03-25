@@ -1564,6 +1564,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "hybrid", .module = hybrid_mod },
             .{ .name = "vsa", .module = vsa_tri },
         },
     });

@@ -457,7 +457,7 @@ pub const PhoenixCore = struct {
         defer self.allocator.free(data);
 
         // TODO: Stubbed - hippocampus.writeHeartbeat() interface needs update
-        _ = data;
+        // data is used in defer statement above
     }
 
     /// Schedule next wake time
@@ -535,7 +535,6 @@ pub const PhoenixCore = struct {
         _ = old_count;
         _ = rules_created;
         _ = recent_errors_len;
-        _ = immune_healed;
 
         std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     }
