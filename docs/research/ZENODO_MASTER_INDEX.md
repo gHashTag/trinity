@@ -1,14 +1,25 @@
-# Trinity Zenodo Publications — Master Index (v2.4)
+# Trinity Zenodo Publications — Master Index (v2.5)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
+
+## What's New in v2.5
+
+- Added **UNIFIED_BIBLIOGRAPHY.md** — 76 curated references across all domains
+- Added **MATHEMATICAL_APPENDIX.md** — Complete formulas, proofs, and derivations
+- Added **ZENODO_UPLOAD_GUIDE.md** — Step-by-step upload instructions
+- Enhanced cross-references between bundles
+- Improved citation consistency across all documents
 
 ## Main Documentation
 
 - **[ZENODO_README.md](./ZENODO_README.md)** — Main description for Zenodo parent collection
 - **[EXPERIMENTAL_RESULTS.md](./EXPERIMENTAL_RESULTS.md)** — Supporting experimental data
 - **[ZENODO_SCIENTIFIC_GUIDE_V2.md](./ZENODO_SCIENTIFIC_GUIDE_V2.md)** — Best practices guide
+- **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
+- **[MATHEMATICAL_APPENDIX.md](./MATHEMATICAL_APPENDIX.md)** — Formulas, proofs, derivations
+- **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
 
 ## Complete Scientific Descriptions
 
