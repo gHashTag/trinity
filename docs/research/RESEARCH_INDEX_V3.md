@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v3.4
+# Trinity Research Documentation Index — v3.5
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 78
+**Total Documents:** 79
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -27,7 +27,7 @@
 | `DEFENSIVE_PUB_IMPLEMENTATION_SUMMARY.md` | Implementation guide | ✅ Complete |
 | `PRIOR_ART_NETWORK.md` | Cross-reference matrix | ✅ Complete |
 
-### 3. Experimental Results & Validation (15 documents)
+### 3. Experimental Results & Validation (16 documents)
 
 | Document | Purpose | Coverage |
 |----------|---------|----------|
@@ -43,6 +43,7 @@
 | `TJEPA_SCIENTIFIC_VALIDATION.md` | T-JEPA self-supervised learning | 13.8% PPL gain |
 | `SACRED_ATTENTION_VALIDATION.md` | φ-RoPE multi-head attention | 11.6% PPL contribution |
 | `CONSCIOUSNESS_GATE_VALIDATION.md` | Dual-system theory gate | 5.7% PPL contribution |
+| `H6_FPGA_CPU_THROUGHPUT_VALIDATION.md` | H6 FPGA vs CPU analysis | Multi-FPGA scaling ✅ NEW |
 | `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests |
 | `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` | Master summary | All hypotheses |
 | `REPRODUCIBLE_RESEARCH.md` | Scientific rigor guidelines | ✅ Complete |
@@ -120,7 +121,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 ├── H3 (Superhuman) → QUEEN_ORCHESTRATION_VALIDATION.md, queen_lotus_experiments.md
 ├── H4 (Superhuman) → QUEEN_SELF_LEARNING_REPORT.md, HYPOTHESIS_VALIDATION_REPORT.md
 ├── H5 (Specialized) → TRI27_SCIENTIFIC_VALIDATION.md, TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md
-├── H6 (Cross-Axis) → PERFORMANCE_BENCHMARKS.md, BENCHMARK_AGGREGATOR.md
+├── H6 (Cross-Axis) → H6_FPGA_CPU_THROUGHPUT_VALIDATION.md, PERFORMANCE_BENCHMARKS.md, BENCHMARK_AGGREGATOR.md
 ├── VSA → VSA_SCIENTIFIC_VALIDATION.md, statistical_analysis_toolkit.py
 ├── Type System → TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md
 └── All → TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md, PRIOR_ART_NETWORK.md
@@ -158,9 +159,10 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 3. **Tri Language:** `TRI_LANGUAGE_SCIENTIFIC_VALIDATION.md` — Result/ADT/Linear/Effects
 4. **Queen:** `QUEEN_ORCHESTRATION_VALIDATION.md` — self-learning, 78% policy success
 5. **FPGA:** `FPGA_SCIENTIFIC_VALIDATION.md` — Zero-DSP, φ-timing validation
-6. **Statistics:** `statistical_analysis_toolkit.py` — 10+ statistical tests
-7. **Master:** `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` — all hypotheses summary
-8. **All Benchmarks:** `BENCHMARK_AGGREGATOR.md` — complete experimental results
+6. **H6 Throughput:** `H6_FPGA_CPU_THROUGHPUT_VALIDATION.md` — FPGA vs CPU SIMD, multi-FPGA scaling
+7. **Statistics:** `statistical_analysis_toolkit.py` — 10+ statistical tests
+8. **Master:** `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` — all hypotheses summary
+9. **All Benchmarks:** `BENCHMARK_AGGREGATOR.md` — complete experimental results
 
 ---
 
@@ -168,6 +170,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.5 | 2026-03-26 | Added H6_FPGA_CPU_THROUGHPUT_VALIDATION.md (FPGA vs CPU SIMD analysis, multi-FPGA scaling path) |
 | 3.4 | 2026-03-26 | Added TJEPA_SCIENTIFIC_VALIDATION.md (13.8% PPL improvement, φ-warmup) |
 | 3.3 | 2026-03-26 | Added 5 specialized research docs: CROSS_BUNDLE, END_TO_END_PIPELINE, SCALING_ANALYSIS, COST_ANALYSIS, PERFORMANCE_BENCHMARKS |
 | 3.2 | 2026-03-26 | Added Tri Language, Queen Orchestration validation docs |
