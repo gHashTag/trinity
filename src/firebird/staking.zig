@@ -247,7 +247,7 @@ pub const StakingManager = struct {
         var positions = try allocator.alloc(StakePosition, stake_ids.items.len);
         for (stake_ids.items, 0..) |id, i| {
             const pos = self.stakes.get(id) orelse continue;
-            positions[i] = pos.*;
+            positions[i] = pos;
         }
 
         return positions;
@@ -263,7 +263,7 @@ pub const StakingManager = struct {
         var positions = try allocator.alloc(StakePosition, stake_ids.items.len);
         for (stake_ids.items, 0..) |id, i| {
             const pos = self.stakes.get(id) orelse continue;
-            positions[i] = pos.*;
+            positions[i] = pos;
         }
 
         return positions;
