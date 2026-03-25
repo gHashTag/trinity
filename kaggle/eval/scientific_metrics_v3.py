@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Metrics v3.0
+Trinity Cognitive Probes — Scientific Metrics v3.1
 
 Implements state-of-the-art (2024-2025) metacognition and calibration metrics:
 
@@ -11,6 +11,10 @@ Phase 2 Improvements:
 - Permutation Tests: Statistical significance testing
 - Cohen's κ: Inter-rater reliability
 - Adaptive ECE: ACE/TACE implementation
+
+v3.1 Updates:
+- norm_inverse imported from utils.py (DRY principle)
+- norm_cdf imported from utils.py (DRY principle)
 
 References:
 - Maniscalco & Lau (2014) — meta-d' methodology
@@ -26,6 +30,13 @@ from typing import List, Dict, Optional, Tuple, Callable
 from dataclasses import dataclass
 from collections import defaultdict
 from enum import Enum
+
+# Import shared utilities (v3.1: DRY principle - no more duplication!)
+try:
+    from .utils import norm_cdf, norm_inverse
+except ImportError:
+    # Fallback for direct execution
+    from utils import norm_cdf, norm_inverse
 
 
 # =============================================================================
@@ -242,15 +253,15 @@ def calculate_bootstrap_ci(
 
         # Adjusted percentiles
         def phi_inv(p: float) -> float:
-            return _norm_inverse(p)
+            return norm_inverse(p)
 
-        alpha1 = phi_inv(z0 + (z0 + _norm_inverse(alpha / 2)) / (1 - a * (z0 + _norm_inverse(alpha / 2))))
-        alpha2 = phi_inv(z0 + (z0 + _norm_inverse(1 - alpha / 2)) / (1 - a * (z0 + _norm_inverse(1 - alpha / 2))))
+        alpha1 = phi_inv(z0 + (z0 + norm_inverse(alpha / 2)) / (1 - a * (z0 + norm_inverse(alpha / 2))))
+        alpha2 = phi_inv(z0 + (z0 + norm_inverse(1 - alpha / 2)) / (1 - a * (z0 + norm_inverse(1 - alpha / 2))))
 
         # CRITICAL FIX (v3.0): Proper index calculation for CI
         # Previous min(1, ...) was wrong - should clamp to n_bootstrap - 1
-        lower_idx = int(max(0, min(n_bootstrap - 1, int(_norm_cdf(alpha1) * n_bootstrap))))
-        upper_idx = int(max(0, min(n_bootstrap - 1, int(_norm_cdf(alpha2) * n_bootstrap))))
+        lower_idx = int(max(0, min(n_bootstrap - 1, int(norm_cdf(alpha1) * n_bootstrap))))
+        upper_idx = int(max(0, min(n_bootstrap - 1, int(norm_cdf(alpha2) * n_bootstrap))))
 
         ci_lower = boot_stats[lower_idx]
         ci_upper = boot_stats[upper_idx]
@@ -289,7 +300,7 @@ def _calculate_bias_correction(boot_stats: List[float], observed: float) -> floa
     # Avoid log(0)
     prop_less = max(prop_less, 1 / n)
     prop_less = min(prop_less, 1 - 1 / n)
-    return _norm_inverse(prop_less)
+    return norm_inverse(prop_less)
 
 
 def _calculate_acceleration(values: List[float]) -> float:
@@ -365,59 +376,6 @@ def _double_bootstrap(
     )
 
 
-def _norm_inverse(p: float) -> float:
-    """Inverse of standard normal CDF."""
-    if p <= 0:
-        return -10.0
-    if p >= 1:
-        return 10.0
-
-    # Beasley-Springer-Moro approximation
-    a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
-         1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00]
-    b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
-         6.680131188771972e+01, -1.328068155288572e+01]
-    c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
-         -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00]
-    d = [7.784695709041462e-03, 3.224671290700398e+01, 2.445134137142996e+00,
-         3.754408661907416e+00]
-
-    p_low = 0.02425
-    p_high = 1 - p_low
-    q = r = 0.0
-
-    if p < p_low:
-        q = math.sqrt(-2 * math.log(p))
-        return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / \
-               ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
-    elif p <= p_high:
-        q = p - 0.5
-        r = q * q
-        return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / \
-               (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)
-    else:
-        q = math.sqrt(-2 * math.log(1 - p))
-        return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / \
-                ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
-
-
-def _norm_cdf(x: float) -> float:
-    """Standard normal CDF."""
-    # Approximation
-    a1 = 0.254829592
-    a2 = -0.284496736
-    a3 = 1.421413741
-    a4 = -1.453152027
-    a5 = 1.061405429
-    p = 0.3275911
-
-    sign = 1 if x >= 0 else -1
-    x = abs(x) / math.sqrt(2)
-
-    t = 1.0 / (1.0 + p * x)
-    y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
-
-    return 0.5 * (1.0 + sign * y)
 
 
 # =============================================================================

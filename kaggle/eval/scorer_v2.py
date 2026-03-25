@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Scoring System v2.2
+Trinity Cognitive Probes — Scientific Scoring System v2.3
 
 Implements scientifically-grounded metacognition metrics:
 - Confidence discretization (Mielke et al. 2024): 0-20 scale (5% bins)
@@ -13,6 +13,10 @@ v2.2 CRITICAL FIXES:
 - Fixed ternary_accuracy bug: now uses TrackResults counts instead of empty list
 - Fixed M-ratio formula: preserves sign of d' (per Maniscalco & Lau 2014)
 - Fixed n-gram documentation: "word n-grams" not "character n-grams"
+
+v2.3 UPDATES:
+- norm_inverse moved to utils.py (DRY principle)
+- Import shared utilities from eval.utils
 
 Key improvements over v2.0:
 - Discretized confidence buckets (no more continuous 0-100 nonsense)
@@ -27,6 +31,13 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple
 from enum import Enum
 from collections import defaultdict
+
+# Import shared utilities (v2.3: DRY principle - no more duplication!)
+try:
+    from .utils import norm_inverse
+except ImportError:
+    # Fallback for direct execution
+    from utils import norm_inverse
 
 
 # =============================================================================
@@ -316,79 +327,20 @@ def calculate_delta_confidence(
     return mean_correct - mean_incorrect
 
 
+# norm_inverse is now imported from utils.py (v2.3 DRY fix)
+
+
+# DEPRECATED: norm_inverse moved to utils.py
+# This wrapper is kept for backward compatibility (v2.3)
 def norm_inverse(p: float) -> float:
     """
-    Inverse of standard normal CDF (probit function).
+    Wrapper for utils.norm_inverse for backward compatibility.
 
-    Uses Abramowitz and Stegun approximation.
-
-    CRITICAL FIX (2024): For p=0, return approximation of -∞.
-    For p=1, return approximation of +∞.
-    Previous version returned 0.0, which artificially limited d' values.
+    v2.3: This function now delegates to utils.py to follow DRY principle.
     """
-    if p <= 0:
-        # Approximation of -∞ (use -10 for practical purposes)
-        # Φ(-10) ≈ 7.6e-24, effectively zero
-        return -10.0
-    if p >= 1:
-        # Approximation of +∞ (use +10 for practical purposes)
-        # Φ(+10) ≈ 1 - 7.6e-24, effectively one
-        return 10.0
-
-    # Constants for approximation
-    a = [
-        -3.969683028665376e+01,
-        2.209460984245205e+02,
-        -2.759285104469687e+02,
-        1.383577518672690e+02,
-        -3.066479806614716e+01,
-        2.506628277459239e+00
-    ]
-    b = [
-        -5.447609879822406e+01,
-        1.615858368580409e+02,
-        -1.556989798598866e+02,
-        6.680131188771972e+01,
-        -1.328068155288572e+01
-    ]
-    c = [
-        -7.784894002430293e-03,
-        -3.223964580411365e-01,
-        -2.400758277161838e+00,
-        -2.549732539343734e+00,
-        4.374664141464968e+00,
-        2.938163982698783e+00
-    ]
-    d = [
-        7.784695709041462e-03,
-        3.224671290700398e-01,
-        2.445134137142996e+00,
-        3.754408661907416e+00
-    ]
-
-    # Define break-points
-    p_low = 0.02425
-    p_high = 1 - p_low
-
-    q: float
-    r: float
-
-    if p < p_low:
-        # Rational approximation for lower region
-        q = math.sqrt(-2 * math.log(p))
-        return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / \
-               ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
-    elif p <= p_high:
-        # Rational approximation for central region
-        q = p - 0.5
-        r = q * q
-        return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / \
-               (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)
-    else:
-        # Rational approximation for upper region
-        q = math.sqrt(-2 * math.log(1 - p))
-        return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / \
-                ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)
+    # Import locally to avoid circular dependency if utils also imports this
+    from . import utils
+    return utils.norm_inverse(p)
 
 
 # =============================================================================
