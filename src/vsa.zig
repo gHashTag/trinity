@@ -22,27 +22,26 @@ pub const MAX_TRITS = gen.MAX_TRITS;
 pub const SearchResult = gen.SearchResult;
 pub const HybridBigInt = gen.HybridBigInt;
 
-// Re-export VSA operations from vsa_core_compat (HybridBigInt-based API for backward compatibility)
-pub const bind = vsa_core_compat.bind;
-pub const unbind = vsa_core_compat.unbind;
-pub const bundle2 = vsa_core_compat.bundle2;
-pub const bundle3 = vsa_core_compat.bundle3;
-pub const permute = vsa_core_compat.permute;
-pub const inversePermute = vsa_core_compat.inversePermute;
-pub const cosineSimilarity = vsa_core_compat.cosineSimilarity;
-pub const hammingDistance = vsa_core_compat.hammingDistance;
-pub const hammingSimilarity = vsa_core_compat.hammingSimilarity;
-pub const dotSimilarity = vsa_core_compat.dotSimilarity;
-pub const vectorNorm = vsa_core_compat.vectorNorm;
-pub const bundleN = vsa_core_compat.bundleN;
-pub const countNonZero = vsa_core_compat.countNonZero;
-pub const randomVector = vsa_core_compat.randomVector;
-pub const encodeSequence = vsa_core_compat.encodeSequence;
-pub const probeSequence = vsa_core_compat.probeSequence;
+// Re-export VSA operations from gen_vsa (Zig 0.15 compatible - avoids module conflict)
+pub const bind = gen.bind;
+pub const unbind = gen.unbind;
+pub const bundle2 = gen.bundle2;
+pub const bundle3 = gen.bundle3;
+pub const permute = gen.permute;
+pub const inversePermute = gen.inversePermute;
+pub const cosineSimilarity = gen.cosineSimilarity;
+pub const hammingDistance = gen.hammingDistance;
+pub const hammingSimilarity = gen.hammingSimilarity;
+pub const dotSimilarity = gen.dotSimilarity;
+pub const vectorNorm = gen.vectorNorm;
+pub const bundleN = gen.bundleN;
+pub const countNonZero = gen.countNonZero;
+pub const randomVector = gen.randomVector;
+pub const encodeSequence = gen.encodeSequence;
+pub const probeSequence = gen.probeSequence;
 
 // Import VSA submodules directly from src/vsa/ (Zig 0.15 compatibility)
 pub const vsa_common = @import("vsa/common.zig");
-pub const vsa_core_compat = @import("vsa/core.zig");
 pub const vsa_encoding = @import("vsa/encoding.zig");
 pub const vsa_storage = @import("vsa/storage.zig");
 pub const vsa_concurrency = @import("vsa/concurrency.zig");
