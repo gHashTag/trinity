@@ -7,8 +7,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const common = @import("common.zig");
-// Import HybridBigInt from hybrid.zig as file import
-const hybrid_mod = @import("../hybrid.zig");
+// Import HybridBigInt from hybrid module
+const hybrid_mod = @import("hybrid");
 const HybridBigInt = hybrid_mod.HybridBigInt;
 const Trit = common.Trit;
 

@@ -4,8 +4,8 @@
 
 const std = @import("std");
 const common = @import("common.zig");
-// Import HybridBigInt from hybrid.zig as file import
-const hybrid_mod = @import("../hybrid.zig");
+// Import HybridBigInt from hybrid module via module system
+const hybrid_mod = @import("hybrid");
 const HybridBigInt = hybrid_mod.HybridBigInt;
 const Trit = common.Trit;
 const Vec32i8 = common.Vec32i8;
