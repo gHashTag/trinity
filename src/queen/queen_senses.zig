@@ -326,7 +326,7 @@ fn readLastIssueCommentTs() i64 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printSensesTable(s: SenseResult) void {
-    const colors = @import("tri_colors.zig");
+    const colors = @import("tri_colors");
     const GREEN = colors.GREEN;
     const RED = colors.RED;
     const CYAN = colors.CYAN;

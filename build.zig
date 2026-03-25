@@ -2307,6 +2307,26 @@ pub fn build(b: *std.Build) void {
     // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
     // phoenix_medulla, phoenix_pons are in src/queen/
     // (Q-zone migration debt). Queen files import them directly.
+    const cortex_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const faculty_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/faculty_types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const thalamus_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/thalamus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const queen_ofc_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/queen_ofc.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const voice_engine_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/voice_engine.zig"),
         .target = target,
@@ -3023,6 +3043,11 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tri_compile", .module = tri_compile_mod },
                 // Queen module (Q-zone Coordination)
                 .{ .name = "queen", .module = queen_mod },
+                // Q-zone modules (individual imports for tri compatibility)
+                .{ .name = "cortex", .module = cortex_mod },
+                .{ .name = "faculty_types", .module = faculty_types_mod },
+                .{ .name = "thalamus", .module = thalamus_mod },
+                .{ .name = "queen_ofc", .module = queen_ofc_mod },
             },
         }),
     });

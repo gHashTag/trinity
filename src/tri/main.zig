@@ -44,7 +44,7 @@ const tri_research = @import("tri_research.zig");
 const tri_experiment = @import("tri_experiment.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
-const faculty_board = @import("cortex.zig");
+const faculty_board = queen.cortex; // cortex module from src/queen/
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");

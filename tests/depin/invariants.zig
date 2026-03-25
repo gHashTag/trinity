@@ -244,7 +244,7 @@ const StateFingerprint = struct {
         // Capture health distribution
         var health_iter = state.reputation.metrics.iterator();
         while (health_iter.next()) |entry| {
-            const health = entry.value_ptr.getHealth();
+            const health = entry.value_ptr.getHealthFloat();
             const bucket = @as(usize, @intFromFloat(@min(0.99, health) * 10.0));
             fp.health_buckets[bucket] += 1;
             fp.unique_addresses += 1;
@@ -264,14 +264,14 @@ const StateFingerprint = struct {
 
         // Hash all buckets
         for (self.stake_buckets) |bucket| {
-            std.hash.autoHashStrat(bucket, &hasher);
+            std.hash.autoHash(&hasher, bucket);
         }
         for (self.health_buckets) |bucket| {
-            std.hash.autoHashStrat(bucket, &hasher);
+            std.hash.autoHash(&hasher, bucket);
         }
 
-        std.hash.autoHashStrat(self.unique_addresses, &hasher);
-        std.hash.autoHashStrat(self.slash_rate_x1000, &hasher);
+        std.hash.autoHash(&hasher, self.unique_addresses);
+        std.hash.autoHash(&hasher, self.slash_rate_x1000);
 
         return @as(u128, @bitCast(hasher.final()));
     }
@@ -597,9 +597,12 @@ fn invariantMonotonic(state: *const TestState) !void {
 
             // Compensation: stake increase must be covered by emission + slash
             const accounted = delta_emitted + delta_slashed;
-            try std.testing.expect(accounted >= delta_staked,
-                "Stake increase of {d} not compensated by emission ({d}) + slash ({d})",
-            );
+            if (accounted < delta_staked) {
+                std.debug.print("Stake increase of {d} not compensated by emission ({d}) + slash ({d})\n", .{
+                    delta_staked, delta_emitted, delta_slashed,
+                });
+                return error.StakeCompensationError;
+            }
         }
     }
 }
@@ -866,7 +869,7 @@ test "dePIN invariants v3: state fingerprint diversity" {
     var state = TestState.init(allocator);
     defer state.deinit();
 
-    var rng = std.Random.DefaultPrng.init(0xD1VER53);
+    var rng = std.Random.DefaultPrng.init(0xD15EEDB);
     const random = rng.random();
 
     // Generate diverse states
@@ -994,7 +997,7 @@ test "dePIN invariants v3: causality invariant" {
     var state = TestState.init(allocator);
     defer state.deinit();
 
-    var rng = std.Random.DefaultPrng.init(0xCAUS41TY);
+    var rng = std.Random.DefaultPrng.init(0xCA5417A);
     const random = rng.random();
 
     // Build up history with diverse operations

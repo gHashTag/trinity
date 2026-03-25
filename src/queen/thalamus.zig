@@ -8,10 +8,13 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const hippocampus = @import("hippocampus.zig");
-const voice_engine = @import("voice_engine.zig");
+// Import tri modules via tri module to avoid migration conflicts
+const tri = @import("tri");
+const hippocampus = tri.hippocampus;
+const voice_engine = tri.voice_engine;
+const farm_accounts = tri.farm_accounts;
+const github_client = tri.github_client;
 const qt = @import("queen_types.zig"); // For findJson helpers
-const farm_accounts = @import("farm_accounts.zig");
 
 const FRESHNESS_THRESHOLD: i64 = 300; // 5 minutes
 const MU_ERRORS_DIR = ".trinity/mu/errors";
@@ -652,9 +655,8 @@ pub const GitHubCache = struct {
             }
         }
 
-        // Fetch fresh data using github_client
-        const github_client_mod = @import("github_client.zig");
-        var client = github_client_mod.GitHubClient.init(allocator, true) catch {
+        // Fetch fresh data using github_client (via tri module)
+        var client = github_client.GitHubClient.init(allocator, true) catch {
             // On failure, return empty counts
             const empty = GitHubIssues{ .timestamp = now };
             self.issues = empty;

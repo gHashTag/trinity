@@ -864,6 +864,12 @@ class TernaryScorerV2:
             if task["count"] > 0:
                 task["mean_score"] /= task["count"]
 
+        # v2.2 NEW: Calculate ΔConf for small sample reliability
+        delta_conf = calculate_delta_confidence(
+            [r.confidence for r in results],
+            [r.is_correct for r in results]
+        )
+
         return TrackResults(
             track_name=track_name,
             total_items=len(results),
@@ -879,7 +885,8 @@ class TernaryScorerV2:
             meta_d_prime=meta_d,
             mratio=mratio,
             calibration_curve=calibration_curve,
-            type2_counts=dict(type2_counts)
+            type2_counts=dict(type2_counts),
+            delta_conf=delta_conf  # v2.2 NEW
         )
 
     def calculate_ternary_accuracy(self, results: List[ScoringResult]) -> float:
@@ -920,6 +927,14 @@ class TernaryScorerV2:
             lines.append(f"\n  Type II SDT Counts:")
             for resp_type, count in results.type2_counts.items():
                 lines.append(f"    {resp_type}: {count}")
+
+        # v2.2 NEW: ΔConf (small sample reliability)
+        if abs(results.delta_conf) > 0.001:
+            lines.append(f"\n📊 ΔConf (v2.2, reliable at n<100):")
+            lines.append(f"  ΔConf: {results.delta_conf:.4f}  (higher = better metacognition)")
+            if len(results) > 0:
+                n_samples = len([r for r in [results] if hasattr(r, 'total_items')])
+                lines.append(f"  Recommendation: {'Use ΔConf' if n_samples < 100 else 'Either metric OK'}")
 
         # v2.2 Advanced Metrics (if available)
         if results.smooth_ece > 0 or results.adaptive_ece > 0:

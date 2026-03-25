@@ -10,15 +10,17 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const types = @import("faculty_types.zig");
-const voice_engine = @import("voice_engine.zig");
-const analysis_engine = @import("analysis_engine.zig");
-const three_paths = @import("three_paths.zig");
-const phi_poetry = @import("phi_poetry.zig");
-const colors = @import("tri_colors.zig");
-const Sacred = @import("train_types.zig").Sacred;
-const tri_state = @import("tri_state.zig");
-const hippocampus = @import("hippocampus.zig");
-const thalamus = @import("thalamus.zig");
+// Import tri modules via tri module to avoid migration conflicts
+const tri = @import("tri");
+const voice_engine = tri.voice_engine;
+const analysis_engine = tri.analysis_engine;
+const three_paths = tri.three_paths;
+const phi_poetry = tri.phi_poetry;
+const colors = tri.tri_colors;
+const Sacred = tri.train_types.Sacred;
+const tri_state = tri.tri_state;
+const hippocampus = tri.hippocampus;
+const thalamus = @import("thalamus.zig"); // Local thalamus (in queen/)
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;
 const AgentState = types.AgentState;

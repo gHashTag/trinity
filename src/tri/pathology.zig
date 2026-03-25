@@ -20,9 +20,11 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const swe_arena = @import("swe_arena.zig");
-const thalamus = @import("thalamus.zig");
+// Import queen modules via queen module
+const queen = @import("queen");
+const thalamus = queen.thalamus;
+const hippocampus = queen.hippocampus;
 const github_client = @import("github_client.zig");
-const hippocampus = @import("hippocampus.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;

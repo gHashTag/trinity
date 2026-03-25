@@ -71,17 +71,26 @@ class ContaminationDetector:
     1. N-gram overlap: Detect exact/near-exact matches
     2. Semantic similarity: Detect paraphrases (requires embeddings)
     3. Temporal check: Verify questions are newer than training cutoff
+
+    v2.2 NEW:
+    - Length-adaptive similarity thresholds
+    - Improved n-gram boundary checking
     """
 
     # N-gram sizes for overlap detection
     NGRAM_SIZES = [3, 4, 5]
 
-    # Similarity thresholds
-    SIMILARITY_THRESHOLDS = {
+    # Base similarity thresholds (for reference text length ~100 chars)
+    BASE_SIMILARITY_THRESHOLDS = {
         ContaminationSeverity.CONFIRMED: 0.98,  # Near-exact match
         ContaminationSeverity.LIKELY: 0.90,     # Very similar
         ContaminationSeverity.SUSPICIOUS: 0.75,  # Possible paraphrase
     }
+
+    # Threshold adjustment parameters
+    MIN_LENGTH = 20      # Minimum text length for reliable detection
+    REF_LENGTH = 100     # Reference length for base thresholds
+    LENGTH_EXPONENT = 0.15  # How quickly thresholds relax with length
 
     def __init__(
         self,
@@ -107,6 +116,45 @@ class ContaminationDetector:
             except ImportError:
                 print("⚠️  sentence-transformers not available, using n-gram only")
                 self.use_embeddings = False
+
+    def _get_adaptive_thresholds(self, text_length: int) -> Dict[ContaminationSeverity, float]:
+        """
+        Calculate length-adaptive similarity thresholds.
+
+        v2.2 NEW: Adjust thresholds based on text length.
+        Longer texts naturally have more overlap, so thresholds should relax.
+
+        Formula: threshold = base_threshold - (base_threshold - min_threshold) * (1 - (length/ref_length)^-exponent)
+
+        Args:
+            text_length: Length of text to check
+
+        Returns:
+            Dict of severity -> adjusted threshold
+        """
+        thresholds = {}
+
+        for severity, base_threshold in self.BASE_SIMILARITY_THRESHOLDS.items():
+            # Minimum thresholds (for very long texts)
+            min_thresholds = {
+                ContaminationSeverity.CONFIRMED: 0.85,  # Still high for confirmed
+                ContaminationSeverity.LIKELY: 0.75,
+                ContaminationSeverity.SUSPICIOUS: 0.60,
+            }
+
+            if text_length < self.MIN_LENGTH:
+                # Short texts: use base thresholds (strict)
+                thresholds[severity] = base_threshold
+            else:
+                # Longer texts: relax thresholds
+                min_threshold = min_thresholds[severity]
+                ratio = (text_length / self.REF_LENGTH) ** -self.LENGTH_EXPONENT
+                # Clamp ratio to [0, 1]
+                ratio = max(0, min(1, ratio))
+                # Adjusted threshold
+                thresholds[severity] = base_threshold - (base_threshold - min_threshold) * (1 - ratio)
+
+        return thresholds
 
     def detect_contamination(
         self,
@@ -175,6 +223,8 @@ class ContaminationDetector:
         """
         Check a single question for contamination.
 
+        v2.2 NEW: Uses length-adaptive thresholds for more robust detection.
+
         Args:
             question: Question to check
             reference_corpus: Reference corpus
@@ -185,6 +235,9 @@ class ContaminationDetector:
         """
         # Normalize question
         q_norm = self._normalize_text(question)
+
+        # Get adaptive thresholds based on question length
+        adaptive_thresholds = self._get_adaptive_thresholds(len(q_norm))
 
         # Check against reference corpus
         for j, ref in enumerate(reference_corpus):
@@ -198,21 +251,21 @@ class ContaminationDetector:
             if q_norm == ref_norm and len(q_norm) > 20:
                 return ContaminationSeverity.CONFIRMED
 
-            # Check n-gram overlap
+            # Check n-gram overlap with adaptive thresholds
             ngram_sim = self._ngram_similarity(q_norm, ref_norm)
-            if ngram_sim >= self.SIMILARITY_THRESHOLDS[ContaminationSeverity.CONFIRMED]:
+            if ngram_sim >= adaptive_thresholds[ContaminationSeverity.CONFIRMED]:
                 return ContaminationSeverity.CONFIRMED
-            elif ngram_sim >= self.SIMILARITY_THRESHOLDS[ContaminationSeverity.LIKELY]:
+            elif ngram_sim >= adaptive_thresholds[ContaminationSeverity.LIKELY]:
                 return ContaminationSeverity.LIKELY
-            elif ngram_sim >= self.SIMILARITY_THRESHOLDS[ContaminationSeverity.SUSPICIOUS]:
+            elif ngram_sim >= adaptive_thresholds[ContaminationSeverity.SUSPICIOUS]:
                 return ContaminationSeverity.SUSPICIOUS
 
             # Check semantic similarity if embeddings available
             if self.use_embeddings:
                 sem_sim = self._semantic_similarity(question, ref)
-                if sem_sim >= self.SIMILARITY_THRESHOLDS[ContaminationSeverity.LIKELY]:
+                if sem_sim >= adaptive_thresholds[ContaminationSeverity.LIKELY]:
                     return ContaminationSeverity.LIKELY
-                elif sem_sim >= self.SIMILARITY_THRESHOLDS[ContaminationSeverity.SUSPICIOUS]:
+                elif sem_sim >= adaptive_thresholds[ContaminationSeverity.SUSPICIOUS]:
                     return ContaminationSeverity.SUSPICIOUS
 
         return ContaminationSeverity.CLEAN

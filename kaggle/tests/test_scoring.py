@@ -7,6 +7,7 @@ Tests the TernaryScorer class and related functions.
 
 import unittest
 import sys
+import math
 from pathlib import Path
 
 # Add parent directory to path for imports
@@ -462,13 +463,17 @@ class TestMetaDPrime(unittest.TestCase):
         import math
 
         # All correct (no Type I variance)
-        meta_d, d_prime, mratio = calculate_meta_d_prime(50, 0, 0, 50)
+        meta_d, d_prime, mratio = calculate_meta_d_prime(50, 0, 0, 0)
         # When all correct, d' is maximal positive
         self.assertGreater(d_prime, 0.0)
 
         # All incorrect (negative d')
-        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 50, 50, 0)
+        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 50, 0)
         self.assertLess(d_prime, 0.0)
+
+        # 50% accuracy = d' = 0 (chance performance)
+        meta_d, d_prime, mratio = calculate_meta_d_prime(50, 0, 0, 50)
+        self.assertEqual(d_prime, 0.0, "50% accuracy should give d' = 0")
 
         # CRITICAL FIX (v3.0): Empty data should return NaN for mratio
         meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 0, 0)

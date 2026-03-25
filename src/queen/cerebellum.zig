@@ -144,7 +144,7 @@ pub fn recordCoordination(
     plan: CoordinationPlan,
     success: bool,
 ) !void {
-    const hippocampus = @import("hippocampus.zig");
+    const hippocampus = @import("hippocampus");
 
     const data = try std.fmt.allocPrint(
         allocator,

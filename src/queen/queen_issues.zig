@@ -7,9 +7,10 @@
 
 const std = @import("std");
 const qt = @import("queen_types.zig");
-// FIXME: Q-zone migration debt — relative imports to avoid module conflicts
-const github_client = @import("../tri/github_client.zig");
-const github_app_auth = @import("../tri/github_app_auth.zig");
+// Import via tri module to avoid module conflicts
+const tri = @import("tri");
+const github_client = tri.github_client;
+const github_app_auth = tri.github_app_auth;
 
 const Allocator = std.mem.Allocator;
 const GITHUB_API_HOST = "api.github.com";

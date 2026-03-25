@@ -465,7 +465,7 @@ fn writeAuditLine(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printPolicyMap(config: qt.QueenConfig, counters: *const ActionCounters) void {
-    const colors = @import("tri_colors.zig");
+    const colors = @import("tri_colors");
     print("\n{s}" ++ qt.E_GEAR ++ " Queen v4 Policy Map ({d} actions){s}\n\n", .{ colors.GOLDEN, @as(u8, NUM_ACTIONS), colors.RESET });
     print("  max_auto_level: L{d} | require_human_approval: {s}\n\n", .{
         config.max_auto_level,

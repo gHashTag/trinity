@@ -752,7 +752,7 @@ test "State Machine v2: full state verification" {
     var executor = StateMachineExecutor.init(allocator);
     defer executor.deinit();
 
-    var gen = CommandGenerator.init(0xFULLVER1);
+    var gen = CommandGenerator.init(0xF00DF001);
 
     // Execute 50 commands
     var i: usize = 0;

@@ -12,8 +12,10 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
-const hippocampus = @import("hippocampus.zig");
-const thalamus = @import("thalamus.zig");
+// Import tri modules via tri module to avoid migration conflicts
+const tri = @import("tri");
+const hippocampus = tri.hippocampus;
+const thalamus = @import("thalamus.zig"); // Local thalamus (in queen/)
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SELF MODEL — "Who am I, what am I doing, what can I do?"

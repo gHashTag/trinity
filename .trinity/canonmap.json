@@ -262,5 +262,17 @@
     }
   ],
   "alphabet_canon_version": "1.0.0",
-  "canon_date": "2026-03-25"
+  "canon_date": "2026-03-25",
+  "migration_debt": {
+    "q_zone": {
+      "status": "partial",
+      "wave": 3,
+      "blocked_by": ["github_client", "hippocampus", "farm_accounts"],
+      "conflicts": "dual_module_ownership",
+      "solution": "option_a_full_zone_separation",
+      "estimated_locs": 500,
+      "affected_files": 30,
+      "blocking": ["zig build tri"]
+    }
+  }
 }

@@ -15,8 +15,9 @@ const array_list = std.array_list;
 
 const qt = @import("queen_types.zig");
 
-// TRI zone imports (from named modules - files in src/tri/)
-const voice_engine = @import("voice_engine");
+// TRI zone imports (via tri module)
+const tri = @import("tri");
+const voice_engine = tri.voice_engine;
 
 // Q-zone imports (files in src/queen/)
 const thalamus = @import("thalamus.zig");
@@ -27,13 +28,17 @@ const faculty_types = @import("faculty_types.zig");
 const phoenix_medulla = @import("phoenix_medulla.zig");
 const phoenix_pons = @import("phoenix_pons.zig");
 
-// Brain zone imports (named modules)
-const basal_ganglia = @import("basal_ganglia");
-const locus_coeruleus = @import("locus_coeruleus");
-const reticular_formation = @import("reticular_formation");
+// Brain zone imports (via brain module)
+const brain = @import("brain");
+const basal_ganglia = brain.basal_ganglia;
+const locus_coeruleus = brain.locus_coeruleus;
+const reticular_formation = brain.reticular_formation;
+const Brain = brain.Brain;
 
 // Phoenix subsystem (brain stem) aliases
-const phoenix_locus_coeruleus = locus_coeruleus;
+const phoenix_locus_coeruleus = brain.phoenix_locus_coeruleus;
+const medulla = brain.phoenix_medulla;
+const pons = brain.phoenix_pons;
 
 // Queen zone imports
 const queen_actions = @import("queen_actions.zig");
@@ -492,7 +497,7 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
     const print = std.debug.print;
 
     print("\n{s}" ++ qt.E_CROWN ++ " Queen DLPFC — Autonomous Decision Engine{s}\n", .{
-        @import("tri_colors.zig").GOLDEN, @import("tri_colors.zig").RESET,
+        @import("tri_colors").GOLDEN, @import("tri_colors").RESET,
     });
     print("  interval: {d}s | daemon: {s} | auto_level: L{d}\n\n", .{
         config.interval_sec,
@@ -568,20 +573,20 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
             cycle_state.running = false;
         } else {
             print("\n{s}Cycle #{d} complete. Sleeping {d}s...{s}\n\n", .{
-                @import("tri_colors.zig").GRAY,
+                @import("tri_colors").GRAY,
                 cycle_state.iteration,
                 config.interval_sec,
-                @import("tri_colors.zig").RESET,
+                @import("tri_colors").RESET,
             });
             std.time.sleep(config.interval_sec * 1_000_000_000);
         }
     }
 
     print("\n{s}" ++ qt.E_CROWN ++ " Queen DLPFC — Shutdown after {d} cycles, {d} decisions{s}\n\n", .{
-        @import("tri_colors.zig").GOLDEN,
+        @import("tri_colors").GOLDEN,
         cycle_state.iteration,
         cycle_state.decision_count,
-        @import("tri_colors.zig").RESET,
+        @import("tri_colors").RESET,
     });
 }
 

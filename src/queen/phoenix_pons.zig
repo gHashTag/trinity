@@ -11,7 +11,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 
 // ═════════════════════════════════════════════════════════════════════════════════════
 // CEREBELLUM BRIDGE — Queen ↔ Cerebellum data flow

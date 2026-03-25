@@ -14,7 +14,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const issue_planner = @import("issue_planner.zig");
 const FarmTask = issue_planner.FarmTask;
-const queen_ofc = @import("queen_ofc.zig");
+const queen = @import("queen");
+const queen_ofc = queen.queen_ofc;
 
 /// Notify Telegram when a farm task starts
 pub fn notifyTaskStart(allocator: Allocator, task: FarmTask) !void {
