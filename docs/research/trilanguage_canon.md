@@ -350,6 +350,84 @@ T-zone (types) → J-zone (compile) → X-zone (distribute) → All zones (consu
 4. **E-zone**: Verifies type correctness, quality gates before distribution
 5. **All zones**: Import and use sacred types, compiled modules
 
+### Import Law (Anti-Fragile Imports)
+
+**Purpose**: Eliminate path-relative imports that break on `git mv`. Named modules provide zone-level abstraction.
+
+**Law**:
+
+1. **NEVER use relative path imports across zone boundaries**
+   ```zig
+   // BAD — breaks on git mv
+   const sacred = @import("../temple/sacred_math.zig");
+
+   // GOOD — uses named module
+   const temple = @import("temple");
+   const PHI = temple.PHI;
+   ```
+
+2. **Every zone has `root.zig` that re-exports all public symbols**
+   ```zig
+   // src/temple/root.zig
+   pub const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
+   pub const weber_tuning = @import("weber_tuning.zig");
+   pub const tri27_core = @import("tri27_core.zig");
+   pub const sacred_math = @import("sacred_math.zig");
+   pub const tri_lang_core = @import("tri_lang_core.zig");
+   pub const coptic = @import("coptic.zig");
+
+   // Convenience re-exports
+   pub const GoldenFloat16 = intraparietal_sulcus.GoldenFloat16;
+   pub const TernaryFloat9 = intraparietal_sulcus.TernaryFloat9;
+   pub const PHI = sacred_math.PHI;
+   ```
+
+3. **build.zig declares ALL zones as named modules**
+   ```zig
+   // build.zig
+   const temple_mod = b.createModule(.{
+       .root_source_file = b.path("src/temple/root.zig"),
+       .target = target,
+       .optimize = optimize,
+   });
+
+   const tri_lang_mod = b.createModule(.{
+       .root_source_file = b.path("src/tri-lang/root.zig"),
+       .target = target,
+       .optimize = optimize,
+   });
+   ```
+
+4. **Within a zone, relative imports are allowed**
+   ```zig
+   // src/tri-lang/pipeline.zig (same zone)
+   const typechecker = @import("typechecker.zig");  // OK
+   ```
+
+5. **Cross-zone imports MUST use named modules**
+   ```zig
+   // src/hslm/root.zig (cross-zone)
+   const temple = @import("temple");
+   pub const GoldenFloat16 = temple.intraparietal_sulcus.GoldenFloat16;
+   pub const TernaryFloat9 = temple.intraparietal_sulcus.TernaryFloat9;
+   ```
+
+**Benefits**:
+- **Anti-fragile**: `git mv src/temple/ src/sacred/` breaks zero imports
+- **Explicit**: Zone boundaries visible in code (`@import("temple")`)
+- **Refactor-safe**: Move files within zone, imports still work
+- **IDE-friendly**: Named modules enable better autocomplete
+
+**Migration**:
+```bash
+# Before: relative import
+@import("../temple/intraparietal_sulcus.zig")
+
+# After: named module
+const temple = @import("temple");
+const intraparietal = temple.intraparietal_sulcus;
+```
+
 ### File Ownership by Zone
 
 ```
@@ -450,6 +528,7 @@ This document is living canon. Amendments require:
 | 1.0.0 | 2026-03-25 | Initial canon — 13/7/10 surface, No OOP law | T-agent |
 | 1.0.1 | 2026-03-25 | Added Layer Binding section | T-agent |
 | 1.1.0 | 2026-03-25 | Added Tri Zones & Agents section (7 zones, ownership tables, lock rules) | T-agent |
+| 1.2.0 | 2026-03-25 | Added Import Law (anti-fragile named modules) | T-agent |
 
 ---
 

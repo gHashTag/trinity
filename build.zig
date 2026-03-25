@@ -2245,6 +2245,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Eval module — E-zone type checking, validation
+    const eval_mod = b.createModule(.{
+        .root_source_file = b.path("src/eval/type_checker.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+        },
+    });
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{

@@ -516,7 +516,7 @@ class TernaryScorer:
             f"  φ-Weighted Mean:     {results.phi_weighted_mean:.4f}",
             f"  Calibration Score:  {results.calibration_score:.4f}",
             f"  Mean Confidence:     {results.mean_confidence:.4f}",
-            f"  Ternary Accuracy:    {self.calculate_ternary_accuracy([r for r in [results] if hasattr(results, '__iter__') else []]):.4f}",
+            f"  Ternary Accuracy:    {(results.correct - results.incorrect) / results.total_items if results.total_items > 0 else 0.0:.4f}",
         ]
 
         if results.per_task_breakdown:

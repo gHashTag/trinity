@@ -769,7 +769,7 @@ class TernaryScorerV2:
             f"  φ-Weighted Mean:     {results.phi_weighted_mean:.4f}",
             f"  Calibration Score:   {results.calibration_score:.4f}",
             f"  Mean Confidence:     {results.mean_confidence:.4f}",
-            f"  Ternary Accuracy:    {self.calculate_ternary_accuracy([r for r in [results] if hasattr(results, '__iter__') else []]):.4f}",
+            f"  Ternary Accuracy:    {(results.correct - results.incorrect) / results.total_items if results.total_items > 0 else 0.0:.4f}",
             f"\n📊 SCIENTIFIC METRICS v2.1:",
             f"  ECE (Calibration):        {results.ece:.4f}  (lower is better)",
             f"  meta-d' (Metacognition):  {results.meta_d_prime:.4f}  (higher is better)",
