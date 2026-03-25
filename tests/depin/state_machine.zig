@@ -437,15 +437,165 @@ pub const StateMachineExecutor = struct {
         self.commands_passed += 1;
     }
 
-    /// Verify model matches real state
+    /// Verify model matches real state (Enhanced with full state verification)
     pub fn verify(self: *const StateMachineExecutor) !void {
-        // Check emission matches
-        if (self.model.emitted != self.real_state.app_state.getEmissionTotal()) {
-            std.debug.print("Model emitted: {d}, Real emitted: {d}\n", .{
-                self.model.emitted,
-                self.real_state.app_state.getEmissionTotal(),
+        // 1. Check emission matches
+        try self.verifyEmission();
+
+        // 2. Check staked amounts (total, not per-address due to hash collisions)
+        try self.verifyStakedAmounts();
+
+        // 3. Check slashed amounts
+        try self.verifySlashedAmounts();
+    }
+
+    /// Verify emission matches between model and real state
+    fn verifyEmission(self: *const StateMachineExecutor) !void {
+        const model_emitted = self.model.emitted;
+        const real_emitted = self.real_state.app_state.getEmissionTotal();
+
+        if (model_emitted != real_emitted) {
+            std.debug.print("Emission mismatch: Model={d}, Real={d}\n", .{
+                model_emitted, real_emitted,
             });
-            return error.StateMismatch;
+            return error.EmissionMismatch;
+        }
+    }
+
+    /// Verify staked amounts match (total comparison)
+    fn verifyStakedAmounts(self: *const StateMachineExecutor) !void {
+        const model_total = self.model.getTotalStaked();
+        const real_total = self.real_state.staking.getTotalStaked();
+
+        // Note: model_total may differ from real_total due to hash collisions
+        // in the model's address hashing. We check that they're reasonably close.
+        const max_diff = @max(1, model_total / 100); // Allow 1% variance
+
+        if (@abs(@as(i128, @intCast(model_total)) - @as(i128, @intCast(real_total))) > max_diff) {
+            std.debug.print("Staked mismatch: Model={d}, Real={d}, diff={d}, max_diff={d}\n", .{
+                model_total, real_total,
+                @abs(@as(i128, @intCast(model_total)) - @as(i128, @intCast(real_total))),
+                max_diff,
+            });
+            return error.StakedMismatch;
+        }
+    }
+
+    /// Verify slashed amounts match
+    fn verifySlashedAmounts(self: *const StateMachineExecutor) !void {
+        const model_slashed = self.model.getTotalSlashed();
+        const real_slashed = self.real_state.staking.getTotalSlashed();
+
+        if (model_slashed != real_slashed) {
+            std.debug.print("Slashed mismatch: Model={d}, Real={d}\n", .{
+                model_slashed, real_slashed,
+            });
+            return error.SlashedMismatch;
+        }
+    }
+
+    /// Cluster-based verification (à la Move Prover)
+    /// Verify only the affected cluster of modules for an operation
+    pub fn verifyCluster(executor: *StateMachineExecutor, cmd: Command) !void {
+        switch (cmd) {
+            .stake => |c| try verifyStakeCluster(executor, c),
+            .slash => |c| try verifySlashCluster(executor, c),
+            .unstake => |c| try verifyUnstakeCluster(executor, c),
+            .emit => |c| try verifyEmitCluster(executor, c),
+            .update_health => |c| try verifyHealthCluster(executor, c),
+        }
+    }
+
+    fn verifyStakeCluster(executor: *StateMachineExecutor, cmd: Command.StakeCmd) !void {
+        // Check pre-condition: emission cap not exceeded
+        const current_emission = executor.real_state.app_state.getEmissionTotal();
+        const new_emission = current_emission + cmd.amount;
+        const cap = executor.real_state.app_state.getEmissionCap();
+
+        if (new_emission > cap) {
+            std.debug.print("Stake would exceed emission cap\n", .{});
+            return error.EmissionCapExceeded;
+        }
+
+        // Post-condition: stake should exist in real state
+        const addr_hash = ModelState.hashAddress(cmd.address);
+        const model_stake = executor.model.staked.get(addr_hash) orelse 0;
+
+        // Real state should have at least this much staked
+        const stakes = try executor.real_state.staking.getStakerStakes(
+            cmd.address, executor.allocator
+        );
+        defer executor.allocator.free(stakes);
+
+        var real_stake: u128 = 0;
+        for (stakes) |s| {
+            if (s.is_active and !s.is_slashed) {
+                real_stake += s.amount;
+            }
+        }
+
+        // Model stake should be <= real stake (due to hash collisions)
+        if (model_stake > real_stake) {
+            std.debug.print("Model stake ({d}) > Real stake ({d})\n", .{
+                model_stake, real_stake,
+            });
+            return error.StakeClusterMismatch;
+        }
+    }
+
+    fn verifySlashCluster(executor: *StateMachineExecutor, cmd: Command.SlashCmd) !void {
+        // Pre-condition: address must have stakes
+        const addr_hash = ModelState.hashAddress(cmd.address);
+        if (executor.model.staked.get(addr_hash) == null) {
+            // Real state should also have no stakes
+            const stakes = try executor.real_state.staking.getStakerStakes(
+                cmd.address, executor.allocator
+            );
+            defer executor.allocator.free(stakes);
+
+            if (stakes.len > 0) {
+                std.debug.print("Model: no stake, Real: {} stakes\n", .{stakes.len});
+                return error.SlashClusterMismatch;
+            }
+        }
+    }
+
+    fn verifyUnstakeCluster(executor: *StateMachineExecutor, cmd: Command.UnstakeCmd) !void {
+        // Verify unstake removed the stake from both model and real
+        const addr_hash = ModelState.hashAddress(cmd.address);
+
+        // Model should not have the stake anymore
+        if (executor.model.staked.get(addr_hash) != null) {
+            std.debug.print("Model still has stake after unstake\n", .{});
+            return error.UnstakeClusterMismatch;
+        }
+    }
+
+    fn verifyEmitCluster(executor: *StateMachineExecutor, cmd: Command.EmitCmd) !void {
+        // Verify emission is within cap
+        const current = executor.real_state.app_state.getEmissionTotal();
+        const new_total = current + cmd.amount;
+        const cap = executor.real_state.app_state.getEmissionCap();
+
+        if (new_total > cap) {
+            std.debug.print("Emit {d} would exceed cap {d}\n", .{ cmd.amount, cap });
+            return error.EmitClusterMismatch;
+        }
+    }
+
+    fn verifyHealthCluster(executor: *StateMachineExecutor, cmd: Command.UpdateHealthCmd) !void {
+        // Health update should be reflected in reputation registry
+        const addr_hex = try std.fmt.allocPrint(executor.allocator, "{s}", .{
+            std.fmt.bytesToHex(&cmd.address, .lower),
+        });
+        defer executor.allocator.free(addr_hex);
+
+        if (executor.real_state.reputation.metrics.get(addr_hex)) |metrics| {
+            const health = metrics.getHealth();
+            if (health < 0.0 or health > 1.0) {
+                std.debug.print("Health out of bounds: {d:.2}\n", .{health});
+                return error.HealthClusterMismatch;
+            }
         }
     }
 
@@ -559,4 +709,67 @@ test "State Machine: pre/post conditions" {
     try model.postStake(addr_hash, 500 * TRI_WEI);
     const staked = model.staked.get(addr_hash).?;
     try std.testing.expectEqual(@as(u128, 500) * TRI_WEI, staked);
+}
+
+test "State Machine v2: cluster-based verification" {
+    const allocator = std.testing.allocator;
+    var executor = StateMachineExecutor.init(allocator);
+    defer executor.deinit();
+
+    var addr: [20]u8 = undefined;
+    @memset(&addr, 0);
+    addr[0] = 0xBB;
+
+    // Test stake cluster verification
+    const stake_cmd = Command{
+        .stake = .{
+            .address = addr,
+            .amount = 5000 * TRI_WEI,
+            .lock_period = .three_months,
+        },
+    };
+
+    try executor.execute(stake_cmd);
+    try executor.verifyCluster(stake_cmd);
+
+    // Test slash cluster verification
+    const slash_cmd = Command{
+        .slash = .{
+            .address = addr,
+            .penalty = 0.1, // 10%
+        },
+    };
+
+    try executor.execute(slash_cmd);
+    try executor.verifyCluster(slash_cmd);
+
+    // Full verification should still pass
+    try executor.verify();
+}
+
+test "State Machine v2: full state verification" {
+    const allocator = std.testing.allocator;
+    var executor = StateMachineExecutor.init(allocator);
+    defer executor.deinit();
+
+    var gen = CommandGenerator.init(0xFULL_V3R1FY);
+
+    // Execute 50 commands
+    var i: usize = 0;
+    while (i < 50) : (i += 1) {
+        const cmd = gen.next();
+        try executor.execute(cmd);
+
+        // Verify cluster after each command
+        try executor.verifyCluster(cmd);
+    }
+
+    // Full verification at the end
+    try executor.verify();
+
+    const stats = executor.getStats();
+    std.debug.print("Full verification: {} commands, {:.1}% pass rate\n", .{
+        stats.commands_executed,
+        stats.pass_rate * 100.0,
+    });
 }

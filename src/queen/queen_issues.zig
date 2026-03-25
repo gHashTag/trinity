@@ -7,8 +7,8 @@
 
 const std = @import("std");
 const qt = @import("queen_types.zig");
-const github_client = @import("github_client.zig");
-const github_app_auth = @import("github_app_auth.zig");
+const github_client = @import("github_client");
+const github_app_auth = @import("github_app_auth");
 
 const Allocator = std.mem.Allocator;
 const GITHUB_API_HOST = "api.github.com";

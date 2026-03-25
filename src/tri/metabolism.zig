@@ -25,7 +25,7 @@ const TrainLogEntry = types.TrainLogEntry;
 const Sacred = types.Sacred;
 
 // S³AI Brain modules
-const brain = @import("brain/brain.zig");
+const brain = @import("../brain/brain.zig");
 const Thalamus = brain.Thalamus;
 const WorkerLiveState = brain.WorkerLiveState;
 const LiveStatus = brain.LiveStatus;

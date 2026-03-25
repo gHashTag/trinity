@@ -569,13 +569,17 @@ def calculate_cohens_kappa(
 
     # Build confusion matrix
     if n_classes is None:
-        all_values = set(ratings1 + ratings2)
+        all_values = sorted(set(ratings1 + ratings2))
         n_classes = len(all_values)
+        class_mapping = {v: i for i, v in enumerate(all_values)}
+    else:
+        all_values = list(range(n_classes))
+        class_mapping = {v: v for v in all_values}
 
     # Confusion matrix
     conf_matrix = defaultdict(lambda: defaultdict(int))
     for r1, r2 in zip(ratings1, ratings2):
-        conf_matrix[r1][r2] += 1
+        conf_matrix[class_mapping[r1]][class_mapping[r2]] += 1
 
     # Observed agreement
     observed_agreement = sum(conf_matrix[i][i] for i in range(n_classes)) / n
@@ -595,8 +599,12 @@ def calculate_cohens_kappa(
         kappa = (observed_agreement - expected_agreement) / (1 - expected_agreement)
 
     # Standard error (approximate)
-    se = math.sqrt((observed_agreement * (1 - observed_agreement)) /
-                   (n * (1 - expected_agreement) ** 2))
+    # CRITICAL FIX (v3.0): Handle division by zero when expected_agreement == 1
+    if expected_agreement >= 1.0 or expected_agreement <= 0.0:
+        se = 0.0
+    else:
+        se = math.sqrt((observed_agreement * (1 - observed_agreement)) /
+                       (n * (1 - expected_agreement) ** 2))
 
     # Interpretation
     if kappa < 0:

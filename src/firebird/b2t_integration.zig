@@ -6,12 +6,19 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa");
+const firebird_vsa = @import("vsa.zig");
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
 
-const TritVec = vsa.TritVec;
-const Trit = vsa.Trit;
+const TritVec = firebird_vsa.TritVec;
+const Trit = firebird_vsa.Trit;
+
+// Local vsa operations for b2t_integration
+const vsa = struct {
+    pub fn bundle2(allocator: std.mem.Allocator, a: *const TritVec, b: *const TritVec) !TritVec {
+        return firebird_vsa.bundle2(allocator, a, b);
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TVC IR TYPES (simplified from b2t_lifter)

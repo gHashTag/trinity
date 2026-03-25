@@ -6,10 +6,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa");
+const firebird_vsa = @import("vsa.zig");
 
-const Trit = vsa.Trit;
-const TritVec = vsa.TritVec;
+const Trit = firebird_vsa.Trit;
+const TritVec = firebird_vsa.TritVec;
 
 // SIMD vector width (32 elements for AVX2, 64 for AVX-512)
 pub const SIMD_WIDTH: usize = 32;

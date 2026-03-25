@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa");
+const firebird_vsa = @import("vsa.zig");
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
 const evolution = @import("evolution.zig");
@@ -14,7 +14,7 @@ const parallel = @import("parallel.zig");
 const b2t = @import("b2t_integration.zig");
 const wasm_parser = @import("wasm_parser.zig");
 
-const TritVec = vsa.TritVec;
+const TritVec = firebird_vsa.TritVec;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

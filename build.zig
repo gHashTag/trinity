@@ -521,6 +521,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_search.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "hybrid", .module = hybrid_mod },
+            },
         }),
     });
     b.installArtifact(trinity_search);
@@ -539,6 +543,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/query_cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "hybrid", .module = hybrid_mod },
+            },
         }),
     });
     b.installArtifact(trinity_query);
@@ -2266,6 +2274,100 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI Brain Modules (Neuroanatomy v5.1) — MOVED HERE for queen_mod imports
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const basal_ganglia_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const reticular_formation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/reticular_formation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const locus_coeruleus_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI modules needed by queen — individual modules to avoid file ownership conflicts
+    const tri_colors_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_colors.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const agent_roles_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/agent_roles.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const faculty_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/faculty_types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const cortex_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const thalamus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/thalamus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const voice_engine_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/voice_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const cerebellum_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/cerebellum.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const insula_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/insula.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const phoenix_medulla_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/phoenix_medulla.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const phoenix_pons_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/phoenix_pons.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const github_client_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/github_client.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const github_app_auth_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/github_app_auth.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const farm_accounts_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/farm_accounts.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const hippocampus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/hippocampus.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "agent_roles", .module = agent_roles_mod },
+        },
+    });
+
     // Eval module — E-zone type checking, validation
     const eval_mod = b.createModule(.{
         .root_source_file = b.path("src/eval/type_checker.zig"),
@@ -2277,13 +2379,66 @@ pub fn build(b: *std.Build) void {
     });
 
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI Brain Modules (Neuroanatomy v5.1) — Additional modules (unique ones only)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const persistence_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/persistence.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const telemetry_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/telemetry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const thalamus_logs_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/thalamus_logs.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const prefrontal_cortex_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/prefrontal_cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const health_history_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/health_history.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     // Queen module — Q-zone Coordination
+    // NOTE: Individual brain and tri modules added to avoid file ownership conflicts
     const queen_mod = b.createModule(.{
         .root_source_file = b.path("src/queen/root.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
             .{ .name = "temple", .module = temple_mod },
+            // Brain modules
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            // TRI modules
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "agent_roles", .module = agent_roles_mod },
+            .{ .name = "faculty_types", .module = faculty_types_mod },
+            .{ .name = "cortex", .module = cortex_mod },
+            .{ .name = "thalamus", .module = thalamus_mod },
+            .{ .name = "voice_engine", .module = voice_engine_mod },
+            .{ .name = "cerebellum", .module = cerebellum_mod },
+            .{ .name = "insula", .module = insula_mod },
+            .{ .name = "phoenix_medulla", .module = phoenix_medulla_mod },
+            .{ .name = "phoenix_pons", .module = phoenix_pons_mod },
+            .{ .name = "github_client", .module = github_client_mod },
+            .{ .name = "github_app_auth", .module = github_app_auth_mod },
+            .{ .name = "farm_accounts", .module = farm_accounts_mod },
+            .{ .name = "hippocampus", .module = hippocampus_mod },
         },
     });
 
@@ -2382,76 +2537,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     // TRI Utils module (Cycle 100: for testing)
-    const tri_colors_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/tri_colors.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // S³AI Brain Modules (Neuroanatomy v5.1) — MUST be before tri_commands_mod
-    // ═══════════════════════════════════════════════════════════════════════════════
-    const basal_ganglia_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const reticular_formation_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/reticular_formation.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const locus_coeruleus_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const amygdala_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/amygdala.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const persistence_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/persistence.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const telemetry_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/telemetry.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const thalamus_logs_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/thalamus_logs.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const prefrontal_cortex_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/prefrontal_cortex.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const health_history_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/health_history.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    // STORM P1 Brain Zones (Ethical Infrastructure)
-    const storm_ofc_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/ofc.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const storm_habenula_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/habenula.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const storm_amygdala_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/amygdala.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+// Duplicate brain module definitions removed - moved before queen_mod
     const microglia_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/microglia.zig"),
         .target = target,
@@ -2730,6 +2818,23 @@ pub fn build(b: *std.Build) void {
         },
     });
     // TRI Commands module (Cycle 100: for testing)
+    // STORM P1 Brain Zones (Ethical Infrastructure)
+    const storm_ofc_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/ofc.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_habenula_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/habenula.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri_commands_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_commands.zig"),
         .target = target,

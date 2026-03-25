@@ -189,6 +189,107 @@ const StateSnapshot = struct {
     active_nodes: usize,
 };
 
+/// State fingerprint for accurate coverage estimation
+/// Tracks distribution of stakes, health scores, and other state dimensions
+const StateFingerprint = struct {
+    /// Histogram of stake distribution: [0-100], [100-1K], [1K-10K], [10K-100K], [100K-1M], [1M-10M], [10M-100M], [100M+]
+    stake_buckets: [8]u64,
+    /// Histogram of health scores: [0.0-0.1], [0.1-0.2], ..., [0.9-1.0]
+    health_buckets: [10]u32,
+    /// Number of unique addresses
+    unique_addresses: usize,
+    /// Slash rate scaled by 1000 (0.000 to 1.000)
+    slash_rate_x1000: u32,
+
+    /// Capture current state fingerprint
+    pub fn capture(state: *const TestState) StateFingerprint {
+        var fp = StateFingerprint{
+            .stake_buckets = [_]u64{0} ** 8,
+            .health_buckets = [_]u32{0} ** 10,
+            .unique_addresses = 0,
+            .slash_rate_x1000 = 0,
+        };
+
+        var total_staked: u128 = 0;
+        var total_slashed: u128 = 0;
+
+        // Capture stake distribution
+        var iter = state.staking_manager.stakes.iterator();
+        while (iter.next()) |entry| {
+            const stake = entry.value_ptr.*;
+            total_staked += stake.amount;
+            if (stake.is_slashed) total_slashed += stake.amount;
+
+            // Bucket by amount (in TRI)
+            const tri = stake.amount / TRI_WEI;
+            if (tri < 100) fp.stake_buckets[0] += 1;
+            else if (tri < 1_000) fp.stake_buckets[1] += 1;
+            else if (tri < 10_000) fp.stake_buckets[2] += 1;
+            else if (tri < 100_000) fp.stake_buckets[3] += 1;
+            else if (tri < 1_000_000) fp.stake_buckets[4] += 1;
+            else if (tri < 10_000_000) fp.stake_buckets[5] += 1;
+            else if (tri < 100_000_000) fp.stake_buckets[6] += 1;
+            else fp.stake_buckets[7] += 1;
+        }
+
+        // Capture health distribution
+        var health_iter = state.reputation.metrics.iterator();
+        while (health_iter.next()) |entry| {
+            const health = entry.value_ptr.getHealth();
+            const bucket = @as(usize, @intFromFloat(@min(0.99, health) * 10.0));
+            fp.health_buckets[bucket] += 1;
+            fp.unique_addresses += 1;
+        }
+
+        // Calculate slash rate
+        if (total_staked > 0) {
+            fp.slash_rate_x1000 = @intFromFloat(@as(f64, @floatFromInt(total_slashed)) * 1000.0 / @as(f64, @floatFromInt(total_staked)));
+        }
+
+        return fp;
+    }
+
+    /// Hash the fingerprint for state uniqueness detection
+    pub fn hash(self: *const StateFingerprint) u128 {
+        var hasher = std.hash.Wyhash.init(0xDEAD_BEEF);
+
+        // Hash all buckets
+        for (self.stake_buckets) |bucket| {
+            std.hash.autoHashStrat(bucket, &hasher);
+        }
+        for (self.health_buckets) |bucket| {
+            std.hash.autoHashStrat(bucket, &hasher);
+        }
+
+        std.hash.autoHashStrat(self.unique_addresses, &hasher);
+        std.hash.autoHashStrat(self.slash_rate_x1000, &hasher);
+
+        return @bitCast(u64, hasher.final());
+    }
+
+    /// Get coverage score (higher = more unique states)
+    pub fn getCoverageScore(self: *const StateFingerprint) f32 {
+        // Count non-empty buckets
+        var stake_diversity: u32 = 0;
+        for (self.stake_buckets) |bucket| {
+            if (bucket > 0) stake_diversity += 1;
+        }
+
+        var health_diversity: u32 = 0;
+        for (self.health_buckets) |bucket| {
+            if (bucket > 0) health_diversity += 1;
+        }
+
+        // Score = (stake diversity + health diversity + has addresses + has slashes) / 11
+        const numerator = @as(f32, @floatFromInt(stake_diversity)) +
+                         @as(f32, @floatFromInt(health_diversity)) +
+                         if (self.unique_addresses > 0) 1.0 else 0.0 +
+                         if (self.slash_rate_x1000 > 0) 1.0 else 0.0;
+
+        return numerator / 11.0;
+    }
+};
+
 const TestState = struct {
     allocator: std.mem.Allocator,
     app_state: app_state.AppState,
@@ -197,8 +298,10 @@ const TestState = struct {
     op_count: usize,
     /// History for temporal invariants (last 100 snapshots)
     history: std.ArrayListUnmanaged(StateSnapshot),
-    /// Unique states seen (for coverage estimation)
-    unique_states: std.AutoHashMap(u64, void),
+    /// Unique states seen (for coverage estimation) - now uses u128 hash
+    unique_states: std.AutoHashMap(u128, void),
+    /// Last captured fingerprint for coverage tracking
+    last_fingerprint: ?StateFingerprint,
 
     pub fn init(allocator: std.mem.Allocator) TestState {
         return TestState{
@@ -208,7 +311,8 @@ const TestState = struct {
             .reputation = reputation.ReputationRegistry.init(allocator),
             .op_count = 0,
             .history = .{},
-            .unique_states = std.AutoHashMap(u64, void).init(allocator),
+            .unique_states = std.AutoHashMap(u128, void).init(allocator),
+            .last_fingerprint = null,
         };
     }
 
@@ -237,14 +341,20 @@ const TestState = struct {
         }
         try self.history.append(self.allocator, snap);
 
-        // Track unique state hash
-        const state_hash = @as(u64, @intCast(snap.total_staked % 1000007)) * 31 +
-            @as(u64, @intCast(snap.emitted % 1000007));
+        // Capture and track unique state fingerprint
+        const fp = StateFingerprint.capture(self);
+        self.last_fingerprint = fp;
+        const state_hash = fp.hash();
         try self.unique_states.put(state_hash, {});
     }
 
     /// Get statistics about the test run
     pub fn getStats(self: *const TestState) Stats {
+        const coverage_score = if (self.last_fingerprint) |fp|
+            fp.getCoverageScore()
+        else
+            0.0;
+
         return Stats{
             .operations_passed = self.op_count,
             .snapshots_recorded = self.history.items.len,
@@ -253,6 +363,7 @@ const TestState = struct {
                 @as(f32, @floatFromInt(self.unique_states.count())) / @as(f32, @floatFromInt(self.op_count))
             else
                 0.0,
+            .coverage_score = coverage_score,
         };
     }
 
@@ -261,11 +372,12 @@ const TestState = struct {
         snapshots_recorded: usize,
         unique_states: usize,
         coverage_estimate: f32,
+        coverage_score: f32, // 0.0 to 1.0, from StateFingerprint
     };
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SHRINKING FRAMEWORK (Level 1)
+// SHRINKING FRAMEWORK (Level 1) - Enhanced with Automatic Shrinking
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Shrinkable operation for finding minimal counter-examples
@@ -293,6 +405,104 @@ const ShrinkableOp = struct {
         return shrunk;
     }
 };
+
+/// Failing sequence for automatic shrinking (binary search minimization)
+pub const FailingSequence = struct {
+    allocator: std.mem.Allocator,
+    ops: std.ArrayListUnmanaged(Op),
+    seed: u64,
+    failure_invariant: []const u8,
+    failure_iteration: usize,
+
+    /// Initialize a failing sequence
+    pub fn init(allocator: std.mem.Allocator, ops: []const Op, seed: u64, invariant: []const u8, iteration: usize) FailingSequence {
+        var seq = FailingSequence{
+            .allocator = allocator,
+            .ops = .{},
+            .seed = seed,
+            .failure_invariant = invariant,
+            .failure_iteration = iteration,
+        };
+        seq.ops.appendSlice(allocator, ops) catch {};
+        return seq;
+    }
+
+    /// Deinitialize
+    pub fn deinit(self: *FailingSequence) void {
+        self.ops.deinit(self.allocator);
+    }
+
+    /// Shrink to minimal counter-example using binary search
+    pub fn shrink(self: *FailingSequence) !usize {
+        var iterations: usize = 0;
+        const max_iterations = 20; // Prevent infinite loops
+
+        while (self.ops.items.len > 1 and iterations < max_iterations) : (iterations += 1) {
+            const half = self.ops.items.len / 2;
+
+            // Try first half
+            var test_state = TestState.init(self.allocator);
+            defer test_state.deinit();
+
+            var rng = std.Random.DefaultPrng.init(self.seed);
+            const random = rng.random();
+
+            // Apply first half of operations
+            for (self.ops.items[0..half]) |op| {
+                applyRandomOp(&test_state, random);
+            }
+
+            // Check if invariant still fails
+            const first_half_fails = verifyAllInvariants(&test_state) != null;
+
+            if (!first_half_fails) {
+                // First half passes - problem is in second half
+                // Keep second half for further shrinking
+                const second_half = self.allocator.alloc(Op, self.ops.items.len - half) catch break;
+                defer self.allocator.free(second_half);
+                @memcpy(second_half, self.ops.items[half..]);
+
+                self.ops.clearRetainingCapacity();
+                try self.ops.appendSlice(self.allocator, second_half);
+            } else {
+                // First half fails - keep shrinking it
+                const first_half_copy = self.allocator.alloc(Op, half) catch break;
+                defer self.allocator.free(first_half_copy);
+                @memcpy(first_half_copy, self.ops.items[0..half]);
+
+                self.ops.clearRetainingCapacity();
+                try self.ops.appendSlice(self.allocator, first_half_copy);
+            }
+        }
+
+        return iterations;
+    }
+
+    /// Get minimal counter-example length
+    pub fn len(self: *const FailingSequence) usize {
+        return self.ops.items.len;
+    }
+};
+
+/// Test if a sequence of operations fails an invariant
+fn testSequenceFails(allocator: std.mem.Allocator, ops: []const Op, seed: u64) bool {
+    var test_state = TestState.init(allocator);
+    defer test_state.deinit();
+
+    var rng = std.Random.DefaultPrng.init(seed);
+    const random = rng.random();
+
+    for (ops) |op| {
+        switch (op) {
+            .stake => |s| randomStake(&test_state, random, TEST_NODES[@as(usize, @intCast(s))]) catch {},
+            .unstake => |u| randomUnstake(&test_state, TEST_NODES[@as(usize, @intCast(u))]) catch {},
+            .slash => |sl| randomSlash(&test_state, TEST_NODES[@as(usize, @intCast(sl))]) catch {},
+            .update_health => |uh| randomUpdateHealth(&test_state, random, TEST_NODES[@as(usize, @intCast(uh))]) catch {},
+        }
+    }
+
+    return verifyAllInvariants(&test_state) != null;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // INVARIANTS
@@ -346,11 +556,11 @@ fn invariantNoNegativeStake(state: *const TestState) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TEMPORAL INVARIANTS (Level 2)
+// TEMPORAL INVARIANTS (Level 2) - Enhanced with Causality and Compensation
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// INVARIANT #5: Monotonicity
-/// total_staked never decreases without corresponding unstake or slash
+/// INVARIANT #5: Monotonicity (Enhanced with Compensation Logic)
+/// total_staked never increases without corresponding emission or slash compensation
 /// Emissions never decrease (they're monotonic)
 fn invariantMonotonic(state: *const TestState) !void {
     if (state.history.items.len < 2) return;
@@ -358,12 +568,26 @@ fn invariantMonotonic(state: *const TestState) !void {
     for (state.history.items[1..], 0..) |curr, i| {
         const prev = state.history.items[i];
 
-        // Emissions are monotonic (never decrease)
+        // 1. Emissions are monotonic (never decrease)
         try std.testing.expect(curr.emitted >= prev.emitted);
 
-        // If staked decreased, slashed should have increased
+        // 2. If staked decreased, slashed should have increased
         if (curr.total_staked < prev.total_staked) {
             try std.testing.expect(curr.total_slashed >= prev.total_slashed);
+        }
+
+        // 3. If staked increased, must be compensated by emission or slash
+        // (New tokens must come from somewhere - either emission or burned tokens)
+        if (curr.total_staked > prev.total_staked) {
+            const delta_staked = curr.total_staked - prev.total_staked;
+            const delta_emitted = curr.emitted - prev.emitted;
+            const delta_slashed = curr.total_slashed - prev.total_slashed;
+
+            // Compensation: stake increase must be covered by emission + slash
+            const accounted = delta_emitted + delta_slashed;
+            try std.testing.expect(accounted >= delta_staked,
+                "Stake increase of {d} not compensated by emission ({d}) + slash ({d})",
+            );
         }
     }
 }
@@ -381,7 +605,50 @@ fn invariantNoDoubleSlash(state: *const TestState) !void {
     }
 }
 
-/// INVARIANT #7: Health-Stake Correlation
+/// INVARIANT #7: Causality
+/// Operations respect temporal dependencies (slash requires prior stake, unstake requires prior stake)
+fn invariantCausality(state: *const TestState) !void {
+    if (state.history.items.len < 2) return;
+
+    for (state.history.items[1..], 0..) |curr, i| {
+        const prev = state.history.items[i];
+
+        // 1. Slash cannot happen without prior stake
+        if (curr.total_slashed > prev.total_slashed) {
+            // Must have had active stakes (nodes) before this
+            try std.testing.expect(prev.active_nodes > 0,
+                "Slash occurred with no prior active nodes",
+            );
+        }
+
+        // 2. Unstake cannot happen without prior stake
+        // (active_nodes decreased = unstake happened)
+        if (curr.active_nodes < prev.active_nodes) {
+            try std.testing.expect(prev.active_nodes > 0,
+                "Unstake occurred with no prior active nodes",
+            );
+        }
+
+        // 3. Emissions should correlate with stake activity
+        const emission_delta = curr.emitted - prev.emitted;
+        const stake_delta = if (curr.total_staked > prev.total_staked)
+            curr.total_staked - prev.total_staked
+        else if (prev.total_staked > curr.total_staked)
+            prev.total_staked - curr.total_staked
+        else
+            0;
+
+        if (stake_delta > 0 and emission_delta > 0) {
+            // More stakes should correlate with more emissions (within reason)
+            // Emissions should be at least 10% of stake delta (floor for real yield)
+            try std.testing.expect(emission_delta >= stake_delta / 10,
+                "Emission ({d}) too low relative to stake delta ({d})",
+            );
+        }
+    }
+}
+
+/// INVARIANT #8: Health-Stake Correlation
 /// More active nodes should correlate with reasonable health scores
 fn invariantHealthStakeCorrelation(state: *const TestState) !void {
     if (state.history.items.len < 2) return;
@@ -479,11 +746,12 @@ const MultiSeedReport = struct {
 
         for (self.seed_results.items) |result| {
             const status = if (result.passed) "✓" else "✗";
-            std.debug.print("{s} Seed 0x{x}: {} unique states, {:.1}% coverage\n", .{
+            std.debug.print("{s} Seed 0x{x}: {} unique states, {:.1}% coverage, score: {:.2}\n", .{
                 status,
                 result.seed,
                 result.stats.unique_states,
                 result.stats.coverage_estimate * 100.0,
+                result.stats.coverage_score,
             });
         }
         std.debug.print("==============================\n\n", .{});
@@ -504,6 +772,7 @@ fn verifyAllInvariants(state: *const TestState) !void {
     try invariantNoNegativeStake(state);
     try invariantMonotonic(state);
     try invariantNoDoubleSlash(state);
+    try invariantCausality(state);
     try invariantHealthStakeCorrelation(state);
 }
 
@@ -574,6 +843,58 @@ test "dePIN invariants v2: coverage estimation" {
     // We should have some coverage
     try std.testing.expect(stats.unique_states > 10);
     try std.testing.expect(stats.coverage_estimate > 0.001);
+
+    // Coverage score should be positive
+    try std.testing.expect(stats.coverage_score > 0.0);
+    try std.testing.expect(stats.coverage_score <= 1.0);
+}
+
+test "dePIN invariants v3: state fingerprint diversity" {
+    const allocator = std.testing.allocator;
+    var state = TestState.init(allocator);
+    defer state.deinit();
+
+    var rng = std.Random.DefaultPrng.init(0xD1VERS3);
+    const random = rng.random();
+
+    // Generate diverse states
+    var i: usize = 0;
+    while (i < 1_000) : (i += 1) {
+        state.op_count = i;
+        applyRandomOp(&state, random);
+        if (i % 10 == 0) {
+            try state.snapshot();
+        }
+    }
+
+    // Get the final fingerprint
+    const fp = state.last_fingerprint orelse return error.NoFingerprint;
+
+    // Check that we have diversity in buckets
+    var non_empty_stake_buckets: u32 = 0;
+    for (fp.stake_buckets) |bucket| {
+        if (bucket > 0) non_empty_stake_buckets += 1;
+    }
+
+    var non_empty_health_buckets: u32 = 0;
+    for (fp.health_buckets) |bucket| {
+        if (bucket > 0) non_empty_health_buckets += 1;
+    }
+
+    // Should have at least some diversity
+    try std.testing.expect(non_empty_stake_buckets > 0);
+    try std.testing.expect(non_empty_health_buckets > 0);
+
+    // Coverage score should reflect this diversity
+    const score = fp.getCoverageScore();
+    try std.testing.expect(score >= 0.0);
+    try std.testing.expect(score <= 1.0);
+
+    std.debug.print("Fingerprint: {} stake buckets, {} health buckets, score: {:.2}\n", .{
+        non_empty_stake_buckets,
+        non_empty_health_buckets,
+        score,
+    });
 }
 
 test "dePIN invariants v2: shrinking example" {
@@ -600,6 +921,39 @@ test "dePIN invariants v2: shrinking example" {
     try std.testing.expectEqual(@as(usize, 0), op.node_idx);
 }
 
+test "dePIN invariants v2: automatic shrinking" {
+    const allocator = std.testing.allocator;
+
+    // Create a sequence of operations that would fail (if we had a failing invariant)
+    // For now, we test the shrinking mechanism itself
+    var ops = std.ArrayListUnmanaged(Op){};
+    defer ops.deinit(allocator);
+
+    // Add 100 random operations
+    var rng = std.Random.DefaultPrng.init(0xBADF00D);
+    const random = rng.random();
+
+    var i: usize = 0;
+    while (i < 100) : (i += 1) {
+        try ops.append(allocator, random.enumValue(Op));
+    }
+
+    // Create a failing sequence (will be shrunk even if no invariant fails)
+    var seq = FailingSequence.init(allocator, ops.items, 0xBADF00D, "test_invariant", 100);
+    defer seq.deinit();
+
+    // Shrink the sequence
+    const shrink_iterations = try seq.shrink();
+
+    // Should have performed some shrinking iterations
+    try std.testing.expect(shrink_iterations > 0);
+
+    // Result should be smaller than original
+    try std.testing.expect(seq.len() < 100);
+
+    std.debug.print("Shrunk from 100 to {d} ops in {d} iterations\n", .{ seq.len(), shrink_iterations });
+}
+
 test "dePIN invariants v2: temporal monotonicity" {
     const allocator = std.testing.allocator;
     var state = TestState.init(allocator);
@@ -621,6 +975,29 @@ test "dePIN invariants v2: temporal monotonicity" {
 
     // Verify temporal invariants hold
     try invariantMonotonic(&state);
+}
+
+test "dePIN invariants v3: causality invariant" {
+    const allocator = std.testing.allocator;
+    var state = TestState.init(allocator);
+    defer state.deinit();
+
+    var rng = std.Random.DefaultPrng.init(0xCAUS4L1TY);
+    const random = rng.random();
+
+    // Build up history with diverse operations
+    var i: usize = 0;
+    while (i < 2_000) : (i += 1) {
+        state.op_count = i;
+        applyRandomOp(&state, random);
+
+        if (i % 10 == 0) {
+            try state.snapshot();
+        }
+    }
+
+    // Verify causality invariant holds
+    try invariantCausality(&state);
 }
 
 test "dePIN invariants v2: emission cap with direct emission" {

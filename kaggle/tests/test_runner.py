@@ -89,8 +89,13 @@ class TestBenchmarkRunner(unittest.TestCase):
     def test_multi_track_aggregation(self):
         """Test running multiple tracks and aggregating."""
         # Create test data for multiple tracks
-        for track in [Track.LEARNING, Track.METACOGNITION]:
-            test_file = Path(self.temp_dir) / track.value + ".csv"
+        # Use the correct file names from TRACK_CONFIGS
+        track_files = {
+            Track.LEARNING: "thlp_learning.csv",
+            Track.METACOGNITION: "tmp_metacognition.csv"
+        }
+        for track, filename in track_files.items():
+            test_file = Path(self.temp_dir) / filename
             with open(test_file, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=[
                     'id', 'task', 'question', 'answer', 'ground_truth_confidence',
@@ -230,7 +235,7 @@ class TestBenchmarkRunner(unittest.TestCase):
         runner = BenchmarkRunner(
             data_dir=self.temp_dir,
             dry_run=True,
-            checkpoint_file=str(checkpoint_file)
+            resume_from=str(checkpoint_file)
         )
 
         runner.run_track(Track.LEARNING, max_items=5, save_interval=2)

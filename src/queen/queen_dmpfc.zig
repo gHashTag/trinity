@@ -11,8 +11,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
-const hippocampus = @import("hippocampus.zig");
-const thalamus = @import("thalamus.zig");
+const hippocampus = @import("hippocampus");  // hippocampus is in tri zone
+const thalamus = @import("thalamus");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SELF-CHECK — "Am I broken?"

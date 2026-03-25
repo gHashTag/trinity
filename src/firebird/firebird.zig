@@ -7,21 +7,21 @@
 
 const std = @import("std");
 const math = std.math;
-const vsa = @import("vsa");
+const firebird_vsa = @import("vsa.zig");
 
 // Re-export VSA types and operations
-pub const TritVec = vsa.TritVec;
-pub const SimilarityMetrics = vsa.SimilarityMetrics;
-pub const Trit = vsa.Trit;
+pub const TritVec = firebird_vsa.TritVec;
+pub const SimilarityMetrics = firebird_vsa.SimilarityMetrics;
+pub const Trit = firebird_vsa.Trit;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const DIM: usize = vsa.DIM;
-pub const PHI: f64 = vsa.PHI;
-pub const PHI_INV: f64 = vsa.PHI_INV;
-pub const TRINITY: f64 = vsa.TRINITY;
+pub const DIM: usize = firebird_vsa.DIM;
+pub const PHI: f64 = firebird_vsa.PHI;
+pub const PHI_INV: f64 = firebird_vsa.PHI_INV;
+pub const TRINITY: f64 = firebird_vsa.TRINITY;
 
 // Evolution parameters
 pub const MU: f64 = 0.0382; // Mutation rate

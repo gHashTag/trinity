@@ -12,7 +12,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
-const basal_ganglia = @import("basal_ganglia.zig");
+const basal_ganglia = @import("basal_ganglia");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFLICT TYPES — What kind of conflict is this?

@@ -5,7 +5,7 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa = @import("vsa");
+const vsa_mod = @import("vsa.zig");
 
 pub const HybridBigInt = trinity.HybridBigInt;
 pub const Trit = trinity.Trit;
@@ -26,19 +26,19 @@ pub const Hypervector = struct {
     pub fn init(dim: usize) Self {
         var hv = HybridBigInt.zero();
         hv.mode = .unpacked_mode;
-        hv.trit_len = @min(dim, vsa.MAX_TRITS);
+        hv.trit_len = @min(dim, vsa_mod.MAX_TRITS);
         return Self{ .data = hv };
     }
 
     /// Create random hypervector (for atomic symbols)
     pub fn random(dim: usize, seed: u64) Self {
-        return Self{ .data = vsa.randomVector(dim, seed) };
+        return Self{ .data = vsa_mod.randomVector(dim, seed) };
     }
 
     /// Create random hypervector with label
     pub fn randomLabeled(dim: usize, seed: u64, label: []const u8) Self {
         return Self{
-            .data = vsa.randomVector(dim, seed),
+            .data = vsa_mod.randomVector(dim, seed),
             .label = label,
         };
     }
@@ -77,35 +77,35 @@ pub const Hypervector = struct {
     /// bind(A, B) represents "A associated with B"
     /// Properties: self-inverse, preserves similarity
     pub fn bind(self: *Self, other: *Self) Self {
-        return Self{ .data = vsa.bind(&self.data, &other.data) };
+        return Self{ .data = vsa_mod.bind(&self.data, &other.data) };
     }
 
     /// Unbind (inverse of bind)
     /// unbind(bind(A, B), B) = A
     pub fn unbind(self: *Self, key: *Self) Self {
-        return Self{ .data = vsa.unbind(&self.data, &key.data) };
+        return Self{ .data = vsa_mod.unbind(&self.data, &key.data) };
     }
 
     /// Bundle two hypervectors (creates superposition)
     /// bundle(A, B) is similar to both A and B
     pub fn bundle(self: *Self, other: *Self) Self {
-        return Self{ .data = vsa.bundle2(&self.data, &other.data) };
+        return Self{ .data = vsa_mod.bundle2(&self.data, &other.data) };
     }
 
     /// Bundle three hypervectors
     pub fn bundle3(self: *Self, b: *Self, c: *Self) Self {
-        return Self{ .data = vsa.bundle3(&self.data, &b.data, &c.data) };
+        return Self{ .data = vsa_mod.bundle3(&self.data, &b.data, &c.data) };
     }
 
     /// Permute (cyclic shift) - for sequence encoding
     /// permute(A, k) shifts A by k positions
     pub fn permute(self: *Self, k: usize) Self {
-        return Self{ .data = vsa.permute(&self.data, k) };
+        return Self{ .data = vsa_mod.permute(&self.data, k) };
     }
 
     /// Inverse permute
     pub fn inversePermute(self: *Self, k: usize) Self {
-        return Self{ .data = vsa.inversePermute(&self.data, k) };
+        return Self{ .data = vsa_mod.inversePermute(&self.data, k) };
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -114,22 +114,22 @@ pub const Hypervector = struct {
 
     /// Cosine similarity [-1, 1]
     pub fn similarity(self: *Self, other: *Self) f64 {
-        return vsa.cosineSimilarity(&self.data, &other.data);
+        return vsa_mod.cosineSimilarity(&self.data, &other.data);
     }
 
     /// Hamming distance (number of differing trits)
     pub fn hammingDistance(self: *Self, other: *Self) usize {
-        return vsa.hammingDistance(&self.data, &other.data);
+        return vsa_mod.hammingDistance(&self.data, &other.data);
     }
 
     /// Hamming similarity [0, 1]
     pub fn hammingSimilarity(self: *Self, other: *Self) f64 {
-        return vsa.hammingSimilarity(&self.data, &other.data);
+        return vsa_mod.hammingSimilarity(&self.data, &other.data);
     }
 
     /// Dot product similarity
     pub fn dotSimilarity(self: *Self, other: *Self) f64 {
-        return vsa.dotSimilarity(&self.data, &other.data);
+        return vsa_mod.dotSimilarity(&self.data, &other.data);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ pub const Hypervector = struct {
 
     /// Count non-zero trits (sparsity measure)
     pub fn countNonZero(self: *Self) usize {
-        return vsa.countNonZero(&self.data);
+        return vsa_mod.countNonZero(&self.data);
     }
 
     /// Density (ratio of non-zero trits)

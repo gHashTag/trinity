@@ -185,7 +185,7 @@ pub fn recordAutoAction(state: *qt.QueenState, kind: ActionKind, counters: *quee
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn printActionResult(kind: ActionKind, result: ActionResult) void {
-    const colors = @import("tri_colors.zig");
+    const colors = @import("tri_colors");
     print("\n{s}{s} {s} — {s}{s}\n", .{
         if (result.success) colors.GREEN else colors.RED,
         kind.emojiIcon(),
