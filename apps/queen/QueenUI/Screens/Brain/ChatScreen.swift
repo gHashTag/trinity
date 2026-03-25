@@ -5352,8 +5352,8 @@ struct SimpleMultilineInput: View {
                 Text(placeholder)
                     .foregroundStyle(Color.white.opacity(0.4))
                     .font(.system(size: 15))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 8)
+                    .padding(.leading, 5)
+                    .padding(.top, 6)
                     .allowsHitTesting(false)
             }
 
@@ -5363,6 +5363,7 @@ struct SimpleMultilineInput: View {
                 .foregroundStyle(.white)
                 .background(Color.clear)
                 .scrollContentBackground(.hidden)
+                .padding(4)
                 .frame(height: 36)
                 .focused($isFocused)
                 .onKeyPress { keyPress in
