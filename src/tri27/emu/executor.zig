@@ -566,26 +566,32 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         // CONDITIONAL JUMP INSTRUCTIONS
         // ═════════════════════════════════════════════════════════════════════════════
         .JGT => {
-            // Jump if dst > src2 (signed comparison)
-            // NOTE: src1 field overlaps immediate, so we use dst for first operand
-            const src1_val = cpu.t27[inst.dst];
-            const src2_val = cpu.t27[inst.src2];
-            const target = @as(u32, @abs(inst.immediate));
+            // Jump if first_op > second_op (signed comparison)
+            // ENCODING: immediate contains [second_op(5) | first_op(5) | target(5)]
+            const imm_unsigned = @as(u16, @bitCast(inst.immediate));
+            const second_op: u5 = @truncate(imm_unsigned & 0x1F);
+            const first_op: u5 = @truncate((imm_unsigned >> 5) & 0x1F);
+            const target_addr: u32 = @intCast((imm_unsigned >> 10) & 0x1F);
+            const src1_val = cpu.t27[first_op];
+            const src2_val = cpu.t27[second_op];
             if (src1_val.trits > src2_val.trits) {
-                cpu.pc = target;
+                cpu.pc = target_addr;
             } else {
                 cpu.pc += 1;
             }
         },
 
         .JLT => {
-            // Jump if dst < src2 (signed comparison)
-            // NOTE: src1 field overlaps immediate, so we use dst for first operand
-            const src1_val = cpu.t27[inst.dst];
-            const src2_val = cpu.t27[inst.src2];
-            const target = @as(u32, @abs(inst.immediate));
+            // Jump if first_op < second_op (signed comparison)
+            // Same encoding as JGT
+            const imm_unsigned = @as(u16, @bitCast(inst.immediate));
+            const second_op: u5 = @truncate(imm_unsigned & 0x1F);
+            const first_op: u5 = @truncate((imm_unsigned >> 5) & 0x1F);
+            const target_addr: u32 = @intCast((imm_unsigned >> 10) & 0x1F);
+            const src1_val = cpu.t27[first_op];
+            const src2_val = cpu.t27[second_op];
             if (src1_val.trits < src2_val.trits) {
-                cpu.pc = target;
+                cpu.pc = target_addr;
             } else {
                 cpu.pc += 1;
             }

@@ -140,7 +140,10 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
     if (std.mem.eql(u8, op_lower, "jgt")) {
         // JGT src1, src2, offset/label (jump if greater than)
-        // NOTE: Encode src1 in dst, src2 in src2 field (NOT src1, to avoid corrupting immediate!)
+        // ENCODING: Pack operands into immediate field to avoid overlap
+        // Bits 17-21: second operand (5 bits)
+        // Bits 22-26: first operand (5 bits)
+        // Bits 27-31: jump target (5 bits)
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src1_str = std.mem.trim(u8, it2.first(), " \t");
         const rest2 = std.mem.trim(u8, it2.rest(), " \t");
@@ -151,15 +154,18 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
         const src1 = try parseRegister(src1_str);
         const src2 = try parseRegister(src2_str);
-        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+        const target_addr = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+
+        // Pack: [second_op(5) | first_op(5) | target(5)]
+        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, @intCast(src1)) << 5) | (@as(i16, target_addr) << 10);
 
         return .{
             encode(Instruction{
                 .opcode = Opcode.JGT,
-                .dst = src1, // First comparison operand
-                .src1 = 0, // Don't use src1 field (overlaps immediate!)
-                .src2 = src2, // Second comparison operand
-                .immediate = offset,
+                .dst = 0,
+                .src1 = 0,
+                .src2 = 0,
+                .immediate = packed_immediate,
                 .has_imm = true,
             }),
             false,
@@ -168,7 +174,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
     if (std.mem.eql(u8, op_lower, "jlt")) {
         // JLT src1, src2, offset/label (jump if less than)
-        // NOTE: Encode src1 in dst, src2 in src2 field (NOT src1, to avoid corrupting immediate!)
+        // Same encoding as JGT
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src1_str = std.mem.trim(u8, it2.first(), " \t");
         const rest2 = std.mem.trim(u8, it2.rest(), " \t");
@@ -179,15 +185,17 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
         const src1 = try parseRegister(src1_str);
         const src2 = try parseRegister(src2_str);
-        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+        const target_addr = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+
+        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, @intCast(src1)) << 5) | (@as(i16, target_addr) << 10);
 
         return .{
             encode(Instruction{
                 .opcode = Opcode.JLT,
-                .dst = src1, // First comparison operand
-                .src1 = 0, // Don't use src1 field (overlaps immediate!)
-                .src2 = src2, // Second comparison operand
-                .immediate = offset,
+                .dst = 0,
+                .src1 = 0,
+                .src2 = 0,
+                .immediate = packed_immediate,
                 .has_imm = true,
             }),
             false,
