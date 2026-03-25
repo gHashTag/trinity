@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v5.3
+# Trinity Research Documentation Index — v5.4
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 111
+**Total Documents:** 112
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -126,6 +126,7 @@
 | `TRINITY_RESEARCH_SYNTHESIS_COMPLETE.md` | Master synthesis, complete framework | 41K LOC milestone ✨ NEW |
 | `TRI_LANGUAGE_COMPLETE_ANALYSIS.md` | Type-safe compiler, 86/86 tests | 1,985 LOC ✨ NEW |
 | `CODE_IMPROVEMENT_PROPOSALS_V1.md` | 10 concrete code improvements | 22-38% VSA gain ✨ NEW |
+| `ZENODO_PUBLICATION_PATTERNS_DEEP_DIVE.md` | Scientific publishing patterns | FAIR compliance ✨ NEW |
 
 ---
 
@@ -187,6 +188,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 5.4 | 2026-03-26 | Added Zenodo Publication Patterns Deep Dive (7 parts, FAIR compliance) |
 | 5.3 | 2026-03-26 | Added Code Improvement Proposals V1 (10 concrete improvements, 22-38% VSA gain) |
 | 5.2 | 2026-03-26 | Updated document count, organized categories |
 | 5.1 | 2026-03-26 | Added Tri Language Complete Analysis (type-safe compiler, 86/86 tests) |
