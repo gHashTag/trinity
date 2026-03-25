@@ -26,8 +26,10 @@ const CodegenError = @import("emit_t27.zig").CodegenError;
 
 pub const PipelineError = error{
     ParseError,
-    OutOfMemory,
 } || TypeError || CodegenError;
+
+// IO operations need anyerror for compatibility
+pub const IOError = anyerror;
 
 pub const PipelineResult = struct {
     bytecode: []const u8,
@@ -115,14 +117,16 @@ pub fn compileSource(allocator: Allocator, source: []const u8) PipelineError!Pip
     };
 }
 
-pub fn compileFile(allocator: Allocator, input_path: []const u8, output_path: []const u8) PipelineError!void {
+pub fn compileFile(allocator: Allocator, input_path: []const u8, output_path: []const u8) IOError!void {
     const source = try std.fs.cwd().readFileAlloc(allocator, input_path, 1024 * 1024);
     defer allocator.free(source);
 
     const result = try compileSource(allocator, source);
     defer result.deinit(allocator);
 
-    try std.fs.cwd().writeFile(.{ .mode = 0o644 }, output_path, result.bytecode);
+    const file = try std.fs.cwd().createFile(output_path, .{ .mode = 0o644 });
+    defer file.close();
+    try file.writeAll(result.bytecode);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
