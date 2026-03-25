@@ -331,6 +331,20 @@ For the Google DeepMind AGI Hackathon, see:
   - CROQ: Conformal Revision of Questions
   - Local Uncertainty Conformal Calibration (LUCCa)
   - Information-theoretic uncertainty decomposition
+- **[HACKATHON_EVALUATION_2025.md](HACKATHON_EVALUATION_2025.md)** — Industry standard evaluation practices:
+  - Robust Elo Rating (N_perms correction, NeurIPS 2024)
+  - Bradley-Terry model for rankings
+  - LLM-as-a-Judge best practices (NAACL 2025)
+  - Three-layer evaluation architecture
+  - Contamination detection (MMLU 6.5% error rate)
+  - MMLU-Pro integration (10-choice, harder)
+  - WILDBENCH metrics (WB-Reward, WB-Score)
+  - Aleatoric vs Epistemic Uncertainty (Google DeepMind)
+  - Muse: Multi-LLM uncertainty aggregation
+  - Conformal LLM-as-a-Judge with prediction intervals
+  - CROQ: Conformal Revision of Questions
+  - Local Uncertainty Conformal Calibration (LUCCa)
+  - Information-theoretic uncertainty decomposition
   - Adaptive Temperature Scaling (token-level)
   - Ranked Voting Self-Consistency (Borda, IRV, MRR)
   - Conformal Prediction (distribution-free uncertainty)
