@@ -94,7 +94,7 @@ pub const Dag = struct {
     /// Add a node to DAG
     pub fn addNode(self: *Self, name: []const u8, expr: []const u8, cost: u32, loc: SourceLocation) !u32 {
         const id = self.next_id;
-        errdefer self.next_id += 1;
+        self.next_id += 1;
 
         const node = DagNode{
             .id = id,

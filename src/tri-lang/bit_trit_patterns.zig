@@ -175,7 +175,7 @@ pub const TritPattern = struct {
         };
     }
 
-    /// Parse from string: "0tPPN", "0tP_Z", "0t+0-"
+    /// Parse from string: "0tPPN", "0tP_Z", "0t+0-", "0t+??"
     pub fn parse(str: []const u8, loc: SourceLocation) !TritPattern {
         if (str.len < 3) return error.InvalidPattern;
         if (!std.mem.eql(u8, str[0..2], "0t")) return error.InvalidPattern;
@@ -189,8 +189,14 @@ pub const TritPattern = struct {
                 continue; // skip separator
             }
 
-            pattern.mask[i] = true; // must match by default
-            pattern.trits[i] = @intFromEnum(try Trit.fromChar(c));
+            if (c == '?') {
+                // Wildcard - don't care
+                pattern.mask[i] = false;
+                pattern.trits[i] = 0; // value doesn't matter
+            } else {
+                pattern.mask[i] = true; // must match
+                pattern.trits[i] = @intFromEnum(try Trit.fromChar(c));
+            }
             pattern.width = @intCast(i + 1);
         }
 
