@@ -177,6 +177,7 @@ This document summarizes the autonomous development cycle work done for the Goog
 ## Commit History
 
 ```
+a36890 fix(kaggle): remove arbitrary CI conversion in Min-K%++ (#415)
 efdced6 feat(kaggle): add BCa (bias-corrected accelerated) bootstrap CI (#415)
 2d19f2 feat(kaggle): add Brier score and ranked voting to calibration (#415)
 9c34080 docs(kaggle): add autonomous development cycle summary (#415)
@@ -193,8 +194,11 @@ efdced6 feat(kaggle): add BCa (bias-corrected accelerated) bootstrap CI (#415)
 3. ✅ Implement BCa Bootstrap CI
 4. ✅ Add Brier Score and Ranked Voting
 5. ✅ Verify True DeLong CI implementation
-6. ⏳ Create CORRECTIONS_V7.md
-7. ⏳ Add Distribution-Robust ECE with concentration inequalities
+6. ✅ Fix arbitrary CI conversion in Min-K%++
+7. ✅ Verify CI index calculation (uses floor/ceil)
+8. ✅ Verify Min-K%++ uses raw log probs (no mean normalization)
+9. ⏳ Create CORRECTIONS_V7.md
+10. ⏳ Add Distribution-Robust ECE with concentration inequalities
 
 ---
 
