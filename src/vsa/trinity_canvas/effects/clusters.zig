@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -51,7 +51,7 @@ pub const WaveCluster = struct {
 
 /// Manages text clusters
 pub const ClusterSystem = struct {
-    clusters: Array<WaveCluster, 32>,
+    clusters: [32]WaveCluster,
     count: USize,
 };
 
@@ -77,8 +77,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -135,7 +135,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: System startup
 /// Then: Initialize empty cluster array
 pub fn init() !void {
-// Initialize empty cluster array
+    // Initialize empty cluster array
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -144,7 +144,7 @@ pub fn init() !void {
 /// When: Creating cluster
 /// Then: Add cluster at position
 pub fn spawn() !void {
-// Add cluster at position
+    // Add cluster at position
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -153,7 +153,7 @@ pub fn spawn() !void {
 /// When: Each frame
 /// Then: Update wave phases, fade opacity
 pub fn update() !void {
-// Update: Update wave phases, fade opacity
+    // Update: Update wave phases, fade opacity
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -163,7 +163,7 @@ pub fn update() !void {
 /// When: Rendering
 /// Then: Draw all clusters with wave effect
 pub fn draw() !void {
-// Draw all clusters with wave effect
+    // Draw all clusters with wave effect
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -173,37 +173,37 @@ pub fn draw() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: Nothing
-// When: System startup
-// Then: Initialize empty cluster array
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: Nothing
+    // When: System startup
+    // Then: Initialize empty cluster array
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "spawn_behavior" {
-// Given: x, y, text, is_user
-// When: Creating cluster
-// Then: Add cluster at position
-// Test spawn: verify behavior is callable
-const func = @TypeOf(spawn);
+    // Given: x, y, text, is_user
+    // When: Creating cluster
+    // Then: Add cluster at position
+    // Test spawn: verify behavior is callable
+    const func = @TypeOf(spawn);
     try std.testing.expect(func != void);
 }
 
 test "update_behavior" {
-// Given: Delta time
-// When: Each frame
-// Then: Update wave phases, fade opacity
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: Delta time
+    // When: Each frame
+    // Then: Update wave phases, fade opacity
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "draw_behavior" {
-// Given: Time
-// When: Rendering
-// Then: Draw all clusters with wave effect
-// Test draw: verify behavior is callable
-const func = @TypeOf(draw);
+    // Given: Time
+    // When: Rendering
+    // Then: Draw all clusters with wave effect
+    // Test draw: verify behavior is callable
+    const func = @TypeOf(draw);
     try std.testing.expect(func != void);
 }
 
