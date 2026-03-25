@@ -1,0 +1,147 @@
+# ═══════════════════════════════════════════════════════════════════
+# TYPES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Type System Core — Type Representation
+# Source of truth for tri-lang/types.zig codegen
+# Wave 2: Type System Core
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_types
+version: "0.1.0"
+module: tri_lang.types
+description: "Type System Core — Type Representation (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  TypeId:
+    description: "Type variable identifier"
+    underlying: "u32"
+
+  Type:
+    description: "Type representation with primitive, function, ADT, and variable types"
+    underlying: "union(enum)"
+    variants:
+      - Unit: "Unit type ()"
+      - Bool: "Boolean type"
+      - Int: "Integer type"
+      - Float: "Float type"
+      - Fn:
+          params: "std.ArrayList(Type)"
+          return_type: "*Type"
+          description: "Function type with parameters and return type"
+      - ADT:
+          name: "[]const u8"
+          type_args: "std.ArrayList(Type)"
+          description: "Algebraic data type with name and type arguments"
+      - Var: "TypeId"
+        description: "Type variable"
+    methods:
+      - name: initVar
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: id
+            type: "TypeId"
+        returns: "!*Type"
+        description: "Initialize type variable"
+        errors:
+          - OutOfMemory
+
+      - name: deinit
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "void"
+        description: "Free type and nested allocations"
+
+      - name: eq
+        params:
+          - name: other
+            type: "*const Type"
+        returns: "bool"
+        description: "Check type equality (structural)"
+
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Format type as string"
+        errors:
+          - OutOfMemory
+
+      - name: ftv
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!array_list.Managed(TypeId)"
+        description: "Get free type variables (sorted, deduplicated)"
+        errors:
+          - OutOfMemory
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  freshTypeVar:
+    returns: "TypeId"
+    description: "Generate fresh type variable ID"
+
+  resetTypeVar:
+    returns: "void"
+    description: "Reset type variable counter"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "Type.primitive equality"
+    given: "Unit and Bool types"
+    when: "comparing"
+    then: "returns false"
+
+  - name: "Type.var equality"
+    given: "Two different type variables"
+    when: "comparing"
+    then: "returns false"
+
+  - name: "Type.format primitives"
+    given: "Unit and Bool types"
+    when: "formatting"
+    then: "returns \"()\" and \"Bool\""
+
+  - name: "Type.ftv primitive"
+    given: "Int type"
+    when: "getting free type variables"
+    then: "returns empty list"
+
+  - name: "Type.ftv var"
+    given: "Type variable"
+    when: "getting free type variables"
+    then: "returns list with its ID"
+
+  - name: "freshTypeVar increments"
+    given: "Calling freshTypeVar 3 times"
+    when: "checking IDs"
+    then: "returns 1, 2, 3"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Type representation for Hindley-Milner type inference:
+# - Primitive types: Unit, Bool, Int, Float
+# - Function types: params (ArrayList) + return_type (pointer)
+# - ADT types: name + type_args (ArrayList) for generic ADTs
+# - Type variables: Var with unique TypeId
+#
+# Type equality is structural (not nominal).
+# Free type variables (ftv) extracted and deduplicated for unification.
+# Type variables allocated on heap for recursive types.
