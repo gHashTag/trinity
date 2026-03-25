@@ -908,7 +908,7 @@ fn publishBundleV4Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void 
     kw_pos += 1;
 
     const body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-26","description":"Enhanced v4.0 with full scientific rigor.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"keywords":{s},"license":{{"id":"cc-by-4.0"}},"version":"4.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}}]}}}}
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-26","description":"Enhanced v4.0 with full scientific rigor.","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity S³AI Framework"}}],"keywords":{s},"license":{{"id":"cc-by-4.0"}},"version":"4.0"}}}}
     , .{ rec.title, kw_buf[0..kw_pos] });
     defer allocator.free(body);
 
