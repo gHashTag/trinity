@@ -4,7 +4,10 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
-const coptic = @import("temple/coptic.zig");
+const temple = @import("temple");
+
+// Use CopticReg from temple module (re-exported from coptic.zig)
+const CopticReg = temple.CopticReg;
 
 /// Coptic bank enumeration
 pub const Bank = enum(u2) {
@@ -30,7 +33,7 @@ pub fn validateBankUsage(regs: [27]u5) !void {
     var bank_counts = [3]u32{ 0, 0, 0 };
 
     for (regs) |reg| {
-        const bank = coptic.CopticReg.bank(reg);
+        const bank = CopticReg.bank(reg);
         bank_counts[bank] += 1;
     }
 
@@ -44,12 +47,12 @@ pub fn validateBankUsage(regs: [27]u5) !void {
 
     // Validate no cross-bank register usage
     // (i.e., a register from Sacred bank is only used in Sacred module)
-    _ = regs; // Validation successful
+    // Validation successful
 }
 
 test "Coptic bank validator init" {
-    // Test: all banks have 9 registers
-    const all_banks = [_]u5{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26 };
+    // Test: all banks have 9 registers (27 total: 0-26)
+    const all_banks = [_]u5{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
 
-    try validateBankUsage(&all_banks);
+    try validateBankUsage(all_banks);
 }
