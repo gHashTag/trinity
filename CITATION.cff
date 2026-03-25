@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: Trinity Defensive Publications
+message: If you use this work, please cite it as below.
+author:
+  - family-names: Vasilev
+    given-names: Dmitrii
+    orcid: https://orcid.org/0000-0000-0000-0000
+version: 1.0.0
+doi: 10.5281/zenodo.19224139
+date-released: 2026-03-26
+url: https://zenodo.org/doi/10.5281/zenodo.19224139
+keywords:
+  - ternary
+  - FPGA
+  - neural-networks
+  - VSA
+  - TRI-27
+  - autonomous-agents
+license: CC-BY-4.0
