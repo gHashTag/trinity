@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Metrics v7.3
+Trinity Cognitive Probes — Scientific Metrics v7.4
 
 SCIENTIFICALLY CORRECT IMPLEMENTATION
 
@@ -28,11 +28,19 @@ v7.3 CRITICAL FIXES from v7.2:
 3. ✅ Adaptive ECE — Now uses KDE-based density binning (CRITICAL)
 4. ✅ Distribution-Robust ECE — Now uses Hoeffding/Bernstein concentration inequalities (CRITICAL)
 
+v7.4 STATISTICAL VALIDITY FIXES from v7.3:
+1. ✅ Full-ECE Quantile — Fixed manual quantile calculation with interpolation (CRITICAL)
+2. ✅ Adaptive ECE Valleys — Proper valley detection using find_peaks (CRITICAL)
+3. ✅ Min-K%++ Normality — Added Shapiro-Wilk test + effect size (Cohen's d) (HIGH)
+4. ✅ Min-K%++ Non-parametric — Wilcoxon test when normality violated (HIGH)
+5. ✅ Bootstrap CI — Increased default to 10000 iterations for accuracy (HIGH)
+6. ✅ CoDeC Multiple Testing — Added Bonferroni/BH-FDR correction support (HIGH)
+
 NEW METRICS in v7:
-5. ✅ Adaptive ECE (Naeini et al., NeurIPS 2024) — KDE-based adaptive binning
+5. ✅ Adaptive ECE (Naeini et al., NeurIPS 2024) — KDE-based adaptive binning with valley detection
 6. ✅ Brier Score (Proper Scoring Rule)
 7. ✅ Distribution-Robust ECE (Dong et al., NeurIPS 2024) — Concentration inequalities
-8. ✅ Enhanced CoDeC with context features
+8. ✅ Enhanced CoDeC with context features + multiple testing correction
 
 References:
 - Min-K%++: arXiv:2404.02936 (Eq 3) — "Theoretical Analysis of Min-K% Probabilities"
@@ -43,6 +51,9 @@ References:
 - Dynamic ECE: Gupta et al. (NeurIPS 2024) — "Dynamic Calibration"
 - Distribution-Robust ECE: Dong et al. (NeurIPS 2024) — "Distribution-Robust Calibration"
 - Brier Score: Brier (1950) — "Verification of Weather Forecasts"
+- Shapiro-Wilk: Shapiro & Wilk (1965) — "An Analysis of Variance Test for Normality"
+- Bonferroni: Bonferroni (1936) — "Teoria statistica delle classi"
+- Benjamini-Hochberg: Benjamini & Hochberg (1995) — "Controlling the False Discovery Rate"
 """
 
 import math
@@ -122,6 +133,11 @@ class MinKPPResultV7:
     ci_upper: float = 1.0
     n_bootstrap: int = 0
 
+    # v7.4: Statistical validity fields
+    normality_p_value: Optional[float] = None  # Shapiro-Wilk test p-value
+    cohen_d: Optional[float] = None  # Effect size (Cohen's d)
+    test_used: str = "t-test"  # Which statistical test was used
+
 
 @dataclass
 class CoDecResultV7:
@@ -145,6 +161,11 @@ class CoDecResultV7:
     # NEW: Context-based features
     used_context_features: bool = False
     context_similarity_score: float = 0.0
+
+    # v7.4: Multiple testing correction fields
+    auc_p_value_adjusted: float = 1.0  # After Bonferroni/BH correction
+    n_tests_for_correction: int = 1  # Number of tests assumed for correction
+    correction_method: str = "none"  # "none", "bonferroni", "bh"
 
 
 @dataclass
@@ -244,7 +265,7 @@ class DistributionRobustECEResult:
 def _bootstrap_confidence_interval(
     values: List[float],
     alpha: float = 0.05,
-    n_bootstrap: int = 1000,
+    n_bootstrap: int = 10000,  # v7.4: Increased from 1000 for more accurate CI
     seed: Optional[int] = None,
     min_samples: int = 10
 ) -> Tuple[float, float, float]:
@@ -252,12 +273,13 @@ def _bootstrap_confidence_interval(
     Calculate bootstrap confidence interval.
 
     v7.2: Added min_samples parameter for statistical validity.
+    v7.4: Increased default n_bootstrap to 10000 for stable percentile estimation.
     Bootstrap requires sufficient samples for reliable CI estimation.
 
     Args:
         values: Data values
         alpha: Significance level (default 0.05 for 95% CI)
-        n_bootstrap: Number of bootstrap samples
+        n_bootstrap: Number of bootstrap samples (v7.4: increased to 10000)
         seed: Random seed for reproducibility
         min_samples: Minimum samples required for bootstrap
 
@@ -302,6 +324,89 @@ def _bootstrap_confidence_interval(
     ci_upper = boot_means[upper_idx]
 
     return mean_val, ci_lower, ci_upper
+
+
+# =============================================================================
+# MULTIPLE TESTING CORRECTION (v7.4)
+# =============================================================================
+
+def _bonferroni_correction(p_values: List[float], alpha: float = 0.05) -> List[bool]:
+    """
+    Apply Bonferroni correction for multiple testing.
+
+    Controls family-wise error rate (FWER) at alpha level.
+
+    Args:
+        p_values: List of p-values from multiple tests
+        alpha: Significance level (default 0.05)
+
+    Returns:
+        List of booleans indicating which tests are significant after correction
+    """
+    if not p_values:
+        return []
+    corrected_alpha = alpha / len(p_values)
+    return [p < corrected_alpha for p in p_values]
+
+
+def _benjamini_hochberg_fdr(p_values: List[float], alpha: float = 0.05) -> List[bool]:
+    """
+    Apply Benjamini-Hochberg FDR correction for multiple testing.
+
+    Controls false discovery rate (FDR) at alpha level.
+    Less conservative than Bonferroni.
+
+    Args:
+        p_values: List of p-values from multiple tests
+        alpha: FDR level (default 0.05)
+
+    Returns:
+        List of booleans indicating which tests are significant after correction
+    """
+    if not p_values:
+        return []
+
+    # Sort p-values with original indices
+    sorted_with_idx = sorted(enumerate(p_values), key=lambda x: x[1])
+    n = len(p_values)
+
+    # Find largest k where p_k <= k * alpha / n
+    max_k = -1
+    for k, (idx, p) in enumerate(sorted_with_idx):
+        threshold = (k + 1) * alpha / n
+        if p <= threshold:
+            max_k = k
+
+    # All tests with p-value <= p_max_k are significant
+    if max_k >= 0:
+        threshold_p = sorted_with_idx[max_k][1]
+        return [p <= threshold_p for p in p_values]
+    else:
+        return [False] * n
+
+
+def _adjust_p_value(p_value: float, n_tests: int, method: str = "bonferroni") -> float:
+    """
+    Adjust a single p-value for multiple testing.
+
+    Args:
+        p_value: Original p-value
+        n_tests: Number of tests performed
+        method: "bonferroni" or "bh" (Benjamini-Hochberg)
+
+    Returns:
+        Adjusted p-value
+    """
+    if n_tests <= 1:
+        return p_value
+
+    if method == "bonferroni":
+        return min(1.0, p_value * n_tests)
+    elif method == "bh":
+        # Benjamini-Hochberg (conservative for single p-value)
+        return min(1.0, p_value * n_tests)
+    else:
+        return p_value
 
 
 def _delong_auc_ci(
@@ -474,20 +579,55 @@ def detect_contamination_mink_pp_v7(
     variance = sum((s - mean_min_k_score) ** 2 for s in sample_min_k_scores) / len(sample_min_k_scores)
     sigma = math.sqrt(variance) if variance > 0 else 1.0
 
-    # v7.3 FIX: Use t-test instead of z-test for better small-sample performance
-    # z-test assumes normality, t-test is more robust for small samples
+    # v7.4 FIX: Add normality test and effect size for statistical validity
     n = len(sample_min_k_scores)
-    se = sigma / math.sqrt(n)
-    t_statistic = mean_min_k_score / se if se > 0 else 0.0
 
-    # Calculate p-value
+    # Normality test (Shapiro-Wilk) for n >= 3 and n <= 5000
+    normality_p_value = None
+    is_normal = True  # Assume normal if can't test
+    if HAS_SCIPY and 3 <= n <= 5000:
+        try:
+            from scipy.stats import shapiro
+            stat, normality_p_value = shapiro(sample_min_k_scores)
+            is_normal = normality_p_value > 0.05  # Reject normality if p < 0.05
+        except Exception:
+            pass
+
+    # Effect size (Cohen's d) for practical significance
+    cohen_d = None
+    if sigma > 0:
+        cohen_d = abs(mean_min_k_score) / sigma
+
+    # v7.4: Choose statistical test based on normality and sample size
     if HAS_SCIPY and n > 1:
-        # Use t-distribution with n-1 degrees of freedom
-        from scipy.stats import t as scipy_t
-        p_value = float(scipy_t.cdf(t_statistic, df=n-1))
+        if is_normal or n >= 30:  # Normal or CLT applies
+            # Use t-test
+            from scipy.stats import t as scipy_t
+            se = sigma / math.sqrt(n)
+            t_statistic = mean_min_k_score / se if se > 0 else 0.0
+            p_value = float(scipy_t.cdf(t_statistic, df=n-1))
+            test_used = "t-test"
+        else:
+            # Non-parametric: Wilcoxon signed-rank test against zero
+            from scipy.stats import wilcoxon
+            try:
+                stat, p_value = wilcoxon([s - 0 for s in sample_min_k_scores], alternative='less')
+                p_value = float(p_value)
+                test_used = "wilcoxon"
+                t_statistic = stat  # Store for compatibility
+            except Exception:
+                # Fallback to t-test
+                se = sigma / math.sqrt(n)
+                t_statistic = mean_min_k_score / se if se > 0 else 0.0
+                from scipy.stats import t as scipy_t
+                p_value = float(scipy_t.cdf(t_statistic, df=n-1))
+                test_used = "t-test-fallback"
     else:
         # Fallback to normal approximation
+        se = sigma / math.sqrt(n)
+        t_statistic = mean_min_k_score / se if se > 0 else 0.0
         p_value = 0.5 * (1 + math.erf(t_statistic / math.sqrt(2)))
+        test_used = "normal"
 
     # Contamination if p-value < threshold AND mean is negative
     is_contaminated = (p_value < statistical_threshold) and (mean_min_k_score < 0)
@@ -520,7 +660,11 @@ def detect_contamination_mink_pp_v7(
         p_value=p_value,
         ci_lower=ci_lower,
         ci_upper=ci_upper,
-        n_bootstrap=n_bootstrap
+        n_bootstrap=n_bootstrap,
+        # v7.4: Statistical validity fields
+        normality_p_value=normality_p_value,
+        cohen_d=cohen_d,
+        test_used=test_used
     )
 
 
@@ -534,10 +678,14 @@ def detect_contamination_codec_v7(
     context_similarities: Optional[List[float]] = None,
     episode_ids: Optional[List[str]] = None,
     n_bootstrap: int = 2000,
-    contamination_threshold: float = 0.9
+    contamination_threshold: float = 0.9,
+    n_tests: int = 1,  # v7.4: Number of tests for multiple testing correction
+    correction_method: str = "none"  # v7.4: "none", "bonferroni", or "bh"
 ) -> CoDecResultV7:
     """
     Enhanced CoDeC implementation with context features (arXiv:2510.27055).
+
+    v7.4: Added multiple testing correction support.
 
     Args:
         true_labels: Ground truth (True = seen/contaminated)
@@ -546,6 +694,8 @@ def detect_contamination_codec_v7(
         episode_ids: Optional episode IDs for multi-episode analysis
         n_bootstrap: Bootstrap samples for AUC CI
         contamination_threshold: AUC threshold for contamination (default 0.9)
+        n_tests: Number of tests performed (for multiple testing correction)
+        correction_method: Method for multiple testing correction ("none", "bonferroni", "bh")
 
     Returns:
         CoDecResultV7 with enhanced features
@@ -645,6 +795,11 @@ def detect_contamination_codec_v7(
     is_contaminated = auc_score > contamination_threshold
     confidence = min(1.0, auc_score)
 
+    # v7.4: Apply multiple testing correction if requested
+    auc_p_value_adjusted = auc_p_value
+    if n_tests > 1 and correction_method != "none":
+        auc_p_value_adjusted = _adjust_p_value(auc_p_value, n_tests, correction_method)
+
     return CoDecResultV7(
         is_contaminated=is_contaminated,
         confidence=confidence,
@@ -660,7 +815,11 @@ def detect_contamination_codec_v7(
         auc_ci_upper=auc_ci_upper,
         auc_p_value=auc_p_value,
         used_context_features=used_context_features,
-        context_similarity_score=context_similarity_score
+        context_similarity_score=context_similarity_score,
+        # v7.4: Multiple testing correction fields
+        auc_p_value_adjusted=auc_p_value_adjusted,
+        n_tests_for_correction=n_tests,
+        correction_method=correction_method
     )
 
 
@@ -767,13 +926,31 @@ def calculate_full_ece_v7(
             bin_boundaries[-1] = 1.0
         else:
             # Fallback: sort and pick quantiles manually
+            # v7.4 FIX: Correct quantile calculation for equal-mass bins
             sorted_probs = sorted(all_probs)
             n_total = len(sorted_probs)
-            bin_boundaries = [
-                sorted_probs[int(i * n_total / n_bins)] if i < n_bins else 1.0
-                for i in range(n_bins + 1)
-            ]
-            bin_boundaries[0] = 0.0
+            bin_boundaries = []
+            for i in range(n_bins + 1):
+                if i == 0:
+                    bin_boundaries.append(0.0)
+                elif i == n_bins:
+                    bin_boundaries.append(1.0)
+                else:
+                    # v7.4: Use exact position for equal-mass bins
+                    # For n_total=100, n_bins=10: positions at 10, 20, 30, ...
+                    pos = i * n_total / n_bins
+                    # Use interpolation for exact quantile
+                    idx = int(pos)
+                    if idx < n_total:
+                        # Linear interpolation for exact quantile
+                        frac = pos - idx
+                        if idx + 1 < n_total:
+                            quantile_val = sorted_probs[idx] + frac * (sorted_probs[idx + 1] - sorted_probs[idx])
+                        else:
+                            quantile_val = sorted_probs[idx]
+                        bin_boundaries.append(quantile_val)
+                    else:
+                        bin_boundaries.append(sorted_probs[-1])
     else:
         # Fixed-width binning
         bin_boundaries = [i / n_bins for i in range(n_bins + 1)]
@@ -1122,50 +1299,41 @@ def calculate_adaptive_ece(
             bin_counts=[n]
         )
 
-    # v7.3 FIX: True adaptive binning using KDE
+    # v7.4 FIX: True adaptive binning using KDE with proper valley detection
     if method == "kde" and HAS_SCIPY:
         try:
             from scipy.stats import gaussian_kde
+            from scipy.signal import find_peaks
             import numpy as np
 
             # Estimate density using KDE
             kde = gaussian_kde(sorted_confs)
             conf_array = np.array(sorted_confs)
 
-            # Find density at each point
-            densities = kde(conf_array)
+            # Create a fine grid for smooth density estimation
+            grid = np.linspace(conf_array.min(), conf_array.max(), 500)
+            density_grid = kde(grid)
 
-            # Target number of bins
-            n_bins = max(2, n // target_samples_per_bin)
+            # Find local minima (valleys) in the density
+            # Valleys are where density changes from decreasing to increasing
+            # We find peaks in negative density to find valleys
+            valleys, _ = find_peaks(-density_grid, distance=len(grid)//(10*n_bins))
 
-            # Find local minima in density as bin boundaries
-            # These represent regions of low probability - natural boundaries
+            # Sort valleys by depth (deepest first)
+            valley_depths = [(grid[i], density_grid[i]) for i in valleys]
+            valley_depths.sort(key=lambda x: x[1])  # Sort by density (lowest first)
+
+            # Select n_bins-1 most significant valleys as boundaries
+            n_bins_target = max(2, n // target_samples_per_bin)
+            n_boundaries = min(n_bins_target - 1, len(valley_depths))
+
             bin_boundaries = [0.0]
-
-            # Sort by density to find valleys (low density regions)
-            # We want to split where density is minimal
-            sorted_by_density = sorted(enumerate(densities), key=lambda x: x[1])
-
-            # Select n_bins-1 lowest density points as boundaries
-            # But spread them across the range
-            boundary_indices = sorted(idx for idx, _ in sorted_by_density[:n_bins * 2])
-            boundary_indices.sort()
-
-            # Filter to ensure good spacing
-            min_spacing = n // (n_bins * 3)  # Minimum spacing between boundaries
-            filtered_boundaries = []
-            for idx in boundary_indices:
-                if not filtered_boundaries or idx - filtered_boundaries[-1] > min_spacing:
-                    filtered_boundaries.append(idx)
-                if len(filtered_boundaries) >= n_bins - 1:
-                    break
-
-            # Convert indices to confidence values
-            for idx in sorted(filtered_boundaries):
-                if 0 <= idx < len(sorted_confs):
-                    bin_boundaries.append(sorted_confs[idx])
-
+            for valley_pos, _ in valley_depths[:n_boundaries]:
+                bin_boundaries.append(float(valley_pos))
             bin_boundaries.append(1.0)
+
+            # Sort and remove duplicates
+            bin_boundaries = sorted(set(bin_boundaries))
 
         except Exception:
             # Fallback to quantile if KDE fails
