@@ -26,9 +26,6 @@ pub const unify = @import("unify.zig");
 pub const emit_t27 = @import("emit_t27.zig");
 pub const pipeline = @import("pipeline.zig");
 
-// Re-export commonly used functions
-pub const compileFile = pipeline.compileFile;
-
 // TRI-27 VM and emulation (J-zone runtime)
 // Uses named module for Anti-Fragile Import Law
 pub const emu = @import("emu");
