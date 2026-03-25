@@ -27,13 +27,16 @@ Build a production-ready type system and TRI-27 bytecode emitter on top of Wave 
   - [x] `TypeEnv.lookup()` — resolve name
   - [x] `TypeEnv.instantiate()` — instantiate scheme
   - [x] `Subst` — type variable substitution map
-  - [x] Tests: 12/12 passing
+  - [x] `Subst.apply()` — full type traversal with substitution
+  - [x] Tests: 15/15 passing
 
-### 1.3 Unification
-- [ ] `src/tri-lang/unify.zig` — Hindley-Milner unification
-  - [ ] `unify(t1, t2)` — unify two types
-  - [ ] `Occurs check` — prevent infinite types
-  - [ ] Error reporting with type diff
+### 1.3 Unification ✅ COMPLETE
+- [x] `src/tri-lang/unify.zig` — Hindley-Milner unification
+  - [x] `unify(t1, t2)` — unify two types
+  - [x] `occursIn()` — occurs check prevents infinite types
+  - [x] TypeError with type diff reporting
+  - [x] Subst composition and cloning
+  - [x] Tests: 13/13 passing
 
 ---
 
