@@ -43,8 +43,11 @@ pub const FileAudit = struct {
     path: []const u8,
     has_spec: bool,
     has_require: bool,
+    has_require_count: usize = 0,
     has_ensure: bool,
+    has_ensure_count: usize = 0,
     has_example: bool,
+    has_example_count: usize = 0,
     behavior_count: usize,
 };
 
@@ -62,40 +65,53 @@ fn gradeEmoji(percentage: f64) []const u8 {
     return if (percentage >= 100.0) "✅" else if (percentage >= 80.0) "🟢" else if (percentage >= 60.0) "🟡" else if (percentage >= 40.0) "🟠" else "🔴";
 }
 
+/// Count behaviors by finding '- name:' list items at indent 2
+fn countBehaviors(content: []const u8) usize {
+    var count: usize = 0;
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    while (lines.next()) |line| {
+        // Count '- name:' keys at indent 2 (behavior list item)
+        // Format: "  - name: behaviorName"
+        if (line.len >= 9 and line[0] == ' ' and line[1] == ' ' and line[2] == '-' and line[3] == ' ' and line[4] == 'n' and line[5] == 'a' and line[6] == 'm' and line[7] == 'e' and line[8] == ':') {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+/// Scan YAML format for spec annotations
+/// Detects: spec:, require:, ensure:, example: at indent 4 within behavior blocks
 pub fn scanBehaviorAnnotations(_: Allocator, content: []const u8) !FileAudit {
     var file_audit = FileAudit{
         .path = "",
         .has_spec = false,
         .has_require = false,
+        .has_require_count = 0,
         .has_ensure = false,
+        .has_ensure_count = 0,
         .has_example = false,
-        .behavior_count = 0,
+        .has_example_count = 0,
+        .behavior_count = countBehaviors(content),
     };
 
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
-        // Simple trim - skip leading whitespace
-        var start: usize = 0;
-        while (start < line.len and (line[start] == ' ' or line[start] == '\t' or line[start] == '\r')) {
-            start += 1;
-        }
-        // Skip trailing whitespace
-        var end: usize = line.len;
-        while (end > start and (line[end - 1] == ' ' or line[end - 1] == '\t' or line[end - 1] == '\r')) {
-            end -= 1;
-        }
-        const trimmed = line[start..end];
-        if (trimmed.len == 0 or trimmed[0] == '#') continue;
-
-        if (std.mem.eql(u8, trimmed, "@spec")) {
-            file_audit.has_spec = true;
-            file_audit.behavior_count += 1;
-        } else if (std.mem.eql(u8, trimmed, "@require")) {
-            file_audit.has_require = true;
-        } else if (std.mem.eql(u8, trimmed, "@ensure")) {
-            file_audit.has_ensure = true;
-        } else if (std.mem.eql(u8, trimmed, "@example")) {
-            file_audit.has_example = true;
+        // Check for keys at indent 4 (within behavior block)
+        // Format: "    key: value"
+        if (line.len >= 6 and line[0] == ' ' and line[1] == ' ' and line[2] == ' ' and line[3] == ' ' and line[4] != ' ') {
+            const rest = line[4..];
+            if (std.mem.startsWith(u8, rest, "spec:")) {
+                file_audit.has_spec = true;
+            } else if (std.mem.startsWith(u8, rest, "require:")) {
+                file_audit.has_require = true;
+                file_audit.has_require_count += 1;
+            } else if (std.mem.startsWith(u8, rest, "ensure:")) {
+                file_audit.has_ensure = true;
+                file_audit.has_ensure_count += 1;
+            } else if (std.mem.startsWith(u8, rest, "example:")) {
+                file_audit.has_example = true;
+                file_audit.has_example_count += 1;
+            }
         }
     }
 
@@ -148,10 +164,11 @@ pub fn auditSpecDirectory(allocator: Allocator, dir_path: []const u8) !SpecAudit
         const file_audit = try scanBehaviorAnnotations(allocator, content);
         report.total_behaviors += file_audit.behavior_count;
 
+        // Count behaviors with each annotation (not files)
         if (file_audit.has_spec) report.with_spec += 1;
-        if (file_audit.has_require) report.with_require += 1;
-        if (file_audit.has_ensure) report.with_ensure += 1;
-        if (file_audit.has_example) report.with_example += 1;
+        report.with_require += file_audit.has_require_count;
+        report.with_ensure += file_audit.has_ensure_count;
+        report.with_example += file_audit.has_example_count;
 
         // Track missing annotations
         var missing_types = std.ArrayListUnmanaged(AnnotationType){};

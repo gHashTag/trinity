@@ -34,6 +34,24 @@ fn copticNameToNum(name: []const u8) ?u5 {
     return null;
 }
 
+// Get bank number from register (0=ALU, 1=Sacred, 2=Const)
+// Bank 0: r0-r8, t0-t8 (alpha0-eta7, theta8)
+// Bank 1: r9-r17, t9-t17 (iota9-rho17)
+// Bank 2: r18-r26, t18-t26 (sigma18-shmima26)
+inline fn getBank(reg: u5) u2 {
+    if (reg <= 8) return 0; // 0-8: ALU
+    if (reg <= 17) return 1; // 9-17: Sacred
+    return 2; // 18-26: Const
+}
+
+// Check if register is in valid bank for the operation
+fn validateBank(reg: u5, allowed_banks: [3]bool) !void {
+    const bank = getBank(reg);
+    if (!allowed_banks[bank]) {
+        return AsmError.InvalidRegister;
+    }
+}
+
 /// Assembler error set
 pub const AsmError = error{
     InvalidSyntax,
@@ -135,6 +153,10 @@ pub const Assembler = struct {
             const dst = try parseRegister(operands[0]);
             const src1 = try parseRegister(operands[1]);
             const src2 = try parseRegister(operands[2]);
+            // Bank validation: ADD only works with ALU (bank 0)
+            try validateBank(dst, .{ true, false, false });
+            try validateBank(src1, .{ true, false, false });
+            try validateBank(src2, .{ true, false, false });
             return encoder.encode_add(dst, src1, src2);
         }
 
