@@ -5363,7 +5363,7 @@ struct SimpleMultilineInput: View {
                 .foregroundStyle(.white)
                 .background(Color.clear)
                 .scrollContentBackground(.hidden)
-                .frame(minHeight: 40, maxHeight: 150)
+                .frame(height: 36)
                 .focused($isFocused)
                 .onKeyPress { keyPress in
                     // Handle Enter key
