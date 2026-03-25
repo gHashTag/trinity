@@ -24,7 +24,7 @@ pub const HybridBigInt = gen.HybridBigInt;
 
 // Import VSA submodules directly from src/vsa/ (Zig 0.15 compatibility)
 pub const vsa_common = @import("vsa/common.zig");
-pub const vsa_core_compat = @import("vsa/core.zig");  // HybridBigInt-based API
+pub const vsa_core_compat = @import("vsa/core.zig"); // HybridBigInt-based API
 pub const vsa_encoding = @import("vsa/encoding.zig");
 pub const vsa_storage = @import("vsa/storage.zig");
 pub const vsa_concurrency = @import("vsa/concurrency.zig");

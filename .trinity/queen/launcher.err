@@ -9487,3 +9487,6 @@ Commands:
 👑 Queen starting in daemon mode...
    God-mode enabled
    Daemon mode: TODO - implement fork/exec
+👑 Queen starting in daemon mode...
+   God-mode enabled
+   Daemon mode: Running (background)
