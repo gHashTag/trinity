@@ -61,6 +61,19 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         } else {
             try publishAllDiscoveries(allocator);
         }
+    } else if (std.mem.eql(u8, subcmd, "bundle")) {
+        if (sub_args.len > 0) {
+            try publishBundle(allocator, sub_args[0]);
+        } else {
+            print("{s}Usage: tri zenodo bundle <A-G>{s}\n", .{ RED, RESET });
+            print("  A = Ternary Neural Networks (B001)\n", .{});
+            print("  B = Zero-DSP FPGA (B002)\n", .{});
+            print("  C = TRI-27 ISA (B003)\n", .{});
+            print("  D = Queen Orchestration (B004)\n", .{});
+            print("  E = Tri Language (B005)\n", .{});
+            print("  F = Sacred Formats (B006)\n", .{});
+            print("  G = VSA Operations (B007)\n", .{});
+        }
     } else if (std.mem.eql(u8, subcmd, "update")) {
         if (sub_args.len > 0) {
             try updateOneRecord(allocator, sub_args[0]);
@@ -82,6 +95,7 @@ const Discovery = struct {
 };
 
 const disc_table = [_]Discovery{
+    // Original discoveries (D004-D007)
     .{
         .id = "D004",
         .title = "Trinity D004: Self-Evolving Ouroboros — Autonomous 6-Phase Code Improvement System",
@@ -109,6 +123,56 @@ const disc_table = [_]Discovery{
         .description = "Four matrix-vector multiply variants for ternary weights: (1) Packed 2-bit 16 weights/u32, (2) Branchless bit-manipulation 9.2x speedup, (3) Sparse CSR, (4) SIMD f16/f32 4-33x speedup. Zero multiplications. 2 bits/param. 1200+ LOC pure Zig.",
         .keywords = "sparse-matmul,ternary,branchless,simd,matrix-multiplication,zig",
         .files = &.{"src/hslm/sparse_ternary.zig"},
+    },
+    // NEW: 7 Bundled Defensive Publications (66 discoveries total)
+    .{
+        .id = "B001",
+        .title = "Trinity B001: Ternary Neural Networks — Theory to Training Farm",
+        .description = "Bundle A: HSLM (1.95M ternary LLM, PPL=125), T-JEPA (ternary masked prediction), Cosine LR with phi-warmup, Gradient accumulation, Checkpoint compression (20x), Wave-based multi-account training, Ternary dot-product, Cognitive Probes v7 (Min-K%++, Full-ECE), Temperature Scaling v5, ROC/AUC Analysis, Contamination Detection. 14 discoveries in neural networks and training.",
+        .keywords = "ternary,neural-network,HSLM,T-JEPA,cosine-lr,phi-warmup,gradient,checkpoint,compression,wave-training,cognitive-probes,temperature-scaling,ROC,AUC,contamination,PPL,LLM",
+        .files = &.{ "src/hslm/", "kaggle/eval/scientific_metrics_v7.py", "kaggle/eval/scientific_metrics_v5.py", "kaggle/eval/roc_utils.py", "kaggle/validate/contamination.py", "docs/research/citation/bundle_a_ternary_nn.cff" },
+    },
+    .{
+        .id = "B002",
+        .title = "Trinity B002: Zero-DSP FPGA for Ternary Inference",
+        .description = "Bundle B: Zero-DSP ternary MAC (pure LUT), DSP48E1 wrapper (70%% reduction), CORDIC continued fraction (6-stage), Streaming Argmax (<100 LUT), Ternary BRAM storage (2-bit), Embedding lookup (power-of-2), phi-weighted scheduler, ESP32 Wi-Fi JTAG, UART echo verification, OpenXC7 Docker synthesis, GF16 multiplier, VecMat DSP acceleration. 13 discoveries in FPGA hardware.",
+        .keywords = "zero-DSP,FPGA,LUT,inference,ternary,CORDIC,argmax,BRAM,embedding,scheduler,ESP32,JTAG,UART,Yosys,nextpnr,XC7A100T,DSP48E1,multiplier",
+        .files = &.{ "fpga/openxc7-synth/hdl/", "fpga/esp32-xvc/", "docs/research/citation/bundle_b_zero_dsp_fpga.cff" },
+    },
+    .{
+        .id = "B003",
+        .title = "Trinity B003: TRI-27 — Ternary ISA with Coptic Encoding",
+        .description = "Bundle C: TRI-27 ISA (36 opcodes, 27 registers), Coptic alphabet encoding (3-bank: alpha-eta, iota-rho, sigma-sampi), 3-bank validation (cross-bank prevention), T27 binary episode format, Reticular Raphe (phi-decay rolling), Phoenix Medulla (resilience), Queen vmPFC (prefrontal orchestration). 7 discoveries in ISA and neuro-inspired wrappers.",
+        .keywords = "TRI-27,ISA,ternary,Coptic,alphabet,encoding,3-bank,registers,opcodes,episode,binary,reticular-raphe,Phoenix-medulla,vmPFC,prefrontal,neuro-inspired",
+        .files = &.{ "src/tri27/", "src/tri27/coptic.zig", "src/tri27/emu/", "src/tri27/reticular_raphe_wrapper.zig", "src/tri27/phoenix_medulla_wrapper.zig", "src/tri27/queen_vmpfc_wrapper.zig", "docs/research/citation/bundle_c_tri27_isa.cff" },
+    },
+    .{
+        .id = "B004",
+        .title = "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration",
+        .description = "Bundle D: Queen Lotus Cycle (6-phase: OBSERVE-ANALYZE-PLAN-EXECUTE-EVALUATE-ADAPT), Episode Jaccard similarity (recall), Quality classification (4 states: UNKNOWN/GOOD/BAD/SACRED), PolicyDelta actions (scale_up/down/out/in), Tri27Config auto-adapt (kill_threshold), Byzantine detection (crash monitoring), Service recycling, SEVO (phi-based hyperopt), ASHA+PBT hybrid (successive halving), Railway serverless ML training farm. 10 discoveries in orchestration.",
+        .keywords = "Queen,self-learning,orchestration,Lotus,Cycle,episode,Jaccard,similarity,quality,classification,PolicyDelta,auto-adapt,Byzantine,fault-tolerance,recycling,SEVO,hyperopt,ASHA,PBT,Railway,serverless",
+        .files = &.{ "src/tri/queen/", "src/farm/evolution.zig", "src/farm/sevo.zig", "src/farm/railway_api.zig", "docs/research/citation/bundle_d_queen_orchestration.cff" },
+    },
+    .{
+        .id = "B005",
+        .title = "Trinity B005: Tri Language — Linear Types, Effects, Dual-Target",
+        .description = "Bundle E: Tri Language (DSL for Zig/Verilog), Linear Types + Ownership (Let/Inout/Sink/Set), Algebraic Effects + Handlers (platform-aware), Bit/Trit Pattern Matching (hardware-level), Content-Addressed Functions (SHA256 AST), Result Type (Austral-style), Array Combinators (map/filter), Pipe Operator, Ternary JSON Parser (3-valued, 100M ops/s), Coptic Code Generation (T27 bytecode), Memory-Tiered Inference (Hippocampus), VIBEE Benchmark Suite, VIBEE Spec (.tri), HNSW Core graph search. 13 discoveries in language and compiler.",
+        .keywords = "Tri,language,DSL,codegen,Zig,Verilog,linear-types,ownership,affine,effects,handlers,pattern-matching,bit,trit,content-addressed,SHA256,AST,Result,Austral,array,combinators,pipe,JSON,parser,Coptic,bytecode,memory-tiered,hippocampus,HNSW,graph",
+        .files = &.{ "src/tri-lang/", "src/vibeec/", "specs/**/*.tri", "docs/research/citation/bundle_e_tri_language.cff" },
+    },
+    .{
+        .id = "B006",
+        .title = "Trinity B006: Sacred GF16/TF3 — phi-Based Arithmetic",
+        .description = "Bundle F: Sacred GF16/TF3 Formats (exp=6,mant=9, 37.8%% LUT reduction), TF3 ternary packing (8 weights in 16 bits), phi-distance metric (|a-b|/phi), Saturating arithmetic (FPGA clamp), Sacred constants (phi,pi,e in ternary), Episode JSONL (experience tracking), Tri27Config JSON (Queen config), PolicySnapshot (senses format). 9 discoveries in formats and protocols.",
+        .keywords = "sacred,GF16,TF3,floating-point,ternary,packing,phi-distance,saturating,arithmetic,constants,Episode,JSONL,Tri27Config,PolicySnapshot,format,protocol",
+        .files = &.{ "src/hslm/f16_utils.zig", "src/tri/sacred.zig", ".trinity/experience/episodes/", ".trinity/queen/", "docs/research/sacred_formats_fpga.md" },
+    },
+    .{
+        .id = "B007",
+        .title = "Trinity B007: VSA Operations for Ternary Computing",
+        .description = "Bundle G: VSA bind/unbind/bundle operations (HybridBigInt SIMD), Ternary dot-product ({-1,0,+1}), Permutation encoding (cyclic), Cosine similarity (ternary vectors), Text encoding VSA (Char to Vec32i8). Vector Symbolic Architecture adapted for ternary computing with associative memory and noise resilience. 3 discoveries in VSA operations.",
+        .keywords = "VSA,vector-symbolic,architecture,bind,unbind,bundle,majority-vote,ternary,dot-product,permutation,cyclic,cosine,similarity,text,encoding,associative,memory,noise-resilience",
+        .files = &.{ "src/vsa/core.zig", "src/vsa/encoding.zig", "docs/research/citation/bundle_g_vsa_ternary.cff" },
     },
 };
 
@@ -358,7 +422,31 @@ fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !voi
             return;
         }
     }
-    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007{s}\n", .{ RED, discovery_id, RESET });
+    print("{s}Unknown discovery: {s}. Valid: D004-D007, B001-B007{s}\n", .{ RED, discovery_id, RESET });
+}
+
+// Map bundle letter A-G to B001-B007
+fn publishBundle(allocator: std.mem.Allocator, bundle_letter: []const u8) !void {
+    if (bundle_letter.len != 1) {
+        print("{s}Invalid bundle: {s}. Use A-G{s}\n", .{ RED, bundle_letter, RESET });
+        return;
+    }
+    const c = bundle_letter[0];
+    const bundle_id = switch (c) {
+        'A', 'a' => "B001",
+        'B', 'b' => "B002",
+        'C', 'c' => "B003",
+        'D', 'd' => "B004",
+        'E', 'e' => "B005",
+        'F', 'f' => "B006",
+        'G', 'g' => "B007",
+        else => {
+            print("{s}Invalid bundle: {s}. Use A-G{s}\n", .{ RED, bundle_letter, RESET });
+            return;
+        },
+    };
+    print("{s}Publishing Bundle {s} ({s})...{s}\n", .{ CYAN, bundle_letter, bundle_id, RESET });
+    try publishDiscovery(allocator, bundle_id);
 }
 
 fn publishAllDiscoveries(allocator: std.mem.Allocator) !void {
@@ -492,10 +580,16 @@ fn printHelp() void {
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
     print("  tri zenodo status               Show current record info\n", .{});
     print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
-    print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all)\n", .{});
+    print("  tri zenodo discovery [D004-D007|B001-B007]  Publish discovery DOI (or all)\n", .{});
+    print("  tri zenodo bundle [A-G]         Publish bundle (A=NN, B=FPGA, C=TRI-27, D=Queen, E=Tri, F=Sacred, G=VSA)\n", .{});
     print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
+    print("  Discoveries:\n", .{});
+    print("    D004-D007: Original (Ouroboros, VSA, phi-RoPE, Sparse MatMul)\n", .{});
+    print("    B001-B007: NEW! 7 Bundles (66 discoveries total)\n", .{});
+    print("              B001=NN (14), B002=FPGA (13), B003=TRI-27 (7)\n", .{});
+    print("              B004=Queen (10), B005=Tri Lang (13), B006=Sacred (9), B007=VSA (3)\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
