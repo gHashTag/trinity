@@ -2821,8 +2821,9 @@ pub fn build(b: *std.Build) void {
     });
 
     // TRI-Lang module (Wave 2 Phase 4: typecheck + emit_t27 + pipeline)
+    // Root module re-exports all tri-lang modules for anti-fragile imports
     const tri_lang_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri-lang/pipeline.zig"),
+        .root_source_file = b.path("src/tri-lang/root.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -2982,7 +2983,7 @@ pub fn build(b: *std.Build) void {
     const tri_emu = b.addExecutable(.{
         .name = "tri-emu",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/emu/tri_emu_main.zig"),
+            .root_source_file = b.path("src/tri-lang/emu/tri_emu_main.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -3008,7 +3009,7 @@ pub fn build(b: *std.Build) void {
     const tri_asm = b.addExecutable(.{
         .name = "tri-asm",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/emu/tri_asm.zig"),
+            .root_source_file = b.path("src/tri-lang/emu/tri_asm.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -3180,7 +3181,7 @@ pub fn build(b: *std.Build) void {
 
     // TRI‑27 Golden Test (full cycle: asm → tbin → emulator)
     const tri27_golden_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri27/emu/test_golden.zig"),
+        .root_source_file = b.path("src/tri-lang/emu/test_golden.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -3208,7 +3209,7 @@ pub fn build(b: *std.Build) void {
 
     // TRI-27 Comprehensive Tests (all 36 opcodes)
     const tri27_comprehensive_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri27/emu/test_comprehensive.zig"),
+        .root_source_file = b.path("src/tri-lang/emu/test_comprehensive.zig"),
         .target = target,
         .optimize = optimize,
     });

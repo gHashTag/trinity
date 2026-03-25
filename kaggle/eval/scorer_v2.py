@@ -223,7 +223,8 @@ def calculate_meta_d_prime(
     # M-ratio: metacognitive efficiency (meta-d' / d')
     # Values > 1 indicate better metacognition than task performance
     # Values < 1 indicate metacognition is worse than task performance
-    mratio = meta_d / max(abs(d_prime), 0.01) if d_prime != 0 else 0.0
+    # FIXED: Use d_prime directly (with sign) not abs() - per Maniscalco & Lau (2014)
+    mratio = meta_d / d_prime if d_prime != 0 else float('nan')
 
     return meta_d, d_prime, mratio
 
@@ -768,7 +769,7 @@ class TernaryScorerV2:
             f"  φ-Weighted Mean:     {results.phi_weighted_mean:.4f}",
             f"  Calibration Score:   {results.calibration_score:.4f}",
             f"  Mean Confidence:     {results.mean_confidence:.4f}",
-            f"  Ternary Accuracy:    {self.calculate_ternary_accuracy([]):.4f}",
+            f"  Ternary Accuracy:    {self.calculate_ternary_accuracy([r for r in [results] if hasattr(results, '__iter__') else []]):.4f}",
             f"\n📊 SCIENTIFIC METRICS v2.1:",
             f"  ECE (Calibration):        {results.ece:.4f}  (lower is better)",
             f"  meta-d' (Metacognition):  {results.meta_d_prime:.4f}  (higher is better)",

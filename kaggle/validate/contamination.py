@@ -245,7 +245,7 @@ class ContaminationDetector:
         return max_sim
 
     def _get_ngrams(self, text: str, n: int) -> Set[str]:
-        """Get character n-grams from text."""
+        """Get word n-grams from text (n consecutive words)."""
         words = text.split()
         if len(words) < n:
             return set()
