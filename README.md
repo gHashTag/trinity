@@ -89,6 +89,21 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 Trinity publishes key innovations as **defensive publications** to establish prior art and prevent patenting. All research is documented with Zenodo DOIs.
 
+### Published v5.0 Bundles (2026-03-26) — Enhanced with NeurIPS/ICLR/MLSys Standards
+
+| Bundle | Discovery | Zenodo DOI | Status |
+|--------|-----------|------------|--------|
+| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) | ✅ Published |
+| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227867](https://doi.org/10.5281/zenodo.19227867) | ✅ Published |
+| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) | ✅ Published |
+| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227871](https://doi.org/10.5281/zenodo.19227871) | ✅ Published |
+| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227873](https://doi.org/10.5281/zenodo.19227873) | ✅ Published |
+| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227875](https://doi.org/10.5281/zenodo.19227875) | ✅ Published |
+| **B007** | VSA Operations (ternary) | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) | ✅ Published |
+| **PARENT** | Trinity S³AI Framework (Complete Collection) | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Published |
+
+**v5.0 Enhancements:** Broader Impact (NeurIPS), Ethical Considerations (ICLR), Reproducibility Checklist (MLSys), 5-sentence abstracts, LaTeX notation, formal theorems with QED, 95% CIs, Docker reproducibility.
+
 ### Published v4.0 Bundles (2026-03-26)
 
 | Bundle | Discovery | Zenodo DOI | Status |
