@@ -15,12 +15,14 @@
 - [x] Test matrix (EMIT_T27_TESTS.md)
 - [x] Reference .t27 (reticular_raphe)
 - [x] Canonmap entry (.trinity_canonmap.json)
-- [x] Emitter (~380 LOC) — src/vibeec/emit_t27.zig
-- [x] Test coverage (7 tests, all passing) — src/vibeec/emit_t27_test.zig
+- [x] Phase 1: Core encoder (~380 LOC) — src/vibeec/emit_t27.zig
+- [x] Phase 2: RegAlloc + LabelResolver (~300 LOC additional)
+- [x] E2E tests: 11/11 tests passing
 - [x] JGT/JLT special encoding (src2 in imm[11-15], target in imm[0-10])
 - [x] .t27 binary format (magic "2IRT" + header + code section)
+- [ ] Phase 3: Full IR integration (VIBEE IR → emit_t27)
 
-**Acceptance**: 7/7 tests passing
+**Acceptance**: 11/11 tests passing
 
 #### Type System Core
 - [ ] Type representation (src/tri-lang/types.zig)

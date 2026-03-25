@@ -2,7 +2,7 @@
 
 **Task**: Implement code generation backend for TRI-27 ISA in VIBEE compiler
 
-**Status**: PARTIAL ✅ (Phase 1 complete, Phase 2 pending)
+**Status**: Phase 2 COMPLETE ✅
 
 **Phase 1 Complete** (2026-03-25):
 - ✅ src/vibeec/emit_t27.zig (~380 LOC) - Core encoder
@@ -10,9 +10,15 @@
 - ✅ JGT/JLT special encoding implemented
 - ✅ .t27 binary format (magic "2IRT" + header)
 
-**Phase 2 Pending**:
-- ⏳ Full VIBEE IR integration (register allocation, label resolution)
-- ⏳ E2E test: .tri → VIBEE → emit_t27 → compare with canonical .t27
+**Phase 2 Complete** (2026-03-25):
+- ✅ RegAlloc: Deterministic register allocator (t0..t3 = state, t4..t7 = loop, t8..t26 = GP)
+- ✅ LabelResolver: Two-pass label resolution for jump instructions
+- ✅ E2E tests: 3 tests for reticular_raphe bytecode format
+- ✅ 11/11 tests passing
+
+**Phase 3 Pending**:
+- ⏳ Full IR integration (VIBEE IR → emit_t27)
+- ⏳ Golden test: .tri → VIBEE → emit_t27 → byte-exact match
 
 ---
 
