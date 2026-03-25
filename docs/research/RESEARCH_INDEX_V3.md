@@ -27,7 +27,7 @@
 | `DEFENSIVE_PUB_IMPLEMENTATION_SUMMARY.md` | Implementation guide | ✅ Complete |
 | `PRIOR_ART_NETWORK.md` | Cross-reference matrix | ✅ Complete |
 
-### 3. Experimental Results & Validation (16 documents)
+### 3. Experimental Results & Validation (17 documents)
 
 | Document | Purpose | Coverage |
 |----------|---------|----------|
@@ -45,6 +45,7 @@
 | `CONSCIOUSNESS_GATE_VALIDATION.md` | Dual-system theory gate | 5.7% PPL contribution |
 | `H6_FPGA_CPU_THROUGHPUT_VALIDATION.md` | H6 FPGA vs CPU analysis | Multi-FPGA scaling ✅ NEW |
 | `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests |
+| `HSLM_OPTIMIZATION_ANALYSIS.md` | HSLM performance optimization | Scientific analysis ✅ NEW |
 | `TRINITY_S3AI_COMPREHENSIVE_VALIDATION.md` | Master summary | All hypotheses |
 | `REPRODUCIBLE_RESEARCH.md` | Scientific rigor guidelines | ✅ Complete |
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
@@ -171,6 +172,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.7 | 2026-03-26 | Added HSLM_OPTIMIZATION_ANALYSIS.md (SIMD, memory layout, training dynamics, FPGA scaling) |
 | 3.6 | 2026-03-26 | Added ZENODO_ABSTRACT_IMPROVEMENTS.md + enhanced bundle abstracts (5-sentence structure, CI, p-values) |
 | 3.5 | 2026-03-26 | Added H6_FPGA_CPU_THROUGHPUT_VALIDATION.md (FPGA vs CPU SIMD analysis, multi-FPGA scaling path) |
 | 3.4 | 2026-03-26 | Added TJEPA_SCIENTIFIC_VALIDATION.md (13.8% PPL improvement, φ-warmup) |
