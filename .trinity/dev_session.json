@@ -1,1 +1,6 @@
-{"current_issue": 418, "state": "TESTED", "test_status": "passed"}
+{
+  "state": "COMMITTED",
+  "issue_number": 411,
+  "branch": "feat/issue-411-linear-types-ownership",
+  "tests_passed": true
+}
