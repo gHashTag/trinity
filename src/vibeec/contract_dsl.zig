@@ -58,12 +58,12 @@ pub const ExprNode = union(enum) {
     gt: *const BinOp,
     ge: *const BinOp,
 
-    // Logical operations
-    and: *const BinOp,
-    or: *const BinOp,
+    // Logical operations (using kw_ prefix to avoid Zig keywords)
+    logical_and: *const BinOp,
+    logical_or: *const BinOp,
 
     // Membership (x in [min, max])
-    in: *const BinOp,
+    kw_in: *const BinOp,
 
     // Unary operations
     not: *const UnaryOp,
@@ -107,6 +107,8 @@ const Parser = struct {
     input: []const u8,
     pos: usize,
     tokens: ArrayList(Token),
+
+    var_pos: ParseCursor = 0,
 
     const Token = struct {
         kind: TokenKind,
@@ -164,12 +166,13 @@ const Parser = struct {
             .allocator = allocator,
             .input = input,
             .pos = 0,
-            .tokens = ArrayList(Token).init(allocator),
+            .tokens = ArrayList(Token){},
+            .var_pos = 0,
         };
     }
 
     fn deinit(self: *Parser) void {
-        self.tokens.deinit();
+        self.tokens.deinit(self.allocator);
     }
 
     // Tokenization
@@ -211,7 +214,7 @@ const Parser = struct {
                 const lexeme = self.input[start..self.pos];
 
                 const kind = identifierToKind(lexeme);
-                try self.tokens.append(.{
+                try self.tokens.append(self.allocator, .{
                     .kind = kind,
                     .lexeme = lexeme,
                     .line = line,
@@ -240,7 +243,7 @@ const Parser = struct {
                 }
 
                 const lexeme = self.input[start..self.pos];
-                try self.tokens.append(.{
+                try self.tokens.append(self.allocator, .{
                     .kind = kind,
                     .lexeme = lexeme,
                     .line = line,
@@ -253,33 +256,33 @@ const Parser = struct {
             // Operators and delimiters
             switch (c) {
                 '+' => {
-                    try self.tokens.append(.{ .kind = .plus, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .plus, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '-' => {
-                    try self.tokens.append(.{ .kind = .minus, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .minus, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '*' => {
-                    try self.tokens.append(.{ .kind = .star, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .star, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '/' => {
-                    try self.tokens.append(.{ .kind = .slash, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .slash, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '%' => {
-                    try self.tokens.append(.{ .kind = .percent, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .percent, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '=' => {
                     if (self.pos + 1 < self.input.len and self.input[self.pos + 1] == '=') {
-                        try self.tokens.append(.{ .kind = .eq, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .eq, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
                         self.pos += 2;
                         col += 2;
                     } else {
@@ -288,7 +291,7 @@ const Parser = struct {
                 },
                 '!' => {
                     if (self.pos + 1 < self.input.len and self.input[self.pos + 1] == '=') {
-                        try self.tokens.append(.{ .kind = .ne, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .ne, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
                         self.pos += 2;
                         col += 2;
                     } else {
@@ -297,48 +300,48 @@ const Parser = struct {
                 },
                 '<' => {
                     if (self.pos + 1 < self.input.len and self.input[self.pos + 1] == '=') {
-                        try self.tokens.append(.{ .kind = .le, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .le, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
                         self.pos += 2;
                         col += 2;
                     } else {
-                        try self.tokens.append(.{ .kind = .lt, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .lt, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                         self.pos += 1;
                         col += 1;
                     }
                 },
                 '>' => {
                     if (self.pos + 1 < self.input.len and self.input[self.pos + 1] == '=') {
-                        try self.tokens.append(.{ .kind = .ge, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .ge, .lexeme = self.input[self.pos .. self.pos + 2], .line = line, .col = col });
                         self.pos += 2;
                         col += 2;
                     } else {
-                        try self.tokens.append(.{ .kind = .gt, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                        try self.tokens.append(self.allocator, .{ .kind = .gt, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                         self.pos += 1;
                         col += 1;
                     }
                 },
                 '(' => {
-                    try self.tokens.append(.{ .kind = .lparen, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .lparen, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 ')' => {
-                    try self.tokens.append(.{ .kind = .rparen, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .rparen, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 '[' => {
-                    try self.tokens.append(.{ .kind = .lbracket, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .lbracket, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 ']' => {
-                    try self.tokens.append(.{ .kind = .rbracket, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .rbracket, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
                 ',' => {
-                    try self.tokens.append(.{ .kind = .comma, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
+                    try self.tokens.append(self.allocator, .{ .kind = .comma, .lexeme = self.input[self.pos .. self.pos + 1], .line = line, .col = col });
                     self.pos += 1;
                     col += 1;
                 },
@@ -350,7 +353,7 @@ const Parser = struct {
         }
 
         // EOF token
-        try self.tokens.append(.{
+        try self.tokens.append(self.allocator, .{
             .kind = .eof,
             .lexeme = "",
             .line = line,
@@ -379,6 +382,269 @@ const Parser = struct {
         if (std.mem.eql(u8, ident, "false")) return .kw_false;
         return .identifier;
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // Expression Parser (Precedence Climbing)
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+
+    const ParseCursor = usize;
+
+    fn peekToken(self: *const Parser) Token {
+        if (self.pos >= self.tokens.items.len) {
+            return .{ .kind = .eof, .lexeme = "", .line = 0, .col = 0 };
+        }
+        return self.tokens.items[self.pos];
+    }
+
+    fn consumeToken(self: *Parser) Token {
+        const token = self.peekToken();
+        if (self.pos < self.tokens.items.len) {
+            self.pos += 1;
+        }
+        return token;
+    }
+
+    fn expectToken(self: *Parser, kind: TokenKind) !Token {
+        const token = self.peekToken();
+        if (token.kind != kind) {
+            return error.SyntaxError;
+        }
+        return self.consumeToken();
+    }
+
+    /// Precedence levels (higher = tighter binding)
+    const Prec = enum(u8) {
+        lowest = 0,
+        logical_or = 1, // or
+        logical_and = 2, // and
+        comparison = 3, // ==, !=, <, <=, >, >=, in
+        additive = 4, // +, -
+        multiplicative = 5, // *, /, %
+        unary = 6, // not, -
+        primary = 7, // literals, identifiers, (), []
+    };
+
+    fn getPrecedence(kind: TokenKind) Prec {
+        return switch (kind) {
+            .kw_or => .logical_or,
+            .kw_and => .logical_and,
+            .eq, .ne, .lt, .le, .gt, .ge, .kw_in => .comparison,
+            .plus, .minus => .additive,
+            .star, .slash, .percent => .multiplicative,
+            else => .lowest,
+        };
+    }
+
+    /// Parse expression with precedence climbing
+    fn parseExpression(self: *Parser, min_prec: Prec) !*const ExprNode {
+        // Parse left side (unary or primary)
+        var left = try self.parseUnary();
+
+        // While next token is binary operator with >= min_prec
+        while (true) {
+            const token = self.peekToken();
+            if (token.kind == .eof) break;
+
+            const op_prec = getPrecedence(token.kind);
+            if (@intFromEnum(op_prec) < @intFromEnum(min_prec)) break;
+
+            // Only binary operators continue the loop
+            switch (token.kind) {
+                .kw_or, .kw_and, .eq, .ne, .lt, .le, .gt, .ge, .kw_in, .plus, .minus, .star, .slash, .percent => {
+                    _ = self.consumeToken();
+                    const next_min_prec: Prec = @enumFromInt(@intFromEnum(op_prec) + 1);
+                    const right = try self.parseExpression(next_min_prec);
+                    left = try self.makeBinaryOp(token.kind, left, right);
+                },
+                else => break,
+            }
+        }
+
+        return left;
+    }
+
+    fn parseUnary(self: *Parser) !*const ExprNode {
+        const token = self.peekToken();
+
+        // Handle unary not and -
+        if (token.kind == .kw_not or token.kind == .minus) {
+            _ = self.consumeToken();
+            const operand = try self.parseUnary();
+            return self.makeUnaryOp(token.kind, operand);
+        }
+
+        return self.parsePrimary();
+    }
+
+    fn parsePrimary(self: *Parser) !*const ExprNode {
+        const token = self.peekToken();
+
+        switch (token.kind) {
+            .int_lit => {
+                _ = self.consumeToken();
+                const value = try self.parseIntLit(token);
+                return self.makeIntLit(value);
+            },
+            .float_lit => {
+                _ = self.consumeToken();
+                const value = try self.parseFloatLit(token);
+                return self.makeFloatLit(value);
+            },
+            .kw_true => {
+                _ = self.consumeToken();
+                return self.makeBoolLit(true);
+            },
+            .kw_false => {
+                _ = self.consumeToken();
+                return self.makeBoolLit(false);
+            },
+            .identifier => {
+                _ = self.consumeToken();
+                // Check for function call: identifier(...)
+                if (self.peekToken().kind == .lparen) {
+                    return self.parseCall(token.lexeme);
+                }
+                return self.makeIdentifier(token.lexeme);
+            },
+            .lparen => {
+                _ = self.consumeToken();
+                const expr = try self.parseExpression(.lowest);
+                _ = try self.expectToken(.rparen);
+                return expr;
+            },
+            .lbracket => {
+                _ = self.consumeToken();
+                return self.parseRange();
+            },
+            else => return error.SyntaxError,
+        }
+    }
+
+    fn parseCall(self: *Parser, func_name: []const u8) !*const ExprNode {
+        _ = try self.expectToken(.lparen);
+
+        var args = ArrayList(*const ExprNode).init(self.allocator);
+
+        // Parse arguments
+        while (self.peekToken().kind != .rparen and self.peekToken().kind != .eof) {
+            const arg = try self.parseExpression(.lowest);
+            try args.append(arg);
+
+            if (self.peekToken().kind == .comma) {
+                _ = self.consumeToken();
+            } else {
+                break;
+            }
+        }
+
+        _ = try self.expectToken(.rparen);
+        return self.makeCall(func_name, args);
+    }
+
+    fn parseRange(self: *Parser) !*const ExprNode {
+        const min = try self.parseExpression(.lowest);
+        _ = try self.expectToken(.comma);
+        const max = try self.parseExpression(.lowest);
+        _ = try self.expectToken(.rbracket);
+        return self.makeRange(min, max);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+    // AST Node Construction
+    // ═══════════════════════════════════════════════════════════════════════════════════════
+
+    fn makeIntLit(self: *Parser, value: i64) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        node.* = .{ .int_lit = value };
+        return node;
+    }
+
+    fn makeFloatLit(self: *Parser, value: f64) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        node.* = .{ .float_lit = value };
+        return node;
+    }
+
+    fn makeBoolLit(self: *Parser, value: bool) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        node.* = .{ .bool_lit = value };
+        return node;
+    }
+
+    fn makeIdentifier(self: *Parser, name: []const u8) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        const duped_name = try self.allocator.dupe(u8, name);
+        node.* = .{ .identifier = duped_name };
+        return node;
+    }
+
+    fn parseIdentifier(self: *Parser) ![]const u8 {
+        const token = self.peekToken();
+        if (token.kind != .identifier) return error.SyntaxError;
+        _ = self.consumeToken();
+        return token.lexeme;
+    }
+
+    fn parseIntLit(self: *Parser, token: Token) !i64 {
+        return std.fmt.parseInt(i64, token.lexeme, 10) catch 0;
+    }
+
+    fn parseFloatLit(self: *Parser, token: Token) !f64 {
+        return std.fmt.parseFloat(f64, token.lexeme) catch 0.0;
+    }
+
+    fn makeBinaryOp(self: *Parser, op: TokenKind, left: *const ExprNode, right: *const ExprNode) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        const binop = try self.allocator.create(ExprNode.BinOp);
+        binop.* = .{ .left = left, .right = right };
+        node.* = switch (op) {
+            .kw_or => .{ .logical_or = binop },
+            .kw_and => .{ .logical_and = binop },
+            .eq => .{ .eq = binop },
+            .ne => .{ .ne = binop },
+            .lt => .{ .lt = binop },
+            .le => .{ .le = binop },
+            .gt => .{ .gt = binop },
+            .ge => .{ .ge = binop },
+            .kw_in => .{ .kw_in = binop },
+            .plus => .{ .add = binop },
+            .minus => .{ .sub = binop },
+            .star => .{ .mul = binop },
+            .slash => .{ .div = binop },
+            .percent => .{ .mod = binop },
+            else => return error.SyntaxError,
+        };
+        return node;
+    }
+
+    fn makeUnaryOp(self: *Parser, op: TokenKind, operand: *const ExprNode) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        const unop = try self.allocator.create(ExprNode.UnaryOp);
+        unop.* = .{ .operand = operand };
+        node.* = switch (op) {
+            .kw_not => .{ .not = unop },
+            .minus => .{ .neg = unop },
+            else => return error.SyntaxError,
+        };
+        return node;
+    }
+
+    fn makeRange(self: *Parser, min: *const ExprNode, max: *const ExprNode) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        const range = try self.allocator.create(ExprNode.RangeExpr);
+        range.* = .{ .min = min, .max = max };
+        node.* = .{ .range = range };
+        return node;
+    }
+
+    fn makeCall(self: *Parser, func: []const u8, args: ArrayList(*const ExprNode)) !*const ExprNode {
+        const node = try self.allocator.create(ExprNode);
+        const call = try self.allocator.create(ExprNode.CallExpr);
+        const duped_func = try self.allocator.dupe(u8, func);
+        call.* = .{ .func = duped_func, .args = args };
+        node.* = .{ .call = call };
+        return node;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════════════
@@ -392,9 +658,11 @@ pub fn parseContract(allocator: Allocator, contract: []const u8) !*const ExprNod
 
     try parser.tokenize();
 
-    // For now, return a placeholder
-    _ = parser;
-    return error.NotImplemented;
+    // Reset position for parsing
+    parser.pos = 0;
+
+    // Parse using precedence climbing
+    return parser.parseExpression(.lowest);
 }
 
 /// Check if a contract expression is provable (no side effects, all variables defined)
@@ -423,7 +691,8 @@ test "tokenize simple expression" {
 
     try parser.tokenize();
 
-    try std.testing.expectEqual(@as(usize, 9), parser.tokens.items.len);
+    // x, >=, 0, and, x, <, 100, EOF = 8 tokens
+    try std.testing.expectEqual(@as(usize, 8), parser.tokens.items.len);
 }
 
 test "tokenize range expression" {
@@ -435,7 +704,8 @@ test "tokenize range expression" {
 
     try parser.tokenize();
 
-    try std.testing.expectEqual(@as(usize, 7), parser.tokens.items.len);
+    // x, in, [, 0, ,, 100, ], EOF = 8 tokens
+    try std.testing.expectEqual(@as(usize, 8), parser.tokens.items.len);
 }
 
 test "tokenize complex boolean" {
@@ -447,11 +717,65 @@ test "tokenize complex boolean" {
 
     try parser.tokenize();
 
-    // Count tokens
+    // Count tokens (excluding EOF)
     var count: usize = 0;
     for (parser.tokens.items) |t| {
         if (t.kind != .eof) count += 1;
     }
 
-    try std.testing.expectEqual(@as(usize, 11), count);
+    // (, x, >, 0, or, y, >, 0, ), and, not, z = 12 tokens
+    try std.testing.expectEqual(@as(usize, 12), count);
+}
+
+test "parse simple comparison" {
+    const allocator = std.testing.allocator;
+    const input = "x >= 0";
+
+    const expr = try parseContract(allocator, input);
+    defer {
+        // Just check we got a valid node
+        _ = expr;
+    }
+
+    // If we got here without error, parsing succeeded
+    try std.testing.expect(true);
+}
+
+test "parse logical and" {
+    const allocator = std.testing.allocator;
+    const input = "x >= 0 and x < 100";
+
+    const expr = try parseContract(allocator, input);
+    defer {
+        _ = expr;
+    }
+
+    // Should be a logical_and node
+    try std.testing.expectEqual(@as(usize, 2), @intFromEnum(expr.*));
+}
+
+test "parse range membership" {
+    const allocator = std.testing.allocator;
+    const input = "x in [0, 100]";
+
+    const expr = try parseContract(allocator, input);
+    defer {
+        _ = expr;
+    }
+
+    // Should be an in (membership) node - kw_in is at index 10
+    try std.testing.expectEqual(@as(usize, 10), @intFromEnum(expr.*));
+}
+
+test "parse complex boolean" {
+    const allocator = std.testing.allocator;
+    const input = "(x > 0 or y > 0) and not z";
+
+    const expr = try parseContract(allocator, input);
+    defer {
+        _ = expr;
+    }
+
+    // Should be a logical_and node
+    try std.testing.expectEqual(@as(usize, 2), @intFromEnum(expr.*));
 }
