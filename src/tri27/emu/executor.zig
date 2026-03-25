@@ -80,6 +80,35 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             cpu.pc += 1;
         },
 
+        .STF => {
+            // Store with bank validation (forbidden in bank 2)
+            // Bank validation is done at assembly time, but we check here too
+            const dst_reg = inst.dst;
+            if (dst_reg >= 18 and dst_reg <= 26) {
+                return ExecError.InvalidRegister; // Forbidden in bank 2
+            }
+
+            const addr = @as(usize, @abs(inst.immediate));
+            const value = cpu.t27[dst_reg];
+
+            // Memory word is 32 bits (fits 2 Trit27s)
+            const word_index = addr * 4;
+            if (word_index + @sizeOf(u64) > memory.len) {
+                return ExecError.InvalidMemory;
+            }
+
+            // Pack Trit27 into 64-bit word for storage
+            const packed_word: u64 = @bitCast(value.trits);
+            // Manual word write (little-endian)
+            const base = word_index;
+            memory[base] = @as(u8, @truncate(packed_word));
+            memory[base + 1] = @as(u8, @truncate(packed_word >> 8));
+            memory[base + 2] = @as(u8, @truncate(packed_word >> 16));
+            memory[base + 3] = @as(u8, @truncate(packed_word >> 24));
+
+            cpu.pc += 1;
+        },
+
         .LD => {
             // Load from memory to register
             const addr = @as(usize, @abs(inst.immediate));
@@ -116,6 +145,24 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             // Ternary addition
             const sum = a.trits + b.trits;
             // Simple modulo 3^27 for now
+            const result = @mod(sum, 19683);
+            const trit_value = Trit27{ .trits = result };
+
+            cpu.t27[inst.dst] = trit_value;
+            // Update flags
+            cpu.flags.Z = result == 0;
+            cpu.flags.N = result < 0;
+            cpu.pc += 1;
+        },
+
+        .FADD => {
+            // Floating-point ADD for sacred bank (bank 1, registers 9-17)
+            // For now, behaves like ADD but restricted to sacred registers
+            const a = cpu.t27[inst.src1];
+            const b = cpu.t27[inst.src2];
+
+            // Sacred floating-point addition (using ternary arithmetic)
+            const sum = a.trits + b.trits;
             const result = @mod(sum, 19683);
             const trit_value = Trit27{ .trits = result };
 

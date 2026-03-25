@@ -30,11 +30,12 @@ pub const Opcode = enum(u8) {
     SHR = 0x1D,
     MOV = 0x1E, // Move register to register
 
-    // === MEMORY (0x02-0x05) ===
+    // === MEMORY (0x02-0x07) ===
     LD = 0x02,
     ST = 0x03,
     LDI = 0x04, // Load immediate
     STI = 0x05, // Store immediate
+    STF = 0x07, // Store with bank validation (forbidden in bank 2)
 
     // === CONTROL (0x40-0x47) ===
     JMP = 0x40,
@@ -57,6 +58,7 @@ pub const Opcode = enum(u8) {
     PI_CONST = 0x81,
     E_CONST = 0x82,
     SACR = 0x83, // Sacred arithmetic operation
+    FADD = 0x90, // Floating-point ADD (sacred bank only)
 
     // === EXECUTOR EXTENSIONS ===
     LD_IMM = 0x84, // Load immediate (executor compatibility)
