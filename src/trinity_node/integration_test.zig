@@ -1663,8 +1663,6 @@ test "v1.8: full pipeline — repair, stake, slash, latency, metrics on 50 nodes
     // Step 2: All nodes stake
     var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
         .min_stake_wei = 100,
-        .pos_failure_slash_rate = 0.05,
-        .corruption_slash_rate = 0.10,
         .min_reputation_for_staking = 0.2,
     });
     defer staking.deinit();
@@ -2069,8 +2067,6 @@ test "v1.9: full pipeline — erasure repair, consensus, delegation, all subsyst
     // === STAKING + DELEGATION ===
     var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
         .min_stake_wei = 100,
-        .pos_failure_slash_rate = 0.05,
-        .corruption_slash_rate = 0.10,
         .min_reputation_for_staking = 0.2,
     });
     defer staking.deinit();
@@ -2531,8 +2527,6 @@ test "v2.0: full pipeline — region topology, escrow, prometheus, all subsystem
     // === STAKING + DELEGATION ===
     var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
         .min_stake_wei = 100,
-        .pos_failure_slash_rate = 0.05,
-        .corruption_slash_rate = 0.10,
         .min_reputation_for_staking = 0.2,
     });
     defer staking.deinit();

@@ -1,0 +1,294 @@
+# ═══════════════════════════════════════════════════════════════════
+# PARSER — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Parser for Tri Language
+# Source of truth for tri-lang/parser.zig codegen
+# Issue #408: ADT Enum + Exhaustive Match + Pipe
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_parser
+version: "0.1.0"
+module: tri_lang.parser
+description: "Parser for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  ParseError:
+    description: "Parse error types"
+    underlying: "error"
+    variants:
+      - UnexpectedToken: "Token does not match expected"
+      - ExpectedIdentifier: "Identifier expected"
+      - ExpectedType: "Type annotation expected"
+      - ExpectedLeftParen: "Opening parenthesis expected"
+      - ExpectedRightParen: "Closing parenthesis expected"
+      - ExpectedLeftBrace: "Opening brace expected"
+      - ExpectedRightBrace: "Closing brace expected"
+      - ExpectedArrow: "Arrow token expected"
+      - ExpectedPipe: "Pipe token expected"
+      - IncompleteMatch: "Match expression incomplete"
+      - DuplicateVariant: "Duplicate enum variant"
+      - OutOfMemory: "Memory allocation failed"
+
+  Parser:
+    description: "Parser state"
+    fields:
+      - name: lexer
+        type: "Lexer"
+        description: "Lexer instance"
+      - name: current_token
+        type: "Token"
+        description: "Current token"
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+    methods:
+      - name: init
+        params:
+          - name: source
+            type: "[]const u8"
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!Parser"
+        description: "Initialize parser with source"
+        errors:
+          - OutOfMemory
+
+      - name: parseProgram
+        returns: "![]ast.Node"
+        description: "Parse a program (list of declarations)"
+        errors:
+          - ParseError
+
+      - name: advance
+        returns: "!void"
+        description: "Advance to next token"
+        errors:
+          - OutOfMemory
+
+      - name: isKeyword
+        params:
+          - name: kw
+            type: "Token.Keyword"
+        returns: "bool"
+        description: "Check if current token is keyword"
+
+      - name: expectKeyword
+        params:
+          - name: kw
+            type: "Token.Keyword"
+        returns: "!void"
+        description: "Expect current token to be keyword"
+        errors:
+          - UnexpectedToken
+
+# ═══════════════════════════════════════════════════════════════════
+# INTERNAL FUNCTIONS (for codegen)
+# ═══════════════════════════════════════════════════════════════════
+
+internal_functions:
+  # Declaration parsing
+  - name: parseDecl
+    returns: "!ast.Node"
+    description: "Parse a declaration"
+
+  - name: parseFunctionDecl
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse function declaration"
+
+  - name: parseStructDecl
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse struct declaration"
+
+  - name: parseEnumDecl
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse enum declaration"
+
+  - name: parseTypeAlias
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse type alias"
+
+  - name: parsePipelineDecl
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse pipeline declaration"
+
+  - name: parseEffectDecl
+    params:
+      - name: is_pub
+        type: "bool"
+    returns: "!ast.Node"
+    description: "Parse effect declaration"
+
+  # Statement parsing
+  - name: parseBlock
+    returns: "![]ast.Statement"
+    description: "Parse block of statements"
+
+  - name: parseStmt
+    returns: "!ast.Statement"
+    description: "Parse a statement"
+
+  - name: parseReturnStmt
+    returns: "!ast.Statement"
+    description: "Parse return statement"
+
+  - name: parseLetStmt
+    returns: "!ast.Statement"
+    description: "Parse let statement"
+
+  - name: parseIfStmt
+    returns: "!ast.Statement"
+    description: "Parse if statement"
+
+  - name: parseWhileStmt
+    returns: "!ast.Statement"
+    description: "Parse while statement"
+
+  - name: parseForStmt
+    returns: "!ast.Statement"
+    description: "Parse for statement"
+
+  # Expression parsing
+  - name: parseExpr
+    returns: "!ast.Expression"
+    description: "Parse expression"
+
+  - name: parsePipeExpr
+    returns: "!ast.Expression"
+    description: "Parse pipe expression"
+
+  - name: parseUnaryExpr
+    returns: "!ast.Expression"
+    description: "Parse unary expression"
+
+  - name: parsePrimaryExpr
+    returns: "!ast.Expression"
+    description: "Parse primary expression"
+
+  - name: parseArrayLiteral
+    returns: "!ast.Expression"
+    description: "Parse array literal"
+
+  - name: parseMatchExpr
+    returns: "!ast.Expression"
+    description: "Parse match expression"
+
+  - name: parseMatchArm
+    returns: "!ast.MatchArm"
+    description: "Parse match arm"
+
+  - name: parsePattern
+    returns: "!ast.Pattern"
+    description: "Parse pattern"
+
+  - name: parsePerformExpr
+    returns: "!ast.Expression"
+    description: "Parse perform expression"
+
+  - name: parseHandleExpr
+    returns: "!ast.Expression"
+    description: "Parse handle expression"
+
+  - name: parseTryExpr
+    returns: "!ast.Expression"
+    description: "Parse try expression"
+
+  # Array combinator expressions
+  - name: parseMapExpr
+    returns: "!ast.Expression"
+    description: "Parse map expression"
+
+  - name: parseReduceExpr
+    returns: "!ast.Expression"
+    description: "Parse reduce expression"
+
+  - name: parseScanExpr
+    returns: "!ast.Expression"
+    description: "Parse scan expression"
+
+  - name: parseFilterExpr
+    returns: "!ast.Expression"
+    description: "Parse filter expression"
+
+  - name: parseFlatMapExpr
+    returns: "!ast.Expression"
+    description: "Parse flatMap expression"
+
+  - name: parseZipExpr
+    returns: "!ast.Expression"
+    description: "Parse zip expression"
+
+  # Type parsing
+  - name: parseType
+    returns: "!ast.Type"
+    description: "Parse type"
+
+  - name: parseResultType
+    returns: "!ast.Type"
+    description: "Parse Result<T,E> type"
+
+  - name: parseLinearType
+    returns: "!ast.Type"
+    description: "Parse linear type"
+
+  - name: parseBankedType
+    returns: "!ast.Type"
+    description: "Parse Banked<T,N> type"
+
+  - name: parseArrayType
+    returns: "!ast.Type"
+    description: "Parse array type [T;N]"
+
+  # Utilities
+  - name: parseParams
+    params:
+      - name: params
+        type: "*std.ArrayList(ast.Param)"
+    returns: "!void"
+    description: "Parse function parameters"
+
+  - name: expectIdentifier
+    returns: "![]const u8"
+    description: "Expect and return identifier"
+
+  - name: expectToken
+    params:
+      - name: token_tag
+        type: "std.meta.Tag(Token)"
+    returns: "!void"
+    description: "Expect specific token"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Parser converts token stream from Lexer into AST:
+# - Declaratives: functions, structs, enums, type aliases, pipelines, effects
+# - Statements: return, let, if, while, for, blocks, expressions
+# - Expressions: unary, binary, pipe, match, perform, handle, try
+# - Array combinators: map, reduce, scan, filter, flatMap, zip
+# - Types: Result, linear, banked, arrays, function types
+# - Patterns: literals, identifiers, wildcards, destructuring
+#
+# Parser maintains single-token lookahead for predictive parsing.
+# All AST nodes are allocated with the provided allocator.
