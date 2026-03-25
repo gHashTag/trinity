@@ -324,6 +324,20 @@ For the Google DeepMind AGI Hackathon, see:
   - Thermometer (unsupervised calibration)
   - Focal Temperature Scaling
   - Contextual Calibration
+- **[HACKATHON_UNCERTAINTY_2025.md](HACKATHON_UNCERTAINTY_2025.md)** — Latest NeurIPS/ICLR 2025 uncertainty quantification:
+  - Aleatoric vs Epistemic Uncertainty (Google DeepMind)
+  - Muse: Multi-LLM uncertainty aggregation
+  - Conformal LLM-as-a-Judge with prediction intervals
+  - CROQ: Conformal Revision of Questions
+  - Local Uncertainty Conformal Calibration (LUCCa)
+  - Information-theoretic uncertainty decomposition
+  - Adaptive Temperature Scaling (token-level)
+  - Ranked Voting Self-Consistency (Borda, IRV, MRR)
+  - Conformal Prediction (distribution-free uncertainty)
+  - Semantic Self-Consistency (embedding-based)
+  - Thermometer (unsupervised calibration)
+  - Focal Temperature Scaling
+  - Contextual Calibration
 
 ### Quick Start for Competition
 ```bash
