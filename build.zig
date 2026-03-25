@@ -2269,6 +2269,13 @@ pub fn build(b: *std.Build) void {
     const run_hslm_tests = b.addRunArtifact(hslm_tests);
     test_step.dependOn(&run_hslm_tests.step);
 
+    // Eval tests (E-zone type checking)
+    const eval_tests = b.addTest(.{
+        .root_module = eval_mod,
+    });
+    const run_eval_tests = b.addRunArtifact(eval_tests);
+    test_step.dependOn(&run_eval_tests.step);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
     // ═══════════════════════════════════════════════════════════════════════════

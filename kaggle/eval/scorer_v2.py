@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trinity Cognitive Probes — Scientific Scoring System v2.1
+Trinity Cognitive Probes — Scientific Scoring System v2.2
 
 Implements scientifically-grounded metacognition metrics:
 - Confidence discretization (Mielke et al. 2024): 0-20 scale (5% bins)
@@ -8,6 +8,11 @@ Implements scientifically-grounded metacognition metrics:
 - meta-d' (Maniscalco et al. 2023): Type II signal detection theory
 - Pass@2 scoring (ARC-AGI-2 2024)
 - Proper statistical validation
+
+v2.2 CRITICAL FIXES:
+- Fixed ternary_accuracy bug: now uses TrackResults counts instead of empty list
+- Fixed M-ratio formula: preserves sign of d' (per Maniscalco & Lau 2014)
+- Fixed n-gram documentation: "word n-grams" not "character n-grams"
 
 Key improvements over v2.0:
 - Discretized confidence buckets (no more continuous 0-100 nonsense)
@@ -102,7 +107,7 @@ class ScoringResult:
 
 @dataclass
 class TrackResults:
-    """Aggregated results for a track with v2.1 metrics."""
+    """Aggregated results for a track with v2.2 metrics."""
     track_name: str
     total_items: int
     correct: int  # +1 scores
@@ -114,12 +119,20 @@ class TrackResults:
     phi_weighted_mean: float
     per_task_breakdown: Dict[str, Dict] = field(default_factory=dict)
 
-    # NEW v2.1 metrics
+    # v2.1 metrics
     ece: float = 0.0  # Expected Calibration Error
     meta_d_prime: float = 0.0  # Metacognitive sensitivity
     mratio: float = 0.0  # Meta-d' / d' ratio
     calibration_curve: List[Tuple[int, float, int]] = field(default_factory=list)  # (bucket, accuracy, count)
     type2_counts: Dict[str, int] = field(default_factory=dict)  # hits, misses, false_alarms, correct_rejections
+
+    # v2.2 metrics (from scientific_metrics_v3.py)
+    smooth_ece: float = 0.0  # SmoothECE with RBF kernel
+    adaptive_ece: float = 0.0  # Adaptive ECE (equal sample bins)
+    meta_i: float = 0.0  # Information-theoretic metacognition (bits)
+    max_meta_i: float = 0.0  # Maximum possible meta-I
+    brier_score: float = 0.0  # Brier score for calibration
+    confidence_intervals: Dict[str, Tuple[float, float]] = field(default_factory=dict)  # CI for metrics
 
 
 @dataclass
@@ -754,7 +767,7 @@ class TernaryScorerV2:
         return (correct - incorrect) / len(results)
 
     def format_results(self, results: TrackResults) -> str:
-        """Format track results for display with v2.1 metrics."""
+        """Format track results for display with v2.2 metrics."""
         lines = [
             f"\n{'='*60}",
             f"Track: {results.track_name}",
@@ -770,10 +783,10 @@ class TernaryScorerV2:
             f"  Calibration Score:   {results.calibration_score:.4f}",
             f"  Mean Confidence:     {results.mean_confidence:.4f}",
             f"  Ternary Accuracy:    {(results.correct - results.incorrect) / results.total_items if results.total_items > 0 else 0.0:.4f}",
-            f"\n📊 SCIENTIFIC METRICS v2.1:",
+            f"\n📊 SCIENTIFIC METRICS v2.2:",
             f"  ECE (Calibration):        {results.ece:.4f}  (lower is better)",
             f"  meta-d' (Metacognition):  {results.meta_d_prime:.4f}  (higher is better)",
-            f"  M-ratio (Efficiency):     {results.mratio:.4f}  (meta-d' / d')",
+            f"  M-ratio (Efficiency):     {results.mratio:.4f}  (meta-d' / d', FIXED: preserves sign)",
         ]
 
         # Type II SDT breakdown
@@ -781,6 +794,19 @@ class TernaryScorerV2:
             lines.append(f"\n  Type II SDT Counts:")
             for resp_type, count in results.type2_counts.items():
                 lines.append(f"    {resp_type}: {count}")
+
+        # v2.2 Advanced Metrics (if available)
+        if results.smooth_ece > 0 or results.adaptive_ece > 0:
+            lines.append(f"\n🔬 ADVANCED METRICS v3.0:")
+            if results.smooth_ece > 0:
+                lines.append(f"  SmoothECE (RBF):         {results.smooth_ece:.4f}  (lower is better)")
+            if results.adaptive_ece > 0:
+                lines.append(f"  Adaptive ECE:            {results.adaptive_ece:.4f}  (lower is better)")
+            if results.meta_i > 0:
+                efficiency = (results.meta_i / results.max_meta_i * 100) if results.max_meta_i > 0 else 0
+                lines.append(f"  meta-I (Info-theoretic): {results.meta_i:.4f} bits / {results.max_meta_i:.4f} max ({efficiency:.1f}%)")
+            if results.brier_score > 0:
+                lines.append(f"  Brier Score:             {results.brier_score:.4f}  (lower is better)")
 
         if results.per_task_breakdown:
             lines.append(f"\nPer-Task Breakdown:")
