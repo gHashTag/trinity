@@ -11,12 +11,16 @@ Build a production-ready type system and TRI-27 bytecode emitter on top of Wave 
 
 ## Phase 1: Type System Core
 
-### 1.1 Type Representation
+### 1.1 Type Representation ⏳ BLOCKED
 - [ ] `src/tri-lang/types.zig` — core type definitions
-  - [ ] `Type` enum — Unit, Bool, Int, Float, Fn, ADT, Var
-  - [ ] `TypeEq` — type equality with variance
-  - [ ] `Type.subst()` — substitution for type variables
-  - [ ] `Type.ftv()` — free type variables
+  - [x] `Type` enum — Unit, Bool, Int, Float, Fn, ADT, Var
+  - [x] `TypeEq` — type equality with variance
+  - [x] `Type.subst()` — substitution for type variables
+  - [x] `Type.ftv()` — free type variables
+
+**BLOCKER:** Zig 0.15 ArrayList API change - `std.ArrayList(T).init(allocator)` returns `array_list.Aligned(T,null)` without `init` method. Need to investigate alternative approach or use `std.ArrayListUnmanaged`.
+
+**Workaround tried:** Direct struct creation fails due to generic function return type changes in Zig 0.15.
 
 ### 1.2 Type Environment
 - [ ] `src/tri-lang/type_env.zig` — typing context
