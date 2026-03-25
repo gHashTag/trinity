@@ -58,11 +58,19 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // VSA Core — single source of truth for VSA algorithms (no HybridBigInt dependency)
+    const vsa_core_mod = b.createModule(.{
+        .root_source_file = b.path("src/vsa_core/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const vsa_tri = b.createModule(.{
         .root_source_file = b.path("src/vsa.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "vsa_core", .module = vsa_core_mod },
             .{ .name = "hybrid", .module = hybrid_mod },
         },
     });
@@ -1822,38 +1830,27 @@ pub fn build(b: *std.Build) void {
     // const needle_mcp_step = b.step("needle-mcp", "Run NEEDLE MCP Server (stdio transport)");
     // needle_mcp_step.dependOn(&run_needle_mcp.step);
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
-
-    const tri_train_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/metabolism.zig"),
+    // TRI training types module (needed by tri_train_mod)
+    const train_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/train_types.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    const trinity_mcp = b.addExecutable(.{
-        .name = "trinity-mcp",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "needle", .module = needle_mod },
-                .{ .name = "vsa", .module = vsa_tri },
-                .{ .name = "treesitter_zig", .module = ts_zig_mod },
-                .{ .name = "tri_train", .module = tri_train_mod },
-                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
-            },
-        }),
+    // TRI train module (for trinity-mcp) - depends on train_types
+    const tri_train_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/metabolism.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "train_types", .module = train_types_mod },
+        },
     });
-    b.installArtifact(trinity_mcp);
 
-    // Don't auto-run the MCP server - it's an interactive stdio service
-    // const run_trinity_mcp = b.addRunArtifact(trinity_mcp);
-    // const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
-    // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
 
     // ═══════════════════════════════════════════════════════════════════════════
     // RALPH AGENT — Autonomous Sleep-Wake Daemon
@@ -2343,8 +2340,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // TRI CLI module — for queen to access tri CLI modules (tri_colors, voice_engine, etc.)
-    const tri_cli_mod = b.createModule(.{
+    // TRI CLI module — UNUSED (causes ownership conflicts, cortex_for_tri uses trinity_mod instead)
+    _ = b.createModule(.{
         .root_source_file = b.path("src/tri/root.zig"),
         .target = target,
         .optimize = optimize,
@@ -2361,17 +2358,17 @@ pub fn build(b: *std.Build) void {
     // phoenix_medulla, phoenix_pons are in src/queen/
     // (Q-zone migration debt). Queen files import them directly.
     // cortex is defined later as cortex_for_tri to avoid circular dependency
-    const faculty_types_mod = b.createModule(.{
+    _ = b.createModule(.{
         .root_source_file = b.path("src/queen/faculty_types.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const thalamus_mod = b.createModule(.{
+    _ = b.createModule(.{
         .root_source_file = b.path("src/queen/thalamus.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const queen_ofc_mod = b.createModule(.{
+    _ = b.createModule(.{
         .root_source_file = b.path("src/queen/queen_ofc.zig"),
         .target = target,
         .optimize = optimize,
@@ -2388,11 +2385,10 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const train_types_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/train_types.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+
+    // NOTE: train_types_mod and tri_train_mod moved earlier (before trinity-mcp)
+    // to fix forward declaration issue
+
     const hippocampus_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/hippocampus.zig"),
         .target = target,
@@ -2413,13 +2409,21 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    // cortex_for_tri: special version that imports tri module to access tri CLI modules
-    const cortex_for_tri = b.createModule(.{
+    // cortex_for_tri: special version that imports individual tri modules
+    _ = b.createModule(.{
         .root_source_file = b.path("src/queen/cortex.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
-            .{ .name = "tri", .module = tri_cli_mod },
+            .{ .name = "tri", .module = trinity_mod },
+            .{ .name = "voice_engine", .module = voice_engine_mod },
+            .{ .name = "analysis_engine", .module = analysis_engine_mod },
+            .{ .name = "three_paths", .module = three_paths_mod },
+            .{ .name = "phi_poetry", .module = phi_poetry_mod },
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "train_types", .module = train_types_mod },
+            .{ .name = "tri_state", .module = tri_state_mod },
+            .{ .name = "hippocampus", .module = hippocampus_mod },
         },
     });
 
@@ -2530,13 +2534,19 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "temple", .module = temple_mod },
-            .{ .name = "tri", .module = tri_cli_mod },
             // Brain modules
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
-            // NOTE: Queen files import tri modules via "tri" namespace
-            // Individual tri modules NOT imported here to avoid conflicts
+            // TRI modules needed by queen (individual imports to avoid conflicts)
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "voice_engine", .module = voice_engine_mod },
+            .{ .name = "train_types", .module = train_types_mod },
+            .{ .name = "tri_state", .module = tri_state_mod },
+            .{ .name = "hippocampus", .module = hippocampus_mod },
+            .{ .name = "analysis_engine", .module = analysis_engine_mod },
+            .{ .name = "three_paths", .module = three_paths_mod },
+            .{ .name = "phi_poetry", .module = phi_poetry_mod },
             // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
             // phoenix_medulla, phoenix_pons are in src/queen/
             // Queen files import them directly from same directory
@@ -2910,7 +2920,7 @@ pub fn build(b: *std.Build) void {
     // FARM STATS — Removed (src/cli/farm_stats.zig does not exist)
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
-    const tri_utils_mod = b.createModule(.{
+    const _tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),
         .target = target,
         .optimize = optimize,
@@ -3225,10 +3235,9 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "github", .module = github_mod },
                 // Farm module (F-zone)
                 .{ .name = "farm", .module = farm_mod },
-                // NOTE: tri CLI module NOT imported here - causes ownership conflicts with tri_colors
-                // Individual tri modules imported instead:
+                // NOTE: tri CLI module NOT imported here - causes ownership conflicts
+                // NOTE: tri_utils imported via @import in main.zig to avoid ownership conflicts
                 // TRI individual modules (to avoid ownership conflicts)
-                .{ .name = "tri_utils", .module = tri_utils_mod },
                 .{ .name = "tri_colors", .module = tri_colors_mod },
                 .{ .name = "voice_engine", .module = voice_engine_mod },
                 .{ .name = "tri_state", .module = tri_state_mod },
@@ -3237,11 +3246,9 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "analysis_engine", .module = analysis_engine_mod },
                 .{ .name = "three_paths", .module = three_paths_mod },
                 .{ .name = "phi_poetry", .module = phi_poetry_mod },
-                // Q-zone modules (individual imports for tri compatibility)
-                .{ .name = "cortex", .module = cortex_for_tri },
-                .{ .name = "faculty_types", .module = faculty_types_mod },
-                .{ .name = "thalamus", .module = thalamus_mod },
-                .{ .name = "queen_ofc", .module = queen_ofc_mod },
+                // NOTE: cortex, faculty_types, thalamus, queen_ofc are queen modules
+                // NOT imported here to avoid module ownership conflicts
+                // Queen modules should be imported through the queen module instead
             },
         }),
     });
@@ -3252,9 +3259,33 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(tri);
 
     const run_tri = b.addRunArtifact(tri);
+
+    // Trinity MCP server (moved here to access tri_train_mod)
+    const trinity_mcp = b.addExecutable(.{
+        .name = "trinity-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
+                .{ .name = "tri_train", .module = tri_train_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+
+    b.installArtifact(trinity_mcp);
+
+    const _run_trinity_mcp = b.addRunArtifact(trinity_mcp);
     if (b.args) |args| {
-        run_tri.addArgs(args);
+        _run_trinity_mcp.addArgs(args);
     }
+    const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
+    trinity_mcp_step.dependOn(&_run_trinity_mcp.step);
+
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
 
@@ -3391,7 +3422,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "tri_utils", .module = tri_utils_mod },
+                .{ .name = "tri_utils", .module = _tri_utils_mod },
                 .{ .name = "tri_commands", .module = tri_commands_mod },
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
