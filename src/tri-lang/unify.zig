@@ -358,7 +358,8 @@ test "unify var with concrete" {
 
     const result = try unify(allocator, var_t, int_t);
     try std.testing.expect(result == .Ok);
-    // Note: testing allocator handles cleanup
+    var s = result.Ok;
+    s.deinit();
 }
 
 test "occurs check prevents infinite types" {
@@ -368,7 +369,8 @@ test "occurs check prevents infinite types" {
     // Same var should unify successfully (no infinite type)
     const result = try unify(std.testing.allocator, &Type{ .Var = tv1 }, &Type{ .Var = tv1 });
     try std.testing.expect(result == .Ok);
-    // Note: testing allocator handles cleanup
+    var s = result.Ok;
+    s.deinit();
 }
 
 test "subst empty" {
