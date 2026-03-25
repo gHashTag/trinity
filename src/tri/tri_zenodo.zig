@@ -80,6 +80,19 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         } else {
             try updateAllRecords(allocator);
         }
+    } else if (std.mem.eql(u8, subcmd, "update-v4")) {
+        if (sub_args.len > 0) {
+            try updateOneBundleV4(allocator, sub_args[0]);
+        } else {
+            try updateAllBundlesV4(allocator);
+        }
+    } else if (std.mem.eql(u8, subcmd, "bundle-v4")) {
+        // Create new v4.0 bundle deposits
+        if (sub_args.len > 0) {
+            try publishBundleV4(allocator, sub_args[0]);
+        } else {
+            try publishAllBundlesV4(allocator);
+        }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -229,6 +242,66 @@ const update_records = [_]UpdateRecord{
         .title = "Trinity D007: Sparse Ternary MatMul — 4-Variant Branchless Multiplication",
         .keywords = "sparse-matmul,branchless,simd,ternary,defensive-publication",
         .cpc = "G06F7/544,G06F7/72,G06F17/16",
+    },
+};
+
+// Enhanced v4.0 bundle records with markdown descriptions
+const bundle_v4_records = [_]UpdateRecord{
+    .{
+        .id = "B001",
+        .zenodo_id = "19225118",
+        .file = "docs/research/zenodo_B001_enhanced_v4.md",
+        .title = "Trinity B001: HSLM — Ternary Neural Networks with 1.95M Parameters v4.0",
+        .keywords = "ternary,neural-network,HSLM,LLM,PPL,TinyStories,1.95M,compression,checkpoint,phi-based,sacred",
+        .cpc = "G06N3/00,G06N3/0455,G06F7/52,G06F17/16",
+    },
+    .{
+        .id = "B002",
+        .zenodo_id = "19225119",
+        .file = "docs/research/zenodo_B002_enhanced_v4.md",
+        .title = "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference v4.0",
+        .keywords = "zero-DSP,FPGA,LUT,inference,ternary,CORDIC,argmax,BRAM,Yosys,nextpnr,XC7A100T,synthesis",
+        .cpc = "G06F7/52,G06F7/72,G06F17/00,H03K19/20",
+    },
+    .{
+        .id = "B003",
+        .zenodo_id = "19225120",
+        .file = "docs/research/zenodo_B003_enhanced_v4.md",
+        .title = "Trinity B003: TRI-27 ISA — Ternary Instruction Set with Coptic Alphabet Encoding v4.0",
+        .keywords = "TRI-27,ISA,ternary,Coptic,alphabet,encoding,3-bank,registers,opcodes,episode,binary",
+        .cpc = "G06F9/30,G06F9/34,G06F15/16",
+    },
+    .{
+        .id = "B004",
+        .zenodo_id = "19225123",
+        .file = "docs/research/zenodo_B004_enhanced_v4.md",
+        .title = "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration for Self-Evolving AI v4.0",
+        .keywords = "Queen,self-learning,orchestration,Lotus,Cycle,episode,Jaccard,similarity,SEVO,hyperopt,ASHA,PBT,Railway",
+        .cpc = "G06N20/00,G06F3/00,G06N5/00",
+    },
+    .{
+        .id = "B005",
+        .zenodo_id = "19225121",
+        .file = "docs/research/zenodo_B005_enhanced_v4.md",
+        .title = "Trinity B005: Tri Language — Linear Types, Effects, Dual-Target Compilation v4.0",
+        .keywords = "Tri,language,DSL,codegen,Zig,Verilog,linear-types,ownership,effects,handlers,pattern-matching,bit,trit",
+        .cpc = "G06F8/30,G06F8/34,G06F8/65",
+    },
+    .{
+        .id = "B006",
+        .zenodo_id = "19225122",
+        .file = "docs/research/zenodo_B006_enhanced_v4.md",
+        .title = "Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v4.0",
+        .keywords = "sacred,GF16,TF3,floating-point,ternary,phi-based,arithmetic,compression,phi-distance",
+        .cpc = "G06F7/52,G06F7/54,G06F5/01",
+    },
+    .{
+        .id = "B007",
+        .zenodo_id = "19225124",
+        .file = "docs/research/zenodo_B007_enhanced_v4.md",
+        .title = "Trinity B007: VSA Operations for Ternary Computing v4.0",
+        .keywords = "VSA,vector-symbolic,architecture,bind,unbind,bundle,ternary,dot-product,permutation,FHRR,BSD",
+        .cpc = "G06F7/72,G06F17/16,G06N3/00",
     },
 };
 
@@ -575,6 +648,262 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
     std.fs.deleteFileAbsolute(zip_path) catch {};
 }
 
+fn updateAllBundlesV4(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}ZENODO BUNDLE v4.0 UPDATE{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    var success: usize = 0;
+    var fail: usize = 0;
+    for (bundle_v4_records) |rec| {
+        updateBundleV4(allocator, rec) catch |err| {
+            print("{s}  FAILED {s}: {}{s}\n", .{ RED, rec.id, err, RESET });
+            fail += 1;
+            continue;
+        };
+        success += 1;
+    }
+
+    print("\n{s}Results: {d} updated, {d} failed{s}\n\n", .{ GREEN, success, fail, RESET });
+}
+
+fn updateOneBundleV4(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    for (bundle_v4_records) |rec| {
+        if (std.mem.eql(u8, rec.id, bundle_id)) {
+            try updateBundleV4(allocator, rec);
+            return;
+        }
+    }
+    print("{s}Unknown bundle: {s}. Valid: B001-B007{s}\n", .{ RED, bundle_id, RESET });
+}
+
+fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} Updating Zenodo #{s} with v4.0 description...\n", .{ CYAN, rec.id, RESET, rec.zenodo_id });
+
+    // Step 1: Read markdown description from file
+    print("  1/4 Reading markdown from {s}...\n", .{rec.file});
+    const desc_file = std.fs.cwd().openFile(rec.file, .{}) catch {
+        print("  {s}File not found: {s}{s}\n", .{ RED, rec.file, RESET });
+        return error.FileNotFound;
+    };
+    defer desc_file.close();
+    const raw_desc = desc_file.readToEndAlloc(allocator, 131072) catch return error.ReadFailed;
+    defer allocator.free(raw_desc);
+
+    // Escape description for JSON embedding
+    const description = try jsonEscapeString(allocator, raw_desc);
+    defer allocator.free(description);
+
+    // Step 2: Create new version draft
+    print("  2/4 Creating new version draft...\n", .{});
+    const newver_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/newversion", .{ API, rec.zenodo_id });
+    defer allocator.free(newver_url);
+    const newver_resp = try curlPost(allocator, newver_url, token, null);
+    defer allocator.free(newver_resp);
+
+    // Get the draft ID from response
+    const draft_id = jsonExtractString(newver_resp, "id") orelse {
+        const resp_preview = newver_resp[0..@min(200, newver_resp.len)];
+        print("  {s}Failed to create new version. Response: {s}{s}\n", .{ RED, resp_preview, RESET });
+        return error.NewVersionFailed;
+    };
+
+    // Step 3: Update metadata with markdown description
+    print("  3/4 Updating metadata (draft {s})...\n", .{draft_id});
+
+    // Build keywords JSON: human keywords + CPC codes
+    var kw_buf: [2048]u8 = undefined;
+    var kw_pos: usize = 0;
+    kw_buf[kw_pos] = '[';
+    kw_pos += 1;
+
+    var kw_iter = std.mem.splitScalar(u8, rec.keywords, ',');
+    var first_kw = true;
+    while (kw_iter.next()) |kw| {
+        if (!first_kw) {
+            kw_buf[kw_pos] = ',';
+            kw_pos += 1;
+        }
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        @memcpy(kw_buf[kw_pos .. kw_pos + kw.len], kw);
+        kw_pos += kw.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        first_kw = false;
+    }
+
+    // Add CPC codes as keywords
+    var cpc_iter = std.mem.splitScalar(u8, rec.cpc, ',');
+    while (cpc_iter.next()) |cpc| {
+        kw_buf[kw_pos] = ',';
+        kw_pos += 1;
+        const prefix = "\"CPC:";
+        @memcpy(kw_buf[kw_pos .. kw_pos + prefix.len], prefix);
+        kw_pos += prefix.len;
+        @memcpy(kw_buf[kw_pos .. kw_pos + cpc.len], cpc);
+        kw_pos += cpc.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+    }
+    kw_buf[kw_pos] = ']';
+    kw_pos += 1;
+
+    const related_ids = \\[{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}]
+    ;
+
+    const meta_body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"Enhanced v4.0 with full scientific rigor: 5-sentence abstract, LaTeX notation, formal theorems, 95% CIs, Docker reproducibility.","upload_type":"software","publication_date":"2026-03-26","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"license":{{"id":"cc-by-4.0"}},"version":"4.0","related_identifiers":{s}}}}}}
+    , .{ rec.title, description, kw_buf[0..kw_pos], related_ids });
+    defer allocator.free(meta_body);
+
+    const draft_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}", .{ API, draft_id });
+    defer allocator.free(draft_url);
+    const meta_resp = try curlPut(allocator, draft_url, token, meta_body);
+    defer allocator.free(meta_resp);
+
+    if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null or std.mem.indexOf(u8, meta_resp, "\"status\":4") != null) {
+        print("  {s}Metadata update failed{s}\n", .{ RED, RESET });
+        return error.MetadataUpdateFailed;
+    }
+
+    // Step 4: Publish the new version
+    print("  4/4 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, draft_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
+    print("  {s}[{s}] Updated to v4.0! DOI: {s}{s}\n\n", .{ GREEN, rec.id, doi, RESET });
+}
+
+fn publishAllBundlesV4(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}ZENODO BUNDLE v4.0 — Publishing 7 bundles{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    for (bundle_v4_records) |rec| {
+        publishBundleV4Single(allocator, rec) catch |err| {
+            print("{s}Failed {s}: {}{s}\n", .{ RED, rec.id, err, RESET });
+            continue;
+        };
+    }
+
+    print("\n{s}All bundles published. Run 'tri zenodo status' to verify.{s}\n\n", .{ GREEN, RESET });
+}
+
+fn publishBundleV4(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    for (bundle_v4_records) |rec| {
+        if (std.mem.eql(u8, rec.id, bundle_id)) {
+            try publishBundleV4Single(allocator, rec);
+            return;
+        }
+    }
+    print("{s}Unknown bundle: {s}. Valid: B001-B007{s}\n", .{ RED, bundle_id, RESET });
+}
+
+fn publishBundleV4Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} {s}\n", .{ CYAN, rec.id, RESET, rec.title });
+
+    // Step 1: Create new deposition
+    print("  1/4 Creating record...\n", .{});
+
+    // Build keywords JSON array from comma-separated string
+    var kw_buf: [1024]u8 = undefined;
+    var kw_pos: usize = 0;
+    kw_buf[kw_pos] = '[';
+    kw_pos += 1;
+    var kw_iter = std.mem.splitScalar(u8, rec.keywords, ',');
+    var first = true;
+    while (kw_iter.next()) |kw| {
+        if (!first) {
+            kw_buf[kw_pos] = ',';
+            kw_pos += 1;
+        }
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        @memcpy(kw_buf[kw_pos .. kw_pos + kw.len], kw);
+        kw_pos += kw.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        first = false;
+    }
+    kw_buf[kw_pos] = ']';
+    kw_pos += 1;
+
+    const body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-26","description":"Enhanced v4.0 with full scientific rigor.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"keywords":{s},"license":{{"id":"cc-by-4.0"}},"version":"4.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}}]}}}}
+    , .{ rec.title, kw_buf[0..kw_pos] });
+    defer allocator.free(body);
+
+    const create_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions", .{API});
+    defer allocator.free(create_url);
+
+    const resp = try curlPost(allocator, create_url, token, body);
+    defer allocator.free(resp);
+
+    const dep_id = jsonExtractString(resp, "id") orelse {
+        print("  {s}Failed to create record{s}\n", .{ RED, RESET });
+        return error.CreateFailed;
+    };
+
+    print("  2/4 Record ID: {s}\n", .{dep_id});
+
+    // Step 3: Upload description file
+    print("  3/4 Uploading description...\n", .{});
+
+    const files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, dep_id });
+    defer allocator.free(files_url);
+
+    // Read markdown file
+    const desc_content = std.fs.cwd().readFileAlloc(allocator, rec.file, 131072) catch return error.ReadFailed;
+    defer allocator.free(desc_content);
+
+    // Write to temp file for upload
+    const temp_name = try std.fmt.allocPrint(allocator, "{s}_description.md", .{rec.id});
+    defer allocator.free(temp_name);
+    const temp_path = try std.fmt.allocPrint(allocator, "/tmp/{s}", .{temp_name});
+    defer allocator.free(temp_path);
+
+    {
+        const temp_file = try std.fs.createFileAbsolute(temp_path);
+        defer temp_file.close();
+        try temp_file.writeAll(desc_content);
+    }
+
+    const auth = try std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token});
+    defer allocator.free(auth);
+    const file_arg = try std.fmt.allocPrint(allocator, "file=@{s}", .{temp_path});
+    defer allocator.free(file_arg);
+    const name_arg = try std.fmt.allocPrint(allocator, "name={s}_description.md", .{rec.id});
+    defer allocator.free(name_arg);
+
+    const upload_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "curl", "-s", "-X", "POST", files_url, "-H", auth, "-F", file_arg, "-F", name_arg },
+    });
+    allocator.free(upload_result.stdout);
+    allocator.free(upload_result.stderr);
+
+    // Step 4: Publish
+    print("  4/4 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, dep_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
+    print("  {s}[{s}] DOI: {s}{s}\n\n", .{ GREEN, rec.id, doi, RESET });
+
+    // Cleanup
+    std.fs.deleteFileAbsolute(temp_path) catch {};
+}
+
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
@@ -582,14 +911,21 @@ fn printHelp() void {
     print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
     print("  tri zenodo discovery [D004-D007|B001-B007]  Publish discovery DOI (or all)\n", .{});
     print("  tri zenodo bundle [A-G]         Publish bundle (A=NN, B=FPGA, C=TRI-27, D=Queen, E=Tri, F=Sacred, G=VSA)\n", .{});
-    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n\n", .{});
+    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n", .{});
+    print("  tri zenodo update-v4 [B001-B007] Update bundles to v4.0 with enhanced descriptions\n", .{});
+    print("  tri zenodo bundle-v4 [B001-B007] Create new v4.0 bundle deposits\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
     print("    D004-D007: Original (Ouroboros, VSA, phi-RoPE, Sparse MatMul)\n", .{});
-    print("    B001-B007: NEW! 7 Bundles (66 discoveries total)\n", .{});
-    print("              B001=NN (14), B002=FPGA (13), B003=TRI-27 (7)\n", .{});
-    print("              B004=Queen (10), B005=Tri Lang (13), B006=Sacred (9), B007=VSA (3)\n\n", .{});
+    print("    B001-B007: Enhanced v4.0 Bundles\n", .{});
+    print("              B001=HSLM (1.95M params, PPL 125.3)\n", .{});
+    print("              B002=Zero-DSP FPGA (0% DSP, 1.2W)\n", .{});
+    print("              B003=TRI-27 ISA (36 opcodes, 27 regs)\n", .{});
+    print("              B004=Queen Lotus (2.36× faster)\n", .{});
+    print("              B005=Tri Language (Linear types, effects)\n", .{});
+    print("              B006=Sacred GF16/TF3 (φ-based arithmetic)\n", .{});
+    print("              B007=VSA Operations (30% resilience)\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
