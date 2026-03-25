@@ -18,6 +18,7 @@
 | [Prior Art Network](PRIOR_ART_NETWORK.md) | Cross-reference matrix | ✅ |
 | [H6 Throughput Validation](H6_FPGA_CPU_THROUGHPUT_VALIDATION.md) | FPGA vs CPU SIMD analysis | ✅ NEW |
 | [Research Index](RESEARCH_INDEX_V3.md) | Complete documentation index | ✅ |
+| [Abstract Improvements](ZENODO_ABSTRACT_IMPROVEMENTS.md) | Zenodo abstract enhancement | ✅ NEW |
 
 ---
 

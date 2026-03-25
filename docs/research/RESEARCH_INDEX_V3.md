@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v3.5
+# Trinity Research Documentation Index — v3.6
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 79
+**Total Documents:** 80
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -50,17 +50,18 @@
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
 
-### 4. Zenodo Publication (7 documents)
+### 4. Zenodo Publication (8 documents)
 
 | Document | Purpose | Version |
 |----------|---------|---------|
-| `ZENODO_PUBLICATION_BEST_PRACTICES.md` | Scientific writing standards | v3.0 ✅ NEW |
+| `ZENODO_PUBLICATION_BEST_PRACTICES.md` | Scientific writing standards | v3.0 ✅ |
+| `ZENODO_ABSTRACT_IMPROVEMENTS.md` | Abstract enhancement analysis | v1.0 ✅ NEW |
 | `ZENODO_SCIENTIFIC_GUIDE_V2.md` | Metadata requirements | v2.0 |
 | `ZENODO_MASTER_INDEX.md` | All Zenodo bundles index | v1.0 |
 | `ZENODO_PUBLICATIONS_SUMMARY.md` | Publication summary | v1.0 |
 | `ZENODO_README.md` | Zenodo bundle README | v1.0 |
 | `CITATION.cff` | Main citation file | v1.0 |
-| `7× citation/bundle_*.cff` | Per-bundle citations | v1.0 |
+| `7× citation/bundle_*.cff` | Per-bundle citations | v1.1 ✅ Enhanced |
 
 ### 5. Mathematical Foundations (4 documents)
 
@@ -170,6 +171,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.6 | 2026-03-26 | Added ZENODO_ABSTRACT_IMPROVEMENTS.md + enhanced bundle abstracts (5-sentence structure, CI, p-values) |
 | 3.5 | 2026-03-26 | Added H6_FPGA_CPU_THROUGHPUT_VALIDATION.md (FPGA vs CPU SIMD analysis, multi-FPGA scaling path) |
 | 3.4 | 2026-03-26 | Added TJEPA_SCIENTIFIC_VALIDATION.md (13.8% PPL improvement, φ-warmup) |
 | 3.3 | 2026-03-26 | Added 5 specialized research docs: CROSS_BUNDLE, END_TO_END_PIPELINE, SCALING_ANALYSIS, COST_ANALYSIS, PERFORMANCE_BENCHMARKS |
