@@ -2358,17 +2358,17 @@ pub fn build(b: *std.Build) void {
     // phoenix_medulla, phoenix_pons are in src/queen/
     // (Q-zone migration debt). Queen files import them directly.
     // cortex is defined later as cortex_for_tri to avoid circular dependency
-    _ = b.createModule(.{
+    const faculty_types_mod = b.createModule(.{
         .root_source_file = b.path("src/queen/faculty_types.zig"),
         .target = target,
         .optimize = optimize,
     });
-    _ = b.createModule(.{
+    const thalamus_mod = b.createModule(.{
         .root_source_file = b.path("src/queen/thalamus.zig"),
         .target = target,
         .optimize = optimize,
     });
-    _ = b.createModule(.{
+    const queen_ofc_mod = b.createModule(.{
         .root_source_file = b.path("src/queen/queen_ofc.zig"),
         .target = target,
         .optimize = optimize,
@@ -3246,9 +3246,11 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "analysis_engine", .module = analysis_engine_mod },
                 .{ .name = "three_paths", .module = three_paths_mod },
                 .{ .name = "phi_poetry", .module = phi_poetry_mod },
-                // NOTE: cortex, faculty_types, thalamus, queen_ofc are queen modules
-                // NOT imported here to avoid module ownership conflicts
-                // Queen modules should be imported through the queen module instead
+                // Queen modules needed by tri (imported directly to avoid queen circular deps)
+                .{ .name = "faculty_types", .module = faculty_types_mod },
+                .{ .name = "thalamus", .module = thalamus_mod },
+                .{ .name = "queen_ofc", .module = queen_ofc_mod },
+                // NOTE: cortex is queen module imported through queen module instead
             },
         }),
     });

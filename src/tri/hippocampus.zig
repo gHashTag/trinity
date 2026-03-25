@@ -28,6 +28,7 @@ pub const Kind = enum {
     episode,
     @"error",
     learning,
+    observation,
 };
 
 // Memory entry
@@ -182,4 +183,48 @@ pub fn getAllCellHealth(allocator: Allocator, days: usize) !CellHealthList {
     _ = allocator;
     _ = days;
     return CellHealthList{};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MemoryRecord — Extended memory entry for mu_error_protocol compatibility
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const MemoryRecord = struct {
+    id_buf: [32]u8 = undefined,
+    id_len: usize = 0,
+    agent_buf: [64]u8 = undefined,
+    agent_len: usize = 0,
+    data_buf: [256]u8 = undefined,
+    data_len: usize = 0,
+    summary_buf: [256]u8 = undefined,
+    summary_len: usize = 0,
+    tags: [2][64]u8 = undefined,
+    tag_lens: [2]usize = [_]usize{0} ** 2,
+    tag_count: usize = 0,
+    ts: u64 = 0,
+    kind: Kind = .observation,
+    ttl: u64 = 0,
+};
+
+/// Write memory record (stub implementation)
+pub fn write(allocator: Allocator, record: *const MemoryRecord) !void {
+    _ = allocator;
+    _ = record;
+    return error.NotImplemented;
+}
+
+/// Generate ID for memory record (stub implementation)
+pub fn generateId(id_buf: []u8, id_len: *usize, ts: u64, prefix: []const u8) void {
+    const id = std.fmt.allocPrint(std.heap.page_allocator, "{s}_{d}", .{ prefix, ts }) catch "unknown";
+    defer std.heap.page_allocator.free(id);
+    const max_len = @min(id.len, id_buf.len);
+    @memcpy(id_buf[0..max_len], id[0..max_len]);
+    id_len.* = max_len;
+}
+
+/// Copy string to fixed buffer (stub implementation)
+pub fn copyToFixed(max_len: usize, buf: []u8, len: *usize, src: []const u8) void {
+    const actual_len = @min(src.len, max_len);
+    @memcpy(buf[0..actual_len], src[0..actual_len]);
+    len.* = actual_len;
 }

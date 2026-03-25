@@ -13,9 +13,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const cell_parser = @import("ribosome.zig");
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 const registry_mod = @import("cytoplasm_registry.zig");
 const perf_mod = @import("cytoplasm_perf.zig");
 
@@ -3733,7 +3733,7 @@ fn runHealth(allocator: Allocator, args: []const []const u8) !void {
             hippocampus.writeCellHealth(allocator, .{
                 .cell_id = cell.id,
                 .cell_name = if (cell.name.len > 0) cell.name else cell.id,
-                .health_score = if (score > 100) @as(u8, 100) else @intCast(score),
+                .health_score = if (score > 100) @as(u8, 100) else @as(u8, @min(score, 255)),
                 .health_delta = 0, // TODO: track previous score for delta
                 .bio_system = bio_name,
                 .trigger = "scan",
