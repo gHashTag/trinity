@@ -461,12 +461,15 @@ All documentation files:
 6. **HACKATHON_EVALUATION_2025.md** — Industry practices
 7. **HACKATHON_ARC_AGI_2025.md** — AGI benchmarking
 8. **ZENODO_BEST_PRACTICES.md** — Publishing guide
-9. **ZENODO_BUNDLES.md** — Bundle catalog
-10. **CORRECTIONS_V7_5.md** — Bug fixes
-11. **AUTONOMOUS_CYCLE_PROGRESS.md** — Development progress
-12. **AUTONOMOUS_CYCLE_SUMMARY.md** — Cycle summary
+9. **ZENODO_SCIENTIFIC_TEMPLATE.md** — Complete submission template
+10. **ZENODO_BUNDLES.md** — Bundle catalog
+11. **CORRECTIONS_V7_5.md** — Bug fixes
+12. **STATISTICAL_ANALYSIS_GUIDE.md** — Statistical methods
+13. **SCIENTIFIC_PAPER_TEMPLATE.md** — Academic writing template
+14. **AUTONOMOUS_CYCLE_PROGRESS.md** — Development progress
+15. **AUTONOMOUS_CYCLE_SUMMARY.md** — Cycle summary
 
-**Total documentation**: ~6,000 LOC across 12 files
+**Total documentation**: ~8,200 LOC across 15 files
 
 ---
 
