@@ -177,11 +177,19 @@ This document summarizes the autonomous development cycle work done for the Goog
 ## Commit History
 
 ```
+1b0c7e docs(kaggle): update README to v7.5 (#415)
+fb83a8 docs(kaggle): add v7.5 corrections documentation (#415)
+d90fc4b docs(kaggle): update cycle summary with more completed fixes (#415)
+ab3bddc docs(research): add Zenodo scientific guide with code analysis (#415)
 a36890 fix(kaggle): remove arbitrary CI conversion in Min-K%++ (#415)
+dc353fc docs(research): update Zenodo publications with author Dmitrii Vasilev (#415)
+d81dc28 docs(kaggle): update cycle summary with completed P1 items (#415)
 efdced6 feat(kaggle): add BCa (bias-corrected accelerated) bootstrap CI (#415)
+214fc8 feat(tri-lang): TTT Dogfood v0.1 — effects island self-hosted (#415)
 2d19f2 feat(kaggle): add Brier score and ranked voting to calibration (#415)
-9c34080 docs(kaggle): add autonomous development cycle summary (#415)
-1aaa49e docs(kaggle): update author name to Dmitrii Vasilev in Zenodo best practices (#415)
+b94318 feat(tri-lang): TTT Dogfood v0.1 — linear_types island self-hosted (#415)
+9c3408 docs(kaggle): add autonomous development cycle summary (#415)
+1aaa49 docs(kaggle): update author name to Dmitrii Vasilev in Zenodo best practices (#415)
 4e4adef docs(kaggle): add AGI benchmarking with ARC-AGI 2025 (#415)
 ```
 
