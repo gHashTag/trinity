@@ -44,3 +44,6 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | agent:claude-opus | task:TDGS-3 | scope:t
 ```
 2026-03-24T20:14:08Z | agent:claude-opus | task:TDGS-3 | scope:tri27.coptic | action:"created coptic.zig enum with 26 registers + bank model" | commit:402cec4551
 2026-03-24T20:18:34Z | agent:claude-opus | task:TDGS-3 | scope:tri27.asm_parser | action:"lexer recognizes Coptic names as Register tokens" | commit:0a55229623
+[INFO] 2026-03-25 09:35:05: Created ANTI_IDLE.md with filesystem safety rules
+[OK] 2026-03-25 10:03:49: Fixed result_type.zig for Zig 0.15 - 8/8 tests passing, committed to #410
+[OK] 2026-03-25 10:24:42: Wave2 Step1 progress - added match() and TRI-27 lowering to Result type, 12/12 tests, 2 commits to #410

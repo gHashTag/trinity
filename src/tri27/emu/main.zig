@@ -13,7 +13,7 @@ const DEFAULT_MEMORY_SIZE: usize = 4096;
 /// Usage: tri-emu program.tbin
 pub fn main() !void {
     // Parse command line arguments
-    var args = try std.process.argsAlloc(std.heap.page_allocator);
+    const args = try std.process.argsAlloc(std.heap.page_allocator);
 
     if (args.len < 2) {
         std.debug.print("Usage: tri-emu program.tbin\n", .{});
@@ -30,11 +30,6 @@ pub fn main() !void {
     // Load .tbin file
     const file_data = try std.fs.cwd().readFileAlloc(std.heap.page_allocator, filepath, MAX_FILE_BYTES);
     defer std.heap.page_allocator.free(file_data);
-
-    if (file_data == LoadError) |value| {
-        std.debug.print("Error: {}\n", .{file_data});
-        std.os.exit(1);
-    }
 
     // Load and execute program
     try loader.load(&cpu, &file_data, &[_]f64{});

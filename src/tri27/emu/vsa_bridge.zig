@@ -139,7 +139,7 @@ pub const VSARegFile = struct {
 
         if (norm_a == 0 or norm_b == 0) return 0.0;
 
-        const sim: f64 = @floatFromInt(dot) / @sqrt(@floatFromInt(norm_a) * @floatFromInt(norm_b));
+        const sim: f64 = @as(f64, @floatFromInt(dot)) / @sqrt(@as(f64, @floatFromInt(norm_a)) * @as(f64, @floatFromInt(norm_b)));
         return std.math.clamp(sim, -1.0, 1.0);
     }
 

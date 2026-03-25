@@ -73,31 +73,31 @@ pub const CPUState = struct {
 
     /// Get ternary register value
     pub fn getT27(self: *CPUState, reg: u5) Trit27 {
-        std.debug.assert(reg < 27, "Invalid ternary register index");
+        std.debug.assert(reg < 27);
         return self.t27[reg];
     }
 
     /// Set ternary register value
     pub fn setT27(self: *CPUState, reg: u5, value: Trit27) void {
-        std.debug.assert(reg < 27, "Invalid ternary register index");
+        std.debug.assert(reg < 27);
         self.t27[reg] = value;
     }
 
     /// Get GF16 register value
     pub fn getF16(self: *CPUState, reg: u4) u16 {
-        std.debug.assert(reg < 8, "Invalid GF16 register index");
+        std.debug.assert(reg < 8);
         return self.f[reg];
     }
 
     /// Set GF16 register value
     pub fn setF16(self: *CPUState, reg: u4, value: u16) void {
-        std.debug.assert(reg < 8, "Invalid GF16 register index");
+        std.debug.assert(reg < 8);
         self.f[reg] = value;
     }
 
     /// Get vector register value
     pub fn getVec(self: *CPUState, reg: u4) []const u16 {
-        std.debug.assert(reg < 16, "Invalid vector register index");
+        std.debug.assert(reg < 16);
         return &self.v[reg];
     }
 
