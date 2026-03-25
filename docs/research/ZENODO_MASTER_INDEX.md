@@ -1,15 +1,18 @@
-# Trinity Zenodo Publications — Master Index (v3.0)
+# Trinity Zenodo Publications — Master Index (v3.1)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
+**Updated:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v3.0
+## What's New in v3.1
 
-- **16,078 lines of documentation** across 33+ files
-- **1.6 MB of scientific content**
+- **16,500+ lines of documentation** across 35+ files
+- **1.8 MB of scientific content**
 - All 7 bundles + parent collection ready
-- **FINAL_STATUS_REPORT.md** — Complete publication readiness report
+- **TERNARY_ATTENTION_ANALYSIS.md** — Mathematical foundation of ternary attention
+- **SIMD_TERNARY_ARCHITECTURE.md** — SIMD vectorization analysis (17.2× speedup)
+- **66 discovery publications** with complete defensive documentation
 - **Status: ✅ READY FOR ZENODO PUBLICATION**
 
 ## Main Documentation
