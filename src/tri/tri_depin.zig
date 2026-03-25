@@ -901,14 +901,14 @@ fn runRewardsCommand(allocator: Allocator, args: []const []const u8) !void {
 
     var total_pending: f64 = 0.0;
     for (mock_rewards) |r| {
-        print("  {s:<14}  {s}{d:>10.6f}{s}   {d:.1f}x\n", .{
+        print("  {s:<14}  {s}{d:>10.6}{s}   {d:.1}x\n", .{
             r.stake_id, GREEN, r.amount_tri, RESET, r.lock_mult,
         });
         total_pending += r.amount_tri;
     }
 
     print("  {s}─────────────  ────────────  ───────────────{s}\n", .{ DIM, RESET });
-    print("  {s}TOTAL:         {s}{d:>10.6f} TRI{s}\n\n", .{
+    print("  {s}TOTAL:         {s}{d:>10.6} TRI{s}\n\n", .{
         BOLD, GREEN, total_pending, RESET,
     });
 
