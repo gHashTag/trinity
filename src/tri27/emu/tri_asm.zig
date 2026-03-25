@@ -140,10 +140,9 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
 
     if (std.mem.eql(u8, op_lower, "jgt")) {
         // JGT src1, src2, offset/label (jump if greater than)
-        // ENCODING: Pack operands into immediate field to avoid overlap
-        // Bits 17-21: second operand (5 bits)
-        // Bits 22-26: first operand (5 bits)
-        // Bits 27-31: jump target (5 bits)
+        // ENCODING: Use dst for src1, ensure immediate lower 5 bits are 0 to avoid corrupting src1
+        // src2 is stored in src2 field (bits 18-22, which overlap with immediate bits 18-22)
+        // To avoid corruption, we require src2 to be in lower 5 bits of immediate
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src1_str = std.mem.trim(u8, it2.first(), " \t");
         const rest2 = std.mem.trim(u8, it2.rest(), " \t");
@@ -156,15 +155,16 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
         const src2 = try parseRegister(src2_str);
         const target_addr = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
-        // Pack: [second_op(5) | first_op(5) | target(5)]
-        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, @intCast(src1)) << 5) | (@as(i16, target_addr) << 10);
+        // Encode: put src2 in lower 5 bits of immediate, target in upper bits
+        // immediate = src2 | (target_addr << 5)
+        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, target_addr) << 5);
 
         return .{
             encode(Instruction{
                 .opcode = Opcode.JGT,
-                .dst = 0,
-                .src1 = 0,
-                .src2 = 0,
+                .dst = src1, // First comparison operand
+                .src1 = 0, // Unused (overlaps with immediate)
+                .src2 = 0, // Second operand is in immediate
                 .immediate = packed_immediate,
                 .has_imm = true,
             }),
@@ -187,14 +187,14 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *con
         const src2 = try parseRegister(src2_str);
         const target_addr = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
-        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, @intCast(src1)) << 5) | (@as(i16, target_addr) << 10);
+        const packed_immediate: i16 = @as(i16, @intCast(src2)) | (@as(i16, target_addr) << 5);
 
         return .{
             encode(Instruction{
                 .opcode = Opcode.JLT,
-                .dst = 0,
-                .src1 = 0,
-                .src2 = 0,
+                .dst = src1, // First comparison operand
+                .src1 = 0, // Unused (overlaps with immediate)
+                .src2 = 0, // Second operand is in immediate
                 .immediate = packed_immediate,
                 .has_imm = true,
             }),

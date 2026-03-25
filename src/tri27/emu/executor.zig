@@ -566,13 +566,11 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         // CONDITIONAL JUMP INSTRUCTIONS
         // ═════════════════════════════════════════════════════════════════════════════
         .JGT => {
-            // Jump if first_op > second_op (signed comparison)
-            // ENCODING: immediate contains [second_op(5) | first_op(5) | target(5)]
-            const imm_unsigned = @as(u16, @bitCast(inst.immediate));
-            const second_op: u5 = @truncate(imm_unsigned & 0x1F);
-            const first_op: u5 = @truncate((imm_unsigned >> 5) & 0x1F);
-            const target_addr: u32 = @intCast((imm_unsigned >> 10) & 0x1F);
-            const src1_val = cpu.t27[first_op];
+            // Jump if dst > second_op (signed comparison)
+            // ENCODING: dst = first operand, immediate lower 5 bits = second operand, immediate upper bits = target
+            const second_op: u5 = @truncate(@as(u16, @bitCast(inst.immediate)) & 0x1F);
+            const target_addr: u32 = @intCast(@as(i16, @intCast(inst.immediate >> 5)));
+            const src1_val = cpu.t27[inst.dst];
             const src2_val = cpu.t27[second_op];
             if (src1_val.trits > src2_val.trits) {
                 cpu.pc = target_addr;
@@ -582,13 +580,11 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         .JLT => {
-            // Jump if first_op < second_op (signed comparison)
+            // Jump if dst < second_op (signed comparison)
             // Same encoding as JGT
-            const imm_unsigned = @as(u16, @bitCast(inst.immediate));
-            const second_op: u5 = @truncate(imm_unsigned & 0x1F);
-            const first_op: u5 = @truncate((imm_unsigned >> 5) & 0x1F);
-            const target_addr: u32 = @intCast((imm_unsigned >> 10) & 0x1F);
-            const src1_val = cpu.t27[first_op];
+            const second_op: u5 = @truncate(@as(u16, @bitCast(inst.immediate)) & 0x1F);
+            const target_addr: u32 = @intCast(@as(i16, @intCast(inst.immediate >> 5)));
+            const src1_val = cpu.t27[inst.dst];
             const src2_val = cpu.t27[second_op];
             if (src1_val.trits < src2_val.trits) {
                 cpu.pc = target_addr;
