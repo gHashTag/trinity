@@ -175,7 +175,7 @@ pub fn foldRight(comptime T: type, array: []const T, init: T, op: fn (T, T) T) T
     var i: isize = @intCast(array.len);
     while (i > 0) {
         i -= 1;
-        acc = op(array[i], acc);
+        acc = op(array[@intCast(i)], acc);
     }
     return acc;
 }
@@ -187,8 +187,9 @@ pub fn foldRight(comptime T: type, array: []const T, init: T, op: fn (T, T) T) T
 /// Zip two arrays into pairs
 /// zip([a1, a2], [b1, b2]) -> [(a1, b1), (a2, b2)]
 pub fn zip(comptime T: type, comptime U: type, allocator: std.mem.Allocator, a: []const T, b: []const U) ![]struct { first: T, second: U } {
+    const Pair = struct { first: T, second: U };
     const len = @min(a.len, b.len);
-    const result = try allocator.alloc(struct { first: T, second: U }, len);
+    const result = try allocator.alloc(Pair, len);
 
     for (0..len) |i| {
         result[i] = .{ .first = a[i], .second = b[i] };
@@ -316,7 +317,7 @@ pub fn takeWhile(comptime T: type, allocator: std.mem.Allocator, array: []const 
 }
 
 /// DropWhile predicate
-pub fn dropWhile(comptime T: type, allocator: std.mem.Allocator, array: []const T, pred: fn (T) bool) ![]U {
+pub fn dropWhile(comptime T: type, allocator: std.mem.Allocator, array: []const T, pred: fn (T) bool) ![]T {
     var start: usize = 0;
     for (array) |item| {
         if (!pred(item)) break;
@@ -367,7 +368,7 @@ fn double(x: i32) i32 {
 }
 
 fn isEven(x: i32) bool {
-    return x % 2 == 0;
+    return @rem(x, 2) == 0;
 }
 
 fn dup(x: i32) []const i32 {
