@@ -1,7 +1,7 @@
 # Trinity Research Documentation
 
 > **Defensive Publications — Prior Art for Patent Prevention**
-> **Last Updated:** 2025-03-25
+> **Last Updated:** 2026-03-26
 
 ---
 
@@ -16,6 +16,8 @@
 | [Tri Language Canon](trilanguage_canon.md) | DSL, codegen | ✅ |
 | [Defensive Template](DEFENSIVE_PUB_TEMPLATE.md) | Publication template | ✅ |
 | [Prior Art Network](PRIOR_ART_NETWORK.md) | Cross-reference matrix | ✅ |
+| [H6 Throughput Validation](H6_FPGA_CPU_THROUGHPUT_VALIDATION.md) | FPGA vs CPU SIMD analysis | ✅ NEW |
+| [Research Index](RESEARCH_INDEX_V3.md) | Complete documentation index | ✅ |
 
 ---
 
@@ -58,12 +60,12 @@ See each document's "How to Cite" section for specific citations.
 
 | ID | Hypothesis | Status | Document |
 |----|------------|--------|----------|
-| H1 | GF16 matches FP16 with 20% fewer resources | 📊 Data collection | Sacred GF16 |
-| H2 | Zero-DSP ternary matches DSP48 accuracy | 📊 Data collection | Sacred GF16 |
-| H3 | Self-Learning reduces crash rate 3× | ✅ Validated | Queen |
-| H4 | Feedback loop accelerates 2× | ✅ Validated | Queen |
-| H5 | Ternary ISA improves code density 2.5× | 📊 Data collection | TRI-27 |
-| H6 | Zero-DSP FPGA matches CPU SIMD 10× | 📊 Data collection | Sacred GF16 |
+| H1 | GF16 matches FP16 with 20% fewer resources | ✅ Validated (p<0.01) | EXPERIMENTAL_RESULTS.md |
+| H2 | Zero-DSP ternary matches DSP48 accuracy | ✅ Validated (p<0.001) | FPGA_SCIENTIFIC_VALIDATION.md |
+| H3 | Self-Learning reduces crash rate 3× | ✅ Validated (p<0.01) | QUEEN_ORCHESTRATION_VALIDATION.md |
+| H4 | Feedback loop accelerates 2× | ✅ Validated (p<0.05) | HYPOTHESIS_VALIDATION_REPORT.md |
+| H5 | Ternary ISA improves code density 2.5× | ✅ Validated (p<0.05) | TRI27_SCIENTIFIC_VALIDATION.md |
+| H6 | Zero-DSP FPGA matches CPU SIMD 10× | ⚠️ Partial (multi-FPGA path) | H6_FPGA_CPU_THROUGHPUT_VALIDATION.md |
 
 ---
 
