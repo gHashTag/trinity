@@ -2,6 +2,7 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
+const array_list = std.array_list;
 
 pub const TypeId = u32;
 
@@ -114,9 +115,10 @@ pub const Type = union(enum) {
         };
     }
 
-    pub fn ftv(self: *const Type, allocator: std.mem.Allocator) !std.ArrayList(TypeId) {
-        var result = std.ArrayList(TypeId).init(allocator);
-        try self.ftvAppend(&result);
+    pub fn ftv(self: *const Type, allocator: std.mem.Allocator) !array_list.Managed(TypeId) {
+        var result = array_list.Managed(TypeId).init(allocator);
+        defer result.deinit();
+        try self.ftvAppend(allocator, &result);
         std.sort.insertion(TypeId, result.items, {}, comptime std.sort.asc(TypeId));
         var i: usize = 1;
         while (i < result.items.len) {
@@ -129,18 +131,18 @@ pub const Type = union(enum) {
         return result;
     }
 
-    fn ftvAppend(self: *const Type, list: *std.ArrayList(TypeId)) !void {
+    fn ftvAppend(self: *const Type, allocator: std.mem.Allocator, list: *array_list.Managed(TypeId)) !void {
         switch (self.*) {
             .Var => |id| try list.append(id),
             .Fn => |fn_data| {
                 for (fn_data.params.items) |*param| {
-                    try param.ftvAppend(list);
+                    try param.ftvAppend(allocator, list);
                 }
-                try fn_data.return_type.ftvAppend(list);
+                try fn_data.return_type.ftvAppend(allocator, list);
             },
             .ADT => |adt_data| {
                 for (adt_data.type_args.items) |*arg| {
-                    try arg.ftvAppend(list);
+                    try arg.ftvAppend(allocator, list);
                 }
             },
             .Unit, .Bool, .Int, .Float => {},
@@ -201,7 +203,7 @@ test "Type.ftv primitive" {
     int_t.* = .Int;
 
     const ftv = try int_t.ftv(allocator);
-    defer ftv.deinit(allocator);
+    defer ftv.deinit();
     try std.testing.expectEqual(@as(usize, 0), ftv.items.len);
 }
 
