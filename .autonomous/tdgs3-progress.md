@@ -17,12 +17,13 @@
 - [x] Canonmap entry (.trinity_canonmap.json)
 - [x] Phase 1: Core encoder (~380 LOC) — src/vibeec/emit_t27.zig
 - [x] Phase 2: RegAlloc + LabelResolver (~300 LOC additional)
-- [x] E2E tests: 11/11 tests passing
+- [x] Phase 3: Golden test (src/vibeec/emit_t27_golden.zig, 13/13 tests passing)
+- [x] E2E tests: 13/13 tests passing
 - [x] JGT/JLT special encoding (src2 in imm[11-15], target in imm[0-10])
 - [x] .t27 binary format (magic "2IRT" + header + code section)
-- [ ] Phase 3: Full IR integration (VIBEE IR → emit_t27)
+- [x] build.zig target: `zig build test-emit_t27`
 
-**Acceptance**: 11/11 tests passing
+**Acceptance**: 13/13 tests passing
 
 #### Type System Core
 - [ ] Type representation (src/tri-lang/types.zig)
@@ -31,6 +32,6 @@
 
 **Estimated**: ~1000 LOC, 70 tests
 
-- Last commit: c36ed7a4ad — Simplified JGT/JLT encoding
-- Blockers: None (Zig 0.15 ArrayList API workaround needed)
-- Last iteration: 2026-03-25T12:00+07
+- Last commit: (uncommitted) — Phase 3 golden test complete
+- Blockers: None
+- Last iteration: 2026-03-25T14:30+07

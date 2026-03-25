@@ -395,7 +395,6 @@ test "subst extend and lookup" {
         try std.testing.expect(t == .Int);
     }
 }
-
 test "unify function types" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
@@ -404,8 +403,10 @@ test "unify function types" {
     const return_ptr = try allocator.create(Type);
     return_ptr.* = .Int;
 
+    // Use empty and ensureTotalCapacity for unmanaged ArrayList
     var params = std.ArrayList(Type).empty;
-    try params.append(allocator, return_ptr.*);
+    try params.ensureTotalCapacity(allocator, 1);
+    params.appendAssumeCapacity(.Int);
 
     const fn1 = try allocator.create(Type);
     fn1.* = .{ .Fn = .{
@@ -414,7 +415,7 @@ test "unify function types" {
     } };
     defer {
         // Manual cleanup to avoid double-free issues
-        fn1.Fn.params.deinit(allocator);
+        params.deinit(allocator);
         allocator.destroy(fn1.Fn.return_type);
         allocator.destroy(fn1);
     }

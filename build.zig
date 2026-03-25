@@ -425,6 +425,20 @@ pub fn build(b: *std.Build) void {
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
     test_step.dependOn(&run_vibeec_tests.step);
 
+    // emit_t27 golden tests — Phase 3 E2E validation
+    const emit_t27_golden_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/emit_t27_golden.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_emit_t27_golden_tests = b.addRunArtifact(emit_t27_golden_tests);
+    test_step.dependOn(&run_emit_t27_golden_tests.step);
+
+    const emit_t27_test_step = b.step("test-emit_t27", "Run emit_t27 golden tests");
+    emit_t27_test_step.dependOn(&run_emit_t27_golden_tests.step);
+
     // TRI-TRACE tests (DEV-001)
     const trace_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -828,6 +842,23 @@ pub fn build(b: *std.Build) void {
     });
     const run_staking_tests = b.addRunArtifact(staking_tests);
     test_step.dependOn(&run_staking_tests.step);
+
+    // dePIN Economic Invariants — Property-based E2E tests
+    const depin_invariants_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/invariants.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+            .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+        },
+    });
+    const depin_invariants_tests = b.addTest(.{
+        .root_module = depin_invariants_mod,
+    });
+    const run_depin_invariants_tests = b.addRunArtifact(depin_invariants_tests);
+    test_step.dependOn(&run_depin_invariants_tests.step);
 
     // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
     const api_tests = b.addTest(.{
