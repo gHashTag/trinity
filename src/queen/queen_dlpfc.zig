@@ -15,38 +15,31 @@ const array_list = std.array_list;
 
 const qt = @import("queen_types.zig");
 
-// TRI zone imports (individual named modules)
-const thalamus = @import("thalamus");
+// TRI zone imports (from named modules - files in src/tri/)
 const voice_engine = @import("voice_engine");
-const cerebellum = @import("cerebellum");
-const insula = @import("insula");
-const faculty_cortex = @import("cortex");
-const faculty_types = @import("faculty_types");
+
+// Q-zone imports (files in src/queen/)
+const thalamus = @import("thalamus.zig");
+const cerebellum = @import("cerebellum.zig");
+const insula = @import("insula.zig");
+const faculty_cortex = @import("cortex.zig");
+const faculty_types = @import("faculty_types.zig");
+const phoenix_medulla = @import("phoenix_medulla.zig");
+const phoenix_pons = @import("phoenix_pons.zig");
 
 // Brain zone imports (named modules)
 const basal_ganglia = @import("basal_ganglia");
 const locus_coeruleus = @import("locus_coeruleus");
 const reticular_formation = @import("reticular_formation");
 
-// FIXME: Q-zone migration debt — brain.zig relative import until Wave 3
-const brain = @import("../brain/brain.zig");
-
 // Phoenix subsystem (brain stem) aliases
 const phoenix_locus_coeruleus = locus_coeruleus;
-const phoenix_medulla = reticular_formation;
-const phoenix_pons = reticular_formation;
 
 // Queen zone imports
 const queen_actions = @import("queen_actions.zig");
 const queen_ofc = @import("queen_ofc.zig");
 const queen_policy = @import("queen_policy.zig");
 const queen_vmpfc = @import("queen_vmpfc.zig");
-
-// S³AI Brain Module Integration
-const Brain = brain.Brain;
-const WorkerLiveState = brain.WorkerLiveState;
-const SafetyVerdict = brain.SafetyVerdict;
-const ACCAction = brain.Action;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DECISION — What Queen wants to do
@@ -688,7 +681,7 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
         // FIXME: Full token health check requires Railway API validation (401/403 detection)
         // For now, just count env vars - this doesn't detect expired tokens, only missing ones
         {
-            const farm_accounts = @import("farm_accounts");
+            const farm_accounts = @import("../tri/farm_accounts.zig");
             var account_buf: [farm_accounts.MAX_ACCOUNTS]farm_accounts.Account = undefined;
             const token_count = farm_accounts.discoverAccounts(ctx.allocator, &account_buf);
             farm_accounts.deinitAccounts(ctx.allocator, &account_buf, token_count);

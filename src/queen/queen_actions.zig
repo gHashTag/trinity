@@ -184,14 +184,18 @@ pub fn recordAutoAction(state: *qt.QueenState, kind: ActionKind, counters: *quee
 // TTY — Print action result
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ANSI colors (local definition to avoid tri_colors module conflict)
+const RESET = "\x1b[0m";
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+
 pub fn printActionResult(kind: ActionKind, result: ActionResult) void {
-    const colors = @import("tri_colors");
     print("\n{s}{s} {s} — {s}{s}\n", .{
-        if (result.success) colors.GREEN else colors.RED,
+        if (result.success) GREEN else RED,
         kind.emojiIcon(),
         kind.label(),
         if (result.success) "OK" else "FAIL",
-        colors.RESET,
+        RESET,
     });
     print("  Duration: {d}ms\n", .{result.duration_ms});
     if (result.output_len > 0) {

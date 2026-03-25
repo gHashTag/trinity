@@ -2304,68 +2304,13 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const faculty_types_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/faculty_types.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const cortex_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/cortex.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const thalamus_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/thalamus.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
+    // phoenix_medulla, phoenix_pons are in src/queen/
+    // (Q-zone migration debt). Queen files import them directly.
     const voice_engine_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/voice_engine.zig"),
         .target = target,
         .optimize = optimize,
-    });
-    const cerebellum_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/cerebellum.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const insula_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/insula.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const phoenix_medulla_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/phoenix_medulla.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const phoenix_pons_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/phoenix_pons.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const github_client_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/github_client.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const github_app_auth_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/github_app_auth.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const farm_accounts_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/farm_accounts.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const hippocampus_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/hippocampus.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "agent_roles", .module = agent_roles_mod },
-        },
     });
 
     // Eval module — E-zone type checking, validation
@@ -2424,21 +2369,15 @@ pub fn build(b: *std.Build) void {
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
-            // TRI modules
-            .{ .name = "tri_colors", .module = tri_colors_mod },
+            // TRI modules (files that exist in src/tri/)
             .{ .name = "agent_roles", .module = agent_roles_mod },
-            .{ .name = "faculty_types", .module = faculty_types_mod },
-            .{ .name = "cortex", .module = cortex_mod },
-            .{ .name = "thalamus", .module = thalamus_mod },
             .{ .name = "voice_engine", .module = voice_engine_mod },
-            .{ .name = "cerebellum", .module = cerebellum_mod },
-            .{ .name = "insula", .module = insula_mod },
-            .{ .name = "phoenix_medulla", .module = phoenix_medulla_mod },
-            .{ .name = "phoenix_pons", .module = phoenix_pons_mod },
-            .{ .name = "github_client", .module = github_client_mod },
-            .{ .name = "github_app_auth", .module = github_app_auth_mod },
-            .{ .name = "farm_accounts", .module = farm_accounts_mod },
-            .{ .name = "hippocampus", .module = hippocampus_mod },
+            // NOTE: github_client, github_app_auth, farm_accounts, tri_colors, hippocampus
+            // cause module conflicts with tri executable
+            // Queen files import them via relative paths to avoid conflicts
+            // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
+            // phoenix_medulla, phoenix_pons are in src/queen/
+            // Queen files import them directly from same directory
         },
     });
 

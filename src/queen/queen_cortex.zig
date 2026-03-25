@@ -168,7 +168,7 @@ test "CellHealth struct has all 6 PFC cell fields" {
 test "integration with faculty_types FacultySnapshot pattern" {
     // Verify queen_cortex can work alongside faculty_types
     // FacultySnapshot has agents array, CellHealth has similar pattern
-    const faculty_types = @import("faculty_types");
+    const faculty_types = @import("faculty_types.zig");
 
     // Verify we can create FacultySnapshot instances
     // (This test just checks type compatibility at compile time)

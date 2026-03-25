@@ -24,8 +24,8 @@ const CheckpointInfo = types.CheckpointInfo;
 const TrainLogEntry = types.TrainLogEntry;
 const Sacred = types.Sacred;
 
-// S³AI Brain modules
-const brain = @import("../brain/brain.zig");
+// S³AI Brain modules - brain is imported as a module dependency in build.zig
+const brain = @import("brain");
 const Thalamus = brain.Thalamus;
 const WorkerLiveState = brain.WorkerLiveState;
 const LiveStatus = brain.LiveStatus;

@@ -222,14 +222,23 @@ const StateFingerprint = struct {
 
             // Bucket by amount (in TRI)
             const tri = stake.amount / TRI_WEI;
-            if (tri < 100) fp.stake_buckets[0] += 1;
-            else if (tri < 1_000) fp.stake_buckets[1] += 1;
-            else if (tri < 10_000) fp.stake_buckets[2] += 1;
-            else if (tri < 100_000) fp.stake_buckets[3] += 1;
-            else if (tri < 1_000_000) fp.stake_buckets[4] += 1;
-            else if (tri < 10_000_000) fp.stake_buckets[5] += 1;
-            else if (tri < 100_000_000) fp.stake_buckets[6] += 1;
-            else fp.stake_buckets[7] += 1;
+            if (tri < 100) {
+                fp.stake_buckets[0] += 1;
+            } else if (tri < 1_000) {
+                fp.stake_buckets[1] += 1;
+            } else if (tri < 10_000) {
+                fp.stake_buckets[2] += 1;
+            } else if (tri < 100_000) {
+                fp.stake_buckets[3] += 1;
+            } else if (tri < 1_000_000) {
+                fp.stake_buckets[4] += 1;
+            } else if (tri < 10_000_000) {
+                fp.stake_buckets[5] += 1;
+            } else if (tri < 100_000_000) {
+                fp.stake_buckets[6] += 1;
+            } else {
+                fp.stake_buckets[7] += 1;
+            }
         }
 
         // Capture health distribution
@@ -264,7 +273,7 @@ const StateFingerprint = struct {
         std.hash.autoHashStrat(self.unique_addresses, &hasher);
         std.hash.autoHashStrat(self.slash_rate_x1000, &hasher);
 
-        return @bitCast(u64, hasher.final());
+        return @as(u128, @bitCast(hasher.final()));
     }
 
     /// Get coverage score (higher = more unique states)
@@ -281,10 +290,13 @@ const StateFingerprint = struct {
         }
 
         // Score = (stake diversity + health diversity + has addresses + has slashes) / 11
+        const has_addresses: f32 = if (self.unique_addresses > 0) 1.0 else 0.0;
+        const has_slashes: f32 = if (self.slash_rate_x1000 > 0) 1.0 else 0.0;
+
         const numerator = @as(f32, @floatFromInt(stake_diversity)) +
                          @as(f32, @floatFromInt(health_diversity)) +
-                         if (self.unique_addresses > 0) 1.0 else 0.0 +
-                         if (self.slash_rate_x1000 > 0) 1.0 else 0.0;
+                         has_addresses +
+                         has_slashes;
 
         return numerator / 11.0;
     }
@@ -448,7 +460,7 @@ pub const FailingSequence = struct {
             const random = rng.random();
 
             // Apply first half of operations
-            for (self.ops.items[0..half]) |op| {
+            for (self.ops.items[0..half]) |_| {
                 applyRandomOp(&test_state, random);
             }
 
@@ -854,7 +866,7 @@ test "dePIN invariants v3: state fingerprint diversity" {
     var state = TestState.init(allocator);
     defer state.deinit();
 
-    var rng = std.Random.DefaultPrng.init(0xD1VERS3);
+    var rng = std.Random.DefaultPrng.init(0xD1VER53);
     const random = rng.random();
 
     // Generate diverse states
@@ -982,7 +994,7 @@ test "dePIN invariants v3: causality invariant" {
     var state = TestState.init(allocator);
     defer state.deinit();
 
-    var rng = std.Random.DefaultPrng.init(0xCAUS4L1TY);
+    var rng = std.Random.DefaultPrng.init(0xCAUS41TY);
     const random = rng.random();
 
     // Build up history with diverse operations

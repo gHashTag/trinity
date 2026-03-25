@@ -591,7 +591,7 @@ pub const StateMachineExecutor = struct {
         defer executor.allocator.free(addr_hex);
 
         if (executor.real_state.reputation.metrics.get(addr_hex)) |metrics| {
-            const health = metrics.getHealth();
+            const health = metrics.getHealthFloat();
             if (health < 0.0 or health > 1.0) {
                 std.debug.print("Health out of bounds: {d:.2}\n", .{health});
                 return error.HealthClusterMismatch;
@@ -752,7 +752,7 @@ test "State Machine v2: full state verification" {
     var executor = StateMachineExecutor.init(allocator);
     defer executor.deinit();
 
-    var gen = CommandGenerator.init(0xFULL_V3R1FY);
+    var gen = CommandGenerator.init(0xFULLVER1);
 
     // Execute 50 commands
     var i: usize = 0;

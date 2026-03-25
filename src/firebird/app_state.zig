@@ -222,7 +222,6 @@ pub const AppState = struct {
     /// Get current revenue (from real economic tracking)
     /// For testing: can fall back to 5% floor if no real revenue accumulated
     pub fn getRevenue(self: *const AppState) u128 {
-        _ = self;
         // In production: sum from RevenueTracker
         // For testing: 5% floor to prevent ponzinomics
         return self.getEmissionTotal() / 20; // 5% floor
@@ -253,6 +252,7 @@ pub const AppState = struct {
     /// Get revenue from a specific source
     pub fn getRevenueSource(self: *const AppState, source: RevenueSource) u128 {
         _ = self;
+        _ = source;
         // For now, return 0 (real revenue tracking requires persistent state)
         // In production, this would read from revenue_tracker
         return 0;

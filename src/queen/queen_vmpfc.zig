@@ -11,7 +11,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
-const thalamus = @import("thalamus");
+const thalamus = @import("thalamus.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // VALUE ASSESSMENT — "Is this action worth it?"

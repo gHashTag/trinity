@@ -355,7 +355,7 @@ fn cmdExecute(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("───────────────────────────────────────────────────────────────\n", .{});
 
     // Create a "default" fingerprint to compare against
-    var default_fp = try vsa.TritVec.random(allocator, opts.dim, 0);
+    var default_fp = try firebird_vsa.TritVec.random(allocator, opts.dim, 0);
     defer default_fp.deinit();
 
     const default_sim = vsa_simd.cosineSimilaritySimd(&nav.position, &default_fp);
@@ -762,7 +762,7 @@ fn cmdInfo() !void {
     std.debug.print("CONSTANTS:\n", .{});
     std.debug.print("  φ (PHI):          {d:.10}\n", .{firebird.PHI});
     std.debug.print("  φ² + 1/φ²:        {d:.10} (= TRINITY)\n", .{firebird.PHI * firebird.PHI + 1.0 / (firebird.PHI * firebird.PHI)});
-    std.debug.print("  Default DIM:      {d}\n", .{vsa.DIM});
+    std.debug.print("  Default DIM:      {d}\n", .{firebird_vsa.DIM});
     std.debug.print("\n", .{});
     std.debug.print("EVOLUTION PARAMETERS:\n", .{});
     std.debug.print("  μ (mutation):     {d:.4}\n", .{firebird.MU});
