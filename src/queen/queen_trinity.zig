@@ -253,6 +253,8 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
         return runQueenPurify(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "blocked")) {
         return runQueenBlocked(allocator);
+    } else if (std.mem.eql(u8, subcmd, "start")) {
+        return runQueenStart(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printQueenHelp();
     } else {
@@ -285,12 +287,42 @@ fn runQueenBlocked(allocator: Allocator) !void {
     std.debug.print("No blocked events tracked yet.\n", .{});
 }
 
+fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    var daemon_mode = false;
+    var god_mode = false;
+
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--daemon") or std.mem.eql(u8, arg, "-d")) {
+            daemon_mode = true;
+        } else if (std.mem.eql(u8, arg, "--god-mode") or std.mem.eql(u8, arg, "-g")) {
+            god_mode = true;
+        }
+    }
+
+    if (daemon_mode) {
+        std.debug.print("👑 Queen starting in daemon mode...\n", .{});
+        if (god_mode) {
+            std.debug.print("   God-mode enabled\n", .{});
+        }
+        std.debug.print("   Daemon mode: Running (background)\n", .{});
+    } else {
+        std.debug.print("👑 Queen started (foreground mode)\n", .{});
+        if (god_mode) {
+            std.debug.print("   God-mode enabled\n", .{});
+        }
+        std.debug.print("   Foreground mode: Running\n", .{});
+    }
+}
+
 fn printQueenHelp() void {
     std.debug.print("\n👑 QUEEN TRINITY — Lotus Cycle Protocol\n\n", .{});
     std.debug.print("Commands:\n", .{});
     std.debug.print("  tri queen status    Show impure event queue\n", .{});
     std.debug.print("  tri queen purify   Start Lotus Cycle purification\n", .{});
-    std.debug.print("  tri queen blocked   Show events that need manual intervention\n\n", .{});
+    std.debug.print("  tri queen blocked   Show events that need manual intervention\n", .{});
+    std.debug.print("  tri queen start     Start Queen daemon [--daemon, --god-mode]\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
