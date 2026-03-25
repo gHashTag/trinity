@@ -54,3 +54,4 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) | agent:claude-opus | task:TDGS-3 | scope:t
 2026-03-25T04:36:36Z | agent:claude-opus | task:TDGS-3 | scope:tri-lang.parser | action:"Fixed Zig 0.15 defer compatibility in parsePrimaryExpr" | commit:004ba8e227
 2026-03-25T04:43:08Z | agent:claude-opus | task:TDGS-3 | scope:tri-lang.types | action:"Created Wave 2 Type System Core (Hindley-Milner)" | commit:7702517c48
 2026-03-25T04:45:49Z | agent:claude-opus | task:TDGS-3 | scope:tests.tri27 | action:"Added reticular_raphe expected output test" | commit:f6e11b810c
+2026-03-25T04:49:36Z | agent:claude-opus | task:TDGS-3 | scope:zig-0.15-compat | action:"Fixed std.sort.sort, std.log.scoped across storm/bsd modules" | commit:c601b5a7c9
