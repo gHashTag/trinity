@@ -34,8 +34,9 @@ pub fn validateBankUsage(regs: [27]u5) !void {
     }
 
     // Validate each bank has exactly 9 registers
-    for (bank_counts, 0..) |count| {
+    for (bank_counts, 0..) |count, i| {
         if (count != 9) {
+            std.debug.print("Bank {d} has {d} registers (expected 9)\n", .{ i, count });
             return error.InvalidBankNumber;
         }
     }
