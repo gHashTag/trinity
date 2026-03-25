@@ -1967,18 +1967,10 @@ struct ChatScreen: View {
 
     private var inputBarView: some View {
         HStack(spacing: ParietalSpacing.md) {
-            MultilineInput(
+            SimpleMultilineInput(
                 text: $input,
                 placeholder: placeholder,
-                isFocused: $focused,
-                onSubmit: { send() },
-                onImagePaste: { name, path in
-                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
-                },
-                onMentionTrigger: { query in
-                    mentionQuery = query ?? ""
-                    showMentionPopup = query != nil
-                }
+                onSubmit: { send() }
             )
             .frame(width: 600)  // FIXED: fixed width prevents layout jitter
             .layoutPriority(1)
@@ -5057,8 +5049,10 @@ struct EmptyThreadView: View {
 }
 
 // MARK: - Multiline Input (Enter sends, Shift+Enter inserts newline)
+// ARCHIVED - Broken since Mar 23, 2025 - Kept for reference only
+// Use SimpleMultilineInput instead
 
-struct MultilineInput: NSViewRepresentable {
+struct MultilineInputLegacy: NSViewRepresentable {
     @Binding var text: String
     var placeholder: String
     var isFocused: FocusState<Bool>.Binding
@@ -5337,6 +5331,44 @@ struct MultilineInput: NSViewRepresentable {
             placeholderLayer?.string = placeholder
             placeholderLayer?.frame = CGRect(x: 5, y: 0, width: textView.bounds.width - 10, height: ParietalSpacing.iconHeight)
             placeholderLayer?.isHidden = !text.isEmpty
+        }
+    }
+}
+
+// MARK: - Simple Multiline Input (Pure SwiftUI replacement)
+
+struct SimpleMultilineInput: View {
+    @Binding var text: String
+    var placeholder: String
+    var onSubmit: () -> Void
+
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if text.isEmpty {
+                Text(placeholder)
+                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(.system(size: 15))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 8)
+                    .allowsHitTesting(false)
+            }
+
+            // Text Editor
+            TextEditor(text: $text)
+                .font(.system(size: 15))
+                .foregroundStyle(.white)
+                .background(Color.clear)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 40, maxHeight: 150)
+                .focused($isFocused)
+                .onSubmit {
+                    if !text.isEmpty {
+                        onSubmit()
+                    }
+                }
         }
     }
 }
