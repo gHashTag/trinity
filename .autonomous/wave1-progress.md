@@ -98,3 +98,22 @@ All three steps of Wave 1 are now complete:
 **Total LOC added:** ~340 LOC across tri27 and tri-lang modules
 **Total tests:** 4+67+40+13+5 = 129+ tests passing
 [OK] Wave2 Step1: Zig 0.15 fixes for result_type.zig
+
+## Wave 1 COMPLETE ✅
+
+**Final Status:** All three steps complete, all builds green.
+- Step 1: reticularraphe.t27 → VM ✅ (MOV, JGT, JLT, JUMP opcodes)
+- Step 2: Coptic alphabet + 3-bank ✅ (27 registers across 3 banks)
+- Step 3: ADT enum + exhaustive match ✅ (~170 LOC)
+
+**Total:** ~340 LOC, 129+ tests passing
+**L0:** ✅ GREEN | **L1:** ✅ GREEN
+
+## Wave 2 Checklist (NEXT)
+
+Based on user request, Wave 2 should focus on:
+- Type system with exhaustiveness checking
+- emit_t27 (TRI-27 bytecode generation)
+- Integration with Wave 1 runtime
+
+See: `.autonomous/wave2-progress.md` for detailed checklist.
