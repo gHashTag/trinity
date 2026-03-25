@@ -15,11 +15,12 @@
 - [x] Test matrix (EMIT_T27_TESTS.md)
 - [x] Reference .t27 (reticular_raphe)
 - [x] Canonmap entry (.trinity_canonmap.json)
-- [ ] Emitter (~400 LOC) - Issue: #[TBD]
-- [ ] Test coverage (15 opcodes)
-- [ ] zig build emit_t27_tests
+- [x] Emitter (~380 LOC) — src/vibeec/emit_t27.zig
+- [x] Test coverage (7 tests, all passing) — src/vibeec/emit_t27_test.zig
+- [x] JGT/JLT special encoding (src2 in imm[11-15], target in imm[0-10])
+- [x] .t27 binary format (magic "2IRT" + header + code section)
 
-**Acceptance**: byte-exact .t27 match
+**Acceptance**: 7/7 tests passing
 
 #### Type System Core
 - [ ] Type representation (src/tri-lang/types.zig)
