@@ -55,6 +55,8 @@ pub const Opcode = enum(u8) {
     SUB3 = 0x86,
     CMP3 = 0x87,
     SYSCALL = 0x88,
+    FADD = 0x90, // Floating-point ADD (sacred bank only)
+    STF = 0x07, // Store with bank validation (forbidden in bank 2)
     _,
 };
 
@@ -331,6 +333,27 @@ pub fn encode_jlt(src1: u5, src2: u5, imm: i16) u32 {
     return word;
 }
 
+/// Encode FADD (Floating-point ADD for sacred bank)
+/// Format: opcode | (dst << 8) | (src1 << 13) | (src2 << 18)
+/// Bank validation: dst, src1, src2 must all be in sacred bank (bank 1, registers 9-17)
+pub fn encode_fadd(dst: u5, src1: u5, src2: u5) u32 {
+    var word: u32 = @intFromEnum(Opcode.FADD);
+    word |= @as(u32, dst) << 8;
+    word |= @as(u32, src1) << 13;
+    word |= @as(u32, src2) << 18;
+    return word;
+}
+
+/// Encode STF (Store with bank validation - forbidden in bank 2)
+/// Format: opcode | (src << 8) | (addr << 16)
+/// Bank validation: src must NOT be in const bank (bank 2, registers 18-26)
+pub fn encode_stf(src: u5, addr: u16) u32 {
+    var word: u32 = @intFromEnum(Opcode.STF);
+    word |= @as(u32, src) << 8;
+    word |= @as(u32, addr) << 16;
+    return word;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -577,4 +600,39 @@ test "encoder_produces_correct_opcodes" {
     try std.testing.expectEqual(@as(u8, 0x02), @intFromEnum(Opcode.LD));
     try std.testing.expectEqual(@as(u8, 0x03), @intFromEnum(Opcode.ST));
     try std.testing.expectEqual(@as(u8, 0x4D), @intFromEnum(Opcode.HALT));
+}
+
+test "encode_fadd_basic" {
+    // FADD opcode = 0x90, sacred bank (registers 9-17)
+    const encoded = encode_fadd(9, 10, 11); // iota9, kappa10, lambda11
+    const expected: u32 = 0x90 | (9 << 8) | (10 << 13) | (11 << 18);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_fadd_sacred_bank_only" {
+    // FADD should only work with sacred bank (registers 9-17)
+    const encoded = encode_fadd(15, 16, 17); // rho15, pi16, rho17
+    const expected: u32 = 0x90 | (15 << 8) | (16 << 13) | (17 << 18);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_fadd_opcode" {
+    try std.testing.expectEqual(@as(u8, 0x90), @intFromEnum(Opcode.FADD));
+}
+
+test "encode_stf_basic" {
+    // STF opcode = 0x07, forbidden in bank 2
+    const encoded = encode_stf(5, 0x1000);
+    const expected: u32 = 0x07 | (5 << 8) | (0x1000 << 16);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_stf_with_address" {
+    const encoded = encode_stf(10, 0xFFFF);
+    const expected: u32 = 0x07 | (10 << 8) | (0xFFFF << 16);
+    try std.testing.expectEqual(expected, encoded);
+}
+
+test "encode_stf_opcode" {
+    try std.testing.expectEqual(@as(u8, 0x07), @intFromEnum(Opcode.STF));
 }

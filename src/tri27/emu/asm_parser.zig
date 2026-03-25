@@ -160,6 +160,19 @@ pub const Assembler = struct {
             return encoder.encode_add(dst, src1, src2);
         }
 
+        // FADD: Floating-point ADD for sacred bank (bank 1 only)
+        if (std.mem.eql(u8, op_lower, "fadd")) {
+            if (operands.len != 3) return AsmError.InvalidSyntax;
+            const dst = try parseRegister(operands[0]);
+            const src1 = try parseRegister(operands[1]);
+            const src2 = try parseRegister(operands[2]);
+            // Bank validation: FADD only works with Sacred (bank 1, registers 9-17)
+            try validateBank(dst, .{ false, true, false });
+            try validateBank(src1, .{ false, true, false });
+            try validateBank(src2, .{ false, true, false });
+            return encoder.encode_fadd(dst, src1, src2);
+        }
+
         if (std.mem.eql(u8, op_lower, "sub")) {
             if (operands.len != 3) return AsmError.InvalidSyntax;
             const dst = try parseRegister(operands[0]);
@@ -202,6 +215,16 @@ pub const Assembler = struct {
             const src = try parseRegister(operands[0]);
             const addr = try parseImmediateU16(operands[1]);
             return encoder.encode_store(src, addr);
+        }
+
+        // STF: Store with bank validation (forbidden in bank 2)
+        if (std.mem.eql(u8, op_lower, "stf")) {
+            if (operands.len != 2) return AsmError.InvalidSyntax;
+            const src = try parseRegister(operands[0]);
+            const addr = try parseImmediateU16(operands[1]);
+            // Bank validation: STF forbids Const bank (bank 2, registers 18-26)
+            try validateBank(src, .{ true, true, false });
+            return encoder.encode_stf(src, addr);
         }
 
         if (std.mem.eql(u8, op_lower, "sti")) {
@@ -600,13 +623,14 @@ test "assembler encodes nop" {
 
 test "assembler encodes add" {
     const allocator = std.testing.allocator;
-    const asm_source = "add r5, r10, r15";
+    // Bank validation: ADD only works with bank 0 (ALU: r0-r8)
+    const asm_source = "add r5, r3, r1";
     const result = try assemble(allocator, asm_source);
     defer allocator.free(result);
 
     try std.testing.expectEqual(@as(usize, 4), result.len);
     const word = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
-    const expected: u32 = 0x10 | (5 << 8) | (10 << 13) | (15 << 18);
+    const expected: u32 = 0x10 | (5 << 8) | (3 << 13) | (1 << 18);
     try std.testing.expectEqual(expected, word);
 }
 
@@ -789,13 +813,109 @@ test "assembler handles Coptic register names" {
 
 test "assembler handles mixed register formats" {
     const allocator = std.testing.allocator;
-    const asm_source = "add r0, iota9, theta8";
+    // Bank validation: ADD only works with bank 0 (ALU: alpha0-theta8)
+    // Test mixed r- and Coptic formats within bank 0
+    const asm_source = "add r0, beta1, theta8";
     const result = try assemble(allocator, asm_source);
     defer allocator.free(result);
     try std.testing.expectEqual(@as(usize, 4), result.len); // 1 instruction
     try std.testing.expectEqual(@as(u8, 0x10), result[0]); // ADD opcode
-    // r0=0, iota9=9, theta8=8
-    const expected: u32 = 0x10 | (0 << 8) | (9 << 13) | (8 << 18);
+    // r0=0, beta1=1, theta8=8
+    const expected: u32 = 0x10 | (0 << 8) | (1 << 13) | (8 << 18);
     const actual = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    try std.testing.expectEqual(expected, actual);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Bank Validation Tests (TDGS-3 Wave 1 Step 1)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "add validates bank 0 only" {
+    const allocator = std.testing.allocator;
+
+    // Valid: ADD with bank 0 registers (ALU: r0-r8)
+    const asm_valid = "add r0, r1, r2";
+    const result_valid = try assemble(allocator, asm_valid);
+    defer allocator.free(result_valid);
+    try std.testing.expectEqual(@as(u8, 0x10), result_valid[0]); // ADD opcode
+
+    // Invalid: ADD with bank 1 register (Sacred: r9-r17)
+    const asm_invalid = "add r0, r9, r1";
+    const result_invalid = assemble(allocator, asm_invalid);
+    try std.testing.expectError(AsmError.InvalidRegister, result_invalid);
+}
+
+test "fadd validates bank 1 only" {
+    const allocator = std.testing.allocator;
+
+    // Valid: FADD with bank 1 registers (Sacred: r9-r17)
+    const asm_valid = "fadd iota9, kappa10, lambda11";
+    const result_valid = try assemble(allocator, asm_valid);
+    defer allocator.free(result_valid);
+    try std.testing.expectEqual(@as(u8, 0x90), result_valid[0]); // FADD opcode
+
+    // Invalid: FADD with bank 0 register (ALU: r0-r8)
+    const asm_invalid = "fadd r0, r9, r10";
+    const result_invalid = assemble(allocator, asm_invalid);
+    try std.testing.expectError(AsmError.InvalidRegister, result_invalid);
+
+    // Invalid: FADD with bank 2 register (Const: r18-r26)
+    const asm_invalid2 = "fadd r9, r18, r10";
+    const result_invalid2 = assemble(allocator, asm_invalid2);
+    try std.testing.expectError(AsmError.InvalidRegister, result_invalid2);
+}
+
+test "stf forbids bank 2" {
+    const allocator = std.testing.allocator;
+
+    // Valid: STF with bank 0 register (ALU: r0-r8)
+    const asm_valid = "stf r5, 0x1000";
+    const result_valid = try assemble(allocator, asm_valid);
+    defer allocator.free(result_valid);
+    try std.testing.expectEqual(@as(u8, 0x07), result_valid[0]); // STF opcode
+
+    // Valid: STF with bank 1 register (Sacred: r9-r17)
+    const asm_valid2 = "stf r15, 0x2000";
+    const result_valid2 = try assemble(allocator, asm_valid2);
+    defer allocator.free(result_valid2);
+    try std.testing.expectEqual(@as(u8, 0x07), result_valid2[0]); // STF opcode
+
+    // Invalid: STF with bank 2 register (Const: r18-r26)
+    const asm_invalid = "stf r20, 0x1000";
+    const result_invalid = assemble(allocator, asm_invalid);
+    try std.testing.expectError(AsmError.InvalidRegister, result_invalid);
+}
+
+test "bank_0_alu_registers" {
+    // Bank 0: ALU registers (r0-r8, alpha0-eta7, theta8)
+    try std.testing.expectEqual(@as(u2, 0), getBank(0)); // r0
+    try std.testing.expectEqual(@as(u2, 0), getBank(4)); // r4
+    try std.testing.expectEqual(@as(u2, 0), getBank(8)); // r8 (theta8)
+}
+
+test "bank_1_sacred_registers" {
+    // Bank 1: Sacred registers (r9-r17, iota9-rho17)
+    try std.testing.expectEqual(@as(u2, 1), getBank(9)); // r9 (iota9)
+    try std.testing.expectEqual(@as(u2, 1), getBank(13)); // r13 (nu13)
+    try std.testing.expectEqual(@as(u2, 1), getBank(17)); // r17 (rho17)
+}
+
+test "bank_2_const_registers" {
+    // Bank 2: Const registers (r18-r26, sigma18-shmima26)
+    try std.testing.expectEqual(@as(u2, 2), getBank(18)); // r18 (sigma18)
+    try std.testing.expectEqual(@as(u2, 2), getBank(22)); // r22 (chi22)
+    try std.testing.expectEqual(@as(u2, 2), getBank(26)); // r26 (shmima26)
+}
+
+test "fadd_encoding_with_sacred_registers" {
+    const allocator = std.testing.allocator;
+    const asm_source = "fadd rho17, pi16, mu12";
+    const result = try assemble(allocator, asm_source);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 4), result.len);
+    const actual = @as(u32, result[0]) | (@as(u32, result[1]) << 8) | (@as(u32, result[2]) << 16) | (@as(u32, result[3]) << 24);
+    // FADD opcode = 0x90, rho17=17, pi16=16, mu12=12
+    const expected: u32 = 0x90 | (17 << 8) | (16 << 13) | (12 << 18);
     try std.testing.expectEqual(expected, actual);
 }
