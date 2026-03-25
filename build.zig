@@ -439,6 +439,18 @@ pub fn build(b: *std.Build) void {
     const emit_t27_test_step = b.step("test-emit_t27", "Run emit_t27 golden tests");
     emit_t27_test_step.dependOn(&run_emit_t27_golden_tests.step);
 
+    // emit_t27_from_ir tests — Phase 4 IR → TRI-27 pipeline
+    const emit_t27_from_ir_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/emit_t27_from_ir_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_emit_t27_from_ir_tests = b.addRunArtifact(emit_t27_from_ir_tests);
+    test_step.dependOn(&run_emit_t27_from_ir_tests.step);
+    emit_t27_test_step.dependOn(&run_emit_t27_from_ir_tests.step);
+
     // TRI-TRACE tests (DEV-001)
     const trace_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -2764,6 +2776,23 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // TRI-Lang module (Wave 2 Phase 4: typecheck + emit_t27 + pipeline)
+    const tri_lang_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri-lang/pipeline.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI-Lang compile module (Wave 2 Phase 4)
+    const tri_compile_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_compile.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_lang", .module = tri_lang_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2837,6 +2866,10 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "golden_chain", .module = golden_chain_mod },
                 // TRI-27 CLI module
                 .{ .name = "tri27_cli", .module = tri27_cli_mod },
+                // TRI-Lang module (Wave 2 Phase 4: typecheck + emit_t27 + pipeline)
+                .{ .name = "tri_lang", .module = tri_lang_mod },
+                // TRI-Lang compile module (Wave 2 Phase 4)
+                .{ .name = "tri_compile", .module = tri_compile_mod },
             },
         }),
     });

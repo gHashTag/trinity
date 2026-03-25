@@ -363,12 +363,12 @@ pub const StakingManager = struct {
 
     fn addToStakerIndex(self: *StakingManager, address: [20]u8, stake_id: []const u8) !void {
         const key = try self.addressToKey(address);
-        errdefer self.allocator.free(key);
 
         const duped_id = try self.allocator.dupe(u8, stake_id);
         errdefer self.allocator.free(duped_id);
 
         if (self.staker_stakes.getEntry(key)) |entry| {
+            self.allocator.free(key); // Key not needed when entry exists
             try entry.value_ptr.append(self.allocator, duped_id);
         } else {
             var list = std.ArrayListUnmanaged([]const u8){};
@@ -388,9 +388,11 @@ pub const StakingManager = struct {
                     _ = list.orderedRemove(i);
                     self.allocator.free(id);
                     if (list.items.len == 0) {
+                        // List is now empty, remove the entry and free the key
                         list.deinit(self.allocator);
+                        const key_to_free = entry.key_ptr.*;
                         _ = self.staker_stakes.remove(entry.key_ptr.*);
-                        self.allocator.free(entry.key_ptr.*);
+                        self.allocator.free(key_to_free);
                     }
                     return true;
                 }

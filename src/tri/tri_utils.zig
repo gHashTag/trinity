@@ -66,6 +66,8 @@ pub const Command = enum {
     // TVC (Distributed Learning)
     tvc_demo,
     tvc_stats,
+    // TRI-27 Bytecode (TDGS-3 Wave 2)
+    t27_test,
     // Multi-Agent System
     agents_demo,
     agents_bench,

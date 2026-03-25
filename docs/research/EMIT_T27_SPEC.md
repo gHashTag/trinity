@@ -2,7 +2,7 @@
 
 **Task**: Implement code generation backend for TRI-27 ISA in VIBEE compiler
 
-**Status**: Phase 3 COMPLETE ✅
+**Status**: Phase 4 COMPLETE ✅
 
 **Phase 1 Complete** (2026-03-25):
 - ✅ src/vibeec/emit_t27.zig (~380 LOC) - Core encoder
@@ -23,9 +23,17 @@
 - ✅ 13/13 tests passing
 - ✅ build.zig target: `zig build test-emit_t27`
 
-**Remaining (Phase 4+)**:
-- [ ] Full .tri → VIBEE IR → emit_t27 pipeline integration
-- [ ] CLI `--target t27` flag for vibee command
+**Phase 4 Complete** (2026-03-25):
+- ✅ Minimal IR → TRI-27 converter (src/vibeec/emit_t27_from_ir_test.zig)
+- ✅ MinimalIRToTri27 struct with full opcode mapping
+- ✅ 4 new tests (LDI+HALT, ADD+labels, JNZ, reticular_raphe subset)
+- ✅ 15/15 tests passing (4 new + 11 existing)
+- ✅ CLI command: `tri t27-test [--run]`
+- ✅ CLI stub: `tri compile <file.tri> --target t27` (TODO: tri_lang integration)
+
+**Remaining (Phase 5+)**:
+- [ ] Full VIBEE IR → emit_t27 integration (ir.zig compatibility with Zig 0.15)
+- [ ] .tri parser → IR generation
 - [ ] Byte-exact comparison with canonical reticular_raphe.t27
 
 ---
