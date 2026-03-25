@@ -1269,7 +1269,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 // Import real tri_fpga commands (VIBEE + openXC7 Pipeline)
 const tri_fpga = @import("tri_fpga.zig");
 const tri_fpga_experience = @import("tri_fpga_experience.zig");
-// const tri_fpga_fly = @import("fpga_fly.zig");
+const tri_fpga_fly = @import("fpga_fly.zig");
 
 const fpga_commands = struct {
     pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -1406,8 +1406,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
     } else if (std.mem.eql(u8, subcommand, "download-uart-bit")) {
         return tri_fpga.runFpgaDownloadUartBitCommand(allocator);
     } else if (std.mem.eql(u8, subcommand, "deploy-fly")) {
-        // TODO: Fix fpga_fly import for Zig 0.15
-        std.debug.print("tri fpga deploy-fly: temporarily disabled during Zig 0.15 migration\n", .{});
+        return tri_fpga_fly.runFpgaDeployFlyCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "power")) {
         return tri_fpga.runFpgaPowerCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {

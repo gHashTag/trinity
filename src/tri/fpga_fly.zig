@@ -9,15 +9,20 @@ const print = std.debug.print;
 pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
-    const env = try std.process.getEnvMap(allocator);
-    defer env.deinit();
-
-    // Get Fly.io token from .env
-    const fly_token = env.get("FLY_API_TOKEN_1") orelse env.get("FLY_API_TOKEN") orelse {
-        std.debug.print("❌ FLY_API_TOKEN not found in .env\n", .{});
-        std.debug.print("Add: FLY_API_TOKEN_1=your_token to .env\n", .{});
-        return error.FlyTokenNotFound;
+    // Get Fly.io token from environment
+    const fly_token = brk: {
+        const token1 = std.process.getEnvVarOwned(allocator, "FLY_API_TOKEN_1") catch break;
+        defer allocator.free(token1);
+        break :token1;
+    } orelse {
+        const token2 = std.process.getEnvVarOwned(allocator, "FLY_API_TOKEN") catch {
+            std.debug.print("❌ FLY_API_TOKEN not found in .env\n", .{});
+            std.debug.print("Add: FLY_API_TOKEN_1=your_token to .env\n", .{});
+            return error.FlyTokenNotFound;
+        };
+        token2;
     };
+    defer allocator.free(fly_token);
 
     // Get repo root
     const repo_root = try std.fs.selfExeDirPathAlloc(allocator);
@@ -49,6 +54,7 @@ pub fn runFpgaDeployFlyCommand(allocator: std.mem.Allocator, args: []const []con
         return error.DeployFailed;
     }
 
+    const stdout = std.io.getStdOut().writer();
     try stdout.print("{s}\n", .{deploy_result.stdout});
 
     // Health check

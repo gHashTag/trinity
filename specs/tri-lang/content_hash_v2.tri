@@ -1,0 +1,105 @@
+# ═══════════════════════════════════════════════════════
+# CONTENT_HASH_V2 — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Improved Content-Addressed Function Hashing
+# Source of truth for tri-lang/content_hash_v2.zig codegen
+# TRI-LANG-6: Content Addressing
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_content_hash_v2
+version: "0.1.0"
+module: tri_lang.content_hash_v2
+description: "Improved Content-Addressed Function Hashing (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  ContentHash:
+    description: "32-byte content hash (Wyhash)"
+    fields:
+      - name: bytes
+        type: "[32]u8"
+        description: "Hash bytes"
+    methods:
+      - name: eql
+        params:
+          - name: other
+            type: "*const ContentHash"
+        returns: "bool"
+        description: "Compare two hashes"
+
+  HashCache:
+    description: "Optional cache for subexpression hashes"
+    fields:
+      - name: map
+        type: "std.AutoHashMap(usize, ContentHash)"
+        description: "Map from expression pointer to hash"
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  normalizeBinary:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+    returns: "![]u8"
+    description: "Normalize expression to binary format"
+    errors:
+      - OutOfMemory
+
+  hashFunctionBinary:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: fn_def
+        type: "*const TypedExpr"
+    returns: "!ContentHash"
+    description: "Hash function definition (binary format)"
+    errors:
+      - OutOfMemory
+
+  hashFunction:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: fn_def
+        type: "*const TypedExpr"
+    returns: "!ContentHash"
+    description: "Alias for hashFunctionBinary"
+    errors:
+      - OutOfMemory
+
+  hashFunctionDecl:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: params
+        type: "[][]const u8"
+      - name: body
+        type: "*const TypedExpr"
+    returns: "!ContentHash"
+    description: "Hash function declaration with params and body"
+    errors:
+      - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# V2 Improvements:
+# - Full 32-byte Wyhash hash (not just 8 bytes)
+# - Optional cache for subexpressions
+# - Binary normalization (much faster than string-based)
+# - Type-aware hashing (optional)
+#
+# Binary format tags:
+# - Int, Bool, Var, BinOp, If, Let, Fn, FnCall, ADT, Match, Pipe
+# - Perform, Handle, Try, Map, Reduce, Scan, Filter, FlatMap, Zip

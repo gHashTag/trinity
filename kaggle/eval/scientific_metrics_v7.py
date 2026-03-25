@@ -2064,6 +2064,166 @@ def ranked_voting_sc(
 
 
 # =============================================================================
+# UNCERTAINTY QUANTIFICATION — NEW v7.5 (NAACL 2024)
+# =============================================================================
+
+@dataclass
+class UncertaintyDecompositionResult:
+    """Result of uncertainty decomposition into aleatoric and epistemic."""
+    total_uncertainty: float  # H[y | x, D] predictive entropy
+    aleatoric_uncertainty: float  # E[H[y | x, θ]] expected entropy
+    epistemic_uncertainty: float  # MI decomposition (total - aleatoric)
+    n_samples: int  # Number of samples used
+
+
+def mutual_information_uncertainty(
+    predictive_distribution: List[float],
+    posterior_samples: Optional[List[List[float]]] = None
+) -> UncertaintyDecompositionResult:
+    """
+    Decompose uncertainty into aleatoric and epistemic using mutual information.
+
+    Based on NAACL 2024 paper "Uncertainty Quantification for In-Context Learning":
+    - Total Uncertainty = H[y | x, D]  (predictive entropy)
+    - Aleatoric Uncertainty = E_{θ~p(θ|D)}[H[y | x, θ]]  (expected entropy)
+    - Epistemic Uncertainty = H[y | x, D] - E[H[y | x, θ]]  (mutual information)
+
+    Args:
+        predictive_distribution: p(y | x, D) averaged over posterior (probability vector)
+        posterior_samples: Samples from posterior p(θ | D) (list of probability vectors)
+
+    Returns:
+        UncertaintyDecompositionResult
+    """
+    import numpy as np
+
+    # Ensure predictive_distribution is a numpy array
+    if isinstance(predictive_distribution, list):
+        pred_dist = np.array(predictive_distribution)
+    else:
+        pred_dist = predictive_distribution
+
+    # Add small epsilon for numerical stability
+    epsilon = 1e-10
+    pred_dist = np.clip(pred_dist, epsilon, 1 - epsilon)
+    pred_dist = pred_dist / pred_dist.sum()  # Normalize
+
+    # Total uncertainty: predictive entropy
+    total_uncertainty = -np.sum(pred_dist * np.log(pred_dist))
+
+    n_samples = len(posterior_samples) if posterior_samples else 1
+
+    if posterior_samples is None or len(posterior_samples) == 0:
+        # Single model: cannot decompose
+        return UncertaintyDecompositionResult(
+            total_uncertainty=total_uncertainty,
+            aleatoric_uncertainty=total_uncertainty,
+            epistemic_uncertainty=0.0,
+            n_samples=n_samples
+        )
+
+    # Aleatoric: expected entropy under posterior
+    entropies = []
+    for sample_dist in posterior_samples:
+        sample_arr = np.array(sample_dist)
+        sample_arr = np.clip(sample_arr, epsilon, 1 - epsilon)
+        sample_arr = sample_arr / sample_arr.sum()
+        h = -np.sum(sample_arr * np.log(sample_arr))
+        entropies.append(h)
+
+    aleatoric_uncertainty = np.mean(entropies)
+
+    # Epistemic: mutual information
+    epistemic_uncertainty = max(0.0, total_uncertainty - aleatoric_uncertainty)
+
+    return UncertaintyDecompositionResult(
+        total_uncertainty=total_uncertainty,
+        aleatoric_uncertainty=aleatoric_uncertainty,
+        epistemic_uncertainty=epistemic_uncertainty,
+        n_samples=n_samples
+    )
+
+
+@dataclass
+class EpistemicAbstentionResult:
+    """Result of epistemic abstention decision."""
+    should_abstain: bool  # Whether to abstain from prediction
+    reason: str  # Explanation for abstention
+    epistemic_score: float  # Raw epistemic uncertainty score
+    confidence: float  # Original confidence
+    entropy: float  # Predictive entropy
+
+
+def epistemic_abstention(
+    confidence: float,
+    predictive_distribution: Optional[List[float]] = None,
+    epistemic_threshold: float = 0.7,
+    entropy_threshold: float = 0.5
+) -> EpistemicAbstentionResult:
+    """
+    Simple abstention based on epistemic uncertainty.
+
+    High entropy + high confidence = likely epistemic uncertainty.
+    This indicates the model is confident but uncertain about what to predict.
+
+    Reference: NAACL 2024 "Uncertainty Quantification for In-Context Learning"
+
+    Args:
+        confidence: Model confidence score
+        predictive_distribution: Full probability distribution (for entropy calculation)
+        epistemic_threshold: Threshold for epistemic score
+        entropy_threshold: Threshold for absolute entropy
+
+    Returns:
+        EpistemicAbstentionResult
+    """
+    import numpy as np
+    import math
+
+    # Calculate entropy if distribution provided
+    if predictive_distribution:
+        pred_arr = np.array(predictive_distribution)
+        epsilon = 1e-10
+        pred_arr = np.clip(pred_arr, epsilon, 1 - epsilon)
+        pred_arr = pred_arr / pred_arr.sum()
+        entropy = -np.sum(pred_arr * np.log(pred_arr))
+    else:
+        # Approximate entropy from confidence: H = -p*log(p) - (1-p)*log(1-p)
+        p = max(epsilon, min(1 - epsilon, confidence))
+        entropy = -(p * math.log(p) + (1 - p) * math.log(1 - p))
+
+    # Epistemic signal: confident but high entropy
+    epistemic_score = confidence * entropy
+
+    # Decision logic
+    if epistemic_score > epistemic_threshold:
+        return EpistemicAbstentionResult(
+            should_abstain=True,
+            reason="abstained_high_epistemic",
+            epistemic_score=epistemic_score,
+            confidence=confidence,
+            entropy=entropy
+        )
+
+    if entropy > entropy_threshold:
+        return EpistemicAbstentionResult(
+            should_abstain=True,
+            reason="abstained_high_entropy",
+            epistemic_score=epistemic_score,
+            confidence=confidence,
+            entropy=entropy
+        )
+
+    return EpistemicAbstentionResult(
+        should_abstain=False,
+        reason="predict",
+        epistemic_score=epistemic_score,
+        confidence=confidence,
+        entropy=entropy
+    )
+
+
+# =============================================================================
 # MAIN / TEST
 # =============================================================================
 
@@ -2127,5 +2287,31 @@ if __name__ == "__main__":
         rv_result = ranked_voting_sc(confidence_lists, correct, method=method)
         print(f"   {method.capitalize()}: SC = {rv_result.aggregated_sc:.4f}")
         print(f"      Individual scores: {[f'{s:.3f}' for s in rv_result.individual_scores]}")
+
+    # Test Uncertainty Decomposition (v7.5)
+    print("\n7. Mutual Information Uncertainty Decomposition (v7.5):")
+    pred_dist = [0.3, 0.4, 0.3]  # Example probability distribution
+    posterior_samples = [
+        [0.25, 0.45, 0.30],
+        [0.35, 0.35, 0.30],
+        [0.30, 0.40, 0.30],
+    ]
+    ud_result = mutual_information_uncertainty(pred_dist, posterior_samples)
+    print(f"   Total Uncertainty: {ud_result.total_uncertainty:.4f}")
+    print(f"   Aleatoric (data): {ud_result.aleatoric_uncertainty:.4f}")
+    print(f"   Epistemic (model): {ud_result.epistemic_uncertainty:.4f}")
+
+    # Test Epistemic Abstention (v7.5)
+    print("\n8. Epistemic Abstention (v7.5):")
+    ea_result = epistemic_abstention(
+        confidence=0.9,
+        predictive_distribution=[0.33, 0.34, 0.33],  # High entropy
+        epistemic_threshold=0.5
+    )
+    print(f"   Confidence: {ea_result.confidence:.2f}")
+    print(f"   Entropy: {ea_result.entropy:.4f}")
+    print(f"   Epistemic Score: {ea_result.epistemic_score:.4f}")
+    print(f"   Should Abstain: {ea_result.should_abstain}")
+    print(f"   Reason: {ea_result.reason}")
 
     print("\n" + "=" * 60)
