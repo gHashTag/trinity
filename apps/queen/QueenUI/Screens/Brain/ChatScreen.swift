@@ -5343,6 +5343,7 @@ struct SimpleMultilineInput: View {
     var onSubmit: () -> Void
 
     @FocusState private var isFocused: Bool
+    @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend: Bool = false
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -5364,10 +5365,26 @@ struct SimpleMultilineInput: View {
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 40, maxHeight: 150)
                 .focused($isFocused)
-                .onSubmit {
-                    if !text.isEmpty {
-                        onSubmit()
+                .onKeyPress { keyPress in
+                    // Handle Enter key
+                    if keyPress.key == .return {
+                        if useCtrlEnterToSend {
+                            // Ctrl+Enter mode: Ctrl+Enter = send, Enter = newline
+                            if keyPress.modifiers.contains(.control) {
+                                onSubmit()
+                                return .handled
+                            }
+                        } else {
+                            // Default mode: Enter = send, Shift+Enter = newline
+                            if !keyPress.modifiers.contains(.shift) {
+                                if !text.isEmpty {
+                                    onSubmit()
+                                }
+                                return .handled
+                            }
+                        }
                     }
+                    return .ignored
                 }
         }
     }
