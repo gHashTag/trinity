@@ -2,7 +2,17 @@
 
 **Task**: Implement code generation backend for TRI-27 ISA in VIBEE compiler
 
-**Status**: TODO
+**Status**: PARTIAL ✅ (Phase 1 complete, Phase 2 pending)
+
+**Phase 1 Complete** (2026-03-25):
+- ✅ src/vibeec/emit_t27.zig (~380 LOC) - Core encoder
+- ✅ src/vibeec/emit_t27_test.zig (~260 LOC) - 7 tests passing
+- ✅ JGT/JLT special encoding implemented
+- ✅ .t27 binary format (magic "2IRT" + header)
+
+**Phase 2 Pending**:
+- ⏳ Full VIBEE IR integration (register allocation, label resolution)
+- ⏳ E2E test: .tri → VIBEE → emit_t27 → compare with canonical .t27
 
 ---
 
