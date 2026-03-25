@@ -33,6 +33,7 @@ pub const content_hash = gen.content_hash;
 pub const content_registry = gen.content_registry;
 pub const tri_lang_tests = gen.tri_lang_tests;
 pub const integration_test = gen.integration_test;
+pub const emu = gen.emu;
 
 // Convenience exports
 pub const Result = gen.Result;
