@@ -1,7 +1,7 @@
 # Trinity Research Documentation Index — v3.0
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 59
+**Total Documents:** 64
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -27,12 +27,17 @@
 | `DEFENSIVE_PUB_IMPLEMENTATION_SUMMARY.md` | Implementation guide | ✅ Complete |
 | `PRIOR_ART_NETWORK.md` | Cross-reference matrix | ✅ Complete |
 
-### 3. Experimental Results & Validation (5 documents)
+### 3. Experimental Results & Validation (10 documents)
 
 | Document | Purpose | Coverage |
 |----------|---------|----------|
 | `EXPERIMENTAL_RESULTS.md` | All 7 bundles experimental data | B001-B007 |
-| `HYPOTHESIS_VALIDATION_REPORT.md` | H1-H6 validation status | ✅ NEW |
+| `BENCHMARK_AGGREGATOR.md` | Complete benchmark results | All bundles ✅ NEW |
+| `HYPOTHESIS_VALIDATION_REPORT.md` | H1-H6 validation status | 5/6 validated ✅ NEW |
+| `VSA_SCIENTIFIC_VALIDATION.md` | VSA math + SIMD validation | 11.87× speedup ✅ NEW |
+| `TRI27_SCIENTIFIC_VALIDATION.md` | Ternary ISA validation | 1.7× density ✅ NEW |
+| `FPGA_SCIENTIFIC_VALIDATION.md` | Hardware validation results | Zero-DSP ✅ NEW |
+| `statistical_analysis_toolkit.py` | Statistical test implementations | 10+ tests ✅ NEW |
 | `REPRODUCIBLE_RESEARCH.md` | Scientific rigor guidelines | ✅ Complete |
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
@@ -76,12 +81,13 @@
 | `RESEARCH_IMPROVEMENTS_2025.md` | 2025 | Year summary |
 | `EMIT_T27_TESTS.md` | 2026-03-26 | T27 test results |
 
-### 8. Tools & Automation (3 documents)
+### 8. Tools & Automation (4 documents)
 
 | Document | Purpose | Language |
 |----------|---------|----------|
 | `quality_check.py` | Automated quality validator | Python |
 | `bundle_package.py` | Zenodo bundle packager | Python |
+| `statistical_analysis_toolkit.py` | 10+ statistical tests | Python ✅ NEW |
 | `verify_trinity_math.py` | Mathematical verification | Python |
 
 ### 9. Specialized Research (7 documents)
@@ -103,11 +109,12 @@
 ```
 TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 ├── H1 (Sacred) → sacred_formats_fpga.md, EXPERIMENTAL_RESULTS.md (B001, B006)
-├── H2 (Sacred) → EXPERIMENTAL_RESULTS.md (B002), verify_trinity_math.py
+├── H2 (Sacred) → FPGA_SCIENTIFIC_VALIDATION.md, EXPERIMENTAL_RESULTS.md (B002)
 ├── H3 (Superhuman) → queen_lotus_experiments.md, HYPOTHESIS_VALIDATION_REPORT.md
 ├── H4 (Superhuman) → QUEEN_SELF_LEARNING_REPORT.md
-├── H5 (Specialized) → EXPERIMENTAL_RESULTS.md (B003, B005)
-├── H6 (Cross-Axis) → PERFORMANCE_BENCHMARKS.md, COST_ANALYSIS.md
+├── H5 (Specialized) → TRI27_SCIENTIFIC_VALIDATION.md, EXPERIMENTAL_RESULTS.md (B003, B005)
+├── H6 (Cross-Axis) → PERFORMANCE_BENCHMARKS.md, BENCHMARK_AGGREGATOR.md
+├── VSA → VSA_SCIENTIFIC_VALIDATION.md, statistical_analysis_toolkit.py
 └── All → PRIOR_ART_NETWORK.md, ZENODO_MASTER_INDEX.md
 ```
 
@@ -136,12 +143,21 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 3. **Formats:** `sacred_formats_fpga.md`
 4. **Verification:** `verify_trinity_math.py`
 
+### For System Validation
+
+1. **VSA:** `VSA_SCIENTIFIC_VALIDATION.md` — bind/unbind/bundle, 11.87× SIMD
+2. **TRI-27:** `TRI27_SCIENTIFIC_VALIDATION.md` — ternary ISA, 1.7× code density
+3. **FPGA:** `FPGA_SCIENTIFIC_VALIDATION.md` — Zero-DSP, φ-timing validation
+4. **Statistics:** `statistical_analysis_toolkit.py` — 10+ statistical tests
+5. **All Benchmarks:** `BENCHMARK_AGGREGATOR.md` — complete experimental results
+
 ---
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1 | 2026-03-26 | Added VSA/TRI-27/FPGA validation docs, statistical toolkit |
 | 3.0 | 2026-03-26 | Added HYPOTHESIS_VALIDATION_REPORT.md, quality tools |
 | 2.0 | 2026-03-25 | Added 66 discovery files, mathematical appendix |
 | 1.0 | 2026-03-20 | Initial research documentation |
