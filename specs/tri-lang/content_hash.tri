@@ -1,0 +1,137 @@
+# ═══════════════════════════════════════════════════════════════════
+# CONTENT HASH — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Content-Addressed Function Hashing
+# Source of truth for tri-lang/content_hash.zig codegen
+# TRI-LANG-6: Content-Addressed Functions
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_content_hash
+version: "0.1.0"
+module: tri_lang.content_hash
+description: "Content-addressed function hashing with alpha-renaming (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  ContentHash:
+    description: "SHA256 hash of normalized AST"
+    fields:
+      - name: bytes
+        type: "[32]u8"
+        description: "SHA256 hash bytes"
+    methods:
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Format as hex string with 'sha256:' prefix"
+        errors:
+          - OutOfMemory
+
+      - name: formatShort
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Format first 8 bytes as hex"
+        errors:
+          - OutOfMemory
+
+      - name: eql
+        params:
+          - name: other
+            type: "*const ContentHash"
+        returns: "bool"
+        description: "Compare two hashes for equality"
+
+  NormalizeContext:
+    description: "Context for AST normalization - tracks variable renaming"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: name_map
+        type: "std.StringHashMap(usize)"
+        description: "Map from original names to v0, v1, ..."
+      - name: next_var_id
+        type: "usize"
+        description: "Next variable ID to assign"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "NormalizeContext"
+        description: "Create new normalization context"
+
+      - name: deinit
+        returns: "void"
+        description: "Free context resources"
+
+      - name: normalizeName
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "![]const u8"
+        description: "Get or create normalized variable name (v0, v1, ...)"
+        errors:
+          - OutOfMemory
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  hashFunction:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: fn_def
+        type: "*const TypedExpr"
+    returns: "!ContentHash"
+    description: "Generate content hash from function expression"
+    errors:
+      - OutOfMemory
+      - "std.crypto.errors.Error"
+    note: "Returns SHA256 hash of normalized AST"
+
+  hashFunctionDecl:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: params
+        type: "[]const []const u8"
+      - name: body
+        type: "*const TypedExpr"
+    returns: "!ContentHash"
+    description: "Hash function with explicit parameter names"
+    errors:
+      - OutOfMemory
+      - "std.crypto.errors.Error"
+    note: "For declarations, arity matters for function identity"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Normalization rules for content-addressed functions:
+# - Alpha-renaming: variables become v0, v1, v2...
+# - Include: function signature, body structure, types
+# - Exclude: original names, comments, whitespace
+# - Preserve: control flow, operations
+#
+# This enables:
+# - fn(x) = x  and  fn(y) = y  have the SAME hash (alpha-equivalence)
+# - Function identity = hash of structure, not name/location
+# - Deduplication of identical functions
+# - Content-addressed function storage
+#
+# Example:
+#   fn(x) = x + y  normalizes to  "fn:2:v0Addv1"
+#   fn(a) = a + b  normalizes to  "fn:2:v0Addv1"  (same hash!)
