@@ -117,7 +117,6 @@ pub const Type = union(enum) {
 
     pub fn ftv(self: *const Type, allocator: std.mem.Allocator) !array_list.Managed(TypeId) {
         var result = array_list.Managed(TypeId).init(allocator);
-        defer result.deinit();
         try self.ftvAppend(allocator, &result);
         std.sort.insertion(TypeId, result.items, {}, comptime std.sort.asc(TypeId));
         var i: usize = 1;
@@ -216,7 +215,7 @@ test "Type.ftv var" {
     defer v1.deinit(allocator);
 
     const ftv = try v1.ftv(allocator);
-    defer ftv.deinit(allocator);
+    defer ftv.deinit();
     try std.testing.expectEqual(@as(usize, 1), ftv.items.len);
     try std.testing.expectEqual(@as(TypeId, 1), ftv.items[0]);
 }
