@@ -484,7 +484,8 @@ def detect_contamination_codec_v7(
     confidence_drops: List[float],
     context_similarities: Optional[List[float]] = None,
     episode_ids: Optional[List[str]] = None,
-    n_bootstrap: int = 2000
+    n_bootstrap: int = 2000,
+    contamination_threshold: float = 0.9
 ) -> CoDecResultV7:
     """
     Enhanced CoDeC implementation with context features (arXiv:2510.27055).
@@ -495,6 +496,7 @@ def detect_contamination_codec_v7(
         context_similarities: Optional context similarity scores
         episode_ids: Optional episode IDs for multi-episode analysis
         n_bootstrap: Bootstrap samples for AUC CI
+        contamination_threshold: AUC threshold for contamination (default 0.9)
 
     Returns:
         CoDecResultV7 with enhanced features
@@ -590,7 +592,8 @@ def detect_contamination_codec_v7(
             context_similarity_score = (sum(seen_sims) / len(seen_sims) -
                                        sum(unseen_sims) / len(unseen_sims))
 
-    is_contaminated = auc_score > 0.9
+    # v7.2 FIX: Use configurable threshold instead of hardcoded 0.9
+    is_contaminated = auc_score > contamination_threshold
     confidence = min(1.0, auc_score)
 
     return CoDecResultV7(
