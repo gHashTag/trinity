@@ -195,6 +195,15 @@ pub fn main() !void {
         return;
     }
 
+    // Compile command: route `tri compile <input.tri> [--target t27] [-o output.t27]`
+    if (std.mem.eql(u8, args[arg_idx], "compile")) {
+        const compile_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const tri_compile_mod = @import("tri_compile.zig");
+        try tri_compile_mod.run(allocator, compile_args);
+        return;
+    }
+
     // GitHub Integration: route `tri issue/board/protocol` to github_commands
     if (arg_idx < args.len) {
         const first_arg = args[arg_idx];
@@ -915,6 +924,8 @@ pub fn main() !void {
             const ctx_loader = @import("context_loader.zig");
             ctx_loader.runContextCommand(allocator, cmd_args);
         },
+        // TRI-27 Bytecode (TDGS-3 Wave 2)
+        .t27_test => try commands.runT27TestCommand(allocator, cmd_args),
         // Demo/Bench commands (not yet implemented)
         .tvc_demo,
         .tvc_stats,
