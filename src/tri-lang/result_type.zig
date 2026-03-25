@@ -186,6 +186,55 @@ pub fn match(comptime T: type, comptime E: type, comptime U: type, result: Resul
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// TYPE-CHECKER: Runtime exhaustive match enforcement
+// ═══════════════════════════════════════════════════════════════════════
+
+/// MatchedResult - runtime token that tracks if Result was properly matched
+/// Note: True compile-time enforcement requires Tri compiler type system
+pub const MatchedResult = struct {
+    matched: bool,
+
+    /// Create a new unmatched result
+    pub fn init() MatchedResult {
+        return MatchedResult{ .matched = false };
+    }
+
+    /// Mark this result as matched (both Ok and Err handled)
+    pub fn markMatched(self: *MatchedResult) void {
+        self.matched = true;
+    }
+
+    /// Verify result was matched - panics if not
+    pub fn verify(self: *const MatchedResult) void {
+        if (!self.matched) {
+            std.debug.panic("Result was not exhaustively matched - both Ok and Err must be handled", .{});
+        }
+    }
+};
+
+/// mustMatch - creates a token that requires explicit matching
+/// Use verify() to check match was called
+///
+/// Usage:
+/// ```zig
+/// var checked = mustMatch(i32, NeuroError, result);
+/// defer checked.verify();
+/// const value = match(i32, NeuroError, i32, result, okFn, errFn);
+/// checked.markMatched();
+/// ```
+pub fn mustMatch(comptime T: type, comptime E: type, result: Result(T, E)) MatchedResult {
+    _ = result;
+    return MatchedResult.init();
+}
+
+/// unwrapChecked - only safe after explicit match
+/// Panics if result wasn't matched first
+pub fn unwrapChecked(comptime T: type, comptime E: type, result: Result(T, E), checked: *const MatchedResult) T {
+    checked.verify();
+    return unwrap(T, E, result);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // TRI-27 LOWERING
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -367,3 +416,59 @@ test "result_tri27_lowering_err" {
     try std.testing.expectEqual(@as(u32, 1), lowered.value);
     try std.testing.expect(lowered.is_error);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// TYPE-CHECKER TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+test "mustMatch_with_proper_match" {
+    const result: Result(i32, NeuroError) = .{ .Ok = 42 };
+
+    var checked = mustMatch(i32, NeuroError, result);
+    defer {
+        if (!checked.matched) {
+            @panic("Result was not matched");
+        }
+    }
+
+    const value = match(i32, NeuroError, i32, result, okHandlerAdd10, errHandlerZero);
+    checked.markMatched();
+
+    try std.testing.expectEqual(@as(i32, 52), value);
+    try std.testing.expect(checked.matched);
+}
+
+test "mustMatch_with_err_match" {
+    const result: Result(i32, NeuroError) = .{ .Err = .InvalidInput };
+
+    var checked = mustMatch(i32, NeuroError, result);
+    defer {
+        if (!checked.matched) {
+            @panic("Result was not matched");
+        }
+    }
+
+    const value = match(i32, NeuroError, i32, result, okHandlerAdd10, errHandlerReturnErrorCode);
+    checked.markMatched();
+
+    try std.testing.expectEqual(@as(i32, 0), value);
+    try std.testing.expect(checked.matched);
+}
+
+test "unwrapChecked_after_match" {
+    const result: Result(i32, NeuroError) = .{ .Ok = 99 };
+
+    var checked = mustMatch(i32, NeuroError, result);
+    defer checked.verify();
+
+    // First match the result
+    _ = match(i32, NeuroError, i32, result, okHandlerAdd10, errHandlerZero);
+    checked.markMatched();
+
+    // Now unwrapChecked is safe
+    const unwrapped = unwrapChecked(i32, NeuroError, result, &checked);
+    try std.testing.expectEqual(@as(i32, 99), unwrapped);
+}
+
+// Note: Testing panic case requires expectPanic which varies by Zig version
+// In production, unwrapChecked will panic if called without matching first
