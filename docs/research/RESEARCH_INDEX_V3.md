@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v5.5
+# Trinity Research Documentation Index — v5.6
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 113
+**Total Documents:** 114
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -128,6 +128,7 @@
 | `CODE_IMPROVEMENT_PROPOSALS_V1.md` | 10 concrete code improvements | 22-38% VSA gain ✨ NEW |
 | `ZENODO_PUBLICATION_PATTERNS_DEEP_DIVE.md` | Scientific publishing patterns | FAIR compliance ✨ NEW |
 | `CONSCIOUSNESS_REASONING_ANALYSIS.md` | Dual-system theory, VSA reasoning | 4 proposals ✨ NEW |
+| `QUEEN_SYSTEM_ANALYSIS.md` | Self-learning orchestrator | 4 proposals ✨ NEW |
 
 ---
 
@@ -189,6 +190,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 5.6 | 2026-03-26 | Added Queen System Analysis (self-learning orchestrator, 4 proposals) |
 | 5.5 | 2026-03-26 | Added Consciousness & Reasoning Analysis (dual-system, 4 proposals) |
 | 5.4 | 2026-03-26 | Added Zenodo Publication Patterns Deep Dive (7 parts, FAIR compliance) |
 | 5.3 | 2026-03-26 | Added Code Improvement Proposals V1 (10 concrete improvements, 22-38% VSA gain) |
