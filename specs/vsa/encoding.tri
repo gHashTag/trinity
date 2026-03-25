@@ -1,0 +1,159 @@
+# ═══════════════════════════════════════════════════════════════════
+# VSA TEXT ENCODING — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Encode/decode text to/from hypervectors
+# Source of truth for vsa_core/encoding.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: vsa_encoding
+version: "0.1.0"
+module: vsa_core.encoding
+description: "Text encoding operations (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════
+
+constants:
+  TEXT_VECTOR_DIM:
+    value: 1000
+    type: usize
+    description: "Default vector dimension for text encoding"
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Codebook:
+    description: "Character codebook with deterministic vector per character"
+    fields:
+      - name: vectors
+        type: "[256][]const Trit"
+        description: "One vector per byte value 0-255"
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator for vectors"
+      - name: dim
+        type: "usize"
+        description: "Vector dimension"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: dim
+            type: "usize"
+        returns: "Codebook"
+        description: "Initialize codebook with deterministic vectors"
+
+      - name: getVector
+        params:
+          - name: char
+            type: "u8"
+        returns: "[]const Trit"
+        description: "Get vector for character"
+
+      - name: deinit
+        returns: "void"
+        description: "Deallocate all vectors"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  encodeText:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: codebook
+        type: "Codebook"
+      - name: text
+        type: "[]const u8"
+    returns: "[]Trit"
+    description: "Encode text string to hypervector using position-based binding"
+
+  encodeTextWords:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: codebook
+        type: "Codebook"
+      - name: text
+        type: "[]const u8"
+    returns: "[]Trit"
+    description: "Encode text with word-level tokenization"
+
+  decodeText:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: codebook
+        type: "Codebook"
+      - name: encoded
+        type: "[]const Trit"
+      - name: max_len
+        type: "usize"
+    returns: "[]u8"
+    description: "Decode hypervector by probing character codebook"
+
+  textSimilarity:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "f64"
+    description: "Compute similarity between two text vectors"
+
+  textsAreSimilar:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+      - name: threshold
+        type: "f64"
+    returns: "bool"
+    description: "Check if two texts are similar (above threshold)"
+
+  findBestMatch:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: codebook
+        type: "Codebook"
+      - name: query
+        type: "[]const u8"
+      - name: corpus
+        type: "[][]const u8"
+    returns: "SearchResult"
+    description: "Find best matching document in corpus"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "Codebook initialization"
+    given: "codebook with dimension 100"
+    when: "initializing"
+    then: "vectors are deterministic"
+
+  - name: "encode/decode roundtrip"
+    given: "text string"
+    when: "encoded then decoded"
+    then: "original text length preserved"
+
+  - name: "textSimilarity identical"
+    given: "same text encoded twice"
+    when: "computing similarity"
+    then: "similarity = 1.0"
+
+  - name: "findBestMatch"
+    given: "query and corpus"
+    when: "finding best match"
+    then: "returns highest similarity document index"
