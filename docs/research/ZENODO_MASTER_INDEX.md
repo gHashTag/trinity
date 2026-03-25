@@ -1,25 +1,33 @@
-# Trinity Zenodo Publications — Master Index (v2.5)
+# Trinity Zenodo Publications — Master Index (v2.6)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v2.5
+## What's New in v2.6
 
-- Added **UNIFIED_BIBLIOGRAPHY.md** — 76 curated references across all domains
-- Added **MATHEMATICAL_APPENDIX.md** — Complete formulas, proofs, and derivations
-- Added **ZENODO_UPLOAD_GUIDE.md** — Step-by-step upload instructions
-- Enhanced cross-references between bundles
-- Improved citation consistency across all documents
+- Added **ALGORITHM_PSEUDOCODE.md** — Detailed pseudocode for all 8 major algorithms
+- Added **SIMD_OPTIMIZATION.md** — Vectorization analysis with 8× speedup benchmarks
+- Added **ROPE_ANALYSIS.md** — φ-RoPE mathematical analysis and experimental results
+- Updated **ZENODO_MASTER_INDEX.md** to v2.6
+- Total documentation: 50+ KB of scientific content
 
 ## Main Documentation
 
+### Core Zenodo Files
 - **[ZENODO_README.md](./ZENODO_README.md)** — Main description for Zenodo parent collection
 - **[EXPERIMENTAL_RESULTS.md](./EXPERIMENTAL_RESULTS.md)** — Supporting experimental data
 - **[ZENODO_SCIENTIFIC_GUIDE_V2.md](./ZENODO_SCIENTIFIC_GUIDE_V2.md)** — Best practices guide
+- **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
+
+### Scientific Foundations
 - **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
 - **[MATHEMATICAL_APPENDIX.md](./MATHEMATICAL_APPENDIX.md)** — Formulas, proofs, derivations
-- **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
+
+### Algorithmic Details (NEW in v2.6)
+- **[ALGORITHM_PSEUDOCODE.md](./ALGORITHM_PSEUDOCODE.md)** — Detailed pseudocode for 8 major algorithms
+- **[SIMD_OPTIMIZATION.md](./SIMD_OPTIMIZATION.md)** — Vectorization analysis, 8× speedup benchmarks
+- **[ROPE_ANALYSIS.md](./ROPE_ANALYSIS.md)** — φ-RoPE mathematical analysis, experimental results
 
 ## Complete Scientific Descriptions
 
