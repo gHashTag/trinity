@@ -8,8 +8,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("faculty_types.zig");
-const Sacred = @import("train_types.zig").Sacred;
+const types = @import("faculty_types");
+const Sacred = @import("train_types").Sacred;
 const FacultySnapshot = types.FacultySnapshot;
 
 /// Generate a φ-themed one-liner based on system state.

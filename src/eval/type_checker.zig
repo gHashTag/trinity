@@ -31,17 +31,17 @@ pub const ErrorEntry = struct {
 /// Type checker state
 pub const TypeChecker = struct {
     allocator: std.mem.Allocator,
-    errors: std.ArrayList(ErrorEntry),
+    errors: std.array_list.Managed(ErrorEntry),
 
     pub fn init(allocator: std.mem.Allocator) TypeChecker {
-        return .{
+        return TypeChecker{
             .allocator = allocator,
-            .errors = std.ArrayList(ErrorEntry).init(allocator),
+            .errors = std.array_list.Managed(ErrorEntry).init(allocator),
         };
     }
 
     pub fn deinit(self: *TypeChecker) void {
-        self.errors.deinit(self.allocator);
+        self.errors.deinit();
     }
 
     /// Check if there are any errors
@@ -51,7 +51,7 @@ pub const TypeChecker = struct {
 
     /// Add a type error
     pub fn addError(self: *TypeChecker, kind: TypeError, message: []const u8, line: u32, column: u32) !void {
-        try self.errors.append(self.allocator, .{
+        try self.errors.append(.{
             .kind = kind,
             .message = message,
             .line = line,

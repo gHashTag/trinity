@@ -8,7 +8,7 @@
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const chat_server = @import("chat_server.zig");
 // depin.zig is in src/firebird/ — inline constants to avoid cross-module import
 const depin = struct {

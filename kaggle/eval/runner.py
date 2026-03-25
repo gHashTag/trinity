@@ -85,6 +85,8 @@ class BenchmarkResult:
     provider: str
     model: str
     timestamp: str
+    # Scientific metrics (computed on aggregate results)
+    scientific_metrics: Dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
@@ -586,6 +588,147 @@ Confidence: [0.0 to 1.0]"""
             print(f"\nPer-Track Scores:")
             for track, stats in summary.per_track_scores.items():
                 print(f"  {track}: {stats['mean_score']:.3f} ({stats['ternary_accuracy']:.3f} ternary)")
+
+        print("="*60 + "\n")
+
+    def compute_scientific_metrics(
+        self,
+        results: List[BenchmarkResult],
+        version: str = "v6"
+    ) -> Dict[str, Any]:
+        """
+        Compute scientific metrics on benchmark results.
+
+        Calculates:
+        - Full-ECE (calibration error)
+        - Class-wise ECE (per-class calibration)
+        - Distribution shift (if source/target available)
+
+        Args:
+            results: List of benchmark results
+            version: Metrics version to use (default: "v6")
+
+        Returns:
+            Dictionary with scientific metrics
+        """
+        if not results:
+            return {}
+
+        try:
+            from .metrics import ScientificMetrics
+        except ImportError:
+            from metrics import ScientificMetrics
+
+        metrics = ScientificMetrics(version=version)
+        scientific_results = {}
+
+        # Extract data for metrics
+        confidences = [r.confidence for r in results]
+        correct = [r.ternary_score == 1 for r in results]
+
+        # Convert to predictions/labels format
+        predictions = [1 if c > 0.5 else 0 for c in confidences]
+        labels = [1 if corr else 0 for corr in correct]
+
+        # Calculate Full-ECE (using scalar confidences as fallback)
+        try:
+            # For scalar confidences, use simple ECE
+            from .scorer_v2 import calculate_ece
+            ece_value = calculate_ece(confidences, correct, n_bins=10)
+            scientific_results["full_ece"] = ece_value
+        except ImportError:
+            scientific_results["full_ece"] = None
+
+        # Calculate class-wise ECE (binary classification: correct/incorrect)
+        try:
+            classwise_result = metrics.calculate_classwise_ece(
+                confidences=confidences,
+                predictions=predictions,
+                labels=labels,
+                n_classes=2,
+                n_bins=10
+            )
+            scientific_results["classwise_ece_macro"] = classwise_result.macro_ece
+            scientific_results["classwise_ece_micro"] = classwise_result.micro_ece
+            scientific_results["classwise_ece_per_class"] = classwise_result.ece_per_class
+        except (NotImplementedError, AttributeError):
+            pass
+
+        # Distribution shift (compare first half to second half)
+        if len(results) > 20:
+            mid_point = len(results) // 2
+            source_confs = confidences[:mid_point]
+            target_confs = confidences[mid_point:]
+
+            try:
+                shift_result = metrics.detect_distribution_shift(
+                    source_confidences=source_confs,
+                    target_confidences=target_confs
+                )
+                scientific_results["distribution_shift_detected"] = shift_result.has_shift
+                scientific_results["distribution_shift_magnitude"] = shift_result.shift_magnitude
+                scientific_results["distribution_shift_ks_pvalue"] = shift_result.ks_pvalue
+            except (NotImplementedError, AttributeError):
+                pass
+
+        return scientific_results
+
+    def attach_scientific_metrics(
+        self,
+        results: List[BenchmarkResult],
+        version: str = "v6"
+    ) -> List[BenchmarkResult]:
+        """
+        Attach scientific metrics to results (stored in aggregate).
+
+        Note: Scientific metrics are computed on aggregate data,
+        not per-item. They are added to a special aggregate result.
+
+        Args:
+            results: List of benchmark results
+            version: Metrics version to use
+
+        Returns:
+            Updated results list
+        """
+        if not results:
+            return results
+
+        # Compute metrics
+        scientific_metrics = self.compute_scientific_metrics(results, version)
+
+        # Create aggregate result entry (if not exists)
+        # We'll add it to the first result for convenience
+        if results:
+            results[0].scientific_metrics = scientific_metrics
+
+        return results
+
+    def print_scientific_metrics(self, scientific_metrics: Dict[str, Any]):
+        """Print scientific metrics in a formatted way."""
+        print("\n" + "="*60)
+        print("SCIENTIFIC METRICS")
+        print("="*60)
+
+        if not scientific_metrics:
+            print("No scientific metrics computed.")
+            print("="*60 + "\n")
+            return
+
+        for key, value in scientific_metrics.items():
+            if isinstance(value, float):
+                print(f"  {key}: {value:.4f}")
+            elif isinstance(value, dict):
+                print(f"  {key}:")
+                for k, v in value.items():
+                    if isinstance(v, float):
+                        print(f"    {k}: {v:.4f}")
+                    else:
+                        print(f"    {k}: {v}")
+            elif isinstance(value, list):
+                print(f"  {key}: [{len(value)} items]")
+            else:
+                print(f"  {key}: {value}")
 
         print("="*60 + "\n")
 

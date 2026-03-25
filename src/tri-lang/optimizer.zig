@@ -69,8 +69,7 @@ pub const OptimizerStats = struct {
     }
 
     pub fn format(self: *const OptimizerStats, allocator: Allocator) ![]const u8 {
-        return std.fmt.allocPrint(allocator, "OptimizerStats{{ passes_run={d}, expressions_modified={d}, iterations={d} }}",
-            .{ self.passes_run, self.expressions_modified, self.iterations });
+        return std.fmt.allocPrint(allocator, "OptimizerStats{{ passes_run={d}, expressions_modified={d}, iterations={d} }}", .{ self.passes_run, self.expressions_modified, self.iterations });
     }
 };
 
@@ -103,7 +102,7 @@ pub const OptimizerConfig = struct {
 /// Core optimizer with pass registry
 pub const Optimizer = struct {
     allocator: Allocator,
-    passes: *std.ArrayList(OptimizerPass),
+    passes: std.ArrayList(OptimizerPass),
     config: OptimizerConfig,
     stats: OptimizerStats,
 
@@ -111,11 +110,9 @@ pub const Optimizer = struct {
 
     /// Create new optimizer with default config
     pub fn init(allocator: Allocator) !Self {
-        const passes_list = try allocator.create(std.ArrayList(OptimizerPass));
-        passes_list.* = std.ArrayList(OptimizerPass).initCapacity(allocator, 0) catch .empty;
         return Self{
             .allocator = allocator,
-            .passes = passes_list,
+            .passes = .{}, // Empty ArrayList in Zig 0.15
             .config = OptimizerConfig.init(),
             .stats = OptimizerStats.init(),
         };
@@ -123,11 +120,9 @@ pub const Optimizer = struct {
 
     /// Create new optimizer with custom config
     pub fn initWithConfig(allocator: Allocator, config: OptimizerConfig) !Self {
-        const passes_list = try allocator.create(std.ArrayList(OptimizerPass));
-        passes_list.* = std.ArrayList(OptimizerPass).initCapacity(allocator, 0) catch .empty;
         return Self{
             .allocator = allocator,
-            .passes = passes_list,
+            .passes = .{}, // Empty ArrayList in Zig 0.15
             .config = config,
             .stats = OptimizerStats.init(),
         };
@@ -136,7 +131,6 @@ pub const Optimizer = struct {
     /// Free optimizer resources
     pub fn deinit(self: *Self) void {
         self.passes.deinit(self.allocator);
-        self.allocator.destroy(self.passes);
     }
 
     /// Add a pass to the optimizer
@@ -266,17 +260,15 @@ pub const Optimizer = struct {
 /// Builder pattern for constructing optimizers
 pub const OptimizerBuilder = struct {
     allocator: Allocator,
-    passes: *std.ArrayList(OptimizerPass),
+    passes: std.ArrayList(OptimizerPass),
     config: OptimizerConfig,
 
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
-        const passes_list = try allocator.create(std.ArrayList(OptimizerPass));
-        passes_list.* = std.ArrayList(OptimizerPass).initCapacity(allocator, 0) catch .empty;
         return Self{
             .allocator = allocator,
-            .passes = passes_list,
+            .passes = .{}, // Empty ArrayList in Zig 0.15
             .config = OptimizerConfig.init(),
         };
     }
@@ -317,7 +309,6 @@ pub const OptimizerBuilder = struct {
     /// Free builder resources
     pub fn deinit(self: *Self) void {
         self.passes.deinit(self.allocator);
-        self.allocator.destroy(self.passes);
     }
 };
 

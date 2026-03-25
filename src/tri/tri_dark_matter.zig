@@ -10,7 +10,7 @@
 //!   tri dm wimp       - Why WIMPs failed (sacred explanation)
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 const GOLDEN = tri_colors.GOLDEN;
 const GREEN = tri_colors.GREEN;

@@ -40,10 +40,10 @@ pub const Treatment = enum {
 // CONFIGURATION
 // ═════════════════════════════════════════════════════════════════════════
 
-pub const CHECK_INTERVAL_SEC: u64 = 30;  // Check every 30s
-pub const STUCK_THRESHOLD_SEC: u64 = 60;  // Heartbeat > 60s = stuck
-pub const MEMORY_LEAK_THRESHOLD_MB: u64 = 512;  // RSS > 512MB
-pub const LOG_OVERFLOW_THRESHOLD_KB: u64 = 512;  // Log > 512KB
+pub const CHECK_INTERVAL_SEC: u64 = 30; // Check every 30s
+pub const STUCK_THRESHOLD_SEC: u64 = 60; // Heartbeat > 60s = stuck
+pub const MEMORY_LEAK_THRESHOLD_MB: u64 = 512; // RSS > 512MB
+pub const LOG_OVERFLOW_THRESHOLD_KB: u64 = 512; // Log > 512KB
 
 pub const DoctorConfig = struct {
     interval_sec: u64 = CHECK_INTERVAL_SEC,

@@ -97,7 +97,6 @@ pub fn encodeTri27Instruction(inst: Tri27Instruction) u32 {
 /// - t8..t26: General purpose (allocated linearly)
 ///
 /// This matches reticular_raphe.t27 layout for golden test compatibility
-
 pub const RegAlloc = struct {
     allocator: Allocator,
     /// Map IR value ID to register number

@@ -9,23 +9,22 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const types = @import("faculty_types.zig");
+const types = @import("faculty_types");
 const thalamus = @import("thalamus.zig"); // Local thalamus (in queen/)
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;
 const AgentState = types.AgentState;
 
-// Import tri module (will fail if cortex is standalone module)
-// This requires cortex to NOT be a standalone module in build.zig
-const tri_mod = @import("tri");
-const voice_engine = tri_mod.voice_engine;
-const analysis_engine = tri_mod.analysis_engine;
-const three_paths = tri_mod.three_paths;
-const phi_poetry = tri_mod.phi_poetry;
-const colors = tri_mod.tri_colors;
-const Sacred = tri_mod.train_types.Sacred;
-const tri_state = tri_mod.tri_state;
-const hippocampus = tri_mod.hippocampus;
+// Import tri modules via module imports (to avoid file ownership conflicts)
+const voice_engine = @import("voice_engine");
+const analysis_engine = @import("analysis_engine");
+const three_paths = @import("three_paths");
+const phi_poetry = @import("phi_poetry");
+const colors = @import("tri_colors");
+const train_types = @import("train_types");
+const Sacred = train_types.Sacred;
+const tri_state = @import("tri_state");
+const hippocampus = @import("hippocampus");
 const Path = three_paths.Path;
 
 pub const Lang = enum {

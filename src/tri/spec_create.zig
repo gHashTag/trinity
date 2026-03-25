@@ -17,7 +17,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const spec_match = @import("spec_template_match.zig");
 const farm = @import("farm");
 const tri_experience = @import("tri_experience.zig");

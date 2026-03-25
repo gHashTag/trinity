@@ -16,7 +16,7 @@
 
 const std = @import("std");
 const cell_parser = @import("ribosome.zig");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 const Allocator = std.mem.Allocator;
 

@@ -48,9 +48,9 @@ pub const CopticLetter = enum(u5) {
 
 /// TRI-27 register bank (for validation)
 pub const Bank = enum(u2) {
-    sacred = 0,   // α-η (r0-r7): sacred/math constants
+    sacred = 0, // α-η (r0-r7): sacred/math constants
     temporal = 1, // ι-ρ (r8-r15): temporal/counters
-    spatial = 2,  // σ-ϡ (r16-r26): spatial/data
+    spatial = 2, // σ-ϡ (r16-r26): spatial/data
 };
 
 /// Get bank for a given Coptic letter
@@ -151,16 +151,16 @@ test "coptic bank assignment" {
 }
 
 test "coptic same_bank check" {
-    try std.testing.expect(sameBank(0, 7));   // Both sacred
-    try std.testing.expect(sameBank(8, 15));  // Both temporal
+    try std.testing.expect(sameBank(0, 7)); // Both sacred
+    try std.testing.expect(sameBank(8, 15)); // Both temporal
     try std.testing.expect(sameBank(16, 26)); // Both spatial
-    try std.testing.expect(!sameBank(0, 8));  // sacred != temporal
+    try std.testing.expect(!sameBank(0, 8)); // sacred != temporal
     try std.testing.expect(!sameBank(8, 16)); // temporal != spatial
 }
 
 test "coptic validate cross-bank operations" {
     // Same bank: valid
-    try validateOp(0, 1, 2);  // All sacred
+    try validateOp(0, 1, 2); // All sacred
     try validateOp(8, 9, 10); // All temporal
     try validateOp(16, 17, 18); // All spatial
 

@@ -5346,47 +5346,139 @@ struct SimpleMultilineInput: View {
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend: Bool = false
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            // Placeholder
-            if text.isEmpty {
-                Text(placeholder)
-                    .foregroundStyle(Color.white.opacity(0.4))
-                    .font(.system(size: 15))
-                    .padding(.leading, 5)
-                    .padding(.top, 6)
-                    .allowsHitTesting(false)
-            }
+        MultilineInputRepresentable(
+            text: $text,
+            placeholder: placeholder,
+            isFocused: $isFocused,
+            onSubmit: onSubmit,
+            useCtrlEnterToSend: useCtrlEnterToSend
+        )
+        .frame(height: 36)
+    }
+}
 
-            // Text Editor
-            TextEditor(text: $text)
-                .font(.system(size: 15))
-                .foregroundStyle(.white)
-                .background(Color.clear)
-                .scrollContentBackground(.hidden)
-                .padding(4)
-                .frame(height: 36)
-                .focused($isFocused)
-                .onKeyPress { keyPress in
-                    // Handle Enter key
-                    if keyPress.key == .return {
-                        if useCtrlEnterToSend {
-                            // Ctrl+Enter mode: Ctrl+Enter = send, Enter = newline
-                            if keyPress.modifiers.contains(.control) {
-                                onSubmit()
-                                return .handled
-                            }
-                        } else {
-                            // Default mode: Enter = send, Shift+Enter = newline
-                            if !keyPress.modifiers.contains(.shift) {
-                                if !text.isEmpty {
-                                    onSubmit()
-                                }
-                                return .handled
-                            }
-                        }
+// Minimal NSTextView wrapper that actually works
+struct MultilineInputRepresentable: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var isFocused: FocusState<Bool>.Binding
+    var onSubmit: () -> Void
+    var useCtrlEnterToSend: Bool
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let scrollView = NSScrollView()
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+
+        let textView = NSTextView()
+        textView.delegate = context.coordinator
+        textView.isRichText = false
+        textView.isEditable = true
+        textView.isSelectable = true
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.font = NSFont.systemFont(ofSize: 15)
+        textView.textColor = .white
+        textView.backgroundColor = .clear
+        textView.drawsBackground = true
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.lineFragmentPadding = 0
+        textView.textContainer?.containerSize = NSSize(width: 600, height: 1000)
+        textView.textContainer?.heightTracksTextView = true
+        textView.textContainer?.widthTracksTextView = true
+        // Add text insets for padding
+        textView.textContainerInset = NSSize(width: 4, height: 8)
+
+        scrollView.documentView = textView
+        context.coordinator.textView = textView
+
+        return scrollView
+    }
+
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+
+        if textView.string != text && !context.coordinator.isUserTyping {
+            textView.string = text
+        }
+
+        context.coordinator.text = text
+        context.coordinator.placeholder = placeholder
+        context.coordinator.onSubmit = onSubmit
+        context.coordinator.useCtrlEnterToSend = useCtrlEnterToSend
+        context.coordinator.updatePlaceholder()
+
+        if isFocused.wrappedValue && textView.window?.firstResponder != textView {
+            DispatchQueue.main.async {
+                textView.window?.makeFirstResponder(textView)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, placeholder: placeholder, onSubmit: onSubmit, useCtrlEnterToSend: useCtrlEnterToSend)
+    }
+
+    class Coordinator: NSObject, NSTextViewDelegate {
+        @Binding var text: String
+        var placeholder: String
+        var onSubmit: () -> Void
+        var useCtrlEnterToSend: Bool
+        weak var textView: NSTextView?
+        private var placeholderLayer: CATextLayer?
+        var isUserTyping = false
+
+        init(text: Binding<String>, placeholder: String, onSubmit: @escaping () -> Void, useCtrlEnterToSend: Bool) {
+            self._text = text
+            self.placeholder = placeholder
+            self.onSubmit = onSubmit
+            self.useCtrlEnterToSend = useCtrlEnterToSend
+        }
+
+        func textDidChange(_ notification: Notification) {
+            isUserTyping = true
+            text = textView?.string ?? ""
+            updatePlaceholder()
+        }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                if useCtrlEnterToSend {
+                    if NSEvent.modifierFlags.contains(.control) {
+                        onSubmit()
+                        return true
                     }
-                    return .ignored
+                } else {
+                    if !NSEvent.modifierFlags.contains(.shift) {
+                        if !text.isEmpty {
+                            onSubmit()
+                        }
+                        return true
+                    }
                 }
+            }
+            return false
+        }
+
+        func updatePlaceholder() {
+            guard let textView = textView else { return }
+            if placeholderLayer == nil {
+                let layer = CATextLayer()
+                layer.font = NSFont.systemFont(ofSize: 15)
+                layer.fontSize = 15
+                layer.foregroundColor = NSColor.white.withAlphaComponent(0.4).cgColor
+                layer.contentsScale = NSScreen.main?.backingScaleFactor ?? 2.0
+                textView.wantsLayer = true
+                textView.layer?.addSublayer(layer)
+                placeholderLayer = layer
+            }
+            placeholderLayer?.string = placeholder
+            placeholderLayer?.frame = CGRect(x: 0, y: 10, width: textView.bounds.width, height: 20)
+            placeholderLayer?.isHidden = !text.isEmpty
         }
     }
 }

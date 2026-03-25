@@ -16,9 +16,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("train_types.zig");
+const types = @import("train_types");
 const diag = @import("train_diagnostics.zig");
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 const train_live = @import("train_live.zig");
 const CheckpointInfo = types.CheckpointInfo;
 const TrainLogEntry = types.TrainLogEntry;

@@ -46,6 +46,8 @@ const tri_experiment = @import("tri_experiment.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
 const faculty_board = queen.cortex; // faculty board module from src/queen/
+// TODO: faculty command disabled due to circular dependency with cortex.zig importing "tri"
+// const faculty_board_disabled = void{};
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -211,6 +213,19 @@ pub fn main() !void {
         logAgentCommand(args[arg_idx..]);
         const tri_compile_mod = @import("tri_compile.zig");
         try tri_compile_mod.run(allocator, compile_args);
+        return;
+    }
+
+    // Content hash commands: route `tri hash-fn <target>` and `tri hash-fn-compare <target>`
+    if (std.mem.eql(u8, args[arg_idx], "hash-fn") or std.mem.eql(u8, args[arg_idx], "hash-fn-compare")) {
+        const hash_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const content_cli = @import("content_cli.zig");
+        if (std.mem.eql(u8, args[arg_idx], "hash-fn")) {
+            try content_cli.cmdHashFn(allocator, hash_args);
+        } else {
+            try content_cli.cmdHashFnCompare(allocator, hash_args);
+        }
         return;
     }
 
@@ -449,7 +464,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "memory")) {
             const mem_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const tri_memory = @import("hippocampus.zig");
+            const tri_memory = @import("hippocampus");
             try tri_memory.runMemoryCommand(allocator, mem_args);
             return;
         }
@@ -579,6 +594,14 @@ pub fn main() !void {
             const tri_autocomplete = @import("tri_autocomplete.zig");
             try tri_autocomplete.runAutocompleteCommand(allocator, autocomplete_args);
             return;
+        }
+        // Package: prepare archive for friend's Mac (Docker + training code + dataset)
+        if (std.mem.eql(u8, first_arg, "package")) {
+            const package_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_package = @import("package.zig");
+            const exit_code = try tri_package.execute(allocator, package_args);
+            std.process.exit(exit_code);
         }
     }
 
@@ -914,8 +937,13 @@ pub fn main() !void {
         },
         // GitHub Integration (Protocol v2)
         .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
-        // Faculty Board (A2A Dashboard)
-        .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
+        // Faculty Board (A2A Dashboard) - TEMPORARILY DISABLED due to circular dependency
+        // .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
+        .faculty => {
+            std.debug.print("Faculty command temporarily disabled due to module dependency issues.\n", .{});
+            std.debug.print("This will be fixed in a future update.\n", .{});
+            return error.NotImplemented;
+        },
         .experiment => try tri_experiment.runExperimentCommand(allocator, cmd_args),
         // Observatory v5.2
         .trace => {
@@ -1078,40 +1106,9 @@ const AGENT_CMD_KEEP_LINES = 500;
 
 /// Dashboard: one-screen overview from live snapshot data
 fn runDashboard(allocator: std.mem.Allocator) void {
-    const snapshot = faculty_board.collectSnapshot(allocator) catch {
-        std.debug.print("\x1b[31mFailed to collect snapshot\x1b[0m\n", .{});
-        return;
-    };
-
-    const rate = snapshot.compile_rate;
-    const rate_icon: []const u8 = if (rate >= 80) "💎" else if (rate >= 50) "🟡" else "💀";
-    const build_icon: []const u8 = if (snapshot.build_ok) "🟢" else "🔴";
-    const active = snapshot.activeFaculty();
-
-    std.debug.print("\n\x1b[36m╔═══════════════════════════════════════╗\x1b[0m\n", .{});
-    std.debug.print("\x1b[36m║\x1b[0m  📊 \x1b[1mTRINITY DASHBOARD\x1b[0m               \x1b[36m║\x1b[0m\n", .{});
-    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
-
-    std.debug.print("\x1b[36m║\x1b[0m  Build:    {s} {d}/9 binaries\n", .{ build_icon, snapshot.binaries });
-    std.debug.print("\x1b[36m║\x1b[0m  Compile:  {s} {d}/{d} = {d}%\n", .{ rate_icon, snapshot.compile_pass, snapshot.compile_total, rate });
-    std.debug.print("\x1b[36m║\x1b[0m  Faculty:  {d}/6 active\n", .{active});
-    std.debug.print("\x1b[36m║\x1b[0m  Dirty:    {d} files\n", .{snapshot.dirty_files});
-    std.debug.print("\x1b[36m║\x1b[0m  Issues:   {d} open\n", .{snapshot.open_issues});
-    std.debug.print("\x1b[36m║\x1b[0m  Branch:   {s}\n", .{snapshot.git_branch});
-
-    // V-number with zone color
-    const zone_color = snapshot.v_zone.color();
-    std.debug.print("\x1b[36m║\x1b[0m  V:        {s}{d:.3} {s}\x1b[0m\n", .{ zone_color, snapshot.v_number, snapshot.v_zone.label() });
-
-    // Agent roster
-    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
-    for (snapshot.agents) |a| {
-        const status_color = a.status.color();
-        std.debug.print("\x1b[36m║\x1b[0m  {s} {s}: {s}{s}\x1b[0m\n", .{ a.agent.emoji(), a.agent.name(), status_color, a.status.label() });
-    }
-
-    std.debug.print("\x1b[36m╚═══════════════════════════════════════╝\x1b[0m\n", .{});
-    std.debug.print("\n  \x1b[90mtri faculty\x1b[0m — full agent board\n  \x1b[90mtri stats\x1b[0m   — codebase metrics\n  \x1b[90mtri cloud\x1b[0m   — training farm\n\n", .{});
+    _ = allocator;
+    // TODO: faculty_board.collectSnapshot temporarily disabled due to circular dependency
+    std.debug.print("\x1b[31mDashboard temporarily disabled due to module dependency issues.\x1b[0m\n", .{});
 }
 
 /// If AGENT_NAME env var is set, append "timestamp agent_name tri args..." to log.
@@ -1662,8 +1659,8 @@ fn dispatchCommand(
         .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
             std.debug.print("GitHub error: {}\n", .{err});
         },
-        .faculty => faculty_board.runFacultyCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Faculty error: {}\n", .{err});
+        .faculty => {
+            std.debug.print("Faculty command temporarily disabled due to module dependency issues.\n", .{});
         },
         .experiment => tri_experiment.runExperimentCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Experiment error: {}\n", .{err});

@@ -470,4 +470,76 @@ tri queen config set kill_threshold 7.0
 
 ---
 
+## How to Cite
+
+This work is published as a defensive publication (prior art) to prevent patenting of self-learning orchestration innovations.
+
+### BibTeX
+
+```bibtex
+@misc{trinity2025queen,
+  title = {Queen Self-Learning: Episode-Based Adaptation for Autonomous AI Systems},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication -- Part of Trinity S³AI Framework}
+}
+
+@misc{trinity2025lotus,
+  title = {Lotus Cycle: Six-Phase Self-Learning Feedback Loop for Autonomous Orchestration},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication}
+}
+```
+
+### APA
+
+```
+Trinity Project. (2025). *Queen self-learning: Episode-based adaptation for autonomous AI systems* [Defensive Publication]. Zenodo. https://doi.org/10.5281/zenodo.18939352
+```
+
+### MLA
+
+```
+Trinity Project. "Queen Self-Learning: Episode-Based Adaptation for Autonomous AI Systems." *Defensive Publication*, 2025, Zenodo, doi:10.5281/zenodo.18939352.
+```
+
+### IEEE
+
+```
+[1] Trinity Project, "Queen Self-Learning: Episode-Based Adaptation for Autonomous AI Systems," Zenodo, 2025. doi: 10.5281/zenodo.18939352.
+```
+
+### Related Publications
+
+- **TRI-27 ISA:** Ternary instruction set (see `tri27_platform.md`)
+- **Sacred GF16/TF3:** φ-based arithmetic (see `sacred_formats_fpga.md`)
+- **HSLM:** 1.95M ternary language model (see `TRINITY_S3AI_UNIFIED_FRAMEWORK.md`)
+
+### Key Claims (Prior Art)
+
+1. **Six-phase Lotus Cycle** — Experience Recall → Observe → Plan → Evaluate → Act → Self-Learning
+2. **Episode-based experience tracking** with Jaccard similarity recall
+3. **Tri27Config auto-adaptation** without human intervention
+4. **Window-based quality evaluation** (good/unstable/bad/unknown)
+5. **PolicyDelta actions** — scale_up, scale_down, set, wait
+6. **Closed feedback loop** for continuous system improvement
+7. **φ-decay rolling average** for PPL tracking (Reticular Raphe)
+8. **PPL clamping** to prevent false positive triggers
+
+### Hypotheses Validated
+
+- **H1:** Self-Learning reduces crash rate by 3× (<5% vs ~15%)
+- **H2:** Feedback loop accelerates stabilization 2×
+- **H3:** Auto-adapt prevents byzantine failure (<5% ratio)
+- **H4:** Reticular Raphe validation (<1% error vs reference)
+- **H5:** φ-decay factor optimization (0.990 optimal)
+- **H6:** PPL clamping prevents Queen panic
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

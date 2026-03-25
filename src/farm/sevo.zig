@@ -17,13 +17,13 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const farm = @import("farm");
-const evolution_mod = farm.evolution;
+// Direct path import to avoid circular dependency within farm module
+const evolution_mod = @import("evolution.zig");
 const EvolutionState = evolution_mod.EvolutionState;
 const ServiceEntry = evolution_mod.ServiceEntry;
 const MutatedConfig = evolution_mod.MutatedConfig;
 const LrSchedule = evolution_mod.LrSchedule;
-const farm_accounts_mod = farm.farm_accounts;
+const farm_accounts_mod = @import("farm_accounts.zig");
 const Account = farm_accounts_mod.Account;
 const railway_api = @import("railway_api.zig");
 

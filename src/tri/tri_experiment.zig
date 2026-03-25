@@ -13,7 +13,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("train_types.zig");
+const types = @import("train_types");
 const diag = @import("train_diagnostics.zig");
 const CheckpointInfo = types.CheckpointInfo;
 

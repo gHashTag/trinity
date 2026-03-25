@@ -424,7 +424,7 @@ const Parser = struct {
         primary = 7, // literals, identifiers, (), []
     };
 
-    const ParseError = error{SyntaxError, OutOfMemory};
+    const ParseError = error{ SyntaxError, OutOfMemory };
 
     fn getPrecedence(kind: TokenKind) Prec {
         return switch (kind) {

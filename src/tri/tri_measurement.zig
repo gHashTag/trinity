@@ -4,7 +4,7 @@
 //! Commands for quantum measurement problem resolution.
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import quantum measurement module (via build.zig module)
 const qm = @import("measurement");

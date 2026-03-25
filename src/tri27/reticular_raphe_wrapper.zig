@@ -150,7 +150,7 @@ test "reticular_raphe_wrapper rolling_ppl" {
     defer allocator.free(bytecode);
 
     // Q16 values: Using small PPL values in Q16 format
-    var q16_ppls = [_]u16{6553, 7864, 7536, 8519, 7208}; // PPLs in Q16
+    var q16_ppls = [_]u16{ 6553, 7864, 7536, 8519, 7208 }; // PPLs in Q16
     const result = try wrapper.execute(bytecode, &q16_ppls);
 
     // With LDI t0, 0, the result should be 0

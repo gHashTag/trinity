@@ -5,7 +5,7 @@
 //! Uses real quantum_gravity_full module from src/gravity/.
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import real quantum gravity module (from build.zig)
 const qg = @import("quantum_gravity_full");

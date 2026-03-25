@@ -1,0 +1,236 @@
+# ═══════════════════════════════════════════════════════════════════
+# LEXER — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Lexical Analysis for Tri Language
+# Source of truth for tri-lang/lexer.zig codegen
+# Issue #408: ADT Enum + Exhaustive Match + Pipe
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_lexer
+version: "0.1.0"
+module: tri_lang.lexer
+description: "Lexical analysis for Tri language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Token:
+    description: "All token types for Tri Language"
+    underlying: "union(enum)"
+    variants:
+      - Keyword: "Keyword"
+      - Identifier: "[]const u8"
+      - IntLiteral: "i64"
+      - FloatLiteral: "f64"
+      - StringLiteral: "[]const u8"
+      - CharLiteral: "u8"
+      - BoolLiteral: "bool"
+      - Operator: "Operator"
+      - LeftParen: "Opening parenthesis"
+      - RightParen: "Closing parenthesis"
+      - LeftBrace: "Opening brace"
+      - RightBrace: "Closing brace"
+      - LeftBracket: "Opening bracket"
+      - RightBracket: "Closing bracket"
+      - Comma: "Comma separator"
+      - Colon: "Colon"
+      - Semicolon: "Semicolon"
+      - Dot: "Dot"
+      - DoubleDot: ".. for ranges"
+      - DoubleDotEq: "..= for inclusive ranges"
+      - Pipe: "| for guards"
+      - PipeForward: "|> for Elixir-style pipe"
+      - Arrow: "=> for match arms"
+      - DoubleArrow: "-> for function types"
+      - FatArrow: "=> for match arms (same as Arrow)"
+      - Equal: "="
+      - EqualEqual: "=="
+      - BangEqual: "!="
+      - Less: "<"
+      - LessEqual: "<="
+      - Greater: ">"
+      - GreaterEqual: ">="
+      - Wildcard: "_ pattern"
+      - RangeToEq: "..="
+      - Eof: "End of file"
+      - Error: "[]const u8"
+
+  Keyword:
+    description: "Keywords in Tri"
+    underlying: "enum(u16)"
+    variants:
+      # Control flow
+      - Fn: "fn keyword"
+      - Return: "return keyword"
+      - If: "if keyword"
+      - Else: "else keyword"
+      - While: "while keyword"
+      - For: "for keyword"
+      - Match: "match keyword"
+      # Type declarations
+      - Type: "type keyword"
+      - Struct: "struct keyword"
+      - Enum: "enum keyword"
+      - Union: "union keyword"
+      # Variable bindings
+      - Let: "let keyword"
+      - Const: "const keyword"
+      # Ternary types
+      - Trit: "trit keyword"
+      - Trit3: "trit3 keyword"
+      - Trit9: "trit9 keyword"
+      - Trit27: "trit27 keyword"
+      # Sacred types
+      - Gf16: "gf16 keyword"
+      - Tf3: "tf3 keyword"
+      # Integer types
+      - I8: "i8 keyword"
+      - I16: "i16 keyword"
+      - I32: "i32 keyword"
+      - I64: "i64 keyword"
+      # Float types
+      - F16: "f16 keyword"
+      - F32: "f32 keyword"
+      - F64: "f64 keyword"
+      # String and boolean
+      - String: "string keyword"
+      - Bool: "bool keyword"
+      # Pipeline
+      - Pipeline: "pipeline keyword"
+      # Modifiers
+      - Pub: "pub keyword"
+      - Export: "export keyword"
+      # Result type
+      - Result: "Result keyword"
+      - Ok: "Ok keyword"
+      - Err: "Err keyword"
+      # Linear types
+      - Linear: "linear keyword"
+      - Banked: "Banked keyword"
+      - Bank0: "Bank0 keyword"
+      - Bank1: "Bank1 keyword"
+      - Bank2: "Bank2 keyword"
+      - Bank3: "Bank3 keyword"
+      - Bank4: "Bank4 keyword"
+      - Bank5: "Bank5 keyword"
+      - Bank6: "Bank6 keyword"
+      - Bank7: "Bank7 keyword"
+      - Bank8: "Bank8 keyword"
+      # Ownership modes
+      - Inout: "inout keyword"
+      - Sink: "sink keyword"
+      - Set: "set keyword"
+      # Effects + Handlers
+      - Effect: "Effect keyword"
+      - Perform: "perform keyword"
+      - Handle: "handle keyword"
+      - Try: "try keyword"
+      - State: "State keyword"
+      - Error: "Error keyword"
+      - Async: "async keyword"
+      # Array combinators
+      - Map: "map keyword"
+      - Reduce: "reduce keyword"
+      - Scan: "scan keyword"
+      - Filter: "filter keyword"
+      - FlatMap: "flatMap keyword"
+      - Zip: "zip keyword"
+      - Inclusive: "inclusive keyword"
+      - Exclusive: "exclusive keyword"
+      - Prefix: "prefix keyword"
+      # Platform types
+      - CPU: "CPU keyword"
+      - FPGA: "FPGA keyword"
+      - VM: "VM keyword"
+      - Auto: "auto keyword"
+
+  Operator:
+    description: "Operators"
+    underlying: "enum(u8)"
+    variants:
+      - Add: "+"
+      - Sub: "-"
+      - Mul: "*"
+      - Div: "/"
+      - Mod: "%"
+      - BitAnd: "&"
+      - BitOr: "|"
+      - BitXor: "^"
+      - BitNot: "~"
+      - ShiftLeft: "<<"
+      - ShiftRight: ">>"
+      - TernaryAnd: "ternary AND"
+      - TernaryOr: "ternary OR"
+      - TernaryXor: "ternary XOR"
+      - Dot: "dot product"
+      - Assign: "="
+
+  Lexer:
+    description: "Lexer state"
+    fields:
+      - name: source
+        type: "[]const u8"
+        description: "Source code"
+      - name: pos
+        type: "usize"
+        description: "Current position"
+      - name: line
+        type: "usize"
+        description: "Current line number"
+      - name: column
+        type: "usize"
+        description: "Current column number"
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+    methods:
+      - name: init
+        params:
+          - name: source
+            type: "[]const u8"
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Lexer"
+        description: "Initialize lexer with source"
+
+      - name: next
+        returns: "!Token"
+        description: "Get next token from source"
+        errors:
+          - OutOfMemory
+          - "Invalid token"
+
+      - name: location
+        returns: "SourceLocation"
+        description: "Get current location for error reporting"
+
+  SourceLocation:
+    description: "Source location for error reporting"
+    fields:
+      - name: line
+        type: "usize"
+        description: "Line number"
+      - name: column
+        type: "usize"
+        description: "Column number"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Lexer tokenizes Tri source code into tokens:
+# - Keywords: fn, if, else, match, let, type, enum, struct, etc.
+# - Identifiers: alphanumeric + underscore
+# - Literals: integers, floats, strings, chars, booleans
+# - Operators: arithmetic, bitwise, ternary, assignment
+# - Delimiters: parentheses, braces, brackets, commas
+# - Special: pipe, pipe forward, arrows, wildcard
+#
+# Two-character operators recognized:
+# - .., ..=, |>, ==, !=, <=, >=, <<, >>, =>, ->
+#
+# Line comments (//) are skipped

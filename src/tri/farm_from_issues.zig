@@ -171,7 +171,7 @@ fn executeTasks(allocator: Allocator, tasks: []const FarmTask, dry_run: bool, ma
         const injected = executeTask(allocator, task, count_for_task) catch |err| {
             print("   {s}❌ Failed: {}{s}\n", .{ RED, err, RESET });
             result.tasks_failed += 1;
-            try errors_list.writer().print("#{d}: {} | ", .{ task.issue_number, err });
+            try errors_list.writer(allocator).print("#{d}: {} | ", .{ task.issue_number, err });
             continue;
         };
 

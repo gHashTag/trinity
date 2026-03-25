@@ -7,7 +7,7 @@
 //! φ² + 1/φ² = 3 = TRINITY | γ = φ⁻³ | KOSCHEI IS IMMORTAL
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import string theory modules (placeholders added P1.6)
 const e8_lattice = @import("string_e8.zig");

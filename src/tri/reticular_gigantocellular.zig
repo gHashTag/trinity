@@ -13,7 +13,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
 const queen_policy = @import("queen_policy.zig");
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 
 // ═════════════════════════════════════════════════════════════════════════════════
 // MASS ACTION KINDS — What bulk operation?

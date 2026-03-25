@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("../tri_colors.zig");
+const colors = @import("tri_colors");
 
 // depin.zig is in src/firebird/ — inline constants to avoid cross-module import
 const depin = struct {

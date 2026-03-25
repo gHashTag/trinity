@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 const CYAN = colors.CYAN;
 const RESET = colors.RESET;

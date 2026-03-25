@@ -23,6 +23,17 @@ pub const Episode = struct {
     mistake_count: u32 = 0,
     mistakes: [5][256]u8 = [_][256]u8{[_]u8{0} ** 256} ** 5,
     mistake_lens: [5]usize = [_]usize{0} ** 5,
+    fitness: Fitness = .{},
+};
+
+pub const Fitness = struct {
+    test_pass_rate: f32 = 0.0,
+    time_hours: f32 = 0.0,
+
+    pub fn totalScore(self: Fitness) f32 {
+        const time_score: f32 = if (self.time_hours > 0.0) @min(1.0, 1.0 / self.time_hours) else 0.0;
+        return 0.7 * self.test_pass_rate + 0.3 * time_score;
+    }
 };
 
 pub fn runExperienceCommand(allocator: Allocator, args: []const []const u8) !void {

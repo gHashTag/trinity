@@ -11,7 +11,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const YELLOW = colors.YELLOW;
 const GREEN = colors.GREEN;
 const RED = colors.RED;

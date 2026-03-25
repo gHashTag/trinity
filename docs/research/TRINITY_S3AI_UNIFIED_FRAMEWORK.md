@@ -539,6 +539,47 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ---
 
+## How to Cite
+
+This unified research framework is published as a defensive publication (prior art) covering all Trinity S³AI innovations.
+
+### BibTeX
+
+```bibtex
+@misc{trinity2025s3ai,
+  title = {Trinity S³AI: Unified Scientific Research Framework for Ternary Computing, FPGA Inference, and Autonomous Self-Learning},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication -- Unified Framework}
+}
+```
+
+### APA
+
+```
+Trinity Project. (2025). *Trinity S³AI: Unified scientific research framework for ternary computing, FPGA inference, and autonomous self-learning* [Defensive Publication]. Zenodo. https://doi.org/10.5281/zenodo.18939352
+```
+
+### IEEE
+
+```
+[1] Trinity Project, "Trinity S³AI: Unified Scientific Research Framework for Ternary Computing, FPGA Inference, and Autonomous Self-Learning," Zenodo, 2025. doi: 10.5281/zenodo.18939352.
+```
+
+### Component Publications
+
+| Component | Zenodo DOI | Document |
+|-----------|------------|----------|
+| HSLM (Paper 1) | 10.5281/zenodo.18939352 | See unified framework |
+| Sacred GF16/TF3 | 10.5281/zenodo.18939352 | `sacred_formats_fpga.md` |
+| TRI-27 ISA | TBD | `tri27_platform.md` |
+| Queen Self-Learning | TBD | `queen_lotus_experiments.md` |
+| Tri Language | TBD | `trilanguage_canon.md` |
+
+---
+
 ## References
 
 [1] D. Ma et al., "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits," arXiv:2402.17764, 2024.

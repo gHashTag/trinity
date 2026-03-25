@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const HRR = @import("vsa").HRR;
 
 const GOLDEN = colors.GOLDEN;

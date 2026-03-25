@@ -6,10 +6,10 @@
 //
 // Self-hosted ENABLED — using generated code from Tri spec:
 
-// Import generated code and re-export all public symbols
-const gen = @import("gen_vsa.zig");
+// Import generated code for core VSA operations
+const gen = @import("gen_vsa");
 
-// Re-export all module-level symbols
+// Re-export core symbols from generated code
 pub const common = gen.common;
 pub const ops = gen.ops;
 pub const sparse = gen.sparse;
@@ -21,63 +21,77 @@ pub const SIMD_WIDTH = gen.SIMD_WIDTH;
 pub const MAX_TRITS = gen.MAX_TRITS;
 pub const SearchResult = gen.SearchResult;
 pub const HybridBigInt = gen.HybridBigInt;
-pub const vsa_common = gen.vsa_common;
-pub const vsa_core_compat = gen.vsa_core_compat;
-pub const vsa_encoding = gen.vsa_encoding;
-pub const vsa_storage = gen.vsa_storage;
-pub const vsa_concurrency = gen.vsa_concurrency;
-pub const vsa_agent = gen.vsa_agent;
-pub const vsa_hrr = gen.vsa_hrr;
-pub const vsa_bsd = gen.vsa_bsd;
-pub const vsa_benchmarks = gen.vsa_benchmarks;
-pub const vsa_fpga_bind = gen.vsa_fpga_bind;
-pub const vsa_tests = gen.vsa_tests;
-pub const HRR = gen.HRR;
-pub const bind = gen.bind;
-pub const unbind = gen.unbind;
-pub const bundle2 = gen.bundle2;
-pub const bundle3 = gen.bundle3;
-pub const permute = gen.permute;
-pub const inversePermute = gen.inversePermute;
-pub const cosineSimilarity = gen.cosineSimilarity;
-pub const hammingDistance = gen.hammingDistance;
-pub const hammingSimilarity = gen.hammingSimilarity;
-pub const dotSimilarity = gen.dotSimilarity;
-pub const vectorNorm = gen.vectorNorm;
-pub const bundleN = gen.bundleN;
-pub const countNonZero = gen.countNonZero;
-pub const randomVector = gen.randomVector;
-pub const encodeSequence = gen.encodeSequence;
-pub const probeSequence = gen.probeSequence;
-pub const charToVector = gen.charToVector;
-pub const encodeText = gen.encodeText;
-pub const decodeText = gen.decodeText;
-pub const encodeTextWords = gen.encodeTextWords;
-pub const textSimilarity = gen.textSimilarity;
-pub const textsAreSimilar = gen.textsAreSimilar;
-pub const TEXT_VECTOR_DIM = gen.TEXT_VECTOR_DIM;
-pub const TextCorpus = gen.TextCorpus;
-pub const ChaseLevDeque = gen.ChaseLevDeque;
-pub const LockFreePool = gen.LockFreePool;
-pub const DependencyGraph = gen.DependencyGraph;
-pub const TaskNode = gen.TaskNode;
-pub const TaskState = gen.TaskState;
-pub const getGlobalPool = gen.getGlobalPool;
-pub const UnifiedAgent = gen.UnifiedAgent;
-pub const AgentMemory = gen.AgentMemory;
-pub const AgentRole = gen.AgentRole;
-pub const Modality = gen.Modality;
-pub const MultiModalToolUse = gen.MultiModalToolUse;
-pub const AutonomousAgent = gen.AutonomousAgent;
-pub const ImprovementLoop = gen.ImprovementLoop;
-pub const UnifiedAutonomousSystem = gen.UnifiedAutonomousSystem;
-pub const UnifiedRequest = gen.UnifiedRequest;
-pub const UnifiedResponse = gen.UnifiedResponse;
-pub const SystemCapability = gen.SystemCapability;
-pub const getUnifiedAgent = gen.getUnifiedAgent;
-pub const getAgentMemory = gen.getAgentMemory;
-pub const getAutonomousAgent = gen.getAutonomousAgent;
-pub const getUnifiedSystem = gen.getUnifiedSystem;
+
+// Re-export VSA operations from vsa_core_compat (HybridBigInt-based API for backward compatibility)
+pub const bind = vsa_core_compat.bind;
+pub const unbind = vsa_core_compat.unbind;
+pub const bundle2 = vsa_core_compat.bundle2;
+pub const bundle3 = vsa_core_compat.bundle3;
+pub const permute = vsa_core_compat.permute;
+pub const inversePermute = vsa_core_compat.inversePermute;
+pub const cosineSimilarity = vsa_core_compat.cosineSimilarity;
+pub const hammingDistance = vsa_core_compat.hammingDistance;
+pub const hammingSimilarity = vsa_core_compat.hammingSimilarity;
+pub const dotSimilarity = vsa_core_compat.dotSimilarity;
+pub const vectorNorm = vsa_core_compat.vectorNorm;
+pub const bundleN = vsa_core_compat.bundleN;
+pub const countNonZero = vsa_core_compat.countNonZero;
+pub const randomVector = vsa_core_compat.randomVector;
+pub const encodeSequence = vsa_core_compat.encodeSequence;
+pub const probeSequence = vsa_core_compat.probeSequence;
+
+// Import VSA submodules directly from src/vsa/ (Zig 0.15 compatibility)
+pub const vsa_common = @import("vsa/common.zig");
+pub const vsa_core_compat = @import("vsa/core.zig");
+pub const vsa_encoding = @import("vsa/encoding.zig");
+pub const vsa_storage = @import("vsa/storage.zig");
+pub const vsa_concurrency = @import("vsa/concurrency.zig");
+pub const vsa_agent = @import("vsa/agent.zig");
+pub const vsa_hrr = @import("vsa/hrr.zig");
+pub const vsa_bsd = @import("vsa/bsd.zig");
+pub const vsa_benchmarks = @import("vsa/benchmarks.zig");
+pub const vsa_fpga_bind = @import("vsa/fpga_bind.zig");
+pub const vsa_tests = @import("vsa/tests.zig");
+
+// Re-export HRR convenience
+pub const HRR = vsa_hrr.HRR;
+
+// Re-export from vsa_encoding
+pub const charToVector = vsa_encoding.charToVector;
+pub const encodeText = vsa_encoding.encodeText;
+pub const decodeText = vsa_encoding.decodeText;
+pub const encodeTextWords = vsa_encoding.encodeTextWords;
+pub const textSimilarity = vsa_encoding.textSimilarity;
+pub const textsAreSimilar = vsa_encoding.textsAreSimilar;
+pub const TEXT_VECTOR_DIM = vsa_encoding.TEXT_VECTOR_DIM;
+
+// Re-export from vsa_storage
+pub const TextCorpus = vsa_storage.TextCorpus;
+
+// Re-export from vsa_concurrency
+pub const ChaseLevDeque = vsa_concurrency.ChaseLevDeque;
+pub const LockFreePool = vsa_concurrency.LockFreePool;
+pub const DependencyGraph = vsa_concurrency.DependencyGraph;
+pub const TaskNode = vsa_concurrency.TaskNode;
+pub const TaskState = vsa_concurrency.TaskState;
+pub const getGlobalPool = vsa_concurrency.getGlobalPool;
+
+// Re-export from vsa_agent
+pub const UnifiedAgent = vsa_agent.UnifiedAgent;
+pub const AgentMemory = vsa_agent.AgentMemory;
+pub const AgentRole = vsa_agent.AgentRole;
+pub const Modality = vsa_agent.Modality;
+pub const MultiModalToolUse = vsa_agent.MultiModalToolUse;
+pub const AutonomousAgent = vsa_agent.AutonomousAgent;
+pub const ImprovementLoop = vsa_agent.ImprovementLoop;
+pub const UnifiedAutonomousSystem = vsa_agent.UnifiedAutonomousSystem;
+pub const UnifiedRequest = vsa_agent.UnifiedRequest;
+pub const UnifiedResponse = vsa_agent.UnifiedResponse;
+pub const SystemCapability = vsa_agent.SystemCapability;
+pub const getUnifiedAgent = vsa_agent.getUnifiedAgent;
+pub const getAgentMemory = vsa_agent.getAgentMemory;
+pub const getAutonomousAgent = vsa_agent.getAutonomousAgent;
+pub const getUnifiedSystem = vsa_agent.getUnifiedSystem;
 
 // Manual (disabled):
 // const manual = @import("vsa/vsa_manual.zig");

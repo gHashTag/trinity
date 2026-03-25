@@ -21,9 +21,9 @@ const ExprNode = dsl.ExprNode;
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 
 pub const ContractType = enum {
-    bool,      // Boolean expression (require/ensure)
-    numeric,   // Numeric comparison or computation
-    void,       // No value (side effect check only)
+    bool, // Boolean expression (require/ensure)
+    numeric, // Numeric comparison or computation
+    void, // No value (side effect check only)
 };
 
 pub const Param = struct {
@@ -80,7 +80,7 @@ pub fn checkContract(
             result.error_message = try std.fmt.allocPrint(
                 allocator,
                 "Type mismatch: contract is {s}, expected {s}",
-                .{@tagName(inferred), @tagName(expected_type)},
+                .{ @tagName(inferred), @tagName(expected_type) },
             );
             return result;
         }

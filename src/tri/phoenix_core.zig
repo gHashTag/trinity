@@ -19,7 +19,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 const StringHashMap = std.StringHashMapUnmanaged;
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
@@ -543,7 +543,7 @@ pub const PhoenixCore = struct {
         _ = self;
         // Call hippocampus import --source arena
         // This is a lightweight call that just reads history.jsonl and writes episodes
-        const arena = @import("hippocampus.zig");
+        const arena = @import("hippocampus");
         _ = arena;
         // NOTE: Actual import happens via CLI or explicit call
         // This is a placeholder for automatic import during sleep

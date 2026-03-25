@@ -99,10 +99,10 @@ pub const SlashLevel = enum(u8) {
     /// Get slash rate as fraction (0.0 to 1.0)
     pub fn rate(self: SlashLevel) f64 {
         return switch (self) {
-            .minor => 0.001,      // 0.1%
-            .moderate => 0.01,    // 1%
-            .major => 0.10,       // 10%
-            .severe => 1.00,      // 100%
+            .minor => 0.001, // 0.1%
+            .moderate => 0.01, // 1%
+            .major => 0.10, // 10%
+            .severe => 1.00, // 100%
         };
     }
 
@@ -270,12 +270,7 @@ pub const LiquidStakeEngine = struct {
     }
 
     /// v3.1: Request liquid staking with concentration check
-    pub fn requestLiquidStake(
-        self: *LiquidStakeEngine,
-        node_id: [32]u8,
-        amount_wei: u128,
-        lst_protocol: []const u8
-    ) !u32 {
+    pub fn requestLiquidStake(self: *LiquidStakeEngine, node_id: [32]u8, amount_wei: u128, lst_protocol: []const u8) !u32 {
         // v3.1: Verify protocol is verified (not just supported)
         const is_verified = self.verified_protocols.get(lst_protocol) orelse false;
         if (!is_verified) {
@@ -291,8 +286,7 @@ pub const LiquidStakeEngine = struct {
         const new_concentration_bps = ((current + amount_wei) * 10000) / total_staked;
 
         if (new_concentration_bps > MAX_LST_CONCENTRATION_BPS) {
-            std.log.warn("LST concentration limit exceeded: {s} would reach {d} bps",
-                .{ lst_protocol, new_concentration_bps });
+            std.log.warn("LST concentration limit exceeded: {s} would reach {d} bps", .{ lst_protocol, new_concentration_bps });
             return error.LSTConcentrationLimitExceeded;
         }
 
@@ -335,12 +329,7 @@ pub const MonitoringCoverage = struct {
 
 /// v3.1: Calculate dynamic verification probability based on conditions
 /// Returns P(Verified) in range [0.5, 0.99]
-pub fn calculateDynamicPVerified(
-    engine: *TokenStakingEngine,
-    node_id: [32]u8,
-    level: SlashLevel,
-    coverage: MonitoringCoverage
-) !f64 {
+pub fn calculateDynamicPVerified(engine: *TokenStakingEngine, node_id: [32]u8, level: SlashLevel, coverage: MonitoringCoverage) !f64 {
     _ = level; // Severity can be used for future adjustments
 
     var p = coverage.coverage_ratio;
@@ -381,11 +370,7 @@ fn getRecentSlashCount(engine: *TokenStakingEngine, window_secs: i64) u32 {
 
 /// Legacy: Calculate if slashing is sufficient deterrent (fixed P)
 /// E[L] = P(Misconduct Verified) × SlashRate × Stake > GainExploit
-pub fn calculateDeterrence(
-    stake_wei: u128,
-    slash_rate: f64,
-    gain_exploit_wei: u128
-) bool {
+pub fn calculateDeterrence(stake_wei: u128, slash_rate: f64, gain_exploit_wei: u128) bool {
     const expected_loss = @as(f64, @floatFromInt(stake_wei)) * BASE_VERIFICATION_PROBABILITY * slash_rate;
     const expected_loss_wei = @as(u128, @intFromFloat(expected_loss));
 
@@ -393,12 +378,7 @@ pub fn calculateDeterrence(
 }
 
 /// v3.1: Calculate deterrence with dynamic verification probability
-pub fn calculateDynamicDeterrence(
-    stake_wei: u128,
-    slash_rate: f64,
-    gain_exploit_wei: u128,
-    p_verified: f64
-) bool {
+pub fn calculateDynamicDeterrence(stake_wei: u128, slash_rate: f64, gain_exploit_wei: u128, p_verified: f64) bool {
     const expected_loss = @as(f64, @floatFromInt(stake_wei)) * p_verified * slash_rate;
     const expected_loss_wei = @as(u128, @intFromFloat(expected_loss));
 
@@ -406,21 +386,14 @@ pub fn calculateDynamicDeterrence(
 }
 
 /// Enhanced slash with deterrence check
-pub fn slashWithDeterrence(
-    self: *TokenStakingEngine,
-    node_id: [32]u8,
-    level: SlashLevel,
-    estimated_gain_wei: u128,
-    reason: []const u8
-) !u128 {
+pub fn slashWithDeterrence(self: *TokenStakingEngine, node_id: [32]u8, level: SlashLevel, estimated_gain_wei: u128, reason: []const u8) !u128 {
     const entry = self.stakes.get(node_id) orelse return error.NotStaked;
     const remaining = entry.staked_wei - entry.slashed_wei;
 
     // Check if slashing is actually a deterrent
     if (!calculateDeterrence(remaining, level.rate(), estimated_gain_wei)) {
         // Log but don't apply - slash would be ineffective
-        std.log.warn("Slash {s} would not deter exploit (stake={d}, gain={d})",
-            .{ reason, remaining, estimated_gain_wei });
+        std.log.warn("Slash {s} would not deter exploit (stake={d}, gain={d})", .{ reason, remaining, estimated_gain_wei });
         return 0;
     }
 
@@ -430,14 +403,7 @@ pub fn slashWithDeterrence(
 
 /// v3.1: Enhanced slash with DYNAMIC deterrence check
 /// Uses coverage-based verification probability
-pub fn slashWithDynamicDeterrence(
-    self: *TokenStakingEngine,
-    node_id: [32]u8,
-    level: SlashLevel,
-    estimated_gain_wei: u128,
-    reason: []const u8,
-    coverage: MonitoringCoverage
-) !u128 {
+pub fn slashWithDynamicDeterrence(self: *TokenStakingEngine, node_id: [32]u8, level: SlashLevel, estimated_gain_wei: u128, reason: []const u8, coverage: MonitoringCoverage) !u128 {
     const entry = self.stakes.get(node_id) orelse return error.NotStaked;
     const remaining = entry.staked_wei - entry.slashed_wei;
 
@@ -450,8 +416,7 @@ pub fn slashWithDynamicDeterrence(
 
     if (expected_loss_wei <= estimated_gain_wei) {
         // v3.1: Log with detailed information
-        std.log.warn("Slash {s} INSUFFICIENT DETERRENT: stake={d}, gain={d}, p={d:.2}, rate={d:.3}",
-            .{ reason, remaining, estimated_gain_wei, p_verified, level.rate() });
+        std.log.warn("Slash {s} INSUFFICIENT DETERRENT: stake={d}, gain={d}, p={d:.2}, rate={d:.3}", .{ reason, remaining, estimated_gain_wei, p_verified, level.rate() });
         return error.InsufficientDeterrence;
     }
 
@@ -481,12 +446,7 @@ pub const UsdStakeResult = struct {
 };
 
 /// Stake with USD-pegged amount
-pub fn stakeUsdPegged(
-    self: *TokenStakingEngine,
-    node_id: [32]u8,
-    stake_usd: u128,
-    allocator: std.mem.Allocator
-) !UsdStakeResult {
+pub fn stakeUsdPegged(self: *TokenStakingEngine, node_id: [32]u8, stake_usd: u128, allocator: std.mem.Allocator) !UsdStakeResult {
     self.mutex.lock();
     defer self.mutex.unlock();
 
@@ -873,14 +833,14 @@ pub const TokenStakingEngine = struct {
     }
 
     pub fn slashForPosFailure(self: *TokenStakingEngine, node_id: [32]u8) u128 {
-        self.slash(node_id, .moderate, "PoS failure") catch |err| {
+        return self.slash(node_id, .moderate, "PoS failure") catch |err| {
             std.log.err("slashForPosFailure failed: {}", .{err});
             return 0;
         };
     }
 
     pub fn slashForCorruption(self: *TokenStakingEngine, node_id: [32]u8) u128 {
-        self.slash(node_id, .major, "Corruption detected") catch |err| {
+        return self.slash(node_id, .major, "Corruption detected") catch |err| {
             std.log.err("slashForCorruption failed: {}", .{err});
             return 0;
         };
@@ -1023,7 +983,7 @@ pub const TokenStakingEngine = struct {
 
 // =============================================================================
 // TESTS
- // =============================================================================
+// =============================================================================
 
 test "sacred supply constant" {
     // 3^21 = 10,460,353,203
@@ -1042,7 +1002,7 @@ test "v3.0: deterrence equation - sufficient stake" {
     // E[L] = 0.95 * 0.01 * 1000 = 9.5 TRI > 5 TRI gain
     const stake: u128 = 1000;
     const gain: u128 = 5;
-    const result = calculateDeterrence(stake * 1e18, SlashLevel.moderate.rate(), gain * 1e18);
+    const result = calculateDeterrence(stake * 1_000_000_000_000_000_000, SlashLevel.moderate.rate(), gain * 1_000_000_000_000_000_000);
     try std.testing.expect(result); // Should deter
 }
 
@@ -1051,7 +1011,7 @@ test "v3.0: deterrence equation - insufficient stake" {
     // E[L] = 0.95 * 0.01 * 100 = 0.95 TRI < 50 TRI gain
     const stake: u128 = 100;
     const gain: u128 = 50;
-    const result = calculateDeterrence(stake * 1e18, SlashLevel.moderate.rate(), gain * 1e18);
+    const result = calculateDeterrence(stake * 1_000_000_000_000_000_000, SlashLevel.moderate.rate(), gain * 1_000_000_000_000_000_000);
     try std.testing.expect(!result); // Should NOT deter
 }
 

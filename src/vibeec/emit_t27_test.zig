@@ -225,12 +225,12 @@ test "emit_t27: reticular_raphe subset" {
     const allocator = std.testing.allocator;
     // Simulate a subset of reticular_raphe instructions
     const instructions = [_]Tri27Instruction{
-        .{ .opcode = .LDI, .dst = 0, .immediate = 16, .has_imm = true },  // LDI t0, MEM_EVALUATIONS
-        .{ .opcode = .LDI, .dst = 5, .immediate = 0, .has_imm = true },   // LDI t5, 0 (index)
-        .{ .opcode = .LDI, .dst = 1, .immediate = 0, .has_imm = true },   // LDI t1, 0
-        .{ .opcode = .LDI, .dst = 2, .immediate = 0, .has_imm = true },   // LDI t2, 0
-        .{ .opcode = .LDI, .dst = 3, .immediate = 0, .has_imm = true },   // LDI t3, 0
-        .{ .opcode = .LDI, .dst = 4, .immediate = 0, .has_imm = true },   // LDI t4, 0
+        .{ .opcode = .LDI, .dst = 0, .immediate = 16, .has_imm = true }, // LDI t0, MEM_EVALUATIONS
+        .{ .opcode = .LDI, .dst = 5, .immediate = 0, .has_imm = true }, // LDI t5, 0 (index)
+        .{ .opcode = .LDI, .dst = 1, .immediate = 0, .has_imm = true }, // LDI t1, 0
+        .{ .opcode = .LDI, .dst = 2, .immediate = 0, .has_imm = true }, // LDI t2, 0
+        .{ .opcode = .LDI, .dst = 3, .immediate = 0, .has_imm = true }, // LDI t3, 0
+        .{ .opcode = .LDI, .dst = 4, .immediate = 0, .has_imm = true }, // LDI t4, 0
         .{ .opcode = .HALT },
     };
 

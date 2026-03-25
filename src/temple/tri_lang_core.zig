@@ -175,10 +175,10 @@ pub const Hole = struct {
 
 /// Ownership mode for variables
 pub const OwnershipMode = enum(u2) {
-    Let = 0,    // immutable, can be read multiple times
-    Inout = 1,  // mutable reference
-    Sink = 2,   // consumes value, must be used exactly once
-    Set = 3,    // mutable owned value
+    Let = 0, // immutable, can be read multiple times
+    Inout = 1, // mutable reference
+    Sink = 2, // consumes value, must be used exactly once
+    Set = 3, // mutable owned value
 
     pub fn isLinear(self: OwnershipMode) bool {
         return self == .Sink;
@@ -195,9 +195,9 @@ pub const OwnershipMode = enum(u2) {
 
 /// Bank identifier for Coptic register safety
 pub const Bank = enum(u2) {
-    ALU = 0,      // Bank 0: ALU registers (t0-t8)
-    Sacred = 1,   // Bank 1: Sacred accumulators (t9-t17)
-    Constant = 2,  // Bank 2: Constants (t18-t26) — immutable
+    ALU = 0, // Bank 0: ALU registers (t0-t8)
+    Sacred = 1, // Bank 1: Sacred accumulators (t9-t17)
+    Constant = 2, // Bank 2: Constants (t18-t26) — immutable
 
     pub fn fromReg(reg: u5) Bank {
         return @enumFromInt(reg / 9);
@@ -345,13 +345,21 @@ test "result err" {
 
 test "result map" {
     const result: Result(i32, NeuroError) = .{ .Ok = 41 };
-    const mapped = map(i32, i64, NeuroError, result, struct { fn inner(x: i32) i64 { return @intCast(x); } }.inner);
+    const mapped = map(i32, i64, NeuroError, result, struct {
+        fn inner(x: i32) i64 {
+            return @intCast(x);
+        }
+    }.inner);
     try std.testing.expectEqual(@as(i64, 41), mapped.Ok);
 }
 
 test "result andThen" {
     const result: Result(i32, NeuroError) = .{ .Ok = 42 };
-    const chained = andThen(i32, bool, NeuroError, result, struct { fn inner(_: i32) Result(bool, NeuroError) { return .{ .Ok = true }; } }.inner);
+    const chained = andThen(i32, bool, NeuroError, result, struct {
+        fn inner(_: i32) Result(bool, NeuroError) {
+            return .{ .Ok = true };
+        }
+    }.inner);
     try std.testing.expect(chained.Ok);
 }
 

@@ -6,22 +6,22 @@
 const std = @import("std");
 
 // Core tri modules (used by queen and other zones)
-pub const tri_colors = @import("tri_colors.zig");
+pub const tri_colors = @import("tri_colors");
 pub const agent_roles = @import("agent_roles.zig");
 
-// Faculty and cortex (for queen integration)
-pub const faculty_types = @import("faculty_types.zig");
-pub const cortex = @import("cortex.zig");
+// Additional tri modules needed by cortex
+pub const analysis_engine = @import("analysis_engine");
+pub const three_paths = @import("three_paths");
+pub const phi_poetry = @import("phi_poetry");
+pub const train_types = @import("train_types");
+pub const tri_state = @import("tri_state");
 
-// Thalamus
-pub const thalamus = @import("thalamus.zig");
+// NOTE: faculty_types, cortex, thalamus, cerebellum, insula, phoenix_medulla, phoenix_pons
+// moved to queen zone (Wave 3)
+// Queen modules should import them directly from queen/
 
-// Brain stem (phoenix subsystem)
-pub const voice_engine = @import("voice_engine.zig");
-pub const cerebellum = @import("cerebellum.zig");
-pub const insula = @import("insula.zig");
-pub const phoenix_medulla = @import("phoenix_medulla.zig");
-pub const phoenix_pons = @import("phoenix_pons.zig");
+// Brain stem (phoenix subsystem) - still in tri/
+pub const voice_engine = @import("voice_engine");
 
 // GitHub integration (for queen issues) — now in github zone (Wave 3)
 const github = @import("github");

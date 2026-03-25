@@ -647,7 +647,9 @@ pub const VibeeParser = struct {
 
             // Parse spec annotations before given/when/then
             const spec_state = try parser_sections.parseSpecAnnotations(
-                self.source, self.pos, self.line,
+                self.source,
+                self.pos,
+                self.line,
                 self.allocator,
                 &behavior.spec_annotation,
                 &behavior.requires,

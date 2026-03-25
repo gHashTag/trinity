@@ -2,7 +2,7 @@
 // MU LEARNING DB — Pattern database with hippocampus dual-write
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 
 const DB_PATH = ".trinity/mu/learning_db.json";
 

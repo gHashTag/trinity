@@ -5,7 +5,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const types = @import("train_types.zig");
+const types = @import("train_types");
 
 pub const CheckpointInfo = types.CheckpointInfo;
 pub const TrainLogEntry = types.TrainLogEntry;
@@ -66,6 +66,7 @@ pub fn diagnose(entries: []const TrainLogEntry, anomalies: []Anomaly) usize {
 pub const Recommendation = struct {
     action: []const u8 = "",
     reason: []const u8 = "",
+    command: []const u8 = "",
 };
 
 pub fn recommend(entries: []const TrainLogEntry) Recommendation {

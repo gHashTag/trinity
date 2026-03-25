@@ -11,7 +11,7 @@
 
 const std = @import("std");
 
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 // Simplified output format enum (Phase 1)
 const OutputFormat = enum {

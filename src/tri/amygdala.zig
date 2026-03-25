@@ -11,8 +11,8 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const hippocampus = @import("hippocampus.zig");
-const voice_engine = @import("voice_engine.zig");
+const hippocampus = @import("hippocampus");
+const voice_engine = @import("voice_engine");
 const queen_ofc = @import("queen_ofc.zig");
 
 // Mood state (temporary - should be unified with OFC)

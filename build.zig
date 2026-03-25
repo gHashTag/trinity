@@ -65,6 +65,17 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Generated VSA module (TTT Dogfood v0.1 — self-hosted codegen)
+    const gen_vsa_mod = b.createModule(.{
+        .root_source_file = b.path("src/gen_vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa_core", .module = vsa_core_mod },
+            .{ .name = "hybrid", .module = hybrid_mod },
+        },
+    });
+
     const vsa_tri = b.createModule(.{
         .root_source_file = b.path("src/vsa.zig"),
         .target = target,
@@ -72,6 +83,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "vsa_core", .module = vsa_core_mod },
             .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "gen_vsa", .module = gen_vsa_mod },
         },
     });
 
@@ -250,6 +262,8 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
+                .{ .name = "bigint", .module = bigint_mod },
+                .{ .name = "packed_trit", .module = packed_trit_mod },
                 .{ .name = "hybrid", .module = hybrid_mod },
                 .{ .name = "vsa", .module = vsa_tri },
             },
@@ -327,6 +341,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vm.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_vm_tests = b.addRunArtifact(vm_tests);
@@ -460,6 +478,9 @@ pub fn build(b: *std.Build) void {
             .imports = &.{
                 .{ .name = "hybrid", .module = hybrid_mod },
                 .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "vm", .module = vm_mod },
+                .{ .name = "trinity", .module = trinity_mod },
+                .{ .name = "packed_trit", .module = packed_trit_mod },
             },
         }),
     });

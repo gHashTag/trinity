@@ -15,7 +15,7 @@ const Allocator = std.mem.Allocator;
 const farm = @import("farm");
 const tri_experience = @import("tri_experience.zig");
 const tri_dev = farm.tri_dev;
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 const print = std.debug.print;
 
 const RESET = "\x1b[0m";
@@ -453,7 +453,7 @@ pub const RetryConfig = struct {
     issue: u32 = 0,
     max_iterations: u32 = 10,
     task: [256]u8 = undefined,
-    task_len: u8 = 0,
+    task_len: usize = 0,
 
     pub fn taskStr(self: *const RetryConfig) []const u8 {
         return self.task[0..self.task_len];
@@ -492,11 +492,11 @@ pub const RetryVerdict = enum {
     }
 };
 
-fn copyToFixed(dest: anytype, len_ptr: *u8, src: []const u8) void {
+fn copyToFixed(dest: anytype, len_ptr: *usize, src: []const u8) void {
     const max = dest.len;
     const copy_len = @min(src.len, max);
     @memcpy(dest[0..copy_len], src[0..copy_len]);
-    len_ptr.* = @intCast(copy_len);
+    len_ptr.* = copy_len;
 }
 
 fn runRetryCommand(allocator: Allocator, args: []const []const u8) !void {

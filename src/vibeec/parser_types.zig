@@ -134,10 +134,10 @@ pub const Behavior = struct {
     test_cases: ArrayList(TestCase),
 
     // Idiom 11 fields — spec-in-code annotations
-    spec_annotation: ?[]const u8,        // @spec name
-    requires: ArrayList([]const u8),     // @require clauses
-    ensures: ArrayList([]const u8),      // @ensure clauses
-    examples: ArrayList(TestCase),       // @example cases
+    spec_annotation: ?[]const u8, // @spec name
+    requires: ArrayList([]const u8), // @require clauses
+    ensures: ArrayList([]const u8), // @ensure clauses
+    examples: ArrayList(TestCase), // @example cases
 
     pub fn init(_: Allocator) Behavior {
         return Behavior{

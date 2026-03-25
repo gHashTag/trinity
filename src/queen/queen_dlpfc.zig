@@ -24,7 +24,7 @@ const thalamus = @import("thalamus.zig");
 const cerebellum = @import("cerebellum.zig");
 const insula = @import("insula.zig");
 const faculty_cortex = @import("cortex.zig");
-const faculty_types = @import("faculty_types.zig");
+const faculty_types = @import("faculty_types");
 const phoenix_medulla = @import("phoenix_medulla.zig");
 const phoenix_pons = @import("phoenix_pons.zig");
 

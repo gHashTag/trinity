@@ -10,7 +10,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const tri_context = @import("tri_context.zig");
 
 const GREEN = colors.GREEN;

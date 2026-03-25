@@ -10,7 +10,7 @@
 // ═════════════════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 const audit = @import("tri_spec_audit.zig");
 const apply = @import("tri_spec_apply.zig");

@@ -1,11 +1,34 @@
 // Trinity Economy: Reward Ledger
 // DEV-003: Display-friendly wrapper around KG reward calculations
+// v2.0: Reputation-based reward multipliers
 //
 // Wraps the core KgRewardCalculator from kg_sync.zig for monitoring use.
 // Provides aggregated metrics suitable for dashboard display.
 // Generated from: specs/tri/swarm_watch.tri
 
 const std = @import("std");
+
+// =============================================================================
+// v2.0: REPUTATION MULTIPLIER INTERFACE
+// =============================================================================
+
+/// Opaque reputation engine interface (to avoid circular dependencies)
+/// Applications should integrate at a higher level using the concrete type.
+pub const ReputationEngineInterface = struct {
+    ptr: *anyopaque,
+    getScoreFn: *const fn (*anyopaque, [32]u8) ?f64,
+    getMultiplierFn: *const fn (*anyopaque, [32]u8) f64,
+
+    /// Get reputation score for a node
+    pub fn getScore(self: ReputationEngineInterface, node_id: [32]u8) ?f64 {
+        return self.getScoreFn(self.ptr, node_id);
+    }
+
+    /// Get reward multiplier for a node
+    pub fn getMultiplier(self: ReputationEngineInterface, node_id: [32]u8) f64 {
+        return self.getMultiplierFn(self.ptr, node_id);
+    }
+};
 
 // =============================================================================
 // CONSTANTS
@@ -70,11 +93,18 @@ pub const RewardLedger = struct {
     events: [MAX_REWARD_EVENTS]RewardEvent = [_]RewardEvent{.{}} ** MAX_REWARD_EVENTS,
     event_head: usize = 0,
     event_count: usize = 0,
+    /// v2.0: Optional reputation engine interface for multipliers
+    reputation_engine: ?ReputationEngineInterface = null,
 
     const Self = @This();
 
     pub fn init() Self {
         return .{};
+    }
+
+    /// Set the reputation engine for reward multipliers
+    pub fn setReputationEngine(self: *Self, engine: ReputationEngineInterface) void {
+        self.reputation_engine = engine;
     }
 
     /// Record a reward earned (before claiming)
@@ -116,6 +146,21 @@ pub const RewardLedger = struct {
     /// Calculate reward for N triples
     pub fn calculateReward(triple_count: u32) u128 {
         return @as(u128, triple_count) * REWARD_PER_TRIPLE_WEI;
+    }
+
+    /// v2.0: Calculate reward with reputation multiplier applied
+    pub fn calculateRewardWithMultiplier(self: *const Self, node_id: [32]u8, triple_count: u32) struct { base: u128, adjusted: u128, multiplier: f64 } {
+        const base = Self.calculateReward(triple_count);
+
+        if (self.reputation_engine) |engine| {
+            const mult = engine.getMultiplier(node_id);
+            const adjusted_f: f64 = @as(f64, @floatFromInt(base)) * mult;
+            const adjusted: u128 = @intFromFloat(adjusted_f);
+
+            return .{ .base = base, .adjusted = adjusted, .multiplier = mult };
+        }
+
+        return .{ .base = base, .adjusted = base, .multiplier = 1.0 };
     }
 
     /// Render reward summary to writer
@@ -166,4 +211,137 @@ test "RewardStats.pendingTri" {
     var stats = RewardStats{};
     stats.pending_wei = 1_000_000_000_000_000_000;
     try std.testing.expectApproxEqAbs(@as(f64, 1.0), stats.pendingTri(), 0.001);
+}
+
+// =============================================================================
+// v2.0 TESTS - Reputation Multipliers
+// =============================================================================
+
+// Mock data for testing reputation interface
+const MockReputationState = struct {
+    scores: std.AutoHashMap([32]u8, f64),
+
+    fn getScore(ptr: *anyopaque, node_id: [32]u8) ?f64 {
+        const self = @as(*MockReputationState, @ptrCast(@alignCast(ptr)));
+        return self.scores.get(node_id);
+    }
+
+    fn getMultiplier(ptr: *anyopaque, node_id: [32]u8) f64 {
+        const self = @as(*MockReputationState, @ptrCast(@alignCast(ptr)));
+        const score = self.scores.get(node_id) orelse return 1.0;
+        if (score >= 0.9) return 2.0;
+        if (score >= 0.7) return 1.5;
+        if (score >= 0.5) return 1.0;
+        return 0.5;
+    }
+};
+
+test "v2.0: calculateRewardWithMultiplier - platinum tier" {
+    const allocator = std.testing.allocator;
+
+    var mock_state = MockReputationState{
+        .scores = std.AutoHashMap([32]u8, f64).init(allocator),
+    };
+    defer mock_state.scores.deinit();
+
+    const node = [_]u8{0x01} ** 32;
+    try mock_state.scores.put(node, 0.95); // Platinum = 2.0x
+
+    var ledger = RewardLedger.init();
+    ledger.setReputationEngine(.{
+        .ptr = &mock_state,
+        .getScoreFn = MockReputationState.getScore,
+        .getMultiplierFn = MockReputationState.getMultiplier,
+    });
+
+    const result = ledger.calculateRewardWithMultiplier(node, 10);
+
+    try std.testing.expectEqual(@as(u128, 10 * REWARD_PER_TRIPLE_WEI), result.base);
+    try std.testing.expectEqual(@as(u128, 20 * REWARD_PER_TRIPLE_WEI), result.adjusted); // 2x
+    try std.testing.expectApproxEqAbs(@as(f64, 2.0), result.multiplier, 0.01);
+}
+
+test "v2.0: calculateRewardWithMultiplier - gold tier" {
+    const allocator = std.testing.allocator;
+
+    var mock_state = MockReputationState{
+        .scores = std.AutoHashMap([32]u8, f64).init(allocator),
+    };
+    defer mock_state.scores.deinit();
+
+    const node = [_]u8{0x01} ** 32;
+    try mock_state.scores.put(node, 0.75); // Gold = 1.5x
+
+    var ledger = RewardLedger.init();
+    ledger.setReputationEngine(.{
+        .ptr = &mock_state,
+        .getScoreFn = MockReputationState.getScore,
+        .getMultiplierFn = MockReputationState.getMultiplier,
+    });
+
+    const result = ledger.calculateRewardWithMultiplier(node, 10);
+
+    try std.testing.expectEqual(@as(u128, 15 * REWARD_PER_TRIPLE_WEI), result.adjusted); // 1.5x
+    try std.testing.expectApproxEqAbs(@as(f64, 1.5), result.multiplier, 0.01);
+}
+
+test "v2.0: calculateRewardWithMultiplier - bronze tier" {
+    const allocator = std.testing.allocator;
+
+    var mock_state = MockReputationState{
+        .scores = std.AutoHashMap([32]u8, f64).init(allocator),
+    };
+    defer mock_state.scores.deinit();
+
+    const node = [_]u8{0x01} ** 32;
+    try mock_state.scores.put(node, 0.3); // Bronze = 0.5x
+
+    var ledger = RewardLedger.init();
+    ledger.setReputationEngine(.{
+        .ptr = &mock_state,
+        .getScoreFn = MockReputationState.getScore,
+        .getMultiplierFn = MockReputationState.getMultiplier,
+    });
+
+    const result = ledger.calculateRewardWithMultiplier(node, 10);
+
+    try std.testing.expectEqual(@as(u128, 5 * REWARD_PER_TRIPLE_WEI), result.adjusted); // 0.5x
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), result.multiplier, 0.01);
+}
+
+test "v2.0: calculateRewardWithMultiplier - unknown node" {
+    const allocator = std.testing.allocator;
+
+    var mock_state = MockReputationState{
+        .scores = std.AutoHashMap([32]u8, f64).init(allocator),
+    };
+    defer mock_state.scores.deinit();
+
+    var ledger = RewardLedger.init();
+    ledger.setReputationEngine(.{
+        .ptr = &mock_state,
+        .getScoreFn = MockReputationState.getScore,
+        .getMultiplierFn = MockReputationState.getMultiplier,
+    });
+
+    const node = [_]u8{0xFF} ** 32;
+    const result = ledger.calculateRewardWithMultiplier(node, 10);
+
+    // Unknown nodes get 1.0x multiplier
+    try std.testing.expectEqual(@as(u128, 10 * REWARD_PER_TRIPLE_WEI), result.base);
+    try std.testing.expectEqual(@as(u128, 10 * REWARD_PER_TRIPLE_WEI), result.adjusted);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), result.multiplier, 0.01);
+}
+
+test "v2.0: calculateRewardWithMultiplier - no engine" {
+    var ledger = RewardLedger.init();
+    // No reputation engine set
+
+    const node = [_]u8{0x01} ** 32;
+    const result = ledger.calculateRewardWithMultiplier(node, 10);
+
+    // Without engine, gets 1.0x multiplier
+    try std.testing.expectEqual(@as(u128, 10 * REWARD_PER_TRIPLE_WEI), result.base);
+    try std.testing.expectEqual(@as(u128, 10 * REWARD_PER_TRIPLE_WEI), result.adjusted);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), result.multiplier, 0.01);
 }

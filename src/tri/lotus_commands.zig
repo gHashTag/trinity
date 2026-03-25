@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const utils = @import("tri_utils.zig");
 
 const RESET = colors.RESET;

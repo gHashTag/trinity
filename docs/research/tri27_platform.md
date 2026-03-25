@@ -340,4 +340,65 @@ src/tri/queen/
 
 ---
 
+## How to Cite
+
+This work is published as a defensive publication (prior art) to prevent patenting of ternary computing innovations.
+
+### BibTeX
+
+```bibtex
+@misc{trinity2025tri27,
+  title = {TRI-27: Ternary Computing ISA with Coptic Alphabet Encoding},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication -- Part of Trinity S³AI Framework}
+}
+
+@misc{trinity2025queen,
+  title = {Queen Self-Learning: Episode-Based Adaptation for Autonomous Systems},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication}
+}
+```
+
+### APA
+
+```
+Trinity Project. (2025). *TRI-27: Ternary computing ISA with Coptic alphabet encoding* [Defensive Publication]. Zenodo. https://doi.org/10.5281/zenodo.18939352
+```
+
+### MLA
+
+```
+Trinity Project. "TRI-27: Ternary Computing ISA with Coptic Alphabet Encoding." *Defensive Publication*, 2025, Zenodo, doi:10.5281/zenodo.18939352.
+```
+
+### IEEE
+
+```
+[1] Trinity Project, "TRI-27: Ternary Computing ISA with Coptic Alphabet Encoding," Zenodo, 2025. doi: 10.5281/zenodo.18939352.
+[2] Trinity Project, "Queen Self-Learning: Episode-Based Adaptation for Autonomous Systems," Zenodo, 2025. doi: 10.5281/zenodo.18939352.
+```
+
+### Related Publications
+
+- **Sacred GF16/TF3:** φ-based arithmetic formats (see `sacred_formats_fpga.md`)
+- **HSLM:** 1.95M ternary language model (see `TRINITY_S3AI_UNIFIED_FRAMEWORK.md`)
+- **Tri Language:** DSL for code generation (see `trilanguage_canon.md`)
+
+### Key Claims (Prior Art)
+
+1. **27-register ternary ISA** with Coptic alphabet encoding (0-ⲁ)
+2. **36 opcodes** including native VSA operations (bind, unbind, bundle2/3)
+3. **Queen Lotus Cycle** -- 6-phase self-learning feedback loop
+4. **Episode-based experience tracking** with Jaccard similarity recall
+5. **Closed-loop policy adaptation** without human intervention
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

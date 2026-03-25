@@ -6,7 +6,7 @@
 
 const std = @import("std");
 const qt = @import("queen_types.zig");
-const faculty_types = @import("faculty_types.zig");
+const faculty_types = @import("faculty_types");
 const thalamus = @import("thalamus.zig");
 
 const Allocator = std.mem.Allocator;

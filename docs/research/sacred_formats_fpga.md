@@ -309,4 +309,57 @@ fpga_100MHz,70M,14,7e-9,70,0.5
 
 ---
 
+## How to Cite
+
+This work is published as a defensive publication (prior art) to prevent patenting of these innovations.
+
+### BibTeX
+
+```bibtex
+@misc{trinity2025sacred,
+  title = {Sacred GF16/TF3 Formats and Zero-DSP FPGA Inference},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication -- Part of Trinity S³AI Framework}
+}
+
+@misc{trinity2025hslm,
+  title = {HSLM: Hardware-Sacred Language Model -- 1.95M Ternary LLM},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://doi.org/10.5281/zenodo.18939352},
+  note = {Defensive Publication}
+}
+```
+
+### APA
+
+```
+Trinity Project. (2025). *Sacred GF16/TF3 formats and zero-DSP FPGA inference* [Defensive Publication]. Zenodo. https://doi.org/10.5281/zenodo.18939352
+```
+
+### MLA
+
+```
+Trinity Project. "Sacred GF16/TF3 Formats and Zero-DSP FPGA Inference." *Defensive Publication*, 2025, Zenodo, doi:10.5281/zenodo.18939352.
+```
+
+### IEEE
+
+```
+[1] Trinity Project, "Sacred GF16/TF3 Formats and Zero-DSP FPGA Inference," Zenodo, 2025. doi: 10.5281/zenodo.18939352.
+```
+
+### Related Publications
+
+- **TRI-27 ISA:** Ternary instruction set architecture (see `tri27_platform.md`)
+- **Queen Self-Learning:** Episode-based adaptation (see `queen_lotus_experiments.md`)
+- **Tri Language:** DSL for hardware/software co-design (see `trilanguage_canon.md`)
+- **VSA Operations:** Vector Symbolic Architecture bind/unbind/bundle
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

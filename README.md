@@ -85,6 +85,36 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 ---
 
+## Defensive Publications (Prior Art)
+
+Trinity publishes key innovations as **defensive publications** to establish prior art and prevent patenting. All research is documented with Zenodo DOIs.
+
+| Discovery | Zenodo DOI | Status |
+|-----------|------------|--------|
+| **HSLM** (1.95M ternary LLM) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
+| **Sacred GF16/TF3** (φ-based arithmetic) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
+| **Zero-DSP FPGA** (ternary inference) | [10.5281/zenodo.18939352](https://doi.org/10.5281/zenodo.18939352) | ✅ Published |
+| **TRI-27** (ternary ISA) | TBD | 🔄 arXiv planned |
+| **Queen** (self-learning system) | TBD | 🔄 arXiv planned |
+| **Tri Language** (DSL codegen) | TBD | 📋 PLDI 2026 |
+
+### How to Cite
+
+```bibtex
+@misc{trinity2025s3ai,
+  title = {Trinity S³AI: Pure Zig Autonomous AI Agent Swarm},
+  author = {{Trinity Project}},
+  year = {2025},
+  doi = {10.5281/zenodo.18939352},
+  url = {https://github.com/gHashTag/trinity},
+  note = {Defensive Publication}
+}
+```
+
+**Research Documentation:** See [`docs/research/README.md`](docs/research/README.md) for complete defensive publication network, including cross-references and citation templates.
+
+---
+
 ## What is Trinity?
 
 Trinity is a **ternary computing framework** with:

@@ -16,7 +16,7 @@
 
 const std = @import("std");
 const verdict = @import("pathology.zig");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const experience = @import("experience_hooks.zig");
 const cloud = @import("cloud_orchestrator.zig");
 const github = @import("github");

@@ -18,11 +18,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const swe_arena = @import("swe_arena.zig");
 // FIXME: Can't import thalamus due to module conflict (queen ↔ root)
 // Using stub for countEpisodeVerdicts for now
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 // Import via github module (Wave 3: zone separation)
 const github = @import("github");
 const github_client = github.github_client;

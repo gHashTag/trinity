@@ -180,13 +180,21 @@ test "TTT: result err" {
 
 test "TTT: result map" {
     const result = tri_lang_core.Result(i32, tri_lang_core.NeuroError){ .Ok = 41 };
-    const mapped = tri_lang_core.map(i32, i64, tri_lang_core.NeuroError, result, struct { fn inner(x: i32) i64 { return @intCast(x); } }.inner);
+    const mapped = tri_lang_core.map(i32, i64, tri_lang_core.NeuroError, result, struct {
+        fn inner(x: i32) i64 {
+            return @intCast(x);
+        }
+    }.inner);
     try std.testing.expectEqual(@as(i64, 41), mapped.Ok);
 }
 
 test "TTT: result andThen" {
     const result = tri_lang_core.Result(i32, tri_lang_core.NeuroError){ .Ok = 42 };
-    const chained = tri_lang_core.andThen(i32, bool, tri_lang_core.NeuroError, result, struct { fn inner(_: i32) tri_lang_core.Result(bool, tri_lang_core.NeuroError) { return .{ .Ok = true }; } }.inner);
+    const chained = tri_lang_core.andThen(i32, bool, tri_lang_core.NeuroError, result, struct {
+        fn inner(_: i32) tri_lang_core.Result(bool, tri_lang_core.NeuroError) {
+            return .{ .Ok = true };
+        }
+    }.inner);
     try std.testing.expect(chained.Ok);
 }
 
@@ -336,7 +344,7 @@ pub fn main() !void {
     std.debug.print("║  φ² + 1/φ² = 3 | TRINITY                              ║\n", .{});
     std.debug.print("║  All TTT tests passed successfully!                    ║\n", .{});
     std.debug.print("║  Sacred Math: PHI={}, PI={}                        ║\n", .{ sacred_math.PHI, sacred_math.PI });
-    std.debug.print("║  TRI-27 Core: {} words memory                     ║\n", .{ tri27_core.MEMORY_SIZE_WORDS });
+    std.debug.print("║  TRI-27 Core: {} words memory                     ║\n", .{tri27_core.MEMORY_SIZE_WORDS});
     std.debug.print("║  Tri Lang Core: Result, Patterns, Linear, Effects       ║\n", .{});
     std.debug.print("╚══════════════════════════════════════════════════╗\n", .{});
 }

@@ -30,6 +30,10 @@ pub const unify = @import("unify.zig");
 pub const emit_t27 = @import("emit_t27.zig");
 pub const pipeline = @import("pipeline.zig");
 
+// TRI-LANG-6: Content-Addressed Functions
+pub const content_hash = @import("content_hash.zig");
+pub const content_registry = @import("content_registry.zig");
+
 // TRI-27 VM and emulation (J-zone runtime)
 // Uses named module for Anti-Fragile Import Law
 pub const emu = @import("emu");

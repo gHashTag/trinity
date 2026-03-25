@@ -59,6 +59,15 @@ from .runner import (
     Task
 )
 
+# Scientific metrics (unified interface)
+from .metrics import (
+    ScientificMetrics,
+    get_metrics,
+    compare_versions,
+    RECOMMENDED_VERSION,
+    VERSION_INFO
+)
+
 __version__ = "1.0.0"
 __all__ = [
     # Scorer
@@ -87,5 +96,12 @@ __all__ = [
     "BenchmarkResult",
     "BenchmarkSummary",
     "Track",
-    "Task"
+    "Task",
+
+    # Scientific Metrics
+    "ScientificMetrics",
+    "get_metrics",
+    "compare_versions",
+    "RECOMMENDED_VERSION",
+    "VERSION_INFO"
 ]

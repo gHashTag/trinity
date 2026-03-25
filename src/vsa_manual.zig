@@ -39,7 +39,7 @@ pub const HybridBigInt = hybrid_mod.HybridBigInt;
 
 // These files in src/vsa/ are now convenience wrappers around vsa_core + hybrid
 pub const vsa_common = @import("vsa/common.zig");
-pub const vsa_core_compat = @import("vsa/core.zig");  // HybridBigInt operations
+pub const vsa_core_compat = @import("vsa/core.zig"); // HybridBigInt operations
 pub const vsa_encoding = @import("vsa/encoding.zig");
 pub const vsa_storage = @import("vsa/storage.zig");
 pub const vsa_concurrency = @import("vsa/concurrency.zig");

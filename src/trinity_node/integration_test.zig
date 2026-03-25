@@ -1526,8 +1526,6 @@ test "v1.8: 50-node token staking with slashing" {
 
     var staking = token_staking_mod.TokenStakingEngine.initWithConfig(allocator, .{
         .min_stake_wei = 100,
-        .pos_failure_slash_rate = 0.05, // 5%
-        .corruption_slash_rate = 0.10, // 10%
         .min_reputation_for_staking = 0.2,
     });
     defer staking.deinit();

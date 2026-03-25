@@ -14,11 +14,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
-const vm = @import("vm.zig");
-const sdk = @import("sdk.zig");
-const hybrid = @import("hybrid.zig");
-const packed_trit = @import("packed_trit.zig");
+const vsa = @import("vsa");
+const vm = @import("vm");
+const sdk = @import("trinity"); // sdk.zig imports trinity.zig, use module directly
+const hybrid = @import("hybrid");
+const packed_trit = @import("packed_trit");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // E2E TEST 1: VSA → VM → SDK Full Pipeline

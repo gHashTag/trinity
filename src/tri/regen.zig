@@ -18,7 +18,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 const print = std.debug.print;
 
 const RESET = "\x1b[0m";

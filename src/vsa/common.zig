@@ -25,6 +25,6 @@ pub const SearchResult = struct {
 };
 
 // HybridBigInt is NOT re-exported here to avoid module ownership conflict.
-// Use @import("hybrid").HybridBigInt directly when needed.
+// Use @import("../../hybrid.zig").HybridBigInt directly when needed.
 
 // φ² + 1/φ² = 3 | TRINITY

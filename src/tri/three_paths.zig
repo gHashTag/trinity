@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("faculty_types.zig");
+const types = @import("faculty_types");
 const FacultySnapshot = types.FacultySnapshot;
 
 pub const Path = struct {

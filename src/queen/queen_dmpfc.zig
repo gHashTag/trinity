@@ -14,7 +14,7 @@ const qt = @import("queen_types.zig");
 // Import tri modules via tri module to avoid migration conflicts
 const tri = @import("tri");
 const hippocampus = tri.hippocampus;
-const thalamus = @import("thalamus.zig");  // thalamus is in queen zone
+const thalamus = @import("thalamus.zig"); // thalamus is in queen zone
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SELF-CHECK — "Am I broken?"

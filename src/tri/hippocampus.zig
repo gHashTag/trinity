@@ -29,6 +29,7 @@ pub const Kind = enum {
     @"error",
     learning,
     observation,
+    rule,
 };
 
 // Memory entry
@@ -53,6 +54,7 @@ pub const Entry = struct {
 pub const ReadOptions = struct {
     kind: Kind = .episode,
     limit: usize = 100,
+    agent: []const u8 = "",
 };
 
 // ErrorList - ArrayList-like structure for hippocampus.read() results
