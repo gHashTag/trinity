@@ -6,12 +6,14 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const Decoder = @import("emu/decoder.zig");
+// Anti-Fragile Import Law: use named modules
+const tri_lang = @import("tri_lang");
+const Decoder = tri_lang.emu.decoder;
 const Opcode = Decoder.Opcode;
 const Instruction = Decoder.Instruction;
-const Assembler = @import("tri_asm.zig");
-const tri_emu = @import("tri_emu.zig");
-const CPUState = @import("cpu_state.zig");
+const Assembler = tri_lang.emu.asm_parser;
+const tri_emu = @import("tri_lang").emu; // Use emu namespace
+const CPUState = tri_lang.emu.cpu_state.CPUState;
 
 pub fn runSimpleTri27(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {

@@ -32,7 +32,7 @@ pub const symbols = @import("symbols.zig");
 pub const refactor = @import("refactor.zig");
 
 // Semantic VSA (Tier 3)
-pub const vsa = @import("vsa.zig");
+pub const vsa = @import("vsa");
 
 // Safe Cross-File (Tier 4)
 pub const safe_cross = @import("safe_cross.zig");

@@ -14,7 +14,7 @@
 // Level 11.25 — Interactive REPL Mode for Trinity Symbolic Reasoning
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const hybrid = @import("hybrid.zig");
 
 const HybridBigInt = hybrid.HybridBigInt;

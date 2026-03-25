@@ -7,7 +7,7 @@
 
 const std = @import("std");
 const math = std.math;
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 // Re-export VSA types and operations
 pub const TritVec = vsa.TritVec;

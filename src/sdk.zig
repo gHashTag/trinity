@@ -5,7 +5,7 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 pub const HybridBigInt = trinity.HybridBigInt;
 pub const Trit = trinity.Trit;

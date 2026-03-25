@@ -7,7 +7,7 @@
 // Or:  zig test src/bench.zig -O ReleaseFast
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const hybrid = @import("hybrid.zig");
 
 const HybridBigInt = hybrid.HybridBigInt;

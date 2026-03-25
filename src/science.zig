@@ -8,7 +8,7 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const sdk = @import("sdk.zig");
 
 pub const HybridBigInt = trinity.HybridBigInt;

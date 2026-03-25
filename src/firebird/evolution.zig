@@ -7,7 +7,7 @@
 
 const std = @import("std");
 const math = std.math;
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
 

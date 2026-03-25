@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const graph = @import("graph.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const safe_cross = @import("safe_cross.zig");
 
 const CallGraph = graph.CallGraph;

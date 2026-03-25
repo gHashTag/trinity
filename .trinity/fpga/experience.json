@@ -120,5 +120,34 @@
       "iostandard": "LVCMOS33",
       "verification": "grep D26.*E26 fpga/constraints/uart_bridge_j2.xdc"
     }
+  },
+  {
+    "id": "FPGA-027",
+    "date": "2026-03-25",
+    "category": "UART",
+    "action": "UART J2 test via FT232RL /dev/tty.usbserial-2140 (PID 0x6001)",
+    "result": "TIMEOUT",
+    "symptom": "No response from FPGA on PING (0x03) via J2 header",
+    "root_cause": "UNKNOWN — FT232RL is valid USB-UART (TXD/RXD), bitstream flashed, but no FPGA response. Possible: stale bitstream (pre-D26/E26 fix), missing clock, or wrong bitstream flashed.",
+    "lesson": "FT232RL PID 0x6001 IS a valid USB-UART adapter. Timeout ≠ cable problem. Need to verify: LED activity, bitstream MD5, clock source, and correct XDC pins.",
+    "tags": [
+      "uart",
+      "j2",
+      "timeout",
+      "ft232rl",
+      "needs-investigation"
+    ],
+    "data": {
+      "device": "/dev/tty.usbserial-2140",
+      "cable_type": "FT232RL USB-UART (PID 0x6001) — VALID for UART",
+      "wiring": "J2 pin 5→D26 (TX), pin 6→E26 (RX)",
+      "ping_sent": "0x03",
+      "pong_received": "null (timeout)",
+      "bitstream": "uart_bridge_j2.bit (flashed via JTAG)",
+      "bitstream_date": "2026-03-25 13:08 (possibly stale)",
+      "xdc_pins": "D26/E26 (correct per FPGA-026)",
+      "idcode_after_flash": "0x00000000 (CPLD 0xFFFE - known issue)",
+      "next_steps": "Check LED D5, verify bitstream MD5, confirm clock M22"
+    }
   }
 ]

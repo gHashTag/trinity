@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const firebird = @import("firebird.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 // ═══════════════════════════════════════════════════════════════
 // CONFIGURATION

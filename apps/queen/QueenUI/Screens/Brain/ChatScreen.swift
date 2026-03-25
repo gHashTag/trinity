@@ -1980,7 +1980,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .frame(maxWidth: 600)  // FIXED: prevent oversized input width
+            .frame(width: 600)  // FIXED: fixed width prevents layout jitter
             .layoutPriority(1)
 
             Button {
@@ -5078,7 +5078,7 @@ struct MultilineInput: NSViewRepresentable {
         textView.font = NSFont.systemFont(ofSize: 15)
         textView.textColor = .white
         textView.backgroundColor = .clear
-        textView.drawsBackground = false
+        textView.drawsBackground = true  // FIXED: enable for hit testing
         // FIXED: enable vertical resizing for multiline input
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false

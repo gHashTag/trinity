@@ -26,6 +26,10 @@ pub const unify = @import("unify.zig");
 pub const emit_t27 = @import("emit_t27.zig");
 pub const pipeline = @import("pipeline.zig");
 
+// TRI-27 VM and emulation (J-zone runtime)
+// Uses named module for Anti-Fragile Import Law
+pub const emu = @import("emu");
+
 // Testing
 pub const tri_lang_tests = @import("tri_lang_tests.zig");
 pub const integration_test = @import("integration_test.zig");

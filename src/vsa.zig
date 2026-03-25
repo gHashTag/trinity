@@ -1,9 +1,8 @@
-// 🤖 TRINITY v0.11.0: Suborbital Order
-//! Strand III: Language & Hardware Bridge
-//!
-//! VSA operations for Trinity S³AI — bind, unbind, bundle, similarity.
-//!
-const std = @import("std");
+// VSA module — Zone Root
+// Re-exports all VSA modules for Anti-Fragile Import Law
+//
+// Uses src/vsa.zig (not src/vsa/root.zig) to allow ../hybrid.zig imports
+// φ² + 1/φ² = 3 | TRINITY
 
 pub const common = @import("vsa/common.zig");
 pub const core = @import("vsa/core.zig");
@@ -12,8 +11,17 @@ pub const storage = @import("vsa/storage.zig");
 pub const concurrency = @import("vsa/concurrency.zig");
 pub const agent = @import("vsa/agent.zig");
 pub const HRR = @import("vsa/hrr.zig").HRR;
+pub const bsd = @import("vsa/bsd.zig");
 
-// Re-export common types
+// Additional VSA modules
+pub const benchmarks = @import("vsa/benchmarks.zig");
+pub const fpga_bind = @import("vsa/fpga_bind.zig");
+pub const hrr = @import("vsa/hrr.zig");
+pub const photon = @import("vsa/photon.zig");
+pub const quantum_transition = @import("vsa/quantum_transition.zig");
+pub const tests = @import("vsa/tests.zig");
+
+// Re-export common types for convenience
 pub const HybridBigInt = common.HybridBigInt;
 pub const Trit = common.Trit;
 pub const Vec32i8 = common.Vec32i8;
@@ -78,24 +86,3 @@ pub const getAgentMemory = agent.getAgentMemory;
 pub const getAutonomousAgent = agent.getAutonomousAgent;
 pub const getUnifiedSystem = agent.getUnifiedSystem;
 
-/// Hamming distance for ternary trit slices.
-/// Counts positions where trits differ. Unequal lengths add the difference.
-pub fn hammingDistanceSlice(a: []const i8, b: []const i8) usize {
-    const len = @min(a.len, b.len);
-    var distance: usize = 0;
-    for (0..len) |i| {
-        if (a[i] != b[i]) distance += 1;
-    }
-    if (a.len > b.len) {
-        distance += a.len - b.len;
-    } else {
-        distance += b.len - a.len;
-    }
-    return distance;
-}
-
-test {
-    _ = @import("vsa/tests.zig");
-}
-
-// φ² + 1/φ² = 3 | TRINITY

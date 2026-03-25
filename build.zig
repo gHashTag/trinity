@@ -2831,18 +2831,20 @@ pub fn build(b: *std.Build) void {
     });
 
     // TRI-27 CLI module for tri binary
-    const tri27_cli_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+    // Root module re-exports all tri-lang modules for anti-fragile imports
+    // TRI-Lang emu module (J-zone VM, assembler, executor)
+    const emu_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri-lang/emu/root.zig"),
         .target = target,
         .optimize = optimize,
     });
-
-    // TRI-Lang module (Wave 2 Phase 4: typecheck + emit_t27 + pipeline)
-    // Root module re-exports all tri-lang modules for anti-fragile imports
     const tri_lang_mod = b.createModule(.{
         .root_source_file = b.path("src/tri-lang/root.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
     });
 
     // TRI-Lang compile module (Wave 2 Phase 4)
@@ -2851,6 +2853,17 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "tri_lang", .module = tri_lang_mod },
+        },
+    });
+
+    // TRI-27 CLI module for tri binary
+    const tri27_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
             .{ .name = "tri_lang", .module = tri_lang_mod },
         },
     });

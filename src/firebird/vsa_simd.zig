@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 const Trit = vsa.Trit;
 const TritVec = vsa.TritVec;

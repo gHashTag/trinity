@@ -66,14 +66,14 @@ pub const TypeChecker = struct {
 
 // Tests
 test "type checker init" {
-    const checker = TypeChecker.init(std.testing.allocator);
+    var checker = TypeChecker.init(std.testing.allocator);
     defer checker.deinit();
 
     try std.testing.expect(!checker.hasErrors());
 }
 
 test "type checker add error" {
-    const checker = TypeChecker.init(std.testing.allocator);
+    var checker = TypeChecker.init(std.testing.allocator);
     defer checker.deinit();
 
     try checker.addError(.Mismatch, "type mismatch", 10, 5);
@@ -81,7 +81,7 @@ test "type checker add error" {
 }
 
 test "type checker reset" {
-    const checker = TypeChecker.init(std.testing.allocator);
+    var checker = TypeChecker.init(std.testing.allocator);
     defer checker.deinit();
 
     try checker.addError(.Mismatch, "error", 1, 1);

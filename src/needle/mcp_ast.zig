@@ -12,7 +12,7 @@
 const std = @import("std");
 const zig_parser = @import("zig_parser.zig");
 const refactor = @import("refactor.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MCP PROTOCOL TYPES

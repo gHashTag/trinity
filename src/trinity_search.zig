@@ -12,7 +12,7 @@
 // Results are sorted by similarity (highest first).
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const hybrid = @import("hybrid.zig");
 
 const HybridBigInt = hybrid.HybridBigInt;

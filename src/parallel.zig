@@ -17,7 +17,7 @@
 
 const std = @import("std");
 const hybrid = @import("hybrid.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 const HybridBigInt = hybrid.HybridBigInt;
 const Trit = hybrid.Trit;

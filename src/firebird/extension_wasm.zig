@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const vsa_simd = @import("vsa_simd.zig");
 const b2t = @import("b2t_integration.zig");
 const depin = @import("depin.zig");

@@ -7720,7 +7720,7 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
         // ── Deps accuracy (max 25) ──
         var deps_score: u8 = 0;
         // Top-level virtual cells (kind=virtual, path="src", file_patterns present):
-        // Their files use @import("vsa.zig") not @import("../vsa/..."), so cross-cell
+        // Their files use @import("vsa") not @import("../vsa/..."), so cross-cell
         // detection can't work. Use declared deps as truth (same as independent cells).
         const is_toplevel_virtual = is_virtual and cell.parent.len == 0;
         const dep_acc = if (is_toplevel_virtual)
