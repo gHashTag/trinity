@@ -76,9 +76,9 @@ Where φ^decay = 0.990 (≈ 1/φ)
 
 main_loop:
     # Check: reached WINDOW_SIZE evaluations (20)?
-    LD t6, 5                 # t6 = t5 + 1 (index + 1)
-    JNZ t5, read_next        # if index != 20, read next
-    JUMP compute_final       # else, compute final value
+    LDI t6, WINDOW_SIZE      # t6 = 20
+    JLT t5, t6, read_next    # if t5 < 20, read next
+    JMP compute_final       # else, compute final value
 
     # ============================================
     # Read new evaluation from memory
@@ -87,11 +87,12 @@ main_loop:
 
 read_next:
     # Calculate array element address: base + index*2
-    MUL t6, t5, 2            # t6 = t5 * 2
-    LDI t6, t0               # t6 = &evaluations (load base)
+    LDI t7, 2                # t7 = 2 (for multiply)
+    MUL t6, t5, t7           # t6 = t5 * 2
+    MOV t7, t0               # t7 = &evaluations (save base)
 
-    # Now t6 = &evaluations + index*2
-    ADD t6, t6, t6           # add offset
+    # Now t6 = offset, t7 = base
+    ADD t6, t7, t6           # t6 = base + offset
 
     # Read 16-bit PPL (Little Endian)
     LD t1, t6                # t1 = evaluations[t5]
@@ -132,7 +133,7 @@ read_next:
 
     # If weight_sum == 0 (first iteration), use raw PPL
     MOV t4, t1               # rolling_ppl = current_ppl
-    JUMP clamping_check      # jump to clamping
+    JMP clamping_check      # jump to clamping
 
 div_okay:
     # Fixed-point division
@@ -156,7 +157,7 @@ div_okay:
     JNZ t6, check_clamp      # if result != 0, use it
 
     # If result is 0, use MIN_PPL as fallback
-    MOV t6, MIN_PPL          # t6 = MIN_PPL
+    LDI t6, MIN_PPL          # t6 = MIN_PPL
 
 check_clamp:
     # rolling_ppl in t4 or t6 (after clamping)
@@ -181,15 +182,15 @@ clamping_check:
     JLT t4, t6, clamp_min    # if t4 < MIN_PPL, increase
 
     # PPL in correct range, skip clamping
-    JUMP save_to_memory      # save result
+    JMP skip_invalid      # save result
 
 clamp_max:
-    LDI t4, t6               # rolling_ppl = MAX_PPL
-    JUMP save_to_memory
+    MOV t4, t6               # rolling_ppl = MAX_PPL (t6 holds MAX_PPL)
+    JMP skip_invalid
 
 clamp_min:
     LDI t4, MIN_PPL          # rolling_ppl = MIN_PPL
-    JUMP save_to_memory
+    JMP skip_invalid
 
     # -----------------------------------------------
     # Skip invalid PPL (0xFFFF) — increment index, continue

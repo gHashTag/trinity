@@ -17,6 +17,14 @@ pub const AsmError = error{
     EmptyLine,
 };
 
+/// Section mode for state machine
+const SectionMode = enum {
+    BeforeFirstSection, // Skip documentation until first .const/.data/.code
+    InConst, // .const section: constants
+    InData, // .data section: data initialization
+    InCode, // .code section: instructions
+};
+
 /// Parse register name (t0-t31) to index
 fn parseRegister(name: []const u8) !u5 {
     if (std.mem.startsWith(u8, name, "t")) {
@@ -47,13 +55,21 @@ fn parseThreeOp(rest: []const u8) AsmError!struct { u8, u8, u8 } {
 /// Label table: maps label name to instruction index
 const LabelTable = std.StringHashMap(u32);
 
-/// Parse instruction with label resolution
-fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: usize) AsmError!struct { u32, bool } {
+/// Constant table: maps constant name to value (u32 for Q16 fixed-point)
+const ConstTable = std.StringHashMap(u32);
+
+/// Parse instruction with label and constant resolution
+fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, consts: *const ConstTable, line_num: usize) AsmError!struct { u32, bool } {
     const trimmed = std.mem.trim(u8, line, " \t\r");
 
-    // Strip inline comments (starting with ';')
+    // Skip full-line comments (starting with '#')
+    if (trimmed.len > 0 and trimmed[0] == '#') return error.EmptyLine;
+
+    // Strip inline comments (starting with ';' or '#')
     var rest_trimmed = trimmed;
     if (std.mem.indexOfScalar(u8, trimmed, ';')) |comment_idx| {
+        rest_trimmed = trimmed[0..comment_idx];
+    } else if (std.mem.indexOfScalar(u8, trimmed, '#')) |comment_idx| {
         rest_trimmed = trimmed[0..comment_idx];
     }
     rest_trimmed = std.mem.trimRight(u8, rest_trimmed, " \t");
@@ -80,7 +96,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
 
     if (std.mem.eql(u8, op_lower, "jmp")) {
         // JMP offset or label (unconditional jump)
-        const offset = parseOperand(rest, labels, line_num) catch |err| return err;
+        const offset = parseOperand(rest, labels, consts, line_num) catch |err| return err;
         return .{ encode(Instruction{
             .opcode = Opcode.JMP,
             .immediate = offset,
@@ -95,7 +111,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         const offset_str = std.mem.trim(u8, it2.rest(), " \t");
 
         const dst = try parseRegister(dst_str);
-        const offset = parseOperand(offset_str, labels, line_num) catch |err| return err;
+        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
         return .{ encode(Instruction{
             .opcode = Opcode.JZ,
@@ -112,7 +128,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         const offset_str = std.mem.trim(u8, it2.rest(), " \t");
 
         const dst = try parseRegister(dst_str);
-        const offset = parseOperand(offset_str, labels, line_num) catch |err| return err;
+        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
 
         return .{ encode(Instruction{
             .opcode = Opcode.JNZ,
@@ -122,9 +138,55 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         }), false };
     }
 
+    if (std.mem.eql(u8, op_lower, "jgt")) {
+        // JGT src1, src2, offset/label (jump if greater than)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const src1_str = std.mem.trim(u8, it2.first(), " \t");
+        const rest2 = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, rest2, ',') orelse return error.InvalidSyntax;
+        const src2_str = std.mem.trim(u8, rest2[0..comma_idx], " \t");
+        const offset_str = std.mem.trim(u8, rest2[comma_idx + 1 ..], " \t");
+
+        const src1 = try parseRegister(src1_str);
+        const src2 = try parseRegister(src2_str);
+        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.JGT,
+            .dst = src1,
+            .src1 = src2,
+            .immediate = offset,
+            .has_imm = true,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "jlt")) {
+        // JLT src1, src2, offset/label (jump if less than)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const src1_str = std.mem.trim(u8, it2.first(), " \t");
+        const rest2 = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, rest2, ',') orelse return error.InvalidSyntax;
+        const src2_str = std.mem.trim(u8, rest2[0..comma_idx], " \t");
+        const offset_str = std.mem.trim(u8, rest2[comma_idx + 1 ..], " \t");
+
+        const src1 = try parseRegister(src1_str);
+        const src2 = try parseRegister(src2_str);
+        const offset = parseOperand(offset_str, labels, consts, line_num) catch |err| return err;
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.JLT,
+            .dst = src1,
+            .src1 = src2,
+            .immediate = offset,
+            .has_imm = true,
+        }), false };
+    }
+
     if (std.mem.eql(u8, op_lower, "call")) {
         // CALL offset/label (call subroutine)
-        const offset = parseOperand(rest, labels, line_num) catch |err| return err;
+        const offset = parseOperand(rest, labels, consts, line_num) catch |err| return err;
         return .{ encode(Instruction{
             .opcode = Opcode.CALL,
             .immediate = offset,
@@ -193,6 +255,22 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         return .{ encode(Instruction{
             .opcode = Opcode.DEC,
             .dst = dst,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "mov")) {
+        // MOV dst, src (move register to register)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src = try parseRegister(src_str);
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.MOV,
+            .dst = dst,
+            .src1 = src,
         }), false };
     }
 
@@ -322,7 +400,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         const imm_str = std.mem.trim(u8, it2.rest(), " \t");
 
         const dst = try parseRegister(dst_str);
-        const imm = std.fmt.parseInt(i16, imm_str, 10) catch return error.InvalidImmediate;
+        const imm = parseOperand(imm_str, labels, consts, line_num) catch |err| return err;
 
         return .{ encode(Instruction{
             .opcode = Opcode.LDI,
@@ -338,7 +416,7 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         const imm_str = std.mem.trim(u8, it2.first(), " \t");
         const dst_str = std.mem.trim(u8, it2.rest(), " \t");
 
-        const imm = std.fmt.parseInt(i16, imm_str, 10) catch return error.InvalidImmediate;
+        const imm = parseOperand(imm_str, labels, consts, line_num) catch |err| return err;
         const dst = try parseRegister(dst_str);
 
         return .{ encode(Instruction{
@@ -481,15 +559,25 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
     return error.UnknownOpcode;
 }
 
-/// Parse operand: immediate number or label reference
-fn parseOperand(text: []const u8, labels: *const LabelTable, line_num: usize) AsmError!i16 {
+/// Parse operand: immediate number, constant, or label reference
+fn parseOperand(text: []const u8, labels: *const LabelTable, consts: *const ConstTable, line_num: usize) AsmError!i16 {
     const trimmed = std.mem.trim(u8, text, " \t");
 
-    // Try as number first
-    if (std.fmt.parseInt(i16, trimmed, 10)) |value| {
-        return value;
+    // Try as number first (try u32 for constants like 65535)
+    if (std.fmt.parseInt(u32, trimmed, 10)) |value| {
+        // Truncate to i16 (with warning if overflow)
+        if (value > 32767) {
+            std.debug.print("Warning: constant value {d} truncated to i16\n", .{value});
+            return @bitCast(@as(u16, @intCast(value & 0xFFFF)));
+        }
+        return @intCast(@as(i16, @intCast(value & 0xFFFF)));
     } else |_| {
-        // Not a number, check if it's a label
+        // Not a number, check if it's a constant
+        if (consts.get(trimmed)) |const_value| {
+            // Truncate u32 constant to i16 (use lower 16 bits)
+            return @bitCast(@as(u16, @intCast(const_value & 0xFFFF)));
+        }
+        // Check if it's a label
         if (labels.get(trimmed)) |label_addr| {
             // Convert u32 to i16 (handle overflow by clamping)
             if (label_addr > 32767) {
@@ -498,28 +586,109 @@ fn parseOperand(text: []const u8, labels: *const LabelTable, line_num: usize) As
             }
             return @bitCast(@as(u16, @truncate(label_addr)));
         }
-        std.debug.print("Error: Undefined label '{s}' at line {d}\n", .{ trimmed, line_num });
+        std.debug.print("Error: Undefined symbol '{s}' at line {d}\n", .{ trimmed, line_num });
         return error.UndefinedLabel;
     }
 }
 
-/// Two-pass assembler with label support
+/// Two-pass assembler with label support and section handling
 pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     var bytecode = std.ArrayList(u8).initCapacity(allocator, 256) catch unreachable;
     errdefer bytecode.deinit(allocator);
+
+    // === PASS 0: Parse .const section ===
+    var consts = ConstTable.init(allocator);
+    defer consts.deinit();
+
+    var lines_iter = std.mem.splitScalar(u8, source, '\n');
+    var section_mode: SectionMode = .BeforeFirstSection;
+
+    while (lines_iter.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+
+        // Check for section directives
+        if (trimmed.len > 0 and trimmed[0] == '.') {
+            if (std.mem.eql(u8, trimmed, ".const")) {
+                section_mode = .InConst;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".data")) {
+                section_mode = .InData;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".code")) {
+                section_mode = .InCode;
+                break; // Done with .const section
+            }
+        }
+
+        // Parse constant definitions: NAME = value
+        if (section_mode == .InConst) {
+            // Skip comments and empty lines
+            if (trimmed.len == 0 or trimmed[0] == '#' or trimmed[0] == ';') continue;
+
+            // Check for '=' sign
+            if (std.mem.indexOfScalar(u8, trimmed, '=')) |eq_idx| {
+                const name = std.mem.trim(u8, trimmed[0..eq_idx], " \t");
+                const value_str = std.mem.trim(u8, trimmed[eq_idx + 1 ..], " \t\r\t");
+
+                // Parse value (strip any trailing comment)
+                var value_clean = value_str;
+                if (std.mem.indexOfScalar(u8, value_str, '#')) |comment_idx| {
+                    value_clean = std.mem.trimRight(u8, value_str[0..comment_idx], " \t");
+                }
+                if (std.mem.indexOfScalar(u8, value_clean, ';')) |comment_idx| {
+                    value_clean = std.mem.trimRight(u8, value_clean[0..comment_idx], " \t");
+                }
+
+                const value = std.fmt.parseInt(u32, value_clean, 10) catch {
+                    std.debug.print("Warning: Invalid constant value '{s}'\n", .{value_clean});
+                    continue;
+                };
+
+                try consts.put(name, value);
+            }
+        }
+    }
 
     // === PASS 1: Collect labels ===
     var labels = LabelTable.init(allocator);
     defer labels.deinit();
 
-    var lines_iter = std.mem.splitScalar(u8, source, '\n');
+    lines_iter = std.mem.splitScalar(u8, source, '\n');
     var line_num: usize = 1;
     var instr_idx: u32 = 2; // Instructions start at PC=2 (magic + header)
+    section_mode = .BeforeFirstSection;
 
     while (lines_iter.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
 
-        // Check for label definition
+        // Check for section directives
+        if (trimmed.len > 0 and trimmed[0] == '.') {
+            if (std.mem.eql(u8, trimmed, ".const")) {
+                section_mode = .InConst;
+                line_num += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".data")) {
+                section_mode = .InData;
+                line_num += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".code")) {
+                section_mode = .InCode;
+                line_num += 1;
+                continue;
+            }
+        }
+
+        // Skip everything before .code section
+        if (section_mode != .InCode) {
+            line_num += 1;
+            continue;
+        }
+
+        // Check for label definition (only in .code section)
         if (trimmed.len > 0 and trimmed[trimmed.len - 1] == ':') {
             const label_name = std.mem.trimRight(u8, trimmed[0 .. trimmed.len - 1], " \t");
             try labels.put(label_name, instr_idx);
@@ -528,7 +697,7 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
         }
 
         // Skip empty lines and comments
-        if (trimmed.len == 0 or trimmed[0] == ';') {
+        if (trimmed.len == 0 or trimmed[0] == ';' or trimmed[0] == '#') {
             line_num += 1;
             continue;
         }
@@ -552,9 +721,37 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     lines_iter = std.mem.splitScalar(u8, source, '\n');
     line_num = 1;
     var instr_count: u16 = 0;
+    section_mode = .BeforeFirstSection; // Reset for pass 2
 
     while (lines_iter.next()) |line| {
-        const result = parseLineWithLabels(line, &labels, line_num) catch |err| switch (err) {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+
+        // Check for section directives
+        if (trimmed.len > 0 and trimmed[0] == '.') {
+            if (std.mem.eql(u8, trimmed, ".const")) {
+                section_mode = .InConst;
+                line_num += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".data")) {
+                section_mode = .InData;
+                line_num += 1;
+                continue;
+            }
+            if (std.mem.eql(u8, trimmed, ".code")) {
+                section_mode = .InCode;
+                line_num += 1;
+                continue;
+            }
+        }
+
+        // Skip everything before .code section
+        if (section_mode != .InCode) {
+            line_num += 1;
+            continue;
+        }
+
+        const result = parseLineWithLabels(line, &labels, &consts, line_num) catch |err| switch (err) {
             error.EmptyLine => {
                 line_num += 1;
                 continue;
