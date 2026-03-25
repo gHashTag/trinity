@@ -1,8 +1,14 @@
-# Trinity Zenodo Publications — Master Index (v2.3)
+# Trinity Zenodo Publications — Master Index (v2.4)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
+
+## Main Documentation
+
+- **[ZENODO_README.md](./ZENODO_README.md)** — Main description for Zenodo parent collection
+- **[EXPERIMENTAL_RESULTS.md](./EXPERIMENTAL_RESULTS.md)** — Supporting experimental data
+- **[ZENODO_SCIENTIFIC_GUIDE_V2.md](./ZENODO_SCIENTIFIC_GUIDE_V2.md)** — Best practices guide
 
 ## Complete Scientific Descriptions
 

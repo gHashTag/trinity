@@ -460,7 +460,7 @@ fn runCoreInstallHook(allocator: Allocator) !void {
         \\    echo "   Or use 'git commit --no-verify' to bypass (NOT RECOMMENDED)"
         \\    exit 1
         \\}}
-        \\
+
 
 
     try fs.cwd().writeFile(.{ .sub_path = hook_path, .data = hook_content });

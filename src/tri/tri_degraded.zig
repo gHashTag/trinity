@@ -20,7 +20,8 @@ pub const DEGRADED_WARNING =
     \\╠═════════════════════════════════════════════════════════════╣
     \\║  Run 'tri doctor diagnose' for detailed diagnosis             ║
     \\╚═══════════════════════════════════════════════════════════════╝
-    \\x1b[0m;
+    \\x1b[0m
+;
 
 /// Show degraded notice for unavailable command
 pub fn showDegradedNotice(module_name: []const u8, reason: []const u8) void {
