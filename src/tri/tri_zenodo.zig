@@ -731,7 +731,7 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
         const del_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files/{s}", .{ API, rec.zenodo_id, file_id });
         defer allocator.free(del_url);
         curlDelete(allocator, del_url, token) catch |err| {
-            std.log.warn("Failed to delete file {s}: {}", .{filename, err});
+            std.log.warn("Failed to delete file {s}: {}", .{ filename, err });
         };
         print("    Deleted: {s}\n", .{filename});
 
@@ -772,7 +772,7 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
         const del_file_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files/{s}", .{ API, draft_id, file_id });
         defer allocator.free(del_file_url);
         curlDelete(allocator, del_file_url, token) catch |err| {
-            std.log.warn("Failed to delete draft file {s}: {}", .{file_id, err});
+            std.log.warn("Failed to delete draft file {s}: {}", .{ file_id, err });
         };
 
         draft_search_pos = value_end + 1;
@@ -819,7 +819,8 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     kw_buf[kw_pos] = ']';
     kw_pos += 1;
 
-    const related_ids = \\[{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}]
+    const related_ids = 
+        \\[{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}]
     ;
 
     // Build metadata JSON body
