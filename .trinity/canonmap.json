@@ -1,0 +1,266 @@
+{
+  "alphabet_zones": [
+    {
+      "letter": "T",
+      "agent_name": "Temple",
+      "path": "src/temple",
+      "role": "TTT / meta-PFC",
+      "brain_region": "meta-layer",
+      "trio27_bank": "all",
+      "superpower": "Stores laws: sacred math, types, TRI-27, TTT Seal",
+      "sealed": true
+    },
+    {
+      "letter": "Q",
+      "agent_name": "Queen",
+      "path": "src/Q",
+      "role": "PFC / coordinator",
+      "brain_region": "Prefrontal Cortex",
+      "trio27_bank": "sacred",
+      "superpower": "Coordinates swarm: reads thalamus, assigns tasks, resolves conflicts",
+      "sealed": false
+    },
+    {
+      "letter": "P",
+      "agent_name": "Phoenix",
+      "path": "src/P",
+      "role": "Brainstem",
+      "brain_region": "Brainstem",
+      "trio27_bank": "const",
+      "superpower": "Holds lifecycle: heartbeats, sleep/wake, reboot/repair",
+      "sealed": false
+    },
+    {
+      "letter": "H",
+      "agent_name": "Hippoc",
+      "path": "src/H",
+      "role": "Hippocampus",
+      "brain_region": "Hippocampus",
+      "trio27_bank": "mu12",
+      "superpower": "Keeps episodic memory: episodes, tdgs-history, recall",
+      "sealed": false
+    },
+    {
+      "letter": "R",
+      "agent_name": "Reticula",
+      "path": "src/R",
+      "role": "Reticular Formation",
+      "brain_region": "Reticular Formation",
+      "trio27_bank": "nu13-xi14",
+      "superpower": "Vigilance: watch-daemon, arousal levels, wake/sleep sweep",
+      "sealed": false
+    },
+    {
+      "letter": "A",
+      "agent_name": "Accumen",
+      "path": "src/A",
+      "role": "Nucleus Accumbens",
+      "brain_region": "Nucleus Accumbens",
+      "trio27_bank": "alpha0-beta1",
+      "superpower": "Learns what brings reward; optimizes ROI and reinforcement",
+      "sealed": false
+    },
+    {
+      "letter": "B",
+      "agent_name": "Basal",
+      "path": "src/B",
+      "role": "Basal Ganglia",
+      "brain_region": "Basal Ganglia",
+      "trio27_bank": "gamma2-delta3",
+      "superpower": "Makes action choices, switches policies, gates motor/code paths",
+      "sealed": false
+    },
+    {
+      "letter": "C",
+      "agent_name": "Cerebellum",
+      "path": "src/C",
+      "role": "Cerebellum",
+      "brain_region": "Cerebellum",
+      "trio27_bank": "epsilon4-zeta5",
+      "superpower": "Tuning and error correction; fine-tunes details and coordination",
+      "sealed": false
+    },
+    {
+      "letter": "D",
+      "agent_name": "Depin",
+      "path": "src/D",
+      "role": "Distributed Infra",
+      "brain_region": "Distributed Systems",
+      "trio27_bank": "theta6-eta7",
+      "superpower": "Watches cluster/networks, deploy, resources, traffic reroute",
+      "sealed": false
+    },
+    {
+      "letter": "E",
+      "agent_name": "Evaluon",
+      "path": "src/E",
+      "role": "Eval/Metrics",
+      "brain_region": "Metrics/Scoring",
+      "trio27_bank": "wrap",
+      "superpower": "Hard judge: metrics, statistical significance, benchmark comparison",
+      "sealed": false
+    },
+    {
+      "letter": "F",
+      "agent_name": "Firecore",
+      "path": "src/F",
+      "role": "LLM Engine",
+      "brain_region": "LLM Engine",
+      "trio27_bank": "theta8-iota9",
+      "superpower": "Knows all about model core: tokens, context, throughput",
+      "sealed": false
+    },
+    {
+      "letter": "G",
+      "agent_name": "Gateway",
+      "path": "src/G",
+      "role": "Proxy/Bridge",
+      "brain_region": "Bridge/Proxy",
+      "trio27_bank": "wrap",
+      "superpower": "Makes bridges: APIs, proxies, safe boundaries between worlds",
+      "sealed": false
+    },
+    {
+      "letter": "I",
+      "agent_name": "Insular",
+      "path": "src/I",
+      "role": "Insula",
+      "brain_region": "Insular Cortex",
+      "trio27_bank": "kappa10-lambda11",
+      "superpower": "Feels internal state: loads, fatigue, system pains",
+      "sealed": false
+    },
+    {
+      "letter": "J",
+      "agent_name": "Jitter",
+      "path": "src/J",
+      "role": "JIT/Compilation",
+      "brain_region": "Compilation",
+      "trio27_bank": "wrap",
+      "superpower": "Responsible for build and optimization (JIT, build paths, profiling)",
+      "sealed": false
+    },
+    {
+      "letter": "K",
+      "agent_name": "Kagglion",
+      "path": "src/K",
+      "role": "Kaggle/Bench",
+      "brain_region": "Benchmark/Dataset",
+      "trio27_bank": "omega24-omega25",
+      "superpower": "Runs Kaggle/Trinity Cognitive Probes, baselines, UX",
+      "sealed": false
+    },
+    {
+      "letter": "L",
+      "agent_name": "Lingua",
+      "path": "src/L",
+      "role": "Language",
+      "brain_region": "Language Areas",
+      "trio27_bank": "shmima26",
+      "superpower": "Works with languages: prompts, localization, language patterns",
+      "sealed": false
+    },
+    {
+      "letter": "M",
+      "agent_name": "Motorix",
+      "path": "src/M",
+      "role": "Motor",
+      "brain_region": "Motor Cortex",
+      "trio27_bank": "wrap",
+      "superpower": "Moves actions: tri CLI, start/stop workers, scripts",
+      "sealed": false
+    },
+    {
+      "letter": "N",
+      "agent_name": "Netron",
+      "path": "src/N",
+      "role": "Network",
+      "brain_region": "Communication",
+      "trio27_bank": "wrap",
+      "superpower": "Monitors network and protocols: WebSockets, MCP, RPC",
+      "sealed": false
+    },
+    {
+      "letter": "O",
+      "agent_name": "Oracle",
+      "path": "src/O",
+      "role": "Watchdog/Oracle",
+      "brain_region": "Watchdog",
+      "trio27_bank": "wrap",
+      "superpower": "Makes predictions and sanity-checks; alerts, anomalies",
+      "sealed": false
+    },
+    {
+      "letter": "S",
+      "agent_name": "Striaton",
+      "path": "src/S",
+      "role": "Striatum/Nigra",
+      "brain_region": "Striatum/Substantia Nigra",
+      "trio27_bank": "mu12-nu13",
+      "superpower": "Tunes action loops: habits, repetitions, reward gating",
+      "sealed": false
+    },
+    {
+      "letter": "U",
+      "agent_name": "UIthmus",
+      "path": "src/U",
+      "role": "UI/Interface",
+      "brain_region": "Interface",
+      "trio27_bank": "wrap",
+      "superpower": "Responsible for interfaces: Telegram/web, visual reports",
+      "sealed": false
+    },
+    {
+      "letter": "V",
+      "agent_name": "Vectora",
+      "path": "src/V",
+      "role": "VSA",
+      "brain_region": "Vector Symbolic Architecture",
+      "trio27_bank": "xi14-omicron15",
+      "superpower": "Works with vector representations, VSA, embedding spaces",
+      "sealed": false
+    },
+    {
+      "letter": "W",
+      "agent_name": "Orbiton",
+      "path": "src/W",
+      "role": "OFC",
+      "brain_region": "Orbitofrontal Cortex",
+      "trio27_bank": "pi16-rho17",
+      "superpower": "Forms context and mood assessment; formats messages",
+      "sealed": false
+    },
+    {
+      "letter": "X",
+      "agent_name": "Xalamus",
+      "path": "src/X",
+      "role": "Thalamus",
+      "brain_region": "Thalamus",
+      "trio27_bank": "sigma18-tau19",
+      "superpower": "Communication bus: relays, normalizes flows to Queen",
+      "sealed": false
+    },
+    {
+      "letter": "Y",
+      "agent_name": "Yabenula",
+      "path": "src/Y",
+      "role": "Habenula",
+      "brain_region": "Habenula",
+      "trio27_bank": "upsilon20-phi21",
+      "superpower": "Monitors anti-reward: punishments, degradations, red flags",
+      "sealed": false
+    },
+    {
+      "letter": "Z",
+      "agent_name": "Zallosum",
+      "path": "src/Z",
+      "role": "Corpus Callosum",
+      "brain_region": "Corpus Callosum",
+      "trio27_bank": "chi22-psi23",
+      "superpower": "Connects hemispheres/zones: syncs different letters, inter-zone pipelines",
+      "sealed": false
+    }
+  ],
+  "alphabet_canon_version": "1.0.0",
+  "canon_date": "2026-03-25"
+}
