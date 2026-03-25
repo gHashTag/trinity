@@ -173,6 +173,48 @@ pub fn tryMacro(comptime T: type, comptime E: type, result: Result(T, E)) T {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// MATCH: Exhaustive pattern matching for Result
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Match over Result with both Ok and Err handlers required
+/// Usage: match(result, okHandler, errHandler)
+pub fn match(comptime T: type, comptime E: type, comptime U: type, result: Result(T, E), ok_handler: fn (T) U, err_handler: fn (E) U) U {
+    return switch (result) {
+        .Ok => |v| ok_handler(v),
+        .Err => |e| err_handler(e),
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TRI-27 LOWERING
+// ═══════════════════════════════════════════════════════════════════════
+
+/// Lowered Result representation for TRI-27 VM
+/// Ok(v) → register with flag=0
+/// Err(e) → register with flag=1
+pub const LoweredResult = struct {
+    /// Register containing value or error code
+    value: u32,
+    /// Error flag: false=Ok, true=Err
+    is_error: bool,
+};
+
+/// Lower Result to TRI-27 register + flag representation
+/// Note: This is a simplified version that works for enums and integers
+pub fn lowerToTRI27(comptime T: type, comptime E: type, result: Result(T, E)) LoweredResult {
+    return switch (result) {
+        .Ok => |v| .{
+            .value = @as(u32, v), // Direct cast for enums/integers
+            .is_error = false,
+        },
+        .Err => |e| .{
+            .value = @as(u32, e), // Direct cast for enums/integers
+            .is_error = true,
+        },
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // EXAMPLE USAGE (as comments for documentation)
 // ═════════════════════════════════════════════════════════════════════════════════════
 
@@ -284,4 +326,44 @@ test "result_unwrap_or" {
 
     const err_result: Result(i32, NeuroError) = .{ .Err = .InvalidInput };
     try std.testing.expectEqual(@as(i32, -1), unwrapOr(i32, NeuroError, err_result, -1));
+}
+
+// Test helper functions for match
+fn okHandlerAdd10(v: i32) i32 {
+    return v + 10;
+}
+
+fn errHandlerZero(e: NeuroError) i32 {
+    _ = e;
+    return 0;
+}
+
+fn errHandlerReturnErrorCode(e: NeuroError) i32 {
+    return @intFromEnum(e);
+}
+
+test "result_match_ok_branch" {
+    const result: Result(i32, NeuroError) = .{ .Ok = 42 };
+    const value = match(i32, NeuroError, i32, result, okHandlerAdd10, errHandlerZero);
+    try std.testing.expectEqual(@as(i32, 52), value);
+}
+
+test "result_match_err_branch" {
+    const result: Result(i32, NeuroError) = .{ .Err = .InvalidInput };
+    const value = match(i32, NeuroError, i32, result, okHandlerAdd10, errHandlerReturnErrorCode);
+    try std.testing.expectEqual(@as(i32, 0), value);
+}
+
+test "result_tri27_lowering_ok" {
+    const result: Result(u8, u8) = .{ .Ok = 42 };
+    const lowered = lowerToTRI27(u8, u8, result);
+    try std.testing.expectEqual(@as(u32, 42), lowered.value);
+    try std.testing.expect(!lowered.is_error);
+}
+
+test "result_tri27_lowering_err" {
+    const result: Result(u8, u8) = .{ .Err = 1 };
+    const lowered = lowerToTRI27(u8, u8, result);
+    try std.testing.expectEqual(@as(u32, 1), lowered.value);
+    try std.testing.expect(lowered.is_error);
 }
