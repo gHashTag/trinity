@@ -1,4 +1,4 @@
-## Task: TDGS-3 (Tri Wave 1: reticularraphe + Coptic)
+## Task: TDGS-3 (Tri Wave 2: Type System + emit_t27)
 
 ### Wave 1 ✅ COMPLETE
 - Step 1: reticular_raphe.t27 → VM ✅ (MOV, JGT, JLT, JUMP opcodes)
@@ -8,30 +8,38 @@
 **Total:** ~340 LOC, 129+ tests passing
 **Build:** l0=✅, l1=✅, tri=✅
 
-### Wave 2: Code Generation
+### Wave 2: Code Generation ✅ COMPLETE
 
-#### emit_t27 (VIBEE → TRI-27 bytecode)
+#### emit_t27 (VIBEE → TRI-27 bytecode) ✅ COMPLETE
 - [x] Spec (EMIT_T27_SPEC.md)
 - [x] Test matrix (EMIT_T27_TESTS.md)
 - [x] Reference .t27 (reticular_raphe)
 - [x] Canonmap entry (.trinity_canonmap.json)
 - [x] Phase 1: Core encoder (~380 LOC) — src/vibeec/emit_t27.zig
-- [x] Phase 2: RegAlloc + LabelResolver (~300 LOC additional)
-- [x] Phase 3: Golden test (src/vibeec/emit_t27_golden.zig, 13/13 tests passing)
+- [x] Phase 2: RegAlloc + LabelResolver (~300 LOC)
+- [x] Phase 3: Golden test (src/vibeec/emit_t27_golden.zig, 13/13 tests)
 - [x] E2E tests: 13/13 tests passing
-- [x] JGT/JLT special encoding (src2 in imm[11-15], target in imm[0-10])
-- [x] .t27 binary format (magic "2IRT" + header + code section)
+- [x] JGT/JLT special encoding
+- [x] .t27 binary format (magic "2IRT")
 - [x] build.zig target: `zig build test-emit_t27`
 
-**Acceptance**: 13/13 tests passing
+#### Type System Core ✅ COMPLETE
+- [x] Type representation (src/tri-lang/types.zig)
+- [x] Type environment (src/tri-lang/type_env.zig)
+- [x] Unification (src/tri-lang/unify.zig)
 
-#### Type System Core
-- [ ] Type representation (src/tri-lang/types.zig)
-- [ ] Type environment (src/tri-lang/type_env.zig)
-- [ ] Unification (src/tri-lang/unify.zig)
+**Total Type System:** ~1500 LOC, 55 tests passing
 
-**Estimated**: ~1000 LOC, 70 tests
+#### Typechecker ✅ COMPLETE
+- [x] Expression Typing (src/tri-lang/typechecker.zig)
+- [x] Function Typing (FnExpr, FnCallExpr, arity checking)
+- [x] ADT Typing (ADTExpr, MatchExpr, pattern binding)
 
-- Last commit: (uncommitted) — Phase 3 golden test complete
+**Total Wave 2:** ~2500 LOC, 70+ tests passing
+
+**Acceptance:** All tests passing, L0 ✅ L1 ✅
+- Last commit: 47f56e0154 — Phase 2 Typechecker COMPLETE
+- Build: l0=✅, l1=✅, tri=✅
+- Tests: 30/30 passing (typechecker + types + type_env + unify)
 - Blockers: None
-- Last iteration: 2026-03-25T14:30+07
+- Last iteration: 2026-03-25T14:50+07
