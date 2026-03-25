@@ -164,7 +164,7 @@ pub fn occursIn(tv: TypeId, t: *const Type) bool {
 /// Main unification function
 /// Unifies two types, returns substitution or error
 pub fn unify(allocator: std.mem.Allocator, t1: *const Type, t2: *const Type) !UnifyResult {
-    return unifyWithSubst(allocator, Subst.empty(std.testing.allocator), t1, t2);
+    return unifyWithSubst(allocator, Subst.empty(allocator), t1, t2);
 }
 
 /// Unify with existing substitution
@@ -398,26 +398,25 @@ test "unify function types" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
 
-    // Create simple function type manually
-    const fn1 = try allocator.create(Type);
-    defer allocator.destroy(fn1);
-
-    const param_int = try allocator.create(Type);
-    defer allocator.destroy(param_int);
-    param_int.* = .Int;
-
-    const ret_int = try allocator.create(Type);
-    defer allocator.destroy(ret_int);
-    ret_int.* = .Int;
+    // Create function type: Int -> Int
+    const return_ptr = try allocator.create(Type);
+    return_ptr.* = .Int;
 
     var params = std.ArrayList(Type).empty;
-    try params.append(allocator, param_int.*);
+    try params.append(allocator, return_ptr.*);
+
+    const fn1 = try allocator.create(Type);
     fn1.* = .{ .Fn = .{
         .params = params,
-        .return_type = ret_int,
+        .return_type = return_ptr,
     } };
+    defer {
+        // Manual cleanup to avoid double-free issues
+        fn1.Fn.params.deinit(allocator);
+        allocator.destroy(fn1.Fn.return_type);
+        allocator.destroy(fn1);
+    }
 
     const result = try unify(allocator, fn1, fn1);
     try std.testing.expect(result == .Ok);
-    params.deinit(allocator);
 }
