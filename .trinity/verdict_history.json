@@ -60,4 +60,6 @@
   {"total":91.1,"build":100,"test":100.0,"cover":91.8,"debt":84.1,"spec":96.7,"level":"LEGENDARY","ts":1773739249}
 ,
   {"total":43.5,"build":0,"test":0.0,"cover":82.1,"debt":69.4,"spec":83.0,"level":"GARBAGE","ts":1774237531}
+,
+  {"total":59.6,"build":0,"test":100.0,"cover":79.5,"debt":63.7,"spec":89.4,"level":"MEDIOCRE","ts":1774415131}
 ]

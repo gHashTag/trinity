@@ -1,0 +1,10 @@
+{
+  "srctri27/emitt27.zig": {
+    "source": "tri-cli",
+    "status": "dev",
+    "tdgs": "wave2-step1",
+    "depends_on": ["src/tri27/emu/*.zig", "src/vibee/*.zig"],
+    "acceptance": "byte-exact match with reference .t27",
+    "expected_loc": 400
+  }
+}

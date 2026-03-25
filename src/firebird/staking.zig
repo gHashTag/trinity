@@ -49,6 +49,9 @@ pub const LockPeriod = enum(u8) {
     }
 };
 
+/// Minimum stake amount: 100 TRI (in wei)
+pub const MIN_STAKE: u128 = 100 * 1_000_000_000_000_000_000;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // STAKE POSITION
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -118,8 +121,6 @@ pub const StakingManager = struct {
     staker_stakes: std.StringHashMapUnmanaged(std.ArrayListUnmanaged([]const u8)),
     /// Total staked amount
     total_staked: u128,
-    /// Minimum stake amount (100 TRI)
-    const MIN_STAKE: u128 = 100 * std.math.pow(u128, 10, 18);
 
     pub fn init(allocator: Allocator) StakingManager {
         return StakingManager{

@@ -709,7 +709,7 @@ fn runStakeCommand(allocator: Allocator, args: []const []const u8) !void {
         .one_month;
 
     // Convert to wei
-    const amount_wei: u128 = @intFromFloat(amount_tri * @as(f64, @floatFromInt(firebird_depin.TRI_WEI)));
+    const amount_wei: u128 = @intFromFloat(amount_tri * @as(f64, @floatFromInt(TRI_WEI)));
 
     print("  {s}Amount:{s}       {d:.2} TRI ({d} wei)\n", .{ CYAN, RESET, amount_tri, amount_wei });
     print("  {s}Lock Period:{s}  {s} ({d:.1}x multiplier){s}\n", .{
@@ -720,10 +720,10 @@ fn runStakeCommand(allocator: Allocator, args: []const []const u8) !void {
     });
 
     // Check minimum stake
-    const min_stake = firebird_staking.StakingManager.MIN_STAKE;
+    const min_stake = firebird_staking.MIN_STAKE;
     if (amount_wei < min_stake) {
         print("{s}Error: Minimum stake is {d} TRI{s}\n\n", .{
-            RED, @as(f64, @floatFromInt(min_stake)) / @as(f64, @floatFromInt(firebird_depin.TRI_WEI)), RESET,
+            RED, @as(f64, @floatFromInt(min_stake)) / @as(f64, @floatFromInt(TRI_WEI)), RESET,
         });
         return;
     }
@@ -793,10 +793,10 @@ fn runClaimCommand(_: Allocator, args: []const []const u8) !void {
     print("\n", .{});
 
     // MOCK MATH: pending = stake / 1000 (arbitrary for testnet)
-    const mock_stake_amount: u128 = 1000 * firebird_depin.TRI_WEI;
+    const mock_stake_amount: u128 = 1000 * TRI_WEI;
     const mock_pending = mock_stake_amount / 1000; // 1 TRI
 
-    const pending_tri = @as(f64, @floatFromInt(mock_pending)) / @as(f64, @floatFromInt(firebird_depin.TRI_WEI));
+    const pending_tri = @as(f64, @floatFromInt(mock_pending)) / @as(f64, @floatFromInt(TRI_WEI));
 
     print("  {s}Pending Rewards:{s} {s}{d:.6} TRI{s}\n", .{
         CYAN, RESET, GREEN, pending_tri, RESET,
