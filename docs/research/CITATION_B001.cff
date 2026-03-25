@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "Trinity B001: Ternary Neural Networks"
+title: "Trinity B001: Ternary Neural Networks — Complete Scientific Framework"
+abstract: "We present HSLM (Hierarchical Sacred Language Model), a 1.95M parameter ternary language model achieving PPL=125 on TinyStories. Our architecture introduces Sacred Attention (φ-based scaling), Consciousness Gate (dual-system reasoning), Phi Scaling (golden ratio architecture), T-JEPA (ternary masked prediction), and Cosine LR with φ-warmup. Implemented in pure Zig, HSLM achieves 377KB model size and 1200 tok/s throughput."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - ternary neural networks
+  - HSLM
+  - Sacred Attention
+  - Consciousness Gate
+  - Phi Scaling
+  - T-JEPA
+  - Cosine LR
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225088
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B001: Ternary Neural Networks — Complete Scientific Framework"
+  year: 2026
+  doi: 10.5281/zenodo.19225088
+  publisher: Zenodo

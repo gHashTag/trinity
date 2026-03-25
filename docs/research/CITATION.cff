@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "Trinity S3AI Framework - Complete Scientific Collection"
+title: "Trinity S³AI Framework — Complete Scientific Collection (76 Discoveries)"
+abstract: "We present the Trinity S³AI (Sacred Symbolic AI) Framework, a comprehensive approach to ternary neural networks, FPGA acceleration, and autonomous orchestration. This collection includes 7 bundles covering 76 scientific discoveries across neural network architecture, hardware design, instruction set design, orchestration systems, language design, number formats, and vector symbolic architectures."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+    affiliation: "Trinity Research Labs"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+keywords:
+  - ternary computing
+  - neural networks
+  - FPGA
+  - VSA
+  - phi-based
+  - Zig
+  - autonomous agents
+  - HSLM
+  - TRI-27
+  - Queen Lotus
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225187
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.3
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity S³AI Framework — Complete Scientific Collection (76 Discoveries)"
+  year: 2026
+  doi: 10.5281/zenodo.19225187
+  publisher: Zenodo

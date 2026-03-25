@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B006: Sacred GF16/TF3"
+title: "Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic"
+abstract: "We present Sacred GF16 and TF3 (Ternary Float 3), two φ-based number formats optimized for ternary neural network computing. Sacred GF16 uses 1 sign bit, 6 exponent bits, and 9 mantissa bits with exponent bias derived from the Golden Ratio. TF3 packs 8 ternary weights into 16 bits using a 2-bit encoding scheme."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - GF16
+  - TF3
+  - phi-based arithmetic
+  - ternary floating point
+  - number format
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225122
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic"
+  year: 2026
+  doi: 10.5281/zenodo.19225122
+  publisher: Zenodo

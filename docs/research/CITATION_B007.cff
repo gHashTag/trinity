@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B007: VSA Operations"
+title: "Trinity B007: VSA Operations for Ternary Computing"
+abstract: "We present a comprehensive framework for Vector Symbolic Architecture (VSA) operations optimized for ternary computing. Our implementation includes four VSA architectures: Binary Sparse Code (BSC), Holographic Reduced Representations (HRR), Fourier HRR (FHRR), and the novel BSD-VSA which integrates elliptic curve theory through the Tate-Shafarevich (Ш) component."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - VSA
+  - FHRR
+  - BSD-VSA
+  - HRR
+  - vector symbolic
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225124
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B007: VSA Operations for Ternary Computing"
+  year: 2026
+  doi: 10.5281/zenodo.19225124
+  publisher: Zenodo

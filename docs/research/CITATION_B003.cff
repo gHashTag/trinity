@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B003: TRI-27 ISA"
+title: "Trinity B003: TRI-27 — Ternary ISA with Coptic Alphabet Encoding"
+abstract: "We present TRI-27, a 27-register ternary instruction set architecture with Coptic alphabet encoding. Our ISA features 36 opcodes organized into 3 banks (α-η: arithmetic, ι-ρ: memory, σ-ϡ: control), VSA operations, and episode-based encoding. The design enables efficient ternary computation with hardware-friendly instruction encoding."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - TRI-27
+  - ISA
+  - Coptic alphabet
+  - ternary architecture
+  - VSA instructions
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225117
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B003: TRI-27 — Ternary ISA with Coptic Alphabet Encoding"
+  year: 2026
+  doi: 10.5281/zenodo.19225117
+  publisher: Zenodo

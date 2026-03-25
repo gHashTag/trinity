@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B004: Queen Lotus Cycle"
+title: "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration"
+abstract: "We present the Queen Lotus Cycle, a 6-phase autonomous orchestration system for neural network training. Inspired by dual-system theory and reinforcement learning, Queen observes training metrics, evaluates quality, generates policy deltas, decides on changes, learns from episodes, and reflects on outcomes. The cycle uses Jaccard similarity for episode matching and SEVO (Sacred Evolution) for hyperparameter optimization."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - Queen Lotus
+  - autonomous orchestration
+  - SEVO
+  - Jaccard similarity
+  - meta-learning
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225118
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration"
+  year: 2026
+  doi: 10.5281/zenodo.19225118
+  publisher: Zenodo

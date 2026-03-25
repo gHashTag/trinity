@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B005: Tri Language"
+title: "Trinity B005: Tri Language — Linear Types, Effects, Dual-Target"
+abstract: "We present Tri, a domain-specific language for ternary neural network specification that compiles to both Zig and Verilog. Tri features linear types with ownership modes (Let, Inout, Sink, Set), algebraic effects and handlers for platform-aware operations, and bit/trit-level pattern matching for hardware description."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - Tri Language
+  - linear types
+  - algebraic effects
+  - dual-target compilation
+  - DSL
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225121
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B005: Tri Language — Linear Types, Effects, Dual-Target"
+  year: 2026
+  doi: 10.5281/zenodo.19225121
+  publisher: Zenodo

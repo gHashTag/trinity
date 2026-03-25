@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "Trinity B002: Zero-DSP FPGA"
+title: "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference"
+abstract: "We present a Zero-DSP FPGA architecture for ternary neural network inference. Our design eliminates DSP slice usage through ternary-aware MAC units, CORDIC φ-rotations, and streaming argmax. Synthesized for XC7A100T with OpenXC7 toolchain, our implementation achieves 0% DSP usage, 19.6% LUT utilization, and 1.2W power consumption—37.5× better energy efficiency than GPU baselines."
+authors:
+  - family-names: Vasilev
+    given-names: Dmitrii
+keywords:
+  - FPGA
+  - Zero-DSP
+  - ternary MAC
+  - CORDIC
+  - OpenXC7
+license: CC-BY-4.0
+doi: 10.5281/zenodo.19225102
+url: "https://github.com/gHashTag/trinity"
+date-released: 2026-03-26
+version: 2.0
+
+preferred-citation:
+  type: software
+  authors:
+    - family-names: Vasilev
+      given-names: Dmitrii
+  title: "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference"
+  year: 2026
+  doi: 10.5281/zenodo.19225102
+  publisher: Zenodo
