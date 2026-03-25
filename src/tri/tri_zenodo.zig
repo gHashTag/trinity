@@ -754,8 +754,9 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const related_ids = \\[{"identifier":"10.5281/zenodo.18947017","relation":"isPartOf","resource_type":"software"}]
     ;
 
+    // Build metadata JSON body
     const meta_body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"Enhanced v4.0 with full scientific rigor: 5-sentence abstract, LaTeX notation, formal theorems, 95% CIs, Docker reproducibility.","upload_type":"software","publication_date":"2026-03-26","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"license":{{"id":"cc-by-4.0"}},"version":"4.0","related_identifiers":{s}}}}}}
+        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"Enhanced v4.0 with full scientific rigor: 5-sentence abstract, LaTeX notation, formal theorems, 95% CIs, Docker reproducibility.","upload_type":"software","publication_date":"2026-03-26","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"license":{{"id":"cc-by-4.0"}},"version":"4.0","related_identifiers":[{s}]}}}}}}
     , .{ rec.title, description, kw_buf[0..kw_pos], related_ids });
     defer allocator.free(meta_body);
 
@@ -871,7 +872,7 @@ fn publishBundleV4Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void 
     defer allocator.free(temp_path);
 
     {
-        const temp_file = try std.fs.createFileAbsolute(temp_path);
+        const temp_file = try std.fs.createFileAbsolute(temp_path, .{});
         defer temp_file.close();
         try temp_file.writeAll(desc_content);
     }
