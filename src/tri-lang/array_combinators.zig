@@ -186,12 +186,12 @@ pub fn foldRight(comptime T: type, array: []const T, init: T, op: fn (T, T) T) T
 
 /// Zip two arrays into pairs
 /// zip([a1, a2], [b1, b2]) -> [(a1, b1), (a2, b2)]
-pub fn zip(comptime T: type, comptime U: type, allocator: std.mem.Allocator, a: []const T, b: []const U) ![]struct { T: T, U: U } {
+pub fn zip(comptime T: type, comptime U: type, allocator: std.mem.Allocator, a: []const T, b: []const U) ![]struct { first: T, second: U } {
     const len = @min(a.len, b.len);
-    const result = try allocator.alloc(struct { T: T, U: U }, len);
+    const result = try allocator.alloc(struct { first: T, second: U }, len);
 
     for (0..len) |i| {
-        result[i] = .{ .T = a[i], .U = b[i] };
+        result[i] = .{ .first = a[i], .second = b[i] };
     }
     return result;
 }
@@ -371,12 +371,11 @@ fn isEven(x: i32) bool {
 }
 
 fn dup(x: i32) []const i32 {
-    return &[_]i32{x, x};
+    return &[_]i32{ x, x };
 }
 test "map_identity" {
     const allocator = std.testing.allocator;
     const input = [_]i32{ 1, 2, 3, 4, 5 };
-
 
     const result = try map(i32, i32, allocator, &input, double);
 

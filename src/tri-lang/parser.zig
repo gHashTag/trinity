@@ -500,27 +500,27 @@ pub const Parser = struct {
 
         switch (self.current_token) {
             .IntLiteral => |v| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .IntLiteral = .{ .value = v, .loc = loc } };
             },
             .FloatLiteral => |v| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .FloatLiteral = .{ .value = v, .loc = loc } };
             },
             .StringLiteral => |v| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .StringLiteral = .{ .value = v, .loc = loc } };
             },
             .CharLiteral => |v| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .CharLiteral = .{ .value = v, .loc = loc } };
             },
             .BoolLiteral => |v| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .BoolLiteral = .{ .value = v, .loc = loc } };
             },
             .Identifier => |name| {
-                defer try self.advance();
+                try self.advance();
                 return ast.Expression{ .Identifier = .{ .name = name, .loc = loc } };
             },
             .LeftParen => {
