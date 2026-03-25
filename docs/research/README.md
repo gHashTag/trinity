@@ -16,7 +16,9 @@
 | [Tri Language Canon](trilanguage_canon.md) | DSL, codegen | ✅ |
 | [Defensive Template](DEFENSIVE_PUB_TEMPLATE.md) | Publication template | ✅ |
 | [Prior Art Network](PRIOR_ART_NETWORK.md) | Cross-reference matrix | ✅ |
-| [H6 Throughput Validation](H6_FPGA_CPU_THROUGHPUT_VALIDATION.md) | FPGA vs CPU SIMD analysis | ✅ NEW |
+| [H6 Throughput Validation](H6_FPGA_CPU_THROUGHPUT_VALIDATION.md) | FPGA vs CPU SIMD analysis | ✅ |
+| [Zenodo Abstract Improvements](ZENODO_ABSTRACT_IMPROVEMENTS.md) | Best practices analysis | ✅ NEW |
+| [HSLM Optimization](HSLM_OPTIMIZATION_ANALYSIS.md) | Performance enhancement | ✅ NEW |
 | [Research Index](RESEARCH_INDEX_V3.md) | Complete documentation index | ✅ |
 | [Abstract Improvements](ZENODO_ABSTRACT_IMPROVEMENTS.md) | Zenodo abstract enhancement | ✅ NEW |
 
@@ -66,7 +68,7 @@ See each document's "How to Cite" section for specific citations.
 | H3 | Self-Learning reduces crash rate 3× | ✅ Validated (p<0.01) | QUEEN_ORCHESTRATION_VALIDATION.md |
 | H4 | Feedback loop accelerates 2× | ✅ Validated (p<0.05) | HYPOTHESIS_VALIDATION_REPORT.md |
 | H5 | Ternary ISA improves code density 2.5× | ✅ Validated (p<0.05) | TRI27_SCIENTIFIC_VALIDATION.md |
-| H6 | Zero-DSP FPGA matches CPU SIMD 10× | ⚠️ Partial (multi-FPGA path) | H6_FPGA_CPU_THROUGHPUT_VALIDATION.md |
+| H6 | Zero-DSP FPGA matches CPU SIMD 10× | ⚠️ Partial (16× FPGA cluster) | H6_FPGA_CPU_THROUGHPUT_VALIDATION.md |
 
 ---
 
