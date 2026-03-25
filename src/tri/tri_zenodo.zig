@@ -696,8 +696,42 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const description = try jsonEscapeString(allocator, raw_desc);
     defer allocator.free(description);
 
+    // Step 1.5: Get existing record and delete all files (required before newversion)
+    print("  1.5/5 Removing existing files...\n", .{});
+    const record_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}", .{ API, rec.zenodo_id });
+    defer allocator.free(record_url);
+    const record_resp = try curlGet(allocator, record_url, token);
+    defer allocator.free(record_resp);
+
+    // Find and delete all existing files
+    var search_pos: usize = 0;
+    while (std.mem.indexOfPos(u8, record_resp, search_pos, "\"filename\":") != null) {
+        const filename_start = std.mem.indexOfPos(u8, record_resp, search_pos, "\"filename\":") orelse break;
+        const start = filename_start + 11; // length of "filename":
+        const end = std.mem.indexOfPos(u8, record_resp, start, "\"") orelse break;
+        const filename = record_resp[start..end];
+
+        // Get file ID
+        const file_id_pattern = try std.fmt.allocPrint(allocator, "\"id\":\"{s}\"", .{filename});
+        defer allocator.free(file_id_pattern);
+        const id_start = std.mem.indexOf(u8, record_resp, file_id_pattern) orelse continue;
+        const id_value_start = id_start + file_id_pattern.len;
+        const id_end = std.mem.indexOfPos(u8, record_resp, id_value_start, "\"") orelse continue;
+        const file_id = record_resp[id_value_start..id_end];
+
+        // Delete file
+        const del_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/files/{s}", .{ API, rec.zenodo_id, file_id });
+        defer allocator.free(del_url);
+        curlDelete(allocator, del_url, token) catch |err| {
+            std.log.warn("Failed to delete file {s}: {}", .{filename, err});
+        };
+        print("    Deleted: {s}\n", .{filename});
+
+        search_pos = end + 1;
+    }
+
     // Step 2: Create new version draft
-    print("  2/4 Creating new version draft...\n", .{});
+    print("  2/5 Creating new version draft...\n", .{});
     const newver_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/newversion", .{ API, rec.zenodo_id });
     defer allocator.free(newver_url);
     const newver_resp = try curlPost(allocator, newver_url, token, null);
@@ -710,8 +744,34 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
         return error.NewVersionFailed;
     };
 
-    // Step 3: Update metadata with markdown description
-    print("  3/4 Updating metadata (draft {s})...\n", .{draft_id});
+    // Step 2.5: Delete all files from the draft (required before updating)
+    print("  2.5/5 Removing files from draft {s}...\n", .{draft_id});
+    const draft_files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, draft_id });
+    defer allocator.free(draft_files_url);
+
+    const draft_files_resp = try curlGet(allocator, draft_files_url, token);
+    defer allocator.free(draft_files_resp);
+
+    // Find and delete all files from draft
+    var draft_search_pos: usize = 0;
+    while (std.mem.indexOfPos(u8, draft_files_resp, draft_search_pos, "\"id\":") != null) {
+        const id_start = std.mem.indexOfPos(u8, draft_files_resp, draft_search_pos, "\"id\":") orelse break;
+        const value_start = id_start + 5;
+        const value_end = std.mem.indexOfPos(u8, draft_files_resp, value_start, "\"") orelse break;
+        const file_id = draft_files_resp[value_start..value_end];
+
+        // Delete this file from draft
+        const del_file_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files/{s}", .{ API, draft_id, file_id });
+        defer allocator.free(del_file_url);
+        curlDelete(allocator, del_file_url, token) catch |err| {
+            std.log.warn("Failed to delete draft file {s}: {}", .{file_id, err});
+        };
+
+        draft_search_pos = value_end + 1;
+    }
+
+    // Step 4: Update metadata with markdown description
+    print("  3/5 Updating metadata (draft {s})...\n", .{draft_id});
 
     // Build keywords JSON: human keywords + CPC codes
     var kw_buf: [2048]u8 = undefined;
@@ -765,13 +825,15 @@ fn updateBundleV4(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const meta_resp = try curlPut(allocator, draft_url, token, meta_body);
     defer allocator.free(meta_resp);
 
+    // Debug: print response on failure
     if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null or std.mem.indexOf(u8, meta_resp, "\"status\":4") != null) {
         print("  {s}Metadata update failed{s}\n", .{ RED, RESET });
+        print("  Response: {s}\n", .{meta_resp[0..@min(500, meta_resp.len)]});
         return error.MetadataUpdateFailed;
     }
 
-    // Step 4: Publish the new version
-    print("  4/4 Publishing...\n", .{});
+    // Step 5: Publish the new version
+    print("  4/5 Publishing...\n", .{});
     const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, draft_id });
     defer allocator.free(pub_url);
     const pub_resp = try curlPost(allocator, pub_url, token, null);
