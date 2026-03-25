@@ -361,7 +361,20 @@ class TestConfidenceDiscretization(unittest.TestCase):
         self.assertEqual(confidence_to_bucket(0.25), 5)
         self.assertEqual(confidence_to_bucket(0.50), 10)
         self.assertEqual(confidence_to_bucket(0.75), 15)
-        self.assertEqual(confidence_to_bucket(1.0), 20)
+        # CRITICAL FIX (v3.0): 100% confidence should be bucket 19, not 20
+        self.assertEqual(confidence_to_bucket(1.0), 19)
+        self.assertEqual(confidence_to_bucket(0.95), 19)
+        self.assertEqual(confidence_to_bucket(0.99), 19)
+
+    def test_confidence_bucket_no_out_of_bounds(self):
+        """Test all confidence values map to valid buckets [0-19]."""
+        from eval.scorer_v2 import confidence_to_bucket
+
+        for i in range(101):
+            confidence = i / 100.0
+            bucket = confidence_to_bucket(confidence)
+            self.assertGreaterEqual(bucket, 0, f"Confidence {confidence} -> bucket {bucket} < 0")
+            self.assertLessEqual(bucket, 19, f"Confidence {confidence} -> bucket {bucket} > 19")
 
 
 class TestExpectedCalibrationError(unittest.TestCase):
@@ -446,15 +459,145 @@ class TestMetaDPrime(unittest.TestCase):
     def test_zero_cases(self):
         """Test handling of zero cases."""
         from eval.scorer_v2 import calculate_meta_d_prime
+        import math
 
         # All correct (no Type I variance)
         meta_d, d_prime, mratio = calculate_meta_d_prime(50, 0, 0, 50)
-        # When all correct, d' is infinite but we return 0 to handle edge case
-        self.assertEqual(d_prime, 0.0)  # Edge case handling
+        # When all correct, d' is maximal positive
+        self.assertGreater(d_prime, 0.0)
 
-        # Empty
+        # All incorrect (negative d')
+        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 50, 50, 0)
+        self.assertLess(d_prime, 0.0)
+
+        # CRITICAL FIX (v3.0): Empty data should return NaN for mratio
         meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 0, 0)
         self.assertEqual(meta_d, 0.0)
+        self.assertEqual(d_prime, 0.0)
+        self.assertTrue(math.isnan(mratio), "M-ratio should be NaN for empty data")
+
+    def test_chance_performance(self):
+        """Test d' = 0 at chance performance (50% accuracy)."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+        import math
+
+        # 50% accuracy = chance performance
+        meta_d, d_prime, mratio = calculate_meta_d_prime(5, 0, 0, 5)
+        self.assertEqual(d_prime, 0.0, "d' should be 0 at chance")
+        self.assertTrue(math.isnan(mratio), "M-ratio undefined when d'=0")
+
+
+class TestNormInverse(unittest.TestCase):
+    """Tests for norm_inverse (probit function) - CRITICAL for SDT."""
+
+    def test_norm_inverse_median(self):
+        """Test Φ(0) = 0.5 (median of standard normal)."""
+        from eval.scorer_v2 import norm_inverse
+        import math
+
+        result = norm_inverse(0.5)
+        self.assertAlmostEqual(result, 0.0, places=5)
+
+    def test_norm_inverse_one_sigma(self):
+        """Test Φ(1) ≈ 0.8413 (one standard deviation)."""
+        from eval.scorer_v2 import norm_inverse
+
+        result = norm_inverse(0.8413)
+        self.assertAlmostEqual(result, 1.0, places=3)
+
+    def test_norm_inverse_negative_one_sigma(self):
+        """Test Φ(-1) ≈ 0.1587 (negative one standard deviation)."""
+        from eval.scorer_v2 import norm_inverse
+
+        result = norm_inverse(0.1587)
+        self.assertAlmostEqual(result, -1.0, places=3)
+
+    def test_norm_inverse_boundaries(self):
+        """Test Φ(∞)=1, Φ(-∞)=0 using approximations."""
+        from eval.scorer_v2 import norm_inverse
+
+        # p = 0 should return approximation of -∞
+        result_neg = norm_inverse(0.0)
+        self.assertLess(result_neg, -5.0, "p=0 should return large negative value")
+
+        # p = 1 should return approximation of +∞
+        result_pos = norm_inverse(1.0)
+        self.assertGreater(result_pos, 5.0, "p=1 should return large positive value")
+
+    def test_norm_inverse_symmetry(self):
+        """Test Φ(-x) = 1 - Φ(x) symmetry property."""
+        from eval.scorer_v2 import norm_inverse
+
+        for p in [0.1, 0.25, 0.4]:
+            result1 = norm_inverse(p)
+            result2 = norm_inverse(1 - p)
+            self.assertAlmostEqual(result1, -result2, places=5,
+                                 msg=f"Symmetry failed for p={p}")
+
+
+class TestTypeISDTEdgeCases(unittest.TestCase):
+    """Tests for Type I SDT edge cases (v3.0 critical fixes)."""
+
+    def test_type1_sdt_empty_data(self):
+        """Test Type I SDT with empty data."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+        import math
+
+        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 0, 0)
+        self.assertEqual(meta_d, 0.0)
+        self.assertEqual(d_prime, 0.0)
+        self.assertTrue(math.isnan(mratio))
+
+    def test_type1_sdt_all_correct(self):
+        """Test Type I SDT when all answers correct."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+
+        meta_d, d_prime, mratio = calculate_meta_d_prime(100, 0, 0, 0)
+        self.assertGreater(d_prime, 0, "All correct should give positive d'")
+        self.assertFalse(math.isnan(mratio), "M-ratio should be defined")
+
+    def test_type1_sdt_all_incorrect(self):
+        """Test Type I SDT when all answers incorrect."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+
+        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 100, 0)
+        self.assertLess(d_prime, 0, "All incorrect should give negative d'")
+        self.assertFalse(math.isnan(mratio), "M-ratio should be defined")
+
+    def test_type1_sdt_chance(self):
+        """Test Type I SDT at chance (50% correct)."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+        import math
+
+        meta_d, d_prime, mratio = calculate_meta_d_prime(50, 0, 0, 50)
+        self.assertEqual(d_prime, 0.0, "50% accuracy = d' = 0")
+        self.assertTrue(math.isnan(mratio), "M-ratio undefined at d'=0")
+
+    def test_type1_sdt_above_chance(self):
+        """Test Type I SDT above chance."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+
+        # 75% correct
+        meta_d, d_prime, mratio = calculate_meta_d_prime(15, 5, 5, 15)
+        self.assertGreater(d_prime, 0, "Above chance should give positive d'")
+
+    def test_type2_sdt_no_correct_data(self):
+        """Test Type II SDT when no correct responses."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+
+        # n_correct = 0, so Type II cannot be computed
+        meta_d, d_prime, mratio = calculate_meta_d_prime(0, 0, 10, 10)
+        self.assertEqual(meta_d, 0.0, "Type II should be 0 when n_correct=0")
+        self.assertLess(d_prime, 0, "Type I should still work")
+
+    def test_type2_sdt_no_incorrect_data(self):
+        """Test Type II SDT when no incorrect responses."""
+        from eval.scorer_v2 import calculate_meta_d_prime
+
+        # n_incorrect = 0, so Type II cannot be computed
+        meta_d, d_prime, mratio = calculate_meta_d_prime(10, 10, 0, 0)
+        self.assertEqual(meta_d, 0.0, "Type II should be 0 when n_incorrect=0")
+        self.assertGreater(d_prime, 0, "Type I should still work")
 
 
 class TestTernaryScorerV2(unittest.TestCase):

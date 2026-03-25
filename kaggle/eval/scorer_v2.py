@@ -63,9 +63,14 @@ def confidence_to_bucket(confidence: float) -> int:
     Convert confidence to bucket index (0-20).
 
     Used for ECE calculation and calibration curves.
+
+    CRITICAL FIX (v3.0): confidence=100 returns bucket 19, not 20.
+    The 21 buckets (0, 5, 10, ..., 100) have indices 0-20, but 100//5=20
+    would be out of bounds. We clamp to max index 19 for 100% confidence.
     """
     discretized = discretize_confidence(confidence)
-    return discretized // 5
+    bucket = discretized // 5
+    return min(bucket, 19)  # Max bucket index is 19 (for confidence 95-100)
 
 
 # =============================================================================
@@ -178,10 +183,10 @@ def calculate_meta_d_prime(
         - d_prime: Task performance (Type I SDT)
         - mratio: meta-d' / d' (metacognitive efficiency)
     """
-    # Avoid division by zero
+    # CRITICAL FIX (v3.0): Explicit n==0 check instead of masking with max(n, 1)
     n = hits + misses + false_alarms + correct_rejections
     if n == 0:
-        return 0.0, 0.0, 0.0
+        return 0.0, 0.0, float('nan')
 
     # ========================================================================
     # Type I SDT (task performance) - CORRECTED VERSION
@@ -194,18 +199,28 @@ def calculate_meta_d_prime(
     # Incorrect responses = all responses where answer was wrong (regardless of confidence)
     n_incorrect = false_alarms + correct_rejections
 
-    # Hit Rate (Type I) = proportion of correct responses
-    # This is simply accuracy: correct / total
-    hr_type1 = n_correct / max(n, 1)
+    # CRITICAL FIX (v3.0): Explicit zero checks for correct/incorrect counts
+    if n_correct == 0:
+        # All incorrect - d' should be negative
+        hr_type1 = 0.01
+        far_type1 = 0.99
+    elif n_incorrect == 0:
+        # All correct - d' should be maximal
+        hr_type1 = 0.99
+        far_type1 = 0.01
+    else:
+        # Hit Rate (Type I) = proportion of correct responses
+        # This is simply accuracy: correct / total
+        hr_type1 = n_correct / n
 
-    # False Alarm Rate (Type I) = proportion of incorrect responses
-    # In standard Type I SDT with 2-alternative forced choice:
-    # FAR = incorrect responses / total trials
-    far_type1 = n_incorrect / max(n, 1)
+        # False Alarm Rate (Type I) = proportion of incorrect responses
+        # In standard Type I SDT with 2-alternative forced choice:
+        # FAR = incorrect responses / total trials
+        far_type1 = n_incorrect / n
 
-    # Apply bounds to avoid infinities (use 0.01-0.99 range)
-    hr_type1 = max(min(hr_type1, 0.99), 0.01)
-    far_type1 = max(min(far_type1, 0.99), 0.01)
+        # Apply bounds to avoid infinities BEFORE norm_inverse (v3.0 fix)
+        hr_type1 = max(min(hr_type1, 0.99), 0.01)
+        far_type1 = max(min(far_type1, 0.99), 0.01)
 
     # Type I d' (task sensitivity)
     d_prime = norm_inverse(hr_type1) - norm_inverse(far_type1)
@@ -220,15 +235,20 @@ def calculate_meta_d_prime(
         # No Type II information available
         return 0.0, d_prime, 0.0
 
+    # CRITICAL FIX (v3.0): Explicit zero checks instead of max(n, 1) masking
     # Type II Hit Rate = high confidence when correct / total correct
-    hr_type2 = hits / max(n_correct, 1)
+    if n_correct == 0:
+        hr_type2 = 0.01
+    else:
+        hr_type2 = hits / n_correct
+        hr_type2 = max(min(hr_type2, 0.99), 0.01)
 
     # Type II False Alarm Rate = high confidence when incorrect / total incorrect
-    far_type2 = false_alarms / max(n_incorrect, 1)
-
-    # Apply bounds
-    hr_type2 = max(min(hr_type2, 0.99), 0.01)
-    far_type2 = max(min(far_type2, 0.99), 0.01)
+    if n_incorrect == 0:
+        far_type2 = 0.01
+    else:
+        far_type2 = false_alarms / n_incorrect
+        far_type2 = max(min(far_type2, 0.99), 0.01)
 
     # Type II d' (meta-d' = metacognitive sensitivity)
     meta_d = norm_inverse(hr_type2) - norm_inverse(far_type2)

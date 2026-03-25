@@ -13,7 +13,7 @@ const std = @import("std");
 pub const bigint = @import("bigint.zig");
 pub const packed_trit = @import("packed_trit.zig");
 pub const hybrid = @import("hybrid.zig");
-pub const vsa = @import("vsa");
+pub const vsa = @import("vsa.zig");
 pub const vm = @import("vm.zig");
 
 // SDK modules (high-level API)

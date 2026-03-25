@@ -66,6 +66,8 @@ def calculate_smooth_ece(
         # Silverman's rule: h = 1.06 * sigma * n^(-1/5)
         sigma = _std(confidences)
         bandwidth = 1.06 * sigma * (n ** (-0.2))
+        # CRITICAL FIX (v3.0): Apply minimum bandwidth to avoid oversmoothing for small n
+        bandwidth = max(bandwidth, 0.05)  # Minimum 5% bandwidth
 
     # Kernel evaluation points
     kernel_points = [i / n_kernel_points for i in range(n_kernel_points + 1)]
@@ -245,8 +247,10 @@ def calculate_bootstrap_ci(
         alpha1 = phi_inv(z0 + (z0 + _norm_inverse(alpha / 2)) / (1 - a * (z0 + _norm_inverse(alpha / 2))))
         alpha2 = phi_inv(z0 + (z0 + _norm_inverse(1 - alpha / 2)) / (1 - a * (z0 + _norm_inverse(1 - alpha / 2))))
 
-        lower_idx = int(max(0, min(1, _norm_cdf(alpha1)) * n_bootstrap))
-        upper_idx = int(max(0, min(1, _norm_cdf(alpha2)) * n_bootstrap))
+        # CRITICAL FIX (v3.0): Proper index calculation for CI
+        # Previous min(1, ...) was wrong - should clamp to n_bootstrap - 1
+        lower_idx = int(max(0, min(n_bootstrap - 1, int(_norm_cdf(alpha1) * n_bootstrap))))
+        upper_idx = int(max(0, min(n_bootstrap - 1, int(_norm_cdf(alpha2) * n_bootstrap))))
 
         ci_lower = boot_stats[lower_idx]
         ci_upper = boot_stats[upper_idx]
@@ -494,11 +498,21 @@ def calculate_meta_i(
     p_low_conf = (misses + correct_rejections) / n
 
     # P(correct|high) and P(incorrect|high)
-    p_correct_given_high = hits / max(hits + false_alarms, 1)
+    # CRITICAL FIX (v3.0): Explicit zero-division check
+    high_total = hits + false_alarms
+    if high_total == 0:
+        p_correct_given_high = 0.5  # Neutral when no data
+    else:
+        p_correct_given_high = hits / high_total
     p_incorrect_given_high = 1 - p_correct_given_high
 
     # P(correct|low) and P(incorrect|low)
-    p_correct_given_low = misses / max(misses + correct_rejections, 1)
+    # CRITICAL FIX (v3.0): Explicit zero-division check
+    low_total = misses + correct_rejections
+    if low_total == 0:
+        p_correct_given_low = 0.5  # Neutral when no data
+    else:
+        p_correct_given_low = misses / low_total
     p_incorrect_given_low = 1 - p_correct_given_low
 
     # Conditional entropies

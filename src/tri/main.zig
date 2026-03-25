@@ -11,7 +11,7 @@ const build_options = @import("build_options");
 const utils = @import("tri_utils.zig");
 const tri_config = @import("tri_config.zig");
 const commands = @import("tri_commands.zig");
-const queen_trinity = @import("queen_trinity.zig");
+const queen = @import("queen");  // Named module for Q-zone
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const tri_context = @import("tri_context.zig");
@@ -181,7 +181,7 @@ pub fn main() !void {
     if (std.mem.eql(u8, args[arg_idx], "queen")) {
         const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
         logAgentCommand(args[arg_idx..]);
-        const queen_mod = @import("queen.zig");
+        const queen_mod = @import("queen");
         try queen_mod.runQueenCommand(allocator, queen_args);
         return;
     }
@@ -399,7 +399,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "queen")) {
             const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const queen = @import("queen.zig");
+            // queen is already imported as named module at top of file
             try queen.runQueenCommand(allocator, queen_args);
             return;
         }

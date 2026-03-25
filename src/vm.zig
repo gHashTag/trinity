@@ -4,7 +4,7 @@
 
 const std = @import("std");
 const tvc_hybrid = @import("hybrid.zig");
-const tvc_vsa = @import("vsa");
+const tvc_vsa = @import("vsa.zig");
 
 pub const HybridBigInt = tvc_hybrid.HybridBigInt;
 pub const Trit = tvc_hybrid.Trit;

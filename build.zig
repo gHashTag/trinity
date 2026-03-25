@@ -31,11 +31,32 @@ pub fn build(b: *std.Build) void {
     build_options.addOption(bool, "enable_fpga", enable_fpga);
     build_options.addOption(bool, "enable_spec", enable_spec);
 
+    // VSA module — V-zone Vector Symbolic Architecture (moved early for trinity_mod)
+    // Hybrid types module (TVC HybridBigInt, Trit, Vec32i8)
+    const hybrid_mod = b.createModule(.{
+        .root_source_file = b.path("src/hybrid.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const vsa_tri = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hybrid", .module = hybrid_mod },
+        },
+    });
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
     });
 
     // VIBEEC compiler module — single source of truth from .tri specs
@@ -642,6 +663,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     b.installArtifact(firebird);
@@ -670,6 +694,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/b2t_integration.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_firebird_tests = b.addRunArtifact(firebird_tests);
@@ -1511,12 +1538,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VSA module for TRI (moved up: needed by tvc_corpus_mod and fluent CLI)
-    const vsa_tri = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
     // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
@@ -2255,16 +2276,6 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    // Firebird module — F-zone LLM Engine
-    const firebird_mod = b.createModule(.{
-        .root_source_file = b.path("src/firebird/root.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "temple", .module = temple_mod },
-            .{ .name = "vsa", .module = vsa_tri },
-        },
-    });
 
     // Queen module — Q-zone Coordination
     const queen_mod = b.createModule(.{
@@ -2966,6 +2977,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "tri_lang", .module = tri_lang_mod },
                 // TRI-Lang compile module (Wave 2 Phase 4)
                 .{ .name = "tri_compile", .module = tri_compile_mod },
+                // Queen module (Q-zone Coordination)
+                .{ .name = "queen", .module = queen_mod },
             },
         }),
     });
@@ -3089,6 +3102,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri27/tri27_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "tri_lang", .module = tri_lang_mod },
+                .{ .name = "emu", .module = emu_mod },
+            },
         }),
     });
     b.installArtifact(tri27);

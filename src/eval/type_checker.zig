@@ -35,7 +35,7 @@ pub const TypeChecker = struct {
     pub fn init(allocator: std.mem.Allocator) TypeChecker {
         return .{
             .allocator = allocator,
-            .errors = std.ArrayList(Error).init(allocator),
+            .errors = std.ArrayList(Error).init(allocator, 0),
         };
     }
 

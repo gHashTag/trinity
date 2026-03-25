@@ -14,7 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa");
+const vsa = @import("vsa.zig");
 const vm = @import("vm.zig");
 const sdk = @import("sdk.zig");
 const hybrid = @import("hybrid.zig");

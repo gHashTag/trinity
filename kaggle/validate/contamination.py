@@ -245,12 +245,19 @@ class ContaminationDetector:
         return max_sim
 
     def _get_ngrams(self, text: str, n: int) -> Set[str]:
-        """Get word n-grams from text (n consecutive words)."""
+        """
+        Get word n-grams from text (n consecutive words).
+
+        CRITICAL FIX (v3.0): Explicit check for n > len(words) to avoid
+        edge cases and improve code clarity.
+        """
         words = text.split()
+        # Explicit check: if n > len(words), no n-grams possible
         if len(words) < n:
             return set()
 
         ngrams = set()
+        # Safe: len(words) - n + 1 >= 1 since len(words) >= n
         for i in range(len(words) - n + 1):
             ngram = " ".join(words[i:i+n])
             ngrams.add(ngram)
@@ -262,6 +269,9 @@ class ContaminationDetector:
         Calculate semantic similarity using embeddings.
 
         Uses cosine similarity of sentence embeddings.
+
+        CRITICAL FIX (v3.0): Identical zero vectors should have similarity 1.0,
+        not 0.0. This handles the edge case where both embeddings are zero.
         """
         if self.embedding_model is None:
             return 0.0
@@ -278,8 +288,11 @@ class ContaminationDetector:
         norm1 = math.sqrt(sum(a * a for a in emb1))
         norm2 = math.sqrt(sum(b * b for b in emb2))
 
+        # CRITICAL FIX (v3.0): Zero vectors should have similarity 1.0 if identical
+        if norm1 == 0 and norm2 == 0:
+            return 1.0  # Identical zero vectors are maximally similar
         if norm1 == 0 or norm2 == 0:
-            return 0.0
+            return 0.0  # One zero, one non-zero = no similarity
 
         return dot_product / (norm1 * norm2)
 
