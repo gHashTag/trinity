@@ -34,10 +34,10 @@ const MAGENTA = "\x1b[35m";
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const AuditMode = enum {
-    normal,   // Display formatted table
-    changed,  // Read paths from stdin, output JSON
-    verify,   // Check signatures, exit 0/1
-    strict,   // Full validation, exit 0/1
+    normal, // Display formatted table
+    changed, // Read paths from stdin, output JSON
+    verify, // Check signatures, exit 0/1
+    strict, // Full validation, exit 0/1
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -45,14 +45,14 @@ const AuditMode = enum {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const GuardedScope = enum {
-    ttc,          // Trusted Tri Core (Zig files)
-    tri_lang,     // Tri language modules
-    tri_stdlib,   // Tri standard library
-    tri_canon,    // Canonical Tri modules
-    t27,          // TRI-27 artifacts
-    docs_norm,    // Normative documentation
-    neuro_core,   // Neuro/HSLM core modules
-    queen_core,   // Queen UI core modules
+    ttc, // Trusted Tri Core (Zig files)
+    tri_lang, // Tri language modules
+    tri_stdlib, // Tri standard library
+    tri_canon, // Canonical Tri modules
+    t27, // TRI-27 artifacts
+    docs_norm, // Normative documentation
+    neuro_core, // Neuro/HSLM core modules
+    queen_core, // Queen UI core modules
 };
 
 pub const GuardedFile = struct {
@@ -460,8 +460,7 @@ fn runCoreInstallHook(allocator: Allocator) !void {
         \\    echo "   Or use 'git commit --no-verify' to bypass (NOT RECOMMENDED)"
         \\    exit 1
         \\}}
-
-
+    ;
 
     try fs.cwd().writeFile(.{ .sub_path = hook_path, .data = hook_content });
 
@@ -506,9 +505,8 @@ fn runCorePreCommit(allocator: Allocator) !void {
             if (std.mem.eql(u8, f.path, trimmed)) {
                 if (!f.has_signature or f.loc > MAX_TTC_LOC) {
                     std.debug.print("{s}✗ {s}: violates TDGS-1 ({s}){s}\n", .{
-                        RED, trimmed,
-                        if (!f.has_signature) "no signature" else "LOC > 3000",
-                        RESET,
+                        RED,                                                    trimmed,
+                        if (!f.has_signature) "no signature" else "LOC > 3000", RESET,
                     });
                     violations += 1;
                 }
@@ -560,10 +558,7 @@ fn runCoreSign(allocator: Allocator, args: []const []const u8) !void {
         // Generate signature line
         const timestamp = std.time.timestamp();
         var sig_buf: [256]u8 = undefined;
-        const sig = try std.fmt.bufPrint(&sig_buf,
-            "// TRI_CORE_SIGNATURE: tri-dev:{d}:sha256:{s}\n// TRI_CORE_SCOPE: TTC\n// DO NOT EDIT MANUALLY — USE `tri dev core ...`\n",
-            .{ timestamp, &hash_hex }
-        );
+        const sig = try std.fmt.bufPrint(&sig_buf, "// TRI_CORE_SIGNATURE: tri-dev:{d}:sha256:{s}\n// TRI_CORE_SCOPE: TTC\n// DO NOT EDIT MANUALLY — USE `tri dev core ...`\n", .{ timestamp, &hash_hex });
 
         // Check if file already has signature
         if (std.mem.indexOf(u8, content, SIGNATURE_PREFIX)) |sig_start| {
@@ -776,7 +771,7 @@ fn runT27Create(allocator: Allocator, args: []const []const u8) !void {
     print("\n{s}📦 TRI DEV T27 CREATE{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     print("  {s}TODO: Implement .t27 file creation{s}\n", .{ YELLOW, RESET });
-    print("  Region: {s}\n\n", .{ region });
+    print("  Region: {s}\n\n", .{region});
 }
 
 fn runT27Regen(allocator: Allocator, args: []const []const u8) !void {
