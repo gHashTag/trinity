@@ -6,10 +6,10 @@
 
 ## What's New in v3.0
 
-- Added **COMPLETE_PUBLICATION_PACKAGE.md** — Consolidated publication summary
 - **16,078 lines of documentation** across 33+ files
 - **1.6 MB of scientific content**
 - All 7 bundles + parent collection ready
+- **FINAL_STATUS_REPORT.md** — Complete publication readiness report
 - **Status: ✅ READY FOR ZENODO PUBLICATION**
 
 ## Main Documentation
@@ -21,7 +21,8 @@
 - **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
 - **[PUBLICATION_CHECKLIST.md](./PUBLICATION_CHECKLIST.md)** — Publication readiness checklist
 - **[UPLOAD_QUICK_REFERENCE.md](./UPLOAD_QUICK_REFERENCE.md)** — Quick upload guide
-- **[COMPLETE_PUBLICATION_PACKAGE.md](./COMPLETE_PUBLICATION_PACKAGE.md)** — Complete summary (NEW v3.0)
+- **[COMPLETE_PUBLICATION_PACKAGE.md](./COMPLETE_PUBLICATION_PACKAGE.md)** — Complete publication summary
+- **[FINAL_STATUS_REPORT.md](./FINAL_STATUS_REPORT.md)** — Final readiness report (NEW v3.0)
 
 ### Scientific Foundations
 - **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
