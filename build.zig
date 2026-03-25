@@ -2624,6 +2624,27 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Firebird App State module (DePIN global state)
+    const firebird_app_state_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/app_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Reputation module (Neuroanatomical health scoring)
+    const firebird_reputation_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/reputation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Staking module (DePIN staking logic)
+    const firebird_staking_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/staking.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Phase 5: Mainnet Deployment
     const firebird_mainnet_mod = b.createModule(.{
         .root_source_file = b.path("src/firebird/mainnet.zig"),
@@ -2720,6 +2741,9 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "bsd", .module = bsd_mod },
                 // Firebird Slashing module (DePIN)
                 .{ .name = "firebird_slashing", .module = firebird_slashing_mod },
+                .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+                .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+                .{ .name = "firebird_staking", .module = firebird_staking_mod },
                 // P1.6: Registry module for commands export and MCP tools
                 .{ .name = "registry", .module = registry_mod },
                 // DePIN modules for directed discovery (Phase 1.1)

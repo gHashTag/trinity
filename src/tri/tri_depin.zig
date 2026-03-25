@@ -33,73 +33,13 @@ const depin_bootstrap = @import("depin_bootstrap");
 const depin_persistence = @import("depin_persistence");
 const firebird_slashing = @import("firebird_slashing");
 
-// Firebird modules for staking and reputation
-// TODO: Fix module imports for Zig 0.15 - relative imports not allowed
-// Stub definitions for now to allow compilation
-const firebird_staking = struct {
-    pub const LockPeriod = enum {
-        one_month,
-        three_months,
-        six_months,
-        one_year,
+// Firebird modules for staking and reputation (imported via build.zig)
+const firebird_app_state = @import("firebird_app_state");
+const firebird_staking = @import("firebird_staking");
+const firebird_reputation = @import("firebird_reputation");
 
-        pub fn fromString(s: []const u8) ?LockPeriod {
-            if (std.mem.eql(u8, s, "1M") or std.mem.eql(u8, s, "1m")) return .one_month;
-            if (std.mem.eql(u8, s, "3M") or std.mem.eql(u8, s, "3m")) return .three_months;
-            if (std.mem.eql(u8, s, "6M") or std.mem.eql(u8, s, "6m")) return .six_months;
-            if (std.mem.eql(u8, s, "1Y") or std.mem.eql(u8, s, "1y")) return .one_year;
-            return null;
-        }
-
-        pub fn getMultiplier(self: LockPeriod) f64 {
-            return switch (self) {
-                .one_month => 1.0,
-                .three_months => 1.2,
-                .six_months => 1.5,
-                .one_year => 2.0,
-            };
-        }
-
-        pub fn getSeconds(self: LockPeriod) u64 {
-            return switch (self) {
-                .one_month => 30 * 86400,
-                .three_months => 90 * 86400,
-                .six_months => 180 * 86400,
-                .one_year => 365 * 86400,
-            };
-        }
-    };
-
-    pub const StakingManager = struct {
-        pub const MIN_STAKE: u128 = 100 * 1_000_000_000_000_000_000;
-    };
-};
-
-const firebird_depin = struct {
-    pub const TRI_WEI: u128 = 1_000_000_000_000_000_000;
-};
-
-const firebird_reputation = struct {
-    pub const BrainRegion = enum {
-        prefrontal,
-        cerebellum,
-        hippocampus,
-        basal_ganglia,
-        cortex,
-
-        pub fn emoji(self: BrainRegion) []const u8 {
-            return switch (self) {
-                .prefrontal => "🧠",
-                .cerebellum => "⚡",
-                .hippocampus => "🔮",
-                .basal_ganglia => "⚙️",
-                .cortex => "🌐",
-            };
-        }
-    };
-};
-
-// const firebird_app_state = @import("../firebird/app_state.zig"); // Unused
+// TRI_WEI constant from app_state
+const TRI_WEI = firebird_app_state.TRI_WEI;
 
 const print = std.debug.print;
 
