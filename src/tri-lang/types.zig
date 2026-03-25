@@ -383,7 +383,8 @@ test "Type.format var" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
 
-    const v1 = try Type.init(allocator, .{ .Var = freshTypeVar() });
+    const id = freshTypeVar();
+    const v1 = try Type.initVar(allocator, id);
     defer v1.deinit(allocator);
     const v1_str = try v1.format(allocator);
     defer allocator.free(v1_str);
@@ -405,7 +406,8 @@ test "Type.ftv var" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
 
-    const v1 = try Type.init(allocator, .{ .Var = freshTypeVar() });
+    const id = freshTypeVar();
+    const v1 = try Type.initVar(allocator, id);
     defer v1.deinit(allocator);
 
     const ftv = try v1.ftv(allocator);
@@ -418,7 +420,8 @@ test "Type.ftv function" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
 
-    const v1 = try Type.init(allocator, .{ .Var = freshTypeVar() });
+    const id = freshTypeVar();
+    const v1 = try Type.initVar(allocator, id);
     defer v1.deinit(allocator);
 
     const int_t = try Type.init(allocator, .Int);
@@ -440,14 +443,15 @@ test "Type.subst var" {
     const allocator = std.testing.allocator;
     defer resetTypeVar();
 
-    const v1 = try Type.init(allocator, .{ .Var = freshTypeVar() });
+    const id = freshTypeVar();
+    const v1 = try Type.initVar(allocator, id);
     defer v1.deinit(allocator);
 
     const int_t = try Type.init(allocator, .Int);
     defer int_t.deinit(allocator);
 
     // Replace '1 with Int
-    const result = try v1.subst(allocator, 1, int_t);
+    const result = try v1.subst(allocator, id, int_t);
     defer result.deinit(allocator);
 
     try std.testing.expect(result.eq(int_t));
