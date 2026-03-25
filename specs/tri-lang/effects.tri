@@ -1,0 +1,249 @@
+# ═══════════════════════════════════════════════════════════════════
+# EFFECTS + HANDLERS — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Algebraic Effects + Handlers for Tri Language
+# Source of truth for tri-lang/effects.zig codegen
+# Issue #412: Effects + Handlers
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_effects
+version: "0.1.0"
+module: tri_lang.effects
+description: "Algebraic effects and handlers (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file"
+    fields:
+      - name: line
+        type: "usize"
+      - name: column
+        type: "usize"
+
+  EffectId:
+    description: "Effect identifier (compile-time known)"
+    underlying: "enum(u8)"
+    values:
+      - IO: "I/O effects"
+      - File: "File operations"
+      - Network: "Network operations"
+      - Database: "Database operations"
+      - State: "State effects"
+      - Mutable: "Mutable state"
+      - Error: "Error effects"
+      - Fail: "Failure effects"
+      - PlatformCPU: "CPU platform"
+      - PlatformFPGA: "FPGA platform"
+      - PlatformVM: "VM platform"
+      - Async: "Async operations"
+      - User: "Custom user effects (128+)"
+
+  EffectOp:
+    description: "Effect operation (e.g., read/write for State)"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Operation name"
+      - name: payload_typename
+        type: "?[]const u8"
+        description: "Payload type name (null for no-arg ops)"
+      - name: loc
+        type: "SourceLocation"
+
+  Effect:
+    description: "Effect definition (compile-time)"
+    fields:
+      - name: id
+        type: "EffectId"
+      - name: name
+        type: "[]const u8"
+      - name: operations
+        type: "[]const EffectOp"
+
+# ═══════════════════════════════════════════════════════════════════
+# STRUCT TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+struct_types:
+  Handler:
+    description: "Effect handler with resumable semantics"
+    fields:
+      - name: effect_id
+        type: "EffectId"
+      - name: state
+        type: "i64"
+    methods:
+      - name: init
+        params:
+          - name: effect_id
+            type: "EffectId"
+          - name: initial_state
+            type: "i64"
+        returns: "Handler"
+      - name: handleStateGet
+        returns: "i64"
+        description: "Handle State.get operation"
+      - name: handleStateSet
+        params:
+          - name: value
+            type: "i64"
+        returns: "void"
+        description: "Handle State.set operation"
+      - name: handleErrorThrow
+        params:
+          - name: msg
+            type: "[]const u8"
+        returns: "void"
+        description: "Handle Error.throw operation"
+      - name: handleAsyncAwait
+        returns: "void"
+        description: "Handle Async.await operation"
+
+  EffectContext:
+    description: "Effect context — tracks active handlers"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: handlers
+        type: "std.ArrayList(Handler)"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Self"
+      - name: deinit
+        returns: "void"
+      - name: pushHandler
+        params:
+          - name: handler
+            type: "Handler"
+        returns: "void"
+        description: "Push handler onto stack"
+      - name: popHandler
+        returns: "Handler"
+        errors:
+          - NoHandler
+        description: "Pop top handler from stack"
+      - name: topHandler
+        returns: "?Handler"
+        description: "Get top handler"
+      - name: handle
+        type_params: ["effect_id"]
+        params:
+          - name: op
+            type: "[]const u8"
+          - name: args
+            type: "anytype"
+        returns: "?i64"
+        errors:
+          - NoHandler
+          - UnhandledEffect
+        description: "Handle effect operation"
+
+  ErrorContext:
+    description: "Error context for effectful error tracking"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: errors
+        type: "std.ArrayList(ErrorEntry)"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Self"
+      - name: deinit
+        returns: "void"
+      - name: push
+        params:
+          - name: entry
+            type: "ErrorEntry"
+        returns: "void"
+      - name: pop
+        returns: "?ErrorEntry"
+      - name: hasErrors
+        returns: "bool"
+      - name: clear
+        returns: "void"
+
+  ErrorEntry:
+    description: "Error entry in context"
+    fields:
+      - name: message
+        type: "[]const u8"
+      - name: effect_id
+        type: "EffectId"
+      - name: loc
+        type: "SourceLocation"
+
+# ═══════════════════════════════════════════════════════════════════
+# PLATFORM EFFECTS
+# ═══════════════════════════════════════════════════════════════════
+
+platform_effects:
+  CPU:
+    description: "CPU platform effect"
+    operations:
+      - name: "read_reg"
+        payload: "null"
+      - name: "write_reg"
+        payload: "null"
+
+  FPGA:
+    description: "FPGA platform effect"
+    operations:
+      - name: "flash_bitstream"
+        payload: "null"
+      - name: "read_jtag"
+        payload: "null"
+
+  VM:
+    description: "VM platform effect"
+    operations:
+      - name: "eval"
+        payload: "null"
+      - name: "step"
+        payload: "null"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "effect_id_values"
+    given: "EffectId enum"
+    when: "checking values"
+    then: "IO=0, File=1, etc."
+
+  - name: "handler_init"
+    given: "Handler with State effect"
+    when: "initializing"
+    then: "state set to initial_state"
+
+  - name: "handler_state_get"
+    given: "Handler with state=42"
+    when: "calling handleStateGet"
+    then: "returns 42"
+
+  - name: "handler_state_set"
+    given: "Handler"
+    when: "calling handleStateSet(100)"
+    then: "state becomes 100"
+
+  - name: "effect_context_push_pop"
+    given: "EffectContext"
+    when: "pushing and popping handler"
+    then: "handlers stack updated"
+
+  - name: "error_context_push_has_errors"
+    given: "ErrorContext"
+    when: "pushing error entry"
+    then: "hasErrors returns true"
