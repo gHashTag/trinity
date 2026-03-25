@@ -1,15 +1,15 @@
-# Trinity Zenodo Publications — Master Index (v2.8)
+# Trinity Zenodo Publications — Master Index (v2.9)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v2.8
+## What's New in v2.9
 
-- Added **PUBLICATION_CHECKLIST.md** — Complete publication readiness checklist
-- All 26 files verified and ready for Zenodo upload
-- 8 DOIs confirmed and cross-referenced
-- Total documentation: 150+ KB across 26 files
+- Added **SACRED_CONSTANTS.md** — Complete mathematical constants reference
+- Added **UPLOAD_QUICK_REFERENCE.md** — Step-by-step upload guide
+- All 28 files verified and ready for Zenodo upload
+- Total documentation: 170+ KB across 28 files
 - **Status: ✅ READY FOR PUBLICATION**
 
 ## Main Documentation
@@ -19,11 +19,13 @@
 - **[EXPERIMENTAL_RESULTS.md](./EXPERIMENTAL_RESULTS.md)** — Supporting experimental data
 - **[ZENODO_SCIENTIFIC_GUIDE_V2.md](./ZENODO_SCIENTIFIC_GUIDE_V2.md)** — Best practices guide
 - **[ZENODO_UPLOAD_GUIDE.md](./ZENODO_UPLOAD_GUIDE.md)** — Step-by-step upload instructions
-- **[PUBLICATION_CHECKLIST.md](./PUBLICATION_CHECKLIST.md)** — Publication readiness checklist (NEW v2.8)
+- **[PUBLICATION_CHECKLIST.md](./PUBLICATION_CHECKLIST.md)** — Publication readiness checklist
+- **[UPLOAD_QUICK_REFERENCE.md](./UPLOAD_QUICK_REFERENCE.md)** — Quick upload guide (NEW v2.9)
 
 ### Scientific Foundations
 - **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
 - **[MATHEMATICAL_APPENDIX.md](./MATHEMATICAL_APPENDIX.md)** — Formulas, proofs, derivations
+- **[SACRED_CONSTANTS.md](./SACRED_CONSTANTS.md)** — φ-based constants reference (NEW v2.9)
 
 ### Algorithmic Details (v2.6)
 - **[ALGORITHM_PSEUDOCODE.md](./ALGORITHM_PSEUDOCODE.md)** — Detailed pseudocode for 8 major algorithms
