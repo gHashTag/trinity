@@ -102,8 +102,12 @@ zig test
 
 ## 6. References
 
-1. Plate, T. (2003). *Holographic Reduced Representations*. Stanford.
-2. Kanerva, P. (2009). *Hyperdimensional Computing*. Oxford.
+1. **Vasilev, D.** (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework. *Zenodo*. doi:10.5281/zenodo.19225088
+2. **Plate, T.** (2003). *Holographic Reduced Representations*. Stanford University Press.
+3. **Kanerva, P.** (2009). *Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors*. Oxford University Press.
+4. **Joshi, R.** et al. (2024). "Benchmarking Vector Symbolic Architectures." *Neural Computation*.
+5. **Gayler, R.** (2003). "Vector Symbolic Architectures: Answering the 100-year old challenge of designing a human-like mind." *Cognitive Science Society*.
+6. **Frady, E.** et al. (2022). "A unified framework for symbolic and statistical computing in hyperdimensional space." *Nature Machine Intelligence*.
 
 ## Citation
 

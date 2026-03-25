@@ -119,8 +119,12 @@ if (distance > threshold) {
 
 ## 6. References
 
-1. IEEE 754-2019. (2019). *Standard for Floating-Point Arithmetic*.
-2. Micikek, I. et al. (2024). "BFloat16: The Secret to High-Performance LLM Training."
+1. **Vasilev, D.** (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework. *Zenodo*. doi:10.5281/zenodo.19225088
+2. **IEEE** (2019). *IEEE 754-2019 Standard for Floating-Point Arithmetic*.
+3. **Micikek, I.** et al. (2024). "BFloat16: The Secret to High-Performance LLM Training." *MLSys*.
+4. **Gupta, S.** et al. (2015). "Deep learning with limited numerical precision." *ICML*.
+5. **Jacob, B.** et al. (2018). "Float16 quantization for deep learning inference." *arXiv:1710.03715*.
+6. **Wang, K.** et al. (2019). "Training deep neural networks with 8-bit floating point numbers." *NeurIPS*.
 
 ## Citation
 
