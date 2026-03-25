@@ -582,8 +582,9 @@ class TestTypeISDTEdgeCases(unittest.TestCase):
         """Test Type I SDT above chance."""
         from eval.scorer_v2 import calculate_meta_d_prime
 
-        # 75% correct
-        meta_d, d_prime, mratio = calculate_meta_d_prime(15, 5, 5, 15)
+        # 75% correct (60 correct, 20 incorrect out of 80 total)
+        # hits=45, misses=15 (60 correct), false_alarms=5, correct_rejections=15 (20 incorrect)
+        meta_d, d_prime, mratio = calculate_meta_d_prime(45, 15, 5, 15)
         self.assertGreater(d_prime, 0, "Above chance should give positive d'")
 
     def test_type2_sdt_no_correct_data(self):

@@ -76,6 +76,28 @@ These files exist in `src/queen/` but should be in `src/tri/`:
 
 **Estimated effort**: ~200 LOC, clean separation
 
+## Latest Progress (2025-03-25)
+
+**Agent A (import fixes) completed:**
+- Removed `src/tri/queen.zig` (27k LOC redundant)
+- Fixed queen imports: hippocampus, tri_colors → use module imports
+- Added cortex_mod, faculty_types_mod, thalamus_mod, queen_ofc_mod to build.zig
+- Updated tri/main.zig: faculty_board → cortex module
+
+**Remaining blocker:**
+- Circular module dependency still exists
+- queen_dlpfc.zig imports `../tri/farm_accounts.zig` (relative path)
+- Creates "file exists in both root and queen" conflict
+- Requires architectural decision (see Options A-C above)
+
+## Current Build Status
+
+```
+zig build tri: ❌ 1 error (module conflict)
+zig build tri27: ✅ Passes (isolated)
+zig build temple: ✅ Passes (isolated)
+```
+
 ## Recommendation
 
 **Defer to Wave 3** with proper zone separation. For now:

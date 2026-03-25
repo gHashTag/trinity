@@ -465,7 +465,7 @@ pub const FailingSequence = struct {
             }
 
             // Check if invariant still fails
-            const first_half_fails = verifyAllInvariants(&test_state) != null;
+            const first_half_fails = verifyAllInvariants(&test_state) catch false;
 
             if (!first_half_fails) {
                 // First half passes - problem is in second half
@@ -631,17 +631,19 @@ fn invariantCausality(state: *const TestState) !void {
         // 1. Slash cannot happen without prior stake
         if (curr.total_slashed > prev.total_slashed) {
             // Must have had active stakes (nodes) before this
-            try std.testing.expect(prev.active_nodes > 0,
-                "Slash occurred with no prior active nodes",
-            );
+            if (prev.active_nodes == 0) {
+                std.debug.print("Slash occurred with no prior active nodes\n", .{});
+                return error.CausalityViolation;
+            }
         }
 
         // 2. Unstake cannot happen without prior stake
         // (active_nodes decreased = unstake happened)
         if (curr.active_nodes < prev.active_nodes) {
-            try std.testing.expect(prev.active_nodes > 0,
-                "Unstake occurred with no prior active nodes",
-            );
+            if (prev.active_nodes == 0) {
+                std.debug.print("Unstake occurred with no prior active nodes\n", .{});
+                return error.CausalityViolation;
+            }
         }
 
         // 3. Emissions should correlate with stake activity
@@ -656,9 +658,12 @@ fn invariantCausality(state: *const TestState) !void {
         if (stake_delta > 0 and emission_delta > 0) {
             // More stakes should correlate with more emissions (within reason)
             // Emissions should be at least 10% of stake delta (floor for real yield)
-            try std.testing.expect(emission_delta >= stake_delta / 10,
-                "Emission ({d}) too low relative to stake delta ({d})",
-            );
+            if (emission_delta < stake_delta / 10) {
+                std.debug.print("Emission ({d}) too low relative to stake delta ({d})\n", .{
+                    emission_delta, stake_delta,
+                });
+                return error.CausalityViolation;
+            }
         }
     }
 }
