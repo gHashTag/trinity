@@ -252,7 +252,7 @@ pub fn auditSpecs(allocator: Allocator, dir_path: []const u8) !SpecAuditReport {
 test "scan empty file" {
     const allocator = std.testing.allocator;
     const content = "";
-    const result = scanBehaviorAnnotations(allocator, content);
+    const result = try scanBehaviorAnnotations(allocator, content);
     try std.testing.expectEqual(@as(usize, 0), result.behavior_count);
     try std.testing.expectEqual(false, result.has_spec);
     try std.testing.expectEqual(false, result.has_require);
