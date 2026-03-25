@@ -114,7 +114,7 @@ pub const HABENULA = struct {
             try rewards.append(ep.avg_reward);
         }
 
-        std.sort.sort(f64, rewards.items, {}, struct {
+        std.sort.insertion(f64, rewards.items, {}, struct {
             pub fn lessThan(_: void, a: f64, b: f64) bool {
                 return a < b;
             }

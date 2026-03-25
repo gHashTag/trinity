@@ -315,7 +315,7 @@ fn jacobianThreeRoot(x: f64, e1: f64, e2: f64, e3: f64) f64 {
 
 /// Sort float array in place
 fn sortFloats(items: []f64) void {
-    std.sort.sort(f64, items, {}, struct {
+    std.sort.insertion(f64, items, {}, struct {
         fn lessThan(_: void, a: f64, b: f64) bool {
             return a < b;
         }
