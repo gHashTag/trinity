@@ -1,16 +1,15 @@
-# Trinity Zenodo Publications — Master Index (v2.6)
+# Trinity Zenodo Publications — Master Index (v2.7)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v2.6
+## What's New in v2.7
 
-- Added **ALGORITHM_PSEUDOCODE.md** — Detailed pseudocode for all 8 major algorithms
-- Added **SIMD_OPTIMIZATION.md** — Vectorization analysis with 8× speedup benchmarks
-- Added **ROPE_ANALYSIS.md** — φ-RoPE mathematical analysis and experimental results
-- Updated **ZENODO_MASTER_INDEX.md** to v2.6
-- Total documentation: 50+ KB of scientific content
+- Added **TRAINING_DYNAMICS.md** — Comprehensive training analysis, convergence, hyperparameter sensitivity
+- Added **SOTA_COMPARISON.md** — State-of-the-art comparison across all 7 domains
+- Updated **ZENODO_MASTER_INDEX.md** to v2.7
+- Total documentation: 75+ KB of scientific content across 20 files
 
 ## Main Documentation
 
@@ -24,10 +23,14 @@
 - **[UNIFIED_BIBLIOGRAPHY.md](./UNIFIED_BIBLIOGRAPHY.md)** — Complete reference list (76 citations)
 - **[MATHEMATICAL_APPENDIX.md](./MATHEMATICAL_APPENDIX.md)** — Formulas, proofs, derivations
 
-### Algorithmic Details (NEW in v2.6)
+### Algorithmic Details (v2.6)
 - **[ALGORITHM_PSEUDOCODE.md](./ALGORITHM_PSEUDOCODE.md)** — Detailed pseudocode for 8 major algorithms
 - **[SIMD_OPTIMIZATION.md](./SIMD_OPTIMIZATION.md)** — Vectorization analysis, 8× speedup benchmarks
 - **[ROPE_ANALYSIS.md](./ROPE_ANALYSIS.md)** — φ-RoPE mathematical analysis, experimental results
+
+### Experimental Analysis (NEW in v2.7)
+- **[TRAINING_DYNAMICS.md](./TRAINING_DYNAMICS.md)** — Training curves, convergence, hyperparameter sensitivity, scaling laws
+- **[SOTA_COMPARISON.md](./SOTA_COMPARISON.md)** — State-of-the-art comparison across all 7 domains, 25 benchmarks
 
 ## Complete Scientific Descriptions
 
