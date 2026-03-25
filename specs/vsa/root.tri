@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════
+# VSA ROOT MODULE — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Top-level VSA glue layer — re-exports all VSA functionality
+# Source of truth for src/vsa.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: vsa_root
+version: "0.1.0"
+module: vsa
+description: "VSA root module — glue layer for all VSA functionality (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# MODULE STRUCTURE
+# ═══════════════════════════════════════════════════════════════════
+
+# This is a pure re-export module — no new types or functions defined.
+# All functionality comes from:
+# 1. vsa_core (pure algorithms, no HybridBigInt)
+# 2. hybrid (HybridBigInt support)
+# 3. src/vsa/ convenience wrappers
+
+# ═══════════════════════════════════════════════════════════════════
+# RE-EXPORTS FROM vsa_core
+# ═══════════════════════════════════════════════════════════════════
+
+# Module re-exports:
+# - common: Basic types (Trit, Vec32i8, SearchResult)
+# - ops: Core VSA operations (bind, bundle, permute, similarity)
+# - sparse: SparseVector operations
+# - encoding: Text encoding (Codebook, encodeText, decodeText)
+
+# Type re-exports:
+# - Trit: Balanced ternary value
+# - Vec32i8, Vec32i16: SIMD vector types
+# - SIMD_WIDTH, MAX_TRITS: Constants
+# - SearchResult: Semantic search result
+
+# ═══════════════════════════════════════════════════════════════════
+# RE-EXPORTS FROM hybrid MODULE
+# ═══════════════════════════════════════════════════════════════════
+
+# - HybridBigInt: Arbitrary precision integer type
+
+# ═══════════════════════════════════════════════════════════════════
+# BACKWARD COMPATIBILITY: src/vsa/ CONVENIENCE WRAPPERS
+# ═══════════════════════════════════════════════════════════════════
+
+# These files provide HybridBigInt-based VSA operations:
+# - vsa/common.zig: Common types with HybridBigInt
+# - vsa/core.zig: Core VSA operations with HybridBigInt
+# - vsa/encoding.zig: Text encoding with HybridBigInt
+# - vsa/storage.zig: TextCorpus storage
+# - vsa/concurrency.zig: ChaseLevDeque, LockFreePool, DependencyGraph
+# - vsa/agent.zig: UnifiedAgent, AgentMemory, AutonomousAgent
+# - vsa/hrr.zig: Holographic Reduced Representation
+# - vsa/bsd.zig: Binary Spatter Codes
+# - vsa/benchmarks.zig: Performance benchmarks
+# - vsa/fpga_bind.zig: FPGA binding operations
+# - vsa/tests.zig: Test suite
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION RE-EXPORTS (from vsa/core.zig for backward compat)
+# ═══════════════════════════════════════════════════════════════════
+
+# Core VSA operations:
+# - bind(a, b): Associate two vectors
+# - unbind(bound, key): Retrieve from binding
+# - bundle2(a, b), bundle3(a, b, c), bundleN(vectors): Majority vote
+# - permute(v, n), inversePermute(v, n): Cyclic permutation
+# - cosineSimilarity(a, b): Similarity in [-1, 1]
+# - hammingDistance(a, b), hammingSimilarity(a, b): Hamming metrics
+# - dotSimilarity(a, b), vectorNorm(v): Vector operations
+# - countNonZero(v): Count non-zero trits
+# - randomVector(allocator, len, seed): Random trit vector
+# - encodeSequence(allocator, items), probeSequence(allocator, items): Sequence ops
+
+# Text encoding:
+# - charToVector(allocator, char, dim): Character to vector
+# - encodeText(allocator, codebook, text): Text to hypervector
+# - decodeText(allocator, codebook, encoded, max_len): Hypervector to text
+# - encodeTextWords(allocator, codebook, text): Word-level encoding
+# - textSimilarity(a, b), textsAreSimilar(a, b, threshold): Similarity checks
+# - TEXT_VECTOR_DIM: Default dimension constant
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "vsa module imports vsa_core"
+    given: "vsa root module"
+    when: "importing vsa_core modules"
+    then: "all modules are accessible"
+
+  - name: "vsa module backward compatibility"
+    given: "HybridBigInt values"
+    when: "calling bind/unbind through root module"
+    then: "operations work as before"
