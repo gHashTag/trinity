@@ -363,7 +363,7 @@ pub fn compileWithOptions(allocator: Allocator, expr: *const TypedExpr, options:
         if (options.registry_path) |path| {
             if (std.fs.cwd().openFile(path, .{})) |file| {
                 file.close();
-                registry = try ContentRegistry.loadFromFile(allocator, path);
+                registry = try @import("content_registry.zig").loadFromFile(allocator, path);
             } else |_| {
                 // File doesn't exist, create new registry
                 registry = try ContentRegistry.init(allocator);
