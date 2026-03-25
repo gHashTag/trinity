@@ -648,6 +648,123 @@ def weighted_ensemble_calibration(
 
 
 # =============================================================================
+# Brier Score (Proper Scoring Rule)
+# =============================================================================
+
+def simple_brier_score(
+    confidences: List[float],
+    correct: List[bool]
+) -> float:
+    """
+    Calculate Brier Score (proper scoring rule).
+
+    BS = (1/N) * Σ(f_i - y_i)²
+
+    where f_i is predicted confidence, y_i is 1 for correct, 0 for incorrect.
+
+    Lower is better (0 = perfect, 0.25 = random, 1 = perfectly wrong).
+
+    Reference: Brier (1950), "Verification of Forecasts"
+
+    Args:
+        confidences: Predicted confidences [0, 1]
+        correct: Ground truth (True=correct, False=incorrect)
+
+    Returns:
+        Brier Score (lower is better)
+    """
+    if not confidences or not correct:
+        return 0.0
+
+    if len(confidences) != len(correct):
+        raise ValueError("confidences and correct must have same length")
+
+    n = len(confidences)
+    bs = 0.0
+    for conf, corr in zip(confidences, correct):
+        y = 1.0 if corr else 0.0
+        bs += (conf - y) ** 2
+
+    return bs / n
+
+
+# =============================================================================
+# Ranked Voting / Self-Consistency
+# =============================================================================
+
+def ranked_voting_sc(
+    confidence_lists: List[List[float]],
+    correct: List[bool],
+    method: str = "borda"
+) -> float:
+    """
+    Ranked voting self-consistency aggregation.
+
+    Combines multiple predictions (e.g., from multiple LLM samples)
+    using ranked voting methods.
+
+    Reference: NAACL 2025 — "Self-Consistency Improves Reasoning"
+
+    Args:
+        confidence_lists: List of confidence predictions (each from a sample)
+        correct: Ground truth (True=correct, False=incorrect)
+        method: Voting method ("borda", "plurality", "median")
+
+    Returns:
+        Aggregated accuracy score
+    """
+    if not confidence_lists or not correct:
+        return 0.0
+
+    n_samples = len(confidence_lists)
+    n_items = len(confidence_lists[0])
+
+    if n_samples == 0 or n_items == 0:
+        return 0.0
+
+    # Convert confidences to binary predictions
+    predictions = []
+    for conf_list in confidence_lists:
+        preds = [1 if c > 0.5 else 0 for c in conf_list]
+        predictions.append(preds)
+
+    # Aggregate predictions
+    if method == "borda":
+        # Borda count: rank items, sum ranks
+        aggregated = []
+        for i in range(n_items):
+            # Count votes for each item
+            votes_for = sum(1 for p in predictions if p[i] == 1)
+            aggregated.append(votes_for)
+
+        # Final prediction: majority
+        final_preds = [1 if a > n_samples / 2 else 0 for a in aggregated]
+
+    elif method == "plurality":
+        # Plurality voting (simple majority)
+        final_preds = []
+        for i in range(n_items):
+            votes_for = sum(1 for p in predictions if p[i] == 1)
+            final_preds.append(1 if votes_for > n_samples / 2 else 0)
+
+    elif method == "median":
+        # Median of confidences
+        import statistics
+        final_preds = []
+        for i in range(n_items):
+            confs = [conf_list[i] for conf_list in confidence_lists]
+            median_conf = statistics.median(confs)
+            final_preds.append(1 if median_conf > 0.5 else 0)
+
+    else:
+        raise ValueError(f"Unknown voting method: {method}")
+
+    # Calculate accuracy
+    correct_preds = sum(1 for p, c in zip(final_preds, correct) if p == (1 if c else 0))
+    return correct_preds / len(correct)
+
+
+# =============================================================================
 # CLI
 # =============================================================================
 

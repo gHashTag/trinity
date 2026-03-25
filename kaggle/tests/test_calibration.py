@@ -431,5 +431,109 @@ class TestWeightedEnsemble:
         assert result[0] == pytest.approx(0.5)
 
 
+class TestBrierScore:
+    """Test Brier score calculation."""
+
+    def test_perfect_prediction(self):
+        """Perfect predictions have BS = 0."""
+        from kaggle.eval.calibration import simple_brier_score
+
+        confidences = [1.0, 1.0, 1.0]
+        correct = [True, True, True]
+
+        bs = simple_brier_score(confidences, correct)
+        assert bs == pytest.approx(0.0)
+
+    def test_worst_prediction(self):
+        """Perfectly wrong predictions have BS = 1."""
+        from kaggle.eval.calibration import simple_brier_score
+
+        confidences = [1.0, 1.0, 1.0]
+        correct = [False, False, False]
+
+        bs = simple_brier_score(confidences, correct)
+        assert bs == pytest.approx(1.0)
+
+    def test_random_prediction(self):
+        """Random predictions (0.5 confidence) have BS = 0.25."""
+        from kaggle.eval.calibration import simple_brier_score
+
+        confidences = [0.5, 0.5, 0.5, 0.5]
+        correct = [True, False, True, False]
+
+        bs = simple_brier_score(confidences, correct)
+        assert bs == pytest.approx(0.25)
+
+    def test_mixed_predictions(self):
+        """Mixed predictions should have BS between 0 and 1."""
+        from kaggle.eval.calibration import simple_brier_score
+
+        confidences = [0.9, 0.7, 0.5, 0.3, 0.1]
+        correct = [True, True, False, False, False]
+
+        bs = simple_brier_score(confidences, correct)
+        assert 0 <= bs <= 1
+
+    def test_empty_lists(self):
+        """Empty lists should return 0."""
+        from kaggle.eval.calibration import simple_brier_score
+
+        bs = simple_brier_score([], [])
+        assert bs == 0.0
+
+
+class TestRankedVotingSC:
+    """Test ranked voting self-consistency."""
+
+    def test_borda_all_agree(self):
+        """Borda count when all samples agree."""
+        from kaggle.eval.calibration import ranked_voting_sc
+
+        confidence_lists = [
+            [0.9, 0.8, 0.1, 0.2],
+            [0.9, 0.8, 0.1, 0.2],
+            [0.9, 0.8, 0.1, 0.2],
+        ]
+        correct = [True, True, False, False]
+
+        accuracy = ranked_voting_sc(confidence_lists, correct, method="borda")
+        assert accuracy == pytest.approx(1.0)
+
+    def test_plurality_majority(self):
+        """Plurality voting with majority."""
+        from kaggle.eval.calibration import ranked_voting_sc
+
+        confidence_lists = [
+            [0.9, 0.9, 0.1, 0.1],  # 2 agree: 1,1,0,0
+            [0.8, 0.7, 0.2, 0.3],  # 2 agree: 1,1,0,0
+            [0.1, 0.1, 0.9, 0.8],  # 2 disagree: 0,0,1,1
+        ]
+        correct = [True, True, False, False]
+
+        accuracy = ranked_voting_sc(confidence_lists, correct, method="plurality")
+        assert accuracy == pytest.approx(1.0)
+
+    def test_median_aggregation(self):
+        """Median of confidences."""
+        from kaggle.eval.calibration import ranked_voting_sc
+
+        confidence_lists = [
+            [0.9, 0.8, 0.1, 0.2],
+            [0.8, 0.7, 0.2, 0.3],
+            [0.7, 0.6, 0.3, 0.4],
+        ]
+        correct = [True, True, False, False]
+
+        accuracy = ranked_voting_sc(confidence_lists, correct, method="median")
+        assert accuracy == pytest.approx(1.0)
+
+    def test_empty_lists(self):
+        """Empty lists should return 0."""
+        from kaggle.eval.calibration import ranked_voting_sc
+
+        accuracy = ranked_voting_sc([], [])
+        assert accuracy == 0.0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
