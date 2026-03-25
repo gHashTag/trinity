@@ -9,6 +9,8 @@
 
 ## 🚀 Quick Start
 
+> **📖 NEW for Hackathon Participants**: See [HACKATHON_MASTER_GUIDE.md](HACKATHON_MASTER_GUIDE.md) for complete implementation roadmap with copy-paste code examples.
+
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -312,6 +314,9 @@ wget https://zenodo.org/record/19223956/files/bundle_b002.zip
 ---
 
 ## 🚀 Hackathon Preparation
+
+### Master Guide
+> **START HERE**: [HACKATHON_MASTER_GUIDE.md](HACKATHON_MASTER_GUIDE.md) — Complete roadmap with implementation code, copy-paste examples, and submission checklist.
 
 ### Gap Analysis
 For the Google DeepMind AGI Hackathon, see:
