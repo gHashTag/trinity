@@ -8,8 +8,8 @@ authors:
     orcid: "https://orcid.org/0000-0000-0000-0000"
     affiliation: "Trinity Open Source Project"
 type: software
-version: 3.1.0
-doi: 10.5281/zenodo.18939352
+version: 4.0.0
+doi: 10.5281/zenodo.19227751
 date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
 repository-code: "https://github.com/gHashTag/trinity"
@@ -38,7 +38,31 @@ keywords:
   - "cascade detection"
 license: MIT
 identifiers:
-  - description: "Zenodo DOI for main defensive publication (Conceptual framework)"
+  - description: "Zenodo DOI for Trinity S³AI Framework v4.0 (Parent collection)"
+    type: doi
+    value: "10.5281/zenodo.19227751"
+  - description: "Zenodo DOI for HSLM (B001)"
+    type: doi
+    value: "10.5281/zenodo.19227733"
+  - description: "Zenodo DOI for Zero-DSP FPGA (B002)"
+    type: doi
+    value: "10.5281/zenodo.19227735"
+  - description: "Zenodo DOI for TRI-27 ISA (B003)"
+    type: doi
+    value: "10.5281/zenodo.19227737"
+  - description: "Zenodo DOI for Queen Lotus Cycle (B004)"
+    type: doi
+    value: "10.5281/zenodo.19227739"
+  - description: "Zenodo DOI for Tri Language (B005)"
+    type: doi
+    value: "10.5281/zenodo.19227743"
+  - description: "Zenodo DOI for Sacred GF16/TF3 (B006)"
+    type: doi
+    value: "10.5281/zenodo.19227745"
+  - description: "Zenodo DOI for VSA Operations (B007)"
+    type: doi
+    value: "10.5281/zenodo.19227749"
+  - description: "Legacy Zenodo DOI (v3.1)"
     type: doi
     value: "10.5281/zenodo.18939352"
   - description: "Citation File Format (CFF) for software citation metadata"
@@ -73,8 +97,8 @@ related-resources:
     title: "Vector Symbolic Architecture (VSA) Core Implementation"
     uri: "https://github.com/gHashTag/trinity/blob/main/src/vsa.zig"
 preferred-citation:
-  type: article
-  title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm with Ternary Computing and FPGA Inference"
+  type: software
+  title: "Trinity S³AI Framework: Ternary Computing for Edge AI"
   authors:
     - family-names: "Vasilev"
       given-names: "Dmitrii"
@@ -82,10 +106,10 @@ preferred-citation:
   year: 2026
   month: 3
   journal: "Zenodo"
-  volume: "v3.1.0"
-  issue: "Defensive Publication"
-  doi: "10.5281/zenodo.18939352"
-  url: "https://doi.org/10.5281/zenodo.18939352"
+  volume: "v4.0"
+  issue: "Defensive Publication Bundle"
+  doi: "10.5281/zenodo.19227751"
+  url: "https://doi.org/10.5281/zenodo.19227751"
 references:
   # Ternary Computing & Neural Networks
   - type: article
