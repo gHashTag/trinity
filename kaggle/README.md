@@ -75,6 +75,8 @@ kaggle/
 │   └── ru/               # Russian ✨ NEW
 ├── eval/                 # Unified evaluation framework
 │   ├── scorer_v2.py      # ✨ Scientific metrics (ECE, meta-d')
+│   ├── scientific_metrics_v7.py  # ✨ v7.4: Full-ECE, CoDeC, Min-K%++
+│   ├── calibration.py    # ✨ Temperature scaling, Platt, Isotonic
 │   ├── runner.py         # Benchmark runner
 │   ├── api_client.py     # Multi-provider LLM client
 │   └── leaderboard.py    # Kaggle submission helper
@@ -304,6 +306,41 @@ wget https://zenodo.org/record/19223956/files/bundle_b002.zip
 - Cohen's κ = 0.84 (substantial agreement)
 - 3 human annotators per item
 - Disagreements resolved by majority vote
+
+---
+
+## 🚀 Hackathon Preparation
+
+### Gap Analysis
+For the Google DeepMind AGI Hackathon, see [HACKATHON_GAP_ANALYSIS.md](HACKATHON_GAP_ANALYSIS.md) for:
+- Priority matrix (P0-P2 improvements)
+- Temperature scaling for +15% ECE improvement
+- v7.4 metrics integration
+- Pass@2 ensemble strategies
+- Submission validation
+- 3-week implementation timeline
+
+### Quick Start for Competition
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Generate datasets
+python -m kaggle.generators.gen_tmp
+python -m kaggle.generators.gen_thlp
+python -m kaggle.generators.gen_tagp
+python -m kaggle.generators.gen_tefb
+python -m kaggle.generators.gen_tscp
+
+# 3. Run with temperature scaling (NEW)
+python -m kaggle.eval.runner --all --output submission.csv --enable-calibration
+
+# 4. Optimize submission
+python -m kaggle.eval.optimizer --submission submission.csv --optimize
+
+# 5. Validate before submitting
+python -m kaggle.eval.validation --submission submission.csv
+```
 
 ---
 
