@@ -1,0 +1,981 @@
+# ═══════════════════════════════════════════════════════════════════
+# AST — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Abstract Syntax Tree for Tri Language
+# Source of truth for tri-lang/ast.zig codegen
+# Issue #408: ADT Enum + Exhaustive Match + Pipe
+# Issue #411: Linear Types + Ownership Modes
+# Issue #412: Effects + Handlers
+# Issue #413: Array Combinators
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_ast
+version: "0.1.0"
+module: tri_lang.ast
+description: "Abstract Syntax Tree for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file for error reporting"
+    fields:
+      - name: line
+        type: "usize"
+        description: "Line number"
+      - name: column
+        type: "usize"
+        description: "Column number"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Program and Declarations
+  # ═══════════════════════════════════════════════════════════════════
+
+  Program:
+    description: "Top-level program"
+    fields:
+      - name: declarations
+        type: "[]const Declaration"
+        description: "Top-level declarations"
+
+  Declaration:
+    description: "Top-level declarations"
+    underlying: "union(enum)"
+    variants:
+      - Function: "FunctionDecl"
+      - StructDef: "StructDecl"
+      - EnumDef: "EnumDecl"
+      - TypeAlias: "TypeAliasDecl"
+      - Pipeline: "PipelineDecl"
+      - EffectDef: "EffectDecl"
+
+  Node:
+    description: "Top-level AST node (unified type for all declarations)"
+    underlying: "union(enum)"
+    variants:
+      - Function: "FunctionDecl"
+      - StructDef: "StructDecl"
+      - EnumDef: "EnumDecl"
+      - TypeAlias: "TypeAliasDecl"
+      - PipelineRef: "PipelineRefExpr"
+      - EffectDef: "EffectDecl"
+
+  FunctionDecl:
+    description: "Function declaration: fn name(params) -> return_type { body }"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Function name"
+      - name: params
+        type: "[]const Param"
+        description: "Parameters"
+      - name: return_type
+        type: "Type"
+        description: "Return type"
+      - name: body
+        type: "[]const Statement"
+        description: "Function body"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  Param:
+    description: "Function parameter"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Parameter name"
+      - name: param_type
+        type: "Type"
+        description: "Parameter type"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  StructDecl:
+    description: "Struct declaration"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Struct name"
+      - name: fields
+        type: "[]const Field"
+        description: "Struct fields"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  Field:
+    description: "Struct field"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Field name"
+      - name: field_type
+        type: "Type"
+        description: "Field type"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  EnumDecl:
+    description: "Enum declaration"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Enum name"
+      - name: variants
+        type: "[]const EnumVariant"
+        description: "Enum variants"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  EnumVariant:
+    description: "Enum variant (data-carrying)"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Variant name"
+      - name: data_type
+        type: "?Type"
+        description: "Optional data type"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  TypeAliasDecl:
+    description: "Type alias"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Alias name"
+      - name: aliased_type
+        type: "Type"
+        description: "Aliased type"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  PipelineDecl:
+    description: "Named pipeline definition: pipeline flow = input |> filter |> map |> output"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Pipeline name"
+      - name: params
+        type: "[]const Param"
+        description: "Parameters (optional)"
+      - name: body
+        type: "Expr"
+        description: "Pipeline body (pipe expression or identifier)"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  EffectDecl:
+    description: "Effect declaration: effect State { get, set(value) }"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Effect name"
+      - name: operations
+        type: "[]const EffectOperation"
+        description: "Effect operations"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  EffectOperation:
+    description: "Effect operation declaration"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Operation name"
+      - name: payload_type
+        type: "?Type"
+        description: "Payload type"
+      - name: loc
+        type: "SourceLocation"
+        description: "Source location"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Statements
+  # ═══════════════════════════════════════════════════════════════════
+
+  Statement:
+    description: "All statement types"
+    underlying: "union(enum)"
+    variants:
+      - Return: "ReturnStmt"
+      - Let: "LetStmt"
+      - If: "IfStmt"
+      - While: "WhileStmt"
+      - For: "ForStmt"
+      - Expression: "ExprStmt"
+      - Effect: "EffectStmt"
+
+  ReturnStmt:
+    description: "Return statement"
+    fields:
+      - name: value
+        type: "?Expr"
+        description: "Return value (null for bare return)"
+
+  LetStmt:
+    description: "Let statement with ownership mode"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Variable name"
+      - name: value_type
+        type: "?Type"
+        description: "Type annotation (optional)"
+      - name: init
+        type: "Expr"
+        description: "Initializer expression"
+      - name: mode
+        type: "OwnershipMode"
+        description: "Ownership mode (let/inout/sink/set)"
+
+  IfStmt:
+    description: "If statement"
+    fields:
+      - name: condition
+        type: "Expr"
+        description: "Condition expression"
+      - name: then_branch
+        type: "[]const Statement"
+        description: "Then branch"
+      - name: else_branch
+        type: "?[]const Statement"
+        description: "Else branch (optional)"
+
+  WhileStmt:
+    description: "While statement"
+    fields:
+      - name: condition
+        type: "Expr"
+        description: "Condition expression"
+      - name: body
+        type: "[]const Statement"
+        description: "Loop body"
+
+  ForStmt:
+    description: "For statement with range"
+    fields:
+      - name: var_name
+        type: "[]const u8"
+        description: "Loop variable name"
+      - name: range
+        type: "Range"
+        description: "Range to iterate"
+      - name: body
+        type: "[]const Statement"
+        description: "Loop body"
+
+  ExprStmt:
+    description: "Expression statement"
+    fields:
+      - name: expr
+        type: "Expr"
+        description: "Expression"
+
+  EffectStmt:
+    description: "Effect statement (resume/yield)"
+    fields:
+      - name: effect_id
+        type: "EffectId"
+        description: "Effect identifier"
+      - name: operation
+        type: "[]const u8"
+        description: "Operation name"
+
+  Range:
+    description: "For loop range"
+    underlying: "union(enum)"
+    variants:
+      - RangeTo: "Expr"
+      - RangeInclusive: "Expr"
+      - RangeFrom: "Expr"
+      - RangeFull: "void"
+
+  EffectId:
+    description: "Effect identifier for handlers"
+    underlying: "enum(u8)"
+    variants:
+      - Effect0: "Effect index 0"
+      - Effect1: "Effect index 1"
+      - Effect2: "Effect index 2"
+      - Effect3: "Effect index 3"
+      - Effect4: "Effect index 4"
+      - Effect5: "Effect index 5"
+      - Effect6: "Effect index 6"
+      - Effect7: "Effect index 7"
+      - Effect8: "Effect index 8"
+      - Effect9: "Effect index 9"
+      - Effect10: "Effect index 10"
+      - Effect11: "Effect index 11"
+      - Effect12: "Effect index 12"
+      - Effect13: "Effect index 13"
+      - Effect14: "Effect index 14"
+      - Effect15: "Effect index 15"
+      - Effect16: "Effect index 16"
+      - Effect17: "Effect index 17"
+      - Effect18: "Effect index 18"
+      - Effect19: "Effect index 19"
+      - Effect20: "Effect index 20"
+      - Effect21: "Effect index 21"
+      - Effect22: "Effect index 22"
+      - Effect23: "Effect index 23"
+      - Effect24: "Effect index 24"
+      - Effect25: "Effect index 25"
+      - Effect26: "Effect index 26"
+      - Effect27: "Effect index 27"
+      - Effect28: "Effect index 28"
+      - Effect29: "Effect index 29"
+      - Effect30: "Effect index 30"
+      - Effect31: "Effect index 31"
+
+  HandlerBody:
+    description: "Handler body with statements"
+    fields:
+      - name: stmts
+        type: "[]const Statement"
+        description: "Handler statements"
+
+  HandlerClause:
+    description: "Single handler clause"
+    fields:
+      - name: operation
+        type: "[]const u8"
+        description: "Operation name"
+      - name: pattern
+        type: "Pattern"
+        description: "Pattern to match"
+      - name: body
+        type: "HandlerBody"
+        description: "Handler body"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Expressions
+  # ═══════════════════════════════════════════════════════════════════
+
+  Expr:
+    description: "All expression types"
+    underlying: "union(enum)"
+    variants:
+      - IntLiteral: "IntLiteralExpr"
+      - FloatLiteral: "FloatLiteralExpr"
+      - StringLiteral: "StringLiteralExpr"
+      - CharLiteral: "CharLiteralExpr"
+      - BoolLiteral: "BoolLiteralExpr"
+      - Identifier: "IdentifierExpr"
+      - BinaryOp: "BinaryOpExpr"
+      - UnaryOp: "UnaryOpExpr"
+      - Call: "CallExpr"
+      - FieldAccess: "FieldAccessExpr"
+      - ArrayAccess: "ArrayAccessExpr"
+      - ArrayLiteral: "ArrayLiteralExpr"
+      - Pipe: "PipeExpr"
+      - Match: "MatchExpr"
+      - PipelineRef: "PipelineRefExpr"
+      - Hole: "HoleExpr"
+      - Perform: "PerformExpr"
+      - Handle: "HandleExpr"
+      - Try: "TryExpr"
+      - Map: "MapExpr"
+      - Reduce: "ReduceExpr"
+      - Scan: "ScanExpr"
+      - Filter: "FilterExpr"
+      - FlatMap: "FlatMapExpr"
+      - Zip: "ZipExpr"
+
+  IntLiteralExpr:
+    description: "Integer literal expression"
+    fields:
+      - name: value
+        type: "i64"
+        description: "Integer value"
+
+  FloatLiteralExpr:
+    description: "Float literal expression"
+    fields:
+      - name: value
+        type: "f64"
+        description: "Float value"
+
+  StringLiteralExpr:
+    description: "String literal expression"
+    fields:
+      - name: value
+        type: "[]const u8"
+        description: "String value"
+
+  CharLiteralExpr:
+    description: "Character literal expression"
+    fields:
+      - name: value
+        type: "u8"
+        description: "Character value"
+
+  BoolLiteralExpr:
+    description: "Boolean literal expression"
+    fields:
+      - name: value
+        type: "bool"
+        description: "Boolean value"
+
+  IdentifierExpr:
+    description: "Identifier expression"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Identifier name"
+
+  BinaryOpExpr:
+    description: "Binary operation expression"
+    fields:
+      - name: op
+        type: "BinaryOperator"
+        description: "Operator"
+      - name: left
+        type: "Expr"
+        description: "Left operand"
+      - name: right
+        type: "Expr"
+        description: "Right operand"
+
+  UnaryOpExpr:
+    description: "Unary operation expression"
+    fields:
+      - name: op
+        type: "UnaryOperator"
+        description: "Operator"
+      - name: operand
+        type: "Expr"
+        description: "Operand"
+
+  CallExpr:
+    description: "Function call expression"
+    fields:
+      - name: callee
+        type: "Expr"
+        description: "Function to call"
+      - name: args
+        type: "[]const Expr"
+        description: "Call arguments"
+
+  FieldAccessExpr:
+    description: "Field access expression"
+    fields:
+      - name: object
+        type: "Expr"
+        description: "Object expression"
+      - name: field
+        type: "[]const u8"
+        description: "Field name"
+
+  ArrayAccessExpr:
+    description: "Array access expression"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: index
+        type: "Expr"
+        description: "Index expression"
+
+  ArrayLiteralExpr:
+    description: "Array literal expression"
+    fields:
+      - name: elements
+        type: "[]const Expr"
+        description: "Array elements"
+
+  PipeExpr:
+    description: "Pipe-forward expression (Elixir-style)"
+    fields:
+      - name: stages
+        type: "[]const Expr"
+        description: "Pipeline stages"
+
+  MatchExpr:
+    description: "Match expression"
+    fields:
+      - name: scrutinee
+        type: "Expr"
+        description: "Value to match"
+      - name: arms
+        type: "[]const MatchArm"
+        description: "Match arms"
+
+  MatchArm:
+    description: "Match arm with pattern and optional guard"
+    fields:
+      - name: pattern
+        type: "Pattern"
+        description: "Pattern to match"
+      - name: guard
+        type: "?Guard"
+        description: "Optional guard condition"
+      - name: body
+        type: "Expr"
+        description: "Arm body"
+
+  Guard:
+    description: "Guard condition for match arm"
+    fields:
+      - name: condition
+        type: "Expr"
+        description: "Guard condition expression"
+
+  PipelineRefExpr:
+    description: "Pipeline reference expression"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Pipeline name"
+
+  HoleExpr:
+    description: "Hole expression (for partial application)"
+    fields:
+      - name: index
+        type: "usize"
+        description: "Hole index"
+
+  PerformExpr:
+    description: "Perform expression (effects)"
+    fields:
+      - name: effect
+        type: "Expr"
+        description: "Effect expression"
+      - name: operation
+        type: "[]const u8"
+        description: "Operation name"
+      - name: payload
+        type: "?Expr"
+        description: "Operation payload"
+
+  HandleExpr:
+    description: "Handle expression (effects)"
+    fields:
+      - name: body
+        type: "Expr"
+        description: "Expression to handle"
+      - name: handlers
+        type: "[]const HandlerClause"
+        description: "Handler clauses"
+
+  TryExpr:
+    description: "Try expression (effects)"
+    fields:
+      - name: body
+        type: "Expr"
+        description: "Expression to try"
+
+  MapExpr:
+    description: "Map expression (array combinator)"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: fn_expr
+        type: "Expr"
+        description: "Mapping function"
+
+  ReduceExpr:
+    description: "Reduce expression (array combinator)"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: init
+        type: "Expr"
+        description: "Initial value"
+      - name: fn_expr
+        type: "Expr"
+        description: "Reducing function"
+
+  ScanExpr:
+    description: "Scan expression (array combinator)"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: init
+        type: "Expr"
+        description: "Initial value"
+      - name: scan_type
+        type: "ScanType"
+        description: "Scan type (inclusive/exclusive)"
+      - name: fn_expr
+        type: "Expr"
+        description: "Scanning function"
+
+  ScanType:
+    description: "Scan type"
+    underlying: "enum"
+    variants:
+      - Inclusive: "Include initial value in output"
+      - Exclusive: "Exclude initial value from output"
+
+  FilterExpr:
+    description: "Filter expression (array combinator)"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: fn_expr
+        type: "Expr"
+        description: "Filtering predicate"
+
+  FlatMapExpr:
+    description: "FlatMap expression (array combinator)"
+    fields:
+      - name: array
+        type: "Expr"
+        description: "Array expression"
+      - name: fn_expr
+        type: "Expr"
+        description: "Mapping function returning array"
+
+  ZipExpr:
+    description: "Zip expression (array combinator)"
+    fields:
+      - name: arrays
+        type: "[]const Expr"
+        description: "Arrays to zip"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Patterns
+  # ═══════════════════════════════════════════════════════════════════
+
+  Pattern:
+    description: "Pattern for match expressions"
+    underlying: "union(enum)"
+    variants:
+      - Wildcard: "void"
+      - Literal: "PatternLiteral"
+      - Identifier: "PatternIdentifier"
+      - EnumVariant: "PatternEnumVariant"
+      - Struct: "PatternStruct"
+      - Array: "PatternArray"
+      - Range: "PatternRange"
+      - Hole: "PatternHole"
+
+  PatternLiteral:
+    description: "Pattern literal"
+    fields:
+      - name: value
+        type: "LiteralValue"
+        description: "Literal value"
+
+  LiteralValue:
+    description: "Literal value in pattern"
+    underlying: "union(enum)"
+    variants:
+      - Int: "i64"
+      - String: "[]const u8"
+      - Char: "u8"
+      - Bool: "bool"
+
+  PatternIdentifier:
+    description: "Pattern identifier (binds variable)"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Identifier name"
+
+  PatternEnumVariant:
+    description: "Pattern enum variant"
+    fields:
+      - name: enum_name
+        type: "[]const u8"
+        description: "Enum name"
+      - name: variant_name
+        type: "[]const u8"
+        description: "Variant name"
+      - name: inner_pattern
+        type: "?Pattern"
+        description: "Inner pattern (for data-carrying variants)"
+
+  PatternStruct:
+    description: "Pattern struct destructuring"
+    fields:
+      - name: struct_name
+        type: "[]const u8"
+        description: "Struct name"
+      - name: fields
+        type: "[]const FieldPattern"
+        description: "Field patterns"
+
+  FieldPattern:
+    description: "Field pattern in struct destructuring"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Field name"
+      - name: pattern
+        type: "Pattern"
+        description: "Field pattern"
+
+  PatternArray:
+    description: "Pattern array destructuring"
+    fields:
+      - name: elements
+        type: "[]const Pattern"
+        description: "Element patterns"
+
+  PatternRange:
+    description: "Pattern range"
+    fields:
+      - name: start
+        type: "?Pattern"
+        description: "Start pattern"
+      - name: end
+        type: "?Pattern"
+        description: "End pattern"
+
+  PatternHole:
+    description: "Pattern hole (for partial matching)"
+    fields:
+      - name: index
+        type: "usize"
+        description: "Hole index"
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Types
+  # ═══════════════════════════════════════════════════════════════════
+
+  Type:
+    description: "All types"
+    underlying: "union(enum)"
+    variants:
+      - Trit: "TypeTrit"
+      - Int: "TypeInt"
+      - Float: "TypeFloat"
+      - String: "TypeString"
+      - Bool: "TypeBool"
+      - Array: "TypeArray"
+      - ArrayFixed: "TypeArrayFixed"
+      - Function: "TypeFunction"
+      - Result: "TypeResult"
+      - Linear: "TypeLinear"
+      - Banked: "TypeBanked"
+      - Struct: "TypeStruct"
+      - Enum: "TypeEnum"
+      - Named: "TypeNamed"
+      - Platform: "TypePlatform"
+
+  TypeTrit:
+    description: "Trit types"
+    underlying: "enum(u2)"
+    variants:
+      - Trit: "Single trit"
+      - Trit3: "3-trit word"
+      - Trit9: "9-trit word"
+      - Trit27: "27-trit word (Coptic)"
+
+  Bank:
+    description: "Bank for Banked<T,N> phantom types"
+    underlying: "enum(u2)"
+    variants:
+      - Bank0: "Coptic register 0"
+      - Bank1: "Coptic register 1"
+      - Bank2: "Coptic register 2"
+      - Bank3: "Coptic register 3"
+      - Bank4: "Coptic register 4"
+      - Bank5: "Coptic register 5"
+      - Bank6: "Coptic register 6"
+      - Bank7: "Coptic register 7"
+      - Bank8: "Coptic register 8"
+
+  TypeInt:
+    description: "Integer types"
+    underlying: "enum(u2)"
+    variants:
+      - I8: "8-bit integer"
+      - I16: "16-bit integer"
+      - I32: "32-bit integer"
+      - I64: "64-bit integer"
+
+  TypeFloat:
+    description: "Float types"
+    underlying: "enum(u2)"
+    variants:
+      - F16: "16-bit float"
+      - F32: "32-bit float"
+      - F64: "64-bit float"
+
+  TypeString:
+    description: "String type"
+
+  TypeBool:
+    description: "Boolean type"
+
+  TypeArray:
+    description: "Array type [T]"
+    fields:
+      - name: element_type
+        type: "Type"
+        description: "Element type"
+
+  TypeArrayFixed:
+    description: "Fixed-size array type [T;N]"
+    fields:
+      - name: element_type
+        type: "Type"
+        description: "Element type"
+      - name: size
+        type: "usize"
+        description: "Array size"
+
+  TypeFunction:
+    description: "Function type"
+    fields:
+      - name: params
+        type: "[]const Type"
+        description: "Parameter types"
+      - name: return_type
+        type: "Type"
+        description: "Return type"
+
+  TypeResult:
+    description: "Result type Result<T,E>"
+    fields:
+      - name: ok_type
+        type: "Type"
+        description: "Success type"
+      - name: err_type
+        type: "Type"
+        description: "Error type"
+
+  TypeLinear:
+    description: "Linear type linear T"
+    fields:
+      - name: inner_type
+        type: "Type"
+        description: "Inner type"
+
+  TypeBanked:
+    description: "Banked type Banked<T,N>"
+    fields:
+      - name: inner_type
+        type: "Type"
+        description: "Inner type"
+      - name: bank
+        type: "Bank"
+        description: "Bank index"
+
+  OwnershipMode:
+    description: "Ownership modes for variable bindings"
+    underlying: "enum(u2)"
+    variants:
+      - Let: "Immutable binding (default)"
+      - Inout: "Mutable borrow (Hylo-style)"
+      - Sink: "Consumed value (Austral-style)"
+      - Set: "Mutable binding (Tri extension)"
+
+  TypeStruct:
+    description: "Struct type reference"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Struct name"
+
+  TypeEnum:
+    description: "Enum type reference"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Enum name"
+
+  TypeNamed:
+    description: "Named type (type alias)"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Type name"
+
+  TypePlatform:
+    description: "Platform-specific type"
+    fields:
+      - name: target
+        type: "PlatformTarget"
+        description: "Platform target"
+
+  PlatformTarget:
+    description: "Platform targets"
+    underlying: "enum(u2)"
+    variants:
+      - CPU: "CPU target"
+      - FPGA: "FPGA target"
+      - VM: "VM target"
+      - Auto: "Auto-detect"
+
+  BinaryOperator:
+    description: "Binary operators"
+    underlying: "enum(u5)"
+    variants:
+      - Add: "+"
+      - Sub: "-"
+      - Mul: "*"
+      - Div: "/"
+      - Mod: "%"
+      - BitAnd: "&"
+      - BitOr: "|"
+      - BitXor: "^"
+      - ShiftLeft: "<<"
+      - ShiftRight: ">>"
+      - Equal: "=="
+      - NotEqual: "!="
+      - Less: "<"
+      - LessEqual: "<="
+      - Greater: ">"
+      - GreaterEqual: ">="
+      - LogicalAnd: "and"
+      - LogicalOr: "or"
+      - TernaryAnd: "Ternary AND"
+      - TernaryOr: "Ternary OR"
+      - TernaryXor: "Ternary XOR"
+      - Dot: "Dot product"
+
+  UnaryOperator:
+    description: "Unary operators"
+    underlying: "enum(u3)"
+    variants:
+      - Neg: "- (arithmetic negation)"
+      - BitNot: "~ (bitwise NOT)"
+      - LogicalNot: "! (logical NOT)"
+      - Deref: "* (dereference)"
+      - Address: "& (address of)"
+      - Consume: "consume (linear)"
+      - TernaryNot: "ternary NOT"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# AST hierarchy:
+# - Program: Top-level container
+# - Declaration: Functions, structs, enums, type aliases, pipelines, effects
+# - Statement: Return, let, if, while, for, expressions, effect statements
+# - Expression: Literals, identifiers, binary/unary ops, calls, field access,
+#               array access/ literals, pipe, match, perform, handle, try,
+#               array combinators (map, reduce, scan, filter, flatMap, zip)
+# - Pattern: Wildcards, literals, identifiers, enum variants, structs, arrays, ranges, holes
+# - Type: Trit, int, float, string, bool, arrays, functions, Result, linear, banked,
+#         structs, enums, named, platform
+#
+# All recursive references use *const (pointers) to avoid infinite types.
+# BinaryOperator uses enum(u5) to fit all variants.
+# Ownership modes: let/inout/sink/set (Hylo-style + Austral-style)
+# Linear types enforce consume-once semantics (Austral-style)
+# Banked types provide Coptic register safety via phantom types
+# Algebraic effects and handlers (Koka/Roc style)
+# Array combinators: map, reduce, scan (inclusive/exclusive), filter, flatMap, zip

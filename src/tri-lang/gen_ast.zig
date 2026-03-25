@@ -1,0 +1,874 @@
+// ═══════════════════════════════════════════════════════════════════
+// AST (GENERATED from .tri spec)
+// TTT Dogfood v0.1: Self-hosted codegen
+// DO NOT EDIT — Generated from specs/tri-lang/ast.tri
+//
+// Issue #408: ADT Enum + Exhaustive Match + Pipe
+// Issue #411: Linear Types + Ownership Modes
+// Issue #412: Effects + Handlers
+// Issue #413: Array Combinators
+//
+// NOTE:
+// - Clear separation: Program / Declaration / Statement / Expr / Pattern / Type
+// - All recursive references use *const (pointers) to avoid infinite types
+// - BinaryOperator uses enum(u5) to fit all variants
+// - Ownership modes: let/inout/sink/set (Hylo-style)
+// - Linear types enforce consume-once semantics (Austral-style)
+// - Banked types provide Coptic register safety via phantom types
+// - Algebraic effects and handlers (Koka/Roc style)
+//
+// φ² + 1/φ² = 3 | TRINITY
+// ═══════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+
+/// Location in source file for error reporting
+pub const SourceLocation = struct {
+    line: usize,
+    column: usize,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Program and Declarations                                                ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Top-level program
+pub const Program = struct {
+    declarations: []const Declaration,
+};
+
+/// Top-level declarations
+pub const Declaration = union(enum) {
+    Function: FunctionDecl,
+    StructDef: StructDecl,
+    EnumDef: EnumDecl,
+    TypeAlias: TypeAliasDecl,
+    Pipeline: PipelineDecl,
+    EffectDef: EffectDecl,
+    // Later: TestDecl, etc.
+};
+
+/// Top-level AST node (unified type for all declarations)
+pub const Node = union(enum) {
+    Function: FunctionDecl,
+    StructDef: StructDecl,
+    EnumDef: EnumDecl,
+    TypeAlias: TypeAliasDecl,
+    PipelineRef: PipelineRefExpr,
+    EffectDef: EffectDecl,
+};
+
+/// Function declaration: fn name(params) -> return_type { body }
+pub const FunctionDecl = struct {
+    name: []const u8,
+    params: []const Param,
+    return_type: Type,
+    body: []const Statement,
+    loc: SourceLocation,
+};
+
+/// Parameter
+pub const Param = struct {
+    name: []const u8,
+    param_type: Type,
+    loc: SourceLocation,
+};
+
+/// Struct declaration
+pub const StructDecl = struct {
+    name: []const u8,
+    fields: []const Field,
+    loc: SourceLocation,
+};
+
+/// Struct field
+pub const Field = struct {
+    name: []const u8,
+    field_type: Type,
+    loc: SourceLocation,
+};
+
+/// Enum declaration
+pub const EnumDecl = struct {
+    name: []const u8,
+    variants: []const EnumVariant,
+    loc: SourceLocation,
+};
+
+/// Enum variant (data-carrying)
+pub const EnumVariant = struct {
+    name: []const u8,
+    /// Optional data type (e.g., Active(gf16) has gf16 data)
+    data_type: ?Type,
+    loc: SourceLocation,
+};
+
+/// Type alias
+pub const TypeAliasDecl = struct {
+    name: []const u8,
+    aliased_type: Type,
+    loc: SourceLocation,
+};
+
+/// Named pipeline definition
+/// pipeline flow = input |> filter |> map |> output
+pub const PipelineDecl = struct {
+    name: []const u8,
+    /// Parameters (optional)
+    params: []const Param,
+    /// Pipeline body (pipe expression or identifier)
+    body: Expr,
+    loc: SourceLocation,
+};
+
+/// Effect declaration: effect State { get, set(value) }
+pub const EffectDecl = struct {
+    name: []const u8,
+    operations: []const EffectOperation,
+    loc: SourceLocation,
+};
+
+/// Effect operation declaration
+pub const EffectOperation = struct {
+    name: []const u8,
+    payload_type: ?Type,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Statements                                                              ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// All statement types
+pub const Statement = union(enum) {
+    Return: ReturnStmt,
+    Let: LetStmt,
+    If: IfStmt,
+    While: WhileStmt,
+    For: ForStmt,
+    Expression: ExprStmt,
+    Effect: EffectStmt,
+};
+
+/// Return statement: return expr
+pub const ReturnStmt = struct {
+    value: Expr,
+    loc: SourceLocation,
+};
+
+/// Let binding: let name = expr (supports let/inout/sink/set)
+pub const LetStmt = struct {
+    /// Variable name
+    name: []const u8,
+    /// Ownership mode (default: Let)
+    ownership: OwnershipMode = .Let,
+    /// Value expression
+    value: Expr,
+    loc: SourceLocation,
+};
+
+/// If statement with optional else
+pub const IfStmt = struct {
+    condition: Expr,
+    then_branch: []const Statement,
+    else_branch: ?[]const Statement,
+    loc: SourceLocation,
+};
+
+/// While loop
+pub const WhileStmt = struct {
+    condition: Expr,
+    body: []const Statement,
+    loc: SourceLocation,
+};
+
+/// For loop: for var in start..end { body }
+pub const ForStmt = struct {
+    var_name: []const u8,
+    range: Range,
+    body: []const Statement,
+    loc: SourceLocation,
+};
+
+/// Expression statement (function call, etc.)
+pub const ExprStmt = struct {
+    expr: Expr,
+    loc: SourceLocation,
+};
+
+/// Effect statement — perform effect with handler
+/// perform effect { operation }
+pub const EffectStmt = struct {
+    /// Effect to perform
+    effect_id: EffectId,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    /// Handler body (clauses for each operation)
+    handler: HandlerBody,
+    loc: SourceLocation,
+};
+
+/// Loop range
+pub const Range = union(enum) {
+    /// start..end
+    To: struct { start: Expr, end: Expr },
+    /// start..=end (inclusive)
+    ToEq: struct { start: Expr, end: Expr },
+};
+
+/// Effect identifier (for algebraic effects)
+pub const EffectId = enum(u8) {
+    /// I/O effects
+    IO,
+    File,
+    Network,
+    Database,
+    /// State effects
+    State,
+    Mutable,
+    /// Error effects
+    Error,
+    Fail,
+    /// Platform effects (dual-target)
+    PlatformCPU,
+    PlatformFPGA,
+    PlatformVM,
+    /// Async effects
+    Async,
+    /// Custom user effects
+    User = 128,
+};
+
+/// Handler body — clauses for handling effect operations
+pub const HandlerBody = struct {
+    /// Handler clauses (operation + body)
+    clauses: []const HandlerClause,
+};
+
+/// Handler clause — pattern for operation + body
+pub const HandlerClause = struct {
+    /// Operation name
+    operation: []const u8,
+    /// Parameter pattern
+    param_pattern: Pattern,
+    /// Handler body expression
+    body: Expr,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Expressions                                                            ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// All expressions
+pub const Expr = union(enum) {
+    // Literals
+    IntLiteral: IntLiteralExpr,
+    FloatLiteral: FloatLiteralExpr,
+    StringLiteral: StringLiteralExpr,
+    CharLiteral: CharLiteralExpr,
+    BoolLiteral: BoolLiteralExpr,
+
+    // Identifiers and calls
+    Identifier: IdentifierExpr,
+    Call: CallExpr,
+
+    // Operations
+    BinaryOp: BinaryOpExpr,
+    UnaryOp: UnaryOpExpr,
+
+    // Access
+    FieldAccess: FieldAccessExpr,
+    ArrayAccess: ArrayAccessExpr,
+
+    // Collections
+    ArrayLiteral: ArrayLiteralExpr,
+
+    // Pipe / Match / Pipeline
+    Pipe: PipeExpr,
+    Match: MatchExpr,
+    PipelineRef: PipelineRefExpr,
+
+    // Effects (algebraic effects and handlers)
+    Perform: PerformExpr,
+    Handle: HandleExpr,
+    Try: TryExpr,
+    Effect: EffectExpr,
+
+    // Array combinators (Futhark-style)
+    Map: MapExpr,
+    Reduce: ReduceExpr,
+    Scan: ScanExpr,
+    Filter: FilterExpr,
+    FlatMap: FlatMapExpr,
+    Zip: ZipExpr,
+
+    // Typed hole (for autocode generation)
+    Hole: HoleExpr,
+};
+
+/// Alias for Expr (used by parser)
+pub const Expression = Expr;
+
+/// Integer literal
+pub const IntLiteralExpr = struct {
+    value: i64,
+    loc: SourceLocation,
+};
+
+/// Float literal
+pub const FloatLiteralExpr = struct {
+    value: f64,
+    loc: SourceLocation,
+};
+
+/// Effect expression — perform effect { operation }
+pub const EffectExpr = struct {
+    /// Effect to perform
+    effect_id: EffectId,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    /// Optional handler
+    handler: ?HandlerBody,
+    loc: SourceLocation,
+};
+
+/// Perform expression: perform effect.operation(args)
+pub const PerformExpr = struct {
+    /// Effect name (may be empty for inferred effects)
+    effect_name: []const u8,
+    /// Operation name
+    operation: []const u8,
+    /// Operation arguments
+    args: []const Expr,
+    loc: SourceLocation,
+};
+
+/// Handle expression: handle effect { op1(pattern) => body, ... }
+pub const HandleExpr = struct {
+    /// Effect name to handle
+    effect_name: []const u8,
+    /// Handler clauses
+    clauses: []const HandlerClause,
+    loc: SourceLocation,
+};
+
+/// Try expression — perform effect with handler
+pub const TryExpr = struct {
+    /// Computation that may perform effects
+    computation: Expr,
+    /// Handler clauses (operation + body)
+    handlers: []const HandlerClause,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Array Combinator Expressions                                            ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Map expression: map(array, func) -> [func(x) for x in array]
+pub const MapExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Function to apply (lambda or identifier)
+    func: Expr,
+    loc: SourceLocation,
+};
+
+/// Reduce expression: reduce(array, init, op) -> folded value
+pub const ReduceExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Initial value
+    init: Expr,
+    /// Binary operation ( associative)
+    operation: BinaryOperator,
+    loc: SourceLocation,
+};
+
+/// Scan expression: scan(array, init, op) -> prefix scan
+pub const ScanExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Initial value
+    init: Expr,
+    /// Binary operation
+    operation: BinaryOperator,
+    /// Scan type: inclusive, exclusive, or default
+    scan_type: ScanType,
+    loc: SourceLocation,
+};
+
+/// Scan type variant
+pub const ScanType = enum {
+    /// Standard prefix scan (includes current element)
+    Prefix,
+    /// Inclusive scan (includes current element in result)
+    Inclusive,
+    /// Exclusive scan (excludes current element from result)
+    Exclusive,
+};
+
+/// Filter expression: filter(array, pred) -> [x for x in array if pred(x)]
+pub const FilterExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Predicate function (returns bool)
+    predicate: Expr,
+    loc: SourceLocation,
+};
+
+/// FlatMap expression: flatMap(array, func) -> concat([func(x) for x in array])
+pub const FlatMapExpr = struct {
+    /// Source array
+    array: Expr,
+    /// Function that returns array
+    func: Expr,
+    loc: SourceLocation,
+};
+
+/// Zip expression: zip(arr1, arr2) -> [(arr1[i], arr2[i])]
+pub const ZipExpr = struct {
+    /// First array
+    array1: Expr,
+    /// Second array
+    array2: Expr,
+    loc: SourceLocation,
+};
+
+/// String literal
+pub const StringLiteralExpr = struct {
+    value: []const u8,
+    loc: SourceLocation,
+};
+
+/// Character (trit) literal
+pub const CharLiteralExpr = struct {
+    value: u8,
+    loc: SourceLocation,
+};
+
+/// Boolean literal
+pub const BoolLiteralExpr = struct {
+    value: bool,
+    loc: SourceLocation,
+};
+
+/// Identifier expression
+pub const IdentifierExpr = struct {
+    name: []const u8,
+    loc: SourceLocation,
+};
+
+/// Binary operator expression
+pub const BinaryOpExpr = struct {
+    left: Expr,
+    op: BinaryOperator,
+    right: Expr,
+    loc: SourceLocation,
+};
+
+/// Unary operator expression
+pub const UnaryOpExpr = struct {
+    op: UnaryOperator,
+    operand: Expr,
+    loc: SourceLocation,
+};
+
+/// Function call expression: callee(args...)
+pub const CallExpr = struct {
+    callee: Expr,
+    args: []const Expr,
+    loc: SourceLocation,
+};
+
+/// Field access expression: obj.field
+pub const FieldAccessExpr = struct {
+    object: Expr,
+    field: []const u8,
+    loc: SourceLocation,
+};
+
+/// Array access expression: arr[index]
+pub const ArrayAccessExpr = struct {
+    array: Expr,
+    index: Expr,
+    loc: SourceLocation,
+};
+
+/// PIPE EXPRESSION - Elixir-style pipe chain
+/// expr |> func1 |> func2 |> ... |> funcN
+pub const PipeExpr = struct {
+    /// Initial value
+    source: Expr,
+    /// Pipeline stages (functions or identifiers to pipe through)
+    stages: []const Expr,
+    loc: SourceLocation,
+};
+
+/// MATCH EXPRESSION - Rust/Elixir exhaustive match
+/// match value {
+///     Variant1(data) => action1,
+///     Variant2        => action2,
+///     Variant3(data)  => action3,
+/// }
+pub const MatchExpr = struct {
+    /// Value to match against
+    value: Expr,
+    /// Match arms (pattern + guard + body)
+    arms: []const MatchArm,
+    loc: SourceLocation,
+};
+
+/// Array literal expression
+pub const ArrayLiteralExpr = struct {
+    elements: []const Expr,
+    loc: SourceLocation,
+};
+
+/// Named pipeline reference
+pub const PipelineRefExpr = struct {
+    name: []const u8,
+    loc: SourceLocation,
+};
+
+/// Typed hole expression: ?hole_name
+pub const HoleExpr = struct {
+    name: []const u8,
+    expected_type: ?*const Type,
+    loc: SourceLocation,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Match Arms, Guards, Patterns                                           ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Single match arm
+pub const MatchArm = struct {
+    /// Pattern to match (ADT variant, literal, wildcard, etc.)
+    pattern: Pattern,
+    /// Optional guard: | condition
+    guard: ?Guard,
+    /// Body expression if pattern matches (and guard passes)
+    body: Expr,
+    loc: SourceLocation,
+};
+
+/// Guard condition - Haskell-style
+/// | condition
+pub const Guard = struct {
+    /// Boolean expression (must evaluate to true)
+    condition: Expr,
+    loc: SourceLocation,
+};
+
+/// Pattern for matching (ADT variant, literal, wildcard, etc.)
+pub const Pattern = union(enum) {
+    /// Wildcard pattern: _ (matches anything)
+    Wildcard: PatternWildcard,
+
+    /// Literal pattern: 42, true, 'tr', "string"
+    Literal: PatternLiteral,
+
+    /// Identifier pattern (binds name)
+    Identifier: PatternIdentifier,
+
+    /// Enum variant pattern: Enum.Variant(data)
+    EnumVariant: PatternEnumVariant,
+
+    /// Struct pattern: Struct { field: pattern, ... }
+    Struct: PatternStruct,
+
+    /// Array pattern: [p1, p2, ...]
+    Array: PatternArray,
+
+    /// Range pattern: start..=end
+    Range: PatternRange,
+
+    /// Typed hole in pattern (for synthesis)
+    Hole: PatternHole,
+};
+
+/// Wildcard pattern
+pub const PatternWildcard = void;
+
+/// Literal pattern
+pub const PatternLiteral = struct {
+    value: LiteralValue,
+};
+
+/// Literal values for patterns
+pub const LiteralValue = union(enum) {
+    Int: i64,
+    Float: f64,
+    String: []const u8,
+    Char: u8,
+    Bool: bool,
+    // Later: BitPattern, TritPattern
+};
+
+/// Identifier pattern
+pub const PatternIdentifier = struct {
+    name: []const u8,
+};
+
+/// Enum variant pattern
+pub const PatternEnumVariant = struct {
+    /// Name of enum (optional; may be inferred)
+    enum_name: ?[]const u8,
+    /// Name of variant
+    variant_name: []const u8,
+    /// Optional nested pattern for variant data
+    data_pattern: ?*const Pattern,
+};
+
+/// Struct pattern
+pub const PatternStruct = struct {
+    /// Name of struct
+    struct_name: []const u8,
+    /// Field patterns: name => pattern
+    field_patterns: []const FieldPattern,
+};
+
+/// Field pattern in struct match
+pub const FieldPattern = struct {
+    field_name: []const u8,
+    pattern: Pattern,
+};
+
+/// Array pattern
+pub const PatternArray = struct {
+    elements: []const Pattern,
+};
+
+/// Range pattern
+pub const PatternRange = struct {
+    start: Expr,
+    end: Expr,
+    inclusive: bool,
+};
+
+/// Typed hole pattern: ?name
+pub const PatternHole = struct {
+    name: []const u8,
+    expected_type: ?Type,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Types                                                                  ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// All types in Tri
+pub const Type = union(enum) {
+    /// Native ternary types
+    Trit: TypeTrit,
+    /// Integer types
+    Int: TypeInt,
+    /// Float types
+    Float: TypeFloat,
+    /// String type
+    String: TypeString,
+    /// Boolean type
+    Bool: TypeBool,
+    /// Array type: [T] or [N]T
+    Array: TypeArray,
+    /// Fixed-size array: [N]T with compile-time bounds checking
+    ArrayFixed: TypeArrayFixed,
+    /// Function type: fn(args) -> return
+    Function: TypeFunction,
+    /// Result type: Result(T, E) - no exceptions
+    Result: TypeResult,
+    /// Linear type: linear T (consume-once)
+    Linear: TypeLinear,
+    /// Banked type: Banked<T, Bank> (phantom type for Coptic safety)
+    Banked: TypeBanked,
+    /// Struct type (name of struct)
+    Struct: TypeStruct,
+    /// Enum type (name of enum)
+    Enum: TypeEnum,
+    /// Named type reference / alias
+    Named: TypeNamed,
+    /// Platform target for dual-target codegen
+    Platform: TypePlatform,
+};
+
+/// Trit types (native)
+pub const TypeTrit = enum(u2) {
+    /// Single trit: {-1, 0, +1}
+    Trit = 0,
+    /// 3 trits packed
+    Trit3 = 1,
+    /// 9 trits packed
+    Trit9 = 2,
+    /// 27 trits packed
+    Trit27 = 3,
+};
+
+/// Bank identifier for Coptic register safety
+/// Bank 0: ALU registers (t0-t8), Bank 1: Sacred (t9-t17), Bank 2: Constants (t18-t26)
+pub const Bank = enum(u2) {
+    /// Bank 0: ALU registers (t0-t8, Ⲁ-Ⲑ)
+    ALU = 0,
+    /// Bank 1: Sacred accumulators (t9-t17, Ⲓ-Ⲣ)
+    Sacred = 1,
+    /// Bank 2: Constants (t18-t26, Ⲥ-Ϥ) — immutable
+    Constant = 2,
+};
+
+/// Integer types
+pub const TypeInt = enum(u2) {
+    I8 = 0,
+    I16 = 1,
+    I32 = 2,
+    I64 = 3,
+};
+
+/// Float types
+pub const TypeFloat = enum(u2) {
+    F16 = 0,
+    F32 = 1,
+    F64 = 2,
+};
+
+/// String type
+pub const TypeString = void;
+
+/// Boolean type
+pub const TypeBool = void;
+
+/// Array type [T] or [N]T
+pub const TypeArray = struct {
+    element_type: *const Type,
+    /// Optional fixed size (e.g., [8]trit)
+    size: ?usize,
+};
+
+/// Fixed-size array with compile-time bounds checking
+/// ArrayFixed(N, T) — array of N elements of type T
+pub const TypeArrayFixed = struct {
+    /// Element type
+    element_type: *const Type,
+    /// Fixed size (compile-time constant)
+    size: usize,
+};
+
+/// Function type fn(args) -> return
+pub const TypeFunction = struct {
+    params: []const Type,
+    return_type: *const Type,
+};
+
+/// Result type: Result(T, E) - no exceptions
+pub const TypeResult = struct {
+    ok_type: *const Type,
+    err_type: *const Type,
+};
+
+/// Linear type: linear T (consume-once semantics from Austral)
+pub const TypeLinear = struct {
+    /// The inner type that must be consumed exactly once
+    inner_type: *const Type,
+};
+
+/// Banked type: Banked<T, Bank> (phantom type for Copic register safety)
+pub const TypeBanked = struct {
+    /// The value type
+    value_type: *const Type,
+    /// The bank (0=ALU, 1=Sacred, 2=Constant)
+    bank: Bank,
+};
+
+/// Ownership mode for variables (Hylo-style)
+pub const OwnershipMode = enum(u2) {
+    /// let x = ... — immutable, can be read multiple times
+    Let = 0,
+    /// inout x = ... — mutable reference
+    Inout = 1,
+    /// sink x = ... — consumes value, must be used exactly once
+    Sink = 2,
+    /// set x = ... — mutable owned value
+    Set = 3,
+};
+
+/// Struct type
+pub const TypeStruct = struct {
+    name: []const u8,
+};
+
+/// Enum type
+pub const TypeEnum = struct {
+    name: []const u8,
+};
+
+/// Named type reference
+pub const TypeNamed = struct {
+    name: []const u8,
+};
+
+/// Platform type for dual-target codegen
+pub const TypePlatform = struct {
+    /// Platform target
+    target: PlatformTarget,
+};
+
+/// Platform target for dual-target codegen (Roc-style)
+/// Allows specifying which backend to compile for
+pub const PlatformTarget = enum(u2) {
+    /// CPU target - generates Zig code
+    CPU = 0,
+    /// FPGA target - generates Verilog
+    FPGA = 1,
+    /// VM target - generates TRI-27 bytecode
+    VM = 2,
+    /// Auto - let the compiler decide
+    Auto = 3,
+};
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║ Operators                                                              ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+
+/// Binary operators
+pub const BinaryOperator = enum(u5) {
+    // Arithmetic
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+
+    // Bitwise / ternary logic (some reserved for ternary ops later)
+    BitAnd,
+    BitOr,
+    BitXor,
+    ShiftLeft,
+    ShiftRight,
+
+    // Comparison
+    Equal,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+
+    // Sacred operations (dot product)
+    Dot,
+
+    // Ternary logic (placeholders)
+    TernaryAnd,
+    TernaryOr,
+    TernaryNot,
+    TernaryXor,
+};
+
+/// Unary operators
+pub const UnaryOperator = enum(u3) {
+    Neg,
+    BitNot,
+    Deref,
+};

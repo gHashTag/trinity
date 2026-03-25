@@ -266,6 +266,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "packed_trit", .module = packed_trit_mod },
                 .{ .name = "hybrid", .module = hybrid_mod },
                 .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "vm", .module = vm_mod },
             },
         }),
     });
