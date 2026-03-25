@@ -309,6 +309,102 @@ tri dev ship
 
 ---
 
+## Tri Zones & Agents — Language Canon × Alphabet Canon 27
+
+### Zone Ownership Table
+
+| Zone | Owns | Files | TTT? |
+|------|------|-------|-----|
+| **T** | Core types, sacred math, Coptic naming | `src/temple/*.zig`, `src/tri27/coptic.zig`, `specs/tri/types.tri` | YES |
+| **J** | JIT, compilation, VM execution | `src/tri-lang/pipeline.zig`, `emit_t27.zig`, `src/tri27/emu/`, `specs/tri/grammar.ebnf` | No |
+| **V** | VSA, embeddings | `src/vsa.zig` | No |
+| **F** | LLM engine integration | `src/firebird/*.zig` | No |
+| **Q** | Coordination, governance | `src/tri/queen_*.zig`, `.trinity/` | No |
+| **X** | Thalamus bus, distribution | `.trinity/thalamus/` | No |
+| **E** | Type checking, verification, quality gates | `src/tri-lang/checker.zig` | No |
+
+### Agent Responsibilities
+
+| Agent | Tri Component | Lock Path |
+|-------|---------------|-----------|
+| **T-agent** | Sacred types, Result, Linear, Effects, Coptic registers | `src/temple/`, `src/tri27/coptic.zig`, `specs/tri/types.tri` |
+| **J-agent** | emit_t27, pipeline, HM inference, VM execution | `src/tri-lang/`, `src/tri27/emu/`, `specs/tri/grammar.ebnf` |
+| **V-agent** | VSA ops, bind/unbind/bundle | `src/vsa.zig` |
+| **F-agent** | Firebird LLM, token streams | `src/firebird/` |
+| **Q-agent** | Queen policy, meta-control, canonmap | `src/tri/queen_*.zig`, `.trinity/canonmap.json` |
+| **E-agent** | Type checker, verify, quality gates | `src/tri-lang/checker.zig` |
+
+### Cross-Zone Compilation Pipeline
+
+```
+T-zone (types) → J-zone (compile) → X-zone (distribute) → All zones (consume)
+     ↓              ↓                  ↓                  ↓
+  sacred math    emit_t27           thalamus           compiled modules
+  Result/Eff     HM inference       distribution       (.tbin)
+  Linear         VM execution
+```
+
+1. **T-zone**: Defines sacred types (trit, tryte, tword, Result, Linear, Effects)
+2. **J-zone**: Compiles .tri → TRI-27 .tbin (emit_t27.zig, HM inference, VM)
+3. **X-zone**: Distributes .tbin to target zones (CPU/FPGA)
+4. **E-zone**: Verifies type correctness, quality gates before distribution
+5. **All zones**: Import and use sacred types, compiled modules
+
+### File Ownership by Zone
+
+```
+src/temple/                    → T-agent (SEALED)
+src/tri27/coptic.zig           → T-agent (sacred naming)
+src/tri27/emu/                 → J-agent (VM execution)
+src/tri-lang/                  → J-agent (compiler, pipeline)
+src/tri-lang/checker.zig       → E-agent (verification)
+src/vsa.zig                    → V-agent
+src/firebird/                  → F-agent
+src/tri/queen_*.zig            → Q-agent
+.trinity/canonmap.json         → Q-agent (governance)
+.trinity/thalamus/             → X-agent (distribution)
+specs/tri/types.tri            → T-agent (type definitions)
+specs/tri/grammar.ebnf         → J-agent (parsing)
+```
+
+### Lock Rules for Language Evolution
+
+1. **One zone per component**: Agent locks only their zone's files
+2. **Cross-zone changes**: Require Queen-issued bridge-task
+3. **TTT Seal**: T-zone changes require unseal token (`TEMPLE_RITUAL=1`)
+4. **Version sync**: `.trinity/canonmap.json` contains `temple_version`. On `tri swarm alpha`, Queen verifies all zones reference same temple_version
+5. **Grammar-Types split**: `grammar.ebnf` (J-zone) parses, `types.tri` (T-zone) defines — changes coordinated via bridge-task
+6. **Quality gates**: E-agent must sign off on all .tbin before X-zone distribution
+
+### Zone Coordination Protocol
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   T-zone    │────▶│   J-zone    │────▶│   E-zone    │
+│  (types)    │     │  (compile)  │     │  (verify)   │
+└─────────────┘     └─────────────┘     └─────────────┘
+                           │                    │
+                           ▼                    ▼
+                    ┌─────────────┐     ┌─────────────┐
+                    │   X-zone    │────▶│  All zones  │
+                    │(distribute) │     │  (consume)  │
+                    └─────────────┘     └─────────────┘
+```
+
+**Bridge-task format** (Q-agent issued):
+```json
+{
+  "bridge_id": "BRIDGE_<timestamp>",
+  "from_zone": "T",
+  "to_zone": "J",
+  "change": "Added Linear type to Result",
+  "temple_version": "1.0.1",
+  "approved_by": "Q-agent"
+}
+```
+
+---
+
 ## TRI-27 Binding: Registers, Banks, Coptic
 
 ### Coptic Register Mapping
@@ -353,14 +449,15 @@ This document is living canon. Amendments require:
 |---------|------|--------|-------|
 | 1.0.0 | 2026-03-25 | Initial canon — 13/7/10 surface, No OOP law | T-agent |
 | 1.0.1 | 2026-03-25 | Added Layer Binding section | T-agent |
+| 1.1.0 | 2026-03-25 | Added Tri Zones & Agents section (7 zones, ownership tables, lock rules) | T-agent |
 
 ---
 
 ## References
 
 - `specs/tri/` — .tri language specifications (source of truth)
-- `src/tri-lang/` — Type system, compiler (HM, emit_t27)
-- `src/tri27/` — VM emulator, Coptic registers
+- `src/tri-lang/` — Type system, compiler (HM, emit_t27), checker (E-zone)
+- `src/tri27/` — VM emulator (J-zone), Coptic registers (T-zone)
 - `docs/research/ALPHABET_CANON_27.md` — 27-zone repository zoning
 - `docs/research/neuroanatomical_architecture.md` — NA-R1 through NA-R11
 - `.trinity/canonmap.json` — Official canon with alphabet_zones
