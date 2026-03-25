@@ -500,6 +500,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_search.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = trinity_mod },
+            },
         }),
     });
     b.installArtifact(trinity_search);
@@ -664,13 +667,109 @@ pub fn build(b: *std.Build) void {
     // });
     // b.installArtifact(uart_echo_test);
 
-    // Firebird tests
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
     const firebird_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/firebird/b2t_integration.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
+    });
+    // Firebird tests (F-zone LLM Engine)
+    const firebird_tests_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    const firebird_tests = b.addTest(.{
+        .root_module = firebird_tests_mod,
     });
     const run_firebird_tests = b.addRunArtifact(firebird_tests);
     test_step.dependOn(&run_firebird_tests.step);
@@ -2254,6 +2353,18 @@ pub fn build(b: *std.Build) void {
             .{ .name = "temple", .module = temple_mod },
         },
     });
+
+    // Firebird module — F-zone LLM Engine
+    const firebird_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+    _ = firebird_mod; // TODO: Currently unused, kept for future firebird module tests
 
     // HSLM tests
     const hslm_tests = b.addTest(.{
