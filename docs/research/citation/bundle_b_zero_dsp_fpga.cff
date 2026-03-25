@@ -1,0 +1,80 @@
+cff-version: 1.2.0
+message: "If you use any Trinity FPGA discoveries, please cite our defensive publication."
+title: "Zero-DSP FPGA for Ternary Inference"
+abstract: "This bundle presents Trinity's comprehensive FPGA research for ternary neural network inference, featuring zero-DSP ternary MAC units (pure LUT implementation), DSP48E1 ternary wrappers (70% resource reduction), CORDIC with continued fraction approximation (6-stage sacred trigonometry), streaming argmax (<100 LUT), ternary BRAM storage (2-bit packing), power-of-2 embedding lookup, phi-weighted ternary scheduler, ESP32 Wi-Fi JTAG cross-platform programming, UART echo verification with LED feedback, OpenXC7 Docker synthesis pipeline, GF16 15-bit multiplier, and vector-matrix DSP acceleration for ternary matrix multiplication. All innovations published as defensive prior art with Zenodo DOIs."
+authors:
+  - family-names: "Trinity"
+    given-names: "Project"
+    affiliation: "Open Source"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-25
+url: "https://github.com/gHashTag/trinity"
+keywords:
+  - "zero-DSP"
+  - "FPGA"
+  - "LUT-based inference"
+  - "ternary MAC"
+  - "DSP48E1"
+  - "CORDIC"
+  - "continued fraction"
+  - "sacred trigonometry"
+  - "argmax"
+  - "streaming"
+  - "BRAM"
+  - "ternary storage"
+  - "embedding lookup"
+  - "ternary scheduler"
+  - "phi-weighted"
+  - "ESP32"
+  - "Wi-Fi JTAG"
+  - "UART verification"
+  - "OpenXC7"
+  - "Yosys"
+  - "nextpnr-xilinx"
+  - "Docker synthesis"
+  - "GF16 multiplier"
+  - "vector-matrix"
+  - "DSP acceleration"
+  - "Xilinx 7-series"
+  - "XC7A100T"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for main defensive publication"
+    type: "doi"
+    value: "TBD"
+  - description: "GitHub repository"
+    type: "url"
+    value: "https://github.com/gHashTag/trinity"
+related-resources:
+  - type: "documentation"
+    relationship: "documents"
+    title: "Sacred Formats and FPGA Implementation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/sacred_formats_fpga.md"
+  - type: "documentation"
+    relationship: "documents"
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+references:
+  - type: "software"
+    authors:
+      - name: "The Yosys Community"
+    title: "Yosys Open SYnthesis Suite"
+    year: 2024
+    url: "https://github.com/YosysHQ/yosys"
+  - type: "software"
+    authors:
+      - name: "openXC7 Community"
+    title: "nextpnr-xilinx: FPGA place and route tool"
+    year: 2024
+    url: "https://github.com/openXC7/nextpnr-xilinx"
+  - type: "article"
+    authors:
+      - family-names: "Volder"
+        given-names: "J."
+    title: "The CORDIC Trigonometric Computing Technique"
+    year: 1959
+    journal: "IRE Transactions on Electronic Computers"
+    volume: "EC-8"
+    pages: "330-334"

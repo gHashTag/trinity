@@ -1,0 +1,76 @@
+cff-version: 1.2.0
+message: "If you use any Trinity VSA discoveries, please cite our defensive publication."
+title: "VSA Operations for Ternary Computing"
+abstract: "This bundle presents Trinity's Vector Symbolic Architecture (VSA) operations adapted for ternary computing, featuring bind/unbind operations using HybridBigInt SIMD for efficient associative memory, bundle operations (2-ary, 3-ary) for majority voting and noise resilience, ternary dot-product for {-1,0,+1} vector operations, cyclic permutation encoding for position-independent representation, cosine similarity for ternary vector comparison, and text encoding mapping characters to Vec32i8 VSA representations. All innovations published as defensive prior art with Zenodo DOIs."
+authors:
+  - family-names: "Trinity"
+    given-names: "Project"
+    affiliation: "Open Source"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-25
+url: "https://github.com/gHashTag/trinity"
+keywords:
+  - "VSA"
+  - "Vector Symbolic Architecture"
+  - "ternary computing"
+  - "bind"
+  - "unbind"
+  - "bundle"
+  - "majority vote"
+  - "HybridBigInt"
+  - "SIMD"
+  - "dot-product"
+  - "ternary vector"
+  - "permutation"
+  - "cyclic"
+  - "cosine similarity"
+  - "text encoding"
+  - "Vec32i8"
+  - "associative memory"
+  - "noise resilience"
+  - "hyperdimensional computing"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for main defensive publication"
+    type: "doi"
+    value: "TBD"
+  - description: "GitHub repository"
+    type: "url"
+    value: "https://github.com/gHashTag/trinity"
+related-resources:
+  - type: "documentation"
+    relationship: "documents"
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+references:
+  - type: "article"
+    authors:
+      - family-names: "Kanerva"
+        given-names: "P."
+    title: "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors"
+    year: 2009
+    journal: "Cognitive Computation"
+    volume: "1"
+    issue: "2"
+    pages: "139-159"
+  - type: "article"
+    authors:
+      - family-names: "Plate"
+        given-names: "T. A."
+    title: "Holographic Reduced Representations"
+    year: 1995
+    journal: "IEEE Transactions on Neural Networks"
+    volume: "6"
+    issue: "3"
+    pages: "623-641"
+  - type: "article"
+    authors:
+      - family-names: "Gayler"
+        given-names: "R. W."
+    title: "Multiplicative Binding, Representation Operators & Analogy"
+    year: 2003
+    booktitle: "Advances in Analogy Research: Integration of Theory and Data from the Cognitive, Computational and Neural Sciences"
+    publisher: "Sofia Press"
+    pages: "149-153"

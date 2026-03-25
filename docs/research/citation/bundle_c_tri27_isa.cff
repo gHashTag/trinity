@@ -1,0 +1,69 @@
+cff-version: 1.2.0
+message: "If you use any TRI-27 ISA discoveries, please cite our defensive publication."
+title: "TRI-27: Ternary ISA with Coptic Encoding"
+abstract: "This bundle presents Trinity's TRI-27 ternary instruction set architecture, featuring 36 opcodes for balanced ternary computation, 27 registers organized in 3 banks (alpha-eta: baseline, iota-rho: workspace, sigma-sampi: sacred), Coptic alphabet encoding for human-readable ternary (3 trits per Coptic letter), cross-bank validation preventing invalid state transitions, T27 binary episode format for experience replay, and neuro-inspired wrapper interfaces (Reticular Raphe for phi-decay rolling, Phoenix Medulla for resilience, Queen vmPFC for prefrontal orchestration). All innovations published as defensive prior art with Zenodo DOIs."
+authors:
+  - family-names: "Trinity"
+    given-names: "Project"
+    affiliation: "Open Source"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-25
+url: "https://github.com/gHashTag/trinity"
+keywords:
+  - "TRI-27"
+  - "ternary ISA"
+  - "instruction set"
+  - "balanced ternary"
+  - "Coptic alphabet"
+  - "ternary encoding"
+  - "3-bank registers"
+  - "cross-bank validation"
+  - "episode format"
+  - "T27 binary"
+  - "36 opcodes"
+  - "MOV"
+  - "JGT"
+  - "JLT"
+  - "JUMP"
+  - "reticular raphe"
+  - "Phoenix medulla"
+  - "vmPFC"
+  - "prefrontal cortex"
+  - "neuro-inspired"
+  - "phi-decay"
+  - "resilience"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for main defensive publication"
+    type: "doi"
+    value: "TBD"
+  - description: "GitHub repository"
+    type: "url"
+    value: "https://github.com/gHashTag/trinity"
+related-resources:
+  - type: "documentation"
+    relationship: "documents"
+    title: "TRI-27 Platform Specification"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/tri27_platform.md"
+  - type: "documentation"
+    relationship: "documents"
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+references:
+  - type: "article"
+    authors:
+      - family-names: "Knuth"
+        given-names: "D."
+    title: "The Art of Computer Programming, Volume 2: Seminumerical Algorithms"
+    year: 1997
+    journal: "Addison-Wesley"
+    edition: "3rd"
+  - type: "article"
+    authors:
+      - family-names: "Frazer"
+        given-names: "W."
+    title: "The Coptic Version of the New Testament in the Southern Dialect"
+    year: "1898"
+    journal: "Oxford University Press"

@@ -1,0 +1,88 @@
+cff-version: 1.2.0
+message: "If you use any Trinity ternary neural network discoveries, please cite our defensive publication."
+title: "Ternary Neural Networks: Theory to Training Farm"
+abstract: "This bundle presents Trinity's comprehensive research on ternary neural networks, spanning theoretical foundations (T-JEPA, cosine scheduling with phi-warmup), implementation (HSLM 1.95M parameter model with PPL=125), training infrastructure (gradient accumulation, checkpoint compression, wave-based multi-account training), and evaluation (Cognitive Probes v7 with Min-K%++, Full-ECE calibration, temperature scaling v5, ROC/AUC analysis, contamination detection). All innovations published as defensive prior art with Zenodo DOIs."
+authors:
+  - family-names: "Trinity"
+    given-names: "Project"
+    affiliation: "Open Source"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-25
+url: "https://github.com/gHashTag/trinity"
+keywords:
+  - "ternary neural network"
+  - "HSLM"
+  - "1.58-bit LLM"
+  - "T-JEPA"
+  - "JEPA"
+  - "masked prediction"
+  - "cosine learning rate"
+  - "phi-based scheduling"
+  - "gradient accumulation"
+  - "checkpoint compression"
+  - "training farm"
+  - "multi-account training"
+  - "wave-based training"
+  - "Cognitive Probes"
+  - "Min-K%"
+  - "Full-ECE"
+  - "temperature scaling"
+  - "ROC/AUC"
+  - "contamination detection"
+  - "TinyStories"
+  - "PPL"
+  - "ternary inference"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for main defensive publication"
+    type: "doi"
+    value: "TBD"
+  - description: "GitHub repository"
+    type: "url"
+    value: "https://github.com/gHashTag/trinity"
+related-resources:
+  - type: "documentation"
+    relationship: "documents"
+    title: "HSLM Training Report"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/fpga-autoregressive-llm-report.md"
+  - type: "documentation"
+    relationship: "documents"
+    title: "Scientific Metrics v7"
+    uri: "https://github.com/gHashTag/trinity/blob/main/kaggle/eval/scientific_metrics_v7.py"
+  - type: "documentation"
+    relationship: "documents"
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+references:
+  - type: "article"
+    authors:
+      - family-names: "Ma"
+        given-names: "D."
+      - family-names: "Liu"
+        given-names: "H."
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2402.17764"
+  - type: "article"
+    authors:
+      - family-names: "Eldan"
+        given-names: "R."
+      - family-names: "Li"
+        given-names: "Y."
+    title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+    year: 2023
+    journal: "arXiv"
+    volume: "arXiv:2305.07759"
+  - type: "article"
+    authors:
+      - family-names: "Wei"
+        given-names: "M."
+      - family-names: "Mishkin"
+        given-names: "D."
+    title: "Curriculum for Leakage: When Does In-Context Learning Leak from Training Data?"
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2409.05452"
