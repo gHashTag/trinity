@@ -661,4 +661,145 @@ Vasilev, Dmitrii. "Trinity B001: Ternary Neural Networks — Complete Scientific
 
 ---
 
+## 8. Broader Impact
+
+### 8.1 Positive Impact
+
+Trinity B001 contributes to society by:
+
+1. **Democratizing AI:** 20× memory compression enables LLM deployment on low-power edge devices (Raspberry Pi, mobile phones), making AI accessible in resource-constrained environments and developing regions.
+
+2. **Energy Efficiency:** Zero-DSP FPGA design reduces power consumption by 82.5% compared to RISC-V baselines, enabling sustainable AI inference with significantly lower carbon footprint.
+
+3. **Open Science:** All innovations are published as defensive prior art with MIT licensing, preventing patent trolling and enabling collaborative research without barriers.
+
+4. **Educational Value:** Complete reproducibility artifacts, Docker environments, and algorithm pseudocode make this framework ideal for teaching neural networks, FPGA design, and compiler construction at universities worldwide.
+
+### 8.2 Negative Impact
+
+1. **Energy Consumption:** While more efficient than baselines, widespread AI deployment may increase overall energy usage due to rebound effects (more applications due to lower costs).
+
+2. **Technical Barriers:** FPGA programming requires specialized knowledge, potentially limiting adoption to well-resourced institutions and creating accessibility gaps.
+
+3. **Model Bias:** Small models trained on limited datasets may inherit or amplify biases present in training data. TinyStories has limited cultural representation, potentially affecting fairness.
+
+### 8.3 Mitigation Strategies
+
+- Comprehensive bias auditing on validation sets with fairness metrics
+- Extensive documentation and tutorials to lower technical barriers
+- Open source code enabling transparency and community audit
+- Community-driven development via GitHub with inclusive contribution guidelines
+- Dataset diversity recommendations for future training
+
+---
+
+## 9. Ethics Statement
+
+### 9.1 Research Ethics
+
+This research was conducted in accordance with open science principles. All code is open source (MIT license), and all datasets are publicly available for verification. No human subjects were involved in the research.
+
+### 9.2 Bias and Fairness
+
+We acknowledge that:
+- Training data (TinyStories) has limited cultural representation (primarily English)
+- Small model size (1.95M) may limit capability for diverse tasks and languages
+- Continuous monitoring for bias is recommended before deployment
+- Model performance may vary across different demographic groups
+
+### 9.3 Dual Use Concerns
+
+Ternary computing technologies could potentially be used for:
+- Surveillance systems (low-power edge AI)
+- Autonomous weapons (efficient inference)
+
+We advocate for responsible AI development and deployment under international governance frameworks (EU AI Act, UNESCO Recommendations).
+
+### 9.4 Environmental Impact
+
+FPGA synthesis and training have environmental costs:
+- Yosys/nextpnr synthesis: ~0.5 kWh per bitstream
+- Training to 50K steps: ~2 kWh on modern hardware (Apple M1)
+
+We offset these costs by:
+- Using energy-efficient algorithms (zero-DSP design)
+- Enabling edge AI (reducing data transfer and cloud reliance)
+- Publishing reproducible research (avoiding redundant experiments)
+
+---
+
+## 10. Data Availability Statement
+
+### 10.1 Dataset
+
+We use **TinyStories** [Eldan & Li, 2023], a publicly available dataset:
+
+- **Source:** https://huggingface.co/datasets/roneneldan/TinyStories
+- **License:** MIT
+- **Size:** 2.1M training stories + 4.7K validation stories
+- **Vocabulary:** 2048 tokens (BPE tokenizer)
+- **Language:** English
+
+### 10.2 Generated Data
+
+All checkpoint files, training logs, and evaluation metrics are included in this Zenodo deposit for full reproducibility:
+
+- `hslm_step_50000.bin` (385 KB): Trained model checkpoint
+- `training_log.jsonl`: Complete training history
+- `evaluation_results.json`: Validation perplexity metrics
+
+---
+
+## 11. Code Availability Statement
+
+### 11.1 Source Code
+
+- **Repository:** https://github.com/gHashTag/trinity
+- **Branch:** feat/issue-411-linear-types-ownership
+- **Tag:** v5.2.0
+- **License:** MIT
+
+### 11.2 Key Files
+
+| File | Path | Purpose |
+|------|------|---------|
+| Model | `src/hslm/` | HSLM implementation (2500 LOC) |
+| Training | `src/hslm/train.zig` | Training loop with φ-warmup |
+| Inference | `src/hslm/inference.zig` | Text generation |
+| FPGA | `fpga/hslm/` | Verilog sources for synthesis |
+
+### 11.3 Dependencies
+
+- **Zero external dependencies** for core functionality
+- **Pure Zig 0.15.x** standard library only
+- **Yosys + nextpnr** for FPGA synthesis (external tools, MIT-licensed)
+
+---
+
+## 12. Acknowledgments
+
+### 12.1 Funding
+
+This work was self-funded by the author as a defensive publication to establish prior art.
+
+### 12.2 Institutional Support
+
+- **GitHub:** Hosting and CI/CD infrastructure via GitHub Actions
+- **Zenodo:** Open access repository hosting with DOI assignment
+- **Zig Software Foundation:** Compiler and tooling (MIT license)
+
+### 12.3 Community Contributions
+
+We thank:
+- The Zig community for excellent tooling and documentation
+- The Yosys/nextpnr open source FPGA community for synthesis tools
+- The Hugging Face community for TinyStories dataset hosting
+- The open source community at large for inspiration and collaboration
+
+### 12.4 Contributors
+
+- **Dmitrii Vasilev** — Lead developer, all 6 innovations in this bundle
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

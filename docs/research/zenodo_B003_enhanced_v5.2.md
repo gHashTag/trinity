@@ -550,4 +550,115 @@ cd fpga/tri27
 
 ---
 
+## 9. Broader Impact
+
+### 9.1 Positive Impact
+
+Trinity B003 contributes to society by:
+
+1. **Educational Innovation:** TRI-27 ISA provides an accessible teaching platform for computer architecture, emphasizing balanced ternary computing and Coptic encoding.
+
+2. **Alternative Computing:** Demonstrates viable alternatives to binary ISAs, expanding the design space for future computer architects.
+
+3. **Open ISA:** All ISA specifications are open source (MIT), preventing patent trolling and enabling academic research.
+
+4. **Cross-Disciplinary:** Bridges ancient Coptic alphabet with modern computing, showcasing historical computing systems.
+
+### 9.2 Negative Impact
+
+1. **Fragmentation:** Introducing a new ISA may fragment the ecosystem if widely adopted.
+
+2. **Tooling Gap:** Lack of compiler support compared to established ISAs (RISC-V, ARM).
+
+3. **Niche Applicability:** Balanced ternary is not optimal for all workloads.
+
+### 9.3 Mitigation Strategies
+
+- Complete toolchain documentation
+- Comparison with established ISAs
+- Open source all tools (assembler, VM, disassembler)
+
+---
+
+## 10. Ethics Statement
+
+### 10.1 Research Ethics
+
+This research was conducted in accordance with open ISA principles. All specifications and implementations are MIT-licensed.
+
+### 10.2 Cultural Considerations
+
+The Coptic alphabet encoding honors the Coptic language and Egyptian heritage. We acknowledge the cultural significance and use it respectfully as a technical encoding scheme.
+
+### 10.3 Intellectual Property
+
+TRI-27 ISA is published as defensive prior art to prevent patenting of ternary ISAs. All innovations are freely usable under MIT license.
+
+---
+
+## 11. Data Availability Statement
+
+### 11.1 ISA Specification
+
+Complete TRI-27 ISA specification is included in this Zenodo deposit:
+
+- `TRI-27 ISA v1.0.pdf`: Complete opcode reference
+- `opcodes.csv`: Machine-readable opcode table
+- `coptic_encoding.csv`: Coptic alphabet mapping
+
+### 11.2 Test Programs
+
+All assembly examples and test cases are included for reproducibility.
+
+---
+
+## 12. Code Availability Statement
+
+### 12.1 Source Code
+
+- **Repository:** https://github.com/gHashTag/trinity
+- **Path:** `src/tri27/`
+- **License:** MIT
+
+### 12.2 Key Files
+
+| File | Path | Purpose |
+|------|------|---------|
+| Assembler | `src/tri27/emu/assembler.zig` | .asm → .t27 |
+| VM | `src/tri27/emu/emu.zig` | Bytecode interpreter |
+| Disassembler | `src/tri27/emu/disassembler.zig` | .t27 → .asm |
+| Verilog Codegen | `src/tri27/verilog.zig` | .asm → .v |
+
+### 12.3 Dependencies
+
+- **Zero external dependencies** for core functionality
+- **Pure Zig 0.15.x** standard library only
+
+---
+
+## 13. Acknowledgments
+
+### 13.1 Funding
+
+This work was self-funded by the author as a defensive publication to establish prior art.
+
+### 13.2 Institutional Support
+
+- **GitHub:** Hosting and CI/CD infrastructure
+- **Zenodo:** Open access repository hosting
+- **Zig Software Foundation:** Compiler and tooling
+
+### 13.3 Community Contributions
+
+We thank:
+- The RISC-V community for ISA design inspiration
+- The Coptic language community for alphabet resources
+- The Zig community for excellent tooling
+
+### 13.4 Contributors
+
+- **Dmitrii Vasilev** — Lead developer, all 4 TRI-27 innovations
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

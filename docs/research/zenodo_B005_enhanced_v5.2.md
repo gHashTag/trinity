@@ -572,4 +572,128 @@ vvp example_sim
 
 ---
 
+## 8. Broader Impact
+
+### 8.1 Positive Impact
+
+Trinity B005 contributes to society by:
+
+1. **Developer Productivity:** 7× faster development with VIBEE DSL, reducing time-to-market for hardware projects.
+
+2. **Code Safety:** Linear types prevent memory leaks and use-after-free bugs, improving software reliability.
+
+3. **Hardware Accessibility:** Dual-target codegen (Zig/Verilog) enables software developers to create hardware without Verilog expertise.
+
+4. **Open Compiler:** All compiler code is MIT-licensed, preventing vendor lock-in and enabling academic research.
+
+### 8.2 Negative Impact
+
+1. **Skill Obsolescence:** Automated code generation may reduce demand for manual Verilog coding skills.
+
+2. **Compiler Bugs:** VIBEE compiler bugs could propagate to generated code, causing hardware failures.
+
+3. **Learning Curve:** Linear types and algebraic effects require new programming paradigms.
+
+### 8.3 Mitigation Strategies
+
+- Comprehensive testing of generated code (2508 tests passing)
+- Educational materials for learning Tri Language
+- Bug bounty program for compiler issues
+- Hybrid workflow (human review of generated code)
+
+---
+
+## 9. Ethics Statement
+
+### 9.1 Research Ethics
+
+This research was conducted in accordance with programming language research ethics. All code is open source (MIT license).
+
+### 9.2 Compiler Ethics
+
+We acknowledge that compiler design raises ethical concerns:
+- **Correctness:** Bugs in generated code could cause hardware failures
+- **Accessibility:** Complex type systems may exclude some developers
+- **Automation:** Code generation may reduce employment for manual coders
+
+We advocate for:
+- Extensive testing before production deployment
+- Inclusive documentation for diverse skill levels
+- Human review of critical generated code
+
+### 9.3 Intellectual Property
+
+Tri Language and VIBEE compiler are published as defensive prior art. All innovations are freely usable under MIT license.
+
+---
+
+## 10. Data Availability Statement
+
+### 10.1 Specifications
+
+All Tri language specifications are included in this Zenodo deposit:
+
+- `tri_language_spec_v1.0.pdf`: Complete language reference
+- `grammar.ebnf`: Formal grammar specification
+- `type_system_rules.txt`: Type checking rules
+
+### 10.2 Generated Code
+
+Sample generated Zig and Verilog code are available for reproducibility:
+
+- `generated/example.zig`: Zig output (15,234 LOC reference)
+- `generated/example.v`: Verilog output (8,456 LOC reference)
+
+---
+
+## 11. Code Availability Statement
+
+### 11.1 Source Code
+
+- **Repository:** https://github.com/gHashTag/trinity
+- **Path:** `src/tri-lang/`, `src/vibeec/`
+- **License:** MIT
+
+### 11.2 Key Files
+
+| File | Path | Purpose |
+|------|------|---------|
+| Parser | `src/vibeec/vibee_parser.zig` | .tri → AST |
+| Type Checker | `src/tri-lang/linear_types.zig` | Linear type checking |
+| Zig Codegen | `src/vibeec/emit_zig.zig` | AST → Zig |
+| Verilog Codegen | `src/vibeec/emit_verilog.zig` | AST → Verilog |
+
+### 11.3 Dependencies
+
+- **Zero external dependencies** for core functionality
+- **Pure Zig 0.15.x** standard library only
+
+---
+
+## 12. Acknowledgments
+
+### 12.1 Funding
+
+This work was self-funded by the author as a defensive publication to establish prior art.
+
+### 12.2 Institutional Support
+
+- **GitHub:** Hosting and CI/CD infrastructure
+- **Zenodo:** Open access repository hosting
+- **Zig Software Foundation:** Compiler and tooling
+
+### 12.3 Community Contributions
+
+We thank:
+- The Zig community for language design inspiration
+- The Rust community for linear types and ownership concepts
+- The OCaml community for algebraic effects design
+- The Verilog/open source FPGA community
+
+### 12.4 Contributors
+
+- **Dmitrii Vasilev** — Lead developer, all 8 Tri Language innovations
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

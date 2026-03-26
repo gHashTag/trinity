@@ -596,4 +596,131 @@ grep -A5 "Slice LUTs" hslm_routed.json
 
 ---
 
+## 7. Broader Impact
+
+### 7.1 Positive Impact
+
+Trinity B002 contributes to society by:
+
+1. **Hardware Accessibility:** Zero-DSP design enables FPGA inference on low-cost FPGAs without DSP resources, reducing hardware costs by 60-80% compared to DSP-rich FPGAs.
+
+2. **Energy Efficiency:** 1.2W power consumption vs 8.5W for FP32 baselines, enabling sustainable edge AI with battery-operated devices.
+
+3. **Open Source Hardware:** All Verilog sources are MIT-licensed, preventing patent trolling in FPGA acceleration and enabling academic research.
+
+4. **Educational Value:** Complete synthesis pipeline (Yosys→nextpnr→bitstream) teaches FPGA design without proprietary vendor tools.
+
+### 7.2 Negative Impact
+
+1. **E-Waste:** FPGA deployment may contribute to electronic waste if devices are not properly recycled.
+
+2. **Technical Barriers:** FPGA programming requires specialized knowledge (Verilog, timing closure), limiting adoption.
+
+3. **Vendor Lock-In:** Design optimized for Xilinx 7-series; porting to other vendors requires re-synthesis.
+
+### 7.3 Mitigation Strategies
+
+- Comprehensive tutorials and documentation for FPGA design
+- Open source toolchain (Yosys, nextpnr) to avoid vendor lock-in
+- Design for longevity (XC7A100T widely available)
+- Recycling guidelines for FPGA hardware
+
+---
+
+## 8. Ethics Statement
+
+### 8.1 Research Ethics
+
+This research was conducted in accordance with open hardware principles. All Verilog sources are open source (MIT license). No human or animal subjects were involved.
+
+### 8.2 Hardware Security
+
+FPGA bitstreams can be used for:
+- Beneficial applications (edge AI, medical devices)
+- Potentially harmful applications (surveillance, weapons)
+
+We advocate for responsible hardware deployment under export control regulations.
+
+### 8.3 Environmental Impact
+
+FPGA manufacturing has environmental costs:
+- Silicon fabrication: ~500 kWh per wafer
+- Packaging and testing: ~50 kWh per device
+
+We offset these costs by:
+- Designing for long product lifetimes (5+ years)
+- Enabling low-power edge AI (reducing cloud energy)
+- Using existing FPGAs (extending hardware lifetime)
+
+---
+
+## 9. Data Availability Statement
+
+### 9.1 Synthesis Data
+
+All synthesis results, timing reports, and bitstreams are included in this Zenodo deposit:
+
+- `hslm_synth.json`: Yosys synthesis output
+- `hslm_routed.json`: nextpnr place-and-route results
+- `hslm.bit`: FPGA bitstream (XC7A100T)
+
+### 9.2 Benchmarks
+
+Resource utilization and power measurements are reproducible on XC7A100T-1FGG484.
+
+---
+
+## 10. Code Availability Statement
+
+### 10.1 Source Code
+
+- **Repository:** https://github.com/gHashTag/trinity
+- **Path:** `fpga/hslm/`
+- **License:** MIT
+
+### 10.2 Key Files
+
+| File | Path | Purpose |
+|------|------|---------|
+| Top Level | `fpga/hslm/hslm_top.v` | Main module |
+| Ternary MAC | `fpga/hslm/hslm_ternary_mac.v` | LUT-based multiplier |
+| CORDIC | `fpga/hslm/cordic_sacred.v` | 6-stage arithmetic |
+| Constraints | `fpga/hslm/hslm_constraints.xdc` | Pin mapping |
+
+### 10.3 Toolchain
+
+| Tool | Version | License |
+|------|---------|---------|
+| Yosys | 0.38+ | MIT |
+| nextpnr-xilinx | latest | ISC |
+| openFPGALoader | latest | MIT |
+
+---
+
+## 11. Acknowledgments
+
+### 11.1 Funding
+
+This work was self-funded by the author as a defensive publication to establish prior art.
+
+### 11.2 Institutional Support
+
+- **GitHub:** Hosting and CI/CD infrastructure
+- **Zenodo:** Open access repository hosting
+- **openXC7 Community:** FPGA toolchain development
+
+### 11.3 Community Contributions
+
+We thank:
+- The Yosys/nextpnr development communities
+- The openFPGALoader project contributors
+- The Xilinx 7-series FPGA community
+- QMTech for affordable FPGA hardware
+
+### 11.4 Contributors
+
+- **Dmitrii Vasilev** — Lead developer, all 12 FPGA innovations
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**
