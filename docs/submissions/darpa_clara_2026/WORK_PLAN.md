@@ -1,4 +1,4 @@
-# DARPA CLARA Proposal — Work Plan
+# DARPA CLARA Proposal — Work Plan v6.2
 
 **Proposal Title:** Trinity S³AI: High-Assurance Ternary Computing Framework for Compositional Reasoning and Formal Verification
 
@@ -64,12 +64,15 @@
 3. Benchmark vs NumPy baseline
 4. Test bitflip resilience (10%, 20%, 30% corruption)
 5. Document API and usage examples
+6. **Implement calibration metrics (ECE, Brier Score)** (NEW v6.2)
+7. **Validate VSA similarity calibration** (NEW v6.2)
 
 **Deliverables:**
 - VSA runtime library (Zig)
 - Benchmark results (speed, accuracy)
 - Bitflip resilience report
 - API documentation
+- **Calibration validation report (ECE < 0.07 for deterministic VSA)** (NEW v6.2)
 
 **Dependencies:** None
 **Risks:** Performance (mitigation: SIMD optimization)
@@ -86,12 +89,15 @@
 3. Measure quantization error distribution
 4. Study mantissa extension (10-bit, 11-bit)
 5. Publish format specification document
+6. **Validate numerical format calibration (ECE < 0.08 target)** (NEW v6.2)
+7. **Measure Brier Score for GF16/TF3 predictions** (NEW v6.2)
 
 **Deliverables:**
 - Accuracy comparison report
 - Quantization error analysis
 - GF16/TF3 format specification
 - Reference implementation (Zig)
+- **Calibration report for sacred formats (B006 bundle)** (NEW v6.2)
 
 **Dependencies:** VSA runtime (Month 5-6)
 **Risks:** Accuracy loss (mitigation: hybrid encoding)
@@ -104,12 +110,15 @@
 3. Implement self-learning adaptation
 4. A/B test vs manual tuning baseline
 5. Measure convergence speed
+6. **Implement Q-value calibration tracking** (NEW v6.2)
+7. **Validate action confidence reliability (ECE < 0.11 target)** (NEW v6.2)
 
 **Deliverables:**
 - Queen integration with HSLM
 - Episode database implementation
 - A/B test results
 - Convergence analysis report
+- **Q-value calibration report (B004 bundle)** (NEW v6.2)
 
 **Dependencies:** Sacred formats (Month 7-8)
 **Risks:** Integration complexity (mitigation: incremental testing)
@@ -122,12 +131,15 @@
 3. Add pipelining where needed
 4. Verify zero DSP usage (post-synthesis audit)
 5. Measure final power consumption
+6. **Validate FPGA inference calibration (ECE < 0.10 target)** (NEW v6.2)
+7. **Compare software vs FPGA calibration consistency** (NEW v6.2)
 
 **Deliverables:**
 - Optimized FPGA bitstream
 - Resource utilization report (<20% LUT, 0 DSP)
 - Power measurement (<2W target)
 - Optimization methodology document
+- **FPGA calibration validation report (B002 bundle)** (NEW v6.2)
 
 **Dependencies:** Queen integration (Month 9-10)
 **Risks:** Timing closure (mitigation: frequency reduction)
@@ -277,16 +289,21 @@ Phase 4:                                                   [======][======][====
 |-----------|-------|-------------|---------------|
 | M1 | 2 | Formal proofs complete | 10 theorems proven |
 | M2 | 4 | FPGA synthesis successful | Bitstream boots |
-| M3 | 6 | VSA runtime ready | Benchmarks pass |
-| M4 | 8 | Sacred formats validated | <5% accuracy loss |
-| M5 | 10 | Queen integrated | Self-learning works |
-| M6 | 12 | Zero-DSP optimized | <20% LUT, 0 DSP |
+| M3 | 6 | VSA runtime ready | Benchmarks pass, ECE < 0.07 |
+| M3.5 | 7 | Calibration metrics implemented | ECE/Brier functions working |
+| M4 | 8 | Sacred formats validated | <5% accuracy loss, ECE < 0.08 |
+| M5 | 10 | Queen integrated | Self-learning works, Q-value ECE < 0.11 |
+| M6 | 12 | Zero-DSP optimized | <20% LUT, 0 DSP, inference ECE < 0.10 |
 | M7 | 14 | TRI-27 hardware ready | Benchmark passes |
 | M8 | 16 | Benchmarks published | 3 tasks live |
-| M9 | 18 | Pipeline validated | E2E test passes |
+| M9 | 18 | Pipeline validated | E2E test passes, all bundles calibrated |
 | M10 | 20 | Documentation complete | All manuals reviewed |
 | M11 | 22 | Training ready | Materials tested |
 | M12 | 24 | v1.0.0 released | GitHub + Zenodo live |
+
+**Calibration Milestones (NEW v6.2):**
+- **M3.5 (Month 7):** Calibration metrics infrastructure complete
+- **M9 (Month 18):** All 7 bundles meet NeurIPS 2025 UQ standards (ECE < 0.12)
 
 ---
 
@@ -402,5 +419,6 @@ The plan is realistic, achievable, and aligned with DARPA CLARA objectives.
 ---
 
 **Document Control:** CLARA-WORK-001
-**Word Count:** ~1,800
+**Version:** 6.2 (Calibration Milestones Added)
+**Word Count:** ~1,900
 **Status:** Draft for DARPA CLARA Full Proposal Submission
