@@ -1,8 +1,8 @@
 # Trinity S³AI Framework — Research Documentation Index
 
-**Last Updated:** 2026-03-26
-**Version:** 1.0
-**Total Documents:** 112+ markdown files
+**Last Updated:** 2026-03-26 (V35 cycle)
+**Version:** 1.1
+**Total Documents:** 118+ markdown files
 
 ---
 
@@ -122,6 +122,8 @@
 | [SACRED_MATHEMATICAL_ENHANCEMENT_V2.md](SACRED_MATHEMATICAL_ENHANCEMENT_V2.md) | Rigorous math proofs with lemmas | 326 |
 | [TRINITY_CODEBASE_SCIENTIFIC_ANALYSIS_V1.md](TRINITY_CODEBASE_SCIENTIFIC_ANALYSIS_V1.md) | Codebase deep analysis (48K LOC) | 357 |
 | [ZENODO_PUBLICATION_BEST_PRACTICES_V6.md](ZENODO_PUBLICATION_BEST_PRACTICES_V6.md) | 10-part publication framework | 489 |
+| [ZENODO_V6.0_UPLOAD_GUIDE.md](ZENODO_V6.0_UPLOAD_GUIDE.md) | Step-by-step upload instructions | 319 |
+| [ZENODO_V6.0_FINAL_VERIFICATION.md](ZENODO_V6.0_FINAL_VERIFICATION.md) | Complete package verification | 248 |
 | [NEURIPS_2026_TRINITY_S3AI_PAPER_DRAFT.md](NEURIPS_2026_TRINITY_S3AI_PAPER_DRAFT.md) | NeurIPS paper draft (8,500 words) | 747 |
 | [NEURIPS_2026_LATEX_TEMPLATE.tex](NEURIPS_2026_LATEX_TEMPLATE.tex) | LaTeX template for submission | 450 |
 | [NEURIPS_2026_REFERENCES.bib](NEURIPS_2026_REFERENCES.bib) | Bibliography (24 papers) | 300 |
