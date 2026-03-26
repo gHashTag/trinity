@@ -67,11 +67,13 @@ pub const PhoenixBridge = struct {
                         regen_count += 1;
                         std.debug.print("  ⚠️  {s}.tri: {s} → VIBEE regen\n", .{ base_name, result.reason });
                         // TODO: Run VIBEE codegen: zig build vibee -- gen specs/{s}.tri
+                        // (requires vibee binary in zig-out/)
                     },
                     .destroy => {
                         regen_count += 1;
                         std.debug.print("  🔥 {s}.tri: {s} → destroy + regen\n", .{ base_name, result.reason });
-                        // TODO: Delete .zig, run VIBEE codegen
+                        // TODO: Delete .zig files, run VIBEE codegen (requires vibee CLI)
+                        // .zig files are temporary build artifacts - vibee regen replaces them with proper specs/ output
                     },
                 }
             }
