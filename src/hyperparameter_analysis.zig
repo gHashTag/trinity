@@ -143,7 +143,7 @@ pub const AnalysisEngine = struct {
 
         // Find best value
         var best_value: f64 = param_range.min_value;
-        var best_score: f64 = std.math.inf;
+        var best_score: f64 = std.math.inf(f64);
 
         for (response) |v| {
             const score = v; // Lower is better for loss
@@ -166,6 +166,7 @@ pub const AnalysisEngine = struct {
 
     /// Calculate sensitivity score (0 = insensitive, 1 = very sensitive)
     fn calculateSensitivity(self: *const AnalysisEngine, values: []const f64) !f64 {
+        _ = self;
         if (values.len < 2) return 0.0;
 
         // Calculate variance
@@ -268,6 +269,7 @@ pub const AnalysisEngine = struct {
         results: []const SensitivityResult,
         path: []const u8
     ) !void {
+        _ = self;
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
 
@@ -296,8 +298,6 @@ pub const AnalysisEngine = struct {
         self: *const AnalysisEngine,
         summary: SensitivitySummary
     ) ![]const u8 {
-        _ = self;
-
         var buffer = std.ArrayList(u8).init(self.allocator);
         defer buffer.deinit();
 
@@ -350,8 +350,8 @@ test "HyperparameterAnalysis - sensitivity calculation" {
     const values = [_]f64{ 1.0, 2.0, 3.0, 4.0, 5.0 };
     const sensitivity = try engine.calculateSensitivity(&values);
 
-    // Variance of 1,2,3,4,5 = 2.0
-    try std.testing.expectApproxEqAbs(@as(f64, 2.0), sensitivity, 0.1);
+    // Variance of 1,2,3,4,5 = 2.0, normalized by max_range=9.0 => 2.0/9.0 ≈ 0.222
+    try std.testing.expectApproxEqAbs(@as(f64, 0.222), sensitivity, 0.001);
 }
 
 test "HyperparameterAnalysis - linear parameter range" {
@@ -376,6 +376,7 @@ test "HyperparameterAnalysis - linear parameter range" {
 
     const engine = AnalysisEngine.init(allocator, false);
     const result = try engine.analyzeParam(config, range);
+    defer allocator.free(result.response_surface); // Clean up allocated response surface
 
     try std.testing.expect(@as(f64, 1e-5) == result.min_value);
     try std.testing.expect(@as(f64, 1e-3) == result.max_value);
@@ -404,6 +405,7 @@ test "HyperparameterAnalysis - logarithmic parameter range" {
 
     const engine = AnalysisEngine.init(allocator, false);
     const result = try engine.analyzeParam(config, range);
+    defer allocator.free(result.response_surface); // Clean up allocated response surface
 
     try std.testing.expect(@as(f64, 1e-5) == result.min_value);
     try std.testing.expect(@as(f64, 1e-3) == result.max_value);
