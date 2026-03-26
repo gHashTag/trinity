@@ -10,8 +10,169 @@
 //! - Scientific reporting functions
 
 const std = @import("std");
-const sacred_stats = @import("../temple/sacred_statistics.zig");
-const sacred_funcs = @import("../temple/sacred_functions.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SACRED CONSTANTS (inline for HSLM module independence)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PHI: f64 = 1.618033988749895;
+const PHI_INV: f64 = 1.0 / PHI; // ≈ 0.618
+const PHI_INV_SQ: f64 = PHI_INV * PHI_INV; // ≈ 0.382
+const PHI_INV_CUBED: f64 = PHI_INV * PHI_INV * PHI_INV; // ≈ 0.236
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATISTICAL FUNCTIONS (minimal subset for HSLM)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Calculate mean of slice
+fn mean(data: []const f64) f64 {
+    if (data.len == 0) return 0.0;
+    var sum: f64 = 0.0;
+    for (data) |x| sum += x;
+    return sum / @as(f64, @floatFromInt(data.len));
+}
+
+/// Calculate variance (sample)
+fn variance(data: []const f64) f64 {
+    if (data.len < 2) return 0.0;
+    const m = mean(data);
+    var sum_sq: f64 = 0.0;
+    for (data) |x| {
+        const diff = x - m;
+        sum_sq += diff * diff;
+    }
+    return sum_sq / @as(f64, @floatFromInt(data.len - 1));
+}
+
+/// Calculate standard deviation
+fn stdDev(data: []const f64) f64 {
+    return std.math.sqrt(variance(data));
+}
+
+/// Calculate standard error
+fn stdError(data: []const f64) f64 {
+    if (data.len == 0) return 0.0;
+    return stdDev(data) / std.math.sqrt(@as(f64, @floatFromInt(data.len)));
+}
+
+/// Confidence level options
+const ConfidenceLevel = enum(u8) {
+    c95,
+    c99,
+
+    fn zScore(self: ConfidenceLevel) f64 {
+        return switch (self) {
+            .c95 => 1.960,
+            .c99 => 2.576,
+        };
+    }
+};
+
+/// Confidence interval result
+const ConfidenceInterval = struct {
+    mean: f64,
+    lower: f64,
+    upper: f64,
+
+    fn format(self: *const ConfidenceInterval, allocator: std.mem.Allocator) ![]u8 {
+        return std.fmt.allocPrint(allocator, "[{d:.1}, {d:.1}]", .{ self.lower, self.upper });
+    }
+};
+
+/// Calculate confidence interval
+fn confidenceInterval(data: []const f64, level: ConfidenceLevel) ConfidenceInterval {
+    if (data.len == 0) return .{ .mean = 0, .lower = 0, .upper = 0 };
+
+    const m = mean(data);
+    const se = stdError(data);
+    const margin = se * level.zScore();
+
+    return .{
+        .mean = m,
+        .lower = m - margin,
+        .upper = m + margin,
+    };
+}
+
+/// Welch's t-test result
+const WelchTestResult = struct {
+    t_statistic: f64,
+    p_value: f64,
+    significant: bool,
+};
+
+/// Perform Welch's t-test
+fn welchTTest(sample1: []const f64, sample2: []const f64, alpha: f64) WelchTestResult {
+    if (sample1.len < 2 or sample2.len < 2) {
+        return .{ .t_statistic = 0, .p_value = 1, .significant = false };
+    }
+
+    const m1 = mean(sample1);
+    const m2 = mean(sample2);
+    const v1 = variance(sample1);
+    const v2 = variance(sample2);
+    const n1: f64 = @floatFromInt(sample1.len);
+    const n2: f64 = @floatFromInt(sample2.len);
+
+    const t_stat = (m1 - m2) / std.math.sqrt(v1 / n1 + v2 / n2);
+
+    // Approximate p-value
+    const abs_t = if (t_stat < 0) -t_stat else t_stat;
+    const p_value = 2.0 * (1.0 - gaussianCDF(abs_t));
+
+    return .{
+        .t_statistic = t_stat,
+        .p_value = p_value,
+        .significant = p_value < alpha,
+    };
+}
+
+fn gaussianCDF(x: f64) f64 {
+    const a1: f64 = 0.254829592;
+    const a2: f64 = -0.284496736;
+    const a3: f64 = 1.421413741;
+    const a4: f64 = -1.453152027;
+    const a5: f64 = 1.061405429;
+    const p: f64 = 0.3275911;
+
+    const sign: f64 = if (x < 0) -1.0 else 1.0;
+    const a = @abs(x);
+
+    const t = 1.0 / (1.0 + p * a);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std.math.exp(-a * a);
+
+    return sign * y;
+}
+
+/// Cohen's d effect size
+const EffectSize = struct {
+    cohens_d: f64,
+
+    fn getInterpretation(self: *const EffectSize) []const u8 {
+        const abs_d = if (self.cohens_d < 0) -self.cohens_d else self.cohens_d;
+        if (abs_d < 0.2) return "negligible";
+        if (abs_d < 0.5) return "small";
+        if (abs_d < 0.8) return "medium";
+        return "large";
+    }
+};
+
+fn cohensD(sample1: []const f64, sample2: []const f64) EffectSize {
+    if (sample1.len == 0 or sample2.len == 0) return .{ .cohens_d = 0 };
+
+    const m1 = mean(sample1);
+    const m2 = mean(sample2);
+    const v1 = variance(sample1);
+    const v2 = variance(sample2);
+    const n1: f64 = @floatFromInt(sample1.len);
+    const n2: f64 = @floatFromInt(sample2.len);
+
+    const pooled_var = ((n1 - 1.0) * v1 + (n2 - 1.0) * v2) / (n1 + n2 - 2.0);
+    const pooled_sd = std.math.sqrt(pooled_var);
+
+    const d = if (pooled_sd > 0) (m1 - m2) / pooled_sd else 0.0;
+    return .{ .cohens_d = d };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HSLM TRAINING CONFIG WITH SACRED SCHEDULES
@@ -103,25 +264,25 @@ pub fn getLR(schedule: LRSchedule, config: HSLMConfig, step: u32) f64 {
         .linear => {
             const progress: f64 = @as(f64, @floatFromInt(step)) /
                 @as(f64, @floatFromInt(config.total_steps));
-            config.lr_peak * (1.0 - progress) + config.lr_min * progress;
+            return config.lr_peak * (1.0 - progress) + config.lr_min * progress;
         },
 
         .cosine => {
             const progress: f64 = @as(f64, @floatFromInt(step)) /
                 @as(f64, @floatFromInt(config.total_steps));
             const cosine = 0.5 * (1.0 + std.math.cos(std.math.pi * progress));
-            config.lr_peak * cosine + config.lr_min * (1.0 - cosine);
+            return config.lr_peak * cosine + config.lr_min * (1.0 - cosine);
         },
 
-        .sacred => config.lr_peak * sacred_funcs.PHI_INV *
-            std.math.pow(f64, sacred_funcs.PHI, -@as(f64, @floatFromInt(step)) /
-                @as(f64, @floatFromInt(config.total_steps)) / sacred_funcs.PHI),
+        .sacred => config.lr_peak * PHI_INV *
+            std.math.pow(f64, PHI, -@as(f64, @floatFromInt(step)) /
+                @as(f64, @floatFromInt(config.total_steps)) / PHI),
 
         .sacred_cosine => {
             const progress: f64 = @as(f64, @floatFromInt(step)) /
                 @as(f64, @floatFromInt(config.total_steps));
-            const cosine = 0.5 * (1.0 + std.math.cos(std.math.pi * progress / sacred_funcs.PHI));
-            config.lr_peak * cosine + config.lr_min * (1.0 - cosine);
+            const cosine = 0.5 * (1.0 + std.math.cos(std.math.pi * progress / PHI));
+            return config.lr_peak * cosine + config.lr_min * (1.0 - cosine);
         },
 
         .warmup_sacred => {
@@ -136,7 +297,7 @@ pub fn getLR(schedule: LRSchedule, config: HSLMConfig, step: u32) f64 {
             const decay_step = step - config.warmup_steps;
             const progress: f64 = @as(f64, @floatFromInt(decay_step)) /
                 @as(f64, @floatFromInt(remaining));
-            return config.lr_peak * std.math.pow(f64, sacred_funcs.PHI, -progress / sacred_funcs.PHI);
+            return config.lr_peak * std.math.pow(f64, PHI, -progress / PHI);
         },
     };
 }
@@ -152,7 +313,7 @@ pub const StepMetrics = struct {
     perplexity: f64,
     lr: f64,
     tokens_per_sec: f64,
-    timestamp: i64,
+    timestamp_ns: u64,
 
     /// Create from loss value
     pub fn fromLoss(step: u32, loss: f64, lr: f64) StepMetrics {
@@ -162,7 +323,7 @@ pub const StepMetrics = struct {
             .perplexity = std.math.exp(loss),
             .lr = lr,
             .tokens_per_sec = 0.0,
-            .timestamp = std.time.nanoTimestamp(),
+            .timestamp_ns = std.time.nanoTimestamp(),
         };
     }
 };
@@ -178,17 +339,17 @@ pub const RunStatistics = struct {
 
     /// Calculate mean final perplexity
     pub fn meanFinalPPL(self: *const RunStatistics) f64 {
-        return sacred_stats.mean(self.final_ppls);
+        return mean(self.final_ppls);
     }
 
     /// Calculate std error of final perplexity
     pub fn stderrFinalPPL(self: *const RunStatistics) f64 {
-        return sacred_stats.stdError(self.final_ppls);
+        return stdError(self.final_ppls);
     }
 
     /// Calculate CI95 for final perplexity
-    pub fn ci95FinalPPL(self: *const RunStatistics) sacred_stats.ConfidenceInterval {
-        return sacred_stats.confidenceInterval(self.final_ppls, .c95);
+    pub fn ci95FinalPPL(self: *const RunStatistics) ConfidenceInterval {
+        return confidenceInterval(self.final_ppls, .c95);
     }
 
     /// Format as NeurIPS table row
@@ -236,7 +397,7 @@ pub const TrainingSession = struct {
             .perplexity = std.math.exp(loss),
             .lr = lr,
             .tokens_per_sec = tokens_per_sec,
-            .timestamp = std.time.nanoTimestamp(),
+            .timestamp_ns = @as(u64, @intCast(std.time.nanoTimestamp())),
         };
         try self.steps.append(metrics);
     }
@@ -297,8 +458,8 @@ pub const ComparisonResult = struct {
     ppl_a: f64,
     ppl_b: f64,
     improvement: f64,
-    welch_result: sacred_stats.WelchTestResult,
-    effect_size: sacred_stats.EffectSize,
+    welch_result: WelchTestResult,
+    effect_size: EffectSize,
     significant: bool,
 
     /// Format comparison as LaTeX table row
@@ -321,11 +482,11 @@ pub const ComparisonResult = struct {
 
 /// Perform statistical comparison between two methods
 pub fn compareMethods(allocator: std.mem.Allocator, method_a: []const u8, ppl_values_a: []const f64, method_b: []const u8, ppl_values_b: []const f64, alpha: f64) !ComparisonResult {
-    const mean_a = sacred_stats.mean(ppl_values_a);
-    const mean_b = sacred_stats.mean(ppl_values_b);
+    const mean_a = mean(ppl_values_a);
+    const mean_b = mean(ppl_values_b);
 
-    const welch = sacred_stats.welchTTest(ppl_values_a, ppl_values_b, alpha);
-    const effect = sacred_stats.cohensD(ppl_values_a, ppl_values_b);
+    const welch = welchTTest(ppl_values_a, ppl_values_b, alpha);
+    const effect = cohensD(ppl_values_a, ppl_values_b);
 
     return ComparisonResult{
         .method_a = try allocator.dupe(u8, method_a),
@@ -356,7 +517,7 @@ pub fn sacredCrossEntropyLoss(logits: []const f64, targets: []const u32) f64 {
         }
     }
 
-    return -sum / sacred_funcs.PHI;
+    return -sum / PHI;
 }
 
 /// Calculate perplexity from loss
@@ -366,7 +527,7 @@ pub fn lossToPerplexity(loss: f64) f64 {
 
 /// Calculate sacred perplexity (φ-adjusted)
 pub fn sacredPerplexity(loss: f64) f64 {
-    return std.math.exp(loss / sacred_funcs.PHI);
+    return std.math.exp(loss / PHI);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -375,29 +536,32 @@ pub fn sacredPerplexity(loss: f64) f64 {
 
 /// Generate NeurIPS-style results table
 pub fn generateNeurIPSTable(allocator: std.mem.Allocator, comparisons: []const ComparisonResult) ![]u8 {
-    var table = std.ArrayList(u8).init(allocator);
-    defer table.deinit();
+    if (comparisons.len == 0) return allocator.dupe(u8, "");
 
-    try table.appendSlice("\\begin{table}[h]\n");
-    try table.appendSlice("\\centering\n");
-    try table.appendSlice("\\caption{Perplexity Comparison on TinyStories}\n");
-    try table.appendSlice("\\begin{tabular}{lccc}\n");
-    try table.appendSlice("\\toprule\n");
-    try table.appendSlice("Method & PPL & StdErr & CI95 \\\\\n");
-    try table.appendSlice("\\midrule\n");
+    // Build result directly
+    var result = std.ArrayList(u8).init(allocator);
+    defer result.deinit();
+
+    try result.appendSlice("\\begin{table}[h]\n");
+    try result.appendSlice("\\centering\n");
+    try result.appendSlice("\\caption{Perplexity Comparison on TinyStories}\n");
+    try result.appendSlice("\\begin{tabular}{lccc}\n");
+    try result.appendSlice("\\toprule\n");
+    try result.appendSlice("Method & PPL & StdErr & CI95 \\\\\n");
+    try result.appendSlice("\\midrule\n");
 
     for (comparisons) |comp| {
         const row = try comp.formatLatex(allocator);
         defer allocator.free(row);
-        try table.appendSlice(row);
-        try table.appendSlice("\n");
+        try result.appendSlice(row);
+        try result.appendSlice("\\n");
     }
 
-    try table.appendSlice("\\bottomrule\n");
-    try table.appendSlice("\\end{tabular}\n");
-    try table.appendSlice("\\end{table}\n");
+    try result.appendSlice("\\bottomrule\n");
+    try result.appendSlice("\\end{tabular}\n");
+    try result.appendSlice("\\end{table}\n");
 
-    return table.toOwnedSlice();
+    return result.toOwnedSlice();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
