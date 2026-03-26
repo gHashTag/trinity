@@ -371,7 +371,33 @@ Vasilev, D. (2026). Trinity B006: Sacred GF16/TF3 - Phi-Based Arithmetic for Ter
 
 ---
 
-## 9. Acknowledgments
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/sacred/gf16.zig` — 16-bit φ-optimal floating-point format
+- `src/sacred/tf3.zig` — Ternary 8-weight packing (2 bits/weight)
+- `src/sacred/conversion.zig` — FP32 ↔ GF16 round-trip conversion
+- `src/sacred/bench.zig` — Precision benchmarks
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build sacred
+# Test round-trip conversion
+./zig-out/bin/sacred-test roundtrip
+# Benchmark TF3 packing
+./zig-out/bin/sacred-bench pack
+```
+
+---
+
+## 10. Acknowledgments
 
 Sacred GF16/TF3 inspired by:
 - IEEE 754 floating-point standard

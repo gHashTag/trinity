@@ -430,6 +430,33 @@ Vasilev, D. (2026). Trinity B003: TRI-27 ISA - Ternary Instruction Set Architect
 
 ---
 
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/tri27/emu/*.zig` — TRI-27 emulator with all 36 opcodes
+- `src/tri27/assembler.zig` — T27 assembly language parser
+- `src/tri27/disassembler.zig` — Binary → T27 text converter
+- `src/vm/opcodes.zig` — Opcode definitions and Coptic encoding
+- `fpga/tri27_cpu.v` — Verilog implementation for FPGA
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build tri27
+# Run emulator
+./zig-out/bin/tri27-emu program.t27
+# Assemble T27 source
+./zig-out/bin/tri27-as source.t27 -o program.t27
+```
+
+---
+
 ## 10. Acknowledgments
 
 TRI-27 ISA design inspired by:
