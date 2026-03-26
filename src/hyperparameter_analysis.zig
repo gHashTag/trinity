@@ -118,11 +118,8 @@ pub const AnalysisEngine = struct {
         config: SensitivityConfig,
         param_range: HyperparamRange
     ) !SensitivityResult {
-        _ = config;
-
-        // Allocate response surface array
+        // Allocate response surface array (owned by result, not freed here)
         const response = try self.allocator.alloc(f64, param_range.n_steps);
-        defer self.allocator.free(response);
 
         // Generate values from min to max
         for (0..param_range.n_steps) |i| {
@@ -132,7 +129,7 @@ pub const AnalysisEngine = struct {
             const value = switch (param_range.scale) {
                 .linear => param_range.min_value +
                            t * (param_range.max_value - param_range.min_value),
-                .logarithmic => param_range.min_value * std.math.pow(
+                .logarithmic => param_range.min_value * std.math.pow(f64,
                     param_range.max_value / param_range.min_value,
                     t
                 ),
@@ -154,7 +151,7 @@ pub const AnalysisEngine = struct {
                 best_score = score;
                 best_value = v;
             }
-        };
+        }
 
         return SensitivityResult{
             .config = config,
@@ -169,8 +166,6 @@ pub const AnalysisEngine = struct {
 
     /// Calculate sensitivity score (0 = insensitive, 1 = very sensitive)
     fn calculateSensitivity(self: *const AnalysisEngine, values: []const f64) !f64 {
-        _ = self;
-
         if (values.len < 2) return 0.0;
 
         // Calculate variance
@@ -189,7 +184,7 @@ pub const AnalysisEngine = struct {
         // Normalize variance to [0, 1] range
         // For typical LLM loss ranges (1.0 - 10.0), use max_range = 9.0
         const max_range = 9.0;
-        return std.math.min(variance / max_range, 1.0);
+        return @min(variance / max_range, 1.0);
     }
 
     /// Run full sensitivity analysis across all hyperparameters
@@ -197,8 +192,6 @@ pub const AnalysisEngine = struct {
         self: *const AnalysisEngine,
         config: SensitivityConfig
     ) !SensitivitySummary {
-        _ = self;
-
         // Allocate results array
         const results = try self.allocator.alloc(SensitivityResult, config.base_config.len);
         defer self.allocator.free(results);
