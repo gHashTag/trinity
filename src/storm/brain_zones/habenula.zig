@@ -2,6 +2,7 @@
 //! Detects unfair reward (effort >> reward) -> SUSPICIOUS
 
 const std = @import("std");
+const tri_experience = @import("../../farm/tri_experience.zig");
 
 pub const Reason = struct {
     reward_ratio: f32,
@@ -13,44 +14,6 @@ pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const u8) ![]const 
 
     const MIN_RATIO: f32 = 0.3; // reward < 0.3 × effort = SUSPICIOUS
     const RECENT_EPISODES: usize = 10;
-
-    // Import experience module (inline to avoid path issues in test)
-    const ExperienceStore = struct {
-        episodes: []const struct {
-            timestamp: i64,
-            success: bool,
-            iterations: u32,
-            learning_count: u32,
-            mistake_count: u32,
-        },
-    };
-
-    // Mock experience data (in production, load from .trinity/experience/)
-    const mock_episodes = [_]struct {
-        timestamp: i64,
-        success: bool,
-        iterations: u32,
-        learning_count: u32,
-        mistake_count: u32,
-    }{
-        .{ .timestamp = -3600, .success = true, .iterations = 1, .learning_count = 1, .mistake_count = 0 },
-        .{ .timestamp = -1800, .success = true, .iterations = 50, .learning_count = 0, .mistake_count = 2 },
-        .{ .timestamp = -900, .success = false, .iterations = 10, .learning_count = 0, .mistake_count = 1 },
-    };
-
-    var total_reward: f32 = 0.0;
-    var total_effort: f32 = 0.0;
-
-    for (mock_episodes) |ep| {
-        const reward: f32 = if (ep.success) 1.0 else 0.0;
-        const effort: f32 = @as(f32, @floatFromInt(ep.iterations)) +
-            @as(f32, @floatFromInt(ep.mistake_count)) * 2.0;
-        total_reward += reward;
-        total_effort += effort;
-    };
-
-    const avg_ratio = if (total_effort > 0) total_reward / total_effort else 1.0;
-    const is_suspicious = avg_ratio < MIN_RATIO;
 
     // Create experience store and calculate ratio
     var store = try tri_experience.createDefaultStore(allocator);
