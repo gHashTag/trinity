@@ -64,14 +64,10 @@ pub const ProfilingEngine = struct {
     config: ProfilingConfig,
 
     pub fn init(allocator: Allocator, config: ProfilingConfig) ProfilingEngine {
-        _ = config;
-
-        const engine = ProfilingEngine{
+        return ProfilingEngine{
             .allocator = allocator,
             .config = config,
         };
-
-        return engine;
     }
 
     fn detectCapabilities(self: *const ProfilingEngine) void {
@@ -153,8 +149,6 @@ pub const ProfilingEngine = struct {
     }
 
     pub fn generateReport(self: *const ProfilingEngine, summary: ProfileSummary) ![]const u8 {
-        _ = self;
-
         var buffer = std.ArrayList(u8).init(self.allocator);
         defer buffer.deinit();
 
