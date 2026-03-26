@@ -207,6 +207,18 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         }
         const conference = args[2];
         try generateChecklist(allocator, conference);
+    } else if (std.mem.eql(u8, subcmd, "theorem")) {
+        // Generate mathematical theorems
+        try generateTheoremExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "figure")) {
+        // Generate figure captions
+        try generateFigureExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "keywords")) {
+        // Generate keywords
+        try generateKeywordsExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "supplementary")) {
+        // Generate supplementary materials
+        try generateSupplementaryExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -1929,6 +1941,128 @@ fn generateChecklist(allocator: std.mem.Allocator, conference_str: []const u8) !
     print("{s}\n", .{md});
 }
 
+/// Generate mathematical theorem examples
+fn generateTheoremExamples(allocator: std.mem.Allocator) !void {
+    const theorem = zenodo_templates.TheoremStatement{
+        .env = .theorem,
+        .label = "thm:trinity-identity",
+        .title = "Trinity Identity",
+        .statement = "$\\phi^2 + \\phi^{-2} = 3$ where $\\phi = \\frac{1 + \\sqrt{5}}{2}$",
+        .proof = "From $\\phi^2 = \\phi + 1$, we have $\\phi^{-2} = \\frac{1}{\\phi^2} = \\frac{1}{\\phi + 1}$. Multiplying by $\\phi^2 + 1$: $\\phi^2 + \\phi^{-2} = \\frac{\\phi^4 + 1}{\\phi^2} = \\frac{(\\phi+1)^2 + 1}{\\phi+1} = 3$.",
+        .references = &[_][]const u8{"eq:golden-ratio"},
+        .equations = &[_][]const u8{},
+    };
+
+    const latex = try theorem.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+
+    const md = try theorem.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Mathematical Theorem Generator{s}\n", .{ BOLD, "THEOREM", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    print("{s}LaTeX Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n\n", .{latex});
+
+    print("{s}Markdown Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n", .{md});
+}
+
+/// Generate figure caption examples
+fn generateFigureExamples(allocator: std.mem.Allocator) !void {
+    const fig = zenodo_templates.FigureCaption{
+        .label = "fig:ternary-architecture",
+        .caption = "Ternary neural network architecture showing {-1,0,+1} weight quantization",
+        .description = "The diagram illustrates the HSLM forward pass with ternary weights, achieving 19.7× memory compression versus float32.",
+        .references = &[_][]const u8{ "eq:trinity-identity", "thm:sparsity" },
+    };
+
+    const latex = try fig.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+
+    const md = try fig.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Figure Caption Generator{s}\n", .{ BOLD, "FIGURE", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    print("{s}LaTeX Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n\n", .{latex});
+
+    print("{s}Markdown Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n", .{md});
+}
+
+/// Generate keywords examples
+fn generateKeywordsExamples(allocator: std.mem.Allocator) !void {
+    const keywords = zenodo_templates.Keywords{
+        .items = &[_]zenodo_templates.Keyword{
+            .{ .term = "neural networks", .category = .acm_ccs },
+            .{ .term = "quantization", .category = .acm_ccs },
+            .{ .term = "ternary computing", .category = .general },
+            .{ .term = "fpga", .category = .mesh },
+            .{ .term = "edge computing", .category = .mesh },
+        },
+    };
+
+    const latex = try keywords.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+
+    const md = try keywords.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Keywords Generator{s}\n", .{ BOLD, "KEYWORDS", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    print("{s}LaTeX Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n\n", .{latex});
+
+    print("{s}Markdown Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n", .{md});
+}
+
+/// Generate supplementary materials examples
+fn generateSupplementaryExamples(allocator: std.mem.Allocator) !void {
+    const items = [_]zenodo_templates.SupplementaryItem{
+        .{
+            .section = .derivations,
+            .title = "Trinity Identity Derivation",
+            .content = "Starting from the definition of the golden ratio $\\phi = \\frac{1 + \\sqrt{5}}{2}$, we derive...",
+            .label = "sup:trinity-derivation",
+        },
+        .{
+            .section = .hardware_spec,
+            .title = "FPGA Resource Utilization",
+            .content = "DSP48: 0%, LUT: 6.7%, BRAM: 100%, Power: 1.2W @ 100MHz",
+        },
+    };
+
+    const sup = zenodo_templates.SupplementaryMaterials{
+        .title = "Supplementary Materials",
+        .items = &items,
+    };
+
+    const latex = try sup.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+
+    const md = try sup.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Supplementary Materials Generator{s}\n", .{ BOLD, "SUPPLEMENTARY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    print("{s}LaTeX Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n\n", .{latex});
+
+    print("{s}Markdown Output:{s}\n", .{ CYAN, RESET });
+    print("{s}\n", .{md});
+}
+
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
@@ -1956,7 +2090,11 @@ fn printHelp() void {
     print("  tri zenodo environment           Generate environmental impact assessment\n", .{});
     print("  tri zenodo sample-size          Generate sample size analysis (statistical power)\n", .{});
     print("  tri zenodo roc                  Generate ROC/AUC analysis for binary classification\n", .{});
-    print("  tri zenodo checklist <conf>    Generate conference submission checklist (neurips|iclr|mlsys)\n\n", .{});
+    print("  tri zenodo checklist <conf>    Generate conference submission checklist (neurips|iclr|mlsys)\n", .{});
+    print("  tri zenodo theorem             Generate mathematical theorems with LaTeX/Markdown formatting\n", .{});
+    print("  tri zenodo figure               Generate figure captions with LaTeX/Markdown formatting\n", .{});
+    print("  tri zenodo keywords            Generate keywords with ACM CCS/MeSH categories\n", .{});
+    print("  tri zenodo supplementary       Generate supplementary materials appendix\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
