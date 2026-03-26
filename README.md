@@ -71,9 +71,9 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 | Resource | Description |
 |----------|-------------|
-| **[Scientific Status 2026](docs/docs/research/trinity-status-2026.md)** | Unified framework overview with 13-level hierarchy, evidence ladder, and honest assessment of rejected hypotheses |
+| **[Trinity S³AI Unified Framework](docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md)** | Master framework with 6 hypotheses (H1-H6) |
+| **[Research Index V3](docs/research/RESEARCH_INDEX_V3.md)** | 181 documents, complete scientific catalog |
 | **[README for Scientists](docs/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
-| **[DELTA-001 Final Report](docs/docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
 | **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
 
 **Evidence Ladder:**
@@ -88,21 +88,6 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 ## Defensive Publications (Prior Art)
 
 Trinity publishes key innovations as **defensive publications** to establish prior art and prevent patenting. All research is documented with Zenodo DOIs.
-
-### Published v5.0 Bundles (2026-03-26) — Enhanced with NeurIPS/ICLR/MLSys Standards
-
-| Bundle | Discovery | Zenodo DOI | Status |
-|--------|-----------|------------|--------|
-| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) | ✅ Published |
-| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227867](https://doi.org/10.5281/zenodo.19227867) | ✅ Published |
-| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) | ✅ Published |
-| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227871](https://doi.org/10.5281/zenodo.19227871) | ✅ Published |
-| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227873](https://doi.org/10.5281/zenodo.19227873) | ✅ Published |
-| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227875](https://doi.org/10.5281/zenodo.19227875) | ✅ Published |
-| **B007** | VSA Operations (ternary) | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) | ✅ Published |
-| **PARENT** | Trinity S³AI Framework (Complete Collection) | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Published |
-
-**v5.0 Enhancements:** Broader Impact (NeurIPS), Ethical Considerations (ICLR), Reproducibility Checklist (MLSys), 5-sentence abstracts, LaTeX notation, formal theorems with QED, 95% CIs, Docker reproducibility.
 
 ### Published v5.2 Bundles (2026-03-26) — Enhanced with Algorithm Boxes & Diagrams
 
@@ -121,19 +106,6 @@ Trinity publishes key innovations as **defensive publications** to establish pri
 
 **Upload Guide:** See [`docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md`](docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md) for complete upload procedures.
 
-### Published v4.0 Bundles (2026-03-26)
-
-| Bundle | Discovery | Zenodo DOI | Status |
-|--------|-----------|------------|--------|
-| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227733](https://doi.org/10.5281/zenodo.19227733) | ✅ Published |
-| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227735](https://doi.org/10.5281/zenodo.19227735) | ✅ Published |
-| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | ✅ Published |
-| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | ✅ Published |
-| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | ✅ Published |
-| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | ✅ Published |
-| **B007** | VSA Operations (ternary computing) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | ✅ Published |
-| **PARENT** | Trinity S³AI Framework | [10.5281/zenodo.19227751](https://doi.org/10.5281/zenodo.19227751) | ✅ Published |
-
 ### How to Cite
 
 ```bibtex
@@ -141,14 +113,14 @@ Trinity publishes key innovations as **defensive publications** to establish pri
   title        = {Trinity S³AI Framework: Ternary Computing for Edge AI},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {4.0},
-  doi          = {10.5281/zenodo.19227751},
-  url          = {https://doi.org/10.5281/zenodo.19227751},
+  version      = {5.2},
+  doi          = {10.5281/zenodo.19227879},
+  url          = {https://doi.org/10.5281/zenodo.19227879},
   publisher    = {Zenodo}
 }
 ```
 
-**Research Documentation:** See [`docs/research/INDEX.md`](docs/research/INDEX.md) for complete research documentation index.
+**Research Documentation:** See [`docs/research/RESEARCH_INDEX_V3.md`](docs/research/RESEARCH_INDEX_V3.md) for complete research documentation index (181 documents).
 
 **Scientific Manifesto:** See [`TRINITY_SCIENTIFIC_MANIFESTO.md`](docs/research/TRINITY_SCIENTIFIC_MANIFESTO.md) for complete innovation catalog (40+ inventions).
 
