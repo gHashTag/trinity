@@ -2157,6 +2157,24 @@ pub fn build(b: *std.Build) void {
     hslm_bench_step.dependOn(&run_hslm_bench.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // Unified Benchmark Framework — VSA, HSLM, FPGA with multi-format output
+    // NOTE: Temporarily disabled - src/bench/unified_benchmark.zig needs Zig 0.15 fixes
+    // ═══════════════════════════════════════════════════════════════════════════
+    //
+    // const unified_bench = b.addExecutable(.{
+    //     .name = "unified-bench",
+    //     .root_module = b.createModule(.{
+    //         .root_source_file = b.path("src/bench/unified_benchmark.zig"),
+    //         .target = target,
+    //         .optimize = .ReleaseFast,
+    //     }),
+    // });
+    // b.installArtifact(unified_bench);
+    // const run_unified_bench = b.addRunArtifact(unified_bench);
+    // const unified_bench_step = b.step("unified-bench", "Run unified benchmark suite (VSA, HSLM, FPGA)");
+    // unified_bench_step.dependOn(&run_unified_bench.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // BPE Tokenizer Trainer
     // ═══════════════════════════════════════════════════════════════════════════
 
