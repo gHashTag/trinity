@@ -151,7 +151,7 @@ Parameters: 1.95M (FP32 equivalent) → 421 KB (ternary)
 ### Hardware
 - **Training:** 8× H100 GPUs (80GB each) via Railway
 - **Inference:** Apple M1 Max (single)
-- **Training Time:** ~100 H100-hours
+- **Training Time:** ~2 weeks on Apple M1 Max (CPU training)
 - **Checkpoint Size:** 386 KB (20× compressed)
 
 ---
@@ -253,12 +253,12 @@ Final PPL: 124.1 (11.6% better than baseline)
 Zig 0.15.x
 Python 3.11+ (for utilities)
 
-# Hardware (training)
-8× H100 80GB GPUs
+# Hardware (training AND inference)
+Apple M1 Max (or any CPU/M1/M2/M3)
+RAM: 8 GB minimum (32 GB recommended)
 
-# Hardware (inference)
-Apple M1 Max (or any CPU)
-RAM: 8 GB minimum
+# Training: Local CPU training (no cloud GPUs required)
+# The model was trained on consumer hardware using CPU-based training
 ```
 
 ### Step-by-Step

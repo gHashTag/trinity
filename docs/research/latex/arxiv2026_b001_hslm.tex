@@ -339,7 +339,7 @@ Total parameters: 1.95M (FP32 equivalent), 421 KB (ternary).
 \subsubsection{Training}
 \begin{itemize}
     \item \textbf{Dataset:} SlimPajama (300B tokens, deduplicated)
-    \item \textbf{Hardware:} 8$\times$ Railway containers (H100 GPUs, 80GB each)
+    \item \textbf{Hardware:} Apple M1 Max (consumer hardware, CPU training)
     \item \textbf{Optimizer:} AdamW ($\beta_1=0.9, \beta_2=0.999$, $\epsilon=10^{-8}$)
     \item \textbf{Learning rate:} $\eta_0 = 10^{-4}$, cosine schedule with $\phi$-warmup (1000 steps)
     \item \textbf{Batch size:} $3^6 = 729$ sequences $\times$ 1024 tokens = 746K tokens/batch
@@ -486,7 +486,7 @@ We propose several hypotheses:
 
 \begin{itemize}
     \item \textbf{Misuse:} Efficient models could enable malicious AI deployment
-    \item \textbf{Centralization:} Training still requires massive compute ($\sim$100 H100-hours)
+    \item \textbf{Training Time:} $\sim$2 weeks on Apple M1 Max (CPU training, accessible)
     \item \textbf{Pseudoscience:} Golden ratio has been used for numerological claims; we maintain rigorous mathematical standards
 \end{itemize}
 
@@ -521,7 +521,6 @@ We thank:
 \begin{itemize}
     \item The Zig Software Foundation for compiler support
     \item The Trinity research community
-    \item Railway (cloud infrastructure)
     \item Anonymous reviewers for feedback
 \end{itemize}
 
@@ -533,9 +532,9 @@ We thank:
 
 \textbf{Pretrained Models:} Zenodo \doi{}
 
-\textbf{Dependencies:} Zig 0.15.x, H100 GPUs (for training), M1 Max (for inference)
+\textbf{Dependencies:} Zig 0.15.x, Apple M1 Max (for training and inference)
 
-\textbf{Training Time:} $\sim$100 H100-hours
+\textbf{Training Time:} $\sim$2 weeks on Apple M1 Max
 
 \textbf{Random Seeds:} Fixed seed 42 for all experiments
 
