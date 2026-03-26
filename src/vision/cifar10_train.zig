@@ -145,12 +145,10 @@ pub const CIFAR10Trainer = struct {
 
     /// Train on single image with backpropagation
     pub fn trainStep(self: *Self, image: CIFAR10Image, allocator: std.mem.Allocator) !CIFAR10Metrics {
-        // Convert image to float tensor
-        var input = try allocator.alloc(f32, 3072);
-        defer allocator.free(input);
-
-        for (0..3072) |i| {
-            input[i] = normalizePixel(image.data[i]);
+        // Convert image to float tensor (on stack, freed after step)
+        var input: [3072]f32 = undefined;
+        defer {
+            for (&input) |*v| v.* = normalizePixel(image.data[@intFromInt(v)]);
         }
 
         // Forward + backward pass with SGD
@@ -170,12 +168,12 @@ pub const CIFAR10Trainer = struct {
 
     /// Validate on dataset
     pub fn validate(self: *Self, dataset: *CIFAR10Dataset, allocator: std.mem.Allocator) !CIFAR10Metrics {
+        _ = allocator;
         const metrics = CIFAR10Metrics.init();
-        const input = try allocator.alloc(f32, 3072);
-        defer allocator.free(input);
 
         for (dataset.images.items) |img| {
-            // Convert to float
+            // Convert to float (stack allocated)
+            var input: [3072]f32 = undefined;
             for (0..3072) |i| {
                 input[i] = normalizePixel(img.data[i]);
             }
