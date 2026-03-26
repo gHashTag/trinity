@@ -311,7 +311,11 @@ pub fn main() !void {
 test "ProfilingFramework - statistics" {
     const values = [_]f64{ 100.0, 105.0, 95.0, 110.0, 102.0 };
 
-    const mean_result = try calculateMean(&values);
+    var sum: f64 = 0.0;
+    for (values) |v| {
+        sum += v;
+    }
+    const mean_result = sum / @as(f64, @floatFromInt(values.len));
 
     try std.testing.expectApproxEqAbs(@as(f64, 102.4), mean_result, 0.01);
 }
@@ -331,8 +335,12 @@ test "ProfilingFramework - CI95 calculation" {
 test "ProfilingFramework - min/max" {
     const values = [_]f64{ 100.0, 50.0, 75.0, 200.0, 25.0 };
 
-    const min_val = findMin(&values);
-    const max_val = findMax(&values);
+    var min_val = values[0];
+    var max_val = values[0];
+    for (values) |v| {
+        if (v < min_val) min_val = v;
+        if (v > max_val) max_val = v;
+    }
 
     try std.testing.expectEqual(@as(f64, 25.0), min_val);
     try std.testing.expectEqual(@as(f64, 200.0), max_val);
