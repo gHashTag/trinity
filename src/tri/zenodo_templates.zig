@@ -1949,16 +1949,19 @@ pub const FigureCaption = struct {
         try fig.writer(allocator).print("  % TODO: Add \\includegraphics here\n", .{});
 
         // Build caption with references
-        try fig.writer(allocator).print("  \\caption{{{s}", .{self.caption});
+        try fig.writer(allocator).writeAll("  \\caption{");
+        try fig.writer(allocator).print("{s}", .{self.caption});
         if (self.references.len > 0) {
-            try fig.writer(allocator).print(" (see ", .{});
+            try fig.writer(allocator).writeAll(" (see ");
             for (self.references, 0..) |ref, i| {
-                if (i > 0) try fig.writer(allocator).print(", ", .{});
-                try fig.writer(allocator).print("\\ref{{{s}}}", .{ref});
+                if (i > 0) try fig.writer(allocator).writeAll(", ");
+                try fig.writer(allocator).writeAll("\\ref{");
+                try fig.writer(allocator).print("{s}", .{ref});
+                try fig.writer(allocator).writeAll("}");
             }
-            try fig.writer(allocator).print(")", .{});
+            try fig.writer(allocator).writeAll(")");
         }
-        try fig.writer(allocator).print("}}\n", .{});
+        try fig.writer(allocator).writeAll("}\n");
 
         try fig.writer(allocator).print("  \\label{{{s}}}\n", .{self.label});
 
