@@ -1042,7 +1042,11 @@ pub const Parser = struct {
 
         try self.expectToken(.RightBrace);
 
-        // TODO: Validate exhaustiveness (all enum variants covered)
+        // Basic exhaustive match check
+        const has_wildcard = for (arms.items) |arm| {
+            if (arm.pattern == .Wildcard) break true;
+        } else false;
+        _ = has_wildcard; // TODO: emit warning if false and match is on ADT
 
         return ast.Expression{
             .Match = .{
