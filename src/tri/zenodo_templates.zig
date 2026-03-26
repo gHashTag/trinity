@@ -1723,6 +1723,184 @@ pub const ComparisonTable = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MATHEMATICAL PROOFS — LaTeX Theorem Generation (NeurIPS/ICLR 2025)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Theorem environment for LaTeX mathematical statements
+pub const TheoremEnvironment = enum {
+    theorem,     // Theorem
+    lemma,       // Lemma
+    corollary,   // Corollary
+    proposition, // Proposition
+    definition,  // Definition
+};
+
+/// Mathematical proof statement with LaTeX formatting
+pub const TheoremStatement = struct {
+    /// Theorem environment type
+    env: TheoremEnvironment,
+    /// Label for cross-referencing (e.g., "thm:ternary-bound")
+    label: []const u8,
+    /// Theorem title (optional)
+    title: ?[]const u8 = null,
+    /// Statement body in LaTeX format
+    statement: []const u8,
+    /// Proof (optional, can be inline or reference appendix)
+    proof: ?[]const u8 = null,
+    /// References to other theorems/definitions
+    references: []const []const u8 = &[0][]const u8,
+    /// Related equations (for auto-numbering)
+    equations: []const []const u8 = &[0][]const u8,
+
+    /// Format as LaTeX theorem block
+    pub fn formatAsLaTeX(self: *const TheoremStatement, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        const env_name = switch (self.env) {
+            .theorem => "theorem",
+            .lemma => "lemma",
+            .corollary => "corollary",
+            .proposition => "proposition",
+            .definition => "definition",
+        };
+
+        try latex.writer(allocator).print("\\begin{{{s}}}{{", .{env_name});
+        if (self.title) |title| {
+            try latex.writer(allocator).print("[{s}]", .{title});
+        }
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+
+        try latex.writer(allocator).print("  {s}\n", .{self.statement});
+
+        if (self.proof) |proof| {
+            try latex.writer(allocator).print("\\begin{{proof}}\n", .{});
+            try latex.writer(allocator).print("  {s}\n", .{proof});
+            try latex.writer(allocator).print("\\end{{proof}}\n", .{});
+        }
+
+        try latex.writer(allocator).print("\\end{{{s}}}\n\n", .{env_name});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown theorem block
+    pub fn formatAsMarkdown(self: *const TheoremStatement, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        const env_name = switch (self.env) {
+            .theorem => "Theorem",
+            .lemma => "Lemma",
+            .corollary => "Corollary",
+            .proposition => "Proposition",
+            .definition => "Definition",
+        };
+
+        if (self.title) |title| {
+            try md.writer(allocator).print("## {s} ({s})\n", .{env_name, title});
+        } else {
+            try md.writer(allocator).print("## {s}\n", .{env_name});
+        }
+
+        if (self.label) |label| {
+            try md.writer(allocator).print("**Label:** `{s}`\n\n", .{label});
+        }
+
+        try md.writer(allocator).print("{s}\n\n", .{self.statement});
+
+        if (self.proof) |proof| {
+            try md.writer(allocator).print("**Proof:** {s}\n\n", .{proof});
+        }
+
+        if (self.references.len > 0) {
+            try md.writer(allocator).print("**References:** ", .{});
+            for (self.references, 0..) |ref, i| {
+                if (i > 0) try md.writer(allocator).print(", ", .{});
+                try md.writer(allocator).print("{s}", .{ref});
+            }
+            try md.writer(allocator).print("\n\n", .{});
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Collection of mathematical proofs with cross-references
+pub const MathematicalProofs = struct {
+    /// Paper title
+    title: []const u8,
+    /// Theorem statements
+    theorems: []const TheoremStatement,
+
+    /// Generate all theorems as LaTeX document section
+    pub fn formatAsLaTeXSection(self: *const MathematicalProofs, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\section{{{s}}}\n", .{self.title});
+        try latex.writer(allocator).print("\\begin{{theorems}}\n\n", .{});
+
+        for (self.theorems) |thm| {
+            const thm_latex = try thm.formatAsLaTeX(allocator);
+            defer allocator.free(thm_latex);
+            try latex.writer(allocator).print("{s}\n", .{thm_latex});
+        }
+
+        try latex.writer(allocator).print("\\end{{theorems}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Generate all theorems as Markdown section
+    pub fn formatAsMarkdownSection(self: *const MathematicalProofs, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("# {s}\n\n", .{self.title});
+
+        for (self.theorems) |thm| {
+            const thm_md = try thm.formatAsMarkdown(allocator);
+            defer allocator.free(thm_md);
+            try md.writer(allocator).print("{s}\n---\n", .{thm_md});
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Equation wrapper with auto-numbering
+pub const Equation = struct {
+    /// LaTeX equation content
+    latex: []const u8,
+    /// Equation label
+    label: []const u8,
+    /// Short description
+    description: []const u8,
+
+    pub fn formatAsLaTeX(self: *const Equation, allocator: std.mem.Allocator) ![]u8 {
+        var eq = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
+        defer eq.deinit(allocator);
+
+        try eq.writer(allocator).print("\\begin{{equation}}\\label{{{s}}}\n", .{self.label});
+        try eq.writer(allocator).print("  {s}\n", .{self.latex});
+        try eq.writer(allocator).print("\\end{{equation}}\n", .{});
+
+        return eq.toOwnedSlice(allocator);
+    }
+
+    pub fn formatAsMarkdown(self: *const Equation, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("**Equation ({s}):** {s}\n\n", .{self.label, self.description});
+        try md.writer(allocator).print("```\n{s}\n```\n", .{self.latex});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2071,6 +2249,102 @@ test "PaperMetadata Conference toString" {
     try std.testing.expectEqual("NeurIPS", PaperMetadata.Conference.neurips.toString());
     try std.testing.expectEqual("ICLR", PaperMetadata.Conference.iclr.toString());
     try std.testing.expectEqual("MLSys", PaperMetadata.Conference.mlsys.toString());
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// MATHEMATICAL PROOFS TESTS
+// ═════════════════════════════════════════════════════════════════════════
+
+test "TheoremStatement formatAsLaTeX" {
+    const theorem = TheoremStatement{
+        .env = .theorem,
+        .label = "thm:ternary-bound",
+        .title = "Ternary Weight Bounds",
+        .statement = "For any weight $w \\in \\{-1, 0, +1\\}$, the expected value $E[w] = 0$.",
+        .proof = "Direct calculation from the definition of ternary weights.",
+        .references = &[_][]const u8{"def:ternary-set"},
+        .equations = &[_][]const u8{"eq:expected-value"},
+    };
+
+    const latex = try theorem.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{theorem}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\label{thm:ternary-bound}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{proof}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\end{proof}") != null);
+}
+
+test "TheoremStatement formatAsMarkdown" {
+    const theorem = TheoremStatement{
+        .env = .lemma,
+        .label = "lem:sparsity",
+        .title = "Sparsity Lemma",
+        .statement = "Ternary quantization achieves 67% sparsity.",
+    };
+
+    const md = try theorem.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "## Lemma") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "Sparsity Lemma") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "`lem:sparsity`") != null);
+}
+
+test "MathematicalProofs formatAsLaTeXSection" {
+    const theorems = [_]TheoremStatement{
+        .{
+            .env = .theorem,
+            .label = "thm:main",
+            .statement = "$\\phi^2 + \\phi^{-2} = 3$",
+        },
+        .{
+            .env = .definition,
+            .label = "def:phi",
+            .statement = "Golden ratio $\\phi = \\frac{1 + \\sqrt{5}}{2}$",
+        },
+    };
+
+    const proofs = MathematicalProofs{
+        .title = "Trinity Mathematical Foundation",
+        .theorems = &theorems,
+    };
+
+    const latex = try proofs.formatAsLaTeXSection(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\section{Trinity Mathematical Foundation}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{theorem}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{definition}") != null);
+}
+
+test "Equation formatAsLaTeX" {
+    const eq = Equation{
+        .latex = "E[w] = \\sum_{i} w_i P(w_i)",
+        .label = "eq:expected-value",
+        .description = "Expected value of ternary weight",
+    };
+
+    const latex = try eq.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{equation}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\label{eq:expected-value}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\end{equation}") != null);
+}
+
+test "Equation formatAsMarkdown" {
+    const eq = Equation{
+        .latex = "\\phi^2 + \\phi^{-2} = 3",
+        .label = "eq:trinity-identity",
+        .description = "Trinity Identity",
+    };
+
+    const md = try eq.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "Trinity Identity") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "\\phi^2") != null);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
