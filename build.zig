@@ -303,6 +303,17 @@ pub fn build(b: *std.Build) void {
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
 
+    // VSA Enhanced Tests
+    const vsa_enhanced_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vsa/tests_enhanced.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_vsa_enhanced_tests = b.addRunArtifact(vsa_enhanced_tests);
+    test_step.dependOn(&run_vsa_enhanced_tests.step);
+
     // Queen API tests
     const queen_api_tests = b.addTest(.{
         .root_module = b.createModule(.{
