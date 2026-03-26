@@ -117,7 +117,7 @@
 | `TRINITY_STATUS_REPORT_20260326.md` | 2026-03-26 | Final status: 26 commits, 102 docs ✨ |
 | `AUTONOMOUS_CYCLE_REPORT_SESSIONS_13_19_CUMULATIVE.md` | 2026-03-26 | Sessions 13-19: 7 commits, 8 docs, 9.5K LOC, publication ready ✨ NEW |
 
-### 8. Tools & Automation (6 documents)
+### 8. Tools & Automation (8 documents)
 
 | Document | Purpose | Language |
 |----------|---------|----------|
@@ -347,3 +347,5 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 ---
 
 **φ² + 1/φ² = 3 | TRINITY**
+| `DATA_MANAGEMENT_PLAN_TEMPLATE_2026.md` | FAIR + NSF/NIH/Horizon DMP template | Markdown ✨ NEW |
+| `CODE_AVAILABILITY_STATEMENT_TEMPLATE_2026.md` | NeurIPS/ICLR/MLSys code statements | Markdown ✨ NEW |
