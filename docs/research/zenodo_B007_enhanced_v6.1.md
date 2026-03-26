@@ -418,7 +418,30 @@ Vasilev, D. (2026). Trinity B007: VSA Operations - Hybrid BigInt with SIMD Accel
 
 ---
 
-## 9. Acknowledgments
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/vsa.zig` — Core VSA operations (bind, unbind, bundle, similarity)
+- `src/hybrid.zig` — HybridBigInt SIMD implementation
+- `src/neon/` — ARM64 NEON optimizations
+- `tests/vsa_test.zig` — Comprehensive VSA test suite
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build vsa-bench
+./zig-out/bin/vsa-bench --mode all
+```
+
+---
+
+## 10. Acknowledgments
 
 VSA implementation inspired by:
 - Kanerva, Pentti (1988) - Sparse Distributed Memory

@@ -443,7 +443,30 @@ Vasilev, D. (2026). Trinity B005: Tri Language - Linear Types, Effects, and Dual
 
 ---
 
-## 9. Acknowledgments
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/vibee/` — VIBEE compiler implementation
+- `src/tri-lang/` — Tri language type system
+- `src/codegen/` — Zig and Verilog code generators
+- `specs/tri/` — .tri specification files
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build vibee
+./zig-out/bin/vibee compile specs/tri/feature.tri
+```
+
+---
+
+## 10. Acknowledgments
 
 Tri Language inspired by:
 - Rust ownership and linear types
