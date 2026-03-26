@@ -45,7 +45,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
     var last_col = b.len + 1;
     var result = matrix[last_row][b.len];
 
-    while (last_row > 0) : (last_row -= 1) : ({
+    while (last_row > 0) {
         // Move up
         for (0..b.len) |col| {
             const cost = matrix[last_row - 1][col];
@@ -58,7 +58,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
             }
         }
         // Move left
-        const move_left = @as(u8, if (a[last_row] == b[last_row - 1]) 1 else 0;
+        const move_left = @as(u8, if (a[last_row] == b[last_row - 1]) 1 else 0);
         if (move_left != 0) {
             matrix[last_row - 1][last_row - 1] = move_left;
             last_col -= 1;
