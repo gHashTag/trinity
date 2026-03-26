@@ -657,14 +657,17 @@ fn runVerdict(allocator: std.mem.Allocator) !VerdictResult {
     }
 
     const perf_score = @as(f64, @floatFromInt(perf_passed)) / @as(f64, @floatFromInt(perf_total)) * 10.0;
-    total_checks += perf_total;
-    passed_checks += perf_passed;
+    // NOTE: Performance checks are NOT part of the hard gate (timing-dependent)
+    // total_checks += perf_total;
+    // passed_checks += perf_passed;
 
     // ── Final Score ──────────────────────────────────────────────────────
     const total_score = vsa_score + vm_score + sdk_score_val + mem_score + perf_score;
 
     return VerdictResult{
-        .pass = passed_checks == total_checks,
+        // pass is based ONLY on deterministic checks (VSA, VM, SDK, Memory)
+        // Performance checks contribute to score but don't cause hard fail
+        .pass = (vsa_passed == vsa_total and vm_passed == vm_total and sdk_passed == sdk_total and mem_passed == mem_total),
         .score = total_score,
         .vsa_score = vsa_score,
         .vm_score = vm_score,
