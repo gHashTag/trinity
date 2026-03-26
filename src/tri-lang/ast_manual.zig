@@ -66,6 +66,7 @@ pub const FunctionDecl = struct {
     return_type: Type,
     body: []const Statement,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Parameter
@@ -80,6 +81,7 @@ pub const StructDecl = struct {
     name: []const u8,
     fields: []const Field,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Struct field
@@ -94,6 +96,7 @@ pub const EnumDecl = struct {
     name: []const u8,
     variants: []const EnumVariant,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Enum variant (data-carrying)
@@ -109,6 +112,7 @@ pub const TypeAliasDecl = struct {
     name: []const u8,
     aliased_type: Type,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Named pipeline definition
@@ -120,6 +124,7 @@ pub const PipelineDecl = struct {
     /// Pipeline body (pipe expression or identifier)
     body: Expr,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Effect declaration: effect State { get, set(value) }
@@ -127,6 +132,7 @@ pub const EffectDecl = struct {
     name: []const u8,
     operations: []const EffectOperation,
     loc: SourceLocation,
+    is_pub: bool = false,
 };
 
 /// Effect operation declaration
