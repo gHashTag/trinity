@@ -233,8 +233,6 @@ pub const AnalysisEngine = struct {
         self: *const AnalysisEngine,
         results: []const SensitivityResult
     ) ![]const Recommendation {
-        _ = self;
-
         const recs = try self.allocator.alloc(Recommendation, results.len);
         errdefer self.allocator.free(recs);
 
@@ -270,8 +268,6 @@ pub const AnalysisEngine = struct {
         results: []const SensitivityResult,
         path: []const u8
     ) !void {
-        _ = self;
-
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
 
