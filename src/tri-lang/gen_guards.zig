@@ -260,7 +260,27 @@ fn compileGuardExpr(cg: *GuardCodegen, expr: *const GuardExpr) !void {
 /// Optimize guard conditions
 /// Removes redundant checks, folds constants
 pub fn optimizeGuard(guard: Guard) !Guard {
-    // TODO: Implement constant propagation and dead code elimination
+    // Evaluate guard to check for constant folding
+    const eval_result = evalGuard(guard);
+
+    // If always true, return a trivial true guard
+    if (eval_result.always_true) {
+        return Guard{
+            .condition = .{ .BoolLiteral = true },
+            .message = guard.message, // Preserve original message
+        };
+    }
+
+    // If always false, return a trivial false guard
+    if (eval_result.always_false) {
+        return Guard{
+            .condition = .{ .BoolLiteral = false },
+            .message = guard.message,
+        };
+    }
+
+    // Otherwise, return the original guard
+    // Future improvements: fold sub-expressions, remove redundant checks
     return guard;
 }
 

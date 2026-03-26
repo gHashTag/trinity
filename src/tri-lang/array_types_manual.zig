@@ -219,6 +219,32 @@ pub fn ArrayFixed(comptime T: type, comptime N: usize) type {
 // TRI-27 LOWERING
 // ═════════════════════════════════════════════════════════════════════════════════════
 
+/// Global memory allocator for TRI-27 arrays
+/// Simple bump allocator with 8 banks (3 bits) of 4KB each
+var memory_allocator: struct {
+    /// Current offset in each bank [0-7]
+    bank_offsets: [8]u12 = [_]u12{0} ** 8,
+    /// Total bytes allocated
+    total_allocated: usize = 0,
+
+    /// Allocate memory in a specific bank
+    fn alloc(bank: u4, size: u12) !u12 {
+        if (bank >= 8) return error.InvalidBank;
+        const offset = memory_allocator.bank_offsets[@intCast(bank)];
+        const new_offset = offset + size;
+        if (new_offset > 0xFFF) return error.OutOfMemory; // 4KB per bank
+        memory_allocator.bank_offsets[@intCast(bank)] = new_offset;
+        memory_allocator.total_allocated += size;
+        return offset;
+    }
+
+    /// Reset allocator (for testing)
+    fn reset() void {
+        memory_allocator.bank_offsets = [_]u12{0} ** 8;
+        memory_allocator.total_allocated = 0;
+    }
+} = .{};
+
 /// Lowered array representation for TRI-27 VM
 /// Format: [bank:3bits][size:12bits][data...]
 pub const LoweredArray = struct {
@@ -228,6 +254,14 @@ pub const LoweredArray = struct {
     size: u12,
     /// Element size in bytes
     element_size: u8,
+    /// Bank number (extracted from base_addr)
+    pub fn getBank(self: *const LoweredArray) u4 {
+        return @intCast((self.base_addr >> 12) & 0x7);
+    }
+    /// Offset within bank (extracted from base_addr)
+    pub fn getOffset(self: *const LoweredArray) u12 {
+        return @intCast(self.base_addr & 0xFFF);
+    }
 };
 
 /// Get TRI-27 memory address for array element
@@ -236,13 +270,38 @@ pub fn arrayAddress(bank: u4, offset: u12) u16 {
     return (@as(u16, bank) << 12) | offset;
 }
 
+/// Allocate memory for an array in TRI-27 memory space
+/// Uses round-robin bank selection for load balancing
+fn allocateArrayMemory(size: u12) !struct { bank: u4, offset: u12 } {
+    // Find bank with most available space
+    var best_bank: u4 = 0;
+    var min_offset: u12 = 0xFFF;
+
+    for (0..8) |i| {
+        const offset = memory_allocator.bank_offsets[i];
+        if (offset < min_offset) {
+            min_offset = offset;
+            best_bank = @intCast(i);
+        }
+    }
+
+    const offset = try memory_allocator.alloc(best_bank, size);
+    return .{ .bank = best_bank, .offset = offset };
+}
+
 /// Lower array to TRI-27 representation
-pub fn lowerArrayFixed(comptime T: type, comptime N: usize, array: ArrayFixed(T, N)) LoweredArray {
-    _ = array;
+pub fn lowerArrayFixed(comptime T: type, comptime N: usize, array: ArrayFixed(T, N)) !LoweredArray {
+    const element_size = @intCast(u8, @sizeOf(T));
+    const total_size = @intCast(u12, N * @sizeOf(T));
+
+    // Allocate memory in TRI-27 space
+    const alloc = try allocateArrayMemory(total_size);
+    const base_addr = arrayAddress(alloc.bank, alloc.offset);
+
     return LoweredArray{
-        .base_addr = arrayAddress(0, 0), // TODO: allocate actual memory
+        .base_addr = base_addr,
         .size = @intCast(N),
-        .element_size = @intCast(@sizeOf(T)),
+        .element_size = element_size,
     };
 }
 

@@ -326,10 +326,82 @@ fn tryInlineCall(allocator: Allocator, call: FnCallExpr, env: *const TypeEnv) ?T
 }
 
 /// Count expressions in a TypedExpr (for inlining heuristics)
+/// Recursively counts all sub-expressions to estimate complexity
 fn countExprs(expr: *const TypedExpr) usize {
-    _ = expr;
-    // TODO: Implement expression counting
-    return 1;
+    switch (expr.*) {
+        .Int, .Bool, .Var => return 1,
+        .BinOp => |op| {
+            // Count left + right + 1 for the binop itself
+            return 1 + countExprs(op.left) + countExprs(op.right);
+        },
+        .If => |if_expr| {
+            // Count condition + then_branch + else_branch
+            var count = 1 + countExprs(if_expr.condition);
+            count += countExprs(if_expr.then_branch);
+            count += countExprs(if_expr.else_branch);
+            return count;
+        },
+        .Let => |let_expr| {
+            // Count binding + body
+            return 1 + countExprs(let_expr.value) + countExprs(let_expr.body);
+        },
+        .Fn => |fn_expr| {
+            // Count function body
+            return 1 + countExprs(fn_expr.body);
+        },
+        .FnCall => |call| {
+            // Count function + all arguments
+            var count = 1; // For the call itself
+            count += countExprs(call.func);
+            for (call.args) |arg| {
+                count += countExprs(arg);
+            }
+            return count;
+        },
+        .Match => |match_expr| {
+            // Count value + all arms
+            var count = 1 + countExprs(match_expr.value);
+            for (match_expr.arms) |arm| {
+                count += countExprs(arm.body);
+            }
+            return count;
+        },
+        .Pipe => |pipe_expr| {
+            // Count source + all stages
+            var count = 1 + countExprs(pipe_expr.source);
+            for (pipe_expr.stages) |stage| {
+                count += countExprs(stage);
+            }
+            return count;
+        },
+        .Map => |m| {
+            return 1 + countExprs(m.array) + countExprs(m.func);
+        },
+        .Reduce => |r| {
+            return 1 + countExprs(r.array) + countExprs(r.init);
+        },
+        .Scan => |s| {
+            return 1 + countExprs(s.array) + countExprs(s.init);
+        },
+        .Filter => |f| {
+            return 1 + countExprs(f.array) + countExprs(f.predicate);
+        },
+        .FlatMap => |f| {
+            return 1 + countExprs(f.array) + countExprs(f.func);
+        },
+        .Zip => |z| {
+            return 1 + countExprs(z.left) + countExprs(z.right);
+        },
+        .ADT => |adt| {
+            // Count type + variant + data
+            if (adt.data) |data| {
+                return 1 + countExprs(data);
+            }
+            return 1;
+        },
+        // Effects are counted as single expressions
+        .Perform, .Handle, .Try => return 1,
+    }
 }
 
 /// Get the inline expansion pass as an OptimizerPass

@@ -416,9 +416,11 @@ fn runStats(allocator_: std.mem.Allocator, formula_id: []const u8) !void {
     // IRRATIONALITY MEASURE (v1.1)
     const mu_color = if (mu < 2.3) RED else if (mu < 3.0) YELLOW else GREEN;
     std.debug.print("  Irrationality μ: {s}{d:.4}{s} ", .{ mu_color, mu, RESET });
-    // Note: print_mu_verdict call removed - std.io.getStdErr() not available in Zig 0.15
-    // TODO: implement alternative output method
-    std.debug.print("\n", .{});
+
+    // Inline verdict for irrationality measure
+    const verdict = if (mu < 2.3) "VERY IRRATIONAL (Liouville)" else if (mu < 3.0) "IRRATIONAL (typical)" else "RATIONAL-LIKE";
+    const v_color = if (mu < 2.3) RED else RESET;
+    std.debug.print("{s}[{s}]{s}\n", .{ v_color, verdict, RESET });
 
     std.debug.print("\n  Classification: {s}\n\n", .{class_str});
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
