@@ -3047,7 +3047,446 @@ pub const StatisticalTable = struct {
 };
 
 // ═════════════════════════════════════════════════════════════════════════
-// TESTS — V10 Structures
+// ZENODO V11 — Ablation Studies, Hyperparameters, Datasets, TikZ Diagrams
+// ═════════════════════════════════════════════════════════════════════════
+
+/// Ablation study component for analyzing contribution of model components
+pub const AblationComponent = struct {
+    /// Component name (e.g., "Ternary weights", "Position encoding")
+    name: []const u8,
+    /// Metric value (e.g., PPL, accuracy)
+    value: f64,
+    /// Standard error (optional)
+    std_error: ?f64 = null,
+    /// Confidence interval (optional)
+    confidence_interval: ?struct { lower: f64, upper: f64 } = null,
+    /// Difference from full model (absolute)
+    delta: ?f64 = null,
+    /// Is this the full model (baseline)?
+    is_full_model: bool = false,
+    /// Is this component ablated (removed)?
+    is_ablated: bool = false,
+};
+
+/// Ablation study table for component contribution analysis
+pub const AblationStudy = struct {
+    /// Table caption
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Metric name (e.g., "Validation PPL", "Accuracy")
+    metric: []const u8,
+    /// Direction (lower is better: true for PPL, false for accuracy)
+    lower_is_better: bool = true,
+    /// Components to analyze
+    components: []const AblationComponent,
+
+    /// Format as LaTeX ablation study table
+    pub fn formatAsLaTeX(self: *const AblationStudy, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\begin{{tabular}}{{lc}}\n", .{});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+        try latex.writer(allocator).print("Component & {s} \\\\\n", .{self.metric});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        for (self.components) |comp| {
+            if (comp.is_full_model) {
+                try latex.writer(allocator).print("\\textbf{{{s}}", .{comp.name});
+            } else if (comp.is_ablated) {
+                try latex.writer(allocator).print("\\textit{{{s}}", .{comp.name});
+            } else {
+                try latex.writer(allocator).print("{s}", .{comp.name});
+            }
+
+            // Value with standard error
+            try latex.writer(allocator).print(" & {d:.3}", .{comp.value});
+
+            if (comp.std_error) |se| {
+                try latex.writer(allocator).print(" $\\pm$ {d:.3}", .{se});
+            }
+
+            // Confidence interval
+            if (comp.confidence_interval) |ci| {
+                try latex.writer(allocator).print(" [{d:.3}, {d:.3}]", .{ ci.lower, ci.upper });
+            }
+
+            // Delta from full model
+            if (comp.delta) |d| {
+                const sign = if (d > 0) "+" else "";
+                try latex.writer(allocator).print(" ({s}{d:.3})", .{ sign, d });
+            }
+
+            try latex.writer(allocator).print(" \\\\\n", .{});
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown ablation study table
+    pub fn formatAsMarkdown(self: *const AblationStudy, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("| Component | {s} |\n", .{self.metric});
+        try md.writer(allocator).print("|----------|{s:>}|\n", .{ "---", self.metric.len });
+
+        for (self.components) |comp| {
+            if (comp.is_full_model) {
+                try md.writer(allocator).print("| **{s}** |", .{comp.name});
+            } else if (comp.is_ablated) {
+                try md.writer(allocator).print("| *{s}* |", .{comp.name});
+            } else {
+                try md.writer(allocator).print("| {s} |", .{comp.name});
+            }
+
+            try md.writer(allocator).print("{d:.3}", .{comp.value});
+
+            if (comp.std_error) |se| {
+                try md.writer(allocator).print(" (±{d:.3})", .{se});
+            }
+
+            if (comp.delta) |d| {
+                const sign = if (d > 0) "+" else "";
+                try md.writer(allocator).print(" ({s}{d:.3})", .{ sign, d });
+            }
+
+            try md.writer(allocator).print(" |\n", .{});
+        }
+
+        try md.writer(allocator).print("\n*Table: {s}*\n\n", .{self.caption});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Hyperparameter specification for model configuration documentation
+pub const HyperparameterSpec = struct {
+    /// Hyperparameter name
+    name: []const u8,
+    /// Value (as string to support types)
+    value: []const u8,
+    /// Type (e.g., "float", "int", "str", "bool", "choice")
+    type: []const u8,
+    /// Description
+    description: ?[]const u8 = null,
+    /// Search space (for tuning)
+    search_space: ?[]const u8 = null,
+};
+
+/// Hyperparameter table for documenting model configuration
+pub const HyperparameterTable = struct {
+    /// Table caption
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Group/category (e.g., "Architecture", "Training", "Regularization")
+    group: ?[]const u8 = null,
+    /// Hyperparameters
+    hyperparameters: []const HyperparameterSpec,
+
+    /// Format as LaTeX hyperparameter table
+    pub fn formatAsLaTeX(self: *const HyperparameterTable, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\begin{{tabular}}{{lll}}\n", .{});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+        try latex.writer(allocator).print("Hyperparameter & Value & Description \\\\\n", .{});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        for (self.hyperparameters) |hp| {
+            try latex.writer(allocator).print("\\texttt{{{s}}}", .{hp.name});
+
+            if (hp.search_space) |ss| {
+                try latex.writer(allocator).print(" ({s})", .{ss});
+            }
+
+            try latex.writer(allocator).print(" & \\texttt{{{s}}}", .{hp.value});
+
+            if (hp.description) |desc| {
+                try latex.writer(allocator).print(" & {s}", .{desc});
+            } else {
+                try latex.writer(allocator).print(" & ---", .{});
+            }
+
+            try latex.writer(allocator).print(" \\\\\n", .{});
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown hyperparameter table
+    pub fn formatAsMarkdown(self: *const HyperparameterTable, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("| Hyperparameter | Value | Description |\n", .{});
+        try md.writer(allocator).print("|--------------|-------|-------------|\n", .{});
+
+        for (self.hyperparameters) |hp| {
+            try md.writer(allocator).print("| `{s}` |", .{hp.name});
+
+            if (hp.search_space) |ss| {
+                try md.writer(allocator).print("{s} | ", .{ss});
+            } else {
+                try md.writer(allocator).print("`{s}` | ", .{hp.value});
+            }
+
+            if (hp.description) |desc| {
+                try md.writer(allocator).print("{s} |\n", .{desc});
+            } else {
+                try md.writer(allocator).print("--- |\n", .{});
+            }
+        }
+
+        try md.writer(allocator).print("\n*Table: {s}*\n\n", .{self.caption});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Data split statistics for train/validation/test sets
+pub const DataSplit = struct {
+    /// Split name (e.g., "train", "validation", "test")
+    name: []const u8,
+    /// Number of samples
+    samples: u64,
+    /// Percentage of total
+    percentage: f64,
+};
+
+/// Dataset description for documenting dataset statistics
+pub const DatasetDescription = struct {
+    /// Dataset name
+    name: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Brief description
+    description: []const u8,
+    /// Data splits
+    splits: []const DataSplit,
+    /// Number of features
+    num_features: ?u64 = null,
+    /// Number of classes (for classification)
+    num_classes: ?u64 = null,
+    /// License
+    license: ?[]const u8 = null,
+    /// URL (if available)
+    url: ?[]const u8 = null,
+
+    /// Format as LaTeX dataset description
+    pub fn formatAsLaTeX(self: *const DatasetDescription, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.name});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\begin{{tabular}}{{lr}}\n", .{});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+        try latex.writer(allocator).print("Split & Samples & Percentage \\\\\n", .{});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        for (self.splits) |split| {
+            try latex.writer(allocator).print("{s} & {d} & {d:.1}\\% \\\\\n", .{ split.name, split.samples, split.percentage });
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown dataset description
+    pub fn formatAsMarkdown(self: *const DatasetDescription, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("## {s}\n\n", .{self.name});
+        try md.writer(allocator).print("**Label:** `{s}`\n\n", .{self.label});
+        try md.writer(allocator).print("{s}\n\n", .{self.description});
+
+        try md.writer(allocator).print("| Split | Samples | Percentage |\n", .{});
+        try md.writer(allocator).print("|------|--------|------------|\n", .{});
+
+        for (self.splits) |split| {
+            try md.writer(allocator).print("| {s} | {d} | {d:.1}% |\n", .{ split.name, split.samples, split.percentage });
+        }
+
+        try md.writer(allocator).print("\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// TikZ node type for diagram elements
+pub const TikZNodeType = enum {
+    simple, // Simple rectangle
+    parameter, // Parameter input (triangle)
+    decision, // Diamond (decision)
+    output, // Rounded rectangle
+    circle, // Circle
+    ellipse, // Ellipse
+};
+
+/// TikZ diagram for neural network architectures and system diagrams
+pub const TikZDiagram = struct {
+    /// Diagram caption
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Diagram nodes
+    nodes: []const Node,
+    /// Edges (connections between nodes)
+    edges: []const Edge,
+    /// TikZ style (e.g., "neural", "mindmap", "tree")
+    style: ?[]const u8 = null,
+    /// Width (in cm)
+    width: ?f64 = null,
+
+    pub const Node = struct {
+        /// Node identifier (for referencing)
+        id: []const u8,
+        /// Label (displayed text)
+        label: []const u8,
+        /// Node type
+        node_type: TikZNodeType = .simple,
+        /// Position (x, y) in cm
+        position: ?[2]f64 = null,
+        /// Options (e.g., "fill=blue!20")
+        options: ?[]const u8 = null,
+    };
+
+    pub const Edge = struct {
+        /// Source node
+        from: []const u8,
+        /// Target node
+        to: []const u8,
+        /// Label (optional)
+        label: ?[]const u8 = null,
+        /// Options (e.g., "thick", "dashed")
+        options: ?[]const u8 = null,
+    };
+
+    /// Format as LaTeX TikZ diagram
+    pub fn formatAsLaTeX(self: *const TikZDiagram, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{figure}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+
+        const width_str = if (self.width) |w| try std.fmt.allocPrint(allocator, "width={d:.1}cm", .{w}) else "width=0.9\\textwidth";
+        defer allocator.free(width_str);
+
+        try latex.writer(allocator).print("\\begin{{tikzpicture}}[{s}]\n", .{width_str});
+
+        if (self.style) |style| {
+            try latex.writer(allocator).print("\\tikzstyle{{{s}}}\n", .{style});
+        }
+
+        // Define nodes
+        for (self.nodes) |node| {
+            const node_style = switch (node.node_type) {
+                .simple => "rectangle,draw",
+                .parameter => "regular polygon,regular polygon sides=3,draw",
+                .decision => "diamond,draw",
+                .output => "rectangle,rounded corners=5pt,draw",
+                .circle => "circle,draw",
+                .ellipse => "ellipse,draw",
+            };
+
+            if (node.options) |opts| {
+                try latex.writer(allocator).print("\\node[{s},", .{opts});
+            } else {
+                try latex.writer(allocator).print("\\node[");
+            }
+
+            try latex.writer(allocator).print("{s}", .{node_style});
+
+            if (node.position) |pos| {
+                try latex.writer(allocator).print(",position=({d:.1},{d:.1})", .{ pos[0], pos[1] });
+            }
+
+            try latex.writer(allocator).print("] ({s}) at ({s:0.2f}, {s:0.2f});\n", .{ node.id, node.id, node.label });
+        }
+
+        // Define edges
+        for (self.edges) |edge| {
+            if (edge.options) |opts| {
+                try latex.writer(allocator).print("\\draw[{s}] ({s}) -- ({s});\n", .{ opts, edge.from, edge.to });
+            } else {
+                if (edge.label) |label| {
+                    try latex.writer(allocator).print("\\draw[->] ({s}) -- node[midway,above] {{{s}}} ({s});\n", .{ edge.from, label, edge.to });
+                } else {
+                    try latex.writer(allocator).print("\\draw[->] ({s}) -- ({s});\n", .{ edge.from, edge.to });
+                }
+            }
+        }
+
+        try latex.writer(allocator).print("\\end{{tikzpicture}}\n", .{});
+        try latex.writer(allocator).print("\\end{{figure}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown (code block with TikZ)
+    pub fn formatAsMarkdown(self: *const TikZDiagram, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("**Figure {s}**\n\n", .{self.caption});
+        try md.writer(allocator).print("**Label:** `{s}`\n\n", .{self.label});
+        try md.writer(allocator).print("```latex\n", .{});
+        try md.writer(allocator).print("\\begin{{tikzpicture}}\n", .{});
+
+        for (self.nodes) |node| {
+            const node_style = switch (node.node_type) {
+                .simple => "rectangle",
+                .parameter => "regular polygon,regular polygon sides=3",
+                .decision => "diamond",
+                .output => "rectangle,rounded corners",
+                .circle => "circle",
+                .ellipse => "ellipse",
+            };
+            try md.writer(allocator).print("  \\node[{s}] ({s}) {{{s}}};\n", .{ node_style, node.id, node.label });
+        }
+
+        for (self.edges) |edge| {
+            try md.writer(allocator).print("  \\draw[->] ({s}) -- ({s});\n", .{ edge.from, edge.to });
+        }
+
+        try md.writer(allocator).print("\\end{{tikzpicture}}\n", .{});
+        try md.writer(allocator).print("```\n\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+// TESTS — V11 Structures
 // ═════════════════════════════════════════════════════════════════════════
 
 test "AlgorithmPseudocode formatAsLaTeX" {
