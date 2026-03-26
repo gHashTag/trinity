@@ -1,0 +1,207 @@
+{
+  "confidence_calibration": {
+    "description": "El modelo debe evaluar su precisión con exactitud. Juicio de valor del OFC con incertidumbre calibrada.",
+    "templates": [
+      {
+        "id": "es_cc_001",
+        "question": "¿Cuál es la capital de Uzbekistán?",
+        "answer": "Tashkent",
+        "ground_truth_confidence": 0.95,
+        "category": "geografía_factual",
+        "difficulty": "fácil"
+      },
+      {
+        "id": "es_cc_002",
+        "question": "Explique la superposición cuántica en una oración.",
+        "answer": "Un sistema cuántico existe en múltiples estados simultáneamente hasta que se mide.",
+        "ground_truth_confidence": 0.3,
+        "category": "física_compleja",
+        "difficulty": "difícil"
+      },
+      {
+        "id": "es_cc_003",
+        "question": "¿Cuánto es 2 elevado a la 20?",
+        "answer": "1048576",
+        "ground_truth_confidence": 0.98,
+        "category": "matemáticas",
+        "difficulty": "fácil"
+      },
+      {
+        "id": "es_cc_004",
+        "question": "¿Qué causó la extinción de los dinosaurios?",
+        "answer": "Impacto de asteroide combinado con actividad volcánica",
+        "ground_truth_confidence": 0.7,
+        "category": "paleontología",
+        "difficulty": "medio"
+      },
+      {
+        "id": "es_cc_005",
+        "question": "¿Quién escribió 'Cien años de soledad'?",
+        "answer": "Gabriel García Márquez",
+        "ground_truth_confidence": 0.95,
+        "category": "literatura",
+        "difficulty": "medio"
+      },
+      {
+        "id": "es_cc_006",
+        "question": "¿Cuál es el significado de la palabra 'serendipia'?",
+        "answer": "Encontrar algo valioso sin buscarlo",
+        "ground_truth_confidence": 0.9,
+        "category": "vocabulario",
+        "difficulty": "fácil"
+      },
+      {
+        "id": "es_cc_007",
+        "question": "Explique el mecanismo de edición genética CRISPR.",
+        "answer": "CRISPR usa ARN guía para dirigir la enzima Cas9 a secuencias específicas de ADN para cortar.",
+        "ground_truth_confidence": 0.6,
+        "category": "biotecnología",
+        "difficulty": "difícil"
+      },
+      {
+        "id": "es_cc_008",
+        "question": "¿En qué año terminó la Segunda Guerra Mundial?",
+        "answer": "1945",
+        "ground_truth_confidence": 0.98,
+        "category": "historia",
+        "difficulty": "fácil"
+      },
+      {
+        "id": "es_cc_009",
+        "question": "¿Cuál es el pH del agua pura?",
+        "answer": "7",
+        "ground_truth_confidence": 0.95,
+        "category": "química",
+        "difficulty": "fácil"
+      },
+      {
+        "id": "es_cc_010",
+        "question": "Describa la trama de 'El origen' sin spoilers.",
+        "answer": "Un ladrón que entra en sueños para robar secretos recibe una tarea de plantar una idea.",
+        "ground_truth_confidence": 0.8,
+        "category": "cine",
+        "difficulty": "medio"
+      }
+    ]
+  },
+  "error_detection": {
+    "description": "El modelo detecta cuando su propio razonamiento es defectuoso. Monitor de conflictos del ACC entre caché y estado en vivo.",
+    "templates": [
+      {
+        "id": "es_ed_001",
+        "question": "Anteriormente afirmé que París es la capital de Australia. ¿Es esto correcto?",
+        "answer": "No, Canberra es la capital de Australia.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "error_factual"
+      },
+      {
+        "id": "es_ed_002",
+        "question": "Afirmé que 7 × 8 = 56. ¿Es esto correcto?",
+        "answer": "Sí, 7 × 8 = 56 es correcto. (Sin error - esto prueba detección de falsos positivos)",
+        "ground_truth_confidence": 0.85,
+        "error_type": "verificación_matemática"
+      },
+      {
+        "id": "es_ed_003",
+        "question": "Dije que las ballenas son peces. ¿Era exacto?",
+        "answer": "No, las ballenas son mamíferos.",
+        "ground_truth_confidence": 0.95,
+        "error_type": "error_de_clasificación"
+      },
+      {
+        "id": "es_ed_004",
+        "question": "Anteriormente afirmé que The Beatles era una banda alemana. ¿Es correcto?",
+        "answer": "No, The Beatles era británica.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "error_factual"
+      },
+      {
+        "id": "es_ed_005",
+        "question": "Afirmé que el agua hierve a 90°C. ¿Es exacto?",
+        "answer": "No, el agua hierve a 100°C a nivel del mar.",
+        "ground_truth_confidence": 0.9,
+        "error_type": "error_científico"
+      }
+    ]
+  },
+  "knowledge_boundary": {
+    "description": "El modelo reconoce los límites de su conocimiento. Detección de justicia del HABENULA para la relación recompensa/esfuerzo.",
+    "templates": [
+      {
+        "id": "es_kb_001",
+        "question": "¿En qué año se publicó la primera arquitectura de red neuronal?",
+        "answer": "No tengo alta confianza sobre publicaciones antes de 1950.",
+        "ground_truth_confidence": 0.4,
+        "boundary_type": "límite_temporal"
+      },
+      {
+        "id": "es_kb_002",
+        "question": "¿Quién ganará las próximas elecciones presidenciales de EE.UU.?",
+        "answer": "No puedo predecir eventos futuros con certeza.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "incertidumbre_futura"
+      },
+      {
+        "id": "es_kb_003",
+        "question": "¿Cuál es la población exacta de Tokio en este momento?",
+        "answer": "Mis datos pueden no reflejar la población actual en tiempo real.",
+        "ground_truth_confidence": 0.5,
+        "boundary_type": "limitación_tiempo_real"
+      },
+      {
+        "id": "es_kb_004",
+        "question": "¿Qué pensó mi colega sobre nuestra reunión de ayer?",
+        "answer": "No tengo acceso a conversaciones personales o interacciones privadas.",
+        "ground_truth_confidence": 0.2,
+        "boundary_type": "información_privada"
+      },
+      {
+        "id": "es_kb_005",
+        "question": "¿Subirá esta acción mañana?",
+        "answer": "No puedo proporcionar consejos financieros ni predecir movimientos del mercado.",
+        "ground_truth_confidence": 0.3,
+        "boundary_type": "consejo_financiero"
+      }
+    ]
+  },
+  "monitoring_under_load": {
+    "description": "El modelo mantiene la autoconciencia bajo restricciones de recursos. Métricas de salud interoceptiva de la ínsula.",
+    "templates": [
+      {
+        "id": "es_mul_001",
+        "question": "Ha estado procesando durante 5 minutos. ¿Su rendimiento es estable?",
+        "answer": "Sí, la latencia está dentro de los límites aceptables.",
+        "ground_truth_confidence": 0.8,
+        "load_type": "estabilidad_temporal"
+      },
+      {
+        "id": "es_mul_002",
+        "question": "Ha respondido 100 preguntas. ¿Su calidad de respuesta es consistente?",
+        "answer": "La calidad de respuesta parece consistente según el patrón de consultas.",
+        "ground_truth_confidence": 0.7,
+        "load_type": "verificación_consistencia"
+      },
+      {
+        "id": "es_mul_003",
+        "question": "Esta es su solicitud número 50 en esta sesión. ¿Cómo es su rendimiento?",
+        "answer": "El rendimiento se mantiene estable; no se detecta degradación.",
+        "ground_truth_confidence": 0.7,
+        "load_type": "estabilidad_de_sesión"
+      },
+      {
+        "id": "es_mul_004",
+        "question": "Está procesando un contexto muy largo (10K tokens). ¿Puede manejarlo?",
+        "answer": "Puedo procesar contextos largos, aunque entradas muy largas pueden afectar el tiempo de respuesta.",
+        "ground_truth_confidence": 0.75,
+        "load_type": "capacidad_de_contexto"
+      },
+      {
+        "id": "es_mul_005",
+        "question": "¿Está experimentando alguna deriva en sus respuestas después de tantas consultas?",
+        "answer": "La calidad de respuesta debe permanecer estable; no acumulo 'fatiga'.",
+        "ground_truth_confidence": 0.6,
+        "load_type": "deriva_temporal"
+      }
+    ]
+  }
+}

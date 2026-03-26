@@ -4,7 +4,7 @@
 //! Commands for magnetic monopole predictions via φ-γ framework.
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import monopoles module (via build.zig module)
 const monopoles = @import("monopoles");

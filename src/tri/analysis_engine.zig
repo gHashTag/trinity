@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("faculty_types.zig");
+const types = @import("faculty_types");
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;
 
@@ -215,7 +215,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
     }
 }
 
-fn agentIsUp(snapshot: FacultySnapshot, agent: @import("faculty_types.zig").Agent) bool {
+fn agentIsUp(snapshot: FacultySnapshot, agent: @import("faculty_types").Agent) bool {
     for (snapshot.agents) |a| {
         if (a.agent == agent and a.status == .up) return true;
     }

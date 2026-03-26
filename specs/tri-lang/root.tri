@@ -1,0 +1,151 @@
+# ═══════════════════════════════════════════════════════════════════
+# ROOT — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# TRI Language Root Module
+# Source of truth for tri-lang/root.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_lang_root
+version: "0.1.0"
+module: tri_lang.root
+description: "TRI Language Root Module (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# MODULES
+# ═══════════════════════════════════════════════════════════════════
+
+# This is a re-export module that imports and re-exports all
+# TRI language compiler and runtime modules.
+
+# Core language modules
+exports:
+  - module: "result_type"
+    description: "Result type for error handling"
+
+  - module: "adt_enum"
+    description: "Algebraic data types with exhaustive match"
+
+  - module: "linear_types"
+    description: "Linear types and ownership"
+
+  - module: "effects"
+    description: "Algebraic effects and handlers"
+
+  - module: "bit_trit_patterns"
+    description: "Bit and trit pattern matching"
+
+  - module: "phantom_types"
+    description: "Phantom types for banked values"
+
+  - module: "array_combinators"
+    description: "Array combinators (map, reduce, scan, filter, etc.)"
+
+  - module: "array_types"
+    description: "Fixed-size array types"
+
+  - module: "auto_parallel"
+    description: "Auto-parallelization for array operations"
+
+  - module: "pipe"
+    description: "Pipe operator (Elixir-style)"
+
+  - module: "guards"
+    description: "Guard conditions for match expressions"
+
+# Compiler pipeline
+  - module: "lexer"
+    description: "Lexical analysis"
+
+  - module: "parser"
+    description: "Parser for Tri Language"
+
+  - module: "ast"
+    description: "Abstract Syntax Tree"
+
+  - module: "typechecker"
+    description: "Hindley-Milner type checker"
+
+  - module: "types"
+    description: "Type representation"
+
+  - module: "type_env"
+    description: "Type environment"
+
+  - module: "unify"
+    description: "Type unification"
+
+  - module: "optimizer"
+    description: "Optimizer"
+
+  - module: "optimizer_passes"
+    description: "Optimizer passes"
+
+  - module: "pipeline"
+    description: "Compiler pipeline"
+
+# Code generation
+  - module: "emit_t27"
+    description: "TRI-27 bytecode emitter"
+
+# Content-addressed functions
+  - module: "content_hash"
+    description: "Content hashing for deduplication"
+
+  - module: "content_registry"
+    description: "Content registry for duplicate detection"
+
+# TRI-27 VM and emulation
+  - module: "emu"
+    description: "TRI-27 emulator (J-zone runtime)"
+
+# Testing
+  - module: "tri_lang_tests"
+    description: "Tri language tests"
+
+  - module: "integration_test"
+    description: "Integration tests"
+
+# ═══════════════════════════════════════════════════════════════════
+# CONVENIENCE RE-EXPORTS
+# ═══════════════════════════════════════════════════════════════════
+
+convenience_exports:
+  - name: "Result"
+    from: "result_type.Result"
+    description: "Result type for error handling"
+
+  - name: "Adt"
+    from: "adt_enum.Adt"
+    description: "Algebraic data type"
+
+  - name: "Linear"
+    from: "linear_types.Linear"
+    description: "Linear type"
+
+  - name: "Owned"
+    from: "linear_types.Owned"
+    description: "Owned value"
+
+  - name: "Effect"
+    from: "effects.Effect"
+    description: "Effect type"
+
+  - name: "Handler"
+    from: "effects.Handler"
+    description: "Handler type"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Root module re-exports all TRI language modules:
+# - Core language: Result, ADT, linear types, effects, patterns, combinators
+# - Compiler: lexer, parser, AST, type checker, unification
+# - Codegen: TRI-27 bytecode emitter
+# - Content-addressed functions: hashing, registry
+# - Runtime: TRI-27 emulator
+# - Testing: unit tests, integration tests
+#
+# Convenience exports provide direct access to commonly used types.

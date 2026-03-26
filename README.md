@@ -49,6 +49,31 @@
 
 ---
 
+## TRI-27 — Trinity Kernel
+
+**TRI-27 is the ternary computing kernel** that executes all Trinity workloads:
+
+| Component | Value |
+|-----------|-------|
+| **Registers** | 27×32-bit (t0-t26) = 3 banks × 9 (Coptic alphabet) |
+| **Opcodes** | 36 — arithmetic, logic, control, ternary, sacred |
+| **Memory** | 64KB byte-addressable |
+| **Targets** | Zig CPU emulator + Verilog FPGA |
+
+```
+φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
+```
+
+**Quick test:**
+```bash
+zig build tri27
+./zig-out/bin/tri27 run tests/hello.tbin
+```
+
+[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri-lang/emu/specs/tri27_isa.md)
+
+---
+
 ## For Scientific Collaborators
 
 **TRINITY is a unified research framework** connecting fundamental physics through a single mathematical identity: `φ² + φ⁻² = 3`. From this root, candidate formulas for gravitational constant **G**, consciousness threshold **C**, temporal perception **t_present**, and fermion generations **N_gen** are derived.
@@ -71,9 +96,9 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 
 | Resource | Description |
 |----------|-------------|
-| **[Scientific Status 2026](docs/docs/research/trinity-status-2026.md)** | Unified framework overview with 13-level hierarchy, evidence ladder, and honest assessment of rejected hypotheses |
+| **[Trinity S³AI Unified Framework](docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md)** | Master framework with 6 hypotheses (H1-H6) |
+| **[Research Index V3](docs/research/RESEARCH_INDEX_V3.md)** | 181 documents, complete scientific catalog |
 | **[README for Scientists](docs/papers/README_FOR_SCIENTISTS.md)** | Mathematical framework without marketing terminology |
-| **[DELTA-001 Final Report](docs/docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
 | **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
 
 **Evidence Ladder:**
@@ -82,6 +107,53 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 - ❌ **Rejected (3):** γ = φ⁻³, α family fit, √(8/3) ≈ φ
 
 **Reproducibility:** `zig build tri && tri constants`
+
+---
+
+## Defensive Publications (Prior Art)
+
+Trinity publishes key innovations as **defensive publications** to establish prior art and prevent patenting. All research is documented with Zenodo DOIs.
+
+### Published v5.2 Bundles (2026-03-26) — Enhanced with Algorithm Boxes & Diagrams
+
+| Bundle | Discovery | Zenodo DOI | Status |
+|--------|-----------|------------|--------|
+| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227733](https://doi.org/10.5281/zenodo.19227733) | ✅ Enhanced v5.2 |
+| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227735](https://doi.org/10.5281/zenodo.19227735) | ✅ Enhanced v5.2 |
+| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | ✅ Enhanced v5.2 |
+| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | ✅ Enhanced v5.2 |
+| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | ✅ Enhanced v5.2 |
+
+> **Note on Version Numbers**: Trinity uses two versioning schemes:
+> - **CLI Version** (v1.0.2 "HEARTBEAT"): Tracks command-line tool releases (see [CHANGELOG.md](CHANGELOG.md))
+> - **Research Bundle Version** (v5.2): Tracks Zenodo scientific publication bundles
+>
+> These serve different purposes and may increment independently.
+| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | ✅ Enhanced v5.2 |
+| **B007** | VSA Operations (ternary computing) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | ✅ Enhanced v5.2 |
+| **PARENT** | Trinity S³AI Framework | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Enhanced v5.2 |
+
+**v5.2 Enhancements:** Algorithm boxes (pseudocode), ASCII architecture diagrams, detailed experimental protocols, statistical analysis with hypothesis testing (p-values, 95% CI), limitations sections, MLSys reproducibility cards. **Documentation growth: +91% (3,846 LOC added)**.
+
+**Upload Guide:** See [`docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md`](docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md) for complete upload procedures.
+
+### How to Cite
+
+```bibtex
+@software{trinity_s3ai_2026,
+  title        = {Trinity S³AI Framework: Ternary Computing for Edge AI},
+  author       = {Vasilev, Dmitrii},
+  year         = 2026,
+  version      = {5.2},
+  doi          = {10.5281/zenodo.19227879},
+  url          = {https://doi.org/10.5281/zenodo.19227879},
+  publisher    = {Zenodo}
+}
+```
+
+**Research Documentation:** See [`docs/research/RESEARCH_INDEX_V3.md`](docs/research/RESEARCH_INDEX_V3.md) for complete research documentation index (181 documents).
+
+**Scientific Manifesto:** See [`TRINITY_SCIENTIFIC_MANIFESTO.md`](docs/research/TRINITY_SCIENTIFIC_MANIFESTO.md) for complete innovation catalog (40+ inventions).
 
 ---
 
@@ -188,6 +260,15 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 | **AUR** | `yay -S trinity-cli` |
 | **Docker** | `docker pull ghcr.io/ghashtag/trinity:latest` |
 
+### Platform-Specific Guides
+
+| Platform | Guide |
+|----------|-------|
+| **macOS** | [docs/quickstart_macos.md](docs/quickstart_macos.md) |
+| **Linux** | [docs/quickstart_linux.md](docs/quickstart_linux.md) |
+| **Windows** | [docs/quickstart_windows.md](docs/quickstart_windows.md) |
+| **Docker** | See container image: `ghcr.io/ghashtag/trinity:latest` |
+
 ### Verify Installation
 
 ```bash
@@ -243,13 +324,145 @@ tri lucas 10           # Lucas L(10)
 tri spiral 5           # φ-spiral coordinates
 ```
 
-### All Commands (203 total)
+### All Commands (30+ command groups)
+
+> **Note:** `tri test` has limited functionality. Use `zig build test` for full testing.
 
 ```bash
 tri help               # Show all commands by category
 tri help --search test # Search commands
 tri help fix           # Detailed command help
 ```
+
+#### Development Workflow
+
+| Command | Description |
+|---------|-------------|
+| `tri dev status` | Show development session status |
+| `tri dev start --issue <N>` | Start session for GitHub issue |
+| `tri dev test` | Run tests and mark as passed |
+| `tri dev commit "msg"` | Commit with issue ID |
+| `tri dev ship` | Mark changes as delivered |
+| `tri dev reset` | Reset changes back to ACTIVE state |
+| `tri dev unblock` | Clear BLOCKED state |
+| `tri dev log` | Show state history |
+
+#### Git & GitHub Integration
+
+| Command | Description |
+|---------|-------------|
+| `tri git status` | Working tree status |
+| `tri git commit "msg"` | Commit with auto-format |
+| `tri git diff` | Show changes |
+| `tri git log` | Commit history |
+| `tri issue list` | List GitHub issues |
+| `tri issue create` | Create new issue |
+| `tri board <action>` | Project board operations |
+| `tri pr <action>` | Pull request management |
+| `tri agent run <N>` | Autonomous issue resolution (8-step cycle) |
+| `tri graphql <query>` | Run GitHub GraphQL query |
+
+#### Cloud & Training Farm
+
+| Command | Description |
+|---------|-------------|
+| `tri cloud status` | Cloud containers overview |
+| `tri cloud spawn <N>` | Spawn container for issue |
+| `tri cloud kill <N>` | Destroy container |
+| `tri cloud agents` | List active agents |
+| `tri cloud sync` | Reconcile with Railway |
+| `tri farm status` | Training farm overview |
+| `tri farm recycle` | Recycle underperforming services |
+| `tri farm evolve` | SEBO hyperparameter optimization |
+| `tri farm inject` | Inject new configurations |
+| `tri deploy <action>` | Deployment management |
+| `tri train <action>` | Training operations |
+
+#### Pipeline & Code Generation
+
+| Command | Description |
+|---------|-------------|
+| `tri pipeline run "<task>"` | Golden Chain 28-link pipeline |
+| `tri chain` | Run chain command |
+| `tri vibee` | VIBEE compiler CLI |
+| `tri spec create <name>` | Create .tri specification |
+| `tri spec-match` | Match issue to spec template |
+| `tri gen` | Generate code from spec |
+
+#### Agents & Swarms
+
+| Command | Description |
+|---------|-------------|
+| `tri faculty` | Agent status dashboard (A2A) |
+| `tri swarm <action>` | Swarm management |
+| `tri queen <subcommand>` | Queen Trinity UI |
+| `tri phoenix <subcommand>` | Phoenix cell system |
+| `tri mu <command>` | Agent TRI (Memory Unit) |
+| `tri notify "msg"` | Telegram notification |
+
+#### FPGA & Hardware
+
+| Command | Description |
+|---------|-------------|
+| `tri fpga build` | Build FPGA bitstream |
+| `tri fpga flash` | Flash bitstream to FPGA |
+| `tri fpga uart` | UART communication test |
+| `tri sacred-const` | Show sacred constants (φ, π, e) |
+
+#### Mathematical & Research
+
+| Command | Description |
+|---------|-------------|
+| `tri constants` | Show φ, π, e, Lucas, Fibonacci |
+| `tri phi <n>` | Compute φ^n |
+| `tri lucas <n>` | Lucas L(n) |
+| `tri spiral <n>` | φ-spiral coordinates |
+| `tri formula <name>` | Evaluate sacred formula |
+| `tri sebo` | Sacred EVolutionary Objective Search |
+| `tri research <action>` | Research operations |
+
+#### Memory & Learning
+
+| Command | Description |
+|---------|-------------|
+| `tri memory list` | List stored memories |
+| `tri memory read <key>` | Read memory entry |
+| `tri memory write <key> <value>` | Store memory |
+| `tri memory search <query>` | Semantic search |
+| `tri experience save` | Save experience |
+| `tri experience recall` | Recall experiences |
+
+#### Utilities
+
+| Command | Description |
+|---------|-------------|
+| `tri doctor` | Codebase health scanner |
+| `tri clean` | Clean build artifacts |
+| `tri fmt` | Format code (zig fmt) |
+| `tri stats` | Codebase metrics |
+| `tri ui [build\|kill]` | Queen UI launcher |
+| `tri version` | Show version info |
+| `tri autocomplete` | Shell autocomplete setup |
+
+#### Testing
+
+| Command | Description |
+|---------|-------------|
+| `tri test` | ⚠️ Limited - use `zig build test` instead |
+| `tri test e2e` | Run E2E toxic test suite |
+| `tri test --repl` | Run REPL tests |
+
+#### Namespaced Commands
+
+Namespace-aware syntax: `tri <namespace> <command>`
+
+| Namespace | Example Commands |
+|-----------|-----------------|
+| `tri dev` | `tri dev status`, `tri dev test`, `tri dev commit` |
+| `tri mcp` | `tri mcp tools`, `tri mcp export` |
+| `tri agent` | `tri agent issue`, `tri agent board` |
+| `tri system` | `tri system doctor`, `tri system clean` |
+| `tri forge` | FPGA commands (via `tri fpga`) |
 
 ### Build from Source
 
@@ -309,6 +522,55 @@ sudo ../tools/flash.sh hslm_full_top.bit  # Flash
 | `hslm_full_top` | 4 + autoregressive FSM | `hslm_full_top.bit` |
 
 See [Research Report](docs/docs/research/fpga-autoregressive-llm-report.md) for full technical details.
+
+---
+
+## TRI-27 Architecture (Wave 1 Complete)
+
+TRI-27 is a ternary RISC processor with 27 ternary registers and full development stack: from ISA to FPGA.
+
+### Features
+- 27 ternary registers (t0-t26) {-1, 0, +1}
+- 3 banks: Sacred (α-η), Temporal (ι-ρ), Spatial (σ-ϡ)
+- 36 opcodes with VSA operations
+- Full toolchain: asm, emu, dis, validator
+- FPGA backend: XC7A100T
+
+### Quick Start
+```bash
+tri tri27 assemble program.tri -o program.tbin
+tri tri27 run program.tbin
+```
+
+### Docs
+- [TRI-27 Guide](docs/tri27/README.md)
+- [Coptic Mapping](src/tri27/coptic.zig)
+- [User Guide](docs/tri27/USER_GUIDE.md)
+
+---
+
+## Trinity S³AI Brain Architecture
+
+### Queen Prefrontal Cortex (6 cells)
+- **dlpfc**: Planning & task assignment
+- **vmpfc**: Valuation & φ-weighted scoring
+- **ofc**: Mood inference & alerts
+- **vlpfc**: Focus area filtering
+- **dmpfc**: Self-check & health grading
+- **acc**: Conflict detection
+
+### Lotus Cycle
+5-state purification: Queued → Diagnosing → Refining → Verifying → Purified → Blocked
+
+### ARAS Vigilance
+- 5-minute sweep interval
+- 12-dimension health check
+- φ-structured constants: φ² + 1/φ² = 3
+
+### Documentation
+- [Neuroanatomical Architecture](docs/research/neuroanatomical_architecture.md)
+- [Brain Architecture](docs/brain/ARCHITECTURE.md)
+- [Integration Examples](docs/INTEGRATION_EXAMPLES.md)
 
 ---
 
@@ -598,12 +860,19 @@ trinity/
 
 | Resource | URL |
 |----------|-----|
+| **[API Implementation Status](docs/api_status.md)** | HTTP API servers and endpoints — ✅ Implemented |
+| **Documentation Index** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) — Central documentation hub |
+| **API Reference** | [docs/api_reference.md](docs/api_reference.md) — HTTP API, CLI, MCP servers |
+| **Glossary** | [docs/glossary.md](docs/glossary.md) — Technical terms and acronyms |
+| **Troubleshooting** | [docs/troubleshooting.md](docs/troubleshooting.md) — Common issues & solutions |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) — Development guidelines |
+| **Code of Conduct** | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Community guidelines |
+| **Changelog** | [CHANGELOG.md](CHANGELOG.md) — Version history |
 | **For Researchers** | [docs/papers/README_FOR_SCIENTISTS.md](docs/papers/README_FOR_SCIENTISTS.md) |
 | **Command Reference** | [docs/command_registry.md](docs/command_registry.md) (auto-generated) |
 | **DePIN Overview** | [gHashTag.github.io/trinity/docs/depin](https://gHashTag.github.io/trinity/docs/depin) |
 | **Quick Start** | [gHashTag.github.io/trinity/docs/depin/quickstart](https://gHashTag.github.io/trinity/docs/depin/quickstart) |
 | **Tokenomics** | [gHashTag.github.io/trinity/docs/depin/tokenomics](https://gHashTag.github.io/trinity/docs/depin/tokenomics) |
-| **API Reference** | [gHashTag.github.io/trinity/docs/depin/api](https://gHashTag.github.io/trinity/docs/depin/api) |
 | **Architecture** | [gHashTag.github.io/trinity/docs/depin/architecture](https://gHashTag.github.io/trinity/docs/depin/architecture) |
 | **Research** | [gHashTag.github.io/trinity/docs/research](https://gHashTag.github.io/trinity/docs/research) |
 | **Website** | [gHashTag.github.io/trinity](https://gHashTag.github.io/trinity) |
@@ -651,6 +920,82 @@ For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)** and **[docs/d
 
 ---
 
+## Multi-Agent Trinity Protocol — Ant & Bee Inspired
+
+Trinity uses a **swarm development model**: multiple agents work in parallel, like ants and bees, coordinating through the environment (stigmergy), not direct commands.
+
+### 1. Roles and Castes
+
+- **Queen / Doctor (L1)** — Aggregate colony state, publish signals (COLONY_STATUS.md), don't depend on Workers.
+- **Workers / Foragers (L2–L3)** — Execute specific tasks (TDGS, tri:dev), coordinate through logs and statuses.
+- **Temple (TTT, L0)** — Sacred layer, agents never touch it.
+
+Each agent has:
+```text
+agent_id: <name or hash>
+specialties: [tri27, queens, build, hslm, docs, ...]
+thresholds:
+  prefers_tasks_with: [build_errors, test_failures, docs, ...]
+```
+
+This defines its **response thresholds** — which tasks it responds to first.
+
+### 2. Stigmergy: Coordination Through Environment
+
+Agents communicate through modified environment, not directly:
+
+- `.autonomous/HIVELOG.md` — Global hive-log
+- `.autonomous/<TASK_ID>/progress.md` — Per-task state
+- `COLONY_STATUS.md` — Aggregated colony state (written by Queen/Doctor)
+
+**HIVELOG format:**
+```text
+2026-03-25T02:44:00Z | agent:<ID> | task:TDGS-2 | phase:IMPLEMENT | scope:build.l1 | action:"migrated queens target to Zig 0.15" | commit:abcd1234
+```
+
+**Rules:**
+1. Each cycle, agent reads: last 20 HIVELOG lines + COLONY_STATUS.md + relevant progress.md
+2. Agent **never repeats** actions already done by another in same task + scope
+
+### 3. Responsibility Zones & Conflict Avoidance
+
+- One TDGS/tri:dev issue = **one coding-agent** by default
+- If two agents work on same TASK_ID: second takes auxiliary role (tests, docs, analysis), doesn't modify code
+- Zones:
+  - `src/temple/**` — TTT, forbidden for agents
+  - `build.zig` and core-build files — only for specially assigned tasks
+  - Other dirs (tri27, tri, hslm, etc.) — assigned by tasks and agents
+
+### 4. Agent Lifecycle (each /loop)
+
+1. **Input:**
+   - Read `COLONY_STATUS.md`
+   - Read `HIVELOG.md` (last 20 entries)
+   - Read `.autonomous/<TASK_ID>/progress.md`
+   - Select ONE task + ONE subphase (SPEC/IMPLEMENT/TEST/REFINE) without active conflict
+
+2. **Work:**
+   - Execute minimal subtask within current phase and scope
+   - Maintain invariants: `zig build l0` and `zig build l1` always green; TTT untouched
+
+3. **Output:**
+   - Update `progress.md` (phase, build_status, tests_status, blockers)
+   - Append HIVELOG entry with time/agent/task/phase/scope/action/commit
+   - Make meaningful commit (only when green)
+
+### 5. Queen / Doctor Role
+
+- **Queen:**
+  - Aggregates TDGS/tri:dev statuses and writes `COLONY_STATUS.md`:
+    - `L0: OK`, `L1: OK`, `Workers: DEGRADED (tri_farm)`
+    - Per TASK_ID: `TODO / IN_PROGRESS (agent:ID) / BLOCKED / DONE`
+- **Doctor:**
+  - Monitors health layers and writes metrics/alerts that agents consider when selecting tasks
+
+Thus, Trinity distributes tasks swarm-style and avoids conflicts without centralized micromanagement: agents read each other's traces and the Queen's signals, then adaptively choose what to do next.
+
+---
+
 ## Build Commands
 
 ```bash
@@ -677,6 +1022,17 @@ zig build test               # Run all tests before submitting PRs
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Troubleshooting
+
+| Issue | Solution | Documentation |
+|-------|----------|----------------|
+| Build fails on Zig 0.15.x | Check API migration | [CONTRIBUTING.md](CONTRIBUTING.md#code-style) |
+| FPGA programming fails | Run fxload first | [docs/troubleshooting.md](docs/troubleshooting.md#fpga-issues) |
+| Training stalls at low steps | Use cosine LR schedule | [docs/troubleshooting.md](docs/troubleshooting.md#training-issues) |
+| Railway deployment errors | Check env vars, Dockerfile | [docs/troubleshooting.md](docs/troubleshooting.md#cloud--deployment-issues) |
+
+See [docs/troubleshooting.md](docs/troubleshooting.md) for complete troubleshooting guide.
 
 ---
 

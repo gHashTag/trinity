@@ -1,0 +1,297 @@
+# ═══════════════════════════════════════════════════════════════════
+# EMIT T27 — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# TRI-27 Bytecode Emitter
+# Source of truth for tri-lang/emit_t27.zig codegen
+# Wave 2, Phase 3: emit_t27 Bytecode Generation
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_emit_t27
+version: "0.1.0"
+module: tri_lang.emit_t27
+description: "TRI-27 bytecode emitter (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Opcode:
+    description: "TRI-27 bytecode opcodes"
+    underlying: "enum(u8)"
+    variants:
+      - NOP: "0x00 - No operation"
+      - PUSH: "0x01 - Push to stack"
+      - POP: "0x02 - Pop from stack"
+      - LOADI: "0x10 - Load integer literal"
+      - LOADB: "0x11 - Load boolean literal"
+      - MOV: "0x20 - Move register"
+      - ADD: "0x30 - Addition"
+      - SUB: "0x31 - Subtraction"
+      - MUL: "0x32 - Multiplication"
+      - DIV: "0x33 - Division"
+      - EQ: "0x40 - Equality"
+      - NE: "0x41 - Not equal"
+      - LT: "0x42 - Less than"
+      - GT: "0x44 - Greater than"
+      - JUMP: "0x50 - Unconditional jump"
+      - JZ: "0x51 - Jump if zero"
+      - CALL: "0x60 - Function call"
+      - RET: "0x61 - Return"
+      - ADTN: "0x70 - ADT nullary variant"
+      - ADTD: "0x71 - ADT variant with data"
+      - RESULT_OK: "0x72 - Result Ok(value)"
+      - RESULT_ERR: "0x73 - Result Err(error)"
+      - LINEAR_CONSUME: "0x74 - Mark linear value as consumed"
+      - LINEAR_BORROW: "0x75 - Shared borrow of linear value"
+      - LINEAR_MOVE: "0x76 - Transfer ownership"
+      - ARRAY_GET: "0x77 - Bounds-checked array get"
+      - ARRAY_LEN: "0x78 - Get array length"
+      - ARRAY_SET: "0x79 - Bounds-checked array set"
+      - EFFECT_PERFORM: "0x7A - Perform effect operation"
+      - EFFECT_HANDLE: "0x7B - Handle effect"
+      - EFFECT_RESUME: "0x7C - Resume from handler"
+      - ARRAY_MAP: "0x80 - Apply function to each element"
+      - ARRAY_REDUCE: "0x81 - Fold array with binary operation"
+      - ARRAY_SCAN: "0x82 - Prefix scan"
+      - ARRAY_FILTER: "0x83 - Filter by predicate"
+      - ARRAY_FLATMAP: "0x84 - Map and concatenate"
+      - ARRAY_ZIP: "0x85 - Pair two arrays"
+      - HALT: "0xFF - Halt execution"
+
+  BytecodeBuffer:
+    description: "Buffer for emitting bytecode with label support"
+    fields:
+      - name: bytes
+        type: "std.ArrayList(u8)"
+        description: "Bytecode bytes"
+      - name: labels
+        type: "std.StringHashMap(usize)"
+        description: "Label name to offset mapping"
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "BytecodeBuffer"
+        description: "Initialize empty buffer"
+
+      - name: deinit
+        returns: "void"
+        description: "Free resources"
+
+      - name: emitByte
+        params:
+          - name: byte
+            type: "u8"
+        returns: "!void"
+        description: "Emit single byte"
+        errors:
+          - OutOfMemory
+
+      - name: emit
+        params:
+          - name: op
+            type: "Opcode"
+        returns: "!void"
+        description: "Emit opcode"
+        errors:
+          - OutOfMemory
+
+      - name: emitWord
+        params:
+          - name: value
+            type: "i32"
+        returns: "!void"
+        description: "Emit 4-byte word"
+        errors:
+          - OutOfMemory
+
+      - name: emitJumpPlaceholder
+        returns: "!usize"
+        description: "Emit placeholder for jump target"
+        errors:
+          - OutOfMemory
+
+      - name: patchJump
+        params:
+          - name: offset
+            type: "usize"
+          - name: target
+            type: "usize"
+        returns: "!void"
+        description: "Patch jump placeholder with target"
+        errors:
+          - OutOfMemory
+
+  Codegen:
+    description: "Code generation state"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: code
+        type: "BytecodeBuffer"
+        description: "Bytecode buffer"
+      - name: next_label
+        type: "u32"
+        description: "Next label ID"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Codegen"
+        description: "Initialize codegen state"
+
+      - name: deinit
+        returns: "void"
+        description: "Free resources"
+
+      - name: freshLabel
+        returns: "![]const u8"
+        description: "Generate fresh label (L0, L1, ...)"
+        errors:
+          - OutOfMemory
+
+      - name: getBytecode
+        returns: "[]const u8"
+        description: "Get emitted bytecode"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  compileExpr:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile expression to bytecode"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileResultOk:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: value_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile Ok(value) constructor"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileResultErr:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: error_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile Err(error) constructor"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileLinearConsume:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: var_name
+        type: "[]const u8"
+    returns: "!void"
+    description: "Compile linear value consumption"
+    errors:
+      - OutOfMemory
+
+  compileLinearMove:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: source_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile linear value move (transfer ownership)"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileLinearBorrow:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: source_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile linear value borrow (shared reference)"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileArrayGet:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: array_expr
+        type: "*const TypedExpr"
+      - name: index_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile array get with bounds checking"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileArraySet:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: array_expr
+        type: "*const TypedExpr"
+      - name: index_expr
+        type: "*const TypedExpr"
+      - name: value_expr
+        type: "*const TypedExpr"
+    returns: "!void"
+    description: "Compile array set with bounds checking"
+    errors:
+      - OutOfMemory
+      - UnsupportedExpression
+
+  compileArrayLen:
+    params:
+      - name: cg
+        type: "*Codegen"
+      - name: size
+        type: "usize"
+    returns: "!void"
+    description: "Compile array length (compile-time constant)"
+    errors:
+      - OutOfMemory
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# TRI-27 bytecode emitter compiles typed expressions to bytecode:
+# - Supports all expression types: literals, variables, operations, control flow
+# - Wave 2: Result types, linear types, array operations
+# - Wave 2: Effects + Handlers (perform, handle, try)
+# - Wave 4: Array combinators (map, reduce, scan, filter, flatMap, zip)
+#
+# Opcodes 0x70-0x7F: ADT and Result type support
+# Opcodes 0x74-0x76: Linear type operations
+# Opcodes 0x77-0x79: Array operations
+# Opcodes 0x7A-0x7C: Effects + Handlers
+# Opcodes 0x80-0x85: Array combinators

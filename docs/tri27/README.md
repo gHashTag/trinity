@@ -1,143 +1,342 @@
 # TRI‑27 — Ternary Computing ISA
 
+> **Role in S³AI**: Central execution engine for all Trinity workloads
+>
+> **Position**: Level 5 of 8-level stack (between Sacred ALU and Tri Language)
+>
+> **Connection**: All strands → TRI-27 → CPU/FPGA execution
+>
 > **Trinity S³AI DNA**: φ² + 1/φ² = 3
+>
+> **Strand III** — Language & Hardware Bridge
 
-**Strand III** — Language & Hardware Bridge
+---
+
+## In Trinity S³AI
+
+TRI-27 sits at the **center of Trinity architecture**:
+
+```
+           ┌─────────────────────────────────────┐
+           │         Trinity S³AI                │
+           │   φ² + 1/φ² = 3 = TRINITY           │
+           └─────────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   Strand I          Strand II         Strand III
+   (Math)            (Brain)          (Language)
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │
+                    ╔═══════════╗
+                    ║  TRI-27   ║  ← KERNEL
+                    ║  27 regs  ║
+                    ║  36 ops   ║
+                    ╚═══════════╝
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+         Zig CPU              Verilog FPGA
+      (Emulator)           (Synthesis)
+```
+
+### Data Flow
+
+```
+Strand I (Math) → TRI-27 Sacred Ops → φ-arithmetic, ternary logic
+Strand II (Brain) → TRI-27 Control Flow → Episode execution, state machine
+Strand III (Target) → TRI-27 ISA → Zig CPU / Verilog FPGA
+```
+
+[Return to Main Architecture](../ARCHITECTURE.md) | [S³AI Full Architecture](../TRINITY_S3AI_ARCHITECTURE.md)
 
 ---
 
 ## Overview
 
-TRI‑27 — тритный (ternary) RISC процессор с 27 тритами и уникальным управлением.
+TRI‑27 is a ternary RISC processor with 27 ternary registers and full development stack: from ISA to FPGA.
 
 ### Architecture
 
 ```
 .tri spec (Single Source of Truth)
     ↓
-TRI-27 language (Ternary types, AST)
+TRI-27 Language (Ternary types, AST)
     ↓              ↓
-    Zig Backend (CPU)          Verilog Backend (FPGA)
+Zig Backend (CPU)  Verilog Backend (FPGA)
+    ↓              ↓
+  tri27 CLI        openxc7-synth
+    ↓              ↓
+Queen Episodes    FPGA Bitstream
 ```
 
-### Word Layout
+### Word Layout (32-bit instruction)
 
-| Bit | Регистр | Размер | Назначение |
-|-----|--------|------|------------------|
-| r0-r25 | 25 трит | 6.25K | Глобальный накопитель |
-| r0-r20 | 20 трит | 5 бит | r1-r24 | Локальный накопитель |
-| r0-r17 | 17 трит | 4.25 бита | r1-r16 | Обычные регистры |
-| r0-r15 | 15 трит | 4 бита | r1-r14 | r2-r12 | Служебные регистры |
-| r0-r13 | 13 трит | 4 бита | r2-r10 | r2-r8  | 32‑битные регистры |
+| Bits | Field | Description |
+|------|-------|-------------|
+| [31:26] | opcode | 6-bit operation code (36 opcodes) |
+| [25:20] | dst | Destination register (t0-t26) |
+| [19:14] | src1 | Source register 1 |
+| [13:8]  | src2 | Source register 2 (or shift amount) |
+| [7:0]   | imm8 | 8-bit immediate (or unused) |
 
-### Float Registers
+### Registers
 
-| Регистр | Размер | Назначение |
-|-----|--------|------|------------------|
-| f0    | 32 бита | Точность (0.5, 1.0) |
-| f1    | 32 бита | Точность (1.0, 1.0) |
-| v0    | 32 бита | GF16 формат |
-| v1    | 32 бита | GF8 формат |
-
-### Vector Registers
-
-| Регистр | Размер | Назначение |
-|-----|--------|------|------------------|
-| vec0-r7 | 7×16 бит | v1-r6 128 бита | Vectors (512×8 бит) |
-| vec0-r5 | 6×16 бит | v1-r4 128 бита | Vectors (1024×8 бит) |
-
-### Instructions
-
-27 опкодов для вычислений, загрузки, ветвления и управления:
-
-**Арифметика (15 инструкций)**
-- LDI/ST  — загрузка в R0 через src1
-- LDI/ST  — загрузка в R0 через dst1
-- LDR   — загрузка в R0 через dst2
-- MOV   — перемещение между регистрами (R→R)
-- ST    — запись в память (R0 ← R)
-- LD    — загрузка из памяти в R0 (R0 ← [src])
-- ST   — сохранение R0 в [src]
-- LDI   — загрузка из памяти в R0 (R0 ← [dst])
-- SAI   — сохранение R0 в [dst]
-- SAI   — сохранение R0 в [dst, src]
-
-**Ветвления (11 инструкций)**
-- JUMP   — безусловный переход (PC ← PC + offset)
-- CALL   — вызов функции по адресу (R0 ← addr)
-- RET   — возврат из функции (PC ← [R0])
-- HALT   — остановка VM (временно)
-- NOP   — нет операции
-
-**Управление памятью (2 инструкций)**
-- LDTI/LDI  — загрузка из памяти
-- STO/LO — сохранение в память
-
-**Системные (5 инструкций)**
-- PUSH   — сохранение PC, увеличение
-- POP   — восстановление PC, уменьшение
-- PUSH/R0 — сохранение R0, затем R0
-- POP/R1 — сохранение R1, затем R1
-- JZ   — переход на R0
-- JZ/INC — сравнение, переход на результат
+| Register | Size | Purpose |
+|----------|------|---------|
+| t0-t26 | 27×32-bit | Ternary registers (t0 = accumulator) |
+| pc | 32-bit | Program Counter (in instructions) |
+| flags | {Z, N, C, H, ...} | Status flags |
 
 ---
 
-## Experience Tracking
+## ISA — 36 Opcodes
 
-**Модуль**: `src/tri27/tri27_experience.zig`
+### Arithmetic (6)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x60 | ADD | dst = src1 + src2 |
+| 0x61 | SUB | dst = src1 - src2 |
+| 0x62 | MUL | dst = src1 × src2 |
+| 0x63 | DIV | dst = src1 ÷ src2 |
+| 0x64 | INC | dst++ |
+| 0x65 | DEC | dst-- |
 
-**Тип операции**:
-- `assemble` — компиляция .tri → .tbin
-- `disassemble` — декомпиляция .tbin → листинг
-- `run` — исполнение .tbin в VM
-- `validate` — проверка .tri спецификации
+### Logic (6)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x18 | AND | dst = src1 & src2 |
+| 0x19 | OR | dst = src1 | src2 |
+| 0x1A | XOR | dst = src1 ^ src2 |
+| 0x1B | NOT | dst = ~dst |
+| 0x1C | SHL | dst = src1 << shift |
+| 0x1D | SHR | dst = src1 >> shift |
 
-**События** — `Tri27Event`:
-- timestamp, operation, input_file, output_file, status, cycles, instructions, error_msg
+### Ternary/VSA (4)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x60 | DOT | ternary dot product |
+| 0x6A | BIND | VSA bind operation |
+| 0x6B | BUNDLE2 | majority vote (2 inputs) |
+| 0x6C | BUNDLE3 | majority vote (3 inputs) |
 
-**Circular буфер** — 32 последних события
+### Sacred (4)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x80 | PHI_CONST | dst = φ (1.618...) |
+| 0x81 | PI_CONST | dst = π (3.141...) |
+| 0x82 | E_CONST | dst = e (2.718...) |
+| 0x92 | SACR | sacred arithmetic (op, dst, src) |
 
-**CLI команды**:
-```bash
-# Инициализация лога
-tri27 experience init          # Инициализировать event log
+### Memory (8)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x01 | LDI | load immediate |
+| 0x02 | LD | load from [src1] |
+| 0x03 | ST | store to [dst] |
+| 0x04 | LDR | load register indirect |
+| 0x05 | MOV | move register |
+| 0x06 | LDTI | load with type |
+| 0x07 | STO | store with offset |
+| 0x08 | SAI | store aligned immediate |
 
-# Логирование операции
-tri27 experience log <file> [ASM|DISASM|RUN|VAL]  # Логировать TRI-27 операцию
+### Control Flow (8)
+| Opcode | Mnemonic | Description |
+|--------|----------|-------------|
+| 0x10 | JUMP | PC ← PC + offset |
+| 0x11 | JZ | jump if dst == 0 |
+| 0x12 | JNZ | jump if dst != 0 |
+| 0x13 | CALL | push PC, PC ← addr |
+| 0x14 | RET | pop PC |
+| 0x15 | PUSH | push to stack |
+| 0x16 | POP | pop from stack |
+| 0x17 | HALT | stop execution |
 
-# Просмотр истории
-tri27 experience status         # Показать последние события
+---
 
-# Сохранение эпизода
-tri27 experience record <issue>  # Сохранить эпизод из последнего события в опыта
+## Backends
 
-# Показать справку
-tri27 experience                # Показать справку по командам
+### Zig Backend (CPU Emulator)
+
+**Files**:
+- `src/tri27/emu/cpu_state.zig` — CPU state, registers, memory
+- `src/tri27/emu/decoder.zig` — instruction decoder
+- `src/tri27/emu/executor.zig` — execution engine
+- `src/tri27/emu/asm_parser.zig` — .tri assembler
+- `src/tri27/tri27_cli.zig` — CLI entrypoint
+
+**Features**:
+- 36 opcodes, complete ISA
+- 27×32-bit registers t0-t26
+- 64KB memory (align(8) u8)
+- Flags: Z, N, C, H, O
+- Cycle counter for profiling
+
+### Verilog Backend (FPGA)
+
+**Files**:
+- `fpga/openxc7-synth/hslm_ternary_mac.v` — ternary ALU core
+- `src/tri27/verilog_backend.zig` — Zig → Verilog generator
+
+**Features**:
+- 0 DSP inference (pure LUT)
+- Pipeline: IF → ID → EX → MEM → WB
+- BRAM36 for instruction memory
+- Ternary arithmetic in LUT
+
+---
+
+## Queen Integration — Lotus Cycle
+
+### Phase 1: Observe
+**File**: `src/tri/queen/observe.zig`
+
+Reads:
+- `policy.json` — kill_threshold, crash_rate_limit, byzantine_rate_limit
+- `senses.json` — farm_best_ppl, test_rate, dirty_files, etc.
+
+### Phase 2: Plan
+**File**: `src/tri/queen/plan.zig`
+
+Generates `PolicyDelta`:
+- `scale_up` — increase threshold (×1.1)
+- `scale_down` — decrease threshold (×0.8-0.95)
+- `set` — set exact value
+- `wait` — do nothing
+
+### Phase 3: Evaluate
+**File**: `src/tri/queen/evaluate.zig`
+
+Evaluates episode window:
+- `good` — success_rate ≥ 95%
+- `unstable` — 70% < success_rate < 95%
+- `bad` — success_rate ≤ 70%
+- `unknown` — no data
+
+### Phase 4: Act
+**File**: `src/tri/queen/act.zig`
+
+Executes Plan:
+- `scale_up` — multiply parameter
+- `scale_down` — divide parameter
+- `trigger` — execute command
+- `wait` — observe
+
+### Phase 5: Self-Learning
+**File**: `src/tri/queen/self_learning.zig`
+
+**Closed loop**:
+```
+tri tri27 run test.tbin
+    → Episode → episodes.jsonl
+    → loadRecentEpisodes(20)
+    → evaluateWindow() → WindowEvaluation
+    → generatePlan() → PolicyDelta[]
+    → applyPolicyDelta() → Tri27Config
+    → saveConfig() → tri27_config.json
+    → Episode about self-learning_cycle
 ```
 
-## Examples
-
-### Hello World (asm)
-
-```asm
-# Hello World .tri
-    msg: const r0, "Hello, World!"
-    const r1: const r1, "World"
-    ldi r0, r0           # загрузка строки
-    ldi r1, r0, r0         # загрузка "World!"
-    ldi r1, r0, r0         # копирование r1 в r0
-    halt                     # остановка VM
-```
-
-### Команда `run` для выполнения
-
-```bash
-# Запуск VM
-tri27 run program.tbin 1000    # Выполнить 1000 инструкций
+**Tri27Config**:
+```zig
+pub const Tri27Config = struct {
+    kill_threshold: f64 = 5.0,        // PPL threshold
+    crash_rate_limit: f64 = 0.1,      // Max crash rate
+    byzantine_rate_limit: f64 = 0.1,  // Max byzantine ratio
+    env_status: EnvStatus = .active,   // Environment status
+    max_retries: u32 = 3,             // Max retries
+    auto_adapt: bool = true,           // Enable self-learning
+};
 ```
 
 ---
 
-**Интеграция**: `src/tri27/tri27_experience.zig` ↔ `src/tri/tri27_cli.zig`
-- Автоматическая запись эпизодов после операций assemble/run/validate/disassemble
+## CLI
+
+```bash
+# Compilation
+tri tri27 assemble <input.tri> -o <output.tbin>
+
+# Disassembly
+tri tri27 disassemble <input.tbin>
+
+# Execution
+tri tri27 run <program.tbin>
+
+# Validation
+tri tri27 validate <source.tri>
+
+# Experience tracking
+tri tri27 experience init
+tri tri27 experience log <file> [ASM|DISASM|RUN|VAL]
+tri tri27 experience status
+tri tri27 experience record <issue>
+
+# ISA reference
+tri tri27 isa
+```
+
+---
+
+## Tests
+
+| Test | File | Description |
+|------|------|-------------|
+| Golden | `test_golden.zig` | 15/15 — full cycle asm→tbin→emu |
+| Comprehensive | `test_comprehensive.zig` | 36/36 — all opcodes |
+| Experience | `tri27_experience.zig` | Jaccard similarity, recall |
+| Queen Self-Learning | `self_learning.zig` | 4/4 — feedback loop |
+
+**Run**:
+```bash
+zig build test-tri27-golden        # Golden tests
+zig build test-tri27-comprehensive # Comprehensive tests
+zig build test-tri27-experience    # Experience tests
+zig build test-queen-self-learning # Self-learning tests
+```
+
+---
+
+## File Structure
+
+```
+src/tri27/
+├── emu/
+│   ├── cpu_state.zig       # CPU state, registers, memory
+│   ├── decoder.zig         # Instruction decoder (36 opcodes)
+│   ├── executor.zig        # Execution engine
+│   ├── asm_parser.zig      # .tri assembler
+│   ├── test_golden.zig     # 15 golden tests
+│   └── test_comprehensive.zig  # 36 opcode tests
+├── tri27_cli.zig           # CLI entrypoint
+├── tri27_experience.zig    # Experience tracking
+├── tri27_experience_jsonl.zig  # JSONL integration
+└── verilog_backend.zig     # Zig → Verilog generator
+
+src/tri/queen/
+├── observe.zig             # Phase 1: read policy/senses
+├── plan.zig                # Phase 2: generate PolicyDelta
+├── evaluate.zig            # Phase 3: evaluate window
+├── act.zig                 # Phase 4: execute action
+└── self_learning.zig       # Phase 5: closed-loop learning
+```
+
+---
+
+## Status
+
+✅ ISA — 36 opcodes
+✅ Zig Backend — CPU emulator
+✅ Verilog Backend — FPGA synthesis
+✅ CLI — assemble/disassemble/run/validate
+✅ Queen Integration — Phases 1-5
+✅ Self-Learning — closed feedback loop
+✅ Tests — 68/68 passing
+
+---
+
+**Integration**:
+- `src/tri27/` ↔ `src/tri/queen/` — Episode tracking
+- `src/tri27/tri27_experience.zig` → `.trinity/queen/episodes.jsonl`
+- `src/tri/queen/self_learning.zig` → `.trinity/queen/tri27_config.json`

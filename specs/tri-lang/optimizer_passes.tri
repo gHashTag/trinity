@@ -1,0 +1,110 @@
+# ═══════════════════════════════════════════════════════
+# OPTIMIZER_PASSES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Individual Optimizer Passes for Tri Language
+# Source of truth for tri-lang/optimizer_passes.zig codegen
+# Wave 5: Optimizer Passes
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_optimizer_passes
+version: "0.1.0"
+module: tri_lang.optimizer_passes
+description: "Individual Optimizer Passes for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  constantFoldPass:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+    returns: "?TypedExpr"
+    description: "Constant folding pass - evaluate constant expressions at compile time"
+
+  getConstantFoldPass:
+    returns: "OptimizerPass"
+    description: "Get constant folding pass as OptimizerPass"
+
+  deadCodeElimPass:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+    returns: "?TypedExpr"
+    description: "Dead code elimination pass - remove unreachable code"
+
+  getDeadCodeElimPass:
+    returns: "OptimizerPass"
+    description: "Get dead code elimination pass as OptimizerPass"
+
+  arrayFusionPass:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+    returns: "?TypedExpr"
+    description: "Array combinator fusion pass - combine consecutive array operations"
+
+  getArrayFusionPass:
+    returns: "OptimizerPass"
+    description: "Get array fusion pass as OptimizerPass"
+
+  inlineExpansionPass:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+    returns: "?TypedExpr"
+    description: "Inline expansion pass - inline small functions at call sites"
+
+  getInlineExpansionPass:
+    returns: "OptimizerPass"
+    description: "Get inline expansion pass as OptimizerPass"
+
+  getStandardPasses:
+    returns: "[]const OptimizerPass"
+    description: "Get standard optimization pass list"
+
+  getAggressivePasses:
+    returns: "[]const OptimizerPass"
+    description: "Get aggressive optimization pass list"
+
+  getMinimalPasses:
+    returns: "[]const OptimizerPass"
+    description: "Get minimal optimization pass list"
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Individual optimizer passes:
+# - constantFoldPass: 2 + 3 => 5, -(-x) => x, if true x else y => x
+# - deadCodeElimPass: remove if false branches, unreachable match arms
+# - arrayFusionPass: map(f) |> filter(g) => single fused loop
+# - inlineExpansionPass: inline small functions at call sites
+#
+# Pass lists:
+# - Standard: constantFold + deadCodeElim + arrayFusion
+# - Aggressive: standard + inlineExpansion
+# - Minimal: constantFold only
+#
+# Each pass returns:
+# - null if no optimization applied
+# - new TypedExpr if optimized

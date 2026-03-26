@@ -1,0 +1,297 @@
+# ═══════════════════════════════════════════════════════════════════
+# RESULT TYPE — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Result<T, E> type for error handling (Gleam/Rust-style)
+# Source of truth for tri-lang/result_type.zig codegen
+# Issue #410: Result Type + No Exceptions
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_result_type
+version: "0.1.0"
+module: tri_lang.result_type
+description: "Result<T, E> type for error handling without exceptions (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file for error reporting"
+    fields:
+      - name: line
+        type: "usize"
+        description: "Line number"
+      - name: column
+        type: "usize"
+        description: "Column number"
+
+  Result:
+    description: "Result<T, E> union type - Ok(value) | Err(error)"
+    type_params: ["T", "E"]
+    variants:
+      - name: Ok
+        value: "T"
+        description: "Success value"
+      - name: Err
+        value: "E"
+        description: "Error value"
+
+  NeuroError:
+    description: "Common errors for neural operations"
+    underlying: "enum(u8)"
+    values:
+      - InvalidInput
+      - BufferOverflow
+      - DivisionByZero
+      - TypeMismatch
+      - OutOfMemory
+      - InvalidState
+      - Timeout
+      - NetworkError
+      - Unknown
+
+  ParseError:
+    description: "Errors for parsing operations"
+    underlying: "enum(u8)"
+    values:
+      - UnexpectedEnd
+      - UnexpectedToken
+      - InvalidSyntax
+      - InvalidLiteral
+
+  EpisodeError:
+    description: "Errors for episode operations"
+    underlying: "enum(u8)"
+    values:
+      - NotFound
+      - Corrupted
+      - TooOld
+      - InvalidFormat
+
+  MatchedResult:
+    description: "Runtime token that tracks if Result was properly matched"
+    fields:
+      - name: matched
+        type: "bool"
+        description: "Whether result was matched"
+    methods:
+      - name: init
+        returns: "MatchedResult"
+        description: "Create a new unmatched result"
+      - name: markMatched
+        returns: "void"
+        description: "Mark this result as matched"
+      - name: verify
+        returns: "void"
+        description: "Verify result was matched - panics if not"
+
+  LoweredResult:
+    description: "Lowered Result representation for TRI-27 VM"
+    fields:
+      - name: value
+        type: "u32"
+        description: "Register containing value or error code"
+      - name: is_error
+        type: "bool"
+        description: "Error flag: false=Ok, true=Err"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  # Result operations
+  map:
+    type_params: ["T", "U", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: mapper
+        type: "fn (T) U"
+    returns: "Result(U, E)"
+    description: "Map over the Ok value, keep Err unchanged"
+
+  mapError:
+    type_params: ["T", "E", "F"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: mapper
+        type: "fn (E) F"
+    returns: "Result(T, F)"
+    description: "Map over the error value, keep Ok unchanged"
+
+  andThen:
+    type_params: ["T", "U", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: mapper
+        type: "fn (T) Result(U, E)"
+    returns: "Result(U, E)"
+    description: "Chain: if Ok, apply function; if Err, keep error"
+
+  withDefault:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: default
+        type: "T"
+    returns: "T"
+    description: "Get the Ok value, or default if Err"
+
+  withDefaultLazy:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: default_fn
+        type: "fn (E) T"
+    returns: "T"
+    description: "Get the Ok value, or compute default from error"
+
+  unwrap:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "T"
+    description: "Unwrap: get Ok value, panic on Err (use sparingly!)"
+
+  unwrapOr:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: default
+        type: "T"
+    returns: "T"
+    description: "Unwrap or: get Ok value, or return default"
+
+  isOk:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "bool"
+    description: "Check if result is Ok"
+
+  isErr:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "bool"
+    description: "Check if result is Err"
+
+  match:
+    type_params: ["T", "E", "U"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: ok_handler
+        type: "fn (T) U"
+      - name: err_handler
+        type: "fn (E) U"
+    returns: "U"
+    description: "Exhaustive match over Result with both handlers required"
+
+  mustMatch:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "MatchedResult"
+    description: "Create a token that requires explicit matching"
+
+  unwrapChecked:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: checked
+        type: "*const MatchedResult"
+    returns: "T"
+    description: "Unwrap only safe after explicit match"
+
+  lowerToTRI27:
+    type_params: ["T", "E"]
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "LoweredResult"
+    description: "Lower Result to TRI-27 register + flag representation"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "result_ok"
+    given: "Ok result with value 42"
+    when: "checking properties"
+    then: "isOk is true, isErr is false, Ok value is 42"
+
+  - name: "result_err"
+    given: "Err result with InvalidInput"
+    when: "checking properties"
+    then: "isOk is false, isErr is true, Err value is InvalidInput"
+
+  - name: "result_map"
+    given: "Ok result"
+    when: "mapping with function"
+    then: "Ok value is transformed"
+
+  - name: "result_map_error"
+    given: "Err result"
+    when: "mapping error"
+    then: "Err value is transformed"
+
+  - name: "result_and_then_ok"
+    given: "Ok result"
+    when: "chaining with andThen"
+    then: "returns result of chained function"
+
+  - name: "result_and_then_err"
+    given: "Err result"
+    when: "chaining with andThen"
+    then: "propagates error"
+
+  - name: "result_with_default"
+    given: "Ok or Err result"
+    when: "calling withDefault"
+    then: "returns Ok value or default"
+
+  - name: "result_match_ok_branch"
+    given: "Ok result"
+    when: "matching with handlers"
+    then: "ok_handler is called"
+
+  - name: "result_match_err_branch"
+    given: "Err result"
+    when: "matching with handlers"
+    then: "err_handler is called"
+
+  - name: "result_tri27_lowering_ok"
+    given: "Ok result"
+    when: "lowering to TRI-27"
+    then: "is_error is false"
+
+  - name: "result_tri27_lowering_err"
+    given: "Err result"
+    when: "lowering to TRI-27"
+    then: "is_error is true"
+
+  - name: "mustMatch_with_proper_match"
+    given: "Result with mustMatch token"
+    when: "matching and marking"
+    then: "token shows matched=true"
+
+  - name: "unwrapChecked_after_match"
+    given: "Matched result"
+    when: "calling unwrapChecked"
+    then: "returns Ok value safely"

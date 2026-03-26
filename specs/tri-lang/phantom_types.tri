@@ -1,0 +1,262 @@
+# ═══════════════════════════════════════════════════════════════════
+# PHANTOM TYPES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Phantom Types for Bank Safety (Wave 2 Step 2)
+# Source of truth for tri-lang/phantom_types.zig codegen
+# Issue #411: Linear Types + Ownership Modes
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_phantom_types
+version: "0.1.0"
+module: tri_lang.phantom_types
+description: "Phantom types for compile-time bank safety (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  # Bank tags (type-level identifiers)
+  Bank0:
+    description: "Bank0 type tag (Coptic: ⲁ)"
+    underlying: "struct"
+
+  Bank1:
+    description: "Bank1 type tag (Coptic: Ⲃ)"
+    underlying: "struct"
+
+  Bank2:
+    description: "Bank2 type tag (Coptic: Ⲅ)"
+    underlying: "struct"
+
+  Bank3:
+    description: "Bank3 type tag (Coptic: Ⲇ)"
+    underlying: "struct"
+
+  Bank4:
+    description: "Bank4 type tag (Coptic: Ⲉ)"
+    underlying: "struct"
+
+  Bank5:
+    description: "Bank5 type tag (Coptic: Ⲋ)"
+    underlying: "struct"
+
+  Bank6:
+    description: "Bank6 type tag (Coptic: Ⲍ)"
+    underlying: "struct"
+
+  Bank7:
+    description: "Bank7 type tag (Coptic: Ⲏ)"
+    underlying: "struct"
+
+  Bank8:
+    description: "Bank8 type tag (Coptic: Ⲑ)"
+    underlying: "struct"
+
+  Banked:
+    description: "Generic banked value with phantom Bank parameter"
+    generic_params:
+      - T: "Value type"
+      - Bank: "Bank tag type (phantom)"
+    fields:
+      - name: value
+        type: "T"
+        description: "The actual value"
+    methods:
+      - name: init
+        params:
+          - name: v
+            type: "T"
+        returns: "Self"
+        description: "Create a new banked value"
+
+      - name: bankNumber
+        returns: "usize"
+        description: "Get the bank number (0-8)"
+
+      - name: transferTo
+        generic_params:
+          - NewBank: "Target bank type"
+        params:
+          - name: self
+            type: "Self"
+        returns: "Banked(T, NewBank)"
+        description: "Transfer value to different bank"
+
+  LoweredBanked:
+    description: "Lowered banked value for TRI-27 VM"
+    fields:
+      - name: value
+        type: "u16"
+        description: "Value (lower 12 bits)"
+      - name: bank
+        type: "u4"
+        description: "Bank number (0-8, encoded in bits 12-14)"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  bankFromType:
+    params:
+      - name: Bank
+        type: "type"
+        comptime: true
+    returns: "usize"
+    description: "Get bank number from type tag (comptime)"
+    note: "Returns 0-8 for Bank0-Bank8, compile error otherwise"
+
+  bankFromNumber:
+    params:
+      - name: n
+        type: "usize"
+        comptime: true
+    returns: "type"
+    description: "Get bank type from number (comptime)"
+    note: "Returns Bank0-Bank8 for 0-8, compile error otherwise"
+
+  isSameBank:
+    params:
+      - name: BankA
+        type: "type"
+        comptime: true
+      - name: BankB
+        type: "type"
+        comptime: true
+    returns: "bool"
+    description: "Check if two banked values are from same bank (comptime)"
+
+  addBanked:
+    generic_params:
+      - T: "Value type"
+      - Bank: "Bank type"
+    params:
+      - name: a
+        type: "Banked(T, Bank)"
+      - name: b
+        type: "Banked(T, Bank)"
+    returns: "Banked(T, Bank)"
+    description: "Add two banked values (must be from same bank)"
+
+  subBanked:
+    generic_params:
+      - T: "Value type"
+      - Bank: "Bank type"
+    params:
+      - name: a
+        type: "Banked(T, Bank)"
+      - name: b
+        type: "Banked(T, Bank)"
+    returns: "Banked(T, Bank)"
+    description: "Subtract two banked values (must be from same bank)"
+
+  crossBankAdd:
+    generic_params:
+      - T: "Value type"
+      - BankA: "First bank type"
+      - BankB: "Second bank type"
+    params:
+      - name: a
+        type: "Banked(T, BankA)"
+      - name: b
+        type: "Banked(T, BankB)"
+    returns: "Banked(T, BankA)"
+    description: "Combine values from different banks (explicit cross-bank operation)"
+    note: "Result goes to first bank"
+
+  lowerBankedToTRI27:
+    generic_params:
+      - T: "Value type"
+      - Bank: "Bank type"
+    params:
+      - name: banked
+        type: "Banked(T, Bank)"
+    returns: "LoweredBanked"
+    description: "Lower banked value to TRI-27 representation"
+
+  bankedAddress:
+    params:
+      - name: bank
+        type: "u4"
+      - name: offset
+        type: "u12"
+    returns: "u16"
+    description: "Get TRI-27 register address for banked value"
+    note: "Format: [bank:3bits][offset:12bits]"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "banked_value_init"
+    given: "Banked(i32, Bank0) with value 42"
+    when: "created"
+    then: "value field equals 42"
+
+  - name: "bank_number_from_type"
+    given: "Bank0, Bank4, Bank8"
+    when: "calling bankFromType"
+    then: "returns 0, 4, 8 respectively"
+
+  - name: "bank_from_number"
+    given: "0, 4, 8"
+    when: "calling bankFromNumber"
+    then: "returns Bank0, Bank4, Bank8 respectively"
+
+  - name: "is_same_bank"
+    given: "Bank0/Bank0, Bank3/Bank3, Bank0/Bank1, Bank4/Bank7"
+    when: "calling isSameBank"
+    then: "returns true, true, false, false"
+
+  - name: "add_banked_same_bank"
+    given: "Banked(i32, Bank2) values 30 and 12"
+    when: "calling addBanked"
+    then: "returns Banked with value 42"
+
+  - name: "sub_banked_same_bank"
+    given: "Banked(i32, Bank5) values 50 and 8"
+    when: "calling subBanked"
+    then: "returns Banked with value 42"
+
+  - name: "cross_bank_add"
+    given: "Banked(i32, Bank0) value 30, Banked(i32, Bank3) value 12"
+    when: "calling crossBankAdd"
+    then: "returns Banked(i32, Bank0) with value 42"
+
+  - name: "transfer_to_bank"
+    given: "Banked(i32, Bank1) value 99"
+    when: "calling transferTo(Bank7)"
+    then: "returns Banked(i32, Bank7) with value 99"
+
+  - name: "lower_to_tri27"
+    given: "Banked(u16, Bank3) value 0x123"
+    when: "calling lowerBankedToTRI27"
+    then: "returns LoweredBanked with value=0x123, bank=3"
+
+  - name: "banked_address"
+    given: "bank=0, offset=0xFFF; bank=5, offset=0x123; bank=8, offset=0x000"
+    when: "calling bankedAddress"
+    then: "returns 0x0FFF, 0x5123, 0x8000"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Phantom types enforce bank safety at compile time:
+# - Bank parameter in Banked<T, Bank> is phantom (not stored at runtime)
+# - Prevents accidental mixing of values from different banks
+# - Cross-bank operations require explicit function calls
+# - TRI-27 lowering encodes bank in high bits of address
+#
+# Example usage:
+#   var x = Banked(i32, Bank0).init(42);
+#   var y = Banked(i32, Bank0).init(10);
+#   var z = addBanked(i32, Bank0, x, y); // OK: same bank
+#
+#   var a = Banked(i32, Bank0).init(42);
+#   var b = Banked(i32, Bank1).init(10);
+#   var c = crossBankAdd(i32, Bank0, Bank1, a, b); // OK: explicit

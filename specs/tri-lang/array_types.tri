@@ -1,0 +1,326 @@
+# ═══════════════════════════════════════════════════════════════════
+# ARRAY TYPES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Fixed-Size Arrays with Bounds Checking (Wave 2)
+# Source of truth for tri-lang/array_types.zig codegen
+# Issue #413: Array Combinators
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_array_types
+version: "0.1.0"
+module: tri_lang.array_types
+description: "Fixed-size arrays with bounds checking and combinators (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  ArrayFixed:
+    description: "Fixed-size array with compile-time bounds checking"
+    generic_params:
+      - T: "Element type"
+      - N: "Array size (compile-time)"
+    fields:
+      - name: data
+        type: "[N]T"
+        description: "Underlying data storage"
+    methods:
+      - name: initUndefined
+        returns: "Self"
+        description: "Create array with undefined values"
+
+      - name: initDefault
+        params:
+          - name: default_value
+            type: "T"
+        returns: "Self"
+        description: "Create array filled with default value"
+
+      - name: fromSlice
+        params:
+          - name: slice
+            type: "[]const T"
+        returns: "!Self"
+        description: "Create array from slice (must match size)"
+        errors:
+          - SliceLengthMismatch
+
+      - name: get
+        params:
+          - name: index
+            type: "usize"
+        returns: "!T"
+        description: "Get element with bounds checking"
+        errors:
+          - OutOfBounds
+
+      - name: getUnsafe
+        params:
+          - name: index
+            type: "usize"
+        returns: "T"
+        description: "Get element without bounds checking (unsafe)"
+
+      - name: set
+        params:
+          - name: index
+            type: "usize"
+          - name: value
+            type: "T"
+        returns: "!void"
+        description: "Set element with bounds checking"
+        errors:
+          - OutOfBounds
+
+      - name: setUnsafe
+        params:
+          - name: index
+            type: "usize"
+          - name: value
+            type: "T"
+        returns: "void"
+        description: "Set element without bounds checking (unsafe)"
+
+      - name: len
+        returns: "usize"
+        description: "Get array length (compile-time constant)"
+
+      - name: byteLen
+        returns: "usize"
+        description: "Get array size in bytes"
+
+      - name: asSlice
+        returns: "[]const T"
+        description: "Convert to const slice"
+
+      - name: asMutSlice
+        returns: "[]T"
+        description: "Convert to mutable slice"
+
+      - name: fill
+        params:
+          - name: value
+            type: "T"
+        returns: "void"
+        description: "Fill array with a value"
+
+      - name: copyFrom
+        params:
+          - name: other
+            type: "Self"
+        returns: "void"
+        description: "Copy contents from another array"
+
+      - name: contains
+        params:
+          - name: value
+            type: "T"
+        returns: "bool"
+        description: "Check if array contains a value"
+
+      - name: indexOf
+        params:
+          - name: value
+            type: "T"
+        returns: "?usize"
+        description: "Find index of value (null if not found)"
+
+      - name: reverse
+        returns: "void"
+        description: "Reverse the array in place"
+
+      # Combinators (Futhark-style)
+      - name: map
+        generic_params:
+          - U: "Output element type"
+        params:
+          - name: mapper
+            type: "fn (T) U"
+        returns: "ArrayFixed(U, N)"
+        description: "Apply function to each element"
+
+      - name: reduce
+        params:
+          - name: initial
+            type: "T"
+          - name: op
+            type: "fn (T, T) T"
+        returns: "T"
+        description: "Fold array using binary operation"
+
+      - name: scan
+        params:
+          - name: initial
+            type: "T"
+          - name: op
+            type: "fn (T, T) T"
+        returns: "ArrayFixed(T, N)"
+        description: "Prefix scan (inclusive)"
+
+      - name: filter
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: predicate
+            type: "fn (T) bool"
+        returns: "![]T"
+        description: "Keep elements matching predicate"
+        note: "Returns slice (may be shorter than N)"
+
+      - name: zip
+        generic_params:
+          - U: "Other array element type"
+        params:
+          - name: other
+            type: "ArrayFixed(U, N)"
+        returns: "ArrayFixed(std.meta.Tuple(&.{T, U}), N)"
+        description: "Combine with another array element-wise"
+
+      - name: flatMap
+        generic_params:
+          - U: "Output element type"
+          - M: "Mapped array size"
+        params:
+          - name: mapper
+            type: "fn (T) ArrayFixed(U, M)"
+        returns: "ArrayFixed(U, N * M)"
+        description: "Apply function returning array and flatten"
+
+  LoweredArray:
+    description: "Lowered array representation for TRI-27 VM"
+    fields:
+      - name: base_addr
+        type: "u16"
+        description: "Base address (includes bank in high bits)"
+      - name: size
+        type: "u12"
+        description: "Number of elements"
+      - name: element_size
+        type: "u8"
+        description: "Element size in bytes"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  arrayAddress:
+    params:
+      - name: bank
+        type: "u4"
+      - name: offset
+        type: "u12"
+    returns: "u16"
+    description: "Get TRI-27 memory address for array element"
+    note: "Format: [bank:3bits][offset:12bits]"
+
+  lowerArrayFixed:
+    generic_params:
+      - T: "Element type"
+      - N: "Array size"
+    params:
+      - name: array
+        type: "ArrayFixed(T, N)"
+    returns: "LoweredArray"
+    description: "Lower array to TRI-27 representation"
+    note: "TODO: allocate actual memory"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "ArrayFixed init and get"
+    given: "ArrayFixed(i32, 5) with default value 42"
+    when: "getting element 0"
+    then: "returns 42"
+
+  - name: "ArrayFixed bounds check"
+    given: "ArrayFixed(i32, 3)"
+    when: "getting element 10"
+    then: "returns OutOfBounds error"
+
+  - name: "ArrayFixed set and get"
+    given: "ArrayFixed(i32, 4)"
+    when: "setting element 2 to 99"
+    then: "get returns 99"
+
+  - name: "ArrayFixed fill"
+    given: "ArrayFixed(i32, 5)"
+    when: "filling with 42"
+    then: "all elements equal 42"
+
+  - name: "ArrayFixed contains"
+    given: "ArrayFixed(i32, 5) with values {1,2,3,4,5}"
+    when: "checking contains 3 and 99"
+    then: "returns true and false"
+
+  - name: "ArrayFixed indexOf"
+    given: "ArrayFixed(i32, 5) with values {10,20,30,40,50}"
+    when: "finding 30 and 99"
+    then: "returns 2 and null"
+
+  - name: "ArrayFixed reverse"
+    given: "ArrayFixed(i32, 5) with values {1,2,3,4,5}"
+    when: "reversing"
+    then: "becomes {5,4,3,2,1}"
+
+  - name: "ArrayFixed map"
+    given: "ArrayFixed(i32, 4) with values {1,2,3,4}"
+    when: "mapping with double function"
+    then: "returns {2,4,6,8}"
+
+  - name: "ArrayFixed reduce"
+    given: "ArrayFixed(i32, 5) with values {1,2,3,4,5}"
+    when: "reducing with add"
+    then: "returns 15"
+
+  - name: "ArrayFixed scan"
+    given: "ArrayFixed(i32, 4) with values {1,2,3,4}"
+    when: "scanning with add"
+    then: "returns {1,3,6,10}"
+
+  - name: "ArrayFixed zip"
+    given: "ArrayFixed(i32, 3) with {1,2,3} and {10,20,30}"
+    when: "zipping"
+    then: "returns {(1,10), (2,20), (3,30)}"
+
+  - name: "ArrayFixed flatMap"
+    given: "ArrayFixed(i32, 2) with {1,2}, mapping to duplicate each"
+    when: "flatMapping"
+    then: "returns {1,2,2,4}"
+
+  - name: "ArrayFixed fromSlice"
+    given: "slice {1,2,3,4,5}"
+    when: "creating ArrayFixed(i32, 5)"
+    then: "copies all elements"
+
+  - name: "ArrayFixed fromSlice wrong length fails"
+    given: "slice {1,2,3} and ArrayFixed(i32, 5)"
+    when: "creating from slice"
+    then: "returns SliceLengthMismatch error"
+
+  - name: "arrayAddress"
+    given: "bank=0,offset=100; bank=1,offset=100; bank=7,offset=0xFFF"
+    when: "calling arrayAddress"
+    then: "returns 100, 0x1000+100, 0x7FFF"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# ArrayFixed provides compile-time sized arrays with runtime bounds checking:
+# - Size N is compile-time constant (type parameter)
+# - All operations check bounds at runtime (get/set)
+# - Unsafe variants available (getUnsafe/setUnsafe)
+# - Futhark-style combinators: map, reduce, scan, filter, zip, flatMap
+# - TRI-27 lowering encodes bank in high bits of address
+#
+# Example:
+#   var arr = ArrayFixed(i32, 5).initDefault(0);
+#   try arr.set(0, 42);
+#   const val = try arr.get(0);
+#   const doubled = arr.map(i32, double);

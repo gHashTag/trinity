@@ -6,7 +6,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const firebird_vsa = @import("vsa.zig");
+const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
 const b2t = @import("b2t_integration.zig");
 const depin = @import("depin.zig");

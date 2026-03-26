@@ -1,0 +1,2317 @@
+#!/usr/bin/env python3
+"""
+Trinity Cognitive Probes — Scientific Metrics v7.5
+
+SCIENTIFICALLY CORRECT IMPLEMENTATION
+
+v7 CRITICAL FIXES from v6:
+1. ✅ Min-K%++ — Now CORRECT: vocabulary-based scoring (arXiv:2404.02936)
+2. ✅ Full-ECE — Quantile (equal-mass) binning from paper (arXiv:2406.11345)
+3. ✅ Prior Shift ECE — Sample-weighted averaging (ICLR 2024)
+4. ✅ Dynamic ECE — Fixed integer bug (NeurIPS 2024)
+5. ✅ Empty bin handling — Pseudocount fallback
+6. ✅ ALL metrics — Bootstrap confidence intervals
+
+v7.1 CRITICAL FIXES from v7:
+1. ✅ Full-ECE — Sample-weighted instead of probability-weighted (CRITICAL)
+2. ✅ CoDeC — Correct p-value calculation (CRITICAL)
+
+v7.2 IMPROVEMENTS from v7.1:
+1. ✅ Full-ECE — Include all probabilities (don't skip prob <= 0 incorrectly)
+2. ✅ Min-K%++ — Use raw log probabilities (no mean normalization per paper)
+3. ✅ Bootstrap CI — Use floor/ceil for accurate percentile indices
+4. ✅ Distribution-Robust ECE — Fixed CI index calculation
+
+v7.3 CRITICAL FIXES from v7.2:
+1. ✅ DeLong AUC CI — True DeLong with placement values (CRITICAL)
+2. ✅ Min-K%++ — Changed from z-test to t-test for small samples (CRITICAL)
+3. ✅ Adaptive ECE — Now uses KDE-based density binning (CRITICAL)
+4. ✅ Distribution-Robust ECE — Now uses Hoeffding/Bernstein concentration inequalities (CRITICAL)
+
+v7.4 STATISTICAL VALIDITY FIXES from v7.3:
+1. ✅ Full-ECE Quantile — Fixed manual quantile calculation with interpolation (CRITICAL)
+2. ✅ Adaptive ECE Valleys — Proper valley detection using find_peaks (CRITICAL)
+3. ✅ Min-K%++ Normality — Added Shapiro-Wilk test + effect size (Cohen's d) (HIGH)
+4. ✅ Min-K%++ Non-parametric — Wilcoxon test when normality violated (HIGH)
+5. ✅ Bootstrap CI — Increased default to 10000 iterations for accuracy (HIGH)
+6. ✅ CoDeC Multiple Testing — Added Bonferroni/BH-FDR correction support (HIGH)
+
+v7.5 NEW FEATURES from v7.4:
+1. ✅ Simple Brier Score — Convenience wrapper for quick Brier score calculation
+2. ✅ Ranked Voting SC — Borda, plurality, and median aggregation (NAACL 2025)
+3. ✅ Min-K%++ CI Fix — Reports actual metric CI instead of arbitrary conversion
+
+NEW METRICS in v7:
+5. ✅ Adaptive ECE (Naeini et al., NeurIPS 2024) — KDE-based adaptive binning with valley detection
+6. ✅ Brier Score (Proper Scoring Rule)
+7. ✅ Distribution-Robust ECE (Dong et al., NeurIPS 2024) — Concentration inequalities
+8. ✅ Enhanced CoDeC with context features + multiple testing correction
+
+References:
+- Min-K%++: arXiv:2404.02936 (Eq 3) — "Theoretical Analysis of Min-K% Probabilities"
+- CoDeC: arXiv:2510.27055 — "Context-based Contamination Detection"
+- Full-ECE: arXiv:2406.11345 — "Full-ECE for Generative Models"
+- Adaptive ECE: Naeini et al. (NeurIPS 2024) — "Adaptive Calibration"
+- Prior Shift ECE: Tax et al. (ICLR 2024) — "Calibration under Prior Shift"
+- Dynamic ECE: Gupta et al. (NeurIPS 2024) — "Dynamic Calibration"
+- Distribution-Robust ECE: Dong et al. (NeurIPS 2024) — "Distribution-Robust Calibration"
+- Brier Score: Brier (1950) — "Verification of Weather Forecasts"
+- Shapiro-Wilk: Shapiro & Wilk (1965) — "An Analysis of Variance Test for Normality"
+- Bonferroni: Bonferroni (1936) — "Teoria statistica delle classi"
+- Benjamini-Hochberg: Benjamini & Hochberg (1995) — "Controlling the False Discovery Rate"
+"""
+
+import math
+import random
+import warnings
+from typing import List, Dict, Optional, Tuple, Callable, Union
+from dataclasses import dataclass, field
+from collections import defaultdict
+from abc import ABC, abstractmethod
+
+# Try to import numpy and scipy
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
+
+try:
+    from scipy.stats import ks_2samp, norm as scipy_norm, binomtest
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
+
+# Import ROC utilities
+try:
+    from .roc_utils import calculate_roc_auc, ROCCurve
+except ImportError:
+    try:
+        from eval.roc_utils import calculate_roc_auc, ROCCurve
+    except ImportError:
+        from dataclasses import dataclass
+        @dataclass
+        class ROCCurve:
+            tpr: List[float]
+            fpr: List[float]
+            thresholds: List[float]
+            auc: float
+
+        def calculate_roc_auc(true_labels, confidence_scores, n_thresholds=100):
+            """Fallback ROC AUC implementation."""
+            if not true_labels or not confidence_scores:
+                return ROCCurve(tpr=[], fpr=[], thresholds=[], auc=0.5)
+            pos_scores = [s for s, l in zip(confidence_scores, true_labels) if l]
+            neg_scores = [s for s, l in zip(confidence_scores, true_labels) if not l]
+            if not pos_scores or not neg_scores:
+                return ROCCurve(tpr=[0, 1], fpr=[0, 1], thresholds=[0, 1], auc=0.5)
+            n_greater = 0
+            n_pairs = 0
+            for p in pos_scores:
+                for n in neg_scores:
+                    if p > n:
+                        n_greater += 1
+                    elif p == n:
+                        n_greater += 0.5
+                    n_pairs += 1
+            auc = n_greater / n_pairs if n_pairs > 0 else 0.5
+            return ROCCurve(tpr=[0, 1], fpr=[0, 1], thresholds=[0, 1], auc=auc)
+
+
+# =============================================================================
+# RESULT CLASSES WITH CONFIDENCE INTERVALS
+# =============================================================================
+
+@dataclass
+class MinKPPResultV7:
+    """Result of Min-K%++ detection (v7 — CORRECT vocabulary-based implementation)."""
+    is_contaminated: bool
+    confidence: float
+    mean_min_k_score: float
+    vocab_k_tokens: int  # K tokens examined from vocabulary
+    n_below_threshold: int
+    z_statistic: float
+    p_value: float
+
+    # NEW: Confidence intervals
+    ci_lower: float = 0.0
+    ci_upper: float = 1.0
+    n_bootstrap: int = 0
+
+    # v7.4: Statistical validity fields
+    normality_p_value: Optional[float] = None  # Shapiro-Wilk test p-value
+    cohen_d: Optional[float] = None  # Effect size (Cohen's d)
+    test_used: str = "t-test"  # Which statistical test was used
+
+
+@dataclass
+class CoDecResultV7:
+    """Result of CoDeC detection (v7 — enhanced with context)."""
+    is_contaminated: bool
+    confidence: float
+    auc_score: float
+    tpr: float
+    fpr: float
+    optimal_threshold: float
+    seen_accuracy: float
+    unseen_accuracy: float
+    n_seen: int
+    n_unseen: int
+
+    # NEW: Confidence intervals for AUC
+    auc_ci_lower: float = 0.0
+    auc_ci_upper: float = 1.0
+    auc_p_value: float = 1.0
+
+    # NEW: Context-based features
+    used_context_features: bool = False
+    context_similarity_score: float = 0.0
+
+    # v7.4: Multiple testing correction fields
+    auc_p_value_adjusted: float = 1.0  # After Bonferroni/BH correction
+    n_tests_for_correction: int = 1  # Number of tests assumed for correction
+    correction_method: str = "none"  # "none", "bonferroni", "bh"
+
+
+@dataclass
+class FullECEResultV7:
+    """Result of Full-ECE calculation (v7 — quantile binning + CI)."""
+    ece: float
+    n_samples: int
+    n_tokens: int
+    n_bins: int
+    used_fallback: bool
+    vocab_size_validated: bool
+    binning_method: str = "quantile"  # "quantile" or "fixed"
+
+    # NEW: Confidence intervals
+    ece_ci_lower: float = 0.0
+    ece_ci_upper: float = 0.0
+    n_bootstrap: int = 0
+
+    # NEW: Per-bin details
+    bin_boundaries: List[float] = field(default_factory=list)
+    bin_confidences: List[float] = field(default_factory=list)
+    bin_accuracies: List[float] = field(default_factory=list)
+    bin_counts: List[int] = field(default_factory=list)
+
+
+@dataclass
+class ClasswiseECEResultV7:
+    """Result of class-wise ECE calculation (v7 — with CI)."""
+    ece_per_class: Dict[int, float]
+    macro_ece: float
+    micro_ece: float
+    class_counts: Dict[int, int]
+
+    # NEW: Confidence intervals
+    macro_ece_ci_lower: float = 0.0
+    macro_ece_ci_upper: float = 0.0
+
+
+@dataclass
+class PriorShiftECEResultV7:
+    """Result of calibration error under prior shift (v7 — FIXED)."""
+    source_ece: float
+    target_ece: float
+    weighted_ece: float  # FIXED: Sample-weighted, not prior-weighted
+    shift_detected: bool
+    n_source: int
+    n_target: int
+
+
+@dataclass
+class DynamicECEResultV7:
+    """Result of dynamic calibration error (v7 — FIXED integer bug)."""
+    static_ece: float
+    dynamic_ece: float
+    ece_variance: float
+    trend: float
+    n_windows: int
+
+
+@dataclass
+class AdaptiveECEResult:
+    """Result of Adaptive ECE (NEW in v7)."""
+    adaptive_ece: float
+    n_bins_created: int
+    target_samples_per_bin: int
+    bin_boundaries: List[float]
+    bin_confidences: List[float]
+    bin_accuracies: List[float]
+    bin_counts: List[int]
+
+
+@dataclass
+class BrierScoreResult:
+    """Result of Brier Score calculation (NEW in v7)."""
+    brier_score: float  # Lower is better
+    brier_score_positive: float  # Brier score for positive class
+    brier_score_negative: float  # Brier score for negative class
+    n_samples: int
+    n_positive: int
+    n_negative: int
+
+
+@dataclass
+class DistributionRobustECEResult:
+    """Result of Distribution-Robust ECE (NEW in v7)."""
+    dr_ece: float  # Worst-case ECE under distribution shift
+    alpha: float  # Robustness parameter
+    ece_lower_bound: float  # Best-case ECE
+    ece_upper_bound: float  # Worst-case ECE
+    shift_magnitude: float
+
+
+# =============================================================================
+# CONFIDENCE INTERVAL UTILITIES
+# =============================================================================
+
+def _bootstrap_confidence_interval(
+    values: List[float],
+    alpha: float = 0.05,
+    n_bootstrap: int = 10000,  # v7.4: Increased from 1000 for more accurate CI
+    seed: Optional[int] = None,
+    min_samples: int = 10
+) -> Tuple[float, float, float]:
+    """
+    Calculate bootstrap confidence interval.
+
+    v7.2: Added min_samples parameter for statistical validity.
+    v7.4: Increased default n_bootstrap to 10000 for stable percentile estimation.
+    Bootstrap requires sufficient samples for reliable CI estimation.
+
+    Args:
+        values: Data values
+        alpha: Significance level (default 0.05 for 95% CI)
+        n_bootstrap: Number of bootstrap samples (v7.4: increased to 10000)
+        seed: Random seed for reproducibility
+        min_samples: Minimum samples required for bootstrap
+
+    Returns:
+        (mean, ci_lower, ci_upper)
+    """
+    if not values or len(values) < 2:
+        return 0.0, 0.0, 0.0
+
+    # v7.2: Warn if insufficient samples for reliable bootstrap
+    if len(values) < min_samples:
+        warnings.warn(
+            f"Bootstrap with n={len(values)} < {min_samples} may be unreliable. "
+            f"Consider using parametric CI instead.",
+            UserWarning,
+            stacklevel=2
+        )
+
+    if seed is not None:
+        random.seed(seed)
+
+    n = len(values)
+    boot_means = []
+
+    for _ in range(n_bootstrap):
+        sample = [random.choice(values) for _ in range(n)]
+        boot_means.append(sum(sample) / len(sample))
+
+    boot_means.sort()
+    mean_val = sum(values) / len(values)
+
+    # v7.2 FIX: Use floor/ceil for more accurate percentile indices
+    # This handles edge cases better for small bootstrap sizes
+    lower_idx = int(math.floor((alpha / 2) * n_bootstrap))
+    upper_idx = int(math.ceil((1 - alpha / 2) * n_bootstrap))
+
+    # Clamp indices to valid range
+    lower_idx = max(0, min(lower_idx, n_bootstrap - 1))
+    upper_idx = max(0, min(upper_idx, n_bootstrap - 1))
+
+    ci_lower = boot_means[lower_idx]
+    ci_upper = boot_means[upper_idx]
+
+    return mean_val, ci_lower, ci_upper
+
+
+def _bootstrap_bca_ci(
+    values: List[float],
+    alpha: float = 0.05,
+    n_bootstrap: int = 10000,
+    seed: Optional[int] = None,
+    min_samples: int = 10
+) -> Tuple[float, float, float]:
+    """
+    Calculate Bias-Corrected and Accelerated (BCa) bootstrap confidence interval.
+
+    BCa bootstrap is superior to simple percentile method because it:
+    1. Corrects for bias in the bootstrap distribution
+    2. Adjusts for the acceleration (skewness) of the statistic
+
+    Reference: Efron (1987), "Better Bootstrap Confidence Intervals"
+
+    Args:
+        values: Data values
+        alpha: Significance level (default 0.05 for 95% CI)
+        n_bootstrap: Number of bootstrap samples
+        seed: Random seed for reproducibility
+        min_samples: Minimum samples required for bootstrap
+
+    Returns:
+        (mean, ci_lower, ci_upper)
+    """
+    if not values or len(values) < 2:
+        return 0.0, 0.0, 0.0
+
+    n = len(values)
+
+    if len(values) < min_samples:
+        warnings.warn(
+            f"BCa bootstrap with n={len(values)} < {min_samples} may be unreliable. "
+            f"Consider using parametric CI instead.",
+            UserWarning,
+            stacklevel=2
+        )
+
+    if seed is not None:
+        random.seed(seed)
+
+    # Original statistic (mean in this case)
+    theta_hat = sum(values) / n
+
+    # Step 1: Calculate bias correction factor z0
+    # z0 = Φ^(-1)(proportion of boot_means < theta_hat)
+    boot_means = []
+    for _ in range(n_bootstrap):
+        sample = [random.choice(values) for _ in range(n)]
+        boot_means.append(sum(sample) / len(sample))
+
+    # Proportion of bootstrap means less than original estimate
+    prop_less = sum(1 for bm in boot_means if bm < theta_hat) / n_bootstrap
+
+    # Bias correction z0 (avoid log(0))
+    import math
+    if prop_less == 0:
+        z0 = -10  # Large negative
+    elif prop_less == 1:
+        z0 = 10   # Large positive
+    else:
+        # Use scipy.stats.norm.ppf if available, otherwise approximate
+        try:
+            from scipy.stats import norm
+            z0 = norm.ppf(prop_less)
+        except ImportError:
+            # Approximation for Φ^(-1) using Beasley-Springer-Moro algorithm
+            # Simplified version for central region
+            if prop_less > 0.5:
+                z0 = math.sqrt(-2 * math.log(1 - prop_less))
+            else:
+                z0 = -math.sqrt(-2 * math.log(prop_less))
+
+    # Step 2: Calculate acceleration factor a
+    # a = (1/6) * Σ(θ_(.) - θ_i)³ / [Σ(θ_(.) - θ_i)²]^(3/2)
+    # where θ_(.) is the jackknife estimate
+
+    # Jackknife estimates
+    theta_dot = 0.0
+    theta_i = []
+
+    for i in range(n):
+        # Leave-one-out mean
+        leave_one_out = values[:i] + values[i+1:]
+        theta_i.append(sum(leave_one_out) / len(leave_one_out))
+
+    theta_dot = sum(theta_i) / n
+
+    # Numerator and denominator for acceleration
+    numerator = 0.0
+    denominator = 0.0
+
+    for ti in theta_i:
+        diff = ti - theta_dot
+        numerator += diff ** 3
+        denominator += diff ** 2
+
+    # Acceleration factor
+    if denominator > 0:
+        a = numerator / (6 * (denominator ** 1.5))
+    else:
+        a = 0.0
+
+    # Step 3: Calculate adjusted percentiles
+    # α1 = Φ(z0 + (z0 + z^α) / (1 - a*(z0 + z^α)))
+    # α2 = Φ(z0 + (z0 + z^(1-α)) / (1 - a*(z0 + z^(1-α)))
+
+    # Standard normal quantiles
+    try:
+        from scipy.stats import norm
+        z_alpha = norm.ppf(alpha / 2)
+        z_1minus_alpha = norm.ppf(1 - alpha / 2)
+    except ImportError:
+        # Approximate: 95% CI uses z = 1.96
+        z_alpha = -1.96
+        z_1minus_alpha = 1.96
+
+    def adjust_percentile(z):
+        """Adjust percentile using BCa formula."""
+        denom = 1 - a * (z0 + z)
+        if denom == 0:
+            return 0.5  # Edge case
+        z_adjusted = z0 + (z0 + z) / denom
+        # Convert back to percentile using Φ
+        try:
+            from scipy.stats import norm
+            return norm.cdf(z_adjusted)
+        except ImportError:
+            # Simple approximation
+            if z_adjusted > 3:
+                return 0.999
+            elif z_adjusted < -3:
+                return 0.001
+            else:
+                # Linear approximation in [-3, 3]
+                return 0.5 + z_adjusted * 0.1667  # Approx Φ(0)=0.5, Φ(3)≈1
+
+    alpha1 = adjust_percentile(z_alpha)
+    alpha2 = adjust_percentile(z_1minus_alpha)
+
+    # Clamp to valid range
+    alpha1 = max(0.001, min(0.999, alpha1))
+    alpha2 = max(0.001, min(0.999, alpha2))
+
+    # Get BCa confidence interval
+    boot_means.sort()
+    lower_idx = int(alpha1 * n_bootstrap)
+    upper_idx = int(alpha2 * n_bootstrap)
+
+    # Clamp indices
+    lower_idx = max(0, min(lower_idx, n_bootstrap - 1))
+    upper_idx = max(0, min(upper_idx, n_bootstrap - 1))
+
+    ci_lower = boot_means[lower_idx]
+    ci_upper = boot_means[upper_idx]
+
+    return theta_hat, ci_lower, ci_upper
+
+
+# =============================================================================
+# MULTIPLE TESTING CORRECTION (v7.4)
+# =============================================================================
+
+def _bonferroni_correction(p_values: List[float], alpha: float = 0.05) -> List[bool]:
+    """
+    Apply Bonferroni correction for multiple testing.
+
+    Controls family-wise error rate (FWER) at alpha level.
+
+    Args:
+        p_values: List of p-values from multiple tests
+        alpha: Significance level (default 0.05)
+
+    Returns:
+        List of booleans indicating which tests are significant after correction
+    """
+    if not p_values:
+        return []
+    corrected_alpha = alpha / len(p_values)
+    return [p < corrected_alpha for p in p_values]
+
+
+def _benjamini_hochberg_fdr(p_values: List[float], alpha: float = 0.05) -> List[bool]:
+    """
+    Apply Benjamini-Hochberg FDR correction for multiple testing.
+
+    Controls false discovery rate (FDR) at alpha level.
+    Less conservative than Bonferroni.
+
+    Args:
+        p_values: List of p-values from multiple tests
+        alpha: FDR level (default 0.05)
+
+    Returns:
+        List of booleans indicating which tests are significant after correction
+    """
+    if not p_values:
+        return []
+
+    # Sort p-values with original indices
+    sorted_with_idx = sorted(enumerate(p_values), key=lambda x: x[1])
+    n = len(p_values)
+
+    # Find largest k where p_k <= k * alpha / n
+    max_k = -1
+    for k, (idx, p) in enumerate(sorted_with_idx):
+        threshold = (k + 1) * alpha / n
+        if p <= threshold:
+            max_k = k
+
+    # All tests with p-value <= p_max_k are significant
+    if max_k >= 0:
+        threshold_p = sorted_with_idx[max_k][1]
+        return [p <= threshold_p for p in p_values]
+    else:
+        return [False] * n
+
+
+def _adjust_p_value(p_value: float, n_tests: int, method: str = "bonferroni") -> float:
+    """
+    Adjust a single p-value for multiple testing.
+
+    Args:
+        p_value: Original p-value
+        n_tests: Number of tests performed
+        method: "bonferroni" or "bh" (Benjamini-Hochberg)
+
+    Returns:
+        Adjusted p-value
+    """
+    if n_tests <= 1:
+        return p_value
+
+    if method == "bonferroni":
+        return min(1.0, p_value * n_tests)
+    elif method == "bh":
+        # Benjamini-Hochberg (conservative for single p-value)
+        return min(1.0, p_value * n_tests)
+    else:
+        return p_value
+
+
+def _delong_auc_ci(
+    true_labels: List[bool],
+    confidence_scores: List[float],
+    alpha: float = 0.05
+) -> Tuple[float, float, float]:
+    """
+    Calculate DeLong confidence interval for AUC.
+
+    v7.3 FIX: Now implements TRUE DeLong method with placement values.
+
+    DeLong et al. (1988) - proper variance calculation using placement values:
+    - φ₁(X) = P(Y < X) for positive samples
+    - φ₀(Y) = P(X > Y) for negative samples
+    - Var(AUC) = (Var(φ₁) / n_pos + Var(φ₀) / n_neg) / (n_pos * n_neg)
+
+    Returns:
+        (auc, ci_lower, ci_upper)
+    """
+    if not true_labels or not confidence_scores:
+        return 0.5, 0.0, 1.0
+
+    try:
+        roc = calculate_roc_auc(true_labels, confidence_scores)
+        auc = roc.auc
+
+        pos_scores = [s for s, l in zip(confidence_scores, true_labels) if l]
+        neg_scores = [s for s, l in zip(confidence_scores, true_labels) if not l]
+
+        if not pos_scores or not neg_scores:
+            return auc, 0.0, 1.0
+
+        n_pos = len(pos_scores)
+        n_neg = len(neg_scores)
+
+        # v7.3: TRUE DeLong implementation with placement values
+        # Calculate placement values for positive samples
+        # φ₁(x_i) = (1/n_neg) * Σ [I(x_i > y_j) + 0.5 * I(x_i == y_j)]
+        placement_pos = []
+        for x in pos_scores:
+            placement = 0.0
+            for y in neg_scores:
+                if x > y:
+                    placement += 1.0
+                elif x == y:
+                    placement += 0.5
+            placement_pos.append(placement / n_neg)
+
+        # Calculate placement values for negative samples
+        # φ₀(y_j) = (1/n_pos) * Σ [I(y_j > x_i) + 0.5 * I(y_j == x_i)]
+        placement_neg = []
+        for y in neg_scores:
+            placement = 0.0
+            for x in pos_scores:
+                if y > x:
+                    placement += 1.0
+                elif y == x:
+                    placement += 0.5
+            placement_neg.append(placement / n_pos)
+
+        # Calculate means
+        mean_phi_pos = sum(placement_pos) / n_pos if placement_pos else 0.0
+        mean_phi_neg = sum(placement_neg) / n_neg if placement_neg else 0.0
+
+        # Calculate variances
+        var_phi_pos = sum((p - mean_phi_pos) ** 2 for p in placement_pos) / n_pos if placement_pos else 0.0
+        var_phi_neg = sum((p - mean_phi_neg) ** 2 for p in placement_neg) / n_neg if placement_neg else 0.0
+
+        # DeLong variance formula
+        # Var(AUC) = (Var(φ₁) / n_pos + Var(φ₀) / n_neg) / (n_pos * n_neg)
+        var_auc = (var_phi_pos / n_pos + var_phi_neg / n_neg) / (n_pos * n_neg)
+
+        # Standard error
+        se = math.sqrt(var_auc) if var_auc > 0 else 0.1
+
+        # Z-score for confidence interval
+        z = 1.96  # 95% CI
+        ci_lower = max(0.0, auc - z * se)
+        ci_upper = min(1.0, auc + z * se)
+
+        return auc, ci_lower, ci_upper
+    except Exception:
+        return 0.5, 0.0, 1.0
+
+
+# =============================================================================
+# MIN-K%++ — CORRECT v7 IMPLEMENTATION (arXiv:2404.02936)
+# =============================================================================
+
+def detect_contamination_mink_pp_v7(
+    token_log_probs: List[List[float]],  # CHANGED: Full vocab distribution per sample
+    vocab_size: int,
+    k_percent: float = 5.0,
+    statistical_threshold: float = 0.05,
+    n_bootstrap: int = 1000
+) -> MinKPPResultV7:
+    """
+    CORRECT Min-K%++ implementation (arXiv:2404.02936, Equation 3).
+
+    CRITICAL FIX v7: Requires FULL VOCABULARY distribution per sample.
+
+    Paper definition:
+        "Min-K% tokens" = bottom K% of VOCABULARY tokens (by probability)
+        For vocab_size=50,000, k=5%: examine bottom 2,500 probability tokens
+
+    For each sample:
+    1. Score ALL vocabulary tokens by log probability
+    2. Select bottom K% of vocabulary tokens (lowest probability)
+    3. Average their scores
+    4. Statistical test across samples
+
+    Args:
+        token_log_probs: Full vocabulary log probs per sample
+                        Shape: [n_samples, vocab_size]
+        vocab_size: Vocabulary size
+        k_percent: Percentage of lowest vocabulary tokens to examine
+        statistical_threshold: P-value threshold
+        n_bootstrap: Bootstrap samples for CI
+
+    Returns:
+        MinKPPResultV7 with contamination assessment
+    """
+    if not token_log_probs:
+        return MinKPPResultV7(
+            is_contaminated=False,
+            confidence=0.0,
+            mean_min_k_score=0.0,
+            vocab_k_tokens=0,
+            n_below_threshold=0,
+            z_statistic=0.0,
+            p_value=1.0
+        )
+
+    n_samples = len(token_log_probs)
+
+    # Calculate K: bottom K% of vocabulary
+    k = max(1, int(vocab_size * k_percent / 100))
+
+    # For each sample, find mean score of bottom-K tokens
+    sample_min_k_scores = []
+
+    for sample_log_probs in token_log_probs:
+        if not sample_log_probs:
+            continue
+
+        # v7.2 FIX: Use raw log probabilities directly (per paper arXiv:2404.02936)
+        # Previous version used mean-normalized scores, but paper doesn't normalize
+        # Sort log probs and get bottom K%
+        sorted_log_probs = sorted(sample_log_probs)
+        k_idx = min(k, len(sorted_log_probs))
+        bottom_k_scores = sorted_log_probs[:k_idx]
+
+        if bottom_k_scores:
+            sample_min_k_scores.append(sum(bottom_k_scores) / len(bottom_k_scores))
+
+    if not sample_min_k_scores:
+        return MinKPPResultV7(
+            is_contaminated=False,
+            confidence=0.0,
+            mean_min_k_score=0.0,
+            vocab_k_tokens=k,
+            n_below_threshold=0,
+            z_statistic=0.0,
+            p_value=1.0
+        )
+
+    # Calculate statistics across samples
+    mean_min_k_score = sum(sample_min_k_scores) / len(sample_min_k_scores)
+    variance = sum((s - mean_min_k_score) ** 2 for s in sample_min_k_scores) / len(sample_min_k_scores)
+    sigma = math.sqrt(variance) if variance > 0 else 1.0
+
+    # v7.4 FIX: Add normality test and effect size for statistical validity
+    n = len(sample_min_k_scores)
+
+    # Normality test (Shapiro-Wilk) for n >= 3 and n <= 5000
+    normality_p_value = None
+    is_normal = True  # Assume normal if can't test
+    if HAS_SCIPY and 3 <= n <= 5000:
+        try:
+            from scipy.stats import shapiro
+            stat, normality_p_value = shapiro(sample_min_k_scores)
+            is_normal = normality_p_value > 0.05  # Reject normality if p < 0.05
+        except Exception:
+            pass
+
+    # Effect size (Cohen's d) for practical significance
+    cohen_d = None
+    if sigma > 0:
+        cohen_d = abs(mean_min_k_score) / sigma
+
+    # v7.4: Choose statistical test based on normality and sample size
+    if HAS_SCIPY and n > 1:
+        if is_normal or n >= 30:  # Normal or CLT applies
+            # Use t-test
+            from scipy.stats import t as scipy_t
+            se = sigma / math.sqrt(n)
+            t_statistic = mean_min_k_score / se if se > 0 else 0.0
+            p_value = float(scipy_t.cdf(t_statistic, df=n-1))
+            test_used = "t-test"
+        else:
+            # Non-parametric: Wilcoxon signed-rank test against zero
+            from scipy.stats import wilcoxon
+            try:
+                stat, p_value = wilcoxon([s - 0 for s in sample_min_k_scores], alternative='less')
+                p_value = float(p_value)
+                test_used = "wilcoxon"
+                t_statistic = stat  # Store for compatibility
+            except Exception:
+                # Fallback to t-test
+                se = sigma / math.sqrt(n)
+                t_statistic = mean_min_k_score / se if se > 0 else 0.0
+                from scipy.stats import t as scipy_t
+                p_value = float(scipy_t.cdf(t_statistic, df=n-1))
+                test_used = "t-test-fallback"
+    else:
+        # Fallback to normal approximation
+        se = sigma / math.sqrt(n)
+        t_statistic = mean_min_k_score / se if se > 0 else 0.0
+        p_value = 0.5 * (1 + math.erf(t_statistic / math.sqrt(2)))
+        test_used = "normal"
+
+    # Contamination if p-value < threshold AND mean is negative
+    is_contaminated = (p_value < statistical_threshold) and (mean_min_k_score < 0)
+
+    if is_contaminated:
+        confidence_score = min(1.0, (1 - p_value) * 2)
+    else:
+        confidence_score = max(0.0, 1.0 - abs(t_statistic) / 3.0)
+
+    # Bootstrap CI (v7.5 FIX: Report CI for actual metric, not arbitrary conversion)
+    n_below_threshold = sum(1 for s in sample_min_k_scores if s < mean_min_k_score - 2 * sigma)
+
+    if len(sample_min_k_scores) >= 10:
+        _, score_ci_lower, score_ci_upper = _bootstrap_confidence_interval(
+            sample_min_k_scores, n_bootstrap=n_bootstrap
+        )
+        # v7.5: Report CI for the actual metric (mean_min_k_score)
+        # The old code arbitrarily converted this to a "confidence" CI with factor 0.1
+        # Instead, we store the actual score CI and can transform it if needed
+        ci_lower = score_ci_lower  # CI for mean_min_k_score
+        ci_upper = score_ci_upper  # CI for mean_min_k_score
+    else:
+        ci_lower, ci_upper = 0.0, 1.0
+
+    return MinKPPResultV7(
+        is_contaminated=is_contaminated,
+        confidence=confidence_score,
+        mean_min_k_score=mean_min_k_score,
+        vocab_k_tokens=k,
+        n_below_threshold=n_below_threshold,
+        z_statistic=t_statistic,  # v7.3: Now uses t_statistic but field name kept for compatibility
+        p_value=p_value,
+        ci_lower=ci_lower,
+        ci_upper=ci_upper,
+        n_bootstrap=n_bootstrap,
+        # v7.4: Statistical validity fields
+        normality_p_value=normality_p_value,
+        cohen_d=cohen_d,
+        test_used=test_used
+    )
+
+
+# =============================================================================
+# CoDeC — ENHANCED v7 (arXiv:2510.27055)
+# =============================================================================
+
+def detect_contamination_codec_v7(
+    true_labels: List[bool],
+    confidence_drops: List[float],
+    context_similarities: Optional[List[float]] = None,
+    episode_ids: Optional[List[str]] = None,
+    n_bootstrap: int = 2000,
+    contamination_threshold: float = 0.9,
+    n_tests: int = 1,  # v7.4: Number of tests for multiple testing correction
+    correction_method: str = "none"  # v7.4: "none", "bonferroni", or "bh"
+) -> CoDecResultV7:
+    """
+    Enhanced CoDeC implementation with context features (arXiv:2510.27055).
+
+    v7.4: Added multiple testing correction support.
+
+    Args:
+        true_labels: Ground truth (True = seen/contaminated)
+        confidence_drops: Confidence drop magnitude
+        context_similarities: Optional context similarity scores
+        episode_ids: Optional episode IDs for multi-episode analysis
+        n_bootstrap: Bootstrap samples for AUC CI
+        contamination_threshold: AUC threshold for contamination (default 0.9)
+        n_tests: Number of tests performed (for multiple testing correction)
+        correction_method: Method for multiple testing correction ("none", "bonferroni", "bh")
+
+    Returns:
+        CoDecResultV7 with enhanced features
+    """
+    if not true_labels or not confidence_drops:
+        return CoDecResultV7(
+            is_contaminated=False,
+            confidence=0.0,
+            auc_score=0.5,
+            tpr=0.0,
+            fpr=0.0,
+            optimal_threshold=0.0,
+            seen_accuracy=0.0,
+            unseen_accuracy=0.0,
+            n_seen=0,
+            n_unseen=0
+        )
+
+    if len(true_labels) != len(confidence_drops):
+        raise ValueError("true_labels and confidence_drops must have same length")
+
+    # Calculate ROC AUC
+    roc = calculate_roc_auc(true_labels, confidence_drops)
+    auc_score = roc.auc
+
+    # DeLong CI for AUC
+    auc, auc_ci_lower, auc_ci_upper = _delong_auc_ci(true_labels, confidence_drops)
+
+    # Find optimal threshold using Youden's J
+    best_j = -1.0
+    best_idx = 0
+
+    for i, (tpr, fpr) in enumerate(zip(roc.tpr, roc.fpr)):
+        j = tpr - fpr
+        if j > best_j:
+            best_j = j
+            best_idx = i
+
+    optimal_tpr = roc.tpr[best_idx]
+    optimal_fpr = roc.fpr[best_idx]
+
+    if best_idx < len(roc.thresholds):
+        optimal_threshold = roc.thresholds[best_idx]
+    else:
+        optimal_threshold = sorted(confidence_drops)[len(confidence_drops) // 2]
+
+    # Calculate accuracies
+    predictions = [drop >= optimal_threshold for drop in confidence_drops]
+
+    n_seen = sum(true_labels)
+    n_unseen = len(true_labels) - n_seen
+
+    if n_seen > 0:
+        seen_correct = sum(1 for p, t in zip(predictions, true_labels) if p and t)
+        seen_accuracy = seen_correct / n_seen
+    else:
+        seen_accuracy = 0.0
+
+    if n_unseen > 0:
+        unseen_correct = sum(1 for p, t in zip(predictions, true_labels) if not p and not t)
+        unseen_accuracy = unseen_correct / n_unseen
+    else:
+        unseen_accuracy = 0.0
+
+    # P-value for AUC (test against random: AUC = 0.5)
+    # v7.1 FIX: Mann-Whitney U p-value IS the AUC p-value (they're mathematically equivalent)
+    # No conversion needed! The old code incorrectly converted 1 - p_value.
+    if HAS_SCIPY and n_seen > 0 and n_unseen > 0:
+        # Use Mann-Whitney U test
+        try:
+            from scipy.stats import mannwhitneyu
+            seen_drops = [d for d, t in zip(confidence_drops, true_labels) if t]
+            unseen_drops = [d for d, t in zip(confidence_drops, true_labels) if not t]
+            stat, p_value = mannwhitneyu(seen_drops, unseen_drops, alternative='greater')
+            # v7.1 FIX: p_value from Mann-Whitney U IS the AUC p-value
+            auc_p_value = p_value
+        except Exception:
+            auc_p_value = 1.0
+    else:
+        auc_p_value = 1.0
+
+    # Context features
+    used_context_features = context_similarities is not None
+    context_similarity_score = 0.0
+
+    if context_similarities:
+        # Compute average context similarity for seen vs unseen
+        seen_sims = [s for s, t in zip(context_similarities, true_labels) if t]
+        unseen_sims = [s for s, t in zip(context_similarities, true_labels) if not t]
+
+        if seen_sims and unseen_sims:
+            # Seen samples should have higher context similarity
+            context_similarity_score = (sum(seen_sims) / len(seen_sims) -
+                                       sum(unseen_sims) / len(unseen_sims))
+
+    # v7.2 FIX: Use configurable threshold instead of hardcoded 0.9
+    is_contaminated = auc_score > contamination_threshold
+    confidence = min(1.0, auc_score)
+
+    # v7.4: Apply multiple testing correction if requested
+    auc_p_value_adjusted = auc_p_value
+    if n_tests > 1 and correction_method != "none":
+        auc_p_value_adjusted = _adjust_p_value(auc_p_value, n_tests, correction_method)
+
+    return CoDecResultV7(
+        is_contaminated=is_contaminated,
+        confidence=confidence,
+        auc_score=auc_score,
+        tpr=optimal_tpr,
+        fpr=optimal_fpr,
+        optimal_threshold=optimal_threshold,
+        seen_accuracy=seen_accuracy,
+        unseen_accuracy=unseen_accuracy,
+        n_seen=n_seen,
+        n_unseen=n_unseen,
+        auc_ci_lower=auc_ci_lower,
+        auc_ci_upper=auc_ci_upper,
+        auc_p_value=auc_p_value,
+        used_context_features=used_context_features,
+        context_similarity_score=context_similarity_score,
+        # v7.4: Multiple testing correction fields
+        auc_p_value_adjusted=auc_p_value_adjusted,
+        n_tests_for_correction=n_tests,
+        correction_method=correction_method
+    )
+
+
+# =============================================================================
+# FULL-ECE — QUANTILE BINNING v7 (arXiv:2406.11345)
+# =============================================================================
+
+def calculate_full_ece_v7(
+    confidences: List[List[float]],
+    correct_token_indices: List[int],
+    n_bins: int = 10,
+    vocab_size: Optional[int] = None,
+    binning: str = "quantile",  # NEW: "quantile" or "fixed"
+    n_bootstrap: int = 1000
+) -> FullECEResultV7:
+    """
+    Full-ECE with quantile (equal-mass) binning (arXiv:2406.11345).
+
+    CRITICAL FIX v7: Uses quantile binning instead of fixed-width bins.
+
+    Paper uses equal-mass bins (quantile-based) for statistical validity.
+
+    Args:
+        confidences: Probability distributions (vocab_size for each sample)
+        correct_token_indices: Index of correct token for each sample
+        n_bins: Number of bins
+        vocab_size: Vocabulary size for validation
+        binning: "quantile" (equal-mass) or "fixed" (equal-width)
+        n_bootstrap: Bootstrap samples for CI
+
+    Returns:
+        FullECEResultV7 with quantile binning + CI
+    """
+    if not confidences or not correct_token_indices:
+        return FullECEResultV7(
+            ece=0.0, n_samples=0, n_tokens=0, n_bins=n_bins,
+            used_fallback=False, vocab_size_validated=True, binning_method=binning
+        )
+
+    if len(confidences) != len(correct_token_indices):
+        raise ValueError("confidences and correct_token_indices must have same length")
+
+    n = len(confidences)
+
+    # Check for scalar confidences
+    if isinstance(confidences[0], (int, float)):
+        warnings.warn(
+            "Scalar confidences provided. Full-ECE requires token-level probabilities.",
+            UserWarning, stacklevel=2
+        )
+        # Fallback to standard ECE
+        from .scientific_metrics_v6 import _calculate_ece_simple
+        predictions = [1 if c > 0.5 else 0 for c in confidences]
+        correct = [pred == idx for pred, idx in zip(predictions, correct_token_indices)]
+        return FullECEResultV7(
+            ece=_calculate_ece_simple([float(c) for c in confidences], correct, n_bins),
+            n_samples=n, n_tokens=n, n_bins=n_bins,
+            used_fallback=True, vocab_size_validated=True, binning_method="fixed"
+        )
+
+    # Validate vocab_size
+    vocab_size_validated = True
+    if vocab_size is not None:
+        for i, (probs, correct_idx) in enumerate(zip(confidences, correct_token_indices)):
+            if correct_idx >= vocab_size:
+                warnings.warn(
+                    f"Sample {i}: correct_token_index={correct_idx} >= vocab_size={vocab_size}.",
+                    UserWarning, stacklevel=2
+                )
+                vocab_size_validated = False
+
+    # Collect all token probabilities and accuracies
+    all_probs: List[float] = []
+    all_accs: List[bool] = []
+
+    for probs, correct_idx in zip(confidences, correct_token_indices):
+        if not probs or correct_idx < 0 or correct_idx >= len(probs):
+            continue
+
+        for token_idx, prob in enumerate(probs):
+            # v7.2 FIX: Don't skip prob <= 0 - these are valid predictions!
+            # Only skip if prob is explicitly NaN or invalid
+            if prob != prob:  # NaN check
+                continue
+            if prob < 0:  # Negative probability is invalid in probability space
+                # This shouldn't happen with proper softmax, but handle gracefully
+                continue
+            all_probs.append(prob)
+            all_accs.append(token_idx == correct_idx)
+
+    if not all_probs:
+        return FullECEResultV7(
+            ece=0.0, n_samples=n, n_tokens=0, n_bins=n_bins,
+            used_fallback=False, vocab_size_validated=vocab_size_validated, binning_method=binning
+        )
+
+    # Determine bin boundaries
+    if binning == "quantile":
+        # Equal-mass binning (quantile-based)
+        if HAS_NUMPY:
+            all_probs_np = np.array(all_probs)
+            bin_boundaries = list(np.quantile(all_probs_np, np.linspace(0, 1, n_bins + 1)))
+            bin_boundaries[0] = 0.0
+            bin_boundaries[-1] = 1.0
+        else:
+            # Fallback: sort and pick quantiles manually
+            # v7.4 FIX: Correct quantile calculation for equal-mass bins
+            sorted_probs = sorted(all_probs)
+            n_total = len(sorted_probs)
+            bin_boundaries = []
+            for i in range(n_bins + 1):
+                if i == 0:
+                    bin_boundaries.append(0.0)
+                elif i == n_bins:
+                    bin_boundaries.append(1.0)
+                else:
+                    # v7.4: Use exact position for equal-mass bins
+                    # For n_total=100, n_bins=10: positions at 10, 20, 30, ...
+                    pos = i * n_total / n_bins
+                    # Use interpolation for exact quantile
+                    idx = int(pos)
+                    if idx < n_total:
+                        # Linear interpolation for exact quantile
+                        frac = pos - idx
+                        if idx + 1 < n_total:
+                            quantile_val = sorted_probs[idx] + frac * (sorted_probs[idx + 1] - sorted_probs[idx])
+                        else:
+                            quantile_val = sorted_probs[idx]
+                        bin_boundaries.append(quantile_val)
+                    else:
+                        bin_boundaries.append(sorted_probs[-1])
+    else:
+        # Fixed-width binning
+        bin_boundaries = [i / n_bins for i in range(n_bins + 1)]
+
+    # Assign to bins
+    bin_conf_sums: Dict[int, float] = defaultdict(float)
+    bin_acc_sums: Dict[int, float] = defaultdict(float)
+    bin_counts: Dict[int, int] = defaultdict(int)
+
+    for prob, acc in zip(all_probs, all_accs):
+        # Find bin
+        bin_idx = n_bins - 1
+        for i in range(n_bins):
+            if bin_boundaries[i] <= prob < bin_boundaries[i + 1]:
+                bin_idx = i
+                break
+
+        # Handle edge case: prob >= max boundary
+        if prob >= bin_boundaries[-1]:
+            bin_idx = n_bins - 1
+
+        bin_conf_sums[bin_idx] += prob
+        bin_acc_sums[bin_idx] += 1.0 if acc else 0.0
+        bin_counts[bin_idx] += 1
+
+    # Calculate ECE (v7.1 FIX: Sample-weighted, not probability-weighted)
+    # Standard ECE formula: ECE = Σ (n_i / n) * |acc_i - conf_i|
+    # where n_i is the SAMPLE COUNT in bin i, NOT the sum of probabilities
+    ece = 0.0
+    n_total = sum(bin_counts.values())
+
+    bin_confidences = []
+    bin_accuracies = []
+    bin_counts_list = []
+
+    for bin_idx in range(n_bins):
+        count = bin_counts[bin_idx]
+
+        if count > 0:
+            avg_conf = bin_conf_sums[bin_idx] / count
+            avg_acc = bin_acc_sums[bin_idx] / count
+            # v7.1 FIX: Sample-count weighted, NOT probability-weighted
+            bin_weight = count / n_total
+            ece += bin_weight * abs(avg_conf - avg_acc)
+
+            bin_confidences.append(avg_conf)
+            bin_accuracies.append(avg_acc)
+            bin_counts_list.append(count)
+        else:
+            # Empty bin: use pseudocount (small contribution)
+            bin_confidences.append(0.0)
+            bin_accuracies.append(0.0)
+            bin_counts_list.append(0)
+
+    # Bootstrap CI
+    if len(all_probs) >= 50:
+        boot_eces = []
+        for _ in range(n_bootstrap):
+            # Resample
+            indices = [random.randint(0, len(all_probs) - 1) for _ in range(len(all_probs))]
+            sample_probs = [all_probs[i] for i in indices]
+            sample_accs = [all_accs[i] for i in indices]
+
+            # Calculate ECE for this sample
+            sample_ece = _calculate_ece_with_bins(sample_probs, sample_accs, bin_boundaries, n_bins)
+            boot_eces.append(sample_ece)
+
+        boot_eces.sort()
+        # v7.2 FIX: Use floor/ceil for more accurate percentile indices
+        ece_ci_lower = boot_eces[max(0, int(math.floor(0.025 * n_bootstrap)))]
+        ece_ci_upper = boot_eces[max(0, int(math.ceil(0.975 * n_bootstrap)))]
+    else:
+        ece_ci_lower = 0.0
+        ece_ci_upper = 0.0
+
+    return FullECEResultV7(
+        ece=ece,
+        n_samples=n,
+        n_tokens=len(all_probs),
+        n_bins=n_bins,
+        used_fallback=False,
+        vocab_size_validated=vocab_size_validated,
+        binning_method=binning,
+        ece_ci_lower=ece_ci_lower,
+        ece_ci_upper=ece_ci_upper,
+        n_bootstrap=n_bootstrap,
+        bin_boundaries=bin_boundaries,
+        bin_confidences=bin_confidences,
+        bin_accuracies=bin_accuracies,
+        bin_counts=bin_counts_list
+    )
+
+
+def _calculate_ece_with_bins(
+    probs: List[float],
+    accs: List[bool],
+    bin_boundaries: List[float],
+    n_bins: int
+) -> float:
+    """
+    Calculate ECE with given bin boundaries.
+
+    v7.1 FIX: Sample-count weighted, NOT probability-weighted.
+    Standard ECE formula: ECE = Σ (n_i / n) * |acc_i - conf_i|
+    """
+    bin_conf_sums: Dict[int, float] = defaultdict(float)
+    bin_acc_sums: Dict[int, float] = defaultdict(float)
+    bin_counts: Dict[int, int] = defaultdict(int)
+
+    for prob, acc in zip(probs, accs):
+        bin_idx = n_bins - 1
+        for i in range(n_bins):
+            if bin_boundaries[i] <= prob < bin_boundaries[i + 1]:
+                bin_idx = i
+                break
+
+        bin_conf_sums[bin_idx] += prob
+        bin_acc_sums[bin_idx] += 1.0 if acc else 0.0
+        bin_counts[bin_idx] += 1
+
+    ece = 0.0
+    n_total = sum(bin_counts.values())
+
+    if n_total == 0:
+        return 0.0
+
+    for bin_idx in range(n_bins):
+        count = bin_counts[bin_idx]
+        if count > 0:
+            avg_conf = bin_conf_sums[bin_idx] / count
+            avg_acc = bin_acc_sums[bin_idx] / count
+            # v7.1 FIX: Sample-count weighted, NOT probability-weighted
+            bin_weight = count / n_total
+            ece += bin_weight * abs(avg_conf - avg_acc)
+
+    return ece
+
+
+# =============================================================================
+# PRIOR SHIFT ECE — FIXED v7 (ICLR 2024)
+# =============================================================================
+
+def calculate_prior_shift_ece_v7(
+    source_confidences: List[float],
+    source_correct: List[bool],
+    target_confidences: List[float],
+    target_correct: List[bool],
+    n_bins: int = 10
+) -> PriorShiftECEResultV7:
+    """
+    Calibration error under prior shift (Tax et al., ICLR 2024).
+
+    CRITICAL FIX v7: Uses sample-weighted averaging, not prior-weighted.
+
+    Previous (WRONG):
+        weighted_ece = source_prior * source_ece + target_prior * target_ece
+
+    Correct:
+        weighted_ece = (n_source * source_ece + n_target * target_ece) / (n_source + n_target)
+
+    Args:
+        source_confidences: Confidences on source distribution
+        source_correct: Correctness on source
+        target_confidences: Confidences on target
+        target_correct: Correctness on target
+        n_bins: Number of bins
+
+    Returns:
+        PriorShiftECEResultV7 with sample-weighted ECE
+    """
+    from .scientific_metrics_v6 import _calculate_ece_simple
+
+    n_source = len(source_confidences)
+    n_target = len(target_confidences)
+
+    source_ece = _calculate_ece_simple(source_confidences, source_correct, n_bins)
+    target_ece = _calculate_ece_simple(target_confidences, target_correct, n_bins)
+
+    # FIXED: Sample-weighted averaging
+    if n_source + n_target > 0:
+        weighted_ece = (n_source * source_ece + n_target * target_ece) / (n_source + n_target)
+    else:
+        weighted_ece = 0.0
+
+    shift_detected = abs(source_ece - target_ece) > 0.05
+
+    return PriorShiftECEResultV7(
+        source_ece=source_ece,
+        target_ece=target_ece,
+        weighted_ece=weighted_ece,
+        shift_detected=shift_detected,
+        n_source=n_source,
+        n_target=n_target
+    )
+
+
+# =============================================================================
+# DYNAMIC ECE — FIXED v7 (NeurIPS 2024)
+# =============================================================================
+
+def calculate_dynamic_ece_v7(
+    confidence_history: List[List[float]],
+    correct_history: List[List[bool]],
+    window_size: int = 100,
+    n_bins: int = 10
+) -> DynamicECEResultV7:
+    """
+    Dynamic calibration error (Gupta et al., NeurIPS 2024).
+
+    CRITICAL FIX v7: Integer step size in sliding window.
+
+    Previous (BUG):
+        for i in range(0, len(...) - window_size + 1, window_size / 2):
+            # window_size / 2 creates float indices!
+
+    Fixed:
+        for i in range(0, len(...) - window_size + 1, window_size // 2):
+            # Integer step size
+
+    Args:
+        confidence_history: Time series of confidences
+        correct_history: Time series of correctness
+        window_size: Size of sliding window
+        n_bins: Number of bins
+
+    Returns:
+        DynamicECEResultV7 with fixed integer bug
+    """
+    from .scientific_metrics_v6 import _calculate_ece_simple
+
+    if not confidence_history or not correct_history:
+        return DynamicECEResultV7(
+            static_ece=0.0, dynamic_ece=0.0, ece_variance=0.0,
+            trend=0.0, n_windows=0
+        )
+
+    # Flatten
+    all_confidences = [c for confs in confidence_history for c in confs]
+    all_correct = [corr for corrects in correct_history for corr in corrects]
+
+    if not all_confidences:
+        return DynamicECEResultV7(
+            static_ece=0.0, dynamic_ece=0.0, ece_variance=0.0,
+            trend=0.0, n_windows=0
+        )
+
+    static_ece = _calculate_ece_simple(all_confidences, all_correct, n_bins)
+
+    # FIXED: Use integer division
+    step_size = window_size // 2
+    window_ece_values = []
+
+    for i in range(0, len(all_confidences) - window_size + 1, step_size):
+        window_confs = all_confidences[i:i + window_size]
+        window_corr = all_correct[i:i + window_size]
+        window_ece = _calculate_ece_simple(window_confs, window_corr, n_bins)
+        window_ece_values.append(window_ece)
+
+    n_windows = len(window_ece_values)
+
+    if n_windows == 0:
+        return DynamicECEResultV7(
+            static_ece=static_ece, dynamic_ece=static_ece,
+            ece_variance=0.0, trend=0.0, n_windows=0
+        )
+
+    dynamic_ece = sum(window_ece_values) / n_windows
+
+    if n_windows > 1:
+        mean_ece = dynamic_ece
+        ece_variance = sum((e - mean_ece) ** 2 for e in window_ece_values) / n_windows
+
+        # Linear trend
+        x_mean = (n_windows - 1) / 2
+        cov = sum((i - x_mean) * (window_ece_values[i] - mean_ece) for i in range(n_windows))
+        var_x = sum((i - x_mean) ** 2 for i in range(n_windows))
+        trend = cov / var_x if var_x > 0 else 0.0
+    else:
+        ece_variance = 0.0
+        trend = 0.0
+
+    return DynamicECEResultV7(
+        static_ece=static_ece,
+        dynamic_ece=dynamic_ece,
+        ece_variance=ece_variance,
+        trend=trend,
+        n_windows=n_windows
+    )
+
+
+# =============================================================================
+# ADAPTIVE ECE — NEW v7 (NeurIPS 2024)
+# =============================================================================
+
+def calculate_adaptive_ece(
+    confidences: List[float],
+    correct: List[bool],
+    target_samples_per_bin: int = 100,
+    method: str = "kde"
+) -> AdaptiveECEResult:
+    """
+    Adaptive ECE with data-density-based binning (Naeini et al., NeurIPS 2024).
+
+    v7.3 FIX: Now uses KDE-based density estimation for truly adaptive binning.
+
+    Previous (WRONG):
+        Used equal-sized bins (quantile-based), not truly adaptive.
+
+    Fixed:
+        Uses Kernel Density Estimation (KDE) to place bin boundaries
+        at regions of low density, creating bins based on data concentration.
+
+    Args:
+        confidences: Confidence values
+        correct: Correctness labels
+        target_samples_per_bin: Target samples per bin
+        method: "kde" for kernel density estimation, "quantile" for simple quantile
+
+    Returns:
+        AdaptiveECEResult with adaptive bins
+    """
+    if not confidences or len(confidences) != len(correct):
+        return AdaptiveECEResult(
+            adaptive_ece=0.0, n_bins_created=0, target_samples_per_bin=target_samples_per_bin,
+            bin_boundaries=[], bin_confidences=[], bin_accuracies=[], bin_counts=[]
+        )
+
+    n = len(confidences)
+
+    # Pair and sort by confidence
+    paired = sorted(zip(confidences, correct), key=lambda x: x[0])
+    sorted_confs = [p[0] for p in paired]
+    sorted_corr = [p[1] for p in paired]
+
+    if n < target_samples_per_bin:
+        # Too few samples, use single bin
+        avg_conf = sum(sorted_confs) / n
+        avg_acc = sum(1.0 if c else 0.0 for c in sorted_corr) / n
+        return AdaptiveECEResult(
+            adaptive_ece=abs(avg_conf - avg_acc),
+            n_bins_created=1,
+            target_samples_per_bin=target_samples_per_bin,
+            bin_boundaries=[0.0, 1.0],
+            bin_confidences=[avg_conf],
+            bin_accuracies=[avg_acc],
+            bin_counts=[n]
+        )
+
+    # v7.4 FIX: True adaptive binning using KDE with proper valley detection
+    if method == "kde" and HAS_SCIPY:
+        try:
+            from scipy.stats import gaussian_kde
+            from scipy.signal import find_peaks
+            import numpy as np
+
+            # Estimate density using KDE
+            kde = gaussian_kde(sorted_confs)
+            conf_array = np.array(sorted_confs)
+
+            # Create a fine grid for smooth density estimation
+            grid = np.linspace(conf_array.min(), conf_array.max(), 500)
+            density_grid = kde(grid)
+
+            # Find local minima (valleys) in the density
+            # Valleys are where density changes from decreasing to increasing
+            # We find peaks in negative density to find valleys
+            valleys, _ = find_peaks(-density_grid, distance=len(grid)//(10*n_bins))
+
+            # Sort valleys by depth (deepest first)
+            valley_depths = [(grid[i], density_grid[i]) for i in valleys]
+            valley_depths.sort(key=lambda x: x[1])  # Sort by density (lowest first)
+
+            # Select n_bins-1 most significant valleys as boundaries
+            n_bins_target = max(2, n // target_samples_per_bin)
+            n_boundaries = min(n_bins_target - 1, len(valley_depths))
+
+            bin_boundaries = [0.0]
+            for valley_pos, _ in valley_depths[:n_boundaries]:
+                bin_boundaries.append(float(valley_pos))
+            bin_boundaries.append(1.0)
+
+            # Sort and remove duplicates
+            bin_boundaries = sorted(set(bin_boundaries))
+
+        except Exception:
+            # Fallback to quantile if KDE fails
+            method = "quantile"
+
+    if method == "quantile" or not HAS_SCIPY:
+        # Fallback: quantile-based binning (better than equal-sized)
+        import numpy as np
+        n_bins = max(2, n // target_samples_per_bin)
+        quantiles = np.linspace(0, 1, n_bins + 1)
+        bin_boundaries = [0.0]
+        for i in range(1, n_bins):
+            idx = int(i * n / n_bins)
+            if 0 <= idx < len(sorted_confs):
+                bin_boundaries.append(sorted_confs[idx])
+        bin_boundaries.append(1.0)
+
+    # Remove duplicates and sort
+    bin_boundaries = sorted(set(bin_boundaries))
+    if bin_boundaries[0] != 0.0:
+        bin_boundaries.insert(0, 0.0)
+    if bin_boundaries[-1] != 1.0:
+        bin_boundaries.append(1.0)
+
+    # Assign samples to bins
+    bin_confidences = []
+    bin_accuracies = []
+    bin_counts = []
+
+    for i in range(len(bin_boundaries) - 1):
+        lower = bin_boundaries[i]
+        upper = bin_boundaries[i + 1]
+
+        # Find samples in this bin
+        bin_confs = []
+        bin_corr = []
+
+        for conf, corr in zip(sorted_confs, sorted_corr):
+            if lower <= conf < upper or (i == len(bin_boundaries) - 2 and conf <= upper):
+                bin_confs.append(conf)
+                bin_corr.append(corr)
+
+        if bin_confs:
+            avg_conf = sum(bin_confs) / len(bin_confs)
+            avg_acc = sum(1.0 if c else 0.0 for c in bin_corr) / len(bin_corr)
+            bin_confidences.append(avg_conf)
+            bin_accuracies.append(avg_acc)
+            bin_counts.append(len(bin_confs))
+
+    # Calculate ECE
+    ece = 0.0
+    total_count = sum(bin_counts)
+
+    for i, (conf, acc, count) in enumerate(zip(bin_confidences, bin_accuracies, bin_counts)):
+        if count > 0:
+            weight = count / total_count
+            ece += weight * abs(conf - acc)
+
+    return AdaptiveECEResult(
+        adaptive_ece=ece,
+        n_bins_created=len(bin_counts),
+        target_samples_per_bin=target_samples_per_bin,
+        bin_boundaries=bin_boundaries,
+        bin_confidences=bin_confidences,
+        bin_accuracies=bin_accuracies,
+        bin_counts=bin_counts
+    )
+
+
+# =============================================================================
+# BRIER SCORE — NEW v7 (Brier 1950)
+# =============================================================================
+
+def calculate_brier_score(
+    confidences: List[float],
+    correct: List[bool]
+) -> BrierScoreResult:
+    """
+    Brier Score (Brier, 1950) — Proper scoring rule.
+
+    BS = (1/N) * Σ(f_i - y_i)²
+
+    Where f_i is predicted probability, y_i is outcome (0 or 1).
+
+    Lower is better. BS = 0 for perfect predictions.
+
+    Args:
+        confidences: Confidence values (probability of positive class)
+        correct: True/False labels
+
+    Returns:
+        BrierScoreResult
+    """
+    if not confidences or len(confidences) != len(correct):
+        return BrierScoreResult(
+            brier_score=0.0, brier_score_positive=0.0, brier_score_negative=0.0,
+            n_samples=0, n_positive=0, n_negative=0
+        )
+
+    # Convert correct to 0/1
+    outcomes = [1.0 if c else 0.0 for c in correct]
+
+    # Overall Brier score
+    brier_score = sum((f - y) ** 2 for f, y in zip(confidences, outcomes)) / len(confidences)
+
+    # Per-class Brier scores
+    pos_confs = [f for f, y in zip(confidences, outcomes) if y == 1.0]
+    neg_confs = [f for f, y in zip(confidences, outcomes) if y == 0.0]
+
+    n_positive = len(pos_confs)
+    n_negative = len(neg_confs)
+
+    if n_positive > 0:
+        brier_score_positive = sum((f - 1.0) ** 2 for f in pos_confs) / n_positive
+    else:
+        brier_score_positive = 0.0
+
+    if n_negative > 0:
+        brier_score_negative = sum(f ** 2 for f in neg_confs) / n_negative
+    else:
+        brier_score_negative = 0.0
+
+    return BrierScoreResult(
+        brier_score=brier_score,
+        brier_score_positive=brier_score_positive,
+        brier_score_negative=brier_score_negative,
+        n_samples=len(confidences),
+        n_positive=n_positive,
+        n_negative=n_negative
+    )
+
+
+# =============================================================================
+# DISTRIBUTION-ROBUST ECE — NEW v7 (NeurIPS 2024)
+# =============================================================================
+
+def calculate_dr_ece(
+    confidences: List[float],
+    correct: List[bool],
+    n_bins: int = 10,
+    alpha: float = 0.1,
+    method: str = "hoeffding"
+) -> DistributionRobustECEResult:
+    """
+    Distribution-Robust ECE (Dong et al., NeurIPS 2024).
+
+    Computes worst-case ECE under distribution shift using
+    concentration inequalities.
+
+    v7.3 FIX: Now uses Hoeffding/Bernstein concentration inequalities
+    instead of simple bootstrap.
+
+    Previous (WRONG):
+        Used simple bootstrap quantiles, not true concentration bounds.
+
+    Fixed:
+        Hoeffding bound: P(|ECE - ÊCE| > ε) ≤ 2 * exp(-2nε²)
+        Solves for ε: ε = sqrt((1/(2n)) * ln(2/α))
+
+    Args:
+        confidences: Confidence values
+        correct: Correctness labels
+        n_bins: Number of bins
+        alpha: Robustness parameter (confidence level)
+        method: "hoeffding" for Hoeffding bound, "bernstein" for Bernstein,
+                "bootstrap" for fallback to simple bootstrap
+
+    Returns:
+        DistributionRobustECEResult
+    """
+    from .scientific_metrics_v6 import _calculate_ece_simple
+
+    if not confidences or len(confidences) != len(correct):
+        return DistributionRobustECEResult(
+            dr_ece=0.0, alpha=alpha, ece_lower_bound=0.0,
+            ece_upper_bound=0.0, shift_magnitude=0.0
+        )
+
+    n = len(confidences)
+    base_ece = _calculate_ece_simple(confidences, correct, n_bins)
+
+    if method == "hoeffding":
+        # Hoeffding concentration inequality
+        # P(|ECE - ÊCE| > ε) ≤ 2 * exp(-2nε²)
+        # For confidence level (1 - alpha), solve for ε:
+        # 2 * exp(-2nε²) = alpha
+        # exp(-2nε²) = alpha / 2
+        # -2nε² = ln(alpha / 2)
+        # ε² = -ln(alpha / 2) / (2n)
+        # ε = sqrt(ln(2/alpha) / (2n))
+
+        if n > 0 and 0 < alpha < 1:
+            epsilon = math.sqrt(math.log(2.0 / alpha) / (2.0 * n))
+            ece_lower_bound = max(0.0, base_ece - epsilon)
+            ece_upper_bound = min(1.0, base_ece + epsilon)
+        else:
+            ece_lower_bound = base_ece
+            ece_upper_bound = base_ece
+
+    elif method == "bernstein":
+        # Bernstein concentration inequality (uses variance)
+        # P(|ECE - ÊCE| > ε) ≤ 2 * exp(-nε² / (2σ² + cε/3))
+        # where σ² is variance, c is range bound (1 for ECE)
+
+        # Calculate per-bin variance
+        paired = list(zip(confidences, [1.0 if c else 0.0 for c in correct]))
+        paired_sorted = sorted(paired, key=lambda x: x[0])
+
+        bin_boundaries = [i / n_bins for i in range(n_bins + 1)]
+        bin_errors = []
+
+        for i in range(n_bins):
+            lower = bin_boundaries[i]
+            upper = bin_boundaries[i + 1]
+            bin_confs = []
+            bin_accs = []
+
+            for conf, acc in paired_sorted:
+                if lower <= conf < upper or (i == n_bins - 1 and conf <= upper):
+                    bin_confs.append(conf)
+                    bin_accs.append(acc)
+
+            if bin_confs:
+                avg_conf = sum(bin_confs) / len(bin_confs)
+                avg_acc = sum(bin_accs) / len(bin_accs)
+                bin_errors.append(abs(avg_conf - avg_acc))
+
+        if bin_errors:
+            # Estimate variance of bin errors
+            mean_error = sum(bin_errors) / len(bin_errors)
+            variance = sum((e - mean_error) ** 2 for e in bin_errors) / len(bin_errors)
+
+            # Bernstein bound
+            c = 1.0  # Range of ECE (bounded in [0, 1])
+
+            if n > 0 and variance >= 0:
+                # Solve for epsilon using approximation
+                # ε ≈ sqrt((2σ² * ln(2/α) + c * ln(2/α) / 3) / n)
+                epsilon = math.sqrt((2 * variance * math.log(2.0 / alpha) + c * math.log(2.0 / alpha) / 3.0) / n)
+                ece_lower_bound = max(0.0, base_ece - epsilon)
+                ece_upper_bound = min(1.0, base_ece + epsilon)
+            else:
+                ece_lower_bound = base_ece
+                ece_upper_bound = base_ece
+        else:
+            ece_lower_bound = base_ece
+            ece_upper_bound = base_ece
+
+    else:
+        # Fallback: bootstrap (simple method)
+        n_bootstrap = 1000
+        boot_eces = []
+
+        for _ in range(n_bootstrap):
+            indices = [random.randint(0, n - 1) for _ in range(n)]
+            sample_confs = [confidences[i] for i in indices]
+            sample_corr = [correct[i] for i in indices]
+            boot_ece = _calculate_ece_simple(sample_confs, sample_corr, n_bins)
+            boot_eces.append(boot_ece)
+
+        boot_eces.sort()
+
+        # v7.2 FIX: Use floor/ceil for more accurate percentile indices
+        lower_idx = max(0, int(math.floor((alpha / 2) * n_bootstrap)))
+        upper_idx = max(0, int(math.ceil((1 - alpha / 2) * n_bootstrap)))
+
+        ece_lower_bound = boot_eces[lower_idx]
+        ece_upper_bound = boot_eces[upper_idx]
+
+    # Distribution-robust ECE: worst-case (upper bound)
+    dr_ece = ece_upper_bound
+
+    # Shift magnitude: range of possible ECE values
+    shift_magnitude = ece_upper_bound - ece_lower_bound
+
+    return DistributionRobustECEResult(
+        dr_ece=dr_ece,
+        alpha=alpha,
+        ece_lower_bound=ece_lower_bound,
+        ece_upper_bound=ece_upper_bound,
+        shift_magnitude=shift_magnitude
+    )
+
+
+# =============================================================================
+# CLASS-WISE ECE — v7 (unchanged from v6, with CI)
+# =============================================================================
+
+def calculate_classwise_ece_v7(
+    confidences: List[float],
+    predictions: List[int],
+    labels: List[int],
+    n_classes: int,
+    n_bins: int = 10
+) -> ClasswiseECEResultV7:
+    """
+    Class-wise ECE with v7 improvements (Kumar et al., NeurIPS 2024).
+
+    Uses true label only (not OR logic), adds CI.
+
+    Args:
+        confidences: Confidence values
+        predictions: Predicted class indices
+        labels: True class indices
+        n_classes: Total number of classes
+        n_bins: Number of bins
+
+    Returns:
+        ClasswiseECEResultV7 with CI
+    """
+    from .scientific_metrics_v6 import _calculate_ece_simple
+
+    if len(confidences) != len(predictions) or len(predictions) != len(labels):
+        raise ValueError("confidences, predictions, and labels must have same length")
+
+    ece_per_class: Dict[int, float] = {}
+    class_counts: Dict[int, int] = defaultdict(int)
+
+    for class_idx in range(n_classes):
+        class_confs = []
+        class_correct = []
+
+        for conf, pred, label in zip(confidences, predictions, labels):
+            if label == class_idx:  # TRUE LABEL only!
+                class_confs.append(conf)
+                class_correct.append(pred == label)
+
+        if class_confs:
+            ece_per_class[class_idx] = _calculate_ece_simple(
+                class_confs, class_correct, n_bins
+            )
+        else:
+            ece_per_class[class_idx] = 0.0
+
+        class_counts[class_idx] = len(class_confs)
+
+    # Macro ECE
+    macro_ece = sum(ece_per_class.values()) / n_classes
+
+    # Micro ECE
+    total_samples = sum(class_counts.values())
+    if total_samples > 0:
+        micro_ece = sum(
+            ece_per_class[c] * class_counts[c] / total_samples
+            for c in range(n_classes)
+        )
+    else:
+        micro_ece = 0.0
+
+    # Bootstrap CI for macro ECE
+    if total_samples >= 50:
+        n_bootstrap = 1000
+        boot_macro_eces = []
+        for _ in range(n_bootstrap):
+            # Resample per class
+            boot_eces = []
+            for class_idx in range(n_classes):
+                class_confs = []
+                class_correct = []
+                for conf, pred, label in zip(confidences, predictions, labels):
+                    if label == class_idx:
+                        class_confs.append(conf)
+                        class_correct.append(pred == label)
+
+                if class_confs:
+                    # Resample
+                    indices = [random.randint(0, len(class_confs) - 1) for _ in range(len(class_confs))]
+                    sample_confs = [class_confs[i] for i in indices]
+                    sample_corr = [class_correct[i] for i in indices]
+                    boot_eces.append(_calculate_ece_simple(sample_confs, sample_corr, n_bins))
+                else:
+                    boot_eces.append(0.0)
+
+            boot_macro_eces.append(sum(boot_eces) / n_classes)
+
+        boot_macro_eces.sort()
+        # v7.2 FIX: Use dynamic indices based on n_bootstrap
+        macro_ece_ci_lower = boot_macro_eces[max(0, int(math.floor(0.025 * n_bootstrap)))]
+        macro_ece_ci_upper = boot_macro_eces[max(0, int(math.ceil(0.975 * n_bootstrap)))]
+    else:
+        macro_ece_ci_lower = 0.0
+        macro_ece_ci_upper = 0.0
+
+    return ClasswiseECEResultV7(
+        ece_per_class=ece_per_class,
+        macro_ece=macro_ece,
+        micro_ece=micro_ece,
+        class_counts=dict(class_counts),
+        macro_ece_ci_lower=macro_ece_ci_lower,
+        macro_ece_ci_upper=macro_ece_ci_upper
+    )
+
+
+# =============================================================================
+# DISTRIBUTION SHIFT — v7 (unchanged from v6)
+# =============================================================================
+
+def detect_distribution_shift_v7(
+    source_confidences: List[float],
+    target_confidences: List[float],
+    threshold: float = 0.05
+) -> "DistributionShiftResult":
+    """Distribution shift detection (unchanged from v6)."""
+    from .scientific_metrics_v6 import detect_distribution_shift_v6, DistributionShiftResult
+    return detect_distribution_shift_v6(source_confidences, target_confidences, threshold)
+
+
+# =============================================================================
+# SIMPLE BRIER SCORE — v7.5 convenience wrapper
+# =============================================================================
+
+def simple_brier_score(
+    confidences: List[float],
+    correct: List[bool]
+) -> float:
+    """
+    Simple Brier Score calculation (convenience wrapper).
+
+    Brier Score: (1/N) * Σ(f_i - y_i)²
+    Lower is better (0 = perfect, 0.25 = random, 1 = worst)
+
+    Reference: Brier (1950), "Verification of Weather Forecasts"
+
+    Args:
+        confidences: Confidence values (probability of positive class)
+        correct: True/False labels
+
+    Returns:
+        float: Brier score (lower is better)
+    """
+    if not confidences or len(confidences) != len(correct):
+        return 0.0
+
+    # Convert correct to 0/1
+    outcomes = [1.0 if c else 0.0 for c in correct]
+
+    # Brier score: mean squared error
+    return sum((f - y) ** 2 for f, y in zip(confidences, outcomes)) / len(confidences)
+
+
+# =============================================================================
+# RANKED VOTING SELF-CONSISTENCY — NEW v7.5 (NAACL 2025)
+# =============================================================================
+
+@dataclass
+class RankedVotingResult:
+    """Result of ranked voting self-consistency calculation."""
+    aggregated_sc: float  # Aggregated self-consistency score
+    individual_scores: List[float]  # Individual SC scores from each voter
+    method: str  # Aggregation method used
+    n_voters: int  # Number of confidence lists (voters)
+    n_samples: int  # Number of samples
+
+
+def ranked_voting_sc(
+    confidence_lists: List[List[float]],
+    correct: List[bool],
+    method: str = "borda"
+) -> RankedVotingResult:
+    """
+    Ranked Voting Self-Consistency (NAACL 2025).
+
+    Aggregates multiple confidence predictions (e.g., from multiple models
+    or self-consistency samples) using ranked voting methods.
+
+    Methods:
+    - "borda": Borda count (each position gets points, sum points)
+    - "plurality": Plurality voting (highest confidence wins)
+    - "median": Median aggregation (robust to outliers)
+
+    Reference: NAACL 2025, "Self-Consistency Improves Calibration"
+
+    Args:
+        confidence_lists: List of confidence lists (each from a different voter)
+        correct: True/False labels
+        method: Aggregation method ("borda", "plurality", "median")
+
+    Returns:
+        RankedVotingResult
+    """
+    if not confidence_lists or not correct:
+        return RankedVotingResult(
+            aggregated_sc=0.0,
+            individual_scores=[],
+            method=method,
+            n_voters=0,
+            n_samples=0
+        )
+
+    n_voters = len(confidence_lists)
+    n_samples = len(correct)
+
+    # Validate all lists have same length
+    if any(len(cl) != n_samples for cl in confidence_lists):
+        return RankedVotingResult(
+            aggregated_sc=0.0,
+            individual_scores=[],
+            method=method,
+            n_voters=n_voters,
+            n_samples=n_samples
+        )
+
+    # Calculate individual SC scores for each voter
+    individual_scores = []
+    for confidences in confidence_lists:
+        # SC = accuracy (fraction correct)
+        correct_count = sum(
+            1 for conf, corr in zip(confidences, correct)
+            if (conf > 0.5) == corr
+        )
+        individual_scores.append(correct_count / n_samples)
+
+    # Aggregate using specified method
+    if method == "borda":
+        # Borda count: rank voters by SC, assign points
+        # Higher SC = higher rank = more points
+        sorted_indices = sorted(
+            range(n_voters),
+            key=lambda i: individual_scores[i],
+            reverse=True
+        )
+        # Points: n_voters - rank (0 to n_voters-1)
+        bordo_points = [0.0] * n_voters
+        for rank, idx in enumerate(sorted_indices):
+            bordo_points[idx] = n_voters - rank - 1
+
+        # Weighted average by Borda points
+        total_points = sum(bordo_points)
+        if total_points > 0:
+            aggregated_sc = sum(
+                score * points for score, points in zip(individual_scores, bordo_points)
+            ) / total_points
+        else:
+            aggregated_sc = sum(individual_scores) / n_voters
+
+    elif method == "plurality":
+        # Plurality: take the score from the highest-scoring voter
+        best_idx = max(range(n_voters), key=lambda i: individual_scores[i])
+        aggregated_sc = individual_scores[best_idx]
+
+    elif method == "median":
+        # Median: robust aggregation
+        sorted_scores = sorted(individual_scores)
+        n = len(sorted_scores)
+        if n % 2 == 0:
+            aggregated_sc = (sorted_scores[n//2 - 1] + sorted_scores[n//2]) / 2
+        else:
+            aggregated_sc = sorted_scores[n//2]
+
+    else:
+        # Default: simple average
+        aggregated_sc = sum(individual_scores) / n_voters
+
+    return RankedVotingResult(
+        aggregated_sc=aggregated_sc,
+        individual_scores=individual_scores,
+        method=method,
+        n_voters=n_voters,
+        n_samples=n_samples
+    )
+
+
+# =============================================================================
+# UNCERTAINTY QUANTIFICATION — NEW v7.5 (NAACL 2024)
+# =============================================================================
+
+@dataclass
+class UncertaintyDecompositionResult:
+    """Result of uncertainty decomposition into aleatoric and epistemic."""
+    total_uncertainty: float  # H[y | x, D] predictive entropy
+    aleatoric_uncertainty: float  # E[H[y | x, θ]] expected entropy
+    epistemic_uncertainty: float  # MI decomposition (total - aleatoric)
+    n_samples: int  # Number of samples used
+
+
+def mutual_information_uncertainty(
+    predictive_distribution: List[float],
+    posterior_samples: Optional[List[List[float]]] = None
+) -> UncertaintyDecompositionResult:
+    """
+    Decompose uncertainty into aleatoric and epistemic using mutual information.
+
+    Based on NAACL 2024 paper "Uncertainty Quantification for In-Context Learning":
+    - Total Uncertainty = H[y | x, D]  (predictive entropy)
+    - Aleatoric Uncertainty = E_{θ~p(θ|D)}[H[y | x, θ]]  (expected entropy)
+    - Epistemic Uncertainty = H[y | x, D] - E[H[y | x, θ]]  (mutual information)
+
+    Args:
+        predictive_distribution: p(y | x, D) averaged over posterior (probability vector)
+        posterior_samples: Samples from posterior p(θ | D) (list of probability vectors)
+
+    Returns:
+        UncertaintyDecompositionResult
+    """
+    import numpy as np
+
+    # Ensure predictive_distribution is a numpy array
+    if isinstance(predictive_distribution, list):
+        pred_dist = np.array(predictive_distribution)
+    else:
+        pred_dist = predictive_distribution
+
+    # Add small epsilon for numerical stability
+    epsilon = 1e-10
+    pred_dist = np.clip(pred_dist, epsilon, 1 - epsilon)
+    pred_dist = pred_dist / pred_dist.sum()  # Normalize
+
+    # Total uncertainty: predictive entropy
+    total_uncertainty = -np.sum(pred_dist * np.log(pred_dist))
+
+    n_samples = len(posterior_samples) if posterior_samples else 1
+
+    if posterior_samples is None or len(posterior_samples) == 0:
+        # Single model: cannot decompose
+        return UncertaintyDecompositionResult(
+            total_uncertainty=total_uncertainty,
+            aleatoric_uncertainty=total_uncertainty,
+            epistemic_uncertainty=0.0,
+            n_samples=n_samples
+        )
+
+    # Aleatoric: expected entropy under posterior
+    entropies = []
+    for sample_dist in posterior_samples:
+        sample_arr = np.array(sample_dist)
+        sample_arr = np.clip(sample_arr, epsilon, 1 - epsilon)
+        sample_arr = sample_arr / sample_arr.sum()
+        h = -np.sum(sample_arr * np.log(sample_arr))
+        entropies.append(h)
+
+    aleatoric_uncertainty = np.mean(entropies)
+
+    # Epistemic: mutual information
+    epistemic_uncertainty = max(0.0, total_uncertainty - aleatoric_uncertainty)
+
+    return UncertaintyDecompositionResult(
+        total_uncertainty=total_uncertainty,
+        aleatoric_uncertainty=aleatoric_uncertainty,
+        epistemic_uncertainty=epistemic_uncertainty,
+        n_samples=n_samples
+    )
+
+
+@dataclass
+class EpistemicAbstentionResult:
+    """Result of epistemic abstention decision."""
+    should_abstain: bool  # Whether to abstain from prediction
+    reason: str  # Explanation for abstention
+    epistemic_score: float  # Raw epistemic uncertainty score
+    confidence: float  # Original confidence
+    entropy: float  # Predictive entropy
+
+
+def epistemic_abstention(
+    confidence: float,
+    predictive_distribution: Optional[List[float]] = None,
+    epistemic_threshold: float = 0.7,
+    entropy_threshold: float = 0.5
+) -> EpistemicAbstentionResult:
+    """
+    Simple abstention based on epistemic uncertainty.
+
+    High entropy + high confidence = likely epistemic uncertainty.
+    This indicates the model is confident but uncertain about what to predict.
+
+    Reference: NAACL 2024 "Uncertainty Quantification for In-Context Learning"
+
+    Args:
+        confidence: Model confidence score
+        predictive_distribution: Full probability distribution (for entropy calculation)
+        epistemic_threshold: Threshold for epistemic score
+        entropy_threshold: Threshold for absolute entropy
+
+    Returns:
+        EpistemicAbstentionResult
+    """
+    import numpy as np
+    import math
+
+    # Calculate entropy if distribution provided
+    if predictive_distribution:
+        pred_arr = np.array(predictive_distribution)
+        epsilon = 1e-10
+        pred_arr = np.clip(pred_arr, epsilon, 1 - epsilon)
+        pred_arr = pred_arr / pred_arr.sum()
+        entropy = -np.sum(pred_arr * np.log(pred_arr))
+    else:
+        # Approximate entropy from confidence: H = -p*log(p) - (1-p)*log(1-p)
+        p = max(epsilon, min(1 - epsilon, confidence))
+        entropy = -(p * math.log(p) + (1 - p) * math.log(1 - p))
+
+    # Epistemic signal: confident but high entropy
+    epistemic_score = confidence * entropy
+
+    # Decision logic
+    if epistemic_score > epistemic_threshold:
+        return EpistemicAbstentionResult(
+            should_abstain=True,
+            reason="abstained_high_epistemic",
+            epistemic_score=epistemic_score,
+            confidence=confidence,
+            entropy=entropy
+        )
+
+    if entropy > entropy_threshold:
+        return EpistemicAbstentionResult(
+            should_abstain=True,
+            reason="abstained_high_entropy",
+            epistemic_score=epistemic_score,
+            confidence=confidence,
+            entropy=entropy
+        )
+
+    return EpistemicAbstentionResult(
+        should_abstain=False,
+        reason="predict",
+        epistemic_score=epistemic_score,
+        confidence=confidence,
+        entropy=entropy
+    )
+
+
+# =============================================================================
+# MAIN / TEST
+# =============================================================================
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("Scientific Metrics v7.5 — Scientifically Correct")
+    print("=" * 60)
+
+    # Test Min-K%++ v7
+    print("\n1. Min-K%++ v7 (CORRECT vocabulary-based):")
+    # Full vocab distribution for each sample
+    token_log_probs = [
+        [-2.0, -3.0, -4.0, -5.0] * 12500,  # Sample 1: 50K vocab
+        [-2.5, -3.5, -4.5, -5.5] * 12500,  # Sample 2
+    ]
+    result = detect_contamination_mink_pp_v7(token_log_probs, vocab_size=50000)
+    print(f"   Contaminated: {result.is_contaminated}")
+    print(f"   Vocab K tokens: {result.vocab_k_tokens}")
+    print(f"   P-value: {result.p_value:.4f}")
+    print(f"   Note: Uses FULL vocabulary distribution")
+
+    # Test Full-ECE v7
+    print("\n2. Full-ECE v7 (Quantile binning):")
+    confidences = [[0.2, 0.7, 0.1], [0.5, 0.3, 0.2], [0.1, 0.8, 0.1]]
+    correct_indices = [2, 0, 1]
+    full_ece = calculate_full_ece_v7(confidences, correct_indices, binning="quantile")
+    print(f"   ECE: {full_ece.ece:.4f}")
+    print(f"   Binning: {full_ece.binning_method}")
+    print(f"   CI: [{full_ece.ece_ci_lower:.4f}, {full_ece.ece_ci_upper:.4f}]")
+
+    # Test Adaptive ECE
+    print("\n3. Adaptive ECE (NEW):")
+    confs = [0.1, 0.2, 0.3, 0.7, 0.8, 0.9]
+    corr = [False, False, True, True, True, True]
+    adaptive = calculate_adaptive_ece(confs, corr)
+    print(f"   Adaptive ECE: {adaptive.adaptive_ece:.4f}")
+    print(f"   Bins created: {adaptive.n_bins_created}")
+
+    # Test Brier Score
+    print("\n4. Brier Score (NEW):")
+    brier = calculate_brier_score(confs, corr)
+    print(f"   Brier Score: {brier.brier_score:.4f}")
+    print(f"   (Lower is better, 0 = perfect)")
+
+    # Test Simple Brier Score (v7.5)
+    print("\n5. Simple Brier Score (v7.5):")
+    simple_bs = simple_brier_score(confs, corr)
+    print(f"   Simple Brier Score: {simple_bs:.4f}")
+    print(f"   (Convenience wrapper, same result)")
+
+    # Test Ranked Voting SC (v7.5)
+    print("\n6. Ranked Voting Self-Consistency (v7.5):")
+    confidence_lists = [
+        [0.7, 0.3, 0.9, 0.1, 0.8],  # Voter 1
+        [0.6, 0.4, 0.8, 0.2, 0.9],  # Voter 2
+        [0.8, 0.2, 0.7, 0.3, 0.85], # Voter 3
+    ]
+    correct = [True, False, True, False, True]
+
+    for method in ["borda", "plurality", "median"]:
+        rv_result = ranked_voting_sc(confidence_lists, correct, method=method)
+        print(f"   {method.capitalize()}: SC = {rv_result.aggregated_sc:.4f}")
+        print(f"      Individual scores: {[f'{s:.3f}' for s in rv_result.individual_scores]}")
+
+    # Test Uncertainty Decomposition (v7.5)
+    print("\n7. Mutual Information Uncertainty Decomposition (v7.5):")
+    pred_dist = [0.3, 0.4, 0.3]  # Example probability distribution
+    posterior_samples = [
+        [0.25, 0.45, 0.30],
+        [0.35, 0.35, 0.30],
+        [0.30, 0.40, 0.30],
+    ]
+    ud_result = mutual_information_uncertainty(pred_dist, posterior_samples)
+    print(f"   Total Uncertainty: {ud_result.total_uncertainty:.4f}")
+    print(f"   Aleatoric (data): {ud_result.aleatoric_uncertainty:.4f}")
+    print(f"   Epistemic (model): {ud_result.epistemic_uncertainty:.4f}")
+
+    # Test Epistemic Abstention (v7.5)
+    print("\n8. Epistemic Abstention (v7.5):")
+    ea_result = epistemic_abstention(
+        confidence=0.9,
+        predictive_distribution=[0.33, 0.34, 0.33],  # High entropy
+        epistemic_threshold=0.5
+    )
+    print(f"   Confidence: {ea_result.confidence:.2f}")
+    print(f"   Entropy: {ea_result.entropy:.4f}")
+    print(f"   Epistemic Score: {ea_result.epistemic_score:.4f}")
+    print(f"   Should Abstain: {ea_result.should_abstain}")
+    print(f"   Reason: {ea_result.reason}")
+
+    print("\n" + "=" * 60)

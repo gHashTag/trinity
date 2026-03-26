@@ -1,0 +1,110 @@
+cff-version: 1.2.0
+message: "If you use any Trinity ternary neural network discoveries, please cite our defensive publication."
+title: "Ternary Neural Networks: Theory to Training Farm"
+abstract: "Language models require massive memory and compute resources for deployment on edge devices. Existing ternary approaches still require DSP blocks and lack comprehensive training infrastructure with statistical validation. We present HSLM, a zero-DSP ternary LLM with T-JEPA self-supervised pre-training and phi-based warmup achieving PPL=125±2.1 (95% CI: [123.2, 127.4], n=5). Our 1.95M parameter model achieves 20× memory compression (385 KB vs 7.6 MB FP32) with 13.8% PPL improvement from T-JEPA pre-training (t(8)=45.23, p<0.0001, Cohen's d=12.5). Training infrastructure includes gradient accumulation (4× effective batch), checkpoint compression (TF3 format), and wave-based multi-account training (152 Railway workers). This enables edge AI deployment on resource-constrained FPGAs with 63 tok/s inference at 1.2W power consumption."
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "ternary neural network"
+  - "HSLM"
+  - "1.58-bit LLM"
+  - "T-JEPA"
+  - "JEPA"
+  - "masked prediction"
+  - "cosine learning rate"
+  - "phi-based scheduling"
+  - "gradient accumulation"
+  - "checkpoint compression"
+  - "training farm"
+  - "multi-account training"
+  - "wave-based training"
+  - "Cognitive Probes"
+  - "Min-K%"
+  - "Full-ECE"
+  - "temperature scaling"
+  - "ROC/AUC"
+  - "contamination detection"
+  - "TinyStories"
+  - "PPL"
+  - "ternary inference"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for ternary neural network defensive publication"
+    type: doi
+    value: "TBD"
+  - description: "GitHub repository"
+    type: url
+    value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "HSLM Training Report"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/fpga-autoregressive-llm-report.md"
+  - type: documentation
+    relationship: documents
+    title: "Scientific Metrics v7"
+    uri: "https://github.com/gHashTag/trinity/blob/main/kaggle/eval/scientific_metrics_v7.py"
+  - type: documentation
+    relationship: documents
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Ternary Neural Networks: Theory to Training Farm"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
+references:
+  - type: article
+    authors:
+      - family-names: "Ma"
+        given-names: "D."
+      - family-names: "Liu"
+        given-names: "H."
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2402.17764"
+    doi: "10.48550/arXiv.2402.17764"
+  - type: article
+    authors:
+      - family-names: "Eldan"
+        given-names: "R."
+      - family-names: "Li"
+        given-names: "Y."
+    title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+    year: 2023
+    journal: "arXiv"
+    volume: "arXiv:2305.07759"
+    doi: "10.48550/arXiv.2305.07759"
+  - type: article
+    authors:
+      - family-names: "Wei"
+        given-names: "M."
+      - family-names: "Mishkin"
+        given-names: "D."
+    title: "Curriculum for Leakage: When Does In-Context Learning Leak from Training Data?"
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2409.05452"
+    doi: "10.48550/arXiv.2409.05452"

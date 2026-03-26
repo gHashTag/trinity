@@ -10,7 +10,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const tri_context = @import("tri_context.zig");
 
 const GREEN = colors.GREEN;
@@ -56,6 +56,8 @@ pub const Command = enum {
     // TVC (Distributed Learning)
     tvc_demo,
     tvc_stats,
+    // TRI-27 Bytecode (TDGS-3 Wave 2)
+    t27_test,
     // Multi-Agent System
     agents_demo,
     agents_bench,

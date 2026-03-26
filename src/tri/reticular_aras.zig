@@ -14,7 +14,7 @@ const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
 const thalamus = @import("thalamus.zig");
 const locus = @import("phoenix_locus_coeruleus.zig");
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 
 // ═══════════════════════════════════════════════════════════════════════
 // SWEEP RESULT — Problems found in farm

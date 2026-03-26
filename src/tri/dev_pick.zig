@@ -14,8 +14,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const dev_scan = @import("dev_scan.zig");
+const farm = @import("farm");
 const tri_experience = @import("tri_experience.zig");
 
 const Allocator = std.mem.Allocator;

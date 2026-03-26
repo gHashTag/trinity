@@ -11,10 +11,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// IPS (Intraparietal Sulcus): GF16/TF3 core format definitions
-pub const ips = @import("../intraparietal_sulcus.zig");
-
-/// Weber Tuning: Logarithmic quantization
-pub const weber = @import("../weber_tuning.zig");
+const temple = @import("temple");
+pub const ips = temple.intraparietal_sulcus;
+pub const weber = temple.weber_tuning;
 
 /// Fusiform Gyrus: Format conversion (cross-format)
 pub const fusiform = @import("../fusiform_gyrus.zig");

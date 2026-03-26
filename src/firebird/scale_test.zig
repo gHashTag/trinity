@@ -6,11 +6,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const firebird_vsa = @import("vsa.zig");
+const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
-const evolution = @import("evolution.zig");
+const farm = @import("farm");
+const evolution = farm.evolution;
 
-const TritVec = vsa.TritVec;
+const TritVec = firebird_vsa.TritVec;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SCALE CONSTANTS

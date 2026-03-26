@@ -11,7 +11,7 @@
 // φ² + 1/φ² = 3
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const hybrid = @import("hybrid.zig");
 const packed_vsa = @import("packed_vsa.zig");
 const packed_trit = @import("packed_trit.zig");

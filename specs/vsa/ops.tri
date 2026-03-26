@@ -1,0 +1,73 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// VSA OPERATIONS — Tri Specification (Stage 1.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+// Parseable spec for codegen. This DRIVES generated code.
+// φ² + 1/φ² = 3 | TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+module vsa.ops;
+
+// Core types
+type Trit = i8;
+type Vec32i8 = @Vector(32, i8);
+type Vec32i16 = @Vector(32, i16);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BASIC OPERATIONS (with allocator)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Bind: XOR-like binding operation
+fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) []Trit;
+
+// Unbind: Inverse of bind (same as bind for XOR-like)
+fn unbind(allocator: std.mem.Allocator, bound: []const Trit, key: []const Trit) []Trit;
+
+// Bundle2: Majority vote for 2 vectors
+fn bundle2(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) []Trit;
+
+// Bundle3: Majority vote for 3 vectors
+fn bundle3(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit, c: []const Trit) []Trit;
+
+// BundleN: Majority vote for N vectors
+fn bundleN(allocator: std.mem.Allocator, vectors: [][]const Trit) []Trit;
+
+// Permute: Cyclic permutation (rotate left)
+fn permute(allocator: std.mem.Allocator, v: []const Trit, n: usize) []Trit;
+
+// InversePermute: Inverse permutation (rotate right)
+fn inversePermute(allocator: std.mem.Allocator, v: []const Trit, n: usize) []Trit;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SIMILARITY METRICS (pure, no allocator)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// CosineSimilarity: Cosine similarity in [-1, 1]
+fn cosineSimilarity(a: []const Trit, b: []const Trit) f64;
+
+// HammingDistance: Count of differing positions
+fn hammingDistance(a: []const Trit, b: []const Trit) usize;
+
+// HammingSimilarity: 1 - normalized hamming distance
+fn hammingSimilarity(a: []const Trit, b: []const Trit) f64;
+
+// DotSimilarity: Dot product similarity
+fn dotSimilarity(a: []const Trit, b: []const Trit) i64;
+
+// VectorNorm: L2 vector norm
+fn vectorNorm(v: []const Trit) f64;
+
+// CountNonZero: Count non-zero trits
+fn countNonZero(v: []const Trit) usize;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OPERATIONS WITH ALLOCATOR (complex)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// RandomVector: Generate random trit vector (Xorshift64)
+fn randomVector(allocator: std.mem.Allocator, len: usize, seed: u64) []Trit;
+
+// EncodeSequence: Encode text sequence into VSA
+fn encodeSequence(allocator: std.mem.Allocator, text: []const u8) []Trit;
+
+// ProbeSequence: Probe for similarity in encoded sequence
+fn probeSequence(allocator: std.mem.Allocator, sequence: []const Trit, query: []const Trit) []f64;

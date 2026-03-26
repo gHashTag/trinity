@@ -1,0 +1,123 @@
+{
+  "title": "Trinity S³AI Framework: Complete Research Collection v6.0 with Figures and Data",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Trinity S³AI (Sacred Symbolic AI) Framework v6.0 presents a comprehensive approach to ternary computing with 40+ documented innovations across 7 research domains, now enhanced with publication-ready figures, supplementary data, and Docker reproducibility containers. (1) Ternary Neural Networks — HSLM-1.95M achieves PPL 125.3 on TinyStories with 20× memory compression; (2) Zero-DSP FPGA — Pure LUT-based inference requiring 0 DSP blocks with 37.8% LUT reduction; (3) TRI-27 ISA — 27-register balanced ternary instruction set with Coptic 3-bank encoding; (4) Queen Lotus Cycle — 6-phase autonomous orchestration with Jaccard similarity retrieval; (5) Tri Language — Linear types, algebraic effects, dual-target codegen to Zig/Verilog; (6) Sacred GF16/TF3 — φ-optimal number formats with 98.4% information retention; (7) VSA Operations — HybridBigInt SIMD achieving 17.2× speedup.\n\n**v6.0 Enhancements:**\n- **Publication-ready figures**: 14 PNG/SVG diagrams for all bundles\n- **Supplementary data**: 9 CSV files with experimental results\n- **Docker reproducibility**: 7 containerized environments\n- **Standardized keywords**: MeSH + ACM CCS taxonomy\n- **Cross-bundle references**: Full DOI network\n\n**Bundle DOIs:**\n- B001: 10.5281/zenodo.19227733 (Ternary Neural Networks)\n- B002: 10.5281/zenodo.19227735 (Zero-DSP FPGA)\n- B003: 10.5281/zenodo.19227737 (TRI-27 ISA)\n- B004: 10.5281/zenodo.19227739 (Queen Lotus Cycle)\n- B005: 10.5281/zenodo.19227741 (Tri Language)\n- B006: 10.5281/zenodo.19227743 (Sacred GF16/TF3)\n- B007: 10.5281/zenodo.19227745 (VSA Operations)\n\nAll implementations are pure Zig 0.15.x with zero external dependencies, complete reproducibility artifacts, and MLSys reproducibility cards.",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "ternary computing",
+    "balanced ternary",
+    "neural networks",
+    "HSLM",
+    "FPGA",
+    "zero-DSP",
+    "TRI-27 ISA",
+    "Queen Lotus Cycle",
+    "Tri Language",
+    "GF16",
+    "TF3",
+    "VSA",
+    "Zig",
+    "prior art",
+    "defensive publication",
+    "reproducibility",
+    "MLSys",
+    "Computing methodologies--Neural networks",
+    "Hardware--Emerging technologies",
+    "cs.AI",
+    "cs.LG",
+    "cs.AR",
+    "cs.NE",
+    "cs.PL"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "related_identifiers": [
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227733",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227735",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227737",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227739",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227741",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227743",
+      "resource_type": "software"
+    },
+    {
+      "relation": "hasPart",
+      "identifier": "10.5281/zenodo.19227745",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isReferencedBy",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://huggingface.co/datasets/roneneldan/TinyStories",
+      "relation": "usesData",
+      "resource_type": "dataset"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)",
+    "Ma et al., TerEffic: Highly Efficient Ternary LLM Inference on FPGA, arXiv:2502.16473 (2025)",
+    "Kanerva, Hyperdimensional Computing, Cognitive Computation (2009)",
+    "Livio, The Golden Ratio, Broadway Books (2008)"
+  ],
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ],
+  "upload_type": "software",
+  "contributors": [
+    {
+      "name": "Trinity Open Source Community",
+      "type": "Other"
+    }
+  ],
+  "grants": [
+    {
+      "id": "open-source://self-funded"
+    }
+  ]
+}

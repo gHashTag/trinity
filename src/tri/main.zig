@@ -4,23 +4,31 @@
 const std = @import("std");
 const trinity_workspace = @import("trinity_workspace");
 
+// Build options for conditional compilation (tiered build)
+const build_options = @import("build_options");
+
 // Decomposed modules
 const utils = @import("tri_utils.zig");
 const tri_config = @import("tri_config.zig");
 const commands = @import("tri_commands.zig");
-const queen_trinity = @import("queen_trinity.zig");
+const queen = @import("queen"); // Named module for Q-zone
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("hypothalamus.zig");
 const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
-const sacred_fpga = @import("tri_sacred_fpga.zig");
+// const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
+const dev_workflow = @import("dev_commands.zig");
+
+// Conditional worker modules (graceful degradation)
+// If enable_cloud=false, the L2 'tri' build will still try to import tri_cloud
+// Use L1 'queens' build for supervisor-only functionality when workers fail
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
-const dev_workflow = @import("dev_commands.zig");
+const farm = @import("farm");
 // P3.0: State machine for rigid process framework
 const tri_zai_proxy = @import("tri_zai_proxy.zig");
 const swe_arena = @import("swe_arena.zig");
@@ -37,7 +45,9 @@ const tri_research = @import("tri_research.zig");
 const tri_experiment = @import("tri_experiment.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
-const faculty_board = @import("cortex.zig");
+const faculty_board = queen.cortex; // faculty board module from src/queen/
+// TODO: faculty command disabled due to circular dependency with cortex.zig importing "tri"
+// const faculty_board_disabled = void{};
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -170,23 +180,54 @@ pub fn main() !void {
         }
     }
 
-    // Queen Trinity namespace: route `tri queen <subcommand>` to queen_trinity
+    // Queen Trinity namespace: route `tri queen <subcommand>` to queen
     if (std.mem.eql(u8, args[arg_idx], "queen")) {
         const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
         logAgentCommand(args[arg_idx..]);
-        try queen_trinity.runQueenCommand(allocator, queen_args);
+        const queen_mod = @import("queen");
+        try queen_mod.runQueenCommand(allocator, queen_args);
         return;
     }
 
     // TRI-27 namespace: route `tri tri27 <subcommand>` to tri27 commands
-    // TEMP: Disabled due to module path issues - needs build.zig configuration
-    // if (std.mem.eql(u8, args[arg_idx], "tri27")) {
-    //     const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-    //     logAgentCommand(args[arg_idx..]);
-    //     const tri27_mod = @import("../tri27/tri27_cli_fixed.zig");
-    //     try tri27_mod.runTri27Command(allocator, tri27_args);
-    //     return;
-    // }
+    if (std.mem.eql(u8, args[arg_idx], "tri27")) {
+        const tri27_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const tri27_mod = @import("tri27_cli");
+        try tri27_mod.runTri27Command(allocator, tri27_args);
+        return;
+    }
+
+    // DOGFOOD-1 enforcement: route `tri dogfood <subcommand>` to dogfood_check
+    if (std.mem.eql(u8, args[arg_idx], "dogfood")) {
+        const dogfood_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const dogfood_check = @import("dogfood_check.zig");
+        try dogfood_check.runDogfoodCheckCommand(allocator, dogfood_args);
+        return;
+    }
+
+    // Compile command: route `tri compile <input.tri> [--target t27] [-o output.t27]`
+    if (std.mem.eql(u8, args[arg_idx], "compile")) {
+        const compile_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const tri_compile_mod = @import("tri_compile.zig");
+        try tri_compile_mod.run(allocator, compile_args);
+        return;
+    }
+
+    // Content hash commands: route `tri hash-fn <target>` and `tri hash-fn-compare <target>`
+    if (std.mem.eql(u8, args[arg_idx], "hash-fn") or std.mem.eql(u8, args[arg_idx], "hash-fn-compare")) {
+        const hash_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        logAgentCommand(args[arg_idx..]);
+        const content_cli = @import("content_cli.zig");
+        if (std.mem.eql(u8, args[arg_idx], "hash-fn")) {
+            try content_cli.cmdHashFn(allocator, hash_args);
+        } else {
+            try content_cli.cmdHashFnCompare(allocator, hash_args);
+        }
+        return;
+    }
 
     // GitHub Integration: route `tri issue/board/protocol` to github_commands
     if (arg_idx < args.len) {
@@ -299,7 +340,7 @@ pub fn main() !void {
             try commands.runDeployCommand(allocator, deploy_sub, deploy_args);
             return;
         }
-        // Spec namespace: route `tri spec create <name>` to spec_create, bare `tri spec` → specexec demo
+        // Spec namespace: route `tri spec <subcommand>` to tri_spec_command
         if (std.mem.eql(u8, first_arg, "spec")) {
             const spec_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
             if (std.mem.eql(u8, spec_sub, "create")) {
@@ -308,9 +349,10 @@ pub fn main() !void {
                 pipeline.runSpecCreateCommand(allocator, spec_args);
                 return;
             }
-            // bare `tri spec` → specexec demo (existing behavior)
+            // Route spec subcommands (audit, apply, help) via tri_spec_command
             logAgentCommand(args[arg_idx..]);
-            demos.runSpecExecDemo();
+            const spec_command = @import("tri_spec_command.zig");
+            try spec_command.runSpecCommand(allocator, args[arg_idx + 1 ..]);
             return;
         }
         // Bench namespace: route `tri bench compare/record/history` to perf_benchmark
@@ -382,7 +424,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "queen")) {
             const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const queen = @import("queen.zig");
+            // queen is already imported as named module at top of file
             try queen.runQueenCommand(allocator, queen_args);
             return;
         }
@@ -422,7 +464,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "memory")) {
             const mem_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const tri_memory = @import("hippocampus.zig");
+            const tri_memory = @import("hippocampus");
             try tri_memory.runMemoryCommand(allocator, mem_args);
             return;
         }
@@ -553,6 +595,14 @@ pub fn main() !void {
             try tri_autocomplete.runAutocompleteCommand(allocator, autocomplete_args);
             return;
         }
+        // Package: prepare archive for friend's Mac (Docker + training code + dataset)
+        if (std.mem.eql(u8, first_arg, "package")) {
+            const package_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_package = @import("package.zig");
+            const exit_code = try tri_package.execute(allocator, package_args);
+            std.process.exit(exit_code);
+        }
     }
 
     // P2.9: Namespace-aware command dispatch
@@ -632,6 +682,9 @@ pub fn main() !void {
         .explain => utils.runSWECommand(&state, .Explain, cmd_args),
         .test_cmd => {
             std.debug.print("Test command not yet implemented in REPL. Use 'zig build test' instead.\n", .{});
+        },
+        .sacred_const => {
+            std.debug.print("🔱 Sacred Constants\n  φ = 1.6180339887498948482\n  φ² = 2.6180339887498948482\n  1/φ² = 0.3819660112501051518\n  φ² + 1/φ² = 3 = TRINITY\n", .{});
         },
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
@@ -839,7 +892,6 @@ pub fn main() !void {
         .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
-        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         .sacred_full_cycle => commands.runSacredFullCycleCommand(allocator),
         // Quantum Trinity v1.4 (Order #032)
         .quantum => commands.runQuantumCommand(allocator, cmd_args),
@@ -885,8 +937,13 @@ pub fn main() !void {
         },
         // GitHub Integration (Protocol v2)
         .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
-        // Faculty Board (A2A Dashboard)
-        .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
+        // Faculty Board (A2A Dashboard) - TEMPORARILY DISABLED due to circular dependency
+        // .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
+        .faculty => {
+            std.debug.print("Faculty command temporarily disabled due to module dependency issues.\n", .{});
+            std.debug.print("This will be fixed in a future update.\n", .{});
+            return error.NotImplemented;
+        },
         .experiment => try tri_experiment.runExperimentCommand(allocator, cmd_args),
         // Observatory v5.2
         .trace => {
@@ -905,6 +962,8 @@ pub fn main() !void {
             const ctx_loader = @import("context_loader.zig");
             ctx_loader.runContextCommand(allocator, cmd_args);
         },
+        // TRI-27 Bytecode (TDGS-3 Wave 2)
+        .t27_test => try commands.runT27TestCommand(allocator, cmd_args),
         // Demo/Bench commands (not yet implemented)
         .tvc_demo,
         .tvc_stats,
@@ -1047,40 +1106,9 @@ const AGENT_CMD_KEEP_LINES = 500;
 
 /// Dashboard: one-screen overview from live snapshot data
 fn runDashboard(allocator: std.mem.Allocator) void {
-    const snapshot = faculty_board.collectSnapshot(allocator) catch {
-        std.debug.print("\x1b[31mFailed to collect snapshot\x1b[0m\n", .{});
-        return;
-    };
-
-    const rate = snapshot.compile_rate;
-    const rate_icon: []const u8 = if (rate >= 80) "💎" else if (rate >= 50) "🟡" else "💀";
-    const build_icon: []const u8 = if (snapshot.build_ok) "🟢" else "🔴";
-    const active = snapshot.activeFaculty();
-
-    std.debug.print("\n\x1b[36m╔═══════════════════════════════════════╗\x1b[0m\n", .{});
-    std.debug.print("\x1b[36m║\x1b[0m  📊 \x1b[1mTRINITY DASHBOARD\x1b[0m               \x1b[36m║\x1b[0m\n", .{});
-    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
-
-    std.debug.print("\x1b[36m║\x1b[0m  Build:    {s} {d}/9 binaries\n", .{ build_icon, snapshot.binaries });
-    std.debug.print("\x1b[36m║\x1b[0m  Compile:  {s} {d}/{d} = {d}%\n", .{ rate_icon, snapshot.compile_pass, snapshot.compile_total, rate });
-    std.debug.print("\x1b[36m║\x1b[0m  Faculty:  {d}/6 active\n", .{active});
-    std.debug.print("\x1b[36m║\x1b[0m  Dirty:    {d} files\n", .{snapshot.dirty_files});
-    std.debug.print("\x1b[36m║\x1b[0m  Issues:   {d} open\n", .{snapshot.open_issues});
-    std.debug.print("\x1b[36m║\x1b[0m  Branch:   {s}\n", .{snapshot.git_branch});
-
-    // V-number with zone color
-    const zone_color = snapshot.v_zone.color();
-    std.debug.print("\x1b[36m║\x1b[0m  V:        {s}{d:.3} {s}\x1b[0m\n", .{ zone_color, snapshot.v_number, snapshot.v_zone.label() });
-
-    // Agent roster
-    std.debug.print("\x1b[36m╠═══════════════════════════════════════╣\x1b[0m\n", .{});
-    for (snapshot.agents) |a| {
-        const status_color = a.status.color();
-        std.debug.print("\x1b[36m║\x1b[0m  {s} {s}: {s}{s}\x1b[0m\n", .{ a.agent.emoji(), a.agent.name(), status_color, a.status.label() });
-    }
-
-    std.debug.print("\x1b[36m╚═══════════════════════════════════════╝\x1b[0m\n", .{});
-    std.debug.print("\n  \x1b[90mtri faculty\x1b[0m — full agent board\n  \x1b[90mtri stats\x1b[0m   — codebase metrics\n  \x1b[90mtri cloud\x1b[0m   — training farm\n\n", .{});
+    _ = allocator;
+    // TODO: faculty_board.collectSnapshot temporarily disabled due to circular dependency
+    std.debug.print("\x1b[31mDashboard temporarily disabled due to module dependency issues.\x1b[0m\n", .{});
 }
 
 /// If AGENT_NAME env var is set, append "timestamp agent_name tri args..." to log.
@@ -1609,7 +1637,6 @@ fn dispatchCommand(
         .reason => utils.runSWECommand(state, .Reason, cmd_args),
         // FPGA commands (forge namespace)
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
-        .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
         // Spec Linter (dev namespace)
         .lint => commands.runLintCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Lint error: {}\n", .{err});
@@ -1632,8 +1659,8 @@ fn dispatchCommand(
         .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
             std.debug.print("GitHub error: {}\n", .{err});
         },
-        .faculty => faculty_board.runFacultyCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Faculty error: {}\n", .{err});
+        .faculty => {
+            std.debug.print("Faculty command temporarily disabled due to module dependency issues.\n", .{});
         },
         .experiment => tri_experiment.runExperimentCommand(allocator, cmd_args) catch |err| {
             std.debug.print("Experiment error: {}\n", .{err});

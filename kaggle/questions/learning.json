@@ -1,0 +1,593 @@
+{
+  "few_shot_induction": {
+    "description": "Model learns rules from few examples. Hippocampus pattern completion with episodic memory.",
+    "templates": [
+      {
+        "id": "fs_001",
+        "rule": "odd number detection",
+        "examples": [
+          {"input": "3", "output": "odd"},
+          {"input": "7", "output": "odd"},
+          {"input": "2", "output": "even"}
+        ],
+        "test": "5",
+        "expected": "odd"
+      },
+      {
+        "id": "fs_002",
+        "rule": "capitalize first letter",
+        "examples": [
+          {"input": "apple", "output": "Apple"},
+          {"input": "banana", "output": "Banana"}
+        ],
+        "test": "cherry",
+        "expected": "Cherry"
+      },
+      {
+        "id": "fs_003",
+        "rule": "sum of two numbers",
+        "examples": [
+          {"input": "1, 2", "output": "3"},
+          {"input": "3, 5", "output": "8"}
+        ],
+        "test": "2, 7",
+        "expected": "9"
+      },
+      {
+        "id": "fs_004",
+        "rule": "reverse string",
+        "examples": [
+          {"input": "cat", "output": "tac"},
+          {"input": "dog", "output": "god"}
+        ],
+        "test": "bird",
+        "expected": "drib"
+      },
+      {
+        "id": "fs_005",
+        "rule": "double the number",
+        "examples": [
+          {"input": "3", "output": "6"},
+          {"input": "7", "output": "14"}
+        ],
+        "test": "9",
+        "expected": "18"
+      },
+      {
+        "id": "fs_006",
+        "rule": "pluralize (add 's')",
+        "examples": [
+          {"input": "cat", "output": "cats"},
+          {"input": "dog", "output": "dogs"}
+        ],
+        "test": "bird",
+        "expected": "birds"
+      },
+      {
+        "id": "fs_007",
+        "rule": "first letter",
+        "examples": [
+          {"input": "apple", "output": "a"},
+          {"input": "banana", "output": "b"}
+        ],
+        "test": "cherry",
+        "expected": "c"
+      },
+      {
+        "id": "fs_008",
+        "rule": "add 'ing' to verb",
+        "examples": [
+          {"input": "run", "output": "running"},
+          {"input": "jump", "output": "jumping"}
+        ],
+        "test": "swim",
+        "expected": "swimming"
+      },
+      {
+        "id": "fs_009",
+        "rule": "sort letters alphabetically",
+        "examples": [
+          {"input": "cat", "output": "act"},
+          {"input": "dog", "output": "dgo"}
+        ],
+        "test": "zebra",
+        "expected": "aberz"
+      },
+      {
+        "id": "fs_010",
+        "rule": "count vowels",
+        "examples": [
+          {"input": "cat", "output": "1"},
+          {"input": "dog", "output": "1"}
+        ],
+        "test": "banana",
+        "expected": "3"
+      },
+      {
+        "id": "fs_011",
+        "rule": "is it prime?",
+        "examples": [
+          {"input": "7", "output": "yes"},
+          {"input": "4", "output": "no"}
+        ],
+        "test": "11",
+        "expected": "yes"
+      },
+      {
+        "id": "fs_012",
+        "rule": "remove vowels",
+        "examples": [
+          {"input": "cat", "output": "ct"},
+          {"input": "dog", "output": "dg"}
+        ],
+        "test": "elephant",
+        "expected": "lphnt"
+      },
+      {
+        "id": "fs_013",
+        "rule": "rotate right by 1",
+        "examples": [
+          {"input": "abc", "output": "cab"},
+          {"input": "dog", "output": "gdo"}
+        ],
+        "test": "cat",
+        "expected": "tca"
+      },
+      {
+        "id": "fs_014",
+        "rule": "word length",
+        "examples": [
+          {"input": "cat", "output": "3"},
+          {"input": "dog", "output": "3"}
+        ],
+        "test": "elephant",
+        "expected": "8"
+      },
+      {
+        "id": "fs_015",
+        "rule": "absolute difference",
+        "examples": [
+          {"input": "5, 3", "output": "2"},
+          {"input": "2, 7", "output": "5"}
+        ],
+        "test": "10, 4",
+        "expected": "6"
+      },
+      {
+        "id": "fs_016",
+        "rule": "minimum of two",
+        "examples": [
+          {"input": "5, 3", "output": "3"},
+          {"input": "2, 7", "output": "2"}
+        ],
+        "test": "10, 4",
+        "expected": "4"
+      },
+      {
+        "id": "fs_017",
+        "rule": "maximum of two",
+        "examples": [
+          {"input": "5, 3", "output": "5"},
+          {"input": "2, 7", "output": "7"}
+        ],
+        "test": "10, 4",
+        "expected": "10"
+      },
+      {
+        "id": "fs_018",
+        "rule": "is multiple of 3?",
+        "examples": [
+          {"input": "6", "output": "yes"},
+          {"input": "7", "output": "no"}
+        ],
+        "test": "12",
+        "expected": "yes"
+      },
+      {
+        "id": "fs_019",
+        "rule": "square the number",
+        "examples": [
+          {"input": "3", "output": "9"},
+          {"input": "5", "output": "25"}
+        ],
+        "test": "7",
+        "expected": "49"
+      },
+      {
+        "id": "fs_020",
+        "rule": "repeat string twice",
+        "examples": [
+          {"input": "ha", "output": "haha"},
+          {"input": "hi", "output": "hihi"}
+        ],
+        "test": "ho",
+        "expected": "hoho"
+      },
+      {
+        "id": "fs_021",
+        "rule": "remove first letter",
+        "examples": [
+          {"input": "cat", "output": "at"},
+          {"input": "dog", "output": "og"}
+        ],
+        "test": "bird",
+        "expected": "ird"
+      },
+      {
+        "id": "fs_022",
+        "rule": "remove last letter",
+        "examples": [
+          {"input": "cat", "output": "ca"},
+          {"input": "dog", "output": "do"}
+        ],
+        "test": "bird",
+        "expected": "bir"
+      },
+      {
+        "id": "fs_023",
+        "rule": "is palindrome?",
+        "examples": [
+          {"input": "racecar", "output": "yes"},
+          {"input": "cat", "output": "no"}
+        ],
+        "test": "level",
+        "expected": "yes"
+      },
+      {
+        "id": "fs_024",
+        "rule": "count consonants",
+        "examples": [
+          {"input": "cat", "output": "2"},
+          {"input": "dog", "output": "2"}
+        ],
+        "test": "banana",
+        "expected": "3"
+      },
+      {
+        "id": "fs_025",
+        "rule": "swap first and last letters",
+        "examples": [
+          {"input": "cat", "output": "tac"},
+          {"input": "dog", "output": "god"}
+        ],
+        "test": "bird",
+        "expected": "dirb"
+      }
+    ]
+  },
+  "belief_update": {
+    "description": "Model updates beliefs when corrected. Hippocampus reconsolidation with depth tracking.",
+    "templates": [
+      {
+        "id": "bu_001",
+        "initial": "Paris is the capital of Australia.",
+        "correction": "Actually, Canberra is the capital of Australia.",
+        "question": "What is the capital of Australia?",
+        "expected": "Canberra"
+      },
+      {
+        "id": "bu_002",
+        "initial": "Water boils at 90°C.",
+        "correction": "Water boils at 100°C at sea level.",
+        "question": "At what temperature does water boil at sea level?",
+        "expected": "100°C"
+      },
+      {
+        "id": "bu_003",
+        "initial": "Whales are fish.",
+        "correction": "Whales are mammals, not fish.",
+        "question": "Are whales fish or mammals?",
+        "expected": "Mammals"
+      },
+      {
+        "id": "bu_004",
+        "initial": "The Beatles were German.",
+        "correction": "The Beatles were British.",
+        "question": "Where were The Beatles from?",
+        "expected": "Britain (UK)"
+      },
+      {
+        "id": "bu_005",
+        "initial": "7 × 8 = 56.",
+        "correction": "7 × 8 = 54.",
+        "question": "What is 7 × 8?",
+        "expected": "54"
+      },
+      {
+        "id": "bu_006",
+        "initial": "Shakespeare wrote 'Don Quixote'.",
+        "correction": "Cervantes wrote 'Don Quixote'.",
+        "question": "Who wrote 'Don Quixote'?",
+        "expected": "Cervantes"
+      },
+      {
+        "id": "bu_007",
+        "initial": "The moon is made of cheese.",
+        "correction": "The moon is made of rock and dust.",
+        "question": "What is the moon made of?",
+        "expected": "Rock and dust"
+      },
+      {
+        "id": "bu_008",
+        "initial": "Vincent van Gogh painted the Mona Lisa.",
+        "correction": "Leonardo da Vinci painted the Mona Lisa.",
+        "question": "Who painted the Mona Lisa?",
+        "expected": "Leonardo da Vinci"
+      },
+      {
+        "id": "bu_009",
+        "initial": "Electrons are larger than atoms.",
+        "correction": "Electrons are subatomic particles smaller than atoms.",
+        "question": "Are electrons larger or smaller than atoms?",
+        "expected": "Smaller"
+      },
+      {
+        "id": "bu_010",
+        "initial": "Antarctica is a country.",
+        "correction": "Antarctica is a continent with no countries.",
+        "question": "Is Antarctica a country or continent?",
+        "expected": "Continent"
+      },
+      {
+        "id": "bu_011",
+        "initial": "Plants only absorb oxygen.",
+        "correction": "Plants absorb CO2 and release oxygen during the day.",
+        "question": "What do plants primarily absorb during the day?",
+        "expected": "Carbon dioxide (CO2)"
+      },
+      {
+        "id": "bu_012",
+        "initial": "The American Civil War was in the 1900s.",
+        "correction": "The American Civil War was from 1861-1865.",
+        "question": "When was the American Civil War?",
+        "expected": "1861-1865"
+      },
+      {
+        "id": "bu_013",
+        "initial": "DNA stands for 'Do Not Alter'.",
+        "correction": "DNA stands for Deoxyribonucleic Acid.",
+        "question": "What does DNA stand for?",
+        "expected": "Deoxyribonucleic Acid"
+      },
+      {
+        "id": "bu_014",
+        "initial": "The sun orbits the Earth.",
+        "correction": "The Earth orbits the sun.",
+        "question": "What orbits what?",
+        "expected": "Earth orbits the sun"
+      },
+      {
+        "id": "bu_015",
+        "initial": "Triangles have four sides.",
+        "correction": "Triangles have three sides.",
+        "question": "How many sides does a triangle have?",
+        "expected": "Three"
+      }
+    ]
+  },
+  "error_driven_learning": {
+    "description": "Model learns from errors rapidly. Amygdala fear conditioning with transfer distance.",
+    "templates": [
+      {
+        "id": "ed_001",
+        "error": "I previously said 7 × 8 = 56.",
+        "correction": "No, 7 × 8 = 54.",
+        "question": "What is 7 × 8?",
+        "expected": "54"
+      },
+      {
+        "id": "ed_002",
+        "error": "I incorrectly stated that whales are fish.",
+        "correction": "Whales are mammals, not fish.",
+        "question": "Are whales fish or mammals?",
+        "expected": "Mammals"
+      },
+      {
+        "id": "ed_003",
+        "error": "I claimed Paris is the capital of Australia.",
+        "correction": "Canberra is the capital of Australia.",
+        "question": "What is the capital of Australia?",
+        "expected": "Canberra"
+      },
+      {
+        "id": "ed_004",
+        "error": "I said The Beatles were German.",
+        "correction": "The Beatles were British.",
+        "question": "Where were The Beatles from?",
+        "expected": "Britain (UK)"
+      },
+      {
+        "id": "ed_005",
+        "error": "I stated that water boils at 90°C.",
+        "correction": "Water boils at 100°C at sea level.",
+        "question": "At what temperature does water boil at sea level?",
+        "expected": "100°C"
+      },
+      {
+        "id": "ed_006",
+        "error": "I claimed Shakespeare wrote 'Don Quixote'.",
+        "correction": "Cervantes wrote 'Don Quixote'.",
+        "question": "Who wrote 'Don Quixote'?",
+        "expected": "Cervantes"
+      },
+      {
+        "id": "ed_007",
+        "error": "I said Vincent van Gogh painted the Mona Lisa.",
+        "correction": "Leonardo da Vinci painted the Mona Lisa.",
+        "question": "Who painted the Mona Lisa?",
+        "expected": "Leonardo da Vinci"
+      },
+      {
+        "id": "ed_008",
+        "error": "I stated electrons are larger than atoms.",
+        "correction": "Electrons are subatomic particles smaller than atoms.",
+        "question": "Are electrons larger or smaller than atoms?",
+        "expected": "Smaller"
+      },
+      {
+        "id": "ed_009",
+        "error": "I claimed Antarctica is a country.",
+        "correction": "Antarctica is a continent with no countries.",
+        "question": "Is Antarctica a country or continent?",
+        "expected": "Continent"
+      },
+      {
+        "id": "ed_010",
+        "error": "I said the American Civil War was in the 1900s.",
+        "correction": "The American Civil War was from 1861-1865.",
+        "question": "When was the American Civil War?",
+        "expected": "1861-1865"
+      }
+    ]
+  },
+  "reward_signal_learning": {
+    "description": "Model learns from reward signals. ACCumbens reinforcement with stationarity tracking.",
+    "templates": [
+      {
+        "id": "rs_001",
+        "action": "Solve puzzle quickly",
+        "reward": "Correct! Good speed.",
+        "question": "What reward did you receive?",
+        "expected": "positive_reward"
+      },
+      {
+        "id": "rs_002",
+        "action": "Incorrect answer",
+        "reward": "Incorrect. Try again.",
+        "question": "What reward did you receive?",
+        "expected": "negative_reward"
+      },
+      {
+        "id": "rs_003",
+        "action": "Provide helpful explanation",
+        "reward": "Excellent explanation!",
+        "question": "What reward did you receive?",
+        "expected": "positive_reward"
+      },
+      {
+        "id": "rs_004",
+        "action": "Give irrelevant response",
+        "reward": "Response was irrelevant.",
+        "question": "What reward did you receive?",
+        "expected": "negative_reward"
+      },
+      {
+        "id": "rs_005",
+        "action": "Complete task accurately",
+        "reward": "Task completed successfully.",
+        "question": "What reward did you receive?",
+        "expected": "positive_reward"
+      },
+      {
+        "id": "rs_006",
+        "action": "Exceed time limit",
+        "reward": "Too slow. Timeout.",
+        "question": "What reward did you receive?",
+        "expected": "negative_reward"
+      },
+      {
+        "id": "rs_007",
+        "action": "Follow instructions precisely",
+        "reward": "Perfect execution.",
+        "question": "What reward did you receive?",
+        "expected": "positive_reward"
+      },
+      {
+        "id": "rs_008",
+        "action": "Miss critical requirement",
+        "reward": "Requirements not met.",
+        "question": "What reward did you receive?",
+        "expected": "negative_reward"
+      },
+      {
+        "id": "rs_009",
+        "action": "Provide creative solution",
+        "reward": "Creative approach appreciated.",
+        "question": "What reward did you receive?",
+        "expected": "positive_reward"
+      },
+      {
+        "id": "rs_010",
+        "action": "Give incomplete answer",
+        "reward": "Answer incomplete.",
+        "question": "What reward did you receive?",
+        "expected": "negative_reward"
+      }
+    ]
+  },
+  "long_context_retention": {
+    "description": "Model retains information across long contexts. Hippocampus consolidation with φ-scaling.",
+    "templates": [
+      {
+        "id": "lc_001",
+        "context": "Alice bought 3 apples, 2 oranges, and 5 bananas.",
+        "question": "How many fruits did Alice buy total?",
+        "expected": "10",
+        "complexity": 3
+      },
+      {
+        "id": "lc_002",
+        "context": "Bob has 5 cats. Yesterday he bought 3 more cats. Then he gave 2 cats to Carol. Before that, he had adopted 4 kittens.",
+        "question": "How many cats does Bob have now?",
+        "expected": "10",
+        "complexity": 5
+      },
+      {
+        "id": "lc_003",
+        "context": "A train leaves station A at 8 AM traveling at 60 mph. Station B is 180 miles away. At 9:30 AM, a second train leaves station B traveling at 80 mph.",
+        "question": "At what time do the trains meet?",
+        "expected": "10:08 AM",
+        "complexity": 8
+      },
+      {
+        "id": "lc_004",
+        "context": "A company has 4 departments. Department A has 12 employees. Department B has 8 but is hiring 3 more. Department C lost 2 employees who moved to Department D. Department D originally had 10 employees and received a team of 5 from Department A. Department A also sent 2 employees to Department E, which started with 7.",
+        "question": "How many employees are in each department now?",
+        "expected": "A: 5, B: 11, C: 8, D: 15, E: 9",
+        "complexity": 13
+      },
+      {
+        "id": "lc_005",
+        "context": "In a tournament, Team Alpha beats Team Beta (3-2). Team Beta beats Team Gamma (4-1). Team Gamma beats Team Delta (3-0). Team Delta beats Team Alpha (2-1) on penalties. Team Alpha also beats Team Gamma (4-3) in overtime. Team Epsilon draws with Team Beta (2-2) and loses to Team Delta (1-3). Team Gamma beats Team Epsilon (3-1). Team Delta ties with Team Beta (1-1). Team Alpha loses to Team Epsilon (2-3) in upset.",
+        "question": "Based on these results, rank the teams by head-to-head performance and identify any circular rankings.",
+        "expected": "Circular: Alpha > Beta > Gamma > Delta > Alpha, with Epsilon as wild card",
+        "complexity": 21
+      },
+      {
+        "id": "lc_006",
+        "context": "The sequence begins: 2, 4, 8, 16, 32, 64. Each number doubles the previous. After 64 comes 128, then 256, then 512, then 1024.",
+        "question": "What comes after 1024 in this sequence?",
+        "expected": "2048",
+        "complexity": 3
+      },
+      {
+        "id": "lc_007",
+        "context": "John was born in 1990. Mary was born in 1985. They met in 2015 when John was 25 and Mary was 30. They got married 3 years later. In 2020, they had their first child. The child was born when John was 30 and Mary was 35.",
+        "question": "What year was their child born?",
+        "expected": "2020",
+        "complexity": 5
+      },
+      {
+        "id": "lc_008",
+        "context": "A recipe calls for: 2 cups flour, 1 cup sugar, 3 eggs, 1 cup milk, 1 tsp vanilla, 1 tsp baking powder. To double it: 4 cups flour, 2 cups sugar, 6 eggs, 2 cups milk, 2 tsp vanilla, 2 tsp baking powder. To halve the original: 1 cup flour, 0.5 cup sugar, 1.5 eggs, 0.5 cup milk, 0.5 tsp vanilla, 0.5 tsp baking powder.",
+        "question": "For a triple batch, how much flour and sugar are needed?",
+        "expected": "6 cups flour, 3 cups sugar",
+        "complexity": 8
+      },
+      {
+        "id": "lc_009",
+        "context": "Book 1: 'The Beginning' has 300 pages and costs $15. Book 2: 'The Middle' has 400 pages and costs $20. Book 3: 'The End' has 350 pages and costs $18. Book 4: 'The Epilogue' has 200 pages and costs $12. A collector buys all books at 10% discount. A student buys only Books 1 and 3 at full price.",
+        "question": "Who pays more and by how much?",
+        "expected": "Collector pays $54.90, Student pays $33. Collector pays $21.90 more",
+        "complexity": 13
+      },
+      {
+        "id": "lc_010",
+        "context": "Five friends (Alice, Bob, Carol, Dave, Eve) sit around a round table. Alice sits north. Bob sits to Alice's right. Carol sits across from Alice. Dave sits between Bob and Carol. Eve sits between Carol and Alice. They rotate one position clockwise. Then Eve leaves. Then they rotate two positions counterclockwise.",
+        "question": "Who is now sitting north?",
+        "expected": "Bob",
+        "complexity": 21
+      }
+    ]
+  }
+}

@@ -7,8 +7,8 @@
 // Thread-safe: each vector is independent. No global state.
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
-const hybrid = @import("hybrid.zig");
+const vsa = @import("vsa");
+const hybrid = @import("hybrid");
 
 const HybridBigInt = hybrid.HybridBigInt;
 const Trit = hybrid.Trit;

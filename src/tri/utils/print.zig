@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("../tri_colors.zig");
+const colors = @import("tri_colors");
 const trinity_swe = @import("../trinity_swe");
 
 const GREEN = colors.GREEN;

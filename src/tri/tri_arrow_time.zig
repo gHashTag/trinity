@@ -10,7 +10,7 @@
 const std = @import("std");
 
 const arrow_time = @import("arrow_of_time");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 /// Parse options from args, return (remaining_args, options)
 const CommandOptions = struct {

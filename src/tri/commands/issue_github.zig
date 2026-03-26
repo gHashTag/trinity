@@ -16,7 +16,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const github_client = @import("../github_client.zig");
+const github = @import("github");
+const github_client = github.github_client;
 const github_commands = @import("../github_commands.zig");
 
 // ANSI colors

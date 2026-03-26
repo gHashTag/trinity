@@ -18,7 +18,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const hippocampus = @import("hippocampus.zig");
+const hippocampus = @import("hippocampus");
 const print = std.debug.print;
 
 const RESET = "\x1b[0m";
@@ -340,9 +340,9 @@ fn scanErrorMemories(allocator: Allocator, result: *RegenAnalysis) !void {
             .source = .hippocampus,
             .priority = .high,
         };
-        const id = std.fmt.bufPrint(&item.id, "mem_{s}", .{err.id()}) catch "mem";
+        const id = std.fmt.bufPrint(&item.id, "mem_{s}", .{(&err).id()}) catch "mem";
         item.id_len = @intCast(id.len);
-        const summary = std.fmt.bufPrint(&item.summary, "{s}", .{err.summary()}) catch "error";
+        const summary = std.fmt.bufPrint(&item.summary, "{s}", .{(&err).summary()}) catch "error";
         item.summary_len = @intCast(summary.len);
         result.fix_items[result.fix_count] = item;
         result.fix_count += 1;

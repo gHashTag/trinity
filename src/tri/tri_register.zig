@@ -1269,6 +1269,7 @@ pub fn registerAllCommands(registry: *CommandRegistry, state: *utils.CLIState) !
 // Import real tri_fpga commands (VIBEE + openXC7 Pipeline)
 const tri_fpga = @import("tri_fpga.zig");
 const tri_fpga_experience = @import("tri_fpga_experience.zig");
+const tri_fpga_fly = @import("fpga_fly.zig");
 
 const fpga_commands = struct {
     pub fn runFpgaGen(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -1301,6 +1302,26 @@ const fpga_commands = struct {
     pub fn runFpgaEye(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return tri_fpga.runFpgaEyeCommand(allocator, args);
     }
+    pub fn runFpgaBuildUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = args;
+        return tri_fpga.runFpgaBuildUartCommand(allocator);
+    }
+    pub fn runFpgaFlashUart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = args;
+        return tri_fpga.runFpgaFlashUartCommand(allocator);
+    }
+    pub fn runFpgaUartTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = args;
+        return tri_fpga.runFpgaUartTestCommand(allocator);
+    }
+    pub fn runFpgaSynthRemote(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = args;
+        return tri_fpga.runFpgaSynthRemoteCommand(allocator);
+    }
+    pub fn runFpgaDownloadUartBit(allocator: std.mem.Allocator, args: []const []const u8) !void {
+        _ = args;
+        return tri_fpga.runFpgaDownloadUartBitCommand(allocator);
+    }
 };
 
 /// Run fpga command - dispatches to gen/verdict/flash/gen-tri/synth subcommands
@@ -1323,7 +1344,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommands\":[", .{});
         const subcommands = &[_][]const u8{
-            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag", "uart", "power",
+            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag", "uart", "power", "deploy-fly",
         };
         for (subcommands, 0..) |sc, i| {
             if (i > 0) try data_json.append(allocator, ',');
@@ -1376,6 +1397,16 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaEye(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "uart")) {
         return tri_fpga.runFpgaUartCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "build-uart")) {
+        return fpga_commands.runFpgaBuildUart(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "flash-uart")) {
+        return fpga_commands.runFpgaFlashUart(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "uart-test")) {
+        return fpga_commands.runFpgaUartTest(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "download-uart-bit")) {
+        return tri_fpga.runFpgaDownloadUartBitCommand(allocator);
+    } else if (std.mem.eql(u8, subcommand, "deploy-fly")) {
+        return tri_fpga_fly.runFpgaDeployFlyCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "power")) {
         return tri_fpga.runFpgaPowerCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {
@@ -1409,7 +1440,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount", "uart", "power" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount", "uart", "build-uart", "flash-uart", "uart-test", "power" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});

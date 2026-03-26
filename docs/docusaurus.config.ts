@@ -13,9 +13,9 @@ const config: Config = {
     v4: true,
   },
 
-  // GitHub Pages deployment
-  url: 'https://gHashTag.github.io',
-  baseUrl: '/trinity/docs/',
+  // Custom domain: t27.ai
+  url: 'https://t27.ai',
+  baseUrl: '/docs/',
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',

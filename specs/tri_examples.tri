@@ -1,0 +1,160 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# tri_examples.tri - Tri Language Example Programs
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Demonstrates all 3 waves of Tri Language:
+# - Wave 1: ADT + match + pipe + guards
+# - Wave 2: Result + linear + phantom + arrays
+# - Wave 3: Effects + handlers (State/Error)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 1: ADT (Algebraic Data Types)
+# ═══════════════════════════════════════════════════════════════════════
+
+pub enum Option<T> {
+    None,
+    Some(T),
+}
+
+pub fn unwrap_or(opt: Option<i32>, default: i32) -> i32 {
+    match opt {
+        None => default,
+        Some(x) => x,
+    }
+}
+
+pub fn map_option(opt: Option<i32>, f: fn(i32) -> i32) -> Option<i32> {
+    match opt {
+        None => None,
+        Some(x) => Some(f(x)),
+    }
+}
+
+# Pipe expression example
+pub fn process_pipeline(data: [4]i32) -> i32 {
+    data
+        |> map(fn(x: i32) => x * 2)
+        |> filter(fn(x: i32) => x > 10)
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 2: Result Type (no exceptions)
+# ═══════════════════════════════════════════════════════════════════════
+
+pub fn divide(x: i64, y: i64) -> Result<i64, string> {
+    if y == 0 then
+        return Err("division by zero")
+    else
+        return Ok(x / y)
+}
+
+pub fn safe_divide(x: i64, y: i64) -> i64 {
+    match divide(x, y) {
+        Ok(value) => value,
+        Err(msg) => 0,
+    }
+}
+
+# Linear types (consume-once semantics)
+pub linear File {
+    close(),
+}
+
+pub fn use_file(f: File) {
+    f.close()
+}
+
+# Banked types (Coptic register safety)
+pub fn banked_operation() -> Banked<i32, Bank0> {
+    return 42
+}
+
+# Fixed-size arrays
+pub fn sum_array(arr: [3]i32) -> i32 {
+    arr[0] + arr[1] + arr[2]
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 3: Effects + Handlers
+# ═══════════════════════════════════════════════════════════════════════
+
+pub effect State<T> {
+    get(),
+    set(T),
+}
+
+pub effect Error {
+    throw(string),
+}
+
+pub fn with_counter() -> i32 {
+    try {
+        perform State.set(10)
+        let x = perform State.get()
+        perform State.set(x + 5)
+        perform State.get()
+    } with {
+        State.get() => 0,
+        State.set(v) => resume_with(v),
+    }
+}
+
+pub fn safe_operation(x: i64) -> Result<i64, string> {
+    try {
+        if x < 0 then
+            perform Error.throw("negative value")
+        else
+            return Ok(x * 2)
+    } with {
+        Error.throw(msg) => Err(msg),
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# COMBINED EXAMPLE: All waves together
+# ═══════════════════════════════════════════════════════════════════════
+
+pub fn process_data(data: [5]i32) -> Result<i32, string> {
+    try {
+        let filtered = try {
+            data
+                |> map(fn(x: i32) => x * 2)
+                |> filter(fn(x: i32) => x > 0)
+        }
+
+        match filtered {
+            arr => {
+                let sum = arr[0] + arr[1] + arr[2] + arr[3] + arr[4]
+                perform State.set(sum)
+                let result = perform State.get()
+                return Ok(result)
+            },
+        }
+    } with {
+        State.get() => 0,
+        State.set(v) => resume_with(v),
+        Error.throw(msg) => Err(msg),
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════
+# STRUCTS AND PIPELINES
+# ═══════════════════════════════════════════════════════════════════════
+
+pub struct Point {
+    x: i32,
+    y: i32,
+}
+
+pub fn distance(p: Point) -> i32 {
+    p.x * p.x + p.y * p.y
+}
+
+pub pipeline transform = fn(x: i32) => x * 2
+                        |> fn(y: i32) => y + 10
+
+# ═══════════════════════════════════════════════════════════════════════
+# END OF EXAMPLES
+# ═══════════════════════════════════════════════════════════════════════════

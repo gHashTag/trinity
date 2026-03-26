@@ -13,7 +13,7 @@
 
 const std = @import("std");
 const math = std.math;
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const trit = @import("trit_vsa.zig");
 
 // Import from canonical source (ANTI-PATTERN: no inline constants!)

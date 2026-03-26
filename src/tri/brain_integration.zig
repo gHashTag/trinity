@@ -14,13 +14,15 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const queen_acc = @import("queen_acc.zig");
-const amygdala = @import("amygdala.zig");
-const queen_pcc = @import("queen_pcc.zig");
-const basal_ganglia = @import("basal_ganglia.zig");
-const queen_ofc = @import("queen_ofc.zig");
-const queen_dlpfc = @import("queen_dlpfc.zig");
-const queen_cortex = @import("queen_cortex.zig");
+// Import queen modules via queen module to avoid migration conflicts
+const queen = @import("queen");
+const queen_acc = queen.queen_acc;
+const amygdala = @import("amygdala.zig"); // Still in src/tri/
+const queen_pcc = queen.queen_pcc;
+const basal_ganglia = @import("basal_ganglia.zig"); // Still in src/tri/
+const queen_ofc = queen.queen_ofc;
+const queen_dlpfc = queen.queen_dlpfc;
+const queen_cortex = queen.queen_cortex;
 const qt = @import("queen_types.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -207,7 +207,7 @@ pub fn syncBridge(
     try bus.broadcast(allocator, .hippocampus, .heartbeat, data);
 
     // Write to hippocampus
-    const hippocampus = @import("hippocampus.zig");
+    const hippocampus = @import("hippocampus");
     const log_data = try std.fmt.allocPrint(
         allocator,
         "{{\"sync_count\":{d},\"queen_cycle\":{d},\"phoenix_state\":\"{s}\"}}",

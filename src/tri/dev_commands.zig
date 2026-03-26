@@ -11,6 +11,7 @@ const Allocator = std.mem.Allocator;
 const state_machine = @import("dev_state_machine.zig");
 const dev_scan = @import("dev_scan.zig");
 const dev_pick = @import("dev_pick.zig");
+// const dev_guarded = @import("dev_guarded.zig");
 
 /// Display current session status
 fn cmdStatus(allocator: Allocator, args: []const []const u8) !void {
@@ -263,10 +264,19 @@ pub fn runDevCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "pick")) {
         try cmdPick(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "loop")) {
-        cmdLoop(allocator, sub_args);
+        // cmdLoop(allocator, sub_args);
+        // } else if (std.mem.eql(u8, subcmd, "core")) {
+        //     // try dev_guarded.runCoreCommand(allocator, sub_args);
+        // } else if (std.mem.eql(u8, subcmd, "tri")) {
+        // } else if (std.mem.eql(u8, subcmd, "tri")) {
+        //     try dev_guarded.runTriCommand(allocator, sub_args);
+        // } else if (std.mem.eql(u8, subcmd, "t27")) {
+        //     try dev_guarded.runT27Command(allocator, sub_args);
+        // } else if (std.mem.eql(u8, subcmd, "docs")) {
+        //     try dev_guarded.runDocsCommand(allocator, sub_args);
     } else {
         std.debug.print("Unknown dev subcommand: '{s}'", .{subcmd});
-        std.debug.print("Available: status, start, test, commit, ship, reset, unblock, log, scan, pick, loop", .{});
+        std.debug.print("Available: status, start, test, commit, ship, reset, unblock, log, scan, pick, loop, core, tri, t27, docs", .{});
         return error.InvalidArgument;
     }
 }

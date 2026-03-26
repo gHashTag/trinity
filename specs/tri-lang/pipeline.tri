@@ -1,0 +1,269 @@
+# ═══════════════════════════════════════════════════════
+# PIPELINE — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Tri Language Compilation Pipeline
+# Source of truth for tri-lang/pipeline.zig codegen
+# Wave 2, Phase 4: End-to-End Integration
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_pipeline
+version: "0.1.0"
+module: tri_lang.pipeline
+description: "Tri Language Compilation Pipeline (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  PipelineError:
+    description: "Pipeline error variants"
+    underlying: "error"
+    variants:
+      - ParseError: "Parser error"
+      - TypeError: "Type checker error"
+      - CodegenError: "Code generator error"
+
+  IOError:
+    description: "IO error for file operations"
+    underlying: "anyerror"
+
+  OptLevel:
+    description: "Optimization level for compilation"
+    underlying: "enum(u2)"
+    variants:
+      - None: "No optimization"
+      - Minimal: "Minimal: constant folding only"
+      - Standard: "Standard: constant folding + dead code elimination"
+      - Aggressive: "Aggressive: all passes including fusion and inlining"
+
+  CompileOptions:
+    description: "Compilation options"
+    fields:
+      - name: opt_level
+        type: "OptLevel"
+        description: "Optimization level"
+      - name: verbose
+        type: "bool"
+        description: "Enable verbose output"
+      - name: max_iterations
+        type: "usize"
+        description: "Maximum optimizer iterations"
+      - name: compute_content_hash
+        type: "bool"
+        description: "Compute content hashes for functions (TRI-LANG-6)"
+      - name: registry_path
+        type: "?[]const u8"
+        description: "Path to content registry file"
+      - name: module_name
+        type: "?[]const u8"
+        description: "Module name for content registry"
+      - name: source_path
+        type: "?[]const u8"
+        description: "Source file path for content registry"
+    methods:
+      - name: init
+        returns: "CompileOptions"
+        description: "Create default options"
+
+  PipelineResult:
+    description: "Result of compilation pipeline"
+    fields:
+      - name: bytecode
+        type: "[]const u8"
+        description: "Generated TRI-27 bytecode"
+      - name: errors
+        type: "[]const []const u8"
+        description: "Compilation errors (if any)"
+      - name: warnings
+        type: "[]const []const u8"
+        description: "Compilation warnings"
+
+  TriParser:
+    description: "Tri language parser"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: source
+        type: "[]const u8"
+        description: "Source code"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: source
+            type: "[]const u8"
+        returns: "TriParser"
+        description: "Create parser"
+
+      - name: parse
+        returns: "!TypedExpr"
+        description: "Parse source to expression"
+        errors:
+          - OutOfMemory
+          - ParseError
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  optimize:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+      - name: opt_level
+        type: "OptLevel"
+    returns: "!*const TypedExpr"
+    description: "Optimize expression with specified level"
+    errors:
+      - OutOfMemory
+
+  optimizeWithOptions:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+      - name: options
+        type: "CompileOptions"
+    returns: "!*const TypedExpr"
+    description: "Optimize expression with options"
+    errors:
+      - OutOfMemory
+
+  compile:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+    returns: "!PipelineResult"
+    description: "Compile expression with standard optimization"
+    errors:
+      - PipelineError
+      - OutOfMemory
+
+  compileWithOptions:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: options
+        type: "CompileOptions"
+    returns: "!PipelineResult"
+    description: "Compile expression with options"
+    errors:
+      - PipelineError
+      - OutOfMemory
+
+  compileWithOptLevel:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: opt_level
+        type: "OptLevel"
+    returns: "!PipelineResult"
+    description: "Compile expression with optimization level"
+    errors:
+      - PipelineError
+      - OutOfMemory
+
+  compileSource:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: source
+        type: "[]const u8"
+    returns: "!PipelineResult"
+    description: "Parse and compile source string"
+    errors:
+      - PipelineError
+      - OutOfMemory
+
+  compileFile:
+    params:
+      - name: input_path
+        type: "[]const u8"
+      - name: output_path
+        type: "[]const u8"
+    returns: "IOError!void"
+    description: "Compile .tri file to .t27 bytecode"
+    errors:
+      - IOError
+
+# ═══════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════
+
+tests:
+  - name: "compile int literal"
+    description: "Compile integer literal to bytecode"
+    given: "Expression: 42"
+    when: "compiling"
+    then: "returns bytecode with PUSHI 42"
+
+  - name: "compile variable"
+    description: "Compile variable reference"
+    given: "Expression: x"
+    when: "compiling with env {x: Int}"
+    then: "returns bytecode with LOAD"
+
+  - name: "compile add"
+    description: "Compile binary operation"
+    given: "Expression: x + y"
+    when: "compiling"
+    then: "returns bytecode with ADD"
+
+  - name: "optimize none"
+    description: "No optimization pass"
+    given: "Expression and opt_level None"
+    when: "optimizing"
+    then: "expression unchanged"
+
+  - name: "optimize standard"
+    description: "Standard optimization"
+    given: "Expression: 2 + 3"
+    when: "optimizing with Standard"
+    then: "expression becomes 5"
+
+  - name: "compile source"
+    description: "Parse and compile source string"
+    given: "Source: \"let x = 5 in x + 1\""
+    when: "compiling source"
+    then: "returns valid bytecode"
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Compilation pipeline:
+# - Parse: source string → TypedExpr
+# - Typecheck: infer types, produce typed AST
+# - Optimize: apply optimizer passes based on opt_level
+# - Codegen: emit TRI-27 bytecode
+# - Output: PipelineResult with bytecode and errors
+#
+# Optimization levels:
+# - None: no optimization
+# - Minimal: constant folding only
+# - Standard: constant folding + dead code elimination
+# - Aggressive: all passes including fusion and inlining
+#
+# Content addressing (TRI-LANG-6):
+# - Optional content hash computation for functions
+# - Content registry for tracking compiled artifacts
+# - Module name and source path for registry entries

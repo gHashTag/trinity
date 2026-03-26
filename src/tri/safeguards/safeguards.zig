@@ -1048,8 +1048,8 @@ pub const ApprovalResult = struct {
 
 /// Present operation for user approval
 pub fn presentForApproval(prompt: []const u8) !ApprovalResult {
-    const stdout = std.io.getStdOut().writer();
-    const stdin = std.io.getStdIn().reader();
+    const stdout = std.io.getStdOut();
+    const stdin = std.io.getStdIn();
 
     // Display prompt
     try stdout.writeAll("\n");

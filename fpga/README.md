@@ -10,6 +10,82 @@
 **Hardware:** QMTECH Artix-7 XC7A100T-1FGG676C
 **JTAG Cable:** Xilinx Platform Cable USB II
 
+---
+
+## 🔧 First-Time Setup (Clean Machine)
+
+The canonical flow requires specific directory structure and toolchain.
+
+### 1. Create Synthesis Directory
+
+```bash
+mkdir -p fpga/openxc7-synth
+mkdir -p fpga/constraints
+mkdir -p fpga/tools
+```
+
+### 2. Add Verilog Source
+
+Create `fpga/openxc7-synth/uart_bridge_v2.v` with UART bridge RTL.
+
+### 3. Build Toolchain
+
+```bash
+# nextpnr-xilinx
+cd fpga/nextpnr-xilinx
+mkdir -p build && cmake .. -DCHIPDB=../xilinx-chipdb
+make -j$(sysctl -n hw.ncpu)
+
+# prjxray
+cd fpga/prjxray
+make -j$(sysctl -n hw.ncpu)
+```
+
+### 4. Flash Script
+
+Create `fpga/tools/flash_no_sudo.sh` (uses keychain for sudo password).
+
+---
+
+## Agent Playbook (FPGA QMTech XC7A100T)
+
+**CRITICAL RULES**:
+1. DO NOT use anything under `fpga/_archive/`
+2. For UART bridge on J2 + FT232RL, ONLY use:
+   - `tri fpga build-uart` — Synthesizes uart_bridge_j2.bit
+   - `tri fpga flash-uart` — Flashes via flash_no_sudo.sh
+   - `tri fpga uart-test` — Tests PING/Hello/byte
+   - `tri fpga status` — Shows cable/FPGA state
+3. DO NOT call `fxload` or `sudo` directly
+4. Canonical constraints: `fpga/constraints/uart_bridge_j2.xdc`
+
+## Canonical UART Bridge Flow (J2 + FT232RL)
+
+| Step | Command | Output |
+|------|---------|--------|
+| Build | `tri fpga build-uart` | `fpga/openxc7-synth/uart_bridge_j2.bit` |
+| Flash | `tri fpga flash-uart` | FPGA programmed |
+| Test | `tri fpga uart-test` | PING/PONG verification |
+
+**Wiring**:
+| FT232RL Color | Pin | J2 Pin | FPGA Pin | Function |
+|---------------|-----|---------|----------|----------|
+| 🟢 Green (RXD) | pin 5 | K20 | uart_tx (out) |
+| ⬜ White (TXD) | pin 6 | L20 | uart_rx (in) |
+| ⬛ Black (GND) | pin 1 | GND | Common ground |
+
+**Protocol**:
+- PING: Send 0x03 → expect 0x83 (PONG)
+- Echo: All received bytes echoed back
+- LED: Flashes 50ms on byte reception
+
+## Root Cause: J1 vs J2 Pin Mismatch
+
+**Problem**: `uart_bridge_fixed.bit` uses J1 pins (A9/D10) but FT232RL is physically connected to J2 pins (K20/L20). This causes EMPTY responses on UART tests.
+
+**Solution**: Use canonical J2 constraints file:
+- `fpga/constraints/uart_bridge_j2.xdc` — Correct pin mapping for J2 header
+
 ## Consciousness Levels
 
 | Level | Value | Status | Description |

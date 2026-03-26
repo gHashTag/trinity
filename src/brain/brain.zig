@@ -73,7 +73,8 @@ pub const observability_export = @import("observability_export");
 
 /// Intraparietal Sulcus (Numerical Processing)
 /// f16/GF16/TF3 numerical format conversions
-pub const intraparietal_sulcus = @import("intraparietal_sulcus");
+const temple = @import("temple");
+pub const intraparietal_sulcus = temple.intraparietal_sulcus;
 
 /// State Recovery (Persistence)
 /// Crash recovery and state persistence for brain components

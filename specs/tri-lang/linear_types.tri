@@ -1,0 +1,358 @@
+# ═══════════════════════════════════════════════════════════════════
+# LINEAR TYPES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Linear Types + Ownership Modes for Tri Language
+# Source of truth for tri-lang/linear_types.zig codegen
+# Issue #411: Linear Types + Ownership Modes
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_linear_types
+version: "0.1.0"
+module: tri_lang.linear_types
+description: "Linear types and ownership modes (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SourceLocation:
+    description: "Location in source file"
+    fields:
+      - name: line
+        type: "usize"
+      - name: column
+        type: "usize"
+
+  OwnershipMode:
+    description: "Ownership mode for variables (Hylo-style)"
+    underlying: "enum(u2)"
+    values:
+      - Let: "Immutable, can be read multiple times"
+      - Inout: "Mutable reference"
+      - Sink: "Consumes value (linear)"
+      - Set: "Mutable owned value"
+    methods:
+      - name: isLinear
+        returns: "bool"
+        description: "True if Sink mode"
+      - name: isMutable
+        returns: "bool"
+        description: "True if Inout or Set"
+      - name: canRead
+        returns: "bool"
+        description: "All modes allow reading"
+      - name: canWrite
+        returns: "bool"
+        description: "True if Inout or Set"
+      - name: canMove
+        returns: "bool"
+        description: "True if Sink or Set"
+
+  Bank:
+    description: "Bank identifier for Coptic register safety"
+    underlying: "enum(u2)"
+    values:
+      - ALU: "Bank 0: ALU registers (t0-t8)"
+      - Sacred: "Bank 1: Sacred accumulators (t9-t17)"
+      - Constant: "Bank 2: Constants (t18-t26, immutable)"
+    methods:
+      - name: fromReg
+        params:
+          - name: reg
+            type: "u5"
+        returns: "Bank"
+        description: "Get bank from register number"
+
+  BorrowKind:
+    description: "Borrow type for borrow checker"
+    underlying: "enum"
+    values:
+      - Shared: "Multiple readers, no writers"
+      - Mutable: "Single writer, no other access"
+
+  BankError:
+    description: "Bank safety errors"
+    underlying: "error"
+    values:
+      - BankMismatch
+      - ImmutableBankWrite
+      - InvalidBankForOpcode
+
+# ═══════════════════════════════════════════════════════════════════
+# GENERIC TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+generic_types:
+  Linear:
+    type_params: ["T"]
+    description: "Linear type wrapper enforces consume-once semantics"
+    fields:
+      - name: value
+        type: "T"
+      - name: consumed
+        type: "bool"
+        default: "false"
+    methods:
+      - name: consume
+        returns: "T"
+        errors:
+          - LinearValueAlreadyConsumed
+        description: "Consume value, mark as used"
+      - name: move
+        returns: "Self"
+        errors:
+          - LinearValueAlreadyConsumed
+        description: "Move value to new owner"
+      - name: isAvailable
+        returns: "bool"
+        description: "Check if value still available"
+      - name: init
+        params:
+          - name: value
+            type: "T"
+        returns: "Self"
+        description: "Create new linear value"
+
+  Banked:
+    type_params: ["T", "bank"]
+    description: "Phantom type for bank-safe registers"
+    fields:
+      - name: value
+        type: "T"
+    methods:
+      - name: getBank
+        returns: "Bank"
+        description: "Get bank at compile time"
+      - name: init
+        params:
+          - name: value
+            type: "T"
+        returns: "Self"
+        description: "Create new banked value"
+      - name: get
+        returns: "T"
+        description: "Get the value"
+      - name: set
+        params:
+          - name: value
+            type: "T"
+        returns: "void"
+        description: "Set the value"
+
+  MustUse:
+    type_params: ["T"]
+    description: "Must-use wrapper (Austral-style)"
+    fields:
+      - name: value
+        type: "T"
+      - name: used
+        type: "bool"
+        default: "false"
+    methods:
+      - name: get
+        returns: "T"
+        description: "Get value and mark as used"
+      - name: isUsed
+        returns: "bool"
+        description: "Check if value was used"
+      - name: init
+        params:
+          - name: value
+            type: "T"
+        returns: "Self"
+        description: "Create new must-use value"
+
+# ═══════════════════════════════════════════════════════════════════
+# STRUCT TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+struct_types:
+  LinearTracker:
+    description: "Track linear variable usage during compilation"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: variables
+        type: "std.StringHashMap(bool)"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Self"
+      - name: deinit
+        returns: "void"
+      - name: declare
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "void"
+        description: "Declare linear variable"
+      - name: consume
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "void"
+        errors:
+          - VariableNotFound
+          - LinearValueAlreadyConsumed
+        description: "Mark variable as consumed"
+      - name: isConsumed
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "bool"
+      - name: exists
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "bool"
+      - name: verifyAllConsumed
+        returns: "void"
+        errors:
+          - LinearVariableNotConsumed
+        description: "Verify all linear variables consumed"
+      - name: clear
+        returns: "void"
+        description: "Clear all tracking (new scope)"
+      - name: getUnconsumed
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "[][]const u8"
+        description: "Get list of unconsumed variables"
+
+  BorrowChecker:
+    description: "Borrow tracking for references"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: borrows
+        type: "std.StringHashMap(std.array_list.AlignedManaged(BorrowKind, null))"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Self"
+      - name: deinit
+        returns: "void"
+      - name: borrow
+        params:
+          - name: var_name
+            type: "[]const u8"
+          - name: kind
+            type: "BorrowKind"
+        returns: "void"
+        errors:
+          - CannotBorrow
+        description: "Borrow a variable"
+      - name: release
+        params:
+          - name: var_name
+            type: "[]const u8"
+        returns: "void"
+        errors:
+          - BorrowNotFound
+          - NoActiveBorrow
+        description: "Release a borrow"
+      - name: hasActiveBorrows
+        params:
+          - name: var_name
+            type: "[]const u8"
+        returns: "bool"
+      - name: hasMutableBorrow
+        params:
+          - name: var_name
+            type: "[]const u8"
+        returns: "bool"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  validateOpcodeBank:
+    params:
+      - name: opcode
+        type: "[]const u8"
+      - name: bank
+        type: "Bank"
+    returns: "void"
+    description: "Check if opcode is valid for given bank"
+    errors:
+      - InvalidBankForOpcode
+      - ImmutableBankWrite
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "linear_type_consume_once"
+    given: "Linear(i32) with value 42"
+    when: "consuming twice"
+    then: "first succeeds, second fails with LinearValueAlreadyConsumed"
+
+  - name: "linear_type_move"
+    given: "Linear(i32) value"
+    when: "moving to new owner"
+    then: "old owner unavailable, new owner has value"
+
+  - name: "bank_from_reg"
+    given: "register numbers 0-26"
+    when: "getting bank"
+    then: "0-8 -> ALU, 9-17 -> Sacred, 18-26 -> Constant"
+
+  - name: "validate_opcode_bank_alu"
+    given: "ALU opcodes ADD/SUB"
+    when: "validating against non-ALU bank"
+    then: "returns InvalidBankForOpcode"
+
+  - name: "validate_opcode_bank_sacred"
+    given: "Sacred opcodes FADD/FMUL"
+    when: "validating against non-Sacred bank"
+    then: "returns InvalidBankForOpcode"
+
+  - name: "validate_opcode_bank_immutable"
+    given: "Store opcode ST_F"
+    when: "validating against Constant bank"
+    then: "returns ImmutableBankWrite"
+
+  - name: "linear_tracker_consume"
+    given: "declared variable x"
+    when: "consuming"
+    then: "isConsumed returns true"
+
+  - name: "linear_tracker_verify_all_consumed"
+    given: "declared variables x and y"
+    when: "only x consumed"
+    then: "verifyAllConsumed fails"
+
+  - name: "must_use_annotation"
+    given: "MustUse(i32) value"
+    when: "calling get"
+    then: "isUsed returns true"
+
+  - name: "borrow_checker_shared_borrows"
+    given: "variable x"
+    when: "borrowing shared 3x"
+    then: "all borrows succeed"
+
+  - name: "borrow_checker_mutable_borrow_exclusive"
+    given: "variable x with mutable borrow"
+    when: "borrowing again"
+    then: "CannotBorrow error"
+
+  - name: "ownership_mode_properties"
+    given: "OwnershipMode values"
+    when: "checking properties"
+    then: "correct isLinear/canWrite/canMove"
+
+  - name: "banked_type_phantom"
+    given: "Banked(i32, ALU) and Banked(i32, Sacred)"
+    when: "calling getBank"
+    then: "returns correct bank"

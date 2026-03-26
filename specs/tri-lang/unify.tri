@@ -1,0 +1,237 @@
+# ═══════════════════════════════════════════════════════
+# UNIFY — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Type Unification for Tri Language
+# Source of truth for tri-lang/unify.zig codegen
+# Wave 2: Type System Core — Unification
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_unify
+version: "0.1.0"
+module: tri_lang.unify
+description: "Type Unification for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  UnifyResult:
+    description: "Unification result"
+    underlying: "union(enum)"
+    variants:
+      - Ok: "Subst"
+        description: "Unification succeeded"
+      - Error: "TypeError"
+        description: "Unification failed with type mismatch"
+
+  TypeError:
+    description: "Type error with details"
+    fields:
+      - name: expected
+        type: "*Type"
+        description: "Expected type"
+      - name: actual
+        type: "*Type"
+        description: "Actual type"
+      - name: msg
+        type: "[]const u8"
+        description: "Error message"
+    methods:
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Format error message"
+        errors:
+          - OutOfMemory
+
+  Subst:
+    description: "Substitution — maps type variables to types"
+    fields:
+      - name: map
+        type: "std.AutoHashMap(TypeId, Type)"
+        description: "Map from TypeId to Type"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Subst"
+        description: "Create empty substitution"
+
+      - name: deinit
+        returns: "void"
+        description: "Free substitution"
+
+      - name: empty
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Subst"
+        description: "Create empty substitution (identity)"
+
+      - name: clone
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!Subst"
+        description: "Clone substitution"
+        errors:
+          - OutOfMemory
+
+      - name: extend
+        params:
+          - name: var_id
+            type: "TypeId"
+          - name: t
+            type: "Type"
+        returns: "!void"
+        description: "Extend substitution with new binding"
+        errors:
+          - OutOfMemory
+
+      - name: get
+        params:
+          - name: var_id
+            type: "TypeId"
+        returns: "?Type"
+        description: "Look up substitution for type variable"
+
+      - name: compose
+        params:
+          - name: other
+            type: "*const Subst"
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!Subst"
+        description: "Compose two substitutions (σ₁ ∘ σ₂)"
+        errors:
+          - OutOfMemory
+
+      - name: apply
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: t
+            type: "Type"
+        returns: "!Type"
+        description: "Apply substitution to type"
+        errors:
+          - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  occursIn:
+    params:
+      - name: tv
+        type: "TypeId"
+      - name: t
+        type: "*const Type"
+    returns: "bool"
+    description: "Occurs check — prevent infinite types (α → α cycles)"
+
+  unify:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: t1
+        type: "*const Type"
+      - name: t2
+        type: "*const Type"
+    returns: "!UnifyResult"
+    description: "Main unification function"
+    errors:
+      - OutOfMemory
+      - TypeError
+
+  unifyWithSubst:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: subst
+        type: "Subst"
+      - name: t1
+        type: "*const Type"
+      - name: t2
+        type: "*const Type"
+    returns: "!UnifyResult"
+    description: "Unify with existing substitution"
+    errors:
+      - OutOfMemory
+      - TypeError
+
+# ═══════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════
+
+tests:
+  - name: "unify same primitives"
+    description: "Same primitive types unify successfully"
+    given: "Int and Int types"
+    when: "unifying"
+    then: "returns Ok with empty substitution"
+
+  - name: "unify different primitives fails"
+    description: "Different primitive types fail to unify"
+    given: "Int and Bool types"
+    when: "unifying"
+    then: "returns Error with type mismatch"
+
+  - name: "unify var with concrete"
+    description: "Type variable unifies with concrete type"
+    given: "Var(1) and Int"
+    when: "unifying"
+    then: "returns Ok with Var(1) -> Int binding"
+
+  - name: "occurs check prevents infinite types"
+    description: "Occurs check prevents α → α cycles"
+    given: "Same type variable with itself"
+    when: "unifying"
+    then: "returns Ok (no infinite type)"
+
+  - name: "subst empty"
+    description: "Empty substitution has no bindings"
+    given: "New substitution"
+    when: "created"
+    then: "map count is 0"
+
+  - name: "subst extend and lookup"
+    description: "Can extend and lookup substitutions"
+    given: "Subst with binding 1 -> Int"
+    when: "looking up 1"
+    then: "returns Int type"
+
+  - name: "unify function types"
+    description: "Function types unify with same arity"
+    given: "Int -> Int with itself"
+    when: "unifying"
+    then: "returns Ok"
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Hindley-Milner unification algorithm for type inference:
+# - Unifies two types, produces substitution or error
+# - Occurs check prevents infinite types (α → α cycles)
+# - Substitution maps type variables to types
+# - Handles primitive types (Unit, Bool, Int, Float)
+# - Handles function types (arity must match, unify params and return)
+# - Handles ADT types (constructor name must match, unify type args)
+#
+# Unification rules:
+# - Var + Var → bind one to the other (if different)
+# - Var + Concrete → bind Var to Concrete (if no occurs check failure)
+# - Primitive + Primitive → Ok if same, Error if different
+# - Fn + Fn → unify params left-to-right, then unify return types
+# - ADT + ADT → unify type args if constructor names match
+#
+# Error types: "Type mismatch", "Arity mismatch", "Different ADT constructors",
+# "Type argument count mismatch", "Cannot construct infinite type"

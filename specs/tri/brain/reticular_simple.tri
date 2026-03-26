@@ -1,0 +1,24 @@
+# Reticular Formation — Simple TRI for TDGS-3 Validation
+# This uses the basic tri-lang syntax (int/bool literals, arithmetic)
+
+# Pattern activation: threshold comparison
+# input >= threshold returns active pattern
+let activate = fn(x, threshold) {
+  if (x > threshold) { x } else { 0 }
+}
+
+# Main: find maximum activation
+let main = fn() {
+  let inputs = [8, 3, 5]  # Scaled by 10: 0.8, 0.3, 0.5
+  let threshold = 4
+  let a1 = activate(inputs[0], threshold)
+  let a2 = activate(inputs[1], threshold)
+  let a3 = activate(inputs[2], threshold)
+
+  # Winner takes all (argmax)
+  if (a1 > a2) {
+    if (a1 > a3) { a1 } else { a3 }
+  } else {
+    if (a2 > a3) { a2 } else { a3 }
+  }
+}

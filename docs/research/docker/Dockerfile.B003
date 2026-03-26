@@ -1,0 +1,40 @@
+# Trinity B003: TRI-27 ISA Emulator Container
+# Bundle: TRI-27 ISA
+# Purpose: Reproducible TRI-27 assembly execution
+# φ² + 1/φ² = 3 | TRINITY
+
+FROM ziglang/zig:0.15.0-alpine AS build
+
+WORKDIR /src
+
+# Copy source
+COPY . .
+
+# Build TRI-27 emulator
+RUN zig build tri27-emu
+
+# Build TRI-27 assembler
+RUN zig build tri27-as
+
+# Build TRI-27 disassembler
+RUN zig build tri27-dis
+
+# Runtime stage
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Copy binaries
+COPY --from=build /src/zig-out/bin/tri27-emu /app/
+COPY --from=build /src/zig-out/bin/tri27-as /app/
+COPY --from=build /src/zig-out/bin/tri27-dis /app/
+
+# Copy example programs
+COPY --from=build /src/var/tri27/examples/*.t27 /app/examples/ 2>/dev/null || true
+
+# Default: Show help
+ENTRYPOINT ["/app/tri27-emu"]
+CMD ["--help"]
+
+# Example usage:
+# echo "sum 1 to 10" | docker run -i trinity-b003

@@ -354,7 +354,7 @@ pub const WSServer = struct {
 
     /// Listener loop for accepting connections
     fn listenerLoop(server: *WSServer) void {
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.io.getStdOut();
 
         while (server.running) {
             if (server.server) |*srv| {
@@ -408,7 +408,7 @@ pub const WSServer = struct {
 
     /// Handle WebSocket connection
     fn handleConnection(server: *WSServer, client: *WSClient) void {
-        const stdout = std.io.getStdOut().writer();
+        const stdout = std.io.getStdOut();
 
         // Perform WebSocket handshake
         server.handshake(client) catch |err| {

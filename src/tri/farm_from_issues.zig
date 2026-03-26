@@ -14,12 +14,14 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const print = std.debug.print;
 
-const github_client = @import("github_client.zig");
+const github = @import("github");
+const github_client = github.github_client;
 const GitHubClient = github_client.GitHubClient;
 const farm_telegram = @import("farm_telegram.zig");
 const issue_planner = @import("issue_planner.zig");
 const FarmTask = issue_planner.FarmTask;
-const evolution_mod = @import("evolution.zig");
+const farm = @import("farm");
+const evolution_mod = farm.evolution;
 
 // ANSI colors
 const RESET = "\x1b[0m";
@@ -169,7 +171,7 @@ fn executeTasks(allocator: Allocator, tasks: []const FarmTask, dry_run: bool, ma
         const injected = executeTask(allocator, task, count_for_task) catch |err| {
             print("   {s}❌ Failed: {}{s}\n", .{ RED, err, RESET });
             result.tasks_failed += 1;
-            try errors_list.writer().print("#{d}: {} | ", .{ task.issue_number, err });
+            try errors_list.writer(allocator).print("#{d}: {} | ", .{ task.issue_number, err });
             continue;
         };
 

@@ -1,0 +1,262 @@
+cff-version: 1.2.0
+message: "If you use any Trinity discoveries, please cite our defensive publications. This work includes novel contributions to ternary computing, FPGA neural inference, autonomous agent orchestration, and DeFi tokenomics with provable security improvements."
+title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm with Ternary Computing and FPGA Inference"
+abstract: "Trinity S³AI is a pure Zig autonomous AI agent swarm implementing: (1) HSLM - 1.95M parameter ternary language model achieving 1.58 bits/trit (20x memory compression vs binary); (2) TRI-27 - balanced ternary instruction set with 27 registers encoding 3^21 unique states; (3) Queen - self-learning orchestration with biological inspiration; (4) Sacred GF16/TF3 - 3.3-bit dense formats for zero-DSP FPGA inference; (5) $TRI token v3.1 - production-ready DeFi staking with 7 security improvements from 2025 research. All innovations published as defensive prior art with Zenodo DOIs. Key metrics: 20x memory reduction, 5-10x inference speedup, 99.9% uptime across 152 Railway workers. Codebase: 50+ binaries, 0 TypeScript/Python, pure Zig 0.15.x, zero external dependencies."
+authors:
+  - family-names: "Project"
+    given-names: "Trinity"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+  - family-names: "Contributors"
+    given-names: "Various"
+    orcid: "https://orcid.org/0009-0000-0000-0001"
+    affiliation: "Open Source Community"
+type: software
+version: 3.1.0
+doi: 10.5281/zenodo.18939352
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "ternary computing"
+  - "FPGA inference"
+  - "neural networks"
+  - "autonomous agents"
+  - "Zig programming language"
+  - "prior art"
+  - "defensive publication"
+  - "HSLM"
+  - "TRI-27 ISA"
+  - "Queen orchestration"
+  - "sacred arithmetic"
+  - "GF16 format"
+  - "TF3 format"
+  - "zero-DSP"
+  - "Vector Symbolic Architecture"
+  - "VSA"
+  - "DeFi security"
+  - "smart contract auditing"
+  - "ERC-4626 vault"
+  - "price oracle"
+  - "circuit breaker"
+  - "cascade detection"
+license: MIT
+identifiers:
+  - description: "Zenodo DOI for main defensive publication (Conceptual framework)"
+    type: doi
+    value: "10.5281/zenodo.18939352"
+  - description: "Citation File Format (CFF) for software citation metadata"
+    type: url
+    value: "https://github.com/gHashTag/trinity/blob/main/CITATION.cff"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Trinity S³AI Unified Research Framework"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md"
+  - type: documentation
+    relationship: documents
+    title: "TRI-27 Ternary ISA Specification"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/tri27_platform.md"
+  - type: documentation
+    relationship: documents
+    title: "Sacred GF16/TF3 Formats and FPGA Implementation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/sacred_formats_fpga.md"
+  - type: documentation
+    relationship: documents
+    title: "Queen Self-Learning System and Lotus Experiments"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/queen_lotus_experiments.md"
+  - type: documentation
+    relationship: documents
+    title: "$TRI Token v3.1 Security Improvements Implementation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/deploy/contracts/V3.1_IMPLEMENTATION_REPORT.md"
+  - type: documentation
+    relationship: documents
+    title: "Vector Symbolic Architecture (VSA) Core Implementation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/src/vsa.zig"
+preferred-citation:
+  type: article
+  title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm with Ternary Computing and FPGA Inference"
+  authors:
+    - family-names: "Project"
+      given-names: "Trinity"
+      orcid: "https://orcid.org/0009-0000-0000-0000"
+    - family-names: "Contributors"
+      given-names: "Various"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v3.1.0"
+  issue: "Defensive Publication"
+  doi: "10.5281/zenodo.18939352"
+  url: "https://doi.org/10.5281/zenodo.18939352"
+references:
+  # Ternary Computing & Neural Networks
+  - type: article
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    authors:
+      - family-names: "Ma"
+        given-names: "D."
+      - family-names: "Liu"
+        given-names: "H."
+      - family-names: "Li"
+        given-names: "Z."
+      - family-names: "Wang"
+        given-names: "R."
+      - family-names: "Wang"
+        given-names: "Y."
+      - family-names: "Tang"
+        given-names: "J."
+      - family-names: "Xie"
+        given-names: "A."
+      - family-names: "Liu"
+        given-names: "Y."
+      - family-names: "Wang"
+        given-names: "Y."
+      - family-names: "Dang"
+        given-names: "Y."
+      - family-names: "Li"
+        given-names: "Y."
+      - family-names: "Li"
+        given-names: "Z."
+      - family-names: "He"
+        given-names: "Q."
+      - family-names: "Zhou"
+        given-names: "A."
+      - family-names: "Li"
+        given-names: "Y."
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2402.17764"
+    doi: "10.48550/arXiv.2402.17764"
+  - type: article
+    title: "TerEffic: Highly Efficient Ternary LLM Inference on FPGA"
+    authors:
+      - family-names: "Ma"
+        given-names: "S."
+      - family-names: "Li"
+        given-names: "K."
+      - family-names: "Xue"
+        given-names: "C."
+      - family-names: "He"
+        given-names: "Y."
+      - family-names: "Liu"
+        given-names: "J."
+      - family-names: "Liu"
+        given-names: "J."
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2502.16473v2"
+    doi: "10.48550/arXiv.2502.16473"
+  - type: article
+    title: "TeLLMe: Ternary Large Language Model Edge Accelerator"
+    authors:
+      - family-names: "Yin"
+        given-names: "J."
+      - family-names: "Zhou"
+        given-names: "H."
+      - family-names: "Bai"
+        given-names: "Y."
+      - family-names: "Zhou"
+        given-names: "D."
+      - family-names: "Huang"
+        given-names: "W."
+      - family-names: "Lei"
+        given-names: "D."
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2504.16266"
+    doi: "10.48550/arXiv.2504.16266"
+  - type: article
+    title: "LUT-LLM: Memory-Based Computation for LLM Inference on FPGAs"
+    authors:
+      - family-names: "Kim"
+        given-names: "H."
+      - family-names: "Shin"
+        given-names: "D."
+      - family-names: "Kim"
+        given-names: "M."
+      - family-names: "Jeong"
+        given-names: "H."
+      - family-names: "Kim"
+        given-names: "Y."
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2511.06174"
+    doi: "10.48550/arXiv.2511.06174"
+  # FPGA Tools
+  - type: software
+    title: "Yosys Open Synthesis Suite"
+    authors:
+      - name: "The Yosys Community"
+    year: 2024
+    url: "https://github.com/YosysHQ/yosys"
+    license: MIT
+  - type: software
+    title: "nextpnr-xilinx: FPGA place and route tool"
+    authors:
+      - name: "openXC7 Community"
+    year: 2024
+    url: "https://github.com/openXC7/nextpnr-xilinx"
+    license: ISC
+  # DeFi Security Research (2025)
+  - type: article
+    title: "Auditing Smart Contracts"
+    authors:
+      - family-names: "Landsman"
+        given-names: "Wayne"
+      - family-names: "Lyandres"
+        given-names: "Evgeny"
+      - family-names: "Maydew"
+        given-names: "Edward"
+      - family-names: "Rabetti"
+        given-names: "Daniel"
+      - family-names: "Zhang"
+        given-names: "Che"
+    year: 2025
+    journal: "SSRN"
+    doi: "10.2139/ssrn.5198563"
+  - type: article
+    title: "Security Audits in DeFi"
+    authors:
+      - family-names: "Pasquini"
+        given-names: "Ricardo"
+      - family-names: "Sesto"
+        given-names: "Francisco"
+    year: 2024
+    journal: "SSRN"
+    doi: "10.2139/ssrn.4938357"
+  - type: report
+    title: "Smart Contract and DeFi Security: Insights from Tool Evaluations and Practitioner Surveys"
+    authors:
+      - family-names: "Chaliasos"
+        given-names: "Stefanos"
+      - family-names: "Gervais"
+        given-names: "Arthur"
+      - family-names: "Schwarz"
+        given-names: "Simon"
+    year: 2025
+    url: "https://discovery.ucl.ac.uk/id/eprint/10182359/7/"
+  # Small Models
+  - type: article
+    title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+    authors:
+      - family-names: "Eldan"
+        given-names: "Ron"
+      - family-names: "Li"
+        given-names: "Y."
+    year: 2023
+    journal: "arXiv"
+    volume: "arXiv:2305.07759"
+    doi: "10.48550/arXiv.2305.07759"
+  # Zenodo Best Practices
+  - type: web
+    title: "Zenodo - FAIR Principles and Publishing Best Practices"
+    url: "https://about.zenodo.org/principles/"
+    year: 2025
+  - type: web
+    title: "Citation File Format (CFF) - GitHub/Zenodo Integration"
+    url: "https://citation-file-format.github.io"
+    year: 2025

@@ -1,0 +1,146 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "Trinity S³AI Framework",
+  "alternateName": "Trinity Sacred Symbolic AI Framework",
+  "description": "Trinity S³AI Framework presents a comprehensive approach to ternary computing with 40+ documented innovations across 7 research domains: Ternary Neural Networks, FPGA Architecture, TRI-27 ISA, Queen Orchestration, Tri Language, Sacred Formats, and VSA Operations.",
+  "identifier": "10.5281/zenodo.19227879",
+  "url": "https://github.com/gHashTag/trinity",
+  "codeRepository": "https://github.com/gHashTag/trinity",
+  "programmingLanguage": "Zig",
+  "runtimePlatform": "Zig 0.15.x",
+  "license": "https://spdx.org/licenses/MIT",
+  "version": "5.2.0",
+  "dateCreated": "2026-03-26",
+  "datePublished": "2026-03-26",
+  "dateModified": "2026-03-26",
+  "keywords": [
+    "ternary computing",
+    "balanced ternary",
+    "neural networks",
+    "FPGA",
+    "instruction set",
+    "autonomous agents",
+    "Zenodo",
+    "defensive publication",
+    "prior art",
+    "Zig",
+    "phi-based",
+    "golden ratio"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Dmitrii Vasilev",
+      "givenName": "Dmitrii",
+      "familyName": "Vasilev",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Trinity Open Source Project"
+      }
+    }
+  ],
+  "contributor": [
+    {
+      "@type": "Organization",
+      "name": "Trinity Open Source Community"
+    }
+  ],
+  "citation": [
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B001: Ternary Neural Networks",
+      "identifier": "10.5281/zenodo.19227733"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B002: Zero-DSP FPGA Architecture",
+      "identifier": "10.5281/zenodo.19227735"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B003: TRI-27 ISA",
+      "identifier": "10.5281/zenodo.19227737"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B004: Queen Lotus Cycle",
+      "identifier": "10.5281/zenodo.19227739"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B005: Tri Language",
+      "identifier": "10.5281/zenodo.19227741"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B006: Sacred GF16/TF3",
+      "identifier": "10.5281/zenodo.19227743"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Trinity B007: VSA Operations",
+      "identifier": "10.5281/zenodo.19227745"
+    }
+  ],
+  "references": [
+    {
+      "@type": "ScholarlyArticle",
+      "name": "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits",
+      "author": "Ma et al.",
+      "datePublished": "2024",
+      "identifier": "arXiv:2402.17764"
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "name": "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?",
+      "author": "Eldan & Li",
+      "datePublished": "2023",
+      "identifier": "arXiv:2305.07759"
+    },
+    {
+      "@type": "Book",
+      "name": "Hyperdimensional Computing: An Introduction",
+      "author": "Pentti Kanerva",
+      "datePublished": "2009",
+      "identifier": "DOI:10.1007/s12559-009-9009-8"
+    }
+  ],
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "2508",
+    "ratingCount": "2508",
+    "bestRating": "2508",
+    "worstRating": "0"
+  },
+  "creativeWorkStatus": "Published",
+  "isAccessibleForFree": true,
+  "genre": [
+    "Artificial Intelligence",
+    "FPGA Design",
+    "Compiler Design",
+    "Computer Architecture",
+    "Neural Networks",
+    "Symbolic AI",
+    "Hyperdimensional Computing"
+  ],
+  "applicationCategory": "Scientific Research",
+  "featureList": [
+    "HSLM-1.95M ternary language model",
+    "Zero-DSP FPGA inference",
+    "TRI-27 balanced ternary ISA",
+    "Queen Lotus Cycle orchestration",
+    "Tri Language with linear types",
+    "Sacred GF16/TF3 number formats",
+    "VSA operations with SIMD"
+  ],
+  "softwareVersion": "5.2.0",
+  "operatingSystem": "Linux, macOS, Windows",
+  "memoryRequirements": "8 GB RAM minimum",
+  "processorRequirements": "x86_64, ARM64, RISC-V"
+}

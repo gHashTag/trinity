@@ -1,0 +1,121 @@
+cff-version: 1.2.0
+message: "If you use any Tri Language discoveries, please cite our defensive publication."
+title: "Tri Language: Linear Types, Effects, Dual-Target Code Generation"
+abstract: "Hardware-software co-design requires separate codebases for software and hardware targets, increasing development complexity and synchronization errors. Existing DSLs lack linear types for resource safety and algebraic effects for platform-aware error handling in embedded systems. We present Tri, a pure Zig DSL featuring Linear Types with ownership modes (Let/Inout/Sink/Set) for compile-time resource safety and Algebraic Effects with Handlers for composable error handling. Our language provides bit/trit-level pattern matching for hardware optimization, content-addressed functions using SHA256 AST hashing for reproducible builds, Austral-style Result type for exception-free errors, and array combinators (map/filter/fold) with pipe operator. VIBEE compiler components include Ternary JSON Parser (3-valued, 100M ops/s), Coptic Code Generation (T27 bytecode), and Memory-Tiered Inference (Hippocampus HNSW). This enables single-source hardware-software co-design with formal resource guarantees and dual-target (Zig+Verilog) code generation."
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "Tri language"
+  - "DSL"
+  - "code generation"
+  - "Zig"
+  - "Verilog"
+  - "dual-target"
+  - "linear types"
+  - "ownership"
+  - "affine types"
+  - "resource safety"
+  - "algebraic effects"
+  - "handlers"
+  - "effect system"
+  - "pattern matching"
+  - "bit-level"
+  - "trit-level"
+  - "content-addressed"
+  - "SHA256"
+  - "AST hashing"
+  - "reproducible builds"
+  - "Result type"
+  - "Austral"
+  - "exception-free"
+  - "array combinators"
+  - "map"
+  - "filter"
+  - "fold"
+  - "pipe operator"
+  - "VIBEE"
+  - "ternary JSON"
+  - "Coptic codegen"
+  - "T27 bytecode"
+  - "memory-tiered"
+  - "hippocampus"
+  - "HNSW"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for Tri Language defensive publication"
+    type: doi
+    value: "TBD"
+  - description: "GitHub repository"
+    type: url
+    value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Tri Language: Linear Types, Effects, Dual-Target Code Generation"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
+references:
+  - type: article
+    authors:
+      - family-names: "Tate"
+        given-names: "A."
+      - family-names: "Tatlock"
+        given-names: "Z."
+    title: "Austral: A Systems Language with Affine Types and Linear Capabilities"
+    year: 2021
+    journal: "arXiv"
+    volume: "arXiv:2107.05568"
+    doi: "10.48550/arXiv.2107.05568"
+  - type: article
+    authors:
+      - family-names: "Bauer"
+        given-names: "L."
+    title: "Programming in Algebraic Effects"
+    year: 2022
+    journal: "Journal of Functional Programming"
+    volume: "32"
+    doi: "10.1017/S0956796822000034"
+  - type: article
+    authors:
+      - family-names: "Bainomugisha"
+        given-names: "E."
+      - family-names: "Lombide Carreton"
+        given-names: "A."
+      - family-names: "van Cutsem"
+        given-names: "T."
+      - family-names: "Boon"
+        given-names: "G."
+      - family-names: "De Meuter"
+        given-names: "W."
+    title: "A Survey on Reactive Programming"
+    year: 2013
+    journal: "ACM Computing Surveys"
+    volume: "45"
+    issue: "4"
+    pages: "1-34"
+    doi: "10.1145/2501654.2501669"

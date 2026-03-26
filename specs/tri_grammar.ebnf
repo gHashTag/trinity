@@ -1,0 +1,240 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# tri_grammar.ebnf - Tri Language EBNF Grammar
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Golden identity: φ² + 1/φ² = 3 | TRINITY
+#
+# Grammar for Tri Language (.tri files) - inspires agents to generate valid code
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════
+# PROGRAM STRUCTURE
+# ═══════════════════════════════════════════════════════════════════════════
+
+Program        ::= { Declaration }
+
+Declaration    ::= FunctionDecl
+                | StructDecl
+                | EnumDecl
+                | TypeAlias
+                | EffectDecl
+                | PipelineDecl
+
+# ═══════════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+FunctionDecl    ::= ["pub"] "fn" Identifier "(" [ParamList] ")" ["->" Type] Block
+
+ParamList      ::= Param { "," Param }
+Param          ::= Identifier ":" Type
+
+Block          ::= "{" { Statement "}" "}"
+
+# ═══════════════════════════════════════════════════════════════════════
+# STATEMENTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+Statement      ::= ReturnStmt
+                | LetStmt
+                | IfStmt
+                | WhileStmt
+                | ForStmt
+                | ExprStmt
+
+ReturnStmt     ::= "return" Expression
+LetStmt        ::= ["inout" | "sink" | "set"] "let" Identifier "=" Expression
+IfStmt         ::= "if" Expression Block ["else" Block]
+WhileStmt      ::= "while" Expression Block
+ForStmt        ::= "for" Identifier "in" Expression Range Block
+ExprStmt       ::= Expression [";"]
+
+Range          ::= ".." Expression | "..=" Expression
+
+# ═══════════════════════════════════════════════════════════════════════
+# EXPRESSIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+Expression     ::= Literal
+                | Identifier
+                | BinaryOp
+                | UnaryOp
+                | CallExpr
+                | FieldAccess
+                | ArrayAccess
+                | ArrayLiteral
+                | PipeExpr
+                | MatchExpr
+                | IfExpr
+                | PerformExpr
+                | HandleExpr
+                | TryExpr
+
+# Literals
+Literal        ::= IntLiteral | FloatLiteral | StringLiteral | BoolLiteral | "true" | "false"
+
+# Operators (precedence: highest to lowest)
+UnaryOp        ::= ("-" | "!" | "~") Expression
+BinaryOp       ::= Expression ("*" | "/" | "%") Expression
+                | Expression ("+" | "-") Expression
+                | Expression ("<<" | ">>") Expression
+                | Expression ("<" | ">" | "<=" | ">=") Expression
+                | Expression ("==" | "!=") Expression
+                | Expression ("&" | "|" | "^") Expression
+
+CallExpr       ::= Identifier "(" [ArgList] ")"
+ArgList        ::= Expression { "," Expression }
+
+FieldAccess    ::= Expression "." Identifier
+ArrayAccess    ::= Expression "[" Expression "]"
+ArrayLiteral   ::= "[" [Expression { "," Expression }] "]"
+
+# Pipe (Elixir-style: source |> stage1 |> stage2)
+PipeExpr       ::= Expression { "|>" Expression }
+
+# Match expression (exhaustive pattern matching)
+MatchExpr      ::= "match" Expression "{" { MatchArm "}" "}"
+MatchArm       ::= Pattern "=>" Expression [ "|" Guard ]
+Guard          ::= Expression
+Pattern        ::= "_"
+                | Identifier
+                | Literal
+                | Identifier "(" [Pattern] ")"
+                | "[" [Pattern { "," Pattern }] "]"
+
+# Inline if
+IfExpr         ::= "if" Expression "then" Expression "else" Expression
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 1: ADT (Algebraic Data Types)
+# ═══════════════════════════════════════════════════════════════════════════
+
+EnumDecl       ::= ["pub"] "enum" Identifier "{" { EnumVariant "}" "}"
+EnumVariant    ::= Identifier ["(" Type ")"] [","]
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 2: RESULT TYPE (no exceptions)
+# ═══════════════════════════════════════════════════════════════════════════
+
+Type           ::= "Result" "<" Type "," Type ">"
+                | "linear" Type
+                | "Banked" "<" Type "," Bank ">"
+                | ArrayType
+                | StructType
+                | EnumType
+                | PrimitiveType
+                | FunctionType
+
+ArrayType       ::= "[" [IntLiteral] Type "]"
+StructType     ::= Identifier
+EnumType       ::= Identifier
+PrimitiveType  ::= "i8" | "i16" | "i32" | "i64"
+                | "f16" | "f32" | "f64"
+                | "bool" | "string"
+                | "trit" | "trit3" | "trit9" | "trit27"
+                | "gf16" | "tf3"
+
+FunctionType   ::= "fn" "[" [TypeList] "]" Type
+TypeList       ::= Type { "," Type }
+
+Bank           ::= "Bank0" | "Bank1" | "Bank2" | "Bank3" | "Bank4" | "Bank5" | "Bank6" | "Bank7" | "Bank8"
+
+# ═══════════════════════════════════════════════════════════════════════
+# WAVE 3: EFFECTS + HANDLERS
+# ═══════════════════════════════════════════════════════════════════════════
+
+EffectDecl     ::= ["pub"] "effect" Identifier "{" { EffectOp "}" "}"
+EffectOp       ::= Identifier ["(" Type ")"] [","]
+
+PerformExpr    ::= "perform" Identifier "." Identifier "(" [ArgList] ")"
+HandleExpr     ::= "handle" Identifier "{" { HandlerClause "}" "}"
+HandlerClause  ::= Identifier "(" Pattern ")" "=>" Expression
+TryExpr        ::= "try" Block "with" "{" { HandlerClause "}" "}"
+
+# ═══════════════════════════════════════════════════════════════════════
+# STRUCTS & TYPE ALIASES
+# ═══════════════════════════════════════════════════════════════════════════
+
+StructDecl     ::= ["pub"] "struct" Identifier "{" { Field "}" "}"
+Field          ::= Identifier ":" Type
+
+TypeAlias      ::= ["pub"] "type" Identifier "=" Type
+
+# ═══════════════════════════════════════════════════════════════════════
+# PIPELINE DECLARATIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+PipelineDecl   ::= ["pub"] "pipeline" Identifier "=" Expression
+
+# ═══════════════════════════════════════════════════════════════════════
+# IDENTIFIERS & LITERALS
+# ═══════════════════════════════════════════════════════════════════════════
+
+Identifier     ::= Letter { Letter | Digit | "_" }
+IntLiteral     ::= Digit+
+FloatLiteral   ::= Digit+ "." Digit+
+StringLiteral  ::= '"' { Character } '"'
+BoolLiteral    ::= "true" | "false"
+
+Letter         ::= [a-zA-Z]
+Digit          ::= [0-9]
+
+# ═══════════════════════════════════════════════════════════════════════
+# COMMENTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Line comment: // content
+# Block comment not supported (use line comments)
+
+# ═══════════════════════════════════════════════════════════════════════
+# EXAMPLE PROGRAMS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Example 1: Simple function with Result type
+# pub fn divide(x: i64, y: i64) -> Result<i64, string> {
+#     if y == 0 then
+#         return Err("division by zero")
+#     else
+#         return Ok(x / y)
+# }
+
+# Example 2: ADT with pattern matching
+# enum Option<T> {
+#     None,
+#     Some(T),
+# }
+#
+# fn double_opt(opt: Option<i64>) -> i64 {
+#     match opt {
+#         None => 0,
+#         Some(x) => x * 2,
+#     }
+# }
+
+# Example 3: Pipe expression
+# fn process(data: [i32]) -> i32 {
+#     data
+#         |> map(fn(x: i32) => x * 2)
+#         |> filter(fn(x: i32) => x > 10)
+#         |> reduce(0, fn(acc: i32, x: i32) => acc + x)
+# }
+
+# Example 4: Effect handlers
+# effect State<T> {
+#     get(),
+#     set(T),
+# }
+#
+# fn with_state() -> i64 {
+#     try {
+#         perform State.get()
+#     } with {
+#         State.get() => 42,
+#         State.set(x) => resume_with(x),
+#     }
+# }
+
+# ═══════════════════════════════════════════════════════════════════════
+# END OF GRAMMAR
+# ═════════════════════════════════════════════════════════════════════════

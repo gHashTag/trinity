@@ -1,101 +1,105 @@
-// 🤖 TRINITY v0.11.0: Suborbital Order
-//! Strand III: Language & Hardware Bridge
-//!
-//! VSA operations for Trinity S³AI — bind, unbind, bundle, similarity.
-//!
-const std = @import("std");
+// ═══════════════════════════════════════════════════════════════════════════════
+// VSA Root Module (SOURCE OF TRUTH SELECTOR)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// TTT Dogfood v0.1: Flip this one line to switch between manual/generated
+//
+// Self-hosted ENABLED — using generated code from Tri spec:
 
-pub const common = @import("vsa/common.zig");
-pub const core = @import("vsa/core.zig");
-pub const encoding = @import("vsa/encoding.zig");
-pub const storage = @import("vsa/storage.zig");
-pub const concurrency = @import("vsa/concurrency.zig");
-pub const agent = @import("vsa/agent.zig");
-pub const HRR = @import("vsa/hrr.zig").HRR;
+// Import generated code for core VSA operations
+const gen = @import("gen_vsa");
 
-// Re-export common types
-pub const HybridBigInt = common.HybridBigInt;
-pub const Trit = common.Trit;
-pub const Vec32i8 = common.Vec32i8;
-pub const SIMD_WIDTH = common.SIMD_WIDTH;
-pub const MAX_TRITS = common.MAX_TRITS;
-pub const SearchResult = common.SearchResult;
+// Re-export core symbols from generated code
+pub const common = gen.common;
+pub const ops = gen.ops;
+pub const sparse = gen.sparse;
+pub const encoding = gen.encoding;
+pub const Trit = gen.Trit;
+pub const Vec32i8 = gen.Vec32i8;
+pub const Vec32i16 = gen.Vec32i16;
+pub const SIMD_WIDTH = gen.SIMD_WIDTH;
+pub const MAX_TRITS = gen.MAX_TRITS;
+pub const SearchResult = gen.SearchResult;
+pub const HybridBigInt = gen.HybridBigInt;
 
-// Re-export core functions
-pub const randomVector = core.randomVector;
-pub const bind = core.bind;
-pub const unbind = core.unbind;
-pub const bundle2 = core.bundle2;
-pub const bundle3 = core.bundle3;
-pub const permute = core.permute;
-pub const inversePermute = core.inversePermute;
-pub const cosineSimilarity = core.cosineSimilarity;
-pub const hammingDistance = core.hammingDistance;
-pub const hammingSimilarity = core.hammingSimilarity;
-pub const dotSimilarity = core.dotSimilarity;
-pub const vectorNorm = core.vectorNorm;
-pub const bundleN = core.bundleN;
-pub const countNonZero = core.countNonZero;
-pub const encodeSequence = core.encodeSequence;
-pub const probeSequence = core.probeSequence;
+// Import VSA submodules directly from src/vsa/ (Zig 0.15 compatibility)
+pub const vsa_common = @import("vsa/common.zig");
+pub const vsa_core_compat = @import("vsa/core.zig"); // HybridBigInt-based API
+pub const vsa_encoding = @import("vsa/encoding.zig");
+pub const vsa_storage = @import("vsa/storage.zig");
+pub const vsa_concurrency = @import("vsa/concurrency.zig");
+pub const vsa_agent = @import("vsa/agent.zig");
+pub const vsa_hrr = @import("vsa/hrr.zig");
+pub const vsa_bsd = @import("vsa/bsd.zig");
+pub const vsa_benchmarks = @import("vsa/benchmarks.zig");
+pub const vsa_fpga_bind = @import("vsa/fpga_bind.zig");
+pub const vsa_tests = @import("vsa/tests.zig");
 
-// Re-export encoding
-pub const charToVector = encoding.charToVector;
-pub const encodeText = encoding.encodeText;
-pub const decodeText = encoding.decodeText;
-pub const encodeTextWords = encoding.encodeTextWords;
-pub const textSimilarity = encoding.textSimilarity;
-pub const textsAreSimilar = encoding.textsAreSimilar;
-pub const TEXT_VECTOR_DIM = encoding.TEXT_VECTOR_DIM;
+// Re-export HybridBigInt-based VSA operations (overrides gen_vsa slice-based API)
+// These take *HybridBigInt pointers instead of slices, for VM compatibility
+pub const bind = vsa_core_compat.bind;
+pub const unbind = vsa_core_compat.unbind;
+pub const bundle2 = vsa_core_compat.bundle2;
+pub const bundle3 = vsa_core_compat.bundle3;
+pub const permute = vsa_core_compat.permute;
+pub const inversePermute = vsa_core_compat.inversePermute;
+pub const cosineSimilarity = vsa_core_compat.cosineSimilarity;
+pub const hammingDistance = vsa_core_compat.hammingDistance;
+pub const hammingSimilarity = vsa_core_compat.hammingSimilarity;
+pub const dotSimilarity = vsa_core_compat.dotSimilarity;
+pub const vectorNorm = vsa_core_compat.vectorNorm;
+pub const bundleN = vsa_core_compat.bundleN;
+pub const countNonZero = vsa_core_compat.countNonZero;
+pub const randomVector = vsa_core_compat.randomVector;
+pub const encodeSequence = vsa_core_compat.encodeSequence;
+pub const probeSequence = vsa_core_compat.probeSequence;
 
-// Re-export storage
-pub const TextCorpus = storage.TextCorpus;
+// Keep slice-based operations available through gen_ops namespace
+pub const gen_ops = gen.ops;
 
-// Re-export concurrency & DAG
-pub const ChaseLevDeque = concurrency.ChaseLevDeque;
-pub const LockFreePool = concurrency.LockFreePool;
-pub const DependencyGraph = concurrency.DependencyGraph;
-pub const TaskNode = concurrency.TaskNode;
-pub const TaskState = concurrency.TaskState;
-pub const getGlobalPool = concurrency.getGlobalPool;
+// Re-export HRR convenience
+pub const HRR = vsa_hrr.HRR;
 
-// Re-export Agentic systems
-pub const UnifiedAgent = agent.UnifiedAgent;
-pub const AgentMemory = agent.AgentMemory;
-pub const AgentRole = agent.AgentRole;
-pub const Modality = agent.Modality;
-pub const MultiModalToolUse = agent.MultiModalToolUse;
-pub const AutonomousAgent = agent.AutonomousAgent;
-pub const ImprovementLoop = agent.ImprovementLoop;
-pub const UnifiedAutonomousSystem = agent.UnifiedAutonomousSystem;
-pub const UnifiedRequest = agent.UnifiedRequest;
-pub const UnifiedResponse = agent.UnifiedResponse;
-pub const SystemCapability = agent.SystemCapability;
+// Re-export from vsa_encoding
+pub const charToVector = vsa_encoding.charToVector;
+pub const encodeText = vsa_encoding.encodeText;
+pub const decodeText = vsa_encoding.decodeText;
+pub const encodeTextWords = vsa_encoding.encodeTextWords;
+pub const textSimilarity = vsa_encoding.textSimilarity;
+pub const textsAreSimilar = vsa_encoding.textsAreSimilar;
+pub const TEXT_VECTOR_DIM = vsa_encoding.TEXT_VECTOR_DIM;
 
-// Prototypical accessors
-pub const getUnifiedAgent = agent.getUnifiedAgent;
-pub const getAgentMemory = agent.getAgentMemory;
-pub const getAutonomousAgent = agent.getAutonomousAgent;
-pub const getUnifiedSystem = agent.getUnifiedSystem;
+// Re-export from vsa_storage
+pub const TextCorpus = vsa_storage.TextCorpus;
 
-/// Hamming distance for ternary trit slices.
-/// Counts positions where trits differ. Unequal lengths add the difference.
-pub fn hammingDistanceSlice(a: []const i8, b: []const i8) usize {
-    const len = @min(a.len, b.len);
-    var distance: usize = 0;
-    for (0..len) |i| {
-        if (a[i] != b[i]) distance += 1;
-    }
-    if (a.len > b.len) {
-        distance += a.len - b.len;
-    } else {
-        distance += b.len - a.len;
-    }
-    return distance;
-}
+// Re-export from vsa_concurrency
+pub const ChaseLevDeque = vsa_concurrency.ChaseLevDeque;
+pub const LockFreePool = vsa_concurrency.LockFreePool;
+pub const DependencyGraph = vsa_concurrency.DependencyGraph;
+pub const TaskNode = vsa_concurrency.TaskNode;
+pub const TaskState = vsa_concurrency.TaskState;
+pub const getGlobalPool = vsa_concurrency.getGlobalPool;
 
-test {
-    _ = @import("vsa/tests.zig");
-}
+// Re-export from vsa_agent
+pub const UnifiedAgent = vsa_agent.UnifiedAgent;
+pub const AgentMemory = vsa_agent.AgentMemory;
+pub const AgentRole = vsa_agent.AgentRole;
+pub const Modality = vsa_agent.Modality;
+pub const MultiModalToolUse = vsa_agent.MultiModalToolUse;
+pub const AutonomousAgent = vsa_agent.AutonomousAgent;
+pub const ImprovementLoop = vsa_agent.ImprovementLoop;
+pub const UnifiedAutonomousSystem = vsa_agent.UnifiedAutonomousSystem;
+pub const UnifiedRequest = vsa_agent.UnifiedRequest;
+pub const UnifiedResponse = vsa_agent.UnifiedResponse;
+pub const SystemCapability = vsa_agent.SystemCapability;
+pub const getUnifiedAgent = vsa_agent.getUnifiedAgent;
+pub const getAgentMemory = vsa_agent.getAgentMemory;
+pub const getAutonomousAgent = vsa_agent.getAutonomousAgent;
+pub const getUnifiedSystem = vsa_agent.getUnifiedSystem;
 
+// Manual (disabled):
+// const manual = @import("vsa/vsa_manual.zig");
+// ... re-export all symbols from manual
+//
 // φ² + 1/φ² = 3 | TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════

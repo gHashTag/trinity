@@ -49,6 +49,9 @@ pub const LockPeriod = enum(u8) {
     }
 };
 
+/// Minimum stake amount: 100 TRI (in wei)
+pub const MIN_STAKE: u128 = 100 * 1_000_000_000_000_000_000;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // STAKE POSITION
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -112,21 +115,25 @@ pub const StakePosition = struct {
 
 pub const StakingManager = struct {
     allocator: Allocator,
+    /// Mutex protects all staking state
+    mutex: std.Thread.Mutex,
     /// All stake positions indexed by stake_id
     stakes: std.StringHashMapUnmanaged(StakePosition),
     /// Stakes indexed by staker address
     staker_stakes: std.StringHashMapUnmanaged(std.ArrayListUnmanaged([]const u8)),
     /// Total staked amount
     total_staked: u128,
-    /// Minimum stake amount (100 TRI)
-    const MIN_STAKE: u128 = 100 * std.math.pow(u128, 10, 18);
+    /// Total slashed amount (for invariant verification)
+    total_slashed: u128,
 
     pub fn init(allocator: Allocator) StakingManager {
         return StakingManager{
             .allocator = allocator,
+            .mutex = .{},
             .stakes = .{},
             .staker_stakes = .{},
             .total_staked = 0,
+            .total_slashed = 0,
         };
     }
 
@@ -138,6 +145,9 @@ pub const StakingManager = struct {
         lock_period: LockPeriod,
     ) ![]const u8 {
         if (amount < MIN_STAKE) return error.StakeBelowMinimum;
+
+        self.mutex.lock();
+        defer self.mutex.unlock();
 
         const now = std.time.timestamp();
         const stake_id = try self.generateStakeId(staker_address, now);
@@ -172,6 +182,9 @@ pub const StakingManager = struct {
     ) ![]const u8 {
         if (amount < MIN_STAKE) return error.StakeBelowMinimum;
 
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
         const now = std.time.timestamp();
         const stake_id = try self.generateStakeId(delegator_address, now);
 
@@ -197,6 +210,9 @@ pub const StakingManager = struct {
 
     /// Withdraw stake
     pub fn withdrawStake(self: *StakingManager, stake_id: []const u8) !u128 {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
         const position = self.stakes.get(stake_id) orelse return error.StakeNotFound;
 
         if (!position.canWithdraw()) {
@@ -231,15 +247,34 @@ pub const StakingManager = struct {
         var positions = try allocator.alloc(StakePosition, stake_ids.items.len);
         for (stake_ids.items, 0..) |id, i| {
             const pos = self.stakes.get(id) orelse continue;
-            positions[i] = pos.*;
+            positions[i] = pos;
+        }
+
+        return positions;
+    }
+
+    /// Get all stakes for an address (MUST hold mutex when calling)
+    fn getStakerStakesLocked(self: *StakingManager, address: [20]u8, allocator: Allocator) ![]StakePosition {
+        const key = try self.addressToKey(address);
+        defer allocator.free(key);
+
+        const stake_ids = self.staker_stakes.get(key) orelse return &[_]StakePosition{};
+
+        var positions = try allocator.alloc(StakePosition, stake_ids.items.len);
+        for (stake_ids.items, 0..) |id, i| {
+            const pos = self.stakes.get(id) orelse continue;
+            positions[i] = pos;
         }
 
         return positions;
     }
 
     /// Get total staked by address
-    pub fn getStakerTotal(self: *const StakingManager, address: [20]u8) !u128 {
-        const stakes = try self.getStakerStakes(address, self.allocator);
+    pub fn getStakerTotal(self: *StakingManager, address: [20]u8) !u128 {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        const stakes = try self.getStakerStakesLocked(address, self.allocator);
         defer self.allocator.free(stakes);
 
         var total: u128 = 0;
@@ -254,18 +289,71 @@ pub const StakingManager = struct {
 
     /// Apply slashing to all stakes of a staker
     pub fn slashStaker(self: *StakingManager, address: [20]u8, penalty_percentage: f64) !usize {
-        const stakes = try self.getStakerStakes(address, self.allocator);
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        const stakes = try self.getStakerStakesLocked(address, self.allocator);
         defer self.allocator.free(stakes);
 
         var slashed_count: usize = 0;
         for (stakes) |*stake| {
             if (stake.is_active and !stake.is_slashed) {
+                const before = stake.amount;
                 stake.applySlash(penalty_percentage);
+                const slashed = before - stake.amount;
+                self.total_slashed += slashed;
                 slashed_count += 1;
             }
         }
 
         return slashed_count;
+    }
+
+    /// Get total staked amount (thread-safe)
+    pub fn getTotalStaked(self: *const StakingManager) u128 {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+        return self_mut.total_staked;
+    }
+
+    /// Get total slashed amount (thread-safe)
+    pub fn getTotalSlashed(self: *const StakingManager) u128 {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+        return self_mut.total_slashed;
+    }
+
+    /// Get total rewards accumulated across all stakes
+    /// For economic invariant testing (real yield calculation)
+    pub fn getTotalRewards(self: *const StakingManager) u128 {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+
+        var total: u128 = 0;
+        var stake_iter = self_mut.stakes.iterator();
+        while (stake_iter.next()) |entry| {
+            total += entry.value_ptr.rewards;
+        }
+        return total;
+    }
+
+    /// Get count of active stakes
+    pub fn getActiveStakeCount(self: *const StakingManager) usize {
+        const self_mut: *StakingManager = @constCast(self);
+        self_mut.mutex.lock();
+        defer self_mut.mutex.unlock();
+
+        var count: usize = 0;
+        var stake_iter = self_mut.stakes.iterator();
+        while (stake_iter.next()) |entry| {
+            if (entry.value_ptr.is_active and !entry.value_ptr.is_slashed) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     pub fn deinit(self: *StakingManager) void {
@@ -306,12 +394,12 @@ pub const StakingManager = struct {
 
     fn addToStakerIndex(self: *StakingManager, address: [20]u8, stake_id: []const u8) !void {
         const key = try self.addressToKey(address);
-        errdefer self.allocator.free(key);
 
         const duped_id = try self.allocator.dupe(u8, stake_id);
         errdefer self.allocator.free(duped_id);
 
         if (self.staker_stakes.getEntry(key)) |entry| {
+            self.allocator.free(key); // Key not needed when entry exists
             try entry.value_ptr.append(self.allocator, duped_id);
         } else {
             var list = std.ArrayListUnmanaged([]const u8){};
@@ -331,9 +419,11 @@ pub const StakingManager = struct {
                     _ = list.orderedRemove(i);
                     self.allocator.free(id);
                     if (list.items.len == 0) {
+                        // List is now empty, remove the entry and free the key
                         list.deinit(self.allocator);
+                        const key_to_free = entry.key_ptr.*;
                         _ = self.staker_stakes.remove(entry.key_ptr.*);
-                        self.allocator.free(entry.key_ptr.*);
+                        self.allocator.free(key_to_free);
                     }
                     return true;
                 }

@@ -2,7 +2,7 @@
 // φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const GOLD = colors.GOLDEN;
 const CYAN = colors.CYAN;
 const GREEN = colors.GREEN;

@@ -4,7 +4,7 @@
 //! Commands for superconductor predictions via φ-γ framework.
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import superconductivity module (via build.zig module)
 const supercond = @import("superconductivity");

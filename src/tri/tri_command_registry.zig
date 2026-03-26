@@ -9,6 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const print = std.debug.print;
 
 /// Command execution function signature
 pub const CommandFn = *const fn (allocator: std.mem.Allocator, args: []const []const u8) anyerror!void;

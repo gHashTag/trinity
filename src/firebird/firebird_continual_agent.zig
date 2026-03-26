@@ -9,7 +9,10 @@
 
 const std = @import("std");
 const firebird = @import("firebird.zig");
-const vsa = @import("vsa.zig");
+const firebird_vsa = @import("vsa.zig");
+const vsa = firebird_vsa; // Shorthand for VSA operations
+
+const Trit = firebird_vsa.Trit;
 
 // ═══════════════════════════════════════════════════════════════
 // CONFIGURATION
@@ -79,14 +82,14 @@ pub const AgentStats = struct {
 pub const Prototype = struct {
     label: []const u8,
     accumulator: []f64,
-    vector: []vsa.Trit,
+    vector: []Trit,
     count: u64,
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, label: []const u8, dim: usize) !Prototype {
         const acc = try allocator.alloc(f64, dim);
         @memset(acc, 0.0);
-        const vec = try allocator.alloc(vsa.Trit, dim);
+        const vec = try allocator.alloc(Trit, dim);
         @memset(vec, 0);
         const label_copy = try allocator.dupe(u8, label);
 
@@ -105,7 +108,7 @@ pub const Prototype = struct {
         self.allocator.free(@constCast(self.label));
     }
 
-    pub fn update(self: *Prototype, input: []const vsa.Trit, lr: f64) void {
+    pub fn update(self: *Prototype, input: []const Trit, lr: f64) void {
         for (0..self.accumulator.len) |i| {
             self.accumulator[i] = self.accumulator[i] * (1.0 - lr) + @as(f64, @floatFromInt(input[i])) * lr;
         }
@@ -130,7 +133,7 @@ pub const Prototype = struct {
 pub const FirebirdContinualAgent = struct {
     config: FirebirdAgentConfig,
     prototypes: std.StringHashMap(Prototype),
-    codebook: std.StringHashMap([]vsa.Trit),
+    codebook: std.StringHashMap([]Trit),
     task_history: std.ArrayList(WebTask),
     stats: AgentStats,
     dim: usize,
@@ -140,7 +143,7 @@ pub const FirebirdContinualAgent = struct {
         return .{
             .config = config,
             .prototypes = std.StringHashMap(Prototype).init(allocator),
-            .codebook = std.StringHashMap([]vsa.Trit).init(allocator),
+            .codebook = std.StringHashMap([]Trit).init(allocator),
             .task_history = std.ArrayList(WebTask).init(allocator),
             .stats = .{
                 .total_browses = 0,
@@ -177,7 +180,7 @@ pub const FirebirdContinualAgent = struct {
     }
 
     /// Get or create token vector
-    fn getTokenVector(self: *FirebirdContinualAgent, token: []const u8) ![]const vsa.Trit {
+    fn getTokenVector(self: *FirebirdContinualAgent, token: []const u8) ![]const Trit {
         if (self.codebook.get(token)) |vec| {
             return vec;
         }
@@ -186,7 +189,7 @@ pub const FirebirdContinualAgent = struct {
         hasher.update(token);
         const seed = hasher.final();
 
-        const vec = try self.allocator.alloc(vsa.Trit, self.dim);
+        const vec = try self.allocator.alloc(Trit, self.dim);
         var rng = std.Random.DefaultPrng.init(seed);
         const random = rng.random();
 
@@ -201,7 +204,7 @@ pub const FirebirdContinualAgent = struct {
     }
 
     /// Encode text to hypervector
-    fn encodeText(self: *FirebirdContinualAgent, text: []const u8) ![]vsa.Trit {
+    fn encodeText(self: *FirebirdContinualAgent, text: []const u8) ![]Trit {
         var accumulator = try self.allocator.alloc(f64, self.dim);
         defer self.allocator.free(accumulator);
         @memset(accumulator, 0.0);
@@ -219,7 +222,7 @@ pub const FirebirdContinualAgent = struct {
             pos += 1;
         }
 
-        const result = try self.allocator.alloc(vsa.Trit, self.dim);
+        const result = try self.allocator.alloc(Trit, self.dim);
         for (0..self.dim) |i| {
             if (accumulator[i] > 0.5) {
                 result[i] = 1;
@@ -234,7 +237,7 @@ pub const FirebirdContinualAgent = struct {
     }
 
     /// Similarity between two vectors
-    fn similarity(self: *FirebirdContinualAgent, a: []const vsa.Trit, b: []const vsa.Trit) f64 {
+    fn similarity(self: *FirebirdContinualAgent, a: []const Trit, b: []const Trit) f64 {
         _ = self;
         var dot: i64 = 0;
         var norm_a: i64 = 0;

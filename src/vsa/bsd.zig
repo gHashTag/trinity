@@ -6,7 +6,9 @@
 const std = @import("std");
 const common = @import("common.zig");
 const core = @import("core.zig");
-const HybridBigInt = common.HybridBigInt;
+// Import HybridBigInt from hybrid.zig as file import
+const hybrid_mod = @import("hybrid");
+const HybridBigInt = hybrid_mod.HybridBigInt;
 const Trit = common.Trit;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -18,7 +20,7 @@ const Trit = common.Trit;
 /// Traditional VSA: [bind, bundle]
 /// BSD-VSA:        [bind, bundle, sha]
 ///
-/// The Sha (Шафаревич-Тейт группа) provides:
+/// The Sha (Shafarevich-Tate group) provides:
 /// 1. Hidden structure information
 /// 2. Arithmetic complexity measure
 /// 3. Proof-theoretic depth for zk-systems

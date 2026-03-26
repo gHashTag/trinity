@@ -12,7 +12,7 @@ const std = @import("std");
 const CommandRegistry = @import("tri_command_registry.zig").CommandRegistry;
 const CommandCategory = @import("tri_command_registry.zig").CommandCategory;
 const CommandMetadata = @import("tri_command_registry.zig").CommandMetadata;
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 pub const HelpOptions = struct {
     category: ?CommandCategory = null,

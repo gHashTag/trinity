@@ -36,7 +36,7 @@ const S3MultiObjConfig = &[_]EnvVar{
     .{ .name = "HSLM_FRESH", .value = "0" },
 };
 
-fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
+pub fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
     const seed = BASE_SEED + worker_id;
     const seed_str = try std.fmt.allocPrint(allocator, "{d}", .{seed});
     defer allocator.free(seed_str);
@@ -48,7 +48,7 @@ fn generateWorker(allocator: Allocator, worker_id: usize) ![]const u8 {
     try buf.writer(allocator).print("{d}:\n", .{worker_id});
     try buf.appendSlice(allocator, "    build:\n");
     try buf.appendSlice(allocator, "      context: ../../\n");
-    try buf.appendSlice(allocator, "      dockerfile: deploy/Dockerfile.hslm-train\n");
+    try buf.appendSlice(allocator, "      dockerfile: deploy/Dockerfile.hslm-train-local.arm64-test\n");
     try buf.appendSlice(allocator, "    container_name: wave9-w");
     try buf.writer(allocator).print("{d}\n", .{worker_id});
     try buf.appendSlice(allocator, "    volumes:\n");

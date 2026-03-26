@@ -8,7 +8,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const types = @import("faculty_types.zig");
+const queen = @import("queen");
+const types = queen.faculty_types;
 const AgentState = types.AgentState;
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;

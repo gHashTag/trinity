@@ -6,7 +6,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const firebird_vsa = @import("vsa.zig");
+const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
 const evolution = @import("evolution.zig");
@@ -14,7 +15,7 @@ const parallel = @import("parallel.zig");
 const b2t = @import("b2t_integration.zig");
 const wasm_parser = @import("wasm_parser.zig");
 
-const TritVec = vsa.TritVec;
+const TritVec = firebird_vsa.TritVec;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -355,7 +356,7 @@ fn cmdExecute(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("───────────────────────────────────────────────────────────────\n", .{});
 
     // Create a "default" fingerprint to compare against
-    var default_fp = try vsa.TritVec.random(allocator, opts.dim, 0);
+    var default_fp = try firebird_vsa.TritVec.random(allocator, opts.dim, 0);
     defer default_fp.deinit();
 
     const default_sim = vsa_simd.cosineSimilaritySimd(&nav.position, &default_fp);
@@ -459,14 +460,14 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     defer initial.deinit();
 
     // Configure evolution
-    const config = parallel.ParallelConfig{
-        .base_config = .{
-            .population_size = opts.pop,
-            .max_generations = opts.gen,
-            .target_fitness = opts.target,
-            .tournament_size = 3,
-        },
-        .num_threads = opts.threads,
+    const config = evolution.EvolutionConfig{
+        .population_size = opts.pop,
+        .max_generations = @intCast(opts.gen),
+        .target_fitness = opts.target,
+        .tournament_size = 3,
+        .elitism_ratio = 0.1,
+        .mutation_rate = 0.05,
+        .crossover_rate = 0.8,
     };
 
     // Initialize population
@@ -484,7 +485,7 @@ fn cmdEvolve(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var rng = std.Random.DefaultPrng.init(seed +% 3);
 
     while (population.generation < opts.gen) {
-        try parallel.evolveGenerationParallel(allocator, &population, &human, &config, &rng);
+        try evolution.evolveGeneration(allocator, &population, &human, &config, &rng);
 
         if (!opts.quiet and (population.generation % 10 == 0 or population.generation == 1)) {
             const best = population.getBest();
@@ -762,7 +763,7 @@ fn cmdInfo() !void {
     std.debug.print("CONSTANTS:\n", .{});
     std.debug.print("  φ (PHI):          {d:.10}\n", .{firebird.PHI});
     std.debug.print("  φ² + 1/φ²:        {d:.10} (= TRINITY)\n", .{firebird.PHI * firebird.PHI + 1.0 / (firebird.PHI * firebird.PHI)});
-    std.debug.print("  Default DIM:      {d}\n", .{vsa.DIM});
+    std.debug.print("  Default DIM:      {d}\n", .{firebird_vsa.DIM});
     std.debug.print("\n", .{});
     std.debug.print("EVOLUTION PARAMETERS:\n", .{});
     std.debug.print("  μ (mutation):     {d:.4}\n", .{firebird.MU});

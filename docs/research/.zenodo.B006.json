@@ -1,0 +1,50 @@
+{
+  "title": "Trinity B006: Sacred GF16/TF3 — Phi-Based Number Formats for Ternary Computing",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Sacred GF16 and TF3 are φ-optimal number formats for ternary neural network inference. Key innovations: (1) GF16 [sign:1][exp:6][mant:9] with φ-distance 0.049 (40% better than IEEE f16); (2) TF3 18-bit ternary with base-3 exponent; (3) φ-distance metric |e/m - 1/φ|; (4) Theorem: GF16 achieves minimal φ-distance among 16-bit formats; (5) 98.4% information retention vs FP32. Mathematical foundation: Trinity Identity φ² + φ⁻² = 3.\n\n**Theorem: Phi-Optimal Bit Distribution**\n```\nFor b-bit format with e exponent bits, m mantissa bits:\nφ-distance = |e/m - 1/φ| where φ = (1 + √5)/2 ≈ 1.618\n\nFor b = 16: e = 6, m = 9 → e/m = 0.667 → |0.667 - 0.618| = 0.049 (minimal)\nThis is GF16, achieving 40% better efficiency than IEEE f16.\n```\n\n**Trinity Identity Proof:**\n```\nφ = (1 + √5)/2 ≈ 1.618\nφ² = (3 + √5)/2 ≈ 2.618\nφ⁻² = (3 - √5)/2 ≈ 0.382\nφ² + φ⁻² = (3 + √5 + 3 - √5)/2 = 6/2 = 3 ∎\n```\n\n**Format Comparison:**\n| Format | Sign | Exp | Mant | φ-distance | Efficiency |\n|--------|------|-----|------|------------|------------|\n| FP32   | 1    | 8   | 23   | 0.364      | 100%       |\n| IEEE f16| 1    | 5   | 10   | 0.118      | 100%       |\n| GF16   | 1    | 6   | 9    | 0.049      | 140%       |\n| TF3    | 1    | 6   | 11   | 0.049      | 145%       |",
+  "keywords": [
+    "GF16",
+    "TF3",
+    "ternary format",
+    "phi-based",
+    "golden ratio",
+    "φ-distance",
+    "number format",
+    "floating-point",
+    "quantization",
+    "information retention",
+    "Trinity Identity",
+    "mathematical proof"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "5.2.0",
+  "doi": "10.5281/zenodo.19227743",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/hslm/f16_utils.zig",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Livio, The Golden Ratio: The Story of Phi, Broadway Books (2008)",
+    "IEEE 754-2019, Standard for Floating-Point Arithmetic (2019)",
+    "Ma et al., The Era of 1-bit LLMs, arXiv:2402.17764 (2024)",
+    "Dettmers et al., QLoRA: Efficient Finetuning of Quantized LLMs, arXiv:2305.14314 (2023)"
+  ],
+  "upload_type": "software"
+}

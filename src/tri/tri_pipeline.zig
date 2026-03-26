@@ -11,7 +11,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const golden_chain = @import("dna_polymerase.zig");
 const pipeline_executor = @import("rna_polymerase.zig");
 const batch_runner = @import("batch_runner.zig");
@@ -237,7 +237,7 @@ pub fn runPipelineStatus(allocator: std.mem.Allocator) void {
 }
 
 fn runPipelineResume(allocator: std.mem.Allocator) void {
-    const tri_state = @import("tri_state.zig");
+    const tri_state = @import("tri_state");
 
     const checkpoint_opt = tri_state.loadPipelineCheckpoint(allocator);
     if (checkpoint_opt) |checkpoint| {

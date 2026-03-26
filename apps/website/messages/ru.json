@@ -761,6 +761,24 @@
       "github": "https://github.com/gHashTag/trinity"
     }
   },
+  "tri27": {
+    "badge": "WAVE 1 COMPLETE",
+    "title": "TRI-27: <span class=\"grad\">Троичный</span> ISA",
+    "sub": "27 регистров, 3 банка, 36 опкодов — от спецификации к FPGA",
+    "cta": "Изучить документацию"
+  },
+  "brainArchitecture": {
+    "badge": "САМОУЧАЯСЬСЯ СИСТЕМА",
+    "title": "Trinity <span class=\"grad\">S³AI</span> Brain Архитектура",
+    "sub": "Нейроанатомический AI с 6 PFC-клетками, Lotus Cycle очистки и ARAS бдительностью",
+    "cta": "Читать архитектуру"
+  },
+  "stack": {
+    "badge": "ВОСЬМЕРОВНЫЙ СТЕК",
+    "title": "Trinity <span class=\"grad\">Восьмиуровневый</span> Стек",
+    "sub": "От распределённого обучения до FPGA аппаратного обеспечения — полный стек в Zig",
+    "cta": "Смотреть архитектуру"
+  },
   "bitnetProof": {
     "badge": "МАТЕМАТИЧЕСКИЕ ДОКАЗАТЕЛЬСТВА",
     "title": "BitNet FPGA — <span class=\"grad\">Научные Пруфы</span>",

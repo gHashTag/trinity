@@ -10,7 +10,8 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
-const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
+const temple = @import("temple");
+const intraparietal_sulcus = temple.intraparietal_sulcus;
 
 // ═══════════════════════════════════════════════════════════════════════
 // BACKEND MODE — Hardware or Software fallback

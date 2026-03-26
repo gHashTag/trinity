@@ -1,0 +1,137 @@
+# ═══════════════════════════════════════════════════════
+# CONTENT_REGISTRY_V2 — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Improved Content Registry
+# Source of truth for tri-lang/content_registry_v2.zig codegen
+# TRI-LANG-6: Content Addressing
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_content_registry_v2
+version: "0.1.0"
+module: tri_lang.content_registry_v2
+description: "Improved Content Registry (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  ImprovedHashMapContext:
+    description: "Improved HashMap context using full 32-byte hash"
+    methods:
+      - name: hash
+        params:
+          - name: key
+            type: "[32]u8"
+        returns: "u64"
+        description: "Wyhash of 32-byte key"
+
+      - name: eql
+        params:
+          - name: a
+            type: "[32]u8"
+          - name: b
+            type: "[32]u8"
+        returns: "bool"
+        description: "Compare two 32-byte arrays"
+
+  ContentRegistryV2:
+    description: "Improved registry with better hash function"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: entries
+        type: "std.HashMap([32]u8, []const FunctionLocation, ImprovedHashMapContext, 80)"
+        description: "Map from hash to function locations"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!ContentRegistryV2"
+        description: "Initialize empty registry"
+        errors:
+          - OutOfMemory
+
+      - name: deinit
+        returns: "void"
+        description: "Free all resources"
+
+      - name: insert
+        params:
+          - name: hash
+            type: "[32]u8"
+          - name: location
+            type: "FunctionLocation"
+        returns: "!void"
+        description: "Insert function location"
+        errors:
+          - OutOfMemory
+
+      - name: lookup
+        params:
+          - name: hash
+            type: "[32]u8"
+        returns: "?[]const FunctionLocation"
+        description: "Look up function by hash"
+
+      - name: toJSON
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]const u8"
+        description: "Serialize to JSON"
+        errors:
+          - OutOfMemory
+
+      - name: fromJSON:
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: json
+            type: "[]const u8"
+        returns: "!ContentRegistryV2"
+        description: "Deserialize from JSON"
+        errors:
+          - OutOfMemory
+          - "Invalid JSON"
+
+  FunctionLocation:
+    description: "Function location in source"
+    fields:
+      - name: module
+        type: "[]const u8"
+        description: "Module name"
+      - name: function
+        type: "[]const u8"
+        description: "Function name"
+      - name: line
+        type: "usize"
+        description: "Line number"
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  testHashQuality:
+    returns: "!void"
+    description: "Test hash quality (avalanche, distribution)"
+    errors:
+      - OutOfMemory
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# V2 Improvements:
+# - Full 32-byte Wyhash hash (not just 8 bytes)
+# - Default HashMap capacity for better performance
+# - More efficient JSON serialization
+#
+# Uses ImprovedHashMapContext which:
+# - Uses Wyhash instead of FNV-1a (better avalanche)
+# - Compares full 32-byte hashes instead of just 8 bytes

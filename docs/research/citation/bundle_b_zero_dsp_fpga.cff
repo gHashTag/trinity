@@ -1,0 +1,102 @@
+cff-version: 1.2.0
+message: "If you use any Trinity FPGA discoveries, please cite our defensive publication."
+title: "Zero-DSP FPGA for Ternary Inference"
+abstract: "FPGA-based neural inference requires expensive DSP blocks, limiting deployment on cost-sensitive FPGAs with limited DSP resources. Existing approaches cannot eliminate DSP usage while maintaining accuracy for ternary weight networks. We present zero-DSP ternary MAC units using pure LUT-based inference on Xilinx XC7A100T FPGA, achieving 37.8% LUT reduction (p<0.01) versus FP16 baselines. Our implementation eliminates 100% of DSP usage (0 vs 50 DSP48E1 blocks) while maintaining PPL=125±2.1 through ternary weight encoding {-1,0,+1} and GF16/TF3 formats. Key innovations include CORDIC with continued fraction approximation (6-stage sacred trigonometry), streaming argmax (<100 LUT), ternary BRAM storage (2-bit packing), and ESP32 Wi-Fi JTAG cross-platform programming. This enables low-cost FPGA deployment with 1.2W power consumption (73% reduction vs 4.5W FP32) and 55 MHz timing closure on Artix-7 hardware."
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "zero-DSP"
+  - "FPGA"
+  - "LUT-based inference"
+  - "ternary MAC"
+  - "DSP48E1"
+  - "CORDIC"
+  - "continued fraction"
+  - "sacred trigonometry"
+  - "argmax"
+  - "streaming"
+  - "BRAM"
+  - "ternary storage"
+  - "embedding lookup"
+  - "ternary scheduler"
+  - "phi-weighted"
+  - "ESP32"
+  - "Wi-Fi JTAG"
+  - "UART verification"
+  - "OpenXC7"
+  - "Yosys"
+  - "nextpnr-xilinx"
+  - "Docker synthesis"
+  - "GF16 multiplier"
+  - "vector-matrix"
+  - "DSP acceleration"
+  - "Xilinx 7-series"
+  - "XC7A100T"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for zero-DSP FPGA defensive publication"
+    type: doi
+    value: "TBD"
+  - description: "GitHub repository"
+    type: url
+    value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Sacred Formats and FPGA Implementation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/sacred_formats_fpga.md"
+  - type: documentation
+    relationship: documents
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "Zero-DSP FPGA for Ternary Inference"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
+references:
+  - type: software
+    authors:
+      - name: "The Yosys Community"
+    title: "Yosys Open Synthesis Suite"
+    year: 2024
+    url: "https://github.com/YosysHQ/yosys"
+    license: MIT
+  - type: software
+    authors:
+      - name: "openXC7 Community"
+    title: "nextpnr-xilinx: FPGA place and route tool"
+    year: 2024
+    url: "https://github.com/openXC7/nextpnr-xilinx"
+    license: ISC
+  - type: article
+    authors:
+      - family-names: "Volder"
+        given-names: "J."
+    title: "The CORDIC Trigonometric Computing Technique"
+    year: 1959
+    journal: "IRE Transactions on Electronic Computers"
+    volume: "EC-8"
+    pages: "330-334"
+    doi: "10.1109/TEC.1959.5218492"

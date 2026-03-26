@@ -1,0 +1,512 @@
+# ═══════════════════════════════════════════════════════
+# TYPECHECKER — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════
+# Hindley-Milner Type Inference for Tri Language
+# Source of truth for tri-lang/typechecker.zig codegen
+# Wave 2: Type System Core — Typechecker
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════
+
+name: tri_typechecker
+version: "0.1.0"
+module: tri_lang.typechecker
+description: "Hindley-Milner Type Inference for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════
+
+types:
+  IntExpr:
+    description: "Integer literal expression"
+    fields:
+      - name: value
+        type: "i64"
+        description: "Integer value"
+
+  BoolExpr:
+    description: "Boolean literal expression"
+    fields:
+      - name: value
+        type: "bool"
+        description: "Boolean value"
+
+  VarExpr:
+    description: "Variable reference expression"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Variable name"
+
+  BinOpExpr:
+    description: "Binary operation expression"
+    fields:
+      - name: left
+        type: "*const TypedExpr"
+        description: "Left operand"
+      - name: op
+        type: "BinaryOperator"
+        description: "Operator"
+      - name: right
+        type: "*const TypedExpr"
+        description: "Right operand"
+
+  IfExpr:
+    description: "If-then-else expression"
+    fields:
+      - name: condition
+        type: "*const TypedExpr"
+        description: "Condition expression"
+      - name: then_branch
+        type: "*const TypedExpr"
+        description: "Then branch"
+      - name: else_branch
+        type: "*const TypedExpr"
+        description: "Else branch"
+
+  LetExpr:
+    description: "Let binding expression"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Binding name"
+      - name: value
+        type: "*const TypedExpr"
+        description: "Value expression"
+      - name: body
+        type: "*const TypedExpr"
+        description: "Body expression"
+
+  FnExpr:
+    description: "Function expression (lambda)"
+    fields:
+      - name: params
+        type: "[][]const u8"
+        description: "Parameter names"
+      - name: body
+        type: "*const TypedExpr"
+        description: "Function body"
+
+  FnCallExpr:
+    description: "Function call expression"
+    fields:
+      - name: func
+        type: "*const TypedExpr"
+        description: "Function expression"
+      - name: args
+        type: "[]*const TypedExpr"
+        description: "Argument expressions"
+
+  ADTExpr:
+    description: "ADT constructor expression"
+    fields:
+      - name: type_name
+        type: "[]const u8"
+        description: "ADT type name"
+      - name: variant
+        type: "[]const u8"
+        description: "Variant name"
+      - name: data
+        type: "?*const TypedExpr"
+        description: "Optional data payload"
+
+  MatchExpr:
+    description: "Match expression"
+    fields:
+      - name: value
+        type: "*const TypedExpr"
+        description: "Value to match"
+      - name: arms
+        type: "[]const MatchArm"
+        description: "Match arms"
+
+  PipeExpr:
+    description: "Pipe operator expression"
+    fields:
+      - name: value
+        type: "*const TypedExpr"
+        description: "Input value"
+      - name: stages
+        type: "[]*const TypedExpr"
+        description: "Pipeline stages"
+
+  PerformExpr:
+    description: "Perform effect expression"
+    fields:
+      - name: effect
+        type: "*const TypedExpr"
+        description: "Effect to perform"
+      - name: args
+        type: "[]*const TypedExpr"
+        description: "Effect arguments"
+
+  HandleExpr:
+    description: "Handle effects expression"
+    fields:
+      - name: value
+        type: "*const TypedExpr"
+        description: "Expression to handle"
+      - name: clauses
+        type: "[]const HandlerClauseTyped"
+        description: "Handler clauses"
+
+  TryExpr:
+    description: "Try expression for Result types"
+    fields:
+      - name: expr
+        type: "*const TypedExpr"
+        description: "Expression to try"
+
+  MapExpr:
+    description: "Map combinator expression"
+    fields:
+      - name: func
+        type: "*const TypedExpr"
+        description: "Mapping function"
+      - name: array
+        type: "*const TypedExpr"
+        description: "Array to map"
+
+  ReduceExpr:
+    description: "Reduce combinator expression"
+    fields:
+      - name: func
+        type: "*const TypedExpr"
+        description: "Reduction function"
+      - name: init
+        type: "*const TypedExpr"
+        description: "Initial value"
+      - name: array
+        type: "*const TypedExpr"
+        description: "Array to reduce"
+
+  ScanExpr:
+    description: "Scan combinator expression"
+    fields:
+      - name: func
+        type: "*const TypedExpr"
+        description: "Scan function"
+      - name: init
+        type: "*const TypedExpr"
+        description: "Initial value"
+      - name: array
+        type: "*const TypedExpr"
+        description: "Array to scan"
+      - name: scan_type
+        type: "ScanType"
+        description: "Scan type (inclusive/exclusive)"
+
+  ScanType:
+    description: "Scan type variant"
+    underlying: "enum"
+    variants:
+      - Inclusive: "Inclusive scan"
+      - Exclusive: "Exclusive scan"
+
+  FilterExpr:
+    description: "Filter combinator expression"
+    fields:
+      - name: pred
+        type: "*const TypedExpr"
+        description: "Predicate function"
+      - name: array
+        type: "*const TypedExpr"
+        description: "Array to filter"
+
+  FlatMapExpr:
+    description: "FlatMap combinator expression"
+    fields:
+      - name: func
+        type: "*const TypedExpr"
+        description: "Mapping function returning array"
+      - name: array
+        type: "*const TypedExpr"
+        description: "Array to flatMap"
+
+  ZipExpr:
+    description: "Zip combinator expression"
+    fields:
+      - name: arrays
+        type: "[]*const TypedExpr"
+        description: "Arrays to zip"
+
+  HandlerClauseTyped:
+    description: "Typed handler clause"
+    fields:
+      - name: effect
+        type: "[]const u8"
+        description: "Effect name"
+      - name: params
+        type: "[][]const u8"
+        description: "Handler parameter names"
+      - name: body
+        type: "*const TypedExpr"
+        description: "Handler body"
+
+  MatchArm:
+    description: "Match arm with pattern and body"
+    fields:
+      - name: pattern
+        type: "MatchPattern"
+        description: "Match pattern"
+      - name: body
+        type: "*const TypedExpr"
+        description: "Arm body"
+
+  MatchPattern:
+    description: "Match pattern variant"
+    underlying: "union(enum)"
+    variants:
+      - Wildcard: "Matches any value"
+      - ADTPattern: "ADT constructor pattern"
+      - VarPattern: "Variable binding pattern"
+
+  ADTPattern:
+    description: "ADT constructor pattern"
+    fields:
+      - name: type_name
+        type: "[]const u8"
+        description: "ADT type name"
+      - name: variant
+        type: "[]const u8"
+        description: "Variant name"
+      - name: binding
+        type: "?[]const u8"
+        description: "Optional binding name"
+
+  TypedExpr:
+    description: "Typed expression union"
+    underlying: "union(enum)"
+    variants:
+      - Int: "IntExpr"
+      - Bool: "BoolExpr"
+      - Var: "VarExpr"
+      - BinOp: "BinOpExpr"
+      - If: "IfExpr"
+      - Let: "LetExpr"
+      - Fn: "FnExpr"
+      - FnCall: "FnCallExpr"
+      - ADT: "ADTExpr"
+      - Match: "MatchExpr"
+      - Pipe: "PipeExpr"
+      - Perform: "PerformExpr"
+      - Handle: "HandleExpr"
+      - Try: "TryExpr"
+      - Map: "MapExpr"
+      - Reduce: "ReduceExpr"
+      - Scan: "ScanExpr"
+      - Filter: "FilterExpr"
+      - FlatMap: "FlatMapExpr"
+      - Zip: "ZipExpr"
+
+  TypeError:
+    description: "Type error variants"
+    underlying: "error"
+    variants:
+      - UndefinedVariable: "Variable not defined"
+      - TypeMismatch: "Type mismatch"
+      - ArityMismatch: "Function arity mismatch"
+      - NotAFunction: "Expected function type"
+      - RecursiveType: "Infinite type"
+      - UnknownADT: "ADT not defined"
+      - UnknownVariant: "ADT variant not defined"
+      - NonExhaustiveMatch: "Match not exhaustive"
+      - InvalidPattern: "Invalid pattern"
+      - EffectMismatch: "Effect type mismatch"
+      - LinearMisuse: "Linear value used incorrectly"
+      - BankViolation: "TRI-27 bank violation"
+
+  InferResult:
+    description: "Type inference result"
+    fields:
+      - name: typed_expr
+        type: "*const TypedExpr"
+        description: "Annotated expression"
+      - name: typ
+        type: "Type"
+        description: "Inferred type"
+      - name: subst
+        type: "Subst"
+        description: "Accumulated substitutions"
+
+  Bank:
+    description: "TRI-27 register bank"
+    underlying: "enum(u2)"
+    variants:
+      - A: "Bank A (reticular)"
+      - B: "Bank B (raphe)"
+      - C: "Bank C (coeruleus)"
+
+  LinearTracker:
+    description: "Linear type usage tracker"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: consumed
+        type: "std.StringHashMap(void)"
+        description: "Consumed linear variables"
+      - name: unconsumed
+        type: "std.StringHashMap(void)"
+        description: "Unconsumed linear variables"
+
+# ═══════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════
+
+functions:
+  infer:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: expr
+        type: "*const TypedExpr"
+      - name: env
+        type: "*const TypeEnv"
+    returns: "!InferResult"
+    description: "Main type inference function (W algorithm)"
+    errors:
+      - OutOfMemory
+      - TypeError
+
+  checkResultExhaustive:
+    params:
+      - name: match_arms
+        type: "[]const MatchArm"
+    returns: "TypeError!void"
+    description: "Check Result match is exhaustive (Ok + Error)"
+    errors:
+      - TypeError
+
+  checkResultMatch:
+    params:
+      - name: value_type
+        type: "Type"
+      - name: match_arms
+        type: "[]const MatchArm"
+    returns: "TypeError!void"
+    description: "Check Result match arms are valid"
+    errors:
+      - TypeError
+
+  checkBankSafety:
+    params:
+      - name: left_bank
+        type: "?Bank"
+      - name: right_bank
+        type: "?Bank"
+    returns: "TypeError!void"
+    description: "Check TRI-27 bank safety (no cross-bank ops)"
+    errors:
+      - TypeError
+
+  getBankFromType:
+    params:
+      - name: t
+        type: "Type"
+    returns: "?Bank"
+    description: "Extract bank annotation from type"
+
+  checkLinearUsage:
+    params:
+      - name: expr
+        type: "*const TypedExpr"
+      - name: tracker
+        type: "*LinearTracker"
+    returns: "TypeError!void"
+    description: "Check linear variable usage (consumed exactly once)"
+    errors:
+      - OutOfMemory
+      - TypeError
+
+# ═══════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════
+
+tests:
+  - name: "infer int literal"
+    description: "Integer literal infers to Int type"
+    given: "IntExpr with value 42"
+    when: "inferring"
+    then: "returns Int type"
+
+  - name: "infer bool literal"
+    description: "Boolean literal infers to Bool type"
+    given: "BoolExpr with value true"
+    when: "inferring"
+    then: "returns Bool type"
+
+  - name: "infer variable"
+    description: "Variable lookup returns bound type"
+    given: "VarExpr with name 'x' in env {x: Int}"
+    when: "inferring"
+    then: "returns Int type"
+
+  - name: "infer let binding"
+    description: "Let binding extends environment"
+    given: "LetExpr binding x = 5 in body x + 1"
+    when: "inferring"
+    then: "returns Int type with x in env"
+
+  - name: "infer function"
+    description: "Function expression infers arrow type"
+    given: "FnExpr params [x] body x + 1"
+    when: "inferring"
+    then: "returns Int -> Int type"
+
+  - name: "infer function call"
+    description: "Function call unifies argument types"
+    given: "FnCallExpr (fn x -> x + 1) [5]"
+    when: "inferring"
+    then: "returns Int type"
+
+  - name: "check bank safety same bank"
+    description: "Same bank operations are safe"
+    given: "Bank.A and Bank.A"
+    when: "checking bank safety"
+    then: "succeeds"
+
+  - name: "check bank safety cross bank"
+    description: "Cross-bank operations fail"
+    given: "Bank.A and Bank.B"
+    when: "checking bank safety"
+    then: "returns BankViolation error"
+
+  - name: "check linear consumed once"
+    description: "Linear value consumed exactly once"
+    given: "Linear variable used once"
+    when: "checking linear usage"
+    then: "succeeds"
+
+  - name: "check linear not consumed"
+    description: "Linear value must be consumed"
+    given: "Linear variable never used"
+    when: "checking linear usage"
+    then: "returns LinearMisuse error"
+
+# ═══════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════
+
+# Hindley-Milner type inference (W algorithm):
+# - Traverses expression tree, accumulating substitutions
+# - Generates fresh type variables for unknown types
+# - Unifies types at application sites
+# - Generalizes type schemes at let-bindings
+# - Instantiates polymorphic functions at use sites
+#
+# Linear types:
+# - Track variable usage (must consume exactly once)
+# - Consumed variables marked in tracker
+# - Error if variable not consumed or consumed twice
+#
+# Bank safety:
+# - TRI-27 has 3 banks (A, B, C)
+# - Operations cannot mix values from different banks
+# - Type annotations carry bank information
+#
+# Effect typing:
+# - Perform/Handle for algebraic effects
+# - Try for Result type propagation
+# - Typechecker tracks effect sets

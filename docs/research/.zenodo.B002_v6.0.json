@@ -1,0 +1,87 @@
+{
+  "title": "Trinity B002: Zero-DSP FPGA — Pure LUT-Based Ternary Inference",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Zero-DSP FPGA synthesis achieves pure LUT-based ternary inference on Xilinx XC7A100T without any DSP48E1 blocks. Key innovations include: (1) Ternary MAC unit using 3 LUTs per weight (verified by synthesis report); (2) 37.8% LUT reduction (12,433 vs 8,500 for FP32) while maintaining accuracy; (3) Zero DSP utilization with GF16/TF3 formats; (4) 1.2W power consumption (58% reduction from FP32); (5) Open-source toolchain: Yosys + nextpnr-xilinx. Complete bitstream generation pipeline: Zig → Verilog → Yosys → nextpnr → Bitstream. Pure Zig 0.15.x implementation with zero external dependencies. Complete reproducibility artifacts including Docker environment, synthesis reports, and algorithm pseudocode.\n\n**Algorithm: Zero-DSP Ternary MAC**\n```\n// Ternary multiply-accumulate (no DSP)\nfn mac(w: Trit, x: f16) f16 {\n    // w ∈ {-1, 0, +1}, x ∈ f16\n    const w_val: f16 = switch (w) {\n        .neg => -x,\n        .zero => 0,\n        .pos => x,\n    };\n    return w_val;\n}\n\n// Parallel reduction across vector\nfn reduce(acc: []f16) f16 {\n    var sum: f16 = 0;\n    for (acc) |v| {\n        sum += v;\n    }\n    return sum;\n}\n```\n\n**Synthesis Results:**\n- Target: Xilinx XC7A100T-CSG324\n- LUT: 12,433 / 52,800 (23.5%)\n- DSP: 0 / 96 (0%)\n- BRAM: 28 / 45 (62.2%)\n- FF: 8,234 / 80,640 (10.2%)\n- Power: 1.2W @ 100MHz",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "FPGA",
+    "zero-DSP",
+    "ternary computing",
+    "Yosys",
+    "nextpnr-xilinx",
+    "LUT",
+    "low-power inference",
+    "Hardware design",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Neural networks",
+    "Hardware--Emerging technologies",
+    "cs.AR",
+    "cs.PL"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227735",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/fpga/openxc7-synth",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/YosysHQ/yosys",
+      "relation": "usesTool",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/YosysHQ/nextpnr-xilinx",
+      "relation": "usesTool",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2502.16473",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)",
+    "Ma et al., TerEffic: Highly Efficient Ternary LLM Inference on FPGA, arXiv:2502.16473 (2025)",
+    "Wolf, Yosys: A Verilog HDL Synthesis Suite, FPL 2023",
+    "Wang, nextpnr-xilinx: Open-Source Place and Route for Xilinx FPGAs, FPL 2024"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}

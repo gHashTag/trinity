@@ -1,0 +1,90 @@
+# ═══════════════════════════════════════════════════════════════════
+# ADT ENUM — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# ADT (Algebraic Data Type) Enum for Tri Language
+# Source of truth for tri-lang/adt_enum.zig codegen
+# Issue #408: ADT Enum + Exhaustive Match
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_adt_enum
+version: "0.1.0"
+module: tri_lang.adt_enum
+description: "ADT Enum with exhaustive match checking (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Variant:
+    description: "Variant definition - describes one variant of an ADT"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Variant name"
+      - name: payload_type_names
+        type: "[][]const u8"
+        description: "Payload type names (empty for unit variants)"
+
+  ADT:
+    description: "ADT definition - describes an algebraic data type"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Type name"
+      - name: variants
+        type: "[]const Variant"
+        description: "All variants of this ADT"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  parseADT:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: source
+        type: "[]const u8"
+    returns: "ADT"
+    description: "Parse ADT type definition from syntax: type T = A(x) | B | C(y,z)"
+    errors:
+      - MissingClosingParen
+      - InvalidSyntax
+
+  isExhaustive:
+    params:
+      - name: adt
+        type: "ADT"
+      - name: covered_variants
+        type: "[][]const u8"
+    returns: "bool"
+    description: "Check if a match statement is exhaustive for an ADT"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "parse simple ADT"
+    given: "source 'type Option = Some(x) | None'"
+    when: "parsing"
+    then: "returns ADT with Some and None variants"
+
+  - name: "isExhaustive returns true when all variants covered"
+    given: "Option ADT with Some/None"
+    when: "checking coverage of both"
+    then: "returns true"
+
+  - name: "isExhaustive returns false when variant missing"
+    given: "Option ADT with Some/None"
+    when: "checking coverage of only Some"
+    then: "returns false"
+
+  - name: "isExhaustive returns false when extra variant present"
+    given: "Option ADT with Some/None"
+    when: "checking coverage with invalid variant"
+    then: "returns false"

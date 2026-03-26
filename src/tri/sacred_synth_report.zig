@@ -10,6 +10,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+// TODO: Add tri_colors module to this binary's build.zig imports
 const colors = @import("tri_colors.zig");
 const GOLD = colors.GOLDEN;
 const CYAN = colors.CYAN;

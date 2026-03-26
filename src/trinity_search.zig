@@ -12,10 +12,10 @@
 // Results are sorted by similarity (highest first).
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
-const hybrid = @import("hybrid.zig");
+const vsa = @import("vsa");
+const hybrid_mod = @import("hybrid");
 
-const HybridBigInt = hybrid.HybridBigInt;
+const HybridBigInt = hybrid_mod.HybridBigInt;
 
 const MAX_RESULTS = 100;
 const MAX_LINES = 10000;

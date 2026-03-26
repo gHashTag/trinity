@@ -1,0 +1,153 @@
+{
+  "canonical": {
+    "src/temple/sacred_math.zig": {
+      "sealed": true,
+      "prod_critical": true,
+      "description": "Sacred math: φ, GF16/TF3, trit/try/tetword arithmetic",
+      "loc": 300,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-SACRED-MATH-V1",
+      "issue": "418"
+    },
+    "src/temple/tri27_core.zig": {
+      "sealed": true,
+      "prod_critical": true,
+      "description": "TRI-27 ISA, Memory, Opcodes, .t27 format",
+      "loc": 200,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TRI27-CORE-V1",
+      "issue": "418"
+    },
+    "src/temple/tri_lang_core.zig": {
+      "sealed": true,
+      "prod_critical": true,
+      "description": "Result type, pattern matching, linear types, Effects + Handlers",
+      "loc": 400,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TRI-LANG-CORE-V1",
+      "issue": "418"
+    },
+    "src/temple/tests.zig": {
+      "sealed": true,
+      "prod_critical": true,
+      "description": "Self-contained TTT unit tests (zero dependencies)",
+      "loc": 500,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TESTS-V1",
+      "issue": "418"
+    },
+    "src/tri-lang/types.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Type representation (HM Type union, TypeVar, ftv)",
+      "loc": 233,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TYPES-V2",
+      "issue": "418"
+    },
+    "src/tri-lang/type_env.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Type environment for HM type inference (Scheme, Poly, Subst)",
+      "loc": 418,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TYPEENV-V1",
+      "issue": "418"
+    },
+    "src/tri-lang/unify.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Hindley-Milner unification algorithm (occurs check, Subst)",
+      "loc": 447,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-UNIFY-V1",
+      "issue": "418"
+    },
+    "src/tri-lang/typechecker.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Expression and function typing with HM inference",
+      "loc": 500,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-TYPECHECKER-V1",
+      "issue": "418"
+    },
+    "src/tri-lang/pipeline.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "End-to-end compilation pipeline (tri → parse → typecheck → emit_t27 → .t27)",
+      "loc": 200,
+      "last_verified": "2026-03-25",
+      "sha256": "TTT-PIPELINE-V1",
+      "issue": "418"
+    },
+    "src/vibeec/emit_t27.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "TRI-27 code generator (VIBEE IR → .t27 bytecode)",
+      "loc": 680,
+      "last_verified": "2026-03-25",
+      "sha256": "EMIT-T27-V1",
+      "issue": "418"
+    },
+    "src/vibeec/emit_t27_golden.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Golden tests for emit_t27 (IR → bytecode validation)",
+      "loc": 200,
+      "last_verified": "2026-03-25",
+      "sha256": "EMIT-T27-GOLDEN-V1",
+      "issue": "418"
+    },
+    "src/vibeec/emit_t27_from_ir_test.zig": {
+      "sealed": false,
+      "prod_critical": true,
+      "sacred": true,
+      "description": "Minimal IR → TRI-27 converter tests (15/15 passing)",
+      "loc": 220,
+      "last_verified": "2026-03-25",
+      "sha256": "EMIT-T27-IR-TEST-V1",
+      "issue": "418"
+    }
+  },
+  "version": "2.0.0",
+  "temple_seal": {
+    "enabled": true,
+    "baseline_commit": "6444e8bab7",
+    "baseline_issue": "418",
+    "baseline_date": "2026-03-25",
+    "description": "TTT (Trusted Tri Temple) Seal protects sacred L0 layer",
+    "enforcement": {
+      "pre_commit_hook": true,
+      "build_gate": "zig build test",
+      "cli_command": "tri ttt-seal check"
+    },
+    "ritual": {
+      "required_marker": "TTT-UNSEAL:",
+      "seal_marker": "TTT-SEAL:",
+      "approval": "queen"
+    },
+    "wave2_baseline": {
+      "status": "sealed",
+      "tests_passing": "43/43",
+      "build_status": "179/181 steps",
+      "files": [
+        "src/tri-lang/types.zig",
+        "src/tri-lang/type_env.zig",
+        "src/tri-lang/unify.zig",
+        "src/tri-lang/typechecker.zig",
+        "src/tri-lang/pipeline.zig",
+        "src/vibeec/emit_t27.zig",
+        "src/vibeec/emit_t27_golden.zig",
+        "src/vibeec/emit_t27_from_ir_test.zig"
+      ]
+    }
+  }
+}

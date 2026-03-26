@@ -15,7 +15,7 @@
 // =============================================================================
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 const sacred_formula = @import("math/formula.zig");
 
 // Sacred constants

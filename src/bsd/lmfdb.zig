@@ -503,7 +503,7 @@ fn cloneEntry(allocator: std.mem.Allocator, entry: *const LMFDBEntry) !LMFDBEntr
 
 /// Sort entries by conductor
 fn sortEntries(entries: []LMFDBEntry) void {
-    std.sort.sort(LMFDBEntry, entries, {}, struct {
+    std.sort.insertion(LMFDBEntry, entries, {}, struct {
         fn lessThan(_: void, a: LMFDBEntry, b: LMFDBEntry) bool {
             return a.label.conductor < b.label.conductor;
         }

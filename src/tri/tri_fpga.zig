@@ -1819,6 +1819,411 @@ fn printPowerUsage() !void {
     , .{ CYAN, RESET });
 }
 
+// =========================================================================
+// UART BUILD — Build uart_bridge_j2.bit for J2 header (FT232RL)
+// =========================================================================
+
+pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA BUILD UART (J2) ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Source: fpga/openxc7-synth/uart_bridge_v2.v\n", .{});
+    std.debug.print("  Constraints: fpga/constraints/uart_bridge_j2.xdc\n", .{});
+    std.debug.print("  Output: fpga/openxc7-synth/uart_bridge_j2.bit\n", .{});
+    std.debug.print("\n  Synthesizing...\n", .{});
+
+    // Build yosys command
+    var yosys_cmd: [1024]u8 = undefined;
+    var pos: usize = 0;
+
+    const read_verilog = "read_verilog fpga/openxc7-synth/uart_bridge_v2.v; ";
+    @memcpy(yosys_cmd[pos..][0..read_verilog.len], read_verilog);
+    pos += read_verilog.len;
+
+    const synth = "synth_xilinx -flatten -abc9 -family xc7 -top uart_bridge_v2; delete t:$scopeinfo; write_json fpga/openxc7-synth/uart_bridge_j2.json";
+    @memcpy(yosys_cmd[pos..][0..synth.len], synth);
+    pos += synth.len;
+
+    // Run yosys
+    var yosys_child = std.process.Child.init(
+        &[_][]const u8{ YOSYS, "-p", yosys_cmd[0..pos] },
+        allocator,
+    );
+    yosys_child.stdout_behavior = .Inherit;
+    yosys_child.stderr_behavior = .Inherit;
+    yosys_child.spawn() catch |err| {
+        std.debug.print(" {s}FAIL{s} (yosys: {s})\n", .{ RED, RESET, @errorName(err) });
+        return error.YosysFailed;
+    };
+    const yosys_term = yosys_child.wait() catch {
+        std.debug.print(" {s}FAIL{s} (yosys wait)\n", .{ RED, RESET });
+        return error.YosysFailed;
+    };
+
+    if (yosys_term.Exited != 0) {
+        std.debug.print(" {s}FAIL{s} (yosys exit {d})\n", .{ RED, RESET, yosys_term.Exited });
+        return error.YosysFailed;
+    }
+    std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+
+    // Run nextpnr-xilinx
+    std.debug.print("  P&R...\n", .{});
+    var nextpnr_child = std.process.Child.init(
+        &[_][]const u8{
+            NEXTPNR,
+            "--chipdb",
+            CHIPDB,
+            "--xdc",
+            "fpga/constraints/uart_bridge_j2.xdc",
+            "--json",
+            "fpga/openxc7-synth/uart_bridge_j2.json",
+            "--fasm",
+            "fpga/openxc7-synth/uart_bridge_j2.fasm",
+            "--seed",
+            "1",
+        },
+        allocator,
+    );
+    nextpnr_child.stdout_behavior = .Inherit;
+    nextpnr_child.stderr_behavior = .Inherit;
+    nextpnr_child.spawn() catch |err| {
+        std.debug.print(" {s}FAIL{s} (nextpnr: {s})\n", .{ RED, RESET, @errorName(err) });
+        return error.NextpnrFailed;
+    };
+    const nextpnr_term = nextpnr_child.wait() catch {
+        std.debug.print(" {s}FAIL{s} (nextpnr wait)\n", .{ RED, RESET });
+        return error.NextpnrFailed;
+    };
+
+    if (nextpnr_term.Exited != 0) {
+        std.debug.print(" {s}FAIL{s} (nextpnr exit {d})\n", .{ RED, RESET, nextpnr_term.Exited });
+        return error.NextpnrFailed;
+    }
+    std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+
+    // Run fasm2frames
+    std.debug.print("  FASM to frames...\n", .{});
+    var fasm_child = std.process.Child.init(
+        &[_][]const u8{
+            "python3",
+            FASM2FRAMES,
+            "--db-root",
+            PRJXRAY_DB,
+            "--part",
+            "xc7a100tfgg676-1",
+            "--sparse",
+            "fpga/openxc7-synth/uart_bridge_j2.fasm",
+            "fpga/openxc7-synth/uart_bridge_j2.frames",
+        },
+        allocator,
+    );
+    fasm_child.stdout_behavior = .Inherit;
+    fasm_child.stderr_behavior = .Inherit;
+    fasm_child.spawn() catch |err| {
+        std.debug.print(" {s}FAIL{s} (fasm2frames: {s})\n", .{ RED, RESET, @errorName(err) });
+        return error.Fasm2FramesFailed;
+    };
+    const fasm_term = fasm_child.wait() catch {
+        std.debug.print(" {s}FAIL{s} (fasm2frames wait)\n", .{ RED, RESET });
+        return error.Fasm2FramesFailed;
+    };
+
+    if (fasm_term.Exited != 0) {
+        std.debug.print(" {s}FAIL{s} (fasm2frames exit {d})\n", .{ RED, RESET, fasm_term.Exited });
+        return error.Fasm2FramesFailed;
+    }
+    std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+
+    // Run xc7frames2bit
+    std.debug.print("  Frames to bitstream...\n", .{});
+    var bit_child = std.process.Child.init(
+        &[_][]const u8{
+            XC7FRAMES2BIT,
+            "--part_file",
+            PRJXRAY_DB ++ "/xc7a100tfgg676-1/part.yaml",
+            "--part_name",
+            "xc7a100tfgg676-1",
+            "--frm_file",
+            "fpga/openxc7-synth/uart_bridge_j2.frames",
+            "--output_file",
+            "fpga/openxc7-synth/uart_bridge_j2.bit",
+        },
+        allocator,
+    );
+    bit_child.stdout_behavior = .Inherit;
+    bit_child.stderr_behavior = .Inherit;
+    bit_child.spawn() catch |err| {
+        std.debug.print(" {s}FAIL{s} (xc7frames2bit: {s})\n", .{ RED, RESET, @errorName(err) });
+        return error.Frames2BitFailed;
+    };
+    const bit_term = bit_child.wait() catch {
+        std.debug.print(" {s}FAIL{s} (xc7frames2bit wait)\n", .{ RED, RESET });
+        return error.Frames2BitFailed;
+    };
+
+    if (bit_term.Exited != 0) {
+        std.debug.print(" {s}FAIL{s} (xc7frames2bit exit {d})\n", .{ RED, RESET, bit_term.Exited });
+        return error.Frames2BitFailed;
+    }
+
+    std.debug.print("\n{s}{s}BUILD COMPLETE{s}\n", .{ BOLD, GREEN, RESET });
+    std.debug.print("  Bitstream: fpga/openxc7-synth/uart_bridge_j2.bit\n", .{});
+    std.debug.print("  Next: tri fpga flash-uart\n\n", .{});
+}
+
+// =========================================================================
+// UART FLASH — Flash uart_bridge_j2.bit via flash_no_sudo.sh
+// =========================================================================
+
+pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator) !void {
+    const bit_path = "fpga/openxc7-synth/uart_bridge_j2.bit";
+
+    std.fs.cwd().access(bit_path, .{}) catch {
+        std.debug.print("{s}Error:{s} Bitstream not found: {s}\n", .{ RED, RESET, bit_path });
+        std.debug.print("  Run: tri fpga build-uart\n\n", .{});
+        return error.FileNotFound;
+    };
+
+    std.debug.print("\n{s}{s}=== TRI FPGA FLASH UART (J2) ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Bitstream: {s}\n", .{bit_path});
+    std.debug.print("\n  Programming via flash_no_sudo.sh...\n", .{});
+
+    var child = std.process.Child.init(
+        &[_][]const u8{ "fpga/tools/flash_no_sudo.sh", bit_path },
+        allocator,
+    );
+    child.stdout_behavior = .Inherit;
+    child.stderr_behavior = .Inherit;
+    child.spawn() catch |err| {
+        std.debug.print(" {s}FAIL{s} (spawn: {s})\n", .{ RED, RESET, @errorName(err) });
+        return error.FlashFailed;
+    };
+    const term = child.wait() catch {
+        std.debug.print(" {s}FAIL{s} (wait)\n", .{ RED, RESET });
+        return error.FlashFailed;
+    };
+
+    if (term.Exited != 0) {
+        std.debug.print("\n{s}FLASH FAILED{s} (exit code {d})\n", .{ RED, RESET, term.Exited });
+        return error.FlashFailed;
+    }
+
+    std.debug.print("\n{s}{s}FLASH COMPLETE{s}\n", .{ BOLD, GREEN, RESET });
+    std.debug.print("  Next: tri fpga uart-test\n\n", .{});
+}
+
+// =========================================================================
+// UART TEST — Test PING/ECHO/byte via UART
+// =========================================================================
+
+pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA UART TEST ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Protocol: PING/PONG + ECHO + BYTE\n", .{});
+    std.debug.print("  Wiring: J2 header (D26=TX, E26=RX)\n", .{});
+    std.debug.print("    FT232RL RXD (green)  → J2 pin 5  → FPGA D26 (uart_tx)\n", .{});
+    std.debug.print("    FT232RL TXD (white)  → J2 pin 6  → FPGA E26 (uart_rx)\n\n", .{});
+
+    const dev_path = blk: {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| break :blk f;
+        std.debug.print("  {s}No serial device found{s}\n", .{ RED, RESET });
+        std.debug.print("  Connect FT232RL to J2 header\n", .{});
+        return;
+    };
+    defer allocator.free(dev_path);
+
+    std.debug.print("  Device: {s}\n", .{dev_path});
+
+    var port = SerialPort.open(dev_path) catch |err| {
+        std.debug.print(" {s}FAIL{s} (open: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+    defer port.close();
+
+    // Test 1: PING/PONG
+    std.debug.print("\n  [1/3] PING test...", .{});
+    const ping_bytes = [_]u8{0x03};
+    _ = port.writeBytes(&ping_bytes) catch |err| {
+        std.debug.print(" {s}FAIL{s} (write: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    var resp: [64]u8 = undefined;
+    const n = port.readBytes(&resp) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    if (n > 0 and resp[0] == 0x83) {
+        std.debug.print(" {s}PONG{s} [0x83] {s}✓{s}\n", .{ GREEN, RESET, GREEN, RESET });
+    } else if (n > 0) {
+        std.debug.print(" {s}EMPTY{s} (got {d} byte(s): ", .{ YELLOW, RESET, n });
+        for (resp[0..n]) |b| std.debug.print("{X:0>2} ", .{b});
+        std.debug.print(" — check wiring or reflash\n", .{});
+        return;
+    } else {
+        std.debug.print(" {s}TIMEOUT{s} (no response)\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Test 2: ECHO "Hello"
+    std.debug.print("\n  [2/3] ECHO test...", .{});
+    const hello = "Hello";
+    _ = port.writeBytes(hello) catch |err| {
+        std.debug.print(" {s}FAIL{s} (write: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    const n2 = port.readBytes(&resp) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    if (n2 > 0 and std.mem.eql(u8, resp[0..n2], hello)) {
+        std.debug.print(" {s}ECHO{s} '{s}' {s}✓{s}\n", .{ GREEN, RESET, hello, GREEN, RESET });
+    } else if (n2 > 0) {
+        std.debug.print(" {s}EMPTY{s} (got {d} bytes: ", .{ YELLOW, RESET, n2 });
+        for (resp[0..n2]) |b| {
+            if (b >= 0x20 and b < 0x7f) std.debug.print("{c}", .{b}) else std.debug.print(".", .{});
+        }
+        std.debug.print("\n", .{});
+        return;
+    } else {
+        std.debug.print(" {s}TIMEOUT{s} (no response)\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Test 3: BYTE 0x61
+    std.debug.print("\n  [3/3] BYTE test...", .{});
+    const byte_test = [_]u8{0x61};
+    _ = port.writeBytes(&byte_test) catch |err| {
+        std.debug.print(" {s}FAIL{s} (write: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    const n3 = port.readBytes(&resp) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read: {s})\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+
+    if (n3 > 0 and resp[0] == 0x61) {
+        std.debug.print(" {s}BYTE{s} 0x61 {s}✓{s}\n", .{ GREEN, RESET, GREEN, RESET });
+    } else if (n3 > 0) {
+        std.debug.print(" {s}EMPTY{s} (got {d} bytes: ", .{ YELLOW, RESET, n3 });
+        for (resp[0..n3]) |b| std.debug.print("{X:0>2} ", .{b});
+        std.debug.print("\n", .{});
+        return;
+    } else {
+        std.debug.print(" {s}TIMEOUT{s} (no response)\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    std.debug.print("\n{s}{s}ALL TESTS PASS{s}\n", .{ BOLD, GREEN, RESET });
+    std.debug.print("  FPGA is working correctly on J2 header!\n\n", .{});
+}
+
+// =========================================================================
+// REMOTE SYNTH — Synthesize via Fly.io API (D26/E26)
+// =========================================================================
+
+const FLY_SYNTH_URL = "https://trinity-fpga-synth.fly.dev";
+
+pub fn runFpgaSynthRemoteCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA REMOTE SYNTH (Fly.io) ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Target: {s}/synthesize\n", .{FLY_SYNTH_URL});
+    std.debug.print("  Part: XC7A100T-1FGG676C (Artix-7)\n", .{});
+    std.debug.print("  Pins: D26/E26 (J2 UART)\n\n", .{});
+
+    // Read Verilog
+    const rtl_path = "fpga/rtl/uart_bridge_j2.v";
+    const verilog = std.fs.cwd().readFileAlloc(allocator, rtl_path, .{}) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read {s}: {s})\n", .{ RED, RESET, rtl_path, @errorName(err) });
+        return err;
+    };
+    defer allocator.free(verilog);
+
+    // Read XDC
+    const xdc_path = "fpga/constraints/uart_bridge_j2.xdc";
+    const xdc = std.fs.cwd().readFileAlloc(allocator, xdc_path, .{}) catch |err| {
+        std.debug.print(" {s}FAIL{s} (read {s}: {s})\n", .{ RED, RESET, xdc_path, @errorName(err) });
+        return err;
+    };
+    defer allocator.free(xdc);
+
+    std.debug.print("  Verilog: {d} bytes\n", .{verilog.len});
+    std.debug.print("  XDC: {d} bytes\n", .{xdc.len});
+
+    // Build JSON request
+    const json_req = try std.fmt.allocPrint(allocator,
+        \\{{"verilog":"{s}","xdc":"{s}","top":"uart_bridge_top"}}
+    , .{ std.zig.fmtEscapes(verilog), std.zig.fmtEscapes(xdc) });
+
+    // Send to Fly.io
+    std.debug.print("\n  Sending to {s}/synthesize...\n", .{FLY_SYNTH_URL});
+
+    var client = std.http.Client{ .allocator = allocator };
+    const headers = [_]std.http.Header{
+        .{ .name = "Content-Type", .value = "application/json" },
+    };
+
+    var req = try client.request(.POST, try std.Uri.parse(FLY_SYNTH_URL ++ "/synthesize"), .{
+        .headers = &headers,
+    });
+    defer req.deinit();
+
+    // Send request body
+    try req.sendBody(json_req);
+
+    // Wait for response headers
+    try req.receiveHead();
+
+    // Read response body
+    const body = try req.reader().readAll(allocator, 1024 * 1024);
+    defer allocator.free(body);
+
+    std.debug.print("  Response: {d} bytes\n", .{body.len});
+    std.debug.print("{s}\n", .{body});
+
+    std.debug.print("\n{s}{s}REM SYNTH COMPLETE{s}\n", .{ BOLD, GREEN, RESET });
+    std.debug.print("  Next: tri fpga download-uart-bit\n\n", .{});
+}
+
+// =========================================================================
+// DOWNLOAD UART BIT — Download bitstream from Fly.io
+// =========================================================================
+
+pub fn runFpgaDownloadUartBitCommand(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA DOWNLOAD UART BIT ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Source: {s}/download\n", .{FLY_SYNTH_URL});
+    std.debug.print("  Output: fpga/openxc7-synth/uart_bridge_j2.bit\n\n", .{});
+
+    // Check Fly.io API for latest job status
+    std.debug.print("  Checking job status...\n", .{});
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    const uri = try std.Uri.parse(FLY_SYNTH_URL ++ "/");
+
+    var req = try client.request(.GET, uri, .{});
+    defer req.deinit();
+
+    var buf: [0]u8 = .{};
+    var response = try req.receiveHead(&buf);
+
+    var transfer_buffer: [4096]u8 = undefined;
+    var reader = response.reader(&transfer_buffer);
+    const body = try reader.allocRemaining(allocator, std.Io.Limit.limited(4096));
+    defer allocator.free(body);
+
+    std.debug.print("  Status: {s}\n", .{body});
+
+    // For now, assume the API returns a download URL or job ID
+    // In production, parse JSON and extract download URL
+
+    std.debug.print("\n  Note: Full download endpoint pending API implementation\n", .{});
+    std.debug.print("  For now, copy bitstream manually from Fly.io:\n", .{});
+    std.debug.print("    flyctl ssh -C \"cat /app/output/uart_bridge_j2.bit\" > uart_bridge_j2.bit\n\n", .{});
+}
+
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
 

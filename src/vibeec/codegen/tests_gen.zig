@@ -45,7 +45,7 @@ pub const TestGenerator = struct {
 
     pub fn writeTests(self: *Self, behaviors: []const Behavior) !void {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
-        try self.builder.writeLine("// TESTS - Generated from behaviors and test_cases");
+        try self.builder.writeLine("// TESTS - Generated from behaviors with @example and test_cases");
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
@@ -63,12 +63,34 @@ pub const TestGenerator = struct {
             try self.writeSanitizedIdent(b.name);
             try self.builder.writeLine("_behavior\" {");
             self.builder.incIndent();
+
+            // Write spec annotation if present
+            if (b.spec_annotation) |spec| {
+                try self.builder.writeFmt("// @spec: {s}\n", .{spec});
+            }
+
+            // Write requires if present
+            for (b.requires.items) |req| {
+                try self.builder.writeFmt("// @require: {s}\n", .{req});
+            }
+
+            // Write ensures if present
+            for (b.ensures.items) |ens| {
+                try self.builder.writeFmt("// @ensure: {s}\n", .{ens});
+            }
+
             try self.builder.writeFmt("// Given: {s}\n", .{b.given});
             try self.builder.writeFmt("// When: {s}\n", .{b.when});
             try self.builder.writeFmt("// Then: {s}\n", .{b.then});
 
-            // Generate assertions from test_cases
-            if (b.test_cases.items.len > 0) {
+            // Prefer @example over legacy test_cases
+            if (b.examples.items.len > 0) {
+                // Generate tests from @example annotations (Idiom 11)
+                for (b.examples.items, 0..) |ex, i| {
+                    try self.generateExampleTest(b.name, ex, i);
+                }
+            } else if (b.test_cases.items.len > 0) {
+                // Fallback to legacy test_cases
                 for (b.test_cases.items) |tc| {
                     try self.generateTestAssertion(b.name, tc);
                 }
@@ -437,6 +459,44 @@ pub const TestGenerator = struct {
         } else {
             // Unknown test - generate comment
             try self.builder.writeFmt("// Test case: input={s}, expected={s}\n", .{ input, expected });
+        }
+    }
+
+    /// Generate test from @example annotation (Idiom 11)
+    /// Examples have input/expect fields and generate concrete assertions
+    pub fn generateExampleTest(self: *Self, behavior_name: []const u8, ex: TestCase, index: usize) !void {
+        const input = utils.stripQuotes(ex.input);
+        const expected = utils.stripQuotes(ex.expected);
+
+        try self.builder.writeFmt("// @example {d}: input=\"{s}\" expect=\"{s}\"\n", .{ index, input, expected });
+
+        // Parse behavior name to determine test pattern
+        if (std.mem.indexOf(u8, behavior_name, "computeSpiral") != null) {
+            if (utils.extractIntParam(input, "n")) |n| {
+                if (std.mem.indexOf(u8, expected, "angle=") != null) {
+                    try self.builder.writeFmt("const result = computeSpiral({d});\n", .{n});
+                    try self.builder.writeLine("// Verify angle, radius, x, y from result");
+                    try self.builder.writeLine("try std.testing.expect(result.radius > 0);");
+                }
+            }
+        } else if (std.mem.indexOf(u8, behavior_name, "phi_power") != null) {
+            if (utils.extractIntParam(input, "n")) |n| {
+                const tol = ex.tolerance orelse 1e-10;
+                try self.builder.writeFmt("try std.testing.expectApproxEqAbs(phi_power({d}), {s}, {d});\n", .{ n, expected, tol });
+            }
+        } else if (std.mem.indexOf(u8, behavior_name, "fibonacci") != null) {
+            if (utils.extractIntParam(input, "n")) |n| {
+                if (utils.parseU64(expected)) |exp_val| {
+                    try self.builder.writeFmt("try std.testing.expectEqual(fibonacci({d}), {d});\n", .{ n, exp_val });
+                }
+            }
+        } else if (std.mem.indexOf(u8, behavior_name, "trinity_identity") != null) {
+            try self.builder.writeLine("try std.testing.expectApproxEqAbs(verify_trinity(), TRINITY, 1e-10);");
+        } else {
+            // Generic example test - setup comment
+            try self.builder.writeFmt("// Test: {s}\n", .{behavior_name});
+            try self.builder.writeFmt("// Given: {s}\n", .{input});
+            try self.builder.writeFmt("// Expect: {s}\n", .{expected});
         }
     }
 

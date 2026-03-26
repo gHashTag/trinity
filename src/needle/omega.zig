@@ -9,11 +9,11 @@
 
 const std = @import("std");
 const graph = @import("graph.zig");
-const vsa = @import("vsa.zig");
+const needle_vsa = @import("vsa.zig");
 const safe_cross = @import("safe_cross.zig");
 
 const CallGraph = graph.CallGraph;
-const SemanticIndex = vsa.SemanticIndex;
+const SemanticIndex = needle_vsa.SemanticIndex;
 const SafeVSARule = safe_cross.SafeVSARule;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -307,7 +307,7 @@ pub const OmegaAgent = struct {
             var iter = seen.iterator();
             var has_duplicate = false;
             while (iter.next()) |_| {
-                const similarity = vsa.cosineSimilarity(
+                const similarity = needle_vsa.cosineSimilarityVSA(
                     &[_]f32{0.5}, // Placeholder embeddings
                     &[_]f32{0.5},
                 ) catch 0.0;

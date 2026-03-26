@@ -15,7 +15,7 @@ const std = @import("std");
 const CommandRegistry = @import("tri_command_registry.zig").CommandRegistry;
 const CommandCategory = @import("tri_command_registry.zig").CommandCategory;
 const HelpSystem = @import("tri_help.zig").HelpSystem;
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 /// Run help command with registry
 /// Supports:

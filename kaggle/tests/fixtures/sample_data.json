@@ -1,0 +1,94 @@
+{
+  "sample_items": [
+    {
+      "id": "sample_001",
+      "track": "tmp",
+      "task": "confidence_calibration",
+      "question": "What is the capital of Uzbekistan?",
+      "ground_truth": "Tashkent",
+      "ground_truth_confidence": 0.95,
+      "difficulty": 3.0,
+      "brain_zone": "ofc",
+      "neural_analog": "OFC value judgment"
+    },
+    {
+      "id": "sample_002",
+      "track": "tmp",
+      "task": "error_detection",
+      "question": "I previously stated Paris is the capital of Australia. Is this correct?",
+      "ground_truth": "No, Canberra is the capital of Australia.",
+      "ground_truth_confidence": 0.9,
+      "difficulty": 5.0,
+      "brain_zone": "acc",
+      "neural_analog": "ACC conflict detection"
+    },
+    {
+      "id": "sample_003",
+      "track": "thlp",
+      "task": "few_shot_induction",
+      "question": "Learn the rule from these examples and apply to the test case.\n\nInput: 3 -> Output: odd\nInput: 7 -> Output: odd\nInput: 2 -> Output: even\n\nTest: 5",
+      "ground_truth": "odd",
+      "ground_truth_confidence": 0.98,
+      "difficulty": 3.0,
+      "brain_zone": "hippocampus",
+      "neural_analog": "Hippocampus pattern completion"
+    }
+  ],
+  "mock_api_responses": {
+    "openai": {
+      "model": "gpt-3.5-turbo",
+      "choices": [{
+        "message": {
+          "role": "assistant",
+          "content": "Answer: Tashkent\nConfidence: 0.95"
+        }
+      }],
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 10,
+        "total_tokens": 30
+      }
+    },
+    "anthropic": {
+      "id": "msg_123",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {"type": "text", "text": "Answer: Tashkent\nConfidence: 0.95"}
+      ],
+      "model": "claude-3-sonnet-20240229",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 20,
+        "output_tokens": 10
+      }
+    },
+    "local": {
+      "model": "llama2",
+      "created_at": "2024-01-01T00:00:00Z",
+      "response": "Answer: Tashkent\nConfidence: 0.95",
+      "done": true,
+      "context": [1, 2, 3],
+      "total_duration": 1500000000,
+      "load_duration": 500000000,
+      "prompt_eval_count": 10
+    }
+  },
+  "expected_scores": {
+    "correct_answer": {
+      "ternary": 1,
+      "raw": 1.0,
+      "calibration_error": 0.0
+    },
+    "wrong_answer": {
+      "ternary": -1,
+      "raw": 0.0,
+      "calibration_error": 0.0
+    },
+    "partial_answer": {
+      "ternary": 0,
+      "raw": 0.5,
+      "calibration_error": 0.2
+    }
+  }
+}

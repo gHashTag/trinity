@@ -1967,19 +1967,12 @@ struct ChatScreen: View {
 
     private var inputBarView: some View {
         HStack(spacing: ParietalSpacing.md) {
-            MultilineInput(
+            SimpleMultilineInput(
                 text: $input,
                 placeholder: placeholder,
-                isFocused: $focused,
-                onSubmit: { send() },
-                onImagePaste: { name, path in
-                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
-                },
-                onMentionTrigger: { query in
-                    mentionQuery = query ?? ""
-                    showMentionPopup = query != nil
-                }
+                onSubmit: { send() }
             )
+            .frame(width: 600)  // FIXED: fixed width prevents layout jitter
             .layoutPriority(1)
 
             Button {
@@ -5056,8 +5049,10 @@ struct EmptyThreadView: View {
 }
 
 // MARK: - Multiline Input (Enter sends, Shift+Enter inserts newline)
+// ARCHIVED - Broken since Mar 23, 2025 - Kept for reference only
+// Use SimpleMultilineInput instead
 
-struct MultilineInput: NSViewRepresentable {
+struct MultilineInputLegacy: NSViewRepresentable {
     @Binding var text: String
     var placeholder: String
     var isFocused: FocusState<Bool>.Binding
@@ -5077,30 +5072,31 @@ struct MultilineInput: NSViewRepresentable {
         textView.font = NSFont.systemFont(ofSize: 15)
         textView.textColor = .white
         textView.backgroundColor = .clear
-        textView.drawsBackground = false
+        textView.drawsBackground = true  // FIXED: enable for hit testing
         // FIXED: enable vertical resizing for multiline input
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // FIXED: allow proper text container sizing
-        textView.textContainer?.containerSize = NSSize(width: 400, height: 1000)
+        // FIXED: container size - sufficient height for multiline text (~20 lines)
+        textView.textContainer?.containerSize = NSSize(width: 600, height: 1000)
         textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // FIXED: allow proper text expansion
-        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
+        // FIXED: constrain initial size, allow expansion via autoresizing
+        textView.setFrameSize(NSSize(width: 600, height: ParietalSpacing.inputBarHeight))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // FIXED: allow proper scrollview sizing
-        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
+        // FIXED: constrain initial size, allow expansion via autoresizing
+        scrollView.setFrameSize(NSSize(width: 600, height: ParietalSpacing.inputBarHeight))
+        scrollView.autohidesScrollers = true
 
         context.coordinator.textView = textView
 
@@ -5334,6 +5330,154 @@ struct MultilineInput: NSViewRepresentable {
             }
             placeholderLayer?.string = placeholder
             placeholderLayer?.frame = CGRect(x: 5, y: 0, width: textView.bounds.width - 10, height: ParietalSpacing.iconHeight)
+            placeholderLayer?.isHidden = !text.isEmpty
+        }
+    }
+}
+
+// MARK: - Simple Multiline Input (Pure SwiftUI replacement)
+
+struct SimpleMultilineInput: View {
+    @Binding var text: String
+    var placeholder: String
+    var onSubmit: () -> Void
+
+    @FocusState private var isFocused: Bool
+    @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend: Bool = false
+
+    var body: some View {
+        MultilineInputRepresentable(
+            text: $text,
+            placeholder: placeholder,
+            isFocused: $isFocused,
+            onSubmit: onSubmit,
+            useCtrlEnterToSend: useCtrlEnterToSend
+        )
+        .frame(height: 36)
+    }
+}
+
+// Minimal NSTextView wrapper that actually works
+struct MultilineInputRepresentable: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var isFocused: FocusState<Bool>.Binding
+    var onSubmit: () -> Void
+    var useCtrlEnterToSend: Bool
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let scrollView = NSScrollView()
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+
+        let textView = NSTextView()
+        textView.delegate = context.coordinator
+        textView.isRichText = false
+        textView.isEditable = true
+        textView.isSelectable = true
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.font = NSFont.systemFont(ofSize: 15)
+        textView.textColor = .white
+        textView.backgroundColor = .clear
+        textView.drawsBackground = true
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.lineFragmentPadding = 0
+        textView.textContainer?.containerSize = NSSize(width: 600, height: 1000)
+        textView.textContainer?.heightTracksTextView = true
+        textView.textContainer?.widthTracksTextView = true
+        // Add text insets for padding
+        textView.textContainerInset = NSSize(width: 4, height: 8)
+
+        scrollView.documentView = textView
+        context.coordinator.textView = textView
+
+        return scrollView
+    }
+
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+
+        if textView.string != text && !context.coordinator.isUserTyping {
+            textView.string = text
+        }
+
+        context.coordinator.text = text
+        context.coordinator.placeholder = placeholder
+        context.coordinator.onSubmit = onSubmit
+        context.coordinator.useCtrlEnterToSend = useCtrlEnterToSend
+        context.coordinator.updatePlaceholder()
+
+        if isFocused.wrappedValue && textView.window?.firstResponder != textView {
+            DispatchQueue.main.async {
+                textView.window?.makeFirstResponder(textView)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, placeholder: placeholder, onSubmit: onSubmit, useCtrlEnterToSend: useCtrlEnterToSend)
+    }
+
+    class Coordinator: NSObject, NSTextViewDelegate {
+        @Binding var text: String
+        var placeholder: String
+        var onSubmit: () -> Void
+        var useCtrlEnterToSend: Bool
+        weak var textView: NSTextView?
+        private var placeholderLayer: CATextLayer?
+        var isUserTyping = false
+
+        init(text: Binding<String>, placeholder: String, onSubmit: @escaping () -> Void, useCtrlEnterToSend: Bool) {
+            self._text = text
+            self.placeholder = placeholder
+            self.onSubmit = onSubmit
+            self.useCtrlEnterToSend = useCtrlEnterToSend
+        }
+
+        func textDidChange(_ notification: Notification) {
+            isUserTyping = true
+            text = textView?.string ?? ""
+            updatePlaceholder()
+        }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                if useCtrlEnterToSend {
+                    if NSEvent.modifierFlags.contains(.control) {
+                        onSubmit()
+                        return true
+                    }
+                } else {
+                    if !NSEvent.modifierFlags.contains(.shift) {
+                        if !text.isEmpty {
+                            onSubmit()
+                        }
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+
+        func updatePlaceholder() {
+            guard let textView = textView else { return }
+            if placeholderLayer == nil {
+                let layer = CATextLayer()
+                layer.font = NSFont.systemFont(ofSize: 15)
+                layer.fontSize = 15
+                layer.foregroundColor = NSColor.white.withAlphaComponent(0.4).cgColor
+                layer.contentsScale = NSScreen.main?.backingScaleFactor ?? 2.0
+                textView.wantsLayer = true
+                textView.layer?.addSublayer(layer)
+                placeholderLayer = layer
+            }
+            placeholderLayer?.string = placeholder
+            placeholderLayer?.frame = CGRect(x: 0, y: 10, width: textView.bounds.width, height: 20)
             placeholderLayer?.isHidden = !text.isEmpty
         }
     }

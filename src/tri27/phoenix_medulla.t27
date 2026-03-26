@@ -1,0 +1,205 @@
+# Phoenix Medulla — Sleep Phase Detection
+# TRI-27 Reference Implementation for Paper 2: TRI-27 + Queen
+#
+# Detects sleep phase based on arousal levels and activity patterns.
+# Returns sleep_phase: 0=AWAKE, 1=LIGHT_SLEEP, 2=DEEP_SLEEP, 3=REM
+#
+# Mathematical foundation: φ² + 1/φ² = 3
+
+.const
+    # Sleep phase constants
+    PHASE_AWAKE = 0
+    PHASE_LIGHT = 1
+    PHASE_DEEP = 2
+    PHASE_REM = 3
+
+    # Arousal thresholds (Q16 fixed-point)
+    AROUSAL_HIGH = 52428    # 0.8 * 65536 (awake threshold)
+    AROUSAL_MID = 32768     # 0.5 * 65536 (light sleep threshold)
+    AROUSAL_LOW = 16384     # 0.25 * 65536 (deep sleep threshold)
+
+    # Activity thresholds (Q16)
+    ACTIVITY_HIGH = 45000   # High activity threshold
+    ACTIVITY_LOW = 10000    # Low activity threshold
+
+    # Memory addresses
+    MEM_AROUSAL = 0         # Current arousal level (Q16)
+    MEM_ACTIVITY = 4        # Current activity level (Q16)
+    MEM_PHASE_HISTORY = 8   # Array of 10 past phases
+    MEM_TIME_IN_PHASE = 18  # Time spent in current phase
+
+.data
+    # Initialize: arousal=0.9, activity=0.6, history all AWAKE
+    .word 58981 24576  # arousal=0.9, activity=0.6
+    .byte 0 0 0 0 0 0 0 0 0 0  # 10× AWAKE
+    .byte 0  # time_in_phase = 0
+
+.code
+    # Register usage:
+    # t0 = result phase
+    # t1 = arousal level
+    # t2 = activity level
+    # t3 = phase counter
+    # t4 = history sum
+    # t5 = dominant phase
+    # t6 = temporary
+    # t7 = temporary
+
+    # Load arousal and activity from memory
+    LDI t7, MEM_AROUSAL
+    LD t1, t7               # t1 = arousal
+    LDI t7, MEM_ACTIVITY
+    LD t2, t7               # t2 = activity
+
+    # ============================================
+    # Phase Detection Logic
+    # ============================================
+
+    # Check HIGH arousal first (AWAKE or REM)
+    LDI t6, AROUSAL_HIGH
+    JGE t1, t6, check_high_arousal
+
+    # Check MID arousal (LIGHT_SLEEP or DEEP)
+    LDI t6, AROUSAL_MID
+    JGE t1, t6, check_mid_arousal
+
+    # Low arousal = DEEP_SLEEP
+    LDI t0, PHASE_DEEP
+    JMP update_history
+
+check_high_arousal:
+    # High arousal: distinguish AWAKE vs REM by activity
+    LDI t6, ACTIVITY_HIGH
+    JGE t2, t6, set_awake
+
+    # High arousal but low activity = REM
+    LDI t0, PHASE_REM
+    JMP update_history
+
+set_awake:
+    LDI t0, PHASE_AWAKE
+    JMP update_history
+
+check_mid_arousal:
+    # Mid arousal: LIGHT_SLEEP
+    LDI t0, PHASE_LIGHT
+    JMP update_history
+
+    # ============================================
+    # Update Phase History (rolling buffer)
+    # ============================================
+
+update_history:
+    # Shift history: move everything left
+    LDI t7, MEM_PHASE_HISTORY + 9
+    LD t6, t7               # Load last element
+    LDI t7, MEM_PHASE_HISTORY + 8
+    ST t7, t6               # Store to second-to-last
+
+    LDI t7, MEM_PHASE_HISTORY + 8
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 7
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 7
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 6
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 6
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 5
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 5
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 4
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 4
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 3
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 3
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 2
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 2
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY + 1
+    ST t7, t6
+
+    LDI t7, MEM_PHASE_HISTORY + 1
+    LD t6, t7
+    LDI t7, MEM_PHASE_HISTORY
+    ST t7, t6
+
+    # Store new phase at beginning
+    LDI t7, MEM_PHASE_HISTORY
+    ST t7, t0
+
+    # ============================================
+    # Compute Dominant Phase (most common in history)
+    # ============================================
+
+compute_dominant:
+    # Count occurrences of each phase in history
+    LDI t3, 0                # phase counter (0-3)
+    LDI t5, 0                # dominant phase
+    LDI t4, 0                # max count
+
+count_loop:
+    # Check if t3 > 3, if so we're done
+    LDI t6, 3
+    JGT t3, t6, done_counting
+
+    # Count occurrences of phase t3 in history
+    LDI t7, 0                # count for this phase
+
+count_phase_0:
+    LDI t6, MEM_PHASE_HISTORY
+    LD t6, t6
+    LDI t1, PHASE_AWAKE
+    JNZ t1, check_match_0
+    INC t7
+check_match_0:
+
+count_phase_1:
+    LDI t6, MEM_PHASE_HISTORY + 1
+    LD t6, t6
+    LDI t1, PHASE_LIGHT
+    JNZ t1, count_phase_2
+    INC t7
+count_phase_2:
+    LDI t6, MEM_PHASE_HISTORY + 2
+    LD t6, t6
+    LDI t1, PHASE_DEEP
+    JNZ t1, count_phase_3
+    INC t7
+count_phase_3:
+    LDI t6, MEM_PHASE_HISTORY + 3
+    LD t6, t6
+    LDI t1, PHASE_REM
+    JNZ t1, update_max
+    INC t7
+
+update_max:
+    # If t7 > t4, update dominant phase
+    JGT t7, t4, set_dominant
+    JMP next_phase
+
+set_dominant:
+    MOV t4, t7               # max count = t7
+    MOV t5, t3               # dominant phase = t3
+
+next_phase:
+    INC t3                   # next phase
+    JMP count_loop
+
+done_counting:
+    # t5 = dominant phase, return it
+    MOV t0, t5
+
+    HALT

@@ -1,0 +1,110 @@
+# ═══════════════════════════════════════════════════════════════════
+# PIPE OPERATOR — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Pipe Expression Desugaring for Tri Language
+# Source of truth for tri-lang/pipe.zig codegen
+# Issue #409: Pipe operator for function chaining
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_pipe
+version: "0.1.0"
+module: tri_lang.pipe
+description: "Pipe operator for function chaining (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  PipeExprValue:
+    description: "Value in pipe expression (simplified union)"
+    underlying: "union(enum)"
+    variants:
+      - Identifier:
+          value: "[]const u8"
+          description: "Variable/function name"
+      - IntLiteral:
+          value: "i64"
+          description: "Integer literal"
+      - BoolLiteral:
+          value: "bool"
+          description: "Boolean literal"
+
+  PipeExpr:
+    description: "Pipe expression: source |> stage1 |> stage2"
+    fields:
+      - name: source
+        type: "PipeExprValue"
+        description: "Source value"
+      - name: stages
+        type: "[]const PipeExprValue"
+        description: "Pipeline stages"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  desugarPipe:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: pipe_expr
+        type: "PipeExpr"
+    returns: "PipeExprValue"
+    description: "Desugar pipe expression to nested function calls"
+    errors:
+      - NotImplemented
+    note: "Transforms source |> stage1 |> stage2 into stage3(stage2(stage1(source)))"
+
+  isPipelineStage:
+    params:
+      - name: expr
+        type: "PipeExprValue"
+    returns: "bool"
+    description: "Check if expression is valid pipeline stage (callable)"
+
+  validatePipe:
+    params:
+      - name: pipe_expr
+        type: "PipeExpr"
+    returns: "bool"
+    description: "Validate that all pipeline stages are callable"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "isPipelineStage with identifier"
+    given: "Identifier expression 'f'"
+    when: "checking if stage"
+    then: "returns true"
+
+  - name: "isPipelineStage with literal"
+    given: "IntLiteral 42"
+    when: "checking if stage"
+    then: "returns false (literals not callable)"
+
+  - name: "desugarPipe single stage"
+    given: "Pipe expression with single stage"
+    when: "desugaring"
+    then: "returns NotImplemented (not yet implemented)"
+
+  - name: "desugarPipe multiple stages"
+    given: "Pipe expression with multiple stages"
+    when: "desugaring"
+    then: "returns NotImplemented (not yet implemented)"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Pipe desugaring example:
+#   Input:  [1, 2, 3] |> map(double) |> filter(>5) |> sum
+#   Output: sum(filter(map([1,2,3], double), >5))
+#
+# This transforms Elixir-style forward pipe into nested function calls
+# where each function receives the previous result as first argument

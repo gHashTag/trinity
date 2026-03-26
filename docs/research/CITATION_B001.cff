@@ -1,0 +1,96 @@
+cff-version: 1.2.0
+message: "If you use HSLM ternary neural network findings, please cite this work. HSLM achieves 20× memory compression with PPL 125.3 on TinyStories."
+title: "Trinity B001: Ternary Neural Networks — HSLM-1.95M Scientific Framework"
+abstract: "We present HSLM-1.95M, a 1.95M parameter ternary language model using balanced ternary weights {-1, 0, +1} achieving 1.58 bits/trit (20× memory compression vs FP32). Key innovations include: (1) Sacred Attention with φ-based scaling (scale = d_k^(-φ^-3) ≈ 0.236); (2) T-JEPA (Ternary JEPA) with consciousness gate for masked prediction; (3) Cosine learning rate with φ-warmup; (4) Ternary SGD with convergence proof; (5) TF3 packing (8 weights in 16 bits). Results: PPL 125.3 ± 2.1 on TinyStories, 385 KB model size, 1200 tokens/sec inference. Pure Zig 0.15.x implementation with zero external dependencies. Complete reproducibility artifacts including Docker environment, MLSys reproducibility card, and algorithm pseudocode."
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 5.2.0
+doi: 10.5281/zenodo.19227733
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity/tree/main/src/hslm"
+keywords:
+  - "ternary neural networks"
+  - "balanced ternary"
+  - "HSLM"
+  - "1.58-bit LLM"
+  - "TinyStories"
+  - "perplexity"
+  - "memory compression"
+  - "sacred attention"
+  - "phi-based scaling"
+  - "T-JEPA"
+  - "masked prediction"
+  - "consciousness gate"
+  - "cosine learning rate"
+  - "ternary SGD"
+  - "TF3"
+  - "ternary packing"
+  - "Zig"
+  - "pure Zig"
+  - "zero dependencies"
+license: MIT
+identifiers:
+  - description: "Zenodo DOI for B001 v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227733"
+  - description: "Parent collection"
+    type: doi
+    value: "10.5281/zenodo.19227879"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "HSLM Architecture and Training Protocol"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/zenodo_B001_enhanced_v5.2.md"
+  - type: documentation
+    relationship: documents
+    title: "Sacred Arithmetic Framework"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/SACRED_ARITHMETIC_FRAMEWORK.md"
+preferred-citation:
+  type: software
+  title: "Trinity B001: Ternary Neural Networks — HSLM-1.95M"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  doi: "10.5281/zenodo.19227733"
+references:
+  - type: article
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    authors:
+      - family-names: "Ma"
+        given-names: "D."
+      - et-al: true
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2402.17764"
+    doi: "10.48550/arXiv.2402.17764"
+  - type: article
+    title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+    authors:
+      - family-names: "Eldan"
+        given-names: "Ron"
+      - family-names: "Li"
+        given-names: "Y."
+    year: 2023
+    journal: "arXiv"
+    volume: "arXiv:2305.07759"
+    doi: "10.48550/arXiv.2305.07759"
+  - type: article
+    title: "TerEffic: Highly Efficient Ternary LLM Inference on FPGA"
+    authors:
+      - family-names: "Ma"
+        given-names: "S."
+      - et-al: true
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2502.16473v2"
+    doi: "10.48550/arXiv.2502.16473"
+
+# φ² + 1/φ² = 3 | TRINITY

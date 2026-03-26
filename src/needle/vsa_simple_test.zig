@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 test "vsa.compile: VSA module compiles and types are available" {
     const allocator = std.testing.allocator;

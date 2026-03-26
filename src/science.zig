@@ -8,13 +8,15 @@
 
 const std = @import("std");
 const trinity = @import("trinity.zig");
-const vsa = @import("vsa.zig");
 const sdk = @import("sdk.zig");
 
 pub const HybridBigInt = trinity.HybridBigInt;
 pub const Trit = trinity.Trit;
 pub const Hypervector = sdk.Hypervector;
-pub const MAX_TRITS = vsa.MAX_TRITS;
+pub const MAX_TRITS = trinity.vsa.MAX_TRITS;
+
+// Use VSA through trinity to avoid module ownership conflicts
+const vsa_mod = trinity.vsa;
 
 // Mathematical constants
 pub const PHI: f64 = 1.6180339887498948482; // Golden ratio
@@ -121,12 +123,12 @@ pub fn distance(a: *Hypervector, b: *Hypervector, metric: DistanceMetric) f64 {
 
 /// Hamming distance (normalized)
 pub fn hammingDistance(a: *Hypervector, b: *Hypervector) f64 {
-    return 1.0 - vsa.hammingSimilarity(&a.data, &b.data);
+    return 1.0 - vsa_mod.hammingSimilarity(&a.data, &b.data);
 }
 
 /// Cosine distance
 pub fn cosineDistance(a: *Hypervector, b: *Hypervector) f64 {
-    return 1.0 - vsa.cosineSimilarity(&a.data, &b.data);
+    return 1.0 - vsa_mod.cosineSimilarity(&a.data, &b.data);
 }
 
 /// Euclidean distance (L2)

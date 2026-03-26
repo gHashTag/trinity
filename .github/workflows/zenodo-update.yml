@@ -1,0 +1,190 @@
+# GitHub Actions: Zenodo Defensive Publication Automation
+#
+# This workflow creates Zenodo deposits for new releases,
+# establishing a timestamped defensive publication for each version.
+#
+# Usage:
+# 1. Create a new GitHub release with semantic version (v1.0.0, v1.1.0, etc.)
+# 2. Zenodo automatically creates a DOI for the release
+# 3. The DOI is posted back as a release asset
+#
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/editing-repository-release-settings
+
+name: Zenodo Defensive Publication
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  zenodo-deposit:
+    name: Create Zenodo Deposit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "📌 Version: ${VERSION}"
+
+      - name: Generate metadata
+        id: metadata
+        run: |
+          cat > metadata.json <<'EOF'
+          {
+            "title": "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm - ${{ steps.version.outputs.version }}",
+            "description": "Defensive publication of Trinity S³AI innovations: HSLM (1.95M ternary LLM), TRI-27 (ternary ISA), Queen (self-learning), Sacred GF16/TF3 formats, and zero-DSP FPGA inference. This release establishes prior art for: ternary computing, FPGA neural networks, self-adaptive AI systems, and φ-based arithmetic formats.\n\nKey discoveries:\n- HSLM: 1.95M ternary LM, PPL=125 on TinyStories\n- Sacred GF16/TF3: φ-based floating point, 37.8% LUT reduction\n- TRI-27: 27-register ternary ISA with Coptic encoding\n- Queen: Episode-based self-learning with 6-phase Lotus Cycle\n- Zero-DSP FPGA: Ternary inference without DSP blocks\n\nCitation: Trinity Project. (2025). Trinity S³AI (Version ${{ steps.version.outputs.version }}) [Defensive Publication]. Zenodo. https://doi.org/10.5281/zenodo.XXXXXX",
+            "creators": [
+              {"name": "Trinity Project", "affiliation": "Open Source"}
+            ],
+            "keywords": [
+              "ternary computing", "FPGA", "neural networks", "autonomous agents",
+              "Zig", "prior art", "defensive publication", "HSLM", "TRI-27",
+              "Queen self-learning", "sacred arithmetic", "GF16", "TF3",
+              "zero-DSP", "VSA", "Vector Symbolic Architecture", "phi-based computing"
+            ],
+            "license": "CC-BY-4.0",
+            "upload_type": "software",
+            "access_right": "open",
+            "communities": [{"identifier": "trinity"}]
+          }
+          EOF
+          cat metadata.json
+          echo "metadata_created=true" >> $GITHUB_OUTPUT
+
+      - name: Create release archive
+        run: |
+          # Create source archive
+          git archive --format=tar.gz --prefix=trinity-${{ steps.version.outputs.version }}/ HEAD > trinity-${{ steps.version.outputs.version }}.tar.gz
+
+          # Calculate checksums
+          sha256sum trinity-${{ steps.version.outputs.version }}.tar.gz > trinity-${{ steps.version.outputs.version }}.tar.gz.sha256
+          md5sum trinity-${{ steps.version.outputs.version }}.tar.gz > trinity-${{ steps.version.outputs.version }}.tar.gz.md5
+
+      - name: Generate CITATION.cff
+        run: |
+          cat > CITATION.cff <<EOF
+          cff-version: 1.2.0
+          message: "If you use this version of Trinity, please cite it."
+          title: "Trinity S³AI: Pure Zig Autonomous AI Agent Swarm"
+          abstract: "Defensive publication of Trinity S³AI innovations including HSLM ternary LLM, TRI-27 ISA, Queen self-learning, Sacred GF16/TF3 formats, and zero-DSP FPGA inference."
+          authors:
+            - family-names: "Trinity"
+              given-names: "Project"
+          version: "${{ steps.version.outputs.version }}"
+          date-released: $(date +%Y-%m-%d)
+          url: "https://github.com/gHashTag/trinity"
+          keywords:
+            - "ternary computing"
+            - "FPGA"
+            - "neural networks"
+            - "prior art"
+            - "defensive publication"
+          license: CC-BY-4.0
+          EOF
+
+      - name: Package research docs
+        run: |
+          mkdir -p research-package
+          cp -r docs/research/* research-package/
+          cp CITATION.cff research-package/
+          tar czf research-docs-${{ steps.version.outputs.version }}.tar.gz research-package/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            trinity-${{ steps.version.outputs.version }}.tar.gz
+            trinity-${{ steps.version.outputs.version }}.tar.gz.sha256
+            trinity-${{ steps.version.outputs.version }}.tar.gz.md5
+            research-docs-${{ steps.version.outputs.version }}.tar.gz
+            CITATION.cff
+            metadata.json
+          fail_on_unmatched_files: true
+
+      - name: Zenodo instructions
+        run: |
+          cat <<'EOF'
+
+          ╔═══════════════════════════════════════════════════════════════════╗
+         ║                    ZENODO DEPOSIT INSTRUCTIONS                    ║
+          ╚═══════════════════════════════════════════════════════════════════╝
+
+          ✅ Release assets created successfully!
+
+          📋 NEXT STEPS:
+
+          1. The GitHub-Zenodo integration will automatically create a deposit
+          2. Visit: https://zenodo.org/account/github
+          3. Find the deposit and add additional metadata if needed
+          4. PUBLISH the deposit to get a DOI
+          5. Add the DOI to CITATION.cff and this workflow
+
+          📌 CURRENT VERSION: ${{ steps.version.outputs.version }}
+
+          🔗 USEFUL LINKS:
+          - Zenodo GitHub: https://zenodo.org/account/github
+          - Trinity Community: https://zenodo.org/communities/trinity
+          - DOI Request: https://zenodo.org/doi/create
+
+          📚 CITATION (once DOI is assigned):
+          Trinity Project. (2025). Trinity S³AI (Version ${{ steps.version.outputs.version }}) [Defensive Publication].
+          Zenodo. https://doi.org/10.5281/zenodo.XXXXXX
+
+          ═══════════════════════════════════════════════════════════════════
+
+          EOF
+
+  zenodo-checksum:
+    name: Verify Zenodo Deposit
+    runs-on: ubuntu-latest
+    needs: zenodo-deposit
+    if: github.event_name == 'release'
+    steps:
+      - name: Wait for Zenodo processing
+        run: |
+          echo "⏳ Zenodo typically processes deposits within 5-10 minutes"
+          echo "📧 Check your email for Zenodo notifications"
+          echo "🔍 Visit: https://zenodo.org/account/github"
+
+      - name: Display verification steps
+        run: |
+          cat <<'EOF'
+
+          ╔═══════════════════════════════════════════════════════════════════╗
+         ║                    VERIFICATION CHECKLIST                          ║
+          ╚═══════════════════════════════════════════════════════════════════╝
+
+          ✅ TO VERIFY YOUR DEPOSIT:
+
+          1. Check Zenodo GitHub page for the deposit
+          2. Verify all files are present (source archive, research docs)
+          3. Check metadata completeness (title, authors, keywords)
+          4. Verify license is set to CC-BY-4.0
+          5. Add to Trinity community
+          6. PUBLISH to get DOI
+          7. Update CITATION.cff with DOI
+          8. Update PRIOR_ART_NETWORK.md with new DOI
+
+          ═══════════════════════════════════════════════════════════════════
+
+          EOF

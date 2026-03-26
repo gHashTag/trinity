@@ -3,8 +3,8 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 
 const std = @import("std");
-const tvc_hybrid = @import("hybrid.zig");
-const tvc_vsa = @import("vsa.zig");
+const tvc_hybrid = @import("hybrid");
+const tvc_vsa = @import("vsa");
 
 pub const HybridBigInt = tvc_hybrid.HybridBigInt;
 pub const Trit = tvc_hybrid.Trit;

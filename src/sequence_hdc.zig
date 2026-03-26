@@ -8,7 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 const vsa_jit = @import("vsa_jit.zig");
 
 const HybridBigInt = vsa.HybridBigInt;

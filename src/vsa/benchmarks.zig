@@ -1,5 +1,5 @@
 const std = @import("std");
-const vsa = @import("../vsa.zig");
+const vsa = @import("root");
 const HybridBigInt = vsa.HybridBigInt;
 const Trit = vsa.Trit;
 const TextCorpus = vsa.TextCorpus;

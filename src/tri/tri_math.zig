@@ -52,7 +52,7 @@
 // =============================================================================
 
 const std = @import("std");
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;

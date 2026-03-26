@@ -7,7 +7,7 @@
 const std = @import("std");
 
 const life = @import("origin_of_life");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 pub fn runLifeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {

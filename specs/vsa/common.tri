@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════
+# VSA COMMON TYPES — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Basic ternary types and SIMD vector definitions
+# Source of truth for vsa_core/common.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: vsa_common
+version: "0.1.0"
+module: vsa_core.common
+description: "Common VSA types and constants (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# CONSTANTS
+# ═══════════════════════════════════════════════════════════════════
+
+constants:
+  MAX_TRITS:
+    value: 59049
+    type: usize
+    description: "Maximum trits (3^10)"
+
+  TRITS_PER_BYTE:
+    value: 5
+    type: usize
+    description: "Trits packed per byte"
+
+  MAX_PACKED_BYTES:
+    value: 11810
+    type: usize
+    description: "(MAX_TRITS + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE"
+
+  SIMD_WIDTH:
+    value: 32
+    type: usize
+    description: "SIMD vector width for parallel operations"
+
+  SIMD_CHUNKS:
+    value: 1845
+    type: usize
+    description: "MAX_TRITS / SIMD_WIDTH"
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Trit:
+    description: "Balanced ternary value {-1, 0, 1}"
+    underlying: "i8"
+
+  Vec32i8:
+    description: "SIMD vector of 32 i8 values for parallel trit operations"
+    underlying: "@Vector(32, i8)"
+
+  Vec32i16:
+    description: "SIMD vector of 32 i16 values for accumulated products"
+    underlying: "@Vector(32, i16)"
+
+  Vec32i32:
+    description: "SIMD vector of 32 i32 values for larger accumulations"
+    underlying: "@Vector(32, i32)"
+
+  SearchResult:
+    description: "Semantic search result with index and similarity score"
+    fields:
+      - name: index
+        type: "usize"
+        description: "Document index in corpus"
+      - name: similarity
+        type: "f64"
+        description: "Cosine similarity score [-1, 1]"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "Trit range"
+    given: "Trit type alias"
+    when: "assigning zero"
+    then: "equals i8(0)"
+
+  - name: "SIMD vectors"
+    given: "Vec32i8 type"
+    when: "creating splat vector"
+    then: "first element equals splat value"

@@ -7,7 +7,7 @@
 const sacred_math = @import("math.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED TYPES — GF16, TF3 (единственный источник правды для форматов)
+// SACRED TYPES — GF16, TF3 (single source of truth for formats)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_types_mod = @import("sacred_types.zig");
@@ -19,7 +19,7 @@ pub const INV_PHI = sacred_types_mod.INV_PHI;
 pub const TRINITY = sacred_types_mod.TRINITY;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED VERIFY — Compile-time проверки Sacred математики
+// SACRED VERIFY — Compile-time checks of Sacred mathematics
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_verify = @import("verify.zig");
@@ -33,7 +33,7 @@ pub const PowersOf3 = sacred_verify.PowersOf3;
 pub const PowersOfPhi = sacred_verify.PowersOfPhi;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED GUARDS — Compile-time guards против anti-patterns
+// SACRED GUARDS — Compile-time guards against anti-patterns
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_guards = @import("guards.zig");
@@ -45,7 +45,7 @@ pub const RailwayConfigGuard = sacred_guards.RailwayConfigGuard;
 pub const HSLMConfigGuard = sacred_guards.HSLMConfigGuard;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED LUT — Compile-time таблицы для Sacred типов
+// SACRED LUT — Compile-time tables for Sacred types
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_lut = @import("lut.zig");
@@ -61,7 +61,7 @@ pub const pow3 = sacred_lut.pow3;
 pub const phi_pow = sacred_lut.phi_pow;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD TERNARY — SIMD-примитивы для тернарного VSA
+// SIMD TERNARY — SIMD primitives for ternary VSA
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const simd_ternary = @import("simd_ternary.zig");

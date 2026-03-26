@@ -13,11 +13,102 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // TIERED BUILD OPTIONS — Graceful Degradation Architecture
+    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // L0: temple_exe  — Always compiles (sacred core only)
+    // L1: queens_exe    — Always compiles (supervisors, no workers)
+    // L2: tri           — Full build (all workers enabled)
+    const enable_farm = b.option(bool, "farm", "Enable tri_farm worker") orelse true;
+    const enable_cloud = b.option(bool, "cloud", "Enable tri_cloud worker") orelse true;
+    const enable_fpga = b.option(bool, "fpga", "Enable tri_fpga worker") orelse true;
+    const enable_spec = b.option(bool, "spec", "Enable spec audit tools") orelse true;
+
+    // Build options module for conditional compilation
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "enable_farm", enable_farm);
+    build_options.addOption(bool, "enable_cloud", enable_cloud);
+    build_options.addOption(bool, "enable_fpga", enable_fpga);
+    build_options.addOption(bool, "enable_spec", enable_spec);
+
+    // Core types modules (must come before hybrid since hybrid depends on them)
+    const bigint_mod = b.createModule(.{
+        .root_source_file = b.path("src/bigint.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const packed_trit_mod = b.createModule(.{
+        .root_source_file = b.path("src/packed_trit.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+        },
+    });
+
+    // Hybrid types module (TVC HybridBigInt, Trit, Vec32i8)
+    const hybrid_mod = b.createModule(.{
+        .root_source_file = b.path("src/hybrid.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
+        },
+    });
+
+    // VSA Core — single source of truth for VSA algorithms (no HybridBigInt dependency)
+    const vsa_core_mod = b.createModule(.{
+        .root_source_file = b.path("src/vsa_core/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Generated VSA module (TTT Dogfood v0.1 — self-hosted codegen)
+    const gen_vsa_mod = b.createModule(.{
+        .root_source_file = b.path("src/gen_vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa_core", .module = vsa_core_mod },
+            .{ .name = "hybrid", .module = hybrid_mod },
+        },
+    });
+
+    const vsa_tri = b.createModule(.{
+        .root_source_file = b.path("src/vsa.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa_core", .module = vsa_core_mod },
+            .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "gen_vsa", .module = gen_vsa_mod },
+        },
+    });
+
+    const vm_mod = b.createModule(.{
+        .root_source_file = b.path("src/vm.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+        },
+    });
+
     // Library module for imports
     const trinity_mod = b.createModule(.{
         .root_source_file = b.path("src/trinity.zig"),
         .target = target,
         .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
+            .{ .name = "hybrid", .module = hybrid_mod },
+            .{ .name = "vsa", .module = vsa_tri },
+            .{ .name = "vm", .module = vm_mod },
+        },
     });
 
     // VIBEEC compiler module — single source of truth from .tri specs
@@ -170,12 +261,22 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "bigint", .module = bigint_mod },
+                .{ .name = "packed_trit", .module = packed_trit_mod },
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "vm", .module = vm_mod },
+            },
         }),
     });
 
     const run_main_tests = b.addRunArtifact(main_tests);
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
+    // test_report_step disabled due to Zig 0.15 const qualifier issue
+    // const test_report_step = b.step("test-report", "Show formatted test report");
+    // test_report_step.dependOn(&test_step);
 
     // Maintainer / author attribution — must match tools/config/author_attribution_guard.manifest
     const author_guard_tests = b.addTest(.{
@@ -219,7 +320,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("benchmarks/benchmark_test.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "vsa", .module = vsa_tri }},
         }),
     });
     const run_bench_tests = b.addRunArtifact(bench_tests);
@@ -244,6 +345,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vm.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_vm_tests = b.addRunArtifact(vm_tests);
@@ -289,12 +394,98 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_vm_dispatch_tests.step);
     test_step.dependOn(&run_vm_test_utils_tests.step);
 
+    // ═════════════════════════════════════════════════════════════
+    // TTT — Trusted Tri Temple — L0 Sacred Layer
+    // ═════════════════════════════════════════════════════════════════════════
+
+    // TTT build target — sacred layer only
+    const exe_temple = b.addExecutable(.{
+        .name = "temple",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/temple/tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const temple_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/temple/tests.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+
+    const temple_step = b.step("temple", "Build and test Trusted Tri Temple");
+    temple_step.dependOn(&exe_temple.step);
+    temple_step.dependOn(&temple_tests.step);
+
+    // Add TTT tests to main test step
+    test_step.dependOn(&temple_tests.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CASTE SYSTEM — L0/L1/L2/L3 Independence Enforcement (TDGS-2)
+    // ════════════════════════════════════════════════════════════════════════════════════════════
+
+    // L0: TTT (Trusted Tri Temple) — Sacred layer, always compiles
+    var l0_step = b.step("l0", "Build L0 TTT (sacred core only)");
+    l0_step.dependOn(&exe_temple.step);
+    l0_step.dependOn(&temple_tests.step);
+
+    // L1: Queens (Supervisors) — Queen CLI + Doctor CLI, no L2 Workers
+    const exe_queen_lotus = b.addExecutable(.{
+        .name = "queen-lotus",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/queen/lotus_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_queen_lotus);
+
+    const exe_doctor = b.addExecutable(.{
+        .name = "doctor",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/doctor/doctor_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_doctor);
+
+    // Unified L1 entry point (all queens in one binary)
+    const exe_queens = b.addExecutable(.{
+        .name = "queens",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_queens.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(exe_queens);
+
+    var queens_step = b.step("queens", "Build L1 Queens (Queen + Doctor) — independent of L2 Workers");
+    queens_step.dependOn(&exe_queen_lotus.step);
+    queens_step.dependOn(&exe_doctor.step);
+    queens_step.dependOn(&exe_queens.step);
+
+    const l1_step = b.step("l1", "Build L1 Queens (supervisors)");
+    l1_step.dependOn(l0_step);
+    l1_step.dependOn(queens_step);
+
     // E2E + Benchmarks + Verdict tests (Phase 4)
     const e2e_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "vm", .module = vm_mod },
+                .{ .name = "trinity", .module = trinity_mod },
+                .{ .name = "packed_trit", .module = packed_trit_mod },
+            },
         }),
     });
     const run_e2e_tests = b.addRunArtifact(e2e_tests);
@@ -308,6 +499,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hybrid", .module = hybrid_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
@@ -327,6 +522,32 @@ pub fn build(b: *std.Build) void {
     });
     const run_vibeec_tests = b.addRunArtifact(vibeec_tests);
     test_step.dependOn(&run_vibeec_tests.step);
+
+    // emit_t27 golden tests — Phase 3 E2E validation
+    const emit_t27_golden_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/emit_t27_golden.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_emit_t27_golden_tests = b.addRunArtifact(emit_t27_golden_tests);
+    test_step.dependOn(&run_emit_t27_golden_tests.step);
+
+    const emit_t27_test_step = b.step("test-emit_t27", "Run emit_t27 golden tests");
+    emit_t27_test_step.dependOn(&run_emit_t27_golden_tests.step);
+
+    // emit_t27_from_ir tests — Phase 4 IR → TRI-27 pipeline
+    const emit_t27_from_ir_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vibeec/emit_t27_from_ir_test.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_emit_t27_from_ir_tests = b.addRunArtifact(emit_t27_from_ir_tests);
+    test_step.dependOn(&run_emit_t27_from_ir_tests.step);
+    emit_t27_test_step.dependOn(&run_emit_t27_from_ir_tests.step);
 
     // TRI-TRACE tests (DEV-001)
     const trace_tests = b.addTest(.{
@@ -377,6 +598,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/trinity_search.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "hybrid", .module = hybrid_mod },
+            },
         }),
     });
     b.installArtifact(trinity_search);
@@ -395,6 +620,10 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/query_cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "hybrid", .module = hybrid_mod },
+            },
         }),
     });
     b.installArtifact(trinity_query);
@@ -413,7 +642,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("benchmarks/bench_core.zig"),
             .target = target,
             .optimize = .ReleaseFast,
-            .imports = &.{.{ .name = "vsa", .module = trinity_mod }},
+            .imports = &.{.{ .name = "vsa", .module = vsa_tri }},
         }),
     });
     b.installArtifact(bench_core);
@@ -519,6 +748,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/cli.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     b.installArtifact(firebird);
@@ -530,16 +762,16 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
-    // UART Echo Test — FPGA UART bridge test
-    const uart_echo_test = b.addExecutable(.{
-        .name = "uart-echo-test",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tools/uart_echo_test.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(uart_echo_test);
+    // UART Echo Test — FPGA UART bridge test (disabled from install)
+    // const uart_echo_test = b.addExecutable(.{
+    //     .name = "uart-echo-test",
+    //     .root_module = b.createModule(.{
+    //         .root_source_file = b.path("src/tools/uart_echo_test.zig"),
+    //         .target = target,
+    //         .optimize = optimize,
+    //     }),
+    // });
+    // b.installArtifact(uart_echo_test);
 
     // Firebird tests
     const firebird_tests = b.addTest(.{
@@ -547,6 +779,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/firebird/b2t_integration.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "vsa", .module = vsa_tri },
+            },
         }),
     });
     const run_firebird_tests = b.addRunArtifact(firebird_tests);
@@ -671,6 +906,27 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Firebird App State module (DePIN global state)
+    const firebird_app_state_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/app_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Reputation module (Neuroanatomical health scoring)
+    const firebird_reputation_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/reputation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Firebird Staking module (DePIN staking logic)
+    const firebird_staking_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/staking.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // DePIN tests
     const depin_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -688,6 +944,82 @@ pub fn build(b: *std.Build) void {
     });
     const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
     test_step.dependOn(&run_depin_network_tests.step);
+
+    // === TRINITY dePIN Testnet v4 Modules ===
+    // AppState: mutex-protected emission tracking
+    const app_state_tests = b.addTest(.{
+        .root_module = firebird_app_state_mod,
+    });
+    const run_app_state_tests = b.addRunArtifact(app_state_tests);
+    test_step.dependOn(&run_app_state_tests.step);
+
+    // Reputation: neuroanatomical health scoring
+    const firebird_reputation_tests = b.addTest(.{
+        .root_module = firebird_reputation_mod,
+    });
+    const run_firebird_reputation_tests = b.addRunArtifact(firebird_reputation_tests);
+    test_step.dependOn(&run_firebird_reputation_tests.step);
+
+    // Staking: lock periods and multipliers
+    const staking_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/staking.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_staking_tests = b.addRunArtifact(staking_tests);
+    test_step.dependOn(&run_staking_tests.step);
+
+    // dePIN Economic Invariants — Property-based E2E tests
+    const depin_invariants_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/invariants.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+            .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+        },
+    });
+    const depin_invariants_tests = b.addTest(.{
+        .root_module = depin_invariants_mod,
+    });
+    const run_depin_invariants_tests = b.addRunArtifact(depin_invariants_tests);
+    test_step.dependOn(&run_depin_invariants_tests.step);
+
+    // dePIN State Machine Tests — Erlang QuickCheck style
+    const depin_state_machine_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/state_machine.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+            .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+        },
+    });
+    const depin_state_machine_tests = b.addTest(.{
+        .root_module = depin_state_machine_mod,
+    });
+    const run_depin_state_machine_tests = b.addRunArtifact(depin_state_machine_tests);
+    test_step.dependOn(&run_depin_state_machine_tests.step);
+
+    // dePIN Economic Invariants Tests — Ponzi resistance & tokenomics
+    const depin_economic_mod = b.createModule(.{
+        .root_source_file = b.path("tests/depin/economic.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+            .{ .name = "firebird_staking", .module = firebird_staking_mod },
+        },
+    });
+    const depin_economic_tests = b.addTest(.{
+        .root_module = depin_economic_mod,
+    });
+    const run_depin_economic_tests = b.addRunArtifact(depin_economic_tests);
+    test_step.dependOn(&run_depin_economic_tests.step);
 
     // Unified API tests — REST+GraphQL+gRPC+WebSocket (Golden Chain #101)
     const api_tests = b.addTest(.{
@@ -1295,19 +1627,17 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VSA module for TRI (moved up: needed by tvc_corpus_mod and fluent CLI)
-    const vsa_tri = b.createModule(.{
-        .root_source_file = b.path("src/vsa.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
     // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "bigint", .module = bigint_mod },
+            .{ .name = "packed_trit", .module = packed_trit_mod },
+            .{ .name = "hybrid", .module = hybrid_mod },
             .{ .name = "vsa", .module = vsa_tri },
+            .{ .name = "vm", .module = vm_mod },
         },
     });
 
@@ -1374,6 +1704,7 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Inject build options and optional tree-sitter modules
     vibee.root_module.addOptions("build_options", ts_options);
     vibee.root_module.addImport("agent_mu", agent_mu_mod);
+    vibee.root_module.addImport("vsa", vsa_tri);
     if (enable_treesitter) {
         const ts_zig_mod = b.createModule(.{
             .root_source_file = b.path("src/tvc/treesitter/zig.zig"),
@@ -1416,6 +1747,28 @@ pub fn build(b: *std.Build) void {
     self_improve_step.dependOn(&run_self_improve.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // ==========================================
+    // LOTUS-CYCLE — Queen Lotus Cycle CLI
+    // ==========================================
+    const lotus_cycle_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/lotus_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const lotus_cycle_exe = b.addExecutable(.{
+        .name = "lotus-cycle",
+        .root_module = lotus_cycle_mod,
+    });
+    b.installArtifact(lotus_cycle_exe);
+
+    const run_lotus_cycle = b.addRunArtifact(lotus_cycle_exe);
+    if (b.args) |args| {
+        run_lotus_cycle.addArgs(args);
+    }
+    const lotus_cycle_step = b.step("lotus-cycle", "Run Queen Lotus Cycle (run/stats/health/test)");
+    lotus_cycle_step.dependOn(&run_lotus_cycle.step);
+
     // TREE-SITTER MODULE (with C stub for builds without tree-sitter)
     // ═══════════════════════════════════════════════════════════════════════════
     // Used by NEEDLE matcher Tier 1 (AST-based matching)
@@ -1454,6 +1807,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "treesitter_zig", .module = ts_zig_mod },
+            .{ .name = "vsa", .module = vsa_tri },
         },
     });
 
@@ -1505,38 +1859,27 @@ pub fn build(b: *std.Build) void {
     // const needle_mcp_step = b.step("needle-mcp", "Run NEEDLE MCP Server (stdio transport)");
     // needle_mcp_step.dependOn(&run_needle_mcp.step);
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
-    // ═══════════════════════════════════════════════════════════════════════════
-    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
-
-    const tri_train_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/metabolism.zig"),
+    // TRI training types module (needed by tri_train_mod)
+    const train_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/train_types.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    const trinity_mcp = b.addExecutable(.{
-        .name = "trinity-mcp",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "needle", .module = needle_mod },
-                .{ .name = "vsa", .module = vsa_tri },
-                .{ .name = "treesitter_zig", .module = ts_zig_mod },
-                .{ .name = "tri_train", .module = tri_train_mod },
-                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
-            },
-        }),
+    // TRI train module (for trinity-mcp) - depends on train_types
+    const tri_train_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/metabolism.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "train_types", .module = train_types_mod },
+        },
     });
-    b.installArtifact(trinity_mcp);
 
-    // Don't auto-run the MCP server - it's an interactive stdio service
-    // const run_trinity_mcp = b.addRunArtifact(trinity_mcp);
-    // const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
-    // trinity_mcp_step.dependOn(&run_trinity_mcp.step);
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TRINITY-MCP — Full Trinity MCP Server (35+ tools)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
 
     // ═══════════════════════════════════════════════════════════════════════════
     // RALPH AGENT — Autonomous Sleep-Wake Daemon
@@ -2000,16 +2343,265 @@ pub fn build(b: *std.Build) void {
     const swe_deploy_step = b.step("swe-deploy", "Build swe-entrypoint for Railway dev agent deploy");
     swe_deploy_step.dependOn(&swe_entrypoint.step);
 
+    // Temple module — T-zone sacred types (GF16, TF3, Coptic)
+    const temple_mod = b.createModule(.{
+        .root_source_file = b.path("src/temple/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI Brain Modules (Neuroanatomy v5.1) — MOVED HERE for queen_mod imports
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const basal_ganglia_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const reticular_formation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/reticular_formation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const locus_coeruleus_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI CLI module — UNUSED (causes ownership conflicts, cortex_for_tri uses trinity_mod instead)
+    _ = b.createModule(.{
+        .root_source_file = b.path("src/tri/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI modules needed by queen — individual modules to avoid file ownership conflicts
+    const tri_colors_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_colors.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // NOTE: agent_roles removed — unused module
+    // NOTE: faculty_types, thalamus, cerebellum, insula,
+    // phoenix_medulla, phoenix_pons are in src/queen/
+    // (Q-zone migration debt). Queen files import them directly.
+    // cortex is defined later as cortex_for_tri to avoid circular dependency
+    const faculty_types_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/faculty_types.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const thalamus_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/thalamus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const queen_ofc_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/queen_ofc.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const voice_engine_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/voice_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Additional tri modules needed by cortex
+    const tri_state_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // NOTE: train_types_mod and tri_train_mod moved earlier (before trinity-mcp)
+    // to fix forward declaration issue
+
+    const hippocampus_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/hippocampus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const analysis_engine_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/analysis_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const three_paths_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/three_paths.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const phi_poetry_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/phi_poetry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // cortex_for_tri: special version that imports individual tri modules
+    _ = b.createModule(.{
+        .root_source_file = b.path("src/queen/cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri", .module = trinity_mod },
+            .{ .name = "voice_engine", .module = voice_engine_mod },
+            .{ .name = "analysis_engine", .module = analysis_engine_mod },
+            .{ .name = "three_paths", .module = three_paths_mod },
+            .{ .name = "phi_poetry", .module = phi_poetry_mod },
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "train_types", .module = train_types_mod },
+            .{ .name = "tri_state", .module = tri_state_mod },
+            .{ .name = "hippocampus", .module = hippocampus_mod },
+        },
+    });
+
+    // Railway API module — shared between tri and farm
+    const railway_api_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/railway_api.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Eval module — E-zone type checking, validation
+    const eval_mod = b.createModule(.{
+        .root_source_file = b.path("src/eval/type_checker.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+        },
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI Brain Modules (Neuroanatomy v5.1) — Additional modules (unique ones only)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const persistence_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/persistence.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const telemetry_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/telemetry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const thalamus_logs_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/thalamus_logs.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const prefrontal_cortex_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/prefrontal_cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const health_history_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/health_history.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // GitHub module — G-zone (Wave 3: zone separation)
+    const github_mod = b.createModule(.{
+        .root_source_file = b.path("src/github/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Dev modules (shared between tri and farm) - must be defined before farm_mod
+    const dev_pipeline_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_pipeline.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_farm_evolve_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_farm_evolve.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_scan_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_scan.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_pick_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_pick.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const dev_loop_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/dev_loop.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Farm module — F-zone (Wave 3: zone separation)
+    const farm_mod = b.createModule(.{
+        .root_source_file = b.path("src/farm/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "railway_api", .module = railway_api_mod },
+            .{ .name = "dev_pipeline", .module = dev_pipeline_mod },
+            .{ .name = "dev_farm_evolve", .module = dev_farm_evolve_mod },
+            .{ .name = "dev_scan", .module = dev_scan_mod },
+            .{ .name = "dev_pick", .module = dev_pick_mod },
+            .{ .name = "dev_loop", .module = dev_loop_mod },
+        },
+    });
+
+    // Queen module — Q-zone Coordination
+    // NOTE: Individual brain and tri modules added to avoid file ownership conflicts
+    const queen_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
+            // Brain modules
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            // TRI modules needed by queen (individual imports to avoid conflicts)
+            .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "voice_engine", .module = voice_engine_mod },
+            .{ .name = "train_types", .module = train_types_mod },
+            .{ .name = "tri_state", .module = tri_state_mod },
+            .{ .name = "hippocampus", .module = hippocampus_mod },
+            .{ .name = "analysis_engine", .module = analysis_engine_mod },
+            .{ .name = "three_paths", .module = three_paths_mod },
+            .{ .name = "phi_poetry", .module = phi_poetry_mod },
+            // NOTE: faculty_types, cortex, thalamus, cerebellum, insula,
+            // phoenix_medulla, phoenix_pons are in src/queen/
+            // Queen files import them directly from same directory
+        },
+    });
+
     // HSLM tests
     const hslm_tests = b.addTest(.{
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/hslm/root.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "temple", .module = temple_mod },
+            },
         }),
     });
     const run_hslm_tests = b.addRunArtifact(hslm_tests);
     test_step.dependOn(&run_hslm_tests.step);
+
+    // Eval tests (E-zone type checking)
+    const eval_tests = b.addTest(.{
+        .root_module = eval_mod,
+    });
+    const run_eval_tests = b.addRunArtifact(eval_tests);
+    test_step.dependOn(&run_eval_tests.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // Trinity Orchestrator — REMOVED (generated.old/ deleted)
@@ -2085,76 +2677,9 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     // TRI Utils module (Cycle 100: for testing)
-    const tri_colors_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/tri_colors.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
 
     // ═══════════════════════════════════════════════════════════════════════════════
-    // S³AI Brain Modules (Neuroanatomy v5.1) — MUST be before tri_commands_mod
-    // ═══════════════════════════════════════════════════════════════════════════════
-    const basal_ganglia_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const reticular_formation_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/reticular_formation.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const locus_coeruleus_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const amygdala_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/amygdala.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const persistence_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/persistence.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const telemetry_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/telemetry.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const thalamus_logs_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/thalamus_logs.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const prefrontal_cortex_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/prefrontal_cortex.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const health_history_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/health_history.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    // STORM P1 Brain Zones (Ethical Infrastructure)
-    const storm_ofc_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/ofc.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const storm_habenula_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/habenula.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const storm_amygdala_mod = b.createModule(.{
-        .root_source_file = b.path("src/storm/brain_zones/amygdala.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // Duplicate brain module definitions removed - moved before queen_mod
     const microglia_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/microglia.zig"),
         .target = target,
@@ -2280,6 +2805,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .imports = &.{
+            .{ .name = "temple", .module = temple_mod },
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
@@ -2423,7 +2949,7 @@ pub fn build(b: *std.Build) void {
     // FARM STATS — Removed (src/cli/farm_stats.zig does not exist)
     // ═══════════════════════════════════════════════════════════════════════════════════════
 
-    const tri_utils_mod = b.createModule(.{
+    const _tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),
         .target = target,
         .optimize = optimize,
@@ -2432,6 +2958,23 @@ pub fn build(b: *std.Build) void {
         },
     });
     // TRI Commands module (Cycle 100: for testing)
+    // STORM P1 Brain Zones (Ethical Infrastructure)
+    const storm_ofc_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/ofc.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_habenula_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/habenula.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri_commands_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_commands.zig"),
         .target = target,
@@ -2564,6 +3107,80 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // TRI-27 CLI module for tri binary
+    // Root module re-exports all tri-lang modules for anti-fragile imports
+    // TRI-Lang emu module (J-zone VM, assembler, executor)
+    const emu_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri-lang/emu/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri_lang_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri-lang/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
+    // TRI-Lang compile module (Wave 2 Phase 4)
+    const tri_compile_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/tri_compile.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "tri_lang", .module = tri_lang_mod },
+        },
+    });
+
+    // TRI-27 CLI module for tri binary
+    const tri27_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+            .{ .name = "tri_lang", .module = tri_lang_mod },
+        },
+    });
+
+    // TRI-27 Coptic alphabet register naming (27 letters, 3 banks)
+    const coptic_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/coptic.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // TRI-27 .t27 module wrappers (DOGFOOD-1 Phase 2)
+    // TODO: Add to tri executable imports when enforcement hook is ready
+    const reticular_raphe_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/reticular_raphe_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
+    const phoenix_medulla_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/phoenix_medulla_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
+    const queen_vmpfc_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/queen_vmpfc_wrapper.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "emu", .module = emu_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2594,6 +3211,9 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "bsd", .module = bsd_mod },
                 // Firebird Slashing module (DePIN)
                 .{ .name = "firebird_slashing", .module = firebird_slashing_mod },
+                .{ .name = "firebird_app_state", .module = firebird_app_state_mod },
+                .{ .name = "firebird_reputation", .module = firebird_reputation_mod },
+                .{ .name = "firebird_staking", .module = firebird_staking_mod },
                 // P1.6: Registry module for commands export and MCP tools
                 .{ .name = "registry", .module = registry_mod },
                 // DePIN modules for directed discovery (Phase 1.1)
@@ -2632,37 +3252,145 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "intraparietal", .module = intraparietal_mod },
                 // STORM Golden Chain — 28-link pipeline
                 .{ .name = "golden_chain", .module = golden_chain_mod },
+                // TRI-27 CLI module
+                .{ .name = "tri27_cli", .module = tri27_cli_mod },
+                // TRI-Lang module (Wave 2 Phase 4: typecheck + emit_t27 + pipeline)
+                .{ .name = "tri_lang", .module = tri_lang_mod },
+                // TRI-Lang compile module (Wave 2 Phase 4)
+                .{ .name = "tri_compile", .module = tri_compile_mod },
+                // Queen module (Q-zone Coordination)
+                .{ .name = "queen", .module = queen_mod },
+                // GitHub module (G-zone)
+                .{ .name = "github", .module = github_mod },
+                // Farm module (F-zone)
+                .{ .name = "farm", .module = farm_mod },
+                // NOTE: tri CLI module NOT imported here - causes ownership conflicts
+                // NOTE: tri_utils imported via @import in main.zig to avoid ownership conflicts
+                // TRI individual modules (to avoid ownership conflicts)
+                .{ .name = "tri_colors", .module = tri_colors_mod },
+                .{ .name = "voice_engine", .module = voice_engine_mod },
+                .{ .name = "tri_state", .module = tri_state_mod },
+                .{ .name = "train_types", .module = train_types_mod },
+                .{ .name = "hippocampus", .module = hippocampus_mod },
+                .{ .name = "analysis_engine", .module = analysis_engine_mod },
+                .{ .name = "three_paths", .module = three_paths_mod },
+                .{ .name = "phi_poetry", .module = phi_poetry_mod },
+                // Queen modules needed by tri (imported directly to avoid queen circular deps)
+                .{ .name = "faculty_types", .module = faculty_types_mod },
+                .{ .name = "thalamus", .module = thalamus_mod },
+                .{ .name = "queen_ofc", .module = queen_ofc_mod },
+                // NOTE: cortex is queen module imported through queen module instead
             },
         }),
     });
+
+    // Build options for conditional compilation (tiered build)
+    tri.root_module.addOptions("build_options", build_options);
+
     b.installArtifact(tri);
 
     const run_tri = b.addRunArtifact(tri);
+
+    // Trinity MCP server (moved here to access tri_train_mod)
+    const trinity_mcp = b.addExecutable(.{
+        .name = "trinity-mcp",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("tools/mcp/trinity_mcp/server.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "needle", .module = needle_mod },
+                .{ .name = "vsa", .module = vsa_tri },
+                .{ .name = "treesitter_zig", .module = ts_zig_mod },
+                .{ .name = "tri_train", .module = tri_train_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+
+    b.installArtifact(trinity_mcp);
+
+    const _run_trinity_mcp = b.addRunArtifact(trinity_mcp);
     if (b.args) |args| {
-        run_tri.addArgs(args);
+        _run_trinity_mcp.addArgs(args);
     }
+    const trinity_mcp_step = b.step("trinity-mcp", "Run TRINITY MCP Server (35+ tools)");
+    trinity_mcp_step.dependOn(&_run_trinity_mcp.step);
+
     const tri_step = b.step("tri", "Run TRI - Unified Trinity CLI");
     tri_step.dependOn(&run_tri.step);
 
-    // ═══════════════════════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+    // TIERED BUILD TARGETS — Graceful Degradation Architecture
+    // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+    // L0: TEMPLE-CORE (sacred core — always compiles)
+    const temple_core_exe = b.addExecutable(.{
+        .name = "temple-core",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_temple.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+    b.installArtifact(temple_core_exe);
+
+    const run_temple_core = b.addRunArtifact(temple_core_exe);
+    if (b.args) |args| {
+        run_temple_core.addArgs(args);
+    }
+    const tier_temple_step = b.step("tier-temple", "Build L0 Temple (sacred core)");
+    tier_temple_step.dependOn(&run_temple_core.step);
+
+    // L1: TRI-QUEENS (supervisors — always compiles)
+    const tri_queens_exe = b.addExecutable(.{
+        .name = "tri-queens",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/main_queens.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+            },
+        }),
+    });
+    b.installArtifact(tri_queens_exe);
+
+    const run_tri_queens = b.addRunArtifact(tri_queens_exe);
+    if (b.args) |args| {
+        run_tri_queens.addArgs(args);
+    }
+    const tier_queens_step = b.step("tier-queens", "Build L1 Queens (supervisors)");
+    tier_queens_step.dependOn(&run_tri_queens.step);
+
+    // ═════════════════════════════════════════════════════════════════════════════════════════════════════
     // TRI‑27 EMULATOR — Ternary RISC Processor Emulator
     // ═══════════════════════════════════════════════════════════════════════════════════════════
     const tri_emu = b.addExecutable(.{
         .name = "tri-emu",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/emu/tri_emu_main.zig"),
+            .root_source_file = b.path("src/tri-lang/emu/tri_emu_main.zig"),
             .target = target,
             .optimize = optimize,
         }),
     });
     b.installArtifact(tri_emu);
 
-    const run_tri_emu = b.addRunArtifact(tri_emu);
+    // Only create run step if arguments are provided
     if (b.args) |args| {
-        run_tri_emu.addArgs(args);
+        if (args.len > 0) {
+            const run_tri_emu = b.addRunArtifact(tri_emu);
+            run_tri_emu.addArgs(args);
+            const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
+            tri_emu_step.dependOn(&run_tri_emu.step);
+        }
+    } else {
+        // Create a dummy step when no args provided
+        _ = b.step("tri-emu", "Run TRI-27 Emulator (use: zig build tri-emu -- <args>)");
     }
-    const tri_emu_step = b.step("tri-emu", "Run TRI-27 Emulator");
-    tri_emu_step.dependOn(&run_tri_emu.step);
 
     // ═══════════════════════════════════════════════════════════════════════════════════════════
     // TRI‑27 ASSEMBLER — Ternary assembler for .tbin bytecode
@@ -2670,27 +3398,43 @@ pub fn build(b: *std.Build) void {
     const tri_asm = b.addExecutable(.{
         .name = "tri-asm",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/emu/tri_asm.zig"),
+            .root_source_file = b.path("src/tri-lang/emu/tri_asm.zig"),
             .target = target,
             .optimize = optimize,
         }),
     });
     b.installArtifact(tri_asm);
 
-    const run_tri_asm = b.addRunArtifact(tri_asm);
+    // Only create run step if arguments are provided
     if (b.args) |args| {
-        run_tri_asm.addArgs(args);
+        if (args.len > 0) {
+            const run_tri_asm = b.addRunArtifact(tri_asm);
+            run_tri_asm.addArgs(args);
+            const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
+            tri_asm_step.dependOn(&run_tri_asm.step);
+        }
+    } else {
+        // Create a dummy step when no args provided
+        _ = b.step("tri-asm", "Run TRI-27 Assembler (use: zig build tri-asm -- <args>)");
     }
-    const tri_asm_step = b.step("tri-asm", "Run TRI-27 Assembler");
-    tri_asm_step.dependOn(&run_tri_asm.step);
 
     // TRI‑27 CLI — TRI-27 language toolchain (assemble/disassemble/run/validate/isa)
+    // TEMP: Disabled from default build due to 5 Zig 0.15 compatibility errors (tracked in #403)
+    // Core works: zig build tri-asm, zig build tri-emu, zig build test-tri27-golden
     const tri27 = b.addExecutable(.{
         .name = "tri27",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/tri27_cli_fixed.zig"),
+            .root_source_file = b.path("src/tri27/tri27_cli.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "tri_lang", .module = tri_lang_mod },
+                .{ .name = "emu", .module = emu_mod },
+                .{ .name = "coptic", .module = coptic_mod },
+                .{ .name = "reticular_raphe", .module = reticular_raphe_mod },
+                .{ .name = "phoenix_medulla", .module = phoenix_medulla_mod },
+                .{ .name = "queen_vmpfc", .module = queen_vmpfc_mod },
+            },
         }),
     });
     b.installArtifact(tri27);
@@ -2709,7 +3453,7 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "tri_utils", .module = tri_utils_mod },
+                .{ .name = "tri_utils", .module = _tri_utils_mod },
                 .{ .name = "tri_commands", .module = tri_commands_mod },
                 .{ .name = "trinity_swe", .module = vibeec_swe },
                 .{ .name = "igla_chat", .module = vibeec_chat },
@@ -2730,6 +3474,32 @@ pub fn build(b: *std.Build) void {
                 // Railway Circuit Breaker — 3-tier production-grade protection
                 .{ .name = "railway_circuit_breaker", .module = b.createModule(.{
                     .root_source_file = b.path("src/tri/railway_circuit_breaker.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // Dev modules (shared between tri and farm)
+                .{ .name = "dev_pipeline", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_pipeline.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_farm_evolve", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_farm_evolve.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_scan", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_scan.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_pick", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_pick.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                .{ .name = "dev_loop", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/dev_loop.zig"),
                     .target = target,
                     .optimize = optimize,
                 }) },
@@ -2813,11 +3583,18 @@ pub fn build(b: *std.Build) void {
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
 
     // TRI‑27 Experience Tests
+    const queen_episodes_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/episodes.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const tri27_experience_mod = b.createModule(.{
         .root_source_file = b.path("src/tri27/tri27_experience.zig"),
         .target = target,
         .optimize = optimize,
     });
+    tri27_experience_mod.addImport("queen_episodes", queen_episodes_mod);
+
     const tri27_experience_tests = b.addTest(.{
         .root_module = tri27_experience_mod,
     });
@@ -2827,7 +3604,7 @@ pub fn build(b: *std.Build) void {
 
     // TRI‑27 Golden Test (full cycle: asm → tbin → emulator)
     const tri27_golden_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri27/emu/test_golden.zig"),
+        .root_source_file = b.path("src/tri-lang/emu/test_golden.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -2837,6 +3614,77 @@ pub fn build(b: *std.Build) void {
     const run_tri27_golden_tests = b.addRunArtifact(tri27_golden_tests);
     const tri27_golden_tests_step = b.step("test-tri27-golden", "Run TRI‑27 Golden Test");
     tri27_golden_tests_step.dependOn(&run_tri27_golden_tests.step);
+
+    // Queen Self-Learning Tests (Phase 5)
+    const queen_self_learning_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/self_learning.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    queen_self_learning_mod.addImport("queen_episodes", queen_episodes_mod);
+
+    const queen_self_learning_tests = b.addTest(.{
+        .root_module = queen_self_learning_mod,
+    });
+    const run_queen_self_learning_tests = b.addRunArtifact(queen_self_learning_tests);
+    const queen_self_learning_tests_step = b.step("test-queen-self-learning", "Run Queen Self-Learning Tests");
+    queen_self_learning_tests_step.dependOn(&run_queen_self_learning_tests.step);
+
+    // TRI-27 Comprehensive Tests (all 36 opcodes)
+    const tri27_comprehensive_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri-lang/emu/test_comprehensive.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_comprehensive_tests = b.addTest(.{
+        .root_module = tri27_comprehensive_mod,
+    });
+    const run_tri27_comprehensive_tests = b.addRunArtifact(tri27_comprehensive_tests);
+    const tri27_comprehensive_tests_step = b.step("test-tri27-comprehensive", "Run TRI‑27 Comprehensive Tests");
+    tri27_comprehensive_tests_step.dependOn(&run_tri27_comprehensive_tests.step);
+
+    // TRI-27 .t27 Module Wrapper Tests (DOGFOOD-1 Phase 2)
+    const reticular_raphe_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/reticular_raphe_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_reticular_raphe_tests = b.addRunArtifact(reticular_raphe_tests);
+    const reticular_raphe_tests_step = b.step("test-reticular-raphe", "Run Reticular Raphe Tests");
+    reticular_raphe_tests_step.dependOn(&run_reticular_raphe_tests.step);
+
+    const phoenix_medulla_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/phoenix_medulla_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_phoenix_medulla_tests = b.addRunArtifact(phoenix_medulla_tests);
+    const phoenix_medulla_tests_step = b.step("test-phoenix-medulla", "Run Phoenix Medulla Tests");
+    phoenix_medulla_tests_step.dependOn(&run_phoenix_medulla_tests.step);
+
+    const queen_vmpfc_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri27/queen_vmpfc_wrapper.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "emu", .module = emu_mod },
+            },
+        }),
+    });
+    const run_queen_vmpfc_tests = b.addRunArtifact(queen_vmpfc_tests);
+    const queen_vmpfc_tests_step = b.step("test-queen-vmpfc", "Run Queen VMPFC Tests");
+    queen_vmpfc_tests_step.dependOn(&run_queen_vmpfc_tests.step);
 
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{
@@ -3748,6 +4596,20 @@ pub fn build(b: *std.Build) void {
     });
     const fpga_synth_step = b.step("fpga-synth", "Synthesize Sacred ALU with Yosys via Docker");
     fpga_synth_step.dependOn(&fpga_synth.step);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // MAC INSTALLER CLI — Multi-Mac Wave 9 Cluster Installer
+    // ═════════════════════════════════════════════════════════════════════════
+
+    const mac_installer = b.addExecutable(.{
+        .name = "tri-mac-installer",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/mac_installer.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(mac_installer);
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // SACRED TRINITY COMPREHENSIVE STEP

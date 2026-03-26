@@ -3,8 +3,8 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 
 const std = @import("std");
-const tvc_bigint = @import("bigint.zig");
-const tvc_packed = @import("packed_trit.zig");
+const tvc_bigint = @import("bigint");
+const tvc_packed = @import("packed_trit");
 
 pub const MAX_TRITS = 59049; // 3^10 - maximum for balanced ternary
 pub const TRITS_PER_BYTE = 5;

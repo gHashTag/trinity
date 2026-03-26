@@ -3,7 +3,7 @@ app = "trinity-fpga-synth"
 primary_region = "sjc"
 
 [build]
-  dockerfile = "Dockerfile.fly"
+  dockerfile = "Dockerfile.simple"
 
 [env]
   PORT = "8080"
@@ -17,12 +17,5 @@ primary_region = "sjc"
   processes = ["app"]
 
 [vm]
-  cpu = "4"
-  memory = "8gb"
-
-  # Larger disk for toolchain
-  size_gb = 40
-
-[[mounts]]
-  source = "fpga_data"
-  destination = "/data"
+  cpu = 1
+  memory = "256mb"

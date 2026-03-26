@@ -3,6 +3,69 @@
 > **Unified Architecture**: One brand, one math, one stack — from φ-structured brain maps to FPGA execution
 >
 > **Golden Identity**: `φ² + 1/φ² = 3` — the sacred formula connects all layers
+>
+> **Central Kernel**: TRI-27 executes all Trinity workloads
+
+---
+
+## TRI-27 — The Trinity Kernel
+
+**TRI-27 is the heart of Trinity** — all strands execute through this ternary kernel:
+
+```
+           ┌─────────────────────────────────────┐
+           │         Trinity S³AI                │
+           │   φ² + 1/φ² = 3 = TRINITY           │
+           └─────────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   Strand I          Strand II         Strand III
+   (Math)            (Brain)          (Language)
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │
+                    ╔═══════════╗
+                    ║  TRI-27   ║  ← KERNEL
+                    ║  27 regs  ║
+                    ║  36 ops   ║
+                    ╚═══════════╝
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+         Zig CPU              Verilog FPGA
+      (Emulator)           (Synthesis)
+```
+
+### Why TRI-27 is the Kernel
+
+| Property | Value | Significance |
+|----------|-------|--------------|
+| **Registers** | 27×32-bit (t0-t26) | 3 banks × 9 (Coptic alphabet) |
+| **Opcodes** | 36 | All operations needed for Trinity |
+| **Memory** | 64KB | Byte-addressable |
+| **States** | 3^27 = 7.6T | Ternary completeness |
+| **Identity** | φ² + 1/φ² = 3 | Architectural invariant |
+
+### Kernel Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **TTT Core** | `src/temple/tri27_core.zig` | L0 Sacred Layer (DO NOT TOUCH) |
+| **CPU State** | `src/tri27/emu/cpu_state.zig` | Registers, memory, flags |
+| **Decoder** | `src/tri27/emu/decoder.zig` | 36 opcode decode |
+| **Executor** | `src/tri27/emu/executor.zig` | Execution engine |
+| **CLI** | `src/tri27/tri27_cli.zig` | assemble/disassemble/run |
+| **ISA Spec** | `src/tri-lang/emu/specs/tri27_isa.md` | Full reference |
+
+### Quick Start
+
+```bash
+zig build tri27
+./zig-out/bin/tri27 run tests/hello.tbin
+```
+
+[Full TRI-27 Documentation](docs/tri27/README.md)
 
 ---
 

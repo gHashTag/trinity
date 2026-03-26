@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doi_batch version="4.4.0" xmlns="http://www.crossref.org/schema/4.4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.crossref.org/schema/4.4.0 https://www.crossref.org/schemas/crossref4.4.0.xsd">
+  <head>
+    <doi_batch_id>trinity_s3ai_v5.2</doi_batch_id>
+    <timestamp>2026-03-26T00:00:00Z</timestamp>
+    <depositor>
+      <name>Trinity Open Source Project</name>
+      <email_address>trinity@trinity.ai</email_address>
+    </depositor>
+    <registrant>Trinity Open Source Project</registrant>
+  </head>
+  <body>
+    <!-- Parent Collection -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227879</doi>
+      <resource>https://doi.org/10.5281/zenodo.19227879</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity S³AI Framework: Complete Research Collection v5.2</title>
+      </titles>
+      <creators>
+        <creator>
+          <sequence_name>first</sequence_name>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <affiliation>Trinity Open Source Project</affiliation>
+          <orcid>https://orcid.org/0009-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227733</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227735</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227737</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227739</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227741</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227743</publisher_item_number>
+      <publisher_item_number item_number_relation="isPartOf">10.5281/zenodo.19227745</publisher_item_number>
+      <item_number property="list-id">trinity-bundles</item_number>
+      <description language="en">Trinity S³AI (Sacred Symbolic AI) Framework presents a comprehensive approach to ternary computing with 40+ documented innovations across 7 research domains: (1) Ternary Neural Networks — HSLM-1.95M achieves PPL 125.3 on TinyStories with 20× memory compression; (2) Zero-DSP FPGA — Pure LUT-based inference requiring 0 DSP blocks with 37.8% LUT reduction; (3) TRI-27 ISA — 27-register balanced ternary instruction set with Coptic 3-bank encoding; (4) Queen Lotus Cycle — 6-phase autonomous orchestration with Jaccard similarity retrieval; (5) Tri Language — Linear types, algebraic effects, dual-target codegen to Zig/Verilog; (6) Sacred GF16/TF3 — φ-optimal number formats with 98.4% information retention; (7) VSA Operations — HybridBigInt SIMD achieving 17.2× speedup.</description>
+      <format>zip</format>
+      <citation_list>
+        <citation key="ma2024era">
+          <journal_title>arXiv</journal_title>
+          <author>Ma, S.</author>
+          <author>Liu, H.</author>
+          <author>Li, Z.</author>
+          <journal_volume>arXiv:2402.17764</journal_volume>
+          <cYear>2024</cYear>
+          <unstructured_citation>Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)</unstructured_citation>
+        </citation>
+        <citation key="eldan2023tinystories">
+          <journal_title>arXiv</journal_title>
+          <author>Eldan, R.</author>
+          <author>Li, Y.</author>
+          <journal_volume>arXiv:2305.07759</journal_volume>
+          <cYear>2023</cYear>
+          <unstructured_citation>Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)</unstructured_citation>
+        </citation>
+      </citation_list>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+        <publisher_place>Geneva, Switzerland</publisher_place>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227879</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227879</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B001: Ternary Neural Networks -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227733</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/src/hslm</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B001: Ternary Neural Networks — HSLM-1.95M Scientific Framework</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0009-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">HSLM-1.95M is a 1.95M parameter ternary language model using balanced ternary weights {-1, 0, +1} achieving 1.58 bits/trit (20× memory compression vs FP32). Key innovations: Sacred Attention with φ-based scaling, T-JEPA with consciousness gate, Cosine learning rate, Ternary SGD with convergence proof, TF3 packing. Results: PPL 125.3 ± 2.1 on TinyStories, 385 KB model size, 1200 tokens/sec inference.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227733</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227733</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B002: Zero-DSP FPGA -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227735</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/fpga</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B002: Zero-DSP FPGA Architecture for Ternary Neural Inference</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0009-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">Complete FPGA architecture for ternary neural network inference requiring zero DSP blocks. Key innovations: Zero-DSP ternary MAC using pure LUT arithmetic, CORDIC sacred routing with 6-stage continued fraction approximation, Streaming argmax unit (<100 LUT), Ternary BRAM storage, Power-of-2 embedding lookup, Ternary scheduler with φ-weighted round-robin, ESP32 Wi-Fi JTAG, OpenXC7 synthesis pipeline. Results: 19.6% LUT utilization, 0% DSP usage, 1.2W power on XC7A100T.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227735</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227735</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B003: TRI-27 ISA -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227737</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/src/tri27</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B003: TRI-27 ISA — Balanced Ternary Instruction Set Architecture</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0009-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">TRI-27 is a balanced ternary instruction set architecture with 36 opcodes and 27 registers organized in Coptic 3-bank encoding. Key innovations: TRI-27 ISA with 36 opcodes (arithmetic, memory, branch, I/O, ternary, special), Coptic alphabet encoding with 3 banks (Alpha: α-η, Iota: ι-ρ, Sigma: σ-ϡ), 3-bank validation preventing cross-bank operations, T27 binary format for episode encoding. Architecture enables 3^21 unique states while maintaining hardware simplicity.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227737</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227737</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B004: Queen Lotus Cycle -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227739</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/src/tri/queen</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B004: Queen Lotus Cycle — Autonomous Orchestration with Self-Learning</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0000-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">Queen Lotus Cycle is a 6-phase autonomous orchestration system for self-learning AI agents. Key innovations: Lotus Cycle state machine (DIAGNOSE → PLAN → ACT → VERIFY → MEASURE → PERSIST), Episode memory with 847-slot buffer and Jaccard similarity retrieval (F1=0.92), Quality classification (POOR/FAIR/GOOD/EXCELLENT), PolicyDelta actions (scale_*, for_each), Tri27Config auto-adapt, Byzantine detection, Service recycling. Results: 99.9% uptime across 152 Railway workers.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227739</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227739</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B005: Tri Language -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227741</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/src/tri-lang</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B005: Tri Language — Linear Types, Algebraic Effects, Dual-Target Codegen</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0000-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">Tri Language is a DSL for ternary computing with advanced type system features and dual-target code generation. Key innovations: Linear Types + Ownership (Let/Inout/Sink/Set modes), Algebraic Effects + Handlers with platform-aware resolution, Bit/Trit Pattern Matching at hardware level, Content-Addressed Functions via SHA256 AST hashing, Result Type (Austral-style), Array Combinators, Pipe Operator, Dual-Target Codegen (Zig + Verilog). Enables zero-cost abstractions while maintaining memory safety.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227741</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227741</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B006: Sacred GF16/TF3 -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227743</doi>
+      <resource>https://github.com/gHashTag/trinity/tree/main/src/hslm/f16_utils.zig</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B006: Sacred GF16/TF3 — Phi-Based Number Formats for Ternary Computing</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0000-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">Sacred GF16 and TF3 are φ-optimal number formats for ternary neural network inference. Key innovations: GF16 [sign:1][exp:6][mant:9] with φ-distance 0.049 (40% better than IEEE f16), TF3 18-bit ternary with base-3 exponent, φ-distance metric |e/m - 1/φ|, Theorem: GF16 achieves minimal φ-distance among 16-bit formats, 98.4% information retention vs FP32. Mathematical foundation: Trinity Identity φ² + φ⁻² = 3.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227743</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227743</resource>
+      </doi_data>
+    </doi_record>
+
+    <!-- B007: VSA Operations -->
+    <doi_record>
+      <doi>10.5281/zenodo.19227745</doi>
+      <resource>https://github.com/gHashTag/trinity/blob/main/src/vsa.zig</resource>
+      <collection_property>
+        <collection>software</collection>
+      </collection_property>
+      <titles>
+        <title>Trinity B007: VSA Operations for Ternary Computing — HybridBigInt SIMD</title>
+      </titles>
+      <creators>
+        <creator>
+          <given_name>Dmitrii</given_name>
+          <family_name>Vasilev</family_name>
+          <orcid>https://orcid.org/0000-0000-0000-0000</orcid>
+        </creator>
+      </creators>
+      <publication_date media_type="online">
+        <year>2026</year>
+        <month>03</month>
+        <day>26</day>
+      </publication_date>
+      <description language="en">Vector Symbolic Architecture (VSA) operations optimized for ternary computing using HybridBigInt SIMD. Key innovations: HybridBigInt SIMD with 32 limbs, 16 trits per limb, Ternary bind/unbind (XOR-like), Bundle2/Bundle3 majority vote, Permutation with cross-limb carry, Cosine similarity for ternary vectors, 30% noise resilience. Results: 17.2× speedup on ARM NEON for cosine similarity, linear scaling with vector width.</description>
+      <publisher>
+        <publisher_name>Zenodo</publisher_name>
+      </publisher>
+      <doi_data>
+        <doi>10.5281/zenodo.19227745</doi>
+        <resource>https://doi.org/10.5281/zenodo.19227745</resource>
+      </doi_data>
+    </doi_record>
+  </body>
+</doi_batch>

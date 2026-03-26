@@ -1,0 +1,257 @@
+# ═══════════════════════════════════════════════════════════════════
+# CONTENT REGISTRY — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Content-Addressed Function Registry
+# Source of truth for tri-lang/content_registry.zig codegen
+# TRI-LANG-6: Content-Addressed Functions
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_content_registry
+version: "0.1.0"
+module: tri_lang.content_registry
+description: "Content-addressed function registry for duplicate detection (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  FunctionLocation:
+    description: "Location of a function definition"
+    fields:
+      - name: module
+        type: "[]const u8"
+        description: "Module name (e.g., 'tri.lang.array')"
+      - name: name
+        type: "[]const u8"
+        description: "Original function name (for display)"
+      - name: line
+        type: "usize"
+        description: "Definition line number"
+      - name: file_path
+        type: "[]const u8"
+        description: "File path (for error messages)"
+    methods:
+      - name: clone
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!FunctionLocation"
+        description: "Duplicate location for allocator management"
+        errors:
+          - OutOfMemory
+
+      - name: deinit
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "void"
+        description: "Free resources"
+
+  DuplicateInfo:
+    description: "Information about duplicate functions"
+    fields:
+      - name: hash
+        type: "ContentHash"
+        description: "Content hash that identifies the duplicate"
+      - name: locations
+        type: "[]const FunctionLocation"
+        description: "All locations where this function appears"
+    methods:
+      - name: deinit
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "void"
+        description: "Free resources"
+
+  ContentRegistry:
+    description: "Content registry - maps content hashes to function locations"
+    fields:
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Memory allocator"
+      - name: entries
+        type: "std.HashMap([32]u8, []const FunctionLocation, Context, 80)"
+        description: "Map from hash bytes to locations"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "!ContentRegistry"
+        description: "Initialize empty registry"
+        errors:
+          - OutOfMemory
+
+      - name: deinit
+        returns: "void"
+        description: "Free all resources"
+
+      - name: register
+        params:
+          - name: hash
+            type: "ContentHash"
+          - name: loc
+            type: "FunctionLocation"
+        returns: "!void"
+        description: "Register a function with its content hash"
+        errors:
+          - OutOfMemory
+
+      - name: registerBytes
+        params:
+          - name: hash_bytes
+            type: "[32]u8"
+          - name: loc
+            type: "FunctionLocation"
+        returns: "!void"
+        description: "Register a function by raw hash bytes"
+        errors:
+          - OutOfMemory
+
+      - name: lookup
+        params:
+          - name: hash
+            type: "ContentHash"
+        returns: "?[]const FunctionLocation"
+        description: "Look up function locations by content hash"
+
+      - name: lookupBytes
+        params:
+          - name: hash_bytes
+            type: "[32]u8"
+        returns: "?[]const FunctionLocation"
+        description: "Look up by raw hash bytes"
+
+      - name: contains
+        params:
+          - name: hash
+            type: "ContentHash"
+        returns: "bool"
+        description: "Check if a function with this hash exists"
+
+      - name: size
+        returns: "usize"
+        description: "Get total number of registered functions (unique hashes)"
+
+      - name: totalFunctions
+        returns: "usize"
+        description: "Get total number of functions (including duplicates)"
+
+      - name: detectDuplicates
+        returns: "![]const DuplicateInfo"
+        description: "Detect all duplicate functions (appearing >1 time)"
+        errors:
+          - OutOfMemory
+
+      - name: stats
+        returns: "Stats"
+        description: "Get statistics about the registry"
+
+      - name: clear
+        returns: "void"
+        description: "Clear all entries"
+
+      - name: merge
+        params:
+          - name: other
+            type: "*const ContentRegistry"
+        returns: "!void"
+        description: "Merge another registry into this one"
+        errors:
+          - OutOfMemory
+
+  Stats:
+    description: "Registry statistics"
+    fields:
+      - name: unique_hashes
+        type: "usize"
+        description: "Number of unique content hashes"
+      - name: total_functions
+        type: "usize"
+        description: "Total number of functions registered"
+      - name: duplicate_count
+        type: "usize"
+        description: "Number of hashes with duplicates"
+      - name: duplicate_functions
+        type: "usize"
+        description: "Total count of duplicate functions"
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+functions:
+  loadFromFile:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: path
+        type: "[]const u8"
+    returns: "!ContentRegistry"
+    description: "Load registry from JSON file"
+    errors:
+      - OutOfMemory
+      - "std.fs.File.Error"
+      - "std.json.Error"
+
+  saveToFile:
+    params:
+      - name: self
+        type: "*const ContentRegistry"
+      - name: path
+        type: "[]const u8"
+    returns: "!void"
+    description: "Save registry to JSON file"
+    errors:
+      - OutOfMemory
+      - "std.fs.File.Error"
+
+  parseFromJson:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: json_str
+        type: "[]const u8"
+    returns: "!ContentRegistry"
+    description: "Parse registry from JSON string"
+    errors:
+      - OutOfMemory
+      - "std.json.Error"
+
+  toJson:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: self
+        type: "*const ContentRegistry"
+    returns: "![]const u8"
+    description: "Serialize registry to JSON string"
+    errors:
+      - OutOfMemory
+
+constants:
+  DEFAULT_REGISTRY_PATH:
+    type: "[]const u8"
+    value: ".trinity/content_registry.json"
+    description: "Default registry file path"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Content registry enables:
+# - Duplicate function detection across codebase
+# - Function identity independent of file location
+# - git mv doesn't break function references
+# - Content-addressed storage and retrieval
+#
+# Example:
+#   var registry = try ContentRegistry.init(allocator);
+#   try registry.register(hash, loc1);
+#   try registry.register(hash, loc2); // Duplicate detected
+#   const dups = try registry.detectDuplicates();
+#   // dups[0].locations.len == 2

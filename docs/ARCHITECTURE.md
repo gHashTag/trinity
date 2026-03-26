@@ -33,6 +33,51 @@ Strand III (Language + Hardware)
 
 ---
 
+## TRI-27 Kernel — Central Execution Engine
+
+**TRI-27 is the heart of Trinity** — all strands execute through this kernel:
+
+```
+Strand I (Math) → TRI-27 Sacred Ops → φ-arithmetic, ternary logic
+Strand II (Brain) → TRI-27 Control Flow → Episode execution, state machine
+Strand III (Target) → TRI-27 ISA → Zig CPU / Verilog FPGA
+```
+
+### Why 27?
+
+- **3^27 = 7.6 trillion** possible states (ternary completeness)
+- **3 banks × 9 registers** (Coptic alphabet mapping)
+- **φ² + 1/φ² = 3** → ternary balance
+
+### Kernel Files
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **TTT Core** | `src/temple/tri27_core.zig` | L0 Sacred Layer (DO NOT TOUCH) |
+| **CPU State** | `src/tri27/emu/cpu_state.zig` | Registers, memory, flags |
+| **Decoder** | `src/tri27/emu/decoder.zig` | 36 opcode decode |
+| **Executor** | `src/tri27/emu/executor.zig` | Execution engine |
+| **CLI** | `src/tri27/tri27_cli.zig` | assemble/disassemble/run |
+| **ISA Spec** | `src/tri-lang/emu/specs/tri27_isa.md` | Full reference |
+
+### Tests
+
+| Test | Status |
+|------|--------|
+| Golden | 15/15 passing |
+| Comprehensive | 36/36 passing |
+| Experience | 4/4 passing |
+| Queen Self-Learning | 4/4 passing |
+
+```bash
+zig build test-tri27-golden        # Golden tests
+zig build test-tri27-comprehensive # All opcodes
+zig build test-tri27-experience    # Experience tracking
+zig build test-queen-self-learning # Self-learning
+```
+
+---
+
 ## Strand I — Mathematical Foundation
 
 ### Роль

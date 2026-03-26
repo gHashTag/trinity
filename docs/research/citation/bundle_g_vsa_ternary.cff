@@ -1,0 +1,97 @@
+cff-version: 1.2.0
+message: "If you use any Trinity VSA discoveries, please cite our defensive publication."
+title: "VSA Operations for Ternary Computing"
+abstract: "Vector Symbolic Architecture requires high-dimensional representations that are computationally expensive on binary hardware. Existing VSA implementations don't exploit ternary computing's natural alignment with {-1,0,+1} representations for efficiency gains. We present ternary VSA operations using HybridBigInt SIMD achieving 11.87× speedup (p<0.001) versus scalar baselines with cosine similarity in [-1,+1] range. Our implementation includes bind/unbind for associative memory, bundle operations (2-ary/3-ary) for majority voting with noise resilience, ternary dot-product for optimized {-1,0,+1} arithmetic, cyclic permutation for position-independent encoding, and text encoding mapping characters to Vec32i8 hypervectors. Test coverage: 11/11 tests passing (100%) including bind/unbind/bundle/cosine/similarity verification. This enables efficient hyperdimensional computing on ternary hardware with 512D hypervectors and sub-microsecond operation latency."
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 1.0.0
+doi: TBD
+date-released: 2026-03-26
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "VSA"
+  - "Vector Symbolic Architecture"
+  - "ternary computing"
+  - "bind"
+  - "unbind"
+  - "bundle"
+  - "majority vote"
+  - "HybridBigInt"
+  - "SIMD"
+  - "dot-product"
+  - "ternary vector"
+  - "permutation"
+  - "cyclic"
+  - "cosine similarity"
+  - "text encoding"
+  - "Vec32i8"
+  - "associative memory"
+  - "noise resilience"
+  - "hyperdimensional computing"
+license: CC-BY-4.0
+identifiers:
+  - description: "Zenodo DOI for VSA ternary defensive publication"
+    type: doi
+    value: "TBD"
+  - description: "GitHub repository"
+    type: url
+    value: "https://github.com/gHashTag/trinity"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Prior Art Network"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/PRIOR_ART_NETWORK.md"
+preferred-citation:
+  type: article
+  title: "VSA Operations for Ternary Computing"
+  authors:
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0000-0000-0000-0000"
+  year: 2026
+  month: 3
+  journal: "Zenodo"
+  volume: "v1.0.0"
+  issue: "Defensive Publication"
+  doi: "TBD"
+  url: "https://zenodo.org/doi/TBD"
+references:
+  - type: article
+    authors:
+      - family-names: "Kanerva"
+        given-names: "P."
+    title: "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors"
+    year: 2009
+    journal: "Cognitive Computation"
+    volume: "1"
+    issue: "2"
+    pages: "139-159"
+    doi: "10.1007/s12559-009-9008-3"
+  - type: article
+    authors:
+      - family-names: "Plate"
+        given-names: "T. A."
+    title: "Holographic Reduced Representations"
+    year: 1995
+    journal: "IEEE Transactions on Neural Networks"
+    volume: "6"
+    issue: "3"
+    pages: "623-641"
+    doi: "10.1109/72.387005"
+  - type: article
+    authors:
+      - family-names: "Gayler"
+        given-names: "R. W."
+    title: "Multiplicative Binding, Representation Operators & Analogy"
+    year: 2003
+    booktitle: "Advances in Analogy Research: Integration of Theory and Data from the Cognitive, Computational and Neural Sciences"
+    publisher: "Sofia Press"
+    pages: "149-153"

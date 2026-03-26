@@ -29,8 +29,26 @@ behaviors:
     when: User runs tri fpga status
     then: Reports toolchain availability and board connection status
 
+  - name: fpgaBuildUart
+    given: uart_bridge_v2.v source and J2 constraints
+    when: User runs tri fpga build-uart
+    then: Synthesizes uart_bridge_j2.bit via openxc7 toolchain
+
+  - name: fpgaFlashUart
+    given: uart_bridge_j2.bit and JTAG connection
+    when: User runs tri fpga flash-uart
+    then: Flashes FPGA via flash_no_sudo.sh (keychain password)
+
+  - name: fpgaUartTest
+    given: Programmed FPGA and FT232RL on J2
+    when: User runs tri fpga uart-test
+    then: Sends PING/Hello/0x61 tests, prints responses
+
 export_functions:
   - fpgaSynth
   - fpgaFlash
   - fpgaVerify
   - fpgaStatus
+  - fpgaBuildUart
+  - fpgaFlashUart
+  - fpgaUartTest

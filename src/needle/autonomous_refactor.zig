@@ -10,7 +10,7 @@
 
 const std = @import("std");
 const zig_parser = @import("zig_parser.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

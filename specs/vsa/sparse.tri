@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════
+# VSA SPARSE OPERATIONS — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Efficient operations on sparse trit representations
+# Source of truth for vsa_core/sparse.zig codegen
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: vsa_sparse
+version: "0.1.0"
+module: vsa_core.sparse
+description: "Sparse VSA operations (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  SparseVector:
+    description: "Sparse trit vector (only stores non-zero positions)"
+    fields:
+      - name: indices
+        type: "[]const usize"
+        description: "Indices of non-zero elements"
+      - name: values
+        type: "[]const Trit"
+        description: "Values at those indices"
+      - name: len
+        type: "usize"
+        description: "Original dense vector length"
+    methods:
+      - name: fromDense
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: dense
+            type: "[]const Trit"
+        returns: "SparseVector"
+        description: "Create sparse vector from dense representation"
+
+      - name: toDense
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "[]Trit"
+        description: "Convert to dense vector"
+
+      - name: dotProduct
+        params:
+          - name: other
+            type: "SparseVector"
+        returns: "i64"
+        description: "Dot product (only iterate over non-zeros)"
+
+      - name: cosineSimilarity
+        params:
+          - name: other
+            type: "SparseVector"
+        returns: "f64"
+        description: "Cosine similarity for sparse vectors"
+
+      - name: sparsity
+        returns: "f64"
+        description: "Sparsity ratio (0 = dense, 1 = empty)"
+
+      - name: memoryUsage
+        returns: "usize"
+        description: "Memory usage in bytes"
+
+      - name: deinit
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "void"
+        description: "Deallocate sparse vector"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "SparseVector fromDense"
+    given: "dense vector with zeros"
+    when: "converted to sparse"
+    then: "non-zero count matches, indices correct"
+
+  - name: "SparseVector toDense roundtrip"
+    given: "dense vector"
+    when: "converted to sparse and back"
+    then: "original vector recovered"
+
+  - name: "SparseVector dotProduct"
+    given: "two sparse vectors"
+    when: "computing dot product"
+    then: "only non-zero positions considered"
+
+  - name: "SparseVector sparsity"
+    given: "sparse vector"
+    when: "computing sparsity ratio"
+    then: "returns 1 - (nnz / total)"

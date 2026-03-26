@@ -1,0 +1,279 @@
+# ═══════════════════════════════════════════════════════════════════
+# TYPE_ENV — Tri Specification (TTT Dogfood v0.1)
+# ═══════════════════════════════════════════════════════════════════
+# Type Environment for Tri Language
+# Source of truth for tri-lang/type_env.zig codegen
+# Wave 2, Phase 1.2: Type Environment
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════
+
+name: tri_type_env
+version: "0.1.0"
+module: tri_lang.type_env
+description: "Type Environment for Tri Language (TTT Dogfood v0.1)"
+language: zig
+
+# ═══════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+types:
+  Scheme:
+    description: "Type Scheme — possibly polymorphic type"
+    underlying: "union(enum)"
+    variants:
+      - Mono: "Type"
+        description: "Monomorphic type (no ∀-quantifiers)"
+      - Poly: "Poly"
+        description: "Polymorphic type: ∀α₁...αₙ.T"
+    methods:
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]u8"
+        description: "Format scheme as string"
+        errors:
+          - OutOfMemory
+
+  Poly:
+    description: "Polymorphic type: ∀α₁...αₙ.T"
+    fields:
+      - name: vars
+        type: "[]const TypeId"
+        description: "Bound type variables"
+      - name: body
+        type: "Type"
+        description: "Body type (may contain type variables)"
+    methods:
+      - name: format
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "![]u8"
+        description: "Format poly type as string"
+        errors:
+          - OutOfMemory
+
+  Binding:
+    description: "Binding: name -> Scheme"
+    fields:
+      - name: name
+        type: "[]const u8"
+        description: "Variable name"
+      - name: scheme
+        type: "Scheme"
+        description: "Type scheme"
+
+  TypeEnv:
+    description: "Type Environment — chain of scopes"
+    fields:
+      - name: bindings
+        type: "std.StringHashMap(Scheme)"
+        description: "Bindings in this scope"
+      - name: parent
+        type: "?*const TypeEnv"
+        description: "Parent environment (null for global scope)"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "TypeEnv"
+        description: "Create new empty environment"
+
+      - name: initWithParent
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: parent
+            type: "*const TypeEnv"
+        returns: "TypeEnv"
+        description: "Create new environment with parent"
+
+      - name: deinit
+        returns: "void"
+        description: "Deinitialize environment"
+
+      - name: extend
+        params:
+          - name: name
+            type: "[]const u8"
+          - name: scheme
+            type: "Scheme"
+        returns: "!void"
+        description: "Add binding to this environment"
+        errors:
+          - OutOfMemory
+
+      - name: lookup
+        params:
+          - name: name
+            type: "[]const u8"
+        returns: "?Scheme"
+        description: "Look up name in environment chain"
+
+      - name: instantiate
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: scheme
+            type: "Poly"
+          - name: subst
+            type: "*const Subst"
+        returns: "!Scheme"
+        description: "Instantiate scheme with substitution"
+        errors:
+          - OutOfMemory
+
+      - name: generalize
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: t
+            type: "Type"
+        returns: "!Scheme"
+        description: "Generalize type to polymorphic scheme"
+        errors:
+          - OutOfMemory
+
+  Subst:
+    description: "Type substitution — maps type variables to types"
+    fields:
+      - name: map
+        type: "std.AutoHashMap(TypeId, Type)"
+        description: "Map from TypeId to Type (substitutions)"
+    methods:
+      - name: init
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+        returns: "Subst"
+        description: "Create empty substitution"
+
+      - name: deinit
+        returns: "void"
+        description: "Deinitialize substitution"
+
+      - name: extend
+        params:
+          - name: var_id
+            type: "TypeId"
+          - name: t
+            type: "Type"
+        returns: "!void"
+        description: "Extend substitution with new binding"
+        errors:
+          - OutOfMemory
+
+      - name: get
+        params:
+          - name: var_id
+            type: "TypeId"
+        returns: "?Type"
+        description: "Look up substitution for type variable"
+
+      - name: apply
+        params:
+          - name: allocator
+            type: "std.mem.Allocator"
+          - name: t
+            type: "Type"
+        returns: "!Type"
+        description: "Apply substitution to type recursively"
+        errors:
+          - OutOfMemory
+
+# ═══════════════════════════════════════════════════════════════════
+# INTERNAL FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════
+
+internal_functions:
+  - name: computeFreeVars
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: ftv_vars
+        type: "[]const TypeId"
+      - name: t
+        type: "Type"
+    returns: "![]TypeId"
+    description: "Compute free type variables — variables not in env"
+    errors:
+      - OutOfMemory
+
+  - name: cleanupType
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: t
+        type: "*Type"
+    returns: "void"
+    description: "Helper: cleanup Type if it has internal allocations"
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "type_env_init"
+    given: "New environment"
+    when: "initialized"
+    then: "has empty bindings and null parent"
+
+  - name: "type_env_extend_lookup"
+    given: "Environment with binding"
+    when: "looking up bound name"
+    then: "returns the bound scheme"
+
+  - name: "type_env_parent_lookup"
+    given: "Child environment with parent"
+    when: "looking up name in parent"
+    then: "returns parent's binding"
+
+  - name: "type_env_not_found"
+    given: "Empty environment"
+    when: "looking up unbound name"
+    then: "returns null"
+
+  - name: "subst_init"
+    given: "New substitution"
+    when: "initialized"
+    then: "has empty map"
+
+  - name: "subst_extend"
+    given: "Substitution"
+    when: "extending with binding"
+    then: "binding is added to map"
+
+  - name: "subst_apply_var"
+    given: "Substitution with var->Int"
+    when: "applying to var type"
+    then: "returns Int type"
+
+  - name: "subst_apply_primitive"
+    given: "Empty substitution"
+    when: "applying to primitive type"
+    then: "returns unchanged type"
+
+  - name: "subst_apply_no_binding"
+    given: "Substitution without binding"
+    when: "applying to unbound var"
+    then: "returns var unchanged"
+
+# ═══════════════════════════════════════════════════════════════════
+# DESIGN NOTES
+# ═══════════════════════════════════════════════════════════════════
+
+# Type Environment for Hindley-Milner type inference:
+# - Scheme: Monomorphic (concrete) or Polymorphic (∀-quantified)
+# - Poly: Type with bound type variables and body
+# - TypeEnv: Lexical scopes with parent links
+# - Subst: Type substitution mapping type variables to types
+#
+# Operations:
+# - extend: Add binding to environment
+# - lookup: Resolve name in environment chain
+# - instantiate: Replace type vars in scheme with actual types
+# - generalize: Convert monomorphic type to polymorphic scheme
+# - apply: Apply substitution to type recursively

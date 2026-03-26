@@ -2,7 +2,9 @@
 // Concurrency and Parallel Processing layer for VSA
 const std = @import("std");
 const common = @import("common.zig");
-const HybridBigInt = common.HybridBigInt;
+// Import HybridBigInt from hybrid module
+const hybrid_mod = @import("hybrid");
+const HybridBigInt = hybrid_mod.HybridBigInt;
 
 // CONSTANTS
 pub const POOL_SIZE = 4;

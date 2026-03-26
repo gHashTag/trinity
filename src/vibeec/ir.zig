@@ -82,24 +82,26 @@ pub const Value = struct {
     uses: std.ArrayList(*Instruction),
 
     pub fn init(allocator: Allocator, id: u32, kind: ValueKind, ir_type: IRType) Value {
+        var uses = std.ArrayList(*Instruction).empty;
+        uses.ensureTotalCapacity(allocator, 4) catch {};
         return .{
             .id = id,
             .kind = kind,
             .ir_type = ir_type,
-            .uses = std.ArrayList(*Instruction).init(allocator),
+            .uses = uses,
         };
     }
 
-    pub fn deinit(self: *Value) void {
-        self.uses.deinit();
+    pub fn deinit(self: *Value, allocator: Allocator) void {
+        self.uses.deinit(allocator);
     }
 
     pub fn isConstant(self: *const Value) bool {
         return @intFromEnum(self.kind) <= @intFromEnum(ValueKind.const_phi);
     }
 
-    pub fn addUse(self: *Value, inst: *Instruction) !void {
-        try self.uses.append(inst);
+    pub fn addUse(self: *Value, inst: *Instruction, allocator: Allocator) !void {
+        try self.uses.append(allocator, inst);
     }
 };
 
@@ -204,11 +206,11 @@ pub const Instruction = struct {
         };
     }
 
-    pub fn addOperand(self: *Instruction, val: *Value) !void {
+    pub fn addOperand(self: *Instruction, val: *Value, allocator: Allocator) !void {
         if (self.operand_count >= 4) return error.TooManyOperands;
         self.operands[self.operand_count] = val;
         self.operand_count += 1;
-        try val.addUse(self);
+        try val.addUse(self, allocator);
     }
 
     pub fn getOperand(self: *const Instruction, idx: usize) ?*Value {
@@ -252,27 +254,28 @@ pub const BasicBlock = struct {
     parent: ?*Function = null,
 
     pub fn init(allocator: Allocator, id: u32) BasicBlock {
+        _ = allocator;
         return .{
             .id = id,
-            .instructions = std.ArrayList(*Instruction).init(allocator),
-            .predecessors = std.ArrayList(*BasicBlock).init(allocator),
-            .successors = std.ArrayList(*BasicBlock).init(allocator),
-            .dom_children = std.ArrayList(*BasicBlock).init(allocator),
-            .dom_frontier = std.ArrayList(*BasicBlock).init(allocator),
+            .instructions = std.ArrayList(*Instruction).empty,
+            .predecessors = std.ArrayList(*BasicBlock).empty,
+            .successors = std.ArrayList(*BasicBlock).empty,
+            .dom_children = std.ArrayList(*BasicBlock).empty,
+            .dom_frontier = std.ArrayList(*BasicBlock).empty,
         };
     }
 
-    pub fn deinit(self: *BasicBlock) void {
-        self.instructions.deinit();
-        self.predecessors.deinit();
-        self.successors.deinit();
-        self.dom_children.deinit();
-        self.dom_frontier.deinit();
+    pub fn deinit(self: *BasicBlock, allocator: Allocator) void {
+        self.instructions.deinit(allocator);
+        self.predecessors.deinit(allocator);
+        self.successors.deinit(allocator);
+        self.dom_children.deinit(allocator);
+        self.dom_frontier.deinit(allocator);
     }
 
-    pub fn append(self: *BasicBlock, inst: *Instruction) !void {
+    pub fn append(self: *BasicBlock, inst: *Instruction, allocator: Allocator) !void {
         inst.parent = self;
-        try self.instructions.append(inst);
+        try self.instructions.append(allocator, inst);
     }
 
     pub fn getTerminator(self: *const BasicBlock) ?*Instruction {
@@ -281,9 +284,9 @@ pub const BasicBlock = struct {
         return if (last.isTerminator()) last else null;
     }
 
-    pub fn addSuccessor(self: *BasicBlock, succ: *BasicBlock) !void {
-        try self.successors.append(succ);
-        try succ.predecessors.append(self);
+    pub fn addSuccessor(self: *BasicBlock, succ: *BasicBlock, allocator: Allocator) !void {
+        try self.successors.append(allocator, succ);
+        try succ.predecessors.append(allocator, self);
     }
 };
 
@@ -313,40 +316,46 @@ pub const Function = struct {
     allocator: Allocator,
 
     pub fn init(allocator: Allocator, id: u32, name: []const u8, ret_type: IRType) Function {
+        var params = std.ArrayList(*Value).empty;
+        var blocks = std.ArrayList(*BasicBlock).empty;
+        var all_instructions = std.ArrayList(*Instruction).empty;
+        params.ensureTotalCapacity(allocator, 8) catch {};
+        blocks.ensureTotalCapacity(allocator, 8) catch {};
+        all_instructions.ensureTotalCapacity(allocator, 32) catch {};
         return .{
             .id = id,
             .name = name,
             .return_type = ret_type,
-            .params = std.ArrayList(*Value).init(allocator),
-            .blocks = std.ArrayList(*BasicBlock).init(allocator),
+            .params = params,
+            .blocks = blocks,
             .value_map = std.AutoHashMap(u32, *Value).init(allocator),
-            .all_instructions = std.ArrayList(*Instruction).init(allocator),
+            .all_instructions = all_instructions,
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *Function) void {
         for (self.blocks.items) |block| {
-            block.deinit();
+            block.deinit(self.allocator);
             self.allocator.destroy(block);
         }
-        self.blocks.deinit();
+        self.blocks.deinit(self.allocator);
 
         for (self.all_instructions.items) |inst| {
             if (inst.phi_incoming) |*incoming| {
-                incoming.deinit();
+                incoming.deinit(self.allocator);
             }
             self.allocator.destroy(inst);
         }
-        self.all_instructions.deinit();
+        self.all_instructions.deinit(self.allocator);
 
         var val_iter = self.value_map.valueIterator();
         while (val_iter.next()) |val| {
-            val.*.deinit();
+            val.*.deinit(self.allocator);
             self.allocator.destroy(val.*);
         }
         self.value_map.deinit();
-        self.params.deinit();
+        self.params.deinit(self.allocator);
     }
 
     /// Create new basic block
@@ -356,7 +365,7 @@ pub const Function = struct {
         block.name = name;
         block.parent = self;
         self.next_block_id += 1;
-        try self.blocks.append(block);
+        try self.blocks.append(self.allocator, block);
 
         if (self.entry_block == null) {
             self.entry_block = block;
@@ -400,21 +409,21 @@ pub const Function = struct {
         const inst = try self.allocator.create(Instruction);
         inst.* = Instruction.init(self.next_inst_id, opcode);
         self.next_inst_id += 1;
-        try self.all_instructions.append(inst);
+        try self.all_instructions.append(self.allocator, inst);
         return inst;
     }
 
     /// Build binary operation
     pub fn buildBinOp(self: *Function, block: *BasicBlock, opcode: Opcode, lhs: *Value, rhs: *Value, result_type: IRType) !*Value {
         const inst = try self.createInst(opcode);
-        try inst.addOperand(lhs);
-        try inst.addOperand(rhs);
+        try inst.addOperand(lhs, self.allocator);
+        try inst.addOperand(rhs, self.allocator);
 
         const result = try self.createValue(.instruction, result_type);
         result.def_inst = inst;
         inst.result = result;
 
-        try block.append(inst);
+        try block.append(inst, self.allocator);
         return result;
     }
 
@@ -422,48 +431,49 @@ pub const Function = struct {
     pub fn buildRet(self: *Function, block: *BasicBlock, val: ?*Value) !void {
         const inst = try self.createInst(.ret);
         if (val) |v| {
-            try inst.addOperand(v);
+            try inst.addOperand(v, self.allocator);
         }
-        try block.append(inst);
+        try block.append(inst, self.allocator);
     }
 
     /// Build unconditional branch
     pub fn buildBr(self: *Function, block: *BasicBlock, target: *BasicBlock) !void {
         const inst = try self.createInst(.br);
         inst.true_block = target;
-        try block.append(inst);
-        try block.addSuccessor(target);
+        try block.append(inst, self.allocator);
+        try block.addSuccessor(target, self.allocator);
     }
 
     /// Build conditional branch
     pub fn buildCondBr(self: *Function, block: *BasicBlock, cond: *Value, true_bb: *BasicBlock, false_bb: *BasicBlock) !void {
         const inst = try self.createInst(.br_cond);
-        try inst.addOperand(cond);
+        try inst.addOperand(cond, self.allocator);
         inst.true_block = true_bb;
         inst.false_block = false_bb;
-        try block.append(inst);
-        try block.addSuccessor(true_bb);
-        try block.addSuccessor(false_bb);
+        try block.append(inst, self.allocator);
+        try block.addSuccessor(true_bb, self.allocator);
+        try block.addSuccessor(false_bb, self.allocator);
     }
 
     /// Build phi node
     pub fn buildPhi(self: *Function, block: *BasicBlock, ir_type: IRType) !*Instruction {
         const inst = try self.createInst(.phi);
-        inst.phi_incoming = std.ArrayList(PhiIncoming).init(self.allocator);
+        var phi_incoming = std.ArrayList(PhiIncoming).empty;
+        phi_incoming.ensureTotalCapacity(self.allocator, 2) catch {};
+        inst.phi_incoming = phi_incoming;
 
         const result = try self.createValue(.instruction, ir_type);
         result.def_inst = inst;
         inst.result = result;
 
-        try block.append(inst);
+        try block.append(inst, self.allocator);
         return inst;
     }
 
     /// Add phi incoming
     pub fn addPhiIncoming(self: *Function, phi: *Instruction, val: *Value, from_block: *BasicBlock) !void {
-        _ = self;
         if (phi.phi_incoming) |*incoming| {
-            try incoming.append(.{ .value = val, .block = from_block });
+            try incoming.append(self.allocator, .{ .value = val, .block = from_block });
         }
     }
 };

@@ -7,12 +7,13 @@
 
 const std = @import("std");
 const math = std.math;
-const vsa = @import("vsa.zig");
+const firebird_vsa = @import("vsa.zig");
+const vsa = firebird_vsa; // Shorthand for VSA operations
 const vsa_simd = @import("vsa_simd.zig");
 const firebird = @import("firebird.zig");
 
-const TritVec = vsa.TritVec;
-const Trit = vsa.Trit;
+const TritVec = firebird_vsa.TritVec;
+const Trit = firebird_vsa.Trit;
 const PhiSpiral = firebird.PhiSpiral;
 
 // Use SIMD operations for performance

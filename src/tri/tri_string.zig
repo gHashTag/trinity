@@ -7,7 +7,7 @@
 //! φ² + 1/φ² = 3 = TRINITY | γ = φ⁻³ | KOSCHEI IS IMMORTAL
 
 const std = @import("std");
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 // Import string theory modules (placeholders added P1.6)
 const e8_lattice = @import("string_e8.zig");
@@ -369,15 +369,14 @@ fn cmdManifold(args: []const []const u8) !void {
 
     // Formula 416: φ-stabilized moduli
     tri_colors.printCyan("[416] φ-STABILIZED MODULI:\n", .{});
-    const moduli = string_phi.compactificationModuli();
-    tri_colors.printWhite("      Moduli follow φ-powers:\n", .{});
-    // Placeholder: show single moduli value (P1.6 TODO: implement full moduli array)
-    tri_colors.printWhite("        μ = {d:.6}\n", .{moduli});
+    const moduli_value = string_phi.compactificationModuli();
+    tri_colors.printWhite("      Compactification moduli (φ-stabilized):\n", .{});
+    tri_colors.printWhite("      μ = {d:.6}\n", .{moduli_value});
     tri_colors.printWhite("\n", .{});
 
     // Formula 417: Volume stabilization
     tri_colors.printCyan("[417] VOLUME STABILIZATION:\n", .{});
-    const vol = string_phi.compactificationVolume(moduli);
+    const vol = string_phi.compactificationVolume(moduli_value);
     tri_colors.printWhite("      V = (product mu_i)^{{1/6}}\n", .{});
     tri_colors.printWhite("      V = {d:.6} (geometric mean)\n\n", .{vol});
 

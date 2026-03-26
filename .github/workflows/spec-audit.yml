@@ -1,0 +1,34 @@
+# TRI-27 Idiom 11 — Spec Audit CI
+# Runs on every push and PR to ensure spec coverage >= 80%
+
+name: Spec Audit
+
+on:
+  push:
+    branches: [main, feat/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  audit:
+    name: Spec Coverage Audit
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Zig
+        run: brew install zig
+
+      - name: Build tri
+        run: zig build tri
+
+      - name: Run spec audit
+        run: ./zig-out/bin/tri spec audit --fail-below 80
+
+      - name: Upload coverage report
+        if: always()
+        run: |
+          echo "## Spec Coverage Report" >> $GITHUB_STEP_SUMMARY
+          ./zig-out/bin/tri spec audit >> $GITHUB_STEP_SUMMARY 2>&1 || true

@@ -9,12 +9,12 @@
 
 const std = @import("std");
 
-// Core modules
-pub const bigint = @import("bigint.zig");
-pub const packed_trit = @import("packed_trit.zig");
-pub const hybrid = @import("hybrid.zig");
-pub const vsa = @import("vsa.zig");
-pub const vm = @import("vm.zig");
+// Core modules - use module imports to avoid file ownership conflicts
+pub const bigint = @import("bigint");
+pub const packed_trit = @import("packed_trit");
+pub const hybrid = @import("hybrid");
+pub const vsa = @import("vsa");
+pub const vm = @import("vm");
 
 // SDK modules (high-level API)
 pub const sdk = @import("sdk.zig");

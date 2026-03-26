@@ -1,0 +1,9 @@
+# Reticular Raphe - Neural Activation
+# Tri language test for Wave 2 type system + emit_t27
+
+let x = 42 in
+let y = 10 in
+if true then
+    x + y
+else
+    x - y

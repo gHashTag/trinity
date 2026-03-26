@@ -13,7 +13,8 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const tri_dev = @import("tri_dev.zig");
+const farm = @import("farm");
+const tri_dev = farm.tri_dev;
 
 const print = std.debug.print;
 

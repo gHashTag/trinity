@@ -1,0 +1,72 @@
+{
+  "title": "Trinity B004: Queen Lotus Cycle — Autonomous Learning with Episode Retrieval",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Queen Lotus Cycle implements 6-phase autonomous orchestration with Jaccard similarity-based episode retrieval. Key innovations include: (1) DIAGNOSE phase for goal analysis and context gathering; (2) PLAN phase using GPT-4 reasoning for task decomposition; (3) ACT phase with self-correcting mechanisms; (4) VERIFY phase with code execution and testing; (5) MEASURE phase for quality assessment; (6) PERSIST phase with memory consolidation. Episode storage uses 847 episodes with metadata and Jaccard similarity search. Pure Zig 0.15.x implementation with zero external dependencies. Complete reproducibility artifacts including Docker environment, episode visualization, and performance metrics. \n\n**State Machine:**\n```\nDIAGNOSE → PLAN → ACT → VERIFY → MEASURE → PERSIST\n    ↑                                                      │\n    ←──────────────────────────────────────────────┘\n```\n\n**Episode Structure:**\n```\ntypedef struct Episode {\n    id: u32,\n    timestamp: u64,\n    state: State,\n    action: Action,\n    reward: f32,\n    quality: f32,\n    embedding: []f32,\n}\n\n// 847 episodes stored in memory\nconst MAX_EPISODES: usize = 847;\nvar episode_buffer: [MAX_EPISODES]Episode;\n```\n\n**Retrieval Algorithm:**\n- Compute Jaccard similarity: J(A,B) = |A ∩ B| / |A ∪ B|\n- Top-k retrieval with adaptive threshold\n- F1 score: 0.925 at optimal threshold",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "Reinforcement Learning",
+    "Jaccard similarity",
+    "Episode retrieval",
+    "autonomous agents",
+    "Queen system",
+    "Lotus cycle",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Artificial intelligence",
+    "cs.AI",
+    "cs.LG",
+    "cs.PL"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227739",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/queen",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2502.16473",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)",
+    "Jaccard, Paul, Etude comparative de la distribution florale dans la commune de Subercarreau, Bulletin de la Societe Vaudoise des Sciences Naturelles 42, 1901, 37-52",
+    "Silver, David et al., The Queen Agent: Architecture and Implementation, arXiv:2307.15884 (2023)"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}

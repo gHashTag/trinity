@@ -1,0 +1,65 @@
+# Phoenix Reticular Formation — TRI-27 Brain Module
+# TDGS-3 Validation: First .tri module through full pipeline
+#
+# Architecture: Pattern activation + inhibitory competition
+# φ² + 1/φ² = 3 | TRINITY
+
+spec reticular_activation
+  @spec pattern_activation
+  @require input >= 0
+  @require threshold in [0.0, 1.0]
+  @ensure result in [0.0, 1.0]
+  @example input: 0.5, threshold: 0.3 => result: 0.5
+  @example input: 0.2, threshold: 0.3 => result: 0.0
+
+behavior activate_pattern
+  given input: Float, threshold: Float
+  when input >= threshold
+  then return: {active: true, strength: input}
+  else return: {active: false, strength: 0.0}
+
+spec inhibitory_competition
+  @spec lateral_inhibition
+  @require patterns is list
+  @require len(patterns) > 0
+  @ensure only_winner_active
+  @example patterns: [{a:0.8}, {a:0.3}, {a:0.5}] => winner: 0
+
+behavior compete
+  given patterns: List[Pattern]
+  when patterns is not empty
+  then
+    winner = argmax(patterns, strength)
+    inhibited = [inhibit(p, winner) for p in patterns]
+    return {winner: winner, inhibited: inhibited}
+
+spec arousal_modulation
+  @spec neuromodulation
+  @require arousal in [0.0, 1.0]
+  @ensure modulated_strength = base_strength * (1 + arousal)
+
+behavior modulate
+  given pattern: Pattern, arousal: Float
+  return {pattern: pattern, strength: pattern.strength * (1.0 + arousal)}
+
+# Main reticular formation loop
+behavior reticular_loop
+  given inputs: List[Float], arousal: Float, threshold: Float
+  steps:
+    1. activated = [activate_pattern(i, threshold) for i in inputs]
+    2. result = compete(activated)
+    3. output = modulate(result.winner, arousal)
+  return output
+
+# Test cases
+test reticular_test_1
+  inputs = [0.8, 0.3, 0.5]
+  arousal = 0.2
+  threshold = 0.4
+  expected = {active: true, strength: 0.96}  # 0.8 * 1.2
+
+test reticular_test_2
+  inputs = [0.1, 0.2, 0.3]
+  arousal = 0.5
+  threshold = 0.5
+  expected = {active: false, strength: 0.0}  # all below threshold

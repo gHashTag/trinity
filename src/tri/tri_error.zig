@@ -10,7 +10,7 @@
 
 const std = @import("std");
 
-const tri_colors = @import("tri_colors.zig");
+const tri_colors = @import("tri_colors");
 
 pub const TriError = enum {
     command_not_found,

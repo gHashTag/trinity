@@ -60,7 +60,13 @@ constraints:
 
 behaviors:
   - name: count_behavior
+    spec: counter_4bit_led_display
     description: "4-bit counter at ~1 Hz with LED display"
+    require: "clk frequency = 50 MHz"
+    ensure: "count in [0, 15] and LEDs show binary value"
+    example:
+      input: "clk runs for 2 seconds"
+      expect: "count increments by 1 or 2, LEDs show binary representation"
     given: "50 MHz clock input"
     when: "posedge clk"
     then: "Counts 0-15, LEDs show binary value, updates every ~1 second"

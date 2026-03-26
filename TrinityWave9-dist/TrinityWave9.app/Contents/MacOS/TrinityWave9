@@ -1,0 +1,71 @@
+#!/bin/bash
+set -e
+
+APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+RESOURCES_DIR="$APP_DIR/Resources"
+COMPOSE_FILE="$RESOURCES_DIR/docker-compose.wave9-mac-2.yml"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${GREEN}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check Docker
+if ! command -v docker >/dev/null 2>&1; then
+    osascript -e 'display alert "Trinity Wave 9" message "Docker Desktop не установлен. Установите Docker Desktop (Apple Silicon) и попробуйте снова."'
+    exit 1
+fi
+
+# Check if Docker is running
+if ! docker info >/dev/null 2>&1; then
+    osascript -e 'display notification "Trinity Wave 9" with title "Docker не запущен" sound name "Glass" message "Откройте Docker Desktop и подождите, пока значок станет зеленым, затем снова запустите TrinityWave9."'
+    exit 1
+fi
+
+# Ensure data directory
+mkdir -p "$RESOURCES_DIR/data/wave9"
+
+# Action based on argument
+ACTION="${1:-up}"
+
+case "$ACTION" in
+    up)
+        log_info "Запуск Wave 9 workers..."
+        cd "$RESOURCES_DIR"
+        docker compose -f "$COMPOSE_FILE" up -d
+        osascript -e 'display notification "Wave 9 workers запущены." with title "Trinity Wave 9"'
+        ;;
+    down)
+        log_info "Остановка Wave 9 workers..."
+        cd "$RESOURCES_DIR"
+        docker compose -f "$COMPOSE_FILE" down
+        osascript -e 'display notification "Wave 9 workers остановлены." with title "Trinity Wave 9"'
+        ;;
+    status)
+        log_info "Проверка статуса..."
+        cd "$RESOURCES_DIR"
+        docker compose -f "$COMPOSE_FILE" ps
+        ;;
+    *)
+        echo "Использование: TrinityWave9 [up|down|status]"
+        echo ""
+        echo "  up     - Запустить workers (docker-compose up -d)"
+        echo "  down   - Остановить workers (docker-compose down)"
+        echo "  status - Показать статус (docker-compose ps)"
+        echo ""
+        echo "Compose file: $COMPOSE_FILE"
+        exit 1
+        ;;
+esac

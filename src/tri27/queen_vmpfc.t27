@@ -1,0 +1,208 @@
+# Queen VMPFC — ROI (Return On Investment) Scoring
+# TRI-27 Reference Implementation for Paper 2: TRI-27 + Queen
+#
+# Computes ROI score for actions based on:
+# - Cost (energy/time spent)
+# - Reward (value gained)
+# - Confidence (certainty in outcome)
+#
+# Returns ROI score in Q16 fixed-point: positive = good, negative = bad
+#
+# Mathematical foundation: φ² + 1/φ² = 3
+
+.const
+    # ROI coefficients (Q16)
+    WEIGHT_REWARD = 39321   # 0.6 * 65536 (reward weight)
+    WEIGHT_COST = 19660     # 0.3 * 65536 (cost penalty)
+    WEIGHT_CONF = 6553      # 0.1 * 65536 (confidence bonus)
+
+    # Confidence thresholds
+    CONF_HIGH = 52428       # 0.8 * 65536
+    CONF_MID = 32768        # 0.5 * 65536
+
+    # ROI thresholds for decision making
+    ROI_EXCELLENT = 32768   # 0.5 (excellent action)
+    ROI_GOOD = 16384        # 0.25 (good action)
+    ROI_POOR = -16384       # -0.25 (poor action)
+
+    # Memory addresses
+    MEM_REWARD = 0          # Reward value (Q16)
+    MEM_COST = 4            # Cost value (Q16)
+    MEM_CONFIDENCE = 8      # Confidence (Q16)
+    MEM_HISTORY = 12        # Array of 8 past ROI scores
+    MEM_AVG_ROI = 28        # Average ROI
+
+.data
+    # Initialize: reward=0.5, cost=0.3, confidence=0.7
+    .word 32768 19660 45875
+
+.code
+    # Register usage:
+    # t0 = ROI score / result
+    # t1 = reward
+    # t2 = cost
+    # t3 = confidence
+    # t4 = weighted reward
+    # t5 = weighted cost
+    # t6 = confidence bonus
+    # t7 = temporary / sum
+
+    # Load inputs from memory
+    LDI t7, MEM_REWARD
+    LD t1, t7               # t1 = reward
+
+    LDI t7, MEM_COST
+    LD t2, t7               # t2 = cost
+
+    LDI t7, MEM_CONFIDENCE
+    LD t3, t7               # t3 = confidence
+
+    # ============================================
+    # Compute Weighted Components
+    # ============================================
+
+    # weighted_reward = reward × WEIGHT_REWARD
+    LDI t7, WEIGHT_REWARD
+    MUL t4, t1, t7          # t4 = reward × 0.6
+    SHR t4, t4, 16          # Convert Q32→Q16
+
+    # weighted_cost = cost × WEIGHT_COST
+    LDI t7, WEIGHT_COST
+    MUL t5, t2, t7          # t5 = cost × 0.3
+    SHR t5, t5, 16          # Convert Q32→Q16
+
+    # confidence_bonus = (confidence - 0.5) × WEIGHT_CONF
+    LDI t7, 32768           # 0.5 in Q16
+    SUB t6, t3, t7          # t6 = confidence - 0.5
+
+    LDI t7, WEIGHT_CONF
+    MUL t6, t6, t7          # t6 = (conf-0.5) × 0.1
+    SHR t6, t6, 16          # Convert Q32→Q16
+
+    # ============================================
+    # Compute Final ROI
+    # ROI = weighted_reward - weighted_cost + confidence_bonus
+    # ============================================
+
+    MOV t0, t4              # t0 = weighted_reward
+    SUB t0, t0, t5          # t0 -= weighted_cost
+    ADD t0, t0, t6          # t0 += confidence_bonus
+
+    # ============================================
+    # Update ROI History (shift and insert)
+    # ============================================
+
+    # Shift history left (drop oldest)
+    LDI t7, MEM_HISTORY + 7
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 6
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 6
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 5
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 5
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 4
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 4
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 3
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 3
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 2
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 2
+    LD t6, t7
+    LDI t7, MEM_HISTORY + 1
+    ST t7, t6
+
+    LDI t7, MEM_HISTORY + 1
+    LD t6, t7
+    LDI t7, MEM_HISTORY
+    ST t7, t6
+
+    # Store new ROI at beginning
+    LDI t7, MEM_HISTORY
+    ST t7, t0
+
+    # ============================================
+    # Compute Average ROI (simple sum/8)
+    # ============================================
+
+    LDI t7, 0                # t7 = running sum
+    ADD t7, t7, t0           # Add newest ROI
+
+    LDI t6, MEM_HISTORY + 1
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 2
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 3
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 4
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 5
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 6
+    LD t6, t6
+    ADD t7, t7, t6
+
+    LDI t6, MEM_HISTORY + 7
+    LD t6, t6
+    ADD t7, t7, t6
+
+    # Divide by 8 (shift right 3)
+    SHR t7, t7, 3
+
+    # Store average ROI
+    LDI t6, MEM_AVG_ROI
+    ST t6, t7
+
+    # ============================================
+    # Decision Classification
+    # ============================================
+
+    # Check ROI thresholds
+    LDI t6, ROI_EXCELLENT
+    JGE t0, t6, classify_excellent
+
+    LDI t6, ROI_GOOD
+    JGE t0, t6, classify_good
+
+    LDI t6, ROI_POOR
+    JLT t0, t6, classify_terrible
+
+    # Between POOR and GOOD = AVERAGE
+    LDI t0, 0                # Return 0 for AVERAGE
+    JMP done
+
+classify_excellent:
+    LDI t0, 3                # Return 3 for EXCELLENT
+    JMP done
+
+classify_good:
+    LDI t0, 2                # Return 2 for GOOD
+    JMP done
+
+classify_terrible:
+    LDI t0, 1                # Return 1 for TERRIBLE
+
+done:
+    # t0 contains classification (0=AVERAGE, 1=TERRIBLE, 2=GOOD, 3=EXCELLENT)
+    HALT

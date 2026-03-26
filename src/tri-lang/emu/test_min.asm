@@ -1,0 +1,2 @@
+LDI t0, 1
+HALT

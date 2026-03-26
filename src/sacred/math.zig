@@ -187,13 +187,12 @@ pub fn displayPostSingularityManifesto(allocator: std.mem.Allocator) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED FORMULA ENGINE v1.1 — Evidence Classification and Validation
+// SACRED FORMULA ENGINE v1.2 — Evidence Classification and Validation
 // φ² + 1/φ² = 3 | γ = φ⁻³ (candidate, NOT axiom)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const registry = @import("registry");
-// const formula_engine = @import("formula_engine"); // TODO: file missing
-// const verification = @import("verification"); // TODO: file missing
+const registry = @import("registry.zig");
+const formula_engine = @import("formula_engine.zig");
 
 // Re-export registry types and functions
 pub const EvidenceLevel = registry.EvidenceLevel;
@@ -207,19 +206,27 @@ pub const Registry = registry.Registry;
 pub const initRegistry = registry.initRegistry;
 
 // Re-export formula engine types and functions
-// pub const FormulaEngine = formula_engine.FormulaEngine; // TODO: file missing
-// pub const SearchResult = formula_engine.SearchResult;
-// pub const PrecomputedConstant = formula_engine.PrecomputedConstant;
-// pub const getPrecomputedConstants = formula_engine.getPrecomputedConstants;
+pub const FormulaEngine = formula_engine.FormulaEngine;
+pub const SearchResult = formula_engine.SearchResult;
+pub const PrecomputedConstant = formula_engine.PrecomputedConstant;
+pub const getPrecomputedConstants = formula_engine.getPrecomputedConstants;
+pub const getAllPrecomputedConstants = formula_engine.getAllPrecomputedConstants;
 
 // Re-export verification types and functions
-// pub const Thresholds = verification.Thresholds; // TODO: file missing
-// pub const VerificationResult = verification.VerificationResult;
-// pub const Verifier = verification.Verifier;
-// pub const Validator = verification.Validator;
-// pub const ValidationReport = verification.ValidationReport;
-// pub const DoctorReport = verification.DoctorReport;
-// pub const SacredDoctor = verification.SacredDoctor;
+pub const Thresholds = formula_engine.Thresholds;
+pub const VerificationResult = formula_engine.VerificationResult;
+pub const verifyTrinityIdentity = formula_engine.verifyTrinityIdentity;
+pub const verifySacredGamma = formula_engine.verifySacredGamma;
+pub const runAllVerifications = formula_engine.runAllVerifications;
+pub const runSacredDoctor = formula_engine.runSacredDoctor;
+pub const DoctorReport = formula_engine.DoctorReport;
+pub const formatVerificationResult = formula_engine.formatVerificationResult;
+pub const getAllThresholds = formula_engine.getAllThresholds;
+
+// Global engine initialization
+pub const engine = formula_engine.engine;
+pub const initEngine = formula_engine.initEngine;
+pub const getEngine = formula_engine.getEngine;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROOF GRAPH ENGINE v1.0 — Evidence-Native Proof Assistant

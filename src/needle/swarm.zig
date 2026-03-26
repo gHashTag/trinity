@@ -14,7 +14,7 @@
 
 const std = @import("std");
 const trit_vsa = @import("trit_vsa.zig");
-const vsa = @import("vsa.zig");
+const vsa = @import("vsa");
 
 // Import from canonical source (ANTI-PATTERN: no inline constants!)
 const sacred_constants = @import("sacred_constants");

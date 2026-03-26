@@ -342,8 +342,14 @@ struct NSTextViewWrapper: NSViewRepresentable {
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         guard let textView = scrollView.documentView as? NSTextView else { return }
 
-        if textView.string != text {
-            textView.string = text
+        // Prevent race condition: don't update if user is actively editing
+        let isFirstResponder = textView.window?.firstResponder == textView
+
+        if !context.coordinator.isUserEditing && !isFirstResponder {
+            if textView.string != text {
+                textView.string = text
+                context.coordinator.textViewString = text
+            }
         }
     }
 
@@ -355,14 +361,43 @@ struct NSTextViewWrapper: NSViewRepresentable {
         var parent: NSTextViewWrapper
         weak var textView: NSTextView?
         var textViewString: String = ""
+        var isUserEditing: Bool = false
+        private var debounceTimer: Timer?
 
         init(_ parent: NSTextViewWrapper) {
             self.parent = parent
+            super.init()
+        }
+
+        deinit {
+            debounceTimer?.invalidate()
+            NotificationCenter.default.removeObserver(self)
         }
 
         func textDidChange(_ notification: Notification) {
             guard let textView = notification.object as? NSTextView else { return }
+
+            // Flag that user is actively editing
+            isUserEditing = true
+
+            // Debounce binding updates to prevent race condition
+            debounceTimer?.invalidate()
+            debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                self.parent.text = textView.string
+                self.textViewString = textView.string
+                self.isUserEditing = false
+            }
+        }
+
+        func textDidEndEditing(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+
+            // Final sync when focus is lost
+            debounceTimer?.invalidate()
             parent.text = textView.string
+            textViewString = textView.string
+            isUserEditing = false
         }
     }
 }

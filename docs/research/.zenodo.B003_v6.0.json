@@ -1,0 +1,70 @@
+{
+  "title": "Trinity B003: TRI-27 ISA — 27-Register Ternary Instruction Set",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "TRI-27 ISA defines a 27-register balanced ternary instruction set with Coptic 3-bank encoding. Key innovations include: (1) Coptic alphabet for optimal 3-bank access (α-η, ι-ρ, σ-ϡ); (2) 9 registers per bank with sacred naming; (3) 48-bit instruction format with opcode, operands, flags; (4) Complete assembler, emulator, and disassembler toolchain; (5) Verified instruction set with 15/15 tests passing; (6) Zero external dependencies in Zig 0.15.x. Complete reproducibility artifacts including Docker environment, instruction reference, and assembly examples. \n\n**ISA Specification:**\n```\nRegisters: 27 total (3 banks × 9)\n  - Alpha (α-η): R0-R8 (general purpose)\n  - Iota (ι-ρ): R9-R17 (function args + saved)\n  - Sigma (σ-ϡ): R18-R26 (stack, frame, control)\n\nInstruction Format: 48 bits\n  - Opcode: 8 bits (256 opcodes)\n  - Operands: 24 bits (up to 3 operands)\n  - Flags: 8 bits (condition codes)\n  - Reserved: 8 bits\n```\n\n**Assembly Example:**\n```\n  # Sum 1 to 10 and store result\n  load r0, #1     ; Load 1 into R0\n  load r1, #10    ; Load 10 into R1\nloop:  add r0, r1       ; R0 += R1\n  dec r1            ; R1 -= 1\n  jgt r1, #0, loop  ; Branch to loop if R1 > 0\n  store r0, #10    ; Store result in R10\n  halt               ; Stop\n```\n\n**Test Coverage:** 15/15 unit tests passing (100%)",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "Instruction Set Architecture",
+    "TRI-27",
+    "Coptic alphabet",
+    "ternary computing",
+    "ISA",
+    "balanced ternary",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Machine architecture",
+    "cs.AR",
+    "cs.PL"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227737",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/tri27",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2502.16473",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Patterson, RISC-V: A Modular ISA, arXiv:1610.00179 (2016)",
+    "Hennessy & Patterson, Computer Architecture: A Quantitative Approach, 5th Edition (2011)"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ const Allocator = std.mem.Allocator;
 const trinity_lang = @import("trinity-lang");
 const CliPatcher = trinity_lang.cli_patcher.CliPatcher;
 const CliCommand = trinity_lang.cli_patcher.CliCommand;
-const colors = @import("tri_colors.zig");
+const colors = @import("tri_colors");
 
 pub fn runIntegrateCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
