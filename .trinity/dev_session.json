@@ -1,7 +1,7 @@
 {
   "issue_number": 435,
-  "state": "ACTIVE",
+  "state": "COMMITTED",
   "test_status": "passed",
-  "last_commit": "af912db5ef",
+  "last_commit": "bc80df33d4",
   "start_time": "2026-03-27T00:00:00Z"
 }

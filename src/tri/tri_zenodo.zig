@@ -231,6 +231,15 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "data-availability")) {
         // Generate data availability statement
         try generateDataAvailabilityExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "algorithm")) {
+        // Generate algorithm pseudocode
+        try generateAlgorithmExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "code-listing")) {
+        // Generate code listing
+        try generateCodeListingExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "statistical-table")) {
+        // Generate statistical table
+        try generateStatisticalTableExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -2134,6 +2143,9 @@ fn printHelp() void {
     print("  tri zenodo bibliography          Generate BibTeX bibliography entries\n", .{});
     print("  tri zenodo acknowledgments       Generate funding and contributor acknowledgments\n", .{});
     print("  tri zenodo data-availability      Generate data availability statement (NeurIPS 2025)\n", .{});
+    print("  tri zenodo algorithm             Generate algorithm pseudocode with LaTeX/Markdown\n", .{});
+    print("  tri zenodo code-listing           Generate syntax-highlighted code listings\n", .{});
+    print("  tri zenodo statistical-table      Generate statistical comparison tables with significance\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
@@ -2347,6 +2359,124 @@ fn generateDataAvailabilityExamples(allocator: std.mem.Allocator) !void {
 
     print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
     const md = try da.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate algorithm pseudocode examples (V10)
+fn generateAlgorithmExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Algorithm Pseudocode Generator{s}\n", .{ BOLD, "ALGORITHM PSEUDOCODE", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const algo = zenodo_templates.AlgorithmPseudocode{
+        .name = "Ternary Matrix Multiplication",
+        .label = "alg:ternary-matmul",
+        .inputs = &[_][]const u8{
+            "A ∈ {-1,0,1}^{m×n} (ternary matrix)",
+            "B ∈ {-1,0,1}^{n×p} (ternary matrix)",
+        },
+        .outputs = &[_][]const u8{
+            "C ∈ {-n,0,n}^{m×p} (result matrix)",
+        },
+        .steps = &[_]zenodo_templates.AlgorithmPseudocode.Step{
+            .{ .text = "Initialize C[m,p] with zeros" },
+            .{ .text = "for i = 1 to m do" },
+            .{ .text = "for j = 1 to p do", .indent = 1 },
+            .{ .text = "sum = 0", .indent = 2 },
+            .{ .text = "for k = 1 to n do", .indent = 2 },
+            .{ .text = "sum = sum + A[i,k] × B[k,j]", .indent = 3 },
+            .{ .text = "C[i,j] = clamp(sum, -n, n)", .indent = 2 },
+            .{ .text = "return C" },
+        },
+        .caption = "Efficient ternary matrix multiplication without overflow",
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try algo.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try algo.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate code listing examples (V10)
+fn generateCodeListingExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Code Listing Generator{s}\n", .{ BOLD, "CODE LISTING", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const listing = zenodo_templates.CodeListing{
+        .caption = "Ternary activation function in Zig",
+        .label = "lst:ternary-act",
+        .language = .zig,
+        .code =
+        \\fn ternaryActivate(x: f64) i8 {
+        \\    // Ternary activation: returns -1, 0, or +1
+        \\    if (x > 0.5) return 1;
+        \\    if (x < -0.5) return -1;
+        \\    return 0;
+        \\}
+        ,
+        .file_path = "src/ternary/activation.zig",
+        .line_start = 42,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try listing.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try listing.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate statistical table examples (V10)
+fn generateStatisticalTableExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Statistical Table Generator{s}\n", .{ BOLD, "STATISTICAL TABLE", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const table = zenodo_templates.StatisticalTable{
+        .caption = "Model comparison on TinyStories validation set",
+        .label = "tab:tinystories-results",
+        .headers = &[_][]const u8{ "Method", "PPL ↓", "Loss ↓", "Params" },
+        .rows = &[_]zenodo_templates.StatisticalTable.Row{
+            .{
+                .method = "GPT-2 (117M)",
+                .values = &[_]f64{ 15.2, 3.8, 117.0 },
+                .std_errors = &[_]f64{ 0.3, 0.1, 0.0 },
+                .significance = &[_]zenodo_templates.SignificanceLevel{ .none, .none, .none },
+                .is_baseline = true,
+            },
+            .{
+                .method = "GPT-2 (35M)",
+                .values = &[_]f64{ 16.8, 4.1, 35.0 },
+                .std_errors = &[_]f64{ 0.4, 0.1, 0.0 },
+                .significance = &[_]zenodo_templates.SignificanceLevel{ .low, .low, .none },
+            },
+            .{
+                .method = "HSLM (ours, 1.95M)",
+                .values = &[_]f64{ 12.5, 3.2, 1.95 },
+                .std_errors = &[_]f64{ 0.2, 0.1, 0.0 },
+                .significance = &[_]zenodo_templates.SignificanceLevel{ .high, .high, .none },
+                .is_best = true,
+            },
+        },
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try table.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try table.formatAsMarkdown(allocator);
     defer allocator.free(md);
     print("{s}\n", .{md});
 }

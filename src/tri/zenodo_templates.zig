@@ -2615,6 +2615,604 @@ pub const Acknowledgments = struct {
     }
 };
 
+// ═════════════════════════════════════════════════════════════════════════
+// ZENODO V10 — Algorithm Pseudocode, Code Listings, Statistical Tables
+// ═════════════════════════════════════════════════════════════════════════
+
+/// Algorithm pseudocode with LaTeX algorithm environment
+pub const AlgorithmPseudocode = struct {
+    /// Algorithm name/title
+    name: []const u8,
+    /// Label for cross-referencing (e.g., "alg:ternary-inference")
+    label: []const u8,
+    /// Input parameters
+    inputs: []const []const u8,
+    /// Output returns
+    outputs: []const []const u8,
+    /// Pseudocode lines (step-by-step)
+    steps: []const Step,
+    /// Optional caption
+    caption: ?[]const u8 = null,
+
+    pub const Step = struct {
+        /// Line number (optional, for specific references)
+        number: ?u32 = null,
+        /// Step description (can use LaTeX math mode)
+        text: []const u8,
+        /// Indentation level (0 = no indent, 1 = one level, etc.)
+        indent: u32 = 0,
+        /// Whether this line is a comment
+        is_comment: bool = false,
+    };
+
+    /// Format as LaTeX algorithm environment (requires algorithm/algorithmic packages)
+    pub fn formatAsLaTeX(self: *const AlgorithmPseudocode, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{algorithm}}[t]\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.name});
+        if (self.caption) |cap| {
+            try latex.writer(allocator).print("({s})\n", .{cap});
+        }
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\begin{{algorithmic}}[1]\n", .{});
+
+        // Input/Output section
+        if (self.inputs.len > 0) {
+            try latex.writer(allocator).print("\\REQUIRE ", .{});
+            for (self.inputs, 0..) |input, i| {
+                if (i > 0) try latex.writer(allocator).print(", ", .{});
+                try latex.writer(allocator).print("{s}", .{input});
+            }
+            try latex.writer(allocator).print("\n", .{});
+        }
+
+        if (self.outputs.len > 0) {
+            try latex.writer(allocator).print("\\ENSURE ", .{});
+            for (self.outputs, 0..) |output, i| {
+                if (i > 0) try latex.writer(allocator).print(", ", .{});
+                try latex.writer(allocator).print("{s}", .{output});
+            }
+            try latex.writer(allocator).print("\n", .{});
+        }
+
+        try latex.writer(allocator).print("\n", .{});
+
+        // Steps
+        for (self.steps) |step| {
+            if (step.is_comment) {
+                try latex.writer(allocator).print("\\COMMENT{{{s}}}\n", .{step.text});
+            } else {
+                // Handle indentation
+                if (step.indent > 0) {
+                    try latex.writer(allocator).print("\\STATE ", .{});
+                    for (0..step.indent) |_| {
+                        try latex.writer(allocator).print("\\indent", .{});
+                    }
+                    try latex.writer(allocator).print("{s}\n", .{step.text});
+                } else {
+                    try latex.writer(allocator).print("\\STATE {s}\n", .{step.text});
+                }
+            }
+        }
+
+        try latex.writer(allocator).print("\\end{{algorithmic}}\n", .{});
+        try latex.writer(allocator).print("\\end{{algorithm}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown code block
+    pub fn formatAsMarkdown(self: *const AlgorithmPseudocode, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("**Algorithm {s}**\n\n", .{self.name});
+        if (self.caption) |cap| {
+            try md.writer(allocator).print("*{s}*\n\n", .{cap});
+        }
+        try md.writer(allocator).print("**Label:** `{s}`\n\n", .{self.label});
+
+        try md.writer(allocator).print("**Input:**\n", .{});
+        for (self.inputs) |input| {
+            try md.writer(allocator).print("- `{s}`\n", .{input});
+        }
+        try md.writer(allocator).print("\n", .{});
+
+        try md.writer(allocator).print("**Output:**\n", .{});
+        for (self.outputs) |output| {
+            try md.writer(allocator).print("- `{s}`\n", .{output});
+        }
+        try md.writer(allocator).print("\n", .{});
+
+        try md.writer(allocator).print("```text\n", .{});
+        for (self.steps, 0..) |step, i| {
+            if (step.number) |n| {
+                try md.writer(allocator).print("{d}: ", .{n});
+            } else {
+                try md.writer(allocator).print("{d}: ", .{i + 1});
+            }
+
+            for (0..step.indent) |_| {
+                try md.writer(allocator).print("  ", .{});
+            }
+
+            if (step.is_comment) {
+                try md.writer(allocator).print("// {s}\n", .{step.text});
+            } else {
+                try md.writer(allocator).print("{s}\n", .{step.text});
+            }
+        }
+        try md.writer(allocator).print("```\n\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Programming language for syntax highlighting
+pub const ProgrammingLanguage = enum {
+    zig,
+    verilog,
+    python,
+    c,
+    cpp,
+    rust,
+    julia,
+    latex,
+    bash,
+    json,
+
+    pub fn toString(self: ProgrammingLanguage) []const u8 {
+        return switch (self) {
+            .zig => "zig",
+            .verilog => "verilog",
+            .python => "python",
+            .c => "c",
+            .cpp => "cpp",
+            .rust => "rust",
+            .julia => "julia",
+            .latex => "latex",
+            .bash => "bash",
+            .json => "json",
+        };
+    }
+
+    pub fn toPygments(self: ProgrammingLanguage) []const u8 {
+        return switch (self) {
+            .zig => "zig",
+            .verilog => "verilog",
+            .python => "python",
+            .c => "c",
+            .cpp => "cpp",
+            .rust => "rust",
+            .julia => "julia",
+            .latex => "latex",
+            .bash => "bash",
+            .json => "json",
+        };
+    }
+};
+
+/// Code listing with syntax highlighting
+pub const CodeListing = struct {
+    /// Caption/description
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Programming language
+    language: ProgrammingLanguage,
+    /// Source code
+    code: []const u8,
+    /// File path (if from specific file)
+    file_path: ?[]const u8 = null,
+    /// Line numbers start (0 = no line numbers)
+    line_start: ?u32 = null,
+    /// Highlighted lines (for emphasis)
+    highlight_lines: []const u32 = &.{},
+
+    /// Format as LaTeX lstlisting (requires listings/minted packages)
+    pub fn formatAsLaTeX(self: *const CodeListing, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{listing}}[t]\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+
+        if (self.file_path) |path| {
+            try latex.writer(allocator).print("\\texttt{{{s}}}\n", .{path});
+        }
+
+        // Use minted for better syntax highlighting (requires Python pygments)
+        try latex.writer(allocator).print("\\begin{{minted}}[", .{});
+        if (self.line_start) |start| {
+            try latex.writer(allocator).print("linenos={},firstnumber={},", .{ true, start });
+        } else {
+            try latex.writer(allocator).print("linenos={},", .{true});
+        }
+        try latex.writer(allocator).print("fontsize=\\small]{{{s}}}\n", .{self.language.toPygments()});
+        try latex.writer(allocator).print("{s}\n", .{self.code});
+        try latex.writer(allocator).print("\\end{{minted}}\n", .{});
+
+        try latex.writer(allocator).print("\\end{{listing}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown code block
+    pub fn formatAsMarkdown(self: *const CodeListing, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("**Listing {s}**\n\n", .{self.caption});
+        try md.writer(allocator).print("**Label:** `{s}`\n\n", .{self.label});
+
+        if (self.file_path) |path| {
+            try md.writer(allocator).print("**File:** `{s}`\n\n", .{path});
+        }
+
+        try md.writer(allocator).print("```{s}\n", .{self.language.toString()});
+        try md.writer(allocator).print("{s}\n", .{self.code});
+        try md.writer(allocator).print("```\n\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Statistical significance level
+pub const SignificanceLevel = enum {
+    none, // p >= 0.05 (not significant)
+    low, // p < 0.05 (*)
+    medium, // p < 0.01 (**)
+    high, // p < 0.001 (***)
+    very_high, // p < 0.0001 (****)
+
+    pub fn toSymbol(self: SignificanceLevel) []const u8 {
+        return switch (self) {
+            .none => "",
+            .low => "*",
+            .medium => "**",
+            .high => "***",
+            .very_high => "****",
+        };
+    }
+
+    pub fn toLaTeX(self: SignificanceLevel) []const u8 {
+        return switch (self) {
+            .none => "",
+            .low => "$^{*}$",
+            .medium => "$^{**}$",
+            .high => "$^{***}$",
+            .very_high => "$^{****}$",
+        };
+    }
+};
+
+/// Statistical comparison table with significance indicators
+pub const StatisticalTable = struct {
+    /// Table caption
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Column headers
+    headers: []const []const u8,
+    /// Rows of data
+    rows: []const Row,
+
+    pub const Row = struct {
+        /// Method name
+        method: []const u8,
+        /// Metric values (one per column after name)
+        values: []const f64,
+        /// Standard errors (optional, same length as values)
+        std_errors: ?[]const f64 = null,
+        /// Confidence intervals (optional)
+        confidence_intervals: ?[]const struct { lower: f64, upper: f64 } = null,
+        /// Significance levels (for comparison to baseline)
+        significance: []const SignificanceLevel,
+        /// Is this the baseline/best method?
+        is_baseline: bool = false,
+        /// Is this the best result?
+        is_best: bool = false,
+    };
+
+    /// Format as LaTeX table with booktabs
+    pub fn formatAsLaTeX(self: *const StatisticalTable, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        // Column spec: first column (l) + one per metric (c)
+        var col_spec = std.ArrayList(u8).initCapacity(allocator, self.headers.len + 10) catch @panic("OOM");
+        defer col_spec.deinit(allocator);
+        try col_spec.writer(allocator).writeAll("l");
+        for (self.headers[1..]) |_| {
+            try col_spec.writer(allocator).writeAll("c");
+        }
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\begin{{tabular}}{{{{{s}}}}}\n", .{col_spec.items});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+
+        // Header row
+        try latex.writer(allocator).print("Method", .{});
+        for (self.headers[1..]) |h| {
+            try latex.writer(allocator).print(" & {s}", .{h});
+        }
+        try latex.writer(allocator).print(" \\\\\n", .{});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        // Data rows
+        for (self.rows) |row| {
+            if (row.is_baseline) {
+                try latex.writer(allocator).print("\\textbf{{{s}}}", .{row.method});
+            } else {
+                try latex.writer(allocator).print("{s}", .{row.method});
+            }
+
+            for (row.values, 0..) |val, i| {
+                const sig = if (i < row.significance.len) row.significance[i] else .none;
+
+                if (row.is_best) {
+                    try latex.writer(allocator).print(" & \\textbf{{{d:.3}}}{s}", .{ val, sig.toLaTeX() });
+                } else if (row.is_baseline) {
+                    try latex.writer(allocator).print(" & \\textit{{{d:.3}}}", .{val});
+                } else {
+                    try latex.writer(allocator).print(" & {d:.3}{s}", .{ val, sig.toLaTeX() });
+                }
+
+                // Add standard error if available
+                if (row.std_errors) |ses| {
+                    if (i < ses.len) {
+                        try latex.writer(allocator).print(" (\\pm {d:.3})", .{ses[i]});
+                    }
+                }
+
+                // Add confidence interval if available
+                if (row.confidence_intervals) |cis| {
+                    if (i < cis.len) {
+                        try latex.writer(allocator).print(" [{d:.3}, {d:.3}]", .{ cis[i].lower, cis[i].upper });
+                    }
+                }
+            }
+            try latex.writer(allocator).print(" \\\\\n", .{});
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown table
+    pub fn formatAsMarkdown(self: *const StatisticalTable, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        // Header row
+        for (self.headers, 0..) |h, i| {
+            if (i > 0) try md.writer(allocator).writeAll(" | ");
+            try md.writer(allocator).print("{s}", .{h});
+        }
+        try md.writer(allocator).writeAll("\n");
+
+        // Separator row
+        for (self.headers, 0..) |_, i| {
+            if (i > 0) try md.writer(allocator).writeAll(" | ");
+            try md.writer(allocator).writeAll(if (i == 0) "---" else "----:");
+        }
+        try md.writer(allocator).writeAll("\n");
+
+        // Data rows
+        for (self.rows) |row| {
+            // Print method name first
+            if (row.is_baseline) {
+                try md.writer(allocator).print("**{s}**", .{row.method});
+            } else {
+                try md.writer(allocator).print("{s}", .{row.method});
+            }
+
+            // Then print values
+            for (row.values, 0..) |val, i| {
+                try md.writer(allocator).writeAll(" | ");
+
+                const sig = if (i < row.significance.len) row.significance[i] else .none;
+
+                if (row.is_best) {
+                    try md.writer(allocator).print("**{d:.3}**{s}", .{ val, sig.toSymbol() });
+                } else if (row.is_baseline) {
+                    try md.writer(allocator).print("*{d:.3}*", .{val});
+                } else {
+                    try md.writer(allocator).print("{d:.3}{s}", .{ val, sig.toSymbol() });
+                }
+
+                // Add standard error if available
+                if (row.std_errors) |ses| {
+                    if (i < ses.len) {
+                        try md.writer(allocator).print(" (±{d:.3})", .{ses[i]});
+                    }
+                }
+            }
+            try md.writer(allocator).writeAll("\n");
+        }
+
+        try md.writer(allocator).print("\n*Table: {s}*\n\n", .{self.caption});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+// TESTS — V10 Structures
+// ═════════════════════════════════════════════════════════════════════════
+
+test "AlgorithmPseudocode formatAsLaTeX" {
+    const algo = AlgorithmPseudocode{
+        .name = "Ternary Matrix Multiplication",
+        .label = "alg:ternary-matmul",
+        .inputs = &[_][]const u8{ "A ∈ {-1,0,1}^{m×n}", "B ∈ {-1,0,1}^{n×p}" },
+        .outputs = &[_][]const u8{"C ∈ {-n,0,n}^{m×p}"},
+        .steps = &[_]AlgorithmPseudocode.Step{
+            .{ .text = "Initialize C with zeros" },
+            .{ .text = "for i = 1 to m do" },
+            .{ .text = "for j = 1 to p do", .indent = 1 },
+            .{ .text = "sum = 0", .indent = 2 },
+            .{ .text = "for k = 1 to n do", .indent = 2 },
+            .{ .text = "sum = sum + A[i,k] × B[k,j]", .indent = 3 },
+            .{ .text = "C[i,j] = clamp(sum, -n, n)", .indent = 2 },
+            .{ .text = "return C" },
+        },
+        .caption = "Efficient ternary matrix multiplication without overflow",
+    };
+
+    const latex = try algo.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{algorithm}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "alg:ternary-matmul") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\REQUIRE") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\ENSURE") != null);
+}
+
+test "AlgorithmPseudocode formatAsMarkdown" {
+    const algo = AlgorithmPseudocode{
+        .name = "Ternary Matrix Multiplication",
+        .label = "alg:ternary-matmul",
+        .inputs = &[_][]const u8{ "A", "B" },
+        .outputs = &[_][]const u8{"C"},
+        .steps = &[_]AlgorithmPseudocode.Step{
+            .{ .number = 1, .text = "Initialize C" },
+            .{ .number = 2, .text = "Multiply A and B" },
+            .{ .number = 3, .text = "return C", .is_comment = true },
+        },
+    };
+
+    const md = try algo.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Algorithm Ternary") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "`alg:ternary-matmul`") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "// return C") != null);
+}
+
+test "ProgrammingLanguage toString" {
+    try std.testing.expectEqualStrings("zig", ProgrammingLanguage.zig.toString());
+    try std.testing.expectEqualStrings("verilog", ProgrammingLanguage.verilog.toString());
+    try std.testing.expectEqualStrings("python", ProgrammingLanguage.python.toString());
+}
+
+test "CodeListing formatAsLaTeX" {
+    const listing = CodeListing{
+        .caption = "Ternary activation function",
+        .label = "lst:ternary-act",
+        .language = .zig,
+        .code = "fn ternary_activate(x: f64) i8 {\n    if x > 0.5 return 1;\n    if x < -0.5 return -1;\n    return 0;\n}",
+        .file_path = "src/ternary.zig",
+        .line_start = 42,
+    };
+
+    const latex = try listing.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{listing}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "lst:ternary-act") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "zig") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "firstnumber=42") != null);
+}
+
+test "CodeListing formatAsMarkdown" {
+    const listing = CodeListing{
+        .caption = "Ternary activation",
+        .label = "lst:act",
+        .language = .python,
+        .code = "def ternary(x):\n    return 1 if x > 0 else (-1 if x < 0 else 0)",
+    };
+
+    const md = try listing.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Listing Ternary activation**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "```python") != null);
+}
+
+test "SignificanceLevel symbols" {
+    try std.testing.expectEqualStrings("", SignificanceLevel.none.toSymbol());
+    try std.testing.expectEqualStrings("*", SignificanceLevel.low.toSymbol());
+    try std.testing.expectEqualStrings("**", SignificanceLevel.medium.toSymbol());
+    try std.testing.expectEqualStrings("***", SignificanceLevel.high.toSymbol());
+    try std.testing.expectEqualStrings("****", SignificanceLevel.very_high.toSymbol());
+}
+
+test "SignificanceLevel toLaTeX" {
+    const latex = SignificanceLevel.high.toLaTeX();
+    try std.testing.expect(std.mem.indexOf(u8, latex, "***") != null);
+}
+
+test "StatisticalTable formatAsLaTeX" {
+    const table = StatisticalTable{
+        .caption = "Model comparison on TinyStories",
+        .label = "tab:results",
+        .headers = &[_][]const u8{ "Method", "PPL", "Loss" },
+        .rows = &[_]StatisticalTable.Row{
+            .{
+                .method = "Baseline",
+                .values = &[_]f64{ 15.2, 3.8 },
+                .std_errors = &[_]f64{ 0.3, 0.1 },
+                .significance = &[_]SignificanceLevel{ .none, .none },
+                .is_baseline = true,
+            },
+            .{
+                .method = "HSLM (ours)",
+                .values = &[_]f64{ 12.5, 3.2 },
+                .std_errors = &[_]f64{ 0.2, 0.1 },
+                .significance = &[_]SignificanceLevel{ .high, .high },
+                .is_best = true,
+            },
+        },
+    };
+
+    const latex = try table.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "tab:results") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "HSLM (ours)") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\textbf{12.500}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "$^{***}$") != null);
+}
+
+test "StatisticalTable formatAsMarkdown" {
+    const table = StatisticalTable{
+        .caption = "Results",
+        .label = "tab:res",
+        .headers = &[_][]const u8{ "Model", "Acc" },
+        .rows = &[_]StatisticalTable.Row{
+            .{
+                .method = "GPT-2",
+                .values = &[_]f64{0.85},
+                .significance = &[_]SignificanceLevel{.none},
+            },
+            .{
+                .method = "HSLM",
+                .values = &[_]f64{0.92},
+                .significance = &[_]SignificanceLevel{.high},
+                .is_best = true,
+            },
+        },
+    };
+
+    const md = try table.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "HSLM") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "**0.920**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "***") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "*Table: Results*") != null);
+}
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // DATA AVAILABILITY — NeurIPS 2025 Requirement
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
