@@ -349,10 +349,10 @@ c4f5640ba44 docs(research): add comprehensive scientific improvements synthesis 
 
 | Metric | Value |
 |--------|-------|
-| New Documents | 12 |
-| Total Lines | 5,527 |
+| New Documents | 15 |
+| Total Lines | 7,377 |
 | Algorithm Boxes | 26 |
-| Theorems with Proofs | 16 |
+| Theorems with Proofs | 21 |
 | Performance Tables | 15 |
 | ASCII Diagrams | 16 |
 | LaTeX Templates | 6 |
