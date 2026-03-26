@@ -246,6 +246,9 @@ Current approaches:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Figure 1: Tri Language Type System Hierarchy**
+![B005-Fig1_type_hierarchy](figures/B005-Fig1_type_hierarchy.png)
+
 ---
 
 ## 3. Theoretical Foundations

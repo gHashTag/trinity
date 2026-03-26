@@ -227,6 +227,9 @@ Throughput: 51,200 tok/s = 100 MHz / (6 cycles + 4 overhead)
 - Throughput per LUT: 51,200 / 10,977 = 4.66 tok/s/LUT
 - Throughput per Watt: 51,200 / 1.2 = 42,667 tok/s/W
 
+**Figure 2: Power Efficiency Comparison**
+![B002-Fig2_power_analysis](figures/B002-Fig2_power_analysis.png)
+
 ### 4.3 Performance Benchmarks
 
 **Table: Inference Speed Comparison**

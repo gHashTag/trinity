@@ -89,6 +89,9 @@ SECURITY MODEL:
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**Figure 1: TRI-27 Register File Layout**
+![B003-Fig1_register_layout](figures/B003-Fig1_register_layout.png)
+
 ### 2.2 Instruction Set
 
 **36 Opcodes (6 categories):**

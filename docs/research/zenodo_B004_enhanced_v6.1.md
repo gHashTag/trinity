@@ -116,6 +116,9 @@ Current systems use:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Figure 1: Queen Lotus Cycle State Machine**
+![B004-Fig1_lotus_cycle](figures/B004-Fig1_lotus_cycle.png)
+
 ### 2.2 Algorithm 1: Jaccard Similarity Episode Retrieval
 
 **Input:** Query state q, Episode Memory M, Similarity threshold θ = 0.8

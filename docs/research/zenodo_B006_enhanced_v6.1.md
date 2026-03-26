@@ -137,6 +137,9 @@ Current approaches:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Figure 1: GF16/TF3 Bit Layout Comparison**
+![B006-Fig1_gf16_layout](figures/B006-Fig1_gf16_layout.png)
+
 ### 2.3 Algorithm 1: GF16 Round-Trip Conversion
 
 **Input:** f32 value
@@ -185,6 +188,9 @@ Current approaches:
 - Optimal encoding maximizes entropy: H = -Σ p(x) log₂ p(x) = log₂ 3 ≈ 1.585 bits
 - GF16 allocates 6 bits exponent, 9 bits mantissa (ratio 9/6 = 1.5 ≈ φ)
 - Deviation from φ increases quantization error
+
+**Figure 2: φ-Distance Heatmap (GF16/TF3 marked as optimal)**
+![B006-Fig2_phi_heatmap](figures/B006-Fig2_phi_heatmap.png)
 
 ### 3.2 Information Retention Analysis
 

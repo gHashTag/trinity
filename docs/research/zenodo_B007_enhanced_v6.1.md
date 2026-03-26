@@ -103,6 +103,9 @@ Current approaches:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+**Figure 1: HybridBigInt SIMD Layout**
+![B007-Fig1_vsa_structure](figures/B007-Fig1_vsa_structure.png)
+
 ### 2.2 Algorithm 1: HybridBigInt Bind (SIMD)
 
 **Input:** a, b ∈ HybridBigInt (512 trits each)
@@ -231,6 +234,9 @@ fn tritHamming(a: []Trit, b: []Trit) u32 {
 **Statistical Analysis:**
 - All operations: p < 0.001 (highly significant)
 - Effect size: Cohen's d = 12.4 (LARGE, threshold d > 0.8)
+
+**Figure 2: VSA Operations SIMD Speedup Comparison**
+![B007-Fig2_simd_speedup](figures/B007-Fig2_simd_speedup.png)
 
 ### 4.2 Noise Resilience (n=100 queries, 45% noise)
 
