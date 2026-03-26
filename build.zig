@@ -962,7 +962,11 @@ pub fn build(b: *std.Build) void {
 
     // Staking: lock periods and multipliers
     const staking_tests = b.addTest(.{
-        .root_module = firebird_staking_mod,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/staking.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     const run_staking_tests = b.addRunArtifact(staking_tests);
     test_step.dependOn(&run_staking_tests.step);
