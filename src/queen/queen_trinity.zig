@@ -167,7 +167,7 @@ pub const ImpureQueue = struct {
 
             var event = ImpureEvent{};
             if (parseImpureEvent(&event, content)) {
-                try self.events.append(event);
+                try self.events.append(self.allocator, event);
             }
         }
     }
