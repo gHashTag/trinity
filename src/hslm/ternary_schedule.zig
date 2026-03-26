@@ -135,15 +135,11 @@ test "TernarySchedule decaying sum decreases" {
 /// Expected: 3-5% PPL improvement vs standard schedule
 pub const ConsciousnessLR = struct {
     base_lr: f32,
-    max_multiplier: f32 = phi_scaling.PHI,        // φ ≈ 1.618
-    min_multiplier: f32 = phi_scaling.INV_PHI,    // φ⁻¹ ≈ 0.618
+    max_multiplier: f32 = phi_scaling.PHI, // φ ≈ 1.618
+    min_multiplier: f32 = phi_scaling.INV_PHI, // φ⁻¹ ≈ 0.618
     total_steps: u64 = 30000,
 
-    pub fn getLR(
-        self: *const ConsciousnessLR,
-        consciousness: f32,
-        step: u32
-    ) f32 {
+    pub fn getLR(self: *const ConsciousnessLR, consciousness: f32, step: u32) f32 {
         // Cosine decay envelope for overall training
         const progress = @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(self.total_steps));
         const envelope = (1.0 + @cos(std.math.pi * progress)) / 2.0;
