@@ -55,6 +55,8 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
 
 /// Record a failure for blacklist
 pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Error) !void {
+    _ = error_code; // TODO: use error code to track different failure types
+
     if (self.blacklist == null) {
         self.blacklist = std.StringHashMap(Error).init(self.allocator);
     }
@@ -96,9 +98,7 @@ pub fn cmdCheckFear(allocator: std.mem.Allocator, args: []const u8) ![]const u8 
     // TODO: Integrate with experience engine
     const is_blocked = false; // Mock for now
 
-    return try std.fmt.allocPrint(allocator,
-        "Blocked: {s}\n"
-    , .{if (is_blocked) "YES ❌" else "NO ✅"});
+    return try std.fmt.allocPrint(allocator, "Blocked: {s}\n", .{if (is_blocked) "YES ❌" else "NO ✅"});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
