@@ -680,23 +680,30 @@ test "shard distribution across peers" {
 test "5-node simulation with disk persistence" {
     const allocator = std.testing.allocator;
 
+    // Generate unique test directory to avoid conflicts with parallel tests
+    var random_bytes: [8]u8 = undefined;
+    std.crypto.random.bytes(&random_bytes);
+    const hex = std.fmt.bytesToHex(random_bytes, .lower);
+    const base_dir = try std.fmt.allocPrint(allocator, "/tmp/trinity_5node_{s}", .{hex});
+    defer allocator.free(base_dir);
+
     // Create 5 temp directories for 5 nodes
-    const dirs = [_][]const u8{
-        "/tmp/trinity_test_5node/node0",
-        "/tmp/trinity_test_5node/node1",
-        "/tmp/trinity_test_5node/node2",
-        "/tmp/trinity_test_5node/node3",
-        "/tmp/trinity_test_5node/node4",
-    };
+    var dirs: [5][]u8 = undefined;
+    for (0..5) |i| {
+        dirs[i] = try std.fmt.allocPrint(allocator, "{s}/node{d}", .{ base_dir, i });
+    }
+    defer {
+        for (0..5) |i| allocator.free(dirs[i]);
+    }
 
     // Clean up from previous run
-    std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+    std.fs.cwd().deleteTree(base_dir) catch |err| {
         std.log.debug("shard_manager: pre-test cleanup failed: {}", .{err});
     };
     for (dirs) |dir| {
         try std.fs.cwd().makePath(dir);
     }
-    defer std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+    defer std.fs.cwd().deleteTree(base_dir) catch |err| {
         std.log.debug("shard_manager: post-test cleanup failed: {}", .{err});
     };
 
