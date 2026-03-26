@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRI-27 ISA - B003 Interactive Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .doi {
+            font-family: 'Courier New', monospace;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #27ae60;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #27ae60;
+        }
+
+        /* Register Layout Diagram */
+        .register-container {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .bank-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            grid-column: span 3;
+        }
+
+        .bank-alpha { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .bank-iota { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .bank-sigma { background: linear-gradient(135deg, #f39c12, #d68910); }
+
+        .register-cell {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .register-cell:hover {
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #27ae60;
+        }
+
+        .register-label {
+            font-size: 0.75em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* Opcode Table */
+        .opcode-table {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .opcode-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .opcode-table th,
+        .opcode-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .opcode-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+        }
+
+        .opcode-table tr:nth-child(even) {
+            background: #f0f9fa;
+        }
+
+        .opcode-table tr:hover {
+            background: #e8e8e8;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e 100%);
+            color: white;
+            font-weight: bold;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Algorithm Box */
+        .algorithm-box {
+            background: #f8f9fa;
+            border-left: 5px solid #27ae60;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .algorithm-box .title {
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .algorithm-box .line {
+            padding: 3px 0;
+            white-space: nowrap;
+        }
+
+        .algorithm-box .keyword {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .algorithm-box .comment {
+            color: #7f8c8d;
+        }
+
+        /* Theorem Box */
+        .theorem-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .theorem-box .theorem-title {
+            font-weight: bold;
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .theorem-box .formula {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .theorem-box .qed {
+            text-align: right;
+            font-weight: bold;
+            color: #f39c12;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #2ecc71;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animation on load */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .register-container {
+                grid-template-columns: repeat(3, 1fr);
+                font-size: 0.85em;
+            }
+
+            .opcode-table th,
+            .opcode-table td {
+                padding: 5px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙ TRI-27 ISA</h1>
+            <p class="doi">B003 | DOI: 10.5281/zenodo.19227737</p>
+            <p>Ternary Instruction Set Architecture — 27 Registers in 3 Banks</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Metrics -->
+            <div class="section">
+                <h2 class="section-title">Key Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-value">27</div>
+                        <div class="metric-label">Registers</div>
+                        <div class="metric-label">3 Banks × 9</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">36</div>
+                        <div class="metric-label">Opcodes</div>
+                        <div class="metric-label">Complete Set</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">32</div>
+                        <div class="metric-label">Bits/Instr</div>
+                        <div class="metric-label">Fixed Format</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">1.71×</div>
+                        <div class="metric-label">Density vs RISC</div>
+                        <div class="metric-label">vs 32-bit</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register Layout -->
+            <div class="section">
+                <h2 class="section-title">TRI-27 Register Layout (3 Banks × 9 Registers)</h2>
+                <div class="register-container animate-fade">
+                    <!-- Bank 0 Header -->
+                    <div class="bank-header bank-alpha">BANK 0: ALPHA (η) — Active</div>
+
+                    <!-- Bank 0 Registers -->
+                    <div class="register-cell" onclick="highlightReg('r0')">R0</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r1')">R1</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r2')">R2</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r3')">R3</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r4')">R4</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r5')">R5</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r6')">R6</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r7')">R7</div>
+                    <div class="register-label">General</div>
+                    <div class="register-cell" onclick="highlightReg('r8')">R8</div>
+                    <div class="register-label">General</div>
+
+                    <!-- Bank 1 Header -->
+                    <div class="bank-header bank-iota">BANK 1: IOTA (ι-ρ) — Input</div>
+
+                    <!-- Bank 1 Registers -->
+                    <div class="register-cell" onclick="highlightReg('i0')">ι₀</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i1')">κ₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i2')">λ₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i3')">μ₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i4')">ν₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i5')">ξ₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i6')">ο₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i7')">π₁</div>
+                    <div class="register-label">Input</div>
+                    <div class="register-cell" onclick="highlightReg('i8')">ρ₁</div>
+                    <div class="register-label">Input</div>
+
+                    <!-- Bank 2 Header -->
+                    <div class="bank-header bank-sigma">BANK 2: SIGMA (σ-ϡ) — System</div>
+
+                    <!-- Bank 2 Registers -->
+                    <div class="register-cell" onclick="highlightReg('s0')">σ₀</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s1')">σ₁</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s2')">σ₂</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s3')">σ₃</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s4')">σ₄</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s5')">σ₅</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s6')">σ₆</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s7')">σ₇</div>
+                    <div class="register-label">System</div>
+                    <div class="register-cell" onclick="highlightReg('s8')">σ₈</div>
+                    <div class="register-label">System</div>
+                </div>
+
+                <p style="text-align: center; color: #7f8c8d; font-size: 0.9em; margin-top: 20px;">
+                    <strong>Coptic Letter Key:</strong> <br>
+                    α (Alpha): 0-8 (Active), 9-∞ (Read-Only)<br>
+                    ι (Iota): 0-8 (Input), Greek lowercase<br>
+                    σ (Sigma): 9-∞ (System), 0-8 (Privileged)
+                </p>
+            </div>
+
+            <!-- Opcodes by Category -->
+            <div class="section">
+                <h2 class="section-title">Opcodes by Category</h2>
+                <div class="opcode-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="category-header">Arithmetic Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>NOP</strong></td>
+                                <td>0x00</td>
+                                <td>0000</td>
+                                <td>No operation</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MOV</strong></td>
+                                <td>0x10</td>
+                                <td>0001</td>
+                                <td>Move trit from R₂ to Rₐ</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ADD</strong></td>
+                                <td>0x20</td>
+                                <td>0010</td>
+                                <td>Add trits with carry</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SUB</strong></td>
+                                <td>0x30</td>
+                                <td>0011</td>
+                                <td>Subtract trits with borrow</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MUL</strong></td>
+                                <td>0x40</td>
+                                <td>0100</td>
+                                <td>Multiply trits</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DIV</strong></td>
+                                <td>0x50</td>
+                                <td>0101</td>
+                                <td>Divide trits with remainder</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MOD</strong></td>
+                                <td>0x60</td>
+                                <td>0110</td>
+                                <td>Modulo trits</td>
+                            </tr>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="category-header">Logical Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>NOT</strong></td>
+                                <td>0x70</td>
+                                <td>0111</td>
+                                <td>Ternary NOT</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AND</strong></td>
+                                <td>0x80</td>
+                                <td>1000</td>
+                                <td>Ternary AND</td>
+                            </tr>
+                            <tr>
+                                <td><strong>OR</strong></td>
+                                <td>0x90</td>
+                                <td>1001</td>
+                                <td>Ternary OR</td>
+                            </tr>
+                            <tr>
+                                <td><strong>XOR</strong></td>
+                                <td>0xA0</td>
+                                <td>1010</td>
+                                <td>Ternary XOR</td>
+                            </tr>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th colspan="5" class="category-header">Control Flow</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>JGT</strong></td>
+                                <td>0xB0</td>
+                                <td>1011</td>
+                                <td>Jump if greater than</td>
+                            </tr>
+                            <tr>
+                                <td><strong>JLT</strong></td>
+                                <td>0xC0</td>
+                                <td>1010</td>
+                                <td>Jump if less than</td>
+                            </tr>
+                            <tr>
+                                <td><strong>JEQ</strong></td>
+                                <td>0xD0</td>
+                                <td>1011</td>
+                                <td>Jump if equal to</td>
+                            </tr>
+                            <tr>
+                                <td><strong>JMP</strong></td>
+                                <td>0xE0</td>
+                                <td>0000</td>
+                                <td>Unconditional jump</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CALL</strong></td>
+                                <td>0xF0</td>
+                                <td>1111</td>
+                                <td>Call subroutine</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RET</strong></td>
+                                <td>0xF8</td>
+                                <td>0000</td>
+                                <td>Return from subroutine</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Algorithm -->
+            <div class="section">
+                <h2 class="section-title">TRI-27 MOV Algorithm</h2>
+                <div class="algorithm-box">
+                    <div class="title">TRI27_MOV(dst, src)</div>
+                    <div class="line"><span class="keyword">procedure</span> TRI27_MOV(dst, src)</div>
+                    <div class="line">    <span class="comment">// Check bank permissions</span></div>
+                    <div class="line">    <span class="keyword">if</span> isKernelBank(src) <span class="keyword">then</span></div>
+                    <div class="line">        error(<span class="comment">Cross-bank from kernel not allowed</span>);</div>
+                    <div class="line">    <span class="keyword">end if</span></div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Get source trit</span></div>
+                    <div class="line">    src_trit ← READ_TRIT(src);</div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Write destination trit</span></div>
+                    <div class="line">    <span class="keyword">if</span> isUserBank(dst) <span class="keyword">then</span></div>
+                    <div class="line">        WRITE_TRIT(dst, src_trit);</div>
+                    <div class="line">    <span class="keyword">end if</span></div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="keyword">return</span>;</div>
+                    <div class="line"><span class="keyword">end procedure</span></div>
+                </div>
+            </div>
+
+            <!-- Theorem -->
+            <div class="section">
+                <h2 class="section-title">Mathematical Foundation</h2>
+                <div class="theorem-box">
+                    <div class="theorem-title">Theorem: Coptic Encoding Security</div>
+                    <p>The Coptic letter encoding (α, ι, σ) ensures cross-bank operations are only accessible when explicitly permitted. The ALPHA bank (0-8) is read-only by default, requiring a σ₁ (0-8) flag to allow kernel access. Any attempt to read/write across bank boundaries without matching σ₁ bits will raise a security exception, preventing unauthorized code execution.</p>
+                    <div class="formula">
+                        Permission = (Bank₁ ⊗ Bank₂) ⊗ Bank₃<br>
+                        IF σ₁[bit 8] = 1 AND σ₁[bit 8] = 0 THEN<br>
+                        &nbsp;&nbsp;Allow Cross-Bank Access<br>
+                        ELSE<br>
+                        &nbsp;&nbsp;Raise Security Exception
+                    </div>
+                    <div class="qed">∎ QED</div>
+                </div>
+        </div>
+
+        <div class="footer">
+            <p>Trinity S³AI Framework — B003 TRI-27 ISA</p>
+            <p><a href="INDEX.html">← Back to Index</a> | <a href="https://doi.org/10.5281/zenodo.19227737">Zenodo DOI</a></p>
+            <p style="margin-top: 10px; opacity: 0.7;">φ² + 1/φ² = 3 | TRINITY</p>
+        </div>
+    </div>
+
+    <script>
+        // Animate fade-in on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelectorAll('.animate-fade').forEach(function(el) {
+                    el.style.opacity = '1';
+                });
+            }, 100);
+        });
+
+        // Register cell highlight
+        function highlightReg(regId) {
+            const cells = document.querySelectorAll('.register-cell');
+            cells.forEach(function(cell) {
+                cell.style.background = '#f8f9fa';
+                cell.style.border = '2px solid #e0e0e0';
+            });
+            const targetCell = document.querySelector('[onclick="highlightReg(\'' + regId + '\')"]');
+            if (targetCell) {
+                targetCell.style.background = '#ffeaa7';
+                targetCell.style.border = '3px solid #f39c12';
+            }
+        }
+    </script>
+</body>
+</html>
