@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.7
+# Trinity Research Documentation Index — v9.8
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 183
-**NEW: SOTA Comparison + Session 28 Report
+**Total Documents:** 185
+**NEW: Effect Size Framework + MLSys Artifact Appendix
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -52,12 +52,12 @@
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
 
-### 4. Zenodo Publication (9 documents)
+### 4. Zenodo Publication (11 documents)
 
 | Document | Purpose | Version |
 |----------|---------|---------|
 | `ZENODO_PUBLICATION_BEST_PRACTICES.md` | Scientific writing standards | v3.0 ✅ |
-| `ZENODO_PUBLICATION_BEST_PRACTICES_2026_COMPREHENSIVE.md` | Complete 2025-2026 standards: FAIR, ML cards, reproducibility | v3.0 ✨ NEW |
+| `ZENODO_PUBLICATION_BEST_PRACTICES_2026_COMPREHENSIVE.md` | Complete 2025-2026 standards: FAIR, ML cards, reproducibility | v3.0 ✅ |
 | `ZENODO_ABSTRACT_IMPROVEMENTS.md` | Abstract enhancement analysis | v1.0 ✅ |
 | `ZENODO_SCIENTIFIC_GUIDE_V2.md` | Metadata requirements | v2.0 |
 | `ZENODO_MASTER_INDEX.md` | All Zenodo bundles index | v1.0 |
@@ -65,6 +65,8 @@
 | `ZENODO_README.md` | Zenodo bundle README | v1.0 |
 | `CITATION.cff` | Main citation file | v1.0 |
 | `7× citation/bundle_*.cff` | Per-bundle citations | v1.1 ✅ Enhanced |
+| `EFFECT_SIZE_STANDARDIZATION_FRAMEWORK_2026.md` | Cohen's d, Cliff's Delta, Pearson's r, R², OR | v1.0 ✨ NEW |
+| `MLSYS_ARTIFACT_APPENDIX_2026.md` | MLSys 2026 reproducibility checklist | v1.0 ✨ NEW |
 
 ### 5. Mathematical Foundations (5 documents)
 
@@ -229,7 +231,9 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 9.6 | 2026-03-26 | Added Security & Robustness Comprehensive Analysis (adversarial attacks FGSM/PGD/AutoAttack, ternary-specific attacks trit-flipping/sacred scaling/VSA poisoning, defenses adversarial training/input filtering/certified robustness, FPGA bitstream encryption, 67.8% robust accuracy 2.3× vs float32, 3.8× faster certification, 272× lower energy) + Session 27 report ✨ NEW |
+| 9.8 | 2026-03-26 | Added Effect Size Standardization Framework (Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, magnitude interpretation, APA-style reporting, 5 implementations) + MLSys Artifact Appendix 2026 (600+ LOC reproducibility documentation, code/data/training verification, hyperparameter sensitivity, troubleshooting guide) ✨ NEW |
+| 9.7 | 2026-03-26 | Added SOTA Comparison + Session 28 Report ✨ NEW |
+| 9.6 | 2026-03-26 | Added Security & Robustness Comprehensive Analysis (adversarial attacks FGSM/PGD/AutoAttack, ternary-specific attacks trit-flipping/sacred scaling/VSA poisoning, defenses adversarial training/input filtering/certified robustness, FPGA bitstream encryption, 67.8% robust accuracy 2.3× vs float32, 3.8× faster certification, 272× lower energy) + Session 27 report ✨ |
 | 9.5 | 2026-03-26 | Added Zenodo Best Practices 2026 Comprehensive (FAIR principles 15/15 compliance, Model Cards + Datasheets, NeurIPS reproducibility checklist, 5-sentence abstract structure, statistical reporting standards, CITATION.cff v1.2.0, automated validation, Trinity 8 bundle examples) + Session 26 report ✨ |
 | 9.4 | 2026-03-26 | Added Scalability Comprehensive Analysis (Amdahl/Gustafson laws, multi-FPGA 87.5% efficiency at 4×, 80.5% at 64×, memory scaling 16× reduction, communication scaling 16×, distributed training 92.1% efficiency, production deployment projections, 4× throughput optimization) + Session 25 report ✨ |
 | 9.3 | 2026-03-26 | Added Energy Efficiency Comprehensive Analysis (Landauer principle, ternary info theory 1.585× density, FPGA zero-DSP 19.2 pJ/OP, sacred scaling 2.1× energy, consciousness gate 36% VSA reduction, carbon footprint 918× improvement, 6.15× optimized to 3.12 pJ/OP) + Session 24 report ✨ |
