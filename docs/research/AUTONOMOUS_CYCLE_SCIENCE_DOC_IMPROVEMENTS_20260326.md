@@ -304,6 +304,14 @@ c13a1aefe5d docs(research): update autonomous cycle report - add NeurIPS 2026 pa
 a8b83fa02bf docs(research): add Phi Scaling and Ternary Activations algorithm boxes V1 (#415)
 
 3894b2e7293 docs(research): add Complete Algorithm Reference V1 - 27 algorithms, 7 theorems (#415)
+
+d818fb95672 docs(research): add HSLM implementation analysis and improvements V1 (#415)
+
+b7303aa5400 docs(research): add VSA and HybridBigInt mathematical foundations V1 (#415)
+
+35d9b2f6d1f docs(research): add consciousness gate and T-JEPA mathematical analysis V1 (#415)
+
+c4f5640ba44 docs(research): add comprehensive scientific improvements synthesis V1 (#415)
 ```
 
 ---
@@ -341,14 +349,14 @@ a8b83fa02bf docs(research): add Phi Scaling and Ternary Activations algorithm bo
 
 | Metric | Value |
 |--------|-------|
-| New Documents | 5 |
-| Total Lines | 2,860 |
+| New Documents | 12 |
+| Total Lines | 5,527 |
 | Algorithm Boxes | 26 |
-| Theorems with Proofs | 7 |
-| Performance Tables | 10 |
-| ASCII Diagrams | 8 |
-| LaTeX Templates | 4 |
-| Statistical Tables (95% CI) | 5 |
+| Theorems with Proofs | 16 |
+| Performance Tables | 15 |
+| ASCII Diagrams | 16 |
+| LaTeX Templates | 6 |
+| Statistical Tables (95% CI) | 8 |
 
 ---
 
