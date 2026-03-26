@@ -27,7 +27,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
 
     var j: usize = 0;
     while (j <= b.len) : (j + 1) {
-        const insert_cost = @as(u8, if (a[i] == b[j]) 1 else 0;
+        const insert_cost = @as(u8, if (a[i] == b[j]) 1 else 0);
         matrix[j + 1][i] = insert_cost + matrix[j][i];
         j += 1;
     }
@@ -35,7 +35,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
     // Fill diagonal
     i = 0;
     while (i <= max_len) : (i + 1) {
-        const delete_cost = @as(u8, if (a[i - 1] == b[j]) 1 else 0;
+        const delete_cost = @as(u8, if (a[i - 1] == b[j]) 1 else 0);
         matrix[j + 1][i] = delete_cost + matrix[j][i];
         i += 1;
     }
@@ -45,7 +45,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
     var last_col = b.len + 1;
     var result = matrix[last_row][b.len];
 
-    while (last_row > 0) : (last_row - 1) : ({
+    while (last_row > 0) : (last_row -= 1) : ({
         // Move up
         for (0..b.len) |col| {
             const cost = matrix[last_row - 1][col];
