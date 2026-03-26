@@ -1160,8 +1160,36 @@ pub const SampleSizeCalculator = struct {
         // Non-centrality parameter
         const delta = effect * @sqrt(n / 2);
 
+        // Approximate normal CDF using error function approximation
+        // Φ(x) ≈ 0.5 * (1 + erf(x / sqrt(2)))
+        // Using polynomial approximation: Φ(x) = 1 - φ(x)*(a1*t + a2*t² + a3*t³ + a4*t⁴ + a5*t⁵)
+        // where t = 1/(1 + p*x), p = 0.2316419, φ(x) = exp(-x²/2) / sqrt(2π)
+        const normCDF = struct {
+            fn pdf(x: f64) f64 {
+                return std.math.exp(-x * x / 2.0) / std.math.sqrt(2.0 * std.math.pi);
+            }
+
+            fn cdf(x: f64) f64 {
+                const p = 0.2316419;
+                const a1 = 0.319381530;
+                const a2 = -0.356563782;
+                const a3 = 1.781477937;
+                const a4 = -1.821255978;
+                const a5 = 1.330274429;
+
+                const sign: f64 = if (x < 0) -1.0 else 1.0;
+                const abs_x = if (x < 0) -x else x;
+
+                const t = 1.0 / (1.0 + p * abs_x);
+                const y = 1.0 - pdf(abs_x) * (a1 * t + a2 * t * t + a3 * t * t * t + a4 * t * t * t * t + a5 * t * t * t * t * t);
+
+                return 0.5 * (1.0 + sign * (2.0 * y - 1.0));
+            }
+        };
+
         // Power approximation using normal distribution (z_critical = 1.96 for α=0.05)
-        const power = 1.0 - std.math.normCDF(1.96 - delta);
+        const power_f64 = 1.0 - normCDF.cdf(1.96 - delta);
+        const power: f32 = @floatCast(power_f64);
 
         return @min(power, 0.999);
     }
@@ -1728,11 +1756,11 @@ pub const ComparisonTable = struct {
 
 /// Theorem environment for LaTeX mathematical statements
 pub const TheoremEnvironment = enum {
-    theorem,     // Theorem
-    lemma,       // Lemma
-    corollary,   // Corollary
+    theorem, // Theorem
+    lemma, // Lemma
+    corollary, // Corollary
     proposition, // Proposition
-    definition,  // Definition
+    definition, // Definition
 };
 
 /// Mathematical proof statement with LaTeX formatting
@@ -1748,9 +1776,9 @@ pub const TheoremStatement = struct {
     /// Proof (optional, can be inline or reference appendix)
     proof: ?[]const u8 = null,
     /// References to other theorems/definitions
-    references: []const []const u8 = &[0][]const u8,
+    references: []const []const u8 = &.{},
     /// Related equations (for auto-numbering)
-    equations: []const []const u8 = &[0][]const u8,
+    equations: []const []const u8 = &.{},
 
     /// Format as LaTeX theorem block
     pub fn formatAsLaTeX(self: *const TheoremStatement, allocator: std.mem.Allocator) ![]u8 {
@@ -1798,15 +1826,12 @@ pub const TheoremStatement = struct {
         };
 
         if (self.title) |title| {
-            try md.writer(allocator).print("## {s} ({s})\n", .{env_name, title});
+            try md.writer(allocator).print("## {s} ({s})\n", .{ env_name, title });
         } else {
             try md.writer(allocator).print("## {s}\n", .{env_name});
         }
 
-        if (self.label) |label| {
-            try md.writer(allocator).print("**Label:** `{s}`\n\n", .{label});
-        }
-
+        try md.writer(allocator).print("**Label:** `{s}`\n\n", .{self.label});
         try md.writer(allocator).print("{s}\n\n", .{self.statement});
 
         if (self.proof) |proof| {
@@ -1893,7 +1918,7 @@ pub const Equation = struct {
         var md = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
         defer md.deinit(allocator);
 
-        try md.writer(allocator).print("**Equation ({s}):** {s}\n\n", .{self.label, self.description});
+        try md.writer(allocator).print("**Equation ({s}):** {s}\n\n", .{ self.label, self.description });
         try md.writer(allocator).print("```\n{s}\n```\n", .{self.latex});
 
         return md.toOwnedSlice(allocator);
