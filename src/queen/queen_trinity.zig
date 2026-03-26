@@ -140,18 +140,18 @@ pub const ImpureQueue = struct {
     pub fn init(allocator: Allocator) ImpureQueue {
         return .{
             .allocator = allocator,
-            .events = std.ArrayList(ImpureEvent).init(allocator),
+            .events = std.ArrayList(ImpureEvent).empty,
         };
     }
 
     pub fn deinit(self: *ImpureQueue) void {
-        self.events.deinit();
+        self.events.deinit(self.allocator);
     }
 
     pub fn load(self: *ImpureQueue) !void {
         self.events.clearRetainingCapacity();
 
-        const dir = std.fs.cwd().openDir(IMPURE_DIR, .{ .iterate = true }) catch {
+        var dir = std.fs.cwd().openDir(IMPURE_DIR, .{ .iterate = true }) catch {
             // Directory doesn't exist yet - empty queue
             return;
         };
@@ -167,7 +167,7 @@ pub const ImpureQueue = struct {
 
             var event = ImpureEvent{};
             if (parseImpureEvent(&event, content)) {
-                try self.events.append(event);
+                try self.events.append(self.allocator, event);
             }
         }
     }
@@ -338,8 +338,8 @@ fn parseImpureEvent(event: *ImpureEvent, json: []const u8) bool {
 }
 
 fn serializeImpureEvent(allocator: Allocator, event: *const ImpureEvent) ![]u8 {
-    var json_str = std.ArrayList(u8).init(allocator);
-    defer json_str.deinit();
+    var json_str = std.ArrayList(u8).initCapacity(allocator, 1024) catch return error.OutOfMemory;
+    defer json_str.deinit(allocator);
 
     try json_str.append('{');
 
@@ -464,10 +464,10 @@ fn runQueenStatus(allocator: Allocator) !void {
 
     // Count by strand
     std.debug.print("\nBy Strand:\n", .{});
-    inline for (@typeInfo(Strand).@"enum_fields".len) |i| {
-        const strand = @typeInfo(Strand).@"enum_fields"[i].value;
+    inline for (@typeInfo(Strand).enum_fields.len) |i| {
+        const strand = @typeInfo(Strand).enum_fields[i].value;
         const count = queue.countByStrand(strand);
-        std.debug.print("  Strand {s}: {d}\n", .{strandFullName(strand), count});
+        std.debug.print("  Strand {s}: {d}\n", .{ strandFullName(strand), count });
     }
 
     // Show blocked events if any
