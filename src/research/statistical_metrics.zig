@@ -17,10 +17,7 @@ pub const ConfidenceInterval = struct {
 
     pub fn format(self: ConfidenceInterval, allocator: std.mem.Allocator) ![]const u8 {
         const level_pct = self.level * 100.0;
-        return std.fmt.allocPrint(allocator,
-            "{d:.0}% CI: [{d:.2}, {d:.2}]",
-            .{ level_pct, self.lower, self.upper }
-        );
+        return std.fmt.allocPrint(allocator, "{d:.0}% CI: [{d:.2}, {d:.2}]", .{ level_pct, self.lower, self.upper });
     }
 
     pub fn contains(self: ConfidenceInterval, value: f64) bool {
@@ -40,10 +37,7 @@ pub const TTestResult = struct {
             try std.fmt.allocPrint(allocator, "p < {d:.2}", .{self.alpha})
         else
             try std.fmt.allocPrint(allocator, "p = {d:.4}", .{self.p_value});
-        return std.fmt.allocPrint(allocator,
-            "t({d}) = {d:.2}, {s}",
-            .{ self.df, self.t_statistic, sig_str }
-        );
+        return std.fmt.allocPrint(allocator, "t({d}) = {d:.2}, {s}", .{ self.df, self.t_statistic, sig_str });
     }
 };
 
@@ -56,10 +50,7 @@ pub const ExperimentResult = struct {
     n: usize,
 
     pub fn formatSummary(self: ExperimentResult, allocator: std.mem.Allocator) ![]const u8 {
-        var result = try std.fmt.allocPrint(allocator,
-            "Value: {d:.2} ± {d:.2} (n={d})\n",
-            .{ self.mean, self.std_err, self.n }
-        );
+        var result = try std.fmt.allocPrint(allocator, "Value: {d:.2} ± {d:.2} (n={d})\n", .{ self.mean, self.std_err, self.n });
 
         const ci_str = try self.ci.format(allocator);
         defer allocator.free(ci_str);
@@ -178,7 +169,7 @@ pub fn twoSampleTTest(values1: []const f64, values2: []const f64) TTestResult {
     }
 
     // t-statistic
-    const se_diff = @sqrt(var1/n1 + var2/n2);
+    const se_diff = @sqrt(var1 / n1 + var2 / n2);
     const t_statistic = (stats1.mean - stats2.mean) / se_diff;
 
     // Degrees of freedom (Welch's t-test approximation)
@@ -215,14 +206,7 @@ pub fn analyzeExperiment(values: []const f64, compare_values: ?[]const f64) Expe
         null;
 
     const cohens_d = if (compare_values) |cv|
-        cohensD(
-            stats.mean,
-            meanStdErr(cv).mean,
-            stats.stderr,
-            meanStdErr(cv).stderr,
-            values.len,
-            cv.len
-        )
+        cohensD(stats.mean, meanStdErr(cv).mean, stats.stderr, meanStdErr(cv).stderr, values.len, cv.len)
     else
         null;
 

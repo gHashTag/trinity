@@ -15,6 +15,7 @@
 
 const std = @import("std");
 const print = std.debug.print;
+const zenodo_templates = @import("zenodo_templates.zig");
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -106,6 +107,30 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             try publishBundleV5_2(allocator, sub_args[0]);
         } else {
             try publishAllBundlesV5_2(allocator);
+        }
+    } else if (std.mem.eql(u8, subcmd, "template")) {
+        // Generate JSON metadata template from zenodo_templates library
+        if (sub_args.len > 0) {
+            try generateMetadataTemplate(allocator, sub_args[0]);
+        } else {
+            print("{s}Usage: tri zenodo template <bundle_id>{s}\n", .{ RED, RESET });
+            print("  Bundle IDs: B001, B002, B003, B004, B005, B006, B007, PARENT\n", .{});
+        }
+    } else if (std.mem.eql(u8, subcmd, "cff")) {
+        // Generate CITATION.cff from zenodo_templates library
+        if (sub_args.len > 0) {
+            try generateCitationCFF(allocator, sub_args[0]);
+        } else {
+            print("{s}Usage: tri zenodo cff <bundle_id>{s}\n", .{ RED, RESET });
+            print("  Bundle IDs: B001, B002, B003, B004, B005, B006, B007, PARENT\n", .{});
+        }
+    } else if (std.mem.eql(u8, subcmd, "readme")) {
+        // Generate README.md for Zenodo deposit from zenodo_templates library
+        if (sub_args.len > 0) {
+            try generateZenodoReadme(allocator, sub_args[0]);
+        } else {
+            print("{s}Usage: tri zenodo readme <bundle_id>{s}\n", .{ RED, RESET });
+            print("  Bundle IDs: B001, B002, B003, B004, B005, B006, B007, PARENT\n", .{});
         }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
@@ -1397,6 +1422,82 @@ fn publishBundleV5Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void 
     std.fs.deleteFileAbsolute(temp_path) catch {};
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEMPLATE GENERATION FUNCTIONS (using zenodo_templates library)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Parse bundle ID string to BundleType enum
+fn parseBundleType(bundle_id: []const u8) !zenodo_templates.BundleType {
+    if (std.mem.eql(u8, bundle_id, "B001") or std.mem.eql(u8, bundle_id, "A")) return .ternary_nn;
+    if (std.mem.eql(u8, bundle_id, "B002") or std.mem.eql(u8, bundle_id, "B")) return .zero_dsp;
+    if (std.mem.eql(u8, bundle_id, "B003") or std.mem.eql(u8, bundle_id, "C")) return .tri27_isa;
+    if (std.mem.eql(u8, bundle_id, "B004") or std.mem.eql(u8, bundle_id, "D")) return .queen_orchestration;
+    if (std.mem.eql(u8, bundle_id, "B005") or std.mem.eql(u8, bundle_id, "E")) return .tri_language;
+    if (std.mem.eql(u8, bundle_id, "B006") or std.mem.eql(u8, bundle_id, "F")) return .vsa_ternary;
+    if (std.mem.eql(u8, bundle_id, "B007") or std.mem.eql(u8, bundle_id, "G")) return .vsa_ternary;
+    if (std.mem.eql(u8, bundle_id, "PARENT")) return .parent;
+    return error.InvalidBundleId;
+}
+
+/// Generate JSON metadata template from zenodo_templates library
+fn generateMetadataTemplate(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    const bundle_type = try parseBundleType(bundle_id);
+    const metadata = try zenodo_templates.createDefaultMetadata(allocator, bundle_type);
+    // Note: metadata fields are static string literals, no need to free them
+
+    const json = try metadata.toJSON(allocator);
+    defer allocator.free(json);
+
+    print("{s}[{s}]{s} Zenodo JSON Metadata\n\n", .{ CYAN, bundle_type.fileName(), RESET });
+    print("{s}\n", .{json});
+}
+
+/// Generate CITATION.cff file from zenodo_templates library
+fn generateCitationCFF(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    const bundle_type = try parseBundleType(bundle_id);
+    const metadata = try zenodo_templates.createDefaultMetadata(allocator, bundle_type);
+    // Note: metadata fields are static string literals, no need to free them
+
+    const cff = try metadata.toCitationCFF(allocator);
+    defer allocator.free(cff);
+
+    // Write to file
+    const filename = try std.fmt.allocPrint(allocator, "CITATION_{s}.cff", .{bundle_type.fileName()});
+    defer allocator.free(filename);
+
+    const file = try std.fs.cwd().createFile(filename, .{});
+    defer file.close();
+    try file.writeAll(cff);
+
+    print("{s}[{s}]{s} CITATION.cff generated\n", .{ GREEN, bundle_type.fileName(), RESET });
+    print("  File: {s}\n", .{filename});
+}
+
+/// Generate README.md for Zenodo deposit from zenodo_templates library
+fn generateZenodoReadme(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    const bundle_type = try parseBundleType(bundle_id);
+    const metadata = try zenodo_templates.createDefaultMetadata(allocator, bundle_type);
+    defer allocator.free(metadata.authors);
+    defer allocator.free(metadata.title);
+    defer allocator.free(metadata.abstract);
+    defer allocator.free(metadata.publication_date);
+    defer allocator.free(metadata.version);
+
+    const readme = try metadata.toZenodoReadme(allocator);
+    defer allocator.free(readme);
+
+    // Write to file
+    const filename = try std.fmt.allocPrint(allocator, "README_{s}.md", .{bundle_type.fileName()});
+    defer allocator.free(filename);
+
+    const file = try std.fs.cwd().createFile(filename, .{});
+    defer file.close();
+    try file.writeAll(readme);
+
+    print("{s}[{s}]{s} README.md generated\n", .{ GREEN, bundle_type.fileName(), RESET });
+    print("  File: {s}\n", .{filename});
+}
+
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
@@ -1408,7 +1509,10 @@ fn printHelp() void {
     print("  tri zenodo update-v4 [B001-B007] Update bundles to v4.0 with enhanced descriptions\n", .{});
     print("  tri zenodo bundle-v4 [B001-B007] Create new v4.0 bundle deposits\n", .{});
     print("  tri zenodo bundle-v5 [B001-B007] Create new v5.0 bundle deposits (NeurIPS/ICLR/MLSys)\n", .{});
-    print("  tri zenodo bundle-v5.2 [B001-B007] Create new v5.2 bundle deposits (algorithm boxes, diagrams, stats)\n\n", .{});
+    print("  tri zenodo bundle-v5.2 [B001-B007] Create new v5.2 bundle deposits (algorithm boxes, diagrams, stats)\n", .{});
+    print("  tri zenodo template <bundle>    Generate JSON metadata template (B001-B007, PARENT)\n", .{});
+    print("  tri zenodo cff <bundle>         Generate CITATION.cff file (B001-B007, PARENT)\n", .{});
+    print("  tri zenodo readme <bundle>      Generate README.md for Zenodo (B001-B007, PARENT)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});

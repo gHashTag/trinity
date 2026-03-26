@@ -17,6 +17,10 @@
 const std = @import("std");
 const SacredConstants = @import("sacred_constants.zig").SacredConstants;
 
+// Re-export zenodo_templates for use in tri_zenodo.zig
+// Path: src/tri/zenodo_templates.zig
+pub const zenodo_templates = @import("zenodo_templates.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
