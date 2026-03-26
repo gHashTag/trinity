@@ -789,13 +789,13 @@ pub const DataAvailabilityStatement = struct {
             .embargoes => "available after embargo period",
         };
 
-        try da.writer(allocator).print("The data used in this study is {s} at: \\url{{{s}}", .{ access_str, self.location });
+        try da.writer(allocator).print("The data used in this study is {s} at: \\url{{{s}}}", .{ access_str, self.location });
 
         if (self.doi) |d| {
             try da.writer(allocator).print(" (DOI: \\doi{{{s}}})", .{d});
         }
 
-        try da.writer(allocator).writeAll("}.\n");
+        try da.writer(allocator).writeAll(".\n");
 
         if (self.notes) |notes| {
             try da.writer(allocator).print("{s}\n", .{notes});
@@ -821,7 +821,7 @@ pub const DataAvailabilityStatement = struct {
         try md.writer(allocator).print("The data used in this study is {s} at: [{s}]({s})", .{ access_str, self.location, self.location });
 
         if (self.doi) |d| {
-            try md.writer(allocator).print(" (DOI: [{s}](https://doi.org/{s}))", .{d, d});
+            try md.writer(allocator).print(" (DOI: [{s}](https://doi.org/{s}))", .{ d, d });
         }
 
         try md.writer(allocator).writeAll(".\n");
@@ -2516,7 +2516,7 @@ pub const Bibliography = struct {
 
         for (self.entries, 0..) |entry, i| {
             try md.writer(allocator).print("{d}. ", .{i + 1});
-            try md.writer(allocator).print("{s}. *{s}* ({d})", .{ entry.author, entry.title, entry.year });
+            try md.writer(allocator).print("{s}. *{s}* ({s})", .{ entry.author, entry.title, entry.year });
 
             if (entry.journal) |j| {
                 try md.writer(allocator).print(". {s}", .{j});
