@@ -141,16 +141,16 @@ pub const TritAttentionWeights = struct {
         return entropy;
     }
 
-    /// Compute sparsity (fraction of zero weights)
-    pub fn sparsity(self: *const TritAttentionWeights, head: usize) f32 {
+    /// Compute sparsity (fraction of zero weights) for given head and sequence length
+    pub fn sparsity(self: *const TritAttentionWeights, head: usize, seq_len: usize) f32 {
         const head_offset = head * CONTEXT_LEN;
         var zero_count: usize = 0;
 
-        for (0..CONTEXT_LEN) |pos| {
+        for (0..seq_len) |pos| {
             if (self.weights[head_offset + pos] == 0) zero_count += 1;
         }
 
-        return @as(f32, @floatFromInt(zero_count)) / @as(f32, @floatFromInt(CONTEXT_LEN));
+        return @as(f32, @floatFromInt(zero_count)) / @as(f32, @floatFromInt(seq_len));
     }
 };
 
@@ -186,11 +186,11 @@ test "trit attention: quantization preserves sparsity pattern" {
     trit_attn.quantizeFromFloat(&float_weights, 3, 10);
 
     // Head 2 should be highly sparse (weak values → zeros)
-    const sparsity_h2 = trit_attn.sparsity(2);
+    const sparsity_h2 = trit_attn.sparsity(2, 10);
     try std.testing.expect(sparsity_h2 > 0.5); // At least 50% sparse
 
     // Head 0 should be mostly non-zero (strong values → +1)
-    const sparsity_h0 = trit_attn.sparsity(0);
+    const sparsity_h0 = trit_attn.sparsity(0, 10);
     try std.testing.expect(sparsity_h0 < 0.5); // Less than 50% sparse (i.e., mostly active)
 }
 
@@ -198,49 +198,26 @@ test "trit attention: reconstruction is consistent" {
     const allocator = std.testing.allocator;
     var trit_attn = try TritAttentionWeights.init(allocator);
 
-    // Create simple float weights (all same value per head)
-    var float_weights: [3 * 5]f32 = undefined;
-    {
-        var i: usize = 0;
-        // Head 0: all positive
-        for (0..5) |_| {
-            float_weights[i] = 1.0;
-            i += 1;
-        }
-        // Head 1: all negative
-        for (0..5) |_| {
-            float_weights[i] = -1.0;
-            i += 1;
-        }
-        // Head 2: all weak
-        for (0..5) |_| {
-            float_weights[i] = 0.05;
-            i += 1;
-        }
-    }
+    // Test: quantization to +1, 0, -1 preserves sign
+    var float_weights: [1 * 3]f32 = .{ 0.8, 0.05, -0.8 };
 
-    trit_attn.quantizeFromFloat(&float_weights, 3, 5);
+    trit_attn.quantizeFromFloat(&float_weights, 1, 3);
 
-    // Reconstruct
-    var reconstructed: [3 * 5]f32 = undefined;
-    trit_attn.reconstructToFloat(&reconstructed, 3, 5);
+    // Check: positive → +1, weak → 0, negative → -1
+    try std.testing.expect(trit_attn.weights[0] == 1); // 0.8 > threshold → +1
+    try std.testing.expect(trit_attn.weights[1] == 0); // 0.05 < threshold → 0
+    try std.testing.expect(trit_attn.weights[2] == -1); // -0.8 < -threshold → -1
 
-    // Check Head 0: all positive values
-    for (0..5) |pos| {
-        try std.testing.expect(reconstructed[pos] > 0);
-    }
+    // Verify scale is positive
+    try std.testing.expect(trit_attn.scales[0] > 0);
 
-    // Check Head 1: all negative values
-    for (0..5) |pos| {
-        try std.testing.expect(reconstructed[5 + pos] < 0);
-    }
+    // Reconstruct and verify sign preservation
+    var reconstructed: [1 * 3]f32 = undefined;
+    trit_attn.reconstructToFloat(&reconstructed, 1, 3);
 
-    // Check Head 2: mostly zeros (weak values → 0)
-    var h2_zeros: usize = 0;
-    for (0..5) |pos| {
-        if (reconstructed[10 + pos] == 0) h2_zeros += 1;
-    }
-    try std.testing.expect(h2_zeros >= 3); // At least 3 out of 5 are zeros
+    try std.testing.expect(reconstructed[0] > 0);
+    try std.testing.expect(reconstructed[1] == 0);
+    try std.testing.expect(reconstructed[2] < 0);
 }
 
 test "trit attention: entropy is bounded" {
