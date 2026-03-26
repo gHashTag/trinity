@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v10.9
+# Trinity Research Documentation Index — v11.1
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 201
-**NEW: Scientific Figures Guide (Publication-quality visualizations)
+**Total Documents:** 205
+**NEW: Peer Review Response Template (Session 31 extended)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -241,6 +241,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 11.0 | 2026-03-26 | Added Session 32 Report — φ-Optimized Training Dynamics + Zenodo Best Practices (gamma-theta LR schedule 8-12% faster convergence, phase-aware φ-scaling 5-8% PPL, adaptive warmup 10-15% stability, φ-based gradient clipping 5-7% gradient flow; 12 proposed improvements: Training Dynamics 6 (P1-P6), Zenodo Practices 4 (P7-P10), Gradient Flow 2 (P11-P12); citation impact analysis: FAIR+enhanced abstract = 2.3× more citations vs minimal; projected 25-35% PPL improvement, 30-50% faster convergence; implementation: ~20h effort) ✨ NEW |
 | 10.3 | 2026-03-26 | Added Neuro-φ Coupling Comprehensive Analysis (biological validation of sacred scaling: attention gain control 0.354 matches V1 cortex 0.3-0.4 within 3%, consciousness threshold φ⁻¹=0.618 matches biological 61.8%, gamma-theta coupling φ³≈4.24 vs bio 5.33; 15 proposed improvements: φ-Hebbian learning 15-20% faster convergence, gamma-phase locked attention 5-8% PPL, consciousness-gated plasticity 10-15% memory retention, quantum-enhanced constants, consciousness metrics Φ-IT/PCI/GWT; 3 new Zenodo bundles B008-B010 proposed; ASSC 2027, NeurIPS 2026, ICLR 2027 submission strategy) + Session 31 Report ✨ NEW |
 | 10.2 | 2026-03-26 | Added Bayesian Alternative Metrics Framework (Bayesian t-test as alternative to frequentist, Bayes factors interpretation, BEST plots, hierarchical models, prior sensitivity analysis, comparison with frequentist results, integration with scientific_metrics_v7.5; 5 Bayesian methods complete) ✨ NEW |
 | 10.1 | 2026-03-26 | Added Session 29 Report (Publication Pipeline: defensive publication guide, arXiv template, video script generator, NeurIPS 2026 LaTeX template, computational complexity tables B002-B007, publication roadmap with 3 primary papers for NeurIPS 2026/ICLR 2027/ICML 2027/MLSys 2027, 4500+ LOC) + Session 30 Report (Effect Size Framework: Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, APA-style reporting; MLSys Artifact Appendix: 5 verification scripts, hyperparameter sensitivity, troubleshooting guide, 1600+ LOC) ✨ NEW |
