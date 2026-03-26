@@ -54,8 +54,49 @@ pub fn assemble(allocator: Allocator, asm_source: []const u8) ![]u8 {
 
     std.debug.print("Assembled {} instructions\n", .{state.instructions.items.len});
 
-    // TODO: Emit .tbin format
-    std.debug.print("TODO: Emit .tbin format");
+    // Emit .tbin format (TRI-27 bytecode format)
+    const output_path = try std.mem.concat(allocator, &.{ input_file, ".tbin" });
+    defer allocator.free(output_path);
+
+    const tbin_header = .{
+        .magic = 0x54524494, // "TDI" in hex (Trinity Bytecode)
+        .version = 1,
+        .num_instructions = @as(u32, @intCast(state.instructions.items.len)),
+        .num_symbols = @as(u32, @intCast(state.symbols.count())),
+        .entry_point = state.entry_point orelse 0,
+    };
+
+    const file = try std.fs.cwd().createFile(output_path, .{ .read = false });
+    defer file.close();
+
+    const writer = file.writer();
+
+    // Write header
+    try writer.writeInt(u32, tbin_header.magic);
+    try writer.writeInt(u32, tbin_header.version);
+    try writer.writeInt(u32, tbin_header.num_instructions);
+    try writer.writeInt(u32, tbin_header.num_symbols);
+    try writer.writeInt(u32, tbin_header.entry_point);
+
+    // Write symbol table
+    var symbol_iter = state.symbols.iterator();
+    while (symbol_iter.next()) |entry| {
+        try writer.writeAll(entry.key_ptr.*);
+        try writer.writeByte(0); // null terminator
+        try writer.writeInt(u32, @intCast(entry.value_ptr.*));
+    }
+
+    // Write instructions
+    for (state.instructions.items) |instr| {
+        try writer.writeInt(u32, @intFromEnum(instr.opcode));
+        try writer.writeInt(u32, @intCast(instr.rd));
+        try writer.writeInt(u32, @intCast(instr.rs));
+        try writer.writeInt(u32, @intCast(instr.rt));
+        try writer.writeInt(u32, instr.immediate orelse 0);
+    }
+
+    try writer.flush();
+    std.debug.print("Emitted .tbin format to {s}\n", .{output_path});
 
     return ParseResult{ .success = true, .instruction_count = state.instructions.items.len };
 }
