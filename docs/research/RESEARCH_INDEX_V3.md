@@ -352,3 +352,4 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 | `CODE_AVAILABILITY_STATEMENT_TEMPLATE_2026.md` | NeurIPS/ICLR/MLSys code statements | Markdown ✨ NEW |
 | `CODE_IMPROVEMENT_REPRIORITIZATION_2026.md` | Strategic code quality plan (277 TODOs analyzed) | Markdown ✨ NEW |
 | `OPEN_SCIENCE_POLICY_2026.md` | FAIR + NeurIPS/ICLR/MLSys compliance declaration | Markdown ✨ NEW |
+| `SCIENTIFIC_PAPER_STRUCTURE_TEMPLATE_2026.md` | ML/CS paper template (NeurIPS/ICLR/MLSys) | Markdown ✨ NEW |
