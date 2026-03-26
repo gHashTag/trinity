@@ -3097,9 +3097,9 @@ pub const AblationStudy = struct {
 
         for (self.components) |comp| {
             if (comp.is_full_model) {
-                try latex.writer(allocator).print("\\textbf{{{s}}", .{comp.name});
+                try latex.writer(allocator).print("\\textbf{{{s}}}", .{comp.name});
             } else if (comp.is_ablated) {
-                try latex.writer(allocator).print("\\textit{{{s}}", .{comp.name});
+                try latex.writer(allocator).print("\\textit{{{s}}}", .{comp.name});
             } else {
                 try latex.writer(allocator).print("{s}", .{comp.name});
             }
@@ -3138,7 +3138,13 @@ pub const AblationStudy = struct {
         defer md.deinit(allocator);
 
         try md.writer(allocator).print("| Component | {s} |\n", .{self.metric});
-        try md.writer(allocator).print("|----------|{s:>}|\n", .{ "---", self.metric.len });
+        try md.writer(allocator).print("|----------|", .{});
+        // Generate dashes for metric column (3 dashes per char for alignment)
+        var dash_idx: usize = 0;
+        while (dash_idx < @min(self.metric.len * 3, 50)) : (dash_idx += 1) {
+            try md.writer(allocator).print("-", .{});
+        }
+        try md.writer(allocator).print("|\n", .{});
 
         for (self.components) |comp| {
             if (comp.is_full_model) {
@@ -3201,7 +3207,7 @@ pub const HyperparameterTable = struct {
 
         try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
         try latex.writer(allocator).print("\\centering\n", .{});
-        try latex.writer(allocator).print("\\caption{{{s}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
         try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
         try latex.writer(allocator).print("\\begin{{tabular}}{{lll}}\n", .{});
         try latex.writer(allocator).print("\\toprule\n", .{});
@@ -3421,7 +3427,7 @@ pub const TikZDiagram = struct {
             if (node.options) |opts| {
                 try latex.writer(allocator).print("\\node[{s},", .{opts});
             } else {
-                try latex.writer(allocator).print("\\node[");
+                try latex.writer(allocator).writeAll("\\node[");
             }
 
             try latex.writer(allocator).print("{s}", .{node_style});
@@ -3430,7 +3436,7 @@ pub const TikZDiagram = struct {
                 try latex.writer(allocator).print(",position=({d:.1},{d:.1})", .{ pos[0], pos[1] });
             }
 
-            try latex.writer(allocator).print("] ({s}) at ({s:0.2f}, {s:0.2f});\n", .{ node.id, node.id, node.label });
+            try latex.writer(allocator).print("] ({s}) {{{s}}};\n", .{ node.id, node.label });
         }
 
         // Define edges
@@ -4576,4 +4582,204 @@ test "ConferenceChecklist generate MLSys" {
     try std.testing.expect(std.mem.indexOf(u8, md, "MLSys 2025 Requirements") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "System Description") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "Benchmarking") != null);
+}
+
+// ============================================================================
+// V11 Tests: AblationStudy, HyperparameterTable, DatasetDescription, TikZDiagram
+// ============================================================================
+
+test "AblationStudy formatAsLaTeX" {
+    const components = [_]AblationComponent{
+        .{ .name = "Full Model", .value = 12.5, .std_error = 0.2, .is_full_model = true },
+        .{ .name = "- Attention", .value = 14.8, .std_error = 0.3, .delta = 2.3, .is_ablated = true },
+        .{ .name = "- Ternary", .value = 13.2, .std_error = 0.2, .delta = 0.7, .is_ablated = true },
+        .{ .name = "- VSA Memory", .value = 15.1, .std_error = 0.4, .delta = 2.6, .is_ablated = true },
+    };
+
+    const ablation = AblationStudy{
+        .caption = "Ablation study on TinyStories validation",
+        .label = "tab:ablation",
+        .metric = "Validation PPL",
+        .lower_is_better = true,
+        .components = &components,
+    };
+
+    const latex = try ablation.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "tab:ablation") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\textbf{Full Model}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\textit{- Attention}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "+2.300") != null);
+}
+
+test "AblationStudy formatAsMarkdown" {
+    const components = [_]AblationComponent{
+        .{ .name = "Full Model", .value = 0.92, .is_full_model = true },
+        .{ .name = "- Pretraining", .value = 0.85, .delta = -0.07, .is_ablated = true },
+    };
+
+    const ablation = AblationStudy{
+        .caption = "Component ablation analysis",
+        .label = "tab:abl",
+        .metric = "Accuracy",
+        .lower_is_better = false,
+        .components = &components,
+    };
+
+    const md = try ablation.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Full Model**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "*- Pretraining*") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "(-0.070)") != null);
+}
+
+test "HyperparameterTable formatAsLaTeX" {
+    const hps = [_]HyperparameterSpec{
+        .{ .name = "learning_rate", .value = "0.001", .type = "float", .description = "Initial learning rate", .search_space = "[1e-4, 1e-2]" },
+        .{ .name = "batch_size", .value = "32", .type = "int", .description = "Training batch size" },
+        .{ .name = "optimizer", .value = "adamw", .type = "str", .description = "Optimizer type" },
+    };
+
+    const table = HyperparameterTable{
+        .caption = "HSLM training hyperparameters",
+        .label = "tab:hparams",
+        .group = "Training",
+        .hyperparameters = &hps,
+    };
+
+    const latex = try table.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "tab:hparams") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\texttt{learning_rate}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "[1e-4, 1e-2]") != null);
+}
+
+test "HyperparameterTable formatAsMarkdown" {
+    const hps = [_]HyperparameterSpec{
+        .{ .name = "embed_dim", .value = "768", .type = "int", .description = "Embedding dimension" },
+        .{ .name = "num_heads", .value = "12", .type = "int", .description = "Number of attention heads" },
+    };
+
+    const table = HyperparameterTable{
+        .caption = "Model architecture",
+        .label = "tab:arch",
+        .hyperparameters = &hps,
+    };
+
+    const md = try table.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "`embed_dim`") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "Embedding dimension") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "*Table: Model architecture*") != null);
+}
+
+test "DatasetDescription formatAsLaTeX" {
+    const splits = [_]DataSplit{
+        .{ .name = "Train", .samples = 90000, .percentage = 90.0 },
+        .{ .name = "Validation", .samples = 5000, .percentage = 5.0 },
+        .{ .name = "Test", .samples = 5000, .percentage = 5.0 },
+    };
+
+    const dataset = DatasetDescription{
+        .name = "TinyStories",
+        .label = "tab:dataset",
+        .description = "A collection of short stories for language model pretraining",
+        .splits = &splits,
+        .num_features = 10000,
+        .num_classes = null,
+        .license = "MIT",
+        .url = "https://github.com/nlp-yone TinyStories",
+    };
+
+    const latex = try dataset.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "TinyStories") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "90.0\\%") != null);
+}
+
+test "DatasetDescription formatAsMarkdown" {
+    const splits = [_]DataSplit{
+        .{ .name = "Training", .samples = 50000, .percentage = 80.0 },
+        .{ .name = "Test", .samples = 12500, .percentage = 20.0 },
+    };
+
+    const dataset = DatasetDescription{
+        .name = "Custom Dataset",
+        .label = "tab:data",
+        .description = "A custom dataset for testing",
+        .splits = &splits,
+        .num_features = 512,
+        .num_classes = 10,
+    };
+
+    const md = try dataset.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "## Custom Dataset") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "`tab:data`") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "| Training | 50000 | 80.0% |") != null);
+}
+
+test "TikZDiagram formatAsLaTeX" {
+    const nodes = [_]TikZDiagram.Node{
+        .{ .id = "input", .label = "Input", .position = [_]f64{ 0, 0 }, .node_type = .simple },
+        .{ .id = "hidden", .label = "Hidden", .position = [_]f64{ 2, 0 }, .node_type = .circle },
+        .{ .id = "output", .label = "Output", .position = [_]f64{ 4, 0 }, .node_type = .output },
+    };
+
+    const edges = [_]TikZDiagram.Edge{
+        .{ .from = "input", .to = "hidden", .label = "W" },
+        .{ .from = "hidden", .to = "output", .label = "V" },
+    };
+
+    const diagram = TikZDiagram{
+        .caption = "Simple neural network architecture",
+        .label = "fig:nn",
+        .nodes = &nodes,
+        .edges = &edges,
+        .style = "neural",
+        .width = 8.0,
+    };
+
+    const latex = try diagram.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{figure}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{tikzpicture}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\node[") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\draw[->]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "fig:nn") != null);
+}
+
+test "TikZDiagram formatAsMarkdown" {
+    const nodes = [_]TikZDiagram.Node{
+        .{ .id = "x", .label = "x", .position = [_]f64{ 0, 0 } },
+        .{ .id = "y", .label = "y", .position = [_]f64{ 1, 1 } },
+    };
+
+    const edges = [_]TikZDiagram.Edge{
+        .{ .from = "x", .to = "y" },
+    };
+
+    const diagram = TikZDiagram{
+        .caption = "Simple diagram",
+        .label = "fig:simple",
+        .nodes = &nodes,
+        .edges = &edges,
+    };
+
+    const md = try diagram.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Figure Simple diagram**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "\\node[") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "\\draw[->]") != null);
 }

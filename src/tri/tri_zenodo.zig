@@ -243,6 +243,18 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "statistical-table")) {
         // Generate statistical table
         try generateStatisticalTableExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "ablation")) {
+        // Generate ablation study
+        try generateAblationExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "hyperparameters")) {
+        // Generate hyperparameter table
+        try generateHyperparameterExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "dataset")) {
+        // Generate dataset description
+        try generateDatasetExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "tikz")) {
+        // Generate TikZ diagram
+        try generateTikzExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -2205,6 +2217,10 @@ fn printHelp() void {
     print("  tri zenodo algorithm             Generate algorithm pseudocode with LaTeX/Markdown\n", .{});
     print("  tri zenodo code-listing           Generate syntax-highlighted code listings\n", .{});
     print("  tri zenodo statistical-table      Generate statistical comparison tables with significance\n", .{});
+    print("  tri zenodo ablation               Generate ablation study tables for component analysis\n", .{});
+    print("  tri zenodo hyperparameters        Generate hyperparameter tables for model config\n", .{});
+    print("  tri zenodo dataset                Generate dataset description with train/val/test splits\n", .{});
+    print("  tri zenodo tikz                   Generate TikZ diagrams for architectures\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
@@ -2536,6 +2552,149 @@ fn generateStatisticalTableExamples(allocator: std.mem.Allocator) !void {
 
     print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
     const md = try table.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate ablation study examples (V11)
+fn generateAblationExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Ablation Study Generator{s}\n", .{ BOLD, "ABLATION STUDY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const components = [_]zenodo_templates.AblationComponent{
+        .{ .name = "Full Model", .value = 12.5, .std_error = 0.2, .is_full_model = true },
+        .{ .name = "- Attention", .value = 14.8, .std_error = 0.3, .delta = 2.3, .is_ablated = true },
+        .{ .name = "- Ternary Weights", .value = 13.2, .std_error = 0.2, .delta = 0.7, .is_ablated = true },
+        .{ .name = "- VSA Memory", .value = 15.1, .std_error = 0.4, .delta = 2.6, .is_ablated = true },
+        .{ .name = "- φ-RoPE", .value = 13.8, .std_error = 0.3, .delta = 1.3, .is_ablated = true },
+    };
+
+    const ablation = zenodo_templates.AblationStudy{
+        .caption = "Ablation study on TinyStories validation set",
+        .label = "tab:ablation",
+        .metric = "Validation PPL ↓",
+        .lower_is_better = true,
+        .components = &components,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try ablation.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try ablation.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate hyperparameter table examples (V11)
+fn generateHyperparameterExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Hyperparameter Table Generator{s}\n", .{ BOLD, "HYPERPARAMETERS", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const hps = [_]zenodo_templates.HyperparameterSpec{
+        .{ .name = "embed_dim", .value = "768", .type = "int", .description = "Embedding dimension", .search_space = "[256, 1024]" },
+        .{ .name = "num_heads", .value = "12", .type = "int", .description = "Number of attention heads" },
+        .{ .name = "num_layers", .value = "12", .type = "int", .description = "Number of transformer layers" },
+        .{ .name = "learning_rate", .value = "0.001", .type = "float", .description = "Peak learning rate", .search_space = "[1e-4, 1e-2]" },
+        .{ .name = "batch_size", .value = "32", .type = "int", .description = "Training batch size per GPU" },
+        .{ .name = "warmup_steps", .value = "2000", .type = "int", .description = "LR warmup steps" },
+        .{ .name = "weight_decay", .value = "0.01", .type = "float", .description = "L2 regularization" },
+        .{ .name = "dropout", .value = "0.1", .type = "float", .description = "Dropout probability" },
+    };
+
+    const table = zenodo_templates.HyperparameterTable{
+        .caption = "HSLM-1.95M training hyperparameters",
+        .label = "tab:hparams",
+        .group = "Training",
+        .hyperparameters = &hps,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try table.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try table.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate dataset description examples (V11)
+fn generateDatasetExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Dataset Description Generator{s}\n", .{ BOLD, "DATASET", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const splits = [_]zenodo_templates.DataSplit{
+        .{ .name = "Train", .samples = 90000, .percentage = 90.0 },
+        .{ .name = "Validation", .samples = 5000, .percentage = 5.0 },
+        .{ .name = "Test", .samples = 5000, .percentage = 5.0 },
+    };
+
+    const dataset = zenodo_templates.DatasetDescription{
+        .name = "TinyStories",
+        .label = "tab:tinystories-dataset",
+        .description = "A collection of 100K short stories for language model pretraining. Stories are generated by GPT-3.5 with strict constraints to ensure child-friendly content and simple vocabulary.",
+        .splits = &splits,
+        .num_features = 10000,
+        .num_classes = null,
+        .license = "MIT",
+        .url = "https://huggingface.co/datasets/roneneldan/TinyStories",
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try dataset.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try dataset.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate TikZ diagram examples (V11)
+fn generateTikzExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} TikZ Diagram Generator{s}\n", .{ BOLD, "TIKZ DIAGRAM", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const nodes = [_]zenodo_templates.TikZDiagram.Node{
+        .{ .id = "input", .label = "Input", .position = [_]f64{ 0, 0 }, .node_type = .simple },
+        .{ .id = "embed", .label = "Ternary Embed", .position = [_]f64{ 2, 0 }, .node_type = .simple },
+        .{ .id = "attention", .label = "φ-Attention", .position = [_]f64{ 4, 0 }, .node_type = .circle },
+        .{ .id = "vsa", .label = "VSA Memory", .position = [_]f64{ 4, -1.5 }, .node_type = .ellipse },
+        .{ .id = "output", .label = "Output", .position = [_]f64{ 6, 0 }, .node_type = .output },
+    };
+
+    const edges = [_]zenodo_templates.TikZDiagram.Edge{
+        .{ .from = "input", .to = "embed", .label = "" },
+        .{ .from = "embed", .to = "attention", .label = "" },
+        .{ .from = "vsa", .to = "attention", .label = "bind" },
+        .{ .from = "attention", .to = "output", .label = "" },
+    };
+
+    const diagram = zenodo_templates.TikZDiagram{
+        .caption = "HSLM architecture: ternary embeddings with φ-attention and VSA memory",
+        .label = "fig:hslm-arch",
+        .nodes = &nodes,
+        .edges = &edges,
+        .style = "neural",
+        .width = 10.0,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try diagram.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try diagram.formatAsMarkdown(allocator);
     defer allocator.free(md);
     print("{s}\n", .{md});
 }
