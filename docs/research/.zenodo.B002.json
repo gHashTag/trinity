@@ -1,0 +1,58 @@
+{
+  "title": "Trinity B002: Zero-DSP FPGA Architecture for Ternary Neural Inference",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Complete FPGA architecture for ternary neural network inference requiring zero DSP blocks. Key innovations: (1) Zero-DSP ternary MAC using pure LUT arithmetic; (2) CORDIC sacred routing with 6-stage continued fraction approximation; (3) Streaming argmax unit (<100 LUT); (4) Ternary BRAM storage with 2-bit packed weights; (5) Power-of-2 embedding lookup; (6) Ternary scheduler with φ-weighted round-robin; (7) ESP32 Wi-Fi JTAG; (8) OpenXC7 synthesis pipeline. Results: 19.6% LUT utilization, 0% DSP usage, 1.2W power on XC7A100T.\n\n**Algorithm: Zero-DSP MAC**\n```\nInput: x ∈ {-1,0,+1}^n, w ∈ {-1,0,+1}^n\n1: acc ← 0\n2: for i = 0 to n-1 do\n3:   if w[i] = +1 then acc ← acc + x[i]\n4:   else if w[i] = -1 then acc ← acc - x[i]\n5:   end if  // w[i] = 0: skip\n6: end for\n7: return acc\n```\n\n**Resource Utilization (XC7A100T):**\n- LUT: 12,425 / 63,400 (19.6%)\n- DSP: 0 / 240 (0%)\n- BRAM: 45 / 210 (21.4%)\n- Power: 1.2W @ 50MHz",
+  "keywords": [
+    "FPGA",
+    "ternary inference",
+    "zero-DSP",
+    "LUT-based",
+    "XC7A100T",
+    "Yosys",
+    "nextpnr",
+    "CORDIC",
+    "argmax",
+    "BRAM",
+    "embedding lookup",
+    "ternary scheduler",
+    "OpenXC7",
+    "Verilog",
+    "Docker"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "5.2.0",
+  "doi": "10.5281/zenodo.19227735",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/fpga",
+      "resource_type": "software"
+    },
+    {
+      "relation": "requires",
+      "identifier": "https://github.com/YosysHQ/yosys",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Ma et al., TerEffic: Highly Efficient Ternary LLM Inference on FPGA, arXiv:2502.16473 (2025)",
+    "Yin et al., TeLLMe: Ternary Large Language Model Edge Accelerator, arXiv:2504.16266 (2025)",
+    "Kim et al., LUT-LLM: Memory-Based Computation for LLM Inference on FPGAs, arXiv:2511.06174 (2025)",
+    "Volder, CORDIC Trigonometric Computing, IRE TEC EC-8(3):330-334 (1959)"
+  ],
+  "upload_type": "software"
+}

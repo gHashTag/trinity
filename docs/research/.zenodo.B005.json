@@ -1,0 +1,53 @@
+{
+  "title": "Trinity B005: Tri Language — Linear Types, Algebraic Effects, Dual-Target Codegen",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Tri Language is a DSL for ternary computing with advanced type system features and dual-target code generation. Key innovations: (1) Linear Types + Ownership (Let/Inout/Sink/Set modes); (2) Algebraic Effects + Handlers with platform-aware resolution; (3) Bit/Trit Pattern Matching at hardware level; (4) Content-Addressed Functions via SHA256 AST hashing; (5) Result Type (Austral-style error handling); (6) Array Combinators; (7) Pipe Operator; (8) Dual-Target Codegen (Zig + Verilog). Enables zero-cost abstractions while maintaining memory safety.\n\n**Linear Types Example:**\n```\nfn consume(let x: Tensor): void { ... }\nfn modify(inout x: Tensor): void { ... }\nfn destroy(sink x: Tensor): void { ... }\nfn create(): Set Tensor { ... }\n```\n\n**Algebraic Effects Example:**\n```\neffect State { fn get(): T, fn set(x: T): void }\nfn counter() with State[i32] {\n  let n = get(); set(n + 1);\n}\n```\n\n**Compilation Pipeline:**\n```\n.tri → AST → Type Check → {Zig codegen, Verilog codegen}\n                                    ↓              ↓\n                               CPU binary     FPGA bitstream\n```",
+  "keywords": [
+    "Tri Language",
+    "linear types",
+    "ownership",
+    "algebraic effects",
+    "effect handlers",
+    "pattern matching",
+    "content-addressed",
+    "SHA256",
+    "result type",
+    "dual-target codegen",
+    "Zig",
+    "Verilog",
+    "DSL",
+    "compiler",
+    "VIBEE"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "5.2.0",
+  "doi": "10.5281/zenodo.19227741",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/tri-lang",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "O'Hearn, Resource Interpretation, Linear Logic, and Full Intuitionistic Linear Logic, POPL (1997)",
+    "Wadler, Linear Types Can Change the World, PLDI (1990)",
+    "Bauer, Programming with Algebraic Effects and Handlers, JFP 32 (2022)",
+    "Kiselyov et al., Freer Monads, More Extensible Effects, arXiv:1403.0749 (2014)"
+  ],
+  "upload_type": "software"
+}

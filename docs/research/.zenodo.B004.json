@@ -1,0 +1,51 @@
+{
+  "title": "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration with Self-Learning",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Queen Lotus Cycle is a 6-phase autonomous orchestration system for self-learning AI agents. Key innovations: (1) Lotus Cycle state machine (DIAGNOSE → PLAN → ACT → VERIFY → MEASURE → PERSIST); (2) Episode memory with 847-slot buffer and Jaccard similarity retrieval (F1=0.92); (3) Quality classification (POOR/FAIR/GOOD/EXCELLENT); (4) PolicyDelta actions (scale_*, for_each); (5) Tri27Config auto-adapt; (6) Byzantine detection; (7) Service recycling. Results: 99.9% uptime across 152 Railway workers, autonomous learning without human intervention.\n\n**State Machine:**\n```\nDIAGNOSE → PLAN → ACT → VERIFY → MEASURE → PERSIST → DIAGNOSE\n           ↖───────────────────────────────────────────────↗\n                           (retry on VERIFY failure)\n```\n\n**Episode Retrieval Algorithm:**\n```\nInput: query q, memory M[847]\n1: max_sim ← 0, best ← NULL\n2: for i = 0 to 846 do\n3:   sim ← |q.states ∩ M[i].states| / |q.states ∪ M[i].states|\n4:   if sim > max_sim AND sim > threshold then\n5:     max_sim ← sim, best ← M[i]\n6: return best  // F1 = 0.92 at threshold = 0.3\n```",
+  "keywords": [
+    "Queen Lotus Cycle",
+    "autonomous orchestration",
+    "self-learning",
+    "episode memory",
+    "Jaccard similarity",
+    "quality classification",
+    "PolicyDelta",
+    "Tri27Config",
+    "Byzantine detection",
+    "ASHA",
+    "PBT",
+    "Railway",
+    "observability"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "5.2.0",
+  "doi": "10.5281/zenodo.19227739",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/tri/queen",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Jaderberg et al., Population Based Training of Neural Networks, arXiv:1711.09846 (2017)",
+    "Li et al., Hyperband: Successive Halving, ICML (2016)",
+    "Real et al., Regularized Evolution for Image Classifier Architecture Search, AAAI (2020)",
+    "Sutton & Barto, Reinforcement Learning: An Introduction, MIT Press (2020)"
+  ],
+  "upload_type": "software"
+}

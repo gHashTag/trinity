@@ -1,0 +1,49 @@
+{
+  "title": "Trinity B003: TRI-27 ISA — Balanced Ternary Instruction Set Architecture",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "TRI-27 is a balanced ternary instruction set architecture with 36 opcodes and 27 registers organized in Coptic 3-bank encoding. Key innovations: (1) TRI-27 ISA with 36 opcodes (arithmetic, memory, branch, I/O, ternary, special); (2) Coptic alphabet encoding with 3 banks (Alpha: α-η, Iota: ι-ρ, Sigma: σ-ϡ); (3) 3-bank validation preventing cross-bank operations; (4) T27 binary format for episode encoding. Architecture enables 3^21 unique states while maintaining hardware simplicity.\n\n**Register File Layout:**\n```\nAlpha Bank (α-η):  R0-R8   (9 registers)\nIota Bank (ι-ρ):   R9-R17  (9 registers)\nSigma Bank (σ-ϡ):  R18-R26 (9 registers)\n\nEach register: 27 trits = 54 bits (Trit27 encoding)\nTotal states: 3^27 ≈ 7.6 × 10^12\n```\n\n**Example Program (Sum 1 to 10):**\n```\nLI  R0, 1      ; R0 = 1 (counter)\nLI  R1, 10     ; R1 = 10 (limit)\nLI  R2, 0      ; R2 = 0 (sum)\nloop: ADD R2, R2, R0  ; sum += counter\n      ADD R0, R0, 1   ; counter++\n      JGT R0, R1, loop  ; if counter > limit, jump\n      HALT            ; done\n```",
+  "keywords": [
+    "TRI-27",
+    "balanced ternary",
+    "instruction set",
+    "ISA",
+    "Coptic alphabet",
+    "3-bank encoding",
+    "ternary registers",
+    "Trit27",
+    "assembler",
+    "emulator",
+    "binary encoding",
+    "RISC"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "5.2.0",
+  "doi": "10.5281/zenodo.19227737",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/tri27",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Patterson & Hennessy, Computer Organization and Design RISC-V Edition, Morgan Kaufmann (2020)",
+    "RISC-V International, The RISC-V Instruction Set Manual (2023)",
+    "Mirhosseini et al., Ternary Quantum Computing, Nature 618:483-488 (2023)"
+  ],
+  "upload_type": "software"
+}
