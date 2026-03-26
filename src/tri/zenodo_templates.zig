@@ -752,6 +752,88 @@ pub fn createEnhancedMetadata(allocator: std.mem.Allocator, bundle: BundleType) 
     };
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA AVAILABILITY — NeurIPS 2025 Requirement
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Data access level
+pub const DataAccessLevel = enum {
+    public,
+    restricted,
+    upon_request,
+    embargoes,
+};
+
+/// Data availability statement for publication
+pub const DataAvailabilityStatement = struct {
+    /// Access level
+    access: DataAccessLevel,
+    /// URL or location of data
+    location: []const u8,
+    /// DOI if available
+    doi: ?[]const u8 = null,
+    /// Additional notes
+    notes: ?[]const u8 = null,
+
+    /// Format as LaTeX data availability statement
+    pub fn formatAsLaTeX(self: *const DataAvailabilityStatement, allocator: std.mem.Allocator) ![]u8 {
+        var da = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer da.deinit(allocator);
+
+        try da.writer(allocator).writeAll("\\section*{Data Availability}\n\n");
+
+        const access_str = switch (self.access) {
+            .public => "publicly available",
+            .restricted => "available under restrictions",
+            .upon_request => "available upon request",
+            .embargoes => "available after embargo period",
+        };
+
+        try da.writer(allocator).print("The data used in this study is {s} at: \\url{{{s}}", .{ access_str, self.location });
+
+        if (self.doi) |d| {
+            try da.writer(allocator).print(" (DOI: \\doi{{{s}}})", .{d});
+        }
+
+        try da.writer(allocator).writeAll("}.\n");
+
+        if (self.notes) |notes| {
+            try da.writer(allocator).print("{s}\n", .{notes});
+        }
+
+        return da.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown data availability statement
+    pub fn formatAsMarkdown(self: *const DataAvailabilityStatement, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).writeAll("## Data Availability\n\n");
+
+        const access_str = switch (self.access) {
+            .public => "publicly available",
+            .restricted => "available under restrictions",
+            .upon_request => "available upon request",
+            .embargoes => "available after embargo period",
+        };
+
+        try md.writer(allocator).print("The data used in this study is {s} at: [{s}]({s})", .{ access_str, self.location, self.location });
+
+        if (self.doi) |d| {
+            try md.writer(allocator).print(" (DOI: [{s}](https://doi.org/{s}))", .{d, d});
+        }
+
+        try md.writer(allocator).writeAll(".\n");
+
+        if (self.notes) |notes| {
+            try md.writer(allocator).print("{s}\n", .{notes});
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
 /// Complete Zenodo deposit package
 pub const ZenodoDeposit = struct {
     metadata: ZenodoMetadata,
@@ -2402,7 +2484,7 @@ pub const BibEntry = struct {
         if (self.doi) |d| try bib.writer(allocator).print("  doi={{{s}}},\n", .{d});
         if (self.url) |u| try bib.writer(allocator).print("  url={{{s}}},\n", .{u});
 
-        try bib.writer(allocator).print("}\n");
+        try bib.writer(allocator).writeAll("}\n");
 
         return bib.toOwnedSlice(allocator);
     }
@@ -2442,7 +2524,7 @@ pub const Bibliography = struct {
             if (entry.doi) |d| {
                 try md.writer(allocator).print(". doi:{s}", .{d});
             }
-            try md.writer(allocator).print(".\n");
+            try md.writer(allocator).writeAll(".\n");
         }
 
         try md.writer(allocator).writeAll("\n");

@@ -219,6 +219,18 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "supplementary")) {
         // Generate supplementary materials
         try generateSupplementaryExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "related")) {
+        // Generate related works
+        try generateRelatedWorksExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "bibliography")) {
+        // Generate bibliography
+        try generateBibliographyExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "acknowledgments")) {
+        // Generate acknowledgments
+        try generateAcknowledgmentsExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "data-availability")) {
+        // Generate data availability statement
+        try generateDataAvailabilityExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -2118,6 +2130,10 @@ fn printHelp() void {
     print("  tri zenodo figure               Generate figure captions with LaTeX/Markdown formatting\n", .{});
     print("  tri zenodo keywords            Generate keywords with ACM CCS/MeSH categories\n", .{});
     print("  tri zenodo supplementary       Generate supplementary materials appendix\n", .{});
+    print("  tri zenodo related              Generate related works with citation context\n", .{});
+    print("  tri zenodo bibliography          Generate BibTeX bibliography entries\n", .{});
+    print("  tri zenodo acknowledgments       Generate funding and contributor acknowledgments\n", .{});
+    print("  tri zenodo data-availability      Generate data availability statement (NeurIPS 2025)\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
@@ -2202,6 +2218,137 @@ fn curlPost(allocator: std.mem.Allocator, url: []const u8, token: []const u8, bo
         defer allocator.free(result.stderr);
         return result.stdout;
     }
+}
+
+/// Generate related works examples with citation context
+fn generateRelatedWorksExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Related Works Generator{s}\n", .{ BOLD, "RELATED WORKS", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const works = [_]zenodo_templates.RelatedWork{
+        .{
+            .cite_key = "vasilev2025hslm",
+            .title = "HSLM: Hardware-Specified Language Model for Edge Deployment",
+            .authors = "Vasilev",
+            .year = 2025,
+            .relation = .builds_on,
+            .context = "We extend the ternary quantization approach to FPGA deployment with zero DSP usage.",
+            .venue = "NeurIPS 2025",
+        },
+        .{
+            .cite_key = "kanerva2009hyperdimensional",
+            .title = "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with Randomly Distributed High-Dimensional Points",
+            .authors = "Kanerva et al.",
+            .year = 2009,
+            .relation = .inspired_by,
+            .context = "Our VSA operations build on the theoretical framework of hyperdimensional computing.",
+            .venue = "IEEE Transactions on Neural Networks and Learning Systems",
+        },
+    };
+
+    const related = zenodo_templates.RelatedWorks{
+        .title = "Related Work",
+        .items = &works,
+    };
+
+    print("{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try related.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate bibliography examples with BibTeX entries
+fn generateBibliographyExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Bibliography Generator{s}\n", .{ BOLD, "BIBLIOGRAPHY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const entries = [_]zenodo_templates.BibEntry{
+        .{
+            .key = "vasilev2025hslm",
+            .entry_type = .inproceedings,
+            .title = "HSLM: Hardware-Specified Language Model for Edge Deployment",
+            .author = "Vasilev, Dmitrii",
+            .year = "2025",
+            .booktitle = "Advances in Neural Information Processing Systems",
+            .doi = "10.5281/zenodo.19227865",
+        },
+        .{
+            .key = "trinity2025framework",
+            .entry_type = .software,
+            .title = "Trinity S³AI: Self-Supervised Sparse AI Framework",
+            .author = "Trinity Collective",
+            .year = "2025",
+            .url = "https://github.com/gHashTag/trinity",
+            .doi = "10.5281/zenodo.19227879",
+        },
+    };
+
+    const bib = zenodo_templates.Bibliography{
+        .title = "References",
+        .entries = &entries,
+    };
+
+    print("{s}{s} BibTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const bibtex = try bib.formatAsBibTeXFile(allocator);
+    defer allocator.free(bibtex);
+    print("{s}\n", .{bibtex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try bib.formatAsMarkdownList(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate acknowledgments examples with funding sources
+fn generateAcknowledgmentsExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Acknowledgments Generator{s}\n", .{ BOLD, "ACKNOWLEDGMENTS", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const funding = [_]zenodo_templates.FundingSource{
+        .{ .agency = "National Science Foundation", .grant_number = "CCF-2345678", .award_title = "Energy-Efficient AI" },
+        .{ .agency = "Defense Advanced Research Projects Agency", .grant_number = "HR0011-24-1234" },
+    };
+
+    const ack = zenodo_templates.Acknowledgments{
+        .funding = &funding,
+        .additional = "We thank the Trinity community for feedback and contributions.",
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try ack.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try ack.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate data availability statement examples (NeurIPS 2025)
+fn generateDataAvailabilityExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Data Availability Generator{s}\n", .{ BOLD, "DATA AVAILABILITY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const da = zenodo_templates.DataAvailabilityStatement{
+        .access = .public,
+        .location = "https://huggingface.co/datasets/roneneldan/TinyStories",
+        .doi = "10.5794/huggingface/roneneldan/TinyStories",
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try da.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try da.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
 }
 
 fn curlPut(allocator: std.mem.Allocator, url: []const u8, token: []const u8, body: []const u8) ![]u8 {
