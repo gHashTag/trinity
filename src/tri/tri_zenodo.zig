@@ -210,6 +210,15 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "theorem")) {
         // Generate mathematical theorems with LaTeX/Markdown formatting
         try generateTheoremExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "figure")) {
+        // Generate figure captions
+        try generateFigureExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "keywords")) {
+        // Generate keywords
+        try generateKeywordsExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "supplementary")) {
+        // Generate supplementary materials
+        try generateSupplementaryExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -1990,6 +1999,93 @@ fn generateTheoremExamples(allocator: std.mem.Allocator) !void {
     print("\nMarkdown:\n{s}\n", .{eq_md});
 }
 
+/// Generate figure caption examples with LaTeX/Markdown formatting
+fn generateFigureExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Figure Caption Generator{s}\n", .{ BOLD, "FIGURE", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const fig = zenodo_templates.FigureCaption{
+        .label = "fig:ternary-architecture",
+        .caption = "Ternary neural network architecture showing {-1,0,+1} weight quantization",
+        .description = "The diagram illustrates the HSLM forward pass with ternary weights, achieving 19.7× memory compression versus float32.",
+        .references = &[_][]const u8{ "eq:trinity-identity", "thm:sparsity" },
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try fig.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try fig.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate keywords examples with ACM CCS/MeSH categories
+fn generateKeywordsExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Keywords Generator{s}\n", .{ BOLD, "KEYWORDS", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const keywords = zenodo_templates.Keywords{
+        .items = &[_]zenodo_templates.Keyword{
+            .{ .term = "neural networks", .category = .acm_ccs },
+            .{ .term = "quantization", .category = .acm_ccs },
+            .{ .term = "ternary computing", .category = .general },
+            .{ .term = "fpga", .category = .mesh },
+            .{ .term = "edge computing", .category = .mesh },
+        },
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try keywords.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try keywords.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate supplementary materials examples with appendix structure
+fn generateSupplementaryExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Supplementary Materials Generator{s}\n", .{ BOLD, "SUPPLEMENTARY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const items = [_]zenodo_templates.SupplementaryItem{
+        .{
+            .section = .derivations,
+            .title = "Trinity Identity Derivation",
+            .content = "Starting from the definition of the golden ratio $\\phi = \\frac{1 + \\sqrt{5}}{2}$, we derive...",
+            .label = "sup:trinity-derivation",
+        },
+        .{
+            .section = .hardware_spec,
+            .title = "FPGA Resource Utilization",
+            .content = "DSP48: 0%, LUT: 6.7%, BRAM: 100%, Power: 1.2W @ 100MHz",
+        },
+    };
+
+    const sup = zenodo_templates.SupplementaryMaterials{
+        .title = "Supplementary Materials",
+        .items = &items,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try sup.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try sup.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
@@ -2019,6 +2115,9 @@ fn printHelp() void {
     print("  tri zenodo roc                  Generate ROC/AUC analysis for binary classification\n", .{});
     print("  tri zenodo checklist <conf>    Generate conference submission checklist (neurips|iclr|mlsys)\n", .{});
     print("  tri zenodo theorem             Generate mathematical theorems with LaTeX/Markdown formatting\n", .{});
+    print("  tri zenodo figure               Generate figure captions with LaTeX/Markdown formatting\n", .{});
+    print("  tri zenodo keywords            Generate keywords with ACM CCS/MeSH categories\n", .{});
+    print("  tri zenodo supplementary       Generate supplementary materials appendix\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
