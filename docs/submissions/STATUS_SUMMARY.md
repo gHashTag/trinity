@@ -1,6 +1,6 @@
 # English-Only Submission Packages — Status Summary
 
-**Current Date:** March 26, 2026
+**Current Date:** March 27, 2026
 **Task:** Implement submission packages for DARPA CLARA, NeurIPS 2026, and ICLR 2027
 
 ---
