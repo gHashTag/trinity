@@ -104,6 +104,23 @@ Trinity publishes key innovations as **defensive publications** to establish pri
 
 **v5.0 Enhancements:** Broader Impact (NeurIPS), Ethical Considerations (ICLR), Reproducibility Checklist (MLSys), 5-sentence abstracts, LaTeX notation, formal theorems with QED, 95% CIs, Docker reproducibility.
 
+### Published v5.2 Bundles (2026-03-26) — Enhanced with Algorithm Boxes & Diagrams
+
+| Bundle | Discovery | Zenodo DOI | Status |
+|--------|-----------|------------|--------|
+| **B001** | HSLM (1.95M ternary LLM) | [10.5281/zenodo.19227733](https://doi.org/10.5281/zenodo.19227733) | ✅ Enhanced v5.2 |
+| **B002** | Zero-DSP FPGA (ternary inference) | [10.5281/zenodo.19227735](https://doi.org/10.5281/zenodo.19227735) | ✅ Enhanced v5.2 |
+| **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | ✅ Enhanced v5.2 |
+| **B004** | Queen (self-learning system) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | ✅ Enhanced v5.2 |
+| **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | ✅ Enhanced v5.2 |
+| **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | ✅ Enhanced v5.2 |
+| **B007** | VSA Operations (ternary computing) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | ✅ Enhanced v5.2 |
+| **PARENT** | Trinity S³AI Framework | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Enhanced v5.2 |
+
+**v5.2 Enhancements:** Algorithm boxes (pseudocode), ASCII architecture diagrams, detailed experimental protocols, statistical analysis with hypothesis testing (p-values, 95% CI), limitations sections, MLSys reproducibility cards. **Documentation growth: +91% (3,846 LOC added)**.
+
+**Upload Guide:** See [`docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md`](docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md) for complete upload procedures.
+
 ### Published v4.0 Bundles (2026-03-26)
 
 | Bundle | Discovery | Zenodo DOI | Status |
