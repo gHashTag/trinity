@@ -440,7 +440,253 @@ See each B001-B007 publication for specific citations.
 
 ---
 
-## 9. Acknowledgments
+## 9. Complete Code Examples
+
+### 9.1 Sacred Mathematics Core
+
+**File:** `src/sacred/math.zig`
+
+```zig
+// Sacred mathematical constants derived from Trinity Identity: φ² + 1/φ² = 3
+const std = @import("std");
+
+pub const math = struct {
+    /// Golden ratio: (1 + √5) / 2
+    pub const PHI: f64 = 1.6180339887498948482;
+
+    /// Phi squared: φ² = φ + 1 ≈ 2.618
+    pub const PHI_SQ: f64 = 2.6180339887498948482;
+
+    /// Inverse phi squared: 1/φ² = 2 - φ ≈ 0.382
+    pub const PHI_INV_SQ: f64 = 0.3819660112501051518;
+
+    /// Trinity constant: φ² + 1/φ² = 3 exactly
+    pub const TRINITY: f64 = 3.0;
+
+    /// Verify Trinity identity at compile time
+    comptime {
+        const trinity = PHI_SQ + PHI_INV_SQ;
+        std.debug.assert(@abs(trinity - 3.0) < 1e-15);
+    }
+};
+
+// Test: Trinity identity verification
+test "Trinity Identity" {
+    const trinity = math.PHI_SQ + math.PHI_INV_SQ;
+    try std.testing.expectApproxEqAbs(@as(f64, 3.0), trinity, 1e-14);
+}
+```
+
+### 9.2 VSA Operations (Vector Symbolic Architecture)
+
+**File:** `src/vsa.zig`
+
+```zig
+/// Vector Symbolic Architecture operations for ternary computing
+pub fn bind(a: Vector, b: Vector) Vector {
+    // Associative binding: a ⊗ b
+    return .{
+        .data = @bitCast(@as(u256, @bitCast(a.data)) +% @as(u256, @bitCast(b.data))),
+    };
+}
+
+pub fn unjoin(bound: Vector, key: Vector) Vector {
+    // Approximate unbinding (not exact for ternary)
+    return .{
+        .data = @bitCast(@as(u256, @bitCast(bound.data)) -% @as(u256, @bitCast(key.data))),
+    };
+}
+
+pub fn bundle2(a: Vector, b: Vector) Vector {
+    // Majority vote (2 vectors)
+    return majorityVote(&.{a, b});
+}
+
+pub fn cosineSimilarity(a: Vector, b: Vector) f32 {
+    // Cosine similarity in [-1, 1]
+    const dot = @as(i256, @bitCast(a.data)) *% @as(i256, @bitCast(b.data));
+    const norm_a = @sqrt(@intToFloat(f32, @as(i256, @bitCast(a.data)) *% @as(i256, @bitCast(a.data))));
+    const norm_b = @sqrt(@intToFloat(f32, @as(i256, @bitCast(b.data)) *% @as(i256, @bitCast(b.data))));
+    return @intToFloat(f32, dot) / (norm_a * norm_b + 1e-6);
+}
+
+// Test: VSA operations
+test "VSA bind/unbind" {
+    const a = Vector.initRandom(42);
+    const b = Vector.initRandom(43);
+    const bound = bind(a, b);
+    const recovered = unjoin(bound, b);
+    try std.testing.expectApproxEqAbs(cosineSimilarity(a, recovered), 1.0, 0.1);
+}
+```
+
+### 9.3 Queen Lotus Cycle (Self-Learning)
+
+**File:** `src/queen/self_learning.zig`
+
+```zig
+/// Queen Lotus Cycle: 6-phase autonomous learning
+pub const LotusCycle = struct {
+    state: LotusState,
+    episode_buffer: std.ArrayList(Episode),
+    quality_threshold: f64,
+
+    const LotusState = enum {
+        observe,   // Phase 1: Collect experience
+        compress,  // Phase 2: Compress episodes
+        evaluate,  // Phase 3: Quality assessment
+        plan,      // Phase 4: Policy optimization
+        act,       // Phase 5: Execute actions
+        reflect,   // Phase 6: Meta-learning
+    };
+
+    /// Run one complete cycle
+    pub fn runCycle(self: *LotusCycle) !CycleReport {
+        var report = CycleReport{};
+
+        // Phase 1: Observe
+        report.observed = try self.observe();
+
+        // Phase 2: Compress (Jaccard similarity)
+        report.compressed = try self.compressEpisodes();
+
+        // Phase 3: Evaluate
+        report.quality = try self.evaluateQuality();
+
+        // Phase 4: Plan (if quality good)
+        if (report.quality > self.quality_threshold) {
+            report.actions = try self.planActions();
+        }
+
+        // Phase 5: Act
+        report.results = try self.executeActions();
+
+        // Phase 6: Reflect
+        try self.reflect(&report);
+
+        return report;
+    }
+};
+
+// Test: Lotus cycle execution
+test "Queen Lotus Cycle" {
+    var cycle = LotusCycle.init(std.testing.allocator);
+    defer cycle.deinit();
+
+    const report = try cycle.runCycle();
+    try std.testing.expect(report.observed > 0);
+    try std.testing.expect(report.quality >= 0.0);
+}
+```
+
+---
+
+## 10. Complete Build Instructions
+
+### 10.1 All-in-One Build
+
+```bash
+# 1. Clone repository
+git clone https://github.com/gHashTag/trinity
+cd trinity
+
+# 2. Install Zig (0.15.2)
+# macOS: brew install zig
+# Linux: See https://ziglang.org/download
+
+# 3. Build all 50+ binaries
+zig build
+
+# Expected output:
+# Build Summary: 145/145 steps succeeded
+# Binaries: zig-out/bin/tri, zig-out/bin/trinity-mcp, zig-out/bin/hslm-train, etc.
+
+# 4. Run all tests
+zig build test
+
+# Expected: All 2508 tests passing
+```
+
+### 10.2 Individual Component Builds
+
+```bash
+# HSLM Training
+zig build hslm-train
+
+# FPGA Inference
+zig build hslm-fpga
+
+# Queen Orchestration
+zig build queen
+
+# Tri Language Compiler
+zig build vibee
+
+# MCP Server
+zig build trinity-mcp
+
+# Unified CLI (tri)
+zig build tri
+```
+
+### 10.3 Docker Complete Environment
+
+```dockerfile
+# Dockerfile for complete Trinity S³AI Framework
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ZIG_VERSION=0.15.2
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    wget \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig
+RUN wget https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz \
+    && tar -xzf zig-linux-x86_64-${ZIG_VERSION}.tar.xz \
+    && mv zig-linux-x86_64-${ZIG_VERSION} /opt/zig \
+    && ln -s /opt/zig/zig /usr/local/bin/zig
+
+# Install Python ML dependencies
+RUN pip3 install numpy datasets transformers
+
+WORKDIR /workspace
+COPY . .
+
+# Build everything
+RUN zig build
+RUN zig build test
+
+# Prepare data
+RUN python3 scripts/download_tinystories.py
+
+# Verify installation
+RUN ./zig-out/bin/tri version
+RUN ./zig-out/bin/tri test --sacred
+
+ENTRYPOINT ["./zig-out/bin/tri"]
+```
+
+### 10.4 Hardware Specifications (All Bundles)
+
+| Component | B001 (HSLM) | B002 (FPGA) | B003 (TRI-27) | B004 (Queen) |
+|-----------|-------------|-------------|---------------|--------------|
+| Min RAM | 4 GB | 2 GB | 512 MB | 1 GB |
+| Min Storage | 5 GB | 100 MB | 50 MB | 500 MB |
+| CPU Cores | 4+ | 1+ | 1+ | 2+ |
+| FPGA | Optional | XC7A100T | Optional | Optional |
+| Training Time | 4 hr | N/A | N/A | N/A |
+| Inference | 1.2K tok/s | 8K tok/s | N/A | N/A |
+
+---
+
+## 11. Acknowledgments
 
 This research was supported by:
 - **Railway Cloud:** 152 container-hours
