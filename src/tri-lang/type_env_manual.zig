@@ -55,10 +55,19 @@ pub const Poly = struct {
         var result = std.ArrayList(u8).init(allocator);
         try result.appendSlice("∀");
 
+        // Map var_id to Greek letters: 0→α, 1→β, 2→γ, etc.
+        const greek = &[_]u8{ 'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ' };
+
         for (self.vars, 0..) |var_id, i| {
             if (i > 0) try result.appendSlice(",");
-            try result.appendSlice("α");
-            _ = var_id; // TODO: proper var name
+            if (var_id < greek.len) {
+                try result.appendSlice(&[1]u8{greek[var_id]});
+            } else {
+                try result.appendSlice("α");
+                const num = try std.fmt.allocPrint(allocator, "{d}", .{var_id + 1});
+                defer allocator.free(num);
+                try result.appendSlice(num);
+            }
         }
 
         try result.appendSlice(".");
@@ -143,8 +152,8 @@ pub const TypeEnv = struct {
         const ftv = try t.ftv(allocator);
         defer ftv.deinit();
 
-        // Free type variables not in env
-        const vars_to_free = try self.computeFreeVars(allocator, ftv.items, t);
+        // Free type variables not in env - filter out bound vars
+        const vars_to_free = try computeFreeVars(allocator, self, ftv.items);
         defer allocator.free(vars_to_free);
 
         return Scheme{ .Poly = Poly{ .vars = vars_to_free, .body = t } };
@@ -280,17 +289,83 @@ pub const Subst = struct {
 // ═════════════════════════════════════════════════════════════════════════════════════════
 
 /// Compute free type variables — variables not in env
-fn computeFreeVars(allocator: Allocator, ftv_vars: []const TypeId, t: Type) ![]TypeId {
-    _ = t;
-
-    // Start with all variables in ftv
+/// Returns ftv_vars filtered to exclude any variables bound in the environment
+fn computeFreeVars(allocator: Allocator, env: *const TypeEnv, ftv_vars: []const TypeId) ![]TypeId {
     var result = std.ArrayList(TypeId).init(allocator);
-    try result.appendSlice(ftv_vars);
 
-    // TODO: filter out variables that appear in env
-    // For now, return all ftv variables
+    // Collect all type variables bound in the environment
+    var bound_vars = std.ArrayList(TypeId).init(allocator);
+    defer bound_vars.deinit();
+    try collectBoundVars(env, &bound_vars);
+
+    // Filter ftv_vars to exclude bound variables
+    for (ftv_vars) |var_id| {
+        var is_bound = false;
+        for (bound_vars.items) |bound| {
+            if (bound == var_id) {
+                is_bound = true;
+                break;
+            }
+        }
+        if (!is_bound) {
+            try result.append(var_id);
+        }
+    }
 
     return result.toOwnedSlice();
+}
+
+/// Collect all type variables bound in the environment (recursively through parent chain)
+fn collectBoundVars(env: *const TypeEnv, result: *std.ArrayList(TypeId)) !void {
+    // Iterate through all bindings in this scope
+    var iter = env.bindings.iterator();
+    while (iter.next()) |entry| {
+        // Collect type variables from the scheme
+        try collectVarsFromScheme(result, &entry.value_ptr.*);
+    }
+
+    // Recursively collect from parent scope
+    if (env.parent) |parent| {
+        try collectBoundVars(parent, result);
+    }
+}
+
+/// Collect type variables from a scheme (handles both Mono and Poly)
+fn collectVarsFromScheme(result: *std.ArrayList(TypeId), scheme: *const Scheme) !void {
+    switch (scheme.*) {
+        .Mono => |t| try collectVarsFromType(result, t),
+        .Poly => |p| {
+            // Add bound vars from the poly type itself
+            try result.appendSlice(p.vars);
+            // Also collect vars from the body
+            try collectVarsFromType(result, p.body);
+        },
+    }
+}
+
+/// Collect all type variables from a type (recursively)
+fn collectVarsFromType(result: *std.ArrayList(TypeId), t: Type) !void {
+    switch (t) {
+        .Var => |var_id| {
+            // Check if already in result to avoid duplicates
+            for (result.items) |v| {
+                if (v == var_id) return;
+            }
+            try result.append(var_id);
+        },
+        .Fn => |fn_data| {
+            for (fn_data.params.items) |param| {
+                try collectVarsFromType(result, param);
+            }
+            try collectVarsFromType(result, fn_data.return_type.*);
+        },
+        .ADT => |adt_data| {
+            for (adt_data.type_args.items) |arg| {
+                try collectVarsFromType(result, arg);
+            }
+        },
+        .Unit, .Bool, .Int, .Float => {},
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════
