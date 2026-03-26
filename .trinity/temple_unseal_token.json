@@ -1,11 +1,12 @@
 {
   "issuer": "Queen",
-  "reason": "V41: Sacred mathematical functions - Adding sacred_functions.zig (470 LOC) with φ-based operations, matrix ops, activation functions, LR schedules, quantization, loss functions, number theory. Extending TTT with non-TTT scientific utilities.",
+  "reason": "V43: Zenodo publication templates - Adding zenodo_templates.zig (~720 LOC) with 7 bundle types (ternary_nn, zero_dsp, tri27_isa, queen_orchestration, tri_language, vsa_ternary, parent), automatic citation generation (APA/IEEE/MLA), DOI management, CFF/README generation for Zenodo deposits. NeurIPS/ICLR standards compliance.",
   "expires_at": "2026-04-26T00:00:00Z",
   "files": [
     "src/temple/sacred_statistics.zig",
     "src/temple/zenodo_utils.zig",
-    "src/temple/sacred_functions.zig"
+    "src/temple/sacred_functions.zig",
+    "src/research/zenodo_templates.zig"
   ],
   "approved_by": "user"
 }

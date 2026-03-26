@@ -213,28 +213,28 @@ pub fn loadDataset(
     defer file.close();
 
     // Get file size
-    const file_size = try file.getEnd();
+    const file_size = try file.getEndPos();
     const expected_images = file_size / BYTES_PER_IMAGE;
 
-    // Create buffered reader
-    const reader = std.io.bufferedReader(file.reader()).reader();
+    // Read all data at once (more efficient than buffered reader)
+    const data = try allocator.alloc(u8, file_size);
+    defer allocator.free(data);
+    _ = try file.readAll(data);
 
-    // Read all images
-    var image_count: usize = 0;
-    while (image_count < expected_images) {
+    // Parse images from data
+    var offset: usize = 0;
+    while (offset + BYTES_PER_IMAGE <= file_size) {
         var image: CIFAR10Image = undefined;
 
         // Read label (1 byte)
-        image.label = try reader.readByte();
+        image.label = data[offset];
+        offset += 1;
 
         // Read pixel data (3072 bytes)
-        const n = try reader.readAll(&image.data);
-        if (n != IMAGE_BYTES) {
-            return error.IncompleteImageData;
-        }
+        @memcpy(image.data[0..], data[offset .. offset + IMAGE_BYTES]);
+        offset += IMAGE_BYTES;
 
         try dataset.images.append(image);
-        image_count += 1;
     }
 
     return dataset;

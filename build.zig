@@ -4435,6 +4435,17 @@ pub fn build(b: *std.Build) void {
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
 
+    // Vision Module — CIFAR-10 training pipeline
+    const cifar10_integration_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/vision/cifar10_integration.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_cifar10_integration_tests = b.addRunArtifact(cifar10_integration_tests);
+    test_step.dependOn(&run_cifar10_integration_tests.step);
+
     // ============================================================
     // Sacred ALU Synthesis — GF16/TF3-9 Arithmetic for XC7A100T
     // ============================================================
