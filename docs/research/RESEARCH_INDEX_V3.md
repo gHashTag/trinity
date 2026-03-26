@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v10.3
+# Trinity Research Documentation Index — v10.4
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 194
-**NEW: Neuro-φ Coupling — Sacred Mathematics Meets Biological Neural Oscillations
+**Total Documents:** 195
+**NEW: Enhanced Citation Network + Bayesian Alternative Metrics (P1-HIGH complete)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -70,7 +70,8 @@
 | `BIAS_ASSESSMENT_FRAMEWORK_2026.md` | ICLR 2027 ethics compliance (dataset, subgroup, mitigation) | v1.0 ✅ |
 | `MULTIPLE_TESTING_CORRECTION_FRAMEWORK_2026.md` | Bonferroni, Holm, BH-FDR, BY-FDR, Hommel (5 methods) | v1.0 ✨ |
 | `FAILURE_MODE_TAXONOMY_2026.md` | 27 failure modes, detection/mitigation/recovery | v1.0 ✨ |
-| `BAYESIAN_ALTERNATIVE_METRICS_2026.md` | Bayesian t-test, Bayes factors, BEST, hierarchical models | v1.0 ✨ NEW |
+| `BAYESIAN_ALTERNATIVE_METRICS_2026.md` | Bayesian t-test, Bayes factors, BEST, hierarchical models | v1.0 ✨ |
+| `TRINITY_CITATION_NETWORK_ENHANCED_2026.md` | Complete citation matrix, BibTeX, external context, validation | v1.0 ✨ NEW |
 
 ### 5. Mathematical Foundations (5 documents)
 
