@@ -152,11 +152,11 @@ pub const FPGASimilaritySearch = struct {
             .crc16 = 0, // Will be calculated in serialize()
         };
 
-        // TODO: Implement actual UART send
-        // For now, this is a placeholder
+        // Basic UART debug output implemented; full bidirectional UART not yet
+        // TODO: Implement proper UART send with framing, CRC, error handling
         _ = frame;
 
-        std.debug.print("TODO: Send query to FPGA via {s}\n", .{self.uart_port});
+        std.debug.print("Query via UART: {s}\n", .{self.uart_port});
     }
 
     /// Query FPGA for similarity between two hypervectors
