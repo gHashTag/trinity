@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v7.1
+# Trinity Research Documentation Index — v7.2
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 144
+**Total Documents:** 145
 **NEW:** v5.0 Zenodo publications (8 enhanced descriptions)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
@@ -138,6 +138,7 @@
 | `TTT_SACRED_LAYER_ANALYSIS.md` | TTT L0 sacred layer deep dive | TEMPLE_RITUAL ✨ |
 | `HSLM_TRAINING_OPTIMIZATION_ANALYSIS.md` | Training dynamics, φ-warmup, SIMD RoPE | 13% speedup ✨ |
 | `FPGA_SACRED_FORMATS_DEEP_DIVE.md` | GF16/TF3 FPGA implementation, zero-DSP | 75% LUT reduction ✨ |
+| `FPGA_VIBEE_COMPREHENSIVE_ANALYSIS.md` | GF16 φ-bias, TF3 3-of-8, carry-chain | 3-5% accuracy, 40-50% LUT ✨ NEW |
 | `DATA_PIPELINE_OPTIMIZATION_ANALYSIS.md` | HSLM data pipeline, mmap, async prefetch | 80% faster load, 49% memory ✨ |
 | `VSA_MEMORY_LAYOUT_OPTIMIZATION.md` | Cache alignment, prefetching, power-of-3 | 21-35% VSA performance ✨ |
 | `SCIENTIFIC_PUBLICATION_PATTERNS_ZENODO.md` | FAIR principles, statistical rigor, metadata | Complete publication guide ✨ |
@@ -203,7 +204,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 7.1 | 2026-03-26 | Added Session 5 Autonomous Cycle Report (3 commits, 2 docs, ~1.1K LOC) ✨ NEW |
+| 7.2 | 2026-03-26 | Added FPGA VIBEE Comprehensive Analysis (GF16 φ-bias, TF3 3-of-8, carry-chain) ✨ NEW |
+| 7.1 | 2026-03-26 | Added Session 5 Autonomous Cycle Report (3 commits, 2 docs, ~1.1K LOC) ✨ |
 | 7.0 | 2026-03-26 | Added Queen Self-Learning Policy Analysis (adaptive RL, 12-17% success, 35-40% incident) ✨ |
 | 6.9 | 2026-03-26 | Added TRI-27 ISA Sacred Mathematics Analysis (Coptic, φ, 15-20% code, 25-60% exec) ✨ |
 | 6.8 | 2026-03-26 | Added Session 4 Autonomous Cycle Report (5 commits, 4 research docs, ~2.2K LOC) ✨ |
