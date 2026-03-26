@@ -288,8 +288,6 @@ fn runQueenBlocked(allocator: Allocator) !void {
 }
 
 fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
-    _ = allocator;
-
     var daemon_mode = false;
     var god_mode = false;
 
@@ -301,19 +299,130 @@ fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
         }
     }
 
+    // PID file for lifecycle management
+    const pid = std.os.linux.getpid();
+    {
+        var f = try std.fs.cwd().createFile("/tmp/trinity-queen.pid", .{});
+        defer f.close();
+        try std.fmt.format(f.writer(), "{d}", .{pid});
+    }
+    defer std.fs.deleteFileAbsolute("/tmp/trinity-queen.pid") catch {};
+
     if (daemon_mode) {
         std.debug.print("👑 Queen starting in daemon mode...\n", .{});
         if (god_mode) {
             std.debug.print("   God-mode enabled\n", .{});
         }
-        std.debug.print("   Daemon mode: Running (background)\n", .{});
+        std.debug.print("   PID: {d}\n", .{pid});
+        std.debug.print("   Heartbeat: .trinity/queen/heartbeat.json\n", .{});
     } else {
         std.debug.print("👑 Queen started (foreground mode)\n", .{});
         if (god_mode) {
             std.debug.print("   God-mode enabled\n", .{});
         }
-        std.debug.print("   Foreground mode: Running\n", .{});
+        std.debug.print("   PID: {d}\n", .{pid});
+        std.debug.print("   Press Ctrl+C to stop\n", .{});
     }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DAEMON LOOP — φ² + 1/φ² = 3 — Eternal vigilance
+    // ═══════════════════════════════════════════════════════════════════════════════
+    var cycle: u64 = 0;
+
+    while (true) {
+        cycle += 1;
+        const now = std.time.milliTimestamp();
+
+        // OBSERVE
+        const dirty = countDirtyFiles(allocator) catch 0;
+        const build_ok = checkBuild(allocator) catch false;
+
+        // DECIDE + ACT
+        if (!build_ok) {
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+        } else if (dirty > 0) {
+            try logToHive(allocator, cycle, "📝 Dirty files detected", .{});
+        }
+
+        // HEARTBEAT — every cycle
+        try updateHeartbeat(allocator, cycle, now, dirty, build_ok);
+
+        // SLEEP 60s
+        std.time.sleep(60 * std.time.ns_per_s);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DAEMON HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn countDirtyFiles(allocator: Allocator) !usize {
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "status", "--short" },
+    });
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) return 0;
+
+    // Count non-empty lines
+    var count: usize = 0;
+    var iter = std.mem.splitScalar(u8, result.stdout, '\n');
+    while (iter.next()) |line| {
+        if (line.len > 0) count += 1;
+    }
+    return count;
+}
+
+fn checkBuild(allocator: Allocator) !bool {
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "build" },
+    });
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    return result.term.Exited == 0 and result.term.Exited.? == 0;
+}
+
+fn updateHeartbeat(allocator: Allocator, cycle: u64, timestamp: i64, dirty: usize, build_ok: bool) !void {
+    const heartbeat_dir = ".trinity/queen";
+    try std.fs.cwd().makePath(heartbeat_dir);
+
+    const heartbeat_path = try std.fs.path.join(allocator, &.{ heartbeat_dir, "heartbeat.json" });
+    defer allocator.free(heartbeat_path);
+
+    const file = try std.fs.cwd().createFile(heartbeat_path, .{});
+    defer file.close();
+
+    const writer = file.writer();
+    try writer.print(
+        \\{{"cycle":{d},"timestamp":{d},"dirty":{d},"build_ok":{}}}
+    , .{ cycle, timestamp, dirty, build_ok });
+}
+
+fn logToHive(allocator: Allocator, cycle: u64, msg: []const u8, args: anytype) !void {
+    _ = args;
+    const hivedir = ".trinity/queen";
+    try std.fs.cwd().makePath(hivedir);
+
+    const hivepath = try std.fs.path.join(allocator, &.{ hivedir, "HIVELOG.md" });
+    defer allocator.free(hivepath);
+
+    const file = try std.fs.cwd().atomicFile(hivepath, .{ .mode = .write_only });
+    defer file.deinit();
+
+    var buffer: [4096]u8 = undefined;
+    const writer = file.file.writer(&buffer);
+    const datetime = std.time.timestamp();
+
+    try writer.print(
+        \\## Cycle {d} — {d}
+        \\{s}
+        \\
+        \\
+    , .{ cycle, datetime, msg });
 }
 
 fn printQueenHelp() void {
