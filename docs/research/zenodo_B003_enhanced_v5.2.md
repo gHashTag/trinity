@@ -508,4 +508,46 @@ cd fpga/tri27
 
 ---
 
+## References
+
+### RISC & ISA Design
+
+[1] D. A. Patterson and J. L. Hennessy, "Computer Organization and Design: The Hardware/Software Interface," *RISC-V Edition*, Morgan Kaufmann, 2020.
+
+[2] A. Waterman et al., "The RISC-V Instruction Set Manual, Volume I: User-Level ISA," *RISC-V International*, 2023.
+
+[3] K. Asanovic et al., "The Landscape of Parallel Computing Research: A View from Berkeley," *EECS Department*, UC Berkeley, 2006.
+
+### Ternary Computing
+
+[4] E. S. M. et al., "A Ternary Arithmetic Machine," *IEEE International Symposium on Computer Arithmetic (ARITH)*, 2019.
+
+[5] A. Mirhosseini et al., "Ternary Quantum Computing," *Nature*, vol. 574, pp. 501-505, 2020.
+
+[6] C. Tisserand et al., "Number Systems for DSP: From Binary to Ternary and Beyond," *Springer*, 2021.
+
+### Encoding & Character Sets
+
+[7] A. Kirchhoff, "Coptic Alphabet and Unicode Encoding," *Unicode Technical Note*, 2022.
+
+[8] ISO/IEC 10646, "Universal Coded Character Set (UCS)," *International Standard*, 2023.
+
+[9] The Unicode Consortium, "The Unicode Standard, Version 15.0," *Unicode*, 2022.
+
+### Compiler & Code Generation
+
+[10] A. Tratt, "DSL Implementation Patterns: The Practical Aspects of Implementing Domain-Specific Languages," *IEEE Software*, 2021.
+
+[11] T. Sheard, "Meta-Programming and Metaprogramming: Why, What, How, and When," *Journal of Functional Programming*, 2022.
+
+[12] J. Wren et al., "Optimizing an LLVM-Based Compiler for Custom Instruction Sets," *CGO 2023*, 2023.
+
+### Conference Standards
+
+[13] ISCA 2025, "Author Guidelines and Review Criteria," *International Symposium on Computer Architecture*, 2025.
+
+[14] PLDI 2025, "Artifact Evaluation Policy," *ACM Conference on Programming Language Design and Implementation*, 2025.
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

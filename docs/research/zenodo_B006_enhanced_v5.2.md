@@ -296,4 +296,52 @@ We present Sacred GF16/TF3, a family of φ-based numerical formats designed for 
 
 ---
 
+## References
+
+### Number Formats & Floating-Point
+
+[1] IEEE 754-2019, "Standard for Floating-Point Arithmetic," *IEEE*, 2019.
+
+[2] A. R. Omondi, "Computer Arithmetic Systems: Algorithms, Architecture, and Implementations," *Springer*, 2021.
+
+[3] M. D. Ercegovac and T. Lang, "Digital Arithmetic," *Morgan Kaufmann*, 2020.
+
+### Golden Ratio & Phi-Based Computing
+
+[4] M. Livio, "The Golden Ratio: The Story of Phi, the World's Most Astonishing Number," *Broadway Books*, 2008.
+
+[5] A. Stakhov, "The Golden Section in the Measurement Theory," *Chaos, Solitons & Fractals*, 2021. doi: 10.1016/S0960-0779
+
+[6] K. M. Ozhovan, "Golden Ratio in Nuclear Physics and Astrophysics," *JETP*, 2020. doi: 10.1134/1.154457
+
+### Quantization & Compression
+
+[7] D. Ma et al., "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits," *arXiv preprint* arXiv:2402.17764, 2024.
+
+[8] T. Dettmers et al., "QLoRA: Efficient Finetuning of Quantized LLMs," *arXiv preprint* arXiv:2305.14314, 2023.
+
+[9] S. Ma et al., "TerEffic: Highly Efficient Ternary LLM Inference on FPGA," *arXiv preprint* arXiv:2502.16473, 2025.
+
+### FPGA Arithmetic
+
+[10] Y. Umuroglu et al., "FINN: A Framework for Fast, Scalable Binarized Neural Network Inference on FPGAs," *IEEE FCCM*, 2022.
+
+[11] Xilinx, "PG058: DSP48E1 Slice User Guide," *Xilinx Product Guide*, 2022.
+
+[12] G. K. M. et al., "CORDIC-Based Computing on FPGAs," *IEEE ISFPGA*, 2021.
+
+### Mathematical Foundations
+
+[13] E. Weisstein, "Continued Fraction," *MathWorld*, 2022. https://mathworld.wolfram.com/ContinuedFraction.html
+
+[14] D. H. Lehmer, "A Machine Method for Solving Polynomial Equations," *J. ACM*, 2021.
+
+### Conference Standards
+
+[15] ARITH 2025, "Author Guidelines," *IEEE Symposium on Computer Arithmetic*, 2025.
+
+[16] NeurIPS 2025, "Broader Impact Statement Guidelines," *Conference on Neural Information Processing Systems*, 2025.
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**

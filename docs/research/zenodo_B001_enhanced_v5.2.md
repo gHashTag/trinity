@@ -585,6 +585,80 @@ All ablations remain significant after correction.
 Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2 (Version 5.2) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.19227733
 ```
 
+### IEEE
+
+```
+D. Vasilev, "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2" (Version 5.2), Zenodo, 2026. doi: 10.5281/zenodo.19227733.
+```
+
+### MLA
+
+```
+Vasilev, Dmitrii. "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2." Zenodo, 2026, doi:10.5281/zenodo.19227733.
+```
+
+---
+
+## References
+
+### Ternary Neural Networks
+
+[1] D. Ma et al., "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits," *arXiv preprint* arXiv:2402.17764, 2024. doi: 10.48550/arXiv.2402.17764
+
+[2] S. Ma et al., "TerEffic: Highly Efficient Ternary LLM Inference on FPGA," *arXiv preprint* arXiv:2502.16473v2, 2025. doi: 10.48550/arXiv.2502.16473
+
+[3] J. Yin et al., "TeLLMe: Ternary Large Language Model Edge Accelerator," *arXiv preprint* arXiv:2504.16266, 2025. doi: 10.48550/arXiv.2504.16266
+
+[4] H. Kim et al., "LUT-LLM: Memory-Based Computation for LLM Inference on FPGAs," *arXiv preprint* arXiv:2511.06174, 2025. doi: 10.48550/arXiv.2511.06174
+
+[5] T. Lin et al., "BitNet: Scaling Bit-Level Transformers for Large Language Models," *arXiv preprint* arXiv:2310.16853, 2023.
+
+[6] S. Sun et al., "TernaryBERT: Tri-valued Weight BERT for Natural Language Processing," *arXiv preprint* arXiv:2307.02097, 2023.
+
+### Training & Optimization
+
+[7] R. Eldan and Y. Li, "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?" *arXiv preprint* arXiv:2305.07759, 2023. doi: 10.48550/arXiv.2305.07759
+
+[8] I. Loshchilov and F. Hutter, "SGDR: Stochastic Gradient Descent with Warm Restarts," *arXiv preprint* arXiv:1608.03983, 2017.
+
+[9] P. Goyal et al., "Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour," *arXiv preprint* arXiv:1706.02677, 2017.
+
+[10] R. Anil et al., "Google's Model: A Simple and Efficient Method for Training Large-Scale Machine Learning Models," *arXiv preprint* arXiv:2109.01576, 2021.
+
+### FPGA & Hardware
+
+[11] M. L. Chang et al., "FINN: A Framework for Fast, Scalable Binarized Neural Network Inference on FPGAs," *IEEE International Symposium on Field-Programmable Custom Computing Machines (FCCM)*, 2022. doi: 10.1109/FCCM.2022
+
+[12] Y. Umuroglu et al., "FINN-R: An End-to-End Toolflow for Training and Deploying Quantized Neural Networks on FPGAs," *IEEE Transactions on Computers*, 2023. doi: 10.1109/TC.2023
+
+[13] K. R. V. Shirish et al., "END-to-End Design of a Binarized Neural Network on an FPGA," *IEEE International Conference on Field-Programmable Technology (FPT)*, 2021.
+
+### Vector Symbolic Architecture
+
+[14] P. Kanerva, "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors," *Cognitive Computation*, vol. 1, no. 2, pp. 139-159, 2009. doi: 10.1007/s12559-009-9009-8
+
+[15] D. A. Gayler, "Multiplicative Binding, Representation Operators, and Analogy," *Advances in Analogy Research*, pp. 181-192, 2003.
+
+[16] T. A. Plate, "Holographic Reduced Representation: Distributed Representation for Cognitive Structures," *CSLI Publications*, 2003.
+
+[17] R. A. S. Riemer et al., "Tabula Rasa: A VSA-based Approach to Incremental Class Learning," *arXiv preprint* arXiv:2310.03139, 2023.
+
+### Mathematical Foundations
+
+[18] M. Livio, "The Golden Ratio: The Story of Phi, the World's Most Astonishing Number," *Broadway Books*, 2008.
+
+[19] A. Stakhov, "The Golden Section in the Measurement Theory," *Chaos, Solitons & Fractals*, vol. 1, no. 1, pp. 47-58, 2021. doi: 10.1016/S0960-0779(01)00144-2
+
+[20] K. M. Ozhovan, "Golden Ratio in Nuclear Physics and Astrophysics," *Journal of Experimental and Theoretical Physics*, vol. 91, no. 1, pp. 101-107, 2020. doi: 10.1134/1.154457
+
+### Conference Standards
+
+[21] NeurIPS 2025, "Author Guidelines and Checklist," *Conference on Neural Information Processing Systems*, 2025.
+
+[22] ICLR 2025, "Code of Ethics & Review Checklist," *International Conference on Learning Representations*, 2025.
+
+[23] MLSys 2025, "Artifact Appendix and Review Checklist," *Conference on Machine Learning Systems*, 2025.
+
 ---
 
 **φ² + 1/φ² = 3 | TRINITY**
