@@ -1,10 +1,5 @@
 {
   "state": "COMMITTED",
-  "issue_number": 415,
-  "branch": "",
-  "files_count": 0,
-  "tests_passed": true,
-  "commit_hash": "",
-  "started_at": 0,
-  "last_updated": 0
+  "issue_number": 433,
+  "tests_passed": true
 }
