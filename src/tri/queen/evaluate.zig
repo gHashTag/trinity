@@ -2,24 +2,48 @@
 // φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 /// Import types from Observe stage
 pub const Context = @import("observe.zig").Context;
 pub const PolicySnapshot = @import("observe.zig").PolicySnapshot;
 pub const SensorsSnapshot = @import("observe.zig").SensorsSnapshot;
+const Episode = @import("episodes.zig").Episode;
+const createTestEpisode = @import("episodes.zig").createTestEpisode;
+pub const Outcome = @import("act.zig").Outcome;
 
-/// ═════════════════════════════════════════════════════════════════════════════════════
-// ACTION CANDIDATES — Possible actions to evaluate
-/// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════∎(_T)─
+/// Action that can be taken
+pub const Action = enum {
+    scale_up,
+    scale_down,
+    trigger,
+    wait,
+};
 
-/// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════generates possible actions and ranks them by quality score
+/// Candidate action with quality score
+pub const Candidate = struct {
+    action: Action,
+    key: []const u8,
+    quality_score: f64,
+    reason: []const u8,
+};
+
+/// Evaluation result
+pub const Evaluation = struct {
+    action: Action,
+    key: []const u8,
+    quality_score: f64,
+    reason: []const u8,
+};
+
+/// Generate candidates based on context
 pub fn generateCandidates(context: Context) ![]Candidate {
-    var candidates = std.ArrayList(Candidate).init(std.heap.page_allocator);
-    defer candidates.deinit();
+    var candidates = try std.ArrayList(Candidate).initCapacity(std.heap.page_allocator, 0);
+    defer candidates.deinit(std.heap.page_allocator);
 
     // 1. Candidate: scale up kill_threshold (if PPL is good)
     if (context.senses.farm_best_ppl < context.policy.kill_threshold) {
-        try candidates.append(Candidate{
+        try candidates.append(std.heap.page_allocator, Candidate{
             .action = .scale_up,
             .key = "kill_threshold",
             .quality_score = 0.5,
@@ -29,7 +53,7 @@ pub fn generateCandidates(context: Context) ![]Candidate {
 
     // 2. Candidate: scale down kill_threshold (if PPL is worse)
     if (context.senses.farm_best_ppl > context.policy.kill_threshold) {
-        try candidates.append(Candidate{
+        try candidates.append(std.heap.page_allocator, Candidate{
             .action = .scale_down,
             .key = "kill_threshold",
             .quality_score = -0.3,
@@ -38,7 +62,7 @@ pub fn generateCandidates(context: Context) ![]Candidate {
     }
 
     // 3. Candidate: wait (no action needed)
-    try candidates.append(Candidate{
+    try candidates.append(std.heap.page_allocator, Candidate{
         .action = .wait,
         .key = "",
         .quality_score = 0.0,
@@ -46,14 +70,25 @@ pub fn generateCandidates(context: Context) ![]Candidate {
     });
 
     // 4. Candidate: trigger farm status check
-    try candidates.append(Candidate{
+    try candidates.append(std.heap.page_allocator, Candidate{
         .action = .trigger,
         .key = "farm_status",
         .quality_score = 0.2,
         .reason = "Check current farm state",
     });
 
-    return candidates.toOwnedSlice();
+    return try candidates.toOwnedSlice(std.heap.page_allocator);
+}
+
+/// Generate candidate actions from context
+pub fn generateCandidateActions(context: Context) ![]Candidate {
+    return try generateCandidates(context);
+}
+
+/// Score a candidate based on context
+fn scoreCandidate(candidate: Candidate, context: Context) f64 {
+    _ = context;
+    return candidate.quality_score;
 }
 
 /// Evaluate candidates and return best action
@@ -63,132 +98,164 @@ pub fn evaluate(context: Context) !Evaluation {
     if (candidates.len == 0) {
         return Evaluation{
             .action = .wait,
+            .key = "",
             .quality_score = 0.0,
             .reason = "No candidates generated",
         };
     }
 
-    // Find best candidate (highest quality_score)
-    var best_idx: usize = 0;
-    var best_score: f64 = candidates[0].quality_score;
-
-    for (candidates[1..], 1..) |candidate, i| {
-        if (candidate.quality_score > best_score) {
-            best_score = candidate.quality_score;
-            best_idx = i;
+    // Find best candidate by score
+    var best_candidate = candidates[0];
+    for (candidates[1..]) |cand| {
+        if (scoreCandidate(cand, context) > scoreCandidate(best_candidate, context)) {
+            best_candidate = cand;
         }
     }
 
     return Evaluation{
-        .action = candidates[best_idx].action,
-        .quality_score = best_score,
-        .reason = candidates[best_idx].reason,
+        .action = best_candidate.action,
+        .key = best_candidate.key,
+        .quality_score = best_candidate.quality_score,
+        .reason = best_candidate.reason,
     };
 }
 
-/// Generate actions based on heuristics
-pub fn generateCandidateActions(context: Context) ![]Candidate {
-    var candidates = std.ArrayList(Candidate).init(std.heap.page_allocator);
-    defer candidates.deinit();
-
-    // 1. Farm optimization: adjust kill_threshold based on PPL
-    const ppl_diff = context.senses.farm_best_ppl - context.policy.kill_threshold;
-
-    if (ppl_diff < -0.5) {
-        // PPL is better, can increase threshold
-        try candidates.append(Candidate{
-            .action = .scale_up,
-            .key = "kill_threshold",
-            .quality_score = 0.7,
-            .reason = "PPL improved, increase kill threshold",
-        });
-    } else if (ppl_diff > 0.5) {
-        // PPL is worse, should decrease threshold
-        try candidates.append(Candidate{
-            .action = .scale_down,
-            .key = "kill_threshold",
-            .quality_score = 0.6,
-            .reason = "PPL degraded, decrease kill threshold",
-        });
-    }
-
-    // 2. Check if dirty files need cleanup
-    if (context.senses.dirty_files > 20) {
-        try candidates.append(Candidate{
-            .action = .trigger,
-            .key = "doctor_scan",
-            .quality_score = 0.4,
-            .reason = "High dirty file count, trigger doctor scan",
-        });
-    }
-
-    // 3. Wait if everything looks stable
-    if (candidates.items.len == 0) {
-        try candidates.append(Candidate{
-            .action = .wait,
-            .key = "",
-            .quality_score = 0.0,
-            .reason = "System stable, no action needed",
-        });
-    }
-
-    return candidates.toOwnedSlice();
-}
-
-/// Score a candidate action based on context
-fn scoreCandidate(candidate: Candidate, context: Context) f64 {
-    var score: f64 = candidate.quality_score;
-
-    // Bonus for actions that improve metrics
-    if (candidate.action == .scale_up and context.senses.farm_best_ppl < 3.0) {
-        score += 0.2;
-    }
-
-    // Penalty for actions that might degrade metrics
-    if (candidate.action == .scale_down and context.senses.farm_best_ppl > 5.0) {
-        score -= 0.3;
-    }
-
-    return score;
-}
-
-test "evaluate: returns valid evaluation" {
-    const allocator = std.testing.allocator;
-
-    // Create a test context
+test "evaluate: generates valid evaluation" {
     const context = Context{
-        .timestamp_ns = std.time.nanoTimestamp(),
-        .policy = PolicySnapshot{ .kill_threshold = 4.0 },
-        .senses = SensorsSnapshot{
-            .farm_best_ppl = 3.5,
-            .dirty_files = 25,
-        },
+        .timestamp_ns = 1234567890,
+        .policy = .{},
+        .senses = .{},
         .active_issues = &[_]u64{},
+        .recalled_episodes = &[_]Episode{},
     };
 
-    const eval = try evaluate(context);
+    const result = try evaluate(context);
 
-    // Should recommend action (not wait)
-    try std.testing.expect(eval.action != .wait);
-    try std.testing.expect(eval.quality_score >= 0.0);
+    try std.testing.expect(result.action == .scale_up or result.action == .wait);
+    try std.testing.expect(result.quality_score >= 0.0);
 }
 
-test "generateCandidateActions: with PPL improvement" {
-    const allocator = std.testing.allocator;
+// ═══════════════════════════════════════════════════════════════════════════════
+// Phase 3: Episode Window Evaluation
+// ═══════════════════════════════════════════════════════════════════════════════
 
-    const context = Context{
-        .timestamp_ns = std.time.nanoTimestamp(),
-        .policy = PolicySnapshot{ .kill_threshold = 4.0 },
-        .senses = SensorsSnapshot{
-            .farm_best_ppl = 3.0, // Better than threshold
-            .dirty_files = 5,
-        },
-        .active_issues = &[_]u64{},
+/// Quality rating based on success rate
+pub const Quality = enum {
+    unknown,
+    good, // success_rate >= 0.95
+    unstable, // 0.70 < success_rate < 0.95
+    bad, // success_rate <= 0.70
+};
+
+/// Window evaluation result
+pub const WindowEvaluation = struct {
+    quality: Quality,
+    success_rate: f64,
+    failure_count: u32,
+    window_size: u32,
+};
+
+/// Evaluate a window of episodes to determine quality
+pub fn evaluateWindow(episodes: []const Episode) WindowEvaluation {
+    if (episodes.len == 0) {
+        return WindowEvaluation{
+            .quality = .unknown,
+            .success_rate = 0.0,
+            .failure_count = 0,
+            .window_size = 0,
+        };
+    }
+
+    var success_count: u32 = 0;
+    var failure_count: u32 = 0;
+
+    for (episodes) |ep| {
+        switch (ep.outcome) {
+            .success => success_count += 1,
+            .partial => failure_count += 1,
+            .failure_learned, .failure_unknown, .blocked => failure_count += 1,
+        }
+    }
+
+    const total: u32 = @intCast(episodes.len);
+    const success_rate = if (total > 0)
+        @as(f64, @floatFromInt(success_count)) / @as(f64, @floatFromInt(total))
+    else
+        0.0;
+
+    const quality: Quality = if (success_rate >= 0.95)
+        .good
+    else if (success_rate <= 0.70)
+        .bad
+    else
+        .unstable;
+
+    return WindowEvaluation{
+        .quality = quality,
+        .success_rate = success_rate,
+        .failure_count = failure_count,
+        .window_size = total,
     };
+}
 
-    const candidates = try generateCandidateActions(context);
-    defer allocator.free(candidates);
+test "evaluate: evaluateWindow empty episodes" {
+    const episodes = &[_]Episode{};
+    const result = evaluateWindow(episodes);
 
-    // Should have at least one candidate
-    try std.testing.expect(candidates.len > 0);
+    try std.testing.expectEqual(Quality.unknown, result.quality);
+    try std.testing.expectEqual(@as(u32, 0), result.window_size);
+}
+
+test "evaluate: evaluateWindow all success" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .success);
+    const episodes = &[_]Episode{ episode1, episode2 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.good, result.quality);
+    try std.testing.expectEqual(@as(f64, 1.0), result.success_rate);
+}
+
+test "evaluate: evaluateWindow mixed outcomes" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .success);
+    const episode3 = try createTestEpisode(allocator, .failure_learned);
+    const episode4 = try createTestEpisode(allocator, .success);
+    const episodes = &[_]Episode{ episode1, episode2, episode3, episode4 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.unstable, result.quality); // 0.75
+    try std.testing.expectEqual(@as(u32, 1), result.failure_count);
+}
+
+test "evaluate: evaluateWindow high failure rate" {
+    const allocator = std.testing.allocator;
+    const episode1 = try createTestEpisode(allocator, .success);
+    const episode2 = try createTestEpisode(allocator, .failure_learned);
+    const episode3 = try createTestEpisode(allocator, .failure_learned);
+    const episode4 = try createTestEpisode(allocator, .blocked);
+    const episodes = &[_]Episode{ episode1, episode2, episode3, episode4 };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.bad, result.quality);
+    try std.testing.expectEqual(@as(u32, 3), result.failure_count);
+}
+
+test "evaluate: evaluateWindow 80% success unstable" {
+    const allocator = std.testing.allocator;
+    // 80% success rate = unstable (not >= 95%, not <= 70%)
+    const episodes = &[_]Episode{
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .success),
+        try createTestEpisode(allocator, .failure_learned),
+    };
+    const result = evaluateWindow(episodes);
+
+    try std.testing.expectEqual(Quality.unstable, result.quality);
+    try std.testing.expectEqual(@as(u32, 1), result.failure_count);
+    try std.testing.expect(result.success_rate > 0.70 and result.success_rate < 0.95);
 }

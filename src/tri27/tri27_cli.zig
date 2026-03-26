@@ -7,16 +7,16 @@ const Allocator = std.mem.Allocator;
 const Decoder = @import("emu/decoder.zig");
 const Opcode = Decoder.Opcode;
 const Instruction = Decoder.Instruction;
-const Assembler = @import("emu/tri_asm.zig");
+const Assembler = @import("emu/asm_parser.zig");
 const Executor = @import("emu/executor.zig");
-const CPUState = @import("emu/cpu_state.zig");
-const tri27_experience = @import("tri27_experience");
+const CPUState = @import("emu/cpu_state.zig").CPUState;
+const tri27_experience = @import("tri27_experience.zig");
 const tri27_experience_jsonl = @import("tri27_experience_jsonl.zig");
 
 const print = std.debug.print;
 
-// ════════════════════════════════════════════════════════════
-const DIM = "\x1b[1m";
+// ════════════════════════════════════════════════════════
+const DIM = "\x1b[2m";
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const RED = "\x1b[31m";
@@ -24,13 +24,13 @@ const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
 
-// ═════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 
 pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "";
 
     if (std.mem.eql(u8, subcmd, "assemble") or std.mem.eql(u8, subcmd, "asm")) {
-        return runAssembleCommand(allocator, args);
+        return runAssembleCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "disassemble") or std.mem.eql(u8, subcmd, "disasm")) {
         return runDisassembleCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "run")) {
@@ -51,7 +51,7 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
 
 fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
     if (all_args.len < 1) {
-        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n", .{}, .{});
+        print("  Usage: tri tri27 assemble <input.tri> -o <output.tbin>\n\n", .{});
         return;
     }
 
@@ -68,14 +68,16 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
         }
     }
 
-    const asm_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
-        return;
+    const asm_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        print("Error reading {s}: {}\n", .{ input_file, e });
+        return error.ReadFileFailed;
     };
     defer allocator.free(asm_content);
 
     const bytecode = try Assembler.assemble(allocator, asm_content);
-    try std.fs.cwd().writeFileAlloc(allocator, output_file, bytecode);
+    const file = try std.fs.cwd().createFile(output_file, .{});
+    defer file.close();
+    try file.writeAll(bytecode);
     allocator.free(bytecode);
 
     // Save episode to Episode/JSONL
@@ -85,150 +87,187 @@ fn runAssembleCommand(allocator: Allocator, all_args: []const []const u8) !void 
         input_file,
         output_file,
         .success,
-        0, // cycles
-        bytecode.len / 4, // instructions
-        "", // error_msg
+        0,
+        @as(u32, @intCast(bytecode.len / 4)),
+        "",
     );
 
-    print("{s}✅ Assembled {d} instructions\n", .{ GREEN, bytecode.len / 4, RESET });
+    print("{s}✅ Assembled {d} instructions{s}\n", .{ GREEN, bytecode.len / 4, RESET });
     print("{s}Wrote to: {s}{s}\n", .{ GREEN, output_file, RESET });
 }
 
 fn runDisassembleCommand(allocator: Allocator, all_args: []const []const u8) !void {
     if (all_args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 disassemble <input.tbin>\n\n");
+        print("  Usage: tri tri27 disassemble <input.tbin>\n\n", .{});
         return;
     }
 
     const input_file = all_args[0];
-    const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
-        return;
+    const tbin_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        print("Error reading {s}: {}\n", .{ input_file, e });
+        return error.ReadFileFailed;
     };
     defer allocator.free(tbin_content);
 
-    print("{s}Disassembling {s} ({d} bytes)\n", .{ CYAN, input_file, RESET, tbin_content.len });
-    print("{s}TODO: implement disassembly\n", .{YELLOW});
+    print("{s}Disassembling {s} ({d} bytes){s}\n", .{ CYAN, input_file, tbin_content.len, RESET });
+    print("{s}═══════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Raw .tbin files have no header - all bytes are instructions
+    const code_data = tbin_content;
+
+    var instr_addr: u32 = 0;
+    var i: usize = 0;
+    while (i + 4 <= code_data.len) : (i += 4) {
+        const word_bytes = code_data[i..][0..4];
+        const word: u32 = @as(u32, word_bytes[0]) |
+            @as(u32, word_bytes[1]) << 8 |
+            @as(u32, word_bytes[2]) << 16 |
+            @as(u32, word_bytes[3]) << 24;
+
+        const inst = Decoder.decode(word);
+
+        // Format: 0x0000:  ADD t5, t1, t2
+        const addr_str = try std.fmt.allocPrint(allocator, "0x{x:0>4}", .{instr_addr});
+        defer allocator.free(addr_str);
+
+        var inst_buf: [128]u8 = undefined;
+        const inst_str = Decoder.formatInstructionShort(inst, &inst_buf);
+
+        print("{s}  {s}:  0x{x:0>8}  {s}{s}{s}\n", .{ DIM, addr_str, word, CYAN, inst_str, RESET });
+
+        // Stop at HALT
+        if (inst.opcode == .HALT) {
+            print("{s}*** HALT reached ***{s}\n", .{ YELLOW, RESET });
+            break;
+        }
+
+        instr_addr += 4;
+    }
+
+    print("\n{s}Disassembly complete: {d} instructions{s}\n", .{ GREEN, i / 4, RESET });
 }
 
 fn runRunCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 run <program.tbin>\n\n");
+        print("  Usage: tri tri27 run <program.tbin>\n\n", .{});
         return;
     }
 
     const input_file = args[0];
-    const tbin_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
-        return;
+    const tbin_content = std.fs.cwd().readFileAlloc(allocator, input_file, 1024 * 1024) catch |e| {
+        print("Error reading {s}: {}\n", .{ input_file, e });
+        return error.ReadFileFailed;
     };
     defer allocator.free(tbin_content);
 
-    var cpu = Executor.init();
+    var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
-    const loaded = cpu.loadProgram(tbin_content);
-    if (!loaded) {
-        print("{s}Error: failed to load program{s}\n", .{ RED, RESET });
-        return;
-    }
+    // Load program into CPU memory
+    const cpu_memory = cpu.getBytesMut();
+    const copy_len = @min(tbin_content.len, cpu_memory.len);
+    @memcpy(cpu_memory[0..copy_len], tbin_content[0..copy_len]);
 
-    const result = cpu.execute(1000);
-    print("{s}Execution result: {}{s}\n", .{ BOLD, result, RESET });
-    print("{s}PC: 0x{X:0>4}{s}\n", .{ cpu.pc, RESET });
+    // Execute program
+    Executor.run(&cpu, cpu_memory) catch |err| {
+        std.debug.print("Execution error: {}\n", .{err});
+        return err;
+    };
+
+    print("{s}Execution result: HALTED{s}\n", .{ BOLD, RESET });
+    print("{s}PC: 0x{X:0>4}{s}\n", .{ BOLD, cpu.pc, RESET });
+    print("{s}Instructions executed: {d}{s}\n", .{ BOLD, cpu.instructions_executed, RESET });
+    print("{s}Cycles: {d}{s}\n", .{ BOLD, cpu.cycles, RESET });
 
     // Save episode to Episode/JSONL
     try tri27_experience_jsonl.saveTri27Episode(
         allocator,
         .run,
         input_file,
-        "", // output_file
-        if (result == 0) .success else .failure,
-        cpu.cycles, // cycles from CPU
-        cpu.instructions, // instructions executed
-        "", // error_msg
+        "",
+        .success,
+        @intCast(cpu.cycles),
+        @intCast(cpu.instructions_executed),
+        "",
     );
-
-    cpu.dumpRegisters();
-
-    cpu.dumpRegisters();
 }
 
 fn runValidateCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing input file{s}\n", .{ RED, RESET });
-        print("  Usage: tri tri27 validate <source.tri>\n\n");
+        print("  Usage: tri tri27 validate <source.tri>\n\n", .{});
         return;
     }
 
     const input_file = args[0];
-    const tri_content = try std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
-        print("Error reading {s}: {s}\n", .{ RED, input_file, e });
-        return;
+    const tri_content = std.fs.cwd().readFileAlloc(allocator, input_file, 4096) catch |e| {
+        print("Error reading {s}: {}\n", .{ input_file, e });
+        return error.ReadFileFailed;
     };
     defer allocator.free(tri_content);
 
-    print("{s}Validation not yet implemented\n", .{YELLOW});
+    print("{s}Validation not yet implemented{s}\n", .{ YELLOW, RESET });
 
     // Save episode to Episode/JSONL
     try tri27_experience_jsonl.saveTri27Episode(
         allocator,
         .validate,
         input_file,
-        "", // output_file
-        .success, // TODO: actual validation result
-        0, // cycles (not tracked for validate)
-        0, // instructions (not tracked for validate)
-        "", // error_msg
+        "",
+        .success,
+        0,
+        0,
+        "",
     );
 }
 
 fn runIsaCommand() !void {
     print("\n{s}TRI-27 INSTRUCTION SET ARCHITECTURE{s}\n", .{ BOLD, RESET });
-    print("{s}═════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("{s}═══════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
     print("{s}ARITHMETIC (0x60-0x17){s}\n", .{ CYAN, RESET });
-    print("  ADD   dst, src1, src2   ; dst = src1 + src2\n");
-    print("  SUB   dst, src1, src2   ; dst = src1 - src2\n");
-    print("  MUL   dst, src1, src2   ; dst = src1 * src2\n");
-    print("  DIV   dst, src1, src2   ; dst = src1 / src2\n");
-    print("  INC   dst               ; dst++\n");
-    print("  DEC   dst               ; dst--\n");
+    print("  ADD   dst, src1, src2   ; dst = src1 + src2\n", .{});
+    print("  SUB   dst, src1, src2   ; dst = src1 - src2\n", .{});
+    print("  MUL   dst, src1, src2   ; dst = src1 * src2\n", .{});
+    print("  DIV   dst, src1, src2   ; dst = src1 / src2\n", .{});
+    print("  INC   dst               ; dst++\n", .{});
+    print("  DEC   dst               ; dst--\n", .{});
 
     print("\n{s}LOGIC (0x18-0x1D){s}\n", .{ CYAN, RESET });
-    print("  AND   dst, src1, src2   ; dst = src1 & src2\n");
-    print("  OR    dst, src1, src2   ; dst = src1 | src2\n");
-    print("  XOR   dst, src1, src2   ; dst = src1 ^ src2\n");
-    print("  NOT   dst               ; dst = ~dst\n");
-    print("  SHL   dst, src1, shift  ; dst = src1 << shift\n");
+    print("  AND   dst, src1, src2   ; dst = src1 & src2\n", .{});
+    print("  OR    dst, src1, src2   ; dst = src1 | src2\n", .{});
+    print("  XOR   dst, src1, src2   ; dst = src1 ^ src2\n", .{});
+    print("  NOT   dst               ; dst = ~dst\n", .{});
+    print("  SHL   dst, src1, shift  ; dst = src1 << shift\n", .{});
+    print("  SHR   dst, src1, shift  ; dst = src1 >> shift\n", .{});
 
     print("\n{s}TERNARY (0x60-0x6D){s}\n", .{ CYAN, RESET });
-    print("  DOT   dst, v1, v2       ; ternary dot product\n");
-    print("  BIND  dst, v1, v2       ; VSA bind\n");
-    print("  BUNDLE2 dst, v1, v2    ; majority vote (2)\n");
-    print("  BUNDLE3 dst, v1, v2, v3 ; majority vote (3)\n");
+    print("  DOT   dst, v1, v2       ; ternary dot product\n", .{});
+    print("  BIND  dst, v1, v2       ; VSA bind\n", .{});
+    print("  BUNDLE2 dst, v1, v2    ; majority vote (2)\n", .{});
+    print("  BUNDLE3 dst, v1, v2, v3 ; majority vote (3)\n", .{});
 
     print("\n{s}SACRED (0x80-0x92){s}\n", .{ CYAN, RESET });
-    print("  PHI_CONST dst           ; dst = φ (golden ratio)\n");
-    print("  PI_CONST  dst           ; dst = π\n");
-    print("  E_CONST   dst           ; dst = e\n");
-    print("  SACR  op, dst, src      ; sacred arithmetic\n");
+    print("  PHI_CONST dst           ; dst = φ (golden ratio)\n", .{});
+    print("  PI_CONST  dst           ; dst = π\n", .{});
+    print("  E_CONST   dst           ; dst = e\n", .{});
+    print("  SACR  op, dst, src      ; sacred arithmetic\n", .{});
 
     print("\n{s}REGISTERS{s}\n", .{ CYAN, RESET });
-    print("  t0-t26 (27 ternary registers)\n");
-    print("  Also accessible as r0-r26\n");
-    print("  Register 0 is accumulator-like\n\n");
+    print("  t0-t26 (27 ternary registers)\n", .{});
+    print("  Also accessible as r0-r26\n", .{});
+    print("  Register 0 is accumulator-like\n\n", .{});
 }
 
 fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         print("{s}Error: missing subcommand{s}\n", .{ RED, RESET });
-        print("  experience init                    Initialize experience log\n");
-        print("  experience log <file> [ASM|DISASM|RUN|VAL]  Log operation\n");
-        print("  experience status                  Show event history\n");
-        print("  experience record <issue>        Record episode from last event\n");
+        print("  experience init                    Initialize experience log\n", .{});
+        print("  experience log <file> [ASM|DISASM|RUN|VAL]  Log operation\n", .{});
+        print("  experience status                  Show event history\n", .{});
+        print("  experience record <issue>          Record episode from last event\n", .{});
         return;
     }
 
@@ -236,12 +275,22 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
 
     if (std.mem.eql(u8, subcmd, "init")) {
         tri27_experience.initEventLog();
-        print("{s}TRI-27 experience log initialized\n", .{GREEN});
+        print("{s}TRI-27 experience log initialized{s}\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, subcmd, "log")) {
         const input_file = if (args.len > 1) args[1] else "";
         const operation_str = if (args.len > 2) args[2] else "RUN";
 
-        var event = tri27_experience.Tri27Event{};
+        var event = tri27_experience.Tri27Event{
+            .timestamp = 0,
+            .operation = .assemble,
+            .input_file = [_]u8{0} ** 256,
+            .output_file = [_]u8{0} ** 256,
+            .status = .queued,
+            .cycles = 0,
+            .instructions = 0,
+            .error_msg = [_]u8{0} ** 512,
+            .has_error = false,
+        };
         event.timestamp = std.time.timestamp();
         event.operation = tri27_experience.parseOperation(operation_str);
 
@@ -262,7 +311,7 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
         try tri27_experience.runStatus();
     } else if (std.mem.eql(u8, subcmd, "record")) {
         if (args.len < 2) {
-            print("{s}Error: missing issue number{s}\n", .{RED});
+            print("{s}Error: missing issue number{s}\n", .{ RED, RESET });
             return;
         }
 
@@ -271,12 +320,12 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
 
         const event_opt = tri27_experience.getLastEvent();
         const event = if (event_opt) |ev| ev else {
-            print("{s}No events to record. Use 'log' first.{s}\n", .{YELLOW});
+            print("{s}No events to record. Use 'log' first.{s}\n", .{ YELLOW, RESET });
             return;
         };
 
         try tri27_experience.recordEpisodeFromEvent(event.*, issue_num);
-        print("{s}Episode #{d} recorded for issue #{d}\n", .{ GREEN, event.timestamp, issue_num, RESET });
+        print("{s}Episode #{d} recorded for issue #{d}{s}\n", .{ GREEN, event.timestamp, issue_num, RESET });
     } else {
         print("{s}Unknown experience subcommand: {s}\n", .{ RED, subcmd });
     }
@@ -297,10 +346,10 @@ fn printHelp() void {
     print("  {s}tri tri27 experience record <issue>{s}             Record episode from last event\n", .{ GREEN, RESET });
     print("  {s}tri tri27 isa{s}                                    Show ISA reference\n", .{ GREEN, RESET });
 
-    print("\n{s}Examples:{s}\n", .{RESET});
-    print("  tri27 assemble prog.tri -o prog.tbin\n");
-    print("  tri27 run prog.tbin\n");
-    print("  tri27 disassemble prog.tbin\n");
+    print("\n{s}Examples:{s}\n", .{ BOLD, RESET });
+    print("  tri27 assemble prog.tri -o prog.tbin\n", .{});
+    print("  tri27 run prog.tbin\n", .{});
+    print("  tri27 disassemble prog.tbin\n", .{});
 }
 
 pub fn main() !void {
@@ -316,5 +365,5 @@ pub fn main() !void {
         return;
     }
 
-    try runTri27Command(allocator, args[2..]);
+    try runTri27Command(allocator, args[1..]);
 }

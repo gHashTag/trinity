@@ -1,0 +1,36 @@
+{
+  "workers": [
+    {
+      "id": 1,
+      "container_name": "wave9-w1",
+      "status": "starting",
+      "step": 0,
+      "ppl": inf,
+      "loss": inf,
+      "seed": 1001,
+      "created_at": 1774335351,
+      "updated_at": 1774335351,
+      "crash_count": 0,
+      "last_error": null
+    },
+    {
+      "id": 2,
+      "container_name": "wave9-w2",
+      "status": "starting",
+      "step": 0,
+      "ppl": inf,
+      "loss": inf,
+      "seed": 1002,
+      "created_at": 1774335351,
+      "updated_at": 1774335351,
+      "crash_count": 0,
+      "last_error": null
+    }
+  ],
+  "created_at": 0,
+  "updated_at": 1774335351,
+  "total_steps": 0,
+  "avg_ppl": 0,
+  "best_ppl": inf,
+  "best_worker_id": null
+}

@@ -15,8 +15,7 @@ const std = @import("std");
 // Import hslm module (external library)
 const hslm = @import("hslm");
 
-// Re-export hslm types for convenience
-pub const f16 = hslm.f16;
+// Re-export hslm types for convenience (f16 skipped to avoid shadowing)
 pub const GF16 = hslm.GF16;
 pub const TF3 = hslm.TF3;
 pub const PHI = hslm.PHI;
@@ -27,22 +26,22 @@ pub const PHI_INV = hslm.PHI_INV;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Safe f16 to f32 conversion with NaN/Inf/subnormal handling
-pub fn f16ToF32(v: f16) f32 {
+pub fn f16ToF32(v: hslm.f16) f32 {
     return hslm.safeF16ToF32(v);
 }
 
 /// Direct f32 to f16 conversion
-pub fn f32ToF16(v: f32) f16 {
+pub fn f32ToF16(v: f32) hslm.f16 {
     return @floatCast(v);
 }
 
 /// Batch conversion f16 → f32
-pub fn f16BatchToF32(comptime N: usize, src: [N]f16) [N]f32 {
+pub fn f16BatchToF32(comptime N: usize, src: [N]hslm.f16) [N]f32 {
     return hslm.f16BatchToF32(N, src);
 }
 
 /// Batch conversion f32 → f16
-pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]f16 {
+pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]hslm.f16 {
     return hslm.f32BatchToF16(N, src);
 }
 
@@ -51,12 +50,12 @@ pub fn f32BatchToF16(comptime N: usize, src: [N]f32) [N]f16 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// φ-weighted quantization for better distribution
-pub fn phiQuantize(v: f32) f16 {
+pub fn phiQuantize(v: f32) hslm.f16 {
     return hslm.phiQuantize(v);
 }
 
 /// φ-weighted dequantization
-pub fn phiDequantize(v: f16) f32 {
+pub fn phiDequantize(v: hslm.f16) f32 {
     return hslm.phiDequantize(v);
 }
 
@@ -139,15 +138,15 @@ pub const NumericalMetrics = struct {
 
     pub fn track(self: *NumericalMetrics, original: f32, quantized: f16) void {
         const dequantized = phiDequantize(quantized);
-        const error = std.math.abs(dequantized - original);
+        const quant_error = @abs(dequantized - original);
 
-        self.quantization_error_max = @max(self.quantization_error_max, error);
+        self.quantization_error_max = @max(self.quantization_error_max, quant_error);
         // Simple moving average (α = 0.1)
-        self.quantization_error_avg = 0.9 * self.quantization_error_avg + 0.1 * error;
+        self.quantization_error_avg = 0.9 * self.quantization_error_avg + 0.1 * quant_error;
     }
 
     pub fn trackSpecial(self: *NumericalMetrics, value: f16) void {
-        const f32_val = safeF16ToF32(value);
+        const f32_val = hslm.safeF16ToF32(value);
 
         if (std.math.isNan(f32_val)) {
             self.nan_count += 1;
@@ -168,10 +167,10 @@ pub const NumericalMetrics = struct {
 test "f16 conversion safe" {
     const original: f32 = 3.14159;
     const f16_val = f32ToF16(original);
-    const f32_val = f16ToF32(f16_val);
+    const f32_val = hslm.safeF16ToF32(f16_val);
 
     // Within 0.1% error is acceptable for f16
-    const error_pct = std.math.abs((f32_val - original) / original) * 100.0;
+    const error_pct = @abs((f32_val - original) / original) * 100.0;
     try std.testing.expect(error_pct < 0.1);
 }
 
