@@ -144,14 +144,8 @@ pub const CIFAR10Trainer = struct {
         _ = self;
     }
 
-    /// Train on single image (gradient computation stub for Phase 1)
+    /// Train on single image with backpropagation
     pub fn trainStep(self: *Self, image: CIFAR10Image, allocator: std.mem.Allocator) !CIFAR10Metrics {
-        _ = self.optimizer;
-        _ = self.model;
-
-        // Phase 1: Simple placeholder gradient
-        // Phase 2: Implement proper backprop
-
         // Convert image to float tensor
         var input = try allocator.alloc(f32, 3072);
         defer allocator.free(input);
@@ -160,17 +154,18 @@ pub const CIFAR10Trainer = struct {
             input[i] = normalizePixel(image.data[i]);
         }
 
-        // Forward pass
+        // Forward + backward pass with SGD
+        const loss = try self.model.backward(input, image.label, self.optimizer.learning_rate);
+
+        // Update metrics
+        self.metrics.updateLoss(loss);
+
+        // Get prediction for accuracy
         var logits: [10]f32 = undefined;
         try self.model.forward(input, &logits);
+        const pred = try self.model.predict(input, allocator);
 
-        // Compute loss
-        const loss = cifar10_model.crossEntropyLoss(&logits, image.label);
-
-        // TODO: Implement backward pass and weight update
-        _ = loss; // Suppress unused warning
-
-        self.metrics.updateAccuracy(@as(usize, image.label), image.label);
+        self.metrics.updateAccuracy(pred, image.label);
 
         return self.metrics;
     }

@@ -197,6 +197,125 @@ pub const CIFAR10Model = struct {
             self.layer2.paramCount() +
             self.layer3.paramCount();
     }
+
+    /// Backward pass: compute gradients and update weights (SGD)
+    /// Returns the cross-entropy loss
+    pub fn backward(self: *Self, input: []const f32, target: usize, learning_rate: f64) !f32 {
+        // Allocate buffers for forward pass (need activations for gradients)
+        const buffer1 = try self.allocator.alloc(f32, 512);
+        defer self.allocator.free(buffer1);
+
+        const buffer2 = try self.allocator.alloc(f32, 256);
+        defer self.allocator.free(buffer2);
+
+        const logits = try self.allocator.alloc(f32, 10);
+        defer self.allocator.free(logits);
+
+        // Forward pass (save activations)
+        self.layer1.forward(input, buffer1);
+        for (buffer1) |*x| x.* = relu(x.*);
+
+        self.layer2.forward(buffer1, buffer2);
+        for (buffer2) |*x| x.* = relu(x.*);
+
+        self.layer3.forward(buffer2, logits);
+
+        // Compute loss
+        const loss = crossEntropyLoss(logits, target);
+
+        // Backward pass (compute gradients)
+        // Gradient of loss w.r.t. logits (softmax gradient)
+        // For cross-entropy with softmax: dL/dlogits[k] = p[k] - y[k]
+        // where p is softmax probability, y is one-hot target
+
+        // Compute softmax probabilities
+        var probs: [10]f32 = undefined;
+        {
+            var max_logit: f32 = logits[0];
+            for (logits[1..]) |l| {
+                if (l > max_logit) max_logit = l;
+            }
+
+            var sum: f32 = 0.0;
+            for (&logits, 0..) |l, i| {
+                probs[i] = std.math.exp(l.* - max_logit);
+                sum += probs[i];
+            }
+
+            for (&probs) |*p| p.* /= sum;
+        }
+
+        // Gradient w.r.t. logits (output layer)
+        var d_logits: [10]f32 = undefined;
+        for (&d_logits, 0..) |*d, i| {
+            const target_val: f32 = if (i == target) 1.0 else 0.0;
+            d.* = probs[i] - target_val;
+        }
+
+        // Gradient w.r.t. layer3 weights (256 → 10)
+        // dL/dw3 = d_logits * buffer2^T
+        const d_w3_lr: f32 = @floatCast(learning_rate);
+        for (0..10) |k| { // output dimension
+            for (0..256) |j| { // input dimension (L2 output)
+                const grad = d_logits[k] * buffer2[j];
+                self.layer3.weights[k * 256 + j] -= d_w3_lr * grad;
+            }
+            // Update bias
+            self.layer3.bias[k] -= d_w3_lr * d_logits[k];
+        }
+
+        // Gradient w.r.t. layer2 activations (512 → 256)
+        // dL/dbuffer2 = (dL/dlogits * W3^T) * ReLU'(buffer2)
+        var d_buffer2: [256]f32 = undefined;
+        @memset(d_buffer2[0..], 0);
+
+        for (0..256) |j| { // L2 output dimension
+            for (0..10) |k| { // L3 input dimension (output)
+                d_buffer2[j] += d_logits[k] * self.layer3.weights[k * 256 + j];
+            }
+        }
+
+        // ReLU derivative (if buffer2[j] > 0, gradient passes through)
+        for (0..256) |j| {
+            if (buffer2[j] <= 0) d_buffer2[j] = 0;
+        }
+
+        // Update layer2 weights (512 → 256)
+        for (0..256) |k| {
+            for (0..512) |j| {
+                const grad = d_buffer2[k] * buffer1[j];
+                self.layer2.weights[k * 512 + j] -= d_w3_lr * grad;
+            }
+            self.layer2.bias[k] -= d_w3_lr * d_buffer2[k];
+        }
+
+        // Gradient w.r.t. layer1 activations (3072 → 512)
+        // dL/dbuffer1 = (dL/dbuffer2 * W2^T) * ReLU'(buffer1)
+        var d_buffer1: [512]f32 = undefined;
+        @memset(d_buffer1[0..], 0);
+
+        for (0..512) |j| {
+            for (0..256) |k| {
+                d_buffer1[j] += d_buffer2[k] * self.layer2.weights[k * 512 + j];
+            }
+        }
+
+        // ReLU derivative
+        for (0..512) |j| {
+            if (buffer1[j] <= 0) d_buffer1[j] = 0;
+        }
+
+        // Update layer1 weights (3072 → 512)
+        for (0..512) |k| {
+            for (0..3072) |j| {
+                const grad = d_buffer1[k] * input[j];
+                self.layer1.weights[k * 3072 + j] -= d_w3_lr * grad;
+            }
+            self.layer1.bias[k] -= d_w3_lr * d_buffer1[k];
+        }
+
+        return loss;
+    }
 };
 
 /// Softmax activation (in-place)
