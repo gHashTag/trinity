@@ -119,7 +119,7 @@ pub const TrainingConfig = struct {
                 // φ-based decay: LR * φ^(-progress/φ)
                 const progress: f64 = @as(f64, @floatFromInt(step - self.warmup_steps)) /
                     @as(f64, @floatFromInt(self.max_steps - self.warmup_steps));
-                const decay = std.math.pow(Sacred.PHI, -progress / Sacred.PHI);
+                const decay = std.math.pow(f64, Sacred.PHI, -progress / Sacred.PHI);
                 return self.learning_rate * decay;
             },
         };
@@ -141,7 +141,7 @@ pub const SacredConfig = struct {
         if (!self.use_sacred_scaling) return std.math.sqrt(2.0 / @as(f64, @floatFromInt(dim)));
 
         // Sacred scaling: σ = d^(-φ⁻³)
-        return std.math.pow(@as(f64, @floatFromInt(dim)), -Sacred.PHI_INV_CUBED);
+        return std.math.pow(f64, @as(f64, @floatFromInt(dim)), -Sacred.PHI_INV_CUBED);
     }
 
     /// Get target sparsity (fraction of zeros)
