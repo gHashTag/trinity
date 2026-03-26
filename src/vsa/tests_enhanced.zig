@@ -227,9 +227,9 @@ test "VSA: Ternary Multiplication Table" {
     // Result also in {-1, 0, +1}
 
     const table = [3][3]i8{
-        .{ 1, 0, -1 },  // -1 × {-1, 0, +1}
-        .{ 0, 0,  0 },  // 0 × {-1, 0, +1}
-        .{ -1, 0, 1 },  // +1 × {-1, 0, +1}
+        .{ 1, 0, -1 }, // -1 × {-1, 0, +1}
+        .{ 0, 0, 0 }, // 0 × {-1, 0, +1}
+        .{ -1, 0, 1 }, // +1 × {-1, 0, +1}
     };
 
     // Verify closure property: result always in {-1, 0, +1}

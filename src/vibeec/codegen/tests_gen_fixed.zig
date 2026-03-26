@@ -98,3 +98,9 @@ pub const TestGenerator = struct {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
+        // TODO: Generate actual test cases from test_cases parameter
+        // For now, just add a placeholder
+        try self.builder.writeLine("// TODO: Add spec-level test cases here");
+        try self.builder.newline();
+    }
+};
