@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinity S³AI — Interactive Results Viewer</title>
+    <style>
+        :root {
+            --phi: 1.618;
+            --primary: #2c3e50;
+            --accent: #9b59b6;
+            --success: #27ae60;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header p {
+            font-size: 1.3em;
+            color: #7f8c8d;
+            margin: 15px 0;
+        }
+        .trinity-formula {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+        }
+        .bundle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .bundle-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .bundle-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: var(--accent);
+        }
+        .bundle-id {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .bundle-title {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        .bundle-doi {
+            font-family: monospace;
+            font-size: 0.9em;
+            color: var(--accent);
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .bundle-links {
+            margin-top: 20px;
+        }
+        .bundle-link {
+            display: inline-block;
+            margin: 5px 10px 5px 0;
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+        .bundle-link:hover {
+            background: var(--accent);
+        }
+        .bundle-link.html {
+            background: var(--success);
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+        .features {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        .features h2 {
+            color: var(--primary);
+            margin-top: 0;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        .feature-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #dee2e6;
+            color: #7f8c8d;
+        }
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .version-badge {
+            background: var(--accent);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trinity S³AI Framework</h1>
+            <p>Interactive Results Viewer <span class="version-badge">v6.0</span></p>
+            <div class="trinity-formula">φ² + 1/φ² = 3</div>
+            <p>Sacred Symbolic AI — Pure Zig 0.15.x • MIT License</p>
+        </div>
+
+        <div class="bundle-grid">
+            <div class="bundle-card" onclick="window.location.href='B001_Training_Viewer.html'">
+                <div class="bundle-id">B001</div>
+                <div class="bundle-title">Ternary Neural Networks</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227733</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">125.3</div>
+                        <div class="stat-label">PPL</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">385KB</div>
+                        <div class="stat-label">Size</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">20×</div>
+                        <div class="stat-label">Compression</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <a href="B001_Training_Viewer.html" class="bundle-link html">📊 Interactive Viewer</a>
+                </div>
+            </div>
+
+            <div class="bundle-card" onclick="window.location.href='B002_FPGA_Viewer.html'">
+                <div class="bundle-id">B002</div>
+                <div class="bundle-title">Zero-DSP FPGA</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227735</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">DSP Blocks</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">1.2W</div>
+                        <div class="stat-label">Power</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">19.6%</div>
+                        <div class="stat-label">LUT Usage</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <a href="B002_FPGA_Viewer.html" class="bundle-link html">📊 Interactive Viewer</a>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-id">B003</div>
+                <div class="bundle-title">TRI-27 ISA</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227737</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">27</div>
+                        <div class="stat-label">Registers</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">36</div>
+                        <div class="stat-label">Opcodes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">3×9</div>
+                        <div class="stat-label">Banks</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <span style="color: #7f8c8d; font-style: italic;">Interactive viewer coming soon</span>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-id">B004</div>
+                <div class="bundle-title">Queen Lotus Cycle</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227739</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Phases</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">1450</div>
+                        <div class="stat-label">Episodes/Hr</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">77%</div>
+                        <div class="stat-label">Success</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <span style="color: #7f8c8d; font-style: italic;">Interactive viewer coming soon</span>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-id">B005</div>
+                <div class="bundle-title">Tri Language</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227741</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">2.9×</div>
+                        <div class="stat-label">Faster</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">Targets</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Safe</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <span style="color: #7f8c8d; font-style: italic;">Interactive viewer coming soon</span>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-id">B006</div>
+                <div class="bundle-title">Sacred GF16/TF3</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227743</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">98.4%</div>
+                        <div class="stat-label">FP32 Ret.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">0.049</div>
+                        <div class="stat-label">φ-Dist</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">40%</div>
+                        <div class="stat-label">Better</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <span style="color: #7f8c8d; font-style: italic;">Interactive viewer coming soon</span>
+                </div>
+            </div>
+
+            <div class="bundle-card">
+                <div class="bundle-id">B007</div>
+                <div class="bundle-title">VSA Operations</div>
+                <div class="bundle-doi">doi:10.5281/zenodo.19227745</div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">14.1×</div>
+                        <div class="stat-label">SIMD</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">30%</div>
+                        <div class="stat-label">Noise Tol.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Ops</div>
+                    </div>
+                </div>
+                <div class="bundle-links">
+                    <span style="color: #7f8c8d; font-style: italic;">Interactive viewer coming soon</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>🎯 Key Features Across All Bundles</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>22 publication-ready figures (PNG + SVG)</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>8 CSV data files with experimental results</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>9 formal mathematical proofs with QED markers</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>32 statistical metrics with 95% confidence intervals</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Complete citation infrastructure (5 formats)</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>7 Dockerfiles for reproducibility</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>Cross-bundle integration guide</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✓</div>
+                    <span>LaTeX templates for academic submission</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Trinity S³AI Framework</strong> — Complete Zenodo v6.0 Publication Package</p>
+            <p style="font-size: 1.2em; margin: 15px 0;">φ² + 1/φ² = 3 | TRINITY</p>
+            <p>
+                <a href="https://github.com/gHashTag/trinity">GitHub</a> •
+                <a href="https://doi.org/10.5281/zenodo.19227879">Parent DOI</a> •
+                <a href="https://zenodo.org/communities/trinity-s3ai">Zenodo Community</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add animation on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.bundle-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Add click tracking
+        document.querySelectorAll('.bundle-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('bundle-link')) {
+                    const link = this.querySelector('.bundle-link.html');
+                    if (link && !link.textContent.includes('coming')) {
+                        window.location.href = link.href;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
