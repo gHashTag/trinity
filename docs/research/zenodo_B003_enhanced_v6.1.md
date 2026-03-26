@@ -411,7 +411,31 @@ vivado -mode batch -source reticularraphe.tcl
 
 ---
 
-## 9. Citation
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/tri27/emu/` — TRI-27 emulator (Zig)
+- `src/tri27/asm/` — TRI-27 assembler (Zig)
+- `src/tri27/disassembler.zig` — TRI-27 disassembler
+- `fpga/xilinx/tri27_core.v` — TRI-27 Verilog implementation
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build tri27-emu tri27-asm
+./zig-out/bin/tri27-emu --help
+./zig-out/bin/tri27-asm --help
+```
+
+---
+
+## 10. Citation
 
 **BibTeX:**
 ```bibtex
@@ -433,7 +457,7 @@ Vasilev, D. (2026). Trinity B003: TRI-27 ISA - Ternary Instruction Set Architect
 
 ---
 
-## 10. Acknowledgments
+## 11. Acknowledgments
 
 TRI-27 ISA design inspired by:
 - RISC-V ISA (UC Berkeley)

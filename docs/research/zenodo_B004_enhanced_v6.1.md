@@ -407,7 +407,29 @@ Vasilev, D. (2026). Trinity B004: Queen Lotus Cycle - Autonomous Learning Orches
 
 ---
 
-## 9. Acknowledgments
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `src/lotus/` — Queen Lotus Cycle implementation
+- `src/memory/content_addressed.zig` — Jaccard similarity retrieval
+- `src/agent/queen.zig` — Autonomous orchestration engine
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+zig build queen-lotus
+./zig-out/bin/queen-lotus --demo
+```
+
+---
+
+## 10. Acknowledgments
 
 Queen Lotus Cycle inspired by:
 - Biological sleep-wake learning cycles
