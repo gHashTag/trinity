@@ -80,7 +80,7 @@ pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Erro
     }
 
     // Check if already tracked
-    const entry = self.blacklist.?.get(task) orelse {
+    const entry = self.blacklist.?.getPtr(task) orelse {
         // First failure - record it with provided error type
         const msg = try std.fmt.allocPrint(self.allocator, "{s} (1/{d})", .{ error_code.toString(), MAX_FAILURES });
         _ = try self.blacklist.?.put(task, .{
@@ -92,19 +92,19 @@ pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Erro
     };
 
     // Increment failure count
-    if (entry.value_ptr.count >= MAX_FAILURES) {
+    if (entry.count >= MAX_FAILURES) {
         // Already at max - ensure blacklisted status
-        if (entry.value_ptr.count > MAX_FAILURES) {
-            entry.value_ptr.count = MAX_FAILURES;
+        if (entry.count > MAX_FAILURES) {
+            entry.count = MAX_FAILURES;
         }
-        const msg = try std.fmt.allocPrint(self.allocator, "{s} - Blacklisted ({d}/{d})", .{ entry.value_ptr.error_type.toString(), entry.value_ptr.count, MAX_FAILURES });
-        self.allocator.free(entry.value_ptr.message);
-        entry.value_ptr.message = msg;
+        const msg = try std.fmt.allocPrint(self.allocator, "{s} - Blacklisted ({d}/{d})", .{ entry.error_type.toString(), entry.count, MAX_FAILURES });
+        self.allocator.free(entry.message);
+        entry.message = msg;
     } else {
-        entry.value_ptr.count += 1;
-        const msg = try std.fmt.allocPrint(self.allocator, "{s} ({d}/{d})", .{ entry.value_ptr.error_type.toString(), entry.value_ptr.count, MAX_FAILURES });
-        self.allocator.free(entry.value_ptr.message);
-        entry.value_ptr.message = msg;
+        entry.count += 1;
+        const msg = try std.fmt.allocPrint(self.allocator, "{s} ({d}/{d})", .{ entry.error_type.toString(), entry.count, MAX_FAILURES });
+        self.allocator.free(entry.message);
+        entry.message = msg;
     }
 }
 

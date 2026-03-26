@@ -417,6 +417,10 @@ test "ReproductionFramework - ablation study" {
 
     const engine = ReproductionEngine.init(allocator, config);
     const result = try engine.runAblationStudy();
+    defer {
+        for (result.output_files) |f| allocator.free(f);
+        allocator.free(result.output_files);
+    }
 
     try std.testing.expect(result.success);
     try std.testing.expectEqual(@as(usize, 2), result.output_files.len);
@@ -439,6 +443,10 @@ test "ReproductionFramework - benchmark study" {
 
     const engine = ReproductionEngine.init(allocator, config);
     const result = try engine.runBenchmarkStudy();
+    defer {
+        for (result.output_files) |f| allocator.free(f);
+        allocator.free(result.output_files);
+    }
 
     try std.testing.expect(result.success);
     try std.testing.expectEqual(@as(usize, 2), result.output_files.len);
@@ -461,6 +469,10 @@ test "ReproductionFramework - hyperparameter analysis" {
 
     const engine = ReproductionEngine.init(allocator, config);
     const result = try engine.runHyperparameterAnalysis();
+    defer {
+        for (result.output_files) |f| allocator.free(f);
+        allocator.free(result.output_files);
+    }
 
     try std.testing.expect(result.success);
     try std.testing.expectEqual(@as(usize, 2), result.output_files.len);
