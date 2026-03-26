@@ -461,12 +461,7 @@ export function predictIslandOfStability(): { Z: number; N: number; halfLife: st
   };
 }
 
-/**
- * Find stable elements using sacred patterns
- */
-export function findStableElements(maxZ: number = 150): number[] {
-  return findStableElements(maxZ);
-}
+// Removed duplicate - function already declared above
 
 /**
  * Calculate sacred stability score for element Z
