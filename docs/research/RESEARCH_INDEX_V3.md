@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.5
+# Trinity Research Documentation Index — v9.6
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 179
-**NEW: Zenodo Best Practices 2026 + Session 26 Report
+**Total Documents:** 181
+**NEW: Security & Robustness Analysis + Session 27 Report
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -165,7 +165,8 @@
 | `FPGA_SACRED_MATHEMATICS_IMPLEMENTATION_COMPREHENSIVE.md` | FPGA Sacred Math: φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP, 19.6% LUT, 1.2W, 250MHz | 75% LUT reduction, 0% DSP, 62.5M ops/s ✨ |
 | `TRINITY_CODE_IMPROVEMENT_PROPOSALS_COMPREHENSIVE.md` | Code Improvement Roadmap: 34+ proposals synthesized into priority-ordered plan, Phase 1-3, 15-25% PPL, 10-20% policy, 30-40% speed | 39 proposals, LOW/MEDIUM/HIGH complexity, 43-67 hours ✨ |
 | `TRINITY_ENERGY_EFFICIENCY_COMPREHENSIVE_ANALYSIS.md` | Energy Efficiency: Landauer principle, ternary info theory, FPGA zero-DSP, sacred scaling, carbon footprint, 19.2 pJ/OP → 3.12 pJ/OP | 12.5× vs CPU, 918× carbon reduction, 6.15× optimized ✨ |
-| `TRINITY_SCALABILITY_COMPREHENSIVE_ANALYSIS.md` | Scalability: Amdahl/Gustafson laws, multi-FPGA scaling, memory/comm scaling, distributed training, 80-92% efficiency | 51.6× speedup on 64×, 16× memory reduction, 16× comm reduction ✨ NEW |
+| `TRINITY_SCALABILITY_COMPREHENSIVE_ANALYSIS.md` | Scalability: Amdahl/Gustafson laws, multi-FPGA scaling, memory/comm scaling, distributed training, 80-92% efficiency | 51.6× speedup on 64×, 16× memory reduction, 16× comm reduction ✨ |
+| `TRINITY_SECURITY_ROBUSTNESS_COMPREHENSIVE_ANALYSIS.md` | Security & Robustness: adversarial attacks (FGSM/PGD), ternary-specific attacks (trit-flipping), defenses (AT, filtering, certified), FPGA security | 67.8% robust acc (2.3× vs float32), 3.8× faster certification, 272× lower energy ✨ NEW |
 
 ---
 
