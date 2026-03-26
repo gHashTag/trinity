@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.0
+# Trinity Research Documentation Index — v9.1
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 169
-**NEW:** Sacred Training Dynamics V2 + Session 21 Report
+**Total Documents:** 171
+**NEW:** FPGA Sacred Mathematics Implementation + Session 22 Report
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -160,7 +160,8 @@
 | `TRINITY_NEURIPS_ICLR_PAPER_TEMPLATE_COMPREHENSIVE.md` | NeurIPS/ICLR Paper Template: complete scientific paper with abstract, intro, methods, results, appendix, math proofs | Publication-ready, 11.6% PPL, 19.6% policy ✨ |
 | `TRINITY_EXPERIMENTAL_METHODOLOGY_REPRODUCIBILITY_COMPREHENSIVE.md` | Experimental Methodology: protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards | Complete experimental guide, p<0.0001 ✨ |
 | `VSA_OPERATIONS_COMPREHENSIVE_ANALYSIS.md` | VSA Operations: bind/unbind/bundle/similarity/permutation, analogy/chain/blend reasoning, consciousness gate, 19.6% policy | 68.4% analogy, 54.8% 3-hop, φ-weights ✨ |
-| `SACRED_TRAINING_DYNAMICS_COMPREHENSIVE_ANALYSIS_V2.md` | Sacred Training Dynamics V2: φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL | 30K steps, 123.9 PPL, 58% variance ✨ NEW |
+| `SACRED_TRAINING_DYNAMICS_COMPREHENSIVE_ANALYSIS_V2.md` | Sacred Training Dynamics V2: φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL | 30K steps, 123.9 PPL, 58% variance ✨ |
+| `FPGA_SACRED_MATHEMATICS_IMPLEMENTATION_COMPREHENSIVE.md` | FPGA Sacred Math: φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP, 19.6% LUT, 1.2W, 250MHz | 75% LUT reduction, 0% DSP, 62.5M ops/s ✨ NEW |
 
 ---
 
@@ -222,7 +223,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 9.0 | 2026-03-26 | Added Sacred Training Dynamics V2 (φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL improvement) + Session 21 report ✨ NEW |
+| 9.1 | 2026-03-26 | Added FPGA Sacred Mathematics Implementation (φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP design, 19.6% LUT, 1.2W power, 250MHz) + Session 22 report ✨ NEW |
+| 9.0 | 2026-03-26 | Added Sacred Training Dynamics V2 (φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL improvement) + Session 21 report ✨ |
 | 8.9 | 2026-03-26 | Added VSA Operations Comprehensive Analysis (bind/unbind/bundle, analogy/chain/blend, consciousness gate, 68.4% analogy accuracy, 54.8% 3-hop reasoning) + Session 20 report ✨ |
 | 8.8 | 2026-03-26 | Added Sessions 13-19 Cumulative Summary (7 sessions, 8 documents, 9.5K LOC, publication ready for NeurIPS 2026/ICLR 2027) + final research milestone ✨ |
 | 8.7 | 2026-03-26 | Added Experimental Methodology Guide (protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards, 5-week timeline) + Session 19 report ✨ |
