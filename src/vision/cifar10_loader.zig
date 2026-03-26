@@ -110,12 +110,9 @@ pub const CIFAR10Dataset = struct {
 
     const Self = @This();
 
-    pub fn init(allocator: std.mem.Allocator) !Self {
-        var images_list: std.ArrayList(CIFAR10Image) = .empty;
-        try images_list.ensureTotalCapacityPrecise(allocator, 1000);
-
+    pub fn init(allocator: std.mem.Allocator) Self {
         return .{
-            .images = images_list,
+            .images = std.ArrayList(CIFAR10Image).empty,
             .is_normalized = false,
             .shuffled = false,
             .allocator = allocator,
@@ -205,7 +202,7 @@ pub fn loadDataset(
     allocator: std.mem.Allocator,
     file_path: []const u8,
 ) !CIFAR10Dataset {
-    var dataset = try CIFAR10Dataset.init(allocator);
+    var dataset = CIFAR10Dataset.init(allocator);
     errdefer dataset.deinit();
 
     // Open file
@@ -241,7 +238,7 @@ pub fn loadDataset(
 
 /// Load full CIFAR-10 training set (5 batches merged)
 pub fn loadTrainingSet(allocator: std.mem.Allocator, data_dir: []const u8) !CIFAR10Dataset {
-    const combined = CIFAR10Dataset.init(allocator);
+    var combined = CIFAR10Dataset.init(allocator);
     errdefer combined.deinit();
 
     // Load all 5 training batches
@@ -252,7 +249,7 @@ pub fn loadTrainingSet(allocator: std.mem.Allocator, data_dir: []const u8) !CIFA
         const batch_path = try std.fs.path.join(allocator, &.{ data_dir, batch_name });
         defer allocator.free(batch_path);
 
-        const batch = try loadDataset(allocator, batch_path);
+        var batch = try loadDataset(allocator, batch_path);
         defer batch.deinit();
 
         // Merge images into combined dataset
@@ -341,7 +338,7 @@ test "cifar10: class names" {
 }
 
 test "cifar10: dataset shuffle" {
-    var dataset = try CIFAR10Dataset.init(testing.allocator);
+    var dataset = CIFAR10Dataset.init(testing.allocator);
     defer dataset.deinit();
 
     // Add 10 images with labels 0-9
@@ -374,7 +371,7 @@ test "cifar10: dataset shuffle" {
 }
 
 test "cifar10: dataset normalization" {
-    var dataset = try CIFAR10Dataset.init(testing.allocator);
+    var dataset = CIFAR10Dataset.init(testing.allocator);
     defer dataset.deinit();
 
     // Add image with known pixel values

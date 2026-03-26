@@ -773,6 +773,51 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
+    // CIFAR-10 Dataset Download Tool
+    const download_cifar10 = b.addExecutable(.{
+        .name = "download-cifar10",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tools/download_cifar10.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(download_cifar10);
+
+    const run_download_cifar10 = b.addRunArtifact(download_cifar10);
+    if (b.args) |args| {
+        run_download_cifar10.addArgs(args);
+    }
+    const download_cifar10_step = b.step("download-cifar10", "Download CIFAR-10 dataset");
+    download_cifar10_step.dependOn(&run_download_cifar10.step);
+
+    // CIFAR-10 Training Tool
+    const vision_module = b.createModule(.{
+        .root_source_file = b.path("src/vision/root.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+
+    const train_cifar10 = b.addExecutable(.{
+        .name = "train-cifar10",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tools/train_cifar10.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+            .imports = &.{
+                .{ .name = "vision", .module = vision_module },
+            },
+        }),
+    });
+    b.installArtifact(train_cifar10);
+
+    const run_train_cifar10 = b.addRunArtifact(train_cifar10);
+    if (b.args) |args| {
+        run_train_cifar10.addArgs(args);
+    }
+    const train_cifar10_step = b.step("train-cifar10", "Train CIFAR-10 model");
+    train_cifar10_step.dependOn(&run_train_cifar10.step);
+
     // UART Echo Test — FPGA UART bridge test (disabled from install)
     // const uart_echo_test = b.addExecutable(.{
     //     .name = "uart-echo-test",

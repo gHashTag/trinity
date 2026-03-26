@@ -8,15 +8,14 @@
 
 const std = @import("std");
 
-const cifar10_model = @import("cifar10_model.zig");
-pub const CIFAR10Model = cifar10_model.CIFAR10Model;
-pub const CIFAR10Config = cifar10_model.CIFAR10Config;
+// Direct inline imports to avoid Zig 0.15 module conflicts
+pub const CIFAR10Model = @import("cifar10_model.zig").CIFAR10Model;
+pub const CIFAR10Config = @import("cifar10_model.zig").CIFAR10Config;
 
-const cifar10_loader = @import("cifar10_loader.zig");
-pub const CIFAR10Image = cifar10_loader.CIFAR10Image;
-pub const CIFAR10Batch = cifar10_loader.CIFAR10Batch;
-pub const CIFAR10Dataset = cifar10_loader.CIFAR10Dataset;
-pub const normalizePixel = cifar10_loader.normalizePixel;
+pub const CIFAR10Image = @import("cifar10_loader.zig").CIFAR10Image;
+pub const CIFAR10Batch = @import("cifar10_loader.zig").CIFAR10Batch;
+pub const CIFAR10Dataset = @import("cifar10_loader.zig").CIFAR10Dataset;
+pub const normalizePixel = @import("cifar10_loader.zig").normalizePixel;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRAINING METRICS
@@ -321,7 +320,7 @@ test "cifar10_train: trainer epoch counter" {
     try testing.expect(trainer.epoch == 0);
 
     // Create minimal dataset
-    var dataset = try CIFAR10Dataset.init(testing.allocator);
+    var dataset = CIFAR10Dataset.init(testing.allocator);
     defer dataset.deinit();
     const img: CIFAR10Image = undefined;
     try dataset.images.append(dataset.allocator, img);
