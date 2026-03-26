@@ -1,0 +1,17 @@
+{
+  "title": "B003: TRI-27 ISA — Coptic Alphabet Ternary Instruction Set v6.3",
+  "creators": [
+    {"name": "Vasilev, Dmitrii", "affiliation": "Independent Researcher", "orcid": "0000-0000-0000-0000"}
+  ],
+  "description": "TRI-27 ISA uses Coptic alphabet (27 letters) for ternary instruction encoding. 27 registers (3 banks × 9), stack-based bytecode, {-1,0,+1} operand format. Opcodes: MOV, JGT, JLT, JUMP, CALL, RET, PUSH, POP, BIND, BUNDLE, PERMUTE. ECE: 0.115, Brier Score: 0.248 (Good calibration).",
+  "keywords": ["ISA", "Instruction Set", "Ternary Computing", "Coptic", "Stack Machine", "Bytecode"],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {"scheme": "doi", "identifier": "10.5281/zenodo.19227879", "relation": "isPartOf", "resource_type": "publication"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity", "relation": "isSupplementedBy", "resource_type": "software"}
+  ],
+  "communities": [{"identifier": "iclr"}, {"identifier": "mlsys"}],
+  "upload_type": "publication"
+}

@@ -1,0 +1,30 @@
+{
+  "title": "B002: Zero-DSP FPGA Implementation — Ternary Synthesis v6.3",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Independent Researcher",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "Zero-DSP FPGA implementation achieves 100% DSP elimination through ternary computing. XC7A100T synthesis: 0% DSP, 19.6% LUT (12433/63400), 6.5% FF (8234/126800), 10.4% BRAM (28/270). Power: 1.2W @ 100MHz, 19.2 pJ/OP energy efficiency. v6.3 adds FPGA analysis notebook with resource utilization plots, power analysis, and carbon emissions calculation. 12.5× energy reduction vs FP32 baseline (240 pJ/OP).",
+  "keywords": [
+    "FPGA",
+    "Zero-DSP",
+    "Ternary Computing",
+    "Xilinx",
+    "Synthesis",
+    "Low Power",
+    "Energy Efficiency"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {"scheme": "doi", "identifier": "10.5281/zenodo.19227879", "relation": "isPartOf", "resource_type": "publication"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity", "relation": "isSupplementedBy", "resource_type": "software"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity/tree/main/docs/research/notebooks/B002_FPGA_Analysis.ipynb", "relation": "references", "resource_type": "publication-other"}
+  ],
+  "communities": [{"identifier": "neurips"}, {"identifier": "mlsys"}],
+  "upload_type": "publication"
+}

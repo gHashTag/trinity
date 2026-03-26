@@ -1,0 +1,83 @@
+{
+  "title": "Trinity S3AI Framework — Parent Collection v6.3",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Independent Researcher",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "Trinity S³AI (Sacred Symbolic AI) is a pure Zig autonomous agent swarm implementing ternary computing for efficient AI at the edge. The framework combines seven comprehensive bundles: B001 (HSLM language model), B002 (Zero-DSP FPGA), B003 (TRI-27 ISA), B004 (Lotus orchestration), B005 (VIBEE compiler), B006 (Sacred formats), B007 (VSA operations). v6.3 adds Jupyter analysis notebooks, conference abstracts (NeurIPS 2026, ICLR 2027, MLSys 2025), and bundle dependency graph. All innovations are grounded in φ² + φ⁻² = 3. Includes full compliance with NeurIPS 2025 uncertainty quantification requirements (ECE, Brier Score).",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Ternary Computing",
+    "Symbolic AI",
+    "Agent Swarm",
+    "FPGA",
+    "Autonomous Systems",
+    "Uncertainty Quantification",
+    "Calibration",
+    "Reproducible Research",
+    "Open Source"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/gHashTag/trinity",
+      "relation": "isSupplementedBy",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227865",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227867",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227869",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227871",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227873",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227875",
+      "relation": "hasPart",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227877",
+      "relation": "hasPart",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [
+    {"identifier": "neurips"},
+    {"identifier": "iclr"},
+    {"identifier": "mlsys"}
+  ],
+  "upload_type": "publication"
+}

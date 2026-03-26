@@ -1,0 +1,17 @@
+{
+  "title": "B004: Lotus Orchestration — Dual-System Consciousness Architecture v6.3",
+  "creators": [
+    {"name": "Vasilev, Dmitrii", "affiliation": "Independent Researcher", "orcid": "0000-0000-0000-0000"}
+  ],
+  "description": "Lotus orchestration implements dual-system consciousness architecture (System 1: fast/intuitive, System 2: slow/deliberative). φ⁻¹ threshold gates, attention mechanisms, faculty coordination. ECE: 0.108, Brier Score: 0.239 (Well-calibrated).",
+  "keywords": ["Orchestration", "Dual-Process", "Consciousness", "Attention", "Agent Coordination"],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {"scheme": "doi", "identifier": "10.5281/zenodo.19227879", "relation": "isPartOf", "resource_type": "publication"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity", "relation": "isSupplementedBy", "resource_type": "software"}
+  ],
+  "communities": [{"identifier": "neurips"}, {"identifier": "iclr"}],
+  "upload_type": "publication"
+}

@@ -1,0 +1,17 @@
+{
+  "title": "B005: VIBEE Compiler — .tri to Zig/Verilog Code Generation v6.3",
+  "creators": [
+    {"name": "Vasilev, Dmitrii", "affiliation": "Independent Researcher", "orcid": "0000-0000-0000-0000"}
+  ],
+  "description": "VIBEE (Visual-aware Interactive Bytecode Executor Editor) generates Zig and Verilog from .tri specifications. Pipeline: parse → AST → codegen → emit. Supports: structs, functions, VSA operations, FPGA templates. ECE: 0.042-0.089, Brier Score: 0.156-0.201 (Excellent-Good calibration).",
+  "keywords": ["Compiler", "Code Generation", "Zig", "Verilog", "VIBEE", "DSL"],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {"scheme": "doi", "identifier": "10.5281/zenodo.19227879", "relation": "isPartOf", "resource_type": "publication"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity", "relation": "isSupplementedBy", "resource_type": "software"}
+  ],
+  "communities": [{"identifier": "mlsys"}, {"identifier": "iclr"}],
+  "upload_type": "publication"
+}

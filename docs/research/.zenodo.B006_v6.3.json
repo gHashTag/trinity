@@ -1,0 +1,17 @@
+{
+  "title": "B006: Sacred Formats — φ-Based Serialization and Math v6.3",
+  "creators": [
+    {"name": "Vasilev, Dmitrii", "affiliation": "Independent Researcher", "orcid": "0000-0000-0000-0000"}
+  ],
+  "description": "Sacred formats implement φ-based scaling laws, ternary serialization, and mathematical foundations. Identity: φ² + 1/φ² = 3. Formats: sacred.toml, .sacred binary, Trit27 encoding. ECE: 0.058-0.071, Brier Score: 0.172-0.189 (Excellent-Good calibration).",
+  "keywords": ["Sacred Math", "Golden Ratio", "Phi", "Serialization", "Formats", "Mathematics"],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {"scheme": "doi", "identifier": "10.5281/zenodo.19227879", "relation": "isPartOf", "resource_type": "publication"},
+    {"scheme": "url", "identifier": "https://github.com/gHashTag/trinity", "relation": "isSupplementedBy", "resource_type": "software"}
+  ],
+  "communities": [{"identifier": "neurips"}, {"identifier": "iclr"}],
+  "upload_type": "publication"
+}

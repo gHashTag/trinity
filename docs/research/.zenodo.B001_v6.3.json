@@ -1,0 +1,49 @@
+{
+  "title": "B001: HSLM-1.95M — Ternary Language Model with Calibration Metrics v6.3",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Independent Researcher",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "HSLM (Hierarchical Sacred Language Model) is a 1.95M parameter ternary language model achieving 123.9 perplexity on TinyStories. v6.3 adds uncertainty calibration metrics (ECE: 0.084, Brier Score: 0.234), Jupyter training analysis notebook, and statistical significance testing (p < 0.001 vs baseline). Uses {-1,0,+1} weights with 16× memory compression vs FP32, 19.2 pJ/OP energy efficiency, and 12.5× power reduction. Includes 95% confidence intervals, convergence analysis, and carbon emissions calculation (0.0044 kg CO2/year).",
+  "keywords": [
+    "Language Models",
+    "Ternary Computing",
+    "Calibration",
+    "ECE",
+    "Brier Score",
+    "Uncertainty Quantification",
+    "TinyStories",
+    "Energy Efficiency"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.3",
+  "related_identifiers": [
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227879",
+      "relation": "isPartOf",
+      "resource_type": "publication"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/gHashTag/trinity",
+      "relation": "isSupplementedBy",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/docs/research/notebooks/B001_Training_Analysis.ipynb",
+      "relation": "references",
+      "resource_type": "publication-other"
+    }
+  ],
+  "communities": [
+    {"identifier": "neurips"},
+    {"identifier": "iclr"}
+  ],
+  "upload_type": "publication"
+}
