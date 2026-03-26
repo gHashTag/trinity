@@ -345,7 +345,7 @@ pub fn compile(allocator: Allocator, expr: *const TypedExpr) PipelineError!Pipel
 /// Compile with custom options
 pub fn compileWithOptions(allocator: Allocator, expr: *const TypedExpr, options: CompileOptions) PipelineError!PipelineResult {
     var env = TypeEnv.init(allocator);
-    defer env.deinit();
+    defer env.deinit(allocator);
 
     // Type inference
     const type_result = try infer(allocator, expr, &env);
@@ -445,7 +445,7 @@ pub fn compileSource(allocator: Allocator, source: []const u8) PipelineError!Pip
     defer allocator.destroy(expr);
 
     var env = TypeEnv.init(allocator);
-    defer env.deinit();
+    defer env.deinit(allocator);
 
     const type_result = try infer(allocator, expr, &env);
 

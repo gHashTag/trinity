@@ -116,10 +116,45 @@ pub const TypeEnv = struct {
         };
     }
 
-    /// Deinitialize environment
-    pub fn deinit(self: *Self) void {
+    /// Deinitialize environment and clean up all Types
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        // Clean up all Types in bindings
+        var iter = self.bindings.iterator();
+        while (iter.next()) |entry| {
+            // Clean up heap-allocated data within Types
+            cleanupScheme(allocator, &entry.value_ptr.*);
+        }
         self.bindings.deinit();
         // Note: parent is not owned, so we don't free it
+    }
+
+    /// Clean up heap-allocated data within a Scheme
+    fn cleanupScheme(allocator: Allocator, scheme: *Scheme) void {
+        switch (scheme.*) {
+            .Mono => |*t| cleanupType(allocator, t),
+            .Poly => |*p| cleanupType(allocator, &p.body),
+        }
+    }
+
+    /// Clean up heap-allocated data within a Type (without freeing the Type itself)
+    fn cleanupType(allocator: Allocator, t: *Type) void {
+        switch (t.*) {
+            .Fn => |*fn_data| {
+                for (fn_data.params.items) |*param| {
+                    cleanupType(allocator, param);
+                }
+                fn_data.params.deinit(allocator);
+                allocator.destroy(fn_data.return_type);
+            },
+            .ADT => |*adt_data| {
+                allocator.free(adt_data.name);
+                for (adt_data.type_args.items) |*arg| {
+                    cleanupType(allocator, arg);
+                }
+                adt_data.type_args.deinit(allocator);
+            },
+            .Unit, .Bool, .Int, .Float, .Var => {},
+        }
     }
 
     /// Add binding to this environment
@@ -180,7 +215,13 @@ pub const Subst = struct {
         };
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn deinit(self: *Self, allocator: Allocator) void {
+        // Clean up all Types in the map
+        var iter = self.map.iterator();
+        while (iter.next()) |entry| {
+            // Clean up heap-allocated data within Type (not the Type itself)
+            cleanupType(allocator, &entry.value_ptr.*);
+        }
         self.map.deinit();
     }
 
@@ -312,7 +353,7 @@ fn computeFreeVars(allocator: Allocator, ftv_vars: []const TypeId, t: Type) ![]T
 test "type_env_init" {
     const allocator = std.testing.allocator;
     var env = TypeEnv.init(allocator);
-    defer env.deinit();
+    defer env.deinit(allocator);
 
     try std.testing.expectEqual(@as(usize, 0), env.bindings.count());
     try std.testing.expect(env.parent == null);
@@ -321,7 +362,7 @@ test "type_env_init" {
 test "type_env_extend_lookup" {
     const allocator = std.testing.allocator;
     var env = TypeEnv.init(allocator);
-    defer env.deinit();
+    defer env.deinit(allocator);
 
     const int_type = Type{ .Int = {} };
     const scheme = Scheme{ .Mono = int_type };
@@ -338,13 +379,13 @@ test "type_env_extend_lookup" {
 test "type_env_parent_lookup" {
     const allocator = std.testing.allocator;
     var parent = TypeEnv.init(allocator);
-    defer parent.deinit();
+    defer parent.deinit(allocator);
 
     const int_type = Type{ .Int = {} };
     try parent.extend("x", Scheme{ .Mono = int_type });
 
     var child = TypeEnv.initWithParent(allocator, &parent);
-    defer child.deinit();
+    defer child.deinit(allocator);
 
     const found = child.lookup("x");
     try std.testing.expect(found != null);
@@ -356,7 +397,7 @@ test "type_env_parent_lookup" {
 test "type_env_not_found" {
     const allocator = std.testing.allocator;
     var env = TypeEnv.init(allocator);
-    defer env.deinit();
+    defer env.deinit(allocator);
 
     const found = env.lookup("y");
     try std.testing.expect(found == null);
@@ -365,7 +406,7 @@ test "type_env_not_found" {
 test "subst_init" {
     const allocator = std.testing.allocator;
     var subst = Subst.init(allocator);
-    defer subst.deinit();
+    defer subst.deinit(allocator);
 
     try std.testing.expectEqual(@as(usize, 0), subst.map.count());
 }
@@ -373,7 +414,7 @@ test "subst_init" {
 test "subst_extend" {
     const allocator = std.testing.allocator;
     var subst = Subst.init(allocator);
-    defer subst.deinit();
+    defer subst.deinit(allocator);
 
     const var_id: TypeId = 1;
     const int_type = Type{ .Int = {} };
@@ -390,7 +431,7 @@ test "subst_extend" {
 test "subst_apply_var" {
     const allocator = std.testing.allocator;
     var subst = Subst.init(allocator);
-    defer subst.deinit();
+    defer subst.deinit(allocator);
 
     const var_id: TypeId = 1;
     const int_type = Type{ .Int = {} };
@@ -406,7 +447,7 @@ test "subst_apply_var" {
 test "subst_apply_primitive" {
     const allocator = std.testing.allocator;
     var subst = Subst.init(allocator);
-    defer subst.deinit();
+    defer subst.deinit(allocator);
 
     const int_type = Type{ .Int = {} };
     const result = try subst.apply(allocator, int_type);
@@ -418,7 +459,7 @@ test "subst_apply_primitive" {
 test "subst_apply_no_binding" {
     const allocator = std.testing.allocator;
     var subst = Subst.init(allocator);
-    defer subst.deinit();
+    defer subst.deinit(allocator);
 
     const var_id: TypeId = 999;
     const var_type = Type{ .Var = var_id };

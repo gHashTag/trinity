@@ -216,6 +216,35 @@ pub const TypeError = error{
 pub const InferResult = struct {
     type: Type,
     subst: Subst,
+
+    /// Clean up the Type and Subst in this result
+    pub fn deinit(self: *InferResult, allocator: Allocator) void {
+        // Clean up heap-allocated data within Type
+        InferResult.cleanupType(allocator, &self.type);
+        // Clean up Subst HashMap
+        self.subst.deinit(allocator);
+    }
+
+    /// Clean up heap-allocated data within a Type (without freeing the Type itself)
+    fn cleanupType(allocator: Allocator, t: *Type) void {
+        switch (t.*) {
+            .Fn => |*fn_data| {
+                for (fn_data.params.items) |*param| {
+                    InferResult.cleanupType(allocator, param);
+                }
+                fn_data.params.deinit();
+                allocator.destroy(fn_data.return_type);
+            },
+            .ADT => |*adt_data| {
+                allocator.free(adt_data.name);
+                for (adt_data.type_args.items) |*arg| {
+                    InferResult.cleanupType(allocator, arg);
+                }
+                adt_data.type_args.deinit();
+            },
+            .Unit, .Bool, .Int, .Float, .Var => {},
+        }
+    }
 };
 
 pub fn infer(allocator: Allocator, expr: *const TypedExpr, env: *const TypeEnv) TypeError!InferResult {
@@ -292,18 +321,18 @@ fn inferLet(allocator: Allocator, expr: LetExpr, env: *const TypeEnv) TypeError!
 }
 
 fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!InferResult {
-    var param_types = std.ArrayList(Type).empty;
-    defer {
+    var param_types = std.ArrayList(Type).init(allocator);
+    errdefer {
         for (param_types.items) |*p| cleanupType(allocator, p);
         param_types.deinit(allocator);
     }
 
     var fn_env = TypeEnv.initWithParent(allocator, env);
-    errdefer fn_env.deinit();
+    defer fn_env.deinit(allocator);
 
     for (expr.params) |name| {
         const var_id = freshTypeVar();
-        try param_types.append(allocator, Type{ .Var = var_id });
+        try param_types.append(Type{ .Var = var_id });
         try fn_env.extend(name, Scheme{ .Mono = Type{ .Var = var_id } });
     }
 
@@ -311,6 +340,8 @@ fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!In
     const ret_ptr = try allocator.create(Type);
     ret_ptr.* = body_result.type;
 
+    // Note: param_types is moved into the return value
+    // Cleanup will be handled by InferResult.deinit
     return InferResult{
         .type = Type{ .Fn = .{ .params = param_types, .return_type = ret_ptr } },
         .subst = body_result.subst,
@@ -356,7 +387,7 @@ fn inferMatch(allocator: Allocator, expr: MatchExpr, env: *const TypeEnv) TypeEr
 
     for (expr.arms) |arm| {
         var arm_env = TypeEnv.initWithParent(allocator, env);
-        errdefer arm_env.deinit();
+        defer arm_env.deinit(allocator);
         try bindPattern(allocator, &arm.pattern, &arm_env);
         _ = try infer(allocator, arm.body, &arm_env);
     }
@@ -429,32 +460,38 @@ fn cleanupType(allocator: Allocator, t: *Type) void {
 test "infer int literal" {
     const a = std.testing.allocator;
     const e = TypedExpr{ .Int = .{ .value = 42 } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
 test "infer bool literal" {
     const a = std.testing.allocator;
     const e = TypedExpr{ .Bool = .{ .value = true } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Bool);
 }
 
 test "infer variable lookup" {
     const a = std.testing.allocator;
     var env = TypeEnv.init(a);
-    defer env.deinit();
+    defer env.deinit(a);
     try env.extend("x", Scheme{ .Mono = Type{ .Int = {} } });
     const e = TypedExpr{ .Var = .{ .name = "x" } };
-    const r = try infer(a, &e, &env);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
 test "infer variable undeclared fails" {
     const a = std.testing.allocator;
-    const env = TypeEnv.init(a);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
     const e = TypedExpr{ .Var = .{ .name = "y" } };
     const r = infer(a, &e, &env);
     try std.testing.expectError(error.UndeclaredVariable, r);
@@ -469,8 +506,10 @@ test "infer binary op add" {
     defer a.destroy(right);
     right.* = TypedExpr{ .Int = .{ .value = 3 } };
     const e = TypedExpr{ .BinOp = .{ .left = left, .op = .Add, .right = right } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -486,8 +525,10 @@ test "infer if expression" {
     defer a.destroy(el);
     el.* = TypedExpr{ .Int = .{ .value = 2 } };
     const e = TypedExpr{ .If = .{ .condition = cond, .then_branch = th, .else_branch = el } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -501,8 +542,9 @@ test "infer let expression" {
     body.* = TypedExpr{ .Var = .{ .name = "x" } };
     const e = TypedExpr{ .Let = .{ .name = "x", .value = val, .body = body } };
     var env = TypeEnv.init(a);
-    defer env.deinit();
-    const r = try infer(a, &e, &env);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -514,8 +556,10 @@ test "infer fn expression" {
     const p = try a.dupe(u8, "x");
     defer a.free(p);
     const e = TypedExpr{ .Fn = .{ .params = &.{p}, .body = body } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Fn);
 }
 
@@ -533,13 +577,17 @@ test "infer fn call" {
     defer a.destroy(arg);
     arg.* = TypedExpr{ .Int = .{ .value = 5 } };
     const e = TypedExpr{ .FnCall = .{ .func = fe, .args = &.{arg} } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Var or r.type == .Int);
 }
 
 test "infer fn call arity mismatch fails" {
     const a = std.testing.allocator;
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
     const fb = try a.create(TypedExpr);
     defer a.destroy(fb);
     fb.* = TypedExpr{ .Int = .{ .value = 42 } };
@@ -555,7 +603,6 @@ test "infer fn call arity mismatch fails" {
     defer a.destroy(a2);
     a2.* = TypedExpr{ .Int = .{ .value = 2 } };
     const e = TypedExpr{ .FnCall = .{ .func = fe, .args = &.{ a1, a2 } } };
-    const env = TypeEnv.init(a);
     const r = infer(a, &e, &env);
     try std.testing.expectError(error.ArityMismatch, r);
 }
@@ -566,16 +613,20 @@ test "infer adt value" {
     defer a.destroy(d);
     d.* = TypedExpr{ .Int = .{ .value = 42 } };
     const e = TypedExpr{ .ADT = .{ .type_name = "Option", .variant = "Some", .data = d } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .ADT);
 }
 
 test "infer adt value no data" {
     const a = std.testing.allocator;
     const e = TypedExpr{ .ADT = .{ .type_name = "Option", .variant = "None", .data = null } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .ADT);
 }
 
@@ -595,8 +646,10 @@ test "infer match expression" {
         .{ .pattern = .{ .ADTVariant = .{ .variant = "Some", .data_pattern = null } }, .body = b2 },
     };
     const e = TypedExpr{ .Match = .{ .value = v, .arms = arms } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -610,8 +663,10 @@ test "infer match wildcard" {
     b.* = TypedExpr{ .Int = .{ .value = 0 } };
     const arms = &[_]MatchArm{.{ .pattern = .Wildcard, .body = b }};
     const e = TypedExpr{ .Match = .{ .value = v, .arms = arms } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -625,8 +680,10 @@ test "infer match var pattern" {
     b.* = TypedExpr{ .Int = .{ .value = 43 } };
     const arms = &[_]MatchArm{.{ .pattern = .{ .Var = "x" }, .body = b }};
     const e = TypedExpr{ .Match = .{ .value = v, .arms = arms } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Int);
 }
 
@@ -648,8 +705,10 @@ test "infer pipe single stage" {
 
     const stages = &[_]*const TypedExpr{fn_stage};
     const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Var or r.type == .Int);
 }
 
@@ -681,13 +740,17 @@ test "infer pipe multiple stages" {
 
     const stages = &[_]*const TypedExpr{ fn_stage1, fn_stage2 };
     const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
-    const env = TypeEnv.init(a);
-    const r = try infer(a, &e, &env);
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
+    var r = try infer(a, &e, &env);
+    defer r.deinit(a);
     try std.testing.expect(r.type == .Var or r.type == .Int);
 }
 
 test "infer pipe stage not_function fails" {
     const a = std.testing.allocator;
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
     const src = try a.create(TypedExpr);
     defer a.destroy(src);
     src.* = TypedExpr{ .Int = .{ .value = 42 } };
@@ -698,13 +761,14 @@ test "infer pipe stage not_function fails" {
 
     const stages = &[_]*const TypedExpr{stage};
     const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
-    const env = TypeEnv.init(a);
     const r = infer(a, &e, &env);
     try std.testing.expectError(error.TypeMismatch, r);
 }
 
 test "infer pipe stage arity_mismatch fails" {
     const a = std.testing.allocator;
+    var env = TypeEnv.init(a);
+    defer env.deinit(a);
     const src = try a.create(TypedExpr);
     defer a.destroy(src);
     src.* = TypedExpr{ .Int = .{ .value = 42 } };
@@ -724,7 +788,6 @@ test "infer pipe stage arity_mismatch fails" {
 
     const stages = &[_]*const TypedExpr{fn_stage};
     const e = TypedExpr{ .Pipe = .{ .source = src, .stages = stages } };
-    const env = TypeEnv.init(a);
     const r = infer(a, &e, &env);
     try std.testing.expectError(error.ArityMismatch, r);
 }
