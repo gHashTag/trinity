@@ -1,15 +1,15 @@
-# Zenodo Quick Links — Таблица быстрых ссылок
+# Zenodo Quick Links
 
-**Автор:** Дмитрий Васильев
-**Дата:** 2026-03-26
-**Версия:** 1.0
+**Author:** Dmitrii Vasilev
+**Date:** 2026-03-26
+**Version:** 1.0
 
 ---
 
-## DOI всех бандлов
+## All Bundle DOIs
 
-| Код | Название | DOI | Ссылка |
-|------|----------|-----|--------|
+| Code | Title | DOI | Link |
+|------|-------|-----|------|
 | **B001** | Ternarial Neural Networks | 10.5281/zenodo.19224354 | [https://doi.org/10.5281/zenodo.19224354](https://doi.org/10.5281/zenodo.19224354) |
 | **B002** | Zero-DSP FPGA Architecture | 10.5281/zenodo.19224355 | [https://doi.org/10.5281/zenodo.19224355](https://doi.org/10.5281/zenodo.19224355) |
 | **B003** | TRI-27 ISA | 10.5281/zenodo.19224356 | [https://doi.org/10.5281/zenodo.19224356](https://doi.org/10.5281/zenodo.19224356) |
@@ -21,29 +21,29 @@
 
 ---
 
-## Ключевые научные статьи (48)
+## Key Scientific Papers (48)
 
-### Калибровка (8)
+### Calibration (8)
 
-| Статья | Год | DOI/arXiv |
-|--------|-----|----------|
+| Paper | Year | DOI/arXiv |
+|-------|------|-----------|
 | Verbalized Confidence in LLMs (Full-ECE) | 2024 | [arXiv:2406.11345](https://arxiv.org/abs/2406.11345) |
 | On Calibration of Modern NNs | 2017 | [arXiv:1706.04599](https://arxiv.org/abs/1706.04599) |
 | Adaptive Calibration Error | 2024 | NeurIPS |
 | Dynamic Calibration Error | 2024 | NeurIPS |
 | Calibration under Prior Shift | 2024 | ICLR |
 
-### Обнаружение загрязнений (4)
+### Contamination Detection (4)
 
-| Статья | Год | DOI/arXiv |
-|--------|-----|----------|
+| Paper | Year | DOI/arXiv |
+|-------|------|-----------|
 | Min-K%++ Probabilities | 2024 | [arXiv:2404.02936](https://arxiv.org/abs/2404.02936) |
 | CoDeC Context-based Detection | 2025 | [arXiv:2510.27055](https://arxiv.org/abs/2510.27055) |
 
-### Статистика (10)
+### Statistics (10)
 
-| Статья | Год | DOI/arXiv |
-|--------|-----|----------|
+| Paper | Year | DOI/arXiv |
+|-------|------|-----------|
 | Better Bootstrap CI (BCa) | 1987 | JASA 82(397) |
 | Comparing AUCs (DeLong) | 1988 | Biometrics 44(3) |
 | Controlling FDR (BH) | 1995 | JRSS 57(1) |
@@ -51,57 +51,55 @@
 
 ---
 
-## Документация по категориям
+## Documentation by Category
 
-### Научные руководства
+### Scientific Guides
 
-| Документ | LOC | Описание |
-|----------|-----|----------|
-| `ZENODO_ADVANCED_PATTERNS_2026.md` | 700 | Передовые практики публикации |
-| `SCIENTIFIC_METRICS_2026_PAPERS.md` | 390 | 48 научных статей |
-| `STATISTICAL_COMPUTING_PATTERNS_2026.md` | 660 | Статистические паттерны |
-| `REPRODUCIBILITY_GUIDE_2026.md` | 756 | Воспроизводимость |
-| `STATISTICAL_QUICK_REFERENCE.md` | 287 | Шпаргалка |
-| `GLOSSARY_RU_2026.md` | 335 | Глоссарий (русский) |
-| `ZENODO_NIGHT_REPORT_RU.md` | 437 | Ночной отчёт (русский) |
+| Document | LOC | Description |
+|----------|-----|-------------|
+| `ZENODO_ADVANCED_PATTERNS_2026.md` | 700 | Advanced publication practices |
+| `SCIENTIFIC_METRICS_2026_PAPERS.md` | 390 | 48 scientific papers |
+| `STATISTICAL_COMPUTING_PATTERNS_2026.md` | 660 | Statistical patterns |
+| `REPRODUCIBILITY_GUIDE_2026.md` | 756 | Reproducibility guide |
+| `STATISTICAL_QUICK_REFERENCE.md` | 287 | Quick reference |
 
-**Всего:** ~3,565 LOC научной документации
+**Total:** ~2,795 LOC of scientific documentation
 
-### Шаблоны
+### Templates
 
-| Документ | Назначение |
-|----------|------------|
-| `ZENODO_SCIENTIFIC_TEMPLATE.md` | Шаблон описания |
-| `ZENODO_BEST_PRACTICES.md` | Лучшие практики |
-| `SCIENTIFIC_PAPER_TEMPLATE.md` | Шаблон статьи |
+| Document | Purpose |
+|----------|---------|
+| `ZENODO_SCIENTIFIC_TEMPLATE.md` | Description template |
+| `ZENODO_BEST_PRACTICES.md` | Best practices |
+| `SCIENTIFIC_PAPER_TEMPLATE.md` | Paper template |
 
 ---
 
-## API и скрипты
+## API and Scripts
 
 ### Zenodo API
 
-**Базовый URL:**
+**Base URL:**
 ```
 https://zenodo.org/api
 ```
 
-**Эндпоинты:**
-- `POST /deposit/depositions` — создать депозицию
-- `PUT /deposit/depositions/{id}` — обновить метаданные
-- `POST /deposit/depositions/{id}/files` — загрузить файл
-- `POST /deposit/depositions/{id}/actions/publish` — опубликовать
+**Endpoints:**
+- `POST /deposit/depositions` — create deposition
+- `PUT /deposit/depositions/{id}` — update metadata
+- `POST /deposit/depositions/{id}/files` — upload file
+- `POST /deposit/depositions/{id}/actions/publish` — publish
 
-### Скрипты
+### Scripts
 
-| Скрипт | Описание |
-|--------|----------|
-| `ZENODO_ADVANCED_PATTERNS_2026.md` | Python upload скрипт |
-| `.zenodo.json` | Метаданные шаблон |
+| Script | Description |
+|--------|-------------|
+| `ZENODO_ADVANCED_PATTERNS_2026.md` | Python upload script |
+| `.zenodo.json` | Metadata template |
 
 ---
 
-## Формулы цитирования
+## Citation Formats
 
 ### BibTeX
 
@@ -133,33 +131,33 @@ D. Vasilev, "Trinity S³AI Framework: Ternary Computing for Edge AI,"
 
 ---
 
-## Ключевые метрики
+## Key Metrics
 
-| Метрика | Значение |
-|---------|----------|
-| **Всего бандлов** | 7 |
-| **Всего DOI** | 8 |
-| **Всего открытий** | 69 |
-| **Статей в библиографии** | 48 |
-| **Документация** | ~15,000 LOC |
-| **Тесты проходящие** | 2,836/2,836 |
-| **Покрытие кода** | 93% |
+| Metric | Value |
+|--------|-------|
+| **Total Bundles** | 7 |
+| **Total DOIs** | 8 |
+| **Total Discoveries** | 69 |
+| **Papers in Bibliography** | 48 |
+| **Documentation** | ~15,000 LOC |
+| **Tests Passing** | 2,836/2,836 |
+| **Code Coverage** | 93% |
 
 ---
 
-## Быстрые команды
+## Quick Commands
 
-### Проверка метаданных
+### Check Metadata
 
 ```bash
-# Проверить .zenodo.json
+# Check .zenodo.json
 python -m json.tool .zenodo.json
 
-# Валидация CITATION.cff
+# Validate CITATION.cff
 cff-lint CITATION.cff
 ```
 
-### Загрузка на Zenodo
+### Upload to Zenodo
 
 ```python
 from requests import post
@@ -167,7 +165,7 @@ from requests import post
 ACCESS_TOKEN = "YOUR_TOKEN"
 headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
-# Создать депозицию
+# Create deposition
 response = post(
     "https://zenodo.org/api/deposit/depositions",
     params={"access_token": ACCESS_TOKEN}
@@ -178,11 +176,12 @@ print(f"Created: {deposition_id}")
 
 ---
 
-## Обновления
+## Updates
 
-| Версия | Дата | Изменения |
-|--------|------|----------|
-| 1.0 | 2026-03-26 | Первая версия |
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2026-03-26 | Initial version |
+| 1.1 | 2026-03-26 | Converted to English, removed Russian references |
 
 ---
 
