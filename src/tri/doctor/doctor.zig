@@ -89,6 +89,16 @@ pub fn checkHealth(allocator: Allocator) !SystemHealth {
 pub fn diagnose(health: SystemHealth) DiagnosisResult {
     // Priority order: dead > crash_loop > stuck > memory_leak > log_overflow > healthy
 
+    // 0. NEW: Check heartbeat file exists (Queen is DEAD if no heartbeat)
+    const heartbeat_exists = fs.cwd().openFile(QUEEN_HEARTBEAT, .{}) catch null;
+    if (heartbeat_exists == null) {
+        return .{
+            .diagnosis = .dead,
+            .treatment = .restart,
+            .reason = "Queen heartbeat file missing",
+        };
+    }
+
     // 1. Check if Queen is dead
     if (!health.queen_running) {
         return .{
@@ -236,8 +246,9 @@ fn killQueen(writer: anytype, timestamp: i64) !void {
 // ═══════════════════════════════════════════════════════════════════════════
 
 fn isPidAlive(pid: i32) bool {
-    // Use kill with error check - returns ProcessNotFound if pid doesn't exist
-    _ = pid;
+    // Use kill(pid, 0) to check if process exists
+    // Returns ProcessNotFound if PID doesn't exist
+    std.posix.kill(@intCast(pid), 0) catch return false;
     return true;
 }
 
