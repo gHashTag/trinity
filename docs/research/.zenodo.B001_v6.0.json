@@ -80,9 +80,12 @@
   ],
   "references": [
     "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Zhang et al., TerEffic: Highly Efficient Ternary LLM Inference on FPGA, arXiv:2502.16473 (2025)",
     "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)",
-    "Ma et al., TerEffic: Highly Efficient Ternary LLM Inference on FPGA, arXiv:2502.16473 (2025)",
-    "Livio, The Golden Ratio: The Story of Phi, Broadway Books (2008)"
+    "Kim et al., LUT-LLM: Memory-based Inference for Large Language Models on FPGA, FPGA 2025",
+    "Ubbedrink et al., FinN-V3: Faster Quantized CNN Inference on FPGAs, arXiv preprint (2025)",
+    "Livio, The Golden Ratio: The Story of Phi, Broadway Books (2008)",
+    "Vasilev, Trinity Identity: φ² + φ⁻² = 3, Trinity S³AI Technical Report (2026)"
   ],
   "upload_type": "software",
   "communities": [
