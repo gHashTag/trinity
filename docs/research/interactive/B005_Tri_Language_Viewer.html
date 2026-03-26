@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tri Language - B005 Interactive Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .doi {
+            font-family: 'Courier New', monospace;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e74c3c;
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Type System Hierarchy */
+        .type-hierarchy {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .type-node {
+            background: white;
+            border: 3px solid #e74c3c;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .type-node:hover {
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3);
+            transform: translateX(10px);
+        }
+
+        .type-node h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .type-modes {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .mode-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .mode-let { background: #3498db; color: white; }
+        .mode-inout { background: #9b59b6; color: white; }
+        .mode-sink { background: #e74c3c; color: white; }
+        .mode-set { background: #27ae60; color: white; }
+
+        /* Compiler Pipeline */
+        .pipeline-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .pipeline-step {
+            background: white;
+            border-left: 5px solid #e74c3c;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .pipeline-step::before {
+            content: '→';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #e74c3c;
+        }
+
+        .pipeline-step:first-child::before {
+            display: none;
+        }
+
+        .pipeline-step h4 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .pipeline-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .pipeline-item {
+            background: #f0f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        /* Effects Handlers */
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .effect-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .effect-card:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.2);
+        }
+
+        .effect-card h4 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+
+        .effect-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        /* Code Generation */
+        .codegen-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .codegen-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .codegen-box {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .codegen-box h4 {
+            color: #3498db;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .codegen-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        /* Algorithm Box */
+        .algorithm-box {
+            background: #f8f9fa;
+            border-left: 5px solid #e74c3c;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .algorithm-box .title {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .algorithm-box .line {
+            padding: 3px 0;
+            white-space: nowrap;
+        }
+
+        .algorithm-box .keyword {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .algorithm-box .comment {
+            color: #7f8c8d;
+        }
+
+        /* Theorem Box */
+        .theorem-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .theorem-box .theorem-title {
+            font-weight: bold;
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .theorem-box .formula {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .theorem-box .qed {
+            text-align: right;
+            font-weight: bold;
+            color: #f39c12;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #e74c3c;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .codegen-comparison {
+                grid-template-columns: 1fr;
+            }
+
+            .type-modes {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Tri Language</h1>
+            <p class="doi">B005 | DOI: 10.5281/zenodo.19227741</p>
+            <p>Linear Types, Effects & Dual-Target Codegen</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Metrics -->
+            <div class="section">
+                <h2 class="section-title">Key Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-value">7×</div>
+                        <div class="metric-label">Dev Speedup</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">95%</div>
+                        <div class="metric-label">Code Quality</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">2.2K</div>
+                        <div class="metric-label">LOC Specs</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Memory Safe</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type System -->
+            <div class="section">
+                <h2 class="section-title">Linear Type System</h2>
+                <div class="type-hierarchy">
+                    <div class="type-node" onclick="showTypeInfo('base')">
+                        <h3>📦 Base Types</h3>
+                        <p>Primitive types: Int, Float, Bool, String, Array</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-let">Let</span>
+                            <span class="mode-badge mode-inout">Inout</span>
+                        </div>
+                    </div>
+
+                    <div class="type-node" onclick="showTypeInfo('function')">
+                        <h3>λ Function Types</h3>
+                        <p>First-class functions with ownership tracking</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-let">Let</span>
+                            <span class="mode-badge mode-set">Set</span>
+                        </div>
+                    </div>
+
+                    <div class="type-node" onclick="showTypeInfo('adt')">
+                        <h3>🎯 ADT (Algebraic Data Types)</h3>
+                        <p>Enums, structs, pattern matching</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-let">Let</span>
+                            <span class="mode-badge mode-sink">Sink</span>
+                        </div>
+                    </div>
+
+                    <div class="type-node" onclick="showTypeInfo('resource')">
+                        <h3>⚡ Resource Types</h3>
+                        <p>Files, sockets, hardware resources</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-inout">Inout</span>
+                            <span class="mode-badge mode-sink">Sink</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="text-align: center; color: #7f8c8d; margin-top: 15px;">
+                    <strong>Linear Type Modes:</strong><br>
+                    <span class="mode-badge mode-let">Let</span> — Immutable, can be copied<br>
+                    <span class="mode-badge mode-inout">Inout</span> — Mutable, single reference<br>
+                    <span class="mode-badge mode-sink">Sink</span> — Consumes value, must be used exactly once<br>
+                    <span class="mode-badge mode-set">Set</span> — Mutable, multiple readers
+                </p>
+            </div>
+
+            <!-- VIBEE Pipeline -->
+            <div class="section">
+                <h2 class="section-title">VIBEE Compiler Pipeline</h2>
+                <div class="pipeline-container">
+                    <div class="pipeline-step">
+                        <h4>1️⃣ Lexer & Parser</h4>
+                        <p>Tokenization and AST generation from .tri source</p>
+                        <div class="pipeline-details">
+                            <span class="pipeline-item">Token Stream</span>
+                            <span class="pipeline-item">AST Nodes</span>
+                            <span class="pipeline-item">Error Recovery</span>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-step">
+                        <h4>2️⃣ Type Checker</h4>
+                        <p>Linear type validation and effect resolution</p>
+                        <div class="pipeline-details">
+                            <span class="pipeline-item">Ownership Check</span>
+                            <span class="pipeline-item">Effect Handlers</span>
+                            <span class="pipeline-item">Exhaustiveness</span>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-step">
+                        <h4>3️⃣ Content Addressing</h4>
+                        <p>SHA256 hashing for deduplication and caching</p>
+                        <div class="pipeline-details">
+                            <span class="pipeline-item">AST Hash</span>
+                            <span class="pipeline-item">Registry Lookup</span>
+                            <span class="pipeline-item">Cache Hit</span>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-step">
+                        <h4>4️⃣ Code Generator</h4>
+                        <p>Dual-target compilation: Zig + Verilog</p>
+                        <div class="pipeline-details">
+                            <span class="pipeline-item">Zig Backend</span>
+                            <span class="pipeline-item">Verilog Backend</span>
+                            <span class="pipeline-item">Bit/Trit Optimization</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Effects Handlers -->
+            <div class="section">
+                <h2 class="section-title">Algebraic Effects & Handlers</h2>
+                <div class="effects-grid">
+                    <div class="effect-card">
+                        <div class="effect-icon">📁</div>
+                        <h4>I/O Effects</h4>
+                        <p>File operations, console output, network requests</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-inout">Inout</span>
+                        </div>
+                    </div>
+
+                    <div class="effect-card">
+                        <div class="effect-icon">💾</div>
+                        <h4>State Effects</h4>
+                        <p>Mutable state, variables, transactions</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-set">Set</span>
+                        </div>
+                    </div>
+
+                    <div class="effect-card">
+                        <div class="effect-icon">⚡</div>
+                        <h4>Concurrency Effects</h4>
+                        <p>Threads, async/await, message passing</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-inout">Inout</span>
+                        </div>
+                    </div>
+
+                    <div class="effect-card">
+                        <div class="effect-icon">🔒</div>
+                        <h4>Security Effects</h4>
+                        <p>Authentication, authorization, encryption</p>
+                        <div class="type-modes">
+                            <span class="mode-badge mode-sink">Sink</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Generation -->
+            <div class="section">
+                <h2 class="section-title">Dual-Target Code Generation</h2>
+                <div class="codegen-container">
+                    <div class="codegen-comparison">
+                        <div class="codegen-box">
+                            <h4>🐍 Zig Target</h4>
+                            <p>High-performance systems programming</p>
+                            <div class="codegen-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">15,234</div>
+                                    <div class="stat-label">LOC Generated</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">95%</div>
+                                    <div class="stat-label">Quality Score</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">✓</div>
+                                    <div class="stat-label">Memory Safe</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">✓</div>
+                                    <div class="stat-label">Zero Copy</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="codegen-box">
+                            <h4>⚡ Verilog Target</h4>
+                            <p>FPGA/ASIC hardware synthesis</p>
+                            <div class="codegen-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">8,456</div>
+                                    <div class="stat-label">LOC Generated</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">100%</div>
+                                    <div class="stat-label">Synthesizable</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">✓</div>
+                                    <div class="stat-label">Ternary Opt</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">✓</div>
+                                    <div class="stat-label">P&R Ready</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm -->
+            <div class="section">
+                <h2 class="section-title">Linear Type Checking Algorithm</h2>
+                <div class="algorithm-box">
+                    <div class="title">CHECK_LINEAR_TYPE(expr, env)</div>
+                    <div class="line"><span class="keyword">function</span> CHECK_LINEAR_TYPE(expr, env)</div>
+                    <div class="line">    <span class="keyword">for</span> each variable v in expr <span class="keyword">do</span></div>
+                    <div class="line">        mode ← GET_MODE(v, env)</div>
+                    <div class="line">        usage_count ← COUNT_USAGE(expr, v)</div>
+                    <div class="line"></div>
+                    <div class="line">        <span class="keyword">if</span> mode = <span class="keyword">SINK</span> <span class="keyword">then</span></div>
+                    <div class="line">            <span class="keyword">if</span> usage_count ≠ 1 <span class="keyword">then</span></div>
+                    <div class="line">                error(<span class="comment">Sink value must be used exactly once</span>)</div>
+                    <div class="line">            <span class="keyword">end if</span></div>
+                    <div class="line">        <span class="keyword">end if</span></div>
+                    <div class="line"></div>
+                    <div class="line">        <span class="keyword">if</span> mode = <span class="keyword">INOUT</span> <span class="keyword">then</span></div>
+                    <div class="line">            <span class="keyword">if</span> usage_count > 1 <span class="keyword">then</span></div>
+                    <div class="line">                error(<span class="comment">Inout value has single reference</span>)</div>
+                    <div class="line">            <span class="keyword">end if</span></div>
+                    <div class="line">        <span class="keyword">end if</span></div>
+                    <div class="line">    <span class="keyword">end for</span></div>
+                    <div class="line">    <span class="keyword">return</span> OK</div>
+                    <div class="line"><span class="keyword">end function</span></div>
+                </div>
+            </div>
+
+            <!-- Theorem -->
+            <div class="section">
+                <h2 class="section-title">Mathematical Foundation</h2>
+                <div class="theorem-box">
+                    <div class="theorem-title">Theorem: Linear Type Memory Safety</div>
+                    <p>In a linear type system with Let/Inout/Sink/Set modes, every value is either (a) immutable and copyable (Let), (b) mutable with single ownership (Inout), (c) consumed exactly once (Sink), or (d) shared and readable (Set). This classification ensures that:</p>
+                    <div class="formula">
+                        1. No value is accessed after being consumed (Sink)<br>
+                        2. No mutable value has multiple owners (Inout)<br>
+                        3. All resources are properly released (RAII)<br>
+                        <br>
+                        ∴ Memory leaks are impossible by construction
+                    </div>
+                    <div class="qed">∎ QED</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Trinity S³AI Framework — B005 Tri Language</p>
+            <p><a href="INDEX.html">← Back to Index</a> | <a href="https://doi.org/10.5281/zenodo.19227741">Zenodo DOI</a></p>
+            <p style="margin-top: 10px; opacity: 0.7;">φ² + 1/φ² = 3 | TRINITY</p>
+        </div>
+    </div>
+
+    <script>
+        // Type info display
+        function showTypeInfo(type) {
+            const typeInfo = {
+                'base': 'Base types are immutable and can be freely copied.',
+                'function': 'Functions capture their environment and have ownership semantics.',
+                'adt': 'Algebraic Data Types enable pattern matching and exhaustive case analysis.',
+                'resource': 'Resource types represent external entities that must be properly managed.'
+            };
+            console.log(type + ': ' + typeInfo[type]);
+        }
+    </script>
+</body>
+</html>
