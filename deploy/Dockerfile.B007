@@ -1,0 +1,31 @@
+# Trinity B007: VSA Operations Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build VSA benchmark utility
+RUN zig build -Doptimize=ReleaseSafe vsa-benchmark
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/docs/research/data /app/data
+COPY --from=builder /src/var/vsa /app/vectors
+
+ENV VSA_DATA=/app/data
+ENV VSA_OUTPUT=/app/vectors
+
+# Default: Run benchmark
+ENTRYPOINT ["/usr/local/bin/vsa-benchmark"]
+CMD ["--help"]
+
+# Example usage:
+# docker run -v $(pwd)/output:/app/output trinity-b007 \
+#   --size 512 \
+#   --iterations 1000000 \
+#   --output /app/output/benchmark.csv

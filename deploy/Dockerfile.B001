@@ -1,0 +1,40 @@
+# Trinity B001: HSLM Training Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build HSLM training binary
+RUN zig build -Doptimize=ReleaseSafe hslm-train
+RUN zig build -Doptimize=ReleaseSafe hslm-inference
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/docs/research/data /app/data
+COPY --from=builder /src/var /app/models
+
+# TinyStories dataset download (placeholder)
+RUN apk add --no-cache wget && \
+    wget -O /app/data/tinystories.zip https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/data.zip && \
+    unzip /app/data/tinystories.zip -d /app/data && \
+    rm /app/data/tinystories.zip
+
+ENV HSLM_DATASET=/app/data
+ENV HSLM_MODELS=/app/models
+
+# Default: Show help
+ENTRYPOINT ["/usr/local/bin/hslm-train"]
+CMD ["--help"]
+
+# Example usage:
+# docker run -v $(pwd)/output:/app/output trinity-b001 \
+#   --dataset /app/data/tinystories \
+#   --steps 30000 \
+#   --lr 0.001 \
+#   --schedule cosine \
+#   --output /app/output/hslm_model.bin

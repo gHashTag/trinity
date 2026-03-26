@@ -1,0 +1,27 @@
+# Trinity B006: Sacred GF16/TF3 Arithmetic Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build sacred math utilities and tests
+RUN zig build -Doptimize=ReleaseSafe sacred-tests
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/docs/research/data /app/data
+
+ENV SACRED_DATA=/app/data
+
+# Default: Run tests
+ENTRYPOINT ["/usr/local/bin/sacred-tests"]
+CMD ["test", "--format", "gf16", "--precision", "9"]
+
+# Example usage:
+# docker run trinity-b006 test --format gf16 --precision 9
+# docker run trinity-b006 test --format tf3

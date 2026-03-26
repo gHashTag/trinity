@@ -1,0 +1,32 @@
+# Trinity B002: FPGA Synthesis Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build FPGA synthesis binary
+RUN zig build -Doptimize=ReleaseSacred sacred-synth
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/docs/research/data /app/data
+COPY --from=builder /src/fpga /app/fpga
+
+ENV FPGA_TARGET=xc7a100t
+ENV FPGA_DATA=/app/data
+ENV FPGA_OUTPUT=/app/fpga
+
+# Default: Show help
+ENTRYPOINT ["/usr/local/bin/sacred-synth"]
+CMD ["--help"]
+
+# Example usage:
+# docker run -v $(pwd)/bitstreams:/app/fpga/output trinity-b002 \
+#   --target xc7a100t \
+#   --spec src/fpga/hslm/hslm.tri \
+#   --output /app/fpga/output/hslm.bit

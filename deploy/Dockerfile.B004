@@ -1,0 +1,31 @@
+# Trinity B004: Queen Lotus Cycle Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build Queen daemon
+RUN zig build -Doptimize=ReleaseSafe queen
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/docs/research/data /app/data
+COPY --from=builder /src/var/queen /app/episodes
+
+ENV QUEEN_DATA=/app/data
+ENV QUEEN_EPISODES=/app/episodes
+
+# Default: Show help
+ENTRYPOINT ["/usr/local/bin/queen"]
+CMD ["--help"]
+
+# Example usage:
+# docker run -v $(pwd)/output:/app/output trinity-b004 \
+#   --episodes 100 \
+#   --quality-threshold 0.7 \
+#   --output /app/output

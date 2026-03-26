@@ -1,0 +1,31 @@
+# Trinity B005: VIBEE Compiler Container
+# Zenodo v6.0 — Reproducibility Bundle
+
+FROM ziglang/zig:0.15.0-alpine AS builder
+
+WORKDIR /src
+COPY . .
+
+# Build VIBEE compiler
+RUN zig build -Doptimize=ReleaseSafe vibee
+
+# Runtime stage
+FROM alpine:3.20
+
+WORKDIR /app
+COPY --from=builder /src/zig-out/bin /usr/local/bin
+COPY --from=builder /src/specs/tri /app/specs
+COPY --from=builder /src/docs/research/data /app/data
+
+ENV VIBEE_SPEC=/app/specs
+ENV VIBEE_OUTPUT=/app/output
+
+# Default: Show help
+ENTRYPOINT ["/usr/local/bin/vibee"]
+CMD ["--help"]
+
+# Example usage:
+# docker run -v $(pwd)/output:/app/output trinity-b005 \
+#   --spec /app/specs/feature.tri \
+#   --target zig \
+#   --output /app/output/feature.zig
