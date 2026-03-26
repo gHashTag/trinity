@@ -350,7 +350,7 @@ fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
         try updateHeartbeat(allocator, cycle, now, dirty, build_ok);
 
         // SLEEP 60s
-        std.time.sleep(60 * std.time.ns_per_s);
+        std.time.nanoSleep(60 * std.time.ns_per_s);
     }
 }
 
@@ -398,14 +398,12 @@ fn updateHeartbeat(allocator: Allocator, cycle: u64, timestamp: i64, dirty: usiz
     const heartbeat_path = try std.fs.path.join(allocator, &.{ heartbeat_dir, "heartbeat.json" });
     defer allocator.free(heartbeat_path);
 
-    const file = try std.fs.cwd().createFile(heartbeat_path, .{});
-    defer file.close();
-
-    var buf: [256]u8 = undefined;
-    const writer = file.writer(&buf);
-    try writer.print(
+    const content = try std.fmt.allocPrint(allocator,
         \\{{"cycle":{d},"timestamp":{d},"dirty":{d},"build_ok":{}}}
     , .{ cycle, timestamp, dirty, build_ok });
+    defer allocator.free(content);
+
+    try std.fs.cwd().writeFile(.{ .sub_path = heartbeat_path, .data = content });
 }
 
 fn logToHive(allocator: Allocator, cycle: u64, msg: []const u8, args: anytype) !void {
@@ -416,20 +414,25 @@ fn logToHive(allocator: Allocator, cycle: u64, msg: []const u8, args: anytype) !
     const hivepath = try std.fs.path.join(allocator, &.{ hivedir, "HIVELOG.md" });
     defer allocator.free(hivepath);
 
-    // Zig 0.15: atomicFile requires write_buffer parameter
-    var write_buffer: [4096]u8 = undefined;
-    const file = try std.fs.cwd().atomicFile(hivepath, .{ .write_buffer = &write_buffer });
-    defer file.deinit();
+    // Read existing content, append new entry
+    const existing = std.fs.cwd().readFileAlloc(allocator, hivepath, 4096) catch "";
+    defer allocator.free(existing);
 
-    const writer = file.file.writer();
     const datetime = std.time.timestamp();
-
-    try writer.print(
+    const entry = try std.fmt.allocPrint(allocator,
         \\## Cycle {d} — {d}
         \\{s}
         \\
         \\
     , .{ cycle, datetime, msg });
+    defer allocator.free(entry);
+
+    const combined = try std.fmt.allocPrint(allocator, "{s}{s}", .{ existing, entry });
+    defer allocator.free(combined);
+
+    var file = try std.fs.cwd().createFile(hivepath, .{});
+    defer file.close();
+    try file.writeAll(combined);
 }
 
 fn printQueenHelp() void {

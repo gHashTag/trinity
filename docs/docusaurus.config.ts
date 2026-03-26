@@ -15,7 +15,7 @@ const config: Config = {
 
   // Custom domain: t27.ai
   url: 'https://t27.ai',
-  baseUrl: '/',
+  baseUrl: '/docs/',
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',

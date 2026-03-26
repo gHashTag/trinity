@@ -275,6 +275,31 @@ const TriParser = struct {
     }
 
     fn parseFnSignature(self: *TriParser, allocator: Allocator) !?FnSignature {
+        self.skipComments();
+
+        // Look for "fn" keyword
+        if (self.pos + 1 >= self.source.len) return null;
+
+        // Scan to find next "fn"
+        while (self.pos < self.source.len - 2) {
+            if (self.source[self.pos] == 'f' and self.source[self.pos + 1] == 'n') {
+                // Check if this is actually "fn" and not part of another identifier
+                const next_char = if (self.pos + 2 < self.source.len)
+                    self.source[self.pos + 2]
+                else
+                    ' ';
+
+                if (std.ascii.isWhitespace(next_char) or next_char == '(') {
+                    self.pos += 2;
+                    self.skipComments();
+                    break;
+                }
+            }
+            self.pos += 1;
+        }
+
+        if (self.pos >= self.source.len - 2) return null;
+
         const name = self.parseIdentifier() orelse return null;
 
         if (!self.expect('(')) return null;
