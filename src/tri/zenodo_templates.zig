@@ -1926,6 +1926,82 @@ pub const Equation = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// FIGURE CAPTION — Publication-Ready Figure Descriptions
+// ═══════════════════════════════════════════════════════════════════════════
+
+pub const FigureCaption = struct {
+    /// Figure label (e.g., "fig:ternary-architecture")
+    label: []const u8,
+    /// Caption text (short, descriptive)
+    caption: []const u8,
+    /// Optional extended description
+    description: ?[]const u8 = null,
+    /// References to related equations/theorems
+    references: []const []const u8 = &.{},
+
+    /// Format as LaTeX figure caption
+    pub fn formatAsLaTeX(self: *const FigureCaption, allocator: std.mem.Allocator) ![]u8 {
+        var fig = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
+        defer fig.deinit(allocator);
+
+        try fig.writer(allocator).print("\\begin{{figure}}[htbp]\n", .{});
+        try fig.writer(allocator).print("  \\centering\n", .{});
+        try fig.writer(allocator).print("  % TODO: Add \\includegraphics here\n", .{});
+
+        // Build caption with references
+        try fig.writer(allocator).print("  \\caption{{{s}", .{self.caption});
+        if (self.references.len > 0) {
+            try fig.writer(allocator).print(" (see ", .{});
+            for (self.references, 0..) |ref, i| {
+                if (i > 0) try fig.writer(allocator).print(", ", .{});
+                try fig.writer(allocator).print("\\ref{{{s}}}", .{ref});
+            }
+            try fig.writer(allocator).print(")", .{});
+        }
+        try fig.writer(allocator).print("}}\n", .{});
+
+        try fig.writer(allocator).print("  \\label{{{s}}}\n", .{self.label});
+
+        // Add extended description as comment
+        if (self.description) |desc| {
+            try fig.writer(allocator).print("  % {s}\n", .{desc});
+        }
+
+        try fig.writer(allocator).print("\\end{{figure}}\n", .{});
+
+        return fig.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown figure caption
+    pub fn formatAsMarkdown(self: *const FigureCaption, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("![{s}](#)\n\n", .{self.caption});
+        try md.writer(allocator).print("**Figure {s}:** {s}", .{ self.label, self.caption });
+
+        // Add references if present
+        if (self.references.len > 0) {
+            try md.writer(allocator).print(" (see ", .{});
+            for (self.references, 0..) |ref, i| {
+                if (i > 0) try md.writer(allocator).print(", ", .{});
+                try md.writer(allocator).print("[{s}](#{s})", .{ ref, ref });
+            }
+            try md.writer(allocator).print(")", .{});
+        }
+
+        try md.writer(allocator).print("\n", .{});
+
+        // Add extended description
+        if (self.description) |desc| {
+            try md.writer(allocator).print("{s}\n\n", .{desc});
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2370,6 +2446,64 @@ test "Equation formatAsMarkdown" {
 
     try std.testing.expect(std.mem.indexOf(u8, md, "Trinity Identity") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "\\phi^2") != null);
+}
+
+test "FigureCaption formatAsLaTeX" {
+    const fig = FigureCaption{
+        .label = "fig:ternary-architecture",
+        .caption = "Ternary neural network architecture showing {-1,0,+1} weight quantization",
+        .description = "The diagram illustrates the HSLM forward pass with ternary weights.",
+        .references = &[_][]const u8{"eq:trinity-identity"},
+    };
+
+    const latex = try fig.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{figure}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\label{fig:ternary-architecture}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\ref{eq:trinity-identity}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\end{figure}") != null);
+}
+
+test "FigureCaption formatAsMarkdown" {
+    const fig = FigureCaption{
+        .label = "fig:ternary-architecture",
+        .caption = "Ternary neural network architecture",
+        .description = "Shows the HSLM forward pass with ternary weights.",
+    };
+
+    const md = try fig.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Figure fig:ternary-architecture:**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "Ternary neural network architecture") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "HSLM forward pass") != null);
+}
+
+test "FigureCaption formatAsLaTeX no references" {
+    const fig = FigureCaption{
+        .label = "fig:fpga-layout",
+        .caption = "FPGA floor plan showing DSP48 and BRAM utilization",
+    };
+
+    const latex = try fig.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{figure}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "(see") == null); // No references
+}
+
+test "FigureCaption formatAsMarkdown no description" {
+    const fig = FigureCaption{
+        .label = "fig:isa-overview",
+        .caption = "TRI-27 ISA instruction format",
+    };
+
+    const md = try fig.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Figure fig:isa-overview:**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "TRI-27 ISA") != null);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
