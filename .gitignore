@@ -311,3 +311,8 @@ apps/queen/*.swiftdeps~
 apps/queen/*.png
 data/cells/
 src/tools/uart-echo-test
+
+# Generated config and testing modules (temporary)
+src/config/
+src/testing/
+tools/research/
