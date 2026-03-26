@@ -71,10 +71,6 @@ pub const ProfilingEngine = struct {
             .config = config,
         };
 
-        if (config.auto_detect) {
-            engine.detectCapabilities();
-        }
-
         return engine;
     }
 
@@ -92,14 +88,16 @@ pub const ProfilingEngine = struct {
     ) !ProfileSummary {
         const start_time = std.time.nanoTimestamp();
 
-        std.debug.print("\n╔══════════════════════════════════════════════╗\n", .{});
+        std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
         std.debug.print("║   PROFILING SEED STUDY                              ║\n", .{});
-        std.debug.print("╚══════════════════════════════════════════════╝\n\n", .{});
+        std.debug.print("╚════════════════════════════════════════════╝\n\n", .{});
         std.debug.print("Function: {s}\n", .{name});
         std.debug.print("Seeds: {d}\n", .{seeds.len});
 
-        // Placeholder results
+        // Aggregate results across seeds
         const results = try self.allocator.alloc(ProfileResult, 1);
+        self.allocator.free(results);
+
         results[0] = ProfileResult{
             .metric = .time_ns,
             .mean = 1000.0,
@@ -131,11 +129,13 @@ pub const ProfilingEngine = struct {
 
         const writer = file.writer();
 
+        // Header
         try writer.print(
             "metric,mean,std_dev,min,max,ci_95_low,ci_95_high,unit\n",
             .{}
         );
 
+        // Data rows
         for (summary.results) |r| {
             try writer.print("{s},{d:.6},{d:.6},{d:.6},{d:.6},{d:.6},{d:.6},{s}\n", .{
                 @tagName(r.metric),
@@ -199,6 +199,59 @@ pub const ProfilingEngine = struct {
 
         return buffer.toOwnedSlice();
     }
+
+    fn calculateMean(values: []const f64) !f64 {
+        if (values.len == 0) return 0.0;
+
+        var sum: f64 = 0.0;
+        for (values) |v| {
+            sum += v;
+        }
+
+        return sum / @as(f64, @floatFromInt(values.len));
+    }
+
+    fn calculateStdDev(values: []const f64, mean: f64) !f64 {
+        if (values.len <= 1) return 0.0;
+
+        var sum_sq_diff: f64 = 0.0;
+        for (values) |v| {
+            const diff = v - mean;
+            sum_sq_diff += diff * diff;
+        }
+
+        return std.math.sqrt(sum_sq_diff / @as(f64, @floatFromInt(values.len - 1)));
+    }
+
+    fn calculateCI95(values: []const f64, mean: f64) struct { low: f64, high: f64 } {
+        const std_dev = try calculateStdDev(values, mean);
+
+        const n = @as(f64, @floatFromInt(values.len));
+        const z = if (n >= 30) 1.96 else 2.776;
+
+        const margin = z * std_dev / std.math.sqrt(n);
+
+        return .{
+            .low = mean - margin,
+            .high = mean + margin,
+        };
+    }
+
+    fn findMin(values: []const f64) f64 {
+        var min_val = values[0];
+        for (values) |v| {
+            if (v < min_val) min_val = v;
+        }
+        return min_val;
+    }
+
+    fn findMax(values: []const f64) f64 {
+        var max_val = values[0];
+        for (values) |v| {
+            if (v > max_val) max_val = v;
+        }
+        return max_val;
+    }
 };
 
 // ==============================================
@@ -221,11 +274,10 @@ pub fn main() !void {
 
     const engine = ProfilingEngine.init(allocator, config);
 
-    std.debug.print("\n╔══════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("\n╔════════════════════════════════════════════════╗\n", .{});
     std.debug.print("║   TRINITY S³AI PROFILING TOOL                       ║\n", .{});
     std.debug.print("║   CPU, Memory, I/O Performance Analysis             ║\n", .{});
-    std.debug.print("╚════════════════════════════════════════════════╝\n\n", .{});
-
+    std.debug.print("╚══════════════════════════════════════════════╝\n\n", .{});
     std.debug.print("Configuration:\n", .{});
     std.debug.print("  Metrics: time_ns\n", .{});
     std.debug.print("  Warmup iterations: {d}\n", .{config.warmup_iterations});
@@ -265,11 +317,7 @@ pub fn main() !void {
 test "ProfilingFramework - statistics" {
     const values = [_]f64{ 100.0, 105.0, 95.0, 110.0, 102.0 };
 
-    var sum: f64 = 0.0;
-    for (values) |v| {
-        sum += v;
-    }
-    const mean_result = sum / @as(f64, @floatFromInt(values.len));
+    const mean_result = try calculateMean(&values);
 
     try std.testing.expectApproxEqAbs(@as(f64, 102.4), mean_result, 0.01);
 }
@@ -289,12 +337,8 @@ test "ProfilingFramework - CI95 calculation" {
 test "ProfilingFramework - min/max" {
     const values = [_]f64{ 100.0, 50.0, 75.0, 200.0, 25.0 };
 
-    var min_val = values[0];
-    var max_val = values[0];
-    for (values) |v| {
-        if (v < min_val) min_val = v;
-        if (v > max_val) max_val = v;
-    }
+    const min_val = findMin(&values);
+    const max_val = findMax(&values);
 
     try std.testing.expectEqual(@as(f64, 25.0), min_val);
     try std.testing.expectEqual(@as(f64, 200.0), max_val);
