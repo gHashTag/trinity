@@ -525,6 +525,55 @@ See [Research Report](docs/docs/research/fpga-autoregressive-llm-report.md) for 
 
 ---
 
+## TRI-27 Architecture (Wave 1 Complete)
+
+TRI-27 is a ternary RISC processor with 27 ternary registers and full development stack: from ISA to FPGA.
+
+### Features
+- 27 ternary registers (t0-t26) {-1, 0, +1}
+- 3 banks: Sacred (α-η), Temporal (ι-ρ), Spatial (σ-ϡ)
+- 36 opcodes with VSA operations
+- Full toolchain: asm, emu, dis, validator
+- FPGA backend: XC7A100T
+
+### Quick Start
+```bash
+tri tri27 assemble program.tri -o program.tbin
+tri tri27 run program.tbin
+```
+
+### Docs
+- [TRI-27 Guide](docs/tri27/README.md)
+- [Coptic Mapping](src/tri27/coptic.zig)
+- [User Guide](docs/tri27/USER_GUIDE.md)
+
+---
+
+## Trinity S³AI Brain Architecture
+
+### Queen Prefrontal Cortex (6 cells)
+- **dlpfc**: Planning & task assignment
+- **vmpfc**: Valuation & φ-weighted scoring
+- **ofc**: Mood inference & alerts
+- **vlpfc**: Focus area filtering
+- **dmpfc**: Self-check & health grading
+- **acc**: Conflict detection
+
+### Lotus Cycle
+5-state purification: Queued → Diagnosing → Refining → Verifying → Purified → Blocked
+
+### ARAS Vigilance
+- 5-minute sweep interval
+- 12-dimension health check
+- φ-structured constants: φ² + 1/φ² = 3
+
+### Documentation
+- [Neuroanatomical Architecture](docs/research/neuroanatomical_architecture.md)
+- [Brain Architecture](docs/brain/ARCHITECTURE.md)
+- [Integration Examples](docs/INTEGRATION_EXAMPLES.md)
+
+---
+
 ## Docker Node
 
 The Trinity CLI Docker image is published to GitHub Container Registry.
