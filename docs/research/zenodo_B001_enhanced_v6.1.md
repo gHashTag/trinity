@@ -362,7 +362,7 @@ Step 30000: loss=2.13, ppl=125.3
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0 (Version 6.0). Zenodo. https://doi.org/10.5281/zenodo.19227865
+Vasilev, D. (2026). Trinity B001: HSLM-1.95M: Ternary Neural Networks — Complete Scientific Framework v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227865
 
 ---
 

@@ -2133,6 +2133,151 @@ pub const Keywords = struct {
     }
 };
 
+// ═════════════════════════════════════════════════════════════════════════
+// SUPPLEMENTARY MATERIALS — Appendices and Additional Content
+// ═════════════════════════════════════════════════════════════════════════
+
+pub const SupplementarySection = enum {
+    /// Mathematical derivations
+    derivations,
+    /// Extended experimental results
+    extended_results,
+    /// Code listings
+    code,
+    /// Additional figures
+    figures,
+    /// Data tables
+    tables,
+    /// Hardware specifications
+    hardware_spec,
+};
+
+pub const SupplementaryItem = struct {
+    /// Section type
+    section: SupplementarySection,
+    /// Title of the item
+    title: []const u8,
+    /// Content (can be text or LaTeX code)
+    content: []const u8,
+    /// Optional label for cross-referencing
+    label: ?[]const u8 = null,
+
+    pub fn formatAsLaTeX(self: *const SupplementaryItem, allocator: std.mem.Allocator) ![]u8 {
+        var sup = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer sup.deinit(allocator);
+
+        try sup.writer(allocator).writeAll("\\subsection{");
+        try sup.writer(allocator).print("{s}", .{self.title});
+        try sup.writer(allocator).writeAll("}\n");
+
+        if (self.label) |label| {
+            try sup.writer(allocator).writeAll("\\label{");
+            try sup.writer(allocator).print("{s}", .{label});
+            try sup.writer(allocator).writeAll("}\n");
+        }
+
+        try sup.writer(allocator).writeAll(self.content);
+        try sup.writer(allocator).writeAll("\n\n");
+
+        return sup.toOwnedSlice(allocator);
+    }
+
+    pub fn formatAsMarkdown(self: *const SupplementaryItem, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        const section_name = switch (self.section) {
+            .derivations => "### Derivations",
+            .extended_results => "### Extended Results",
+            .code => "### Code Listings",
+            .figures => "### Additional Figures",
+            .tables => "### Data Tables",
+            .hardware_spec => "### Hardware Specifications",
+        };
+
+        try md.writer(allocator).writeAll(section_name);
+        try md.writer(allocator).writeAll("\n\n");
+
+        try md.writer(allocator).writeAll("#### ");
+        try md.writer(allocator).print("{s}", .{self.title});
+        try md.writer(allocator).writeAll("\n\n");
+
+        try md.writer(allocator).writeAll(self.content);
+        try md.writer(allocator).writeAll("\n\n");
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+pub const SupplementaryMaterials = struct {
+    /// Title for the appendix section
+    title: []const u8 = "Supplementary Materials",
+    /// Items in the appendix
+    items: []const SupplementaryItem,
+
+    /// Format as LaTeX appendix
+    pub fn formatAsLaTeX(self: *const SupplementaryMaterials, allocator: std.mem.Allocator) ![]u8 {
+        var sup = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer sup.deinit(allocator);
+
+        try sup.writer(allocator).writeAll("\\appendix{");
+        try sup.writer(allocator).print("{s}", .{self.title});
+        try sup.writer(allocator).writeAll("}\n\n");
+
+        // Group by section type
+        var current_section: ?SupplementarySection = null;
+
+        for (self.items) |item| {
+            if (current_section == null or current_section.? != item.section) {
+                current_section = item.section;
+                const section_name = switch (item.section) {
+                    .derivations => "\\section{Derivations}",
+                    .extended_results => "\\section{Extended Results}",
+                    .code => "\\section{Code Listings}",
+                    .figures => "\\section{Additional Figures}",
+                    .tables => "\\section{Data Tables}",
+                    .hardware_spec => "\\section{Hardware Specifications}",
+                };
+                try sup.writer(allocator).writeAll(section_name);
+                try sup.writer(allocator).writeAll("\n\n");
+            }
+
+            try sup.writer(allocator).writeAll("\\subsection{");
+            try sup.writer(allocator).print("{s}", .{item.title});
+            try sup.writer(allocator).writeAll("}\n");
+
+            if (item.label) |label| {
+                try sup.writer(allocator).writeAll("\\label{");
+                try sup.writer(allocator).print("{s}", .{label});
+                try sup.writer(allocator).writeAll("}\n");
+            }
+
+            try sup.writer(allocator).writeAll(item.content);
+            try sup.writer(allocator).writeAll("\n\n");
+        }
+
+        return sup.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown appendix
+    pub fn formatAsMarkdown(self: *const SupplementaryMaterials, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).writeAll("# ");
+        try md.writer(allocator).print("{s}", .{self.title});
+        try md.writer(allocator).writeAll("\n\n");
+
+        for (self.items) |item| {
+            const formatted = try item.formatAsMarkdown(allocator);
+            defer allocator.free(formatted);
+            try md.writer(allocator).writeAll(formatted);
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
 // ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2717,6 +2862,97 @@ test "Keywords countByCategory" {
 
     const mesh_count = kws.countByCategory(.mesh);
     try std.testing.expectEqual(@as(usize, 1), mesh_count);
+}
+
+test "SupplementaryItem formatAsLaTeX" {
+    const item = SupplementaryItem{
+        .section = .derivations,
+        .title = "Trinity Identity Derivation",
+        .content = "Starting from $\\phi = \\frac{1 + \\sqrt{5}}{2}$...",
+        .label = "sup:trinity-derivation",
+    };
+
+    const latex = try item.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\subsection{Trinity Identity Derivation}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\label{sup:trinity-derivation}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "Starting from") != null);
+}
+
+test "SupplementaryItem formatAsMarkdown" {
+    const item = SupplementaryItem{
+        .section = .code,
+        .title = "HSLM Forward Pass",
+        .content = "```zig\nfn forward(...)\n```",
+    };
+
+    const md = try item.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "### Code Listings") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "#### HSLM Forward Pass") != null);
+}
+
+test "SupplementaryMaterials formatAsLaTeX" {
+    const items = [_]SupplementaryItem{
+        .{
+            .section = .derivations,
+            .title = "Trinity Derivation",
+            .content = "Math content",
+        },
+        .{
+            .section = .extended_results,
+            .title = "Additional Benchmarks",
+            .content = "Table content",
+        },
+    };
+
+    const sup = SupplementaryMaterials{
+        .title = "Appendix",
+        .items = &items,
+    };
+
+    const latex = try sup.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\appendix{Appendix}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\section{Derivations}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\section{Extended Results}") != null);
+}
+
+test "SupplementaryMaterials formatAsMarkdown" {
+    const items = [_]SupplementaryItem{
+        .{
+            .section = .hardware_spec,
+            .title = "FPGA Resources",
+            .content = "DSP48: 0%, LUT: 6.7%",
+        },
+    };
+
+    const sup = SupplementaryMaterials{
+        .items = &items,
+    };
+
+    const md = try sup.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "# Supplementary Materials") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "### Hardware Specifications") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "DSP48: 0%") != null);
+}
+
+test "SupplementaryItem no label" {
+    const item = SupplementaryItem{
+        .section = .figures,
+        .title = "Additional Architecture Diagram",
+        .content = "Figure content",
+    };
+
+    const latex = try item.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\label{") == null);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
