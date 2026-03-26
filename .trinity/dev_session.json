@@ -1,10 +1,7 @@
 {
-  "state": "COMMITTED",
-  "issue_number": 415,
-  "branch": "",
-  "files_count": 0,
-  "tests_passed": true,
-  "commit_hash": "",
-  "started_at": 0,
-  "last_updated": 0
+  "issue_number": 435,
+  "state": "ACTIVE",
+  "test_status": "passed",
+  "last_commit": "af912db5ef",
+  "start_time": "2026-03-27T00:00:00Z"
 }

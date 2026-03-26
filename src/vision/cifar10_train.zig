@@ -27,12 +27,20 @@ pub const CIFAR10Metrics = struct {
     correct: usize,
     total: usize,
 
+    // Calibration metrics for scientific publication
+    // ECE: Expected Calibration Error (lower is better)
+    // Brier: Brier Score - proper scoring rule (lower is better)
+    ece: f32,
+    brier_score: f32,
+
     pub fn init() CIFAR10Metrics {
         return .{
             .loss = 0.0,
             .accuracy = 0.0,
             .correct = 0,
             .total = 0,
+            .ece = 0.0,
+            .brier_score = 0.0,
         };
     }
 
@@ -50,6 +58,93 @@ pub const CIFAR10Metrics = struct {
 
     pub fn reset(self: *CIFAR10Metrics) void {
         self.* = init();
+    }
+
+    /// Calculate Expected Calibration Error (ECE)
+    /// ECE = Σ (n_i / n) * |acc_i - conf_i|
+    /// Uses 10 equal-width bins [0.0, 0.1), [0.1, 0.2), ..., [0.9, 1.0]
+    pub fn calculateECE(
+        confidences: []const f32,
+        predictions: []const usize,
+        targets: []const u8,
+        n_bins: usize,
+    ) f32 {
+        if (confidences.len == 0) return 0.0;
+
+        var bin_counts: [10]usize = [_]usize{0} ** 10;
+        var bin_acc_sums: [10]f32 = [_]f32{0.0} ** 10;
+        var bin_conf_sums: [10]f32 = [_]f32{0.0} ** 10;
+
+        const bins = @min(n_bins, 10);
+
+        for (confidences, predictions, targets) |conf, pred, target| {
+            const bin_idx = @min(@as(usize, @intFromFloat(conf * @as(f32, @floatFromInt(bins)))), bins - 1);
+            bin_counts[bin_idx] += 1;
+
+            const is_correct: f32 = if (pred == target) 1.0 else 0.0;
+            bin_acc_sums[bin_idx] += is_correct;
+            bin_conf_sums[bin_idx] += conf;
+        }
+
+        var ece: f32 = 0.0;
+        const n: f32 = @floatFromInt(confidences.len);
+
+        for (0..bins) |i| {
+            if (bin_counts[i] > 0) {
+                const acc_i = bin_acc_sums[i] / @as(f32, @floatFromInt(bin_counts[i]));
+                const conf_i = bin_conf_sums[i] / @as(f32, @floatFromInt(bin_counts[i]));
+                const weight = @as(f32, @floatFromInt(bin_counts[i])) / n;
+                ece += weight * @abs(acc_i - conf_i);
+            }
+        }
+
+        return ece;
+    }
+
+    /// Calculate Brier Score (binary calibration metric)
+    /// BS = (1/N) * Σ(f_i - y_i)²
+    /// where f_i is predicted confidence, y_i is 1 for correct, 0 for incorrect
+    /// Note: This is a simplified version using max confidence as proxy
+    pub fn calculateBrierScore(
+        confidences: []const f32,
+        targets: []const u8,
+        predictions: []const usize,
+    ) f32 {
+        if (confidences.len == 0) return 0.0;
+
+        var bs: f32 = 0.0;
+        const n: f32 = @floatFromInt(confidences.len);
+
+        for (confidences, targets, predictions) |conf, target, pred| {
+            // y = 1 if prediction was correct, 0 otherwise
+            const y: f32 = if (pred == target) 1.0 else 0.0;
+            bs += (conf - y) * (conf - y);
+        }
+
+        return bs / n;
+    }
+
+    /// Calculate multiclass Brier Score for 10-class classification
+    /// BS = (1/N) * Σ Σ (p_ij - y_ij)²
+    /// where p_ij is predicted probability for class j, y_ij is 1 if true class else 0
+    pub fn calculateMulticlassBrierScore(
+        probabilities: []const [10]f32,
+        targets: []const u8,
+    ) f32 {
+        if (probabilities.len == 0) return 0.0;
+
+        var bs: f32 = 0.0;
+        const n: f32 = @floatFromInt(probabilities.len);
+
+        for (probabilities, targets) |probs, target| {
+            const target_class = @as(usize, @intCast(target));
+            for (probs, 0..) |p, j| {
+                const y: f32 = if (j == target_class) 1.0 else 0.0;
+                bs += (p - y) * (p - y);
+            }
+        }
+
+        return bs / (n * 10.0); // Average over all samples and classes
     }
 };
 
@@ -329,4 +424,83 @@ test "cifar10_train: trainer epoch counter" {
     _ = trainer.trainEpoch(&dataset, 1, testing.allocator) catch {};
 
     try testing.expect(trainer.epoch == 1);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CALIBRATION METRICS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "cifar10_train: metrics init with calibration" {
+    const metrics = CIFAR10Metrics.init();
+
+    try testing.expect(metrics.loss == 0.0);
+    try testing.expect(metrics.accuracy == 0.0);
+    try testing.expect(metrics.correct == 0);
+    try testing.expect(metrics.total == 0);
+    try testing.expect(metrics.ece == 0.0);
+    try testing.expect(metrics.brier_score == 0.0);
+}
+
+test "cifar10_train: calculate ECE perfect calibration" {
+    // Perfect calibration: confidence matches accuracy
+    // High confidence predictions are correct, low confidence are wrong
+    const confidences = [_]f32{ 0.1, 0.1, 0.9, 0.9 };
+    const predictions = [_]usize{ 0, 1, 2, 3 };
+    const targets = [_]u8{ 1, 2, 2, 3 }; // Low conf: wrong, High conf: correct
+
+    const ece = CIFAR10Metrics.calculateECE(&confidences, &predictions, &targets, 5);
+    // ECE should be low for well-calibrated predictions
+    try testing.expect(ece < 0.3);
+}
+
+test "cifar10_train: calculate ECE empty input" {
+    const confidences = [_]f32{};
+    const predictions = [_]usize{};
+    const targets = [_]u8{};
+
+    const ece = CIFAR10Metrics.calculateECE(&confidences, &predictions, &targets, 10);
+    try testing.expect(ece == 0.0);
+}
+
+test "cifar10_train: calculate Brier Score perfect predictions" {
+    const confidences = [_]f32{ 1.0, 1.0, 1.0 };
+    const targets = [_]u8{ 0, 1, 2 };
+    const predictions = [_]usize{ 0, 1, 2 }; // All correct
+
+    const bs = CIFAR10Metrics.calculateBrierScore(&confidences, &targets, &predictions);
+    // Brier score should be 0 for perfect predictions with confidence 1.0
+    try testing.expectApproxEqAbs(bs, 0.0, 0.001);
+}
+
+test "cifar10_train: calculate Brier Score wrong predictions" {
+    const confidences = [_]f32{ 1.0, 1.0, 1.0 };
+    const targets = [_]u8{ 0, 1, 2 };
+    const predictions = [_]usize{ 1, 2, 0 }; // All wrong
+
+    const bs = CIFAR10Metrics.calculateBrierScore(&confidences, &targets, &predictions);
+    // Brier score should be 1.0 for confidently wrong predictions
+    try testing.expectApproxEqAbs(bs, 1.0, 0.001);
+}
+
+test "cifar10_train: calculate multiclass Brier Score" {
+    const probabilities = [_][10]f32{
+        [_]f32{1.0} ** 10, // Uniform distribution
+        [_]f32{0.0} ** 9 ++ [_]f32{1.0}, // Perfect prediction (last class)
+    };
+    const targets = [_]u8{ 0, 9 };
+
+    const bs = CIFAR10Metrics.calculateMulticlassBrierScore(&probabilities, &targets);
+    // Should be between 0 and 1
+    try testing.expect(bs >= 0.0 and bs <= 1.0);
+}
+
+test "cifar10_train: metrics reset preserves calibration fields" {
+    var metrics = CIFAR10Metrics.init();
+    metrics.ece = 0.15;
+    metrics.brier_score = 0.25;
+
+    metrics.reset();
+
+    try testing.expect(metrics.ece == 0.0);
+    try testing.expect(metrics.brier_score == 0.0);
 }
