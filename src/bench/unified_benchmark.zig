@@ -185,7 +185,7 @@ pub const BenchmarkSuite = struct {
         const std_dev = @sqrt(variance_f);
 
         const ops_per_sec = @as(f64, @floatFromInt(ops_per_iter * iterations)) /
-                           @as(f64, @floatFromInt(total_time)) * 1_000_000_000;
+            @as(f64, @floatFromInt(total_time)) * 1_000_000_000;
 
         try self.results.append(self.allocator, BenchmarkResult{
             .name = name,
