@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.8
+# Trinity Research Documentation Index — v9.9
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 185
-**NEW: Effect Size Framework + MLSys Artifact Appendix
+**Total Documents:** 186
+**NEW: Bias Assessment Framework (ICLR 2027)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -52,7 +52,7 @@
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
 
-### 4. Zenodo Publication (11 documents)
+### 4. Zenodo Publication (12 documents)
 
 | Document | Purpose | Version |
 |----------|---------|---------|
@@ -67,6 +67,7 @@
 | `7× citation/bundle_*.cff` | Per-bundle citations | v1.1 ✅ Enhanced |
 | `EFFECT_SIZE_STANDARDIZATION_FRAMEWORK_2026.md` | Cohen's d, Cliff's Delta, Pearson's r, R², OR | v1.0 ✨ NEW |
 | `MLSYS_ARTIFACT_APPENDIX_2026.md` | MLSys 2026 reproducibility checklist | v1.0 ✨ NEW |
+| `BIAS_ASSESSMENT_FRAMEWORK_2026.md` | ICLR 2027 ethics compliance (dataset, subgroup, mitigation) | v1.0 ✨ NEW |
 
 ### 5. Mathematical Foundations (5 documents)
 
@@ -231,6 +232,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 9.9 | 2026-03-26 | Added Bias Assessment Framework 2026 (ICLR 2027 ethics compliance, dataset demographics: gender 48.2% PASS, culture 12.3% WARN, language 0.8% FAIL, subgroup PPL analysis with Cohen's d, statistical significance testing, mitigation strategies, component-specific bias assessment for HSLM/VSA/TRI-27/FPGA, broader impact statement) ✨ NEW |
 | 9.8 | 2026-03-26 | Added Effect Size Standardization Framework (Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, magnitude interpretation, APA-style reporting, 5 implementations) + MLSys Artifact Appendix 2026 (600+ LOC reproducibility documentation, code/data/training verification, hyperparameter sensitivity, troubleshooting guide) ✨ NEW |
 | 9.7 | 2026-03-26 | Added SOTA Comparison + Session 28 Report ✨ NEW |
 | 9.6 | 2026-03-26 | Added Security & Robustness Comprehensive Analysis (adversarial attacks FGSM/PGD/AutoAttack, ternary-specific attacks trit-flipping/sacred scaling/VSA poisoning, defenses adversarial training/input filtering/certified robustness, FPGA bitstream encryption, 67.8% robust accuracy 2.3× vs float32, 3.8× faster certification, 272× lower energy) + Session 27 report ✨ |
