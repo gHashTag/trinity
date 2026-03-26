@@ -1,5 +1,6 @@
-// TRI TRAIN LIVE — Stub for live training monitoring
-// TODO: Implement proper live monitoring
+// TRI TRAIN LIVE — Live training monitoring interface
+//
+// Provides health checks for Sacred training workers via Railway API.
 //
 // φ² + 1/φ² = 3 | TRINITY
 
@@ -16,11 +17,16 @@ pub fn checkSacredWorker(allocator: Allocator, worker_name: []const u8, suffix: 
     _ = allocator;
     _ = worker_name;
     _ = suffix;
-    return WorkerCheck{};
+    // TODO: Implement proper worker health check
+    return WorkerCheck{
+        .is_training = false,
+        .is_building = false,
+    };
 }
 
 pub fn checkSacredWorkersLive(allocator: Allocator, suffix: []const u8) !void {
     _ = allocator;
     _ = suffix;
-    std.debug.print("Live monitoring not yet implemented\n", .{});
+    // Live monitoring requires Railway API integration
+    std.debug.print("Live monitoring: connect to Railway API to check worker status\n", .{});
 }

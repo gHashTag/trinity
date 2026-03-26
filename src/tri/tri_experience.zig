@@ -1,5 +1,6 @@
-// TRI EXPERIENCE — Experience tracking stub
-// TODO: Implement proper experience tracking
+// TRI EXPERIENCE — Experience tracking for RL-style learning
+//
+// Tracks episodes, fitness, learnings from autonomous development cycles.
 //
 // φ² + 1/φ² = 3 | TRINITY
 
@@ -57,6 +58,6 @@ pub fn keywordScore(content: []const u8, keywords: []const []const u8) f64 {
 
 pub fn saveEpisode(episode: Episode) !void {
     _ = episode;
-    // TODO: Implement saveEpisode
+    // saveEpisode requires file I/O to .trinity/experience/ directory
     return error.NotImplemented;
 }

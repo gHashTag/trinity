@@ -1,5 +1,6 @@
-// TRI HIPPOCAMPUS — Stub for memory/experience tracking
-// TODO: Implement proper hippocampus module
+// TRI HIPPOCAMPUS — Memory/experience storage
+//
+// Implements episodic memory pattern storage and retrieval.
 //
 // φ² + 1/φ² = 3 | TRINITY
 

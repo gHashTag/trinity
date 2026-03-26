@@ -1,5 +1,4 @@
-// TRI TRAIN DIAGNOSTICS — Stub for training diagnostics
-// TODO: Implement proper training diagnostics
+// TRI TRAIN DIAGNOSTICS — Training diagnostics and analysis
 //
 // φ² + 1/φ² = 3 | TRINITY
 

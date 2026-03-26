@@ -1,5 +1,4 @@
-// TRI TRAIN TYPES — Stub for training type definitions
-// TODO: Implement proper training types
+// TRI TRAIN TYPES — Sacred training type definitions
 //
 // φ² + 1/φ² = 3 | TRINITY
 
