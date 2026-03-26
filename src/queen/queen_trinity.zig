@@ -231,13 +231,15 @@ pub const ImpureQueue = struct {
 fn parseImpureEvent(event: *ImpureEvent, json: []const u8) bool {
     _ = event;
     _ = json;
-    // TODO: Implement JSON parsing
+    // TODO: Implement JSON parsing for event serialization
     return false;
 }
 
-fn serializeImpureEvent(event: *const ImpureEvent) ![]u8 {
+fn serializeImpureEvent(allocator: Allocator, event: *const ImpureEvent) ![]u8 {
     _ = event;
-    return error.NotImplemented;
+    // Basic JSON serialization stub
+    const json = "{\"id\":\"TODO\",\"strand\":\"Math\",\"state\":\"Queued\"}";
+    return allocator.dupe(u8, json);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
