@@ -145,17 +145,18 @@ After all 7 bundles published:
 | B007 | `B007_simd_benchmarks.csv` | 6 | SIMD performance |
 | B007 | `B007_noise_resilience.csv` | 10 | Noise tolerance |
 
-### Interactive HTML Viewers (7 files)
+### Interactive HTML Viewers (8 files)
 
 | File | Purpose | Features | Status |
 |------|---------|----------|--------|
 | `interactive/INDEX.html` | Main navigation | Bundle cards, statistics, animations | ✅ NEW |
 | `interactive/B001_Training_Viewer.html` | HSLM results | Training charts, ablation studies, theorems | ✅ NEW |
 | `interactive/B002_FPGA_Viewer.html` | FPGA resources | Resource bars, power analysis, synthesis flow | ✅ NEW |
-| `interactive/B004_Lotus_Cycle_Viewer.html` | Lotus Cycle | Phase diagram, quality distribution, episode memory | ✅ NEW |
-| `interactive/B007_VSA_Operations_Viewer.html` | VSA Operations | SIMD speedup, truth tables, noise resilience | ✅ NEW |
 | `interactive/B003_TRI27_Viewer.html` | TRI-27 ISA | Register layout, opcode tables, Coptic encoding | ✅ NEW |
+| `interactive/B004_Lotus_Cycle_Viewer.html` | Lotus Cycle | Phase diagram, quality distribution, episode memory | ✅ NEW |
+| `interactive/B005_Tri_Language_Viewer.html` | Tri Language | Linear types, VIBEE pipeline, effects handlers | ✅ NEW |
 | `interactive/B006_GF16_TF3_Viewer.html` | GF16/TF3 | Format comparison, TF3 packing, accuracy charts | ✅ NEW |
+| `interactive/B007_VSA_Operations_Viewer.html` | VSA Operations | SIMD speedup, truth tables, noise resilience | ✅ NEW |
 
 **Interactive Viewer Features:**
 - Self-contained HTML (no external dependencies)
@@ -222,7 +223,7 @@ After all 7 bundles published:
 | Statistical metrics | 15 | 20 | 32 | +113% |
 | Citation formats | 2 | 3 | 5 | +150% |
 | Dockerfiles | 0 | 0 | 7 | +∞ |
-| **Interactive viewers** | **0** | **0** | **5** | **+∞** |
+| **Interactive viewers** | **0** | **0** | **8** | **+∞** |
 
 ### Total Files
 
@@ -237,8 +238,8 @@ After all 7 bundles published:
 | LaTeX templates | 3 |
 | BibTeX files | 3 |
 | README files | 5+ |
-| **Interactive viewers** | **7** |
-| **TOTAL** | **~87** |
+| **Interactive viewers** | **8** |
+| **TOTAL** | **~88** |
 
 ---
 
