@@ -1,0 +1,58 @@
+digraph TrinityBundles {
+    // Trinity S³AI Bundle Dependency Graph
+    // Generated: 2026-03-27
+    // φ² + 1/φ² = 3
+    
+    rankdir=TB;
+    node [fontname="Arial", fontsize=12];
+    edge [fontname="Arial", fontsize=10];
+    
+    // Parent Collection
+    PARENT [label="Trinity S³AI\n(PARENT)", shape=box, style=filled, fillcolor="#FFD700", fontsize=14, fontweight=bold];
+    
+    // Core Bundles
+    B001 [label="B001: HSLM\n(Hierarchical Sacred\nLanguage Model)", shape=box, style=filled, fillcolor="#87CEEB"];
+    B002 [label="B002: FPGA\n(Zero-DSP\nImplementation)", shape=box, style=filled, fillcolor="#87CEEB"];
+    B003 [label="B003: TRI-27\n(Ternary ISA)", shape=box, style=filled, fillcolor="#87CEEB"];
+    B004 [label="B004: Lotus\n(Orchestration)", shape=box, style=filled, fillcolor="#98FB98"];
+    B005 [label="B005: VIBEE\n(Code Generator)", shape=box, style=filled, fillcolor="#98FB98"];
+    B006 [label="B006: Sacred\n(Formats & Math)", shape=box, style=filled, fillcolor="#DDA0DD"];
+    B007 [label="B007: VSA\n(Vector Symbolic\nArchitecture)", shape=box, style=filled, fillcolor="#DDA0DD"];
+    
+    // Applications Layer
+    APPLICATIONS [label="Applications\n(Trinity Apps)", shape=ellipse, style=filled, fillcolor="#FFB6C1", fontsize=14];
+    
+    // Dependencies
+    PARENT -> B001 [label="contains"];
+    PARENT -> B002 [label="contains"];
+    PARENT -> B003 [label="contains"];
+    PARENT -> B004 [label="contains"];
+    PARENT -> B005 [label="contains"];
+    PARENT -> B006 [label="contains"];
+    PARENT -> B007 [label="contains"];
+    
+    // Inter-bundle dependencies
+    B001 -> B002 [label="deploys to", style=dashed];
+    B001 -> B003 [label="compiles to", style=dashed];
+    B003 -> B002 [label="synthesizes", style=dashed];
+    B005 -> B003 [label="generates", style=dashed];
+    B005 -> B002 [label="generates", style=dashed];
+    B006 -> B001 [label="formats", style=dashed];
+    B007 -> B001 [label="enhances", style=dashed];
+    
+    // Application dependencies
+    B001 -> APPLICATIONS [label="models in"];
+    B002 -> APPLICATIONS [label="runs on"];
+    B003 -> APPLICATIONS [label="executes on"];
+    B004 -> APPLICATIONS [label="orchestrates"];
+    B005 -> APPLICATIONS [label="builds"];
+    B006 -> APPLICATIONS [label="serializes"];
+    B007 -> APPLICATIONS [label="reasons in"];
+    
+    // Legend
+    {rank=same; B001 B002 B003}
+    {rank=same; B004 B005 B006 B007}
+    
+    label="Trinity S³AI Bundle Dependency Graph\nφ² + 1/φ² = 3";
+    fontsize=10;
+}
