@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v6.9
+# Trinity Research Documentation Index — v7.0
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 142
+**Total Documents:** 143
 **NEW:** v5.0 Zenodo publications (8 enhanced descriptions)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
@@ -133,6 +133,7 @@
 | `ZENODO_PUBLICATION_PATTERNS_DEEP_DIVE.md` | Scientific publishing patterns | FAIR compliance ✨ |
 | `CONSCIOUSNESS_REASONING_ANALYSIS.md` | Dual-system theory, VSA reasoning | 4 proposals ✨ |
 | `QUEEN_SYSTEM_ANALYSIS.md` | Self-learning orchestrator | 4 proposals ✨ |
+| `QUEEN_SELF_LEARNING_POLICY_ANALYSIS.md` | Adaptive rate limiting, RL policy | 12-17% success, 35-40% incident ✨ NEW |
 | `TTT_SACRED_LAYER_ANALYSIS.md` | TTT L0 sacred layer deep dive | TEMPLE_RITUAL ✨ |
 | `HSLM_TRAINING_OPTIMIZATION_ANALYSIS.md` | Training dynamics, φ-warmup, SIMD RoPE | 13% speedup ✨ |
 | `FPGA_SACRED_FORMATS_DEEP_DIVE.md` | GF16/TF3 FPGA implementation, zero-DSP | 75% LUT reduction ✨ |
@@ -201,7 +202,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 6.9 | 2026-03-26 | Added TRI-27 ISA Sacred Mathematics Analysis (Coptic, φ, 15-20% code, 25-60% exec) ✨ NEW |
+| 7.0 | 2026-03-26 | Added Queen Self-Learning Policy Analysis (adaptive RL, 12-17% success, 35-40% incident) ✨ NEW |
+| 6.9 | 2026-03-26 | Added TRI-27 ISA Sacred Mathematics Analysis (Coptic, φ, 15-20% code, 25-60% exec) ✨ |
 | 6.8 | 2026-03-26 | Added Session 4 Autonomous Cycle Report (5 commits, 4 research docs, ~2.2K LOC) ✨ |
 | 6.7 | 2026-03-26 | Added Sacred Attention Consciousness Analysis (SIMD RoPE, adaptive threshold, 16-25% attn) ✨ |
 | 6.6 | 2026-03-26 | Added Scientific Publication Patterns Zenodo (FAIR, statistical rigor, metadata guide) ✨ |
