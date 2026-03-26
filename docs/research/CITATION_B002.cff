@@ -1,28 +1,116 @@
 cff-version: 1.2.0
-message: "Trinity B002: Zero-DSP FPGA"
-title: "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference"
-abstract: "We present a Zero-DSP FPGA architecture for ternary neural network inference. Our design eliminates DSP slice usage through ternary-aware MAC units, CORDIC φ-rotations, and streaming argmax. Synthesized for XC7A100T with OpenXC7 toolchain, our implementation achieves 0% DSP usage, 19.6% LUT utilization, and 1.2W power consumption—37.5× better energy efficiency than GPU baselines."
+message: "If you use Zero-DSP FPGA inference findings, please cite this work. Pure LUT-based ternary inference requires 0 DSP blocks."
+title: "Trinity B002: Zero-DSP FPGA Architecture for Ternary Neural Inference"
+abstract: "We present a complete FPGA architecture for ternary neural network inference requiring zero DSP blocks. Key innovations include: (1) Zero-DSP ternary MAC using pure LUT arithmetic; (2) CORDIC sacred routing with 6-stage continued fraction approximation; (3) Streaming argmax unit (<100 LUT); (4) Ternary BRAM storage with 2-bit packed weights; (5) Power-of-2 embedding lookup for cache efficiency; (6) Ternary scheduler with φ-weighted round-robin; (7) ESP32 Wi-Fi JTAG for cross-platform programming; (8) OpenXC7 synthesis pipeline (Yosys → nextpnr → Bitstream). Results: 19.6% LUT utilization, 0% DSP usage, 1.2W power consumption on XC7A100T. Pure Zig → Verilog workflow with Docker-based reproducibility. Complete MLSys reproducibility card with resource utilization breakdown and synthesis timing analysis."
 authors:
-  - family-names: Vasilev
-    given-names: Dmitrii
-keywords:
-  - FPGA
-  - Zero-DSP
-  - ternary MAC
-  - CORDIC
-  - OpenXC7
-license: CC-BY-4.0
-doi: 10.5281/zenodo.19225102
-url: "https://github.com/gHashTag/trinity"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
+    affiliation: "Trinity Open Source Project"
+type: software
+version: 5.2.0
+doi: 10.5281/zenodo.19227735
 date-released: 2026-03-26
-version: 2.0
-
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity/tree/main/fpga"
+keywords:
+  - "FPGA"
+  - "ternary inference"
+  - "zero-DSP"
+  - "LUT-based"
+  - "XC7A100T"
+  - "Yosys"
+  - "nextpnr"
+  - "CORDIC"
+  - "argmax"
+  - "BRAM"
+  - "embedding lookup"
+  - "ternary scheduler"
+  - "ESP32 JTAG"
+  - "OpenXC7"
+  - "Verilog"
+  - "synthesis"
+  - "bitstream"
+  - "Docker"
+  - "reproducibility"
+license: MIT
+identifiers:
+  - description: "Zenodo DOI for B002 v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227735"
+  - description: "Parent collection"
+    type: doi
+    value: "10.5281/zenodo.19227879"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Zero-DSP FPGA Architecture Documentation"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/zenodo_B002_enhanced_v5.2.md"
+  - type: software
+    relationship: requires
+    title: "Yosys Open Synthesis Suite"
+    uri: "https://github.com/YosysHQ/yosys"
+  - type: software
+    relationship: requires
+    title: "nextpnr-xilinx"
+    uri: "https://github.com/openXC7/nextpnr-xilinx"
 preferred-citation:
   type: software
+  title: "Trinity B002: Zero-DSP FPGA Architecture"
   authors:
-    - family-names: Vasilev
-      given-names: Dmitrii
-  title: "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference"
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
   year: 2026
-  doi: 10.5281/zenodo.19225102
-  publisher: Zenodo
+  month: 3
+  journal: "Zenodo"
+  doi: "10.5281/zenodo.19227735"
+references:
+  - type: article
+    title: "TerEffic: Highly Efficient Ternary LLM Inference on FPGA"
+    authors:
+      - family-names: "Ma"
+        given-names: "S."
+      - et-al: true
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2502.16473v2"
+    doi: "10.48550/arXiv.2502.16473"
+  - type: article
+    title: "TeLLMe: Ternary Large Language Model Edge Accelerator"
+    authors:
+      - family-names: "Yin"
+        given-names: "J."
+      - et-al: true
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2504.16266"
+    doi: "10.48550/arXiv.2504.16266"
+  - type: article
+    title: "LUT-LLM: Memory-Based Computation for LLM Inference on FPGAs"
+    authors:
+      - family-names: "Kim"
+        given-names: "H."
+      - et-al: true
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2511.06174"
+    doi: "10.48550/arXiv.2511.06174"
+  - type: article
+    title: "CORDIC Trigonometric Computing"
+    authors:
+      - family-names: "Volder"
+        given-names: "Jack E."
+    year: 1959
+    journal: "IRE Transactions on Electronic Computers"
+    volume: "EC-8"
+    issue: "3"
+    pages: "330-334"
+  - type: software
+    title: "Yosys Open Synthesis Suite"
+    authors:
+      - name: "The Yosys Community"
+    year: 2024
+    url: "https://github.com/YosysHQ/yosys"
+    license: MIT
+
+# φ² + 1/φ² = 3 | TRINITY
