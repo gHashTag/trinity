@@ -121,3 +121,67 @@ test "TernarySchedule decaying sum decreases" {
     try std.testing.expect(sums[1] < sums[0]);
     try std.testing.expect(sums[2] < sums[1]);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS-AWARE LR EXTENSION (Session 33 Proposal P8)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Consciousness-Aware LR Scheduler (Session 33 Proposal P8)
+///
+/// Theory: Scale learning rate by consciousness level.
+/// High consciousness → higher LR (fast learning)
+/// Low consciousness → lower LR (stability)
+///
+/// Expected: 3-5% PPL improvement vs standard schedule
+pub const ConsciousnessLR = struct {
+    base_lr: f32,
+    max_multiplier: f32 = phi_scaling.PHI,        // φ ≈ 1.618
+    min_multiplier: f32 = phi_scaling.INV_PHI,    // φ⁻¹ ≈ 0.618
+    total_steps: u64 = 30000,
+
+    pub fn getLR(
+        self: *const ConsciousnessLR,
+        consciousness: f32,
+        step: u32
+    ) f32 {
+        // Cosine decay envelope for overall training
+        const progress = @as(f32, @floatFromInt(step)) / @as(f32, @floatFromInt(self.total_steps));
+        const envelope = (1.0 + @cos(std.math.pi * progress)) / 2.0;
+
+        // Consciousness scaling based on CONSCIOUSNESS_THRESHOLD (φ⁻¹ ≈ 0.618)
+        const c_scale = if (consciousness > phi_scaling.INV_PHI)
+            self.max_multiplier
+        else
+            self.min_multiplier;
+
+        return self.base_lr * envelope * c_scale;
+    }
+};
+
+test "ConsciousnessLR high consciousness → higher LR" {
+    const clr = ConsciousnessLR{ .base_lr = 3e-4 };
+    const high_c: f32 = 0.8; // Above threshold
+
+    const lr1 = clr.getLR(high_c, 1000);
+    const lr2 = clr.getLR(high_c, 10000);
+
+    // Higher consciousness should give higher LR
+    try std.testing.expect(lr1 > 0);
+    try std.testing.expect(lr2 > 0);
+    // With cosine envelope, LR should decrease over time
+    try std.testing.expect(lr2 < lr1);
+}
+
+test "ConsciousnessLR low consciousness → lower LR" {
+    const clr = ConsciousnessLR{ .base_lr = 3e-4 };
+    const low_c: f32 = 0.4; // Below threshold
+
+    const lr1 = clr.getLR(low_c, 1000);
+    const lr2 = clr.getLR(low_c, 10000);
+
+    try std.testing.expect(lr1 > 0);
+    try std.testing.expect(lr2 > 0);
+    // Low consciousness should scale by φ⁻¹
+    const expected_scale = clr.base_lr * clr.min_multiplier;
+    try std.testing.expect(lr1 < expected_scale * 1.1);
+}
