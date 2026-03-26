@@ -419,7 +419,7 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
     var parser = TriParser.init(source);
 
     // Emit Zig code directly - no need to store parsed functions
-    var output = std.ArrayList(u8).init(allocator);
+    var output = std.ArrayListUnmanaged(u8){};
 
     try output.appendSlice(
         \\// ═══════════════════════════════════════════════════════════════════════════════
@@ -466,7 +466,7 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
         try output.appendSlice("\n\n");
     } else |_| {}
 
-    return output.toOwnedSlice();
+    return output.toOwnedSlice(allocator);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
