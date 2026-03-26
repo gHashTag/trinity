@@ -430,7 +430,29 @@ Vasilev, D. (2026). Trinity B002: Zero-DSP FPGA - Ternary Inference Accelerator 
 
 ---
 
-## 9. Acknowledgments
+## 9. Code Availability
+
+**Repository:** https://github.com/gHashTag/trinity
+
+**Tag:** v6.1.0 (corresponds to this Zenodo release)
+
+**Key Files:**
+- `fpga/xilinx/ternary_mac.v` — LUT-based ternary MAC
+- `fpga/xilinx/transformer_layer.v` — Transformer engine
+- `fpga/xilinx/ternary_inference.v` — Top-level module
+- `src/hslm/` — HSLM model for inference
+
+**Build Instructions:**
+```bash
+git clone https://github.com/gHashTag/trinity
+cd trinity
+git checkout v6.1.0
+vivado -mode batch -source fpga/xilinx/hslm_accelerator.tcl
+```
+
+---
+
+## 10. Acknowledgments
 
 FPGA hardware provided by QMTech. Synthesis tools: Xilinx Vivado WebPACK (free license).
 
