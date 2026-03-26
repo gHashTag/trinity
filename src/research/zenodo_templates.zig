@@ -515,10 +515,12 @@ pub const CitationConverter = struct {
     /// Convert BibTeX to APA
     pub fn bibtexToAPA(bibtex: []const u8, allocator: std.mem.Allocator) ![]u8 {
         // Extract title from BibTeX
-        const title_idx = std.mem.indexOf(u8, bibtex, "title = {") orelse return allocator.dupe(u8, bibtex);
-        const title_start = title_idx + 10; // skip "title = {"
-        const title_end_idx = std.mem.indexOf(u8, bibtex[title_start..], "},") orelse bibtex[title_start..].len;
-        const title_slice = bibtex[title_start .. title_start + title_end_idx];
+        const title_idx = std.mem.indexOf(u8, bibtex, "title") orelse return allocator.dupe(u8, bibtex);
+        const after_title = bibtex[title_idx + "title".len ..];
+        const open_brace = std.mem.indexOf(u8, after_title, "{") orelse return allocator.dupe(u8, bibtex);
+        const after_open_brace = after_title[open_brace + 1 ..];
+        const close_brace = std.mem.indexOf(u8, after_open_brace, "}") orelse return allocator.dupe(u8, bibtex);
+        const title_slice = after_open_brace[0..close_brace];
 
         // Extract authors
         const authors = try extractBibtexAuthors(bibtex, allocator);
@@ -554,36 +556,26 @@ pub const CitationConverter = struct {
 };
 
 fn extractBibtexAuthors(bibtex: []const u8, allocator: std.mem.Allocator) ![]u8 {
-    // Try both "author = {" and "author={" patterns
-    const author_idx = if (std.mem.indexOf(u8, bibtex, "author = {")) |idx| idx else if (std.mem.indexOf(u8, bibtex, "author={")) |idx| idx else return allocator.dupe(u8, "Unknown Author");
-    // Skip past the opening brace
-    const open_brace_idx = std.mem.indexOf(u8, bibtex[author_idx..], "{") orelse return allocator.dupe(u8, "Unknown Author");
-    var i = author_idx + open_brace_idx + 1;
+    // Look for "author" keyword
+    const author_idx = std.mem.indexOf(u8, bibtex, "author") orelse return allocator.dupe(u8, "Unknown Author");
+
+    // Find the opening brace after "author"
+    const after_author = bibtex[author_idx + "author".len ..];
+    const open_brace_idx = std.mem.indexOf(u8, after_author, "{") orelse return allocator.dupe(u8, "Unknown Author");
+
+    // Find the closing brace
+    const after_open_brace = after_author[open_brace_idx + 1 ..];
+    const close_brace_idx = std.mem.indexOf(u8, after_open_brace, "}") orelse return allocator.dupe(u8, "Unknown Author");
+
+    // Extract author name
+    const author_name = after_open_brace[0..close_brace_idx];
+
     var result = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
     defer result.deinit(allocator);
 
-    var depth: i32 = 1;
-    var brace_start: ?usize = null;
-
-    while (i < bibtex.len) : (i += 1) {
-        const c = bibtex[i];
-        if (c == '{') {
-            depth += 1;
-            if (depth == 2) brace_start = i;
-        } else if (c == '}') {
-            if (depth > 0) depth -= 1;
-            if (depth == 1) {
-                if (brace_start) |start| {
-                    // Found closing of authors
-                    const author = bibtex[start + 1 .. i];
-                    for (author) |ch| try result.append(allocator, ch);
-                    try result.append(allocator, ',');
-                    try result.append(allocator, ' ');
-                    brace_start = null;
-                }
-            }
-        }
-    }
+    for (author_name) |ch| try result.append(allocator, ch);
+    try result.append(allocator, ',');
+    try result.append(allocator, ' ');
 
     if (result.items.len > 2) {
         // Remove trailing comma and space
@@ -728,6 +720,6 @@ test "CitationConverter bibtexToAPA" {
     defer std.testing.allocator.free(apa);
 
     try std.testing.expect(std.mem.indexOf(u8, apa, "Dmitrii Vasilev") != null);
-    try std.testing.expect(std.mem.indexOf(u8, apa, "Trinity S³AI") != null);
+    try std.testing.expect(std.mem.indexOf(u8, apa, "*Trinity S³AI*") != null);
     try std.testing.expect(std.mem.indexOf(u8, apa, "2026") != null);
 }
