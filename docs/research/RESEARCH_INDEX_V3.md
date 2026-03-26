@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v10.0
+# Trinity Research Documentation Index — v10.1
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 188
-**NEW: Multiple Testing + Failure Mode Taxonomy
+**Total Documents:** 190
+**NEW: Session 29-30 Reports (Publication Pipeline + Effect Sizes/MLSys)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -234,6 +234,7 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 10.1 | 2026-03-26 | Added Session 29 Report (Publication Pipeline: defensive publication guide, arXiv template, video script generator, NeurIPS 2026 LaTeX template, computational complexity tables B002-B007, publication roadmap with 3 primary papers for NeurIPS 2026/ICLR 2027/ICML 2027/MLSys 2027, 4500+ LOC) + Session 30 Report (Effect Size Framework: Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, APA-style reporting; MLSys Artifact Appendix: 5 verification scripts, hyperparameter sensitivity, troubleshooting guide, 1600+ LOC) ✨ NEW |
 | 10.0 | 2026-03-26 | Added Multiple Testing Correction Framework (5 methods: Bonferroni, Holm-Bonferroni, Benjamini-Hochberg FDR, Benjamini-Yekutieli FDR, Hommel; decision tree for method selection; NeurIPS/ICLR reporting formats; integration with scientific_metrics_v7.5) + Failure Mode Taxonomy (27 failure modes: HSLM 6, VSA 3, TRI-27 4, FPGA 5, VIBEE 4; 5 severity levels, 4 recovery strategies, detection code, monitoring interface) ✨ NEW |
 | 9.9 | 2026-03-26 | Added Bias Assessment Framework 2026 (ICLR 2027 ethics compliance, dataset demographics: gender 48.2% PASS, culture 12.3% WARN, language 0.8% FAIL, subgroup PPL analysis with Cohen's d, statistical significance testing, mitigation strategies, component-specific bias assessment for HSLM/VSA/TRI-27/FPGA, broader impact statement) ✅ NEW |
 | 9.8 | 2026-03-26 | Added Effect Size Standardization Framework (Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, magnitude interpretation, APA-style reporting, 5 implementations) + MLSys Artifact Appendix 2026 (600+ LOC reproducibility documentation, code/data/training verification, hyperparameter sensitivity, troubleshooting guide) ✨ NEW |
