@@ -9,6 +9,7 @@
 
 const generated = @import("gen_ops.zig");
 
+// Zig 0.15: usingnamespace deprecated, use explicit exports
 pub const bind = generated.bind;
 pub const unbind = generated.unbind;
 pub const bundle2 = generated.bundle2;
@@ -26,3 +27,10 @@ pub const dotSimilarity = generated.dotSimilarity;
 pub const vectorNorm = generated.vectorNorm;
 pub const countNonZero = generated.countNonZero;
 pub const dotProduct = generated.dotProduct;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// To revert to manual: comment out above, uncomment below:
+// const manual = @import("ops_manual.zig");
+// pub const bind = manual.bind;
+// ... etc
+// ═══════════════════════════════════════════════════════════════════════════════
