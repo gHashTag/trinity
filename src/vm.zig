@@ -4,7 +4,7 @@
 
 const std = @import("std");
 const tvc_hybrid = @import("hybrid");
-const tvc_vsa = @import("vsa");
+// VSA import via module system
 
 pub const HybridBigInt = tvc_hybrid.HybridBigInt;
 pub const Trit = tvc_hybrid.Trit;
