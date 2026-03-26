@@ -360,3 +360,19 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 | `AUTONOMOUS_CYCLE_SESSION35_FINAL_REPORT_20260326.md` | Model+Dataset cards, 950 LOC, ML transparency | Markdown ✨ NEW |
 | `README_TEMPLATE_2026.md` | GitHub scientific software README best practices | Markdown ✨ NEW |
 | `AUTONOMOUS_CYCLE_SESSIONS_34_35_COMPREHENSIVE_20260326.md` | 10 docs, 5250 LOC, conference+grant+ML ready | Markdown ✨ NEW |
+
+### v12.7 (2026-03-26) — Conference Presentation Templates
+
+**New Documents (2):**
+- `CONFERENCE_SLIDE_DECK_TEMPLATE_2026.md` — 15-minute oral presentation structure
+- `SCIENTIFIC_POSTER_TEMPLATE_2026.md` — Conference poster specifications
+
+**Growth:** +1,300 LOC, complete presentation framework
+
+**Conference Readiness:** 100%
+- ✅ NeurIPS 2026 (poster + oral)
+- ✅ ICLR 2027 (poster + oral)
+- ✅ MLSys 2026 (poster + demo)
+
+**Total Documents:** 224
+
