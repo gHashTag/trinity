@@ -1,4 +1,4 @@
-# B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v6.1
+# B006: Sacred GF16/TF3 - Phi-Based Arithmetic for Ternary Computing v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present Sacred GF16/TF3, a family of φ-based numerical formats designed for efficient ternary neural network computation. Standard floating-point formats use powers of 2 for exponent bias and mantissa precision, which are suboptimal for ternary computing. Our designs use (1) **GF16** — 6-bit exponent, 9-bit mantissa with exp=6,mant=9 achieving 37.8% LUT reduction vs FP32, (2) **TF3** — ternary floating-point packing 8 weights in 16 bits (vs 256 bits for 8 FP32 weights), and (3) **φ-Distance Metric** — |a - b| / φ for similarity computation. Derived from the Trinity Identity φ² + φ⁻² = 3 where φ = (1 + √5) / 2 ≈ 1.618, these formats achieve optimal ternary alignment while maintaining IEEE 754 compatibility for exponent bits. Implementation in pure Zig with hardware verification on XC7A100T FPGA shows 19.6% LUT utilization for GF16 arithmetic units and 1.2W power consumption at 100MHz. We provide formal proof that TF3 encoding preserves 98.4% information compared to FP32 (Theorem 1), demonstrate 16× memory bandwidth reduction (256 bits → 16 bits for 8 weights), and achieve 1200 tokens/second inference throughput on CPU with 0.125% mean absolute error.
+We present Sacred GF16/TF3, a family of φ-based numerical formats designed for efficient ternary neural network computation. Standard floating-point formats use powers of 2 for exponent bias and mantissa precision, which are suboptimal for ternary computing. Our designs use (1) **GF16** - 6-bit exponent, 9-bit mantissa with exp=6,mant=9 achieving 37.8% LUT reduction vs FP32, (2) **TF3** - ternary floating-point packing 8 weights in 16 bits (vs 256 bits for 8 FP32 weights), and (3) **φ-Distance Metric** - |a - b| / φ for similarity computation. Derived from the Trinity Identity φ² + φ⁻² = 3 where φ = (1 + √5) / 2 ≈ 1.618, these formats achieve optimal ternary alignment while maintaining IEEE 754 compatibility for exponent bits. Implementation in pure Zig with hardware verification on XC7A100T FPGA shows 19.6% LUT utilization for GF16 arithmetic units and 1.2W power consumption at 100MHz. We provide formal proof that TF3 encoding preserves 98.4% information compared to FP32 (Theorem 1), demonstrate 16× memory bandwidth reduction (256 bits → 16 bits for 8 weights), and achieve 1200 tokens/second inference throughput on CPU with 0.125% mean absolute error.
 
 ---
 
@@ -37,9 +37,9 @@ Current approaches:
 - φ-based scaling: exp/mant ratio ≈ φ for optimal ternary alignment
 
 **Key Innovations:**
-1. **φ-Optimal Bit Allocation** — 6-bit exponent, 9-bit mantissa derived from golden ratio
-2. **Ternary Packing** — 8 weights in 16 bits with {-1,0,+1} encoding
-3. **Round-Trip Precision** — 98.4% information retention with 0.125% MAE
+1. **φ-Optimal Bit Allocation** - 6-bit exponent, 9-bit mantissa derived from golden ratio
+2. **Ternary Packing** - 8 weights in 16 bits with {-1,0,+1} encoding
+3. **Round-Trip Precision** - 98.4% information retention with 0.125% MAE
 
 ### 1.3 Key Results
 
@@ -354,7 +354,7 @@ TF3 packing:
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b006,
-  title={Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v6.1},
+  title={Trinity B006: Sacred GF16/TF3 - Phi-Based Arithmetic for Ternary Computing v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -367,7 +367,7 @@ TF3 packing:
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227743
+Vasilev, D. (2026). Trinity B006: Sacred GF16/TF3 - Phi-Based Arithmetic for Ternary Computing v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227743
 
 ---
 

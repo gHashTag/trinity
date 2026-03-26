@@ -1,4 +1,4 @@
-# B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v6.1
+# B005: Tri Language - Linear Types, Effects, and Dual-Target Codegen v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present Tri Language, a linear-typed DSL with algebraic effects and dual-target code generation (Zig/Verilog), achieving 7× development speedup with 95% code quality vs hand-written implementations. Existing hardware DSLs lack memory safety guarantees or require manual hardware translation, introducing bugs and slowing development. Our design uses (1) **Linear Types** — Let/Inout/Sink/Set modes for ownership tracking, (2) **Algebraic Effects** — platform-aware handlers for I/O, state, and concurrency, and (3) **Bit/Trit Pattern Matching** — hardware-level pattern compilation to Verilog case statements and Zig switch expressions. Implemented in pure Zig with VIBEE compiler, our system generates 15,234 LOC of Zig (95.2% of hand-written quality) and 8,456 LOC of Verilog (93.9% quality) from 2,200 LOC of Tri specifications. We provide formal proof that linear typing prevents memory leaks (Theorem 1), demonstrate 7× faster development vs hand-coding with large effect size (Cohen's d = 2.21), and show complete reproducibility through content-addressed function hashing (SHA256).
+We present Tri Language, a linear-typed DSL with algebraic effects and dual-target code generation (Zig/Verilog), achieving 7× development speedup with 95% code quality vs hand-written implementations. Existing hardware DSLs lack memory safety guarantees or require manual hardware translation, introducing bugs and slowing development. Our design uses (1) **Linear Types** - Let/Inout/Sink/Set modes for ownership tracking, (2) **Algebraic Effects** - platform-aware handlers for I/O, state, and concurrency, and (3) **Bit/Trit Pattern Matching** - hardware-level pattern compilation to Verilog case statements and Zig switch expressions. Implemented in pure Zig with VIBEE compiler, our system generates 15,234 LOC of Zig (95.2% of hand-written quality) and 8,456 LOC of Verilog (93.9% quality) from 2,200 LOC of Tri specifications. We provide formal proof that linear typing prevents memory leaks (Theorem 1), demonstrate 7× faster development vs hand-coding with large effect size (Cohen's d = 2.21), and show complete reproducibility through content-addressed function hashing (SHA256).
 
 ---
 
@@ -39,9 +39,9 @@ Current approaches:
 - VIBEE compiler: .tri → Zig/Verilog with content-addressed caching
 
 **Key Innovations:**
-1. **Linear Type System** — Ownership tracking prevents memory leaks
-2. **Algebraic Effects** — Composable side-effect management
-3. **Dual-Target Codegen** — Single source, Zig and Verilog outputs
+1. **Linear Type System** - Ownership tracking prevents memory leaks
+2. **Algebraic Effects** - Composable side-effect management
+3. **Dual-Target Codegen** - Single source, Zig and Verilog outputs
 
 ### 1.3 Key Results
 
@@ -51,7 +51,7 @@ Current approaches:
 | **Zig Code Quality** | 95.2% | 100% (baseline) | -4.8% (acceptable) |
 | **Verilog Code Quality** | 93.9% | 100% (baseline) | -6.1% (acceptable) |
 | **Memory Safety** | 100% | Variable | **Guaranteed** |
-| **Effect Size (d)** | 2.21 | — | **LARGE** |
+| **Effect Size (d)** | 2.21 | - | **LARGE** |
 
 **Statistical Significance:**
 - Development speed: 7× ± 0.8× (95% CI: [6.2×, 7.8×])
@@ -279,8 +279,8 @@ Current approaches:
 |--------|--------------|-----------------|-------|
 | Zig LOC | 16,000 | 15,234 | 95.2% |
 | Verilog LOC | 9,000 | 8,456 | 93.9% |
-| Compile errors | 0 | 0 | — |
-| Runtime errors | 0 | 0 | — |
+| Compile errors | 0 | 0 | - |
+| Runtime errors | 0 | 0 | - |
 
 **Conclusion:** VIBEE generates production-quality code (≥93% of hand-written).
 
@@ -291,7 +291,7 @@ Current approaches:
 | Simple module | 2h | 15m | 8× | 2.34 | [1.87, 2.81] |
 | Complex algorithm | 8h | 1.5h | 5.3× | 1.89 | [1.42, 2.36] |
 | Hardware IP | 16h | 2h | 8× | 2.41 | [1.94, 2.88] |
-| **Average** | — | — | **7×** | **2.21** | **[1.74, 2.68]** |
+| **Average** | - | - | **7×** | **2.21** | **[1.74, 2.68]** |
 
 **Effect Size Interpretation:** LARGE effect (Cohen's d = 2.21) indicates substantial practical improvement. Paired t-test: t(11) = 8.42, p < 0.001.
 
@@ -305,9 +305,9 @@ Current approaches:
 | 50,000 | 1.1 ms | 4.8 ms | 3.2 ms | 9.1 ms |
 
 **Scaling Laws:**
-- Parsing: O(n^1.05) — nearly linear
-- Type checking: O(n^1.02) — linear in practice
-- Codegen: O(n) — strictly linear
+- Parsing: O(n^1.05) - nearly linear
+- Type checking: O(n^1.02) - linear in practice
+- Codegen: O(n) - strictly linear
 
 ---
 
@@ -423,7 +423,7 @@ fn distance(p1: Point, p2: Point): f32 {
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b005,
-  title={Trinity B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v6.1},
+  title={Trinity B005: Tri Language - Linear Types, Effects, and Dual-Target Codegen v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -436,7 +436,7 @@ fn distance(p1: Point, p2: Point): f32 {
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227741
+Vasilev, D. (2026). Trinity B005: Tri Language - Linear Types, Effects, and Dual-Target Codegen v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227741
 
 ---
 

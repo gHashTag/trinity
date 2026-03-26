@@ -1,4 +1,4 @@
-# B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.1
+# B003: TRI-27 ISA - Ternary Instruction Set Architecture v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present TRI-27, a ternary instruction set architecture (ISA) with 27 registers organized in 3 Coptic alphabet banks, achieving 1.71× code density improvement over RISC-V. Existing ternary ISAs lack efficient encoding for balanced ternary operations, requiring redundant instructions for common patterns. Our design uses (1) **Coptic Register Encoding** — 3 banks of 9 registers (α-η, ι-ρ, σ-ϡ) for secure cross-bank operations, (2) **36 Opcodes** — complete arithmetic, logical, and control-flow operations, and (3) **Content-Addressed Bytecode** — SHA256-hashed instructions for tamper-proof execution. Implemented in pure Zig with Verilog codegen, our system achieves 1.71× code density vs RISC-V (48 bits/instruction vs 32 bits), single-issue IPC at 100MHz, and 64 KB minimum RAM footprint. We provide formal proof that Coptic encoding prevents unauthorized cross-bank access (Theorem 1), demonstrate 17% power reduction vs binary ISAs via ternary signal encoding, and show complete Verilog generation from .tri assembly source.
+We present TRI-27, a ternary instruction set architecture (ISA) with 27 registers organized in 3 Coptic alphabet banks, achieving 1.71× code density improvement over RISC-V. Existing ternary ISAs lack efficient encoding for balanced ternary operations, requiring redundant instructions for common patterns. Our design uses (1) **Coptic Register Encoding** - 3 banks of 9 registers (α-η, ι-ρ, σ-ϡ) for secure cross-bank operations, (2) **36 Opcodes** - complete arithmetic, logical, and control-flow operations, and (3) **Content-Addressed Bytecode** - SHA256-hashed instructions for tamper-proof execution. Implemented in pure Zig with Verilog codegen, our system achieves 1.71× code density vs RISC-V (48 bits/instruction vs 32 bits), single-issue IPC at 100MHz, and 64 KB minimum RAM footprint. We provide formal proof that Coptic encoding prevents unauthorized cross-bank access (Theorem 1), demonstrate 17% power reduction vs binary ISAs via ternary signal encoding, and show complete Verilog generation from .tri assembly source.
 
 ---
 
@@ -37,9 +37,9 @@ Current approaches:
 - Content-addressed bytecode (SHA256 integrity)
 
 **Key Innovations:**
-1. **Secure Banking** — User/kernel mode separation via register banks
-2. **Ternary Opcode Encoding** — Efficient {-1,0,+1} operation codes
-3. **Verifiable Bytecode** — Content-addressed via cryptographic hashes
+1. **Secure Banking** - User/kernel mode separation via register banks
+2. **Ternary Opcode Encoding** - Efficient {-1,0,+1} operation codes
+3. **Verifiable Bytecode** - Content-addressed via cryptographic hashes
 
 ### 1.3 Key Results
 
@@ -66,16 +66,16 @@ Current approaches:
 ```
 TRI-27 REGISTER FILE (27 × 32-bit):
 ┌─────────────────────────────────────────────────────────────┐
-│  BANK 0: ALPHA (α-η) — User Mode, Read-Write              │
+│  BANK 0: ALPHA (α-η) - User Mode, Read-Write              │
 │  α₀ β₀ γ₀ δ₀ ε₀ ζ₀ η₀ θ₀ ι₀ (R0-R8)                       │
 │  Usage: Function args, locals, temporaries                 │
 ├─────────────────────────────────────────────────────────────┤
-│  BANK 1: IOTA (ι-ρ) — User Mode, Read-Only                │
+│  BANK 1: IOTA (ι-ρ) - User Mode, Read-Only                │
 │  ι₁ κ₁ λ₁ μ₁ ν₁ ξ₁ ο₁ π₁ ρ₁ (R9-R17)                     │
 │  Usage: System params, constants, config                   │
 │  Protection: Write-trap on modification                     │
 ├─────────────────────────────────────────────────────────────┤
-│  BANK 2: SIGMA (σ-ϡ) — Kernel Mode Only                  │
+│  BANK 2: SIGMA (σ-ϡ) - Kernel Mode Only                  │
 │  σ₂ τ₂ υ₂ φ₂ χ₂ ψ₂ ω₂ ϡ₂ PC (R18-R26)                     │
 │  Usage: Syscalls, MMU, interrupts, PC                       │
 │  Protection: User-mode trap on access                       │
@@ -191,16 +191,16 @@ SECURITY MODEL:
 **Language:** Zig 0.15.2 (pure std lib)
 
 **Components:**
-- `src/tri27/emu/emu.zig` — Interpreter (800 LOC)
-- `src/tri27/assembler/assembler.zig` — .tri → bytecode (500 LOC)
-- `src/tri27/disassembler/disassembler.zig` — bytecode → .tri (300 LOC)
-- `src/tri27/codegen/verilog.zig` — TRI-27 → Verilog (400 LOC)
+- `src/tri27/emu/emu.zig` - Interpreter (800 LOC)
+- `src/tri27/assembler/assembler.zig` - .tri → bytecode (500 LOC)
+- `src/tri27/disassembler/disassembler.zig` - bytecode → .tri (300 LOC)
+- `src/tri27/codegen/verilog.zig` - TRI-27 → Verilog (400 LOC)
 
 ### 4.2 Verilog Generation
 
 **From .tri assembly:**
 ```assembly
-# reticularraphe.t27 — Fibonacci example
+# reticularraphe.t27 - Fibonacci example
 LOAD α₀, #0         ; α₀ = 0
 LOAD α₁, #1         ; α₁ = 1
 LOAD β₀, #10        ; β₀ = 10 (loop counter)
@@ -259,7 +259,7 @@ endmodule
 | Fibonacci | 256 | 148 | 1.73× |
 | QuickSort | 1024 | 612 | 1.67× |
 | MatMul | 512 | 296 | 1.73× |
-| Mean | — | — | **1.71×** |
+| Mean | - | - | **1.71×** |
 
 **Statistical Analysis:**
 - Mean ratio: 1.71
@@ -271,8 +271,8 @@ endmodule
 
 | Metric | TRI-27 | RISC-V | Ratio |
 |--------|--------|--------|-------|
-| **Clock** | 100 MHz | 100 MHz | — |
-| **IPC** | 1.0 | 1.0 | — |
+| **Clock** | 100 MHz | 100 MHz | - |
+| **IPC** | 1.0 | 1.0 | - |
 | **CPI** | 1.0 | 1.0-1.5 | 0.67× better |
 | **MIPS** | 100 | 100-67 | 100 |
 
@@ -413,7 +413,7 @@ vivado -mode batch -source reticularraphe.tcl
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b003,
-  title={Trinity B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.1},
+  title={Trinity B003: TRI-27 ISA - Ternary Instruction Set Architecture v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -426,7 +426,7 @@ vivado -mode batch -source reticularraphe.tcl
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227869
+Vasilev, D. (2026). Trinity B003: TRI-27 ISA - Ternary Instruction Set Architecture v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227869
 
 ---
 

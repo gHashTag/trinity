@@ -1,4 +1,4 @@
-# Trinity S³AI Framework — Parent Collection v6.1
+# Trinity S³AI Framework - Parent Collection v6.1
 
 **Version:** 6.1
 **Published:** 2026-03-27
@@ -204,7 +204,7 @@ B001 (HSLM-1.95M) ────→ B002 (Zero-DSP FPGA)
 
 ```bibtex
 @misc{vasilev2026trinity_parent,
-  title={Trinity S³AI Framework — Parent Collection v6.1},
+  title={Trinity S³AI Framework - Parent Collection v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},

@@ -1,4 +1,4 @@
-# B004: Queen Lotus Cycle — Autonomous Learning Orchestration v6.1
+# B004: Queen Lotus Cycle - Autonomous Learning Orchestration v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present Queen Lotus Cycle, a 6-phase autonomous learning orchestration system achieving 847-episode memory with 0.7 quality threshold filtering and Jaccard similarity-based episode retrieval. Existing orchestration systems lack biologically-inspired phase transitions, requiring manual intervention for learning rate adjustment and episode selection. Our design uses (1) **Jaccard Similarity Episode Retrieval** — content-addressed experience replay with 92% recall accuracy at optimal threshold θ = 0.8, (2) **6-Phase Lotus Cycle** — SENSE → PLAN → ACT → REFLECT → INTEGRATE → DORMANCY for natural learning dynamics, and (3) **Quality Classification** — 4-state assessment (POOR/FAIR/GOOD/EXCELLENT) with automatic filtering. Implemented in pure Zig with Railway cloud integration, our system achieves 30-60s cycle duration, 92% retrieval accuracy (F1 = 0.92), and 74% reduction in redundant exploration. We provide formal proof that Jaccard retrieval converges to optimal policy (Theorem 1), demonstrate 3.8× improvement in sample efficiency vs random exploration (223 vs 847 episodes), and show complete autonomous operation without human intervention. The architecture enables self-improving AI systems that learn continuously from experience with minimal computational overhead.
+We present Queen Lotus Cycle, a 6-phase autonomous learning orchestration system achieving 847-episode memory with 0.7 quality threshold filtering and Jaccard similarity-based episode retrieval. Existing orchestration systems lack biologically-inspired phase transitions, requiring manual intervention for learning rate adjustment and episode selection. Our design uses (1) **Jaccard Similarity Episode Retrieval** - content-addressed experience replay with 92% recall accuracy at optimal threshold θ = 0.8, (2) **6-Phase Lotus Cycle** - SENSE → PLAN → ACT → REFLECT → INTEGRATE → DORMANCY for natural learning dynamics, and (3) **Quality Classification** - 4-state assessment (POOR/FAIR/GOOD/EXCELLENT) with automatic filtering. Implemented in pure Zig with Railway cloud integration, our system achieves 30-60s cycle duration, 92% retrieval accuracy (F1 = 0.92), and 74% reduction in redundant exploration. We provide formal proof that Jaccard retrieval converges to optimal policy (Theorem 1), demonstrate 3.8× improvement in sample efficiency vs random exploration (223 vs 847 episodes), and show complete autonomous operation without human intervention. The architecture enables self-improving AI systems that learn continuously from experience with minimal computational overhead.
 
 ---
 
@@ -39,9 +39,9 @@ Current systems use:
 - Episode buffer: 847 max episodes (FIFO eviction)
 
 **Key Innovations:**
-1. **Jaccard Episode Retrieval** — Set-based similarity without neural embeddings
-2. **6-Phase Lotus Cycle** — Natural learning dynamics inspired by biological sleep-wake cycles
-3. **Quality-Aware Memory** — Automatic pruning of low-value experiences
+1. **Jaccard Episode Retrieval** - Set-based similarity without neural embeddings
+2. **6-Phase Lotus Cycle** - Natural learning dynamics inspired by biological sleep-wake cycles
+3. **Quality-Aware Memory** - Automatic pruning of low-value experiences
 
 ### 1.3 Key Results
 
@@ -50,7 +50,7 @@ Current systems use:
 | **Sample Efficiency** | 223 episodes | 847 episodes | **3.8× better** |
 | **Retrieval F1** | 0.92 (θ=0.8) | 0.75 (cosine) | **23% better** |
 | **Redundancy Reduction** | 74% | 0% | **Significant** |
-| **Cycle Duration** | 30-60s | — | — |
+| **Cycle Duration** | 30-60s | - | - |
 | **Memory Footprint** | 850 KB | 5 MB | **5.9× smaller** |
 
 **Statistical Significance:**
@@ -66,7 +66,7 @@ Current systems use:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                       QUEEN LOTUS CYCLE — 6 PHASES                          │
+│                       QUEEN LOTUS CYCLE - 6 PHASES                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │                    ┌─────────────────────────────────────┐                  │
@@ -369,10 +369,10 @@ docker run -v $(pwd)/.trinity:/root/.trinity trinity-b004 cycle --auto
 
 ## 7. Limitations
 
-1. **Episode Buffer Size:** Max 847 episodes — oldest evicted FIFO
-2. **Jaccard Tokenization:** Simple whitespace splitting — no semantic understanding
+1. **Episode Buffer Size:** Max 847 episodes - oldest evicted FIFO
+2. **Jaccard Tokenization:** Simple whitespace splitting - no semantic understanding
 3. **Single-Agent:** No multi-agent coordination or communication
-4. **Discrete States:** Designed for discrete environments — continuous requires discretization
+4. **Discrete States:** Designed for discrete environments - continuous requires discretization
 
 **Future Work:**
 - Hierarchical episode memory (847 → 10K+ episodes)
@@ -387,7 +387,7 @@ docker run -v $(pwd)/.trinity:/root/.trinity trinity-b004 cycle --auto
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b004,
-  title={Trinity B004: Queen Lotus Cycle — Autonomous Learning Orchestration v6.1},
+  title={Trinity B004: Queen Lotus Cycle - Autonomous Learning Orchestration v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -400,7 +400,7 @@ docker run -v $(pwd)/.trinity:/root/.trinity trinity-b004 cycle --auto
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B004: Queen Lotus Cycle — Autonomous Learning Orchestration v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227739
+Vasilev, D. (2026). Trinity B004: Queen Lotus Cycle - Autonomous Learning Orchestration v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227739
 
 ---
 

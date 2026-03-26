@@ -1,4 +1,4 @@
-# B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.1
+# B002: Zero-DSP FPGA - Ternary Inference Accelerator v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present a zero-DSP ternary inference accelerator for FPGAs, achieving 51,200 tokens/second throughput with 0% DSP utilization at 1.2W power consumption. Existing neural network accelerators require DSP48 blocks for efficient multiplication, limiting deployment on DSP-constrained FPGAs and increasing cost by 3-5×. Our design uses (1) **LUT-based ternary MAC** — pure combinatorial logic for {-1,0,+1} multiplication, (2) **CORDIC sacred routing** — 6-stage pipelined arithmetic without multipliers, and (3) **BRAM-optimized storage** — 2-bit packed weights for 16× memory reduction. Implemented in Verilog for Xilinx XC7A100T, our system achieves 19.6% LUT utilization (10,977 / 54,600 for SLR), 100% BRAM utilization (270 / 270), and 1.2W power consumption. We provide formal verification that ternary MAC computes exact dot products (Theorem 1), demonstrate 5× power reduction vs DSP-based designs (1.2W vs 6.0W), and show 6.02× throughput improvement vs CPU baseline. The architecture enables edge AI deployment on low-cost FPGAs without DSP resources, reducing hardware cost by 70% while maintaining competitive inference performance.
+We present a zero-DSP ternary inference accelerator for FPGAs, achieving 51,200 tokens/second throughput with 0% DSP utilization at 1.2W power consumption. Existing neural network accelerators require DSP48 blocks for efficient multiplication, limiting deployment on DSP-constrained FPGAs and increasing cost by 3-5×. Our design uses (1) **LUT-based ternary MAC** - pure combinatorial logic for {-1,0,+1} multiplication, (2) **CORDIC sacred routing** - 6-stage pipelined arithmetic without multipliers, and (3) **BRAM-optimized storage** - 2-bit packed weights for 16× memory reduction. Implemented in Verilog for Xilinx XC7A100T, our system achieves 19.6% LUT utilization (10,977 / 54,600 for SLR), 100% BRAM utilization (270 / 270), and 1.2W power consumption. We provide formal verification that ternary MAC computes exact dot products (Theorem 1), demonstrate 5× power reduction vs DSP-based designs (1.2W vs 6.0W), and show 6.02× throughput improvement vs CPU baseline. The architecture enables edge AI deployment on low-cost FPGAs without DSP resources, reducing hardware cost by 70% while maintaining competitive inference performance.
 
 ---
 
@@ -34,9 +34,9 @@ Current accelerators use DSP48E1 blocks for multiply-accumulate (MAC) operations
 - Result: y = Σ(x_i) - Σ(x_j) for w_i=+1 and w_j=-1 (subtract + accumulate)
 
 **Key Innovations:**
-1. **Ternary MAC Unit** — Single LUT6 computes {-1,0,+1} × {INT8} in 1 cycle
-2. **Zero-DSP Pipeline** — 6-stage CORDIC without DSP blocks
-3. **BRAM Packing** — 16 ternary weights per 36-bit BRAM (2 bits each)
+1. **Ternary MAC Unit** - Single LUT6 computes {-1,0,+1} × {INT8} in 1 cycle
+2. **Zero-DSP Pipeline** - 6-stage CORDIC without DSP blocks
+3. **BRAM Packing** - 16 ternary weights per 36-bit BRAM (2 bits each)
 
 ### 1.3 Key Results
 
@@ -144,7 +144,7 @@ Throughput: 51,200 tok/s = 100 MHz / (6 cycles + 4 overhead)
 | **BRAM** | 270 | 270 | 100% | Weight storage |
 | **DSP** | 0 | 240 | 0% | **Zero-DSP achievement** |
 | **MMCM** | 1 | 6 | 16.7% | Clock generation |
-| **Power** | 1.2W | — | — | Dynamic @ 100MHz |
+| **Power** | 1.2W | - | - | Dynamic @ 100MHz |
 
 **Breakdown by Module:**
 - Embedding: 1,250 LUT (11.4%)
@@ -410,7 +410,7 @@ vivado -mode batch -source hslm_accelerator.tcl
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b002,
-  title={Trinity B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.1},
+  title={Trinity B002: Zero-DSP FPGA - Ternary Inference Accelerator v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -423,7 +423,7 @@ vivado -mode batch -source hslm_accelerator.tcl
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227867
+Vasilev, D. (2026). Trinity B002: Zero-DSP FPGA - Ternary Inference Accelerator v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227867
 
 ---
 

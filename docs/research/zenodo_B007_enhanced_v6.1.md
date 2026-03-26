@@ -1,4 +1,4 @@
-# B007: VSA Operations — Hybrid BigInt with SIMD Acceleration v6.1
+# B007: VSA Operations - Hybrid BigInt with SIMD Acceleration v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-We present a complete Vector Symbolic Architecture (VSA) implementation for balanced ternary computing, enabling efficient cognitive computing with sparse distributed representations. Traditional VSA implementations use binary hypervectors with expensive high-dimensional operations, limiting practical deployment on resource-constrained hardware. Our design uses (1) **HybridBigInt SIMD** — 32-wide trit parallel operations achieving 17.2× speedup over scalar code on ARM64, (2) **Bind/Unbind/Bundle** — ternary analogues of XOR/XOR/majority-vote with hardware-friendly truth tables, (3) **Permutation Encoding** — cyclic rotations for efficient similarity search, and (4) **Noise Resilience** — 90% accuracy at 45% noise with NEON SIMD acceleration. Implemented in pure Zig with 850 LOC including all VSA operations, our system achieves 1200 tokens/second inference throughput on CPU with 30% noise resilience in similarity recall tasks. We provide formal proof that bundle operation implements ternary majority voting (Theorem 1), demonstrate 11.4× SIMD speedup for bind operations (95% CI: [11.2×, 11.6×]), and show 99.7% retrieval accuracy for noisy inputs with 30% trit flips using ternary Hamming distance.
+We present a complete Vector Symbolic Architecture (VSA) implementation for balanced ternary computing, enabling efficient cognitive computing with sparse distributed representations. Traditional VSA implementations use binary hypervectors with expensive high-dimensional operations, limiting practical deployment on resource-constrained hardware. Our design uses (1) **HybridBigInt SIMD** - 32-wide trit parallel operations achieving 17.2× speedup over scalar code on ARM64, (2) **Bind/Unbind/Bundle** - ternary analogues of XOR/XOR/majority-vote with hardware-friendly truth tables, (3) **Permutation Encoding** - cyclic rotations for efficient similarity search, and (4) **Noise Resilience** - 90% accuracy at 45% noise with NEON SIMD acceleration. Implemented in pure Zig with 850 LOC including all VSA operations, our system achieves 1200 tokens/second inference throughput on CPU with 30% noise resilience in similarity recall tasks. We provide formal proof that bundle operation implements ternary majority voting (Theorem 1), demonstrate 11.4× SIMD speedup for bind operations (95% CI: [11.2×, 11.6×]), and show 99.7% retrieval accuracy for noisy inputs with 30% trit flips using ternary Hamming distance.
 
 ---
 
@@ -38,9 +38,9 @@ Current approaches:
 - Noise resilience: Ternary Hamming distance
 
 **Key Innovations:**
-1. **SIMD-Accelerated VSA** — 4× parallel trit processing
-2. **Hardware-Friendly Truth Tables** — XOR-like bind with LUT support
-3. **Noise Resilient Similarity** — Ternary distance metric
+1. **SIMD-Accelerated VSA** - 4× parallel trit processing
+2. **Hardware-Friendly Truth Tables** - XOR-like bind with LUT support
+3. **Noise Resilient Similarity** - Ternary distance metric
 
 ### 1.3 Key Results
 
@@ -50,7 +50,7 @@ Current approaches:
 | **Bundle** | 52.1 ns | 4.4 ns | **11.8×** | [11.4×, 12.2×] |
 | **Cosine** | 68.3 ns | 4.0 ns | **17.1×** | [16.5×, 17.7×] |
 | **Permute** | 38.7 ns | 2.8 ns | **13.8×** | [13.2×, 14.4×] |
-| **Average** | — | — | **14.2×** | **[13.7×, 14.7×]** |
+| **Average** | - | - | **14.2×** | **[13.7×, 14.7×]** |
 
 **Statistical Significance:**
 - All speedups: Cohen's d > 4.0 (LARGE effect)
@@ -65,7 +65,7 @@ Current approaches:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                       HYBRIDBIGINT — 32-WIDE TRIT SIMD                      │
+│                       HYBRIDBIGINT - 32-WIDE TRIT SIMD                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────┐    │
@@ -226,7 +226,7 @@ fn tritHamming(a: []Trit, b: []Trit) u32 {
 | Bundle | 52.1 | 4.4 | 11.8× | [11.4, 12.2] | 10.5 |
 | Cosine | 68.3 | 4.0 | 17.1× | [16.5, 17.7] | 14.2 |
 | Permute | 38.7 | 2.8 | 13.8× | [13.2, 14.4] | 12.1 |
-| **Average** | — | — | **14.2×** | — | **12.4 (LARGE)** |
+| **Average** | - | - | **14.2×** | - | **12.4 (LARGE)** |
 
 **Statistical Analysis:**
 - All operations: p < 0.001 (highly significant)
@@ -395,7 +395,7 @@ Noise Resilience (30% noise):
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b007,
-  title={Trinity B007: VSA Operations — Hybrid BigInt with SIMD Acceleration v6.1},
+  title={Trinity B007: VSA Operations - Hybrid BigInt with SIMD Acceleration v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
@@ -408,7 +408,7 @@ Noise Resilience (30% noise):
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B007: VSA Operations — Hybrid BigInt with SIMD Acceleration v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227745
+Vasilev, D. (2026). Trinity B007: VSA Operations - Hybrid BigInt with SIMD Acceleration v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227745
 
 ---
 
