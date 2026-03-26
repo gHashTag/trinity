@@ -222,7 +222,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 8.9 | 2026-03-26 | Added VSA Operations Comprehensive Analysis (bind/unbind/bundle, analogy/chain/blend, consciousness gate, 68.4% analogy accuracy, 54.8% 3-hop reasoning) + Session 20 report ✨ NEW |
+| 9.0 | 2026-03-26 | Added Sacred Training Dynamics V2 (φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL improvement) + Session 21 report ✨ NEW |
+| 8.9 | 2026-03-26 | Added VSA Operations Comprehensive Analysis (bind/unbind/bundle, analogy/chain/blend, consciousness gate, 68.4% analogy accuracy, 54.8% 3-hop reasoning) + Session 20 report ✨ |
 | 8.8 | 2026-03-26 | Added Sessions 13-19 Cumulative Summary (7 sessions, 8 documents, 9.5K LOC, publication ready for NeurIPS 2026/ICLR 2027) + final research milestone ✨ |
 | 8.7 | 2026-03-26 | Added Experimental Methodology Guide (protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards, 5-week timeline) + Session 19 report ✨ |
 | 8.6 | 2026-03-26 | Added NeurIPS/ICLR Paper Template (complete scientific paper: abstract, intro, methods, results, appendix, math proofs, statistical validation) + Session 18 report ✨ |
