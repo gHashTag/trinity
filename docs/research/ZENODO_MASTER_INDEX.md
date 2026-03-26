@@ -1,19 +1,58 @@
-# Trinity Zenodo Publications — Master Index (v3.1)
+# Trinity Zenodo Publications — Master Index (v4.0)
 
 **Author:** Dmitrii Vasilev
 **Published:** 2026-03-26
 **Updated:** 2026-03-26
 **License:** CC-BY-4.0
 
-## What's New in v3.1
+## What's New in v4.0
 
-- **16,500+ lines of documentation** across 35+ files
-- **1.8 MB of scientific content**
-- All 7 bundles + parent collection ready
-- **TERNARY_ATTENTION_ANALYSIS.md** — Mathematical foundation of ternary attention
-- **SIMD_TERNARY_ARCHITECTURE.md** — SIMD vectorization analysis (17.2× speedup)
-- **66 discovery publications** with complete defensive documentation
-- **Status: ✅ READY FOR ZENODO PUBLICATION**
+- **v5.0 Enhanced Scientific Descriptions** — NeurIPS/ICLR/MLSys standards
+- **8 new DOIs** (19227865 series) with Broader Impact, Ethics, Reproducibility
+- **3,000+ lines of enhanced documentation** across 8 bundles
+- All bundles include 5-sentence abstracts, LaTeX notation, formal theorems
+- **Status: ✅ PUBLISHED TO ZENODO**
+
+## Published Zenodo DOIs
+
+### v5.0 Enhanced Publications (2026-03-26)
+
+| Bundle | Description | DOI | Discoveries |
+|--------|-------------|-----|-------------|
+| **B001** | Ternary Neural Networks v5.0 | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) | 14 |
+| **B002** | Zero-DSP FPGA v5.0 | [10.5281/zenodo.19227867](https://doi.org/10.5281/zenodo.19227867) | 13 |
+| **B003** | TRI-27 ISA v5.0 | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) | 7 |
+| **B004** | Queen Lotus Cycle v5.0 | [10.5281/zenodo.19227871](https://doi.org/10.5281/zenodo.19227871) | 10 |
+| **B005** | Tri Language v5.0 | [10.5281/zenodo.19227873](https://doi.org/10.5281/zenodo.19227873) | 13 |
+| **B006** | Sacred GF16/TF3 v5.0 | [10.5281/zenodo.19227875](https://doi.org/10.5281/zenodo.19227875) | 9 |
+| **B007** | VSA Operations v5.0 | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) | 3 |
+| **PARENT** | Trinity S³AI Framework v5.0 | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | All |
+
+**v5.0 Enhancements:**
+- Broader Impact (NeurIPS 2025 Standard)
+- Ethical Considerations (ICLR 2025 Standard)
+- Reproducibility Checklist (MLSys 2025 Standard)
+- 5-sentence abstract structure
+- LaTeX mathematical notation
+- Formal theorems with QED markers
+- 95% confidence intervals
+- Docker reproducibility
+
+### v4.0 Publications (2026-03-26)
+
+| Bundle | Description | DOI | Discoveries |
+|--------|-------------|-----|-------------|
+| **B001** | [Ternary Neural Networks](./zenodo_B001_full_description.md) | [10.5281/zenodo.19227733](https://doi.org/10.5281/zenodo.19227733) | 17 |
+| **B002** | [Zero-DSP FPGA](./zenodo_B002_full_description.md) | [10.5281/zenodo.19227735](https://doi.org/10.5281/zenodo.19227735) | 13 |
+| **B003** | [TRI-27 ISA](./zenodo_B003_full_description.md) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | 7 |
+| **B004** | [Queen Lotus Cycle](./zenodo_B004_full_description.md) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | 10 |
+| **B005** | [Tri Language](./zenodo_B005_full_description.md) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | 13 |
+| **B006** | [Sacred GF16/TF3](./zenodo_B006_full_description.md) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | 9 |
+| **B007** | [VSA Operations](./zenodo_B007_full_description.md) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | 7 |
+
+**Parent Collection v4.0:** [10.5281/zenodo.19227751](https://doi.org/10.5281/zenodo.19227751)
+
+**Total:** 76 discoveries across 7 bundles
 
 ## Main Documentation
 

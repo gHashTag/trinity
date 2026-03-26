@@ -90,14 +90,35 @@
 
 ## Zenodo DOIs (Defensive Publications)
 
+### v5.0 Enhanced Publications (2026-03-26)
+
 | ID | Discovery | DOI | Status |
 |----|-----------|-----|--------|
-| P1 | HSLM (1.95M ternary LLM) | 10.5281/zenodo.18939352 | ✅ Published |
-| P2 | Sacred GF16/TF3 Formats | 10.5281/zenodo.18939352 | ✅ Published |
-| P3 | Zero-DSP FPGA Inference | 10.5281/zenodo.18939352 | ✅ Published |
-| P4 | TRI-27 ISA | TBD | 🔄 arXiv planned |
-| P5 | Queen Self-Learning | TBD | 🔄 arXiv planned |
-| P6 | Tri Language | TBD | 🔄 PLDI 2026 planned |
+| B001 | HSLM (1.95M ternary LLM) | 10.5281/zenodo.19227865 | ✅ Published v5.0 |
+| B002 | Zero-DSP FPGA Inference | 10.5281/zenodo.19227867 | ✅ Published v5.0 |
+| B003 | TRI-27 ISA (Coptic encoding) | 10.5281/zenodo.19227869 | ✅ Published v5.0 |
+| B004 | Queen Lotus Cycle (6-phase) | 10.5281/zenodo.19227871 | ✅ Published v5.0 |
+| B005 | Tri Language (Linear types) | 10.5281/zenodo.19227873 | ✅ Published v5.0 |
+| B006 | Sacred GF16/TF3 (φ-based) | 10.5281/zenodo.19227875 | ✅ Published v5.0 |
+| B007 | VSA Operations (ternary) | 10.5281/zenodo.19227877 | ✅ Published v5.0 |
+| PARENT | Trinity S³AI Framework | 10.5281/zenodo.19227879 | ✅ Published v5.0 |
+
+**v5.0 Features:** NeurIPS/ICLR/MLSys standards, Broader Impact, Ethics, Reproducibility Checklist
+
+### v4.0 Publications (2026-03-26)
+
+| ID | Discovery | DOI | Status |
+|----|-----------|-----|--------|
+| B001 | HSLM (1.95M ternary LLM) | 10.5281/zenodo.19227733 | ✅ Published v4.0 |
+| B002 | Zero-DSP FPGA Inference | 10.5281/zenodo.19227735 | ✅ Published v4.0 |
+| B003 | TRI-27 ISA | 10.5281/zenodo.19227737 | ✅ Published v4.0 |
+| B004 | Queen Lotus Cycle | 10.5281/zenodo.19227739 | ✅ Published v4.0 |
+| B005 | Tri Language | 10.5281/zenodo.19227743 | ✅ Published v4.0 |
+| B006 | Sacred GF16/TF3 | 10.5281/zenodo.19227745 | ✅ Published v4.0 |
+| B007 | VSA Operations | 10.5281/zenodo.19227749 | ✅ Published v4.0 |
+| PARENT | Trinity S³AI Framework | 10.5281/zenodo.19227751 | ✅ Published v4.0 |
+
+### Legacy v3.1 Publications (2025)
 | P7 | VSA Operations | TBD | 📋 Draft |
 
 ---
