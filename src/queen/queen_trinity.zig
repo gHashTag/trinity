@@ -229,15 +229,176 @@ pub const ImpureQueue = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn parseImpureEvent(event: *ImpureEvent, json: []const u8) bool {
-    _ = event;
-    _ = json;
-    // TODO: Implement JSON parsing
-    return false;
+    // Simple JSON parser for ImpureEvent
+    // Extracts key string fields without full validation
+    var i: usize = 0;
+
+    // Skip whitespace
+    while (i < json.len and (json[i] == ' ' or json[i] == '\t' or json[i] == '\n' or json[i] == '\r')) : (i += 1) {}
+
+    // Must start with '{'
+    if (i >= json.len or json[i] != '{') return false;
+    i += 1;
+
+    while (i < json.len) : (i += 1) {
+        // Skip whitespace
+        while (i < json.len and (json[i] == ' ' or json[i] == '\t' or json[i] == '\n' or json[i] == '\r')) : (i += 1) {}
+        if (i >= json.len) return false;
+
+        // Check for end of object
+        if (json[i] == '}') break;
+
+        // Find key
+        if (json[i] != '"') return false;
+        i += 1;
+        const key_start = i;
+        while (i < json.len and json[i] != '"') : (i += 1) {
+            if (json[i] == '\\') {
+                i += 1; // Skip escaped char
+            }
+        }
+        if (i >= json.len) return false;
+        const key = json[key_start..i];
+        i += 1; // Skip closing quote
+
+        // Skip colon and whitespace
+        while (i < json.len and (json[i] == ' ' or json[i] == '\t' or json[i] == ':')) : (i += 1) {}
+        if (i >= json.len) return false;
+
+        // Extract value based on key
+        if (std.mem.eql(u8, key, "strand")) {
+            if (json[i] != '"') return false;
+            i += 1;
+            const val_start = i;
+            while (i < json.len and json[i] != '"') : (i += 1) {}
+            const val = json[val_start..i];
+            i += 1; // Skip closing quote
+            event.strand = if (std.mem.eql(u8, val, "Brain")) .Brain else if (std.mem.eql(u8, val, "Lang")) .Lang else .Math;
+        } else if (std.mem.eql(u8, key, "event_type")) {
+            if (json[i] != '"') return false;
+            i += 1;
+            const val_start = i;
+            while (i < json.len and json[i] != '"') : (i += 1) {}
+            const val = json[val_start..i];
+            i += 1; // Skip closing quote
+            event.event_type = if (std.mem.eql(u8, val, "BUILD_FAIL")) .BUILD_FAIL else if (std.mem.eql(u8, val, "TEST_FAIL")) .TEST_FAIL else if (std.mem.eql(u8, val, "SPEC_MISMATCH")) .SPEC_MISMATCH else if (std.mem.eql(u8, val, "GEN_FAIL")) .GEN_FAIL else if (std.mem.eql(u8, val, "VERIFY_FAIL")) .VERIFY_FAIL else if (std.mem.eql(u8, val, "DEPLOY_FAIL")) .DEPLOY_FAIL else if (std.mem.eql(u8, val, "CHECKPOINT_FAIL")) .CHECKPOINT_FAIL else .BUILD_FAIL;
+        } else if (std.mem.eql(u8, key, "state")) {
+            if (json[i] != '"') return false;
+            i += 1;
+            const val_start = i;
+            while (i < json.len and json[i] != '"') : (i += 1) {}
+            const val = json[val_start..i];
+            i += 1; // Skip closing quote
+            event.state = if (std.mem.eql(u8, val, "Queued")) .Queued else if (std.mem.eql(u8, val, "Diagnosing")) .Diagnosing else if (std.mem.eql(u8, val, "Refining")) .Refining else if (std.mem.eql(u8, val, "Verifying")) .Verifying else if (std.mem.eql(u8, val, "Purified")) .Purified else if (std.mem.eql(u8, val, "Blocked")) .Blocked else .Queued;
+        } else if (std.mem.eql(u8, key, "source_file")) {
+            if (json[i] != '"') return false;
+            i += 1;
+            const val_start = i;
+            while (i < json.len and json[i] != '"') : (i += 1) {
+                if (json[i] == '\\') i += 1;
+            }
+            const val = json[val_start..i];
+            i += 1; // Skip closing quote
+            event.source_file_len = @min(255, val.len);
+            @memcpy(event.source_file[0..event.source_file_len], val);
+        } else if (std.mem.eql(u8, key, "error_msg")) {
+            if (json[i] != '"') return false;
+            i += 1;
+            const val_start = i;
+            while (i < json.len and json[i] != '"') : (i += 1) {
+                if (json[i] == '\\') i += 1;
+            }
+            const val = json[val_start..i];
+            i += 1; // Skip closing quote
+            event.error_msg_len = @min(511, val.len);
+            @memcpy(event.error_msg[0..event.error_msg_len], val);
+        } else if (std.mem.eql(u8, key, "timestamp")) {
+            while (i < json.len and (json[i] == ' ' or json[i] == '\t')) : (i += 1) {}
+            const num_start = i;
+            while (i < json.len and (json[i] == '-' or json[i] == '+' or (json[i] >= '0' and json[i] <= '9'))) : (i += 1) {}
+            if (num_start < i) {
+                const num_str = json[num_start..i];
+                event.timestamp = std.fmt.parseInt(i64, num_str, 10) catch 0;
+            }
+        } else if (std.mem.eql(u8, key, "attempts")) {
+            while (i < json.len and (json[i] == ' ' or json[i] == '\t')) : (i += 1) {}
+            const num_start = i;
+            while (i < json.len and (json[i] >= '0' and json[i] <= '9')) : (i += 1) {}
+            if (num_start < i) {
+                const num_str = json[num_start..i];
+                event.attempts = std.fmt.parseInt(u8, num_str, 10) catch 0;
+            }
+        } else {
+            // Skip unknown value
+            while (i < json.len and json[i] != ',' and json[i] != '}') : (i += 1) {}
+        }
+    }
+
+    return true;
 }
 
-fn serializeImpureEvent(event: *const ImpureEvent) ![]u8 {
-    _ = event;
-    return error.NotImplemented;
+fn serializeImpureEvent(allocator: Allocator, event: *const ImpureEvent) ![]u8 {
+    var json_str = std.ArrayList(u8).init(allocator);
+    defer json_str.deinit();
+
+    try json_str.append('{');
+
+    // ID field (hex encoded, first 32 bytes)
+    try json_str.appendSlice("\"id\": \"");
+    for (0..32) |i| {
+        try json_str.writer(allocator).print("{x:0>2}", .{event.id[i]});
+    }
+    try json_str.appendSlice("\",");
+
+    // Strand
+    const strand_name = switch (event.strand) {
+        .Math => "Math",
+        .Brain => "Brain",
+        .Lang => "Lang",
+    };
+    try json_str.writer(allocator).print("\"strand\": \"{s}\",", .{strand_name});
+
+    // Event type
+    const event_type_name = eventName(event.event_type);
+    try json_str.writer(allocator).print("\"event_type\": \"{s}\",", .{event_type_name});
+
+    // Source file
+    try json_str.appendSlice("\"source_file\": \"");
+    if (event.source_file_len > 0) {
+        const sf = event.source_file[0..event.source_file_len];
+        for (sf) |c| {
+            if (c == '\\' or c == '"') {
+                try json_str.append('\\');
+            }
+            try json_str.append(c);
+        }
+    }
+    try json_str.appendSlice("\",");
+
+    // Error message
+    try json_str.appendSlice("\"error_msg\": \"");
+    if (event.error_msg_len > 0) {
+        const em = event.error_msg[0..event.error_msg_len];
+        for (em) |c| {
+            if (c == '\\' or c == '"') {
+                try json_str.append('\\');
+            }
+            try json_str.append(c);
+        }
+    }
+    try json_str.appendSlice("\",");
+
+    // Timestamp and attempts
+    try json_str.writer(allocator).print("\"timestamp\": {d},", .{event.timestamp});
+    try json_str.writer(allocator).print("\"attempts\": {d},", .{event.attempts});
+
+    // State
+    const state_name = lotusStateName(event.state);
+    try json_str.writer(allocator).print("\"state\": \"{s}\"", .{state_name});
+
+    try json_str.append('}');
+
+    return allocator.dupe(u8, json_str.items);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
