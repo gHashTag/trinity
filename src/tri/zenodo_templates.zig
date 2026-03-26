@@ -2005,6 +2005,135 @@ pub const FigureCaption = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// KEYWORDS — Standardized Keyword Sets for Scientific Indexing
+// ═══════════════════════════════════════════════════════════════════════════
+
+pub const KeywordCategory = enum {
+    /// ACM Computing Classification System
+    acm_ccs,
+    /// Medical Subject Headings (MeSH)
+    mesh,
+    /// General machine learning keywords
+    general,
+};
+
+pub const Keyword = struct {
+    /// The keyword term
+    term: []const u8,
+    /// Category for indexing
+    category: KeywordCategory,
+    /// Optional subcategory (e.g., "cs.LG" for ACM, "D02.145" for MeSH)
+    subcategory: ?[]const u8 = null,
+
+    pub fn formatAsLaTeX(self: *const Keyword, allocator: std.mem.Allocator) ![]u8 {
+        var kw = std.ArrayList(u8).initCapacity(allocator, 128) catch @panic("OOM");
+        defer kw.deinit(allocator);
+
+        try kw.writer(allocator).print("\\kw{{{s}}}", .{self.term});
+
+        return kw.toOwnedSlice(allocator);
+    }
+
+    pub fn formatAsMarkdown(self: *const Keyword, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 128) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("{s}", .{self.term});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+pub const Keywords = struct {
+    /// List of keywords
+    items: []const Keyword,
+
+    /// Format as LaTeX keywords command
+    pub fn formatAsLaTeX(self: *const Keywords, allocator: std.mem.Allocator) ![]u8 {
+        var kw = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer kw.deinit(allocator);
+
+        try kw.writer(allocator).writeAll("\\keywords{");
+
+        for (self.items, 0..) |item, i| {
+            if (i > 0) try kw.writer(allocator).writeAll(", ");
+            try kw.writer(allocator).print("{s}", .{item.term});
+        }
+
+        try kw.writer(allocator).writeAll("}\n");
+
+        return kw.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown keywords section
+    pub fn formatAsMarkdown(self: *const Keywords, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).writeAll("**Keywords:** ");
+
+        for (self.items, 0..) |item, i| {
+            if (i > 0) try md.writer(allocator).writeAll(", ");
+            try md.writer(allocator).print("{s}", .{item.term});
+        }
+
+        try md.writer(allocator).writeAll("\n\n");
+
+        // Group by category (simplified implementation)
+        var has_acm = false;
+        var has_mesh = false;
+        var has_general = false;
+
+        for (self.items) |item| {
+            switch (item.category) {
+                .acm_ccs => has_acm = true,
+                .mesh => has_mesh = true,
+                .general => has_general = true,
+            }
+        }
+
+        if (has_acm) {
+            try md.writer(allocator).writeAll("**ACM CCS:** ");
+            var first = true;
+            for (self.items) |item| {
+                if (item.category == .acm_ccs) {
+                    if (!first) try md.writer(allocator).writeAll(", ");
+                    try md.writer(allocator).print("{s}", .{item.term});
+                    first = false;
+                }
+            }
+            try md.writer(allocator).writeAll("\n\n");
+        }
+
+        if (has_mesh) {
+            try md.writer(allocator).writeAll("**MeSH:** ");
+            var first = true;
+            for (self.items) |item| {
+                if (item.category == .mesh) {
+                    if (!first) try md.writer(allocator).writeAll(", ");
+                    try md.writer(allocator).print("{s}", .{item.term});
+                    first = false;
+                }
+            }
+            try md.writer(allocator).writeAll("\n\n");
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+
+    /// Count keywords by category
+    pub fn countByCategory(self: *const Keywords, category: KeywordCategory) usize {
+        var count: usize = 0;
+        for (self.items) |item| {
+            if (item.category == category) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2507,6 +2636,83 @@ test "FigureCaption formatAsMarkdown no description" {
 
     try std.testing.expect(std.mem.indexOf(u8, md, "**Figure fig:isa-overview:**") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "TRI-27 ISA") != null);
+}
+
+test "Keyword formatAsLaTeX" {
+    const kw = Keyword{
+        .term = "neural networks",
+        .category = .general,
+    };
+
+    const latex = try kw.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\kw{neural networks}") != null);
+}
+
+test "Keyword formatAsMarkdown" {
+    const kw = Keyword{
+        .term = "quantization",
+        .category = .acm_ccs,
+        .subcategory = "cs.LG",
+    };
+
+    const md = try kw.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "quantization") != null);
+}
+
+test "Keywords formatAsLaTeX" {
+    const kws = Keywords{
+        .items = &[_]Keyword{
+            .{ .term = "neural networks", .category = .general },
+            .{ .term = "quantization", .category = .acm_ccs },
+            .{ .term = "edge computing", .category = .mesh },
+        },
+    };
+
+    const latex = try kws.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\keywords{") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "neural networks") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "quantization") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "edge computing") != null);
+}
+
+test "Keywords formatAsMarkdown" {
+    const kws = Keywords{
+        .items = &[_]Keyword{
+            .{ .term = "ternary", .category = .general },
+            .{ .term = "neural networks", .category = .acm_ccs },
+            .{ .term = "fpga", .category = .mesh },
+        },
+    };
+
+    const md = try kws.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Keywords:**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "ternary") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "**ACM CCS:**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "**MeSH:**") != null);
+}
+
+test "Keywords getByCategory" {
+    const kws = Keywords{
+        .items = &[_]Keyword{
+            .{ .term = "neural networks", .category = .acm_ccs },
+            .{ .term = "quantization", .category = .general },
+            .{ .term = "machine learning", .category = .acm_ccs },
+            .{ .term = "edge computing", .category = .mesh },
+        },
+    };
+
+    const acm = try kws.getByCategory(std.testing.allocator, .acm_ccs);
+    defer std.testing.allocator.free(acm);
+
+    try std.testing.expectEqual(@as(usize, 2), acm.len);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
