@@ -167,7 +167,7 @@ pub const ImpureQueue = struct {
 
             var event = ImpureEvent{};
             if (parseImpureEvent(&event, content)) {
-                try self.events.append(self.allocator, event);
+                try self.events.append(event);
             }
         }
     }
@@ -464,8 +464,8 @@ fn runQueenStatus(allocator: Allocator) !void {
 
     // Count by strand
     std.debug.print("\nBy Strand:\n", .{});
-    inline for (@typeInfo(Strand).enum_fields.len) |i| {
-        const strand = @typeInfo(Strand).enum_fields[i].value;
+    const strands = [_]Strand{ .Math, .Brain, .Lang };
+    for (strands) |strand| {
         const count = queue.countByStrand(strand);
         std.debug.print("  Strand {s}: {d}\n", .{ strandFullName(strand), count });
     }
