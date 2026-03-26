@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v7.8
+# Trinity Research Documentation Index — v7.9
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 151
+**Total Documents:** 152
 **NEW:** v5.0 Zenodo publications (8 enhanced descriptions)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
@@ -148,7 +148,8 @@
 | `SACRED_ATTENTION_CONSCIOUSNESS_ANALYSIS.md` | SIMD RoPE, adaptive threshold, layer-wise EMA | 16-25% attn, 2-3% PPL ✨ |
 | `TERNARY_NEURAL_NETWORK_COMPREHENSIVE_ANALYSIS.md` | TNN 6 variants, STE modes, TernGrad, hybrid precision | 35-50% inference, 35-40% memory ✨ |
 | `CONSCIOUSNESS_DUAL_SYSTEM_COMPREHENSIVE_ANALYSIS.md` | Consciousness gate φ⁻¹ threshold, VSA reasoning, dual-system | 35-50% long-range, 15-25% accuracy, 25-35% efficiency ✨ |
-| `HSLM_NEUROANATOMICAL_COMPREHENSIVE_ANALYSIS.md` | Neuroanatomical architecture: Angular/Fusiform/Orbitofrontal + Parallel | 25-40% memory, 15-30% speed, 10-20% training efficiency ✨ NEW |
+| `HSLM_NEUROANATOMICAL_COMPREHENSIVE_ANALYSIS.md` | Neuroanatomical architecture: Angular/Fusiform/Orbitofrontal + Parallel | 25-40% memory, 15-30% speed, 10-20% training efficiency ✨ |
+| `ZENODO_FAIR_2025_COMPREHENSIVE_GUIDE.md` | FAIR 2025 principles + NeurIPS/ICLR/MLSys standards, reproducibility | 40-60% discoverability, 80-95% reproducibility ✨ NEW |
 
 ---
 
@@ -210,7 +211,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 7.8 | 2026-03-26 | Added HSLM Neuroanatomical Architecture Comprehensive Analysis (4 components, 6 proposals) ✨ NEW |
+| 7.9 | 2026-03-26 | Added Zenodo FAIR 2025 Comprehensive Guide (FAIR principles, NeurIPS/ICLR/MLSys, reproducibility) ✨ NEW |
+| 7.8 | 2026-03-26 | Added HSLM Neuroanatomical Architecture Comprehensive Analysis (4 components, 6 proposals) ✨ |
 | 7.7 | 2026-03-26 | Added Consciousness Dual-System Comprehensive Analysis (φ⁻¹ gate, VSA reasoning, 6 proposals) ✨ |
 | 7.6 | 2026-03-26 | Added Ternary Neural Network Comprehensive Analysis (6 variants, STE, TernGrad, hybrid) ✨ |
 | 7.5 | 2026-03-26 | Added Session 7 Autonomous Cycle Report (2 commits, 1 doc, ~500 LOC) ✨ NEW |
