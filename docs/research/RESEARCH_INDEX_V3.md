@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.4
+# Trinity Research Documentation Index — v9.5
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 177
-**NEW: Scalability Comprehensive Analysis + Session 25 Report
+**Total Documents:** 179
+**NEW: Zenodo Best Practices 2026 + Session 26 Report
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -52,12 +52,13 @@
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
 
-### 4. Zenodo Publication (8 documents)
+### 4. Zenodo Publication (9 documents)
 
 | Document | Purpose | Version |
 |----------|---------|---------|
 | `ZENODO_PUBLICATION_BEST_PRACTICES.md` | Scientific writing standards | v3.0 ✅ |
-| `ZENODO_ABSTRACT_IMPROVEMENTS.md` | Abstract enhancement analysis | v1.0 ✅ NEW |
+| `ZENODO_PUBLICATION_BEST_PRACTICES_2026_COMPREHENSIVE.md` | Complete 2025-2026 standards: FAIR, ML cards, reproducibility | v3.0 ✨ NEW |
+| `ZENODO_ABSTRACT_IMPROVEMENTS.md` | Abstract enhancement analysis | v1.0 ✅ |
 | `ZENODO_SCIENTIFIC_GUIDE_V2.md` | Metadata requirements | v2.0 |
 | `ZENODO_MASTER_INDEX.md` | All Zenodo bundles index | v1.0 |
 | `ZENODO_PUBLICATIONS_SUMMARY.md` | Publication summary | v1.0 |
@@ -226,7 +227,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 9.4 | 2026-03-26 | Added Scalability Comprehensive Analysis (Amdahl/Gustafson laws, multi-FPGA 87.5% efficiency at 4×, 80.5% at 64×, memory scaling 16× reduction, communication scaling 16×, distributed training 92.1% efficiency, production deployment projections, 4× throughput optimization) + Session 25 report ✨ NEW |
+| 9.5 | 2026-03-26 | Added Zenodo Best Practices 2026 Comprehensive (FAIR principles 15/15 compliance, Model Cards + Datasheets, NeurIPS reproducibility checklist, 5-sentence abstract structure, statistical reporting standards, CITATION.cff v1.2.0, automated validation, Trinity 8 bundle examples) + Session 26 report ✨ NEW |
+| 9.4 | 2026-03-26 | Added Scalability Comprehensive Analysis (Amdahl/Gustafson laws, multi-FPGA 87.5% efficiency at 4×, 80.5% at 64×, memory scaling 16× reduction, communication scaling 16×, distributed training 92.1% efficiency, production deployment projections, 4× throughput optimization) + Session 25 report ✨ |
 | 9.3 | 2026-03-26 | Added Energy Efficiency Comprehensive Analysis (Landauer principle, ternary info theory 1.585× density, FPGA zero-DSP 19.2 pJ/OP, sacred scaling 2.1× energy, consciousness gate 36% VSA reduction, carbon footprint 918× improvement, 6.15× optimized to 3.12 pJ/OP) + Session 24 report ✨ |
 | 9.2 | 2026-03-26 | Added Code Improvement Proposals Comprehensive (34+ proposals from Sessions 13-22 synthesized into priority-ordered roadmap, Phase 1-3 implementation plan, 15-25% PPL, 10-20% policy, 30-40% speed improvements, 43-67 hours total) + Session 23 report ✨ |
 | 9.1 | 2026-03-26 | Added FPGA Sacred Mathematics Implementation (φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP design, 19.6% LUT, 1.2W power, 250MHz) + Session 22 report ✨ |

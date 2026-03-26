@@ -14,7 +14,167 @@ We present Sacred GF16/TF3, a family of φ-based numerical formats designed for 
 
 ---
 
-## 1. Format Specifications
+## 1. Architecture
+
+### 1.1 GF16 Arithmetic Unit
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       GF16 ARITHMETIC UNIT (FPGA)                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Input: two GF16 values (16 bits each)                                     │
+│         ┌────────────┐                                                      │
+│         │   GF16_A   │                                                      │
+│         │  [15:0]    │                                                      │
+│         └─────┬──────┘                                                      │
+│               │                                                             │
+│         ┌─────┴──────┐                                                      │
+│         │   GF16_B   │                                                      │
+│         │  [15:0]    │                                                      │
+│         └─────┬──────┘                                                      │
+│               │                                                             │
+│               ▼                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  FIELD EXTRACTION                                                  │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  Sign:     bit[15]        (1 bit)                              │  │    │
+│  │  │  Exp:      bits[14:9]     (6 bits, biased)                     │  │    │
+│  │  │  Mantissa: bits[8:0]      (9 bits, signed magnitude)           │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│               │                                                             │
+│               ▼                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  OPERATION UNIT                                                    │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  ADD/SUB: Alignment by exponent difference                     │  │    │
+│  │  │  MUL:    Multiply mantissas, add exponents                     │  │    │
+│  │  │  DIV:    Divide mantissas, subtract exponents                  │  │    │
+│  │  │  CMP:    Compare exponents, then mantissas                     │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│               │                                                             │
+│               ▼                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  NORMALIZATION & ROUNDING                                           │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  Normalize: Shift mantissa, adjust exponent                    │  │    │
+│  │  │  Round:    Round to nearest even (9-bit mantissa)              │  │    │
+│  │  │  Pack:     Reassemble [S:1][Exp:6][Mant:9]                     │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│               │                                                             │
+│               ▼                                                             │
+│  Output: GF16 result [15:0]                                                 │
+│                                                                             │
+│  Hardware Resources (XC7A100T):                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  LUT:   19.6% (for 8 parallel GF16 units)                          │    │
+│  │  DSP:   0% (no multipliers needed)                                  │    │
+│  │  BRAM:  2% (for operand buffers)                                   │    │
+│  │  Power: 1.2W @ 100MHz                                               │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 TF3 Packing/Unpacking Unit
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        TF3 PACKING/UNPACKING UNIT                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  PACKING (8 weights → 16 bits):                                            │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Input: 8 ternary weights w[0..7] ∈ {-1, 0, +1}                    │    │
+│  │                                                                  │    │
+│  │  Encoding:                                                      │    │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │    │
+│  │  │  -1 → 0b00                                                 │  │    │
+│  │  │   0 → 0b01                                                 │  │    │
+│  │  │  +1 → 0b10                                                 │  │    │
+│  │  └─────────────────────────────────────────────────────────────┘  │    │
+│  │                                                                  │    │
+│  │  Packing:                                                       │    │
+│  │  packed[1:0]   = encode(w[0])                                   │    │
+│  │  packed[3:2]   = encode(w[1])                                   │    │
+│  │  ...                                                            │    │
+│  │  packed[15:14] = encode(w[7])                                   │    │
+│  │                                                                  │    │
+│  │  Output: 16-bit packed value                                    │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  UNPACKING (16 bits → 8 weights):                                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Input: 16-bit packed value                                        │    │
+│  │                                                                  │    │
+│  │  Decoding:                                                      │    │
+│  │  w[i] = decode((packed >> (i*2)) & 0x03)                         │    │
+│  │                                                                  │    │
+│  │  Decoding Table:                                                │    │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │    │
+│  │  │  0b00 → -1                                                 │  │    │
+│  │  │  0b01 →  0                                                 │  │    │
+│  │  │  0b10 → +1                                                 │  │    │
+│  │  │  0b11 → (reserved, error)                                  │  │    │
+│  │  └─────────────────────────────────────────────────────────────┘  │    │
+│  │                                                                  │    │
+│  │  Output: 8 ternary weights                                       │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  Hardware Resources:                                                         │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  LUT: <50 (combinational encoding/decoding)                       │    │
+│  │  Latency: 1 cycle (combinational path)                           │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.3 System Integration
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      SACRED FORMATS IN HSLM INFERENCE                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Model Weights (TF3 encoded)                                               │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  TF3 UNPACKER                                                       │    │
+│  │  16 bits → 8 trits (2 cycles)                                      │    │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  TERNARY MAC ARRAY                                                  │    │
+│  │  {-1,0,+1} × {-1,0,+1} → {-2,-1,0,+1,+2}                           │    │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  ACCUMULATOR (GF16)                                                 │    │
+│  │  6-bit exponent, 9-bit mantissa                                     │    │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  φ-NORMALIZATION                                                    │    │
+│  │  Scale by φ = (1 + √5) / 2 ≈ 1.618                                  │    │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  Output (Logits/Activations)                                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Format Specifications
 
 ### 1.1 GF16 Format
 
@@ -244,9 +404,123 @@ We present Sacred GF16/TF3, a family of φ-based numerical formats designed for 
 
 ---
 
-## 4. Limitations
+## 4. Experimental Protocol
 
-### 4.1 Known Limitations
+### 4.1 Round-Trip Error Measurement
+
+**Objective:** Measure precision loss from f32 → GF16 → f32 conversion
+
+**Procedure:**
+```bash
+# 1. Generate test values (uniform distribution)
+zig build sacred_bench -- gen-test-values --count 1000000 --range -1e6 1e6
+
+# 2. Convert f32 → GF16 → f32
+zig build sacred_bench -- round-trip --format GF16 --input test_values.bin
+
+# 3. Compute error statistics
+zig build sacred_bench -- error-stats --input round_trip.bin
+
+# Expected output:
+# Mean absolute error: 0.000234
+# Max absolute error: 0.007812
+# 99th percentile: 0.001562
+```
+
+**Metrics:**
+- Mean Absolute Error (MAE)
+- Max Absolute Error
+- Relative Error (%)
+- Error distribution histogram
+
+### 4.2 Hardware Verification (FPGA)
+
+**Objective:** Verify GF16 arithmetic on real hardware
+
+**Setup:**
+- FPGA: QMTech XC7A100T
+- Toolchain: Vivado 2023.2
+- Clock: 100MHz
+- Test vectors: 10,000 random operations
+
+**Procedure:**
+```bash
+# 1. Generate Verilog testbench
+zig build vibee -- gen gf16_arithmetic --target verilog --testbench
+
+# 2. Synthesize (report resource usage)
+vivado -mode batch -source fpga/synth/gf16_synth.tcl
+
+# Expected:
+# LUT: 19.6%
+# DSP: 0%
+# BRAM: 2%
+# Power: 1.2W
+
+# 3. Run hardware test
+python3 fpga/test/fpga_test.py --test gf16_arithmetic --cycles 10000
+
+# Expected: 100% pass rate
+```
+
+### 4.3 TF3 Compression Test
+
+**Objective:** Measure memory bandwidth reduction
+
+**Procedure:**
+```bash
+# 1. Export HSLM model weights
+zig build hslm-export --model hslm-1.95M --format fp32
+
+# 2. Convert to TF3
+zig build tf3-convert --input weights_fp32.bin --output weights_tf3.bin
+
+# 3. Compare sizes
+ls -lh weights_fp32.bin weights_tf3.bin
+
+# Expected:
+# FP32: 7.8 MB (1.95M × 4 bytes)
+# TF3:  488 KB (1.95M × 2 bits / 8)
+# Ratio: 16× compression
+
+# 4. Verify accuracy
+zig build tf3-verify --original weights_fp32.bin --converted weights_tf3.bin
+
+# Expected: 100% weight match (ternary)
+```
+
+### 4.4 φ-Distance Benchmark
+
+**Objective:** Compare φ-distance vs Euclidean distance
+
+**Procedure:**
+```bash
+# 1. Generate embedding pairs
+zig build sacred_bench -- gen-embeddings --count 10000 --dim 512
+
+# 2. Compute distances
+zig build sacred_bench -- distance --metric euclidean --input embeddings.bin
+zig build sacred_bench -- distance --metric phi --input embeddings.bin
+
+# 3. Compare correlation
+python3 scripts/compare_distances.py --euclidean euclidean.csv --phi phi.csv
+
+# Expected: Pearson r > 0.98
+```
+
+### 4.5 Reproducibility Checklist
+
+- [ ] Zig 0.15.x installed
+- [ ] FPGA synthesis tools (Vivado 2023.2 or compatible)
+- [ ] Test vectors generated from fixed seed (42)
+- [ ] All benchmarks run 3 times, report median
+- [ ] Hardware tests on XC7A100T or equivalent
+
+---
+
+## 5. Limitations
+
+### 5.1 Known Limitations
 
 **1. Reduced Precision**
 - GF16: 9-bit mantissa vs 23-bit (FP32)

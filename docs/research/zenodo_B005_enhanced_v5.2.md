@@ -14,7 +14,122 @@ We present Tri Language, a linear-typed DSL with algebraic effects and dual-targ
 
 ---
 
-## 1. Type System Diagrams
+## 1. Architecture
+
+### 1.1 VIBEE Compiler Pipeline
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         VIBEE COMPILER ARCHITECTURE                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Input (.tri spec)                                                          │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  1. LEXER & PARSER                                                  │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  Tokenization: .tri → tokens                                   │  │    │
+│  │  │  AST Generation: tokens → AST nodes                            │  │    │
+│  │  │  Error Recovery: Continue on syntax errors                     │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  2. TYPE CHECKER                                                    │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  Linear Type Checking: Let/Inout/Sink/Set validation          │  │    │
+│  │  │  Effect Checking: Handler resolution                           │  │    │
+│  │  │  Pattern Exhaustiveness: All cases covered                     │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  3. CONTENT ADDRESSING                                              │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │  AST Hashing: SHA256(AST) → content hash                       │  │    │
+│  │  │  Deduplication: Reuse existing generated code                  │  │    │
+│  │  │  Registry: .trinity/content/ directory                         │  │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                     │
+│       ▼                                                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  4. CODE GENERATOR (Target Selection)                               │    │
+│  │  ┌─────────────────────────────────────────────────────────────────┐  │    │
+│  │  │                                                          ┌─────┴─────┐ │    │
+│  │  │                    Target Selection                         │          │ │    │
+│  │  │  ┌───────────────┴──────────┐              ┌─────────────────┤          │ │    │
+│  │  │  │   ZIG CODEGEN           │              │  VERILOG CODEGEN │          │ │    │
+│  │  │  │  ┌─────────────────┐    │              │  ┌─────────────┐ │          │ │    │
+│  │  │  │  │ Let → const    │    │              │  │ Bit → case  │ │          │ │    │
+│  │  │  │  │ Inout → var    │    │              │  │ Trit → mux  │ │          │ │    │
+│  │  │  │  │ Sink → defer   │    │              │  │ Struct →    │ │          │ │    │
+│  │  │  │  │ Effect → fn    │    │              │  │   module    │ │          │ │    │
+│  │  │  │  └─────────────────┘    │              │  └─────────────┘ │          │ │    │
+│  │  │  └─────────────────────────┘              └─────────────────┘          │ │    │
+│  │  └─────────────────────────────────────────────────────────────────┘  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                            │                                        │
+│       ▼                            ▼                                        │
+│  Output: Zig Code              Output: Verilog Code                         │
+│  (15,234 LOC ref)              (8,456 LOC ref)                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Type System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         TRI TYPE SYSTEM LAYERS                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Layer 3: Effects (Algebraic)                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  State<T>  : get/set operations                                     │    │
+│  │  IO<T>     : read/write operations                                   │    │
+│  │  Async<T>  : spawn/join operations                                   │    │
+│  │  Effect<T> : User-defined effects                                   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                              │                                             │
+│  Layer 2: Linearity (Ownership)                                           │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Let<T>    : Immutable borrow (multiple readers)                    │    │
+│  │  Inout<T>  : Mutable borrow (single writer)                         │    │
+│  │  Sink<T>   : Consumed value (must use exactly once)                 │    │
+│  │  Set<T>    : Owned collection (moves ownership)                     │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                              │                                             │
+│  Layer 1: Base Types                                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Primitives: i32, u32, f32, bool, trit, str                        │    │
+│  │  Composites: Array<T>, Struct { ... }, Enum { ... }                │    │
+│  │  Functions: fn(T) -> T                                              │    │
+│  │  Patterns: BitPattern, TritPattern, StructPattern                  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.3 Component Modules
+
+| Module | File | Purpose | LOC |
+|--------|------|---------|-----|
+| Lexer | `src/vibeec/lexer.zig` | Tokenization | 180 |
+| Parser | `src/vibeec/vibee_parser.zig` | AST generation | 420 |
+| Type Checker | `src/tri-lang/linear_types.zig` | Linear typing | 340 |
+| Effect Resolver | `src/tri-lang/effects.zig` | Handler dispatch | 280 |
+| Zig Codegen | `src/vibeec/emit_zig.zig` | AST → Zig | 520 |
+| Verilog Codegen | `src/vibeec/emit_verilog.zig` | AST → Verilog | 480 |
+
+**Total:** 2,220 LOC of compiler infrastructure
+
+---
+
+## 2. Type System Diagrams
 
 ### 1.1 Linear Type Modes
 
