@@ -357,3 +357,6 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 | `AUTONOMOUS_CYCLE_SESSION34_FINAL_REPORT_20260326.md` | 6 templates, 3400 LOC, grant+conference ready | Markdown ✨ NEW |
 | `MODEL_CARD_TEMPLATE_2026.md` | Mitchell+ ML Commons model card standard | Markdown ✨ NEW |
 | `DATASET_CARD_TEMPLATE_2026.md` | Gebru+ datasheets for datasets standard | Markdown ✨ NEW |
+| `AUTONOMOUS_CYCLE_SESSION35_FINAL_REPORT_20260326.md` | Model+Dataset cards, 950 LOC, ML transparency | Markdown ✨ NEW |
+| `README_TEMPLATE_2026.md` | GitHub scientific software README best practices | Markdown ✨ NEW |
+| `AUTONOMOUS_CYCLE_SESSIONS_34_35_COMPREHENSIVE_20260326.md` | 10 docs, 5250 LOC, conference+grant+ML ready | Markdown ✨ NEW |
