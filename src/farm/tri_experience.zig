@@ -32,7 +32,7 @@ pub const Episode = struct {
     pub fn effortScore(self: *const Episode) f32 {
         const base_effort: f32 = @floatFromInt(self.iterations);
         const task_complexity: f32 = @floatFromInt(self.task_len);
-        const mistake_penalty: f32 = @floatFromInt(self.mistake_count) * 2.0;
+        const mistake_penalty: f32 = @as(f32, @floatFromInt(self.mistake_count)) * 2.0;
         return base_effort + (task_complexity * 0.1) + mistake_penalty;
     }
 
@@ -41,7 +41,7 @@ pub const Episode = struct {
         var reward: f32 = if (self.success) 1.0 else 0.0;
 
         // Learning bonus: +0.1 per unique learning
-        reward += @floatFromInt(self.learning_count) * 0.1;
+        reward += @as(f32, @floatFromInt(self.learning_count)) * 0.1;
 
         // Efficiency bonus: fewer iterations = higher reward
         if (self.iterations > 0) {
@@ -68,9 +68,11 @@ pub const ExperienceStore = struct {
     const Self = @This();
 
     pub fn init(allocator: Allocator) !Self {
+        var episodes_list: std.ArrayList(Episode) = .empty;
+        try episodes_list.ensureTotalCapacityPrecise(allocator, 100);
         return .{
             .allocator = allocator,
-            .episodes = std.ArrayList(Episode).init(allocator),
+            .episodes = episodes_list,
         };
     }
 
@@ -80,7 +82,7 @@ pub const ExperienceStore = struct {
 
     /// Add episode to store
     pub fn addEpisode(self: *Self, episode: Episode) !void {
-        try self.episodes.append(episode);
+        try self.episodes.append(self.allocator, episode);
     }
 
     /// Calculate average reward/effort ratio across recent episodes
@@ -100,12 +102,13 @@ pub const ExperienceStore = struct {
 
     /// Find episodes with suspiciously low reward/effort ratio
     pub fn findSuspiciousEpisodes(self: *Self, threshold: f32, allocator: Allocator) ![]const usize {
-        var suspicious = std.ArrayList(usize).init(allocator);
+        var suspicious = std.ArrayList(usize).empty;
+        try suspicious.ensureTotalCapacityPrecise(allocator, 16);
         defer suspicious.deinit(allocator);
 
         for (self.episodes.items, 0..) |ep, i| {
             if (ep.rewardEffortRatio() < threshold) {
-                try suspicious.append(i);
+                try suspicious.append(allocator, i);
             }
         }
 
@@ -130,7 +133,7 @@ pub const ExperienceStore = struct {
         for (self.episodes.items) |ep| {
             if (ep.success) stats.success_count += 1 else stats.failure_count += 1;
             stats.total_iterations += ep.iterations;
-        };
+        }
 
         stats.avg_iterations = @as(f32, @floatFromInt(stats.total_iterations)) /
             @as(f32, @floatFromInt(stats.total_episodes));
