@@ -144,22 +144,22 @@ pub const CIFAR10Trainer = struct {
     }
 
     /// Train on single image with backpropagation
-    pub fn trainStep(self: *Self, image: CIFAR10Image, allocator: std.mem.Allocator) !CIFAR10Metrics {
+    pub fn trainStep(self: *Self, image: CIFAR10Image) !CIFAR10Metrics {
         // Convert image to float tensor (on stack, freed after step)
         var input: [3072]f32 = undefined;
-        defer {
-            for (&input) |*v| v.* = normalizePixel(image.data[@intFromInt(v)]);
+        for (0..3072) |i| {
+            input[i] = normalizePixel(image.data[@intCast(i)]);
         }
 
         // Forward + backward pass with SGD
-        const loss = try self.model.backward(input, image.label, self.optimizer.learning_rate);
+        const loss = try self.model.backward(&input, image.label, self.optimizer.learning_rate);
 
         // Update metrics
         self.metrics.updateLoss(loss);
 
         // Get prediction for accuracy
         var probs: [10]f32 = undefined;
-        const pred = try self.model.predict(input, &probs);
+        const pred = try self.model.predict(&input, &probs);
 
         self.metrics.updateAccuracy(pred, image.label);
 
@@ -180,7 +180,7 @@ pub const CIFAR10Trainer = struct {
 
             // Predict
             var probs: [10]f32 = undefined;
-            const prediction = try self.model.predict(input, &probs);
+            const prediction = try self.model.predict(&input, &probs);
 
             metrics.updateAccuracy(prediction, img.label);
         }
@@ -221,7 +221,7 @@ pub const CIFAR10Trainer = struct {
             defer batch.deinit();
 
             for (batch.images.items) |img| {
-                _ = try self.trainStep(img, allocator);
+                _ = try self.trainStep(img);
             }
 
             start_idx += batch_size;

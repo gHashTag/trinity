@@ -59,7 +59,7 @@ test "cifar10: train on single batch" {
 
     for (0..subset_size) |i| {
         const img = dataset.get(i);
-        const metrics = try trainer.trainStep(img, testing.allocator);
+        const metrics = try trainer.trainStep(img);
         total_loss += metrics.loss;
         if (metrics.correct > 0) correct = metrics.correct;
 

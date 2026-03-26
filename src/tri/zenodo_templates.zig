@@ -84,15 +84,15 @@ pub const Author = struct {
 
     pub fn formatAsCreator(self: *const Author, allocator: std.mem.Allocator) ![]u8 {
         var creator = std.ArrayList(u8).initCapacity(allocator, 256) catch @panic("OOM");
-        defer creator.deinit();
+        defer creator.deinit(allocator);
 
         try creator.writer(allocator).print("{{\"name\": \"{s}\", \"affiliation\": \"{s}\"", .{ self.name, self.affiliation });
         if (self.orcid) |orcid| {
             try creator.writer(allocator).print(", \"orcid\": \"{s}\"", .{orcid});
         }
-        try creator.writer(allocator).print("}}");
+        try creator.writer(allocator).print("}}", .{});
 
-        return creator.toOwnedSlice();
+        return creator.toOwnedSlice(allocator);
     }
 };
 
@@ -126,7 +126,7 @@ pub const BroaderImpact = struct {
 
     pub fn formatAsMarkdown(self: *const BroaderImpact, allocator: std.mem.Allocator) ![]u8 {
         var md = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer md.deinit();
+        defer md.deinit(allocator);
 
         try md.writer(allocator).print("## Broader Impact\n\n", .{});
         try md.writer(allocator).print("### Positive Impacts\n\n", .{});
@@ -142,7 +142,7 @@ pub const BroaderImpact = struct {
             try md.writer(allocator).print("- {s}\n", .{mitigation});
         }
 
-        return md.toOwnedSlice();
+        return md.toOwnedSlice(allocator);
     }
 };
 
@@ -159,7 +159,7 @@ pub const EthicalConsiderations = struct {
 
     pub fn formatAsMarkdown(self: *const EthicalConsiderations, allocator: std.mem.Allocator) ![]u8 {
         var md = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer md.deinit();
+        defer md.deinit(allocator);
 
         try md.writer(allocator).print("## Ethical Considerations\n\n", .{});
         try md.writer(allocator).print("### Data Provenance\n\n{s}\n\n", .{self.data_provenance});
@@ -176,7 +176,7 @@ pub const EthicalConsiderations = struct {
             try md.writer(allocator).print("### Fairness\n\n{s}\n\n", .{fair});
         }
 
-        return md.toOwnedSlice();
+        return md.toOwnedSlice(allocator);
     }
 };
 
@@ -199,7 +199,7 @@ pub const ReproducibilityInfo = struct {
 
     pub fn formatAsMarkdown(self: *const ReproducibilityInfo, allocator: std.mem.Allocator) ![]u8 {
         var md = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer md.deinit();
+        defer md.deinit(allocator);
 
         try md.writer(allocator).print("## Reproducibility\n\n", .{});
         try md.writer(allocator).print("### Code\n\n", .{});
@@ -220,7 +220,7 @@ pub const ReproducibilityInfo = struct {
             try md.writer(allocator).print("### Random Seed\n\n{d}\n\n", .{seed});
         }
 
-        return md.toOwnedSlice();
+        return md.toOwnedSlice(allocator);
     }
 };
 
@@ -356,7 +356,7 @@ pub const ZenodoMetadata = struct {
     /// Generate JSON metadata for Zenodo upload
     pub fn toJSON(self: *const ZenodoMetadata, allocator: std.mem.Allocator) ![]u8 {
         var json = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer json.deinit();
+        defer json.deinit(allocator);
 
         try json.writer(allocator).print("{{\n", .{});
         try json.writer(allocator).print("  \"title\": \"{s}\",\n", .{self.title});
@@ -398,13 +398,13 @@ pub const ZenodoMetadata = struct {
 
         try json.writer(allocator).print("  \"upload_type\": \"publication\"\n}}\n", .{});
 
-        return try json.toOwnedSlice();
+        return try json.toOwnedSlice(allocator);
     }
 
     /// Generate CITATION.cff file content
     pub fn toCitationCFF(self: *const ZenodoMetadata, allocator: std.mem.Allocator) ![]u8 {
         var cff = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
-        defer cff.deinit();
+        defer cff.deinit(allocator);
 
         try cff.writer(allocator).print("cff-version: 1.2.0\n", .{});
         try cff.writer(allocator).print("message: \"If you use this software, please cite it as below.\"\n\n", .{});
@@ -423,13 +423,13 @@ pub const ZenodoMetadata = struct {
         try cff.writer(allocator).print("url: https://doi.org/{s}\n", .{self.bundle_type.doi()});
         try cff.writer(allocator).print("license: {s}\n", .{self.license.toString()});
 
-        return try cff.toOwnedSlice();
+        return try cff.toOwnedSlice(allocator);
     }
 
     /// Generate README.md for Zenodo deposit
     pub fn toZenodoReadme(self: *const ZenodoMetadata, allocator: std.mem.Allocator) ![]u8 {
         var readme = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer readme.deinit();
+        defer readme.deinit(allocator);
 
         try readme.writer(allocator).print("# {s}\n\n", .{self.title});
 
@@ -477,7 +477,7 @@ pub const ZenodoMetadata = struct {
         try readme.writer(allocator).print("## License\n\n", .{});
         try readme.writer(allocator).print("This work is licensed under {s}.\n", .{self.license.toString()});
 
-        return try readme.toOwnedSlice();
+        return try readme.toOwnedSlice(allocator);
     }
 };
 
@@ -729,6 +729,10 @@ pub fn createEnhancedMetadata(allocator: std.mem.Allocator, bundle: BundleType) 
         .random_seed = 42,
     };
 
+    // Format impact and ethics as markdown strings
+    const impact_str = try impact_md.formatAsMarkdown(allocator);
+    const ethics_str = try ethics_md.formatAsMarkdown(allocator);
+
     return ZenodoMetadata{
         .bundle_type = base.bundle_type,
         .title = base.title,
@@ -742,9 +746,9 @@ pub fn createEnhancedMetadata(allocator: std.mem.Allocator, bundle: BundleType) 
         .fpga_resources = base.fpga_resources,
         .related_dois = base.related_dois,
         .funding = funding_slice,
-        .broader_impact = try impact_md.formatAsMarkdown(allocator),
-        .ethics = try ethics_md.formatAsMarkdown(allocator),
-        .reproducibility = try repro_md.formatAsMarkdown(allocator),
+        .broader_impact = impact_str,
+        .ethics = ethics_str,
+        .reproducibility = repro_md,
     };
 }
 
@@ -1061,10 +1065,10 @@ test "CitationConverter bibtexToAPA" {
 
 test "createEnhancedMetadata" {
     const metadata = try createEnhancedMetadata(std.testing.allocator, BundleType.ternary_nn);
-    defer std.testing.allocator.free(metadata.funding);
-    defer std.testing.allocator.free(metadata.broader_impact);
-    defer std.testing.allocator.free(metadata.ethics);
-    defer std.testing.allocator.free(metadata.reproducibility);
+    defer {
+        if (metadata.broader_impact) |s| std.testing.allocator.free(s);
+        if (metadata.ethics) |s| std.testing.allocator.free(s);
+    }
 
     try std.testing.expect(metadata.funding != null);
     try std.testing.expect(metadata.broader_impact != null);
