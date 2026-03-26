@@ -161,9 +161,8 @@ pub const CIFAR10Trainer = struct {
         self.metrics.updateLoss(loss);
 
         // Get prediction for accuracy
-        var logits: [10]f32 = undefined;
-        try self.model.forward(input, &logits);
-        const pred = try self.model.predict(input, allocator);
+        var probs: [10]f32 = undefined;
+        const pred = try self.model.predict(input, &probs);
 
         self.metrics.updateAccuracy(pred, image.label);
 

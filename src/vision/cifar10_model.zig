@@ -237,8 +237,8 @@ pub const CIFAR10Model = struct {
             }
 
             var sum: f32 = 0.0;
-            for (&logits, 0..) |l, i| {
-                probs[i] = std.math.exp(l.* - max_logit);
+            for (logits, 0..) |l, i| {
+                probs[i] = std.math.exp(l - max_logit);
                 sum += probs[i];
             }
 

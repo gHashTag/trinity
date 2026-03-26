@@ -14,20 +14,22 @@ const testing = std.testing;
 
 // Test training on single batch from real CIFAR-10 data
 test "cifar10: train on single batch" {
-    // Skip test if dataset not available
-    const data_dir = "data/cifar-10/cifar-10-batches-bin";
-    var dir = std.fs.cwd().openDir(data_dir, .{}) catch |err| {
+    // Use absolute path for dataset
+    const batch_path = "data/cifar-10/cifar-10-batches-bin/data_batch_1.bin";
+
+    // Check if file exists first
+    if (std.fs.cwd().openFile(batch_path, .{})) |_| {
+        // File exists, continue
+    } else |err| {
         if (err == error.FileNotFound) {
-            std.debug.print("Skipping test: dataset not found at {s}\n", .{data_dir});
+            std.debug.print("Skipping test: dataset not found at {s}\n", .{batch_path});
             return error.SkipZigTest;
         }
         return err;
-    };
-    defer dir.close();
+    }
 
     // Load first training batch
-    const batch_path = "data_batch_1.bin";
-    const dataset = try cifar10_loader.loadDataset(testing.allocator, batch_path);
+    var dataset = try cifar10_loader.loadDataset(testing.allocator, batch_path);
     defer dataset.deinit();
 
     std.debug.print("Loaded {d} images from {s}\n", .{ dataset.len(), batch_path });
@@ -85,19 +87,22 @@ test "cifar10: train on single batch" {
 
 // Test forward pass on real data
 test "cifar10: forward pass on real data" {
-    const data_dir = "data/cifar-10/cifar-10-batches-bin";
-    var dir = std.fs.cwd().openDir(data_dir, .{}) catch |err| {
+    // Use absolute path for dataset
+    const batch_path = "data/cifar-10/cifar-10-batches-bin/data_batch_1.bin";
+
+    // Check if file exists first
+    if (std.fs.cwd().openFile(batch_path, .{})) |_| {
+        // File exists, continue
+    } else |err| {
         if (err == error.FileNotFound) {
-            std.debug.print("Skipping test: dataset not found\n", .{});
+            std.debug.print("Skipping test: dataset not found at {s}\n", .{batch_path});
             return error.SkipZigTest;
         }
         return err;
-    };
-    defer dir.close();
+    }
 
     // Load single image
-    const batch_path = "data_batch_1.bin";
-    const dataset = try cifar10_loader.loadDataset(testing.allocator, batch_path);
+    var dataset = try cifar10_loader.loadDataset(testing.allocator, batch_path);
     defer dataset.deinit();
 
     try testing.expect(dataset.len() > 0);

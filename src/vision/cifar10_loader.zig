@@ -214,7 +214,6 @@ pub fn loadDataset(
 
     // Get file size
     const file_size = try file.getEndPos();
-    const expected_images = file_size / BYTES_PER_IMAGE;
 
     // Read all data at once (more efficient than buffered reader)
     const data = try allocator.alloc(u8, file_size);
@@ -234,7 +233,7 @@ pub fn loadDataset(
         @memcpy(image.data[0..], data[offset .. offset + IMAGE_BYTES]);
         offset += IMAGE_BYTES;
 
-        try dataset.images.append(image);
+        try dataset.images.append(dataset.allocator, image);
     }
 
     return dataset;
@@ -254,7 +253,7 @@ pub fn loadTrainingSet(allocator: std.mem.Allocator, data_dir: []const u8) !CIFA
         defer allocator.free(batch_path);
 
         const batch = try loadDataset(allocator, batch_path);
-        defer batch.deinit(allocator);
+        defer batch.deinit();
 
         // Merge images into combined dataset
         for (batch.images.items) |img| {
