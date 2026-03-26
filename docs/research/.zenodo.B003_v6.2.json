@@ -1,0 +1,63 @@
+{
+  "title": "B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.1",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Trinity Research Collective",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "We present TRI-27, a ternary instruction set architecture (ISA) with 27 registers organized in 3 Coptic alphabet banks, achieving 1.71× code density improvement over RISC-V. Existing ternary ISAs lack efficient encoding for balanced ternary operations, requiring redundant instructions for common patterns. Our design uses (1) Coptic Register Encoding — 3 banks of 9 registers (α-η, ι-ρ, σ-ϡ) for secure cross-bank operations, (2) 36 Opcodes — complete arithmetic, logical, and control-flow operations, and (3) Content-Addressed Bytecode — SHA256-hashed instructions for tamper-proof execution. Implemented in pure Zig with Verilog codegen, our system achieves 1.71× code density vs RISC-V (48 bits/instruction vs 32 bits), single-issue IPC at 100MHz, and 64 KB minimum RAM footprint. We provide formal proof that Coptic encoding prevents unauthorized cross-bank access (Theorem 1), demonstrate 17% power reduction vs binary ISAs via ternary signal encoding, and show complete Verilog generation from .tri assembly source.",
+  "keywords": [
+    "Instruction Set Architecture",
+    "ISA Design",
+    "Ternary Computing",
+    "Balanced Ternary",
+    "RISC-V Alternative",
+    "Coptic Alphabet",
+    "Code Density",
+    "Secure Banking",
+    "Verilog Code Generation",
+    "Assembly Language",
+    "Content-Addressed Code",
+    "SHA256 Integrity"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.2",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227867",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227865",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "riscv"
+    },
+    {
+      "identifier": "fpga"
+    },
+    {
+      "identifier": "neurips"
+    },
+    {
+      "identifier": "iclr"
+    },
+    {
+      "identifier": "ics"
+    }
+  ],
+  "upload_type": "publication"
+}

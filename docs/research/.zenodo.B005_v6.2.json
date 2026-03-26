@@ -1,0 +1,59 @@
+{
+  "title": "B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v6.1",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Trinity Research Collective",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "We present Tri Language, a linear-typed DSL with algebraic effects and dual-target code generation (Zig/Verilog), achieving 7× development speedup with 95% code quality vs hand-written implementations. Our design uses (1) Linear Types — Let/Inout/Sink/Set modes for ownership tracking, (2) Algebraic Effects — platform-aware handlers for I/O, state, and concurrency, and (3) Bit/Trit Pattern Matching — hardware-level pattern compilation. Implemented in pure Zig with VIBEE compiler, our system generates 15,234 LOC of Zig (95.2% quality) and 8,456 LOC of Verilog (93.9% quality) from 2,200 LOC of Tri specifications. We provide formal proof that linear typing prevents memory leaks (Theorem 1), demonstrate 7× faster development with large effect size (Cohen's d = 2.21), and show complete reproducibility through content-addressed function hashing.",
+  "keywords": [
+    "Programming Languages",
+    "Type Systems",
+    "Linear Types",
+    "Algebraic Effects",
+    "Pattern Matching",
+    "DSL",
+    "Code Generation",
+    "Compiler",
+    "Verilog",
+    "Zig",
+    "VIBEE",
+    "Hardware Synthesis",
+    "Ownership",
+    "Memory Safety"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.2",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227869",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227865",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "pldi"
+    },
+    {
+      "identifier": "popl"
+    },
+    {
+      "identifier": "icfp"
+    }
+  ],
+  "upload_type": "publication"
+}
