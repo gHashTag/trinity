@@ -534,4 +534,163 @@ All results are reproducible with:
 
 ---
 
+## 9. Broader Impact
+
+### 9.1 Positive Impact
+
+Trinity Framework contributes to society by:
+
+1. **Democratizing AI:** 20× memory compression enables LLM deployment on low-power edge devices (Raspberry Pi, mobile phones), making AI accessible in resource-constrained regions.
+
+2. **Energy Efficiency:** Zero-DSP FPGA design reduces power consumption by 82.5% compared to RISC-V baselines, enabling sustainable AI inference.
+
+3. **Open Science:** All 40+ innovations are published as defensive prior art with MIT licensing, preventing patent trolling and enabling collaborative research.
+
+4. **Educational Value:** Complete reproducibility artifacts, Docker environments, and algorithm pseudocode make this framework ideal for teaching neural networks, FPGA design, compiler construction, and cognitive computing.
+
+5. **Alternative Computing:** Demonstrates viable alternatives to binary computing (balanced ternary, φ-based arithmetic), expanding the design space for future computer architects.
+
+### 9.2 Negative Impact
+
+1. **Energy Consumption:** While more efficient than baselines, widespread AI deployment may increase overall energy usage due to rebound effects.
+
+2. **Technical Barriers:** FPGA programming and ternary computing require specialized knowledge, potentially limiting adoption.
+
+3. **Fragmentation:** New ISA (TRI-27) and language (Tri) may fragment the ecosystem if widely adopted without proper tooling support.
+
+4. **Model Bias:** Small models trained on limited datasets may inherit biases from training data.
+
+### 9.3 Mitigation Strategies
+
+- Comprehensive bias auditing on validation sets
+- Extensive documentation and tutorials to lower barriers
+- Open source code enabling transparency
+- Community-driven development via GitHub
+- Inclusive contribution guidelines
+
+---
+
+## 10. Ethics Statement
+
+### 10.1 Research Ethics
+
+This research was conducted in accordance with open science principles. All code is open source (MIT license), and all datasets are publicly available for verification.
+
+### 10.2 Dual Use Concerns
+
+Trinity technologies could potentially be used for:
+- Surveillance systems (low-power edge AI)
+- Autonomous weapons (efficient inference)
+
+We advocate for responsible AI development and deployment under international governance frameworks (EU AI Act, UNESCO Recommendations).
+
+### 10.3 Environmental Impact
+
+FPGA synthesis and training have environmental costs:
+- Yosys/nextpnr synthesis: ~0.5 kWh per bitstream
+- Training to 50K steps: ~2 kWh on modern hardware
+
+We offset these costs by:
+- Using energy-efficient algorithms (zero-DSP design)
+- Enabling edge AI (reducing data transfer and cloud reliance)
+- Publishing reproducible research (avoiding redundant experiments)
+
+---
+
+## 11. Data Availability Statement
+
+### 11.1 Datasets
+
+| Dataset | Location | License | Purpose |
+|---------|----------|----------|---------|
+| TinyStories | HuggingFace | MIT | Neural network training |
+| Episode data | `.trinity/experience/` | MIT | Queen Lotus training |
+| Checkpoints | `data/checkpoints/` | MIT | Model checkpoints |
+
+### 11.2 Generated Data
+
+All test vectors, benchmark results, and evaluation metrics are included in this Zenodo deposit for full reproducibility.
+
+---
+
+## 12. Code Availability Statement
+
+### 12.1 Source Code
+
+- **Repository:** https://github.com/gHashTag/trinity
+- **Branch:** feat/issue-411-linear-types-ownership
+- **Tag:** v5.2.0
+- **License:** MIT
+
+### 12.2 Component Paths
+
+| Component | Path | LOC |
+|-----------|------|-----|
+| HSLM | `src/hslm/` | 2,500 |
+| FPGA | `fpga/hslm/` | 1,200 |
+| TRI-27 | `src/tri27/` | 1,800 |
+| Queen | `src/queen/` | 1,400 |
+| Tri Language | `src/tri-lang/` | 2,100 |
+| VSA | `src/vsa.zig` | 850 |
+| Sacred Math | `src/sacred/` | 400 |
+
+### 12.3 Dependencies
+
+- **Zero external dependencies** for core functionality
+- **Pure Zig 0.15.x** standard library only
+- **Yosys + nextpnr** for FPGA synthesis (external tools, MIT-licensed)
+
+---
+
+## 13. Acknowledgments
+
+### 13.1 Funding
+
+This work was self-funded by the author as a defensive publication to establish prior art for 40+ innovations.
+
+### 13.2 Institutional Support
+
+- **GitHub:** Hosting and CI/CD infrastructure via GitHub Actions
+- **Zenodo:** Open access repository hosting with DOI assignment
+- **Zig Software Foundation:** Compiler and tooling (MIT license)
+- **Railway:** Cloud infrastructure credits for testing
+
+### 13.3 Community Contributions
+
+We thank:
+- The Zig community for excellent tooling and documentation
+- The Yosys/nextpnr open source FPGA communities
+- The Hugging Face community for TinyStories dataset hosting
+- The RISC-V community for ISA design inspiration
+- The Rust community for linear types and ownership concepts
+- The OCaml community for algebraic effects design
+- The ARM NEON developer community
+- The open source community at large
+
+### 13.4 Contributors
+
+- **Dmitrii Vasilev** — Lead developer, all 40+ innovations across 7 research domains
+
+---
+
+## 14. Related Publications (Parent Collection Links)
+
+### Individual Bundles
+
+1. **B001: Ternary Neural Networks** — DOI: 10.5281/zenodo.19227733
+2. **B002: Zero-DSP FPGA** — DOI: 10.5281/zenodo.19227735
+3. **B003: TRI-27 ISA** — DOI: 10.5281/zenodo.19227737
+4. **B004: Queen Lotus Cycle** — DOI: 10.5281/zenodo.19227739
+5. **B005: Tri Language** — DOI: 10.5281/zenodo.19227741
+6. **B006: Sacred GF16/TF3** — DOI: 10.5281/zenodo.19227743
+7. **B007: VSA Operations** — DOI: 10.5281/zenodo.19227745
+
+### Supporting Documentation
+
+- **Trinity Scientific Manifesto** — Complete innovation catalog
+- **Sacred Arithmetic Framework** — Mathematical foundations
+- **Scientific References v5.2** — Comprehensive bibliography
+
+---
+
 **φ² + 1/φ² = 3 | TRINITY**
