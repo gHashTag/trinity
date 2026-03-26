@@ -425,12 +425,64 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runQueenStatus(allocator: Allocator) !void {
-    _ = allocator;
     std.debug.print("\n👑 QUEEN TRINITY STATUS\n", .{});
     std.debug.print("═════════════════════════\n\n", .{});
     std.debug.print("Impure event queue: .trinity/impure/\n", .{});
     std.debug.print("Lotus Cycle: φ² + 1/φ² = 3\n\n", .{});
-    std.debug.print("Status: TODO - implement event loading\n", .{});
+
+    // Load event queue
+    var queue = ImpureQueue.init(allocator);
+    defer queue.deinit();
+    queue.load() catch {
+        std.debug.print("No impure events found (queue empty or directory doesn't exist)\n", .{});
+        return;
+    };
+
+    const total = queue.events.items.len;
+    if (total == 0) {
+        std.debug.print("No impure events tracked\n", .{});
+        return;
+    }
+
+    // Count by state
+    const queued = queue.countByState(.Queued);
+    const diagnosing = queue.countByState(.Diagnosing);
+    const refining = queue.countByState(.Refining);
+    const verifying = queue.countByState(.Verifying);
+    const purified = queue.countByState(.Purified);
+    const blocked = queue.countByState(.Blocked);
+
+    std.debug.print("Total events: {d}\n\n", .{total});
+
+    std.debug.print("By State:\n", .{});
+    std.debug.print("  Queued:     {d}\n", .{queued});
+    std.debug.print("  Diagnosing: {d}\n", .{diagnosing});
+    std.debug.print("  Refining:   {d}\n", .{refining});
+    std.debug.print("  Verifying:  {d}\n", .{verifying});
+    std.debug.print("  Purified:   {d}\n", .{purified});
+    std.debug.print("  Blocked:    {d}\n", .{blocked});
+
+    // Count by strand
+    std.debug.print("\nBy Strand:\n", .{});
+    inline for (@typeInfo(Strand).@"enum_fields".len) |i| {
+        const strand = @typeInfo(Strand).@"enum_fields"[i].value;
+        const count = queue.countByStrand(strand);
+        std.debug.print("  Strand {s}: {d}\n", .{strandFullName(strand), count});
+    }
+
+    // Show blocked events if any
+    if (blocked > 0) {
+        std.debug.print("\n🚫 BLOCKED EVENTS:\n", .{});
+        for (queue.events.items) |event| {
+            if (event.state == .Blocked) {
+                std.debug.print("  [{s}] {s}: {s}\n", .{
+                    strandName(event.strand),
+                    eventName(event.event_type),
+                    event.errorMsgStr(),
+                });
+            }
+        }
+    }
 }
 
 fn runQueenPurify(allocator: Allocator, args: []const []const u8) !void {
@@ -442,10 +494,35 @@ fn runQueenPurify(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runQueenBlocked(allocator: Allocator) !void {
-    _ = allocator;
-    std.debug.print("🚫 BLOCKED EVENTS\n", .{});
+    std.debug.print("\n🚫 BLOCKED EVENTS\n", .{});
     std.debug.print("══════════════════\n\n", .{});
-    std.debug.print("No blocked events tracked yet.\n", .{});
+
+    var queue = ImpureQueue.init(allocator);
+    defer queue.deinit();
+    queue.load() catch {
+        std.debug.print("No impure events found (queue empty or directory doesn't exist)\n", .{});
+        return;
+    };
+
+    const blocked_count = queue.countByState(.Blocked);
+    if (blocked_count == 0) {
+        std.debug.print("No blocked events — Lotus Cycle flowing freely! ✨\n", .{});
+        return;
+    }
+
+    std.debug.print("Blocked events requiring manual intervention: {d}\n\n", .{blocked_count});
+    for (queue.events.items) |event| {
+        if (event.state == .Blocked) {
+            std.debug.print("  [{s}] {s}: {s}\n", .{
+                strandName(event.strand),
+                eventName(event.event_type),
+                event.errorMsgStr(),
+            });
+            if (event.source_file_len > 0) {
+                std.debug.print("    File: {s}\n", .{event.sourceFileStr()});
+            }
+        }
+    }
 }
 
 fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
