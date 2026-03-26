@@ -349,20 +349,20 @@ Step 30000: loss=2.13, ppl=125.3
 **BibTeX:**
 ```bibtex
 @misc{vasilev2026trinity_b001,
-  title={Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0},
+  title={Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.1},
   author={Vasilev, Dmitrii},
   year={2026},
   month={March},
   doi={10.5281/zenodo.19227865},
   url={https://doi.org/10.5281/zenodo.19227865},
   publisher={Zenodo},
-  version={6.0},
+  version={6.1},
   license={CC-BY-4.0}
 }
 ```
 
 **APA:**
-Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0 (Version 6.0). Zenodo. https://doi.org/10.5281/zenodo.19227865
+Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.1 (Version 6.1). Zenodo. https://doi.org/10.5281/zenodo.19227865
 
 ---
 
