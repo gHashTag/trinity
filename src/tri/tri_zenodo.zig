@@ -255,6 +255,15 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "tikz")) {
         // Generate TikZ diagram
         try generateTikzExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "reproducibility")) {
+        // Generate reproducibility checklist
+        try generateReproducibilityExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "results")) {
+        // Generate results summary
+        try generateResultsSummaryExamples(allocator);
+    } else if (std.mem.eql(u8, subcmd, "multipanel")) {
+        // Generate multi-panel figure
+        try generateMultiPanelExamples(allocator);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -2221,6 +2230,9 @@ fn printHelp() void {
     print("  tri zenodo hyperparameters        Generate hyperparameter tables for model config\n", .{});
     print("  tri zenodo dataset                Generate dataset description with train/val/test splits\n", .{});
     print("  tri zenodo tikz                   Generate TikZ diagrams for architectures\n", .{});
+    print("  tri zenodo reproducibility       Generate reproducibility checklist for paper submissions\n", .{});
+    print("  tri zenodo results               Generate results summary table with statistics\n", .{});
+    print("  tri zenodo multipanel            Generate multi-panel figure layouts (2x2, 1x3, etc)\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
@@ -2695,6 +2707,103 @@ fn generateTikzExamples(allocator: std.mem.Allocator) !void {
 
     print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
     const md = try diagram.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate reproducibility checklist examples (V12)
+fn generateReproducibilityExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Reproducibility Checklist Generator{s}\n", .{ BOLD, "REPRODUCIBILITY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const items = [_]zenodo_templates.ChecklistItem{
+        .{ .category = "Code", .question = "Is the code available?", .response = .yes, .details = "GitHub: github.com/trinity", .link = "https://github.com/gHashTag/trinity" },
+        .{ .category = "Data", .question = "Is the dataset publicly available?", .response = .partial, .details = "TinyStories is public, custom datasets are private" },
+        .{ .category = "Hyperparameters", .question = "Are all hyperparameters listed?", .response = .yes },
+        .{ .category = "Random Seed", .question = "Is the random seed reported?", .response = .yes },
+        .{ .category = "Compute", .question = "Are compute resources documented?", .response = .yes, .details = "Training: 4x A100 GPUs, 8 hours" },
+        .{ .category = "Dependencies", .question = "Are all dependencies listed?", .response = .yes },
+    };
+
+    const checklist = zenodo_templates.ReproducibilityChecklist{
+        .conference = "NeurIPS",
+        .year = 2025,
+        .items = &items,
+        .paper_title = "HSLM: Ternary Neural Networks with Hierarchical Sparse Language Modeling",
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try checklist.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try checklist.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate results summary examples (V12)
+fn generateResultsSummaryExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Results Summary Generator{s}\n", .{ BOLD, "RESULTS SUMMARY", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const results = [_]zenodo_templates.StatisticalResult{
+        .{ .metric = "HSLM (ours, 1.95M)", .value = 12.5, .std_err = 0.2, .ci = .{ .lower = 12.1, .upper = 12.9 }, .p_value = 0.001, .effect_size = 1.8, .significance = .high, .is_best = true },
+        .{ .metric = "GPT-2 Small (117M)", .value = 15.2, .std_err = 0.3, .ci = .{ .lower = 14.6, .upper = 15.8 }, .p_value = 0.05, .effect_size = 0.0, .significance = .low },
+        .{ .metric = "LSTM-3L", .value = 18.4, .std_err = 0.4, .ci = .{ .lower = 17.6, .upper = 19.2 }, .p_value = 0.15, .effect_size = -0.5, .significance = .none },
+    };
+
+    const summary = zenodo_templates.ResultsSummary{
+        .caption = "Main experimental results on TinyStories validation set",
+        .label = "tab:main-results",
+        .dataset = "TinyStories",
+        .results = &results,
+        .primary_metric = "Validation PPL ↓",
+        .higher_is_better = false,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try summary.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try summary.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+    print("{s}\n", .{md});
+}
+
+/// Generate multi-panel figure examples (V12)
+fn generateMultiPanelExamples(allocator: std.mem.Allocator) !void {
+    print("\n{s}═════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}{s} Multi-Panel Figure Generator{s}\n", .{ BOLD, "MULTI-PANEL FIGURE", RESET });
+    print("{s}═════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const panels = [_]zenodo_templates.SubPanel{
+        .{ .panel_id = "a", .caption = "HSLM architecture with ternary embeddings and φ-attention", .label = "fig:hslm:a", .width_frac = 0.48 },
+        .{ .panel_id = "b", .caption = "Training loss curve showing convergence", .label = "fig:hslm:b", .width_frac = 0.48 },
+        .{ .panel_id = "c", .caption = "Per-layer ablation study", .label = "fig:hslm:c", .width_frac = 0.48 },
+        .{ .panel_id = "d", .caption = "FPGA resource utilization", .label = "fig:hslm:d", .width_frac = 0.48 },
+    };
+
+    const fig = zenodo_templates.MultiPanelFigure{
+        .caption = "HSLM model: (a) architecture, (b) training, (c) ablation, (d) FPGA implementation",
+        .label = "fig:hslm",
+        .layout = "2x2",
+        .panels = &panels,
+        .width = 0.9,
+    };
+
+    print("{s}{s} LaTeX Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const latex = try fig.formatAsLaTeX(allocator);
+    defer allocator.free(latex);
+    print("{s}\n", .{latex});
+
+    print("\n{s}{s} Markdown Output:{s}\n\n", .{ CYAN, BOLD, RESET });
+    const md = try fig.formatAsMarkdown(allocator);
     defer allocator.free(md);
     print("{s}\n", .{md});
 }

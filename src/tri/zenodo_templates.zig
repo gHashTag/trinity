@@ -3591,7 +3591,7 @@ pub const ReproducibilityChecklist = struct {
             }
 
             if (item.link) |lnk| {
-                try md.writer(allocator).print("**🔗** [{s}]({s})\n\n", .{"Link", lnk});
+                try md.writer(allocator).print("**🔗** [{s}]({s})\n\n", .{ "Link", lnk });
             }
         }
 
@@ -3642,7 +3642,7 @@ pub const ResultsSummary = struct {
         try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
         try latex.writer(allocator).print("\\centering\n", .{});
         try latex.writer(allocator).print("\\caption{{{s} on {s}}}\n", .{ self.caption, self.dataset });
-        try latex.writer(allocator).print("\\label{{{s}}}\n", .{ self.label });
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
         try latex.writer(allocator).print("\\begin{{tabular}}{{lccccc}}\n", .{});
         try latex.writer(allocator).print("\\toprule\n", .{});
         try latex.writer(allocator).print("Method & {s} & SE & 95%% CI & $p$-value & Cohen's $d$ \\\\\n", .{self.primary_metric});
@@ -3712,9 +3712,9 @@ pub const ResultsSummary = struct {
 
         for (self.results) |result| {
             if (result.is_best) {
-                try md.writer(allocator).print("| **{s}** | **{d:.3}** |", .{result.metric, result.value});
+                try md.writer(allocator).print("| **{s}** | **{d:.3}** |", .{ result.metric, result.value });
             } else {
-                try md.writer(allocator).print("| {s} | {d:.3} |", .{result.metric, result.value});
+                try md.writer(allocator).print("| {s} | {d:.3} |", .{ result.metric, result.value });
             }
 
             if (result.std_err) |se| {
@@ -3745,7 +3745,7 @@ pub const ResultsSummary = struct {
             try md.writer(allocator).print(" |\n", .{});
         }
 
-        try md.writer(allocator).print("\n*Table: {s} on {s}*\n\n", .{self.caption, self.dataset});
+        try md.writer(allocator).print("\n*Table: {s} on {s}*\n\n", .{ self.caption, self.dataset });
 
         return md.toOwnedSlice(allocator);
     }
@@ -3774,7 +3774,7 @@ pub const MultiPanelFigure = struct {
     /// Sub-panels
     panels: []const SubPanel,
     /// Figure width (in cm)
-    width: f64 = 0.9,  // fraction of textwidth
+    width: f64 = 0.9, // fraction of textwidth
 
     /// Format as LaTeX subfigure layout
     pub fn formatAsLaTeX(self: *const MultiPanelFigure, allocator: std.mem.Allocator) ![]u8 {
@@ -3826,9 +3826,7 @@ pub const MultiPanelFigure = struct {
         try md.writer(allocator).print("|-------|----------|-------|\n", .{});
 
         for (self.panels) |panel| {
-            try md.writer(allocator).print("| ({s}) | {s} | {d:.0}% |\n", .{
-                panel.panel_id, panel.caption, panel.width_frac * 100.0
-            });
+            try md.writer(allocator).print("| ({s}) | {s} | {d:.0}% |\n", .{ panel.panel_id, panel.caption, panel.width_frac * 100.0 });
         }
 
         try md.writer(allocator).print("\n", .{});
@@ -5192,7 +5190,7 @@ test "ReproducibilityChecklist formatAsMarkdown" {
 test "ResultsSummary formatAsLaTeX" {
     const results = [_]StatisticalResult{
         .{ .metric = "HSLM (ours)", .value = 12.5, .std_err = 0.2, .p_value = 0.001, .effect_size = 1.8, .significance = .high, .is_best = true },
-        .{ .metric = "GPT-2 (117M)", .value = 15.2, .std_err = 0.3, .p_value = 0.05, .effect_size = 0.0, .significance = .low, .is_baseline = false },
+        .{ .metric = "GPT-2 (117M)", .value = 15.2, .std_err = 0.3, .p_value = 0.05, .effect_size = 0.0, .significance = .low },
     };
 
     const summary = ResultsSummary{
