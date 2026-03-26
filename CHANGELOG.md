@@ -10,6 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- API implementation status document (docs/api_status.md)
+- TODO triage report (docs/research/TODO_TRIAGE_REPORT_20260326.md)
+- Version clarification for CLI vs Research Bundle versions
+
+### Changed
+- Clarified version numbering scheme (CLI v1.0.2 vs Research v5.2)
+- Added HTTP API implementation status to README
+- Improved documentation consistency
+
+### Fixed
+- Corrected misleading claims about HTTP API "not implemented"
+- The HTTP API IS implemented in:
+  - `src/vibeec/http_server.zig` (1059 LOC) - OpenAI-compatible `/v1/chat/completions`
+  - `src/trinity_node/http_api.zig` (1359 LOC) - DePIN node endpoints
+  - `src/api/unified_server.zig` (431 LOC) - Unified API registry
+
+---
+
+## [1.0.2] HEARTBEAT - 2026-03-03
+
+### Added
 - Issue templates for bug reports, feature requests, and documentation
 - Pull request template with comprehensive checklist
 - API reference documentation (docs/api_reference.md)

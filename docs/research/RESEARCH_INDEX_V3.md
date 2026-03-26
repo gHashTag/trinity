@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v10.1
+# Trinity Research Documentation Index — v10.3
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 190
-**NEW: Session 29-30 Reports (Publication Pipeline + Effect Sizes/MLSys)
+**Total Documents:** 194
+**NEW: Neuro-φ Coupling — Sacred Mathematics Meets Biological Neural Oscillations
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -68,8 +68,9 @@
 | `EFFECT_SIZE_STANDARDIZATION_FRAMEWORK_2026.md` | Cohen's d, Cliff's Delta, Pearson's r, R², OR | v1.0 ✅ |
 | `MLSYS_ARTIFACT_APPENDIX_2026.md` | MLSys 2026 reproducibility checklist | v1.0 ✅ |
 | `BIAS_ASSESSMENT_FRAMEWORK_2026.md` | ICLR 2027 ethics compliance (dataset, subgroup, mitigation) | v1.0 ✅ |
-| `MULTIPLE_TESTING_CORRECTION_FRAMEWORK_2026.md` | Bonferroni, Holm, BH-FDR, BY-FDR, Hommel (5 methods) | v1.0 ✨ NEW |
-| `FAILURE_MODE_TAXONOMY_2026.md` | 27 failure modes, detection/mitigation/recovery | v1.0 ✨ NEW |
+| `MULTIPLE_TESTING_CORRECTION_FRAMEWORK_2026.md` | Bonferroni, Holm, BH-FDR, BY-FDR, Hommel (5 methods) | v1.0 ✨ |
+| `FAILURE_MODE_TAXONOMY_2026.md` | 27 failure modes, detection/mitigation/recovery | v1.0 ✨ |
+| `BAYESIAN_ALTERNATIVE_METRICS_2026.md` | Bayesian t-test, Bayes factors, BEST, hierarchical models | v1.0 ✨ NEW |
 
 ### 5. Mathematical Foundations (5 documents)
 
@@ -234,6 +235,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 10.3 | 2026-03-26 | Added Neuro-φ Coupling Comprehensive Analysis (biological validation of sacred scaling: attention gain control 0.354 matches V1 cortex 0.3-0.4 within 3%, consciousness threshold φ⁻¹=0.618 matches biological 61.8%, gamma-theta coupling φ³≈4.24 vs bio 5.33; 15 proposed improvements: φ-Hebbian learning 15-20% faster convergence, gamma-phase locked attention 5-8% PPL, consciousness-gated plasticity 10-15% memory retention, quantum-enhanced constants, consciousness metrics Φ-IT/PCI/GWT; 3 new Zenodo bundles B008-B010 proposed; ASSC 2027, NeurIPS 2026, ICLR 2027 submission strategy) + Session 31 Report ✨ NEW |
+| 10.2 | 2026-03-26 | Added Bayesian Alternative Metrics Framework (Bayesian t-test as alternative to frequentist, Bayes factors interpretation, BEST plots, hierarchical models, prior sensitivity analysis, comparison with frequentist results, integration with scientific_metrics_v7.5; 5 Bayesian methods complete) ✨ NEW |
 | 10.1 | 2026-03-26 | Added Session 29 Report (Publication Pipeline: defensive publication guide, arXiv template, video script generator, NeurIPS 2026 LaTeX template, computational complexity tables B002-B007, publication roadmap with 3 primary papers for NeurIPS 2026/ICLR 2027/ICML 2027/MLSys 2027, 4500+ LOC) + Session 30 Report (Effect Size Framework: Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, APA-style reporting; MLSys Artifact Appendix: 5 verification scripts, hyperparameter sensitivity, troubleshooting guide, 1600+ LOC) ✨ NEW |
 | 10.0 | 2026-03-26 | Added Multiple Testing Correction Framework (5 methods: Bonferroni, Holm-Bonferroni, Benjamini-Hochberg FDR, Benjamini-Yekutieli FDR, Hommel; decision tree for method selection; NeurIPS/ICLR reporting formats; integration with scientific_metrics_v7.5) + Failure Mode Taxonomy (27 failure modes: HSLM 6, VSA 3, TRI-27 4, FPGA 5, VIBEE 4; 5 severity levels, 4 recovery strategies, detection code, monitoring interface) ✨ NEW |
 | 9.9 | 2026-03-26 | Added Bias Assessment Framework 2026 (ICLR 2027 ethics compliance, dataset demographics: gender 48.2% PASS, culture 12.3% WARN, language 0.8% FAIL, subgroup PPL analysis with Cohen's d, statistical significance testing, mitigation strategies, component-specific bias assessment for HSLM/VSA/TRI-27/FPGA, broader impact statement) ✅ NEW |

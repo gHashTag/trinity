@@ -98,6 +98,12 @@ Trinity publishes key innovations as **defensive publications** to establish pri
 | **B003** | TRI-27 (ternary ISA) | [10.5281/zenodo.19227737](https://doi.org/10.5281/zenodo.19227737) | ✅ Enhanced v5.2 |
 | **B004** | Queen (self-learning system) | [10.5281/zenodo.19227739](https://doi.org/10.5281/zenodo.19227739) | ✅ Enhanced v5.2 |
 | **B005** | Tri Language (DSL codegen) | [10.5281/zenodo.19227743](https://doi.org/10.5281/zenodo.19227743) | ✅ Enhanced v5.2 |
+
+> **Note on Version Numbers**: Trinity uses two versioning schemes:
+> - **CLI Version** (v1.0.2 "HEARTBEAT"): Tracks command-line tool releases (see [CHANGELOG.md](CHANGELOG.md))
+> - **Research Bundle Version** (v5.2): Tracks Zenodo scientific publication bundles
+>
+> These serve different purposes and may increment independently.
 | **B006** | Sacred GF16/TF3 (φ-based arithmetic) | [10.5281/zenodo.19227745](https://doi.org/10.5281/zenodo.19227745) | ✅ Enhanced v5.2 |
 | **B007** | VSA Operations (ternary computing) | [10.5281/zenodo.19227749](https://doi.org/10.5281/zenodo.19227749) | ✅ Enhanced v5.2 |
 | **PARENT** | Trinity S³AI Framework | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Enhanced v5.2 |
@@ -780,6 +786,7 @@ trinity/
 
 | Resource | URL |
 |----------|-----|
+| **[API Implementation Status](docs/api_status.md)** | HTTP API servers and endpoints — ✅ Implemented |
 | **Documentation Index** | [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) — Central documentation hub |
 | **API Reference** | [docs/api_reference.md](docs/api_reference.md) — HTTP API, CLI, MCP servers |
 | **Glossary** | [docs/glossary.md](docs/glossary.md) — Technical terms and acronyms |
