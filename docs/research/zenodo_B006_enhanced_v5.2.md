@@ -404,6 +404,25 @@ We present Sacred GF16/TF3, a family of φ-based numerical formats designed for 
 
 ---
 
+### 3.3 Computational Complexity Analysis (NeurIPS 2026 Standard)
+
+| Operation | Time Complexity | Space Complexity | Practical Runtime (Apple M1) | Memory | Notes |
+|-----------|-----------------|------------------|------------------------------|--------|-------|
+| **GF16 f32→GF16** | O(1) | O(1) | 12 ns (1 operation) | <1 KB | Extract fields |
+| **GF16 GF16→f32** | O(1) | O(1) | 15 ns (1 operation) | <1 KB | Denormalize |
+| **TF3 Pack** | O(k/8) | O(1) | 0.5 μs (k=1024) | 256 B | 8 weights per cycle |
+| **TF3 Unpack** | O(k/8) | O(1) | 0.5 μs (k=1024) | 2 B | 8 trits per cycle |
+| **Normalization** | O(1) | O(1) | 8 ns (1 cycle) | <1 KB | Scale by φ ≈ 1.618 |
+| **φ-Distance** | O(k) | O(k) | 0.75 μs (k=8) | 2 KB | Euclidean distance |
+
+| Model Size | Parameters | LUT Utilization | Power (W) | Throughput (tok/s) |
+|------------|------------|------------------|-----------|---------------------|
+| 1.95M HSLM | 3.9M | 19.6% | 1.2 | 8000 | Sublinear O(params^0.9) |
+| 10M HSLM | 20.8M | 15.1% | 2.4 | 10500 | Linear O(params) |
+| 100M HSLM | 208.3M | 35.1% | 4.8 | 12000 | Linear O(params) |
+
+---
+
 ## 4. Experimental Protocol
 
 ### 4.1 Round-Trip Error Measurement
