@@ -304,7 +304,9 @@ fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
     {
         var f = try std.fs.cwd().createFile("/tmp/trinity-queen.pid", .{});
         defer f.close();
-        try std.fmt.format(f.writer(), "{d}", .{pid});
+        var buf: [64]u8 = undefined;
+        const pid_str = try std.fmt.bufPrintZ(&buf, "{d}", .{pid});
+        try f.writeAll(pid_str);
     }
     defer std.fs.deleteFileAbsolute("/tmp/trinity-queen.pid") catch {};
 
@@ -364,7 +366,7 @@ fn countDirtyFiles(allocator: Allocator) !usize {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    if (result.term.Exited != 0) return 0;
+    if (result.term != .Exited or result.term.Exited != 0) return 0;
 
     // Count non-empty lines
     var count: usize = 0;
@@ -383,7 +385,10 @@ fn checkBuild(allocator: Allocator) !bool {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 
-    return result.term.Exited == 0 and result.term.Exited.? == 0;
+    return switch (result.term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
 }
 
 fn updateHeartbeat(allocator: Allocator, cycle: u64, timestamp: i64, dirty: usize, build_ok: bool) !void {
@@ -396,7 +401,8 @@ fn updateHeartbeat(allocator: Allocator, cycle: u64, timestamp: i64, dirty: usiz
     const file = try std.fs.cwd().createFile(heartbeat_path, .{});
     defer file.close();
 
-    const writer = file.writer();
+    var buf: [256]u8 = undefined;
+    const writer = file.writer(&buf);
     try writer.print(
         \\{{"cycle":{d},"timestamp":{d},"dirty":{d},"build_ok":{}}}
     , .{ cycle, timestamp, dirty, build_ok });
@@ -410,11 +416,12 @@ fn logToHive(allocator: Allocator, cycle: u64, msg: []const u8, args: anytype) !
     const hivepath = try std.fs.path.join(allocator, &.{ hivedir, "HIVELOG.md" });
     defer allocator.free(hivepath);
 
-    const file = try std.fs.cwd().atomicFile(hivepath, .{ .mode = .write_only });
+    // Zig 0.15: atomicFile requires write_buffer parameter
+    var write_buffer: [4096]u8 = undefined;
+    const file = try std.fs.cwd().atomicFile(hivepath, .{ .write_buffer = &write_buffer });
     defer file.deinit();
 
-    var buffer: [4096]u8 = undefined;
-    const writer = file.file.writer(&buffer);
+    const writer = file.file.writer();
     const datetime = std.time.timestamp();
 
     try writer.print(
