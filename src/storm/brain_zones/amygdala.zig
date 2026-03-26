@@ -75,14 +75,14 @@ pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Erro
         self.blacklist = std.StringHashMap(Error).init(self.allocator);
     }
 
-    const err_entry: try self.blacklist.getOrPut(self.allocator, task, .{
+    const err_entry = try self.blacklist.getOrPut(self.allocator, task, .{
         .code = error_code,
         .message = "",
     });
     defer self.allocator.free(err_entry.value_ptr.message);
 
     // Check if already at MAX_FAILURES
-    const count: self.blacklist.get(task) orelse 0;
+    const count = self.blacklist.get(task) orelse 0;
     if (count + 1 >= MAX_FAILURES) {
         // Add to blacklist with PERSISTENT error
         _ = try self.blacklist.put(self.allocator, task, .{
@@ -112,5 +112,5 @@ pub fn cmdCheckFear(allocator: std.mem.Allocator, args: []const u8) !u8 {
 
     return try std.fmt.allocPrint(allocator,
         \\Blocked: {s}
-    , .{ if (is_blocked) "YES ❌" else "NO ✅" });
+    , .{if (is_blocked) "YES ❌" else "NO ✅"});
 }
