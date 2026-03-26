@@ -349,3 +349,4 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 **φ² + 1/φ² = 3 | TRINITY**
 | `DATA_MANAGEMENT_PLAN_TEMPLATE_2026.md` | FAIR + NSF/NIH/Horizon DMP template | Markdown ✨ NEW |
 | `CODE_AVAILABILITY_STATEMENT_TEMPLATE_2026.md` | NeurIPS/ICLR/MLSys code statements | Markdown ✨ NEW |
+| `CODE_IMPROVEMENT_REPRIORITIZATION_2026.md` | Strategic code quality plan (277 TODOs analyzed) | Markdown ✨ NEW |
