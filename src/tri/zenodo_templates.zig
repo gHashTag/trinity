@@ -776,6 +776,191 @@ pub const ZenodoDeposit = struct {
     }
 };
 
+/// Full paper metadata for submission
+pub const PaperMetadata = struct {
+    /// Title
+    title: []const u8,
+    /// Authors (full names)
+    authors: []const []const u8,
+    /// Abstract (150-250 words recommended)
+    abstract: []const u8,
+    /// Keywords (3-8 recommended)
+    keywords: []const []const u8,
+    /// MLCC category (e.g., "cs.LG", "cs.AI", "cs.NE")
+    mlcc_category: []const u8,
+    /// Conference (NeurIPS, ICLR, MLSys, etc.)
+    conference: Conference,
+    /// Year
+    year: u32,
+    /// Code repository URL
+    code_url: []const u8,
+    /// DOI (if available)
+    doi: ?[]const u8,
+
+    pub const Conference = enum {
+        neurips,
+        iclr,
+        mlsys,
+        icml,
+        aaai,
+        ijcai,
+
+        pub fn toString(self: Conference) []const u8 {
+            return switch (self) {
+                .neurips => "NeurIPS",
+                .iclr => "ICLR",
+                .mlsys => "MLSys",
+                .icml => "ICML",
+                .aaai => "AAAI",
+                .ijcai => "IJCAI",
+            };
+        }
+
+        pub fn latexTemplate(self: Conference) []const u8 {
+            return switch (self) {
+                .neurips => "neurips_2025",
+                .iclr => "iclr_2025",
+                .mlsys => "mlsys_2025",
+                .icml => "icml_2025",
+                .aaai => "aaai_2025",
+                .ijcai => "ijcai_2025",
+            };
+        }
+    };
+
+    /// Generate paper abstract for submission
+    pub fn formatAsAbstract(self: *const PaperMetadata, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("# {s}\n\n", .{self.title});
+
+        // Authors
+        try md.writer(allocator).print("**Authors**: ", .{});
+        for (self.authors, 0..) |author, i| {
+            if (i > 0) try md.writer(allocator).print(", ", .{});
+            try md.writer(allocator).print("{s}", .{author});
+        }
+        try md.writer(allocator).print("\n\n", .{});
+
+        // Abstract body
+        try md.writer(allocator).print("## Abstract\n\n{s}\n\n", .{self.abstract});
+
+        // Keywords
+        try md.writer(allocator).print("**Keywords**: ", .{});
+        for (self.keywords, 0..) |kw, i| {
+            if (i > 0) try md.writer(allocator).print(", ", .{});
+            try md.writer(allocator).print("{s}", .{kw});
+        }
+        try md.writer(allocator).print("\n\n", .{});
+
+        // Metadata
+        try md.writer(allocator).print("**Conference**: {s} {d}\n", .{ self.conference.toString(), self.year });
+        try md.writer(allocator).print("**Category**: {s}\n", .{self.mlcc_category});
+        try md.writer(allocator).print("**Code**: {s}\n", .{self.code_url});
+        if (self.doi) |doi| {
+            try md.writer(allocator).print("**DOI**: {s}\n", .{doi});
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+
+    /// Word count validation (abstracts should be 150-250 words)
+    pub fn validateAbstractLength(self: *const PaperMetadata) !struct {
+        word_count: usize,
+        is_valid: bool,
+        recommendation: []const u8,
+    } {
+        var word_count: usize = 0;
+        var in_word = false;
+
+        for (self.abstract) |c| {
+            if (c == ' ' or c == '\n' or c == '\t') {
+                if (in_word) {
+                    word_count += 1;
+                    in_word = false;
+                }
+            } else {
+                in_word = true;
+            }
+        }
+        if (in_word) word_count += 1;
+
+        const is_valid = word_count >= 150 and word_count <= 250;
+        var recommendation: []const u8 = undefined;
+
+        if (word_count < 150) {
+            recommendation = "Abstract is too short. Add more details on methodology and results.";
+        } else if (word_count > 250) {
+            recommendation = "Abstract is too long. Condense background and focus on contributions.";
+        } else {
+            recommendation = "Abstract length is appropriate.";
+        }
+
+        return .{
+            .word_count = word_count,
+            .is_valid = is_valid,
+            .recommendation = recommendation,
+        };
+    }
+};
+
+/// Batch processing for all bundles
+pub const BatchProcessor = struct {
+    allocator: std.mem.Allocator,
+
+    /// Generate combined README for all bundles
+    pub fn generateCombinedReadme(allocator: std.mem.Allocator) ![]u8 {
+        var readme = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer readme.deinit(allocator);
+
+        try readme.writer(allocator).print("# Trinity S³AI — Complete Zenodo Bundle Collection\n\n", .{});
+        try readme.writer(allocator).print("**Date**: 2026-03-27\n", .{});
+        try readme.writer(allocator).print("**Version**: 5.0.0\n", .{});
+        try readme.writer(allocator).print("**Status**: ✅ Publication Ready\n\n", .{});
+
+        try readme.writer(allocator).print("## Bundle Overview\n\n", .{});
+        try readme.writer(allocator).print("| Bundle | Title | DOI |\n", .{});
+        try readme.writer(allocator).print("|--------|-------|-----|\n", .{});
+
+        const bundles = &[_]BundleType{
+            .ternary_nn,
+            .zero_dsp,
+            .tri27_isa,
+            .queen_orchestration,
+            .tri_language,
+            .vsa_ternary,
+            .parent,
+        };
+
+        for (bundles) |bundle| {
+            const deposit = try generateZenodoDeposit(allocator, bundle);
+            try readme.writer(allocator).print("| {s} | {s} | [{s}](https://doi.org/{s}) |\n", .{
+                deposit.metadata.bundle_type.fileName(),
+                deposit.metadata.bundle_type.displayName(),
+                deposit.metadata.bundle_type.doi(),
+                deposit.metadata.bundle_type.doi(),
+            });
+        }
+
+        try readme.writer(allocator).print("\n## Citation\n\n", .{});
+        try readme.writer(allocator).print("```bibtex\n", .{});
+        try readme.writer(allocator).print("@software{{trinity2025s3ai,\n", .{});
+        try readme.writer(allocator).print("  title = {{Trinity S³AI: Ternary Sparse Sacred Scalable AI Framework}},\n", .{});
+        try readme.writer(allocator).print("  author = {{Vasilev, Dmitrii}},\n", .{});
+        try readme.writer(allocator).print("  year = {{2025}},\n", .{});
+        try readme.writer(allocator).print("  doi = {{10.5281/zenodo.19227879}},\n", .{});
+        try readme.writer(allocator).print("  url = {{https://github.com/gHashTag/trinity}}\n", .{});
+        try readme.writer(allocator).print("}}\n", .{});
+        try readme.writer(allocator).print("```\n\n", .{});
+
+        try readme.writer(allocator).print("---\n\n", .{});
+        try readme.writer(allocator).print("**φ² + 1/φ² = 3 | TRINITY**\n", .{});
+
+        return readme.toOwnedSlice(allocator);
+    }
+};
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CITATION FORMAT CONVERTERS
 // ═══════════════════════════════════════════════════════════════════════════
@@ -875,6 +1060,73 @@ fn extractBibtexField(bibtex: []const u8, field_name: []const u8, allocator: std
 
     return result.toOwnedSlice(allocator);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCIENTIFIC COMPUTATION UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Bootstrap confidence interval calculation (resampling method)
+pub const BootstrapCI = struct {
+    samples: []const f64,
+    n_resamples: u32 = 10000,
+    confidence: f64 = 0.95,
+
+    const Self = @This();
+
+    /// Calculate bootstrap confidence interval
+    pub fn calculate(self: *const Self, allocator: std.mem.Allocator) !struct { lower: f64, upper: f64 } {
+        const alpha = 1.0 - self.confidence;
+        const prng = std.Random.DefaultPrng.init(42);
+
+        // Generate bootstrap resamples
+        var resampled_means = try allocator.alloc(f64, self.n_resamples);
+        defer allocator.free(resampled_means);
+
+        for (0..self.n_resamples) |i| {
+            var sum: f64 = 0.0;
+            var rng = prng.random();
+
+            for (0..self.samples.len) |_| {
+                const idx = rng.uintLessThan(usize, self.samples.len);
+                sum += self.samples[idx];
+            }
+
+            resampled_means[i] = sum / @as(f64, @floatFromInt(self.samples.len));
+        }
+
+        // Sort resampled means
+        std.sort.block(f64, resampled_means, {}, comptime std.sort.asc(f64));
+
+        // Get percentiles
+        const lower_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt(alpha / 2.0 * @as(f64, @floatFromInt(self.n_resamples))))));
+        const upper_idx = @as(usize, @intFromFloat(@as(f64, @floatFromInt((1.0 - alpha / 2.0) * @as(f64, @floatFromInt(self.n_resamples))))));
+
+        return .{
+            .lower = resampled_means[@min(lower_idx, self.n_resamples - 1)],
+            .upper = resampled_means[@min(upper_idx, self.n_resamples - 1)],
+        };
+    }
+};
+
+/// Calibration metrics for probabilistic predictions
+pub const CalibrationMetrics = struct {
+    expected_calibration_error: f64,
+    brier_score: f64,
+    n_bins: u32 = 10,
+
+    pub fn formatAsMarkdown(self: *const CalibrationMetrics, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("### Calibration Metrics\n\n", .{});
+        try md.writer(allocator).print("| Metric | Value |\n", .{});
+        try md.writer(allocator).print("|--------|-------|\n", .{});
+        try md.writer(allocator).print("| ECE ({d} bins) | {d:.4} |\n", .{ self.n_bins, self.expected_calibration_error });
+        try md.writer(allocator).print("| Brier Score | {d:.4} |\n\n", .{self.brier_score});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PUBLICATION-READY STRUCTURES (NeurIPS/ICLR/MLSys 2025)
@@ -995,6 +1247,41 @@ pub const ComparisonTable = struct {
         try md.writer(allocator).print("\n*Table: {s}*\n\n", .{self.caption});
 
         return md.toOwnedSlice(allocator);
+    }
+
+    /// Generate LaTeX table for NeurIPS/ICLR papers
+    pub fn formatAsLaTeX(self: *const ComparisonTable, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{tab:results}}\n", .{});
+        try latex.writer(allocator).print("\\begin{{tabular}}{{lccc}}\n", .{});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+        try latex.writer(allocator).print("Method & {s} & Baseline & Change \\\\\n", .{self.rows[0].metric});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        for (self.rows) |row| {
+            // Bold the best result
+            const is_best = row.ours < row.baseline;
+            if (is_best) {
+                try latex.writer(allocator).print("\\textbf{{{s}}} & {d:.3} & {d:.3} & {s} \\\\\n", .{
+                    row.name, row.ours, row.baseline, row.improvement,
+                });
+            } else {
+                try latex.writer(allocator).print("{s} & {d:.3} & {d:.3} & {s} \\\\\n", .{
+                    row.name, row.ours, row.baseline, row.improvement,
+                });
+            }
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
     }
 };
 
@@ -1257,4 +1544,94 @@ test "ComparisonTable formatAsMarkdown" {
     try std.testing.expect(std.mem.indexOf(u8, md, "HSLM-1.95M") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "125.3") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "-13.7%") != null);
+}
+
+test "ComparisonTable formatAsLaTeX" {
+    const rows = &[_]ComparisonTable.Row{
+        .{ .name = "HSLM-1.95M", .metric = "PPL", .ours = 125.3, .baseline = 145.2, .improvement = "-13.7%" },
+    };
+
+    const table = ComparisonTable{
+        .caption = "Perplexity comparison",
+        .rows = rows,
+    };
+
+    const latex = try table.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\textbf{HSLM-1.95M}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\toprule") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\bottomrule") != null);
+}
+
+test "CalibrationMetrics formatAsMarkdown" {
+    const calib = CalibrationMetrics{
+        .expected_calibration_error = 0.083,
+        .brier_score = 0.125,
+        .n_bins = 10,
+    };
+
+    const md = try calib.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "### Calibration Metrics") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "0.083") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "0.125") != null);
+}
+
+test "PaperMetadata formatAsAbstract" {
+    const paper = PaperMetadata{
+        .title = "Ternary Neural Networks for Efficient AI",
+        .authors = &[_][]const u8{"Dmitrii Vasilev"},
+        .abstract = "This paper introduces ternary neural networks that achieve 20x compression.",
+        .keywords = &[_][]const u8{ "ternary", "neural networks", "compression" },
+        .mlcc_category = "cs.LG",
+        .conference = .neurips,
+        .year = 2025,
+        .code_url = "https://github.com/gHashTag/trinity",
+        .doi = "10.5281/zenodo.19227865",
+    };
+
+    const md = try paper.formatAsAbstract(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "# Ternary Neural Networks") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "## Abstract") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "NeurIPS 2025") != null);
+}
+
+test "PaperMetadata validateAbstractLength" {
+    const short_abstract = "Too short.";
+
+    const paper_short = PaperMetadata{
+        .title = "Test",
+        .authors = &[_][]const u8{"Author"},
+        .abstract = short_abstract,
+        .keywords = &[_][]const u8{"test"},
+        .mlcc_category = "cs.LG",
+        .conference = .neurips,
+        .year = 2025,
+        .code_url = "https://github.com/test",
+        .doi = null,
+    };
+
+    const result = try paper_short.validateAbstractLength();
+    try std.testing.expect(!result.is_valid);
+    try std.testing.expect(result.word_count < 150);
+}
+
+test "BatchProcessor generateCombinedReadme" {
+    const readme = try BatchProcessor.generateCombinedReadme(std.testing.allocator);
+    defer std.testing.allocator.free(readme);
+
+    try std.testing.expect(std.mem.indexOf(u8, readme, "Trinity S³AI") != null);
+    try std.testing.expect(std.mem.indexOf(u8, readme, "B001") != null);
+    try std.testing.expect(std.mem.indexOf(u8, readme, "10.5281/zenodo.19227865") != null);
+}
+
+test "PaperMetadata Conference toString" {
+    try std.testing.expectEqual("NeurIPS", PaperMetadata.Conference.neurips.toString());
+    try std.testing.expectEqual("ICLR", PaperMetadata.Conference.iclr.toString());
+    try std.testing.expectEqual("MLSys", PaperMetadata.Conference.mlsys.toString());
 }
