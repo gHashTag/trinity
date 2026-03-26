@@ -59,10 +59,11 @@ def check_file(filepath: Path) -> Dict:
         else:
             results["missing_sections"].append(section)
     
-    # Check for missing sections
+    # Check for missing sections (with numbered headings support)
     for section in MISSING_SECTIONS:
-        pattern = f"## {section}"
-        if pattern not in content:
+        # Match both "## Section Name" and "## N. Section Name" patterns
+        pattern = rf"^##\s*\d*\.\s*{re.escape(section)}"
+        if not re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
             results["missing_sections"].append(section)
         else:
             results["found_sections"].append(section)
