@@ -1,0 +1,57 @@
+{
+  "title": "B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.1",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "affiliation": "Trinity Research Collective",
+      "orcid": "0000-0000-0000-0000"
+    }
+  ],
+  "description": "We present a zero-DSP ternary inference accelerator for FPGAs, achieving 51,200 tokens/second throughput with 0% DSP utilization at 100MHz and 1.2W power consumption. Existing neural network accelerators require DSP48 blocks for efficient multiplication, limiting deployment on DSP-constrained FPGAs and increasing cost by 3.5x. Our design uses (1) LUT-based ternary MAC — pure combinatorial logic for {-1, 0, +1} multiplication, (2) CORDIC sacred routing — 6-stage pipelined arithmetic without multipliers, and (3) BRAM-optimized storage — 2-bit packed weights for 16× memory reduction. Implemented in Verilog for Xilinx XC7A100T, our system achieves 51,200 tokens/second inference throughput with 12,433 LUT (10.977%), 8,234 BRAM (27.0%), and 100% BRAM utilization. We provide formal verification that ternary MAC computes exact dot products via Theorem 1, demonstrate 5× power reduction (1.2W vs 6.0W) and 6.02× throughput improvement vs DSP-based designs, with 6.05× lower latency (19.5 μs vs 118 μs) and 6.02× better efficiency (42.7 vs 7.0 tok/s/W). The architecture enables edge AI deployment on low-cost FPGAs without DSP resources, reducing hardware cost by 70% while maintaining competitive inference performance.",
+  "keywords": [
+    "FPGA",
+    "Hardware Acceleration",
+    "Zero-DSP",
+    "Ternary Computing",
+    "LUT-based Computing",
+    "CORDIC Arithmetic",
+    "Neural Network Accelerator",
+    "Low-Power AI",
+    "Edge Computing",
+    "Reconfigurable Logic",
+    "Efficient Design",
+    "Memory Optimization"
+  ],
+  "license": "CC-BY-4.0",
+  "publication_date": "2026-03-27",
+  "version": "6.1",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227867",
+      "resource_type": "software"
+    },
+    {
+      "relation": "references",
+      "identifier": "10.5281/zenodo.19227865",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "fpga"
+    },
+    {
+      "identifier": "neurips"
+    },
+    {
+      "identifier": "iclr"
+    }
+  ],
+  "upload_type": "publication"
+}
