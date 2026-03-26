@@ -17,7 +17,7 @@ pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const u8) !u8 {
     std.debug.print("🧠 HABENULA unfair-detect: P1 TODO\n");
 
     // Calculate reward/effort ratio from experience
-    // TODO: Integrate with experience engine
+    // TODO: Integrate with tri_experience module for historical tracking
     const reward_ratio: f32 = 1.0; // Mock for now
 
     return try std.fmt.allocPrint(allocator, "HABENULA: reward/effort = {d:.2} (ratio >= {d:.1} = SUSPICIOUS", .{
