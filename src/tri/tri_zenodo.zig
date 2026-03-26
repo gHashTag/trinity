@@ -1477,11 +1477,7 @@ fn generateCitationCFF(allocator: std.mem.Allocator, bundle_id: []const u8) !voi
 fn generateZenodoReadme(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
     const bundle_type = try parseBundleType(bundle_id);
     const metadata = try zenodo_templates.createDefaultMetadata(allocator, bundle_type);
-    defer allocator.free(metadata.authors);
-    defer allocator.free(metadata.title);
-    defer allocator.free(metadata.abstract);
-    defer allocator.free(metadata.publication_date);
-    defer allocator.free(metadata.version);
+    // Note: metadata fields are static string literals, no need to free them
 
     const readme = try metadata.toZenodoReadme(allocator);
     defer allocator.free(readme);
