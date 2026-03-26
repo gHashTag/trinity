@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v8.6
+# Trinity Research Documentation Index — v8.7
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 161
-**NEW:** NeurIPS/ICLR Paper Template + Session 18 Report
+**Total Documents:** 163
+**NEW:** Experimental Methodology Guide + Session 19 Report
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -156,7 +156,8 @@
 | `TRINITY_BLOCK_DUAL_SYSTEM_COMPREHENSIVE_ANALYSIS.md` | Trinity Block: Dual-System (TNN+VSA), consciousness gate φ⁻¹, reasoning, 6 proposals | 15-25% policy, 30-40% compute ✨ |
 | `SACRED_MATHEMATICAL_FOUNDATIONS_COMPREHENSIVE_ANALYSIS.md` | Sacred Math: φ²+1/φ²=3, powers of φ, sacred scaling, consciousness threshold, ternary info theory, 6 proposals | 10-18% training, 15-25% convergence ✨ |
 | `HSLM_COMPLETE_ARCHITECTURE_SYNTHESIS_COMPREHENSIVE_ANALYSIS.md` | HSLM Complete Synthesis: sacred math + ternary + dual-system unified, 6 proposals, 77.8% policy | 10-18% PPL, 5-13% policy, 30-40% speed ✨ |
-| `TRINITY_NEURIPS_ICLR_PAPER_TEMPLATE_COMPREHENSIVE.md` | NeurIPS/ICLR Paper Template: complete scientific paper with abstract, intro, methods, results, appendix, math proofs | Publication-ready, 11.6% PPL, 19.6% policy ✨ NEW |
+| `TRINITY_NEURIPS_ICLR_PAPER_TEMPLATE_COMPREHENSIVE.md` | NeurIPS/ICLR Paper Template: complete scientific paper with abstract, intro, methods, results, appendix, math proofs | Publication-ready, 11.6% PPL, 19.6% policy ✨ |
+| `TRINITY_EXPERIMENTAL_METHODOLOGY_REPRODUCIBILITY_COMPREHENSIVE.md` | Experimental Methodology: protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards | Complete experimental guide, p<0.0001 ✨ NEW |
 
 ---
 
@@ -218,7 +219,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 8.6 | 2026-03-26 | Added NeurIPS/ICLR Paper Template (complete scientific paper: abstract, intro, methods, results, appendix, math proofs, statistical validation) + Session 18 report ✨ NEW |
+| 8.7 | 2026-03-26 | Added Experimental Methodology Guide (protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards, 5-week timeline) + Session 19 report ✨ NEW |
+| 8.6 | 2026-03-26 | Added NeurIPS/ICLR Paper Template (complete scientific paper: abstract, intro, methods, results, appendix, math proofs, statistical validation) + Session 18 report ✨ |
 | 8.5 | 2026-03-26 | Added HSLM Complete Architecture Synthesis (sacred math + ternary + dual-system unified, 6 proposals, 77.8% policy, 11.6% PPL sacred scaling) + Session 17 report ✨ |
 | 8.4 | 2026-03-26 | Added Sacred Mathematical Foundations Comprehensive Analysis (φ²+1/φ²=3, powers of φ, sacred scaling, consciousness threshold, ternary info theory, 6 proposals) ✨ |
 | 8.3 | 2026-03-26 | Added Trinity Block Dual-System Comprehensive Analysis (TNN+VSA, consciousness gate φ⁻¹, reasoning operations, 6 proposals) ✨ |
