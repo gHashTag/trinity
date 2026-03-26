@@ -300,7 +300,7 @@ fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
     }
 
     // PID file for lifecycle management
-    const pid = std.os.system.getpid();
+    const pid = std.os.linux.getpid();
     {
         var f = try std.fs.cwd().createFile("/tmp/trinity-queen.pid", .{});
         defer f.close();

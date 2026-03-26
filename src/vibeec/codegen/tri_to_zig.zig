@@ -1,165 +1,248 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// tri_to_zig.zig — Tri to Zig Codegen (Stage 0.5)
+// tri_to_zig.zig — Tri to Zig Codegen (Stage 1.0)
 // ═══════════════════════════════════════════════════════════════════════════════
-// Template-based codegen: parses .tri spec, emits Zig code
-// This is NOT a full compiler — it maps signatures to template implementations
+// Full template-based codegen for 17 VSA operations
 // φ² + 1/φ² = 3 | TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AST for .tri spec
+// FULL TEMPLATE IMPLEMENTATIONS (Stage 1.0)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TriType = enum {
-    I8,
-    I16,
-    I64,
-    F64,
-    Usize,
-    U64,
-    Bool,
-    Vector,
-    Slice,
-    Pointer,
-
-    pub fn parse(str: []const u8) ?TriType {
-        if (std.mem.eql(u8, str, "i8")) return .I8;
-        if (std.mem.eql(u8, str, "i16")) return .I16;
-        if (std.mem.eql(u8, str, "i64")) return .I64;
-        if (std.mem.eql(u8, str, "f64")) return .F64;
-        if (std.mem.eql(u8, str, "usize")) return .Usize;
-        if (std.mem.eql(u8, str, "u64")) return .U64;
-        if (std.mem.eql(u8, str, "bool")) return .Bool;
-        if (std.mem.startsWith(u8, str, "@Vector")) return .Vector;
-        if (std.mem.endsWith(u8, str, "Trit")) return .Slice;
-        if (std.mem.indexOfScalar(u8, str, '[') != null) return .Slice;
-        if (std.mem.indexOfScalar(u8, str, '*') != null) return .Pointer;
-        return null;
-    }
-};
-
-const FnParam = struct {
-    name: []const u8,
-    type_str: []const u8,
-
-    pub fn formatZig(self: FnParam, allocator: Allocator) ![]u8 {
-        // Convert .tri type to Zig type
-        if (std.mem.eql(u8, self.type_str, "[]const Trit")) {
-            return allocator.dupe(u8, "[]const Trit");
-        }
-        if (std.mem.eql(u8, self.type_str, "[]Trit")) {
-            return allocator.dupe(u8, "[]Trit");
-        }
-        if (std.mem.eql(u8, self.type_str, "std.mem.Allocator")) {
-            return allocator.dupe(u8, "std.mem.Allocator");
-        }
-        if (std.mem.eql(u8, self.type_str, "usize")) {
-            return allocator.dupe(u8, "usize");
-        }
-        if (std.mem.eql(u8, self.type_str, "i64")) {
-            return allocator.dupe(u8, "i64");
-        }
-        if (std.mem.eql(u8, self.type_str, "f64")) {
-            return allocator.dupe(u8, "f64");
-        }
-        if (std.mem.eql(u8, self.type_str, "u64")) {
-            return allocator.dupe(u8, "u64");
-        }
-        return allocator.dupe(u8, self.type_str);
-    }
-};
-
-const FnSignature = struct {
-    name: []const u8,
-    params: []FnParam,
-    return_type: []const u8,
-    has_allocator: bool,
-
-    pub fn formatZig(self: FnSignature, allocator: Allocator) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(allocator);
-        defer buffer.deinit();
-
-        try buffer.appendSlice("pub fn ");
-        try buffer.appendSlice(self.name);
-        try buffer.appendSlice("(");
-
-        for (self.params, 0..) |param, i| {
-            const zig_type = try param.formatZig(allocator);
-            defer allocator.free(zig_type);
-
-            try buffer.appendSlice(param.name);
-            try buffer.appendSlice(": ");
-            try buffer.appendSlice(zig_type);
-
-            if (i < self.params.len - 1) {
-                try buffer.appendSlice(", ");
-            }
-        }
-
-        try buffer.appendSlice(") ");
-
-        if (std.mem.eql(u8, self.return_type, "void")) {
-            try buffer.appendSlice("void");
-        } else {
-            try buffer.appendSlice(self.return_type);
-        }
-
-        return buffer.toOwnedSlice();
-    }
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// TEMPLATE IMPLEMENTATIONS
-// ─────────────────────────────────────────────────────────────────────────────
-// Stage 0.5: Template-based codegen. These are the actual implementations.
-// ─────────────────────────────────────────────────────────────────────────────
-
-fn getTemplate(comptime name: []const u8) ?[]const u8 {
-    const templates = .{
-        .{ "bind", @embedFile("templates/bind.zig.tpl") },
-        .{ "unbind", @embedFile("templates/unbind.zig.tpl") },
-        .{ "bundle2", @embedFile("templates/bundle2.zig.tpl") },
-        .{ "cosineSimilarity", @embedFile("templates/cosineSimilarity.zig.tpl") },
-        .{ "hammingDistance", @embedFile("templates/hammingDistance.zig.tpl") },
-        .{ "hammingSimilarity", @embedFile("templates/hammingSimilarity.zig.tpl") },
-        .{ "dotSimilarity", @embedFile("templates/dotSimilarity.zig.tpl") },
-        .{ "vectorNorm", @embedFile("templates/vectorNorm.zig.tpl") },
-        .{ "countNonZero", @embedFile("templates/countNonZero.zig.tpl") },
-        .{ "dotProduct", @embedFile("templates/dotProduct.zig.tpl") },
-    };
-
-    inline for (templates) |tpl| {
-        if (std.mem.eql(u8, name, tpl[0])) return tpl[1];
-    }
-    return null;
-}
-
-// For now, use hardcoded templates inline (Stage 0.5-MINIMAL)
 const IMPLEMENTATIONS = struct {
     pub fn get(name: []const u8) ?[]const u8 {
-        if (std.mem.eql(u8, name, "bind")) return 
-        \\pub fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
-        \\    const result = try allocator.alloc(Trit, a.len);
-        \\    for (a, 0..) |_, i| {
-        \\        result[i] = if (b[i] == 0) a[i] else @as(i8, @truncate(b[i] * a[i]));
-        \\    }
-        \\    return result;
-        \\}
+        if (std.mem.eql(u8, name, "bind")) return
+            \\pub fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
+            \\    const len = @max(a.len, b.len);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    for (0..len) |i| {
+            \\        const a_val = if (i < a.len) a[i] else 0;
+            \\        const b_val = if (i < b.len) b[i] else 0;
+            \\        result[i] = if (b_val == 0) a_val else b_val * a_val;
+            \\    }
+            \\    return result;
+            \\}
         ;
 
-        if (std.mem.eql(u8, name, "dotProduct")) return 
-        \\pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
-        \\    var sum: i64 = 0;
-        \\    const len = @min(a.len, b.len);
-        \\    for (0..len) |i| {
-        \\        sum += a[i] * b[i];
-        \\    }
-        \\    return sum;
-        \\}
+        if (std.mem.eql(u8, name, "unbind")) return
+            \\pub fn unbind(allocator: std.mem.Allocator, bound: []const Trit, key: []const Trit) ![]Trit {
+            \\    const len = @max(bound.len, key.len);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    for (0..len) |i| {
+            \\        const b_val = if (i < bound.len) bound[i] else 0;
+            \\        const k_val = if (i < key.len) key[i] else 0;
+            \\        result[i] = if (k_val == 0) b_val else k_val * b_val;
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "bundle2")) return
+            \\pub fn bundle2(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
+            \\    const len = @max(a.len, b.len);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    for (0..len) |i| {
+            \\        const a_val = if (i < a.len) a[i] else 0;
+            \\        const b_val = if (i < b.len) b[i] else 0;
+            \\        const sum = a_val + b_val;
+            \\        result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "bundle3")) return
+            \\pub fn bundle3(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit, c: []const Trit) ![]Trit {
+            \\    const len = @max(@max(a.len, b.len), c.len);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    for (0..len) |i| {
+            \\        const a_val = if (i < a.len) a[i] else 0;
+            \\        const b_val = if (i < b.len) b[i] else 0;
+            \\        const c_val = if (i < c.len) c[i] else 0;
+            \\        const sum = a_val + b_val + c_val;
+            \\        result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "bundleN")) return
+            \\pub fn bundleN(allocator: std.mem.Allocator, vectors: []const []const Trit) ![]Trit {
+            \\    if (vectors.len == 0) return error.EmptyVectorList;
+            \\    var len: usize = 0;
+            \\    for (vectors) |v| len = @max(len, v.len);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    for (0..len) |i| {
+            \\        var sum: i32 = 0;
+            \\        for (vectors) |v| {
+            \\            const val = if (i < v.len) v[i] else 0;
+            \\            sum += val;
+            \\        }
+            \\        result[i] = if (sum > 0) 1 else if (sum < 0) -1 else 0;
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "permute")) return
+            \\pub fn permute(allocator: std.mem.Allocator, v: []const Trit, n: usize) ![]Trit {
+            \\    if (v.len == 0) return try allocator.alloc(Trit, 0);
+            \\    const result = try allocator.alloc(Trit, v.len);
+            \\    const rotate = @mod(n, v.len);
+            \\    for (0..v.len) |i| {
+            \\        const src_idx = if (i >= rotate) i - rotate else i + v.len - rotate;
+            \\        result[i] = v[src_idx];
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "inversePermute")) return
+            \\pub fn inversePermute(allocator: std.mem.Allocator, v: []const Trit, n: usize) ![]Trit {
+            \\    if (v.len == 0) return try allocator.alloc(Trit, 0);
+            \\    const result = try allocator.alloc(Trit, v.len);
+            \\    const rotate = @mod(n, v.len);
+            \\    for (0..v.len) |i| {
+            \\        const src_idx = (i + rotate) % v.len;
+            \\        result[i] = v[src_idx];
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "cosineSimilarity")) return
+            \\pub fn cosineSimilarity(a: []const Trit, b: []const Trit) f64 {
+            \\    if (a.len != b.len) return 0.0;
+            \\    var dot: i64 = 0;
+            \\    var norm_a: f64 = 0.0;
+            \\    var norm_b: f64 = 0.0;
+            \\    for (a, 0..) |ai, i| {
+            \\        dot += ai * b[i];
+            \\        norm_a += @as(f64, @floatFromInt(ai)) * @as(f64, @floatFromInt(ai));
+            \\        norm_b += @as(f64, @floatFromInt(b[i])) * @as(f64, @floatFromInt(b[i]));
+            \\    }
+            \\    const denom = @sqrt(norm_a) * @sqrt(norm_b);
+            \\    if (denom == 0.0) return 0.0;
+            \\    return @as(f64, @floatFromInt(dot)) / denom;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "hammingDistance")) return
+            \\pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
+            \\    var count: usize = 0;
+            \\    const len = @min(a.len, b.len);
+            \\    for (0..len) |i| {
+            \\        if (a[i] != b[i]) count += 1;
+            \\    }
+            \\    return count;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "hammingSimilarity")) return
+            \\pub fn hammingSimilarity(a: []const Trit, b: []const Trit) f64 {
+            \\    const dist = hammingDistance(a, b);
+            \\    const max_len = @max(a.len, b.len);
+            \\    if (max_len == 0) return 1.0;
+            \\    return 1.0 - (@as(f64, @floatFromInt(dist)) / @as(f64, @floatFromInt(max_len)));
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "dotSimilarity")) return
+            \\pub fn dotSimilarity(a: []const Trit, b: []const Trit) i64 {
+            \\    var sum: i64 = 0;
+            \\    const len = @min(a.len, b.len);
+            \\    for (0..len) |i| {
+            \\        sum += a[i] * b[i];
+            \\    }
+            \\    return sum;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "vectorNorm")) return
+            \\pub fn vectorNorm(v: []const Trit) f64 {
+            \\    var sum: f64 = 0.0;
+            \\    for (v) |x| {
+            \\        sum += @as(f64, @floatFromInt(x)) * @as(f64, @floatFromInt(x));
+            \\    }
+            \\    return @sqrt(sum);
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "countNonZero")) return
+            \\pub fn countNonZero(v: []const Trit) usize {
+            \\    var count: usize = 0;
+            \\    for (v) |x| {
+            \\        if (x != 0) count += 1;
+            \\    }
+            \\    return count;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "randomVector")) return
+            \\pub fn randomVector(allocator: std.mem.Allocator, len: usize, seed: u64) ![]Trit {
+            \\    if (len == 0) return try allocator.alloc(Trit, 0);
+            \\    var result = try allocator.alloc(Trit, len);
+            \\    var rng = std.rand.DefaultPrng.init(seed);
+            \\    for (0..len) |i| {
+            \\        const val = rng.random().int(i3) - 1;
+            \\        result[i] = @as(Trit, @intCast(val));
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "encodeSequence")) return
+            \\pub fn encodeSequence(allocator: std.mem.Allocator, text: []const u8) ![]Trit {
+            \\    const trits_per_byte: usize = 5;
+            \\    const result_len = text.len * trits_per_byte;
+            \\    var result = try allocator.alloc(Trit, result_len);
+            \\    for (text, 0..) |byte, i| {
+            \\        const base_idx = i * trits_per_byte;
+            \\        const b = @as(i32, byte);
+            \\        result[base_idx + 0] = @as(Trit, @intCast(@mod(b + 1, 3))) - 1;
+            \\        result[base_idx + 1] = @as(Trit, @intCast(@mod(b + 2, 3))) - 1;
+            \\        result[base_idx + 2] = @as(Trit, @intCast(@mod(b + 3, 3))) - 1;
+            \\        result[base_idx + 3] = @as(Trit, @intCast(@mod(b + 4, 3))) - 1;
+            \\        result[base_idx + 4] = @as(Trit, @intCast(@mod(b + 5, 3))) - 1;
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "probeSequence")) return
+            \\pub fn probeSequence(allocator: std.mem.Allocator, sequence: []const Trit, query: []const Trit) ![]f64 {
+            \\    if (query.len == 0) {
+            \\        const result = try allocator.alloc(f64, 1);
+            \\        result[0] = 0.0;
+            \\        return result;
+            \\    }
+            \\    if (sequence.len < query.len) {
+            \\        const result = try allocator.alloc(f64, 1);
+            \\        result[0] = 0.0;
+            \\        return result;
+            \\    }
+            \\    const window_count = sequence.len - query.len + 1;
+            \\    var result = try allocator.alloc(f64, window_count);
+            \\    for (0..window_count) |i| {
+            \\        const window = sequence[i..][0..query.len];
+            \\        result[i] = cosineSimilarity(window, query);
+            \\    }
+            \\    return result;
+            \\}
+        ;
+
+        if (std.mem.eql(u8, name, "dotProduct")) return
+            \\pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
+            \\    var sum: i64 = 0;
+            \\    const len = @min(a.len, b.len);
+            \\    for (0..len) |i| {
+            \\        sum += a[i] * b[i];
+            \\    }
+            \\    return sum;
+            \\}
         ;
 
         return null;
@@ -188,7 +271,7 @@ const TriParser = struct {
         while (self.pos < self.source.len and self.source[self.pos] != '\n') {
             self.pos += 1;
         }
-        if (self.pos < self.source.len) self.pos += 1; // skip \n
+        if (self.pos < self.source.len) self.pos += 1;
     }
 
     fn skipComments(self: *TriParser) void {
@@ -196,13 +279,11 @@ const TriParser = struct {
             self.skipWhitespace();
             if (self.pos >= self.source.len) break;
 
-            // Skip // comments
             if (self.pos + 1 < self.source.len and self.source[self.pos] == '/' and self.source[self.pos + 1] == '/') {
                 self.skipLine();
                 continue;
             }
 
-            // Skip /* */ comments
             if (self.pos + 1 < self.source.len and self.source[self.pos] == '/' and self.source[self.pos + 1] == '*') {
                 self.pos += 2;
                 while (self.pos < self.source.len - 1) : (self.pos += 1) {
@@ -236,13 +317,12 @@ const TriParser = struct {
         if (self.pos >= self.source.len) return null;
 
         const start = self.pos;
-        while (self.pos < self.source.len and !std.ascii.isWhitespace(self.source[self.pos]) and self.source[self.pos] != ',' and self.source[self.pos] != ')' and self.source[self.pos] != ':') {
+        while (self.pos < self.source.len and !std.ascii.isWhitespace(self.source[self.pos]) and self.source[self.pos] != ',' and self.source[self.pos] != ')' and self.source[self.pos] != ':' and self.source[self.pos] != ';') {
             if (self.source[self.pos] == '[') {
-                // Parse slice/array type
                 while (self.pos < self.source.len and self.source[self.pos] != ']') {
                     self.pos += 1;
                 }
-                if (self.pos < self.source.len) self.pos += 1; // skip ]
+                if (self.pos < self.source.len) self.pos += 1;
             } else {
                 self.pos += 1;
             }
@@ -262,28 +342,13 @@ const TriParser = struct {
         return false;
     }
 
-    fn parseFnParam(self: *TriParser, allocator: Allocator) !?FnParam {
-        const name = self.parseIdentifier() orelse return null;
-        _ = self.expect(':');
-
-        const type_str = self.parseType() orelse return null;
-
-        return FnParam{
-            .name = try allocator.dupe(u8, name),
-            .type_str = try allocator.dupe(u8, type_str),
-        };
-    }
-
     fn parseFnSignature(self: *TriParser, allocator: Allocator) !?FnSignature {
         self.skipComments();
 
-        // Look for "fn" keyword
         if (self.pos + 1 >= self.source.len) return null;
 
-        // Scan to find next "fn"
         while (self.pos < self.source.len - 2) {
             if (self.source[self.pos] == 'f' and self.source[self.pos + 1] == 'n') {
-                // Check if this is actually "fn" and not part of another identifier
                 const next_char = if (self.pos + 2 < self.source.len)
                     self.source[self.pos + 2]
                 else
@@ -314,7 +379,6 @@ const TriParser = struct {
 
         var has_allocator = false;
 
-        // Parse parameters
         while (true) {
             self.skipComments();
             if (self.expect(')')) break;
@@ -330,11 +394,10 @@ const TriParser = struct {
             }
         }
 
-        // Parse return type (format: ") type;" not "-> type")
         self.skipComments();
         const return_type = self.parseType() orelse return null;
+        _ = self.expect(';');
 
-        // Copy params for return value
         const owned_params = try allocator.dupe(FnParam, params.items);
 
         return FnSignature{
@@ -344,6 +407,30 @@ const TriParser = struct {
             .has_allocator = has_allocator,
         };
     }
+
+    fn parseFnParam(self: *TriParser, allocator: Allocator) !?FnParam {
+        const name = self.parseIdentifier() orelse return null;
+        _ = self.expect(':');
+
+        const type_str = self.parseType() orelse return null;
+
+        return FnParam{
+            .name = try allocator.dupe(u8, name),
+            .type_str = try allocator.dupe(u8, type_str),
+        };
+    }
+};
+
+const FnParam = struct {
+    name: []const u8,
+    type_str: []const u8,
+};
+
+const FnSignature = struct {
+    name: []const u8,
+    params: []FnParam,
+    return_type: []const u8,
+    has_allocator: bool,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -352,14 +439,12 @@ const TriParser = struct {
 
 pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
     var parser = TriParser.init(source);
-
-    // Emit Zig code directly - no need to store parsed functions
     var output = std.ArrayListUnmanaged(u8){};
 
     try output.appendSlice(allocator,
         \\// ═══════════════════════════════════════════════════════════════════════════════
         \\// VSA Core — Operations (GENERATED from .tri spec)
-        \\// Stage 0.5: Template-based codegen
+        \\// Stage 1.0: Full template codegen
         \\// DO NOT EDIT — Generated from specs/vsa/ops.tri
         \\//
         \\// φ² + 1/φ² = 3 | TRINITY
@@ -376,7 +461,6 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
         \\
     );
 
-    // Parse and emit each function
     while (true) {
         const sig_result = parser.parseFnSignature(allocator) catch break;
         const sig = sig_result orelse break;
@@ -390,9 +474,7 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
             allocator.free(sig.params);
         }
 
-        // Get implementation from template
         const impl = IMPLEMENTATIONS.get(sig.name) orelse {
-            // No template implementation - emit stub
             try output.appendSlice(allocator, "// TODO: No implementation for ");
             try output.appendSlice(allocator, sig.name);
             try output.appendSlice(allocator, "\n");
