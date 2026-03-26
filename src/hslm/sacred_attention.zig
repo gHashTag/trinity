@@ -9,6 +9,7 @@ const math = std.math;
 const constants = @import("constants.zig");
 const simd_ops = @import("simd_ops.zig");
 const ste_mod = @import("ste.zig");
+const adaptive_scaling = @import("adaptive_scaling.zig");
 
 const EMBED_DIM = constants.EMBED_DIM; // 243
 const NUM_HEADS = constants.NUM_HEADS; // 3
@@ -18,7 +19,8 @@ const PHI: f64 = constants.PHI;
 const SACRED_GAMMA: f64 = constants.SACRED_GAMMA; // φ⁻³ ≈ 0.2360679
 
 // Sacred attention scale: 1/HEAD_DIM^φ⁻³ ≈ 0.354 (not standard 1/√81 = 0.111)
-pub const SACRED_ATTN_SCALE: f32 = @floatCast(1.0 / math.pow(f64, @as(f64, HEAD_DIM), SACRED_GAMMA));
+// Can be overridden by adaptive scaling during training
+pub const SACRED_ATTN_SCALE_BASE: f32 = @floatCast(1.0 / math.pow(f64, @as(f64, HEAD_DIM), SACRED_GAMMA));
 
 // RoPE: HEAD_DIM=81 is odd → 40 rotation pairs, 1 un-rotated dimension
 const ROPE_PAIRS: usize = HEAD_DIM / 2; // 40
@@ -68,6 +70,12 @@ pub const SacredAttention = struct {
     alpha_k: f32 = 1.0,
     alpha_v: f32 = 1.0,
     alpha_o: f32 = 1.0,
+
+    // Adaptive scaling configuration and state
+    adaptive_config: adaptive_scaling.AdaptiveConfig = .{},
+    current_scale: f32 = SACRED_ATTN_SCALE_BASE, // Cached for backward pass
+    training_step: u32 = 0,
+    total_training_steps: u32 = 30000,
 
     is_worker: bool,
     allocator: std.mem.Allocator,
@@ -144,6 +152,10 @@ pub const SacredAttention = struct {
             .cache_rms_input = cache_rms_input,
             .cache_rms_scale = cache_rms_scale,
             .seq_len = 0,
+            .adaptive_config = .{}, // Default: disabled
+            .current_scale = SACRED_ATTN_SCALE_BASE,
+            .training_step = 0,
+            .total_training_steps = 30000,
             .is_worker = false,
             .allocator = allocator,
         };
@@ -283,6 +295,32 @@ pub const SacredAttention = struct {
         self.seq_len = 0;
     }
 
+    /// Configure adaptive sacred scaling
+    pub fn setAdaptiveConfig(self: *Self, config: adaptive_scaling.AdaptiveConfig) void {
+        self.adaptive_config = config;
+    }
+
+    /// Set training progress for adaptive scaling
+    pub fn setTrainingStep(self: *Self, step: u32, total_steps: u32) void {
+        self.training_step = step;
+        self.total_training_steps = total_steps;
+    }
+
+    /// Increment training step (call after each training iteration)
+    pub fn incrementStep(self: *Self) void {
+        self.training_step +%= 1;
+    }
+
+    /// Get current attention scale (for logging/analysis)
+    pub fn getCurrentScale(self: *const Self) f32 {
+        return self.current_scale;
+    }
+
+    /// Get scale statistics for logging
+    pub fn getScaleStats(self: *const Self) adaptive_scaling.ScaleStats {
+        return adaptive_scaling.getScaleStats(self.training_step, self.total_training_steps, self.adaptive_config);
+    }
+
     /// Process one position (inference or non-last training position).
     /// Caches K_rope and V for attention, but not full backward caches.
     pub fn processPosition(self: *Self, input: []const f32, position: usize, output: []f32) void {
@@ -307,14 +345,21 @@ pub const SacredAttention = struct {
         self.cache_rms_scale[pos] = rms;
         @memcpy(self.cache_normed[pos_off .. pos_off + EMBED_DIM], &normed);
 
-        // 2. Project Q, K, V via ternary matmul
+        // 2. Project Q, K, V via ternary matmul with adaptive scaling
         var q: [EMBED_DIM]f32 = undefined;
         var k: [EMBED_DIM]f32 = undefined;
         var v: [EMBED_DIM]f32 = undefined;
+
+        // Compute adaptive scale for this position
+        const adaptive_scale = if (self.adaptive_config.enabled)
+            adaptive_scaling.adaptiveSacredScale(self.training_step, self.total_training_steps, self.adaptive_config)
+        else
+            self.current_scale; // Use base scale (either fixed sacred or previously computed)
+
         simd_ops.ternaryMatvecSimd(&normed, self.w_q, &q, EMBED_DIM, EMBED_DIM);
         simd_ops.ternaryMatvecSimd(&normed, self.w_k, &k, EMBED_DIM, EMBED_DIM);
         simd_ops.ternaryMatvecSimd(&normed, self.w_v, &v, EMBED_DIM, EMBED_DIM);
-        ste_mod.applyAlpha(&q, self.alpha_q); // TWN scaling
+        ste_mod.applyAlpha(&q, self.alpha_q); // TWN scaling with adaptive scale
         ste_mod.applyAlpha(&k, self.alpha_k);
         ste_mod.applyAlpha(&v, self.alpha_v);
 
@@ -327,6 +372,9 @@ pub const SacredAttention = struct {
 
         // Cache K after RoPE
         @memcpy(self.cache_k_rope[pos_off .. pos_off + EMBED_DIM], &k);
+
+        // Store current scale for backward pass
+        self.current_scale = adaptive_scale;
 
         // Cache Q for last pos backward
         if (cache_for_backward) {
@@ -344,7 +392,7 @@ pub const SacredAttention = struct {
             const h_start = h * HEAD_DIM;
             const h_end = h_start + HEAD_DIM;
 
-            // Compute scores: Q_h · K_h[j] * SACRED_ATTN_SCALE for j=0..pos
+            // Compute scores: Q_h · K_h[j] * adaptive_scale for j=0..pos
             var scores: [CONTEXT_LEN]f32 = undefined;
             for (0..pos + 1) |j| {
                 const j_off = j * EMBED_DIM;
@@ -352,7 +400,7 @@ pub const SacredAttention = struct {
                 for (h_start..h_end) |d| {
                     dot += q[d] * self.cache_k_rope[j_off + d];
                 }
-                scores[j] = dot * SACRED_ATTN_SCALE;
+                scores[j] = dot * adaptive_scale;
             }
 
             // Softmax over [0..pos]
@@ -446,8 +494,8 @@ pub const SacredAttention = struct {
             for (0..self.seq_len) |j| {
                 const j_off = j * EMBED_DIM;
                 for (h_start..h_end) |d| {
-                    grad_q_full[d] += grad_score[j] * self.cache_k_rope[j_off + d] * SACRED_ATTN_SCALE;
-                    grad_k_all[j_off + d] += grad_score[j] * self.cache_q_last[d] * SACRED_ATTN_SCALE;
+                    grad_q_full[d] += grad_score[j] * self.cache_k_rope[j_off + d] * self.current_scale;
+                    grad_k_all[j_off + d] += grad_score[j] * self.cache_q_last[d] * self.current_scale;
                 }
             }
         }
@@ -676,11 +724,11 @@ fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
 
 test "sacred attn scale value" {
     // 1/81^φ⁻³ ≈ 0.354
-    try std.testing.expect(SACRED_ATTN_SCALE > 0.34);
-    try std.testing.expect(SACRED_ATTN_SCALE < 0.36);
+    try std.testing.expect(SACRED_ATTN_SCALE_BASE > 0.34);
+    try std.testing.expect(SACRED_ATTN_SCALE_BASE < 0.36);
     // Verify it's ~3× larger than standard 1/√81 = 0.111
     const standard = 1.0 / @sqrt(@as(f32, 81.0));
-    try std.testing.expect(SACRED_ATTN_SCALE > standard * 2.5);
+    try std.testing.expect(SACRED_ATTN_SCALE_BASE > standard * 2.5);
 }
 
 test "rope rotation reversible" {
