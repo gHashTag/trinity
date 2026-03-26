@@ -1,10 +1,10 @@
-# B003: TRI-27 ISA — Ternary Instruction Set Architecture v5.2
+# B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227737
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, Opcode Tables, Statistical Analysis)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, Opcode Tables, Statistical Analysis)
 
 ---
 
@@ -15,6 +15,20 @@ We present TRI-27, a ternary instruction set architecture (ISA) with 27 register
 ---
 
 ## 1. Architecture Diagrams
+
+### 1.1 TRI-27 Register File Layout
+
+**Figure 1: TRI-27 3-Bank Register Layout (Alpha/Iota/Sigma)**
+
+![B003-Fig1_register_layout](figures/B003-Fig1_register_layout.png)
+
+**Key Observations:**
+- 3 banks × 9 registers = 27 total
+- Each bank: distinct Coptic letter (α, ι, σ)
+- 32-bit per register: supports signed trit (-1,0,+1) or packed TF3
+- Cross-bank operations require explicit permission
+
+### 1.2 TRI-27 Register File
 
 ### 1.1 TRI-27 Register File
 

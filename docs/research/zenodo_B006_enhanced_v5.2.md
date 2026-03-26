@@ -1,10 +1,10 @@
-# B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v5.2
+# B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227743
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, Bit Layouts, Statistical Analysis)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, Bit Layouts, Statistical Analysis)
 
 ---
 
@@ -15,6 +15,31 @@ We present Sacred GF16/TF3, a family of φ-based numerical formats designed for 
 ---
 
 ## 1. Architecture
+
+### 1.1 GF16/TF3 Bit Layout Comparison
+
+**Figure 1: GF16/TF3 Bit Layout (φ-optimal)**
+
+![B006-Fig1_gf16_layout](figures/B006-Fig1_gf16_layout.png)
+
+**Key Observations:**
+- FP32: 1 sign + 8 exp + 23 mantissa (32 bits)
+- GF16: 1 sign + 6 exp + 9 mantissa (16 bits, φ-optimal)
+- TF3: 8× (1s+1e+2m) packed = 16 bits (8 weights)
+- φ-optimality: exp/mant ratio ≈ φ
+
+### 1.2 φ-Distance Heatmap
+
+**Figure 2: φ-Distance from Optimal Allocation**
+
+![B006-Fig2_phi_heatmap](figures/B006-Fig2_phi_heatmap.png)
+
+**Key Observations:**
+- Green region: φ-optimal (exp=6, mant=9)
+- GF16 marker: (9, 6) - φ-optimal
+- TF3 marker: (9, 9) - near-optimal for 8× packing
+
+### 1.3 GF16 Arithmetic Unit
 
 ### 1.1 GF16 Arithmetic Unit
 

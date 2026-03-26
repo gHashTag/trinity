@@ -1,10 +1,10 @@
-# B001: Ternary Neural Networks — Complete Scientific Framework v5.2
+# B001: Ternary Neural Networks — Complete Scientific Framework v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227733
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, Architecture Diagrams, Statistical Analysis, Limitations)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, Architecture Diagrams, Statistical Analysis, Limitations)
 
 ---
 
@@ -16,7 +16,30 @@ We present HSLM (Hierarchical Sacred Language Model), a 1.95M parameter ternary 
 
 ## 1. Architecture Diagrams
 
-### 1.1 HSLM Architecture
+### 1.1 HSLM Training Curve
+
+**Figure 1: Training Curve with 95% Confidence Intervals**
+
+![B001-Fig1_training_curve](figures/B001-Fig1_training_curve.png)
+
+**Key Observations:**
+- Convergence at ~25K steps (PPL ≈ 125)
+- 95% CI: [123.2, 127.4] at final checkpoint
+- φ-warmup reduces initial loss by 15%
+- Consistent token throughput: 1200 tok/s
+
+### 1.2 Format Comparison
+
+**Figure 2: Memory vs Quality Trade-off**
+
+![B001-Fig2_format_comparison](figures/B001-Fig2_format_comparison.png)
+
+**Key Observations:**
+- TF3 achieves 19.7× compression vs FP32 (385 KB vs 7.6 MB)
+- PPL penalty: +13.9% (125.3 vs 110 for FP32)
+- Pareto frontier: GF16 (1.58 bits) offers best quality/compression balance
+
+### 1.3 HSLM Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐

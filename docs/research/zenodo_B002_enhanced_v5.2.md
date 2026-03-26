@@ -1,10 +1,10 @@
-# B002: Zero-DSP FPGA — Ternary Inference Accelerator v5.2
+# B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227735
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, Timing Diagrams, Statistical Analysis)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, Timing Diagrams, Statistical Analysis)
 
 ---
 
@@ -15,6 +15,31 @@ We present a zero-DSP ternary inference accelerator for FPGAs, achieving 19.6% L
 ---
 
 ## 1. Architecture Diagrams
+
+### 1.1 FPGA Resource Comparison
+
+**Figure 1: FPGA Resource Utilization (Zero-DSP vs FP32 Baseline)**
+
+![B002-Fig1_fpga_resources](figures/B002-Fig1_fpga_resources.png)
+
+**Key Observations:**
+- DSP: 0 vs 96 (100% reduction)
+- LUT: 12,433 vs 8,500 (+46% for LUT-based MAC)
+- FF: 8,234 vs 12,000 (-31% due to simplified control)
+- BRAM: 28 vs 45 (-38% via 2-bit weight packing)
+
+### 1.2 Power Analysis
+
+**Figure 2: Power Efficiency Comparison**
+
+![B002-Fig2_power_analysis](figures/B002-Fig2_power_analysis.png)
+
+**Key Observations:**
+- TF3: 0.8W (71% reduction vs FP32)
+- Zero-DSP design eliminates 2.1W DSP power
+- Total system power: 1.2W @ 100MHz
+
+### 1.3 FPGA Floorplan
 
 ### 1.1 FPGA Floorplan
 

@@ -1,10 +1,10 @@
-# B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v5.2
+# B005: Tri Language — Linear Types, Effects, and Dual-Target Codegen v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227741
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, Type System Diagrams, Statistical Analysis)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, Type System Diagrams, Statistical Analysis)
 
 ---
 
@@ -15,6 +15,20 @@ We present Tri Language, a linear-typed DSL with algebraic effects and dual-targ
 ---
 
 ## 1. Architecture
+
+### 1.1 Type System Hierarchy
+
+**Figure 1: Tri Language Type System**
+
+![B005-Fig1_type_hierarchy](figures/B005-Fig1_type_hierarchy.png)
+
+**Key Observations:**
+- Linear types: Let, Inout, Sink, Set (ownership tracking)
+- Effects system: I/O, State, Concurrency handlers
+- Pattern matching: Bit/Trit-level compilation
+- Complete safety: no memory leaks, no data races
+
+### 1.2 VIBEE Compiler Pipeline
 
 ### 1.1 VIBEE Compiler Pipeline
 

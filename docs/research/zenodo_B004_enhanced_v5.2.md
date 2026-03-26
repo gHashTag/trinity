@@ -1,10 +1,10 @@
-# B004: Queen Lotus Cycle — Autonomous Learning Orchestration v5.2
+# B004: Queen Lotus Cycle — Autonomous Learning Orchestration v6.0
 
 **Authors:** Dmitrii Vasilev
 **DOI:** 10.5281/zenodo.19227739
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-26
-**Version:** 5.2 (Enhanced with Algorithm Boxes, State Diagrams, Statistical Analysis)
+**Version:** 6.0 (Enhanced with Publication-Ready Figures, Algorithm Boxes, State Diagrams, Statistical Analysis)
 
 ---
 
@@ -15,6 +15,20 @@ We present Queen Lotus Cycle, a 6-phase autonomous learning orchestration system
 ---
 
 ## 1. Architecture Diagrams
+
+### 1.1 Queen Lotus Cycle State Machine
+
+**Figure 1: 6-Phase Lotus Cycle State Machine**
+
+![B004-Fig1_lotus_cycle](figures/B004-Fig1_lotus_cycle.png)
+
+**Key Observations:**
+- 6 phases: DIAGNOSE → PLAN → ACT → VERIFY → MEASURE → PERSIST
+- Each phase: distinct color-coded state
+- Transitions: clockwise with quality-based shortcuts
+- Duration: 30-60s per cycle
+
+### 1.2 Queen Lotus Cycle State Machine
 
 ### 1.1 Queen Lotus Cycle State Machine
 
