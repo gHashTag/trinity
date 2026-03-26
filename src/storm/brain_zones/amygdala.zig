@@ -5,10 +5,34 @@ const std = @import("std");
 
 pub const MAX_FAILURES: u32 = 3; // 3 failures = blacklist
 
+/// Error types for failure tracking
+pub const ErrorType = enum(u8) {
+    Duplicate = 1,
+    Persistent = 2,
+    Timeout = 3,
+    Unknown = 0,
+
+    pub fn toString(self: ErrorType) []const u8 {
+        return switch (self) {
+            .Duplicate => "DUPLICATE",
+            .Persistent => "PERSISTENT",
+            .Timeout => "TIMEOUT",
+            .Unknown => "UNKNOWN",
+        };
+    }
+};
+
+/// Failure record - tracks count and type
+pub const FailureRecord = struct {
+    count: u32,
+    error_type: ErrorType,
+    message: []const u8,
+};
+
 /// Experience Engine - tracks task failures and blacklist
 pub const ExperienceEngine = struct {
     allocator: std.mem.Allocator,
-    blacklist: ?std.StringHashMap(Error) = null,
+    blacklist: ?std.StringHashMap(FailureRecord) = null,
 
     /// Create new experience engine
     pub fn init(allocator: std.mem.Allocator) ExperienceEngine {
@@ -21,20 +45,15 @@ pub const ExperienceEngine = struct {
     /// Deinitialize experience engine
     pub fn deinit(self: *ExperienceEngine) void {
         if (self.blacklist) |*bl| {
+            // Free all allocated messages
+            var iter = bl.iterator();
+            while (iter.next()) |entry| {
+                self.allocator.free(entry.value_ptr.message);
+            }
             bl.deinit();
         }
     }
 };
-
-pub const Error = struct {
-    code: u8,
-    message: []const u8,
-};
-
-/// AMYGDALA Error Codes
-const ERR_DUPLICATE = "DUPLICATE";
-const ERR_PERSISTENT = "PERSISTENT";
-const ERR_TIMEOUT = "TIMEOUT";
 
 /// Simple Levenshtein distance calculation
 fn levenshtein(a: []const u8, b: []const u8) usize {
@@ -54,33 +73,38 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
 }
 
 /// Record a failure for blacklist
-pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Error) !void {
-    _ = error_code; // TODO: use error code to track different failure types
-
+/// Uses error_code to track different failure types (Duplicate, Persistent, Timeout)
+pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: ErrorType) !void {
     if (self.blacklist == null) {
-        self.blacklist = std.StringHashMap(Error).init(self.allocator);
+        self.blacklist = std.StringHashMap(FailureRecord).init(self.allocator);
     }
 
-    // Check if already at MAX_FAILURES
+    // Check if already tracked
     const entry = self.blacklist.?.get(task) orelse {
-        // First failure - record it
-        _ = try self.blacklist.?.put(self.allocator, task, .{
-            .code = 1,
-            .message = "",
+        // First failure - record it with provided error type
+        const msg = try std.fmt.allocPrint(self.allocator, "{s} (1/{d})", .{ error_code.toString(), MAX_FAILURES });
+        _ = try self.blacklist.?.put(task, .{
+            .count = 1,
+            .error_type = error_code,
+            .message = msg,
         });
         return;
     };
 
     // Increment failure count
-    if (entry.value_ptr.code >= MAX_FAILURES) {
-        // Add to blacklist with PERSISTENT error
-        _ = try self.blacklist.?.put(self.allocator, task, .{
-            .code = MAX_FAILURES,
-            .message = "Persistently failing (3x)",
-        });
+    if (entry.value_ptr.count >= MAX_FAILURES) {
+        // Already at max - ensure blacklisted status
+        if (entry.value_ptr.count > MAX_FAILURES) {
+            entry.value_ptr.count = MAX_FAILURES;
+        }
+        const msg = try std.fmt.allocPrint(self.allocator, "{s} - Blacklisted ({d}/{d})", .{ entry.value_ptr.error_type.toString(), entry.value_ptr.count, MAX_FAILURES });
+        self.allocator.free(entry.value_ptr.message);
+        entry.value_ptr.message = msg;
     } else {
-        // Increment failure count
-        entry.value_ptr.code += 1;
+        entry.value_ptr.count += 1;
+        const msg = try std.fmt.allocPrint(self.allocator, "{s} ({d}/{d})", .{ entry.value_ptr.error_type.toString(), entry.value_ptr.count, MAX_FAILURES });
+        self.allocator.free(entry.value_ptr.message);
+        entry.value_ptr.message = msg;
     }
 }
 
@@ -88,17 +112,42 @@ pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Erro
 pub fn checkBlacklist(self: *ExperienceEngine, task: []const u8) bool {
     const bl = self.blacklist orelse return false;
     const entry = bl.get(task) orelse return false;
-    return entry.code >= MAX_FAILURES;
+    return entry.count >= MAX_FAILURES;
+}
+
+/// Get failure info for a task
+pub fn getFailureInfo(self: *ExperienceEngine, task: []const u8) ?FailureRecord {
+    const bl = self.blacklist orelse return null;
+    return bl.get(task);
 }
 
 /// CLI command for AMYGDALA
+/// Usage: tri amygdala check <task_name>
 pub fn cmdCheckFear(allocator: std.mem.Allocator, args: []const u8) ![]const u8 {
-    _ = args;
+    var engine = ExperienceEngine.init(allocator);
+    defer engine.deinit();
 
-    // TODO: Integrate with experience engine
-    const is_blocked = false; // Mock for now
+    // Parse task name from args
+    const task_name = std.mem.trim(u8, args, " \n\t");
+    if (task_name.len == 0) {
+        return try std.fmt.allocPrint(allocator, "Usage: tri amygdala check <task_name>\n", .{});
+    }
 
-    return try std.fmt.allocPrint(allocator, "Blocked: {s}\n", .{if (is_blocked) "YES ❌" else "NO ✅"});
+    const info = getFailureInfo(&engine, task_name);
+    const is_blocked = checkBlacklist(&engine, task_name);
+
+    if (info) |record| {
+        return try std.fmt.allocPrint(allocator, "Task: {s}\nStatus: {s}\nFailures: {d}/{d}\nType: {s}\nMessage: {s}\n", .{
+            task_name,
+            if (is_blocked) "BLOCKED ❌" else "TRACKED ⚠️",
+            record.count,
+            MAX_FAILURES,
+            record.error_type.toString(),
+            record.message,
+        });
+    } else {
+        return try std.fmt.allocPrint(allocator, "Task: {s}\nStatus: NO ✅\nNot tracked in experience engine\n", .{task_name});
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -140,5 +189,73 @@ test "cmdCheckFear returns status" {
     const result = try cmdCheckFear(allocator, "");
     defer allocator.free(result);
 
-    try std.testing.expect(std.mem.indexOf(u8, result, "Blocked") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "Usage") != null);
+}
+
+test "recordFailure first failure" {
+    const allocator = std.testing.allocator;
+    var engine = ExperienceEngine.init(allocator);
+    defer engine.deinit();
+
+    try recordFailure(&engine, "test_task", .Timeout);
+
+    try std.testing.expect(!checkBlacklist(&engine, "test_task"));
+
+    const info = getFailureInfo(&engine, "test_task");
+    try std.testing.expect(info != null);
+    if (info) |rec| {
+        try std.testing.expectEqual(@as(u32, 1), rec.count);
+        try std.testing.expectEqual(ErrorType.Timeout, rec.error_type);
+    }
+}
+
+test "recordFailure blacklist after 3 failures" {
+    const allocator = std.testing.allocator;
+    var engine = ExperienceEngine.init(allocator);
+    defer engine.deinit();
+
+    try recordFailure(&engine, "bad_task", .Persistent);
+    try std.testing.expect(!checkBlacklist(&engine, "bad_task"));
+
+    try recordFailure(&engine, "bad_task", .Persistent);
+    try std.testing.expect(!checkBlacklist(&engine, "bad_task"));
+
+    try recordFailure(&engine, "bad_task", .Persistent);
+    try std.testing.expect(checkBlacklist(&engine, "bad_task"));
+
+    const info = getFailureInfo(&engine, "bad_task");
+    try std.testing.expect(info != null);
+    if (info) |rec| {
+        try std.testing.expectEqual(@as(u32, 3), rec.count);
+        try std.testing.expectEqual(ErrorType.Persistent, rec.error_type);
+    }
+}
+
+test "recordFailure different error types" {
+    const allocator = std.testing.allocator;
+    var engine = ExperienceEngine.init(allocator);
+    defer engine.deinit();
+
+    try recordFailure(&engine, "task_a", .Duplicate);
+    try recordFailure(&engine, "task_b", .Timeout);
+    try recordFailure(&engine, "task_c", .Persistent);
+
+    const info_a = getFailureInfo(&engine, "task_a");
+    try std.testing.expect(info_a != null);
+    try std.testing.expectEqual(ErrorType.Duplicate, info_a.?.error_type);
+
+    const info_b = getFailureInfo(&engine, "task_b");
+    try std.testing.expect(info_b != null);
+    try std.testing.expectEqual(ErrorType.Timeout, info_b.?.error_type);
+
+    const info_c = getFailureInfo(&engine, "task_c");
+    try std.testing.expect(info_c != null);
+    try std.testing.expectEqual(ErrorType.Persistent, info_c.?.error_type);
+}
+
+test "ErrorType toString" {
+    try std.testing.expectEqualStrings("DUPLICATE", ErrorType.Duplicate.toString());
+    try std.testing.expectEqualStrings("PERSISTENT", ErrorType.Persistent.toString());
+    try std.testing.expectEqualStrings("TIMEOUT", ErrorType.Timeout.toString());
+    try std.testing.expectEqualStrings("UNKNOWN", ErrorType.Unknown.toString());
 }
