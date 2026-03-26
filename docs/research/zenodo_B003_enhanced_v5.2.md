@@ -550,10 +550,10 @@ cd fpga/tri27
 
 ```bibtex
 @software{trinity_b003_v5_2_2026,
-  title        = {Trinity B003: TRI-27 ISA — Ternary Instruction Set Architecture v5.2},
+  title        = {Trinity B003: TRI-27 ISA — Ternary Instruction Set Architecture v6.0},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {5.2},
+  version      = {6.0},
   doi          = {10.5281/zenodo.19227737},
   url          = {https://doi.org/10.5281/zenodo.19227737},
   publisher    = {Zenodo}

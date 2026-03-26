@@ -602,10 +602,10 @@ python3 scripts/compare_distances.py --euclidean euclidean.csv --phi phi.csv
 
 ```bibtex
 @software{trinity_b006_v5_2_2026,
-  title        = {Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v5.2},
+  title        = {Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v6.0},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {5.2},
+  version      = {6.0},
   doi          = {10.5281/zenodo.19227743},
   url          = {https://doi.org/10.5281/zenodo.19227743},
   publisher    = {Zenodo}

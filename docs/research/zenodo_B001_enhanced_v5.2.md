@@ -345,7 +345,7 @@ git --version
 ```bash
 git clone https://github.com/gHashTag/trinity
 cd trinity
-git checkout v5.2
+git checkout v6.0
 ```
 
 **Step 2: Download TinyStories**
@@ -589,7 +589,7 @@ All ablations remain significant after correction.
 
 **Repository:** https://github.com/gHashTag/trinity
 **License:** MIT
-**Version:** v5.2
+**Version:** 6.0
 **Dependencies:** Zig 0.15.x (std only, zero external)
 **Code LOC:** ~15,000 (including tests)
 
@@ -666,34 +666,34 @@ All ablations remain significant after correction.
 ### BibTeX
 
 ```bibtex
-@software{trinity_b001_v5_2_2026,
-  title        = {Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2},
+@software{trinity_b001_v6_0_2026,
+  title        = {Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {5.2},
+  version      = {6.0},
   doi          = {10.5281/zenodo.19227733},
   url          = {https://doi.org/10.5281/zenodo.19227733},
   publisher    = {Zenodo},
-  note         = {Enhanced with Algorithm Boxes, Architecture Diagrams, Statistical Analysis}
+  note         = {Enhanced with Publication-Ready Figures, Algorithm Boxes, Architecture Diagrams, Statistical Analysis, Limitations}
 }
 ```
 
 ### APA
 
 ```
-Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2 (Version 5.2) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.19227733
+Vasilev, D. (2026). Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0 (Version 6.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.19227733
 ```
 
 ### IEEE
 
 ```
-D. Vasilev, "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2" (Version 5.2), Zenodo, 2026. doi: 10.5281/zenodo.19227733.
+D. Vasilev, "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0" (Version 6.0), Zenodo, 2026. doi: 10.5281/zenodo.19227733.
 ```
 
 ### MLA
 
 ```
-Vasilev, Dmitrii. "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2." Zenodo, 2026, doi:10.5281/zenodo.19227733.
+Vasilev, Dmitrii. "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v6.0." Zenodo, 2026, doi:10.5281/zenodo.19227733.
 ```
 
 ---
@@ -855,7 +855,7 @@ All checkpoint files, training logs, and evaluation metrics are included in this
 
 - **Repository:** https://github.com/gHashTag/trinity
 - **Branch:** feat/issue-411-linear-types-ownership
-- **Tag:** v5.2.0
+- **Tag:** v6.0.0
 - **License:** MIT
 
 ### 11.2 Key Files

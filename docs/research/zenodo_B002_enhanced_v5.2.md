@@ -596,10 +596,10 @@ grep -A5 "Slice LUTs" hslm_routed.json
 
 ```bibtex
 @software{trinity_b002_v5_2_2026,
-  title        = {Trinity B002: Zero-DSP FPGA — Ternary Inference Accelerator v5.2},
+  title        = {Trinity B002: Zero-DSP FPGA — Ternary Inference Accelerator v6.0},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {5.2},
+  version      = {6.0},
   doi          = {10.5281/zenodo.19227735},
   url          = {https://doi.org/10.5281/zenodo.19227735},
   publisher    = {Zenodo}

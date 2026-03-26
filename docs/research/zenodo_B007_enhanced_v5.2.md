@@ -562,10 +562,10 @@ zig build vsa_test --verify-permutation --dim 512
 
 ```bibtex
 @software{trinity_b007_v5_2_2026,
-  title        = {Trinity B007: VSA Operations for Ternary Computing v5.2},
+  title        = {Trinity B007: VSA Operations for Ternary Computing v6.0},
   author       = {Vasilev, Dmitrii},
   year         = 2026,
-  version      = {5.2},
+  version      = {6.0},
   doi          = {10.5281/zenodo.19227745},
   url          = {https://doi.org/10.5281/zenodo.19227745},
   publisher    = {Zenodo}
