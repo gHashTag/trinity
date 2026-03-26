@@ -1,0 +1,5 @@
+// Benchmark Suite Specification for Trinity S³AI Research
+const BaselineModel = union(enum) {
+    gpt2_small, phi3_mini, tinyllama, gpt2_base, llama7b, mistral7b,
+    trinity_hslm,
+};
