@@ -8,7 +8,7 @@ authors:
     orcid: "https://orcid.org/0000-0000-0000-0000"
     affiliation: "Trinity Open Source Project"
 type: software
-version: 5.0.0
+version: 5.2.0
 doi: 10.5281/zenodo.19227879
 date-released: 2026-03-26
 url: "https://github.com/gHashTag/trinity"
@@ -62,6 +62,30 @@ identifiers:
   - description: "Zenodo DOI for VSA Operations (B007) v5.0"
     type: doi
     value: "10.5281/zenodo.19227877"
+  - description: "Zenodo DOI for Trinity S³AI Framework v5.2 (Parent collection)"
+    type: doi
+    value: "10.5281/zenodo.19227879"
+  - description: "Zenodo DOI for HSLM (B001) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227733"
+  - description: "Zenodo DOI for Zero-DSP FPGA (B002) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227735"
+  - description: "Zenodo DOI for TRI-27 ISA (B003) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227737"
+  - description: "Zenodo DOI for Queen Lotus Cycle (B004) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227739"
+  - description: "Zenodo DOI for Tri Language (B005) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227741"
+  - description: "Zenodo DOI for Sacred GF16/TF3 (B006) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227743"
+  - description: "Zenodo DOI for VSA Operations (B007) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227745"
   - description: "Zenodo DOI for Trinity S³AI Framework v4.0 (Parent collection)"
     type: doi
     value: "10.5281/zenodo.19227751"
@@ -122,7 +146,7 @@ related-resources:
     uri: "https://github.com/gHashTag/trinity/blob/main/src/vsa.zig"
 preferred-citation:
   type: software
-  title: "Trinity S³AI Framework: Complete Research Collection v5.0"
+  title: "Trinity S³AI Framework: Complete Research Collection v5.2"
   authors:
     - family-names: "Vasilev"
       given-names: "Dmitrii"
@@ -130,8 +154,8 @@ preferred-citation:
   year: 2026
   month: 3
   journal: "Zenodo"
-  volume: "v5.0"
-  issue: "Enhanced with NeurIPS/ICLR/MLSys Standards"
+  volume: "v5.2"
+  issue: "Enhanced with Algorithm Boxes, Architecture Diagrams, Statistical Analysis"
   doi: "10.5281/zenodo.19227879"
   url: "https://doi.org/10.5281/zenodo.19227879"
 references:
