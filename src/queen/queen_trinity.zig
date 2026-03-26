@@ -350,7 +350,7 @@ fn runQueenStart(allocator: Allocator, args: []const []const u8) !void {
         try updateHeartbeat(allocator, cycle, now, dirty, build_ok);
 
         // SLEEP 60s
-        std.time.nanoSleep(60 * std.time.ns_per_s);
+        std.Thread.sleep(60 * std.time.ns_per_s);
     }
 }
 
