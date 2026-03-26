@@ -3313,7 +3313,7 @@ pub const DatasetDescription = struct {
         try latex.writer(allocator).print("\\midrule\n", .{});
 
         for (self.splits) |split| {
-            try latex.writer(allocator).print("{s} & {d} & {d:.1}\\% \\\\\n", .{ split.name, split.samples, split.percentage });
+            try latex.writer(allocator).print("{s} & {d} & {d:.1}%% \\\\\n", .{ split.name, split.samples, split.percentage });
         }
 
         try latex.writer(allocator).print("\\bottomrule\n", .{});
@@ -3486,6 +3486,352 @@ pub const TikZDiagram = struct {
 
         try md.writer(allocator).print("\\end{{tikzpicture}}\n", .{});
         try md.writer(allocator).print("```\n\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+// V12: Advanced Scientific Structures
+// ═════════════════════════════════════════════════════════════════════════
+
+/// Reproducibility checklist item for ML paper submissions
+pub const ChecklistItem = struct {
+    /// Category (e.g., "Code", "Data", "Hyperparameters")
+    category: []const u8,
+    /// Checklist question
+    question: []const u8,
+    /// Response (yes/no/partial/NA)
+    response: ChecklistResponse,
+    /// Additional details
+    details: ?[]const u8 = null,
+    /// Link to resource (GitHub, Zenodo, etc.)
+    link: ?[]const u8 = null,
+};
+
+pub const ChecklistResponse = enum {
+    yes,
+    no,
+    partial,
+    na,
+
+    pub fn toString(self: ChecklistResponse) []const u8 {
+        return switch (self) {
+            .yes => "✓ Yes",
+            .no => "✗ No",
+            .partial => "~ Partial",
+            .na => "N/A",
+        };
+    }
+
+    pub fn toSymbol(self: ChecklistResponse) []const u8 {
+        return switch (self) {
+            .yes => "[✓]",
+            .no => "[✗]",
+            .partial => "[~]",
+            .na => "[ ]",
+        };
+    }
+};
+
+/// Reproducibility checklist for paper submissions (NeurIPS/ICLR/MLSys)
+pub const ReproducibilityChecklist = struct {
+    /// Conference name
+    conference: []const u8,
+    /// Year
+    year: u32,
+    /// Checklist items
+    items: []const ChecklistItem,
+    /// Paper title
+    paper_title: []const u8,
+    /// Corresponding author
+    contact: ?[]const u8 = null,
+
+    /// Format as LaTeX checklist
+    pub fn formatAsLaTeX(self: *const ReproducibilityChecklist, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\section{{Reproducibility Checklist}}\n\n", .{});
+        try latex.writer(allocator).print("\\textbf{{Paper:}} {s} ({s} {d})\n\n", .{ self.paper_title, self.conference, self.year });
+
+        for (self.items) |item| {
+            try latex.writer(allocator).print("\\textbf{{{s}:}} {s}\n", .{ item.category, item.question });
+            try latex.writer(allocator).print("{s} ", .{item.response.toSymbol()});
+
+            if (item.details) |det| {
+                try latex.writer(allocator).print("-- {s}", .{det});
+            }
+
+            if (item.link) |lnk| {
+                try latex.writer(allocator).print(" (\\href{{{s}}}{{link}})", .{lnk});
+            }
+
+            try latex.writer(allocator).print("\n\n", .{});
+        }
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown checklist
+    pub fn formatAsMarkdown(self: *const ReproducibilityChecklist, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 4096) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("# Reproducibility Checklist\n\n", .{});
+        try md.writer(allocator).print("**Paper:** {s}\n", .{self.paper_title});
+        try md.writer(allocator).print("**Conference:** {s} {d}\n\n", .{ self.conference, self.year });
+
+        for (self.items) |item| {
+            try md.writer(allocator).print("### {s}\n\n", .{item.category});
+            try md.writer(allocator).print("**{s}** {s}\n\n", .{ item.question, item.response.toString() });
+
+            if (item.details) |det| {
+                try md.writer(allocator).print("{s}\n\n", .{det});
+            }
+
+            if (item.link) |lnk| {
+                try md.writer(allocator).print("**🔗** [{s}]({s})\n\n", .{"Link", lnk});
+            }
+        }
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Statistical result with confidence interval
+pub const StatisticalResult = struct {
+    /// Metric name
+    metric: []const u8,
+    /// Value
+    value: f64,
+    /// Standard error
+    std_err: ?f64 = null,
+    /// Confidence interval (95% by default)
+    ci: ?struct { lower: f64, upper: f64 } = null,
+    /// P-value
+    p_value: ?f64 = null,
+    /// Effect size (Cohen's d)
+    effect_size: ?f64 = null,
+    /// Significance level
+    significance: SignificanceLevel = .none,
+    /// Is this the best result?
+    is_best: bool = false,
+};
+
+/// Results summary table for experimental outcomes
+pub const ResultsSummary = struct {
+    /// Table caption
+    caption: []const u8,
+    /// Label for cross-referencing
+    label: []const u8,
+    /// Dataset name
+    dataset: []const u8,
+    /// Results (one per method)
+    results: []const StatisticalResult,
+    /// Primary metric (for sorting)
+    primary_metric: []const u8,
+    /// Higher is better?
+    higher_is_better: bool = false,
+
+    /// Format as LaTeX results table
+    pub fn formatAsLaTeX(self: *const ResultsSummary, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{table}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+        try latex.writer(allocator).print("\\caption{{{s} on {s}}}\n", .{ self.caption, self.dataset });
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{ self.label });
+        try latex.writer(allocator).print("\\begin{{tabular}}{{lccccc}}\n", .{});
+        try latex.writer(allocator).print("\\toprule\n", .{});
+        try latex.writer(allocator).print("Method & {s} & SE & 95%% CI & $p$-value & Cohen's $d$ \\\\\n", .{self.primary_metric});
+        try latex.writer(allocator).print("\\midrule\n", .{});
+
+        for (self.results) |result| {
+            // Method name with bold for best
+            if (result.is_best) {
+                try latex.writer(allocator).print("\\textbf{{{s}}} & ", .{result.metric});
+            } else {
+                try latex.writer(allocator).print("{s} & ", .{result.metric});
+            }
+
+            // Value with bold for best
+            if (result.is_best) {
+                try latex.writer(allocator).print("\\textbf{{{d:.3}}} & ", .{result.value});
+            } else {
+                try latex.writer(allocator).print("{d:.3} & ", .{result.value});
+            }
+
+            // Standard error
+            if (result.std_err) |se| {
+                try latex.writer(allocator).print("{d:.3} & ", .{se});
+            } else {
+                try latex.writer(allocator).print("--- & ", .{});
+            }
+
+            // Confidence interval
+            if (result.ci) |ci| {
+                try latex.writer(allocator).print("[{d:.3}, {d:.3}] & ", .{ ci.lower, ci.upper });
+            } else {
+                try latex.writer(allocator).print("--- & ", .{});
+            }
+
+            // P-value with significance
+            if (result.p_value) |pv| {
+                const sig_str = if (pv < 0.001) "<0.001" else try std.fmt.allocPrint(allocator, "{d:.3}", .{pv});
+                try latex.writer(allocator).print("{s}{s} & ", .{ sig_str, result.significance.toLaTeX() });
+            } else {
+                try latex.writer(allocator).print("--- & ", .{});
+            }
+
+            // Effect size
+            if (result.effect_size) |es| {
+                try latex.writer(allocator).print("{d:.3}", .{es});
+            } else {
+                try latex.writer(allocator).print("---", .{});
+            }
+
+            try latex.writer(allocator).print(" \\\\\n", .{});
+        }
+
+        try latex.writer(allocator).print("\\bottomrule\n", .{});
+        try latex.writer(allocator).print("\\end{{tabular}}\n", .{});
+        try latex.writer(allocator).print("\\end{{table}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown results table
+    pub fn formatAsMarkdown(self: *const ResultsSummary, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("| Method | {s} | SE | 95% CI | $p$ | $d$ |\n", .{self.primary_metric});
+        try md.writer(allocator).print("|--------|{d:>7}|----|--------|-----|-----|\n", .{self.primary_metric.len});
+
+        for (self.results) |result| {
+            if (result.is_best) {
+                try md.writer(allocator).print("| **{s}** | **{d:.3}** |", .{result.metric, result.value});
+            } else {
+                try md.writer(allocator).print("| {s} | {d:.3} |", .{result.metric, result.value});
+            }
+
+            if (result.std_err) |se| {
+                try md.writer(allocator).print("{d:.3} |", .{se});
+            } else {
+                try md.writer(allocator).writeAll("--- |");
+            }
+
+            if (result.ci) |ci| {
+                try md.writer(allocator).print("[{d:.3}, {d:.3}] |", .{ ci.lower, ci.upper });
+            } else {
+                try md.writer(allocator).writeAll("--- |");
+            }
+
+            if (result.p_value) |pv| {
+                const pv_str = if (pv < 0.001) "<0.001" else try std.fmt.allocPrint(allocator, "{d:.3}", .{pv});
+                try md.writer(allocator).print("{s}{s} |", .{ pv_str, result.significance.toSymbol() });
+            } else {
+                try md.writer(allocator).print("--- |", .{});
+            }
+
+            if (result.effect_size) |es| {
+                try md.writer(allocator).print("{d:.3}", .{es});
+            } else {
+                try md.writer(allocator).print("---", .{});
+            }
+
+            try md.writer(allocator).print(" |\n", .{});
+        }
+
+        try md.writer(allocator).print("\n*Table: {s} on {s}*\n\n", .{self.caption, self.dataset});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Sub-panel for multi-panel figures
+pub const SubPanel = struct {
+    /// Panel identifier (a, b, c, ...)
+    panel_id: []const u8,
+    /// Caption for this panel
+    caption: []const u8,
+    /// Label for cross-reference
+    label: ?[]const u8 = null,
+    /// Width fraction (0.0-1.0)
+    width_frac: f64 = 0.5,
+};
+
+/// Multi-panel figure layout (2x2, 1x3, etc.)
+pub const MultiPanelFigure = struct {
+    /// Overall caption
+    caption: []const u8,
+    /// Overall label
+    label: []const u8,
+    /// Layout: "2x2", "1x3", "1x2", "2x1"
+    layout: []const u8,
+    /// Sub-panels
+    panels: []const SubPanel,
+    /// Figure width (in cm)
+    width: f64 = 0.9,  // fraction of textwidth
+
+    /// Format as LaTeX subfigure layout
+    pub fn formatAsLaTeX(self: *const MultiPanelFigure, allocator: std.mem.Allocator) ![]u8 {
+        var latex = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer latex.deinit(allocator);
+
+        try latex.writer(allocator).print("\\begin{{figure}}[t]\n", .{});
+        try latex.writer(allocator).print("\\centering\n", .{});
+
+        // Generate subfigure layout
+        var panel_idx: usize = 0;
+        for (self.panels) |panel| {
+            try latex.writer(allocator).print("\\begin{{subfigure}}{{{d:.1}\\textwidth}}\n", .{panel.width_frac});
+            try latex.writer(allocator).print("  \\centering\n", .{});
+            try latex.writer(allocator).print("  % TODO: Include figure file for panel ({s})\n", .{panel.panel_id});
+            try latex.writer(allocator).print("  \\caption{{{s}}}\n", .{panel.caption});
+
+            if (panel.label) |lbl| {
+                try latex.writer(allocator).print("  \\label{{{s}}}\n", .{lbl});
+            }
+
+            try latex.writer(allocator).print("\\end{{subfigure}}\n", .{});
+            try latex.writer(allocator).print("\\quad\n", .{});
+
+            panel_idx += 1;
+            // Add line break after each row (simplified: break after 2 panels for 2-column layout)
+            if (panel_idx < self.panels.len and panel_idx % 2 == 0) {
+                try latex.writer(allocator).print("\\\n", .{});
+            }
+        }
+
+        try latex.writer(allocator).print("\\caption{{{s}}}\n", .{self.caption});
+        try latex.writer(allocator).print("\\label{{{s}}}\n", .{self.label});
+        try latex.writer(allocator).print("\\end{{figure}}\n", .{});
+
+        return latex.toOwnedSlice(allocator);
+    }
+
+    /// Format as Markdown
+    pub fn formatAsMarkdown(self: *const MultiPanelFigure, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 2048) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("**Figure {s}**\n\n", .{self.caption});
+        try md.writer(allocator).print("**Label:** `{s}`\n", .{self.label});
+        try md.writer(allocator).print("**Layout:** {s}\n\n", .{self.layout});
+
+        try md.writer(allocator).print("| Panel | Caption | Width |\n", .{});
+        try md.writer(allocator).print("|-------|----------|-------|\n", .{});
+
+        for (self.panels) |panel| {
+            try md.writer(allocator).print("| ({s}) | {s} | {d:.0}% |\n", .{
+                panel.panel_id, panel.caption, panel.width_frac * 100.0
+            });
+        }
+
+        try md.writer(allocator).print("\n", .{});
 
         return md.toOwnedSlice(allocator);
     }
@@ -4702,7 +5048,7 @@ test "DatasetDescription formatAsLaTeX" {
 
     try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
     try std.testing.expect(std.mem.indexOf(u8, latex, "TinyStories") != null);
-    try std.testing.expect(std.mem.indexOf(u8, latex, "90.0\\%") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "90.0%") != null);
 }
 
 test "DatasetDescription formatAsMarkdown" {
@@ -4782,4 +5128,150 @@ test "TikZDiagram formatAsMarkdown" {
     try std.testing.expect(std.mem.indexOf(u8, md, "**Figure Simple diagram**") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "\\node[") != null);
     try std.testing.expect(std.mem.indexOf(u8, md, "\\draw[->]") != null);
+}
+
+// ============================================================================
+// TESTS — V12 Structures
+// ============================================================================
+
+test "ChecklistResponse toString" {
+    try std.testing.expectEqualStrings("✓ Yes", ChecklistResponse.yes.toString());
+    try std.testing.expectEqualStrings("✗ No", ChecklistResponse.no.toString());
+    try std.testing.expectEqualStrings("~ Partial", ChecklistResponse.partial.toString());
+    try std.testing.expectEqualStrings("N/A", ChecklistResponse.na.toString());
+}
+
+test "ChecklistResponse toSymbol" {
+    try std.testing.expectEqualStrings("[✓]", ChecklistResponse.yes.toSymbol());
+    try std.testing.expectEqualStrings("[✗]", ChecklistResponse.no.toSymbol());
+    try std.testing.expectEqualStrings("[~]", ChecklistResponse.partial.toSymbol());
+    try std.testing.expectEqualStrings("[ ]", ChecklistResponse.na.toSymbol());
+}
+
+test "ReproducibilityChecklist formatAsLaTeX" {
+    const items = [_]ChecklistItem{
+        .{ .category = "Code", .question = "Is code available?", .response = .yes, .link = "https://github.com/example" },
+        .{ .category = "Data", .question = "Is dataset public?", .response = .partial, .details = "Training data is private" },
+        .{ .category = "Hyperparameters", .question = "Are all HPs listed?", .response = .yes },
+    };
+
+    const checklist = ReproducibilityChecklist{
+        .conference = "NeurIPS",
+        .year = 2025,
+        .items = &items,
+        .paper_title = "HSLM: Hierarchical Sparse Language Model",
+    };
+
+    const latex = try checklist.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\section{Reproducibility Checklist}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "[✓]") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "https://github.com/example") != null);
+}
+
+test "ReproducibilityChecklist formatAsMarkdown" {
+    const items = [_]ChecklistItem{
+        .{ .category = "Code", .question = "Is code available?", .response = .yes },
+    };
+
+    const checklist = ReproducibilityChecklist{
+        .conference = "ICLR",
+        .year = 2025,
+        .items = &items,
+        .paper_title = "Test Paper",
+    };
+
+    const md = try checklist.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "# Reproducibility Checklist") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "✓ Yes") != null);
+}
+
+test "ResultsSummary formatAsLaTeX" {
+    const results = [_]StatisticalResult{
+        .{ .metric = "HSLM (ours)", .value = 12.5, .std_err = 0.2, .p_value = 0.001, .effect_size = 1.8, .significance = .high, .is_best = true },
+        .{ .metric = "GPT-2 (117M)", .value = 15.2, .std_err = 0.3, .p_value = 0.05, .effect_size = 0.0, .significance = .low, .is_baseline = false },
+    };
+
+    const summary = ResultsSummary{
+        .caption = "Main results",
+        .label = "tab:results",
+        .dataset = "TinyStories",
+        .results = &results,
+        .primary_metric = "Validation PPL",
+        .higher_is_better = false,
+    };
+
+    const latex = try summary.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{table}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\textbf{HSLM (ours)}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "$^{***}$") != null);
+}
+
+test "ResultsSummary formatAsMarkdown" {
+    const results = [_]StatisticalResult{
+        .{ .metric = "Method A", .value = 0.85, .std_err = 0.02, .ci = .{ .lower = 0.81, .upper = 0.89 }, .is_best = true },
+    };
+
+    const summary = ResultsSummary{
+        .caption = "Results",
+        .label = "tab:res",
+        .dataset = "Dataset X",
+        .results = &results,
+        .primary_metric = "Accuracy",
+        .higher_is_better = true,
+    };
+
+    const md = try summary.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Method A**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "**0.850**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "[0.810, 0.890]") != null);
+}
+
+test "MultiPanelFigure formatAsLaTeX" {
+    const panels = [_]SubPanel{
+        .{ .panel_id = "a", .caption = "Architecture overview", .label = "fig:arch:a", .width_frac = 0.48 },
+        .{ .panel_id = "b", .caption = "Training curve", .label = "fig:arch:b", .width_frac = 0.48 },
+    };
+
+    const fig = MultiPanelFigure{
+        .caption = "Model architecture and training",
+        .label = "fig:arch",
+        .layout = "1x2",
+        .panels = &panels,
+        .width = 0.9,
+    };
+
+    const latex = try fig.formatAsLaTeX(std.testing.allocator);
+    defer std.testing.allocator.free(latex);
+
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{figure}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "\\begin{subfigure}") != null);
+    try std.testing.expect(std.mem.indexOf(u8, latex, "Architecture overview") != null);
+}
+
+test "MultiPanelFigure formatAsMarkdown" {
+    const panels = [_]SubPanel{
+        .{ .panel_id = "a", .caption = "Panel A", .width_frac = 0.5 },
+        .{ .panel_id = "b", .caption = "Panel B", .width_frac = 0.5 },
+    };
+
+    const fig = MultiPanelFigure{
+        .caption = "Multi-panel figure",
+        .label = "fig:multi",
+        .layout = "1x2",
+        .panels = &panels,
+    };
+
+    const md = try fig.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "**Figure Multi-panel figure**") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "| (a) | Panel A | 50% |") != null);
 }
