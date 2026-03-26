@@ -1,7 +1,11 @@
 {
   "issuer": "Queen",
-  "reason": "TDGS-4 Wave 1 T-zone migration: moving sacred types from src/hslm/ and src/tri27/ to src/temple/",
-  "expires_at": "2026-03-26T00:00:00Z",
-  "files": ["src/temple/intraparietal_sulcus.zig", "src/temple/weber_tuning.zig", "src/temple/coptic.zig", "src/temple/root.zig"],
+  "reason": "V41: Sacred mathematical functions - Adding sacred_functions.zig (470 LOC) with φ-based operations, matrix ops, activation functions, LR schedules, quantization, loss functions, number theory. Extending TTT with non-TTT scientific utilities.",
+  "expires_at": "2026-04-26T00:00:00Z",
+  "files": [
+    "src/temple/sacred_statistics.zig",
+    "src/temple/zenodo_utils.zig",
+    "src/temple/sacred_functions.zig"
+  ],
   "approved_by": "user"
 }
