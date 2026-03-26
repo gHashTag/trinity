@@ -1,12 +1,11 @@
-// ═════════════════════════════════════════════════════════════════════════════
-══════
+// ==============================================
 // BENCHMARK RUNNER
-// ═══════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 //
 // Executes SOTA baseline models for fair comparison with Trinity HSLM
 //
 // φ² + 1/φ² = 3 | TRINITY
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -91,7 +90,7 @@ pub const BenchmarkRunner = struct {
             }
         }
 
-        var best_perplexity: f64 = std.math.inf;
+        var best_perplexity: f64 = std.math.inf(f64);
         var worst_perplexity: f64 = 0.0;
 
         // Run experiments for each seed
@@ -188,7 +187,7 @@ pub const BenchmarkRunner = struct {
         return trinity_result;
     }
 
-    /// Calculate mean
+    /// Calculate mean for perplexity
     fn calculateMeanPerplexity(results: []const BenchmarkResult) !f64 {
         if (results.len == 0) return 0.0;
 
@@ -198,21 +197,6 @@ pub const BenchmarkRunner = struct {
         }
 
         return sum / @as(f64, @floatFromInt(results.len));
-    }
-
-    /// Calculate standard deviation
-    fn calculateStdDev(results: []const BenchmarkResult) !f64 {
-        const mean = try calculateMeanPerplexity(results);
-
-        if (results.len <= 1) return 0.0;
-
-        var sum_sq_diff: f64 = 0.0;
-        for (results) |r| {
-            const diff = r.perplexity - mean;
-            sum_sq_diff += diff * diff;
-        }
-
-        return std.math.sqrt(sum_sq_diff / @as(f64, @floatFromInt(results.len - 1)));
     }
 
     /// Calculate mean for tokens per second
@@ -251,9 +235,24 @@ pub const BenchmarkRunner = struct {
         return sum / @as(f64, @floatFromInt(results.len));
     }
 
+    /// Calculate standard deviation
+    fn calculateStdDev(results: []const BenchmarkResult) !f64 {
+        const mean = try self.calculateMeanPerplexity(results);
+
+        if (results.len <= 1) return 0.0;
+
+        var sum_sq_diff: f64 = 0.0;
+        for (results) |r| {
+            const diff = r.perplexity - mean;
+            sum_sq_diff += diff * diff;
+        }
+
+        return std.math.sqrt(sum_sq_diff / @as(f64, @floatFromInt(results.len - 1)));
+    }
+
     /// Calculate 95% confidence interval
     fn calculateCI95(results: []const BenchmarkResult, mean: f64) !struct { low: f64, high: f64 } {
-        const std_dev = try calculateStdDev(results);
+        const std_dev = try self.calculateStdDev(results);
 
         // For n >= 30, use z = 1.96 (normal approximation)
         const n = @as(f64, @floatFromInt(results.len));
@@ -292,12 +291,11 @@ pub const BenchmarkRunner = struct {
 
         std.debug.print("Exported to: {s}\n", path);
     }
-    }
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 // FLOPS MEASUREMENT
-// ═══════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 
 /// Count FLOPs for a Transformer forward pass
 /// Formula: FLOPs = 2 * num_layers * d_model * d_ff * n_tokens
@@ -331,12 +329,12 @@ pub fn estimateTrainingFLOPs(params_m: u32, n_tokens: u32) f64 {
 
 /// FLOPs per token (efficiency metric)
 pub fn flopsPerToken(training_flops: u64, n_tokens: u32) f64 {
-    return training_flops / @as(f64, @floatFromInt(n_tokens));
+    return @as(f64, @floatFromInt(training_flops)) / @as(f64, @floatFromInt(n_tokens));
 }
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 // TESTS
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// ==============================================
 
 test "BenchmarkRunner - FLOPs calculation" {
     const config = FLOPsConfig{
@@ -371,4 +369,3 @@ test "BenchmarkRunner - flopsPerToken" {
 
     try std.testing.expectApproxEqAbs(expected, flops_per_tok, expected * 0.01);
 }
-
