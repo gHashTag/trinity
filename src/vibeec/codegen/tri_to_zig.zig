@@ -8,6 +8,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AST for .tri spec
@@ -35,9 +36,8 @@ const TriType = enum {
         if (std.mem.eql(u8, str, "bool")) return .Bool;
         if (std.mem.startsWith(u8, str, "@Vector")) return .Vector;
         if (std.mem.endsWith(u8, str, "Trit")) return .Slice;
-        if (std.mem.indexOf(u8, str, "[]const ")) != null) return .Slice;
-        if (std.mem.indexOf(u8, str, "[]")) != null) return .Slice;
-        if (std.mem.indexOf(u8, str, "*")) != null) return .Pointer;
+        if (std.mem.indexOfScalar(u8, str, '[') != null) return .Slice;
+        if (std.mem.indexOfScalar(u8, str, '*') != null) return .Pointer;
         return null;
     }
 };
@@ -417,26 +417,8 @@ const TriParser = struct {
 
 pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
     var parser = TriParser.init(source);
-    var functions = std.ArrayList(FnSignature).init(allocator);
-    defer {
-        for (functions.items) |f| {
-            allocator.free(f.name);
-            allocator.free(f.return_type);
-            for (f.params) |p| {
-                allocator.free(p.name);
-                allocator.free(p.type_str);
-            }
-            allocator.free(f.params);
-        }
-        functions.deinit();
-    }
 
-    // Parse all function signatures
-    while (try parser.parseFnSignature(allocator)) |sig| {
-        try functions.append(sig.*);
-    } else |_| {}
-
-    // Emit Zig code
+    // Emit Zig code directly - no need to store parsed functions
     var output = std.ArrayList(u8).init(allocator);
 
     try output.appendSlice(
@@ -459,20 +441,30 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
         \\
     );
 
-    // Emit each function
-    for (functions.items) |fn_sig| {
+    // Parse and emit each function
+    while (try parser.parseFnSignature(allocator)) |sig| {
+        defer {
+            allocator.free(sig.name);
+            allocator.free(sig.return_type);
+            for (sig.params) |p| {
+                allocator.free(p.name);
+                allocator.free(p.type_str);
+            }
+            allocator.free(sig.params);
+        }
+
         // Get implementation from template
-        const impl = IMPLEMENTATIONS.get(fn_sig.name) orelse {
+        const impl = IMPLEMENTATIONS.get(sig.name) orelse {
             // No template implementation - emit stub
             try output.appendSlice("// TODO: No implementation for ");
-            try output.appendSlice(fn_sig.name);
+            try output.appendSlice(sig.name);
             try output.appendSlice("\n");
             continue;
         };
 
         try output.appendSlice(impl);
         try output.appendSlice("\n\n");
-    }
+    } else |_| {}
 
     return output.toOwnedSlice();
 }
