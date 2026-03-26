@@ -1,11 +1,11 @@
-# B001: Ternary Neural Networks — Complete Scientific Framework v6.0
+# B001: HSLM-1.95M: Ternary Neural Networks — Complete Scientific Framework v6.1
 
 **Authors:** Dmitrii Vasilev (https://orcid.org/0000-0000-0000-0000)
 **Affiliation:** Trinity Research Collective
 **DOI:** 10.5281/zenodo.19227865
 **License:** CC-BY-4.0
 **Publication Date:** 2026-03-27
-**Version:** 6.0 (NeurIPS 2026/ICLR 2027/MLSys 2025 Compliant)
+**Version:** 6.1 (NeurIPS 2026/ICLR 2027/MLSys 2025 Compliant)
 
 ---
 
