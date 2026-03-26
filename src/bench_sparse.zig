@@ -8,7 +8,7 @@
 const std = @import("std");
 const sparse = @import("sparse.zig");
 const vsa = @import("vsa");
-const hybrid = @import("hybrid.zig");
+const hybrid = @import("hybrid");
 
 const SparseVector = sparse.SparseVector;
 const HybridBigInt = hybrid.HybridBigInt;

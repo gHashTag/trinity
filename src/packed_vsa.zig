@@ -9,7 +9,7 @@
 
 const std = @import("std");
 const packed_trit = @import("packed_trit.zig");
-const hybrid = @import("hybrid.zig");
+const hybrid = @import("hybrid");
 const vsa = @import("vsa");
 
 const PackedBigInt = packed_trit.PackedBigInt;

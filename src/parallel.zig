@@ -16,7 +16,7 @@
 // φ² + 1/φ² = 3
 
 const std = @import("std");
-const hybrid = @import("hybrid.zig");
+const hybrid = @import("hybrid");
 const vsa = @import("vsa");
 
 const HybridBigInt = hybrid.HybridBigInt;

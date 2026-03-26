@@ -9,7 +9,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const jit_unified = @import("jit_unified.zig");
-const hybrid = @import("./hybrid.zig");
+const hybrid = @import("hybrid");
 
 pub const HybridBigInt = hybrid.HybridBigInt;
 pub const Trit = hybrid.Trit;

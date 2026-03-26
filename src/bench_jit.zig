@@ -8,7 +8,7 @@
 const std = @import("std");
 const jit = @import("jit.zig");
 const vsa = @import("vsa");
-const hybrid = @import("hybrid.zig");
+const hybrid = @import("hybrid");
 
 const JitCompiler = jit.JitCompiler;
 const HybridBigInt = hybrid.HybridBigInt;

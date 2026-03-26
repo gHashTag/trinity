@@ -47,7 +47,7 @@ pub const autonomous_refactor = @import("omega.zig");
 pub const zig_parser = @import("zig_parser.zig");
 
 // Phase 2: Hybrid VSA + TritVSA
-pub const hybrid = @import("hybrid.zig");
+pub const hybrid = @import("hybrid");
 pub const trit_vsa = @import("trit_vsa.zig");
 
 // Phase 3: Swarm
