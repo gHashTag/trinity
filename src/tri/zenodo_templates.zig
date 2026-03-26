@@ -2699,7 +2699,7 @@ test "Keywords formatAsMarkdown" {
     try std.testing.expect(std.mem.indexOf(u8, md, "**MeSH:**") != null);
 }
 
-test "Keywords getByCategory" {
+test "Keywords countByCategory" {
     const kws = Keywords{
         .items = &[_]Keyword{
             .{ .term = "neural networks", .category = .acm_ccs },
@@ -2709,10 +2709,14 @@ test "Keywords getByCategory" {
         },
     };
 
-    const acm = try kws.getByCategory(std.testing.allocator, .acm_ccs);
-    defer std.testing.allocator.free(acm);
+    const acm_count = kws.countByCategory(.acm_ccs);
+    try std.testing.expectEqual(@as(usize, 2), acm_count);
 
-    try std.testing.expectEqual(@as(usize, 2), acm.len);
+    const general_count = kws.countByCategory(.general);
+    try std.testing.expectEqual(@as(usize, 1), general_count);
+
+    const mesh_count = kws.countByCategory(.mesh);
+    try std.testing.expectEqual(@as(usize, 1), mesh_count);
 }
 
 // ═════════════════════════════════════════════════════════════════════════
