@@ -2,6 +2,7 @@
 //! Detects unfair reward (effort >> reward) -> SUSPICIOUS
 
 const std = @import("std");
+const tri_experience = @import("../../farm/tri_experience.zig");
 
 pub const Reason = struct {
     reward_ratio: f32,
@@ -11,15 +12,55 @@ pub const Reason = struct {
 pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const u8) ![]const u8 {
     _ = args;
 
-    const MIN_RATIO: f32 = 2.0; // effort >> 2x reward = SUSPICIOUS
+    const MIN_RATIO: f32 = 0.3; // reward < 0.3 × effort = SUSPICIOUS
+    const RECENT_EPISODES: usize = 10;
 
-    std.debug.print("🧠 HABENULA unfair-detect: P1 TODO\n");
+    // Create experience store and calculate ratio
+    var store = try tri_experience.createDefaultStore(allocator);
+    defer store.deinit();
 
-    // Calculate reward/effort ratio from experience
-    // TODO: Integrate with tri_experience module for historical tracking
-    const reward_ratio: f32 = 1.0; // Mock for now
+    const avg_ratio = store.avgRewardEffortRatio(RECENT_EPISODES);
+    const stats = store.getStats();
 
-    return try std.fmt.allocPrint(allocator, "HABENULA: reward/effort = {d:.2} (ratio >= {d:.1} = SUSPICIOUS", .{
-        reward_ratio, MIN_RATIO,
-    });
+    // Find suspicious episodes
+    const suspicious_indices = try store.findSuspiciousEpisodes(MIN_RATIO, allocator);
+    defer allocator.free(suspicious_indices);
+
+    const is_suspicious = avg_ratio < MIN_RATIO or suspicious_indices.len > 0;
+
+    var message: []const u8 = undefined;
+    if (is_suspicious) {
+        message = try std.fmt.allocPrint(allocator,
+            \\🧠 HABENULA: SUSPICIOUS reward/effort ratio detected!
+            \\
+            \\  Ratio: {d:.3} (threshold: {d:.1})
+            \\  Total episodes: {d}
+            \\  Success rate: {d:.1}%
+            \\  Suspicious episodes: {d}
+            \\
+            \\  Analysis: High effort with low reward indicates possible:
+            \\  - Suboptimal tool selection
+            \\  - Missing prerequisite information
+            \\  - Environment/configuration issues
+            \\  - Overly complex approach for simple task
+        , .{
+            avg_ratio,              MIN_RATIO,
+            stats.total_episodes,   stats.successRate() * 100.0,
+            suspicious_indices.len,
+        });
+    } else {
+        message = try std.fmt.allocPrint(allocator,
+            \\🧠 HABENULA: reward/effort ratio healthy
+            \\
+            \\  Ratio: {d:.3} (threshold: {d:.1})
+            \\  Total episodes: {d}
+            \\  Success rate: {d:.1}%
+            \\  Status: NORMAL
+        , .{
+            avg_ratio,            MIN_RATIO,
+            stats.total_episodes, stats.successRate() * 100.0,
+        });
+    }
+
+    return message;
 }
