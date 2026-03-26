@@ -229,18 +229,24 @@ pub const InferResult = struct {
     fn cleanupType(allocator: Allocator, t: *Type) void {
         switch (t.*) {
             .Fn => |*fn_data| {
-                for (fn_data.params.items) |*param| {
+                // Params are stored as ArrayList with items pointing to allocated array
+                const param_array = fn_data.params.items;
+                for (param_array) |*param| {
                     InferResult.cleanupType(allocator, param);
                 }
-                fn_data.params.deinit();
+                // Free the items array
+                allocator.free(param_array);
                 allocator.destroy(fn_data.return_type);
             },
             .ADT => |*adt_data| {
                 allocator.free(adt_data.name);
-                for (adt_data.type_args.items) |*arg| {
+                // Type args are stored as ArrayList with items pointing to allocated array
+                const args_array = adt_data.type_args.items;
+                for (args_array) |*arg| {
                     InferResult.cleanupType(allocator, arg);
                 }
-                adt_data.type_args.deinit();
+                // Free the items array
+                allocator.free(args_array);
             },
             .Unit, .Bool, .Int, .Float, .Var => {},
         }
@@ -321,18 +327,18 @@ fn inferLet(allocator: Allocator, expr: LetExpr, env: *const TypeEnv) TypeError!
 }
 
 fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!InferResult {
-    var param_types = std.ArrayList(Type).init(allocator);
-    errdefer {
+    var fn_env = TypeEnv.initWithParent(allocator, env);
+    defer fn_env.deinit(allocator);
+
+    var param_types = std.ArrayList(Type).empty;
+    defer {
         for (param_types.items) |*p| cleanupType(allocator, p);
         param_types.deinit(allocator);
     }
 
-    var fn_env = TypeEnv.initWithParent(allocator, env);
-    defer fn_env.deinit(allocator);
-
     for (expr.params) |name| {
         const var_id = freshTypeVar();
-        try param_types.append(Type{ .Var = var_id });
+        try param_types.append(allocator, Type{ .Var = var_id });
         try fn_env.extend(name, Scheme{ .Mono = Type{ .Var = var_id } });
     }
 
@@ -340,8 +346,8 @@ fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!In
     const ret_ptr = try allocator.create(Type);
     ret_ptr.* = body_result.type;
 
-    // Note: param_types is moved into the return value
-    // Cleanup will be handled by InferResult.deinit
+    // Create a shallow copy of param_types for the result
+    // The ArrayList is moved into the Type struct
     return InferResult{
         .type = Type{ .Fn = .{ .params = param_types, .return_type = ret_ptr } },
         .subst = body_result.subst,

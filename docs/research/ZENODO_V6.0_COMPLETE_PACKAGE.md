@@ -145,13 +145,15 @@ After all 7 bundles published:
 | B007 | `B007_simd_benchmarks.csv` | 6 | SIMD performance |
 | B007 | `B007_noise_resilience.csv` | 10 | Noise tolerance |
 
-### Interactive HTML Viewers (3 files)
+### Interactive HTML Viewers (5 files)
 
 | File | Purpose | Features | Status |
 |------|---------|----------|--------|
 | `interactive/INDEX.html` | Main navigation | Bundle cards, statistics, animations | ✅ NEW |
 | `interactive/B001_Training_Viewer.html` | HSLM results | Training charts, ablation studies, theorems | ✅ NEW |
 | `interactive/B002_FPGA_Viewer.html` | FPGA resources | Resource bars, power analysis, synthesis flow | ✅ NEW |
+| `interactive/B004_Lotus_Cycle_Viewer.html` | Lotus Cycle | Phase diagram, quality distribution, episode memory | ✅ NEW |
+| `interactive/B007_VSA_Operations_Viewer.html` | VSA Operations | SIMD speedup, truth tables, noise resilience | ✅ NEW |
 
 **Interactive Viewer Features:**
 - Self-contained HTML (no external dependencies)
@@ -218,7 +220,7 @@ After all 7 bundles published:
 | Statistical metrics | 15 | 20 | 32 | +113% |
 | Citation formats | 2 | 3 | 5 | +150% |
 | Dockerfiles | 0 | 0 | 7 | +∞ |
-| **Interactive viewers** | **0** | **0** | **3** | **+∞** |
+| **Interactive viewers** | **0** | **0** | **5** | **+∞** |
 
 ### Total Files
 
@@ -233,8 +235,8 @@ After all 7 bundles published:
 | LaTeX templates | 3 |
 | BibTeX files | 3 |
 | README files | 5+ |
-| **Interactive HTML viewers** | **3** |
-| **TOTAL** | **~83** |
+| **Interactive HTML viewers** | **5** |
+| **TOTAL** | **~85** |
 
 ---
 

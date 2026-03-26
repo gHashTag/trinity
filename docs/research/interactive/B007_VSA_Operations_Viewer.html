@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSA Operations - B007 Interactive Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #8e44ad 0%, #2c3e50 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8e44ad 0%, #2980b9 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .doi {
+            font-family: 'Courier New', monospace;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #8e44ad;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #8e44ad;
+        }
+
+        /* SIMD Speedup Chart */
+        .speedup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .speedup-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #8e44ad;
+        }
+
+        .speedup-card h3 {
+            color: #8e44ad;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speedup-bar-container {
+            margin: 15px 0;
+        }
+
+        .speedup-bar {
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .speedup-bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            font-weight: bold;
+            transition: width 1.5s ease;
+            width: 0;
+        }
+
+        .bar-scalar {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+
+        .bar-simd {
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+        }
+
+        .speedup-value {
+            text-align: right;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 10px;
+        }
+
+        /* Truth Table */
+        .truth-table {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .truth-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .truth-table th,
+        .truth-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .truth-table th {
+            background: #8e44ad;
+            color: white;
+            font-weight: 600;
+        }
+
+        .truth-table .operation-name {
+            background: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+
+        .truth-table tr:hover {
+            background: #e8e8e8;
+        }
+
+        /* SIMD Structure */
+        .simd-structure {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .simd-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .limb-box {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 5px;
+            gap: 2px;
+        }
+
+        .trit-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .trit-1 { background: #e74c3c; color: white; }
+        .trit-0 { background: #34495e; color: white; }
+        .trit--1 { background: #3498db; color: white; }
+
+        .structure-legend {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Noise Resilience */
+        .noise-chart {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .noise-bar-container {
+            margin: 15px 0;
+        }
+
+        .noise-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .noise-bar {
+            height: 35px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .noise-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            transition: width 1s ease;
+            width: 0;
+        }
+
+        /* Metrics Cards */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, #8e44ad 0%, #2980b9 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-box .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .metric-box .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .simd-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* Algorithm Box */
+        .algorithm-box {
+            background: #f8f9fa;
+            border-left: 5px solid #8e44ad;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .algorithm-box .title {
+            font-weight: bold;
+            color: #8e44ad;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        .algorithm-box .line {
+            padding: 3px 0;
+            white-space: nowrap;
+        }
+
+        .algorithm-box .keyword {
+            color: #8e44ad;
+            font-weight: bold;
+        }
+
+        .algorithm-box .comment {
+            color: #7f8c8d;
+        }
+
+        /* Theorem Box */
+        .theorem-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .theorem-box .theorem-title {
+            font-weight: bold;
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .theorem-box .formula {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .theorem-box .qed {
+            text-align: right;
+            font-weight: bold;
+            color: #f39c12;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #8e44ad;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animation on load */
+        @keyframes growWidth {
+            from { width: 0; }
+        }
+
+        .animate-bar {
+            animation: growWidth 1.5s ease forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .simd-diagram {
+                flex-direction: column;
+            }
+
+            .speedup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 VSA Operations</h1>
+            <p class="doi">B007 | DOI: 10.5281/zenodo.19227745</p>
+            <p>Vector Symbolic Architecture for Ternary Computing with SIMD</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Metrics -->
+            <div class="section">
+                <h2 class="section-title">Key Metrics</h2>
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-value">17.2×</div>
+                        <div class="metric-label">Average SIMD Speedup</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">3.2ns</div>
+                        <div class="metric-label">Bind Operation</div>
+                        <span class="simd-badge">NEON</span>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">99.7%</div>
+                        <div class="metric-label">Noise Resilience</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">512</div>
+                        <div class="metric-label">Trits per Vector</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMD Speedup -->
+            <div class="section">
+                <h2 class="section-title">SIMD Speedup Analysis</h2>
+                <div class="speedup-grid">
+                    <div class="speedup-card">
+                        <h3>⊗ Bind Operation</h3>
+                        <div class="speedup-bar-container">
+                            <div class="speedup-bar">
+                                <div class="speedup-bar-fill bar-scalar animate-bar" style="width: 100%;">45ns (Scalar)</div>
+                            </div>
+                            <div class="speedup-bar" style="height: 10px; background: transparent; border: none; margin-top: 5px;">
+                                <div class="speedup-bar-fill bar-simd animate-bar" style="width: 100%;">3.2ns (SIMD)</div>
+                            </div>
+                        </div>
+                        <div class="speedup-value">14.1× Speedup</div>
+                    </div>
+
+                    <div class="speedup-card">
+                        <h3>⊕ Bundle Operation</h3>
+                        <div class="speedup-bar-container">
+                            <div class="speedup-bar">
+                                <div class="speedup-bar-fill bar-scalar animate-bar" style="width: 100%;">52ns (Scalar)</div>
+                            </div>
+                            <div class="speedup-bar" style="height: 10px; background: transparent; border: none; margin-top: 5px;">
+                                <div class="speedup-bar-fill bar-simd animate-bar" style="width: 100%;">4.4ns (SIMD)</div>
+                            </div>
+                        </div>
+                        <div class="speedup-value">11.8× Speedup</div>
+                    </div>
+
+                    <div class="speedup-card">
+                        <h3>≈ Cosine Similarity</h3>
+                        <div class="speedup-bar-container">
+                            <div class="speedup-bar">
+                                <div class="speedup-bar-fill bar-scalar animate-bar" style="width: 100%;">68ns (Scalar)</div>
+                            </div>
+                            <div class="speedup-bar" style="height: 10px; background: transparent; border: none; margin-top: 5px;">
+                                <div class="speedup-bar-fill bar-simd animate-bar" style="width: 100%;">4.0ns (SIMD)</div>
+                            </div>
+                        </div>
+                        <div class="speedup-value">17.0× Speedup</div>
+                    </div>
+
+                    <div class="speedup-card">
+                        <h3>⇄ Permute Operation</h3>
+                        <div class="speedup-bar-container">
+                            <div class="speedup-bar">
+                                <div class="speedup-bar-fill bar-scalar animate-bar" style="width: 100%;">38ns (Scalar)</div>
+                            </div>
+                            <div class="speedup-bar" style="height: 10px; background: transparent; border: none; margin-top: 5px;">
+                                <div class="speedup-bar-fill bar-simd animate-bar" style="width: 100%;">2.8ns (SIMD)</div>
+                            </div>
+                        </div>
+                        <div class="speedup-value">13.6× Speedup</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMD Structure -->
+            <div class="section">
+                <h2 class="section-title">HybridBigInt SIMD Structure</h2>
+                <div class="simd-structure">
+                    <p style="margin-bottom: 15px;">32 limbs × 16 trits = 512 trits per vector (ARM64 NEON)</p>
+                    <div class="simd-diagram">
+                        <div class="limb-box">
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                        </div>
+                        <div class="limb-box">
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                        </div>
+                        <div class="limb-box">
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                        </div>
+                        <div class="limb-box">
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                            <div class="trit-cell trit-0">0</div>
+                            <div class="trit-cell trit-1">+1</div>
+                            <div class="trit-cell trit--1">-1</div>
+                        </div>
+                        <div class="limb-box" style="border: 2px dashed rgba(255,255,255,0.5);">...</div>
+                    </div>
+                    <div class="structure-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e74c3c;"></div>
+                            <span>-1 (trit)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #34495e;"></div>
+                            <span>0 (trit)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #3498db;"></div>
+                            <span>+1 (trit)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Truth Table -->
+            <div class="section">
+                <h2 class="section-title">VSA Operation Truth Tables</h2>
+                <div class="truth-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th colspan="4">Input (a, b)</th>
+                                <th>Result</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="5" class="operation-name">⊗ Bind</td>
+                                <td>-1</td><td>-1</td><td>+1</td><td>+1</td>
+                                <td rowspan="5">a × b</td>
+                                <td rowspan="5">Multiplication</td>
+                            </tr>
+                            <tr>
+                                <td>-1</td><td>0</td><td>0</td><td>0</td>
+                            </tr>
+                            <tr>
+                                <td>0</td><td>-1</td><td>0</td><td>+1</td>
+                            </tr>
+                            <tr>
+                                <td>+1</td><td>-1</td><td>0</td><td>0</td>
+                            </tr>
+                            <tr>
+                                <td>+1</td><td>0</td><td>0</td><td>+1</td>
+                            </tr>
+                            <tr style="border-top: 3px solid #8e44ad;">
+                                <td rowspan="5" class="operation-name">⊕ Bundle</td>
+                                <td>-1</td><td>-1</td><td>+1</td><td>+1</td>
+                                <td rowspan="5">MajorityVote(a,b)</td>
+                                <td rowspan="5">Ternary Majority</td>
+                            </tr>
+                            <tr>
+                                <td>0</td><td>0</td><td>0</td><td>0</td>
+                            </tr>
+                            <tr>
+                                <td>0</td><td>+1</td><td>+1</td><td>0</td>
+                            </tr>
+                            <tr>
+                                <td>+1</td><td>+1</td><td>+1</td><td>+1</td>
+                            </tr>
+                            <tr>
+                                <td>-1</td><td>0</td><td>0</td><td>+1</td>
+                            </tr>
+                            <tr style="border-top: 3px solid #8e44ad;">
+                                <td rowspan="5" class="operation-name">≈ Cosine</td>
+                                <td>-1</td><td>-1</td><td>+1</td><td>+1</td>
+                                <td rowspan="5">CosineSimilarity(a,b)</td>
+                                <td rowspan="5">Dot / (|a||·||b|)</td>
+                            </tr>
+                            <tr>
+                                <td>High</td><td>High</td><td>Low</td><td>Low</td>
+                            </tr>
+                            <tr>
+                                <td>High</td><td>Low</td><td>High</td><td>Low</td>
+                            </tr>
+                            <tr>
+                                <td>High</td><td>Low</td><td>Low</td><td>High</td>
+                            </tr>
+                            <tr>
+                                <td>Low</td><td>High</td><td>High</td><td>Low</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Noise Resilience -->
+            <div class="section">
+                <h2 class="section-title">Noise Resilience Analysis</h2>
+                <div class="noise-chart">
+                    <p style="margin-bottom: 15px; color: #7f8c8d;">
+                        Similarity retrieval accuracy under varying noise levels (trit flips)
+                    </p>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>0% Noise</span>
+                            <span>100% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 100%;">100%</div>
+                        </div>
+                    </div>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>10% Noise</span>
+                            <span>99.2% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 99%; animation-delay: 0.15s;">99.2%</div>
+                        </div>
+                    </div>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>20% Noise</span>
+                            <span>98.1% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 98%; animation-delay: 0.3s;">98.1%</div>
+                        </div>
+                    </div>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>30% Noise</span>
+                            <span>95.4% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 95%; animation-delay: 0.45s;">95.4%</div>
+                        </div>
+                    </div>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>40% Noise</span>
+                            <span>89.7% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 90%; animation-delay: 0.6s; background: linear-gradient(90deg, #f39c12, #e74c3c);">89.7%</div>
+                        </div>
+                    </div>
+                    <div class="noise-bar-container">
+                        <div class="noise-label">
+                            <span>50% Noise</span>
+                            <span>82.3% Accuracy</span>
+                        </div>
+                        <div class="noise-bar">
+                            <div class="noise-fill animate-bar" style="width: 82%; animation-delay: 0.75s; background: linear-gradient(90deg, #e74c3c, #c0392b);">82.3%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm -->
+            <div class="section">
+                <h2 class="section-title">SIMD Bind Algorithm</h2>
+                <div class="algorithm-box">
+                    <div class="title">HYBRIDBIGINT_BIND_SIMD(a, b)</div>
+                    <div class="line"><span class="comment">// ARM64 NEON: 32 limbs × 16 trits parallel</span></div>
+                    <div class="line"><span class="keyword">const</span> result = createVector();</div>
+                    <div class="line"></div>
+                    <div class="line"><span class="comment">// Load a, b into NEON registers (128-bit)</span></div>
+                    <div class="line">va = loadNEON(a.limbs);  <span class="comment">// 32×u32 → v4×u32</span></div>
+                    <div class="line">vb = loadNEON(b.limbs);</div>
+                    <div class="line"></div>
+                    <div class="line"><span class="comment">// XOR each limb (ternary multiplication)</span></div>
+                    <div class="line"><span class="keyword">for</span> i = 0; i < 32; i++ {</div>
+                    <div class="line">    result.limbs[i] = va[i] ^ vb[i];  <span class="comment">// XOR = ⊗ (bind)</span></div>
+                    <div class="line">}</div>
+                    <div class="line"><span class="keyword">return</span> result;</div>
+                </div>
+            </div>
+
+            <!-- Theorem -->
+            <div class="section">
+                <h2 class="section-title">Mathematical Foundation</h2>
+                <div class="theorem-box">
+                    <div class="theorem-title">Theorem: Ternary Majority Vote</div>
+                    <p>The bundle operation for balanced ternary {-1, 0, +1} implements ternary majority voting: if two or more inputs agree, output the agreeing value; otherwise output 0.</p>
+                    <div class="formula">
+                        bundle(a,b,c) = <br>
+                        IF count(-1) ≥ 2 THEN -1<br>
+                        ELSE IF count(+1) ≥ 2 THEN +1<br>
+                        ELSE 0<br><br>
+                        <span style="font-size: 0.9em; color: #7f8c8d;">(Generalizes to n inputs)</span>
+                    </div>
+                    <div class="qed">∎ QED</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Trinity S³AI Framework — B007 VSA Operations</p>
+            <p><a href="INDEX.html">← Back to Index</a> | <a href="https://doi.org/10.5281/zenodo.19227745">Zenodo DOI</a></p>
+            <p style="margin-top: 10px; opacity: 0.7;">φ² + 1/φ² = 3 | TRINITY</p>
+        </div>
+    </div>
+
+    <script>
+        // Animate bars on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelectorAll('.noise-fill, .speedup-bar-fill').forEach(function(bar) {
+                    bar.style.width = bar.style.width;
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

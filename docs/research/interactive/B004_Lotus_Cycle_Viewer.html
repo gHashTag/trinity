@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queen Lotus Cycle - B004 Interactive Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header .doi {
+            font-family: 'Courier New', monospace;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #9b59b6;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #9b59b6;
+        }
+
+        /* Cycle Diagram */
+        .cycle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .phase {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .phase:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .phase .phase-number {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .phase .phase-name {
+            font-size: 1.1em;
+        }
+
+        .phase-sense { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .phase-plan { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .phase-act { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .phase-reflect { background: linear-gradient(135deg, #f39c12, #d68910); }
+        .phase-integrate { background: linear-gradient(135deg, #1abc9c, #16a085); }
+        .phase-dormancy { background: linear-gradient(135deg, #34495e, #2c3e50); }
+
+        .arrow {
+            font-size: 2em;
+            color: #9b59b6;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .dormancy-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Phase Details */
+        .phase-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .phase-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #9b59b6;
+            transition: transform 0.3s ease;
+        }
+
+        .phase-card:hover {
+            transform: translateX(5px);
+        }
+
+        .phase-card h3 {
+            color: #9b59b6;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phase-card .phase-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .phase-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .phase-card li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .phase-card li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #9b59b6;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .metric-unit {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        /* Quality Distribution */
+        .quality-chart {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .quality-bar-container {
+            margin: 15px 0;
+        }
+
+        .quality-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .quality-bar {
+            height: 35px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .quality-fill {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            transition: width 1s ease;
+            width: 0;
+        }
+
+        .quality-excellent { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+        .quality-good { background: linear-gradient(90deg, #3498db, #5dade2); }
+        .quality-fair { background: linear-gradient(90deg, #f39c12, #f1c40f); }
+        .quality-poor { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+
+        /* Episode Memory Table */
+        .memory-table {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .memory-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .memory-table th,
+        .memory-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .memory-table th {
+            background: #9b59b6;
+            color: white;
+            font-weight: 600;
+        }
+
+        .memory-table tr:hover {
+            background: #e8e8e8;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-excellent { background: #27ae60; }
+        .badge-good { background: #3498db; }
+        .badge-fair { background: #f39c12; }
+        .badge-poor { background: #e74c3c; }
+
+        /* Algorithm Box */
+        .algorithm-box {
+            background: #f8f9fa;
+            border-left: 5px solid #9b59b6;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .algorithm-box .title {
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .algorithm-box .line {
+            padding: 3px 0;
+        }
+
+        .algorithm-box .keyword {
+            color: #9b59b6;
+            font-weight: bold;
+        }
+
+        .algorithm-box .comment {
+            color: #7f8c8d;
+        }
+
+        /* Theorem Box */
+        .theorem-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .theorem-box .theorem-title {
+            font-weight: bold;
+            color: #f39c12;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .theorem-box .formula {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .theorem-box .qed {
+            text-align: right;
+            font-weight: bold;
+            color: #f39c12;
+            margin-top: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #9b59b6;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Animation on load */
+        @keyframes growWidth {
+            from { width: 0; }
+        }
+
+        .animate-bar {
+            animation: growWidth 1.5s ease forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .phase {
+                width: 100px;
+                height: 100px;
+                font-size: 0.8em;
+            }
+
+            .cycle-container {
+                flex-direction: column;
+            }
+
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌸 Queen Lotus Cycle</h1>
+            <p class="doi">B004 | DOI: 10.5281/zenodo.19227739</p>
+            <p>Autonomous Learning Orchestration with 6-Phase Cycle</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Metrics -->
+            <div class="section">
+                <h2 class="section-title">Key Metrics</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">847</div>
+                        <div class="metric-label">Max Episodes</div>
+                        <div class="metric-unit">Memory Buffer</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">92%</div>
+                        <div class="metric-label">Recall Accuracy</div>
+                        <div class="metric-unit">Jaccard Similarity</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">0.7</div>
+                        <div class="metric-label">Quality Threshold</div>
+                        <div class="metric-unit">Minimum Q</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">30-60s</div>
+                        <div class="metric-label">Cycle Duration</div>
+                        <div class="metric-unit">Per Episode</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lotus Cycle Diagram -->
+            <div class="section">
+                <h2 class="section-title">6-Phase Lotus Cycle</h2>
+                <div class="cycle-container">
+                    <div class="phase phase-sense" onclick="showPhaseDetails('sense')">
+                        <span class="phase-number">Phase 1</span>
+                        <span class="phase-name">SENSE</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="phase phase-plan" onclick="showPhaseDetails('plan')">
+                        <span class="phase-number">Phase 2</span>
+                        <span class="phase-name">PLAN</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="phase phase-act" onclick="showPhaseDetails('act')">
+                        <span class="phase-number">Phase 3</span>
+                        <span class="phase-name">ACT</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="phase phase-reflect" onclick="showPhaseDetails('reflect')">
+                        <span class="phase-number">Phase 4</span>
+                        <span class="phase-name">REFLECT</span>
+                    </div>
+                </div>
+                <div class="cycle-container" style="margin-top: -20px;">
+                    <div class="phase phase-integrate" onclick="showPhaseDetails('integrate')">
+                        <span class="phase-number">Phase 5</span>
+                        <span class="phase-name">INTEGRATE</span>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="phase phase-dormancy" onclick="showPhaseDetails('dormancy')">
+                        <span class="phase-number">Phase 6</span>
+                        <span class="phase-name">DORMANCY</span>
+                    </div>
+                    <div class="arrow" style="transform: rotate(-45deg);">↖</div>
+                    <div style="color: #9b59b6; font-weight: bold;">Q ≥ 0.7</div>
+                </div>
+
+                <div class="phase-details">
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #3498db, #2980b9);">1</span>
+                            SENSE
+                        </h3>
+                        <ul>
+                            <li>Read environment state</li>
+                            <li>Parse training metrics</li>
+                            <li>Extract loss, PPL, gradient norm</li>
+                            <li>Classify state quality</li>
+                        </ul>
+                    </div>
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">2</span>
+                            PLAN
+                        </h3>
+                        <ul>
+                            <li>Query episode memory</li>
+                            <li>Jaccard similarity search</li>
+                            <li>Retrieve top-3 episodes</li>
+                            <li>Select action (ε-greedy)</li>
+                        </ul>
+                    </div>
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">3</span>
+                            ACT
+                        </h3>
+                        <ul>
+                            <li>Execute selected action</li>
+                            <li>Modify hyperparameters</li>
+                            <li>Log to GitHub issue</li>
+                            <li>Trigger next training run</li>
+                        </ul>
+                    </div>
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #f39c12, #d68910);">4</span>
+                            REFLECT
+                        </h3>
+                        <ul>
+                            <li>Observe outcome</li>
+                            <li>Calculate reward</li>
+                            <li>Update Q-value</li>
+                            <li>Record effectiveness</li>
+                        </ul>
+                    </div>
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #1abc9c, #16a085);">5</span>
+                            INTEGRATE
+                        </h3>
+                        <ul>
+                            <li>Merge policy updates</li>
+                            <li>Update value function</li>
+                            <li>Consolidate learning</li>
+                            <li>Prepare for dormancy</li>
+                        </ul>
+                    </div>
+                    <div class="phase-card">
+                        <h3>
+                            <span class="phase-icon" style="background: linear-gradient(135deg, #34495e, #2c3e50);">6</span>
+                            DORMANCY
+                        </h3>
+                        <ul>
+                            <li>Quality check: Q ≥ 0.7?</li>
+                            <li>Prune low-quality episodes</li>
+                            <li>Energy conservation</li>
+                            <li>Wake: timeout or threshold</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Distribution -->
+            <div class="section">
+                <h2 class="section-title">Episode Quality Distribution</h2>
+                <div class="quality-chart">
+                    <div class="quality-bar-container">
+                        <div class="quality-label">
+                            <span>Excellent (Q ≥ 0.9)</span>
+                            <span>185 episodes (22%)</span>
+                        </div>
+                        <div class="quality-bar">
+                            <div class="quality-fill quality-excellent animate-bar" style="width: 22%;">22%</div>
+                        </div>
+                    </div>
+                    <div class="quality-bar-container">
+                        <div class="quality-label">
+                            <span>Good (0.7 ≤ Q < 0.9)</span>
+                            <span>312 episodes (37%)</span>
+                        </div>
+                        <div class="quality-bar">
+                            <div class="quality-fill quality-good animate-bar" style="width: 37%; animation-delay: 0.2s;">37%</div>
+                        </div>
+                    </div>
+                    <div class="quality-bar-container">
+                        <div class="quality-label">
+                            <span>Fair (0.5 ≤ Q < 0.7)</span>
+                            <span>245 episodes (29%)</span>
+                        </div>
+                        <div class="quality-bar">
+                            <div class="quality-fill quality-fair animate-bar" style="width: 29%; animation-delay: 0.4s;">29%</div>
+                        </div>
+                    </div>
+                    <div class="quality-bar-container">
+                        <div class="quality-label">
+                            <span>Poor (Q < 0.5)</span>
+                            <span>105 episodes (12%)</span>
+                        </div>
+                        <div class="quality-bar">
+                            <div class="quality-fill quality-poor animate-bar" style="width: 12%; animation-delay: 0.6s;">12%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Episodes -->
+            <div class="section">
+                <h2 class="section-title">Recent Episode Memory</h2>
+                <div class="memory-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Episode ID</th>
+                                <th>Timestamp</th>
+                                <th>Action</th>
+                                <th>Reward</th>
+                                <th>Quality</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#847</td>
+                                <td>2026-03-26 18:42:15</td>
+                                <td>REDUCE_LR (0.001→0.0007)</td>
+                                <td>+0.95</td>
+                                <td><span class="quality-badge badge-excellent">Excellent</span></td>
+                            </tr>
+                            <tr>
+                                <td>#846</td>
+                                <td>2026-03-26 18:15:33</td>
+                                <td>INCREASE_BATCH (32→64)</td>
+                                <td>+0.82</td>
+                                <td><span class="quality-badge badge-good">Good</span></td>
+                            </tr>
+                            <tr>
+                                <td>#845</td>
+                                <td>2026-03-26 17:48:21</td>
+                                <td>ADD_LAYER (depth 9→10)</td>
+                                <td>+0.68</td>
+                                <td><span class="quality-badge badge-fair">Fair</span></td>
+                            </tr>
+                            <tr>
+                                <td>#844</td>
+                                <td>2026-03-26 17:22:09</td>
+                                <td>EARLY_STOP (loss plateau)</td>
+                                <td>+0.91</td>
+                                <td><span class="quality-badge badge-excellent">Excellent</span></td>
+                            </tr>
+                            <tr>
+                                <td>#843</td>
+                                <td>2026-03-26 16:55:47</td>
+                                <td>REDUCE_LR (0.0015→0.001)</td>
+                                <td>+0.45</td>
+                                <td><span class="quality-badge badge-fair">Fair</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Algorithm -->
+            <div class="section">
+                <h2 class="section-title">Lotus Cycle Algorithm</h2>
+                <div class="algorithm-box">
+                    <div class="title">QUEEN_LOTUS_CYCLE(s, M)</div>
+                    <div class="line"><span class="keyword">procedure</span> QUEEN_LOTUS_CYCLE(s, M)</div>
+                    <div class="line">    <span class="comment">// Phase 1: SENSE — Read environment</span></div>
+                    <div class="line">    state_quality ← CLASSIFY_STATE(s)</div>
+                    <div class="line">    metrics ← COMPUTE_METRICS(s)  <span class="comment">// loss, PPL, grad</span></div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Phase 2: PLAN — Query memory</span></div>
+                    <div class="line">    relevant ← RECALL_EPISODES(s, M, top_k=3)</div>
+                    <div class="line">    action ← SELECT_ACTION(relevant, metrics)</div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Phase 3: ACT — Execute action</span></div>
+                    <div class="line">    s' ← EXECUTE_ACTION(action, s)</div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Phase 4: REFLECT — Observe outcome</span></div>
+                    <div class="line">    reward ← COMPUTE_REWARD(s, action, s')</div>
+                    <div class="line">    Q[s,action] ← Q[s,action] + α × (reward - Q[s,action])</div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Phase 5: INTEGRATE — Update policy</span></div>
+                    <div class="line">    M ← UPDATE_MEMORY(M, s, action, reward)</div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="comment">// Phase 6: DORMANCY — Quality check</span></div>
+                    <div class="line">    <span class="keyword">if</span> Q[s,action] < 0.7 <span class="keyword">then</span></div>
+                    <div class="line">        PRUNE_EPISODE(M, s)</div>
+                    <div class="line">    <span class="keyword">end if</span></div>
+                    <div class="line"></div>
+                    <div class="line">    <span class="keyword">return</span> (s', M')</div>
+                    <div class="line"><span class="keyword">end procedure</span></div>
+                </div>
+            </div>
+
+            <!-- Theorem -->
+            <div class="section">
+                <h2 class="section-title">Mathematical Foundation</h2>
+                <div class="theorem-box">
+                    <div class="theorem-title">Theorem: Lotus Cycle Convergence</div>
+                    <p>Under Jaccard-based episode retrieval with similarity threshold τ > 0.7, the Queen Lotus Cycle converges to an optimal policy in O(N/log N) episodes, where N is the state-action space size.</p>
+                    <div class="formula">
+                        J(A,B) = |A ∩ B| / |A ∪ B| <br>
+                        Q*(s,a) = E[Σ γ^t r_t | s₀=s, a₀=a]
+                    </div>
+                    <div class="qed">∎ QED</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Trinity S³AI Framework — B004 Queen Lotus Cycle</p>
+            <p><a href="INDEX.html">← Back to Index</a> | <a href="https://doi.org/10.5281/zenodo.19227739">Zenodo DOI</a></p>
+            <p style="margin-top: 10px; opacity: 0.7;">φ² + 1/φ² = 3 | TRINITY</p>
+        </div>
+    </div>
+
+    <script>
+        // Animate bars on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelectorAll('.quality-fill').forEach(function(bar) {
+                    bar.style.width = bar.style.width;
+                });
+            }, 100);
+        });
+
+        // Phase details click handler
+        function showPhaseDetails(phase) {
+            console.log('Showing details for phase:', phase);
+            // Scroll to phase card
+            const cards = document.querySelectorAll('.phase-card');
+            cards.forEach(function(card) {
+                if (card.querySelector('.phase-name').textContent.toLowerCase() === phase) {
+                    card.style.transform = 'translateX(10px)';
+                    setTimeout(function() {
+                        card.style.transform = 'translateX(5px)';
+                    }, 300);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
