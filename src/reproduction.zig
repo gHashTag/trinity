@@ -172,23 +172,19 @@ pub const ReproductionEngine = struct {
             \\## System Information
             \\- OS: {s}
             \\- Arch: {s}
-            \\- Zig Version: {s}
             \\
-        ,
-            .{
-                @tagName(self.config.experiment_type),
-                self.config.seed,
-                self.config.n_seeds,
-                self.config.dataset,
-                self.config.max_steps,
-                std.time.nanoTimestamp(),
-                @tagName(comptime builtin.os.tag),
-                @tagName(comptime builtin.cpu.arch),
-                builtin.zig_version,
-            }
-        );
+        , .{
+            @tagName(self.config.experiment_type),
+            self.config.seed,
+            self.config.n_seeds,
+            self.config.dataset,
+            self.config.max_steps,
+            std.time.nanoTimestamp(),
+            @tagName(comptime builtin.os.tag),
+            @tagName(comptime builtin.cpu.arch),
+        });
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(self.allocator);
     }
 
     /// Run ablation study
@@ -320,10 +316,10 @@ pub const ReproductionEngine = struct {
         }
 
         // Combine output files
-        var output_files = std.ArrayList([]const u8).init(self.allocator);
-        try output_files.appendSlice(ablation.output_files);
-        try output_files.appendSlice(benchmark.output_files);
-        try output_files.appendSlice(hyperparam.output_files);
+        var output_files = try std.ArrayList([]const u8).initCapacity(self.allocator, 16);
+        try output_files.appendSlice(self.allocator, ablation.output_files);
+        try output_files.appendSlice(self.allocator, benchmark.output_files);
+        try output_files.appendSlice(self.allocator, hyperparam.output_files);
 
         std.debug.print("\n✓ Full reproduction complete\n", .{});
 
@@ -331,7 +327,7 @@ pub const ReproductionEngine = struct {
             .experiment_type = .full_reproduction,
             .success = true,
             .execution_time_secs = 0.0,
-            .output_files = output_files.toOwnedSlice(),
+            .output_files = try output_files.toOwnedSlice(self.allocator),
             .error_message = null,
         };
     }
