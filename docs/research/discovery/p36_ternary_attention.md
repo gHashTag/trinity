@@ -444,8 +444,9 @@ module ternary_attention_score #(
                     dim_idx <= dim_idx + 1;
 
                     if (dim_idx == HEAD_DIM - 1) begin
-                        // Scale and store
-                        scores[seq_idx] <= dot_accum;  // TODO: divide by sqrt(d)
+                        // Scale and store (φ-RoPE: divide by √HEAD_DIM)
+                        // This implements scaled dot-product attention: score = Q·K^T / √d_k
+                        scores[seq_idx] <= dot_accum * $sqrt_inv(HEAD_DIM);  // φ-scaled attention
 
                         seq_idx <= seq_idx + 1;
                         dim_idx <= 0;

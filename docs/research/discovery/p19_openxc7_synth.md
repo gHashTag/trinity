@@ -470,12 +470,31 @@ pub const OpenXC7Synth = struct {
             }
         }
 
+        // Parse CARRY usage from synth report
+        var carries: usize = 0;
+        if (std.mem.indexOf(u8, report_output, "CARRY4")) |_| {
+            // Count CARRY4 instances
+            var iter = std.mem.split(u8, report_output, "\n");
+            while (iter.next()) |line| {
+                if (std.mem.indexOf(u8, line, "CARRY4")) |_| {
+                    // Extract count from line like "CARRY4: 42"
+                    var parts = std.mem.split(u8, line, ":");
+                    if (parts.next()) |_| {
+                        if (parts.next()) |count_str| {
+                            const count = std.fmt.parseUnsigned(usize, count_str, 10) catch 0;
+                            carries += count;
+                        }
+                    }
+                }
+            }
+        }
+
         return .{
             .luts = luts,
             .ffs = ffs,
             .dsps = dsps,
             .brams = brams,
-            .carry = 0, // TODO: parse CARRY usage
+            .carry = carries,
         };
     }
 

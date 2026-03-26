@@ -332,9 +332,16 @@ pub const HybridBigInt = struct {
             result.*[i] = v.limbs[src_idx];
         }
 
-        // Internal trit shift (if needed)
+        // Internal trit shift (cross-limb rotation)
         if (internal_shift > 0) {
-            // TODO: Implement cross-limb shift
+            const trits_per_limb = 16; // 32 bits / 2 bits per trit
+            for (0..v.limbs.len) |i| {
+                // Shift trits across limb boundary
+                const src_idx = (i + v.limbs.len - 1) % v.limbs.len;
+                const high_trits = v.limbs[src_idx] >> (32 - internal_shift * 2);
+                const low_mask = @as(u32, @intCast((1 << (internal_shift * 2)) - 1));
+                result.*[i] = (result.*[i] << (internal_shift * 2)) | high_trits;
+            }
         }
 
         return HybridBigInt{
