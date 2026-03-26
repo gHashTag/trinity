@@ -151,6 +151,65 @@ pub fn main() !void {
         });
         std.debug.print("  Time:     {d:.2}s\n", .{duration_sec});
 
+        // Calculate calibration metrics on validation sample
+        if (epoch == epochs - 1 or epoch == 0) {
+            std.debug.print("  Calibration metrics:\n", .{});
+
+            // Sample 1000 images for calibration
+            const sample_size = @min(1000, train_dataset.len());
+            var confidences = try allocator.alloc(f32, sample_size);
+            defer allocator.free(confidences);
+            var predictions = try allocator.alloc(usize, sample_size);
+            defer allocator.free(predictions);
+            var targets = try allocator.alloc(u8, sample_size);
+            defer allocator.free(targets);
+            var probabilities = try allocator.alloc([10]f32, sample_size);
+            defer allocator.free(probabilities);
+
+            for (0..sample_size) |i| {
+                const img = train_dataset.images.items[i];
+                var input: [3072]f32 = undefined;
+                for (0..3072) |j| {
+                    input[j] = cifar10_loader.normalizePixel(img.data[j]);
+                }
+
+                const pred = try model.predict(&input, &probabilities[i]);
+                predictions[i] = pred;
+                targets[i] = img.label;
+
+                // Use max probability as confidence
+                var max_conf: f32 = 0.0;
+                for (probabilities[i]) |p| {
+                    max_conf = @max(max_conf, p);
+                }
+                confidences[i] = max_conf;
+            }
+
+            // Calculate ECE
+            const ece = cifar10_train.CIFAR10Metrics.calculateECE(
+                confidences,
+                predictions,
+                targets,
+                10,
+            );
+            std.debug.print("    ECE:    {d:.4}\n", .{ece});
+
+            // Calculate Brier Score
+            const brier = cifar10_train.CIFAR10Metrics.calculateBrierScore(
+                confidences,
+                targets,
+                predictions,
+            );
+            std.debug.print("    Brier:  {d:.4}\n", .{brier});
+
+            // Calculate multiclass Brier Score
+            const brier_mc = cifar10_train.CIFAR10Metrics.calculateMulticlassBrierScore(
+                probabilities,
+                targets,
+            );
+            std.debug.print("    BrierMC:{d:.4}\n", .{brier_mc});
+        }
+
         // Calculate ETA
         const elapsed = epoch_time - start_time;
         const elapsed_sec = @as(f64, @floatFromInt(elapsed)) / 1_000_000_000.0;
