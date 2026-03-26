@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.9
+# Trinity Research Documentation Index — v10.0
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 186
-**NEW: Bias Assessment Framework (ICLR 2027)
+**Total Documents:** 188
+**NEW: Multiple Testing + Failure Mode Taxonomy
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -52,7 +52,7 @@
 | `REPRODUCIBILITY_GUIDE_V2.md` | Step-by-step reproduction | ✅ Complete |
 | `fpga-autoregressive-llm-report.md` | HSLM detailed report | ✅ Complete |
 
-### 4. Zenodo Publication (12 documents)
+### 4. Zenodo Publication (14 documents)
 
 | Document | Purpose | Version |
 |----------|---------|---------|
@@ -65,9 +65,11 @@
 | `ZENODO_README.md` | Zenodo bundle README | v1.0 |
 | `CITATION.cff` | Main citation file | v1.0 |
 | `7× citation/bundle_*.cff` | Per-bundle citations | v1.1 ✅ Enhanced |
-| `EFFECT_SIZE_STANDARDIZATION_FRAMEWORK_2026.md` | Cohen's d, Cliff's Delta, Pearson's r, R², OR | v1.0 ✨ NEW |
-| `MLSYS_ARTIFACT_APPENDIX_2026.md` | MLSys 2026 reproducibility checklist | v1.0 ✨ NEW |
-| `BIAS_ASSESSMENT_FRAMEWORK_2026.md` | ICLR 2027 ethics compliance (dataset, subgroup, mitigation) | v1.0 ✨ NEW |
+| `EFFECT_SIZE_STANDARDIZATION_FRAMEWORK_2026.md` | Cohen's d, Cliff's Delta, Pearson's r, R², OR | v1.0 ✅ |
+| `MLSYS_ARTIFACT_APPENDIX_2026.md` | MLSys 2026 reproducibility checklist | v1.0 ✅ |
+| `BIAS_ASSESSMENT_FRAMEWORK_2026.md` | ICLR 2027 ethics compliance (dataset, subgroup, mitigation) | v1.0 ✅ |
+| `MULTIPLE_TESTING_CORRECTION_FRAMEWORK_2026.md` | Bonferroni, Holm, BH-FDR, BY-FDR, Hommel (5 methods) | v1.0 ✨ NEW |
+| `FAILURE_MODE_TAXONOMY_2026.md` | 27 failure modes, detection/mitigation/recovery | v1.0 ✨ NEW |
 
 ### 5. Mathematical Foundations (5 documents)
 
@@ -232,7 +234,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 9.9 | 2026-03-26 | Added Bias Assessment Framework 2026 (ICLR 2027 ethics compliance, dataset demographics: gender 48.2% PASS, culture 12.3% WARN, language 0.8% FAIL, subgroup PPL analysis with Cohen's d, statistical significance testing, mitigation strategies, component-specific bias assessment for HSLM/VSA/TRI-27/FPGA, broader impact statement) ✨ NEW |
+| 10.0 | 2026-03-26 | Added Multiple Testing Correction Framework (5 methods: Bonferroni, Holm-Bonferroni, Benjamini-Hochberg FDR, Benjamini-Yekutieli FDR, Hommel; decision tree for method selection; NeurIPS/ICLR reporting formats; integration with scientific_metrics_v7.5) + Failure Mode Taxonomy (27 failure modes: HSLM 6, VSA 3, TRI-27 4, FPGA 5, VIBEE 4; 5 severity levels, 4 recovery strategies, detection code, monitoring interface) ✨ NEW |
+| 9.9 | 2026-03-26 | Added Bias Assessment Framework 2026 (ICLR 2027 ethics compliance, dataset demographics: gender 48.2% PASS, culture 12.3% WARN, language 0.8% FAIL, subgroup PPL analysis with Cohen's d, statistical significance testing, mitigation strategies, component-specific bias assessment for HSLM/VSA/TRI-27/FPGA, broader impact statement) ✅ NEW |
 | 9.8 | 2026-03-26 | Added Effect Size Standardization Framework (Cohen's d, Cliff's Delta, Pearson's r, R², Odds Ratio with 95% CI, magnitude interpretation, APA-style reporting, 5 implementations) + MLSys Artifact Appendix 2026 (600+ LOC reproducibility documentation, code/data/training verification, hyperparameter sensitivity, troubleshooting guide) ✨ NEW |
 | 9.7 | 2026-03-26 | Added SOTA Comparison + Session 28 Report ✨ NEW |
 | 9.6 | 2026-03-26 | Added Security & Robustness Comprehensive Analysis (adversarial attacks FGSM/PGD/AutoAttack, ternary-specific attacks trit-flipping/sacred scaling/VSA poisoning, defenses adversarial training/input filtering/certified robustness, FPGA bitstream encryption, 67.8% robust accuracy 2.3× vs float32, 3.8× faster certification, 272× lower energy) + Session 27 report ✨ |
