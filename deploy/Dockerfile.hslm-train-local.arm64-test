@@ -1,0 +1,28 @@
+# Trinity HSLM Training — ARM64 Native Test (no dataset)
+# Just to verify ARM64 binaries work
+#
+# φ² + 1/φ² = 3 = TRINITY
+
+FROM ubuntu:24.04
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup data directories
+RUN mkdir -p /data/tinystories /data/checkpoints
+
+# Create test dataset
+RUN echo "Once upon a time..." > /data/tinystories/train.txt
+
+# Copy prebuilt ARM64 Linux binaries from host
+COPY zig-out-linux/hslm-entrypoint /usr/local/bin/hslm-entrypoint
+COPY zig-out-linux/hslm-train /usr/local/bin/hslm-train
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
+
+LABEL version="2.4.0-arm64-test" \
+      description="Trinity HSLM Training — ARM64 test without dataset"

@@ -1980,6 +1980,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
+            .frame(maxWidth: 600)  // FIXED: prevent oversized input width
             .layoutPriority(1)
 
             Button {
@@ -5083,24 +5084,23 @@ struct MultilineInput: NSViewRepresentable {
         textView.isHorizontallyResizable = false
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // FIXED: allow proper text container sizing
-        textView.textContainer?.containerSize = NSSize(width: 400, height: 1000)
+        // FIXED: container size - reasonable bounds for chat input
+        textView.textContainer?.containerSize = NSSize(width: 600, height: 200)
         textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // FIXED: allow proper text expansion
-        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
+        // FIXED: NO fixed frame size - let SwiftUI control sizing via layout
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // FIXED: allow proper scrollview sizing
-        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
+        // FIXED: NO fixed frame size - let SwiftUI control sizing
+        scrollView.autohidesScrollers = true
 
         context.coordinator.textView = textView
 

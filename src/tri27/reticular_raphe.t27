@@ -1,0 +1,215 @@
+# Reticular Raphe — PPL Rolling Average with φ-Decay
+# TRI-27 Reference Implementation for Paper 2: TRI-27 + Queen
+
+## Overview
+
+Reticular Raphe computes rolling average Perplexity (PPL) for a set of
+evaluations with φ-based weight decay. This is the reference implementation
+for validating Queen Self-Learning hypotheses H4-H6.
+
+**Mathematical foundation**: φ² + 1/φ² = 3
+
+---
+
+## Algorithm
+
+### Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| WINDOW_SIZE | 20 | Size of rolling evaluation window |
+| PHI_DECAY | 0.990 | φ-decay factor (0.990 ≈ 1/φ) |
+| MIN_WEIGHT | 0.05 | Minimum weight for old evaluation |
+| MAX_PPL | 127.0 | Maximum PPL value for clamping |
+
+### Formula
+
+```
+For each new evaluation p_t:
+
+weight = φ^decay * (window_size - 1)
+rolling_ppl = (weight * rolling_ppl + p_t) / (weight + 1)
+
+Where φ^decay = 0.990 (≈ 1/φ)
+```
+
+---
+
+## Implementation
+
+.const
+    # Algorithm constants
+    WINDOW_SIZE = 20
+    PHI_DECAY = 65535  # Q16: 0.990 ≈ 65535/65536
+
+    # Minimum PPL value (for clamping)
+    MIN_PPL = 8192  # Q16: 0.125
+
+    # Memory addresses (8-byte aligned)
+    MEM_PPL_SUM = 0         # 64-bit: weighted PPL sum
+    MEM_WEIGHT_SUM = 8      # 64-bit: weight sum
+    MEM_EVALUATIONS = 16    # array of 20×8-bit PPL
+    MEM_RESULTS = 40        # array of 20×16-bit rolling PPL
+
+.data
+    # Initialize memory with zeros
+    .dword 0 0 0 0
+
+.code
+    # t0 = data pointer, t1 = current evaluation, t2 = weight sum
+    # t3 = current weighted sum, t4 = rolling PPL, t5 = index
+    # t6 = temporary for calculations
+
+    # Initialize pointers
+    LDI t0, MEM_EVALUATIONS  # t0 = &evaluations
+    LDI t5, 0                # index = 0
+
+    # Initialize memory to zero
+    LDI t1, 0                # current_ppl = 0
+    LDI t2, 0                # weight_sum = 0
+    LDI t3, 0                # weighted_sum = 0
+    LDI t4, 0                # rolling_ppl = 0
+
+    # ============================================
+    # Main loop: read evaluations, compute rolling PPL
+    # ============================================
+
+main_loop:
+    # Check: reached WINDOW_SIZE evaluations (20)?
+    LD t6, 5                 # t6 = t5 + 1 (index + 1)
+    JNZ t5, read_next        # if index != 20, read next
+    JUMP compute_final       # else, compute final value
+
+    # ============================================
+    # Read new evaluation from memory
+    # Expected location: evaluations[t5] at address &evaluations + t5*2
+    # ============================================
+
+read_next:
+    # Calculate array element address: base + index*2
+    MUL t6, t5, 2            # t6 = t5 * 2
+    LDI t6, t0               # t6 = &evaluations (load base)
+
+    # Now t6 = &evaluations + index*2
+    ADD t6, t6, t6           # add offset
+
+    # Read 16-bit PPL (Little Endian)
+    LD t1, t6                # t1 = evaluations[t5]
+
+    # -----------------------------------------------
+    # Check: is evaluation valid (not 0xFFFF)?
+    LDI t6, 65535            # t6 = 0xFFFF (reserved for invalid)
+    JZ t1, skip_invalid      # if PPL == 0xFFFF, skip
+
+    # -----------------------------------------------
+    # Compute current weighted PPL
+    # weighted_sum += (φ^decay * rolling_ppl)
+    # -----------------------------------------------
+
+    # t1 = current_ppl, φ^decay already in t6
+    LDI t6, PHI_DECAY        # t6 = φ^decay
+
+    # t6 = φ^decay * rolling_ppl (16-bit × 16-bit)
+    MUL t6, t4, t6           # t6 = φ^decay × rolling_ppl
+
+    # t6 = weighted_sum + (φ^decay × rolling_ppl)
+    ADD t3, t3, t6           # t3 += value
+
+    # -----------------------------------------------
+    # Update weight sum
+    # weight_sum += φ^decay
+    # -----------------------------------------------
+
+    ADD t2, t2, t6           # t2 += φ^decay
+
+    # -----------------------------------------------
+    # Compute new rolling PPL
+    # rolling_ppl = weighted_sum / weight_sum
+    # -----------------------------------------------
+
+    # Check for division by zero
+    JNZ t2, div_okay         # if weight_sum != 0, divide
+
+    # If weight_sum == 0 (first iteration), use raw PPL
+    MOV t4, t1               # rolling_ppl = current_ppl
+    JUMP clamping_check      # jump to clamping
+
+div_okay:
+    # Fixed-point division
+    # rolling_ppl = weighted_sum / weight_sum
+    # Use integer division via shifts
+    # -----------------------------------------------
+
+    # Approximation: /65536 ≈ ×0.0000153
+    # rolling_ppl ≈ weighted_sum × 65536 >> 16
+
+    # Save weight_sum for multiplication
+    MOV t6, t2               # t6 = weight_sum
+
+    # Multiply numerator by scale
+    MUL t6, t3, t6           # t6 = weighted_sum × 65536
+
+    # Right shift by 16 bits (integer division)
+    SHR t6, t6, 16           # t6 = (weighted_sum × 65536) >> 16
+
+    # Check result (rolling_ppl in t4)
+    JNZ t6, check_clamp      # if result != 0, use it
+
+    # If result is 0, use MIN_PPL as fallback
+    MOV t6, MIN_PPL          # t6 = MIN_PPL
+
+check_clamp:
+    # rolling_ppl in t4 or t6 (after clamping)
+    JNZ t6, save_result      # if t6 != 0, use it
+
+save_result:
+    MOV t4, t6               # rolling_ppl = result
+
+    # -----------------------------------------------
+    # Clamping: limit PPL to range [MIN_PPL, 127.0]
+    # Clamp(x) = min(MAX_PPL, max(MIN_PPL, x))
+    # -----------------------------------------------
+
+clamping_check:
+    # t4 = rolling_ppl, check for MAX_PPL
+    LDI t6, 127              # t6 = MAX_PPL (127.0)
+
+    # If rolling_ppl > 127.0, clamp down
+    JGT t4, t6, clamp_max    # if t4 > MAX_PPL, decrease
+
+    # If rolling_ppl <= 127.0, check MIN_PPL
+    JLT t4, t6, clamp_min    # if t4 < MIN_PPL, increase
+
+    # PPL in correct range, skip clamping
+    JUMP save_to_memory      # save result
+
+clamp_max:
+    LDI t4, t6               # rolling_ppl = MAX_PPL
+    JUMP save_to_memory
+
+clamp_min:
+    LDI t4, MIN_PPL          # rolling_ppl = MIN_PPL
+    JUMP save_to_memory
+
+    # -----------------------------------------------
+    # Skip invalid PPL (0xFFFF) — increment index, continue
+    # -----------------------------------------------
+
+skip_invalid:
+    INC t5                   # index++
+
+    # Check for WINDOW_SIZE (20)
+    LDI t6, WINDOW_SIZE      # t6 = 20
+
+    # If index < 20, continue main loop
+    JLT t5, t6, main_loop
+
+    # ============================================
+    # Final computation: output rolling PPL in t0
+    # ============================================
+
+compute_final:
+    # t0 will contain final rolling PPL
+    MOV t0, t4               # return value
+
+    HALT

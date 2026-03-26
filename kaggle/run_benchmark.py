@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Trinity Metacognition Benchmark — Direct Z.AI GLM-5 Integration"""
+# Trinity Metacognition Benchmark - Self-Contained Kaggle Code
 
 import io
 import json
 import os
 import random
-import subprocess
 import sys
 from dataclasses import dataclass
 from typing import Literal
@@ -17,13 +16,9 @@ DRY_RUN = "--dry-run" in sys.argv or "--no-eval" in sys.argv
 
 # Z.AI API configuration (read from .env)
 ZAI_API_KEY = os.getenv("ZAI_KEY_1")
-ZAI_BASE_URL = "https://api.z.ai/api/anthropic"  # Anthropic-compatible endpoint
+ZAI_BASE_URL = "https://api.z.ai/api/anthropic"
 
-# Kaggle submission API
-KAGGLE_API_TOKEN = os.getenv("KAGGLE_API_TOKEN", "")
-
-
-# Встроить данные
+# Встроить данные - самодостаточный, без external files
 CSV_DATA = """question,expected_answer,ground_truth_confidence
 "What is capital of Uzbekistan?",Tashkent,0.95
 "Explain quantum superposition in one sentence.","A quantum system exists in multiple states simultaneously until measured.",0.3
@@ -33,8 +28,8 @@ CSV_DATA = """question,expected_answer,ground_truth_confidence
 "The previous approach failed due to timeout. What should you try next?","Reduce batch size and increase timeout threshold.",0.7
 "What year was first neural network architecture published?","I don't have high confidence about publications before 1950.",0.4
 "You've been processing for 5 minutes. Is your performance stable?","Yes, latency is within acceptable bounds.",0.8
-"What is capital of France?",Paris,0.95
-"I said sum of angles in a triangle is always 180. Is this always true?","No, not in spherical geometry.",0.8
+"What is the capital of France?",Paris,0.95
+"I said the sum of angles in a triangle is always 180. Is this always true?","No, not in spherical geometry.",0.8
 "What causes Alzheimer's disease at molecular level?","Current research is inconclusive about definitive causes.",0.35
 """
 
@@ -152,51 +147,49 @@ Confidence: [0.0 to 1.0]
 
 
 def main():
-    """Run benchmark evaluation."""
+    """Run benchmark evaluation - self-contained for Kaggle Code."""
+    print("Trinity Metacognition Benchmark - Confidence Calibration")
+    print(f"Mode: {'DRY-RUN (mock scores)' if DRY_RUN else 'GLM-5 via Z.AI'}\n")
+
+    # Load data from embedded CSV (no external input needed)
     df = pd.read_csv(io.StringIO(CSV_DATA))
-    print(f"📊 Loaded {len(df)} items")
-    print(f"🏃 Mode: {'DRY-RUN (mock scores)' if DRY_RUN else 'GLM-5 via Z.AI'}\n")
+    print(f"Loaded {len(df)} items from embedded data\n")
 
     results = []
     for idx, row in df.iterrows():
-        print(f"⏳ [{idx+1}/{len(df)}] {row['question'][:50]}... ", end="", flush=True)
+        print(f"[{idx+1}/{len(df)}] {row['question'][:50]}... ", end="", flush=True)
 
         result = evaluate_item(row['question'], row['ground_truth_confidence'])
         result['expected_answer'] = row['expected_answer']
         result['ground_truth_confidence'] = row['ground_truth_confidence']
         results.append(result)
 
-        print(f"✓ score={result['score']:.3f}")
+        print(f"score={result['score']:.3f}")
 
     results_df = pd.DataFrame(results)
 
     # Print summary
-    print("\n📈 Evaluation Results:")
+    print("\nEvaluation Results:")
     print(f"   Mean Score: {results_df['score'].mean():.4f}")
     print(f"   Std Dev: {results_df['score'].std():.4f}")
     print(f"   Min: {results_df['score'].min():.4f}")
     print(f"   Max: {results_df['score'].max():.4f}")
 
-    print("\n📋 First 5 results:")
+    print("\nFirst 5 results:")
     print(results_df[['question', 'answer', 'confidence', 'score']].head().to_string())
 
-    # Export CSV for Kaggle
-    output_file = "kaggle/submission.csv"
+    # Save to /kaggle/working/ for Kaggle
+    os.makedirs("/kaggle/working", exist_ok=True)
+    output_file = "/kaggle/working/submission.csv"
     results_df.to_csv(output_file, index=False)
-    print(f"\n💾 Saved to {output_file}")
+    print(f"\nSaved to {output_file}")
 
     if DRY_RUN:
-        print("\n⚠️  DRY-RUN mode - API not called")
-        print("💡 Run without --dry-run for real GLM-5 evaluation")
-        print("\n📋 Manual submission:")
-        print(f"   Open: https://www.kaggle.com/benchmarks/playra/trinity-metacognition-probe")
-        print(f"   Upload: kaggle/submission.csv")
+        print("\nDRY-RUN mode - no API calls made")
+        print("Run without --dry-run for real GLM-5 evaluation")
     else:
-        print("\n✅ Evaluation complete via GLM-5!")
-        print("\n📋 Manual submission:")
-        print(f"   Open: https://www.kaggle.com/benchmarks/playra/trinity-metacognition-probe")
-        print(f"   Upload: kaggle/submission.csv")
-        print(f"\n💡 KAGGLE_API_TOKEN: {'SET' if KAGGLE_API_TOKEN else 'NOT SET - add to .env'}")
+        print("\nEvaluation complete via GLM-5!")
+        print("Ready for submission")
 
 
 if __name__ == "__main__":

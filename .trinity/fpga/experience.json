@@ -43,29 +43,6 @@
     }
   },
   {
-    "id": "FPGA-023",
-    "date": "2026-03-23",
-    "category": "UART",
-    "action": "Add loopback_mode to uart_echo_test v3.10",
-    "result": "SUCCESS",
-    "symptom": "Loopback mode allows testing serial port without FPGA",
-    "root_cause": "FT232RL can loop TX to RX internally when physically shorted",
-    "lesson": "Loopback mode provides software test capability independent of hardware FPGA connection. Useful for verifying serial port functionality when FPGA is unavailable.",
-    "tags": [
-      "uart",
-      "echo-test",
-      "loopback",
-      "v3.10",
-      "software-improvement"
-    ],
-    "data": {
-      "flag": "--loopback-mode",
-      "banner": "LOOPBACK MODE (TX->RX on FT232RL)",
-      "instruction": "Short TX to RX with wire (pin 4 -> pin 5 on DB9)",
-      "uart_echo_test_version": "v3.10"
-    }
-  },
-  {
     "id": "FPGA-024",
     "date": "2026-03-23",
     "category": "UART",
@@ -90,6 +67,33 @@
       "fpga_test_result": "FAIL - 0/6 passed",
       "pin_wiring": "TCK/TDI/TDO/TMS (JTAG) not TXD/RXD (UART)",
       "required_adapter": "USB-to-UART (CP2102/CH340/FT232R-UART)"
+    }
+  },
+  {
+    "id": "FPGA-025",
+    "date": "2026-03-24",
+    "category": "UART",
+    "action": "Hardware debug plan execution",
+    "result": "BLOCKED",
+    "symptom": "Cannot execute UART echo test plan - hardware blockers prevent all tests",
+    "root_cause": "1) CPLD 0xFFFE causes TDO stuck at 0, JTAG cannot read IDCODE. 2) /dev/cu.usbserial-2140 is JTAG-only, cannot do UART. Plan assumes working JTAG + UART capability.",
+    "lesson": "Check hardware compatibility before writing test plans. FT232RL JTAG (PID 0x6001) != FT232R-UART. CPLD 0xFFFE is a hard blocker for all JTAG operations.",
+    "tags": [
+      "uart",
+      "jtag",
+      "cpld",
+      "blocked",
+      "hardware-limitation",
+      "plan-invalid"
+    ],
+    "data": {
+      "step1_build": "PASS - Fixed unused constants, binary created",
+      "step2_loopback": "BLOCKED - JTAG cable has no TX/RX pins",
+      "step3_jtag": "FAIL - TDO stuck at 0 (CPLD 0xFFFE)",
+      "idcode_expected": "0x13631093",
+      "idcode_actual": "0x00000000",
+      "cpld_version": "0xFFFE",
+      "required_equipment": ["USB-to-UART adapter (CP2102/CH340)", "FPGA board with working CPLD"]
     }
   }
 ]
