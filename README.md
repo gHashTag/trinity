@@ -150,6 +150,8 @@ Trinity publishes key innovations as **defensive publications** to establish pri
 
 **Research Documentation:** See [`docs/research/INDEX.md`](docs/research/INDEX.md) for complete research documentation index.
 
+**Scientific Manifesto:** See [`TRINITY_SCIENTIFIC_MANIFESTO.md`](docs/research/TRINITY_SCIENTIFIC_MANIFESTO.md) for complete innovation catalog (40+ inventions).
+
 ---
 
 ## What is Trinity?
