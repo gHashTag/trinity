@@ -1,38 +1,17 @@
-# Trinity B006: GF16/TF3 Format Container
-# Bundle: Sacred GF16/TF3
-# Purpose: Reproducible number format experiments
-# φ² + 1/φ² = 3 | TRINITY
-
+# Trinity B006: Sacred Formats Container
+# Zenodo Bundle v6.1 - GF16/TF3 Phi-Based Arithmetic
 FROM ziglang/zig:0.15.0-alpine AS build
 
 WORKDIR /src
-
-# Copy source
 COPY . .
 
-# Build GF16/TF3 utilities
-RUN zig build gf16-test
-
-# Build format conversion tools
-RUN zig build format-convert
+# Build sacred format tools
+RUN zig build sacred-tools
 
 # Runtime stage
 FROM alpine:3.19
+COPY --from=build /src/zig-out/bin/sacred-* /usr/local/bin/
 
-RUN apk add --no-cache python3 py3-pip
-
-WORKDIR /app
-
-# Copy binaries
-COPY --from=build /src/zig-out/bin/gf16-test /app/
-COPY --from=build /src/zig-out/bin/format-convert /app/
-
-# Copy Python analysis scripts
-COPY --from=build /src/docs/research/figures/*.py /app/scripts/ 2>/dev/null || true
-
-# Default: Run GF16 round-trip test
-ENTRYPOINT ["/app/gf16-test"]
+WORKDIR /data
+ENTRYPOINT ["sacred-convert"]
 CMD ["--help"]
-
-# Example usage:
-# docker run trinity-b006 --roundtrip --samples 1000000

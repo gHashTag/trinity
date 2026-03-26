@@ -1,82 +1,19 @@
 # Trinity B002: FPGA Synthesis Container
-# Bundle: Zero-DSP FPGA
-# Purpose: Reproducible FPGA synthesis with Yosys + nextpnr
-# φ² + 1/φ² = 3 | TRINITY
+# Zenodo Bundle v6.1 - Zero-DSP Ternary Inference
+FROM ziglang/zig:0.15.0-alpine AS build
 
-FROM debian:bookworm-slim AS build
-
-# Install FPGA toolchain
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \
-    python3 \
-    python3-pip \
-    wget \
-    bison \
-    flex \
-    gawk \
-    tcl-dev \
-    libffi-dev \
-    libreadline-dev \
-    graphviz \
-    xdot \
-    pkg-config \
-    libboost-system-dev \
-    libboost-python-dev \
-    libboost-filesystem-dev \
-    zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Zig
-RUN wget https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz \
-    && tar -xzf zig-linux-x86_64-0.15.0.tar.xz \
-    && mv zig-linux-x86_64-0.15.0/zig /usr/local/bin/ \
-    && rm zig-linux-x86_64-0.15.0.tar.xz
-
-# Clone and build Yosys
-RUN git clone https://github.com/YosysHQ/yosys /tmp/yosys \
-    && cd /tmp/yosys \
-    && make -j$(nproc) \
-    && make install \
-    && cd / \
-    && rm -rf /tmp/yosys
-
-# Clone and build nextpnr-xilinx
-RUN git clone https://github.com/YosysHQ/nextpnr /tmp/nextpnr \
-    && cd /tmp/nextpnr \
-    && cmake -DARCH=xilinx -DCMAKE_BUILD_TYPE=Release . \
-    && make -j$(nproc) \
-    && make install \
-    && cd / \
-    && rm -rf /tmp/nextpnr
-
-WORKDIR /workspace
-
-# Copy Trinity source
+WORKDIR /src
 COPY . .
 
-# Build HSLM for FPGA
-RUN zig build hslm-fpga
-
-# Generate Verilog
-RUN zig build hslm-verilog
-
-# Synthesize (requires bitstream generation on actual hardware)
-RUN yosys -p "synth_xilinx -top hslm_top" var/hslm/hslm.v -o var/hslm/synth.json
+# Build FPGA synthesis tools
+RUN zig build fpga-synth
 
 # Runtime stage
-FROM debian:bookworm-slim
+FROM alpine:3.19
+RUN apk add --no-cache yosys nextpnr-ice40
+COPY --from=build /src/zig-out/bin/fpga-synth /usr/local/bin/
+COPY --from=build /src/fpga /usr/local/share/trinity/fpga
 
-RUN apt-get update && apt-get install -y \
-    yosys \
-    nextpnr-xilinx \
-    fpga-icestorm \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-COPY --from=build /workspace/var/hslm /app/hslm/
-
-# Default: Show synthesis report
-ENTRYPOINT ["yosys"]
+WORKDIR /workspace
+ENTRYPOINT ["fpga-synth"]
 CMD ["--help"]

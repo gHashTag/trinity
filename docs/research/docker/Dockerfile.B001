@@ -1,39 +1,22 @@
 # Trinity B001: HSLM Training Container
-# Bundle: Ternary Neural Networks
-# Purpose: Reproducible HSLM-1.95M training on TinyStories
-# φ² + 1/φ² = 3 | TRINITY
-
+# Zenodo Bundle v6.1 - Ternary Neural Networks
 FROM ziglang/zig:0.15.0-alpine AS build
 
 WORKDIR /src
-
-# Copy source
 COPY . .
 
 # Build HSLM training binary
 RUN zig build hslm-train
 
-# Build HSLM inference binary
-RUN zig build hslm-inference
-
-# Runtime stage
+# Runtime stage (minimal)
 FROM alpine:3.19
+COPY --from=build /src/zig-out/bin/hslm-train /usr/local/bin/
+COPY --from=build /src/zig-out/lib /usr/local/lib/trinity
 
-RUN apk add --no-cache wget ca-certificates
-
-WORKDIR /app
-
-# Copy binaries from build stage
-COPY --from=build /src/zig-out/bin/hslm-train /app/
-COPY --from=build /src/zig-out/bin/hslm-inference /app/
-
-# Copy model checkpoints (if any)
-COPY --from=build /src/var/hslm/*.bin /app/models/ 2>/dev/null || true
-
-# Default: Show help
-ENTRYPOINT ["/app/hslm-train"]
+WORKDIR /data
+ENTRYPOINT ["hslm-train"]
 CMD ["--help"]
 
 # Example usage:
-# docker run -v $(pwd)/data:/app/data trinity-b001 \
-#   --dataset /app/data/tinystories --steps 30000 --checkpoint /app/models/hslm.bin
+# docker run -v $(pwd)/data:/data trinity-b001 \
+#   hslm-train --dataset tinystories --steps 30000

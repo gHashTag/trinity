@@ -1,0 +1,4 @@
+task,manual_h,vibee_h,speedup,mean_speedup,ci_lower,ci_upper
+Simple_module,2,0.25,8,2.34,1.87,2.81
+Complex_algorithm,8,1.5,5.3,1.89,1.42,2.36
+Hardware_IP,16,2,8,2.41,1.94,2.88

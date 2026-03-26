@@ -1,40 +1,17 @@
-# Trinity B005: Tri Language Compiler Container
-# Bundle: Tri Language
-# Purpose: Reproducible .tri → Zig/Verilog compilation
-# φ² + 1/φ² = 3 | TRINITY
-
+# Trinity B005: VIBEE Compiler Container
+# Zenodo Bundle v6.1 - Linear Types, Effects, Dual-Target Codegen
 FROM ziglang/zig:0.15.0-alpine AS build
 
 WORKDIR /src
-
-# Copy source
 COPY . .
 
 # Build VIBEE compiler
 RUN zig build vibee
 
-# Build Tri language tools
-RUN zig build tri-lang
-
 # Runtime stage
 FROM alpine:3.19
+COPY --from=build /src/zig-out/bin/vibee /usr/local/bin/
 
-WORKDIR /app
-
-# Copy binaries
-COPY --from=build /src/zig-out/bin/vibee /app/
-COPY --from=build /src/zig-out/bin/tri-lang /app/
-
-# Copy specs
-COPY --from=build /src/specs /app/specs/
-
-# Copy generated output directory
-RUN mkdir -p /app/generated
-
-# Default: Show help
-ENTRYPOINT ["/app/vibee"]
+WORKDIR /workspace
+ENTRYPOINT ["vibee"]
 CMD ["--help"]
-
-# Example usage:
-# docker run -v $(pwd)/specs:/app/specs trinity-b005 \
-#   gen /app/specs/tri/feature.tri --target zig

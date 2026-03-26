@@ -1,38 +1,17 @@
 # Trinity B007: VSA Operations Container
-# Bundle: VSA Operations
-# Purpose: Reproducible VSA SIMD benchmarks
-# φ² + 1/φ² = 3 | TRINITY
-
+# Zenodo Bundle v6.1 - Vector Symbolic Architecture with SIMD
 FROM ziglang/zig:0.15.0-alpine AS build
 
 WORKDIR /src
-
-# Copy source
 COPY . .
 
-# Build VSA benchmark suite
+# Build VSA library and benchmarks
 RUN zig build vsa-bench
-
-# Build HybridBigInt tests
-RUN zig build bigint-test
 
 # Runtime stage
 FROM alpine:3.19
+COPY --from=build /src/zig-out/bin/vsa-bench /usr/local/bin/
 
-RUN apk add --no-cache ca-certificates
-
-WORKDIR /app
-
-# Copy binaries
-COPY --from=build /src/zig-out/bin/vsa-bench /app/
-COPY --from=build /src/zig-out/bin/bigint-test /app/
-
-# Copy benchmark data
-COPY --from=build /src/docs/research/data/B007_*.csv /app/data/ 2>/dev/null || true
-
-# Default: Run VSA benchmarks
-ENTRYPOINT ["/app/vsa-bench"]
+WORKDIR /data
+ENTRYPOINT ["vsa-bench"]
 CMD ["--help"]
-
-# Example usage:
-# docker run trinity-b007 --iterations 1000000 --output /app/results.json

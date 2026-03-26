@@ -1,39 +1,17 @@
 # Trinity B004: Queen Lotus Cycle Container
-# Bundle: Queen Lotus Cycle
-# Purpose: Reproducible Queen agent learning cycle
-# φ² + 1/φ² = 3 | TRINITY
-
+# Zenodo Bundle v6.1 - Autonomous Learning Orchestration
 FROM ziglang/zig:0.15.0-alpine AS build
 
 WORKDIR /src
-
-# Copy source
 COPY . .
 
-# Build Queen agent
-RUN zig build queen
-
-# Build Queen CLI
-RUN zig build queen-cli
+# Build Queen Lotus runtime
+RUN zig build queen-lotus
 
 # Runtime stage
 FROM alpine:3.19
+COPY --from=build /src/zig-out/bin/queen-lotus /usr/local/bin/
 
-RUN apk add --no-cache ca-certificates
-
-WORKDIR /app
-
-# Copy binaries
-COPY --from=build /src/zig-out/bin/queen /app/
-COPY --from=build /src/zig-out/bin/queen-cli /app/
-
-# Create memory directory
-RUN mkdir -p /app/.queen/episodes
-
-# Default: Run Queen agent
-ENTRYPOINT ["/app/queen"]
+WORKDIR /workspace
+ENTRYPOINT ["queen-lotus"]
 CMD ["--help"]
-
-# Example usage:
-# docker run -v $(pwd)/memory:/app/.queen trinity-b004 \
-#   --task "Implement feature X" --episodes /app/.queen/episodes
