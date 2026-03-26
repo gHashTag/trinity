@@ -113,26 +113,19 @@ pub const AnalysisEngine = struct {
     }
 
     /// Run sensitivity analysis for single hyperparameter
-    pub fn analyzeParam(
-        self: *const AnalysisEngine,
-        config: SensitivityConfig,
-        param_range: HyperparamRange
-    ) !SensitivityResult {
+    pub fn analyzeParam(self: *const AnalysisEngine, config: SensitivityConfig, param_range: HyperparamRange) !SensitivityResult {
         // Allocate response surface array (owned by result, not freed here)
         const response = try self.allocator.alloc(f64, param_range.n_steps);
 
         // Generate values from min to max
         for (0..param_range.n_steps) |i| {
             const t = @as(f64, @floatFromInt(i)) /
-                      @as(f64, @floatFromInt(param_range.n_steps - 1));
+                @as(f64, @floatFromInt(param_range.n_steps - 1));
 
             const value = switch (param_range.scale) {
                 .linear => param_range.min_value +
-                           t * (param_range.max_value - param_range.min_value),
-                .logarithmic => param_range.min_value * std.math.pow(f64,
-                    param_range.max_value / param_range.min_value,
-                    t
-                ),
+                    t * (param_range.max_value - param_range.min_value),
+                .logarithmic => param_range.min_value * std.math.pow(f64, param_range.max_value / param_range.min_value, t),
             };
 
             response[i] = value;
@@ -189,10 +182,7 @@ pub const AnalysisEngine = struct {
     }
 
     /// Run full sensitivity analysis across all hyperparameters
-    pub fn analyzeAll(
-        self: *const AnalysisEngine,
-        config: SensitivityConfig
-    ) !SensitivitySummary {
+    pub fn analyzeAll(self: *const AnalysisEngine, config: SensitivityConfig) !SensitivitySummary {
         // Allocate results array
         const results = try self.allocator.alloc(SensitivityResult, config.base_config.len);
         defer self.allocator.free(results);
@@ -230,10 +220,7 @@ pub const AnalysisEngine = struct {
     }
 
     /// Generate recommendations based on sensitivity results
-    fn generateRecommendations(
-        self: *const AnalysisEngine,
-        results: []const SensitivityResult
-    ) ![]const Recommendation {
+    fn generateRecommendations(self: *const AnalysisEngine, results: []const SensitivityResult) ![]const Recommendation {
         const recs = try self.allocator.alloc(Recommendation, results.len);
         errdefer self.allocator.free(recs);
 
@@ -264,11 +251,7 @@ pub const AnalysisEngine = struct {
     }
 
     /// Export results to CSV
-    pub fn exportCsv(
-        self: *const AnalysisEngine,
-        results: []const SensitivityResult,
-        path: []const u8
-    ) !void {
+    pub fn exportCsv(self: *const AnalysisEngine, results: []const SensitivityResult, path: []const u8) !void {
         _ = self;
         const file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
@@ -276,10 +259,7 @@ pub const AnalysisEngine = struct {
         const writer = file.writer();
 
         // Header
-        try writer.print(
-            "param,min_value,max_value,best_value,sensitivity_score\n",
-            .{}
-        );
+        try writer.print("param,min_value,max_value,best_value,sensitivity_score\n", .{});
 
         // Data rows
         for (results) |r| {
@@ -294,10 +274,7 @@ pub const AnalysisEngine = struct {
     }
 
     /// Generate sensitivity report (human-readable)
-    pub fn generateReport(
-        self: *const AnalysisEngine,
-        summary: SensitivitySummary
-    ) ![]const u8 {
+    pub fn generateReport(self: *const AnalysisEngine, summary: SensitivitySummary) ![]const u8 {
         var buffer = std.ArrayList(u8).init(self.allocator);
         defer buffer.deinit();
 
@@ -310,13 +287,11 @@ pub const AnalysisEngine = struct {
             \\- Least sensitive: {s}
             \\
             \\## Recommendations
-            ,
-            .{
-                summary.n_params_analyzed,
-                @tagName(summary.most_sensitive),
-                @tagName(summary.least_sensitive),
-            }
-        );
+        , .{
+            summary.n_params_analyzed,
+            @tagName(summary.most_sensitive),
+            @tagName(summary.least_sensitive),
+        });
 
         for (summary.recommendations) |rec| {
             try buffer.writer().print(
@@ -325,14 +300,12 @@ pub const AnalysisEngine = struct {
                 \\- Confidence: {d:.0%}
                 \\- Reason: {s}
                 \\
-                ,
-                .{
-                    @tagName(rec.param),
-                    rec.suggested_value,
-                    rec.confidence * 100.0,
-                    rec.reason,
-                }
-            );
+            , .{
+                @tagName(rec.param),
+                rec.suggested_value,
+                rec.confidence * 100.0,
+                rec.reason,
+            });
         }
 
         return buffer.toOwnedSlice();
@@ -368,7 +341,7 @@ test "HyperparameterAnalysis - linear parameter range" {
     const config = SensitivityConfig{
         .name = "test",
         .base_config = &[_]HyperparamRange{range},
-        .seeds = &[_]u32{ 42 },
+        .seeds = &[_]u32{42},
         .dataset = .tinystories,
         .epochs = 10,
         .output_path = "/tmp/test.csv",
@@ -397,7 +370,7 @@ test "HyperparameterAnalysis - logarithmic parameter range" {
     const config = SensitivityConfig{
         .name = "test",
         .base_config = &[_]HyperparamRange{range},
-        .seeds = &[_]u32{ 42 },
+        .seeds = &[_]u32{42},
         .dataset = .tinystories,
         .epochs = 10,
         .output_path = "/tmp/test.csv",

@@ -77,11 +77,7 @@ pub const ProfilingEngine = struct {
         std.debug.print("  Arch: {s}\n", .{@tagName(builtin.cpu.arch)});
     }
 
-    pub fn profileSeeds(
-        self: *const ProfilingEngine,
-        name: []const u8,
-        seeds: []const u32
-    ) !ProfileSummary {
+    pub fn profileSeeds(self: *const ProfilingEngine, name: []const u8, seeds: []const u32) !ProfileSummary {
         const start_time = std.time.nanoTimestamp();
 
         std.debug.print("\n╔════════════════════════════════════════════╗\n", .{});
@@ -126,10 +122,7 @@ pub const ProfilingEngine = struct {
         const writer = file.writer();
 
         // Header
-        try writer.print(
-            "metric,mean,std_dev,min,max,ci_95_low,ci_95_high,unit\n",
-            .{}
-        );
+        try writer.print("metric,mean,std_dev,min,max,ci_95_low,ci_95_high,unit\n", .{});
 
         // Data rows
         for (summary.results) |r| {
@@ -162,12 +155,10 @@ pub const ProfilingEngine = struct {
             \\- Total time: {d:.2}s
             \\
             \\## Results by Metric
-            ,
-            .{
-                summary.n_metrics,
-                summary.total_time_secs,
-            }
-        );
+        , .{
+            summary.n_metrics,
+            summary.total_time_secs,
+        });
 
         for (summary.results) |r| {
             try writer.print(
@@ -177,18 +168,16 @@ pub const ProfilingEngine = struct {
                 \\- Range: {d:.2} - {d:.2} {s}
                 \\- 95% CI: [{d:.2}, {d:.2}]
                 \\
-                ,
-                .{
-                    @tagName(r.metric),
-                    r.mean,
-                    r.std_dev,
-                    r.min,
-                    r.max,
-                    r.ci_95.low,
-                    r.ci_95.high,
-                    r.unit,
-                }
-            );
+            , .{
+                @tagName(r.metric),
+                r.mean,
+                r.std_dev,
+                r.min,
+                r.max,
+                r.ci_95.low,
+                r.ci_95.high,
+                r.unit,
+            });
         }
 
         return buffer.toOwnedSlice();

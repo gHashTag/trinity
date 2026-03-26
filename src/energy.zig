@@ -128,11 +128,7 @@ pub const EnergyEngine = struct {
     }
 
     /// Measure energy consumption for a function
-    pub fn measure(
-        self: *const EnergyEngine,
-        name: []const u8,
-        n_tokens: u32
-    ) !EnergyResult {
+    pub fn measure(self: *const EnergyEngine, name: []const u8, n_tokens: u32) !EnergyResult {
         _ = name;
 
         const sample_interval_s = @as(f64, @floatFromInt(self.config.sample_interval_ms)) / 1000.0;
@@ -168,12 +164,7 @@ pub const EnergyEngine = struct {
     }
 
     /// Measure across multiple seeds
-    pub fn measureSeeds(
-        self: *const EnergyEngine,
-        name: []const u8,
-        seeds: []const u32,
-        n_tokens_per_seed: u32
-    ) !EnergySummary {
+    pub fn measureSeeds(self: *const EnergyEngine, name: []const u8, seeds: []const u32, n_tokens_per_seed: u32) !EnergySummary {
         const start_time = std.time.nanoTimestamp();
 
         std.debug.print("\n╔══════════════════════════════════════════════╗\n", .{});
@@ -246,10 +237,7 @@ pub const EnergyEngine = struct {
         const writer = file.writer();
 
         // Header
-        try writer.print(
-            "metric,value,unit\n",
-            .{}
-        );
+        try writer.print("metric,value,unit\n", .{});
 
         // Aggregate results
         try writer.print("mean_power_watts,{d:.6},W\n", .{summary.results.mean_power_watts});
@@ -289,20 +277,18 @@ pub const EnergyEngine = struct {
             \\## Efficiency Metrics
             \\- FLOPs per joule: {d:.0}
             \\- Power state: mostly active
-            ,
-            .{
-                summary.n_samples,
-                summary.results.duration_secs,
-                summary.results.mean_power_watts,
-                summary.results.peak_power_watts,
-                summary.results.total_energy_joules,
-                summary.results.total_energy_joules / 3.6e6,
-                summary.results.energy_per_token_joules,
-                summary.results.carbon_g_co2e,
-                summary.results.carbon_g_co2e / 120.0, // 120 g CO2e per km
-                summary.results.flops_per_joule,
-            }
-        );
+        , .{
+            summary.n_samples,
+            summary.results.duration_secs,
+            summary.results.mean_power_watts,
+            summary.results.peak_power_watts,
+            summary.results.total_energy_joules,
+            summary.results.total_energy_joules / 3.6e6,
+            summary.results.energy_per_token_joules,
+            summary.results.carbon_g_co2e,
+            summary.results.carbon_g_co2e / 120.0, // 120 g CO2e per km
+            summary.results.flops_per_joule,
+        });
 
         return buffer.toOwnedSlice();
     }

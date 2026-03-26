@@ -140,10 +140,7 @@ pub const BenchmarkRunner = struct {
         const writer = file.writer();
 
         // Header
-        try writer.print(
-            "model,n_seeds,ppl_mean,ppl_std,ppl_ci_low,ppl_ci_high,tok_mean,tok_std,lat_mean,lat_std,mem_mean,flops,improvement\n",
-            .{}
-        );
+        try writer.print("model,n_seeds,ppl_mean,ppl_std,ppl_ci_low,ppl_ci_high,tok_mean,tok_std,lat_mean,lat_std,mem_mean,flops,improvement\n", .{});
 
         // Data rows
         for (results) |r| {
@@ -174,7 +171,7 @@ pub fn countFLOPs(config: FLOPsConfig) u64 {
 
 pub fn estimateTrainingFLOPs(params_m: u32, n_tokens: u32) f64 {
     const training_flops = @as(f64, @floatFromInt(params_m)) *
-                          @as(f64, @floatFromInt(n_tokens)) * 6.0;
+        @as(f64, @floatFromInt(n_tokens)) * 6.0;
     return training_flops;
 }
 

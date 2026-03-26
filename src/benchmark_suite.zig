@@ -235,10 +235,9 @@ pub const AggregatedResult = struct {
         const model_name = try self.baseline_model.format(allocator);
         defer allocator.free(model_name);
 
-        // Format: Model & PPL & tok/s & Latency (ms) & Params (M) \\
+        // Format: Model & PPL & tok/s & Latency (ms) & Params (M) \\ (LaTeX line break)
         return std.fmt.allocPrint(allocator,
-            "{s} & {d:.2} $\\pm$ {d:.2} & {d:.1} $\\pm$ {d:.1} & {d:.2} $\\pm$ {d:.2} & {d} \\\\
-        , .{
+            "{s} & {d:.2} $\\pm$ {d:.2} & {d:.1} $\\pm$ {d:.1} & {d:.2} $\\pm$ {d:.2} & {d} \\\\", .{
             model_name,
             self.perplexity_mean,
             self.perplexity_std,
