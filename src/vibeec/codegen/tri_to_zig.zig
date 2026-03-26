@@ -121,121 +121,121 @@ const FnSignature = struct {
 const IMPLEMENTATIONS = struct {
     // Bind: XOR-like binding
     bind: []const u8 =
-    \\pub fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
-    \\    const result = try allocator.alloc(Trit, a.len);
-    \\    for (a, 0..) |_, i| {
-    \\        result[i] = if (b[i] == 0) a[i] else @as(i8, @truncate(b[i] * a[i]));
-    \\    }
-    \\    return result;
-    \\}
+        \\pub fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
+        \\    const result = try allocator.alloc(Trit, a.len);
+        \\    for (a, 0..) |_, i| {
+        \\        result[i] = if (b[i] == 0) a[i] else @as(i8, @truncate(b[i] * a[i]));
+        \\    }
+        \\    return result;
+        \\}
     ,
 
     // Unbind: Inverse of bind
     unbind: []const u8 =
-    \\pub fn unbind(allocator: std.mem.Allocator, bound: []const Trit, key: []const Trit) ![]Trit {
-    \\    const result = try allocator.alloc(Trit, bound.len);
-    \\    for (bound, 0..) |_, i| {
-    \\        result[i] = if (key[i] == 0) bound[i] else @as(i8, @truncate(key[i] * bound[i]));
-    \\    }
-    \\    return result;
-    \\}
+        \\pub fn unbind(allocator: std.mem.Allocator, bound: []const Trit, key: []const Trit) ![]Trit {
+        \\    const result = try allocator.alloc(Trit, bound.len);
+        \\    for (bound, 0..) |_, i| {
+        \\        result[i] = if (key[i] == 0) bound[i] else @as(i8, @truncate(key[i] * bound[i]));
+        \\    }
+        \\    return result;
+        \\}
     ,
 
     // Bundle2: Majority vote for 2
     bundle2: []const u8 =
-    \\pub fn bundle2(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
-    \\    const result = try allocator.alloc(Trit, a.len);
-    \\    for (a, 0..) |_, i| {
-    \\        result[i] = if (a[i] == b[i]) a[i] else 0;
-    \\    }
-    \\    return result;
-    \\}
+        \\pub fn bundle2(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
+        \\    const result = try allocator.alloc(Trit, a.len);
+        \\    for (a, 0..) |_, i| {
+        \\        result[i] = if (a[i] == b[i]) a[i] else 0;
+        \\    }
+        \\    return result;
+        \\}
     ,
 
     // CosineSimilarity
     cosineSimilarity: []const u8 =
-    \\pub fn cosineSimilarity(a: []const Trit, b: []const Trit) f64 {
-    \\    if (a.len != b.len) return 0.0;
-    \\    var dot: i64 = 0;
-    \\    var norm_a: f64 = 0.0;
-    \\    var norm_b: f64 = 0.0;
-    \\    for (a, 0..) |ai, i| {
-    \\        dot += ai * b[i];
-    \\        norm_a += @as(f64, @floatFromInt(ai)) * @as(f64, @floatFromInt(ai));
-    \\        norm_b += @as(f64, @floatFromInt(b[i])) * @as(f64, @floatFromInt(b[i]));
-    \\    }
-    \\    const denom = @sqrt(norm_a) * @sqrt(norm_b);
-    \\    if (denom == 0.0) return 0.0;
-    \\    return @as(f64, @floatFromInt(dot)) / denom;
-    \\}
+        \\pub fn cosineSimilarity(a: []const Trit, b: []const Trit) f64 {
+        \\    if (a.len != b.len) return 0.0;
+        \\    var dot: i64 = 0;
+        \\    var norm_a: f64 = 0.0;
+        \\    var norm_b: f64 = 0.0;
+        \\    for (a, 0..) |ai, i| {
+        \\        dot += ai * b[i];
+        \\        norm_a += @as(f64, @floatFromInt(ai)) * @as(f64, @floatFromInt(ai));
+        \\        norm_b += @as(f64, @floatFromInt(b[i])) * @as(f64, @floatFromInt(b[i]));
+        \\    }
+        \\    const denom = @sqrt(norm_a) * @sqrt(norm_b);
+        \\    if (denom == 0.0) return 0.0;
+        \\    return @as(f64, @floatFromInt(dot)) / denom;
+        \\}
     ,
 
     // HammingDistance
     hammingDistance: []const u8 =
-    \\pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
-    \\    var count: usize = 0;
-    \\    const len = @min(a.len, b.len);
-    \\    for (0..len) |i| {
-    \\        if (a[i] != b[i]) count += 1;
-    \\    }
-    \\    return count;
-    \\}
+        \\pub fn hammingDistance(a: []const Trit, b: []const Trit) usize {
+        \\    var count: usize = 0;
+        \\    const len = @min(a.len, b.len);
+        \\    for (0..len) |i| {
+        \\        if (a[i] != b[i]) count += 1;
+        \\    }
+        \\    return count;
+        \\}
     ,
 
     // HammingSimilarity
     hammingSimilarity: []const u8 =
-    \\pub fn hammingSimilarity(a: []const Trit, b: []const Trit) f64 {
-    \\    const dist = hammingDistance(a, b);
-    \\    const max_len = @max(a.len, b.len);
-    \\    if (max_len == 0) return 1.0;
-    \\    return 1.0 - (@as(f64, @floatFromInt(dist)) / @as(f64, @floatFromInt(max_len)));
-    \\}
+        \\pub fn hammingSimilarity(a: []const Trit, b: []const Trit) f64 {
+        \\    const dist = hammingDistance(a, b);
+        \\    const max_len = @max(a.len, b.len);
+        \\    if (max_len == 0) return 1.0;
+        \\    return 1.0 - (@as(f64, @floatFromInt(dist)) / @as(f64, @floatFromInt(max_len)));
+        \\}
     ,
 
     // DotSimilarity
     dotSimilarity: []const u8 =
-    \\pub fn dotSimilarity(a: []const Trit, b: []const Trit) i64 {
-    \\    var sum: i64 = 0;
-    \\    const len = @min(a.len, b.len);
-    \\    for (0..len) |i| {
-    \\        sum += a[i] * b[i];
-    \\    }
-    \\    return sum;
-    \\}
+        \\pub fn dotSimilarity(a: []const Trit, b: []const Trit) i64 {
+        \\    var sum: i64 = 0;
+        \\    const len = @min(a.len, b.len);
+        \\    for (0..len) |i| {
+        \\        sum += a[i] * b[i];
+        \\    }
+        \\    return sum;
+        \\}
     ,
 
     // VectorNorm
     vectorNorm: []const u8 =
-    \\pub fn vectorNorm(v: []const Trit) f64 {
-    \\    var sum: f64 = 0.0;
-    \\    for (v) |x| {
-    \\        sum += @as(f64, @floatFromInt(x)) * @as(f64, @floatFromInt(x));
-    \\    }
-    \\    return @sqrt(sum);
-    \\}
+        \\pub fn vectorNorm(v: []const Trit) f64 {
+        \\    var sum: f64 = 0.0;
+        \\    for (v) |x| {
+        \\        sum += @as(f64, @floatFromInt(x)) * @as(f64, @floatFromInt(x));
+        \\    }
+        \\    return @sqrt(sum);
+        \\}
     ,
 
     // CountNonZero
     countNonZero: []const u8 =
-    \\pub fn countNonZero(v: []const Trit) usize {
-    \\    var count: usize = 0;
-    \\    for (v) |x| {
-    \\        if (x != 0) count += 1;
-    \\    }
-    \\    return count;
-    \\}
+        \\pub fn countNonZero(v: []const Trit) usize {
+        \\    var count: usize = 0;
+        \\    for (v) |x| {
+        \\        if (x != 0) count += 1;
+        \\    }
+        \\    return count;
+        \\}
     ,
 
     // DotProduct (NEW - to prove codegen works)
     dotProduct: []const u8 =
-    \\pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
-    \\    var sum: i64 = 0;
-    \\    const len = @min(a.len, b.len);
-    \\    for (0..len) |i| {
-    \\        sum += a[i] * b[i];
-    \\    }
-    \\    return sum;
-    \\}
+        \\pub fn dotProduct(a: []const Trit, b: []const Trit) i64 {
+        \\    var sum: i64 = 0;
+        \\    const len = @min(a.len, b.len);
+        \\    for (0..len) |i| {
+        \\        sum += a[i] * b[i];
+        \\    }
+        \\    return sum;
+        \\}
     ,
 
     fn get(name: []const u8) ?[]const u8 {
@@ -366,13 +366,12 @@ const TriParser = struct {
 
         if (!self.expect('(')) return null;
 
-        var params = std.ArrayList(FnParam).init(allocator);
+        var params = std.ArrayListUnmanaged(FnParam){};
         defer {
             for (params.items) |p| {
                 allocator.free(p.name);
                 allocator.free(p.type_str);
             }
-            params.deinit();
         }
 
         var has_allocator = false;
@@ -421,7 +420,7 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
     // Emit Zig code directly - no need to store parsed functions
     var output = std.ArrayListUnmanaged(u8){};
 
-    try output.appendSlice(
+    try output.appendSlice(allocator,
         \\// ═══════════════════════════════════════════════════════════════════════════════
         \\// VSA Core — Operations (GENERATED from .tri spec)
         \\// Stage 0.5: Template-based codegen
@@ -456,14 +455,14 @@ pub fn generate(allocator: Allocator, source: []const u8) ![]const u8 {
         // Get implementation from template
         const impl = IMPLEMENTATIONS.get(sig.name) orelse {
             // No template implementation - emit stub
-            try output.appendSlice("// TODO: No implementation for ");
-            try output.appendSlice(sig.name);
-            try output.appendSlice("\n");
+            try output.appendSlice(allocator, "// TODO: No implementation for ");
+            try output.appendSlice(allocator, sig.name);
+            try output.appendSlice(allocator, "\n");
             continue;
         };
 
-        try output.appendSlice(impl);
-        try output.appendSlice("\n\n");
+        try output.appendSlice(allocator, impl);
+        try output.appendSlice(allocator, "\n\n");
     } else |_| {}
 
     return output.toOwnedSlice(allocator);
