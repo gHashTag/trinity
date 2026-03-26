@@ -7,8 +7,25 @@
 //
 const generated = @import("gen_ops.zig");
 
-pub usingnamespace generated;
-//
+// Zig 0.15: explicit exports for better IDE support and documentation
+pub const bind = generated.bind;
+pub const unbind = generated.unbind;
+pub const bundle2 = generated.bundle2;
+pub const bundle3 = generated.bundle3;
+pub const bundleN = generated.bundleN;
+pub const permute = generated.permute;
+pub const inversePermute = generated.inversePermute;
+pub const randomVector = generated.randomVector;
+pub const encodeSequence = generated.encodeSequence;
+pub const probeSequence = generated.probeSequence;
+pub const cosineSimilarity = generated.cosineSimilarity;
+pub const hammingDistance = generated.hammingDistance;
+pub const hammingSimilarity = generated.hammingSimilarity;
+pub const dotSimilarity = generated.dotSimilarity;
+pub const vectorNorm = generated.vectorNorm;
+pub const countNonZero = generated.countNonZero;
+pub const dotProduct = generated.dotProduct;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // To revert to manual: comment out above, uncomment below:
 // const manual = @import("ops_manual.zig");
