@@ -441,7 +441,7 @@ Confidence: [0.0 to 1.0]"""
                 timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
             ))
 
-            print(" " * " * attempt_idx, end="", flush=True)
+            print("  " * attempt_idx, end="", flush=True)
 
         # Select best result based on ternary score
         best_attempt = max(attempts, key=lambda x: x.ternary_score)
