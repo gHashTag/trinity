@@ -1,7 +1,7 @@
-# Trinity Research Documentation Index — v6.5
+# Trinity Research Documentation Index — v6.6
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 138
+**Total Documents:** 139
 **NEW:** v5.0 Zenodo publications (8 enhanced descriptions)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
@@ -135,7 +135,8 @@
 | `HSLM_TRAINING_OPTIMIZATION_ANALYSIS.md` | Training dynamics, φ-warmup, SIMD RoPE | 13% speedup ✨ |
 | `FPGA_SACRED_FORMATS_DEEP_DIVE.md` | GF16/TF3 FPGA implementation, zero-DSP | 75% LUT reduction ✨ |
 | `DATA_PIPELINE_OPTIMIZATION_ANALYSIS.md` | HSLM data pipeline, mmap, async prefetch | 80% faster load, 49% memory ✨ |
-| `VSA_MEMORY_LAYOUT_OPTIMIZATION.md` | Cache alignment, prefetching, power-of-3 | 21-35% VSA performance ✨ NEW |
+| `VSA_MEMORY_LAYOUT_OPTIMIZATION.md` | Cache alignment, prefetching, power-of-3 | 21-35% VSA performance ✨ |
+| `SCIENTIFIC_PUBLICATION_PATTERNS_ZENODO.md` | FAIR principles, statistical rigor, metadata | Complete publication guide ✨ NEW |
 
 ---
 
@@ -197,7 +198,8 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 6.5 | 2026-03-26 | Added VSA Memory Layout Optimization (cache alignment, prefetching, 21-35% performance) ✨ NEW |
+| 6.6 | 2026-03-26 | Added Scientific Publication Patterns Zenodo (FAIR, statistical rigor, metadata guide) ✨ NEW |
+| 6.5 | 2026-03-26 | Added VSA Memory Layout Optimization (cache alignment, prefetching, 21-35% performance) ✨ |
 | 6.4 | 2026-03-26 | Added Data Pipeline Optimization Analysis (mmap, async prefetch, 80% faster, 49% memory) ✨ |
 | 6.3 | 2026-03-26 | Zenodo v5.0 enhancements (8 publications) |
 | 6.2 | 2026-03-26 | Added FPGA Sacred Formats Deep Dive (GF16/TF3, zero-DSP, 75% LUT reduction) ✨ |
