@@ -57,8 +57,20 @@ pub const Poly = struct {
 
         for (self.vars, 0..) |var_id, i| {
             if (i > 0) try result.appendSlice(",");
-            try result.appendSlice("α");
-            _ = var_id; // TODO: proper var name
+            // Convert var_id to greek letter (α, β, γ, δ, ε, ...)
+            // TypeId is just an index, so we map 0→α, 1→β, 2→γ, etc.
+            const greek = &[8]u8{ 'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ' };
+            if (var_id < greek.len) {
+                try result.appendSlice(&[1]u8{greek[var_id]});
+            } else {
+                // For vars beyond θ, use α₁, α₂, etc.
+                try result.appendSlice("α");
+                if (var_id > 0) {
+                    const num = try std.fmt.allocPrint(allocator, "{d}", .{var_id + 1});
+                    defer allocator.free(num);
+                    try result.appendSlice(num);
+                }
+            }
         }
 
         try result.appendSlice(".");

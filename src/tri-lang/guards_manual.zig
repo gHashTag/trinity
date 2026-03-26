@@ -257,9 +257,41 @@ fn compileGuardExpr(cg: *GuardCodegen, expr: *const GuardExpr) !void {
 /// Optimize guard conditions
 /// Removes redundant checks, folds constants
 pub fn optimizeGuard(guard: Guard) !Guard {
-    // TODO: Implement constant propagation and dead code elimination
+    // For now, return the guard unchanged
+    // Full implementation requires:
+    // 1. Constant propagation: evaluate constant sub-expressions
+    // 2. Algebraic simplifications: x and x → x, true or x → true
+    // 3. Dead code elimination: remove unreachable branches
+    // 4. Common subexpression elimination
     return guard;
 }
+
+/// Fold a binary operation on boolean constants
+fn foldBinaryOpBool(op: BinaryOperator, left: bool, right: bool) GuardExpr {
+    return switch (op) {
+        .BitAnd => GuardExpr{ .BoolLiteral = left and right },
+        .BitOr => GuardExpr{ .BoolLiteral = left or right },
+        .Equal => GuardExpr{ .BoolLiteral = left == right },
+        .NotEqual => GuardExpr{ .BoolLiteral = left != right },
+        .Less => GuardExpr{ .BoolLiteral = @as(i64, @intFromBool(left)) < @as(i64, @intFromBool(right)) },
+        .Greater => GuardExpr{ .BoolLiteral = @as(i64, @intFromBool(left)) > @as(i64, @intFromBool(right)) },
+        else => GuardExpr{ .BoolLiteral = false }, // Fallback
+    };
+}
+
+/// Check if two guard expressions are structurally equivalent
+fn isSameExpr(a: *const GuardExpr, b: *const GuardExpr) bool {
+    return switch (a.*) {
+        .BoolLiteral => |a_bool| b.* == .BoolLiteral and a_bool == b.BoolLiteral,
+        .IntLiteral => |a_int| b.* == .IntLiteral and a_int == b.IntLiteral,
+        .Identifier => |a_id| b.* == .Identifier and std.mem.eql(u8, a_id, b.Identifier),
+        .BinaryOp => |a_binop| b.* == .BinaryOp and a_binop.op == b.BinaryOp.op and isSameExpr(a_binop.left, b.BinaryOp.left) and isSameExpr(a_binop.right, b.BinaryOp.right),
+        .UnaryOp => |a_unop| b.* == .UnaryOp and a_unop.op == b.UnaryOp.op and isSameExpr(a_unop.operand, b.UnaryOp.operand),
+    };
+}
+
+// Note: In real implementation, GuardExpr would be allocated
+// For manual testing, we return simplified expressions without allocation
 
 // ═══════════════════════════════════════════════════════════════════
 // TESTS
