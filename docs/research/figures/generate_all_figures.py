@@ -272,29 +272,29 @@ def b005_type_hierarchy():
                  ('Sink', 7, 5, MAGENTA), ('Set', 10, 5, GREEN)]
 
     for name, x, y, color in linear_types:
-        box = FancyBboxPatch((x, y), (x + 1.8, y + 1.2),
+        box = FancyBboxPatch((x, y), 1.8, 1.2,
                              boxstyle="round,pad=0.1", edgecolor=color, facecolor=color, alpha=0.5)
         ax.add_patch(box)
         ax.text(x + 0.9, y + 0.6, name, ha='center', color=WHITE,
                 fontsize=10, weight='bold')
 
     # Effects
-    effects_box = FancyBboxPatch((2, 2), (9, 3.5),
+    effects_box = FancyBboxPatch((2, 2), 7, 1.5,
                                boxstyle="round,pad=0.1", edgecolor=WHITE, facecolor='#330033', alpha=0.5)
     ax.add_patch(effects_box)
     ax.text(5.5, 2.75, 'Effects System', ha='center', color=WHITE,
             fontsize=11, weight='bold')
 
     # Patterns
-    patterns_box = FancyBboxPatch((2, 3.8), (9, 5.3),
+    patterns_box = FancyBboxPatch((2, 3.8), 7, 1.5,
                                 boxstyle="round,pad=0.1", edgecolor=WHITE, facecolor='#330033', alpha=0.5)
     ax.add_patch(patterns_box)
     ax.text(5.5, 4.55, 'Pattern Matching', ha='center', color=WHITE,
             fontsize=11, weight='bold')
 
     # Connection arrows
-    for box in linear_types:
-        arrow = FancyArrowPatch((box[2], box[3]), (5, 2.5), mutation_scale=10,
+    for name, x, y, color in linear_types:
+        arrow = FancyArrowPatch((x + 0.9, y + 0.6), (5.5, 2.75), mutation_scale=10,
                                 color=WHITE, arrowstyle='->', linewidth=1.5)
         ax.add_patch(arrow)
 
