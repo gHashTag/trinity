@@ -234,6 +234,10 @@ pub const SacredAttention = struct {
             .cache_rms_input = cache_rms_input,
             .cache_rms_scale = cache_rms_scale,
             .seq_len = 0,
+            .adaptive_config = .{},  // Default: disabled
+            .current_scale = SACRED_ATTN_SCALE_BASE,
+            .training_step = 0,
+            .total_training_steps = 30000,
             .is_worker = true,
             .allocator = allocator,
         };
