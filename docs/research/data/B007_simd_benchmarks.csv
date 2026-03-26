@@ -1,0 +1,12 @@
+# Trinity B007: VSA SIMD Benchmarks
+# Bundle: VSA Operations
+# Platform: ARM64 (Apple M1), NEON SIMD
+# Measurement: 1M operations, median latency
+
+operation,scalar_ns,simd_ns,speedup,vec_len,notes
+Bind,45.2,3.2,14.1,512,HybridBigInt multiplication
+Bundle,52.1,4.4,11.8,512,3-way majority vote
+Cosine,68.3,4.0,17.1,512,Similarity search
+Permute,38.7,2.8,13.8,512,Cyclic rotation
+Unbind,51.4,4.1,12.5,512,Inverse binding
+Similarity,67.8,3.9,17.4,512,Cosine similarity alias

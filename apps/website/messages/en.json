@@ -761,6 +761,24 @@
       "github": "https://github.com/gHashTag/trinity"
     }
   },
+  "tri27": {
+    "badge": "WAVE 1 COMPLETE",
+    "title": "TRI-27: <span class=\"grad\">Ternary Computing</span> ISA",
+    "sub": "27 registers, 3 banks, 36 opcodes — from spec to FPGA",
+    "cta": "Explore Docs"
+  },
+  "brainArchitecture": {
+    "badge": "SELF-LEARNING SYSTEM",
+    "title": "Trinity <span class=\"grad\">S³AI</span> Brain Architecture",
+    "sub": "Neuroanatomically-inspired AI with 6 PFC cells, Lotus Cycle purification, and ARAS vigilance",
+    "cta": "Read Architecture"
+  },
+  "stack": {
+    "badge": "EIGHT-LEVEL STACK",
+    "title": "Trinity <span class=\"grad\">Eight-Level</span> Stack",
+    "sub": "From distributed training to FPGA hardware — complete AI stack in pure Zig",
+    "cta": "View Architecture"
+  },
   "bitnetProof": {
     "badge": "MATHEMATICAL PROOFS",
     "title": "BitNet FPGA — <span class=\"grad\">Scientific Evidence</span>",

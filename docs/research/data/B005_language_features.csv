@@ -1,0 +1,23 @@
+# Trinity B005: Tri Language Feature Coverage
+# Bundle: Tri Language
+# Features: Linear types, Effects, Pattern matching, Codegen
+
+feature,category,zig_support,verilog_support,lines_of_code,tests_passing
+Linear_Types,Types,YES,NO,145,42
+Linear_Let,Linear,YES,NO,38,15
+Linear_Inout,Linear,YES,NO,42,18
+Linear_Sink,Linear,YES,NO,31,12
+Linear_Set,Linear,YES,NO,34,10
+Effects_System,Effects,YES,NO,128,35
+Effect_Handle,Effects,YES,NO,67,22
+Effect_Resume,Effects,YES,NO,61,13
+ADT_Enum,Types,YES,NO,89,31
+Pattern_Match,Patterns,YES,NO,156,48
+Literal_Pattern,Patterns,YES,NO,42,15
+Struct_Pattern,Patterns,YES,NO,38,13
+Enum_Pattern,Patterns,YES,NO,38,12
+Pipe_Operator,Syntax,YES,NO,45,18
+Codegen_Zig,Compilation,YES,N/A,234,67
+Codegen_Verilog,Compilation,N/A,YES,312,54
+AST_Parser,Parser,YES,N/A,267,41
+Typechecker,Types,YES,N/A,198,52

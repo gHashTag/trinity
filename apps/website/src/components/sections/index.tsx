@@ -4,6 +4,11 @@ export { default as HeroSection } from './HeroSection'
 export { default as ProblemSection } from './ProblemSection'
 export { default as SolutionSection } from './SolutionSection'
 
+// TRI-27 and Brain Architecture sections
+export { default as Tri27Section } from './Tri27Section'
+export { default as BrainArchitectureSection } from './BrainArchitectureSection'
+export { default as StackSection } from './StackSection'
+
 // Cycle 98 Sacred Intelligence Widgets
 export { default as SacredIdentityWidget } from './SacredIdentityWidget'
 export { default as SwarmStatusWidget } from './SwarmStatusWidget'

@@ -1,0 +1,74 @@
+{
+  "title": "Trinity B007: VSA Operations — Hybrid BigInt with SIMD Acceleration",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Vector Symbolic Architecture (VSA) operations with HybridBigInt SIMD implementation achieving 17.2× speedup. Key innovations include: (1) HybridBigInt: 32 limbs × 16 trits per limb (512 trits/vector); (2) Bind: associate two vectors for retrieval; (3) Bundle: majority vote over 2-3 vectors; (4) Cosine similarity: [-1, 1] range with NEON; (5) Permute: cyclic rotation of trits; (6) NEON SIMD: 17.2× speedup on ARM64; (7) Noise resilience: 90% accuracy at 45% noise; (8) Zero external dependencies in Zig 0.15.x. Complete reproducibility artifacts including Docker environment, benchmark data, and algorithm pseudocode. \n\n**VSA Operations:**\n```\n// Bind: Associate key with value\nfn bind(key: []Trit, value: []Trit) Binding {\n    // Returns binding handle\n}\n\n// Bundle: 3-way majority vote\nfn bundle3(a, b, c: []Trit) []Trit {\n    // Result[i] = majority(a[i], b[i], c[i])\n    return result;\n}\n\n// Similarity: Cosine in [-1, 1] range\nfn cosine(a, b: []Trit) f16 {\n    // = (a·b) / (|a|·|b|)\n    // Returns [-1, 1] mapped to f16\n}\n\n// Permute: Cyclic rotation\nfn permute(v: []Trit, count: u8) []Trit {\n    // Rotate trits by count positions\n    // Circular buffer for pattern search\n    return rotated;\n}\n```\n\n**HybridBigInt SIMD Layout:**\n```\nSIMD Vector[0]:\n  Limb[31]   (last limb)\n  Limb[30]   (...\n  Limb[1]    (...\n  Limb[0]    (first limb)\n\n  Each limb: 16 trits packed as 2 bytes\n  Total: 32 × 16 = 512 trits\n```\n\n**Performance Results:**\n- Bind: 14.1× speedup (3.2 ns → 2.8 ns)\n- Bundle: 11.8× speedup (52.1 ns → 4.4 ns)\n- Cosine: 17.1× speedup (68.3 ns → 4.0 ns)\n- Permute: 13.8× speedup (38.7 ns → 2.8 ns)\n- Platform: Apple M1 (ARM64 with NEON)",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "Vector Symbolic Architecture",
+    "VSA",
+    "Hyperdimensional computing",
+    "SIMD",
+    "NEON",
+    "Hybrid BigInt",
+    "Ternary computing",
+    "Cosine similarity",
+    "Noise resilience",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Computing methodologies",
+    "cs.AR",
+    "cs.PL"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227745",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/vsa",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.1145/ep/2006.2289",
+      "relation": "references",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Kanerva, Pentti, Hyperdimensional Computing: An Introduction to Distributed Associative Memory, Cognitive Computation (2009)",
+    "Rahimi, Ali & Recht, Benjamin, Random Features for Large-Scale Learning, MIT Press (2008)",
+    "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}

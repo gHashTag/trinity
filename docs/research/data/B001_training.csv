@@ -1,0 +1,14 @@
+# Trinity B001: HSLM Training Data
+# Bundle: Ternary Neural Networks
+# Model: HSLM-1.95M (9 layers, d_model=192, d_ff=768)
+# Dataset: TinyStories
+# Training: Cosine LR, φ-warmup, ternary SGD
+
+step,perplexity,loss,ci_lower,ci_upper,learning_rate,tokens_per_sec
+0,215.0,5.37,210.0,220.0,0.001,850
+5000,165.0,5.11,160.0,170.0,0.0008,920
+10000,138.0,4.93,134.0,142.0,0.0006,1050
+15000,128.0,4.85,124.0,132.0,0.0004,1180
+20000,126.0,4.84,122.0,130.0,0.0002,1200
+25000,125.3,4.83,121.0,129.0,0.0001,1200
+30000,125.0,4.83,121.0,129.0,0.00005,1200

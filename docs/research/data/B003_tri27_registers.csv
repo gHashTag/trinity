@@ -1,0 +1,33 @@
+# Trinity B003: TRI-27 Register File
+# Bundle: TRI-27 ISA
+# Architecture: 27 registers (3 banks × 9 registers)
+# Encoding: Coptic alphabet (3-bank system)
+
+register_id,bank,bank_symbol,coptic_char,address,purpose
+R0,Alpha,α,ⲁ,0x00,Return value
+R1,Alpha,β,ⲃ,0x01,General purpose
+R2,Alpha,γ,ⲅ,0x02,General purpose
+R3,Alpha,δ,ⲇ,0x03,General purpose
+R4,Alpha,ε,ⲉ,0x04,General purpose
+R5,Alpha,ζ,ⲍ,0x05,General purpose
+R6,Alpha,η,ⲏ,0x06,General purpose
+R7,Alpha,θ,ⲑ,0x07,General purpose
+R8,Alpha,ι,ⲓ,0x08,Temporary
+R9,Iota,κ,ⲕ,0x09,Function argument 1
+R10,Iota,λ,ⲗ,0x0A,Function argument 2
+R11,Iota,μ,ⲙ,0x0B,Function argument 3
+R12,Iota,ν,ⲛ,0x0C,Saved register 1
+R13,Iota,ξ,ⲝ,0x0D,Saved register 2
+R14,Iota,ο,ⲟ,0x0E,Saved register 3
+R15,Iota,π,ⲡ,0x0F,Saved register 4
+R16,Iota,ρ,ⲣ,0x10,Saved register 5
+R17,Iota,σ,ⲥ,0x11,Saved register 6
+R18,Sigma,τ,ⲧ,0x12,Stack pointer
+R19,Sigma,υ,ⲩ,0x13,Frame pointer
+R20,Sigma,φ,ⲫ,0x14,Instruction pointer
+R21,Sigma,χ,ⲭ,0x15,Status register
+R22,Sigma,ψ,�,0x16,Control register
+R23,Sigma,ω,ⲱ,0x17,Reserved
+R24,Sigma,ϡ,⳽,0x18,Reserved
+R25,Sigma,ϣ,ϣ,0x19,Reserved
+R26,Sigma,ϥ,ϥ,0x1A,Reserved

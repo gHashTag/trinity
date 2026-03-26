@@ -12,6 +12,9 @@ const BenchmarksSection = lazy(() => import('./components/sections/BenchmarksSec
 const CalculatorSection = lazy(() => import('./components/sections/CalculatorSection'))
 const DePINSection = lazy(() => import('./components/sections/DePINSection'))
 const TechTree = lazy(() => import('./components/TechTree/TechTree'))
+const Tri27Section = lazy(() => import('./components/sections/Tri27Section'))
+const BrainArchitectureSection = lazy(() => import('./components/sections/BrainArchitectureSection'))
+const StackSection = lazy(() => import('./components/sections/StackSection'))
 const TeamSection = lazy(() => import('./components/sections/TeamSection'))
 const InvestSection = lazy(() => import('./components/sections/InvestSection'))
 
@@ -63,7 +66,16 @@ export default function App() {
         {/* 7. TECH TREE - Research laboratory */}
         <TechTree />
 
-        {/* 8. SACRED INTELLIGENCE - Cycle 98 Self-Awareness Dashboard */}
+        {/* 8. TRI-27 - Ternary Computing ISA */}
+        <Tri27Section />
+
+        {/* 9. BRAIN ARCHITECTURE - S³AI Neuroanatomy */}
+        <BrainArchitectureSection />
+
+        {/* 10. EIGHT-LEVEL STACK - Full technology stack */}
+        <StackSection />
+
+        {/* 11. SACRED INTELLIGENCE - Cycle 98 Self-Awareness Dashboard */}
         <SacredIdentityWidget />
         <SwarmStatusWidget />
         <EvolutionMonitorWidget />

@@ -1,0 +1,72 @@
+{
+  "title": "Trinity B005: Tri Language — Linear Types, Effects, and Pattern Matching",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Tri Language provides a functional programming language with algebraic effects and pattern matching, dual-target code generation to Zig and Verilog. Key innovations include: (1) Linear type system with Let, Inout, Sink, Set for guaranteed termination; (2) Algebraic effects system for side-effect management; (3) Exhaustive pattern matching with ADT enums, literal/struct/enum patterns; (4) Pipe operator for sequential transformation; (5) VIBEE compiler with .tri → Zig/Verilog codegen; (6) Complete AST parser and typechecker (267 LOC, 41 passing tests). Pure Zig 0.15.x implementation with zero external dependencies. Complete reproducibility artifacts including Docker environment, type system documentation, and code examples. \n\n**Linear Types:**\n```\nLet<T>   // Value binder (can't be reassigned)\nInout<T> // Single write value (initialized once)\nSink<T>   // Value consumer (no storage)\nSet<T>    // Value container (mutable)\n```\n\n**Effects:**\n```\neffect Handle<T> {  // Handler registration\n    fn(effect: Effect<T>) !void;  // Subscribe to effect\n}\n\neffect Resume<T> {  // Effect chaining\n    fn(handler: effect Handle<T>) !Effect<T>;  // Resume execution\n    fn(value: T) !void;  // Continue with value\n}\n```\n\n**Pattern Matching:**\n```\nmatch (value) {\n| ADT.EnumVariant(var) => handle_variant,\n| ADT.AnotherVariant(a, b) => sum(a, b),\n| struct {x, y} if (.x > 0) => x,| _ => default,\n}\n```\n\n**Compiler Pipeline:**\n1. Parse .tri → AST\n2. Typecheck AST (267 LOC, 41 tests)\n3. Generate Zig target\n4. Generate Verilog target (optional)",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "Programming languages",
+    "Type systems",
+    "Algebraic effects",
+    "Pattern matching",
+    "Linear types",
+    "Compiler",
+    "Code generation",
+    "VIBEE",
+    "Tri language",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Programming languages",
+    "cs.PL",
+    "cs.SE"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227741",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/tri-lang",
+      "resource_type": "software"
+    },
+    {
+      "relation": "cites",
+      "identifier": "10.48550/arXiv.2006.0185",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.1145/ep/2016.2289",
+      "relation": "references",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Wadler, Philip, A Critique of Abstraction, TOPLAS 1992",
+    "Swierstra, S., Extending the Simply Typed Lambda Calculus, POPL 1992",
+    "McBride & Paterson, The Essence of Algol: A Reference Manual, 2003"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}

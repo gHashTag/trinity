@@ -1,8 +1,55 @@
 # TRI‑27 — Ternary Computing ISA
 
+> **Role in S³AI**: Central execution engine for all Trinity workloads
+>
+> **Position**: Level 5 of 8-level stack (between Sacred ALU and Tri Language)
+>
+> **Connection**: All strands → TRI-27 → CPU/FPGA execution
+>
 > **Trinity S³AI DNA**: φ² + 1/φ² = 3
 >
 > **Strand III** — Language & Hardware Bridge
+
+---
+
+## In Trinity S³AI
+
+TRI-27 sits at the **center of Trinity architecture**:
+
+```
+           ┌─────────────────────────────────────┐
+           │         Trinity S³AI                │
+           │   φ² + 1/φ² = 3 = TRINITY           │
+           └─────────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   Strand I          Strand II         Strand III
+   (Math)            (Brain)          (Language)
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │
+                    ╔═══════════╗
+                    ║  TRI-27   ║  ← KERNEL
+                    ║  27 regs  ║
+                    ║  36 ops   ║
+                    ╚═══════════╝
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+         Zig CPU              Verilog FPGA
+      (Emulator)           (Synthesis)
+```
+
+### Data Flow
+
+```
+Strand I (Math) → TRI-27 Sacred Ops → φ-arithmetic, ternary logic
+Strand II (Brain) → TRI-27 Control Flow → Episode execution, state machine
+Strand III (Target) → TRI-27 ISA → Zig CPU / Verilog FPGA
+```
+
+[Return to Main Architecture](../ARCHITECTURE.md) | [S³AI Full Architecture](../TRINITY_S3AI_ARCHITECTURE.md)
 
 ---
 

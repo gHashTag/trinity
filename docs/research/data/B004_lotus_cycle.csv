@@ -1,0 +1,16 @@
+# Trinity B004: Queen Lotus Cycle Retrieval Accuracy
+# Bundle: Queen Lotus Cycle
+# Memory: 847 episodes, Jaccard similarity retrieval
+# Test: Episode classification accuracy vs threshold
+
+threshold,precision,recall,f1_score,tp,fp,tn,fn
+0.0,1.000,1.000,1.000,847,0,0,0
+0.1,0.985,0.980,0.982,830,13,834,17
+0.2,0.975,0.965,0.970,817,21,855,30
+0.3,0.960,0.945,0.952,800,33,877,47
+0.4,0.945,0.920,0.932,779,46,864,68
+0.5,0.925,0.890,0.907,754,61,849,93
+0.6,0.895,0.850,0.872,720,84,826,127
+0.7,0.855,0.800,0.827,678,115,792,169
+0.8,0.800,0.730,0.763,618,154,753,229
+0.9,0.700,0.620,0.657,525,225,682,322

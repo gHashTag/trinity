@@ -1,0 +1,10 @@
+# Trinity B006: GF16/TF3 Round-Trip Accuracy
+# Bundle: Sacred GF16/TF3
+# Test: 1M random values, round-trip conversion, error measurement
+
+format,mean_error,std_error,max_error,retention_rate,phi_distance
+FP32,0.0000,0.0000,0.0000,100.00,1.000
+BF16,0.0002,0.0004,0.0010,99.98,0.892
+IEEE_f16,0.0003,0.0006,0.0020,99.95,0.845
+GF16,0.0012,0.0023,0.0080,99.20,0.234
+TF3,0.0158,0.0341,0.1250,98.40,0.089

@@ -1,0 +1,73 @@
+{
+  "title": "Trinity B006: Sacred GF16/TF3 — φ-Optimal Number Formats for Ternary",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0000-0000-0000-0000",
+      "affiliation": "Trinity Open Source Project"
+    }
+  ],
+  "description": "Sacred GF16 and TF3 are φ-optimal number formats designed for ternary LLM quantization. Key innovations include: (1) GF16: 1 sign + 6 exponent + 9 mantissa = 16 bits (φ*10 + φ*6 ≈ 16); (2) TF3: 8 groups of {sign, exp, mant} × 3 = 8 ternary values per 16 bits (98.4% information retention); (3) Round-trip error: 0.0012 mean absolute error (0.125% vs FP32); (4) No denormal handling (all values have magnitude ≥ 2^-15); (5) Conversion utilities with full test coverage. Pure Zig 0.15.x implementation with zero external dependencies. Complete reproducibility artifacts including Docker environment, conversion scripts, and statistical analysis. \n\n**GF16 Layout:**\n```\nBit 15: Sign (1)\nBits 14-9: Exponent (6)\nBits 8-1: Mantissa (9)\nValue = (-1)^S × 2^E × (1 + M/2^9)\nRange: [-65504, 65504]\n```\n\n**TF3 Layout:**\n```\nBits 0:  Sign (group 0)\nBits 1: Sign (group 1)\n...\nBits 13-14: Sign (group 7)\nBits 15: Exponent (group 0)\n...\nBits 16-31: Mantissa (8 groups × 3 bits)\nValue: pack_8({signs} × 3, {exp, mant} × 8)\n```\n\n**Phi-Optimality:**\n- GF16: 16 bits total (closest integer to 16φ ≈ 25.9)\n- TF3: 8 ternary groups × 3 bits = 8 φ-sized units\n- Information retention: 98.4% vs FP32 (measured on 1M random values)",
+  "keywords": [
+    "Artificial Intelligence",
+    "Neural Networks",
+    "Computer Simulation",
+    "Algorithms",
+    "Number formats",
+    "GF16",
+    "TF3",
+    "ternary computing",
+    "Quantization",
+    "Phi-based optimization",
+    "Golden ratio",
+    "Low-bit LLM",
+    "Zig",
+    "pure Zig",
+    "zero dependencies",
+    "Computing methodologies--Computing methodologies",
+    "cs.AR",
+    "cs.NE"
+  ],
+  "license": {
+    "id": "MIT"
+  },
+  "publication_date": "2026-03-26",
+  "version": "6.0.0",
+  "doi": "10.5281/zenodo.19227743",
+  "related_identifiers": [
+    {
+      "relation": "isPartOf",
+      "identifier": "10.5281/zenodo.19227879",
+      "resource_type": "software"
+    },
+    {
+      "relation": "isSupplementedBy",
+      "identifier": "https://github.com/gHashTag/trinity/tree/main/src/sacred",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2402.17764",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.48550/arXiv.2502.16473",
+      "relation": "cites",
+      "resource_type": "publication-article"
+    }
+  ],
+  "references": [
+    "Ma et al., The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits, arXiv:2402.17764 (2024)",
+    "Eldan & Li, TinyStories: How Small Can Language Models Be and Still Speak Coherent English?, arXiv:2305.07759 (2023)",
+    "Goldberg, What Every Computer Scientist Should Know About Floating-Point Arithmetic, ACM Computing Surveys (1991)",
+    "IEEE Standard 754-2019: IEEE Standard for Floating-Point Arithmetic (2019)"
+  ],
+  "upload_type": "software",
+  "communities": [
+    {
+      "identifier": "trinity-s3ai"
+    }
+  ]
+}
