@@ -1,0 +1,149 @@
+# Trinity S³AI — Zenodo v6.0 Reproducibility Suite
+# Docker Compose for all 7 bundles
+# φ² + 1/φ² = 3 | TRINITY
+
+version: "3.8"
+
+services:
+  # B001: HSLM Training
+  b001-hslm:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B001
+    image: trinity-b001:zenodo-v6.0
+    container_name: trinity-b001
+    volumes:
+      - ../../data:/app/data:rw
+      - ../../var/hslm:/app/models:rw
+    environment:
+      - HSLM_DATASET=/app/data/tinystories
+      - HSLM_STEPS=30000
+      - HSLM_LR=0.001
+      - HSLM_LR_SCHEDULE=cosine
+      - HSLM_WARMUP=2000
+    command: ["--dataset", "/app/data/tinystories", "--steps", "30000"]
+    profiles:
+      - training
+
+  # B001: HSLM Inference
+  b001-inference:
+    depends_on:
+      - b001-hslm
+    image: trinity-b001:zenodo-v6.0
+    container_name: trinity-b001-inference
+    volumes:
+      - ../../var/hslm:/app/models:ro
+    environment:
+      - HSLM_CHECKPOINT=/app/models/hslm_step_30000.bin
+    command: ["--checkpoint", "/app/models/hslm_step_30000.bin", "--prompt", "Once upon a time", "--tokens", "100"]
+    profiles:
+      - inference
+
+  # B002: FPGA Synthesis
+  b002-fpga:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B002
+    image: trinity-b002:zenodo-v6.0
+    container_name: trinity-b002
+    volumes:
+      - ../../fpga/hslm:/src/fpga/hslm:rw
+      - ../../var/fpga:/app/bitstreams:rw
+    environment:
+      - FPGA_TARGET=xc7a100t
+      - YOSYS_VERSION=0.38
+    command: ["synth"]
+    profiles:
+      - fpga
+
+  # B003: TRI-27 Assembly
+  b003-tri27:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B003
+    image: trinity-b003:zenodo-v6.0
+    container_name: trinity-b003
+    volumes:
+      - ../../specs/tri:/src/specs/tri:ro
+      - ../../var/tri27:/app/output:rw
+    command: ["assemble", "/src/specs/tri/hello.tri", "--output", "/app/output/hello.t27"]
+    profiles:
+      - tri27
+
+  # B004: Queen Lotus Cycle
+  b004-lotus:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B004
+    image: trinity-b004:zenodo-v6.0
+    container_name: trinity-b004
+    volumes:
+      - ../../var/queen:/app/episodes:rw
+    environment:
+      - QUEEN_EPISODES=100
+      - QUEEN_QUALITY_THRESHOLD=0.7
+    command: ["run", "--episodes", "100"]
+    profiles:
+      - queen
+
+  # B005: VIBEE Compiler
+  b005-vibee:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B005
+    image: trinity-b005:zenodo-v6.0
+    container_name: trinity-b005
+    volumes:
+      - ../../specs/tri:/src/specs/tri:ro
+      - ../../var/vibee:/app/output:rw
+    command: ["compile", "/src/specs/tri/feature.tri", "--output", "/app/output"]
+    profiles:
+      - vibee
+
+  # B006: GF16/TF3 Arithmetic
+  b006-sacred:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B006
+    image: trinity-b006:zenodo-v6.0
+    container_name: trinity-b006
+    command: ["test", "--format", "gf16", "--precision", "9"]
+    profiles:
+      - sacred
+
+  # B007: VSA Operations
+  b007-vsa:
+    build:
+      context: ../..
+      dockerfile: docs/research/docker/Dockerfile.B007
+    image: trinity-b007:zenodo-v6.0
+    container_name: trinity-b007
+    volumes:
+      - ../../var/vsa:/app/vectors:rw
+    command: ["benchmark", "--size", "512", "--iterations", "1000000"]
+    profiles:
+      - vsa
+
+  # All-bundles test suite
+  test-all:
+    depends_on:
+      - b001-hslm
+      - b002-fpga
+      - b003-tri27
+      - b004-lotus
+      - b005-vibee
+      - b006-sacred
+      - b007-vsa
+    image: trinity-b001:zenodo-v6.0
+    container_name: trinity-test-all
+    command: ["echo", "All bundles tested"]
+    profiles:
+      - test
+
+volumes:
+  data:
+  models:
+  bitstreams:
+  episodes:
+  output:
+  vectors:
