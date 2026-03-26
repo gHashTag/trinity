@@ -6,23 +6,23 @@ V = n × 3^k × π^m × φ^p × e^q
 
 ---
 
-## Цель
+## Goal
 
-Все критичные слои Trinity/Tri (от Zig-ядра до Tri-кода и .t27) изменяются **только через `tri dev`**, а не руками в редакторе. Это уменьшает число ошибок, обеспечивает единый pipeline проверок и готовит почву для автогенерации/само-хостинга.
+All critical Trinity/Tri layers (from Zig core to Tri code and .t27) are modified **only through `tri dev`**, not manually in an editor. This reduces errors, ensures unified pipeline checks, and prepares the ground for auto-generation/self-hosting.
 
 ---
 
-## TDGS-1: Core Development Law (Расширенный)
+## TDGS-1: Core Development Law (Extended)
 
-> **Любые изменения файлов из списка «Guarded scope» должны выполняться ИСКЛЮЧИТЕЛЬНО через команды `tri dev`.**
+> **Any changes to files in the "Guarded scope" list MUST be performed EXCLUSIVELY through `tri dev` commands.**
 >
-> **Прямое редактирование этих файлов руками считается нарушением** и блокируется pre-commit/CI.
+> **Direct manual editing of these files is considered a violation** and is blocked by pre-commit/CI.
 
 ---
 
-## 1. Область действия
+## 1. Scope
 
-### 1.1. Trusted Tri Core (TTC, Zig)
+### 1.1 Trusted Tri Core (TTC, Zig)
 
 | File | LOC | Purpose |
 |------|-----|---------|
@@ -38,134 +38,133 @@ V = n × 3^k × π^m × φ^p × e^q
 
 **Total TTC: ≤ 3000 LOC Zig**
 
-### 1.2. Tri-язык (основные модули)
+### 1.2 Tri Language (core modules)
 
-- Все файлы `src/tri-lang/*.tri` (язык/stdlib/комбинаторы)
-- Все Tri-модули, помеченные как **core/canon** в `canon_map.json`
+- All files `src/tri-lang/*.tri` (language/stdlib/combinators)
+- All Tri modules marked as **core/canon** in `canon_map.json`
 
-### 1.3. TRI-27 артефакты и спецификации
+### 1.3 TRI-27 Artifacts and Specifications
 
-- Все `.t27` в `src/tri27/`
-- Все исследовательские спецификации в `docs/research/*.md` и `docs/tri27/*.md`, помеченные как **normative**
+- All `.t27` files in `src/tri27/`
+- All research specifications in `docs/research/*.md` and `docs/tri27/*.md` marked as **normative**
 
-### 1.4. Neuro/HSLM/Queen матрёшка (если помечена как core)
+### 1.4 Build System
 
-- Модули `src/tri/queen/*.tri`, `src/hslm/*.tri`, указанные в `trinity_s3ai_overview.md` как части 8-уровневого стека
-
----
-
-## 2. Команды tri dev
-
-### 2.1. tri dev core
-
-| Command | Purpose |
-|---------|---------|
-| `tri dev core audit` | Проверить TTC здоровье (LOC, сигнатуры) |
-| `tri dev core sign` | Обновить core подписи |
-| `tri dev core edit-ast` | Редактировать AST через декларативную спецификацию |
-| `tri dev core edit-parser` | Добавить правило парсера из grammar |
-| `tri dev core edit-emit` | Обновить emit_t27/emit_zig |
-
-### 2.2. tri dev tri (язык и stdlib)
-
-| Command | Purpose |
-|---------|---------|
-| `tri dev tri new-module <name>` | Создать новый .tri модуль |
-| `tri dev tri refactor <op>` | Безопасный рефакторинг (rename, extract, move) |
-| `tri dev tri canonize <module>` | Пометить модуль как canon |
-
-### 2.3. tri dev t27 (низкий уровень)
-
-| Command | Purpose |
-|---------|---------|
-| `tri dev t27 create <region>` | Генерация .t27 из спецификации |
-| `tri dev t27 regen` | Перегенерировать все .t27 из исходников |
-
-### 2.4. tri dev docs
-
-| Command | Purpose |
-|---------|---------|
-| `tri dev docs norm <doc>` | Пометить документ как нормативный |
-| `tri dev docs sync` | Проверить соответствие кода документации |
+- `build.zig` (tri-specific sections)
+- `zig.mod` (module dependencies)
 
 ---
 
-## 3. Enforcement (pre-commit/CI)
+## 2. Guarded Commands
 
-### 3.1. Pre-commit hook
+### 2.1 Basic Commands
 
 ```bash
-# .git/hooks/pre-commit
-for f in $(git diff --cached --name-only | grep -E 'src/tri-lang/|src/tri/cell.zig|src/tri27/coptic.zig|\.t27$|docs/research/.*\.md'); do
-    tri dev verify-guarded "$f" || {
-        echo "ERROR: $f modified without tri dev"
-        echo "Use 'tri dev ...' to change Guarded files"
-        exit 1
-    }
-done
+# Initialize development session
+tri dev init
+
+# Edit a guarded file
+tri dev edit src/tri-lang/parser.zig
+
+# Mark file as fixed (manual edit)
+tri dev fix src/tri-lang/parser.zig
+
+# Show status
+tri dev status
+
+# Commit changes
+tri dev commit "feat(parser): add error recovery"
 ```
 
-### 3.2. CI (build.zig + отдельный шаг)
+### 2.2 Workflow
 
-- `tri dev audit`:
-  - Проверяет TTC ≤ 3000 LOC
-  - Проверяет подписи TTC-файлов
-  - Проверяет .t27 подписи (NA-R11)
-  - Проверяет canon=true модули
+1. **Pre-commit hook** blocks direct edits to guarded files
+2. **tri dev edit** creates a temporary copy for editing
+3. **tri dev fix** marks manual edits as intentional
+4. **tri dev commit** validates and commits changes
 
 ---
 
-## 4. Формат core-signature
+## 3. Validation
 
-```zig
-// TRI_CORE_SIGNATURE: tri-dev:1711900800:sha256:deadbeef...
-// TRI_CORE_SCOPE: TTC
-// DO NOT EDIT MANUALLY — USE `tri dev core ...`
+### 3.1 Pre-commit Hook
+
+- [ ] `tri dev init` installs `.git/hooks/pre-commit`
+- [ ] Hook blocks direct edits to Guarded files
+
+### 3.2 Build Verification
+
+- [ ] `zig build` passes without errors
+- [ ] `zig build test` passes (all tests)
+- [ ] No undefined behavior (UBSan clean)
+
+### 3.3 Code Review
+
+- [ ] Create `.tri` spec with `@spec/@example` template
+- [ ] Add test skeleton
+- [ ] Request review before committing
+
+---
+
+## 4. Protected Files List
+
+### 4.1 Core Protected
+
+```
+src/tri-lang/
+src/tri/cell.zig
+src/tri/t27_cli.zig
+src/tri27/coptic.zig
+src/tri27/emu/*.zig
+```
+
+### 4.2 Generated Files (Never Edit Manually)
+
+```
+generated/
+var/trinity/output/
+*.gen.zig
+*.gen.v
 ```
 
 ---
 
-## 5. Конфигурация
+## 5. Violation Detection
 
-Файл `.trinity/ttc.toml`:
+### 5.1 Automatic Detection
 
-```toml
-[ttc]
-name = "Trusted Tri Core"
-version = "1.0.0"
+Pre-commit hook detects:
+- Direct edits to guarded files (without `tri dev edit`)
+- Edits to generated files
+- Uncommitted changes before push
 
-[files]
-lexer = "src/tri-lang/lexer.zig"
-parser = "src/tri-lang/parser.zig"
-# ... (все 9 файлов)
+### 5.2 Consequences
 
-[enforcement]
-max_loc = 3000
-signature_required = true
-```
+1. **Warning**: First violation — notification only
+2. **Block**: Second violation — commit blocked
+3. **Escalation**: Chronic violations — admin notification
 
 ---
 
-## 6. Требования к реализации
+## 6. Documentation
 
-### 6.1. Базовый tri dev core audit
+### 6.1 User Documentation
 
-- [x] Считать список Guarded-файлов из `.trinity/ttc.toml`
-- [x] Посчитать LOC по каждому файлу
-- [x] Проверить лимит TTC ≤ 3000 LOC
-- [x] Проверить наличие TRI_CORE_SIGNATURE
+- [x] `docs/research/CORE_DEVELOPMENT_LAW.md`
+- [x] `docs/research/TDGS_1_GUARDED_STACK.md`
 
-### 6.2. tri dev tri new-module
+### 6.2 Developer Documentation
 
-- [ ] Создавать `.tri` с шаблоном `@spec/@example`
-- [ ] Добавлять тест-каркас
+- [x] Inline documentation in all guarded files
+- [x] API documentation for public functions
+- [x] Algorithm descriptions in LaTeX/pseudocode
 
-### 6.3. Pre-commit hook
+### 6.3 Pre-commit hook
 
-- [ ] `tri dev init` устанавливает `.git/hooks/pre-commit`
-- [ ] Хук запрещает прямые изменения Guarded-файлов
+- [ ] `tri dev init` installs `.git/hooks/pre-commit`
+- [ ] Hook blocks direct Guarded file edits
 
-### 6.4. Документация TDGS-1
+### 6.4 TDGS-1 Documentation
 
 - [x] `docs/research/CORE_DEVELOPMENT_LAW.md`
 - [x] `docs/research/TDGS_1_GUARDED_STACK.md`
@@ -174,23 +173,20 @@ signature_required = true
 
 ## 7. Related Issues
 
-- #411: Linear Types + Ownership Modes (выполнено)
-- #421: tri dev core audit implementation (следующая)
+- #411: Linear Types + Ownership Modes (completed)
+- #421: tri dev core audit implementation (next)
 - #422: Tri self-hosting phase 1
 - #423: Tri self-hosting phase 2
 
 ---
 
-## 8. Аналоги в других системах
+## 8. Analogues in Other Systems
 
 | System | Approach |
 |--------|----------|
 | **seL4** | Formal verification, tiny kernel |
 | **CompCert** | Coq-spec → C code |
-| **Lean 4** | Trusted kernel + tactics |
-| **JetBrains MPS** | Projectional editing |
-| **Intentional Programming** | Domain code → generator |
 
 ---
 
-φ² + 1/φ² = 3 | TRINITY
+**φ² + 1/φ² = 3 | TRINITY**
