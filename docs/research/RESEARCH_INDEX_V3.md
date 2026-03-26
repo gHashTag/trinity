@@ -1,8 +1,8 @@
-# Trinity Research Documentation Index — v9.1
+# Trinity Research Documentation Index — v9.2
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 171
-**NEW:** FPGA Sacred Mathematics Implementation + Session 22 Report
+**Total Documents:** 173
+**NEW: Code Improvement Proposals Comprehensive + Session 23 Report
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -161,7 +161,8 @@
 | `TRINITY_EXPERIMENTAL_METHODOLOGY_REPRODUCIBILITY_COMPREHENSIVE.md` | Experimental Methodology: protocols for sacred scaling, ternary STE, dual-system, statistical analysis, reproducibility safeguards | Complete experimental guide, p<0.0001 ✨ |
 | `VSA_OPERATIONS_COMPREHENSIVE_ANALYSIS.md` | VSA Operations: bind/unbind/bundle/similarity/permutation, analogy/chain/blend reasoning, consciousness gate, 19.6% policy | 68.4% analogy, 54.8% 3-hop, φ-weights ✨ |
 | `SACRED_TRAINING_DYNAMICS_COMPREHENSIVE_ANALYSIS_V2.md` | Sacred Training Dynamics V2: φ-based warmup, LR scheduling, EMA decay, gradient clipping, 25-38% faster convergence, 9-16% PPL | 30K steps, 123.9 PPL, 58% variance ✨ |
-| `FPGA_SACRED_MATHEMATICS_IMPLEMENTATION_COMPREHENSIVE.md` | FPGA Sacred Math: φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP, 19.6% LUT, 1.2W, 250MHz | 75% LUT reduction, 0% DSP, 62.5M ops/s ✨ NEW |
+| `FPGA_SACRED_MATHEMATICS_IMPLEMENTATION_COMPREHENSIVE.md` | FPGA Sacred Math: φ-constants via CORDIC, ternary mult with carry-chain, sacred scaling, zero-DSP, 19.6% LUT, 1.2W, 250MHz | 75% LUT reduction, 0% DSP, 62.5M ops/s ✨ |
+| `TRINITY_CODE_IMPROVEMENT_PROPOSALS_COMPREHENSIVE.md` | Code Improvement Roadmap: 34+ proposals synthesized into priority-ordered plan, Phase 1-3, 15-25% PPL, 10-20% policy, 30-40% speed | 39 proposals, LOW/MEDIUM/HIGH complexity, 43-67 hours ✨ NEW |
 
 ---
 
