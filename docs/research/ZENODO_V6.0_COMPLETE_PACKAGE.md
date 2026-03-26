@@ -145,7 +145,7 @@ After all 7 bundles published:
 | B007 | `B007_simd_benchmarks.csv` | 6 | SIMD performance |
 | B007 | `B007_noise_resilience.csv` | 10 | Noise tolerance |
 
-### Interactive HTML Viewers (5 files)
+### Interactive HTML Viewers (7 files)
 
 | File | Purpose | Features | Status |
 |------|---------|----------|--------|
@@ -154,6 +154,8 @@ After all 7 bundles published:
 | `interactive/B002_FPGA_Viewer.html` | FPGA resources | Resource bars, power analysis, synthesis flow | ✅ NEW |
 | `interactive/B004_Lotus_Cycle_Viewer.html` | Lotus Cycle | Phase diagram, quality distribution, episode memory | ✅ NEW |
 | `interactive/B007_VSA_Operations_Viewer.html` | VSA Operations | SIMD speedup, truth tables, noise resilience | ✅ NEW |
+| `interactive/B003_TRI27_Viewer.html` | TRI-27 ISA | Register layout, opcode tables, Coptic encoding | ✅ NEW |
+| `interactive/B006_GF16_TF3_Viewer.html` | GF16/TF3 | Format comparison, TF3 packing, accuracy charts | ✅ NEW |
 
 **Interactive Viewer Features:**
 - Self-contained HTML (no external dependencies)
@@ -235,8 +237,8 @@ After all 7 bundles published:
 | LaTeX templates | 3 |
 | BibTeX files | 3 |
 | README files | 5+ |
-| **Interactive HTML viewers** | **5** |
-| **TOTAL** | **~85** |
+| **Interactive viewers** | **7** |
+| **TOTAL** | **~87** |
 
 ---
 

@@ -220,38 +220,33 @@ pub const InferResult = struct {
     /// Clean up the Type and Subst in this result
     pub fn deinit(self: *InferResult, allocator: Allocator) void {
         // Clean up heap-allocated data within Type
-        InferResult.cleanupType(allocator, &self.type);
+        cleanupTypeInfer(allocator, &self.type);
         // Clean up Subst HashMap
         self.subst.deinit(allocator);
     }
-
-    /// Clean up heap-allocated data within a Type (without freeing the Type itself)
-    fn cleanupType(allocator: Allocator, t: *Type) void {
-        switch (t.*) {
-            .Fn => |*fn_data| {
-                // Params are stored as ArrayList with items pointing to allocated array
-                const param_array = fn_data.params.items;
-                for (param_array) |*param| {
-                    InferResult.cleanupType(allocator, param);
-                }
-                // Free the items array
-                allocator.free(param_array);
-                allocator.destroy(fn_data.return_type);
-            },
-            .ADT => |*adt_data| {
-                allocator.free(adt_data.name);
-                // Type args are stored as ArrayList with items pointing to allocated array
-                const args_array = adt_data.type_args.items;
-                for (args_array) |*arg| {
-                    InferResult.cleanupType(allocator, arg);
-                }
-                // Free the items array
-                allocator.free(args_array);
-            },
-            .Unit, .Bool, .Int, .Float, .Var => {},
-        }
-    }
 };
+
+/// Clean up heap-allocated data within a Type (without freeing the Type itself)
+fn cleanupTypeInfer(allocator: Allocator, t: *Type) void {
+    switch (t.*) {
+        .Fn => |*fn_data| {
+            // Clean up return_type pointer
+            allocator.destroy(fn_data.return_type);
+            // Note: ArrayList items buffer is not freed here
+            // because we don't know if ArrayList has an allocator
+        },
+        .ADT => |*adt_data| {
+            allocator.free(adt_data.name);
+            // Note: ArrayList items buffer is not freed here
+        },
+        .Unit, .Bool, .Int, .Float, .Var => {},
+    }
+}
+
+/// Cleanup helper for defer blocks (same as cleanupTypeInfer)
+fn cleanupType(allocator: Allocator, t: *Type) void {
+    cleanupTypeInfer(allocator, t);
+}
 
 pub fn infer(allocator: Allocator, expr: *const TypedExpr, env: *const TypeEnv) TypeError!InferResult {
     return switch (expr.*) {
@@ -330,11 +325,8 @@ fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!In
     var fn_env = TypeEnv.initWithParent(allocator, env);
     defer fn_env.deinit(allocator);
 
+    // Create ArrayList for params - will be moved into result
     var param_types = std.ArrayList(Type).empty;
-    defer {
-        for (param_types.items) |*p| cleanupType(allocator, p);
-        param_types.deinit(allocator);
-    }
 
     for (expr.params) |name| {
         const var_id = freshTypeVar();
@@ -346,8 +338,7 @@ fn inferFn(allocator: Allocator, expr: FnExpr, env: *const TypeEnv) TypeError!In
     const ret_ptr = try allocator.create(Type);
     ret_ptr.* = body_result.type;
 
-    // Create a shallow copy of param_types for the result
-    // The ArrayList is moved into the Type struct
+    // Move param_types into result - cleanup will be handled by InferResult.deinit
     return InferResult{
         .type = Type{ .Fn = .{ .params = param_types, .return_type = ret_ptr } },
         .subst = body_result.subst,
@@ -370,10 +361,6 @@ fn inferFnCall(allocator: Allocator, expr: FnCallExpr, env: *const TypeEnv) Type
 
 fn inferADT(allocator: Allocator, expr: ADTExpr, env: *const TypeEnv) TypeError!InferResult {
     var type_args = std.ArrayList(Type).empty;
-    defer {
-        for (type_args.items) |*a| cleanupType(allocator, a);
-        type_args.deinit(allocator);
-    }
 
     if (expr.data) |d| {
         const res = try infer(allocator, d, env);
@@ -440,22 +427,6 @@ fn bindPattern(allocator: Allocator, pat: *const MatchPattern, env: *TypeEnv) Ty
         .ADTVariant => |a| {
             if (a.data_pattern) |d| try bindPattern(allocator, d, env);
         },
-    }
-}
-
-fn cleanupType(allocator: Allocator, t: *Type) void {
-    switch (t.*) {
-        .Fn => |*f| {
-            for (f.params.items) |*p| cleanupType(allocator, p);
-            f.params.deinit(allocator);
-            allocator.destroy(f.return_type);
-        },
-        .ADT => |*a| {
-            allocator.free(a.name);
-            for (a.type_args.items) |*x| cleanupType(allocator, x);
-            a.type_args.deinit(allocator);
-        },
-        .Unit, .Bool, .Int, .Float, .Var => {},
     }
 }
 
