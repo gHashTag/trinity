@@ -274,6 +274,9 @@ pub fn build(b: *std.Build) void {
     const run_main_tests = b.addRunArtifact(main_tests);
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&run_main_tests.step);
+    // test_report_step disabled due to Zig 0.15 const qualifier issue
+    // const test_report_step = b.step("test-report", "Show formatted test report");
+    // test_report_step.dependOn(&test_step);
 
     // Maintainer / author attribution — must match tools/config/author_attribution_guard.manifest
     const author_guard_tests = b.addTest(.{
