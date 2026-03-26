@@ -116,7 +116,7 @@ test "levenshtein different strings" {
 
 test "levenshtein empty strings" {
     try std.testing.expectEqual(@as(usize, 5), levenshtein("hello", ""));
-    try std.testing.expectEqual(@as(usize, 3), levenshtein("", "world"));
+    try std.testing.expectEqual(@as(usize, 5), levenshtein("", "world"));
 }
 
 test "ExperienceEngine init and deinit" {
