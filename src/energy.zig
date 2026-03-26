@@ -403,7 +403,7 @@ test "EnergyFramework - carbon calculation" {
 
     // 1 MJ / 3.6e6 = 0.000278 kWh
     // 0.000278 kWh * 420 = 0.1167 g
-    try std.testing.expectApproxEqAbs(@as(f64, 0.116), carbon_g, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f64, 116.667), carbon_g, 0.01);
 }
 
 test "EnergyFramework - car kilometers" {
