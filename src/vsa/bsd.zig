@@ -20,7 +20,7 @@ const Trit = common.Trit;
 /// Traditional VSA: [bind, bundle]
 /// BSD-VSA:        [bind, bundle, sha]
 ///
-/// The Sha (Шафаревич-Тейт группа) provides:
+/// The Sha (Shafarevich-Tate group) provides:
 /// 1. Hidden structure information
 /// 2. Arithmetic complexity measure
 /// 3. Proof-theoretic depth for zk-systems

@@ -227,7 +227,7 @@ fn nextAgentToWake(snapshot: FacultySnapshot, issues: *const IssueSet, buf: *[12
                 const action = std.fmt.bufPrint(buf, "#{d} → Faculty 5/6", .{issue.number}) catch "Implement #79 → research agent";
                 return .{ .label = "Hire Scholar", .action = action };
             }
-            return .{ .label = "Нанять Scholar", .action = "Implement #79 → research agent" };
+            return .{ .label = "Hire Scholar", .action = "Implement #79 → research agent" };
         }
     }
     for (snapshot.agents) |a| {
