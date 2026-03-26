@@ -1,7 +1,8 @@
-# Trinity Research Documentation Index — v6.2
+# Trinity Research Documentation Index — v6.4
 
 **Last Updated:** 2026-03-26
-**Total Documents:** 128
+**Total Documents:** 137
+**NEW:** v5.0 Zenodo publications (8 enhanced descriptions)
 **Purpose:** Complete scientific documentation index for Trinity S³AI framework
 
 ---
@@ -132,7 +133,8 @@
 | `QUEEN_SYSTEM_ANALYSIS.md` | Self-learning orchestrator | 4 proposals ✨ |
 | `TTT_SACRED_LAYER_ANALYSIS.md` | TTT L0 sacred layer deep dive | TEMPLE_RITUAL ✨ |
 | `HSLM_TRAINING_OPTIMIZATION_ANALYSIS.md` | Training dynamics, φ-warmup, SIMD RoPE | 13% speedup ✨ |
-| `FPGA_SACRED_FORMATS_DEEP_DIVE.md` | GF16/TF3 FPGA implementation, zero-DSP | 75% LUT reduction ✨ NEW |
+| `FPGA_SACRED_FORMATS_DEEP_DIVE.md` | GF16/TF3 FPGA implementation, zero-DSP | 75% LUT reduction ✨ |
+| `DATA_PIPELINE_OPTIMIZATION_ANALYSIS.md` | HSLM data pipeline, mmap, async prefetch | 80% faster load, 49% memory ✨ NEW |
 
 ---
 
@@ -194,7 +196,9 @@ TRINITY_S3AI_UNIFIED_FRAMEWORK.md (ROOT)
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 6.2 | 2026-03-26 | Added FPGA Sacred Formats Deep Dive (GF16/TF3, zero-DSP, 75% LUT reduction) ✨ NEW |
+| 6.4 | 2026-03-26 | Added Data Pipeline Optimization Analysis (mmap, async prefetch, 80% faster, 49% memory) ✨ NEW |
+| 6.3 | 2026-03-26 | Zenodo v5.0 enhancements (8 publications) |
+| 6.2 | 2026-03-26 | Added FPGA Sacred Formats Deep Dive (GF16/TF3, zero-DSP, 75% LUT reduction) ✨ |
 | 6.1 | 2026-03-26 | Updated Session 3 FINAL report (41 commits, 7 research docs, ~12K LOC, 28 improvement proposals) ✨ FINAL |
 | 6.0 | 2026-03-26 | Added HSLM Training Optimization Analysis (φ-warmup, layer-wise EMA, SIMD RoPE, 13% speedup) ✨ |
 | 5.9 | 2026-03-26 | Updated VSA Optimization Deep Dive (10.17×→14.59× path, 43% potential) ✨ |
