@@ -429,7 +429,7 @@ pub const ZenodoMetadata = struct {
     /// Generate README.md for Zenodo deposit
     pub fn toZenodoReadme(self: *const ZenodoMetadata, allocator: std.mem.Allocator) ![]u8 {
         var readme = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
-        defer readme.deinit(allocator);
+        defer readme.deinit();
 
         try readme.writer(allocator).print("# {s}\n\n", .{self.title});
 
@@ -477,7 +477,7 @@ pub const ZenodoMetadata = struct {
         try readme.writer(allocator).print("## License\n\n", .{});
         try readme.writer(allocator).print("This work is licensed under {s}.\n", .{self.license.toString()});
 
-        return try readme.toOwnedSlice(allocator);
+        return try readme.toOwnedSlice();
     }
 };
 
