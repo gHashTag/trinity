@@ -132,6 +132,14 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
             print("{s}Usage: tri zenodo readme <bundle_id>{s}\n", .{ RED, RESET });
             print("  Bundle IDs: B001, B002, B003, B004, B005, B006, B007, PARENT\n", .{});
         }
+    } else if (std.mem.eql(u8, subcmd, "enhanced")) {
+        // Generate enhanced metadata with scientific fields (broader impact, ethics, reproducibility)
+        if (sub_args.len > 0) {
+            try generateEnhancedMetadata(allocator, sub_args[0]);
+        } else {
+            print("{s}Usage: tri zenodo enhanced <bundle_id>{s}\n", .{ RED, RESET });
+            print("  Bundle IDs: B001, B002, B003, B004, B005, B006, B007, PARENT\n", .{});
+        }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -1494,6 +1502,53 @@ fn generateZenodoReadme(allocator: std.mem.Allocator, bundle_id: []const u8) !vo
     print("  File: {s}\n", .{filename});
 }
 
+/// Generate enhanced metadata with NeurIPS/ICLR/MLSys 2025 compliant fields
+fn generateEnhancedMetadata(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    const bundle_type = try parseBundleType(bundle_id);
+    const metadata = try zenodo_templates.createEnhancedMetadata(allocator, bundle_type);
+    defer {
+        if (metadata.broader_impact) |s| allocator.free(s);
+        if (metadata.ethics) |s| allocator.free(s);
+    }
+
+    const json = try metadata.toJSON(allocator);
+    defer allocator.free(json);
+
+    print("\n{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}Enhanced Zenodo Metadata — {s}{s}\n", .{ BOLD, bundle_type.displayName(), RESET });
+    print("{s}═══════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    print("{s}📋 Metadata Fields:{s}\n", .{ CYAN, RESET });
+    print("  • Funding: {d} reference(s)\n", .{if (metadata.funding) |f| f.len else 0});
+    print("  • Broader Impact: {s}\n", .{if (metadata.broader_impact != null) "Included" else "None"});
+    print("  • Ethical Considerations: {s}\n", .{if (metadata.ethics != null) "Included" else "None"});
+    print("  • Reproducibility Info: {s}\n\n", .{if (metadata.reproducibility != null) "Included" else "None"});
+
+    if (metadata.broader_impact) |impact| {
+        print("{s}🌍 Broader Impact Statement:{s}\n", .{ GREEN, RESET });
+        print("{s}\n\n", .{impact});
+    }
+
+    if (metadata.ethics) |eth| {
+        print("{s}⚖️  Ethical Considerations:{s}\n", .{ YELLOW, RESET });
+        print("{s}\n\n", .{eth});
+    }
+
+    if (metadata.reproducibility) |repro| {
+        print("{s}🔬 Reproducibility Checklist:{s}\n", .{ CYAN, RESET });
+        print("  Code: {s}\n", .{repro.code_url});
+        print("  Commit: {s}\n", .{repro.commit_hash});
+        if (repro.docker_image) |img| print("  Docker: {s}\n", .{img});
+        if (repro.dataset_url) |url| print("  Dataset: {s}\n", .{url});
+        print("  Hardware: {s}\n\n", .{repro.hardware});
+    }
+
+    print("{s}📄 JSON Metadata (for Zenodo upload):{s}\n", .{ BOLD, RESET });
+    print("{s}\n\n", .{json});
+
+    print("{s}✓ Enhanced metadata generated for {s}{s}\n", .{ GREEN, bundle_type.fileName(), RESET });
+}
+
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
@@ -1508,7 +1563,8 @@ fn printHelp() void {
     print("  tri zenodo bundle-v5.2 [B001-B007] Create new v5.2 bundle deposits (algorithm boxes, diagrams, stats)\n", .{});
     print("  tri zenodo template <bundle>    Generate JSON metadata template (B001-B007, PARENT)\n", .{});
     print("  tri zenodo cff <bundle>         Generate CITATION.cff file (B001-B007, PARENT)\n", .{});
-    print("  tri zenodo readme <bundle>      Generate README.md for Zenodo (B001-B007, PARENT)\n\n", .{});
+    print("  tri zenodo readme <bundle>      Generate README.md for Zenodo (B001-B007, PARENT)\n", .{});
+    print("  tri zenodo enhanced <bundle>   Generate enhanced metadata with scientific fields\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
