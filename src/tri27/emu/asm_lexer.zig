@@ -79,20 +79,21 @@ pub const Lexer = struct {
             return;
         }
 
-        if (c == 'r' and self.pos + 1 < self.source.len) {
+        if ((c == 'r' or c == 't' or c == 'R' or c == 'T') and self.pos + 1 < self.source.len) {
             if (self.source[self.pos + 1] >= '0' and self.source[self.pos + 1] <= '9') {
                 try self.lexRegister();
                 return;
             }
         }
 
-        if (c == '-' or (c >= '0' and c <= '9')) {
-            try self.lexImmediate();
+        // Check hex immediate BEFORE decimal immediate
+        if (c == '0' and self.pos + 1 < self.source.len and self.source[self.pos + 1] == 'x') {
+            try self.lexHexImmediate();
             return;
         }
 
-        if (c == '0' and self.pos + 1 < self.source.len and self.source[self.pos + 1] == 'x') {
-            try self.lexHexImmediate();
+        if (c == '-' or (c >= '0' and c <= '9')) {
+            try self.lexImmediate();
             return;
         }
 
@@ -114,9 +115,19 @@ pub const Lexer = struct {
     fn skipWhitespace(self: *Lexer) void {
         while (self.pos < self.source.len) {
             const c = self.source[self.pos];
-            if (c != ' ' and c != '\t') break;
-            self.pos += 1;
-            self.column += 1;
+            if (c == '\n') {
+                self.pos += 1;
+                self.line += 1;
+                self.column = 1;
+            } else if (c == '\r') {
+                self.pos += 1;
+                // Skip CR, next will be LF handled above
+            } else if (c == ' ' or c == '\t') {
+                self.pos += 1;
+                self.column += 1;
+            } else {
+                break;
+            }
         }
     }
 
@@ -370,10 +381,17 @@ test "lexer tokenizes comment" {
     defer lexer.deinit();
 
     const tokens = try lexer.tokenize();
-    try std.testing.expectEqual(@as(usize, 7), tokens.len);
+    // nop, comment, add, r1, comma, r2, comma, r3, EOF = 9 tokens
+    try std.testing.expectEqual(@as(usize, 9), tokens.len);
+    try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
     try std.testing.expectEqual(TokenType.Comment, tokens[1].type);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[2].type);
-    try std.testing.expectEqual(TokenType.EOF, tokens[6].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[3].type);
+    try std.testing.expectEqual(TokenType.Comma, tokens[4].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[5].type);
+    try std.testing.expectEqual(TokenType.Comma, tokens[6].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[7].type);
+    try std.testing.expectEqual(TokenType.EOF, tokens[8].type);
 }
 
 test "lexer handles hex immediates" {
@@ -394,11 +412,46 @@ test "lexer handles newlines" {
     defer lexer.deinit();
 
     const tokens = try lexer.tokenize();
-    try std.testing.expectEqual(@as(usize, 5), tokens.len);
+    // nop, add, r1, comma, r2, EOF = 6 tokens
+    try std.testing.expectEqual(@as(usize, 6), tokens.len);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
     try std.testing.expectEqual(TokenType.Mnemonic, tokens[1].type);
     try std.testing.expectEqual(TokenType.Register, tokens[2].type);
     try std.testing.expectEqual(TokenType.Comma, tokens[3].type);
     try std.testing.expectEqual(TokenType.Register, tokens[4].type);
     try std.testing.expectEqual(TokenType.EOF, tokens[5].type);
+}
+
+test "lexer handles t-registers" {
+    const allocator = std.testing.allocator;
+    const source = "inc t0";
+    var lexer = Lexer.init(allocator, source);
+    defer lexer.deinit();
+
+    const tokens = try lexer.tokenize();
+    try std.testing.expectEqual(@as(usize, 3), tokens.len);
+    try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[1].type);
+    try std.testing.expectEqualStrings("t0", tokens[1].text);
+    try std.testing.expectEqual(TokenType.EOF, tokens[2].type);
+}
+
+test "lexer handles t-register arithmetic" {
+    const allocator = std.testing.allocator;
+    const source = "add t1, t2, t3";
+    var lexer = Lexer.init(allocator, source);
+    defer lexer.deinit();
+
+    const tokens = try lexer.tokenize();
+    try std.testing.expectEqual(@as(usize, 7), tokens.len);
+    try std.testing.expectEqual(TokenType.Mnemonic, tokens[0].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[1].type);
+    try std.testing.expectEqualStrings("t1", tokens[1].text);
+    try std.testing.expectEqual(TokenType.Comma, tokens[2].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[3].type);
+    try std.testing.expectEqualStrings("t2", tokens[3].text);
+    try std.testing.expectEqual(TokenType.Comma, tokens[4].type);
+    try std.testing.expectEqual(TokenType.Register, tokens[5].type);
+    try std.testing.expectEqualStrings("t3", tokens[5].text);
+    try std.testing.expectEqual(TokenType.EOF, tokens[6].type);
 }

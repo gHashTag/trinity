@@ -530,16 +530,16 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
-    // UART Echo Test — FPGA UART bridge test
-    const uart_echo_test = b.addExecutable(.{
-        .name = "uart-echo-test",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tools/uart_echo_test.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(uart_echo_test);
+    // UART Echo Test — FPGA UART bridge test (disabled from install)
+    // const uart_echo_test = b.addExecutable(.{
+    //     .name = "uart-echo-test",
+    //     .root_module = b.createModule(.{
+    //         .root_source_file = b.path("src/tools/uart_echo_test.zig"),
+    //         .target = target,
+    //         .optimize = optimize,
+    //     }),
+    // });
+    // b.installArtifact(uart_echo_test);
 
     // Firebird tests
     const firebird_tests = b.addTest(.{
@@ -1416,6 +1416,28 @@ pub fn build(b: *std.Build) void {
     self_improve_step.dependOn(&run_self_improve.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // ==========================================
+    // LOTUS-CYCLE — Queen Lotus Cycle CLI
+    // ==========================================
+    const lotus_cycle_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/lotus_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const lotus_cycle_exe = b.addExecutable(.{
+        .name = "lotus-cycle",
+        .root_module = lotus_cycle_mod,
+    });
+    b.installArtifact(lotus_cycle_exe);
+
+    const run_lotus_cycle = b.addRunArtifact(lotus_cycle_exe);
+    if (b.args) |args| {
+        run_lotus_cycle.addArgs(args);
+    }
+    const lotus_cycle_step = b.step("lotus-cycle", "Run Queen Lotus Cycle (run/stats/health/test)");
+    lotus_cycle_step.dependOn(&run_lotus_cycle.step);
+
     // TREE-SITTER MODULE (with C stub for builds without tree-sitter)
     // ═══════════════════════════════════════════════════════════════════════════
     // Used by NEEDLE matcher Tier 1 (AST-based matching)
@@ -2564,6 +2586,13 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // TRI-27 CLI module for tri binary
+    const tri27_cli_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/tri27_cli.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2632,6 +2661,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "intraparietal", .module = intraparietal_mod },
                 // STORM Golden Chain — 28-link pipeline
                 .{ .name = "golden_chain", .module = golden_chain_mod },
+                // TRI-27 CLI module
+                .{ .name = "tri27_cli", .module = tri27_cli_mod },
             },
         }),
     });
@@ -2685,10 +2716,12 @@ pub fn build(b: *std.Build) void {
     tri_asm_step.dependOn(&run_tri_asm.step);
 
     // TRI‑27 CLI — TRI-27 language toolchain (assemble/disassemble/run/validate/isa)
+    // TEMP: Disabled from default build due to 5 Zig 0.15 compatibility errors (tracked in #403)
+    // Core works: zig build tri-asm, zig build tri-emu, zig build test-tri27-golden
     const tri27 = b.addExecutable(.{
         .name = "tri27",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri27/tri27_cli_fixed.zig"),
+            .root_source_file = b.path("src/tri27/tri27_cli.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -2813,11 +2846,18 @@ pub fn build(b: *std.Build) void {
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
 
     // TRI‑27 Experience Tests
+    const queen_episodes_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/episodes.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const tri27_experience_mod = b.createModule(.{
         .root_source_file = b.path("src/tri27/tri27_experience.zig"),
         .target = target,
         .optimize = optimize,
     });
+    tri27_experience_mod.addImport("queen_episodes", queen_episodes_mod);
+
     const tri27_experience_tests = b.addTest(.{
         .root_module = tri27_experience_mod,
     });
@@ -2837,6 +2877,34 @@ pub fn build(b: *std.Build) void {
     const run_tri27_golden_tests = b.addRunArtifact(tri27_golden_tests);
     const tri27_golden_tests_step = b.step("test-tri27-golden", "Run TRI‑27 Golden Test");
     tri27_golden_tests_step.dependOn(&run_tri27_golden_tests.step);
+
+    // Queen Self-Learning Tests (Phase 5)
+    const queen_self_learning_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/self_learning.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    queen_self_learning_mod.addImport("queen_episodes", queen_episodes_mod);
+
+    const queen_self_learning_tests = b.addTest(.{
+        .root_module = queen_self_learning_mod,
+    });
+    const run_queen_self_learning_tests = b.addRunArtifact(queen_self_learning_tests);
+    const queen_self_learning_tests_step = b.step("test-queen-self-learning", "Run Queen Self-Learning Tests");
+    queen_self_learning_tests_step.dependOn(&run_queen_self_learning_tests.step);
+
+    // TRI-27 Comprehensive Tests (all 36 opcodes)
+    const tri27_comprehensive_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/test_comprehensive.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_comprehensive_tests = b.addTest(.{
+        .root_module = tri27_comprehensive_mod,
+    });
+    const run_tri27_comprehensive_tests = b.addRunArtifact(tri27_comprehensive_tests);
+    const tri27_comprehensive_tests_step = b.step("test-tri27-comprehensive", "Run TRI‑27 Comprehensive Tests");
+    tri27_comprehensive_tests_step.dependOn(&run_tri27_comprehensive_tests.step);
 
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{

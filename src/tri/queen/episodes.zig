@@ -1,0 +1,653 @@
+// Queen Episodes — Episode Management & JSONL Persistence
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+pub const Context = @import("observe.zig").Context;
+pub const Plan = @import("plan.zig").Plan;
+pub const Step = @import("plan.zig").Step;
+pub const Result = @import("act.zig").Result;
+pub const Outcome = @import("act.zig").Outcome;
+
+pub const Source = enum {
+    lotus_cycle,
+    external,
+    scheduled,
+    experience_recall,
+    tri27,
+};
+
+pub const Action = union(enum) {
+    scale_up: struct { key: []const u8, quality_score: f64 },
+    scale_down: struct { key: []const u8, quality_score: f64 },
+    trigger: struct { key: []const u8 },
+    set: struct { key: []const u8, value: union { bool: bool, f64: f64 } },
+    wait: void,
+    tri27_op: struct {
+        operation: Tri27Operation,
+        input_file: []const u8,
+        output_file: []const u8,
+        cycles: u32,
+        instructions: u32,
+    },
+};
+
+pub const Tri27Operation = enum(u8) {
+    assemble,
+    disassemble,
+    run,
+    @"test",
+    validate,
+    flash,
+    dump,
+};
+
+pub const Tri27Status = enum(u8) {
+    queued,
+    running,
+    success,
+    failed,
+    timeout,
+    cancelled,
+};
+
+pub const Tri27Event = struct {
+    timestamp: i64,
+    operation: Tri27Operation,
+    input_file: []const u8,
+    output_file: []const u8,
+    status: Tri27Status,
+    cycles: u32,
+    instructions: u32,
+    error_msg: []const u8,
+    has_error: bool,
+
+    pub fn inputFile(self: Tri27Event) []const u8 {
+        return self.input_file;
+    }
+
+    pub fn outputFile(self: Tri27Event) []const u8 {
+        return self.output_file;
+    }
+
+    pub fn errorMsg(self: Tri27Event) []const u8 {
+        if (!self.has_error) return "";
+        return self.error_msg;
+    }
+};
+
+pub const Episode = struct {
+    id: u64,
+    timestamp: u64,
+    source: Source,
+    context: Context,
+    action: Action,
+    result: Result,
+    outcome: Outcome,
+};
+
+/// Simplified episode summary for JSONL persistence
+/// (Full Episode struct has unions that Zig 0.15 JSON cannot serialize)
+pub const EpisodeSummary = struct {
+    id: u64,
+    timestamp: u64,
+    source: Source,
+    action_type: []const u8,
+    key: []const u8,
+    outcome: Outcome,
+    success: bool,
+    duration_ms: u64,
+    /// For TRI-27 operations: input file path
+    input_file: []const u8 = "",
+    /// For TRI-27 operations: operation type
+    tri27_operation: []const u8 = "",
+};
+
+/// Parse TRI-27 operation string to enum
+fn parseTri27Operation(str: []const u8) Tri27Operation {
+    if (std.mem.eql(u8, str, "assemble")) return .assemble;
+    if (std.mem.eql(u8, str, "disassemble")) return .disassemble;
+    if (std.mem.eql(u8, str, "run")) return .run;
+    if (std.mem.eql(u8, str, "test")) return .@"test";
+    if (std.mem.eql(u8, str, "validate")) return .validate;
+    if (std.mem.eql(u8, str, "flash")) return .flash;
+    if (std.mem.eql(u8, str, "dump")) return .dump;
+    return .assemble; // Default
+}
+
+/// Helper function for creating test Episode with minimal fields
+pub fn createTestEpisode(allocator: Allocator, outcome: Outcome) !Episode {
+    const now_ns = std.time.nanoTimestamp();
+    const id: u64 = @as(u64, @intCast(@mod(now_ns, 1_000_000_000_000_000_000)));
+    const ms = std.time.milliTimestamp();
+    const timestamp: u64 = @intCast(@divTrunc(ms, 1000));
+
+    return Episode{
+        .id = id,
+        .timestamp = timestamp,
+        .source = .lotus_cycle,
+        .context = Context{
+            .timestamp_ns = timestamp * 1_000_000,
+            .policy = .{},
+            .senses = .{},
+            .active_issues = try allocator.alloc(u64, 0),
+            .recalled_episodes = &[_]Episode{},
+        },
+        .action = .wait,
+        .result = Result{
+            .success = true,
+            .@"error" = null,
+            .timing = .{ .start_ns = timestamp * 1_000_000, .end_ns = timestamp * 1_000_000, .duration_ms = 0 },
+            .output = null,
+            .new_senses = .{},
+        },
+        .outcome = outcome,
+    };
+}
+
+pub fn recordEpisode(allocator: std.mem.Allocator, context: Context, plan: Plan, result: Result, outcome: Outcome) !Episode {
+    _ = allocator;
+    return Episode{
+        .id = @as(u64, @intCast(std.time.nanoTimestamp())),
+        .timestamp = @as(u64, @intCast(std.time.nanoTimestamp())),
+        .source = .lotus_cycle,
+        .context = context,
+        .action = if (plan.action == .scale_up)
+            Action{ .scale_up = .{ .key = plan.key, .quality_score = plan.quality_score } }
+        else if (plan.action == .scale_down)
+            Action{ .scale_down = .{ .key = plan.key, .quality_score = plan.quality_score } }
+        else if (plan.action == .trigger)
+            Action{ .trigger = .{ .key = plan.key } }
+        else
+            Action{ .wait = {} },
+        .result = result,
+        .outcome = outcome,
+    };
+}
+
+/// Record TRI-27 operation as Episode
+pub fn recordTri27Episode(allocator: std.mem.Allocator, tri27_event: Tri27Event) !EpisodeSummary {
+    const now_ns_i128 = std.time.nanoTimestamp();
+    const now_ns = @as(u64, @intCast(@abs(now_ns_i128)));
+
+    // Create minimal context
+    const context = Context{
+        .timestamp_ns = now_ns,
+        .policy = .{},
+        .senses = .{},
+        .active_issues = &[_]u64{},
+        .recalled_episodes = &[_]Episode{},
+    };
+
+    // Map Tri27Status to Outcome
+    const outcome: Outcome = switch (tri27_event.status) {
+        .success => .success,
+        .failed => if (tri27_event.has_error) .failure_learned else .failure_unknown,
+        .timeout => .blocked,
+        .cancelled => .blocked,
+        .queued, .running => .partial,
+    };
+
+    // Create result
+    const result = Result{
+        .success = tri27_event.status == .success,
+        .@"error" = if (tri27_event.has_error)
+            try allocator.dupe(u8, tri27_event.errorMsg())
+        else
+            null,
+        .timing = .{
+            .start_ns = now_ns,
+            .end_ns = now_ns + tri27_event.cycles * 1000,
+            .duration_ms = tri27_event.cycles / 1000,
+        },
+        .output = if (tri27_event.status == .success)
+            try allocator.dupe(u8, tri27_event.outputFile())
+        else
+            null,
+        .new_senses = .{},
+    };
+
+    // Create Episode with tri27_op action
+    const episode = Episode{
+        .id = @as(u64, @intCast(now_ns)),
+        .timestamp = @as(u64, @intCast(now_ns)),
+        .source = .tri27,
+        .context = context,
+        .action = .{
+            .tri27_op = .{
+                .operation = tri27_event.operation,
+                .input_file = try allocator.dupe(u8, tri27_event.inputFile()),
+                .output_file = try allocator.dupe(u8, tri27_event.outputFile()),
+                .cycles = tri27_event.cycles,
+                .instructions = tri27_event.instructions,
+            },
+        },
+        .result = result,
+        .outcome = outcome,
+    };
+
+    // Convert to EpisodeSummary for JSONL persistence
+    const summary = EpisodeSummary{
+        .id = episode.id,
+        .timestamp = episode.timestamp,
+        .source = episode.source,
+        .action_type = "tri27_op",
+        .key = tri27_event.inputFile(),
+        .outcome = episode.outcome,
+        .success = episode.result.success,
+        .duration_ms = episode.result.timing.duration_ms,
+        .input_file = tri27_event.inputFile(),
+        .tri27_operation = @tagName(tri27_event.operation),
+    };
+
+    // Write to JSONL (episode takes ownership of allocated strings)
+    _ = try appendEpisode(episode, allocator);
+
+    // Clean up allocated memory
+    allocator.free(episode.action.tri27_op.input_file);
+    allocator.free(episode.action.tri27_op.output_file);
+    if (episode.result.@"error") |err| allocator.free(err);
+    if (episode.result.output) |out| allocator.free(out);
+
+    return summary;
+}
+
+pub fn appendEpisode(episode: Episode, allocator: std.mem.Allocator) !void {
+    const episodes_dir = ".trinity/queen";
+    std.fs.cwd().makePath(episodes_dir) catch |err| {
+        if (err != error.PathAlreadyExists) return err;
+    };
+
+    const file_path = try std.fmt.allocPrint(allocator, "{s}/episodes.jsonl", .{episodes_dir});
+    defer allocator.free(file_path);
+
+    const file = try std.fs.cwd().createFile(file_path, .{});
+    defer file.close();
+
+    try file.seekFromEnd(0);
+
+    // Create simplified summary for JSONL
+    const action_name = @tagName(episode.action);
+    var input_file: []const u8 = "";
+    var tri27_operation: []const u8 = "";
+    const key = switch (episode.action) {
+        .scale_up => |a| a.key,
+        .scale_down => |a| a.key,
+        .trigger => |a| a.key,
+        .set => |a| a.key,
+        .wait => "",
+        .tri27_op => |t| blk: {
+            input_file = t.input_file;
+            tri27_operation = @tagName(t.operation);
+            break :blk t.input_file;
+        },
+    };
+
+    const summary = EpisodeSummary{
+        .id = episode.id,
+        .timestamp = episode.timestamp,
+        .source = episode.source,
+        .action_type = action_name,
+        .key = key,
+        .outcome = episode.outcome,
+        .success = episode.result.success,
+        .duration_ms = episode.result.timing.duration_ms,
+        .input_file = input_file,
+        .tri27_operation = tri27_operation,
+    };
+
+    // Build JSON manually to ensure []const u8 fields serialize as strings
+    // Zig 0.15 JSON treats []const u8 as byte array, so we use manual formatting
+    const outcome_str = @tagName(summary.outcome);
+    const source_str = @tagName(summary.source);
+    const json = try std.fmt.allocPrint(allocator,
+        \\{{"id":{d},"timestamp":{d},"source":"{s}","action_type":"{s}","key":"{s}","outcome":"{s}","success":{s},"duration_ms":{d},"input_file":"{s}","tri27_operation":"{s}"}}
+    , .{
+        summary.id,
+        summary.timestamp,
+        source_str,
+        summary.action_type,
+        summary.key,
+        outcome_str,
+        if (summary.success) "true" else "false",
+        summary.duration_ms,
+        summary.input_file,
+        summary.tri27_operation,
+    });
+    defer allocator.free(json);
+
+    const line = try std.fmt.allocPrint(allocator, "{s}\n", .{json});
+    defer allocator.free(line);
+
+    try file.writeAll(line);
+}
+
+pub fn loadEpisodes(allocator: std.mem.Allocator) ![]Episode {
+    const file_path = ".trinity/queen/episodes.jsonl";
+
+    const file = std.fs.cwd().openFile(file_path, .{}) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer allocator.free(contents);
+
+    var episodes = try std.ArrayList(Episode).initCapacity(allocator, 0);
+    defer episodes.deinit(allocator);
+
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+
+    while (line_iter.next()) |line| {
+        if (line.len == 0) continue;
+
+        // Parse EpisodeSummary instead of full Episode
+        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch {
+            continue;
+        };
+        defer parsed.deinit();
+
+        // Create minimal Episode from summary
+        // Note: This loses context and result details - suitable for stats only
+        const summary = parsed.value;
+        const action: Action = if (std.mem.eql(u8, summary.action_type, "scale_up"))
+            Action{ .scale_up = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "scale_down"))
+            Action{ .scale_down = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "trigger"))
+            Action{ .trigger = .{ .key = summary.key } }
+        else if (std.mem.eql(u8, summary.action_type, "tri27_op"))
+            Action{
+                .tri27_op = .{
+                    .operation = parseTri27Operation(summary.tri27_operation),
+                    .input_file = summary.input_file,
+                    .output_file = "",
+                    .cycles = 0,
+                    .instructions = 0,
+                },
+            }
+        else
+            Action{ .wait = {} };
+
+        const ep = Episode{
+            .id = summary.id,
+            .timestamp = summary.timestamp,
+            .source = summary.source,
+            .context = undefined, // Not preserved in summary
+            .action = action,
+            .result = undefined, // Not preserved in summary
+            .outcome = summary.outcome,
+        };
+
+        try episodes.append(allocator, ep);
+    }
+
+    return try episodes.toOwnedSlice(allocator);
+}
+
+/// Load the most recent N episodes from episodes.jsonl
+/// Returns episodes in reverse chronological order (newest first)
+pub fn loadRecentEpisodes(allocator: std.mem.Allocator, max_count: usize) ![]Episode {
+    const file_path = ".trinity/queen/episodes.jsonl";
+
+    const file = std.fs.cwd().openFile(file_path, .{}) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 1024 * 1024) catch {
+        return try allocator.alloc(Episode, 0);
+    };
+    defer allocator.free(contents);
+
+    // Use a ring buffer to keep only the most recent episodes
+    var buffer = try std.ArrayList(?Episode).initCapacity(allocator, @min(max_count, 1024));
+    defer {
+        for (buffer.items) |maybe_ep| {
+            if (maybe_ep) |ep| {
+                if (ep.context.active_issues.len > 0) allocator.free(ep.context.active_issues);
+            }
+        }
+        buffer.deinit(allocator);
+    }
+
+    var buf_idx: usize = 0;
+    var filled = false;
+
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+
+    while (line_iter.next()) |line| {
+        if (line.len == 0) continue;
+
+        const parsed = std.json.parseFromSlice(EpisodeSummary, allocator, line, .{}) catch {
+            continue;
+        };
+        defer parsed.deinit();
+
+        const summary = parsed.value;
+        const action: Action = if (std.mem.eql(u8, summary.action_type, "scale_up"))
+            Action{ .scale_up = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "scale_down"))
+            Action{ .scale_down = .{ .key = summary.key, .quality_score = 0.0 } }
+        else if (std.mem.eql(u8, summary.action_type, "trigger"))
+            Action{ .trigger = .{ .key = summary.key } }
+        else if (std.mem.eql(u8, summary.action_type, "tri27_op"))
+            Action{
+                .tri27_op = .{
+                    .operation = parseTri27Operation(summary.tri27_operation),
+                    .input_file = summary.input_file,
+                    .output_file = "",
+                    .cycles = 0,
+                    .instructions = 0,
+                },
+            }
+        else
+            Action{ .wait = {} };
+
+        const ep = Episode{
+            .id = summary.id,
+            .timestamp = summary.timestamp,
+            .source = summary.source,
+            .context = undefined,
+            .action = action,
+            .result = undefined,
+            .outcome = summary.outcome,
+        };
+
+        // Ring buffer insertion
+        if (buffer.items.len < max_count) {
+            try buffer.append(allocator, ep);
+        } else {
+            // Replace old entry
+            buf_idx = buf_idx % max_count;
+            const old = buffer.items[buf_idx];
+            if (old) |o| {
+                if (o.context.active_issues.len > 0) allocator.free(o.context.active_issues);
+            }
+            buffer.items[buf_idx] = ep;
+            buf_idx += 1;
+            filled = true;
+        }
+    }
+
+    // Extract episodes in reverse order (newest first)
+    const result_count = if (filled) max_count else buffer.items.len;
+    var result = try allocator.alloc(Episode, result_count);
+
+    if (filled) {
+        // Buffer is a ring - start from buf_idx (oldest) and wrap around
+        for (0..result_count) |i| {
+            const idx = (buf_idx + i) % max_count;
+            result[i] = buffer.items[idx].?;
+        }
+        // Reverse to get newest first
+        for (0..result_count / 2) |i| {
+            const j = result_count - 1 - i;
+            const tmp = result[i];
+            result[i] = result[j];
+            result[j] = tmp;
+        }
+    } else {
+        // Buffer not filled - copy as-is (newest last, so reverse)
+        for (0..result_count) |i| {
+            result[i] = buffer.items[i].?;
+        }
+        // Reverse to get newest first
+        for (0..result_count / 2) |i| {
+            const j = result_count - 1 - i;
+            const tmp = result[i];
+            result[i] = result[j];
+            result[j] = tmp;
+        }
+    }
+
+    return result;
+}
+
+pub fn getLastEpisode(allocator: std.mem.Allocator) !?Episode {
+    const episodes = try loadEpisodes(allocator);
+    defer allocator.free(episodes);
+
+    if (episodes.len == 0) return null;
+    return episodes[episodes.len - 1];
+}
+
+pub const EpisodeStats = struct {
+    total: u32,
+    by_source: [5]u32, // Updated to include tri27
+    by_outcome: [5]u32,
+    last_24h: u32,
+};
+
+pub fn getEpisodeStats(allocator: std.mem.Allocator) !EpisodeStats {
+    const episodes = try loadEpisodes(allocator);
+    defer allocator.free(episodes);
+
+    const now_ns = std.time.nanoTimestamp();
+    const day_ns: u64 = 24 * 60 * 60 * 1_000_000_000;
+
+    var stats = EpisodeStats{
+        .total = @intCast(episodes.len),
+        .by_source = [_]u32{0} ** 5,
+        .by_outcome = [_]u32{0} ** 5,
+        .last_24h = 0,
+    };
+
+    for (episodes) |ep| {
+        const source_idx: u3 = @intFromEnum(ep.source);
+        stats.by_source[source_idx] += 1;
+
+        const outcome_idx: u3 = @intFromEnum(ep.outcome);
+        stats.by_outcome[outcome_idx] += 1;
+
+        if (now_ns - ep.timestamp < day_ns) {
+            stats.last_24h += 1;
+        }
+    }
+
+    return stats;
+}
+
+test "episodes: recordEpisode creates valid episode" {
+    const allocator = std.testing.allocator;
+
+    const context = Context{
+        .timestamp_ns = 1234567890,
+        .policy = .{},
+        .senses = .{},
+        .active_issues = try allocator.alloc(u64, 0),
+        .recalled_episodes = &[_]Episode{},
+    };
+    defer allocator.free(context.active_issues);
+
+    const plan = Plan{
+        .action = .scale_up,
+        .key = "kill_threshold",
+        .quality_score = 0.7,
+        .steps = &[_]Step{},
+        .rollback = null,
+    };
+
+    const result = Result{
+        .success = true,
+        .@"error" = null,
+        .timing = .{
+            .start_ns = 1234567890,
+            .end_ns = 1234567990,
+            .duration_ms = 100,
+        },
+        .output = null,
+        .new_senses = .{},
+    };
+
+    const episode = try recordEpisode(allocator, context, plan, result, .success);
+
+    try std.testing.expect(episode.timestamp != 0);
+    try std.testing.expect(episode.source == .lotus_cycle);
+    try std.testing.expect(episode.context.timestamp_ns == 1234567890);
+}
+
+test "episodes: parseTri27Operation" {
+    try std.testing.expectEqual(Tri27Operation.assemble, parseTri27Operation("assemble"));
+    try std.testing.expectEqual(Tri27Operation.disassemble, parseTri27Operation("disassemble"));
+    try std.testing.expectEqual(Tri27Operation.run, parseTri27Operation("run"));
+    try std.testing.expectEqual(Tri27Operation.@"test", parseTri27Operation("test"));
+    try std.testing.expectEqual(Tri27Operation.validate, parseTri27Operation("validate"));
+    try std.testing.expectEqual(Tri27Operation.flash, parseTri27Operation("flash"));
+    try std.testing.expectEqual(Tri27Operation.dump, parseTri27Operation("dump"));
+    try std.testing.expectEqual(Tri27Operation.assemble, parseTri27Operation("unknown")); // Default
+}
+
+test "episodes: recordTri27Episode maps Tri27Event to EpisodeSummary" {
+    const allocator = std.testing.allocator;
+
+    // Create Tri27Event: {.op = .assemble, .status = .success, .cycles = 42}
+    const tri27_event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .assemble,
+        .input_file = "test.tasm",
+        .output_file = "test.tbin",
+        .status = .success,
+        .cycles = 42,
+        .instructions = 10,
+        .error_msg = "",
+        .has_error = false,
+    };
+
+    // Map to EpisodeSummary via recordTri27Episode
+    const summary = try recordTri27Episode(allocator, tri27_event);
+
+    // Verify EpisodeSummary fields
+    try std.testing.expectEqual(Source.tri27, summary.source);
+    try std.testing.expectEqualStrings("tri27_op", summary.action_type);
+    try std.testing.expect(summary.success);
+    try std.testing.expectEqual(Outcome.success, summary.outcome);
+    try std.testing.expectEqual(@as(u64, 0), summary.duration_ms); // 42 cycles / 1000 = 0
+    try std.testing.expectEqualStrings("test.tasm", summary.input_file);
+    try std.testing.expectEqualStrings("assemble", summary.tri27_operation);
+}
+
+test "episodes: recordTri27Episode maps failed operation" {
+    const allocator = std.testing.allocator;
+
+    const tri27_event = Tri27Event{
+        .timestamp = 1234567890,
+        .operation = .run,
+        .input_file = "bad.tasm",
+        .output_file = "",
+        .status = .failed,
+        .cycles = 10,
+        .instructions = 2,
+        .error_msg = "Syntax error at line 5",
+        .has_error = true,
+    };
+
+    const summary = try recordTri27Episode(allocator, tri27_event);
+
+    try std.testing.expectEqual(Source.tri27, summary.source);
+    try std.testing.expect(!summary.success);
+    try std.testing.expectEqual(Outcome.failure_learned, summary.outcome);
+    try std.testing.expectEqualStrings("bad.tasm", summary.input_file);
+    try std.testing.expectEqualStrings("run", summary.tri27_operation);
+}
