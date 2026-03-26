@@ -8,8 +8,7 @@ pub const Reason = struct {
     message: []const u8,
 };
 
-pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const u8) !u8 {
-    _ = allocator;
+pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const u8) ![]const u8 {
     _ = args;
 
     const MIN_RATIO: f32 = 2.0; // effort >> 2x reward = SUSPICIOUS
