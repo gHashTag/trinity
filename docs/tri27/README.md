@@ -8,7 +8,7 @@
 
 ## Overview
 
-TRI‑27 — тритный (ternary) RISC процессор с 27 тритными регистрами и полным стеком разработки: от ISA до FPGA.
+TRI‑27 is a ternary RISC processor with 27 ternary registers and full development stack: from ISA to FPGA.
 
 ### Architecture
 
@@ -36,11 +36,11 @@ Queen Episodes    FPGA Bitstream
 
 ### Registers
 
-| Регистр | Размер | Назначение |
-|---------|--------|------------|
-| t0-t26 | 27×32-bit | Тритные регистры (t0 = аккумулятор) |
-| pc | 32-bit | Program Counter (в инструкциях) |
-| flags | {Z, N, C, H, ...} | Флаги состояния |
+| Register | Size | Purpose |
+|----------|------|---------|
+| t0-t26 | 27×32-bit | Ternary registers (t0 = accumulator) |
+| pc | 32-bit | Program Counter (in instructions) |
+| flags | {Z, N, C, H, ...} | Status flags |
 
 ---
 
@@ -60,7 +60,7 @@ Queen Episodes    FPGA Bitstream
 | Opcode | Mnemonic | Description |
 |--------|----------|-------------|
 | 0x18 | AND | dst = src1 & src2 |
-| 0x19 | OR | dst = src1 \| src2 |
+| 0x19 | OR | dst = src1 | src2 |
 | 0x1A | XOR | dst = src1 ^ src2 |
 | 0x1B | NOT | dst = ~dst |
 | 0x1C | SHL | dst = src1 << shift |
@@ -112,74 +112,74 @@ Queen Episodes    FPGA Bitstream
 
 ### Zig Backend (CPU Emulator)
 
-**Файлы**:
+**Files**:
 - `src/tri27/emu/cpu_state.zig` — CPU state, registers, memory
 - `src/tri27/emu/decoder.zig` — instruction decoder
 - `src/tri27/emu/executor.zig` — execution engine
 - `src/tri27/emu/asm_parser.zig` — .tri assembler
 - `src/tri27/tri27_cli.zig` — CLI entrypoint
 
-**Особенности**:
-- 36 опкодов, полный ISA
-- 27×32-bit регистры t0-t26
-- 64KB память (align(8) u8)
-- Флаги: Z, N, C, H, O
-- Cycle counter для профилирования
+**Features**:
+- 36 opcodes, complete ISA
+- 27×32-bit registers t0-t26
+- 64KB memory (align(8) u8)
+- Flags: Z, N, C, H, O
+- Cycle counter for profiling
 
 ### Verilog Backend (FPGA)
 
-**Файлы**:
+**Files**:
 - `fpga/openxc7-synth/hslm_ternary_mac.v` — ternary ALU core
-- `src/tri27/verilog_backend.zig` — Zig → Verilog генератор
+- `src/tri27/verilog_backend.zig` — Zig → Verilog generator
 
-**Особенности**:
+**Features**:
 - 0 DSP inference (pure LUT)
 - Pipeline: IF → ID → EX → MEM → WB
-- BRAM36 для instruction memory
-- Ternary arithmetic в LUT
+- BRAM36 for instruction memory
+- Ternary arithmetic in LUT
 
 ---
 
 ## Queen Integration — Lotus Cycle
 
 ### Phase 1: Observe
-**Файл**: `src/tri/queen/observe.zig`
+**File**: `src/tri/queen/observe.zig`
 
-Читает:
+Reads:
 - `policy.json` — kill_threshold, crash_rate_limit, byzantine_rate_limit
 - `senses.json` — farm_best_ppl, test_rate, dirty_files, etc.
 
 ### Phase 2: Plan
-**Файл**: `src/tri/queen/plan.zig`
+**File**: `src/tri/queen/plan.zig`
 
-Генерирует `PolicyDelta`:
-- `scale_up` — увеличить threshold (×1.1)
-- `scale_down` — уменьшить threshold (×0.8-0.95)
-- `set` — установить точное значение
-- `wait` — ничего не делать
+Generates `PolicyDelta`:
+- `scale_up` — increase threshold (×1.1)
+- `scale_down` — decrease threshold (×0.8-0.95)
+- `set` — set exact value
+- `wait` — do nothing
 
 ### Phase 3: Evaluate
-**Файл**: `src/tri/queen/evaluate.zig`
+**File**: `src/tri/queen/evaluate.zig`
 
-Оценивает окно episodes:
+Evaluates episode window:
 - `good` — success_rate ≥ 95%
 - `unstable` — 70% < success_rate < 95%
 - `bad` — success_rate ≤ 70%
-- `unknown` — нет данных
+- `unknown` — no data
 
 ### Phase 4: Act
-**Файл**: `src/tri/queen/act.zig`
+**File**: `src/tri/queen/act.zig`
 
-Исполняет Plan:
-- `scale_up` — умножить параметр
-- `scale_down` — разделить параметр
-- `trigger` — выполнить команду
-- `wait` — наблюдать
+Executes Plan:
+- `scale_up` — multiply parameter
+- `scale_down` — divide parameter
+- `trigger` — execute command
+- `wait` — observe
 
 ### Phase 5: Self-Learning
-**Файл**: `src/tri/queen/self_learning.zig`
+**File**: `src/tri/queen/self_learning.zig`
 
-**Замкнутый цикл**:
+**Closed loop**:
 ```
 tri tri27 run test.tbin
     → Episode → episodes.jsonl
@@ -188,7 +188,7 @@ tri tri27 run test.tbin
     → generatePlan() → PolicyDelta[]
     → applyPolicyDelta() → Tri27Config
     → saveConfig() → tri27_config.json
-    → Episode о self-learning_cycle
+    → Episode about self-learning_cycle
 ```
 
 **Tri27Config**:
@@ -208,16 +208,16 @@ pub const Tri27Config = struct {
 ## CLI
 
 ```bash
-# Компиляция
+# Compilation
 tri tri27 assemble <input.tri> -o <output.tbin>
 
-# Декомпиляция
+# Disassembly
 tri tri27 disassemble <input.tbin>
 
-# Исполнение
+# Execution
 tri tri27 run <program.tbin>
 
-# Валидация
+# Validation
 tri tri27 validate <source.tri>
 
 # Experience tracking
@@ -234,14 +234,14 @@ tri tri27 isa
 
 ## Tests
 
-| Тест | Файл | Описание |
-|------|------|----------|
-| Golden | `test_golden.zig` | 15/15 — полный цикл asm→tbin→emu |
-| Comprehensive | `test_comprehensive.zig` | 36/36 — все опкоды |
+| Test | File | Description |
+|------|------|-------------|
+| Golden | `test_golden.zig` | 15/15 — full cycle asm→tbin→emu |
+| Comprehensive | `test_comprehensive.zig` | 36/36 — all opcodes |
 | Experience | `tri27_experience.zig` | Jaccard similarity, recall |
 | Queen Self-Learning | `self_learning.zig` | 4/4 — feedback loop |
 
-**Запуск**:
+**Run**:
 ```bash
 zig build test-tri27-golden        # Golden tests
 zig build test-tri27-comprehensive # Comprehensive tests
@@ -279,7 +279,7 @@ src/tri/queen/
 
 ## Status
 
-✅ ISA — 36 opcod
+✅ ISA — 36 opcodes
 ✅ Zig Backend — CPU emulator
 ✅ Verilog Backend — FPGA synthesis
 ✅ CLI — assemble/disassemble/run/validate
@@ -289,7 +289,7 @@ src/tri/queen/
 
 ---
 
-**Интеграция**:
+**Integration**:
 - `src/tri27/` ↔ `src/tri/queen/` — Episode tracking
 - `src/tri27/tri27_experience.zig` → `.trinity/queen/episodes.jsonl`
 - `src/tri/queen/self_learning.zig` → `.trinity/queen/tri27_config.json`
