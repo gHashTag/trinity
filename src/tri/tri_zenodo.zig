@@ -100,6 +100,13 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         } else {
             try publishAllBundlesV5(allocator);
         }
+    } else if (std.mem.eql(u8, subcmd, "bundle-v5.2")) {
+        // Create new v5.2 bundle deposits with algorithm boxes, diagrams, statistical analysis
+        if (sub_args.len > 0) {
+            try publishBundleV5_2(allocator, sub_args[0]);
+        } else {
+            try publishAllBundlesV5_2(allocator);
+        }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -387,6 +394,77 @@ const bundle_v5_records = [_]UpdateRecord{
         .file = "docs/research/zenodo_parent_collection_enhanced_v5.md",
         .title = "Trinity S³AI Framework — Complete Research Collection v5.0",
         .keywords = "Trinity,S3AI,ternary,computing,framework,HSLM,FPGA,TRI-27,Queen,Tri-language,GF16,TF3,VSA,phi-based,sacred,neural,network,instruction,set,orchestration,linear,types,effects,handlers,pattern,matching,ethics,broader-impact,reproducibility",
+        .cpc = "G06N3/00,G06N20/00,G06F7/52,G06F9/30,G06F8/30,G06F7/72,G06F17/16",
+    },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V5.2 Bundle Records — Enhanced with Algorithm Boxes, Diagrams, Statistical Analysis
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const bundle_v5_2_records = [_]UpdateRecord{
+    .{
+        .id = "B001",
+        .zenodo_id = "19227733",
+        .file = "docs/research/zenodo_B001_enhanced_v5.2.md",
+        .title = "Trinity B001: Ternary Neural Networks — Complete Scientific Framework v5.2",
+        .keywords = "ternary,neural-network,HSLM,LLM,PPL,TinyStories,1.95M,compression,checkpoint,phi-based,sacred,T-JEPA,consciousness-gate,cosine-lr,Docker,reproducibility,ethics,broader-impact,algorithm-boxes,architecture-diagrams,statistical-analysis,hypothesis-testing,limitations,MLSys-reproducibility-card",
+        .cpc = "G06N3/00,G06N3/0455,G06F7/52,G06F17/16",
+    },
+    .{
+        .id = "B002",
+        .zenodo_id = "19227735",
+        .file = "docs/research/zenodo_B002_enhanced_v5.2.md",
+        .title = "Trinity B002: Zero-DSP FPGA Architecture for Ternary Inference v5.2",
+        .keywords = "zero-DSP,FPGA,LUT,inference,ternary,CORDIC,argmax,BRAM,Yosys,nextpnr,XC7A100T,synthesis,JTAG,ESP32,UART,Docker,reproducibility,ethics,broader-impact,algorithm-boxes,architecture-diagrams,statistical-analysis,experimental-protocol,limitations",
+        .cpc = "G06F7/52,G06F7/72,G06F17/00,H03K19/20",
+    },
+    .{
+        .id = "B003",
+        .zenodo_id = "19227737",
+        .file = "docs/research/zenodo_B003_enhanced_v5.2.md",
+        .title = "Trinity B003: TRI-27 ISA — Ternary Instruction Set with Coptic Alphabet Encoding v5.2",
+        .keywords = "TRI-27,ISA,ternary,Coptic,alphabet,encoding,3-bank,registers,opcodes,episode,binary,27-registers,Docker,reproducibility,ethics,cultural-heritage,algorithm-boxes,opcode-tables,assembly-examples,code-density,statistical-analysis,limitations",
+        .cpc = "G06F9/30,G06F9/34,G06F15/16",
+    },
+    .{
+        .id = "B004",
+        .zenodo_id = "19227739",
+        .file = "docs/research/zenodo_B004_enhanced_v5.2.md",
+        .title = "Trinity B004: Queen Lotus Cycle — Autonomous Orchestration for Self-Evolving AI v5.2",
+        .keywords = "Queen,self-learning,orchestration,Lotus,Cycle,episode,Jaccard,similarity,SEVO,hyperopt,ASHA,PBT,Railway,autonomous,AI,ethics,broader-impact,reproducibility,algorithm-boxes,architecture-diagrams,statistical-analysis,experimental-protocol,limitations,retrieval-accuracy,sample-efficiency",
+        .cpc = "G06N20/00,G06F3/00,G06N5/00",
+    },
+    .{
+        .id = "B005",
+        .zenodo_id = "19227743",
+        .file = "docs/research/zenodo_B005_enhanced_v5.2.md",
+        .title = "Trinity B005: Tri Language — Linear Types, Effects, Dual-Target Compilation v5.2",
+        .keywords = "Tri,language,DSL,codegen,Zig,Verilog,linear-types,ownership,effects,handlers,pattern-matching,bit,trit,ADT,pipe,compiler,Docker,reproducibility,ethics,algorithm-boxes,type-system-diagrams,code-examples,statistical-analysis,limitations,code-generation-quality",
+        .cpc = "G06F8/30,G06F8/34,G06F8/65",
+    },
+    .{
+        .id = "B006",
+        .zenodo_id = "19227745",
+        .file = "docs/research/zenodo_B006_enhanced_v5.2.md",
+        .title = "Trinity B006: Sacred GF16/TF3 — Phi-Based Arithmetic for Ternary Computing v5.2",
+        .keywords = "sacred,GF16,TF3,floating-point,ternary,phi-based,arithmetic,compression,phi-distance,exponent,mantissa,FPGA,Docker,reproducibility,ethics,algorithm-boxes,format-specifications,statistical-analysis,limitations,information-retention,hardware-utilization",
+        .cpc = "G06F7/52,G06F7/54,G06F5/01",
+    },
+    .{
+        .id = "B007",
+        .zenodo_id = "19227749",
+        .file = "docs/research/zenodo_B007_enhanced_v5.2.md",
+        .title = "Trinity B007: VSA Operations for Ternary Computing v5.2",
+        .keywords = "VSA,vector-symbolic,architecture,bind,unbind,bundle,ternary,dot-product,permutation,FHRR,BSD,HybridBigInt,SIMD,cosine-similarity,Docker,reproducibility,ethics,algorithm-boxes,architecture-diagrams,statistical-analysis,SIMD-speedup,noise-resilience,limitations,truth-tables",
+        .cpc = "G06F7/72,G06F17/16,G06N3/00",
+    },
+    .{
+        .id = "PARENT",
+        .zenodo_id = "19227751",
+        .file = "docs/research/zenodo_parent_collection_v5.2.md",
+        .title = "Trinity S³AI Framework — Complete Research Collection v5.2",
+        .keywords = "Trinity,S3AI,ternary,computing,framework,HSLM,FPGA,TRI-27,Queen,Tri-language,GF16,TF3,VSA,phi-based,sacred,neural,network,instruction,set,orchestration,linear,types,effects,handlers,pattern,matching,ethics,broader-impact,reproducibility,algorithm-boxes,architecture-diagrams,statistical-analysis,experimental-protocols,limitations,MLSys-reproducibility-cards",
         .cpc = "G06N3/00,G06N20/00,G06F7/52,G06F9/30,G06F8/30,G06F7/72,G06F17/16",
     },
 };
@@ -1078,6 +1156,142 @@ fn publishBundleV5(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
     print("{s}Unknown bundle: {s}. Valid: B001-B007, PARENT{s}\n", .{ RED, bundle_id, RESET });
 }
 
+fn publishAllBundlesV5_2(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}ZENODO BUNDLE v5.2 — Publishing with Algorithm Boxes, Diagrams, Statistical Analysis{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+    print("Enhanced with:\n", .{});
+    print("  • Algorithm boxes (pseudocode for all key algorithms)\n", .{});
+    print("  • ASCII architecture diagrams\n", .{});
+    print("  • Detailed experimental protocols\n", .{});
+    print("  • Statistical analysis with hypothesis testing\n", .{});
+    print("  • Limitations sections\n", .{});
+    print("  • MLSys reproducibility cards\n\n", .{});
+
+    for (bundle_v5_2_records) |rec| {
+        publishBundleV5_2Single(allocator, rec) catch |err| {
+            print("{s}Failed {s}: {}{s}\n", .{ RED, rec.id, err, RESET });
+            continue;
+        };
+    }
+
+    print("\n{s}All v5.2 bundles published. Run 'tri zenodo status' to verify.{s}\n\n", .{ GREEN, RESET });
+}
+
+fn publishBundleV5_2(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    for (bundle_v5_2_records) |rec| {
+        if (std.mem.eql(u8, rec.id, bundle_id)) {
+            try publishBundleV5_2Single(allocator, rec);
+            return;
+        }
+    }
+    print("{s}Unknown bundle: {s}. Valid: B001-B007, PARENT{s}\n", .{ RED, bundle_id, RESET });
+}
+
+fn publishBundleV5_2Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} {s}\n", .{ CYAN, rec.id, RESET, rec.title });
+
+    // Step 1: Create new deposition
+    print("  1/4 Creating record...\n", .{});
+
+    // Build keywords JSON array from comma-separated string
+    var kw_buf: [4096]u8 = undefined;
+    var kw_pos: usize = 0;
+    kw_buf[kw_pos] = '[';
+    kw_pos += 1;
+    var kw_iter = std.mem.splitScalar(u8, rec.keywords, ',');
+    var first = true;
+    while (kw_iter.next()) |kw| {
+        if (!first) {
+            kw_buf[kw_pos] = ',';
+            kw_pos += 1;
+        }
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        @memcpy(kw_buf[kw_pos .. kw_pos + kw.len], kw);
+        kw_pos += kw.len;
+        kw_buf[kw_pos] = '"';
+        kw_pos += 1;
+        first = false;
+    }
+    kw_buf[kw_pos] = ']';
+    kw_pos += 1;
+
+    // Build notes with v5.2 enhancements
+    const notes = "Enhanced v5.2 with Algorithm Boxes (pseudocode), ASCII Architecture Diagrams, Detailed Experimental Protocols, Statistical Analysis with Hypothesis Testing, Limitations Sections, MLSys Reproducibility Cards. NeurIPS/ICLR/MLSys 2025 compliant.";
+
+    const body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-26","description":"{s}","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity S³AI Framework"}}],"keywords":{s},"license":{{"id":"cc-by-4.0"}},"version":"5.2","notes":"{s}"}}}}
+    , .{ rec.title, notes, kw_buf[0..kw_pos], notes });
+    defer allocator.free(body);
+
+    const create_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions", .{API});
+    defer allocator.free(create_url);
+
+    const resp = try curlPost(allocator, create_url, token, body);
+    defer allocator.free(resp);
+
+    const dep_id = jsonExtractString(resp, "id") orelse {
+        print("  {s}Failed to create record{s}\n", .{ RED, RESET });
+        return error.CreateFailed;
+    };
+
+    print("  2/4 Record ID: {s}\n", .{dep_id});
+
+    // Step 3: Upload description file
+    print("  3/4 Uploading enhanced v5.2 description...\n", .{});
+
+    const files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, dep_id });
+    defer allocator.free(files_url);
+
+    // Read markdown file
+    const desc_content = std.fs.cwd().readFileAlloc(allocator, rec.file, 524288) catch return error.ReadFailed;
+    defer allocator.free(desc_content);
+
+    // Write to temp file for upload
+    const temp_name = try std.fmt.allocPrint(allocator, "{s}_v5.2_description.md", .{rec.id});
+    defer allocator.free(temp_name);
+    const temp_path = try std.fmt.allocPrint(allocator, "/tmp/{s}", .{temp_name});
+    defer allocator.free(temp_path);
+
+    {
+        const temp_file = try std.fs.createFileAbsolute(temp_path, .{});
+        defer temp_file.close();
+        try temp_file.writeAll(desc_content);
+    }
+
+    const auth = try std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token});
+    defer allocator.free(auth);
+    const file_arg = try std.fmt.allocPrint(allocator, "file=@{s}", .{temp_path});
+    defer allocator.free(file_arg);
+    const name_arg = try std.fmt.allocPrint(allocator, "name={s}_v5.2_description.md", .{rec.id});
+    defer allocator.free(name_arg);
+
+    const upload_result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "curl", "-s", "-X", "POST", files_url, "-H", auth, "-F", file_arg, "-F", name_arg },
+    });
+    allocator.free(upload_result.stdout);
+    allocator.free(upload_result.stderr);
+
+    // Step 4: Publish
+    print("  4/4 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, dep_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
+    const conceptdoi = jsonExtractString(pub_resp, "conceptdoi") orelse "pending";
+    print("  {s}[{s}] DOI: {s}{s}\n", .{ GREEN, rec.id, doi, RESET });
+    print("     Concept DOI: {s}\n\n", .{conceptdoi});
+
+    // Cleanup
+    std.fs.deleteFileAbsolute(temp_path) catch {};
+}
+
 fn publishBundleV5Single(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     const token = try loadToken(allocator);
     defer allocator.free(token);
@@ -1193,12 +1407,13 @@ fn printHelp() void {
     print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n", .{});
     print("  tri zenodo update-v4 [B001-B007] Update bundles to v4.0 with enhanced descriptions\n", .{});
     print("  tri zenodo bundle-v4 [B001-B007] Create new v4.0 bundle deposits\n", .{});
-    print("  tri zenodo bundle-v5 [B001-B007] Create new v5.0 bundle deposits (NeurIPS/ICLR/MLSys)\n\n", .{});
+    print("  tri zenodo bundle-v5 [B001-B007] Create new v5.0 bundle deposits (NeurIPS/ICLR/MLSys)\n", .{});
+    print("  tri zenodo bundle-v5.2 [B001-B007] Create new v5.2 bundle deposits (algorithm boxes, diagrams, stats)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
     print("  Discoveries:\n", .{});
     print("    D004-D007: Original (Ouroboros, VSA, phi-RoPE, Sparse MatMul)\n", .{});
-    print("    B001-B007: Enhanced v4.0 Bundles\n", .{});
+    print("    B001-B007: Enhanced Bundles (v4.0, v5.0, v5.2)\n", .{});
     print("              B001=HSLM (1.95M params, PPL 125.3)\n", .{});
     print("              B002=Zero-DSP FPGA (0% DSP, 1.2W)\n", .{});
     print("              B003=TRI-27 ISA (36 opcodes, 27 regs)\n", .{});
