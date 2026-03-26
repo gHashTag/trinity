@@ -1,35 +1,231 @@
 cff-version: 1.2.0
-message: "Trinity S3AI Framework - Complete Scientific Collection"
-title: "Trinity S³AI Framework — Complete Scientific Collection (76 Discoveries)"
-abstract: "We present the Trinity S³AI (Sacred Symbolic AI) Framework, a comprehensive approach to ternary neural networks, FPGA acceleration, and autonomous orchestration. This collection includes 7 bundles covering 76 scientific discoveries across neural network architecture, hardware design, instruction set design, orchestration systems, language design, number formats, and vector symbolic architectures."
+message: "If you use any Trinity S³AI research findings, please cite our complete scientific collection. This work represents defensive publication of 40+ innovations across ternary computing, FPGA architecture, neural networks, and autonomous orchestration."
+title: "Trinity S³AI Framework — Complete Scientific Collection v5.2"
+abstract: "Trinity S³AI (Sacred Symbolic AI) Framework presents a comprehensive approach to ternary computing with 40+ documented innovations across 7 research domains: (1) Ternary Neural Networks — HSLM-1.95M achieves PPL 125.3 on TinyStories with 20× memory compression; (2) Zero-DSP FPGA — Pure LUT-based inference requiring 0 DSP blocks with 37.8% LUT reduction; (3) TRI-27 ISA — 27-register balanced ternary instruction set with Coptic 3-bank encoding; (4) Queen Lotus Cycle — 6-phase autonomous orchestration with Jaccard similarity retrieval; (5) Tri Language — Linear types, algebraic effects, dual-target codegen to Zig/Verilog; (6) Sacred GF16/TF3 — φ-optimal number formats with 98.4% information retention; (7) VSA Operations — HybridBigInt SIMD achieving 17.2× speedup. All implementations are pure Zig 0.15.x with zero external dependencies, complete reproducibility artifacts, and MLSys reproducibility cards."
 authors:
-  - family-names: Vasilev
-    given-names: Dmitrii
-    affiliation: "Trinity Research Labs"
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
     orcid: "https://orcid.org/0009-0000-0000-0000"
-keywords:
-  - ternary computing
-  - neural networks
-  - FPGA
-  - VSA
-  - phi-based
-  - Zig
-  - autonomous agents
-  - HSLM
-  - TRI-27
-  - Queen Lotus
-license: CC-BY-4.0
-doi: 10.5281/zenodo.19225187
-url: "https://github.com/gHashTag/trinity"
+    affiliation: "Trinity Open Source Project"
+    email: "dmitrii@trinity.ai"
+type: software
+version: 5.2.0
+doi: 10.5281/zenodo.19227879
 date-released: 2026-03-26
-version: 2.3
-
+url: "https://github.com/gHashTag/trinity"
+repository-code: "https://github.com/gHashTag/trinity"
+keywords:
+  - "ternary computing"
+  - "balanced ternary"
+  - "neural networks"
+  - "HSLM"
+  - "1.58-bit LLM"
+  - "FPGA inference"
+  - "zero-DSP"
+  - "TRI-27 ISA"
+  - "Coptic encoding"
+  - "Queen Lotus Cycle"
+  - "autonomous orchestration"
+  - "Jaccard similarity"
+  - "Tri Language"
+  - "linear types"
+  - "algebraic effects"
+  - "GF16"
+  - "TF3"
+  - "phi-optimal"
+  - "golden ratio"
+  - "VSA"
+  - "Vector Symbolic Architecture"
+  - "HybridBigInt"
+  - "SIMD"
+  - "Zig programming language"
+  - "pure Zig"
+  - "zero dependencies"
+  - "defensive publication"
+  - "prior art"
+  - "reproducibility"
+  - "MLSys"
+license: MIT
+identifiers:
+  - description: "Zenodo DOI for Trinity S³AI Framework v5.2 (Parent collection)"
+    type: doi
+    value: "10.5281/zenodo.19227879"
+  - description: "Zenodo DOI for HSLM Ternary Neural Networks (B001) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227733"
+  - description: "Zenodo DOI for Zero-DSP FPGA Architecture (B002) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227735"
+  - description: "Zenodo DOI for TRI-27 ISA (B003) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227737"
+  - description: "Zenodo DOI for Queen Lotus Cycle (B004) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227739"
+  - description: "Zenodo DOI for Tri Language (B005) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227741"
+  - description: "Zenodo DOI for Sacred GF16/TF3 (B006) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227743"
+  - description: "Zenodo DOI for VSA Operations (B007) v5.2"
+    type: doi
+    value: "10.5281/zenodo.19227745"
+  - description: "Software Heritage persistent archive identifier"
+    type: swh
+    value: "swh:1:dir:github-commits-hash"
+related-resources:
+  - type: documentation
+    relationship: documents
+    title: "Trinity Scientific Manifesto — Complete Innovation Catalog"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/TRINITY_SCIENTIFIC_MANIFESTO.md"
+  - type: documentation
+    relationship: documents
+    title: "Trinity S³AI Unified Research Framework"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md"
+  - type: documentation
+    relationship: documents
+    title: "Sacred Arithmetic Framework — GF16/TF3 Mathematical Foundations"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/SACRED_ARITHMETIC_FRAMEWORK.md"
+  - type: documentation
+    relationship: documents
+    title: "Scientific References v5.2 — Comprehensive Bibliography"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/SCIENTIFIC_REFERENCES_V5.2.md"
+  - type: documentation
+    relationship: documents
+    title: "Zenodo v5.2 Upload Guide"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/ZENODO_V5.2_UPLOAD_GUIDE.md"
+  - type: documentation
+    relationship: documents
+    title: "Zenodo Figures & Diagrams Guide"
+    uri: "https://github.com/gHashTag/trinity/blob/main/docs/research/ZENODO_FIGURES_GUIDE.md"
 preferred-citation:
   type: software
+  title: "Trinity S³AI Framework: Complete Research Collection v5.2"
   authors:
-    - family-names: Vasilev
-      given-names: Dmitrii
-  title: "Trinity S³AI Framework — Complete Scientific Collection (76 Discoveries)"
+    - family-names: "Vasilev"
+      given-names: "Dmitrii"
+      orcid: "https://orcid.org/0009-0000-0000-0000"
   year: 2026
-  doi: 10.5281/zenodo.19225187
-  publisher: Zenodo
+  month: 3
+  journal: "Zenodo"
+  volume: "v5.2"
+  issue: "Enhanced with Algorithm Boxes, Architecture Diagrams, Statistical Analysis"
+  doi: "10.5281/zenodo.19227879"
+  url: "https://doi.org/10.5281/zenodo.19227879"
+references:
+  # Ternary Computing & Neural Networks
+  - type: article
+    title: "The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits"
+    authors:
+      - family-names: "Ma"
+        given-names: "D."
+      - family-names: "Liu"
+        given-names: "H."
+      - family-names: "Li"
+        given-names: "Z."
+      - family-names: "Wang"
+        given-names: "R."
+      - family-names: "Wang"
+        given-names: "Y."
+      - family-names: "Tang"
+        given-names: "J."
+      - family-names: "Xie"
+        given-names: "A."
+      - family-names: "Liu"
+        given-names: "Y."
+      - family-names: "Wang"
+        given-names: "Y."
+      - family-names: "Dang"
+        given-names: "Y."
+      - family-names: "Li"
+        given-names: "Y."
+      - family-names: "Li"
+        given-names: "Z."
+      - family-names: "He"
+        given-names: "Q."
+      - family-names: "Zhou"
+        given-names: "A."
+      - family-names: "Li"
+        given-names: "Y."
+    year: 2024
+    journal: "arXiv"
+    volume: "arXiv:2402.17764"
+    doi: "10.48550/arXiv.2402.17764"
+  - type: article
+    title: "TerEffic: Highly Efficient Ternary LLM Inference on FPGA"
+    authors:
+      - family-names: "Ma"
+        given-names: "S."
+      - family-names: "Li"
+        given-names: "K."
+      - family-names: "Xue"
+        given-names: "C."
+      - family-names: "He"
+        given-names: "Y."
+      - family-names: "Liu"
+        given-names: "J."
+      - family-names: "Liu"
+        given-names: "J."
+    year: 2025
+    journal: "arXiv"
+    volume: "arXiv:2502.16473v2"
+    doi: "10.48550/arXiv.2502.16473"
+  - type: article
+    title: "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?"
+    authors:
+      - family-names: "Eldan"
+        given-names: "Ron"
+      - family-names: "Li"
+        given-names: "Y."
+    year: 2023
+    journal: "arXiv"
+    volume: "arXiv:2305.07759"
+    doi: "10.48550/arXiv.2305.07759"
+  # FPGA Tools
+  - type: software
+    title: "Yosys Open Synthesis Suite"
+    authors:
+      - name: "The Yosys Community"
+    year: 2024
+    url: "https://github.com/YosysHQ/yosys"
+    license: MIT
+  - type: software
+    title: "nextpnr-xilinx: FPGA place and route tool"
+    authors:
+      - name: "openXC7 Community"
+    year: 2024
+    url: "https://github.com/openXC7/nextpnr-xilinx"
+    license: ISC
+  # VSA & Hyperdimensional Computing
+  - type: article
+    title: "Hyperdimensional Computing: An Introduction to Computing in Distributed Representation with High-Dimensional Random Vectors"
+    authors:
+      - family-names: "Kanerva"
+        given-names: "Pentti"
+    year: 2009
+    journal: "Cognitive Computation"
+    volume: "1"
+    issue: "2"
+    pages: "139-159"
+    doi: "10.1007/s12559-009-9009-8"
+  # Mathematical Foundations
+  - type: book
+    title: "The Golden Ratio: The Story of Phi, the World's Most Astonishing Number"
+    authors:
+      - family-names: "Livio"
+        given-names: "Mario"
+    year: 2008
+    publisher: "Broadway Books"
+    isbn: "978-0767908160"
+  # Scientific Standards
+  - type: web
+    title: "Zenodo - FAIR Principles and Publishing Best Practices"
+    url: "https://about.zenodo.org/principles/"
+    year: 2025
+  - type: web
+    title: "Citation File Format (CFF) - GitHub/Zenodo Integration"
+    url: "https://citation-file-format.github.io"
+    year: 2025
+
+# φ² + 1/φ² = 3 | TRINITY
