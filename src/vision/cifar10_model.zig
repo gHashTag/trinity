@@ -223,12 +223,17 @@ pub const CIFAR10Model = struct {
         // Compute loss
         const loss = crossEntropyLoss(logits, target);
 
+        // Check for NaN loss and return early if detected
+        if (std.math.isNan(loss)) {
+            return 0.0; // Return zero loss, skip weight update this step
+        }
+
         // Backward pass (compute gradients)
         // Gradient of loss w.r.t. logits (softmax gradient)
         // For cross-entropy with softmax: dL/dlogits[k] = p[k] - y[k]
         // where p is softmax probability, y is one-hot target
 
-        // Compute softmax probabilities
+        // Compute softmax probabilities with numerical stability
         var probs: [10]f32 = undefined;
         {
             var max_logit: f32 = logits[0];
@@ -236,13 +241,18 @@ pub const CIFAR10Model = struct {
                 if (l > max_logit) max_logit = l;
             }
 
+            // Clip to prevent exp overflow
+            const max_exp_input: f32 = 88.0;
             var sum: f32 = 0.0;
             for (logits, 0..) |l, i| {
-                probs[i] = std.math.exp(l - max_logit);
+                const exp_input = @min(l - max_logit, max_exp_input);
+                probs[i] = std.math.exp(exp_input);
                 sum += probs[i];
             }
 
-            for (&probs) |*p| p.* /= sum;
+            // Add epsilon to prevent division by zero
+            const epsilon: f32 = 1.0e-8;
+            for (&probs) |*p| p.* /= (sum + epsilon);
         }
 
         // Gradient w.r.t. logits (output layer)
@@ -250,6 +260,12 @@ pub const CIFAR10Model = struct {
         for (&d_logits, 0..) |*d, i| {
             const target_val: f32 = if (i == target) 1.0 else 0.0;
             d.* = probs[i] - target_val;
+        }
+
+        // Gradient clipping to prevent explosion
+        const grad_clip: f32 = 5.0;
+        for (&d_logits) |*d| {
+            d.* = @max(-grad_clip, @min(grad_clip, d.*));
         }
 
         // Gradient w.r.t. layer3 weights (256 → 10)
@@ -275,6 +291,11 @@ pub const CIFAR10Model = struct {
             }
         }
 
+        // Clip gradients
+        for (&d_buffer2) |*d| {
+            d.* = @max(-grad_clip, @min(grad_clip, d.*));
+        }
+
         // ReLU derivative (if buffer2[j] > 0, gradient passes through)
         for (0..256) |j| {
             if (buffer2[j] <= 0) d_buffer2[j] = 0;
@@ -298,6 +319,11 @@ pub const CIFAR10Model = struct {
             for (0..256) |k| {
                 d_buffer1[j] += d_buffer2[k] * self.layer2.weights[k * 512 + j];
             }
+        }
+
+        // Clip gradients
+        for (&d_buffer1) |*d| {
+            d.* = @max(-grad_clip, @min(grad_clip, d.*));
         }
 
         // ReLU derivative
@@ -339,9 +365,10 @@ pub inline fn softmax(logits: []f32) void {
     }
 }
 
-/// Cross-entropy loss
+/// Cross-entropy loss with numerical stability
 pub fn crossEntropyLoss(logits: []const f32, target: usize) f32 {
-    // Apply softmax (without modifying input)
+    // Clip logits to prevent exp overflow (max ~88 for f32 before overflow)
+    const max_exp_input: f32 = 88.0;
     var max_logit: f32 = logits[0];
     for (logits[1..]) |l| {
         if (l > max_logit) max_logit = l;
@@ -350,11 +377,15 @@ pub fn crossEntropyLoss(logits: []const f32, target: usize) f32 {
     var sum: f32 = 0.0;
     var exps: [10]f32 = undefined;
     for (logits, 0..) |l, i| {
-        exps[i] = std.math.exp(l - max_logit);
+        // Clip input to exp to prevent overflow
+        const exp_input: f32 = if (l - max_logit > max_exp_input) max_exp_input else l - max_logit;
+        exps[i] = std.math.exp(exp_input);
         sum += exps[i];
     }
 
-    const log_sum = std.math.log(f32, std.math.e, sum);
+    // Add epsilon to prevent log(0)
+    const epsilon: f32 = 1.0e-8;
+    const log_sum = std.math.log(f32, std.math.e, sum + epsilon);
 
     // Loss = -log(softmax[target])
     const loss = -(logits[target] - max_logit) + log_sum;
