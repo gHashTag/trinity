@@ -201,4 +201,3 @@ pub fn probeSequence(allocator: std.mem.Allocator, sequence: []const Trit, query
     }
     return result;
 }
-
