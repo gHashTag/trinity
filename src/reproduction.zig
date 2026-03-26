@@ -153,10 +153,10 @@ pub const ReproductionEngine = struct {
 
     /// Generate experiment manifest
     fn generateManifest(self: *const ReproductionEngine) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
-        defer buffer.deinit();
+        var buffer = try std.ArrayList(u8).initCapacity(self.allocator, 256);
+        defer buffer.deinit(self.allocator);
 
-        const writer = buffer.writer();
+        const writer = buffer.writer(self.allocator);
 
         try writer.print(
             \\# Trinity S³AI Reproduction Manifest
@@ -182,8 +182,8 @@ pub const ReproductionEngine = struct {
                 self.config.dataset,
                 self.config.max_steps,
                 std.time.nanoTimestamp(),
-                @tagName(std.os.tag), // TODO: format OS name
-                @tagName(std.Target.current.cpu.arch),
+                @tagName(comptime builtin.os.tag),
+                @tagName(comptime builtin.cpu.arch),
                 builtin.zig_version,
             }
         );
