@@ -149,8 +149,7 @@ pub const BenchmarkConfig = struct {
             self.max_tokens,
             self.temperature,
             self.seed,
-        }
-        );
+        });
     }
 };
 
@@ -173,23 +172,20 @@ pub const BenchmarkResult = struct {
         const model_name = try self.config.baseline_model.format(allocator);
         defer allocator.free(model_name);
 
-        return std.fmt.allocPrint(allocator,
-            "{s},{s},{d},{d:.4},{d:.2},{d:.2},{d:.2},{d:.6},{d:.2},{d:.2},{d:.1},{d}\n",
-            .{
-                self.config.name,
-                model_name,
-                self.seed,
-                self.perplexity,
-                self.tokens_per_second,
-                self.latency_ms,
-                self.memory_mb,
-                self.energy_per_token,
-                self.flops,
-                self.total_params_m,
-                self.model_size_mb,
-                self.flops_per_param,
-            }
-        );
+        return std.fmt.allocPrint(allocator, "{s},{s},{d},{d:.4},{d:.2},{d:.2},{d:.2},{d:.6},{d:.2},{d:.2},{d:.1},{d}\n", .{
+            self.config.name,
+            model_name,
+            self.seed,
+            self.perplexity,
+            self.tokens_per_second,
+            self.latency_ms,
+            self.memory_mb,
+            self.energy_per_token,
+            self.flops,
+            self.total_params_m,
+            self.model_size_mb,
+            self.flops_per_param,
+        });
     }
 };
 
@@ -212,23 +208,20 @@ pub const AggregatedResult = struct {
         const model_name = try self.baseline_model.format(allocator);
         defer allocator.free(model_name);
 
-        return std.fmt.allocPrint(allocator,
-            "{s},{d},{d:.4},{d:.4},{d:.4},{d:.4},{d:.2},{d:.2},{d:.2},{d:.2},{d:.2},{d:.1}\n",
-            .{
-                model_name,
-                self.n_seeds,
-                self.perplexity_mean,
-                self.perplexity_std,
-                self.perplexity_ci_95_low,
-                self.perplexity_ci_95_high,
-                self.tokens_per_second_mean,
-                self.tokens_per_second_std,
-                self.latency_mean_ms,
-                self.memory_mean_mb,
-                self.flops_mean,
-                self.improvement_vs_baseline,
-            }
-        );
+        return std.fmt.allocPrint(allocator, "{s},{d},{d:.4},{d:.4},{d:.4},{d:.4},{d:.2},{d:.2},{d:.2},{d:.2},{d:.2},{d:.1}\n", .{
+            model_name,
+            self.n_seeds,
+            self.perplexity_mean,
+            self.perplexity_std,
+            self.perplexity_ci_95_low,
+            self.perplexity_ci_95_high,
+            self.tokens_per_second_mean,
+            self.tokens_per_second_std,
+            self.latency_mean_ms,
+            self.memory_mean_mb,
+            self.flops_mean,
+            self.improvement_vs_baseline,
+        });
     }
 
     pub fn formatLatex(self: *const AggregatedResult, allocator: Allocator) ![]const u8 {
@@ -236,8 +229,7 @@ pub const AggregatedResult = struct {
         defer allocator.free(model_name);
 
         // Format: Model & PPL & tok/s & Latency (ms) & Params (M) \\ (LaTeX line break)
-        return std.fmt.allocPrint(allocator,
-            "{s} & {d:.2} $\\pm$ {d:.2} & {d:.1} $\\pm$ {d:.1} & {d:.2} $\\pm$ {d:.2} & {d} \\\\", .{
+        return std.fmt.allocPrint(allocator, "{s} & {d:.2} $\\pm$ {d:.2} & {d:.1} $\\pm$ {d:.1} & {d:.2} $\\pm$ {d:.2} & {d} \\\\", .{
             model_name,
             self.perplexity_mean,
             self.perplexity_std,
@@ -246,8 +238,7 @@ pub const AggregatedResult = struct {
             self.latency_mean_ms,
             5.0, // Placeholder std
             self.baseline_model.paramsMillion(),
-        }
-        );
+        });
     }
 };
 
@@ -420,18 +411,13 @@ pub const Framework = struct {
     }
 
     /// Compare Trinity HSLM with baseline
-    pub fn compareWithBaseline(
-        self: *const Framework,
-        trinity_config: BenchmarkConfig,
-        baseline_config: BenchmarkConfig,
-        seeds: []const u32
-    ) !struct { trinity: AggregatedResult, baseline: AggregatedResult, comparison: f64, significant: bool } {
+    pub fn compareWithBaseline(self: *const Framework, trinity_config: BenchmarkConfig, baseline_config: BenchmarkConfig, seeds: []const u32) !struct { trinity: AggregatedResult, baseline: AggregatedResult, comparison: f64, significant: bool } {
         const trinity_result = try self.runStudy(trinity_config, seeds);
         const baseline_result = try self.runStudy(baseline_config, seeds);
 
         // Calculate improvement
         const improvement = (baseline_result.perplexity_mean - trinity_result.perplexity_mean) /
-                            baseline_result.perplexity_mean * 100.0;
+            baseline_result.perplexity_mean * 100.0;
 
         // Run paired t-test
         const trinity_ppls = try self.allocator.alloc(f64, seeds.len);
@@ -466,10 +452,7 @@ pub const Framework = struct {
         const writer = file.writer();
 
         // Header
-        try writer.print(
-            "model,n_seeds,ppl_mean,ppl_std,ppl_ci_low,ppl_ci_high,tps_mean,tps_std,latency_ms,memory_mb,flops,improvement\n",
-            .{}
-        );
+        try writer.print("model,n_seeds,ppl_mean,ppl_std,ppl_ci_low,ppl_ci_high,tps_mean,tps_std,latency_ms,memory_mb,flops,improvement\n", .{});
 
         // Data rows
         for (results) |r| {
