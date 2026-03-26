@@ -3136,6 +3136,16 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // Vision Module — Cross-modal validation (CIFAR-10)
+    const vision_mod = b.createModule(.{
+        .root_source_file = b.path("src/vision/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hslm", .module = hslm_mod },
+        },
+    });
+
     // TRI-27 CLI module for tri binary
     // Root module re-exports all tri-lang modules for anti-fragile imports
     // TRI-Lang emu module (J-zone VM, assembler, executor)
@@ -3279,6 +3289,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "hslm", .module = hslm_mod },
                 // Intraparietal Sulcus — Numerical Layer
                 .{ .name = "intraparietal", .module = intraparietal_mod },
+                // Vision Module — Cross-modal validation
+                .{ .name = "vision", .module = vision_mod },
                 // STORM Golden Chain — 28-link pipeline
                 .{ .name = "golden_chain", .module = golden_chain_mod },
                 // TRI-27 CLI module
