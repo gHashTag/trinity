@@ -154,8 +154,10 @@ pub const CIFAR10Trainer = struct {
         // Forward + backward pass with SGD
         const loss = try self.model.backward(&input, image.label, self.optimizer.learning_rate);
 
-        // Update metrics
-        self.metrics.updateLoss(loss);
+        // Update metrics (skip if loss is NaN/0 sentinel from backward)
+        if (!std.math.isNan(loss)) {
+            self.metrics.updateLoss(loss);
+        }
 
         // Get prediction for accuracy
         var probs: [10]f32 = undefined;

@@ -877,6 +877,128 @@ fn extractBibtexField(bibtex: []const u8, field_name: []const u8, allocator: std
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PUBLICATION-READY STRUCTURES (NeurIPS/ICLR/MLSys 2025)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Statistical results with confidence intervals and significance tests
+pub const StatisticalResults = struct {
+    /// Metric name
+    metric: []const u8,
+    /// Mean value
+    mean: f64,
+    /// Standard deviation
+    std_dev: f64,
+    /// Standard error of mean
+    std_error: f64,
+    /// 95% confidence interval lower bound
+    ci95_lower: f64,
+    /// 95% confidence interval upper bound
+    ci95_upper: f64,
+    /// Sample size
+    n: u32,
+    /// Statistical significance (p-value)
+    p_value: ?f64 = null,
+    /// Effect size (Cohen's d)
+    effect_size: ?f64 = null,
+
+    pub fn formatAsMarkdown(self: *const StatisticalResults, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 512) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("### {s}\n\n", .{self.metric});
+        try md.writer(allocator).print("| Metric | Mean | Std | SE | 95% CI | n |\n", .{});
+        try md.writer(allocator).print("|--------|-----|----|---|--------|---|\n", .{});
+        try md.writer(allocator).print("| {s} | {d:.3} | {d:.3} | {d:.3} | [{d:.2}, {d:.2}] | {d} |\n", .{ self.metric, self.mean, self.std_dev, self.std_error, self.ci95_lower, self.ci95_upper, self.n });
+
+        if (self.p_value) |pv| {
+            try md.writer(allocator).print("\\* p < {d:.3}\n", .{pv});
+        }
+        if (self.effect_size) |es| {
+            try md.writer(allocator).print("\\*\\* Cohen's d = {d:.3}\n", .{es});
+        }
+
+        try md.writer(allocator).print("\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Algorithm box with proper mathematical notation
+pub const AlgorithmBox = struct {
+    /// Algorithm name
+    name: []const u8,
+    /// Problem formulation
+    problem: []const u8,
+    /// Notation (e.g., "x ∈ ℝ^n")
+    input: []const u8,
+    /// Key assumptions
+    assumptions: []const []const u8,
+    /// Complexity (time/space)
+    complexity: ?[]const u8 = null,
+
+    pub fn formatAsMarkdown(self: *const AlgorithmBox, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("## Algorithm\n\n", .{});
+        try md.writer(allocator).print("**{s}:** {s}\n\n", .{ self.name, self.problem });
+
+        try md.writer(allocator).print("### Input\n\n", .{});
+        try md.writer(allocator).print("- {s}\n\n", .{self.input});
+
+        if (self.assumptions.len > 0) {
+            try md.writer(allocator).print("**Assumptions:**\n", .{});
+            for (self.assumptions) |assumption| {
+                try md.writer(allocator).print("- {s}\n", .{assumption});
+            }
+            try md.writer(allocator).print("\n", .{});
+        }
+
+        if (self.complexity) |comp| {
+            try md.writer(allocator).print("**Complexity:** {s}\n\n", .{comp});
+        }
+
+        try md.writer(allocator).print("---\n\n", .{});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+/// Comparison table for baseline models
+pub const ComparisonTable = struct {
+    /// Table caption
+    caption: []const u8,
+    /// Rows: name, metric, ours, baseline, improvement
+    rows: []const Row,
+
+    pub const Row = struct {
+        name: []const u8,
+        metric: []const u8,
+        ours: f64,
+        baseline: f64,
+        improvement: []const u8,
+    };
+
+    pub fn formatAsMarkdown(self: *const ComparisonTable, allocator: std.mem.Allocator) ![]u8 {
+        var md = std.ArrayList(u8).initCapacity(allocator, 1024) catch @panic("OOM");
+        defer md.deinit(allocator);
+
+        try md.writer(allocator).print("| Method | {s} | Baseline | Change |\n", .{self.rows[0].metric});
+        try md.writer(allocator).print("|--------|-----|----------|--------|\n", .{});
+
+        for (self.rows) |row| {
+            try md.writer(allocator).print("| {s} | {d:.3} | {d:.3} | {s} |\n", .{
+                row.name, row.ours, row.baseline, row.improvement,
+            });
+        }
+
+        try md.writer(allocator).print("\n*Table: {s}*\n\n", .{self.caption});
+
+        return md.toOwnedSlice(allocator);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1074,4 +1196,65 @@ test "createEnhancedMetadata" {
     try std.testing.expect(metadata.broader_impact != null);
     try std.testing.expect(metadata.ethics != null);
     try std.testing.expect(metadata.reproducibility != null);
+}
+
+test "StatisticalResults formatAsMarkdown" {
+    const stats = StatisticalResults{
+        .metric = "Perplexity",
+        .mean = 125.3,
+        .std_dev = 2.1,
+        .std_error = 0.94,
+        .ci95_lower = 123.2,
+        .ci95_upper = 127.4,
+        .n = 5,
+        .p_value = 0.001,
+        .effect_size = 1.8,
+    };
+
+    const md = try stats.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "### Perplexity") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "125.3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "[123.20, 127.40]") != null);
+}
+
+test "AlgorithmBox formatAsMarkdown" {
+    const algo = AlgorithmBox{
+        .name = "Ternary Forward Pass",
+        .problem = "Efficient forward pass using {-1,0,+1} weights",
+        .input = "W ∈ {-1,0,+1}^{m×n}, x ∈ ℝ^n",
+        .assumptions = &[_][]const u8{
+            "Weights are ternary",
+            "Input is float32",
+            "No bias term",
+        },
+        .complexity = "O(mn) time, O(mn) space",
+    };
+
+    const md = try algo.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "## Algorithm") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "Ternary Forward Pass") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "O(mn)") != null);
+}
+
+test "ComparisonTable formatAsMarkdown" {
+    const rows = &[_]ComparisonTable.Row{
+        .{ .name = "HSLM-1.95M", .metric = "PPL", .ours = 125.3, .baseline = 145.2, .improvement = "-13.7%" },
+        .{ .name = "Baseline", .metric = "PPL", .ours = 145.2, .baseline = 145.2, .improvement = "-" },
+    };
+
+    const table = ComparisonTable{
+        .caption = "Perplexity comparison on TinyStories",
+        .rows = rows,
+    };
+
+    const md = try table.formatAsMarkdown(std.testing.allocator);
+    defer std.testing.allocator.free(md);
+
+    try std.testing.expect(std.mem.indexOf(u8, md, "HSLM-1.95M") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "125.3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, md, "-13.7%") != null);
 }
