@@ -1,131 +1,208 @@
-# Trinity Zenodo Badges
+# Zenodo Badges for README
 
-Badges for Trinity README files and Zenodo descriptions.
+**Shields.io badges for Trinity Zenodo bundles**
+
+---
 
 ## Individual Bundle Badges
 
-### B001: HSLM-1.95M
+### All-in-One Badge (Parent Collection)
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227865.svg)](https://doi.org/10.5281/zenodo.19227865)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![PPL](https://img.shields.io/badge/PPL-125.3-green)](https://doi.org/10.5281/zenodo.19227865)
-[![model](https://img.shields.io/badge/model-385%20KB-orange)](https://doi.org/10.5281/zenodo.19227865)
+[![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19227879-blue)](https://doi.org/10.5281/zenodo.19227879)
 ```
 
-### B002: Zero-DSP FPGA
+Preview: [![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19227879-blue)](https://doi.org/10.5281/zenodo.19227879)
+
+### B001: HSLM
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227867.svg)](https://doi.org/10.5281/zenodo.19227867)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![DSP](https://img.shields.io/badge/DSP-0%25-brightgreen)](https://doi.org/10.5281/zenodo.19227867)
-[![power](https://img.shields.io/badge/power-1.8W-yellow)](https://doi.org/10.5281/zenodo.19227867)
+[![B001 DOI](https://img.shields.io/badge/B001-10.5281%2Fzenodo.19227865-brightgreen)](https://doi.org/10.5281/zenodo.19227865)
 ```
 
-### B003: TRI-27 ISA
+### B002: FPGA
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227869.svg)](https://doi.org/10.5281/zenodo.19227869)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![tests](https://img.shields.io/badge/tests-129%2F129-brightgreen)](https://doi.org/10.5281/zenodo.19227869)
-[![coverage](https://img.shields.io/badge/coverage-98.7%25-green)](https://doi.org/10.5281/zenodo.19227869)
+[![B002 DOI](https://img.shields.io/badge/B002-10.5281%2Fzenodo.19227867-orange)](https://doi.org/10.5281/zenodo.19227867)
 ```
 
-### B004: Queen Lotus
+### B003: TRI-27
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227871.svg)](https://doi.org/10.5281/zenodo.19227871)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![phases](https://img.shields.io/badge/phases-5-purple)](https://doi.org/10.5281/zenodo.19227871)
-[![policy](https://img.shields.io/badge/policy-95.5%25-green)](https://doi.org/10.5281/zenodo.19227871)
+[![B003 DOI](https://img.shields.io/badge/B003-10.5281%2Fzenodo.19227869-yellow)](https://doi.org/10.5281/zenodo.19227869)
 ```
 
-### B005: Tri Language
+### B004: Lotus
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227873.svg)](https://doi.org/10.5281/zenodo.19227873)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![targets](https://img.shields.io/badge/targets-4-blue)](https://doi.org/10.5281/zenodo.19227873)
-[![effects](https://img.shields.io/badge/effects-270%20LOC-yellow)](https://doi.org/10.5281/zenodo.19227873)
+[![B004 DOI](https://img.shields.io/badge/B004-10.5281%2Fzenodo.19227871-pink)](https://doi.org/10.5281/zenodo.19227871)
 ```
 
-### B006: GF16 Format
+### B005: TriLang
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227875.svg)](https://doi.org/10.5281/zenodo.19227875)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![compression](https://img.shields.io/badge/compression-20x-brightgreen)](https://doi.org/10.5281/zenodo.19227875)
-[![trits](https://img.shields.io/badge/trits-1.58%20bits-orange)](https://doi.org/10.5281/zenodo.19227875)
+[![B005 DOI](https://img.shields.io/badge/B005-10.5281%2Fzenodo.19227873-purple)](https://doi.org/10.5281/zenodo.19227873)
 ```
 
-### B007: VSA Operations
+### B006: GF16
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227877.svg)](https://doi.org/10.5281/zenodo.19227877)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![SIMD](https://img.shields.io/badge/SIMD-17x-brightgreen)](https://doi.org/10.5281/zenodo.19227877)
-[![noise](https://img.shields.io/badge/noise-94.8%25%40%2020%25-green)](https://doi.org/10.5281/zenodo.19227877)
+[![B006 DOI](https://img.shields.io/badge/B006-10.5281%2Fzenodo.19227875-red)](https://doi.org/10.5281/zenodo.19227875)
 ```
 
-### PARENT Collection
+### B007: VSA
+
 ```markdown
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg)](https://doi.org/10.5281/zenodo.19227879)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![bundles](https://img.shields.io/badge/bundles-7-purple)](https://doi.org/10.5281/zenodo.19227879)
-[![LOC](https://img.shields.io/badge/LOC-4571-yellow)](https://doi.org/10.5281/zenodo.19227879)
+[![B007 DOI](https://img.shields.io/badge/B007-10.5281%2Fzenodo.19227877-blueviolet)](https://doi.org/10.5281/zenodo.19227877)
 ```
+
+---
+
+## Badge Styles
+
+### Flat Style
+
+```markdown
+[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.19227879-209cff?style=flat)](https://doi.org/10.5281/zenodo.19227879)
+```
+
+### Flat-Square Style
+
+```markdown
+[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.19227879-209cff?style=flat-square)](https://doi.org/10.5281/zenodo.19227879)
+```
+
+### For-the-Badge Style
+
+```markdown
+[![Zenodo](https://img.shields.io/badge/ZENODO-10.5281%2Fzenodo.19227879-209cff?style=for-the-badge)](https://doi.org/10.5281/zenodo.19227879)
+```
+
+### Plastic Style
+
+```markdown
+[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.19227879-209cff?style=plastic)](https://doi.org/10.5281/zenodo.19227879)
+```
+
+---
 
 ## Combined Badge Row
 
 ```markdown
-[![B001](https://zenodo.org/badge/DOI/10.5281/zenodo.19227865.svg)](https://doi.org/10.5281/zenodo.19227865)
-[![B002](https://zenodo.org/badge/DOI/10.5281/zenodo.19227867.svg)](https://doi.org/10.5281/zenodo.19227867)
-[![B003](https://zenodo.org/badge/DOI/10.5281/zenodo.19227869.svg)](https://doi.org/10.5281/zenodo.19227869)
-[![B004](https://zenodo.org/badge/DOI/10.5281/zenodo.19227871.svg)](https://doi.org/10.5281/zenodo.19227871)
-[![B005](https://zenodo.org/badge/DOI/10.5281/zenodo.19227873.svg)](https://doi.org/10.5281/zenodo.19227873)
-[![B006](https://zenodo.org/badge/DOI/10.5281/zenodo.19227875.svg)](https://doi.org/10.5281/zenodo.19227875)
-[![B007](https://zenodo.org/badge/DOI/10.5281/zenodo.19227877.svg)](https://doi.org/10.5281/zenodo.19227877)
-[![PARENT](https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg)](https://doi.org/10.5281/zenodo.19227879)
+[![B001](https://img.shields.io/badge/B001-10.5281%2Fzenodo.19227865-brightgreen)](https://doi.org/10.5281/zenodo.19227865)
+[![B002](https://img.shields.io/badge/B002-10.5281%2Fzenodo.19227867-orange)](https://doi.org/10.5281/zenodo.19227867)
+[![B003](https://img.shields.io/badge/B003-10.5281%2Fzenodo.19227869-yellow)](https://doi.org/10.5281/zenodo.19227869)
+[![B004](https://img.shields.io/badge/B004-10.5281%2Fzenodo.19227871-pink)](https://doi.org/10.5281/zenodo.19227871)
+[![B005](https://img.shields.io/badge/B005-10.5281%2Fzenodo.19227873-purple)](https://doi.org/10.5281/zenodo.19227873)
+[![B006](https://img.shields.io/badge/B006-10.5281%2Fzenodo.19227875-red)](https://doi.org/10.5281/zenodo.19227875)
+[![B007](https://img.shields.io/badge/B007-10.5281%2Fzenodo.19227877-blueviolet)](https://doi.org/10.5281/zenodo.19227877)
+[![PARENT](https://img.shields.io/badge/PARENT-10.5281%2Fzenodo.19227879-blue)](https://doi.org/10.5281/zenodo.19227879)
 ```
 
-## Framework Overview Badge
+Preview:
+[![B001](https://img.shields.io/badge/B001-10.5281%2Fzenodo.19227865-brightgreen)](https://doi.org/10.5281/zenodo.19227865)
+[![B002](https://img.shields.io/badge/B002-10.5281%2Fzenodo.19227867-orange)](https://doi.org/10.5281/zenodo.19227867)
+[![B003](https://img.shields.io/badge/B003-10.5281%2Fzenodo.19227869-yellow)](https://doi.org/10.5281/zenodo.19227869)
+[![B004](https://img.shields.io/badge/B004-10.5281%2Fzenodo.19227871-pink)](https://doi.org/10.5281/zenodo.19227871)
+[![B005](https://img.shields.io/badge/B005-10.5281%2Fzenodo.19227873-purple)](https://doi.org/10.5281/zenodo.19227873)
+[![B006](https://img.shields.io/badge/B006-10.5281%2Fzenodo.19227875-red)](https://doi.org/10.5281/zenodo.19227875)
+[![B007](https://img.shields.io/badge/B007-10.5281%2Fzenodo.19227877-blueviolet)](https://doi.org/10.5281/zenodo.19227877)
+[![PARENT](https://img.shields.io/badge/PARENT-10.5281%2Fzenodo.19227879-blue)](https://doi.org/10.5281/zenodo.19227879)
+
+---
+
+## Custom Badge Parameters
+
+### Color Options
 
 ```markdown
-[![Trinity S³AI](https://img.shields.io/badge/Trinity-S³AI%20Framework-blue)](https://doi.org/10.5281/zenodo.19227879)
-[![version](https://img.shields.io/badge/version-9.0-blue)](https://github.com/gHashTag/trinity)
-[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/gHashTag/trinity)
-[![Zig](https://img.shields.io/badge/Zig-0.15.2-orange)](https://ziglang.org)
+# Named colors
+?color=brightgreen
+?color=green
+?color=yellowgreen
+?color=yellow
+?color=orange
+?color=red
+?color=pink
+?color=purple
+?color=blue
+?color=blueviolet
+
+# Hex colors
+?color=209cff  # Zenodo blue
+?color=3498db  # Trinity blue
 ```
 
-## Scientific Rigor Badges
+### Logo Options
 
 ```markdown
-[![V15+](https://img.shields.io/badge/scientific-V15%2B-brightgreen)](https://github.com/gHashTag/trinity)
-[![CI](https://img.shields.io/badge/CI-95%25%20%2F%2099%25-green)](https://github.com/gHashTag/trinity)
-[![bootstrap](https://img.shields.io/badge/bootstrap-10K-yellow)](https://github.com/gHashTag/trinity)
-[![reproducible](https://img.shields.io/badge/reproducible-✅-brightgreen)](https://github.com/gHashTag/trinity)
+?logo=data:image/png;base64,...
+?logo=zenodo
+&logoWidth=20
 ```
 
-## Build Status Badges
+### Label Options
 
 ```markdown
-[![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/gHashTag/trinity)
-[![tests](https://img.shields.io/badge/tests-3000%2B-brightgreen)](https://github.com/gHashTag/trinity)
-[![coverage](https://img.shields.io/badge/coverage-95%25-green)](https://github.com/gHashTag/trinity)
+?label=zenodo
+?label=DOI
+?label=BUNDLE
+?message=10.5281/zenodo.19227879
 ```
 
-## Usage
+---
 
-Add these badges to:
-1. Main `README.md` at the top
-2. Individual bundle markdown files
-3. Zenodo description HTML (converted to links)
-4. Research paper headers
+## Dynamic Badges
 
-## Custom Badge Generator
+### View Count Badge
 
-```bash
-# Format: https://img.shields.io/badge/{label}-{message}-{color}
-# Colors: brightgreen, green, yellow, orange, red, blue, purple
+```markdown
+[![Zenodo views](https://zenodo.org/badge/19227879/19227879.svg)](https://doi.org/10.5281/zenodo.19227879)
 ```
 
-Examples:
-- `version-9.0-blue` → Version 9.0 badge
-- `tests-129%2F129-brightgreen` → All tests passing (%2F = escaped /)
-- `DSP-0%25-brightgreen` → Zero DSP (%25 = escaped %)
+### Download Count Badge
+
+```markdown
+[![Zenodo downloads](https://zenodo.org/badge/doi/10.5281/zenodo.19227879.svg)](https://doi.org/10.5281/zenodo.19227879)
+```
+
+---
+
+## README Header Example
+
+```markdown
+# Trinity
+
+[![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19227879-blue)](https://doi.org/10.5281/zenodo.19227879)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/gHashTag/trinity/ci.yml)](https://github.com/gHashTag/trinity/actions)
+
+> φ² + 1/φ² = 3 | Pure Zig autonomous AI agent swarm
+
+## Scientific Publications
+
+| Bundle | Description | DOI |
+|--------|-------------|-----|
+| [B001](docs/research/bundles/B001_HSLM.md) | HSLM-1.95M Ternary Neural Networks | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) |
+| [B002](docs/research/bundles/B002_FPGA.md) | Zero-DSP FPGA Implementation | [10.5281/zenodo.19227867](https://doi.org/10.5281/zenodo.19227867) |
+| [B003](docs/research/bundles/B003_TRI27.md) | TRI-27 ISA Specification | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) |
+| [B004](docs/research/bundles/B004_Lotus.md) | Queen Lotus Consciousness Cycle | [10.5281/zenodo.19227871](https://doi.org/10.5281/zenodo.19227871) |
+| [B005](docs/research/bundles/B005_TriLang.md) | Tri Language Specification | [10.5281/zenodo.19227873](https://doi.org/10.5281/zenodo.19227873) |
+| [B006](docs/research/bundles/B006_GF16.md) | GF16 Format Specification | [10.5281/zenodo.19227875](https://doi.org/10.5281/zenodo.19227875) |
+| [B007](docs/research/bundles/B007_VSA.md) | VSA Operations Library | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) |
+
+## Citation
+
+```bibtex
+@software{trinity,
+  title={Trinity: Complete Scientific Collection v9.0},
+  author={Vasilev, Dmitrii},
+  year={2026},
+  doi={10.5281/zenodo.19227879},
+  publisher={Zenodo}
+}
+```
+```
 
 ---
 
