@@ -51,88 +51,85 @@ pub const CffFile = struct {
         var buffer = std.ArrayListUnmanaged(u8){};
         defer buffer.deinit(allocator);
 
+        const writer = buffer.writer(allocator);
+
         // CFF version
-        try buffer.appendSlice(allocator, "cff-version: \"1.2.0\"\n");
+        try writer.writeAll("cff-version: \"1.2.0\"\n");
 
         // Message
-        try buffer.appendSlice(allocator, "message: \"If you use this software, please cite it as below.\"\n");
+        try writer.writeAll("message: \"If you use this software, please cite it as below.\"\n");
 
-        // Title (escape quotes)
-        try buffer.appendSlice(allocator, "title: \"");
-        try buffer.appendSlice(allocator, self.title);
-        try buffer.appendSlice(allocator, "\"\n");
+        // Title
+        try writer.print("title: \"{s}\"\n", .{self.title});
 
         // Authors
-        try buffer.appendSlice("authors:\n");
+        try writer.writeAll("authors:\n");
         for (self.authors) |author| {
-            try buffer.appendSlice("  - family-names: \"");
-            try buffer.appendSlice(author.family_names);
-            try buffer.appendSlice("\"\n");
+            try writer.print("  - family-names: \"{s}\"\n", .{author.family_names});
 
             if (author.given_names) |given| {
-                try buffer.print("    given-names: \"{s}\"\n", .{given});
+                try writer.print("    given-names: \"{s}\"\n", .{given});
             }
 
             if (author.orcid) |o| {
-                try buffer.print("    orcid: \"{s}\"\n", .{o});
+                try writer.print("    orcid: \"{s}\"\n", .{o});
             }
 
             if (author.email) |e| {
-                try buffer.print("    email: \"{s}\"\n", .{e});
+                try writer.print("    email: \"{s}\"\n", .{e});
             }
 
             if (author.affiliation) |aff| {
-                try buffer.print("    affiliation: \"{s}\"\n", .{aff});
+                try writer.print("    affiliation: \"{s}\"\n", .{aff});
             }
         }
 
         // Version
-        try buffer.print("version: \"{s}\"\n", .{self.version});
+        try writer.print("version: \"{s}\"\n", .{self.version});
 
         // DOI
         if (self.doi) |doi| {
-            try buffer.print("doi: \"{s}\"\n", .{doi});
+            try writer.print("doi: \"{s}\"\n", .{doi});
         }
 
         // Date released
         if (self.date_released) |date| {
-            try buffer.print("date-released: {s}\n", .{date});
+            try writer.print("date-released: {s}\n", .{date});
         }
 
         // URL
         if (self.url) |url| {
-            try buffer.print("url: \"{s}\"\n", .{url});
+            try writer.print("url: \"{s}\"\n", .{url});
         }
 
         // License
         if (self.license) |lic| {
-            try buffer.print("license: {s}\n", .{lic});
+            try writer.print("license: {s}\n", .{lic});
         }
 
         // Abstract
         if (self.abstract) |abs| {
-            try buffer.appendSlice("abstract: |\n");
-            // Indent abstract lines
+            try writer.writeAll("abstract: |\n");
             var lines = std.mem.splitScalar(u8, abs, '\n');
             while (lines.next()) |line| {
-                try buffer.print("  {s}\n", .{line});
+                try writer.print("  {s}\n", .{line});
             }
         }
 
         // Keywords
         if (self.keywords.len > 0) {
-            try buffer.appendSlice("keywords:\n");
+            try writer.writeAll("keywords:\n");
             for (self.keywords) |kw| {
-                try buffer.print("  - \"{s}\"\n", .{kw});
+                try writer.print("  - \"{s}\"\n", .{kw});
             }
         }
 
         // Commit
         if (self.commit) |commit| {
-            try buffer.print("commit: \"{s}\"\n", .{commit});
+            try writer.print("commit: \"{s}\"\n", .{commit});
         }
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(allocator);
     }
 
     /// Escape special YAML characters in string
@@ -242,6 +239,7 @@ pub fn createTrinityCff(allocator: Allocator, version: []const u8, doi: ?[]const
         .license = try allocator.dupe(u8, "MIT"),
         .abstract = try allocator.dupe(u8, abstract),
         .keywords = keywords[0..],
+        .commit = null,
     };
 }
 

@@ -161,16 +161,18 @@ pub const CoarNotification = struct {
 
     /// Generate COAR notification JSON-LD
     pub fn toJsonLd(self: *const CoarNotification, allocator: Allocator) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(allocator);
-        errdefer buffer.deinit();
+        var buffer = std.ArrayListUnmanaged(u8){};
+        defer buffer.deinit(allocator);
 
-        try buffer.appendSlice("{\n");
+        const writer = buffer.writer(allocator);
+
+        try writer.writeAll("{\n");
 
         // Context
-        try buffer.print("  \"@context\": \"https://coar-repositories.org/contexts/notification.jsonld\",\n", .{});
+        try writer.print("  \"@context\": \"https://coar-repositories.org/contexts/notification.jsonld\",\n", .{});
 
         // ID (unique notification ID)
-        try buffer.print("  \"id\": \"{s}/notification/{s}\",\n", .{ self.resource_url, self.timestamp });
+        try writer.print("  \"id\": \"{s}/notification/{s}\",\n", .{ self.resource_url, self.timestamp });
 
         // Type
         const type_str = switch (self.notification_type) {
@@ -178,51 +180,51 @@ pub const CoarNotification = struct {
             .update => "Update",
             .delete => "Delete",
         };
-        try buffer.print("  \"type\": \"{s}\",\n", .{type_str});
+        try writer.print("  \"type\": \"{s}\",\n", .{type_str});
 
         // Object (the resource being notified about)
-        try buffer.appendSlice("  \"object\": {\n");
-        try buffer.print("    \"id\": \"{s}\",\n", .{self.resource_id});
-        try buffer.print("    \"type\": \"{s}\",\n", .{self.work_type.toString()});
-        try buffer.print("    \"ietf:cite-as\": \"{s}\"\n", .{self.resource_url});
-        try buffer.appendSlice("  },\n");
+        try writer.writeAll("  \"object\": {\n");
+        try writer.print("    \"id\": \"{s}\",\n", .{self.resource_id});
+        try writer.print("    \"type\": \"{s}\",\n", .{self.work_type.toString()});
+        try writer.print("    \"ietf:cite-as\": \"{s}\"\n", .{self.resource_url});
+        try writer.writeAll("  },\n");
 
         // Origin (repository)
-        try buffer.appendSlice("  \"origin\": {\n");
-        try buffer.print("    \"id\": \"https://{s}\",\n", .{self.repository});
-        try buffer.print("    \"type\": \"Service\",\n");
-        try buffer.print("    \"name\": \"{s}\"\n", .{self.repository});
-        try buffer.appendSlice("  },\n");
+        try writer.writeAll("  \"origin\": {\n");
+        try writer.print("    \"id\": \"https://{s}\",\n", .{self.repository});
+        try writer.writeAll("    \"type\": \"Service\",\n");
+        try writer.print("    \"name\": \"{s}\"\n", .{self.repository});
+        try writer.writeAll("  },\n");
 
         // Target (indexing service)
-        try buffer.appendSlice("  \"target\": {\n");
-        try buffer.print("    \"id\": \"https://openalex.org\",\n");
-        try buffer.print("    \"type\": \"Service\",\n");
-        try buffer.print("    \"name\": \"OpenAlex\"\n");
-        try buffer.appendSlice("  },\n");
+        try writer.writeAll("  \"target\": {\n");
+        try writer.writeAll("    \"id\": \"https://openalex.org\",\n");
+        try writer.writeAll("    \"type\": \"Service\",\n");
+        try writer.writeAll("    \"name\": \"OpenAlex\"\n");
+        try writer.writeAll("  },\n");
 
         // Timestamp
-        try buffer.print("  \"published\": \"{s}\",\n", .{self.timestamp});
+        try writer.print("  \"published\": \"{s}\",\n", .{self.timestamp});
 
         // Topics (if any)
         if (self.topics.len > 0) {
-            try buffer.appendSlice("  \"topics\": [\n");
+            try writer.writeAll("  \"topics\": [\n");
             for (self.topics, 0..) |topic, i| {
                 const comma = if (i < self.topics.len - 1) "," else "";
-                try buffer.print("    \"{{\"id\": \"https://openalex.org/topics/{s}\", \"name\": \"{s}\"}}{s}\n", .{ topic, topic, comma });
+                try writer.print("    \"{{\"id\": \"https://openalex.org/topics/{s}\", \"name\": \"{s}\"}}{s}\n", .{ topic, topic, comma });
             }
-            try buffer.appendSlice("  ],\n");
+            try writer.writeAll("  ],\n");
         }
 
-        try buffer.appendSlice("  \"actor\": {\n");
-        try buffer.appendSlice("    \"id\": \"https://github.com/gHashTag/trinity\",\n");
-        try buffer.appendSlice("    \"type\": \"Software\",\n");
-        try buffer.appendSlice("    \"name\": \"Trinity S³AI\"\n");
-        try buffer.appendSlice("  }\n");
+        try writer.writeAll("  \"actor\": {\n");
+        try writer.writeAll("    \"id\": \"https://github.com/gHashTag/trinity\",\n");
+        try writer.writeAll("    \"type\": \"Software\",\n");
+        try writer.writeAll("    \"name\": \"Trinity S³AI\"\n");
+        try writer.writeAll("  }\n");
 
-        try buffer.appendSlice("}\n");
+        try writer.writeAll("}\n");
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(allocator);
     }
 };
 
@@ -299,35 +301,37 @@ pub const OpenAlexWork = struct {
 
     /// Generate OpenAlex JSON
     pub fn toJson(self: *const OpenAlexWork, allocator: Allocator) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(allocator);
-        errdefer buffer.deinit();
+        var buffer = std.ArrayListUnmanaged(u8){};
+        defer buffer.deinit(allocator);
 
-        try buffer.appendSlice("{\n");
-        try buffer.print("  \"title\": \"{s}\",\n", .{self.title});
-        try buffer.print("  \"type\": \"{s}\",\n", .{self.type.toString()});
-        try buffer.print("  \"year\": {d},\n", .{self.year});
-        try buffer.print("  \"citation_count\": {d},\n", .{self.citation_count});
+        const writer = buffer.writer(allocator);
+
+        try writer.writeAll("{\n");
+        try writer.print("  \"title\": \"{s}\",\n", .{self.title});
+        try writer.print("  \"type\": \"{s}\",\n", .{self.type.toString()});
+        try writer.print("  \"year\": {d},\n", .{self.year});
+        try writer.print("  \"citation_count\": {d},\n", .{self.citation_count});
 
         if (self.doi) |doi| {
-            try buffer.print("  \"doi\": \"{s}\",\n", .{doi});
+            try writer.print("  \"doi\": \"{s}\",\n", .{doi});
         }
 
         if (self.id) |id| {
-            try buffer.print("  \"id\": \"{s}\",\n", .{id});
+            try writer.print("  \"id\": \"{s}\",\n", .{id});
         }
 
         if (self.concepts.len > 0) {
-            try buffer.appendSlice("  \"concepts\": [\n");
+            try writer.writeAll("  \"concepts\": [\n");
             for (self.concepts, 0..) |concept, i| {
                 const comma = if (i < self.concepts.len - 1) "," else "";
-                try buffer.print("    \"{{\"name\": \"{s}\"}}{s}\n", .{ concept, comma });
+                try writer.print("    \"{{\"name\": \"{s}\"}}{s}\n", .{ concept, comma });
             }
-            try buffer.appendSlice("  ],\n");
+            try writer.writeAll("  ],\n");
         }
 
-        try buffer.appendSlice("}\n");
+        try writer.writeAll("}\n");
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(allocator);
     }
 };
 
