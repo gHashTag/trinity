@@ -248,8 +248,17 @@ pub const AuthorList = struct {
         };
     }
 
-    /// Deallocate author list
+    /// Deallocate author list and all owned strings
     pub fn deinit(self: *AuthorList, allocator: Allocator) void {
+        for (self.authors.items) |author| {
+            allocator.free(author.name);
+            if (author.orcid) |orcid| allocator.free(orcid);
+            if (author.email) |email| allocator.free(email);
+            for (author.affiliations) |aff| {
+                allocator.free(aff);
+            }
+            allocator.free(author.affiliations);
+        }
         self.authors.deinit(allocator);
     }
 

@@ -9,6 +9,7 @@ pub const CircularBuffer = struct {
     data: []i64,
     head: usize,
     tail: usize,
+    count: usize,
     capacity: usize,
     allocator: std.mem.Allocator,
 
@@ -19,6 +20,7 @@ pub const CircularBuffer = struct {
             .data = data,
             .head = 0,
             .tail = 0,
+            .count = 0,
             .capacity = capacity,
             .allocator = allocator,
         };
@@ -29,23 +31,27 @@ pub const CircularBuffer = struct {
         buf.data[buf.tail] = value;
         buf.tail = (buf.tail + 1) % buf.capacity;
 
-        if (buf.tail == buf.head) {
-            buf.head = (buf.head + 1) % buf.capacity; // Overwrite
+        if (buf.count == buf.capacity) {
+            // Buffer is full, advance head (overwrites oldest)
+            buf.head = (buf.head + 1) % buf.capacity;
+        } else {
+            buf.count += 1;
         }
     }
 
     /// Read next value
     pub fn read(buf: *CircularBuffer) i64 {
-        if (buf.isEmpty()) return 0;
+        if (buf.count == 0) return 0;
 
         const value = buf.data[buf.head];
         buf.head = (buf.head + 1) % buf.capacity;
+        buf.count -= 1;
         return value;
     }
 
     /// Check if buffer is empty
     pub fn isEmpty(buf: *const CircularBuffer) bool {
-        return buf.head == buf.tail;
+        return buf.count == 0;
     }
 
     /// Free buffer

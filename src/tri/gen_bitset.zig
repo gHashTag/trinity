@@ -28,7 +28,7 @@ pub const Bitset = struct {
         if (index >= bs.size) return;
         const word = index / @bitSizeOf(usize);
         const bit = index % @bitSizeOf(usize);
-        bs.data[word] |= @as(usize, 1) << bit;
+        bs.data[word] |= @as(usize, 1) << @intCast(bit);
     }
 
     /// Set bit to 0
@@ -36,7 +36,7 @@ pub const Bitset = struct {
         if (index >= bs.size) return;
         const word = index / @bitSizeOf(usize);
         const bit = index % @bitSizeOf(usize);
-        bs.data[word] &= ~(@as(usize, 1) << bit);
+        bs.data[word] &= ~(@as(usize, 1) << @intCast(bit));
     }
 
     /// Check if bit is set
@@ -44,7 +44,7 @@ pub const Bitset = struct {
         if (index >= bs.size) return false;
         const word = index / @bitSizeOf(usize);
         const bit = index % @bitSizeOf(usize);
-        return (bs.data[word] & (@as(usize, 1) << bit)) != 0;
+        return (bs.data[word] & (@as(usize, 1) << @intCast(bit))) != 0;
     }
 
     /// Bitwise OR
