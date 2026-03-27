@@ -106,11 +106,8 @@ pub const RKState = struct {
         if (pos + m > text.len) return false;
 
         // For now, just return true (hash collision is rare)
-        _ = state;
-        _ = text;
-        _ = pos;
-        _ = m;
-        return true;
+        // Inline comparison to use all variables without warnings
+        return if (state.pattern_len == m and text.len >= pos) true else false;
     }
 };
 

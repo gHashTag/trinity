@@ -167,6 +167,5 @@ test "suffix array search" {
     defer std.testing.allocator.free(matches);
 
     // Just verify search doesn't crash
-    _ = matches;
     try std.testing.expect(true);
 }

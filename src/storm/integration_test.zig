@@ -620,8 +620,8 @@ pub fn main() !u8 {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const test = IntegrationTest.init(allocator);
-    try test.runAll();
+    const integration_test = IntegrationTest.init(allocator);
+    try integration_test.runAll();
 
     return 0;
 }

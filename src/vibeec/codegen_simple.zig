@@ -86,11 +86,15 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
 
+    var behaviors = std.ArrayList(Behavior).init(allocator);
+    var constants = std.ArrayList(Constant).init(allocator);
+    var types = std.ArrayList(Type).init(allocator);
+
     var spec = SimpleSpec{
         .name = "",
-        .behaviors = std.ArrayList(Behavior).init(allocator),
-        .constants = std.ArrayList(Constant).init(allocator),
-        .types = std.ArrayList(Type).init(allocator),
+        .behaviors = behaviors,
+        .constants = constants,
+        .types = types,
     };
 
     var lines = std.mem.splitSequence(u8, content, "\\n");
@@ -142,11 +146,11 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
                 });
 
                 current_behavior = &spec.behaviors.items[spec.behaviors.items.len - 1];
-                code_lines.deinit(allocator);
+                code_lines.deinit();
                 code_lines = std.ArrayList([]const u8).init(allocator);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    code: |")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |_| {
                 const code_start = std.mem.indexOf(u8, trimmed, "|").? + 1;
                 const first_line = std.mem.trim(u8, trimmed[code_start..], &std.ascii.whitespace);
 

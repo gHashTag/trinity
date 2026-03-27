@@ -71,7 +71,7 @@ pub const ACAutomaton = struct {
         defer queue.deinit(allocator);
 
         // Initialize queue with root's children
-        for (root.children, 0..) |maybe_child, c| {
+        for (root.children) |maybe_child| {
             if (maybe_child) |child| {
                 child.fail = root;
                 try queue.append(allocator, child);
@@ -109,7 +109,7 @@ pub const ACAutomaton = struct {
 
     /// Find all pattern matches
     pub fn search(ac: *const ACAutomaton, text: []const u8, allocator: std.mem.Allocator) ![]Match {
-        var matches = std.ArrayList(Match).init(allocator);
+        var matches = std.ArrayList(Match).initCapacity(allocator, 16) catch unreachable;
         var node = ac.root;
 
         for (text, 0..) |c, pos| {
@@ -123,7 +123,7 @@ pub const ACAutomaton = struct {
 
             // Check output at this node
             if (node.output.len > 0) {
-                try matches.append(.{
+                try matches.append(allocator, .{
                     .pattern = node.output,
                     .position = pos - node.output.len + 1,
                 });
@@ -133,7 +133,7 @@ pub const ACAutomaton = struct {
             var fail = node.fail;
             while (fail != ac.root) {
                 if (fail.output.len > 0) {
-                    try matches.append(.{
+                    try matches.append(allocator, .{
                         .pattern = fail.output,
                         .position = pos - fail.output.len + 1,
                     });

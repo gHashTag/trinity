@@ -409,7 +409,8 @@ fn checkBuild(allocator: std.mem.Allocator) !bool {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
-    return result.term.Exited == 0;
+    // Check if process exited cleanly (exit code 0)
+    return result.term == .Exited and result.term.Exited == 0;
 }
 
 fn updateHeartbeat(allocator: std.mem.Allocator, cycle: u64, timestamp: i64) !void {
