@@ -1,17 +1,16 @@
 # Trinity S³AI DNA Architecture
 
-> **Trinity Identity**: `φ² + 1/φ² = 3` — одно уравнение связывает математику, архитектуру мозга и язык Trinity.
+> **Trinity Identity**: `φ² + 1/φ² = 3` — a single equation links mathematics, brain architecture, and the Trinity language.
 
 ## Overview
 
-Trinity S³AI (Science-Structure-System AI) строится на **трёх переплетённых Strand** — каждый критичен для системы, но не может существовать без других двух.
+Trinity S³AI (Science-Structure-System AI) is built on **three intertwined Strands** — each is critical to the system, but cannot exist without the other two.
 
-| Strand | Роль | Код | Связи |
-|--------|------|-----|--------|
-| **I: Mathematical Foundation** | `src/tri/math/` | Священные константы, формулы, VSA |
-| **II: Cognitive Architecture** | `src/brain/` | Нейроанатомическая карта, исполнительные функции |
-| **III: Language & Hardware Bridge** | `src/tri/` + `fpga/` | TRI-27 язык, FPGA бэкенды |
-
+| Strand | Role | Code | Relationships |
+|--------|------|--------|
+| **I: Mathematical Foundation** | `src/tri/math/` | Sacred constants, formulas, VSA |
+| **II: Cognitive Architecture** | `src/brain/` | Neuroanatomical map, executive functions |
+| **III: Language & Hardware Bridge** | `src/tri/` + `fpga/` | TRI-27 language, FPGA backends |
 ```
 Strand I (Math)
     ↓
@@ -26,198 +25,197 @@ Strand III (Language + Hardware)
 φ² + 1/φ² = 3 = TRINITY
 ```
 
-Эта формула — **архитектурный инвариант** Trinity:
-- Математика: `V = n × 3^k × π^m × φ^p × e^q` в `src/tri/math/formula.zig`
-- Константы: 75+ священных значений в `src/tri/math/constants.zig`
-- Governance: 8 принципов в `src/sacred/CHARTER.md`
-
+This formula is an **architectural invariant** of Trinity:
+- Mathematics: `V = n × 3^k × π^m × φ^p × e^q` in `src/tri/math/formula.zig`
+- Constants: 75+ sacred values ​​in `src/tri/math/constants.zig`
+- Governance: 8 principles in `src/sacred/CHARTER.md`
 ---
 
 ## TRI-27 Kernel — Central Execution Engine
 
-**TRI-27 — тернарное вычислительное ядро**, которое выполняет все рабочие нагрузки Trinity:
+**TRI-27 is a ternary computing core** that executes all Trinity workloads:
 
-| Компонент | Значение |
-|------------|---------|
-| **Регистры** | 27×32-bit (t0-t26) = 3 банка × 9 (коптский алфавит) |
-| **Опкоды** | 36 — арифметика, логика, управление, тернарные, священные |
-| **Память** | 64KB байтоадресуемая |
-| **Цели** | Zig эмулятор CPU + Verilog FPGA |
+| Component | Value |
+|-----------|---------|
+| **Registers** | 27 x 32-bit (t0-t26) = 3 banks x 9 (Coptic alphabet) |
+| **Opcodes** | 36 — arithmetic, logic, control, ternary, sacred |
+| **Memory** | 64KB byte-addressable |
+| **Targets** | Zig CPU emulator + Verilog FPGA |
 
 ```
-φ² + 1/φ² = 3 → 3^27 = 7.6 триллионов состояний (тернарная полнота)
+φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
 ```
 
-[Полная документация TRI-27](docs/tri27/README.md)
+[Full TRI-27 documentation](docs/tri27/README.md)
 
 ---
 
 ## Strand I — Mathematical Foundation
 
-### Роль
+### Role
 
-Священная математическая рамка, которая задаёт **числовую геометрию** Trinity.
+The sacred mathematical framework that defines the **numerical geometry** of the Trinity.
 
-### Компоненты
+### Components
 
-| Модуль | Назначение | Ключевые элементы |
+| Module | Purpose | Key Elements |
 |--------|----------|-----------------|
-| `src/tri/math/formula.zig` | Священная формула | V = n × 3^k × π^m × φ^p × e^q |
-| `src/tri/math/constants.zig` | Священные константы | φ, π, e, γ, χ, σ, ε (75+) |
-| `src/tri/math/identities.zig` | Идентичности | φ-distance, ternary resonance |
-| `src/tri/math/transcendental.zig` | Трансцендентные функции | π, e, ln, exp |
-| `src/sacred/CHARTER.md` | Governance | 8 принципов |
-| `src/vsa.zig` | VSA операции | bind, unbind, bundle, similarity |
+| `src/tri/math/formula.zig` | The sacred formula | V = n × 3^k × π^m × φ^p × e^q |
+| `src/tri/math/constants.zig` | Sacred Constants | φ, π, e, γ, χ, σ, ε (75+) |
+| `src/tri/math/identities.zig` | Identities | φ-distance, ternary resonance |
+| `src/tri/math/transcendental.zig` | Transcendental Functions | π, e, ln, exp |
+| `src/sacred/CHARTER.md` | Governance | 8 Principles |
+| `src/vsa.zig` | VSA Operations | bind, unbind, bundle, similarity |
 
-### Связи
+### Connections
 
-- **→ Strand II**: Мозговые модули используют `src/tri/math/` для sacred операций
-- **→ Strand III**: TRI-27 компилятор использует sacred константы
+- **→ Strand II**: Brain modules use `src/tri/math/` for sacred operations
+- **→ Strand III**: TRI-27 compiler uses sacred constants
 
 ---
 
 ## Strand II — Cognitive Architecture
 
-### Роль
+### Role
 
-Нейроанатомически вдохновлённая архитектура **виртуального мозга** Trinity.
+Neuroanatomically inspired architecture of the Trinity **virtual brain**.
 
-### Компоненты
+### Components
 
-| Регион | Файл | Назначение | LOC |
-|--------|-------|----------|-----|
-| Prefrontal Cortex | `prefrontal_cortex.zig` | Исполнительные функции | 717 |
-| Basal Ganglia | `basal_ganglia.zig` | Реестр задач | 889 |
-| Reticular Formation | `reticular_formation.zig` | Шина событий (10K) | 746 |
-| Locus Coeruleus | `locus_coeruleus.zig` | Регуляция возбуждения | 253 |
-| Amygdala | `amygdala.zig` | Эмоциональная значимость | 578 |
-| Persistence | `persistence.zig` | Журналирование JSONL | 804 |
-| Health History | `health_history.zig` | Снимки здоровья | 305 |
-| Cerebellum | `cerebellum.zig` | Моторное обучение | 1601 |
-| Thalamus | `thalamus_logs.zig` | Ретрансляция | 435 |
-| Telemetry | `telemetry.zig` | Временные ряды | 412 |
-| Corpus Callosum | `federation.zig` | Агрегация, CRDT | 2166 |
-| Microglia | `microglia.zig` | Иммунный мониторинг | 512 |
-| Alerts | `alerts.zig` | Критические уведомления | 1241 |
-| Metrics Dashboard | `metrics_dashboard.zig` | Управление метриками | 1884 |
-| Visual Cortex | `visualization.zig` | ASCII карты | 1302 |
-| Admin | `admin.zig` | Административный контроль | 1374 |
-| State Recovery | `state_recovery.zig` | Восстановление | 2037 |
-| Evolution Simulation | `evolution_simulation.zig` | Эволюция агентов | 1500+ |
+| Region | File | Purpose | LOC |
+|--------|----------|---------|
+| Prefrontal Cortex | `prefrontal_cortex.zig` | Executive Functions | 717 |
+| Basal Ganglia | `basal_ganglia.zig` | Task Registry | 889 |
+| Reticular Formation | `reticular_formation.zig` | Event Bus (10K) | 746 |
+| Locus Coeruleus | `locus_coeruleus.zig` | Arousal Regulation | 253 |
+| Amygdala | `amygdala.zig` | Emotional Valence | 578 |
+| Persistence | `persistence.zig` | JSONL Logging | 804 |
+| Health History | `health_history.zig` | Health Snapshots | 305 |
+| Cerebellum | `cerebellum.zig` | Motor Learning | 1601 |
+| Thalamus | `thalamus_logs.zig` | Relay | 435 |
+| Telemetry | `telemetry.zig` | Time Series | 412 |
+| Corpus Callosum | `federation.zig` | Aggregation, CRDT | 2166 |
+| Microglia | `microglia.zig` | Immune Monitoring | 512 |
+| Alerts | `alerts.zig` | Critical Notifications | 1241 |
+| Metrics Dashboard | `metrics_dashboard.zig` | Metrics Management | 1884 |
+| Visual Cortex | `visualization.zig` | ASCII Maps | 1302 |
+| Admin | `admin.zig` | Administrative Control | 1374 |
+| State Recovery | `state_recovery.zig` | Recovery | 2037 |
+| Evolution Simulation | `evolution_simulation.zig` | Agent Evolution | 1500+ |
 | SEBO | `sebo.zig` | Sacred Bayesian Optimization | 800+ |
-| Integration Test | `integration_test.zig` | Межмодульные тесты | 600+ |
-| Performance Benchmarks | `benchmarks.zig`, `perf_*.zig` | Производительность | 1000+ |
+| Integration Test | `integration_test.zig` | Cross-Module Benchmarks | 600+ |
+| Performance Benchmarks | `benchmarks.zig`, `perf_*.zig` | Performance | 1000+ |
 
-### Связи
+### Links
 
-- **← Strand I**: Использует sacred математику из `src/tri/math/`
-- **→ Strand III**: Выполняет TRI-27 bytecode, компилируемый в Zig
+- **← Strand I**: Uses sacred math from `src/tri/math/`
+- **→ Strand III**: Executes TRI-27 bytecode compiled to Zig
 
 ---
 
 ## Strand III — Language & Hardware Bridge (TRI-27)
 
-### Роль
+### Role
 
-Связывает высокоуровневый язык **TRI-27** с двумя мирами исполнения: CPU (Zig) и FPGA (Verilog). TRI-27 — единственный язык высокого уровня, Zig/Verilog — бэкенды.
+Links the **TRI-27** high-level language to two execution worlds: CPU (Zig) and FPGA (Verilog). TRI-27 is the only high-level language; Zig/Verilog are the backends.
 
-### Компоненты
+### Components
 
-| Компонент | Файл | Назначение |
-|-----------|-------|----------|
-| TRI-27 Lexer | `src/tri/lexer.zig` | Токенизация |
+| Component | File | Purpose |
+|-----------|----------|----------|
+| TRI-27 Lexer | `src/tri/lexer.zig` | Tokenization |
 | TRI-27 Parser | `src/tri/parser.zig` | AST |
-| TRI-27 AST | `src/tri/ast.zig` | Узлы |
+| TRI-27 AST | `src/tri/ast.zig` | Nodes |
 | Zig Backend | `src/tri/emit_zig.zig` | CPU target |
 | Verilog Backend | `src/tri/emit_verilog.zig` | FPGA target |
 | VSA Operations | `src/vsa.zig` | bind, unbind, bundle, similarity |
 | Sacred ALU | `fpga/openxc7-synth/sacred_alu.v` | φ-mathematics |
 | TMU | `fpga/openxc7-synth/hslm_ternary_mac.v` | Ternary matrix |
 
-### Цепочка компиляции
+### Compilation Chain
 
 ```
 .tri spec (Single Source of Truth)
-    ↓
+↓
 TRI-27 language (Ternary types, AST)
-    ↓              ↓
-    Zig Backend    Verilog Backend
-   (emit)        (emit)
+↓ ↓
+Zig Backend Verilog Backend
+(emit) (emit)
 ```
 
-**Важно**: Zig и Verilog — это **targets**, не source of truth. TRI-27 = source of truth.
+**Important**: Zig and Verilog are **targets**, not sources of truth. TRI-27 = source of truth.
 
-### Связи
+### Links
 
-- **← Strand II**: Компилируется в Zig для выполнения мозговых модулей
-- **← Strand I**: Использует sacred константы в FPGA Sacred ALU
+- **← Strand II**: Compiled to Zig for running brain modules
+- **← Strand I**: Uses sacred constants in the FPGA Sacred ALU
 
 ---
 
 ## Rigid Process Framework
 
-**Расположение**: `src/tri/dev/`
+**Location**: `src/tri/dev/`
 
 **State Machine**: `IDLE → ACTIVE → DIRTY → TESTED → COMMITTED → SHIPPED`
 
-Все изменения кода проходят через этот pipeline, а не ручное редактирование.
+All code changes go through this pipeline, rather than manual editing.
 
 ---
 
 ## Tri Skill & Tri Cell
 
-**Skill** — единица возможностей, определённая через `.claude/skills/*/SKILL.md`.
+**Skill** is a unit of capability defined in `.claude/skills/*/SKILL.md`.
 
-**Tri Cell** — самовосстанавливающаяся ячейка Phoenix System, определённая в `cell.tri`.
+**Tri Cell** is a self-healing Phoenix System cell, defined in `cell.tri`.
 
-Все новые возможности проходят через **Rigid Process** и фиксируются в опыте Trinity.
+All new capabilities are processed through the Rigid Process and are captured in the Trinity experience.
 
-Принципы:
+Principles:
 
-- `.tri`/TRI-27 спецификации — **единственный источник истины**
-- Codegen (Zig/Verilog) разрешён только через SKILL-ячейки и tri-CLI, под контролем state-machine
-- Phoenix / Tri Cell уровнем выше обеспечивает самовосстановление и долговечность колонии SKILL-клеток
-
----
-
-## Trinity S³AI DNA — сведение трёх Strand
-
-Trinity становится целостной, когда три Strand синхронизированы:
-
-- Strand I задаёт **числовую геометрию** (φ, 3, 27, ternary).
-- Strand II размещает эту геометрию в **виртуальном мозге**.
-- Strand III обеспечивает **исполнение и материализацию** — от TRI-27 до CPU/FPGA.
-
-Всё новое знание, модуль или SKILL появляются только тогда, когда:
-
-1. Их место описано в ARCHITECTURE (один из Strand).
-2. Есть `.tri`/TRI-27 спецификация.
-3. Они проведены через Rigid Process и зафиксированы в опыте Trinity.
+- .tri/TRI-27 specifications are the single source of truth
+- Codegen (Zig/Verilog) is only enabled through SKILL cells and tri-CLI, controlled by the state machine
+- Phoenix/Tri Cell, one level higher, ensures self-healing and longevity of the SKILL cell colony
 
 ---
 
-## Аннотационные паттерны (для вставки в код)
+## Trinity S³AI DNA — merging three Strands
 
-**Strand I (Math)** — для всех файлов в `src/tri/math/*.zig`:
+Trinity becomes complete when the three Strands are synchronized:
+
+- Strand I defines the numerical geometry (φ, 3, 27, ternary).
+- Strand II places this geometry in the virtual brain.
+- Strand III provides execution and materialization — from TRI-27 to CPU/FPGA.
+
+Any new knowledge, module, or SKILL appears only when:
+
+1. Their location is described in ARCHITECTURE (one of the Strands).
+2. There is a `.tri`/TRI-27 specification.
+3. They are implemented through the Rigid Process and captured in the Trinity experience.
+
+---
+
+## Annotation Patterns (for insertion into code)
+
+**Strand I (Math)** — for all files in `src/tri/math/*.zig`:
 ```zig
-//! [Module Name] — [Brief description]
+//! [Module Name] — [Brief Description]
 //! Strand I: Mathematical Foundation
 //!
 ```
 
-**Strand II (Brain)** — для всех файлов в `src/brain/*.zig`:
+**Strand II (Brain)** — for all files in `src/brain/*.zig`:
 ```zig
-//! [Module Name] — [Neuroanatomical function]
+//! [Module Name] — [Neuroanatomical Function]
 //! Strand II: Cognitive Architecture
 //!
 ```
 
-**Strand III (Language + Hardware)** — для:
+**Strand III (Language + Hardware)** - for:
 - `src/tri/token.zig`, `src/tri/lexer.zig`, `src/tri/ast.zig`, `src/tri/parser.zig`, `src/tri/emit_zig.zig`, `src/tri/emit_verilog.zig`, `src/vsa.zig`
 - `fpga/openxc7-synth/*.v`
 
 ```zig
-//! [Module Name] — [TRI-27/FPGA component]
+//! [Module Name] - [TRI-27/FPGA component]
 //! Strand III: Language & Hardware Bridge
 //!
 ```
@@ -226,46 +224,46 @@ Trinity становится целостной, когда три Strand син
 
 ## Queen Trinity Protocol
 
-**Расположение**: `src/tri/queen_trinity.zig`
+**Location**: `src/tri/queen_trinity.zig`
 
-**Роль**: Lotus Cycle Protocol для очистки impure событий от всех трёх Strand.
+**Role**: Lotus Cycle Protocol for clearing impure events from all three Strands.
 
 **Lotus Cycle (φ² + 1/φ² = 3)**:
 ```
 QUEUED → DIAGNOSING → REFINE → VERIFY → PURIFIED
-   ↑        ↓         ↑        ↑
-   ←────────────────── RESET ────────────────
+↑ ↓ ↑ ↑
+←────────────────── RESET ────────────────
 ```
 
-**Максимум 3 попытки** (архитектурный лимит Trinity).
+**Maximum 3 attempts** (Trinity architectural limit).
 
-**Impure события** генерируются всеми Strand:
-- **Strand I (Math)**: `src/tri/math/` — sacred вычисления, формулы
-- **Strand II (Brain)**: `src/brain/` — обучение, telemetry, checkpoint
-- **Strand III (Lang)**: `src/tri27/`, `fpga/` — компиляции, синтез, верификация
+**Impure events** are generated by all Strands:
+- **Strand I (Math)**: `src/tri/math/` — sacred calculations, formulas
+- **Strand II (Brain)**: `src/brain/` — training, telemetry, checkpoint
+- **Strand III (Lang)**: `src/tri27/`, `fpga/` — compilation, synthesis, verification
 
-**Типы событий**:
-| Тип | Код | Описание |
-|-----|------|----------|
-| BUILD_FAIL | `zig build` упал |
-| TEST_FAIL | `zig build test` не прошёл |
-| SPEC_MISMATCH | `.tri` spec не совпадает с кодом |
-| GEN_FAIL | GEN фаза упала |
-| VERIFY_FAIL | VERIFY фаза не прошла |
-| DEPLOY_FAIL | деплой не удался |
-| CHECKPOINT_FAIL | checkpoint не создан |
+**Event Types**:
+| Type | Code | Description |
+|-----|-------|----------|
+| BUILD_FAIL | `zig build` failed |
+| TEST_FAIL | `zig build test` failed |
+| SPEC_MISMATCH | `.tri` spec does not match code |
+| GEN_FAIL | GEN phase failed |
+| VERIFY_FAIL | VERIFY phase failed |
+| DEPLOY_FAIL | deployment failed |
+| CHECKPOINT_FAIL | checkpoint not created |
 
-**Хранилище**: `.trinity/impure/*.json`
+**Repository**: `.trinity/impure/*.json`
 
-**CLI команды**:
+**CLI commands**:
 ```bash
-tri queen status      # Показать очередь impure событий
-tri queen purify     # Запустить Lotus Cycle на первом в очереди
-tri queen purify --all # Очистить все queued
-tri queen blocked     # Показать события, где Queen не смогла
+tri queen status # Show impure event queue
+tri queen purify # Run Lotus Cycle on the first event in the queue
+tri queen purify --all # Clear all queued events
+tri queen blocked # Show events where Queen failed
 ```
 
-**Интеграция**:
-- Hook события записывают в `.trinity/impure/` автоматически
-- Queen CLI читает очередь и выполняет Lotus Cycle
-- Каждая фаза цикла (DIAGNOSING → VERIFY → PURIFY) записывает прогресс в событие
+**Integration**:
+- Hook events are written to `.trinity/impure/` automatically
+- Queen CLI reads the queue and executes Lotus Cycle
+- Each cycle phase (DIAGNOSING → VERIFY → PURIFY) records progress in an event
