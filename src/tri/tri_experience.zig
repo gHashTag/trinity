@@ -821,6 +821,12 @@ pub fn saveEpisode(episode: Episode) !void {
     defer file.close();
     try file.writeAll(buf[0..pos]);
 
+    // Issue #420: Append-only JSONL episode log (ESAA pattern)
+    appendJsonlEpisode(buf[0..pos]);
+
+    // Issue #420: Update similar_tasks.json index
+    updateSimilarTasks(episode);
+
     // Dual-write: episode → hippocampus (secondary, file = primary)
     var summary_buf2: [256]u8 = undefined;
     const hipp_summary = std.fmt.bufPrint(&summary_buf2, "issue#{d} {s} verdict={s}", .{
@@ -865,6 +871,92 @@ fn updateMistakePatterns(mistake_text: []const u8, issue: u32) !void {
     var file = dir.createFile(fname, .{}) catch return;
     defer file.close();
     file.writeAll(json) catch {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JSONL EPISODE LOG — Issue #420: append-only event sourcing (ESAA pattern)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const JSONL_PATH = ".trinity/experience/episodes/activity.jsonl";
+const SIMILAR_TASKS_PATH = ".trinity/experience/similar_tasks.json";
+
+fn appendJsonlEpisode(json_line: []const u8) void {
+    std.fs.cwd().makePath(".trinity/experience/episodes") catch {};
+
+    // Open in append mode
+    const file = std.fs.cwd().openFile(JSONL_PATH, .{ .mode = .write_only }) catch {
+        // File doesn't exist, create it
+        const new_file = std.fs.cwd().createFile(JSONL_PATH, .{}) catch return;
+        defer new_file.close();
+        new_file.writeAll(json_line) catch return;
+        new_file.writeAll("\n") catch return;
+        return;
+    };
+    defer file.close();
+
+    // Seek to end for append
+    file.seekFromEnd(0) catch return;
+    file.writeAll(json_line) catch return;
+    file.writeAll("\n") catch return;
+}
+
+fn updateSimilarTasks(episode: Episode) void {
+    std.fs.cwd().makePath(".trinity/experience") catch {};
+
+    // Read existing similar_tasks.json
+    var existing: [65536]u8 = undefined;
+    var existing_len: usize = 0;
+    if (std.fs.cwd().openFile(SIMILAR_TASKS_PATH, .{})) |file| {
+        defer file.close();
+        existing_len = file.readAll(&existing) catch 0;
+    } else |_| {}
+
+    // Build new entry
+    var entry_buf: [1024]u8 = undefined;
+    const entry = std.fmt.bufPrint(&entry_buf,
+        \\{{"task_id":"#{d}","title":"{s}","verdict":"{s}","fail_count":{d},"timestamp":{d}}}
+    , .{
+        episode.issue,
+        episode.taskStr(),
+        episode.verdictStr(),
+        if (std.mem.eql(u8, episode.verdictStr(), "FAIL")) @as(u32, 1) else @as(u32, 0),
+        episode.timestamp,
+    }) catch return;
+
+    // Check if this issue already exists in the index — update if so
+    var id_search_buf: [32]u8 = undefined;
+    const id_search = std.fmt.bufPrint(&id_search_buf, "\"task_id\":\"#{d}\"", .{episode.issue}) catch return;
+
+    if (existing_len > 2 and std.mem.indexOf(u8, existing[0..existing_len], id_search) != null) {
+        // Issue already tracked — skip duplicate (could update in future)
+        return;
+    }
+
+    // Append to JSON array
+    const file = std.fs.cwd().createFile(SIMILAR_TASKS_PATH, .{}) catch return;
+    defer file.close();
+
+    if (existing_len > 2) {
+        // Remove trailing "]" and add new entry
+        // Find last "]"
+        var last_bracket: usize = existing_len;
+        while (last_bracket > 0) {
+            last_bracket -= 1;
+            if (existing[last_bracket] == ']') break;
+        }
+        if (last_bracket > 0) {
+            file.writeAll(existing[0..last_bracket]) catch return;
+            file.writeAll(",") catch return;
+            file.writeAll(entry) catch return;
+            file.writeAll("]\n") catch return;
+            return;
+        }
+    }
+
+    // New file — create array
+    file.writeAll("[") catch return;
+    file.writeAll(entry) catch return;
+    file.writeAll("]\n") catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1470,4 +1562,42 @@ test "containsIC" {
     try std.testing.expect(!containsIC("hello", "xyz"));
     try std.testing.expect(!containsIC("hi", "hello"));
     try std.testing.expect(containsIC("FAILURE mode", "failure"));
+}
+
+// Issue #420: JSONL + similar_tasks tests
+
+test "Episode JSONL fields" {
+    // Verify Episode struct has all required JSONL fields
+    var episode = Episode{};
+    episode.issue = 420;
+    copyToFixed(&episode.task, &episode.task_len, "dev loop test");
+    copyToFixed(&episode.verdict, &episode.verdict_len, "PASS");
+    episode.timestamp = 1700000000;
+    episode.iterations = 3;
+
+    try std.testing.expectEqual(@as(u32, 420), episode.issue);
+    try std.testing.expectEqualStrings("dev loop test", episode.taskStr());
+    try std.testing.expectEqualStrings("PASS", episode.verdictStr());
+    try std.testing.expectEqual(@as(i64, 1700000000), episode.timestamp);
+    try std.testing.expectEqual(@as(u32, 3), episode.iterations);
+}
+
+test "Episode with mistakes and learnings" {
+    var episode = Episode{};
+    episode.issue = 100;
+    copyToFixed(&episode.task, &episode.task_len, "test mistakes");
+    copyToFixed(&episode.verdict, &episode.verdict_len, "FAIL");
+
+    // Add mistakes
+    copyToFixed(&episode.mistakes[0], &episode.mistake_lens[0], "build error");
+    episode.mistake_count = 1;
+
+    // Add learnings
+    copyToFixed(&episode.learnings[0], &episode.learning_lens[0], "check deps first");
+    episode.learning_count = 1;
+
+    try std.testing.expectEqualStrings("build error", episode.getMistake(0));
+    try std.testing.expectEqualStrings("check deps first", episode.getLearning(0));
+    try std.testing.expectEqualStrings("", episode.getMistake(1));
+    try std.testing.expectEqualStrings("", episode.getLearning(1));
 }

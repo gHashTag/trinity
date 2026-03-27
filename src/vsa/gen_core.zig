@@ -245,4 +245,3 @@ pub fn cosineSimilarity(a: *const HybridBigInt, b: *const HybridBigInt) f64 {
 
     return @as(f64, @floatFromInt(dot)) / (norm_a * norm_b);
 }
-

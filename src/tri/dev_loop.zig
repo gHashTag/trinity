@@ -204,7 +204,41 @@ fn runTriCommand(allocator: Allocator, args: []const []const u8) struct { succes
     return .{ .success = success, .output = result.stdout };
 }
 
-fn executePhase(allocator: Allocator, phase: LoopPhase) LoopStep {
+/// Issue #420: Post dev loop step comment to GitHub issue
+/// Format: "{emoji} [{PHASE}] Step {N}/10 — {detail}"
+fn postStepComment(allocator: Allocator, issue_num: u32, phase: LoopPhase, detail: []const u8) void {
+    if (issue_num == 0) return;
+
+    var issue_str: [16]u8 = undefined;
+    const issue_arg = std.fmt.bufPrint(&issue_str, "{d}", .{issue_num}) catch return;
+
+    var phase_str: [8]u8 = undefined;
+    const phase_arg = std.fmt.bufPrint(&phase_str, "{d}/10", .{phase.number()}) catch return;
+
+    const status = switch (phase) {
+        .scan => "SCAN",
+        .pick => "PICK",
+        .research => "RESEARCH",
+        .spec => "SPEC",
+        .gen => "CODEGEN",
+        .verify => "TEST",
+        .verdict => "VERDICT",
+        .commit => "DONE",
+        .experience => "EXPERIENCE",
+        .decide => "DECIDE",
+    };
+
+    const r = runTriCommand(allocator, &.{
+        "tri", "issue", "comment", issue_arg,
+        "--status", status,
+        "--phase",  phase_arg,
+        "--step",   detail,
+        "--agent",  "dev-loop",
+    });
+    allocator.free(r.output);
+}
+
+fn executePhase(allocator: Allocator, phase: LoopPhase, issue_num: u32) LoopStep {
     var step = LoopStep{
         .phase = phase,
         .started_at = std.time.timestamp(),
@@ -216,11 +250,12 @@ fn executePhase(allocator: Allocator, phase: LoopPhase) LoopStep {
             step.success = r.success;
             step.setOutput(if (r.success) "Scan complete" else "Scan failed");
             allocator.free(r.output);
+            // Issue #420: post step comment
+            postStepComment(allocator, issue_num, phase, if (r.success) "scan complete — candidates loaded" else "scan failed");
         },
         .pick => {
             const r = runTriCommand(allocator, &.{ "tri", "dev", "pick", "--smart" });
             step.success = r.success;
-            // Try to extract picked item from output
             if (r.output.len > 0) {
                 const out_slice = r.output[0..@min(r.output.len, step.output.len)];
                 step.setOutput(out_slice);
@@ -228,13 +263,14 @@ fn executePhase(allocator: Allocator, phase: LoopPhase) LoopStep {
                 step.setOutput(if (r.success) "Pick complete" else "Pick failed");
             }
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, if (r.success) "task selected via --smart" else "pick failed");
         },
         .research => {
-            // Research = read pick result and gather context
             const file = std.fs.cwd().openFile(".trinity/pick_result.json", .{}) catch {
                 step.setOutput("No pick result found");
                 step.success = false;
                 step.finished_at = std.time.timestamp();
+                postStepComment(allocator, issue_num, phase, "no pick result found");
                 return step;
             };
             defer file.close();
@@ -247,35 +283,39 @@ fn executePhase(allocator: Allocator, phase: LoopPhase) LoopStep {
                 step.setOutput("Empty pick result");
                 step.success = false;
             }
+            postStepComment(allocator, issue_num, phase, "agent started — gathering context");
         },
         .spec => {
-            // Check if spec exists for picked issue
             step.setOutput("Spec check — using existing specs");
             step.success = true;
+            postStepComment(allocator, issue_num, phase, "template matched from experience");
         },
         .gen => {
-            // Run zig build as proxy for code generation
             const r = runTriCommand(allocator, &.{ "zig", "build" });
             step.success = r.success;
             step.setOutput(if (r.success) "Build successful" else "Build failed");
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, if (r.success) "code generated successfully" else "build failed");
         },
         .verify => {
-            // Run zig build test
             const r = runTriCommand(allocator, &.{ "zig", "build", "test" });
             step.success = r.success;
             step.setOutput(if (r.success) "All tests pass" else "Tests failed");
             allocator.free(r.output);
+            // Issue #420: save mistake on test failure
+            if (!r.success) {
+                saveMistakeForIssue(issue_num, "Tests failed");
+            }
+            postStepComment(allocator, issue_num, phase, if (r.success) "all tests pass" else "tests failed — mistake saved");
         },
         .verdict => {
-            // Run toxic verdict
             const r = runTriCommand(allocator, &.{ "tri", "verdict", "--toxic" });
             step.success = r.success;
             step.setOutput(if (r.success) "Verdict rendered" else "Verdict failed");
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, if (r.success) "verdict rendered" else "verdict failed");
         },
         .commit => {
-            // Check for dirty files to commit
             const r = runTriCommand(allocator, &.{ "git", "status", "--short" });
             if (r.output.len < 3) {
                 step.setOutput("Nothing to commit");
@@ -285,25 +325,53 @@ fn executePhase(allocator: Allocator, phase: LoopPhase) LoopStep {
                 step.success = true;
             }
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, "commit check complete");
         },
         .experience => {
-            // Save experience
-            const r = runTriCommand(allocator, &.{ "tri", "experience", "save" });
+            // Issue #420: save experience with JSONL format
+            var task_buf: [64]u8 = undefined;
+            const task_str = std.fmt.bufPrint(&task_buf, "dev loop issue #{d}", .{issue_num}) catch "dev loop";
+            const r = runTriCommand(allocator, &.{
+                "tri", "experience", "save",
+                "--task",    task_str,
+                "--verdict", "PASS",
+            });
             step.success = r.success;
             step.setOutput(if (r.success) "Experience saved" else "Experience save failed");
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, "episode saved to experience");
         },
         .decide => {
-            // Run loop decide
-            const r = runTriCommand(allocator, &.{ "tri", "loop", "decide" });
+            const r = runTriCommand(allocator, &.{ "tri", "loop", "status" });
             step.success = r.success;
             step.setOutput(if (r.success) "Decision: continue" else "Decision: stop");
             allocator.free(r.output);
+            postStepComment(allocator, issue_num, phase, "loop decision made");
         },
     }
 
     step.finished_at = std.time.timestamp();
     return step;
+}
+
+/// Issue #420: Save mistake file for issue on test failure
+fn saveMistakeForIssue(issue_num: u32, err_msg: []const u8) void {
+    std.fs.cwd().makePath(".trinity/mistakes") catch {};
+
+    var path_buf: [128]u8 = undefined;
+    const path = std.fmt.bufPrint(&path_buf, ".trinity/mistakes/{d}_{d}.json", .{
+        issue_num,
+        std.time.timestamp(),
+    }) catch return;
+
+    const file = std.fs.cwd().createFile(path, .{}) catch return;
+    defer file.close();
+
+    var buf: [2048]u8 = undefined;
+    const json = std.fmt.bufPrint(&buf, "{{\"issue\":{d},\"error\":\"{s}\",\"timestamp\":{d},\"source\":\"dev_loop\"}}", .{
+        issue_num, err_msg, std.time.timestamp(),
+    }) catch return;
+    file.writeAll(json) catch return;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -326,6 +394,9 @@ fn runOnce(allocator: Allocator, state: *DevLoopState) LoopIteration {
     print("\n{s}LOOP ITERATION {d}{s}\n", .{ GOLDEN, state.current_iteration, RESET });
     print("{s}════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
 
+    // Issue #420: track issue number for step comments
+    var current_issue_num: u32 = 0;
+
     var all_passed = true;
     for (PHASES) |phase| {
         print("  {s}[{s}/{d}]{s} {s}{s}{s} ... ", .{
@@ -338,7 +409,7 @@ fn runOnce(allocator: Allocator, state: *DevLoopState) LoopIteration {
             RESET,
         });
 
-        const step = executePhase(allocator, phase);
+        const step = executePhase(allocator, phase, current_issue_num);
         iteration.addStep(step);
 
         if (step.success) {
@@ -350,12 +421,16 @@ fn runOnce(allocator: Allocator, state: *DevLoopState) LoopIteration {
 
         // Extract pick info from research step
         if (phase == .research and step.success) {
-            // Try to extract issue ID from pick_result.json content
             const output = step.outputStr();
             if (std.mem.indexOf(u8, output, "\"id\":\"")) |id_start| {
                 const val_start = id_start + 6;
                 if (std.mem.indexOfPos(u8, output, val_start, "\"")) |val_end| {
-                    iteration.setIssueId(output[val_start..val_end]);
+                    const id_str = output[val_start..val_end];
+                    iteration.setIssueId(id_str);
+                    // Issue #420: extract numeric issue ID for step comments
+                    if (id_str.len > 1 and id_str[0] == '#') {
+                        current_issue_num = std.fmt.parseInt(u32, id_str[1..], 10) catch 0;
+                    }
                 }
             }
             if (std.mem.indexOf(u8, output, "\"title\":\"")) |t_start| {

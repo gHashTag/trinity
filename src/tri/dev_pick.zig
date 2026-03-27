@@ -295,6 +295,18 @@ pub fn pickSmart(result: *const dev_scan.ScanResult) PickResult {
             score += 10.0;
         }
 
+        // Issue #420: (5) Experience boost — past successes indicate tractable task
+        if (item.has_experience and item.past_pass > 0 and reason_count < 4) {
+            const boost: f32 = @as(f32, @floatFromInt(item.past_pass)) * 5.0;
+            score += boost;
+            var r = PickReason{};
+            r.setFactor("experience_boost");
+            r.weight = boost;
+            r.setDetail("Past successes on this task");
+            reasons_buf[reason_count] = r;
+            reason_count += 1;
+        }
+
         scored[scored_count] = ScoredItem{ .idx = i, .score = score };
         scored_count += 1;
     }
@@ -432,12 +444,26 @@ fn renderPick(result: *const dev_scan.ScanResult, pick: *const PickResult) void 
         print("\n", .{});
     }
 
-    // MNL skips
-    if (pick.skipped_mnl > 0) {
-        print("  {s}MNL:{s} {d} items deprioritized (3+ past failures)\n\n", .{ YELLOW, RESET, pick.skipped_mnl });
+    // Experience context (Issue #420)
+    if (chosen.has_experience) {
+        print("  {s}Experience:{s} {d} attempts ({s}{d} pass{s}/{s}{d} fail{s})\n", .{
+            CYAN,
+            RESET,
+            chosen.past_attempts,
+            GREEN,
+            chosen.past_pass,
+            RESET,
+            RED,
+            chosen.past_fail,
+            RESET,
+        });
     }
 
-    print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+    // MNL skips
+    if (pick.skipped_mnl > 0) {
+        print("  {s}MNL:{s} {d} items deprioritized (3+ past failures)\n", .{ YELLOW, RESET, pick.skipped_mnl });
+    }
+    print("\n{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -647,4 +673,52 @@ test "doctor_bonus" {
     const pick = pickSmart(&result);
     // Doctor item should score higher due to +15 bonus
     try std.testing.expectEqual(@as(usize, 1), pick.chosen_idx);
+}
+
+test "experience_boost" {
+    var result = dev_scan.ScanResult{};
+
+    // Same priority, but one has experience successes
+    var no_exp = dev_scan.ScanItem{ .priority = .medium };
+    no_exp.setId("#200");
+    no_exp.setTitle("No experience");
+
+    var with_exp = dev_scan.ScanItem{
+        .priority = .medium,
+        .has_experience = true,
+        .past_pass = 3,
+        .past_fail = 0,
+        .past_attempts = 3,
+    };
+    with_exp.setId("#201");
+    with_exp.setTitle("Has experience");
+
+    result.addItem(no_exp);
+    result.addItem(with_exp);
+
+    const pick = pickSmart(&result);
+    // Item with experience should get boost
+    try std.testing.expectEqual(@as(usize, 1), pick.chosen_idx);
+    try std.testing.expect(pick.final_score > 60.0);
+}
+
+test "mnl_skips_3x_failed" {
+    var result = dev_scan.ScanResult{};
+
+    // Critical priority but 4 failures — should be deprioritized
+    var failed = dev_scan.ScanItem{ .priority = .critical, .fail_count = 4 };
+    failed.setId("#300");
+    failed.setTitle("Repeatedly failing");
+
+    // Low priority, fresh — should win due to MNL penalty on failed
+    var fresh = dev_scan.ScanItem{ .priority = .high, .fail_count = 0 };
+    fresh.setId("#301");
+    fresh.setTitle("Fresh high-pri");
+
+    result.addItem(failed);
+    result.addItem(fresh);
+
+    const pick = pickSmart(&result);
+    try std.testing.expectEqual(@as(usize, 1), pick.chosen_idx);
+    try std.testing.expect(pick.skipped_mnl >= 1);
 }
