@@ -311,3 +311,4 @@ apps/queen/*.swiftdeps~
 apps/queen/*.png
 data/cells/
 src/tools/uart-echo-test
+data/cifar-10/
