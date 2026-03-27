@@ -54,6 +54,8 @@ jobs:
         run: |
           mkdir -p combined
           cp -r apps/website/dist/* combined/
+          # Copy CNAME from public (if exists)
+          cp apps/website/public/CNAME combined/ 2>/dev/null || true
           mkdir -p combined/docs
           cp -r docs/build/* combined/docs/
           touch combined/.nojekyll
