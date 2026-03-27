@@ -161,7 +161,6 @@ pub const JsonLdGenerator = struct {
     /// Validate against Schema.org
     pub fn validateSchemaOrg(self: JsonLdGenerator, allocator: std.mem.Allocator) !ValidationResult {
         var errors = try std.ArrayList([]const u8).initCapacity(allocator, 10);
-        defer errors.deinit(allocator);
 
         // Required fields
         if (self.metadata.title.len == 0) {
@@ -179,9 +178,12 @@ pub const JsonLdGenerator = struct {
             try errors.append(allocator, "Schema.org: at least 3 'keywords' recommended");
         }
 
+        const errors_slice = try errors.toOwnedSlice(allocator);
+        errors.deinit(allocator);
+
         return ValidationResult{
-            .valid = errors.items.len == 0,
-            .errors = try errors.toOwnedSlice(allocator),
+            .valid = errors_slice.len == 0,
+            .errors = errors_slice,
         };
     }
 
@@ -326,7 +328,7 @@ test "JsonLdGenerator: Schema.org validation" {
     const metadata_empty = ZenodoMetadata{};
     const gen_empty = JsonLdGenerator{ .metadata = metadata_empty };
     const result_empty = try gen_empty.validateSchemaOrg(std.testing.allocator);
-    // Note: result_empty has dynamically allocated errors, skip deinit for simplicity
+    defer result_empty.deinit(std.testing.allocator);
 
     try std.testing.expect(!result_empty.valid); // Should fail validation
 
