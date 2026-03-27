@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="#-installation">Installation</a> &bull;
-  <a href="#-quick-start">Quick Start</a> &bull;
-  <a href="#-tri-cli-commands">Commands</a> &bull;
-  <a href="#-architecture">Architecture</a> &bull;
-  <a href="#-documentation">Docs</a>
+  <a href="#installation">Installation</a> &bull;
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#tri-cli">Commands</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="#documentation">Docs</a>
 </p>
 
 <p align="center">
@@ -101,7 +101,8 @@ Each branch produces testable predictions; some confirmed (G: 0.09%), some rejec
 | **[DELTA-001 Final Report](docs/docs/research/delta_001_final_report.md)** | Why γ ≠ φ⁻³: Honest negative result on Barbero-Immirzi parameter |
 | **[LISA Prediction Roadmap](docs/papers/LISA_PREDICTION_ROADMAP_2035.md)** | 12 testable predictions for gravitational wave observations (2035+) |
 
-**Evidence Ladder:**
+## Evidence Ladder
+
 - ✅ **Smoking Guns (4):** G (0.09%), N_gen = 3, t_present (382 ms), T_cycles (~97 min)
 - ✅ **Consistent (3):** C, Ω_Λ, Ω_DM
 - ❌ **Rejected (3):** γ = φ⁻³, α family fit, √(8/3) ≈ φ
