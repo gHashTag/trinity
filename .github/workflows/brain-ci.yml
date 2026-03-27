@@ -131,9 +131,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build All Binaries
+      - name: Build TRI Binary
         run: |
-          zig build -Dci=true
+          zig build tri -Dci=true
 
   # =========================================================================
   # Phase 2: Unit Tests — Individual Brain Regions
