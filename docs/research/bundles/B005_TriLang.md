@@ -10,10 +10,32 @@ Tri is a ternary programming language with VIBEE compiler targeting Zig and Veri
 
 ## Key Features
 
-- **Syntax:** .tri specification format
+- **Syntax:** .tri specification format (Coptic-inspired notation)
 - **Targets:** Zig, Verilog (VIBEE codegen)
 - **Type System:** ADT enums, exhaustive match, result types
 - **Effects:** Effects + handlers system (~270 LOC)
+- **Parser:** Generated from `vibee_parser.tri` spec
+- **Compilation:** Multi-stage pipeline (parse → validate → codegen → optimize)
+
+## VIBEE Compilation Pipeline
+
+```
+.tri spec → Parse → AST → Type Check → Zig/Verilog
+                    ↓
+                  Validate (exhaustive patterns)
+                    ↓
+                  Codegen (tri_compiler.zig)
+                    ↓
+                  Optimize (inlining, dead code elimination)
+                    ↓
+                  Output (Zig/Verilog/Assembly)
+```
+
+**Supported Targets:**
+- `zig` - Native code with φ-optimized ternary operations
+- `verilog` - FPGA bitstream synthesis (B002 compatible)
+- `wasm` - WebAssembly for browser deployment
+- `x86_64` - SIMD-optimized native assembly
 
 ## Code Example
 
