@@ -375,8 +375,8 @@ test "DataSource formatAsMarkdown" {
 
 test "BiasAssessment formatAsMarkdown" {
     const bias = BiasAssessment{
-        .known_biases = &[_][]const u8{"English language bias", "Western cultural bias"},
-        .mitigation_steps = &[_][]const u8{"Balanced sampling", "Cross-cultural validation"},
+        .known_biases = &[_][]const u8{ "English language bias", "Western cultural bias" },
+        .mitigation_steps = &[_][]const u8{ "Balanced sampling", "Cross-cultural validation" },
         .bias_measured = true,
         .bias_metrics = null,
     };

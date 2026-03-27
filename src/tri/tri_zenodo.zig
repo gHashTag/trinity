@@ -166,11 +166,11 @@ fn generateModelCard(allocator: std.mem.Allocator, args: []const []const u8) !vo
                 .{ .name = "train", .num_samples = 2800000, .percentage = 0.967 },
                 .{ .name = "validation", .num_samples = 100000, .percentage = 0.033 },
             },
-            .preprocessing = &.{ "GF16 ternary encoding (16 gradients to 1 ternary value)" },
+            .preprocessing = &.{"GF16 ternary encoding (16 gradients to 1 ternary value)"},
         },
         .ethics = .{
-            .risks = &.{ "Model trained on synthetic stories, limited generalization to real-world domains" },
-            .mitigations = &.{ "Validate on domain-specific data before production deployment" },
+            .risks = &.{"Model trained on synthetic stories, limited generalization to real-world domains"},
+            .mitigations = &.{"Validate on domain-specific data before production deployment"},
             .reviewed_by = "Trinity Research Team",
         },
         .limitations = null,
@@ -213,20 +213,18 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
 
     // Demonstrate significance testing
     const test_result = zenodo_v16.StatisticalTestResult{
-        .test_type = .t_test,
+        .test_type = .ttest,
         .statistic = 2.45,
         .p_value = 0.014,
-        .significant = true,
-        .significance_level = .two_star,
+        .significance = .double_star,
         .effect_size = 0.65,
-        .ci = ci,
         .interpretation = "Medium effect size, significant at p<0.05",
     };
 
     print("Statistical Test (Welch's t-test):\n", .{});
     print("  t-statistic: {d:.2}\n", .{test_result.statistic});
     print("  p-value: {d:.4}\n", .{test_result.p_value});
-    print("  Significance: {s}\n", .{test_result.significanceLevelString()});
+    print("  Significance: {s}\n", .{test_result.significance.toSymbol()});
     print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size});
     print("  Interpretation: {s}\n\n", .{test_result.interpretation});
 

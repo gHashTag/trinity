@@ -85,8 +85,7 @@ pub const ConfidenceInterval = struct {
         const upper_str = try std.fmt.allocPrint(allocator, "{d:.4}", .{self.upper});
         defer allocator.free(upper_str);
 
-        return std.fmt.allocPrint(allocator, "[{s}, {s}] ({s})",
-            .{ lower_str, upper_str, pct_str });
+        return std.fmt.allocPrint(allocator, "[{s}, {s}] ({s})", .{ lower_str, upper_str, pct_str });
     }
 
     /// Format as LaTeX string
@@ -99,8 +98,7 @@ pub const ConfidenceInterval = struct {
         const upper_str = try std.fmt.allocPrint(allocator, "{d:.4}", .{self.upper});
         defer allocator.free(upper_str);
 
-        return std.fmt.allocPrint(allocator, "[{s}, {s}] ({s})",
-            .{ lower_str, upper_str, pct_str });
+        return std.fmt.allocPrint(allocator, "[{s}, {s}] ({s})", .{ lower_str, upper_str, pct_str });
     }
 };
 
@@ -205,8 +203,7 @@ pub const ExperimentResultEnhanced = struct {
         const std_str = try std.fmt.allocPrint(allocator, "{d:.4}", .{self.std_dev});
         defer allocator.free(std_str);
 
-        return std.fmt.allocPrint(allocator, "{s} & {s:.3f} & {s:.3f}",
-            .{ self.experiment_id, self.mean, self.std_dev });
+        return std.fmt.allocPrint(allocator, "{s} & {s:.3f} & {s:.3f}", .{ self.experiment_id, self.mean, self.std_dev });
     }
 };
 
