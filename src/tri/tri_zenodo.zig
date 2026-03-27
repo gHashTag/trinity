@@ -825,7 +825,7 @@ fn statisticalSummary(allocator: std.mem.Allocator, args: []const []const u8) !v
 // V21 BROADER IMPACT STATEMENT (NeurIPS/ICLR 2025)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runV21Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn runV21Command(_: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         printV21Help();
         return;
