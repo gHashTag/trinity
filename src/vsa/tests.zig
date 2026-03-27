@@ -351,3 +351,149 @@ test "QutritArray coherence detection" {
 }
 
 // TQNN tests moved to src/models/tqnn/tqnn_inference.zig (break vsa↔models cycle)
+
+//==========================================================================
+// TEXT ENCODING TESTS (Phase 1: Character-level VSA)
+//==========================================================================
+
+test "VSA Text Encoding: charToVector deterministic" {
+    const text = @import("text_encoding.zig");
+
+    const v1 = text.charToVector('a');
+    const v2 = text.charToVector('a');
+
+    // Same character should produce same vector
+    try std.testing.expectEqual(v1.trit_len, v2.trit_len);
+
+    // Different characters should produce different vectors
+    const v3 = text.charToVector('b');
+    const sim = vsa.cosineSimilarity(&v1, &v3);
+    try std.testing.expect(sim < 0.8); // Should be dissimilar
+}
+
+test "VSA Text Encoding: encodeWord" {
+    const text = @import("text_encoding.zig");
+
+    const word_vec = text.encodeWord("cat");
+
+    // Word vector should have correct dimension
+    try std.testing.expect(word_vec.trit_len > 0);
+
+    // Same word should produce same vector
+    const word_vec2 = text.encodeWord("cat");
+    const sim = vsa.cosineSimilarity(&word_vec, &word_vec2);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.01);
+}
+
+test "VSA Text Encoding: similar words have higher similarity" {
+    const text = @import("text_encoding.zig");
+
+    const cat = text.encodeWord("cat");
+    const cats = text.encodeWord("cats");
+    const dog = text.encodeWord("dog");
+
+    const cat_cats_sim = vsa.cosineSimilarity(&cat, &cats);
+    const cat_dog_sim = vsa.cosineSimilarity(&cat, &dog);
+
+    // "cat" and "cats" should be more similar than "cat" and "dog"
+    try std.testing.expect(cat_cats_sim > cat_dog_sim);
+}
+
+test "VSA Text Encoding: textSimilarity" {
+    const text = @import("text_encoding.zig");
+
+    const sim1 = text.textSimilarity("hello world", "hello world");
+    const sim2 = text.textSimilarity("hello world", "goodbye world");
+
+    // Identical texts should be very similar
+    try std.testing.expect(sim1 > 0.9);
+
+    // Different texts should be less similar
+    try std.testing.expect(sim2 < sim1);
+}
+
+test "VSA Text Encoding: encodeNgram" {
+    const text = @import("text_encoding.zig");
+
+    const bigram = text.encodeNgram("th");
+
+    // Bigram vector should have correct dimension
+    try std.testing.expect(bigram.trit_len > 0);
+
+    // Same bigram should produce same vector
+    const bigram2 = text.encodeNgram("th");
+    const sim = vsa.cosineSimilarity(&bigram, &bigram2);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.0), sim, 0.01);
+}
+
+test "VSA Text Encoding: encodeTextWithNgrams" {
+    const text_enc = @import("text_encoding.zig");
+    const allocator = std.testing.allocator;
+
+    const encoded = try text_enc.encodeTextWithNgrams("hello", allocator);
+
+    // All levels should have valid vectors
+    try std.testing.expect(encoded.char_level.trit_len > 0);
+    try std.testing.expect(encoded.combined.trit_len > 0);
+}
+
+test "VSA Text Encoding: DocumentStats" {
+    const text = @import("text_encoding.zig");
+    const allocator = std.testing.allocator;
+
+    var stats = text.DocumentStats.init(allocator);
+    defer stats.deinit();
+
+    try stats.addDocument("the cat sat");
+    try stats.addDocument("the dog sat");
+    try stats.addDocument("the bird flew");
+
+    try std.testing.expectEqual(@as(usize, 3), stats.total_docs);
+
+    // "the" appears in all docs, should have lower IDF
+    const idf_the = stats.idf("the");
+    const idf_cat = stats.idf("cat");
+
+    try std.testing.expect(idf_cat > idf_the);
+}
+
+test "VSA Text Encoding: AssociativeMemory" {
+    const text = @import("text_encoding.zig");
+    const allocator = std.testing.allocator;
+
+    var memory = text.AssociativeMemory.init(allocator);
+    defer memory.deinit(allocator);
+
+    const vec1 = text.encodeWord("apple");
+    const vec2 = text.encodeWord("banana");
+
+    try memory.store(allocator, "apple", vec1);
+    try memory.store(allocator, "banana", vec2);
+
+    // Should retrieve stored keys
+    const retrieved1 = memory.retrieve(vec1);
+    try std.testing.expectEqualStrings("apple", retrieved1.?);
+
+    const retrieved2 = memory.retrieve(vec2);
+    try std.testing.expectEqualStrings("banana", retrieved2.?);
+}
+
+test "VSA Text Encoding: findTopK" {
+    const text = @import("text_encoding.zig");
+    const allocator = std.testing.allocator;
+
+    const corpus = &[_][]const u8{
+        "the quick brown fox",
+        "the lazy dog",
+        "the quick cat",
+        "a completely different text",
+    };
+
+    const results = try text.findTopK("quick fox", corpus, allocator, 2);
+    defer allocator.free(results);
+
+    try std.testing.expectEqual(@as(usize, 2), results.len);
+
+    // First result should be most similar
+    try std.testing.expect(results[0].similarity > results[1].similarity);
+}
