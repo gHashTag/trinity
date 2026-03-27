@@ -313,9 +313,9 @@ pub fn parseTokenAmount(str: []const u8) TokenErrorCode!u128 {
 pub fn calculateAPY(staked: u128, rewards: u128, lock_period_seconds: i64) f64 {
     if (staked == 0 or lock_period_seconds <= 0) return 0.0;
 
-    const reward_ratio: f64 = @floatFromInt(rewards) / @floatFromInt(staked);
+    const reward_ratio: f64 = @as(f64, @floatFromInt(rewards)) / @as(f64, @floatFromInt(staked));
     const year_seconds: f64 = 365.0 * 24.0 * 3600.0;
-    const periods_per_year: f64 = year_seconds / @floatFromInt(lock_period_seconds);
+    const periods_per_year: f64 = year_seconds / @as(f64, @floatFromInt(lock_period_seconds));
 
     return reward_ratio * periods_per_year * 100.0;
 }
