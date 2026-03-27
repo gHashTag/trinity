@@ -44,7 +44,7 @@ https://trinity-production-a1d4.up.railway.app
 
 ### Token
 ```
-PX_BRIDGE_TOKEN=d9d42042ada98a9557c9cb5b1609edd88447d72ecda16f2ce723a6bca4718df5
+PX_BRIDGE_TOKEN=<TOKEN>  # Set via env var or Railway secret
 ```
 
 ### API Reference
