@@ -1,8 +1,8 @@
 # B005: Tri Language Specification
 
 **DOI:** 10.5281/zenodo.19227873
-**Version:** 8.0
-**LOC:** 560
+**Version:** 9.0
+**LOC:** 642
 
 ## Overview
 
