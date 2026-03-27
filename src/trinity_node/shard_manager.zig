@@ -784,26 +784,36 @@ test "5-node simulation with disk persistence" {
     // Phase 3: Simulate restart — create 5 NEW providers, load from disk
     var new0 = storage_mod.StorageProvider.init(allocator, .{
         .max_bytes = config.max_bytes,
+        .shard_size = config.shard_size,
+        .replication_factor = config.replication_factor,
         .storage_dir = dirs[0],
     });
     defer new0.deinit();
     var new1 = storage_mod.StorageProvider.init(allocator, .{
         .max_bytes = config.max_bytes,
+        .shard_size = config.shard_size,
+        .replication_factor = config.replication_factor,
         .storage_dir = dirs[1],
     });
     defer new1.deinit();
     var new2 = storage_mod.StorageProvider.init(allocator, .{
         .max_bytes = config.max_bytes,
+        .shard_size = config.shard_size,
+        .replication_factor = config.replication_factor,
         .storage_dir = dirs[2],
     });
     defer new2.deinit();
     var new3 = storage_mod.StorageProvider.init(allocator, .{
         .max_bytes = config.max_bytes,
+        .shard_size = config.shard_size,
+        .replication_factor = config.replication_factor,
         .storage_dir = dirs[3],
     });
     defer new3.deinit();
     var new4 = storage_mod.StorageProvider.init(allocator, .{
         .max_bytes = config.max_bytes,
+        .shard_size = config.shard_size,
+        .replication_factor = config.replication_factor,
         .storage_dir = dirs[4],
     });
     defer new4.deinit();
