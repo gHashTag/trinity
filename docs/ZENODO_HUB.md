@@ -323,6 +323,20 @@ python3 tools/zenodo_upload_v8.py --dry-run --all
 
 ## Changelog
 
+### v19.2 (2026-03-27) — OpenAlex + COAR Integration
+- ✅ OpenAlex work type classification (8 types)
+- ✅ COAR notification system (Crossref/DataCite/OpenAlex)
+- ✅ Enhanced metadata validation with scoring (0-100)
+- ✅ SPDX license validation (12 identifiers)
+- ✅ Implementation: `src/tri/doctor/zenodo_v19.zig` (300 LOC)
+
+### v19.1 (2026-03-27) — Citation File Format
+- ✅ Created CITATION.cff (CFF 1.2.0) at project root
+- ✅ ORCID integration (0009-0008-4294-6159)
+- ✅ Preferred citation format
+- ✅ References to all 7 bundles
+- ✅ SPDX license identifier
+
 ### v9.0 (2026-03-27) — Scientific Enhancement
 - ✅ All 8 bundles enhanced with experimental results
 - ✅ B001: Added SOTA comparison table (HSLM vs TinyLlama, GPT-2)
@@ -366,8 +380,10 @@ python3 tools/zenodo_upload_v8.py --dry-run --all
 
 - **Research Framework:** `docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md`
 - **V16 Scientific Rigor:** `src/tri/doctor/zenodo_v16.zig`
+- **V19 OpenAlex + COAR:** `src/tri/doctor/zenodo_v19.zig`
+- **Best Practices 2025:** `docs/research/ZENODO_BEST_PRACTICES_2025.md`
 - **CLI Implementation:** `src/tri/tri_zenodo.zig`
-- **Upload Script:** `tools/zenodo_upload_v8.py`
+- **Upload Script:** `tools/zenodo_upload_v9.py`
 
 ---
 
