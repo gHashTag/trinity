@@ -252,7 +252,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("  p-value: {d:.4}\n", .{test_result.p_value});
     print("  Significance: {s}\n", .{test_result.significance.toSymbol()});
     print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size orelse 0.0});
-    print("  Interpretation: {s}\n\n", .{test_result.interpretation});
+    print("  Interpretation: {d:.2}\n\n", .{test_result.interpretation});
 
     // Demonstrate experiment comparison
     const exp1 = zenodo_v16.ExperimentResultEnhanced{
@@ -837,44 +837,45 @@ fn runV21Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
         print("\n{s}{s}V21 NeurIPS Broader Impact Statement{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
-        const output = try statement.formatNeurips(allocator);
-        defer allocator.free(output);
-
-        print("{s}\n", .{output});
-        print("{s}✅ NeurIPS broader impact statement generated!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V21 broader impact module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v21_broader_impact module is available
+        // const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+        // const output = try statement.formatNeurips(allocator);
+        // defer allocator.free(output);
+        // print("{s}\n", .{output});
+        // print("{s}✅ NeurIPS broader impact statement generated!{s}\n\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, v21_subcmd, "iclr")) {
         print("\n{s}{s}V21 ICLR Ethical Statement{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
-        const output = try statement.formatIclr(allocator);
-        defer allocator.free(output);
-
-        print("{s}\n", .{output});
-        print("{s}✅ ICLR ethical statement generated!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V21 ethical statement module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v21_broader_impact module is available
+        // const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+        // const output = try statement.formatIclr(allocator);
+        // defer allocator.free(output);
+        // print("{s}\n", .{output});
+        // print("{s}✅ ICLR ethical statement generated!{s}\n\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, v21_subcmd, "risk")) {
         print("\n{s}{s}V21 Risk Assessment Matrix{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
-
-        print("{s}Risk Assessment:{s}\n\n", .{ BOLD, RESET });
-        print("{s}Risk{s} | {s}Likelihood{s} | {s}Impact{s} | {s}Score{s} | {s}Mitigation{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
-        print("{s}─────{s}┼{s}─────────{s}┼{s}───────{s}┼{s}──────{s}┼{s}────────────{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
-
-        for (statement.risks) |risk| {
-            const likelihood_emoji = risk.likelihood.emoji();
-            const impact_emoji = risk.impact.emoji();
-            print(" {s} {s} {s} | {s} {d} {s} | {s} {d} {s} | {s} **{d}** {s} | ", .{ RESET, risk.name, RESET, likelihood_emoji, RESET, risk.likelihood.score(), RESET, impact_emoji, RESET, risk.impact.score(), RESET, risk.score(), RESET });
-            if (risk.mitigations.len > 0) {
-                print("{s}\n", .{risk.mitigations[0]});
-            } else {
-                print("\n");
-            }
-        }
-
-        print("\n{s}✅ Risk assessment displayed!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V21 risk assessment module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v21_broader_impact module is available
+        // const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+        // print("{s}Risk Assessment:{s}\n\n", .{ BOLD, RESET });
+        // print("{s}Risk{s} | {s}Likelihood{s} | {s}Impact{s} | {s}Score{s} | {s}Mitigation{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+        // print("{s}─────{s}┼{s}─────────{s}┼{s}───────{s}┼{s}──────{s}┼{s}────────────{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+        // for (statement.risks) |risk| {
+        //     const likelihood_emoji = risk.likelihood.emoji();
+        //     const impact_emoji = risk.impact.emoji();
+        //     print(" {s} {s} {s} | {s} {d} {s} | {s} {d} {s} | {s} **{d}** {s} | ", .{ RESET, risk.name, RESET, likelihood_emoji, RESET, risk.likelihood.score(), RESET, impact_emoji, RESET, risk.impact.score(), RESET, risk.score(), RESET });
+        //     if (risk.mitigations.len > 0) {
+        //         print("{s}\n", .{risk.mitigations[0]});
+        //     } else {
+        //         print("\n");
+        //     }
+        // }
+        // print("\n{s}✅ Risk assessment displayed!{s}\n\n", .{ GREEN, RESET });
     } else {
         print("{s}Unknown V21 subcommand: {s}{s}\n", .{ RED, v21_subcmd, RESET });
         printV21Help();
@@ -905,51 +906,47 @@ fn runV22Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
         print("\n{s}{s}V22 NeurIPS Reproducibility Checklist{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
-        defer allocator.free(checklist.categories);
-
-        const output = try checklist.formatNeurips(allocator);
-        defer allocator.free(output);
-
-        print("{s}\n", .{output});
-
-        const completion = checklist.overallCompletion();
-        print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
-        print("{s}✅ NeurIPS checklist generated!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V22 reproducibility module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v22_reproducibility module is available
+        // const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        // defer allocator.free(checklist.categories);
+        // const output = try checklist.formatNeurips(allocator);
+        // defer allocator.free(output);
+        // print("{s}\n", .{output});
+        // const completion = checklist.overallCompletion();
+        // print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
+        // print("{s}✅ NeurIPS checklist generated!{s}\n\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, v22_subcmd, "iclr")) {
         print("\n{s}{s}V22 ICLR Reproducibility Criteria{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
-        defer allocator.free(checklist.categories);
-
-        const output = try checklist.formatIclr(allocator);
-        defer allocator.free(output);
-
-        print("{s}\n", .{output});
-
-        const completion = checklist.overallCompletion();
-        print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
-        print("{s}✅ ICLR checklist generated!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V22 reproducibility module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v22_reproducibility module is available
+        // const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        // defer allocator.free(checklist.categories);
+        // const output = try checklist.formatIclr(allocator);
+        // defer allocator.free(output);
+        // print("{s}\n", .{output});
+        // const completion = checklist.overallCompletion();
+        // print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
+        // print("{s}✅ ICLR checklist generated!{s}\n\n", .{ GREEN, RESET });
     } else if (std.mem.eql(u8, v22_subcmd, "completion")) {
         print("\n{s}{s}V22 Completion Status{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-//         const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
-        defer allocator.free(checklist.categories);
-
-        const overall_completion = checklist.overallCompletion();
-
-        print("{s}Overall Completion: {d:.1}%{s}\n\n", .{ BOLD, overall_completion, RESET });
-
-        print("{s}Category Breakdown:{s}\n", .{ BOLD, RESET });
-        for (checklist.categories) |cat| {
-            const cat_completion = cat.completion();
-            const status = if (cat_completion == 100.0) "✅" else if (cat_completion >= 70.0) "🟡" else "🔴";
-            print("  {s} {s}: {d:.1}% {s}\n", .{ status, cat.name, cat_completion, RESET });
-        }
-
-        print("\n{s}✅ Completion status displayed!{s}\n\n", .{ GREEN, RESET });
+        print("{s}⚠️  V22 reproducibility module not yet available{s}\n\n", .{ YELLOW, RESET });
+        // TODO: Uncomment when zenodo_v22_reproducibility module is available
+        // const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        // defer allocator.free(checklist.categories);
+        // const overall_completion = checklist.overallCompletion();
+        // print("{s}Overall Completion: {d:.1}%{s}\n\n", .{ BOLD, overall_completion, RESET });
+        // print("{s}Category Breakdown:{s}\n", .{ BOLD, RESET });
+        // for (checklist.categories) |cat| {
+        //     const cat_completion = cat.completion();
+        //     const status = if (cat_completion == 100.0) "✅" else if (cat_completion >= 70.0) "🟡" else "🔴";
+        //     print("  {s} {s}: {d:.1}% {s}\n", .{ status, cat.name, cat_completion, RESET });
+        // }
+        // print("\n{s}✅ Completion status displayed!{s}\n\n", .{ GREEN, RESET });
     } else {
         print("{s}Unknown V22 subcommand: {s}{s}\n", .{ RED, v22_subcmd, RESET });
         printV22Help();
