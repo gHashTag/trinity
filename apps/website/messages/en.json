@@ -2,7 +2,7 @@
   "lang": "en",
   "langSwitch": "RU",
   "langHref": "?lang=ru",
-  "nav": ["TRINITY", "Theorems", "Solution", "Benchmarks", "Calculator", "DePIN", "Tech Tree", "Team", "Science", "Invest"],
+  "nav": ["TRINITY", "Theorems", "Publications", "Solution", "Benchmarks", "Calculator", "DePIN", "Team", "Invest"],
   "hero": {
     "tag": "GPU-Verified Green AI Economy",
     "badge_publications": "7 PUBLICATIONS",
@@ -30,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "Dashboard",
+    "tree": "Research Lab",
     "docs": "Docs"
   },
   "theorems": {

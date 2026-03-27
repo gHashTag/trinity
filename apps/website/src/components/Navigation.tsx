@@ -2,7 +2,7 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'solution', 'benchmarks', 'calculator', 'depin', 'tech-tree', 'team', 'science', 'invest']
+const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
 const BASE = import.meta.env.BASE_URL
 
 export default memo(function Navigation() {
@@ -76,6 +76,13 @@ export default memo(function Navigation() {
           {t.navExtra?.dashboard || 'Dashboard'}
         </a>
         <a
+          href={`${BASE}tree`}
+          style={{ color: '#ffd700', fontWeight: 600 }}
+          aria-label="Go to Research Lab"
+        >
+          {t.navExtra?.tree || 'Research Lab'}
+        </a>
+        <a
           href={`${BASE}docs/`}
           target="_blank"
           rel="noopener noreferrer"
@@ -138,6 +145,14 @@ export default memo(function Navigation() {
                 aria-label="Go to Dashboard"
               >
                 {t.navExtra?.dashboard || 'Dashboard'}
+              </a>
+              <a
+                href={`${BASE}tree`}
+                style={{ color: '#ffd700' }}
+                onClick={() => setMenuOpen(false)}
+                aria-label="Go to Research Lab"
+              >
+                {t.navExtra?.tree || 'Research Lab'}
               </a>
               <a
                 href={`${BASE}docs/`}

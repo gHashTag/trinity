@@ -2,7 +2,7 @@
   "lang": "zh",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "定理", "解决方案", "基准测试", "计算器", "DePIN", "科技树", "团队", "科学", "投资"],
+  "nav": ["TRINITY", "定理", "出版物", "解决方案", "基准测试", "计算器", "DePIN", "团队", "投资"],
   "hero": {
     "badge_publications": "7篇出版物",
     "badge_doi": "DOI已验证",
@@ -30,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "仪表板",
+    "tree": "研究实验室",
     "docs": "文档"
   },
   "theorems": {

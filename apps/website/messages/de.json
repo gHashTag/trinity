@@ -2,7 +2,7 @@
   "lang": "de",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Theoreme", "Lösung", "Benchmarks", "Rechner", "DePIN", "Tech-Baum", "Team", "Wissenschaft", "Investieren"],
+  "nav": ["TRINITY", "Theoreme", "Publikationen", "Lösung", "Benchmarks", "Rechner", "DePIN", "Team", "Investieren"],
   "hero": {
     "badge_publications": "7 PUBLIKATIONEN",
     "badge_doi": "DOI-VERIFIZIERT",
@@ -30,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "Dashboard",
+    "tree": "Forschungslab",
     "docs": "Doku"
   },
   "theorems": {
