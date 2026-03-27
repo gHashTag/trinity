@@ -24,7 +24,7 @@ pub fn compress(data: []const u8, allocator: std.mem.Allocator) ![]u16 {
     }
 
     var dict_size: u16 = 256;
-    var current = std.ArrayList(u8).init(allocator);
+    var current = std.ArrayList(u8).initCapacity(allocator, 16) catch unreachable;
     defer current.deinit(allocator);
 
     for (data) |byte| {
@@ -33,7 +33,7 @@ pub fn compress(data: []const u8, allocator: std.mem.Allocator) ![]u16 {
         var key = [_]u8{0} ** 256;
         @memcpy(key[0..current.items.len], current.items);
 
-        if (dict.get(key)) |code| {
+        if (dict.get(key)) |_| {
             // Continue building current string
             continue;
         } else {

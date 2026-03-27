@@ -85,12 +85,13 @@ pub fn generateCodes(tree: *const HuffmanNode, allocator: std.mem.Allocator) ![]
     var codes = try allocator.alloc(HuffmanCode, 256);
     @memset(codes, HuffmanCode{});
 
-    var stack = std.ArrayList(struct { node: *const HuffmanNode, code: u32, len: u8 }).init(allocator);
+    var stack = std.ArrayList(struct { node: *const HuffmanNode, code: u32, len: u8 }).initCapacity(allocator, 32) catch unreachable;
     defer stack.deinit(allocator);
 
     try stack.append(allocator, .{ .node = tree, .code = 0, .len = 0 });
 
-    while (stack.popOrNull()) |frame| {
+    while (stack.items.len > 0) {
+        const frame = stack.orderedRemove(stack.items.len - 1);
         const node = frame.node;
 
         if (node.left == null and node.right == null) {
@@ -131,7 +132,7 @@ test "huffman build tree" {
     const tree = try buildTree(&freq, std.testing.allocator);
     defer std.testing.allocator.destroy(tree);
 
-    try std.testing.expect(tree != null);
+    try std.testing.expect(tree.freq > 0);
 }
 
 test "huffman generate codes" {

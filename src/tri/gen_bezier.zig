@@ -30,29 +30,30 @@ pub const BezierCurve = struct {
     pub fn evaluate(curve: *const BezierCurve, t: f64) Point {
         if (t < 0 or t > 1) return .{ .x = 0, .y = 0 };
 
-        var points = curve.control;
-        const n = curve.control.len;
+        var control = curve.control;
+        var n = curve.control.len;
 
         // De Casteljau algorithm
-        while (n > 1) : (n -= 1) {
+        while (n > 1) {
             for (0..n - 1) |i| {
-                points[i].x = (1 - t) * points[i].x + t * points[i + 1].x;
-                points[i].y = (1 - t) * points[i].y + t * points[i + 1].y;
+                control[i].x = (1 - t) * control[i].x + t * control[i + 1].x;
+                control[i].y = (1 - t) * control[i].y + t * control[i + 1].y;
             }
+            n -= 1;
         }
 
-        return points[0];
+        return control[0];
     }
 };
 
 test "bezier linear" {
-    const control = [_]Point{
+    var control_buf = [_]Point{
         Point.init(0, 0),
         Point.init(10, 10),
     };
 
     var curve = BezierCurve{
-        .control = &control,
+        .control = &control_buf,
         .degree = 1,
         .allocator = std.testing.allocator,
     };
@@ -67,14 +68,14 @@ test "bezier linear" {
 }
 
 test "bezier quadratic" {
-    const control = [_]Point{
+    var control_buf = [_]Point{
         Point.init(0, 0),
         Point.init(5, 10),
         Point.init(10, 0),
     };
 
     var curve = BezierCurve{
-        .control = &control,
+        .control = &control_buf,
         .degree = 2,
         .allocator = std.testing.allocator,
     };
@@ -87,7 +88,7 @@ test "bezier quadratic" {
 }
 
 test "bezier cubic" {
-    const control = [_]Point{
+    var control_buf = [_]Point{
         Point.init(0, 0),
         Point.init(2.5, 10),
         Point.init(7.5, -10),
@@ -95,7 +96,7 @@ test "bezier cubic" {
     };
 
     var curve = BezierCurve{
-        .control = &control,
+        .control = &control_buf,
         .degree = 3,
         .allocator = std.testing.allocator,
     };

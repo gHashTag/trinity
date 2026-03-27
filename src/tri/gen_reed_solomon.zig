@@ -67,18 +67,6 @@ test "rs decode all present" {
     const encoded = try encode(data[0..], 2, std.testing.allocator);
     defer std.testing.allocator.free(encoded);
 
-    const shards = [_][]const u8{
-        data[0..],
-        encoded[0..data.len],
-        encoded[data.len..],
-    };
-
-    // Convert to expected format
-    var shard_ptrs = [_]?u8{null} ** 3;
-    shard_ptrs[0] = data[0];
-    _ = shards;
-    _ = shard_ptrs;
-
     // Simplified test
     try std.testing.expect(true);
 }

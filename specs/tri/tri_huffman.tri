@@ -1,0 +1,54 @@
+name: tri_huffman
+version: "0.1.0"
+language: zig
+module: tri.huffman
+description: "Huffman coding — lossless compression"
+
+types:
+  HuffmanNode:
+    description: "Huffman tree node"
+    fields:
+      char: "u8"
+      freq: "usize"
+      left: "?HuffmanNode"
+      right: "?HuffmanNode"
+
+  HuffmanCode:
+    description: "Bit code for a character"
+    fields:
+      bits: "u32"
+      length: "u8"
+
+functions:
+  build_tree:
+    params:
+      - name: frequencies
+        type: "[]const usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HuffmanNode"
+    description: "Build Huffman tree from frequency table"
+
+  generate_codes:
+    params:
+      - name: tree
+        type: "*const HuffmanNode"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]HuffmanCode"
+    description: "Generate canonical Huffman codes"
+
+  encode:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: codes
+        type: "[]const HuffmanCode"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Encode data using Huffman codes"
+
+behaviors:
+  - name: "optimal_prefix"
+    description: "Huffman codes are prefix-free and optimal for given frequencies"

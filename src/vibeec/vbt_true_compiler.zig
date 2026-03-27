@@ -158,6 +158,7 @@ fn parse_simple_spec(path: []const u8, allocator: Allocator) !SimpleSpec {
         } else if (std.mem.startsWith(u8, trimmed, "    description:")) {
             if (current_behavior) |*b| {
                 b.description = try allocator.dupe(u8, trimmed[14..], &std.ascii.whitespace);
+            }
         } else if (std.mem.startsWith(u8, trimmed, "    implementation: |")) {
             if (current_behavior) |*b| {
                 const code_start = std.mem.indexOf(u8, trimmed, "|").? + 1;
@@ -201,7 +202,7 @@ fn parse_simple_spec(path: []const u8, allocator: Allocator) !SimpleSpec {
 // SIMPLE ZIG GENERATOR - NO TEMPLATE COMPLEXITY
 // ═══════════════════════════════════════════════════════════════════════════
 
-fn generate_simple_zig(spec: *const SimpleSpec, allocator: Allocator) ![]const u8 { {
+fn generate_simple_zig(spec: *const SimpleSpec, allocator: Allocator) ![]const u8 {
     var zig_code = std.ArrayList(u8).init(allocator);
     defer zig_code.deinit(allocator);
 

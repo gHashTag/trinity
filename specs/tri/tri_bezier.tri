@@ -1,0 +1,39 @@
+name: tri_bezier
+version: "0.1.0"
+language: zig
+module: tri.bezier
+description: "Bezier curve interpolation"
+
+types:
+  Point:
+    description: "2D point"
+    fields:
+      x: "f64"
+      y: "f64"
+
+  BezierCurve:
+    description: "Bezier curve"
+    fields:
+      control: "[]Point"
+      degree: "usize"
+
+functions:
+  evaluate:
+    params:
+      - name: curve
+        type: "*const BezierCurve"
+      - name: t
+        type: "f64"
+    returns: "Point"
+    description: "Evaluate curve at parameter t in [0,1]"
+
+  derivative:
+    params:
+      - name: curve
+        type: "*const BezierCurve"
+    returns: "BezierCurve"
+    description: "Compute derivative curve"
+
+behaviors:
+  - name: "de_casteljau"
+    description: "De Casteljau algorithm for stable evaluation"

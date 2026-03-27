@@ -1,0 +1,45 @@
+name: tri_msgpack
+version: "0.1.0"
+module: tri.msgpack
+description: "TRI MessagePack — efficient binary format"
+
+types:
+  MsgPackType:
+    description: "MessagePack type"
+    enum: [Nil, Bool, Int, Uint, Float, Str, Bin, Array, Map]
+
+  MsgPackValue:
+    description: "MessagePack value"
+    fields:
+      type: "MsgPackType"
+      int_value: "i64"
+      uint_value: "u64"
+      float_value: "f64"
+      str_value: "[]const u8"
+      bin_value: "[]const u8"
+      array_value: "[]MsgPackValue"
+      map_value: "std.StringHashMap(MsgPackValue)"
+
+functions:
+  encode:
+    params:
+      - name: value
+        type: "MsgPackValue"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Encode to MessagePack"
+
+  decode:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!MsgPackValue"
+    description: "Decode from MessagePack"
+
+behaviors:
+  - name: compact
+    description: "Compact binary format"
+    note: "Space-efficient serialization"

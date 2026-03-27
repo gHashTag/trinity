@@ -1,0 +1,48 @@
+name: tri_async_stream
+version: "0.1.0"
+module: tri.async.stream
+description: "TRI Async Stream — lazy sequences"
+
+types:
+  Stream(T):
+    description: "Lazy stream"
+    fields:
+      generator: "fn() ?T"
+      state: "StreamState"
+
+  StreamState:
+    description: "Stream state"
+    enum: [Ready, Pending, Done]
+
+functions:
+  from:
+    params:
+      - name: items
+        type: "[]T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Stream(T)"
+    description: "Create stream from array"
+
+  map:
+    params:
+      - name: stream
+        type: "Stream(T)"
+      - name: fn
+        type: "fn(T) U"
+    returns: "Stream(U)"
+    description: "Transform each element"
+
+  filter:
+    params:
+      - name: stream
+        type: "Stream(T)"
+      - name: predicate
+        type: "fn(T) bool"
+    returns: "Stream(T)"
+    description: "Filter elements"
+
+behaviors:
+  - name: lazy
+    description: "Lazy evaluation"
+    note: "Elements generated on demand"

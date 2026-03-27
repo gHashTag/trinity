@@ -1,0 +1,56 @@
+name: tri_lru_cache
+version: "0.1.0"
+language: zig
+module: tri.lru_cache
+description: "LRU cache — least recently used eviction"
+
+types:
+  LRUCache:
+    description: "Fixed-size cache with LRU eviction"
+    generic: "K, V"
+    fields:
+      capacity: "usize"
+      size: "usize"
+      head: "*Node"
+      tail: "*Node"
+      map: "HashMap(K, *Node)"
+
+  Node:
+    generic: "K, V"
+    fields:
+      key: "K"
+      value: "V"
+      prev: "*Node"
+      next: "*Node"
+
+functions:
+  init:
+    params:
+      - name: capacity
+        type: "usize"
+    returns: "LRUCache"
+    description: "Create LRU cache with capacity"
+
+  get:
+    params:
+      - name: cache
+        type: "*LRUCache"
+      - name: key
+        type: "K"
+    returns: "?V"
+    description: "Get value and move to front"
+
+  put:
+    params:
+      - name: cache
+        type: "*LRUCache"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "void"
+    description: "Insert key-value, evict LRU if full"
+
+behaviors:
+  - name: "lru_eviction"
+    description: "When at capacity, remove least recently used item"

@@ -41,12 +41,15 @@ pub const SHA256 = struct {
 
         // Prepare message schedule
         for (0..16) |i| {
-            w[i] = std.mem.readIntBig(u32, sha.buffer[i * 4 ..][0..4]);
+            w[i] = @as(u32, @intCast(sha.buffer[i * 4])) << 24 |
+                    @as(u32, @intCast(sha.buffer[i * 4 + 1])) << 16 |
+                    @as(u32, @intCast(sha.buffer[i * 4 + 2])) << 8 |
+                    @as(u32, @intCast(sha.buffer[i * 4 + 3]));
         }
 
         for (16..64) |i| {
-            const s0 = @rotatel(u32, w[i - 15], 7) ^ @rotatel(u32, w[i - 15], 18) ^ (w[i - 15] >> 3);
-            const s1 = @rotatel(u32, w[i - 2], 17) ^ @rotatel(u32, w[i - 2], 19) ^ (w[i - 2] >> 10);
+            const s0 = std.math.rotl(u32, w[i - 15], 7) ^ std.math.rotl(u32, w[i - 15], 18) ^ (w[i - 15] >> 3);
+            const s1 = std.math.rotl(u32, w[i - 2], 17) ^ std.math.rotl(u32, w[i - 2], 19) ^ (w[i - 2] >> 10);
             w[i] = w[i - 16] +% s0 +% w[i - 7] +% s1;
         }
 
@@ -72,10 +75,10 @@ pub const SHA256 = struct {
         };
 
         for (0..64) |i| {
-            const s1 = @rotatel(u32, e, 6) ^ @rotatel(u32, e, 11) ^ @rotatel(u32, e, 25);
+            const s1 = std.math.rotl(u32, e, 6) ^ std.math.rotl(u32, e, 11) ^ std.math.rotl(u32, e, 25);
             const ch = (e & f) ^ (~e & g);
             const t1 = hh +% s1 +% ch +% k[i] +% w[i];
-            const s0 = @rotatel(u32, a, 2) ^ @rotatel(u32, a, 13) ^ @rotatel(u32, a, 22);
+            const s0 = std.math.rotl(u32, a, 2) ^ std.math.rotl(u32, a, 13) ^ std.math.rotl(u32, a, 22);
             const maj = (a & b) ^ (a & c) ^ (b & c);
             const t2 = s0 +% maj;
 
@@ -121,14 +124,25 @@ pub const SHA256 = struct {
 
         // Append length in bits
         const bit_len = sha.count * 8;
-        std.mem.writeIntBig(u64, sha.buffer[56..64], bit_len);
+        sha.buffer[56] = @intCast((bit_len >> 56) & 0xFF);
+        sha.buffer[57] = @intCast((bit_len >> 48) & 0xFF);
+        sha.buffer[58] = @intCast((bit_len >> 40) & 0xFF);
+        sha.buffer[59] = @intCast((bit_len >> 32) & 0xFF);
+        sha.buffer[60] = @intCast((bit_len >> 24) & 0xFF);
+        sha.buffer[61] = @intCast((bit_len >> 16) & 0xFF);
+        sha.buffer[62] = @intCast((bit_len >> 8) & 0xFF);
+        sha.buffer[63] = @intCast(bit_len & 0xFF);
 
         sha.processBlock();
 
         // Output hash
         var result: [32]u8 = undefined;
         for (0..8) |i| {
-            std.mem.writeIntBig(u32, result[i * 4 ..][0..4], sha.state[i]);
+            const s = sha.state[i];
+            result[i * 4] = @intCast((s >> 24) & 0xFF);
+            result[i * 4 + 1] = @intCast((s >> 16) & 0xFF);
+            result[i * 4 + 2] = @intCast((s >> 8) & 0xFF);
+            result[i * 4 + 3] = @intCast(s & 0xFF);
         }
 
         return result;

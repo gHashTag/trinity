@@ -23,27 +23,26 @@ pub const GF256 = struct {
         return a.add(b);
     }
 
-    /// Multiplication in GF(256)
+    /// Multiplication in GF(256) using Russian Peasant Multiplication
     pub fn mul(a: GF256, b: GF256) GF256 {
-        var result: u16 = 0;
-        var a_val: u16 = a.value;
-        var b_val = b.value;
+        var result: u8 = 0;
+        var a_val: u8 = a.value;
+        var b_val: u8 = b.value;
 
         while (b_val > 0) {
             if (b_val & 1 != 0) {
                 result ^= a_val;
             }
+            const high_bit: u8 = if (a_val & 0x80 != 0) 1 else 0;
             a_val <<= 1;
             b_val >>= 1;
+
+            if (high_bit != 0) {
+                a_val ^= 0x1B; // x^8 + x^4 + x^3 + x + 1
+            }
         }
 
-        // Reduce with irreducible polynomial x^8 + x^4 + x^3 + x + 1 (0x11B)
-        var reduced: u8 = @intCast(result & 0xFF);
-        if (result >> 8 != 0) {
-            reduced ^= @intCast((result >> 8) * 0x1B);
-        }
-
-        return .{ .value = reduced };
+        return .{ .value = result };
     }
 
     /// Exponentiation

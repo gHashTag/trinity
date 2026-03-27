@@ -93,7 +93,7 @@ pub const OrchestratorPhase = enum {
     plan,
     spec_create,
     gen,
-    test,
+    testing,
     bench,
     verdict,
     git,
@@ -108,7 +108,7 @@ pub const OrchestratorPhase = enum {
             .plan => "PLAN",
             .spec_create => "SPEC_CREATE",
             .gen => "GEN",
-            .test => "TEST",
+            .testing => "TEST",
             .bench => "BENCH",
             .verdict => "VERDICT",
             .git => "GIT",
@@ -428,10 +428,10 @@ pub const TriOrchestrator = struct {
         }
 
         // Phase 5: tri test
-        self.state.current_phase = .test;
+        self.state.current_phase = .testing;
         const test_result = try self.executeTriCommand(&.{"tri", "test"});
         if (!test_result.success) {
-            return self.handleFailure(.test, test_result);
+            return self.handleFailure(.testing, test_result);
         }
 
         // Phase 6: tri bench

@@ -86,7 +86,7 @@ test "kmp build prefix" {
 
 test "kmp search" {
     const pattern = "ABAB";
-    const prefix = try buildPrefix(pattern, std.testing.allocator);
+    var prefix = try buildPrefix(pattern, std.testing.allocator);
     defer prefix.deinit();
 
     const text = "ABABABAB";
@@ -99,7 +99,7 @@ test "kmp search" {
 
 test "kmp no match" {
     const pattern = "ABC";
-    const prefix = try buildPrefix(pattern, std.testing.allocator);
+    var prefix = try buildPrefix(pattern, std.testing.allocator);
     defer prefix.deinit();
 
     const text = "ABABABAB";

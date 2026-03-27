@@ -1,0 +1,59 @@
+name: tri_rtree
+version: "0.1.0"
+module: tri.rtree
+description: "TRI RTree — spatial index"
+
+types:
+  Rect:
+    description: "Rectangle"
+    fields:
+      x_min: "f64"
+      y_min: "f64"
+      x_max: "f64"
+      y_max: "f64"
+
+  RTreeNode:
+    description: "R-tree node"
+    fields:
+      rect: "Rect"
+      children: "[]RTreeNode"
+      is_leaf: "bool"
+
+  RTree:
+    description: "R-tree spatial index"
+    fields:
+      root: "?RTreeNode"
+      max_entries: "usize"
+
+functions:
+  init:
+    params:
+      - name: max_entries
+        type: "usize"
+    returns: "RTree"
+    description: "Create R-tree"
+
+  insert:
+    params:
+      - name: tree
+        type: "*RTree"
+      - name: rect
+        type: "Rect"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Insert rectangle"
+
+  query:
+    params:
+      - name: tree
+        type: "RTree"
+      - name: search_rect
+        type: "Rect"
+    returns: "[]Rect"
+    description: "Find overlapping rectangles"
+
+behaviors:
+  - name: spatial
+    description: "Spatial indexing"
+    note: "Rectangle overlap queries"

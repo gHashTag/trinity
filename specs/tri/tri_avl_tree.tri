@@ -1,0 +1,62 @@
+name: tri_avl_tree
+version: "0.1.0"
+language: zig
+module: tri.avl_tree
+description: "AVL tree — height-balanced BST"
+
+types:
+  AVLTree:
+    generic: "K, V"
+    description: "Self-balancing binary search tree"
+    fields:
+      root: "?*AVLNode"
+      size: "usize"
+
+  AVLNode:
+    generic: "K, V"
+    fields:
+      key: "K"
+      value: "V"
+      height: "i32"
+      left: "?*AVLNode"
+      right: "?*AVLNode"
+
+functions:
+  init:
+    returns: "AVLTree"
+    description: "Create empty AVL tree"
+
+  insert:
+    params:
+      - name: tree
+        type: "*AVLTree"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "!void"
+    description: "Insert with automatic rebalancing"
+
+  find:
+    params:
+      - name: tree
+        type: "*const AVLTree"
+      - name: key
+        type: "K"
+    returns: "?V"
+    description: "Look up value by key"
+
+  delete:
+    params:
+      - name: tree
+        type: "*AVLTree"
+      - name: key
+        type: "K"
+    returns: "bool"
+    description: "Remove key, return true if deleted"
+
+behaviors:
+  - name: "balance_factor"
+    description: "Height difference between subtrees in [-1, 0, 1]"
+  - name: "rotations"
+    description: "Left/right rotations to maintain balance"

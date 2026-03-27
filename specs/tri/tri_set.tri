@@ -1,63 +1,54 @@
 name: tri_set
 version: "0.1.0"
 module: tri.set
-description: "TRI Set — immutable set"
+description: "TRI Set — set data structure"
 
 types:
-  Set(T):
-    description: "Immutable set of unique values"
+  HashSet(T):
+    description: "Hash set"
     fields:
-      items: "[]T"
+      items: "std.HashMap(T, void)"
 
 functions:
-  empty:
-    returns: "Set(T)"
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HashSet(T)"
     description: "Create empty set"
 
-  singleton:
-    params:
-      - name: value
-        type: "T"
-    returns: "Set(T)"
-    description: "Create set with one element"
-
-  insert:
+  add:
     params:
       - name: set
-        type: "Set(T)"
-      - name: value
+        type: "*HashSet(T)"
+      - name: item
         type: "T"
-    returns: "Set(T)"
-    description: "Add element (if not present)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add item to set"
 
   contains:
     params:
       - name: set
-        type: "Set(T)"
-      - name: value
+        type: "HashSet(T)"
+      - name: item
         type: "T"
     returns: "bool"
     description: "Check membership"
 
-  remove:
-    params:
-      - name: set
-        type: "Set(T)"
-      - name: value
-        type: "T"
-    returns: "Set(T)"
-    description: "Remove element"
-
   union:
     params:
       - name: a
-        type: "Set(T)"
+        type: "HashSet(T)"
       - name: b
-        type: "Set(T)"
-    returns: "Set(T)"
+        type: "HashSet(T)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HashSet(T)"
     description: "Set union"
 
 behaviors:
-  - name: no_duplicates
-    description: "Sets contain unique values"
-    note: "Insert returns same set if value exists"
+  - name: unique
+    description: "No duplicates"
+    note: "O(1) average operations"

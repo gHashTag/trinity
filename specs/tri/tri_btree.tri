@@ -1,0 +1,56 @@
+name: tri_btree
+version: "0.1.0"
+module: tri.btree
+description: "TRI BTree — B-tree data structure"
+
+types:
+  BTree(K, V):
+    description: "B-tree of order 4"
+    fields:
+      root: "BTreeNode(K, V)"
+      order: "usize"
+
+  BTreeNode(K, V):
+    description: "B-tree node"
+    fields:
+      keys: "[]K"
+      values: "[]V"
+      children: "[]BTreeNode(K, V)"
+      leaf: "bool"
+
+functions:
+  init:
+    params:
+      - name: order
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!BTree(T)"
+    description: "Create empty B-tree"
+
+  insert:
+    params:
+      - name: tree
+        type: "*BTree(T)"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Insert key-value pair"
+
+  search:
+    params:
+      - name: tree
+        type: "BTree(T)"
+      - name: key
+        type: "K"
+    returns: "?V"
+    description: "Search for key"
+
+behaviors:
+  - name: balanced
+    description: "Self-balancing tree"
+    note: "Maintains B-tree properties"

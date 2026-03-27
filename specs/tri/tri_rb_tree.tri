@@ -1,0 +1,64 @@
+name: tri_rb_tree
+version: "0.1.0"
+language: zig
+module: tri.rb_tree
+description: "Red-Black tree — self-balancing BST"
+
+types:
+  RBTree:
+    generic: "K, V"
+    description: "Balanced binary search tree"
+    fields:
+      root: "?*RBNode"
+      size: "usize"
+
+  RBNode:
+    generic: "K, V"
+    fields:
+      key: "K"
+      value: "V"
+      color: "Color"
+      left: "?*RBNode"
+      right: "?*RBNode"
+      parent: "?*RBNode"
+
+  Color:
+    enum: ["RED", "BLACK"]
+
+functions:
+  init:
+    returns: "RBTree"
+    description: "Create empty red-black tree"
+
+  insert:
+    params:
+      - name: tree
+        type: "*RBTree"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "!void"
+    description: "Insert key-value pair with rebalancing"
+
+  find:
+    params:
+      - name: tree
+        type: "*const RBTree"
+      - name: key
+        type: "K"
+    returns: "?V"
+    description: "Look up value by key"
+
+  delete:
+    params:
+      - name: tree
+        type: "*RBTree"
+      - name: key
+        type: "K"
+    returns: "bool"
+    description: "Remove key if present, returns true if deleted"
+
+behaviors:
+  - name: "red_black_properties"
+    description: "1) Root is black 2) Red children are black 3) Equal black depth to all leaves"

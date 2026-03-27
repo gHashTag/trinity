@@ -1,0 +1,38 @@
+name: tri_bson
+version: "0.1.0"
+module: tri.bson
+description: "TRI BSON — Binary JSON format"
+
+types:
+  BsonValue:
+    description: "BSON value type"
+    enum: [Double, String, Document, Array, Binary, ObjectId, Boolean, DateTime, Null, Int32, Int64]
+
+  BsonDocument:
+    description: "BSON document"
+    fields:
+      fields: "std.StringHashMap(BsonValue)"
+
+functions:
+  parse:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!BsonDocument"
+    description: "Parse BSON format"
+
+  serialize:
+    params:
+      - name: doc
+        type: "BsonDocument"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Serialize to BSON"
+
+behaviors:
+  - name: binary
+    description: "Binary representation"
+    note: "Little-endian encoding"
