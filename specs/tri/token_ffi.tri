@@ -1,0 +1,200 @@
+# TRI-27 Token System - Token FFI Specification
+# ════════════════════════════════════════════════════════════════
+#
+# Module: token_ffi
+# Purpose: Web3 contract calls and blockchain interaction
+# Parent: #442
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ════════════════════════════════════════════════════════════════
+
+name: token_ffi
+version: "1.0.0"
+language: zig
+module: tri27.token_ffi
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: token_types
+    used_as: Token data structures
+
+types:
+  TokenContract:
+    description: ERC20 token contract interface
+    fields:
+      - name: address
+        type: "[20]u8"
+        description: Contract address (20 bytes)
+      - name: rpc_url
+        type: "[]const u8"
+        description: Web3 RPC endpoint URL
+
+  TransactionReceipt:
+    description: Receipt of a blockchain transaction
+    fields:
+      - name: tx_hash
+        type: "[32]u8"
+        description: Transaction hash
+      - name: status
+        type: bool
+        description: True if successful
+      - name: gas_used
+        type: u64
+        description: Gas consumed by transaction
+      - name: block_number
+        type: u64
+        description: Block number of transaction
+
+  Web3Error:
+    description: Web3 RPC and transaction errors
+    values:
+      - name: NetworkError
+        description: RPC call failed
+      - name: InvalidResponse
+        description: Malformed RPC response
+      - name: TransactionReverted
+        description: Contract call reverted
+      - name: OutOfGas
+        description: Transaction ran out of gas
+      - name: NonceTooLow
+        description: Account nonce too low
+      - name: InsufficientFunds
+        description: Insufficient ETH for gas
+      - name: ContractNotFound
+        description: Contract does not exist
+
+  ContractCall:
+    description: Encoded contract method call
+    fields:
+      - name: to_address
+        type: "[20]u8"
+        description: Target contract address
+      - name: data
+        type: "[]const u8"
+        description: Encoded function call data
+      - name: value
+        type: u128
+        description: ETH value to send (wei)
+
+  SignedTransaction:
+    description: Signed transaction ready for broadcast
+    fields:
+      - name: to_address
+        type: "[20]u8"
+        description: Recipient address
+      - name: value
+        type: u128
+        description: ETH value in wei
+      - name: data
+        type: "[]const u8"
+        description: Transaction data
+      - name: gas_limit
+        type: u64
+        description: Gas limit
+      - name: nonce
+        type: u64
+        description: Account nonce
+      - name: signature
+        type: "[65]u8"
+        description: ECDSA signature (r, s, v)
+
+behaviors:
+  encodeCall:
+    given: contract address, method name, parameters
+    when: Encoding contract method call
+    then:
+      - Generate function selector (first 4 bytes of Keccak256)
+      - ABI encode parameters
+      - Return encoded call data
+
+  decodeBalance:
+    given: contract call response data
+    when: Decoding balanceOf response
+    then:
+      - Parse u128 from response
+      - Return token balance
+
+  sendTransaction:
+    given: signed transaction
+    when: Broadcasting to network
+    then:
+      - Send eth_sendRawTransaction RPC call
+      - Return transaction hash
+      - Return error on failure
+
+  waitForReceipt:
+    given: transaction hash
+    when: Waiting for transaction confirmation
+    then:
+      - Poll eth_getTransactionReceipt
+      - Timeout after 5 minutes
+      - Return receipt when confirmed
+
+  balanceOf:
+    given: contract address, wallet address
+    when: Reading token balance
+    then:
+      - Encode balanceOf call
+      - Send eth_call (read-only)
+      - Decode u128 balance
+      - Return balance or error
+
+  transfer:
+    given: contract address, recipient, amount
+    when: Sending tokens
+    then:
+      - Encode transfer call
+      - Create transaction object
+      - Sign with private key
+      - Broadcast transaction
+      - Return transaction hash
+
+  stake:
+    given: contract address, amount, lock_period_days
+    when: Staking tokens
+    then:
+      - Encode stake call
+      - Create transaction
+      - Sign and broadcast
+      - Return transaction hash
+
+  unstake:
+    given: contract address
+    when: Unstaking tokens
+    then:
+      - Encode unstake call
+      - Create transaction
+      - Sign and broadcast
+      - Return transaction hash
+
+  claimRewards:
+    given: contract address
+    when: Claiming staking rewards
+    then:
+      - Encode claimRewards call
+      - Create transaction
+      - Sign and broadcast
+      - Return transaction hash
+
+  estimateGas:
+    given: contract address, call data
+    when: Estimating gas cost
+    then:
+      - Send eth_estimateGas RPC call
+      - Return gas estimate
+      - Return error if call would revert
+
+  getNonce:
+    given: wallet address
+    when: Getting current transaction count
+    then:
+      - Send eth_getTransactionCount RPC call
+      - Return nonce (pending or latest)
+      - Use for transaction nonce
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/tri27/token_ffi.zig"
+  lines: 400-500
+  complexity: "high - requires HTTP client, ABI encoding, cryptography"
