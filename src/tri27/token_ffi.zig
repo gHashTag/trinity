@@ -642,7 +642,7 @@ test "parseAddress works without 0x prefix" {
 }
 
 test "formatAddress formats with 0x prefix" {
-    const addr = [20]u8{0x12} ++ [19]u8{0x34};
+    const addr = [_]u8{0x12} ++ [_]u8{0x34} ** 19;
     const result = try formatAddress(addr, std.testing.allocator);
     defer std.testing.allocator.free(result);
     try std.testing.expectEqualStrings("0x1234343434343434343434343434343434343434", result);
