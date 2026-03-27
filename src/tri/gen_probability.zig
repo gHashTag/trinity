@@ -56,7 +56,8 @@ pub fn normal(mean: f64, std_dev: f64, rng: *PRNG) f64 {
     const u_a = rng.float();
     const u_b = rng.float();
 
-    const z0 = std.math.sqrt(-2.0 * std.math.log(f64, u_a)) * std.math.cos(2.0 * std.pi * u_b);
+    const ln_u_a = std.math.log(f64, std.math.e, u_a);
+    const z0 = std.math.sqrt(-2.0 * ln_u_a) * std.math.cos(2.0 * std.pi * u_b);
 
     return mean + std_dev * z0;
 }
@@ -65,7 +66,8 @@ pub fn normal(mean: f64, std_dev: f64, rng: *PRNG) f64 {
 pub fn exponential(lambda: f64, rng: *PRNG) f64 {
     if (lambda <= 0) return 0;
     const u = rng.float();
-    return -std.math.log(f64, 1.0 - u) / lambda;
+    const ln_val = std.math.log(f64, std.math.e, 1.0 - u);
+    return -ln_val / lambda;
 }
 
 test "bernoulli" {
