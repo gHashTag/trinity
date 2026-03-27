@@ -1,8 +1,8 @@
 # B001: HSLM-1.95M Ternary Neural Networks
 
 **DOI:** 10.5281/zenodo.19227865
-**Version:** 8.0
-**LOC:** 605
+**Version:** 9.0
+**LOC:** 708
 
 ## Overview
 

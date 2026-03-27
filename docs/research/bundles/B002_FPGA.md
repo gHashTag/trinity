@@ -26,7 +26,7 @@ FPGA accelerator achieving **zero DSP utilization** while maintaining comparable
 
 ## Files
 
-- Metadata: `docs/research/.zenodo.B002_v8.0.json`
+- Metadata: `docs/research/.zenodo.B002_v9.0.json`
 - Verilog: `fpga/openxc7-synth/`
 - Reports: `fpga/synthesis_reports/`
 

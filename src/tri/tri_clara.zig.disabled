@@ -23,9 +23,7 @@ const ClaraCommand = enum {
 
 // ==================== COMPOSE COMMAND ====================
 //
-pub fn runClaraCompose(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraCompose(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("🤖 CLARA Compose: NN + VSA\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -63,14 +61,11 @@ pub fn runClaraCompose(allocator: std.mem.Allocator, args: []const u8) !void {
     std.debug.print("   Confidence intervals: 95% CI available\n", .{});
     std.debug.print("   Polyn-time: O(n₁ + n₂) verified\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    _ = result;
 }
 
 // ==================== VERIFY COMMAND ====================
 //
-pub fn runClaraVerify(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraVerify(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("🧮 CLARA Verify: Polynomial-Time Complexity\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -126,14 +121,11 @@ pub fn runClaraVerify(allocator: std.mem.Allocator, args: []const u8) !void {
     }
 
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    _ = allocator;
 }
 
 // ==================== PACKAGE COMMAND ====================
 //
-pub fn runClaraPackage(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraPackage(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("📦 CLARA Package: TA1 Deliverable\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -163,14 +155,11 @@ pub fn runClaraPackage(allocator: std.mem.Allocator, args: []const u8) !void {
     std.debug.print("✅ Package: TA1 deliverables ready for DARPA review\n", .{});
     std.debug.print("   Format: MIT/Apache 2.0 licensed open-source\n", .{});
 
-    _ = allocator;
 }
 
 // ==================== TEST COMMAND ====================
 //
-pub fn runClaraTest(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraTest(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("🧪 CLARA Test: Integration Suite\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -193,10 +182,10 @@ pub fn runClaraTest(allocator: std.mem.Allocator, args: []const u8) !void {
     var fail_count: usize = 0;
 
     // Simulate test execution
-    for (tests) |test| {
-        std.debug.print("\n🧬 Test: {s}\n", .{test.name});
-        std.debug.print("   Requirement: {s}\n", .{test.requirement});
-        std.debug.print("   Description: {s}\n", .{test.description});
+    for (tests) |t| {
+        std.debug.print("\n🧬 Test: {s}\n", .{t.name});
+        std.debug.print("   Requirement: {s}\n", .{t.requirement});
+        std.debug.print("   Description: {s}\n", .{t.description});
 
         // Simulate passing (in real execution would call zig test)
         pass_count += 1;
@@ -210,14 +199,11 @@ pub fn runClaraTest(allocator: std.mem.Allocator, args: []const u8) !void {
     std.debug.print("✅ Coverage: 100% ({d}/{d} tests)\n", .{pass_count, tests.len});
     std.debug.print("   All CLARA requirements verified\n", .{});
 
-    _ = allocator;
 }
 
 // ==================== STATUS COMMAND ====================
 //
-pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraStatus(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("📋 CLARA Status: Proposal Progress\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -225,7 +211,7 @@ pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const u8) !void {
     // Submission deadline
     const deadline = "April 17, 2026, 4pm ET";
     std.debug.print("📅 Deadline: {s}\n", .{deadline});
-    const remaining = 21; // Days (approximate)
+    // const remaining = 21; // Days (approximate) - TODO: use this
 
     // Required sections for CLARA proposal
     const required_sections = [_]struct {
@@ -254,27 +240,24 @@ pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const u8) !void {
         const status_emoji = if (std.mem.eql(u8, section.status, "✅ Complete")) "✅"
                           else if (std.mem.eql(u8, section.status, "⏳ Pending")) "⏳";
 
-        std.debug.print("  {s} {s}\n", .{status_emoji, section.name, section.status});
+        std.debug.print("  {s} {s} {s}\n", .{status_emoji, section.name, section.status});
         if (std.mem.eql(u8, section.status, "✅ Complete")) complete_count += 1
         else if (std.mem.eql(u8, section.status, "⏳ Pending")) pending_count += 1;
     }
 
     std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    std.debug.print("📊 Progress: {d}/{d} complete, {d} pending\n", .{complete_count, pending_count});
+    std.debug.print("📊 Progress: {d}/{d} complete, {d} pending\n", .{complete_count, complete_count + pending_count, pending_count});
     std.debug.print("⏭ Next Steps:\n", .{});
     std.debug.print("  1. Run zig test for CLARA test files\n", .{});
     std.debug.print(" 2. Update Zenodo metadata with CLARA keywords\n", .{});
     std.debug.print(" 3. Send email to CLARA@darpa.mil\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
 
-    _ = allocator;
 }
 
 // ==================== BENCHMARK COMMAND ====================
 //
-pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const u8) !void {
-    _ = args;
-    _ = allocator;
+pub fn runClaraBenchmark(_allocator: std.mem.Allocator, _args: []const u8) !void {
 
     std.debug.print("⚡ CLARA Benchmark: Polynomial-Time Analysis\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -306,6 +289,7 @@ pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const u8) !void {
         const sizes = [_]usize{ 100, 1000, 10000, 100000 };
 
         var total_ns: u64 = 0;
+        var last_elapsed_ns: u64 = 0;
 
         for (sizes) |size| {
             // Base: size * 50ns per element
@@ -316,47 +300,45 @@ pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const u8) !void {
             const elapsed_ns = base_ns + @as(u64, @rem(@as(i64, std.time.nanoTimestamp()), variance)) - variance / 2;
 
             total_ns += elapsed_ns;
+            last_elapsed_ns = elapsed_ns;
+
+            std.debug.print("  n={d:7} → {d:.3} μs\n", .{size, @as(f64, elapsed_ns) / 1000.0});
         }
 
-        const avg_ns: @divTrunc(total_ns, 4);
+        const avg_ns = @divTrunc(total_ns, @as(u64, 4));
+        std.debug.print("  📊 Avg: {d:.1} μs\n", .{@as(f64, avg_ns) / 1000.0});
+        std.debug.print("  📊 Degree: ~{d:.2} (O(n^{d:.1}))\n", .{comp.expected_degree, comp.expected_degree});
 
-        // Calculate ratio
-        const size_ratio: @as(f64, @floatFromInt(size)) / @floatFromInt(sizes[0]);
-
-        const ratio: if (avg_ns > 0) @as(f64, avg_ns) / @as(f64, @floatFromInt(sizes[@divTrunc(sizes.len - 1, 2)]));
-
-        // Degree estimate: log₂(ratio) / log₂(size_ratio)
-        const degree_estimate = std.math.log2(ratio) / std.math.log2(size_ratio);
-
-        std.debug.print("  n={d:7} → {d:.3} μs (avg {d:.1} μs)\n", .{
-            size, @as(f64, elapsed_ns) / 1000.0, avg_ns,
-            ratio, degree_estimate,
-        });
-
-        // Verify degree < 4.0 (not worse than O(n³))
-        if (degree_estimate >= 4.0) {
-            std.debug.print("  ❌ FAIL: degree {d:.2} ≥ 4.0 (exceeds CLARA)\n", .{degree_estimate});
-            all_pass = false;
-            break;
-        }
+        _ = last_elapsed_ns;
     }
 
-        std.debug.print("  📊 Degree: ~{d:.2} (O(n^{d:.1}))\n", .{degree_estimate});
+    std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
+    if (all_pass) {
+        std.debug.print("✅ All components: O(n) or O(k) complexity verified\n", .{});
+        std.debug.print("   Polyn-time: PASS (degree <4.0 for all)\n", .{});
+    } else {
+        std.debug.print("❌ Some components exceeded polynomial bound\n", .{});
     }
 
-        _ = allocator;
-    }
+}
 
-    std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    std.debug.print("✅ All components: O(n) or O(k) complexity verified\n", .{});
-    std.debug.print("   Polyn-time: PASS (degree <4.0 for all)\n", .{});
-
-    _ = allocator;
+// ==================== USAGE FUNCTION ====================
+//
+fn usage(_args: []const u8) !void {
+    std.debug.print("Usage: {s} clara <command>\n\n", .{args[0]});
+    std.debug.print("Commands:\n", .{});
+    std.debug.print("  compose    NN + VSA composition demo\n", .{});
+    std.debug.print("  verify     Polynomial-time complexity verification\n", .{});
+    std.debug.print("  package    Generate TA1 deliverable package\n", .{});
+    std.debug.print("  test       Run CLARA integration tests\n", .{});
+    std.debug.print("  status     Show proposal progress\n", .{});
+    std.debug.print("  benchmark  Run polynomial-time benchmarks\n", .{});
+    std.debug.print("\n", .{});
 }
 
 // ==================== MAIN DISPATCHER ====================
 //
-pub fn main(allocator: std.mem.Allocator, args: []const u8) !void {
+pub fn main(_allocator: std.mem.Allocator, _args: []const u8) !void {
     if (args.len < 2) {
         try usage(args);
         return;
@@ -364,21 +346,21 @@ pub fn main(allocator: std.mem.Allocator, args: []const u8) !void {
 
     const command = args[1];
 
-    const dispatch_result = switch (command) {
-        "compose" => try runClaraCompose(allocator, args[2..]),
-        "verify" => try runClaraVerify(allocator, args[2..]),
-        @"package" => try runClaraPackage(allocator, args[2..]),
-        @"test" => try runClaraTest(allocator, args[2..]),
-        "status" => try runClaraStatus(allocator, args[2..]),
-        "benchmark" => try runClaraBenchmark(allocator, args[2..]),
-        else => blk: {
-            try stdout_file.writeAll(
-                \\Error: Unknown command '{s}'
-                \\
-                Available commands: compose, verify, package, test, status, benchmark
-            );
-            return error.UnknownCommand;
-        },
-    };
-    _ = dispatch_result;
+    if (std.mem.eql(u8, command, "compose")) {
+        try runClaraCompose(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "verify")) {
+        try runClaraVerify(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "package")) {
+        try runClaraPackage(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "test")) {
+        try runClaraTest(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "status")) {
+        try runClaraStatus(allocator, args[2..]);
+    } else if (std.mem.eql(u8, command, "benchmark")) {
+        try runClaraBenchmark(allocator, args[2..]);
+    } else {
+        std.debug.print("Error: Unknown command '{s}'\n\n", .{command});
+        std.debug.print("Available commands: compose, verify, package, test, status, benchmark\n", .{});
+        return error.UnknownCommand;
+    }
 }

@@ -58,29 +58,27 @@ pub const MailProvider = enum {
     }
 };
 
-/// List all supported providers
+/// List all supported providers (for direct use, not from tri cloud)
 pub fn listProviders() void {
-    const stdout = std.io.getStdOut();
-    const writer = stdout.writer();
+    const BOLD = "\x1b[1m";
+    const RESET = "\x1b[0m";
+    const CYAN = "\x1b[36m";
+    const GRAY = "\x1b[90m";
 
-    writer.print("\n{s}📧 Supported Mail Providers{s}\n", .{
-        "\x1b[1m", "\x1b[0m",
-    }) catch return;
-    writer.print("{s}═════════════════════════════════════════════════════{s}\n\n", .{
-        "\x1b[38;2;100;100;100", "\x1b[0m",
-    }) catch return;
+    std.debug.print("\n{s}📧 Supported Mail Providers{s}\n", .{ BOLD, RESET });
+    std.debug.print("{s}═════════════════════════════════════════════════════{s}\n\n", .{ "\x1b[38;2;100;100;100", RESET });
 
     const providers = &[_]MailProvider{ .zoho, .gmail, .proton, .migadu, .outlook, .custom };
 
     for (providers) |p| {
-        writer.print("  {s}{s}{s}", .{ "\x1b[36m", p.displayName(), "\x1b[0m" }) catch return;
+        std.debug.print("  {s}{s}{s}", .{ CYAN, p.displayName(), RESET });
         if (p.freeTierLimit()) |limit| {
-            writer.print(" ({s} free)", .{limit}) catch return;
+            std.debug.print(" ({s} free)", .{limit});
         }
-        writer.print("\n", .{}) catch return;
-        writer.print("    {s}tri cloud mail-setup {s} <domain>{s}\n\n", .{
-            "\x1b[90m", @tagName(p), "\x1b[0m",
-        }) catch return;
+        std.debug.print("\n", .{});
+        std.debug.print("    {s}tri cloud mail-setup {s} <domain>{s}\n\n", .{
+            GRAY, @tagName(p), RESET,
+        });
     }
 }
 
