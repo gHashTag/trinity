@@ -252,7 +252,7 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 
 ## Installation
 
-**Trinity v1.0.2 "HEARTBEAT"** — Install via your preferred package manager:
+**Trinity v5.1.0 "HEARTBEAT"** — Install via your preferred package manager:
 
 | Method | Command |
 |--------|---------|
@@ -274,7 +274,7 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 
 ```bash
 tri --version
-# Output: TRI CLI v1.0.2
+# Output: TRI CLI v5.1.0
 
 tri constants
 # Shows all constants (φ, π, e, μ, χ, σ, ε...)
@@ -451,7 +451,7 @@ tri help fix           # Detailed command help
 |---------|-------------|
 | `tri test` | ⚠️ Limited - use `zig build test` instead |
 | `tri test e2e` | Run E2E toxic test suite |
-| `tri test --repl` | Run REPL tests |
+| `tri test --repl` | Run REPL tests (WIP - use `zig build test`) |
 
 #### TRI-27 Token & Staking
 
@@ -558,7 +558,7 @@ The Trinity CLI Docker image is published to GitHub Container Registry.
 | | |
 |---|---|
 | **Image** | `ghcr.io/ghashtag/trinity:latest` |
-| **Version** | `ghcr.io/ghashtag/trinity:1.0.2` |
+| **Version** | `ghcr.io/ghashtag/trinity:5.1.0` |
 | **Platforms** | linux/amd64 |
 | **Base** | Alpine 3.19 |
 | **Size** | ~8 MB |
@@ -698,10 +698,7 @@ Include `X-Wallet: 0xYOUR_ADDRESS` in HTTP headers. See [Tokenomics docs](https:
 **One-command 32-agent Trinity cluster:**
 
 ```bash
-# Run demo
-./demo/v8_production_swarm.sh
-
-# Or directly
+# Generate and run
 zig build vibee -- gen specs/tri/vsa_swarm_production_32.vibee
 zig build swarm
 ./zig-out/bin/swarm-runtime
@@ -951,12 +948,12 @@ MIT -- see [LICENSE](LICENSE)
 ---
 
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases/v1.0.2"><strong>Download v1.0.2 "HEARTBEAT"</strong></a> &bull;
+  <a href="https://github.com/gHashTag/trinity/releases/v5.1.0"><strong>Download v5.1.0 "HEARTBEAT"</strong></a> &bull;
   <a href="https://gHashTag.github.io/trinity/">Dashboard</a> &bull;
   <a href="https://gHashTag.github.io/trinity/docs/">Documentation</a>
 </p>
 
 <p align="center">
   <code>φ² + 1/φ² = 3 = TRINITY</code><br>
-  <code>v1.0.2 HEARTBEAT — 3 March 2026</code>
+  <code>v5.1.0 HEARTBEAT — 28 March 2026</code>
 </p>
