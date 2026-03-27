@@ -191,6 +191,17 @@ pub fn build(b: *std.Build) void {
     const author_guard_step = b.step("author-guard", "Verify canonical maintainer strings (Dmitrii Vasilev / @gHashTag) in locked files");
     author_guard_step.dependOn(&run_author_guard_tests.step);
 
+    // Cyrillic guard — English-only codebase policy enforcement
+    const cyrillic_guard_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/cyrillic_guard.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_cyrillic_guard_tests = b.addRunArtifact(cyrillic_guard_tests);
+    test_step.dependOn(&run_cyrillic_guard_tests.step);
+
     // VSA tests
     const vsa_tests = b.addTest(.{
         .root_module = b.createModule(.{
