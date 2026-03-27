@@ -42,7 +42,8 @@ pub const PriorityQueue = struct {
         }
     }
 
-    fn siftDown(pq: *PriorityQueue, index: usize) void {
+    fn siftDown(pq: *PriorityQueue, start_index: usize) void {
+        var index = start_index;
         const n = pq.size;
         while (true) {
             const left = 2 * index + 1;
