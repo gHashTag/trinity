@@ -62,9 +62,6 @@ def load_metadata(bundle_id: str) -> dict:
     with open(json_path) as f:
         return json.load(f)
 
-    with open(json_path) as f:
-        return json.load(f)
-
 
 def curl_get(url: str, token: str) -> str:
     """Perform GET request via curl."""
@@ -106,7 +103,7 @@ def publish_bundle(bundle_id: str, token: str, dry_run: bool = False) -> dict:
     title = metadata.get("title", "Unknown")
 
     print(f"Title: {title}")
-    print(f"Version: {metadata.get('version', '8.0')}")
+    print(f"Version: {metadata.get('version', '9.0')}")
 
     if dry_run:
         print(f"\n[DRY RUN] Would publish {bundle_id}")
@@ -219,7 +216,7 @@ def publish_bundle(bundle_id: str, token: str, dry_run: bool = False) -> dict:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Upload Zenodo v8.0 bundles")
+    parser = argparse.ArgumentParser(description="Upload Zenodo v9.0 bundles")
     parser.add_argument("--bundle", "-b", help="Bundle ID (B001-B007, PARENT)")
     parser.add_argument("--alias", "-a", help="Bundle alias (A-G, PARENT)")
     parser.add_argument("--all", action="store_true", help="Publish all bundles")
