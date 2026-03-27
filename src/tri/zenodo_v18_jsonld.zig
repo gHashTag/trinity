@@ -215,6 +215,12 @@ pub const ZenodoMetadata = struct {
     code_repository: ?[]const u8 = null,
     parent_doi: ?[]const u8 = null,
     programming_language: ?[]const u8 = null,
+
+    /// Free dynamically allocated fields
+    pub fn deinit(self: *ZenodoMetadata, allocator: std.mem.Allocator) void {
+        if (self.title.len > 0) allocator.free(self.title);
+        self.title = "";
+    }
 };
 
 /// Schema.org property
@@ -361,7 +367,8 @@ test "JsonLdGenerator: JSON escaping" {
 }
 
 test "ZenodoMetadata: default Trinity metadata" {
-    const metadata = try defaultTrinityMetadata(std.testing.allocator, "B001", "9.0");
+    var metadata = try defaultTrinityMetadata(std.testing.allocator, "B001", "9.0");
+    defer metadata.deinit(std.testing.allocator);
 
     try std.testing.expect(std.mem.indexOf(u8, metadata.title, "B001") != null);
     try std.testing.expectEqual(@as(usize, 7), metadata.keywords.len);
