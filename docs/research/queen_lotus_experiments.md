@@ -2,27 +2,27 @@
 
 ## Overview
 
-Queen Lotus Cycle — оркестратор self-learning для Trinity S³AI. Замкнутый цикл из 6 фаз: Experience Recall → Observe → Plan → Evaluate → Act → Self-Learning.
+Queen Lotus Cycle is a self-learning orchestrator for Trinity S³AI. Closed loop of 6 phases: Experience Recall → Observe → Plan → Evaluate → Act → Self-Learning.
 
-**Цель**: Автоматическая адаптация конфигурации на основе исторических episodic данных.
+**Goal**: Automatic configuration adaptation based on historical episodic data.
 
 ---
 
 ## Lotus Cycle Phases
 
 ### Phase 0: Experience Recall
-**Файл**: `src/tri27/tri27_experience.zig`
+**File**: `src/tri27/tri27_experience.zig`
 
-**Функция**:
-- Загружает последние N episodes из `.trinity/queen/episodes.jsonl`
-- Вычисляет Jaccard similarity для поиска паттернов
-- Предоставляет контекст для Observe фазы
+**Purpose**:
+- Loads last N episodes from `.trinity/queen/episodes.jsonl`
+- Computes Jaccard similarity for pattern finding
+- Provides context for Observe phase
 
-**Метрики**:
-- `recall_accuracy` — точность recall (целевой >0.8)
-- `jaccard_threshold` — порог схожести (по умолчанию 0.3)
+**Metrics**:
+- `recall_accuracy` — recall accuracy (target >0.8)
+- `jaccard_threshold` — similarity threshold (default 0.3)
 
-**Команды**:
+**Commands**:
 ```bash
 tri queen experience-recall --recent 20
 tri queen jaccard --episode <ID> --threshold 0.3
@@ -31,14 +31,14 @@ tri queen jaccard --episode <ID> --threshold 0.3
 ---
 
 ### Phase 1: Observe
-**Файл**: `src/tri/queen/observe.zig`
+**File**: `src/tri/queen/observe.zig`
 
-**Функция**:
-- Читает `policy.json` — текущая конфигурация
-- Читает `senses.json` — сенсорные данные (farm metrics)
-- Формирует `Context` для планирования
+**Purpose**:
+- Reads `policy.json` — current configuration
+- Reads `senses.json` — sensor data (farm metrics)
+- Forms `Context` for planning
 
-**Политика (PolicySnapshot)**:
+**Policy (PolicySnapshot)**:
 ```json
 {
   "kill_threshold": 5.0,
@@ -49,7 +49,7 @@ tri queen jaccard --episode <ID> --threshold 0.3
 }
 ```
 
-**Сенсоры (Senses)**:
+**Sensors (Senses)**:
 ```json
 {
   "farm_best_ppl": 125.0,
@@ -63,13 +63,13 @@ tri queen jaccard --episode <ID> --threshold 0.3
 ---
 
 ### Phase 2: Plan
-**Файл**: `src/tri/queen/plan.zig`
+**File**: `src/tri/queen/plan.zig`
 
-**Функция**:
-- Генерирует `PolicyDelta[]` на основе `WindowEvaluation`
-- Типы действий: scale_up, scale_down, set, wait
+**Purpose**:
+- Generates `PolicyDelta[]` based on `WindowEvaluation`
+- Action types: scale_up, scale_down, set, wait
 
-**PolicyDelta варианты**:
+**PolicyDelta variants**:
 ```zig
 pub const PolicyDelta = union(enum) {
     scale_up: struct { key: []const u8, factor: f64 },
@@ -79,9 +79,9 @@ pub const PolicyDelta = union(enum) {
 };
 ```
 
-**Логика планирования**:
-| Quality | Действие | Фактор |
-|---------|----------|--------|
+**Planning logic**:
+| Quality | Action | Factor |
+|---------|--------|--------|
 | good | wait | — |
 | unstable | scale_down | ×0.9 |
 | bad | scale_down | ×0.8 |
@@ -90,11 +90,11 @@ pub const PolicyDelta = union(enum) {
 ---
 
 ### Phase 3: Evaluate
-**Файл**: `src/tri/queen/evaluate.zig`
+**File**: `src/tri/queen/evaluate.zig`
 
-**Функция**:
-- Оценивает окно episodes на success_rate
-- Классифицирует качество: good/unstable/bad/unknown
+**Purpose**:
+- Evaluates episode window for success_rate
+- Classifies quality: good/unstable/bad/unknown
 
 **WindowEvaluation**:
 ```zig
@@ -112,19 +112,19 @@ pub const Quality = enum {
     good,       // success_rate ≥ 95%
     unstable,   // 70% < success_rate < 95%
     bad,        // success_rate ≤ 70%
-    unknown,    // нет данных
+    unknown,    // no data
 };
 ```
 
 ---
 
 ### Phase 4: Act
-**Файл**: `src/tri/queen/act.zig`
+**File**: `src/tri/queen/act.zig`
 
-**Функция**:
-- Исполняет `PolicyDelta[]`
-- Применяет изменения к `Tri27Config`
-- Сохраняет конфигурацию
+**Purpose**:
+- Executes `PolicyDelta[]`
+- Applies changes to `Tri27Config`
+- Saves configuration
 
 **Tri27Config**:
 ```zig
@@ -141,14 +141,14 @@ pub const Tri27Config = struct {
 ---
 
 ### Phase 5: Self-Learning
-**Файл**: `src/tri/queen/self_learning.zig`
+**File**: `src/tri/queen/self_learning.zig`
 
-**Функция**:
-- Замыкает цикл: episodes → evaluation → plan → act → config
-- Записывает episode о self-learning_cycle
-- Сохраняет обновлённую конфигурацию
+**Purpose**:
+- Closes loop: episodes → evaluation → plan → act → config
+- Records episode about self_learning_cycle
+- Saves updated configuration
 
-**Замкнутый цикл**:
+**Closed loop**:
 ```
 tri tri27 run test.tbin
     → Episode → episodes.jsonl
@@ -157,7 +157,7 @@ tri tri27 run test.tbin
     → generatePlan() → PolicyDelta[]
     → applyPolicyDelta() → Tri27Config
     → saveConfig() → tri27_config.json
-    → Episode о self_learning_cycle
+    → Episode about self_learning_cycle
 ```
 
 ---
@@ -318,33 +318,33 @@ tri farm monitor --duration 48h --metrics queen_trigger_rate,kill_count
 | H5: φ-decay optimization | `tri queen config set phi_decay <value>` | convergence_time |
 | H6: PPL clamping | `tri queen config set max_ppl <value>` | queen_trigger_rate |
 
-### H2: Feedback loop ускоряет стабилизацию
-**Утверждение**: Системы с self-learning достигают стабильного режима (quality=good) в 2× быстрее.
+### H2: Feedback loop accelerates stabilization
+**Claim**: Systems with self-learning reach stable mode (quality=good) 2× faster.
 
-**Переменные**:
-- Независимая: `auto_adapt` (bool)
-- Зависимая: `time_to_stable` = steps до quality=good
-- Контролируемые: начальная конфигурация
+**Variables**:
+- Independent: `auto_adapt` (bool)
+- Dependent: `time_to_stable` = steps until quality=good
+- Controlled: initial configuration
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# Мониторинг сходимости
+# Monitor convergence
 tri queen self-learning --window 20 --monitor
 tri plot convergence.jsonl --x steps --y quality
 ```
 
-**Ожидаемый результат**:
+**Expected Result**:
 - Queen enabled: time_to_stable ~ 100 episodes
 - Queen disabled: time_to_stable ~ 200 episodes
 
-### H3: Auto-adapt предотвращает byzantine failure
-**Утверждение**: `byzantine_rate_limit` с auto-adapt снижает byzantine ratio до <5%.
+### H3: Auto-adapt prevents byzantine failure
+**Claim**: `byzantine_rate_limit` with auto-adapt reduces byzantine ratio to <5%.
 
-**Переменные**:
-- Независимая: `auto_adapt` × `byzantine_rate_limit`
-- Зависимая: `byzantine_rate` = byzantine / total_episodes
+**Variables**:
+- Independent: `auto_adapt` × `byzantine_rate_limit`
+- Dependent: `byzantine_rate` = byzantine / total_episodes
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 tri farm inject --config byzantine_stress.json
 tri queen self-learning --window 50
@@ -353,18 +353,18 @@ tri farm metrics --filter byzantine_rate
 
 ---
 
-## Экспериментальные сценарии
+## Experimental Scenarios
 
-### Сценарий A: Queen vs No-Queen (A/B)
-**Цель**: Измерить влияние Queen на farm stability.
+### Scenario A: Queen vs No-Queen (A/B)
+**Goal**: Measure Queen's impact on farm stability.
 
 **Setup**:
-- Контрольная группа: 50 services без Queen
-- Экспериментальная группа: 50 services с Queen
-- Длительность: 48 часов
-- Метрики: crash_rate, byzantine_rate, success_rate, ppl
+- Control group: 50 services without Queen
+- Experimental group: 50 services with Queen
+- Duration: 48 hours
+- Metrics: crash_rate, byzantine_rate, success_rate, ppl
 
-**Команды**:
+**Commands**:
 ```bash
 tri farm ab-test \
     --control queen_disabled.json \
@@ -374,15 +374,15 @@ tri farm ab-test \
     --metrics crash_rate,byzantine_rate,success_rate,ppl
 ```
 
-### Сценарий B: Tri27Config вариации
-**Цель**: Найть оптимальные threshold values.
+### Scenario B: Tri27Config variations
+**Goal**: Find optimal threshold values.
 
 **Setup**:
 - `kill_threshold`: {3.0, 5.0, 7.0, 10.0}
 - `crash_rate_limit`: {0.05, 0.1, 0.15, 0.2}
-- Grid search: 4 × 4 = 16 конфигураций
+- Grid search: 4 × 4 = 16 configurations
 
-**Команды**:
+**Commands**:
 ```bash
 tri farm grid-search \
     --params kill_threshold,crash_rate_limit \
@@ -391,15 +391,15 @@ tri farm grid-search \
     --duration 24h
 ```
 
-### Сценарий C: Quality evolution
-**Цель**: Наблюдать за переходами quality состояний.
+### Scenario C: Quality evolution
+**Goal**: Observe quality state transitions.
 
 **Setup**:
-- Начальное состояние: quality=unknown
-- Цель: достичь quality=good
-- Записывать все переходы: unknown → unstable → good
+- Initial state: quality=unknown
+- Goal: reach quality=good
+- Record all transitions: unknown → unstable → good
 
-**Команды**:
+**Commands**:
 ```bash
 tri queen self-learning --window 20 --trace
 tri plot quality-transitions.jsonl --state-machine
@@ -407,42 +407,42 @@ tri plot quality-transitions.jsonl --state-machine
 
 ---
 
-## Quality metrics
+## Quality Metrics
 
-| Quality | Success rate | Действие |
-|---------|--------------|----------|
+| Quality | Success rate | Action |
+|---------|--------------|--------|
 | good | ≥95% | wait (maintain) |
 | unstable | 70-95% | scale_down (adjust) |
 | bad | ≤70% | scale_down (aggressive) |
-| unknown | нет данных | scale_up (explore) |
+| unknown | no data | scale_up (explore) |
 
 ---
 
-## Мониторинг
+## Monitoring
 
-### CLI команды
+### CLI Commands
 ```bash
-# Показать текущий статус
+# Show current status
 tri queen status
 
-# Показать последние episodes
+# Show recent episodes
 tri queen episode-list --recent 20
 
-# Запустить self-learning cycle
+# Start self-learning cycle
 tri queen self-learning --window 20
 
-# Показать Tri27Config
+# Show Tri27Config
 tri queen config show
 
-# Изменить Tri27Config
+# Change Tri27Config
 tri queen config set kill_threshold 7.0
 ```
 
-### JSONL логирование
+### JSONL Logging
 ```
 .trinity/queen/
-├── episodes.jsonl       # Все episodes
-├── tri27_config.json    # Текущая конфигурация
+├── episodes.jsonl       # All episodes
+├── tri27_config.json    # Current configuration
 └── self_learning_log.jsonl  # Self-learning cycles
 ```
 
@@ -460,9 +460,9 @@ tri queen config set kill_threshold 7.0
 
 ---
 
-## Связь с другими компонентами
+## Integration with Other Components
 
-| Компонент | Интерфейс | Файл |
+| Component | Interface | File |
 |-----------|-----------|------|
 | TRI-27 | Episode logging | `.trinity/queen/episodes.jsonl` |
 | HSLM farm | Senses input | `.trinity/queen/senses.json` |

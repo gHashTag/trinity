@@ -2,13 +2,13 @@
 
 ## Overview
 
-TRI-27 — микросубстрат для исследований тернарных вычислений: RISC-процессор с 27 тритными регистрами и 36 опкодами. Полный стек разработки: от ISA спецификации до FPGA bitstream.
+TRI-27 is a microsubstrate for ternary computing research: a RISC processor with 27 ternary registers and 36 opcodes. Full development stack: from ISA specification to FPGA bitstream.
 
-**Математическая основа**: φ² + 1/φ² = 3 = TRINITY
+**Mathematical Foundation**: φ² + 1/φ² = 3 = TRINITY
 
 ---
 
-## Архитектура
+## Architecture
 
 ### Word Layout (32-bit instruction)
 
@@ -22,11 +22,11 @@ TRI-27 — микросубстрат для исследований терна
 
 ### Registers
 
-| Регистр | Размер | Назначение |
-|---------|--------|------------|
-| t0-t26 | 27×32-bit | Тритные регистры (t0 = аккумулятор) |
+| Register | Size | Purpose |
+|----------|------|---------|
+| t0-t26 | 27×32-bit | Ternary registers (t0 = accumulator) |
 | pc | 32-bit | Program Counter |
-| flags | {Z, N, C, H, O} | Флаги состояния |
+| flags | {Z, N, C, H, O} | Status flags |
 
 ### ISA — 36 Opcodes
 
@@ -96,79 +96,79 @@ TRI-27 — микросубстрат для исследований терна
 
 ### Zig Backend (CPU Emulator)
 
-**Файлы**:
+**Files**:
 - `src/tri27/emu/cpu_state.zig` — CPU state, registers, memory
 - `src/tri27/emu/decoder.zig` — instruction decoder
 - `src/tri27/emu/executor.zig` — execution engine
 - `src/tri27/emu/asm_parser.zig` — .tri assembler
 - `src/tri27/tri27_cli.zig` — CLI entrypoint
 
-**Особенности**:
-- 36 опкодов, полный ISA
-- 27×32-bit регистры t0-t26
-- 64KB память (align(8) u8)
-- Флаги: Z, N, C, H, O
-- Cycle counter для профилирования
+**Features**:
+- 36 opcodes, complete ISA
+- 27×32-bit registers t0-t26
+- 64KB memory (align(8) u8)
+- Flags: Z, N, C, H, O
+- Cycle counter for profiling
 
 ### Verilog Backend (FPGA)
 
-**Файлы**:
+**Files**:
 - `fpga/openxc7-synth/hslm_ternary_mac.v` — ternary ALU core
-- `src/tri27/verilog_backend.zig` — Zig → Verilog генератор
+- `src/tri27/verilog_backend.zig` — Zig → Verilog generator
 
-**Особенности**:
+**Features**:
 - 0 DSP inference (pure LUT)
 - Pipeline: IF → ID → EX → MEM → WB
-- BRAM36 для instruction memory
-- Ternary arithmetic в LUT
+- BRAM36 for instruction memory
+- Ternary arithmetic in LUT
 
 ---
 
 ## Queen Integration — Lotus Cycle
 
 ### Phase 0: Experience Recall
-**Файл**: `src/tri27/tri27_experience.zig`
+**File**: `src/tri27/tri27_experience.zig`
 
-Читает `.trinity/queen/episodes.jsonl` — последние N episodes для анализа.
+Reads `.trinity/queen/episodes.jsonl` — last N episodes for analysis.
 
 ### Phase 1: Observe
-**Файл**: `src/tri/queen/observe.zig`
+**File**: `src/tri/queen/observe.zig`
 
-Читает:
+Reads:
 - `policy.json` — kill_threshold, crash_rate_limit, byzantine_rate_limit
 - `senses.json` — farm_best_ppl, test_rate, dirty_files, etc.
 
 ### Phase 2: Plan
-**Файл**: `src/tri/queen/plan.zig`
+**File**: `src/tri/queen/plan.zig`
 
-Генерирует `PolicyDelta`:
-- `scale_up` — увеличить threshold (×1.1)
-- `scale_down` — уменьшить threshold (×0.8-0.95)
-- `set` — установить точное значение
-- `wait` — ничего не делать
+Generates `PolicyDelta`:
+- `scale_up` — increase threshold (×1.1)
+- `scale_down` — decrease threshold (×0.8-0.95)
+- `set` — set exact value
+- `wait` — do nothing
 
 ### Phase 3: Evaluate
-**Файл**: `src/tri/queen/evaluate.zig`
+**File**: `src/tri/queen/evaluate.zig`
 
-Оценивает окно episodes:
+Evaluates episode window:
 - `good` — success_rate ≥ 95%
 - `unstable` — 70% < success_rate < 95%
 - `bad` — success_rate ≤ 70%
-- `unknown` — нет данных
+- `unknown` — no data
 
 ### Phase 4: Act
-**Файл**: `src/tri/queen/act.zig`
+**File**: `src/tri/queen/act.zig`
 
-Исполняет Plan:
-- `scale_up` — умножить параметр
-- `scale_down` — разделить параметр
-- `trigger` — выполнить команду
-- `wait` — наблюдать
+Executes Plan:
+- `scale_up` — multiply parameter
+- `scale_down` — divide parameter
+- `trigger` — execute command
+- `wait` — observe
 
 ### Phase 5: Self-Learning
-**Файл**: `src/tri/queen/self_learning.zig`
+**File**: `src/tri/queen/self_learning.zig`
 
-**Замкнутый цикл**:
+**Closed loop**:
 ```
 tri tri27 run test.tbin
     → Episode → episodes.jsonl
@@ -197,16 +197,16 @@ pub const Tri27Config = struct {
 ## CLI
 
 ```bash
-# Компиляция
+# Compilation
 tri tri27 assemble <input.tri> -o <output.tbin>
 
-# Декомпиляция
+# Disassembly
 tri tri27 disassemble <input.tbin>
 
-# Исполнение
+# Execution
 tri tri27 run <program.tbin>
 
-# Валидация
+# Validation
 tri tri27 validate <source.tri>
 
 # Experience tracking
@@ -223,14 +223,14 @@ tri tri27 isa
 
 ## Tests
 
-| Тест | Файл | Статус | Описание |
-|------|------|--------|----------|
-| Golden | `test_golden.zig` | ✅ 15/15 | полный цикл asm→tbin→emu |
-| Comprehensive | `test_comprehensive.zig` | ✅ 36/36 | все опкоды |
+| Test | File | Status | Description |
+|------|------|--------|-------------|
+| Golden | `test_golden.zig` | ✅ 15/15 | full cycle asm→tbin→emu |
+| Comprehensive | `test_comprehensive.zig` | ✅ 36/36 | all opcodes |
 | Experience | `tri27_experience.zig` | ✅ — | Jaccard similarity, recall |
 | Queen Self-Learning | `self_learning.zig` | ✅ 4/4 | feedback loop |
 
-**Запуск**:
+**Run**:
 ```bash
 zig build test-tri27-golden        # Golden tests
 zig build test-tri27-comprehensive # Comprehensive tests
@@ -240,10 +240,10 @@ zig build test-queen-self-learning # Self-learning tests
 
 ---
 
-## Экспериментальные классы
+## Experimental Classes
 
-### Энергия/латентность dot-product
-**Гипотеза H1**: TRI-27 VM (CPU) медленнее Sacred ALU (FPGA) в 10-100× по latency, но competitive по energy/op.
+### Energy/Latency of Dot-Product
+**Hypothesis H1**: TRI-27 VM (CPU) is 10-100× slower than Sacred ALU (FPGA) in latency, but competitive in energy/op.
 
 **Pipeline**:
 ```bash
@@ -257,13 +257,13 @@ tri fpga synth dot_product.tri --target xc7a100t
 tri bench compare cpu.json fpga.json
 ```
 
-**Метрики**:
+**Metrics**:
 - latency (ns/op)
 - throughput (ops/s)
 - energy (J/op)
 
-### Ternary vs binary ISA
-**Гипотеза H2**: Тритные операции {-1, 0, +1} снижают instruction count vs binary {0, 1}.
+### Ternary vs Binary ISA
+**Hypothesis H2**: Ternary operations {-1, 0, +1} reduce instruction count vs binary {0, 1}.
 
 **Pipeline**:
 ```bash
@@ -276,13 +276,13 @@ tri tri27 disassemble algo_ternary.tbin | wc -l
 objdump -d algo_binary | wc -l
 ```
 
-**Метрики**:
+**Metrics**:
 - instructions_per_algorithm
 - bytes_per_instruction
 - cyclomatic_complexity
 
-### Code density
-**Гипотеза H3**: TRI-27 код в 2-3× компактнее бинарного RISC.
+### Code Density
+**Hypothesis H3**: TRI-27 code is 2-3× more compact than binary RISC.
 
 **Benchmark suite**:
 - Fibonacci (recursive)
@@ -330,9 +330,9 @@ src/tri/queen/
 
 ---
 
-## Связь с другими компонентами
+## Integration with Other Components
 
-| Компонент | Файл | Интерфейс |
+| Component | File | Interface |
 |-----------|------|-----------|
 | Sacred ALU | `fpga/openxc7-synth/sacred_alu.v` | Dot-product opcode |
 | Queen | `src/tri/queen/self_learning.zig` | Episode logging |

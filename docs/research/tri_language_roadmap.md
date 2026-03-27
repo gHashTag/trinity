@@ -2,15 +2,15 @@
 
 ## Overview
 
-Tri Language — доменно-специфичный язык для Trinity S³AI. Единая точка входа для генерации Zig и Verilog кода из спецификаций .tri.
+Tri Language is a domain-specific language for Trinity S³AI. Single entry point for generating Zig and Verilog code from .tri specifications.
 
-**Цель**: Single Source of Truth для CPU и FPGA backends.
+**Goal**: Single Source of Truth for CPU and FPGA backends.
 
 ---
 
-## Статус
+## Status
 
-| Компонент | Статус | Файл |
+| Component | Status | File |
 |-----------|--------|------|
 | Grammar | 🔄 In Progress | `specs/tri/grammar.tri` |
 | Lexer | 🔄 In Progress | `src/tri-lang/lexer.zig` |
@@ -93,9 +93,9 @@ fn sacred_mul(a: gf16, b: gf16, limit: gf16) gf16 {
 
 ---
 
-## Компилятор
+## Compiler
 
-### Архитектура
+### Architecture
 
 ```
 .tri spec (Single Source of Truth)
@@ -115,12 +115,12 @@ CPU code       FPGA bitstream
 
 ### Lexer
 
-**Файл**: `src/tri-lang/lexer.zig`
+**File**: `src/tri-lang/lexer.zig`
 
-**Функция**:
-- Токенизация .tri исходников
-- Распознавание keywords, identifiers, literals
-- Генерация Token stream
+**Purpose**:
+- Tokenization of .tri source files
+- Recognition of keywords, identifiers, literals
+- Generation of Token stream
 
 **Token type**:
 ```zig
@@ -135,12 +135,12 @@ pub const Token = union(enum) {
 
 ### Parser
 
-**Файл**: `src/tri-lang/parser.zig` (planned)
+**File**: `src/tri-lang/parser.zig` (planned)
 
-**Функция**:
-- Построение AST из Token stream
-- Проверка синтаксиса
-- Генерация Error при неверном синтаксисе
+**Purpose**:
+- Construction of AST from Token stream
+- Syntax checking
+- Generation of Error on invalid syntax
 
 **AST node**:
 ```zig
@@ -155,16 +155,16 @@ pub const Node = union(enum) {
 
 ### Type Checker
 
-**Файл**: `src/tri-lang/type_checker.zig` (planned)
+**File**: `src/tri-lang/type_checker.zig` (planned)
 
-**Функция**:
-- Вывод типов
-- Проверка совместимости типов
-- Генерация Type errors
+**Purpose**:
+- Type inference
+- Type compatibility checking
+- Generation of Type errors
 
 **Type rules**:
-- `trit ⊆ i32` — ternary может быть использован как integer
-- `gf16 ↔ f16` — конвертация без потери точности
+- `trit ⊆ i32` — ternary can be used as integer
+- `gf16 ↔ f16` — conversion without precision loss
 - `tf3 → [8]trit` — unpacking
 
 ---
@@ -173,12 +173,12 @@ pub const Node = union(enum) {
 
 ### emit_zig
 
-**Файл**: `src/tri-lang/emit_zig.zig`
+**File**: `src/tri-lang/emit_zig.zig`
 
-**Функция**:
-- Генерация Zig кода из AST
-- Маппинг Tri types → Zig types
-- Генерация stdlib calls
+**Purpose**:
+- Generation of Zig code from AST
+- Mapping Tri types → Zig types
+- Generation of stdlib calls
 
 **Type mapping**:
 | Tri type | Zig type |
@@ -188,7 +188,7 @@ pub const Node = union(enum) {
 | gf16 | f16 (via @bitCast) |
 | tf3 | struct TF3 { scale: f16, weights: u16 } |
 
-**Пример**:
+**Example**:
 ```tri
 // Tri source
 fn add(a: trit, b: trit) trit {
@@ -208,12 +208,12 @@ fn add(a: i8, b: i8) i8 {
 
 ### emit_verilog
 
-**Файл**: `src/tri-lang/emit_verilog.zig` (planned)
+**File**: `src/tri-lang/emit_verilog.zig` (planned)
 
-**Функция**:
-- Генерация Verilog кода из AST
-- Маппинг Tri types → Verilog types
-- Генерация module definitions
+**Purpose**:
+- Generation of Verilog code from AST
+- Mapping Tri types → Verilog types
+- Generation of module definitions
 
 **Type mapping**:
 | Tri type | Verilog type |
@@ -223,7 +223,7 @@ fn add(a: i8, b: i8) i8 {
 | gf16 | `signed [15:0]` (Q8.8 fixed-point) |
 | tf3 | `struct { scaled signed [15:0]; weights [15:0]; }` |
 
-**Пример**:
+**Example**:
 ```tri
 // Tri source
 fn mac(a: trit, w: trit, acc: i32) i32 {
@@ -251,9 +251,9 @@ endmodule
 
 ---
 
-## Связь компонентов
+## Component Integration
 
-### HSLM код → Tri → CPU/FPGA
+### HSLM code → Tri → CPU/FPGA
 
 ```
 HSLM training (src/hslm/*.zig)
@@ -266,7 +266,7 @@ tri build --target zig    → Zig code → CPU inference
 tri build --target verilog → Verilog → FPGA bitstream
 ```
 
-**Пример**:
+**Example**:
 ```tri
 // specs/tri/ternary_mac.tri
 struct TernaryMAC {
@@ -286,7 +286,7 @@ struct TernaryMAC {
 ### TRI-27 ISA → native ternary ops
 
 ```tri
-// TRI-27 instructions в Tri
+// TRI-27 instructions in Tri
 asm DOT dst, src1, src2 {
     // dst = dot_product(src1, src2)
     const result = dot_product(
@@ -312,50 +312,50 @@ fn sacred_dot(a: []gf16, b: []gf16) gf16 {
 
 ---
 
-## Научные вопросы
+## Scientific Questions
 
-### Q1: Влияние тернарных типов на expressiveness
-**Гипотеза**: Тернарные types (trit, trit3, trit9) позволяют более компактное выражение алгоритмов vs binary types.
+### Q1: Influence of Ternary Types on Expressiveness
+**Hypothesis**: Ternary types (trit, trit3, trit9) enable more compact expression of algorithms vs binary types.
 
-**Метрики**:
-- LOC для типовых алгоритмов (dot-product, matmul)
+**Metrics**:
+- LOC for typical algorithms (dot-product, matmul)
 - Cyclomatic complexity
 - Type safety (compile-time errors)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# Написать бенчмарк на Tri и Zig
+# Write benchmark in Tri and Zig
 tri bench compare --spec ternary_mac.tri --impl zig/ternary_mac.zig
 ```
 
-### Q2: Dot-оператор на оптимизацию
-**Гипотеза**: Dot-оператор (`a . b`) в Tri генерирует более эффективный код vs loop.
+### Q2: Dot Operator Optimization
+**Hypothesis**: Dot operator (`a . b`) in Tri generates more efficient code vs loop.
 
-**Метрики**:
+**Metrics**:
 - Instruction count
 - Cycle count (CPU)
 - LUT utilisation (FPGA)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# Сравнить dot vs loop
+# Compare dot vs loop
 tri bench dot_vs_loop --size 1000 --backend zig,verilog
 ```
 
-### Q3: Dual-target compilation fidelity
-**Гипотеза**: Zig и Verilog backends генерируют семантически эквивалентный код.
+### Q3: Dual-Target Compilation Fidelity
+**Hypothesis**: Zig and Verilog backends generate semantically equivalent code.
 
-**Метрики**:
-- Числовые результаты (identical до 1e-6)
+**Metrics**:
+- Numerical results (identical within 1e-6)
 - Behaviour corner cases (overflow, NaN)
-- Performance parity (в пределах 2×)
+- Performance parity (within 2×)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# Генерировать оба backends
+# Generate both backends
 tri build --target zig,verilog --spec ternary_ops.tri
 
-# Test на единых inputs
+# Test on unified inputs
 tri test compare --zig out/zig --verilog out/verilog --inputs test_vectors.json
 ```
 
@@ -448,9 +448,9 @@ src/tri-lang/
 
 ---
 
-## Связь с другими компонентами
+## Integration with Other Components
 
-| Компонент | Интерфейс | Файл |
+| Component | Interface | File |
 |-----------|-----------|------|
 | HSLM | Algorithm specs | `specs/tri/hslm_ops.tri` |
 | TRI-27 | ISA instructions | `specs/tri/tri27_ops.tri` |

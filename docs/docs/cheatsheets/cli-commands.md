@@ -5,7 +5,7 @@ sidebar_label: CLI Commands
 
 # TRI CLI Cheat Sheet
 
-**Все команды TRI CLI в одном месте**
+**All TRI CLI commands in one place**
 
 ---
 

@@ -64,8 +64,13 @@ Queen Episodes    FPGA Bitstream
 ### Registers
 
 | Register | Size | Purpose |
+<<<<<<< Updated upstream
 |---------|---------|-----------|
 | t0-t26 | 27×32-bit | Trit registers (t0 = accumulator) |
+=======
+|----------|------|---------|
+| t0-t26 | 27×32-bit | Ternary registers (t0 = accumulator) |
+>>>>>>> Stashed changes
 | pc | 32-bit | Program Counter (in instructions) |
 | flags | {Z, N, C, H, ...} | Status flags |
 
@@ -139,7 +144,7 @@ Queen Episodes    FPGA Bitstream
 
 ### Zig Backend (CPU Emulator)
 
-**Файлы**:
+**Files**:
 - `src/tri27/emu/cpu_state.zig` — CPU state, registers, memory
 - `src/tri27/emu/decoder.zig` — instruction decoder
 - `src/tri27/emu/executor.zig` — execution engine
@@ -147,7 +152,11 @@ Queen Episodes    FPGA Bitstream
 - `src/tri27/tri27_cli.zig` — CLI entrypoint
 
 **Features**:
+<<<<<<< Updated upstream
 - 36 opcodes, full ISA
+=======
+- 36 opcodes, complete ISA
+>>>>>>> Stashed changes
 - 27×32-bit registers t0-t26
 - 64KB memory (align(8) u8)
 - Flags: Z, N, C, H, O
@@ -170,14 +179,18 @@ Queen Episodes    FPGA Bitstream
 ## Queen Integration — Lotus Cycle
 
 ### Phase 1: Observe
-**Файл**: `src/tri/queen/observe.zig`
+**File**: `src/tri/queen/observe.zig`
 
+<<<<<<< Updated upstream
 Read:
+=======
+Reads:
+>>>>>>> Stashed changes
 - `policy.json` — kill_threshold, crash_rate_limit, byzantine_rate_limit
 - `senses.json` — farm_best_ppl, test_rate, dirty_files, etc.
 
 ### Phase 2: Plan
-**Файл**: `src/tri/queen/plan.zig`
+**File**: `src/tri/queen/plan.zig`
 
 Generates `PolicyDelta`:
 - `scale_up` — increase threshold (×1.1)
@@ -188,34 +201,56 @@ Generates `PolicyDelta`:
 ### Phase 3: Evaluate
 **File**: `src/tri/queen/evaluate.zig`
 
+<<<<<<< Updated upstream
 Evaluates the episodes window:
+=======
+Evaluates episode window:
+>>>>>>> Stashed changes
 - `good` — success_rate ≥ 95%
 - `unstable` — 70% < success_rate < 95%
 - `bad` — success_rate ≤ 70%
 - `unknown` — no data
 
 ### Phase 4: Act
-**Файл**: `src/tri/queen/act.zig`
+**File**: `src/tri/queen/act.zig`
 
+<<<<<<< Updated upstream
 Executes a Plan:
 - `scale_up` — multiply a parameter
 - `scale_down` — divide a parameter
 - `trigger` — execute a command
 - `wait` — watch
+=======
+Executes Plan:
+- `scale_up` — multiply parameter
+- `scale_down` — divide parameter
+- `trigger` — execute command
+- `wait` — observe
+>>>>>>> Stashed changes
 
 ### Phase 5: Self-Learning
-**Файл**: `src/tri/queen/self_learning.zig`
+**File**: `src/tri/queen/self_learning.zig`
 
-**Замкнутый цикл**:
+**Closed loop**:
 ```
 tri tri27 run test.tbin
+<<<<<<< Updated upstream
 → Episode → episodes.jsonl
 → loadRecentEpisodes(20)
 → evaluateWindow() → WindowEvaluation
 → generatePlan() → PolicyDelta[]
 → applyPolicyDelta() → Tri27Config
 → saveConfig() → tri27_config.json
-→ Episode о self-learning_cycle
+    → Episode about self-learning_cycle
+=======
+    → Episode → episodes.jsonl
+    → loadRecentEpisodes(20)
+    → evaluateWindow() → WindowEvaluation
+    → generatePlan() → PolicyDelta[]
+    → applyPolicyDelta() → Tri27Config
+    → saveConfig() → tri27_config.json
+    → Episode → self_learning_cycle
+>>>>>>> Stashed changes
 ```
 
 **Tri27Config**:
@@ -262,13 +297,18 @@ tri tri27 isa
 ## Tests
 
 | Test | File | Description |
+<<<<<<< Updated upstream
 |------|------|----------|
 | Golden | `test_golden.zig` | 15/15 — full asm→tbin→emu cycle |
+=======
+|------|------|-------------|
+| Golden | `test_golden.zig` | 15/15 — full cycle asm→tbin→emu |
+>>>>>>> Stashed changes
 | Comprehensive | `test_comprehensive.zig` | 36/36 — all opcodes |
 | Experience | `tri27_experience.zig` | Jaccard similarity, recall |
 | Queen Self-Learning | `self_learning.zig` | 4/4 — feedback loop |
 
-**Запуск**:
+**Run**:
 ```bash
 zig build test-tri27-golden        # Golden tests
 zig build test-tri27-comprehensive # Comprehensive tests
@@ -306,7 +346,7 @@ src/tri/queen/
 
 ## Status
 
-✅ ISA — 36 opcod
+✅ ISA — 36 opcodes
 ✅ Zig Backend — CPU emulator
 ✅ Verilog Backend — FPGA synthesis
 ✅ CLI — assemble/disassemble/run/validate
