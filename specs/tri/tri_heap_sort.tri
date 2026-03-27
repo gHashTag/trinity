@@ -1,0 +1,20 @@
+name: tri_heap_sort
+version: "0.1.0"
+language: zig
+module: tri.heap_sort
+description: "Heap Sort - in-place O(n log n) sorting"
+
+functions:
+  sort:
+    params:
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort in place using heap sort"
+
+behaviors:
+  - name: max_heap
+    description: "Build max heap, then extract max repeatedly"
+    implementation: |
+      Heapify: sift down largest element to root.
+      Extract: swap root with last, sift down new root.

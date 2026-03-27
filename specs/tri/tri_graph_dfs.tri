@@ -1,0 +1,25 @@
+name: tri_graph_dfs
+version: "0.1.0"
+language: zig
+module: tri.graph_dfs
+description: "Depth-First Search for graph traversal"
+
+types:
+  DFSResult:
+    description: "DFS traversal result"
+    fields:
+      preorder: "[]usize"
+      postorder: "[]usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  traverse:
+    params:
+      - name: graph
+        type: "*Graph"
+      - name: start
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "DFSResult"
+    description: "DFS from start vertex"
