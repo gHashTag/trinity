@@ -94,8 +94,6 @@ pub fn percentile(allocator: std.mem.Allocator, values: []const f64, p: f64) !f6
 pub fn correlation(x: []const f64, y: []const f64) f64 {
     if (x.len != y.len or x.len == 0) return 0;
 
-    const n = @as(f64, @floatFromInt(x.len));
-
     const mean_x = mean(x);
     const mean_y = mean(y);
 

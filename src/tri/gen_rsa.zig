@@ -62,7 +62,7 @@ pub fn decrypt(ciphertext: u64, d: u64, n: u64) u64 {
 }
 
 test "rsa encrypt decrypt" {
-    var keys = try generate(std.testing.allocator, 16);
+    const keys = try generate(std.testing.allocator, 16);
 
     const message: u64 = 123;
     const c = encrypt(message, keys.public_e, keys.public_n);

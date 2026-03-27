@@ -71,7 +71,7 @@ pub fn isOnCurve(curve: *const EllipticCurve, p: ECPoint) bool {
     const lhs = p.y * p.y;
     const rhs = p.x * p.x * p.x + curve.a * p.x + curve.b;
 
-    return std.approxEqAbs(f64, lhs, rhs, 0.0001);
+    return std.math.approxEqAbs(f64, lhs, rhs, 0.0001);
 }
 
 test "ecc point on curve" {
