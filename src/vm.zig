@@ -569,12 +569,12 @@ pub const VSAVM = struct {
 
     /// Convenience: Compute Fibonacci F(n) where n is in s0
     pub fn fib(self: *VSAVM) !void {
-        try self.execSacredOpcode(.fib, .{});
+        try self.execSacredOpcode(.fib, SacredOperands.none);
     }
 
     /// Convenience: Verify sacred identity φ² + 1/φ² = 3
     pub fn verifySacredIdentity(self: *VSAVM) !void {
-        try self.execSacredOpcode(.sacred_identity, .{});
+        try self.execSacredOpcode(.sacred_identity, SacredOperands.none);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
