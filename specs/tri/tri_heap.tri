@@ -1,0 +1,48 @@
+name: tri_heap
+version: "0.1.0"
+module: tri.heap
+description: "TRI Heap — binary heap data structure"
+
+types:
+  Heap(T):
+    description: "Priority queue"
+    fields:
+      items: "[]T"
+      size: "usize"
+
+functions:
+  empty:
+    returns: "Heap(T)"
+    description: "Create empty heap"
+
+  push:
+    params:
+      - name: heap
+        type: "*Heap(T)"
+      - name: item
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Insert item"
+
+  pop:
+    params:
+      - name: heap
+        type: "*Heap(T)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "?T"
+    description: "Extract max element"
+
+  peek:
+    params:
+      - name: heap
+        type: "*Heap(T)"
+    returns: "?T"
+    description: "View max element"
+
+behaviors:
+  - name: priority
+    description: "Max-heap ordering"
+    note: "Parent >= children"

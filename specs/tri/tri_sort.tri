@@ -1,0 +1,37 @@
+name: tri_sort
+version: "0.1.0"
+module: tri.sort
+description: "TRI Sort — sorting algorithms"
+
+types:
+  SortOrder:
+    description: "Sort direction"
+    enum: [Ascending, Descending]
+
+functions:
+  sort:
+    params:
+      - name: items
+        type: "[]const T"
+      - name: order
+        type: "SortOrder"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]T"
+    description: "Sort slice (T must be orderable)"
+
+  sortBy:
+    params:
+      - name: items
+        type: "[]const T"
+      - name: key_fn
+        type: "fn(T) ?Order"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]T"
+    description: "Sort by key function"
+
+behaviors:
+  - name: stable
+    description: "Stable sort"
+    note: "Preserves equal order"
