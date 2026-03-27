@@ -102,8 +102,6 @@ pub fn bankName(bank: u2) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "CopticReg bank() returns correct bank" {
-    const std = @import("std");
-
     // Bank 0 (0-8)
     try std.testing.expectEqual(@as(u2, 0), CopticReg.alpha.bank());
     try std.testing.expectEqual(@as(u2, 0), CopticReg.beta.bank());
@@ -119,8 +117,6 @@ test "CopticReg bank() returns correct bank" {
 }
 
 test "glyphToReg finds correct register" {
-    const std = @import("std");
-
     try std.testing.expectEqual(CopticReg.alpha, try glyphToReg("Ⲁ"));
     try std.testing.expectEqual(CopticReg.iota, try glyphToReg("Ⲓ"));
     try std.testing.expectEqual(CopticReg.sima, try glyphToReg("Ⲥ"));
@@ -131,13 +127,10 @@ test "glyphToReg finds correct register" {
 }
 
 test "coptic_glyphs array has 27 entries" {
-    const std = @import("std");
     try std.testing.expectEqual(@as(usize, 27), coptic_glyphs.len);
 }
 
 test "CopticReg name returns correct tag" {
-    const std = @import("std");
-
     try std.testing.expectEqualStrings("alpha", CopticReg.alpha.name());
     try std.testing.expectEqualStrings("iota", CopticReg.iota.name());
     try std.testing.expectEqualStrings("sima", CopticReg.sima.name());

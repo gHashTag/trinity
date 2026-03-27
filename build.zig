@@ -2599,6 +2599,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/main.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
             .imports = &.{
                 .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
                 .{ .name = "trinity_swe", .module = vibeec_swe },
@@ -3624,6 +3625,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/sacred_alu.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .link_libc = true,
         }),
     });
     b.installArtifact(sacred);
