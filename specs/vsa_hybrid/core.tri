@@ -1,0 +1,45 @@
+// VSA Core — HybridBigInt Operations Specification
+// Packed storage (5 trits/byte), lazy unpacking, SIMD acceleration
+//
+// φ² + 1/φ² = 3 | TRINITY
+
+// HybridBigInt: 59049 max trits, packed + unpacked modes
+struct HybridBigInt {
+    packed_data: [MAX_PACKED_BYTES]u8,
+    unpacked_cache: [MAX_TRITS]Trit,
+    mode: StorageMode,  // packed_mode or unpacked_mode
+    trit_len: usize,
+    dirty: bool,
+}
+
+// Storage modes
+enum StorageMode {
+    packed_mode,
+    unpacked_mode,
+}
+
+// Constants
+const MAX_TRITS: usize = 59049;  // 3^10
+const TRITS_PER_BYTE: usize = 5;
+const MAX_PACKED_BYTES: usize = (MAX_TRITS + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
+
+// SIMD types
+const Vec32i8 = @Vector(32, i8);
+const Vec32i16 = @Vector(32, i16);
+const SIMD_WIDTH: usize = 32;
+
+// Core operations
+fn bind(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt;
+fn unbind(bound: *HybridBigInt, key: *HybridBigInt) HybridBigInt;
+fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt;
+fn bundle3(a: *HybridBigInt, b: *HybridBigInt, c: *HybridBigInt) HybridBigInt;
+fn permute(v: *HybridBigInt, n: usize) HybridBigInt;
+fn inversePermute(v: *HybridBigInt, n: usize) HybridBigInt;
+fn ensureUnpacked(self: *HybridBigInt) void;
+fn getTrit(self: *HybridBigInt, pos: usize) Trit;
+fn setTrit(self: *HybridBigInt, pos: usize, value: Trit) void;
+
+// Conversion
+fn zero() HybridBigInt;
+fn fromI64(value: i64) HybridBigInt;
+fn toI64(self: *HybridBigInt) i64;

@@ -1,0 +1,131 @@
+# GF(2^8) Galois Field — Source of Truth
+# Primitive polynomial: x^8 + x^4 + x^3 + x^2 + 1 = 0x11D
+# Used for Reed-Solomon erasure coding
+# φ² + 1/φ² = 3 | TRINITY
+
+name: gf256
+version: "0.1.0"
+module: crypto.gf256
+description: "GF(2^8) Galois Field arithmetic (TTT Dogfood v0.1)"
+
+types:
+  GF256:
+    description: "Galois Field with 256 elements using lookup tables"
+    fields:
+      - name: exp_table
+        type: "[512]u8"
+        description: "Exponentiation table (double-size for wraparound)"
+      - name: log_table
+        type: "[256]u8"
+        description: "Logarithm table"
+
+constants:
+  PRIMITIVE_POLY:
+    type: u16
+    value: 285
+    description: "x^8 + x^4 + x^3 + x^2 + 1 = 0x11D = 285"
+
+  FIELD_SIZE:
+    type: u16
+    value: 256
+    description: "GF(2^8) has 256 elements"
+
+functions:
+  init:
+    returns: GF256
+    description: "Initialize GF(2^8) lookup tables using primitive polynomial"
+
+  add:
+    params:
+      - name: a
+        type: u8
+      - name: b
+        type: u8
+    returns: u8
+    description: "Addition in GF(2^8) is XOR"
+    formula: "a ^ b"
+
+  sub:
+    params:
+      - name: a
+        type: u8
+      - name: b
+        type: u8
+    returns: u8
+    description: "Subtraction in GF(2^8) is also XOR"
+    formula: "a ^ b"
+
+  mul:
+    params:
+      - name: a
+        type: u8
+      - name: b
+        type: u8
+    returns: u8
+    description: "Multiplication via log/exp tables"
+    formula: |
+      if a == 0 or b == 0: return 0
+      return exp_table[log_table[a] + log_table[b]]
+
+  div:
+    params:
+      - name: a
+        type: u8
+      - name: b
+        type: u8
+    returns: u8
+    description: "Division via log/exp tables"
+    formula: |
+      if a == 0: return 0
+      if b == 0: error
+      return exp_table[log_table[a] + 255 - log_table[b]]
+
+  pow:
+    params:
+      - name: a
+        type: u8
+      - name: n
+        type: u8
+    returns: u8
+    description: "Exponentiation: a^n"
+    formula: |
+      if n == 0: return 1
+      if a == 0: return 0
+      exp = (log_table[a] * n) % 255
+      return exp_table[exp]
+
+  inverse:
+    params:
+      - name: a
+        type: u8
+    returns: u8
+    description: "Multiplicative inverse: a^(-1) such that a * a^(-1) = 1"
+    formula: "exp_table[255 - log_table[a]]"
+
+behaviors:
+  - name: table_initialization
+    description: "Build exp and log tables using primitive polynomial"
+    implementation: |
+      Start with x = 1
+      For i in 0..254:
+        exp_table[i] = x
+        exp_table[i + 255] = x  (duplicate for wraparound)
+        log_table[x] = i
+        x = x * 2
+        if x >= 256: x = x ^ PRIMITIVE_POLY
+      exp_table[255] = exp_table[0]
+      log_table[0] = 0 (convention)
+
+  - name: field_properties
+    description: "GF(2^8) properties"
+    implementation: |
+      - Addition and subtraction are XOR (no carries)
+      - Multiplicative group is cyclic of order 255
+      - Every non-zero element has an inverse
+      - Used for Reed-Solomon codes, RAID-6, QR codes
+
+constraints:
+  - Primitive polynomial is fixed: 0x11D
+  - Field size is 256 (2^8)
+  - exp_table is 512 elements to handle wraparound
+  - log(0) is defined as 0 by convention (mathematically undefined)

@@ -1,0 +1,130 @@
+# TRI-27 Token System - Token Types Specification
+# ════════════════════════════════════════════════════════════════
+#
+# Module: token_types
+# Purpose: Token data structures for TRI-27 VM token integration
+# Parent: #441
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ════════════════════════════════════════════════════════════════
+
+name: token_types
+version: "1.0.0"
+language: zig
+module: tri27.token_types
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: coptic
+    used_as: Coptic register mapping
+  - module: tri_cpu
+    used_as: Trit27 type for token values
+
+types:
+  TokenAccount:
+    description: ERC20-compatible token account with 18 decimal precision
+    fields:
+      - name: balance
+        type: u128
+        description: Token balance in smallest units (18 decimals)
+      - name: nonce
+        type: u64
+        description: Transaction nonce for replay protection
+      - name: allowance
+        type: u128
+        description: Approved amount for spender
+
+  TokenStake:
+    description: Staked token position with lock time
+    fields:
+      - name: staker
+        type: "[32]u8"
+        description: Node address (32 bytes)
+      - name: amount
+        type: u128
+        description: Staked amount in 18-decimal units
+      - name: lock_time
+        type: i64
+        description: Unix timestamp when stake is locked
+      - name: unlock_time
+        type: i64
+        description: Unix timestamp when stake can be unlocked
+      - name: is_active
+        type: bool
+        description: Whether stake is currently active
+
+  TokenErrorCode:
+    description: Token-related error codes
+    values:
+      - name: InsufficientBalance
+        description: Not enough tokens for operation
+      - name: InvalidNonce
+        description: Invalid transaction nonce
+      - name: AllowanceExceeded
+        description: Transfer amount exceeds allowance
+      - name: StakeLocked
+        description: Stake is still in lock period
+      - name: NotStaked
+        description: No active stake for operation
+      - name: InvalidAddress
+        description: Invalid address format
+      - name: NetworkError
+        description: Web3 RPC call failed
+
+behaviors:
+  formatTokenAmount:
+    given: amount in u128 (18 decimals)
+    when: Displaying token amount
+    then:
+      - Convert to TRI (divide by 10^18)
+      - Format with 18 decimal places
+
+  parseTokenAmount:
+    given: string with TRI amount (decimal or integer)
+    when: Parsing user input
+    then:
+      - Parse to u128
+      - Multiply by 10^18 for smallest units
+      - Return error on invalid input
+
+  checkStakeUnlocked:
+    given: TokenStake
+    when: Checking if stake can be unstaked
+    then:
+      - Compare current time with unlock_time
+      - Return bool indicating unlock status
+
+  calculateAPY:
+    given: staked_amount, reward_earned, lock_period_seconds
+    when: Calculating annual percentage yield
+    then:
+      - APY = (rewards / staked) * (365 days / lock_period) * 100
+
+  initTokenState:
+    given: allocator
+    when: Initializing token state storage
+    then:
+      - Create TokenAccount for zero address
+      - Initialize staking hashmap
+      - Return pointer to state
+
+  getTokenBalance:
+    given: address
+    when: Reading token balance
+    then:
+      - Lookup TokenAccount for address
+      - Return balance or 0 if not found
+
+  updateTokenBalance:
+    given: address, delta
+    when: Modifying token balance
+    then:
+      - Add delta to existing balance
+      - Handle overflow/underflow
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/tri27/token_types.zig"
+  lines: 300-400
+  complexity: "medium - depends on std hashmap and u128 arithmetic"

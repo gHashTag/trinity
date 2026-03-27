@@ -134,10 +134,10 @@ const IMPURE_DIR = ".trinity/impure";
 const MAX_QUEUE_SIZE = 256;
 
 pub const ImpureQueue = struct {
-    allocator: Allocator,
+    allocator: std.mem.Allocator,
     events: std.ArrayList(ImpureEvent),
 
-    pub fn init(allocator: Allocator) ImpureQueue {
+    pub fn init(allocator: std.mem.Allocator) ImpureQueue {
         return .{
             .allocator = allocator,
             .events = std.ArrayList(ImpureEvent).init(allocator),
@@ -244,11 +244,13 @@ fn serializeImpureEvent(event: *const ImpureEvent) ![]u8 {
 // CLI COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
+pub fn runQueenCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "status";
 
     if (std.mem.eql(u8, subcmd, "status")) {
         return runQueenStatus(allocator);
+    } else if (std.mem.eql(u8, subcmd, "start")) {
+        return runQueenStart(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "purify")) {
         return runQueenPurify(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "blocked")) {
@@ -261,7 +263,116 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
     }
 }
 
-fn runQueenStatus(allocator: Allocator) !void {
+// ═══════════════════════════════════════════════════════════════════════════════
+// DAEMON MODE — Queen Trinity Supervision Loop
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const PID_FILE = "/tmp/trinity-queen.pid";
+const HEARTBEAT_FILE = ".trinity/queen/heartbeat.json";
+const DAEMON_SLEEP_SEC = 60;
+
+fn runQueenStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    // Create PID file
+    const pid = std.os.linux.getpid();
+    {
+        var f = try std.fs.cwd().createFile(PID_FILE, .{});
+        defer f.close();
+        var buf: [32]u8 = undefined;
+        const pid_str = try std.fmt.bufPrint(&buf, "{d}", .{pid});
+        try f.writeAll(pid_str);
+    }
+    defer std.fs.deleteFileAbsolute(PID_FILE) catch {};
+
+    // Create heartbeat directory
+    std.fs.cwd().makePath(".trinity/queen") catch {};
+
+    std.debug.print("👑 Queen Trinity starting daemon mode (PID {d})\n", .{pid});
+
+    var cycle: u64 = 0;
+
+    // DAEMON LOOP — infinite until killed
+    while (true) {
+        cycle += 1;
+        const now = std.time.milliTimestamp();
+
+        // OBSERVE: check system state
+        const dirty = countDirtyFiles(allocator) catch 0;
+        const build_ok = checkBuild(allocator) catch false;
+
+        // DECIDE + ACT: log issues
+        if (!build_ok) {
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+        } else if (dirty > 0) {
+            try logToHive(allocator, cycle, "📝 Dirty files detected", .{});
+        } else {
+            try logToHive(allocator, cycle, "✅ System stable", .{});
+        }
+
+        // HEARTBEAT: update liveness
+        try updateHeartbeat(allocator, cycle, now);
+
+        // SLEEP until next cycle
+        std.Thread.sleep(DAEMON_SLEEP_SEC * 1000_000_000);
+    }
+}
+
+fn countDirtyFiles(allocator: std.mem.Allocator) !usize {
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "git", "status", "--short" },
+    });
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    var count: usize = 0;
+    var iter = std.mem.splitScalar(u8, result.stdout, '\n');
+    while (iter.next()) |line| {
+        if (line.len > 0) count += 1;
+    }
+    return count;
+}
+
+fn checkBuild(allocator: std.mem.Allocator) !bool {
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig", "build" },
+    });
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+    return result.term.Exited == 0;
+}
+
+fn updateHeartbeat(allocator: std.mem.Allocator, cycle: u64, timestamp: i64) !void {
+    const content = try std.fmt.allocPrint(allocator, "{{\"cycle\":{d},\"timestamp\":{d}}}\n", .{ cycle, timestamp });
+    defer allocator.free(content);
+
+    var f = try std.fs.cwd().createFile(HEARTBEAT_FILE, .{ .truncate = true });
+    defer f.close();
+    try f.writeAll(content);
+}
+
+fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: anytype) !void {
+    _ = args;
+    const timestamp = std.time.milliTimestamp();
+    const formatted = try std.fmt.allocPrint(allocator, "[{d}] Cycle {d}: {s}\n", .{ timestamp, cycle, msg });
+    defer allocator.free(formatted);
+
+    const log_file = ".trinity/queen/HIVELOG.md";
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+    defer f.close();
+
+    const pos = try f.getEndPos();
+    try f.seekTo(pos);
+    try f.writeAll(formatted);
+}
+
+fn runQueenStatus(allocator: std.mem.Allocator) !void {
     _ = allocator;
     std.debug.print("\n👑 QUEEN TRINITY STATUS\n", .{});
     std.debug.print("═════════════════════════\n\n", .{});
@@ -270,7 +381,7 @@ fn runQueenStatus(allocator: Allocator) !void {
     std.debug.print("Status: TODO - implement event loading\n", .{});
 }
 
-fn runQueenPurify(allocator: Allocator, args: []const []const u8) !void {
+fn runQueenPurify(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
     _ = args;
     std.debug.print("🌸 LOTUS CYCLE PURIFICATION\n", .{});
@@ -278,7 +389,7 @@ fn runQueenPurify(allocator: Allocator, args: []const []const u8) !void {
     std.debug.print("Purify mode: TODO - implement\n", .{});
 }
 
-fn runQueenBlocked(allocator: Allocator) !void {
+fn runQueenBlocked(allocator: std.mem.Allocator) !void {
     _ = allocator;
     std.debug.print("🚫 BLOCKED EVENTS\n", .{});
     std.debug.print("══════════════════\n\n", .{});
@@ -289,6 +400,7 @@ fn printQueenHelp() void {
     std.debug.print("\n👑 QUEEN TRINITY — Lotus Cycle Protocol\n\n", .{});
     std.debug.print("Commands:\n", .{});
     std.debug.print("  tri queen status    Show impure event queue\n", .{});
+    std.debug.print("  tri queen start     Start daemon mode (PID file + heartbeat)\n", .{});
     std.debug.print("  tri queen purify   Start Lotus Cycle purification\n", .{});
     std.debug.print("  tri queen blocked   Show events that need manual intervention\n\n", .{});
 }

@@ -41,6 +41,8 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
         return runExperienceCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "isa")) {
         return runIsaCommand();
+    } else if (std.mem.eql(u8, subcmd, "token")) {
+        return runTokenCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help") or std.mem.eql(u8, subcmd, "-h")) {
         printHelp();
     } else {
@@ -329,6 +331,18 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
     } else {
         print("{s}Unknown experience subcommand: {s}\n", .{ RED, subcmd });
     }
+}
+
+fn runTokenCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    if (args.len < 1) return;
+    print("\n{s}Token Commands{s}\n", .{ GREEN, RESET });
+    print("  tri27 token balance      - Check token balance\n", .{});
+    print("  tri27 token stake <days>   - Stake tokens\n", .{});
+    print("  tri27 token unstake        - Unstake tokens\n", .{});
+    print("  tri27 token claim          - Claim rewards\n", .{});
+    print("  tri27 token approve <spender> <amount>  - Approve spending\n", .{});
+    print("  tri27 token send <to> <amount>   - Send tokens\n", .{});
 }
 
 fn printHelp() void {

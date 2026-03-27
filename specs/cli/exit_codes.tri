@@ -1,0 +1,65 @@
+# TRI Exit Codes — Source of Truth
+# Standard exit codes for TRI CLI
+# φ² + 1/φ² = 3 | TRINITY
+
+name: tri_exit_codes
+version: "0.1.0"
+module: cli.exit_codes
+description: "Standard exit codes for CLI (TTT Dogfood v0.1)"
+
+types:
+  ExitCode:
+    description: "Standard exit codes for TRI CLI"
+    enum_type: u8
+    values:
+      - name: success
+        value: 0
+        description: "Command completed successfully"
+      - name: command_error
+        value: 1
+        description: "Invalid command or arguments"
+      - name: validation_error
+        value: 2
+        description: "Pre-flight validation failed"
+      - name: runtime_error
+        value: 3
+        description: "Runtime execution error"
+      - name: timeout
+        value: 4
+        description: "Command exceeded time limit"
+      - name: job_failed
+        value: 5
+        description: "Async job failed"
+      - name: artifact_failed
+        value: 6
+        description: "Output generation failed"
+      - name: internal_error
+        value: 7
+        description: "Internal error (bug)"
+
+functions:
+  exitWithCode:
+    params:
+      - name: code
+        type: ExitCode
+    returns: "void"
+    description: "Exit with the specified exit code"
+
+  exitInternalError:
+    returns: "void"
+    description: "Exit with internal error code"
+
+behaviors:
+  - name: exit_code_convention
+    description: "Standard Unix exit code convention"
+    implementation: |
+      0 = success
+      1-127 = errors
+      128+n = terminated by signal n
+      Uses std.process.exit()
+
+constraints:
+  - Exit codes are u8 values (0-255)
+  - Only values 0-7 are defined
+  - All error paths should use defined exit codes
+  - exitWithCode never returns (noreturn)
