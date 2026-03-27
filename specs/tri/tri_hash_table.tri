@@ -1,0 +1,67 @@
+name: tri_hash_table
+version: "0.1.0"
+language: zig
+module: tri.hash_table
+description: "Hash table with chaining"
+
+types:
+  Entry:
+    description: "Hash table entry"
+    fields:
+      key: "usize"
+      value: "i64"
+      next: "?Entry"
+
+  HashTable:
+    description: "Hash table with chaining"
+    fields:
+      buckets: "[]?Entry"
+      capacity: "usize"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "HashTable"
+    description: "Create hash table"
+
+  put:
+    params:
+      - name: ht
+        type: "*HashTable"
+      - name: key
+        type: "usize"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Insert key-value pair"
+
+  get:
+    params:
+      - name: ht
+        type: "*HashTable"
+      - name: key
+        type: "usize"
+    returns: "i64"
+    description: "Get value by key"
+
+  remove:
+    params:
+      - name: ht
+        type: "*HashTable"
+      - name: key
+        type: "usize"
+    returns: "bool"
+    description: "Remove key"
+
+  deinit:
+    params:
+      - name: ht
+        type: "*HashTable"
+    returns: "void"
+    description: "Free table"

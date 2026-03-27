@@ -1,0 +1,75 @@
+name: tri_octree
+version: "0.1.0"
+language: zig
+module: tri.octree
+description: "Octree for 3D spatial partitioning"
+
+types:
+  BBox:
+    description: "3D bounding box"
+    fields:
+      min_x: "f64"
+      min_y: "f64"
+      min_z: "f64"
+      max_x: "f64"
+      max_y: "f64"
+      max_z: "f64"
+
+  OctNode:
+    description: "Octree node"
+    fields:
+      bounds: "BBox"
+      children: "[8]?OctNode"
+      data: "?void"
+      divided: "bool"
+      allocator: "std.mem.Allocator"
+
+  Octree:
+    description: "3D spatial partitioning"
+    fields:
+      root: "?OctNode"
+      min_size: "f64"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: bounds
+        type: "BBox"
+      - name: min_size
+        type: "f64"
+    returns: "Octree"
+    description: "Create octree"
+
+  insert:
+    params:
+      - name: ot
+        type: "*Octree"
+      - name: x
+        type: "f64"
+      - name: y
+        type: "f64"
+      - name: z
+        type: "f64"
+      - name: data
+        type: "void"
+    returns: "!void"
+    description: "Insert point with data"
+
+  query:
+    params:
+      - name: ot
+        type: "*Octree"
+      - name: bounds
+        type: "BBox"
+    returns: "[]void"
+    description: "Find data in region"
+
+  deinit:
+    params:
+      - name: ot
+        type: "*Octree"
+    returns: "void"
+    description: "Free tree"

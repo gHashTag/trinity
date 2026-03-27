@@ -1,44 +1,58 @@
 name: tri_priority_queue
 version: "0.1.0"
+language: zig
 module: tri.priority_queue
-description: "TRI Priority queue — min-heap"
+description: "Priority queue (binary heap)"
 
 types:
-  PriorityQueue(T):
-    description: "Min-heap priority queue"
+  PriorityQueue:
+    description: "Max priority queue"
     fields:
-      items: "[]T"
-      count: usize
+      data: "[]i64"
+      size: "usize"
+      allocator: "std.mem.Allocator"
 
 functions:
-  new:
-    returns: "PriorityQueue(T)"
-    description: "Create empty queue"
-
-  insert:
+  init:
     params:
-      - name: queue
-        type: "PriorityQueue(T)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "PriorityQueue"
+    description: "Create empty priority queue"
+
+  enqueue:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
       - name: value
-        type: "T"
+        type: "i64"
+    returns: "!void"
+    description: "Insert with priority"
+
+  dequeue:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "i64"
+    description: "Remove max element"
+
+  peek:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "i64"
+    description: "Get max without removing"
+
+  isEmpty:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "bool"
+    description: "Check if empty"
+
+  deinit:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
     returns: "void"
-    description: "Insert value"
-
-  extractMin:
-    params:
-      - name: queue
-        type: "PriorityQueue(T)"
-    returns: "Option(T)"
-    description: "Remove and return minimum"
-
-  peekMin:
-    params:
-      - name: queue
-        type: "PriorityQueue(T)"
-    returns: "Option(T)"
-    description: "Get minimum without removing"
-
-behaviors:
-  - name: heap_property
-    description: "Parent <= children"
-    note: "O(log n) insert and extract"
+    description: "Free queue"

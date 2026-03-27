@@ -1,0 +1,51 @@
+name: tri_lru_cache_impl
+version: "0.1.0"
+language: zig
+module: tri.lru_cache_impl
+description: "LRU cache implementation"
+
+types:
+  LRUCache:
+    description: "Least recently used cache"
+    fields:
+      capacity: "usize"
+      map: "HashMap"
+      list_head: "?ListNode"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "LRUCache"
+    description: "Create LRU cache"
+
+  get:
+    params:
+      - name: cache
+        type: "*LRUCache"
+      - name: key
+        type: "usize"
+    returns: "?i64"
+    description: "Get value, move to front"
+
+  put:
+    params:
+      - name: cache
+        type: "*LRUCache"
+      - name: key
+        type: "usize"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Insert, evict LRU if full"
+
+  deinit:
+    params:
+      - name: cache
+        type: "*LRUCache"
+    returns: "void"
+    description: "Free cache"
