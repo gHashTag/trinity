@@ -99,6 +99,9 @@ pub fn runLoopCommand(allocator: Allocator, args: []const []const u8) !void {
         try runContinuous(allocator, interval);
     } else if (std.mem.eql(u8, subcmd, "retry")) {
         try runRetryCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "decide")) {
+        // Issue #420: Episode-based energy decision
+        try runLoopDecide(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -293,6 +296,124 @@ fn decide(results: []const StepResult) LoopDecision {
     if (any_fail) return .exit_done; // build broken = fix needed, exit
     if (all_ok) return .continue_loop; // everything green = keep going
     return .idle_wait; // partial success = wait
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOOP DECIDE — Issue #420: Episode-based energy calculation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Energy = completed episodes / total episodes ratio
+/// If energy > threshold (0.5), continue. Otherwise stop.
+pub fn runLoopDecide(allocator: Allocator) !void {
+    print("\n{s}LOOP DECIDE{s} — Episode-based energy calculation\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    var episodes_dir = std.fs.cwd().openDir(".trinity/experience/episodes", .{ .iterate = true }) catch {
+        print("  {s}No episodes found. Default: CONTINUE{s}\n\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer episodes_dir.close();
+
+    var total: u32 = 0;
+    var passes: u32 = 0;
+    var fails: u32 = 0;
+    var recent_fails: u32 = 0;
+
+    const now = std.time.timestamp();
+    const one_hour_ago = now - 3600;
+
+    var dir_iter = episodes_dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+        // Skip JSONL file
+        if (std.mem.eql(u8, entry.name, "activity.jsonl")) continue;
+
+        const contents = episodes_dir.readFileAlloc(allocator, entry.name, 64 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        total += 1;
+
+        // Parse verdict
+        const verdict = extractEpisodeVerdict(contents);
+        if (std.mem.eql(u8, verdict, "PASS")) {
+            passes += 1;
+        } else {
+            fails += 1;
+            // Check if recent failure (within last hour)
+            const ts = extractEpisodeTimestamp(contents);
+            if (ts > one_hour_ago) {
+                recent_fails += 1;
+            }
+        }
+    }
+
+    // Calculate energy
+    const energy: f32 = if (total > 0)
+        @as(f32, @floatFromInt(passes)) / @as(f32, @floatFromInt(total))
+    else
+        1.0; // No episodes = full energy (fresh start)
+
+    const energy_pct: u32 = @intFromFloat(energy * 100.0);
+
+    print("  Episodes:     {d} total ({s}{d} pass{s} / {s}{d} fail{s})\n", .{
+        total, GREEN, passes, RESET, RED, fails, RESET,
+    });
+    print("  Recent fails: {d} (last hour)\n", .{recent_fails});
+    print("  Energy:       {s}{d}%{s}\n\n", .{
+        if (energy >= 0.5) GREEN else if (energy >= 0.3) YELLOW else RED,
+        energy_pct,
+        RESET,
+    });
+
+    // Decision thresholds
+    const decision: []const u8 = if (recent_fails >= 5)
+        "STOP — too many recent failures, needs human intervention"
+    else if (energy < 0.3)
+        "STOP — energy too low, review mistakes before continuing"
+    else if (energy < 0.5)
+        "IDLE — low energy, consider fixing past failures first"
+    else
+        "CONTINUE — energy sufficient for next iteration";
+
+    const dec_color: []const u8 = if (energy >= 0.5) GREEN else if (energy >= 0.3) YELLOW else RED;
+    print("  {s}Decision: {s}{s}\n\n", .{ dec_color, decision, RESET });
+
+    // Save decision to state
+    saveDecideState(energy, total, passes, fails, decision);
+}
+
+fn extractEpisodeVerdict(json: []const u8) []const u8 {
+    const needle = "\"verdict\":\"";
+    const start = (std.mem.indexOf(u8, json, needle) orelse return "UNKNOWN") + needle.len;
+    const end = std.mem.indexOfPos(u8, json, start, "\"") orelse return "UNKNOWN";
+    return json[start..end];
+}
+
+fn extractEpisodeTimestamp(json: []const u8) i64 {
+    const needle = "\"timestamp\":";
+    const start = (std.mem.indexOf(u8, json, needle) orelse return 0) + needle.len;
+    var end = start;
+    while (end < json.len and json[end] >= '0' and json[end] <= '9') : (end += 1) {}
+    if (end == start) return 0;
+    return std.fmt.parseInt(i64, json[start..end], 10) catch 0;
+}
+
+fn saveDecideState(energy: f32, total: u32, passes: u32, fails: u32, decision: []const u8) void {
+    std.fs.cwd().makePath(".trinity/state") catch {};
+    const file = std.fs.cwd().createFile(".trinity/state/loop_state.json", .{}) catch return;
+    defer file.close();
+
+    const energy_pct: u32 = @intFromFloat(energy * 100.0);
+    var buf: [512]u8 = undefined;
+    const json = std.fmt.bufPrint(&buf,
+        \\{{"energy":{d},"total":{d},"passes":{d},"fails":{d},"decision":"{s}","timestamp":{d}}}
+    , .{
+        energy_pct, total, passes, fails,
+        decision[0..@min(decision.len, 64)],
+        std.time.timestamp(),
+    }) catch return;
+    file.writeAll(json) catch {};
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -808,7 +929,8 @@ fn printHelp() void {
     print("  {s}tri loop status{s}           Show last loop state\n", .{ CYAN, RESET });
     print("  {s}tri loop continuous{s}       Run continuously (5min default)\n", .{ CYAN, RESET });
     print("  {s}tri loop continuous -i 60{s} Custom interval (seconds)\n", .{ CYAN, RESET });
-    print("  {s}tri loop retry{s}            Build-test-retry with experience\n\n", .{ CYAN, RESET });
+    print("  {s}tri loop retry{s}            Build-test-retry with experience\n", .{ CYAN, RESET });
+    print("  {s}tri loop decide{s}           Episode-based energy decision\n\n", .{ CYAN, RESET });
     print("  {s}Steps per iteration (once/continuous):{s}\n", .{ DIM, RESET });
     print("    1. Build + Test (zig build && zig build test)\n", .{});
     print("    2. Farm collect (training metrics from Railway)\n", .{});
@@ -891,4 +1013,31 @@ test "extractRetryErrorSummary fallback" {
     const output = "some warning without error keyword";
     const summary = extractRetryErrorSummary(output);
     try std.testing.expectEqualStrings("some warning without error keyword", summary);
+}
+
+// Issue #420: Loop decide tests
+
+test "extractEpisodeVerdict PASS" {
+    const json = "{\"issue\":1,\"verdict\":\"PASS\",\"timestamp\":12345}";
+    try std.testing.expectEqualStrings("PASS", extractEpisodeVerdict(json));
+}
+
+test "extractEpisodeVerdict FAIL" {
+    const json = "{\"issue\":2,\"verdict\":\"FAIL\",\"timestamp\":12345}";
+    try std.testing.expectEqualStrings("FAIL", extractEpisodeVerdict(json));
+}
+
+test "extractEpisodeVerdict missing" {
+    const json = "{\"issue\":3,\"timestamp\":12345}";
+    try std.testing.expectEqualStrings("UNKNOWN", extractEpisodeVerdict(json));
+}
+
+test "extractEpisodeTimestamp" {
+    const json = "{\"timestamp\":1700000000}";
+    try std.testing.expectEqual(@as(i64, 1700000000), extractEpisodeTimestamp(json));
+}
+
+test "extractEpisodeTimestamp missing" {
+    const json = "{\"issue\":1}";
+    try std.testing.expectEqual(@as(i64, 0), extractEpisodeTimestamp(json));
 }

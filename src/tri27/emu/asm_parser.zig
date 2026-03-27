@@ -291,17 +291,17 @@ pub const Assembler = struct {
         // Try Coptic glyph first (Issue #407)
         if (glyphToReg(trimmed)) |reg| {
             return reg.regIndex();
-        } else {
-            // Not a Coptic glyph, try ASCII format
-            const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
-                trimmed[1..]
-            else
-                trimmed;
-
-            const num = std.fmt.parseInt(u8, num_str, 10) catch return AsmError.InvalidRegister;
-            if (num > 31) return AsmError.InvalidRegister;
-            return @as(u5, @intCast(num));
         }
+
+        // Not a Coptic glyph, try ASCII format
+        const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
+            trimmed[1..]
+        else
+            trimmed;
+
+        const num = std.fmt.parseInt(u8, num_str, 10) catch return AsmError.InvalidRegister;
+        if (num > 31) return AsmError.InvalidRegister;
+        return @as(u5, @intCast(num));
     }
 
     /// Get bank for register number (0-26)

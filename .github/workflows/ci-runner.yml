@@ -25,7 +25,7 @@ jobs:
         run: zig build -Dci=true --summary all
 
       - name: Test
-        run: zig build test --summary all
+        run: zig build test -Dci=true --summary all
 
       - name: Telegram notify
         if: failure()

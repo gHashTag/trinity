@@ -20,10 +20,10 @@ pub fn bindSimple(a: []const Trit, b: []const Trit) ![]Trit {
 test "bindSimple works" {
     const a = [_]Trit{ 1, -1, 0 };
     const b = [_]Trit{ -1, 1, 0 };
-    
+
     const result = try bindSimple(&a, &b);
     defer std.heap.page_allocator.free(result);
-    
+
     try std.testing.expectEqual(@as(usize, 3), result.len);
     try std.testing.expectEqual(@as(Trit, -1), result[0]);
 }

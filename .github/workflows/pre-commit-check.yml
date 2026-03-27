@@ -8,19 +8,30 @@ jobs:
     name: Code Format Validation
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
       - name: Check zig fmt
         run: |
-          git diff --name-only --cached --diff-filter=M '*.zig' | grep '^A.*zig$' | xargs zig fmt --check
-          if [ $? -ne 0 ]; then
-            echo "❌ Code not formatted. Run: zig fmt src/"
-            exit 1
+          FILES=$(git diff --name-only origin/main...HEAD -- '*.zig' || true)
+          if [ -n "$FILES" ]; then
+            echo "$FILES" | xargs zig fmt --check
+            if [ $? -ne 0 ]; then
+              echo "Code not formatted. Run: zig fmt src/"
+              exit 1
+            fi
           fi
-          echo "✅ All zig code formatted"
+          echo "All zig code formatted"
 
       - name: Check whitespace
         run: |
-          TRAILING=$(git diff --cached HEAD -- '*.zig' | grep -E '^\+.*$' | wc -l)
+          TRAILING=$(git diff origin/main...HEAD -- '*.zig' | grep -E '^\+.*[[:space:]]$' | wc -l)
           if [ "$TRAILING" -gt 0 ]; then
-            echo "❌ Trailing whitespace detected"
+            echo "Trailing whitespace detected"
             exit 1
           fi

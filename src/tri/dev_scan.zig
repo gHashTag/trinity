@@ -100,6 +100,11 @@ pub const ScanItem = struct {
     priority: Priority = .backlog,
     fail_count: u32 = 0,
     created_at: i64 = 0,
+    // Experience context (Issue #420 — dev loop step 1)
+    past_attempts: u32 = 0,
+    past_pass: u32 = 0,
+    past_fail: u32 = 0,
+    has_experience: bool = false,
 
     pub fn idStr(self: *const ScanItem) []const u8 {
         return self.id[0..self.id_len];
@@ -360,6 +365,154 @@ fn scanPipeline(result: *ScanResult) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SCAN EXPERIENCE — .trinity/experience/similar_tasks.json + episodes
+// Issue #420 — dev loop step 1: experience context enrichment
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn scanExperience(allocator: Allocator, result: *ScanResult) void {
+    // Enrich existing scan items with experience context
+    // Read similar_tasks.json for fast lookup
+    const similar_tasks = loadSimilarTasks(allocator);
+    defer if (similar_tasks) |s| allocator.free(s);
+
+    // Read episode files to count pass/fail per issue
+    var episodes_dir = std.fs.cwd().openDir(".trinity/experience/episodes", .{ .iterate = true }) catch return;
+    defer episodes_dir.close();
+
+    // Build per-issue stats from episodes
+    const IssueStats = struct { attempts: u32, passes: u32, fails: u32 };
+    var stats_keys: [128]u32 = undefined;
+    var stats_vals: [128]IssueStats = undefined;
+    var stats_count: usize = 0;
+
+    var dir_iter = episodes_dir.iterate();
+    while (dir_iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+        const contents = episodes_dir.readFileAlloc(allocator, entry.name, 64 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        const issue_id = extractEpisodeU32(contents, "issue") orelse continue;
+        if (issue_id == 0) continue;
+
+        const verdict = extractEpisodeString(contents, "verdict") orelse "";
+        const is_pass = std.mem.eql(u8, verdict, "PASS");
+
+        // Find or create stats entry
+        var found = false;
+        for (0..stats_count) |si| {
+            if (stats_keys[si] == issue_id) {
+                stats_vals[si].attempts += 1;
+                if (is_pass) stats_vals[si].passes += 1 else stats_vals[si].fails += 1;
+                found = true;
+                break;
+            }
+        }
+        if (!found and stats_count < 128) {
+            stats_keys[stats_count] = issue_id;
+            stats_vals[stats_count] = .{
+                .attempts = 1,
+                .passes = if (is_pass) 1 else 0,
+                .fails = if (!is_pass) 1 else 0,
+            };
+            stats_count += 1;
+        }
+    }
+
+    // Enrich scan items with experience data
+    for (0..result.count) |i| {
+        const item = &result.items[i];
+        const id_str = item.idStr();
+
+        // Extract issue number from ID (e.g., "#420" → 420)
+        var issue_num: u32 = 0;
+        if (id_str.len > 1 and id_str[0] == '#') {
+            issue_num = std.fmt.parseInt(u32, id_str[1..], 10) catch 0;
+        }
+
+        if (issue_num > 0) {
+            for (0..stats_count) |si| {
+                if (stats_keys[si] == issue_num) {
+                    item.past_attempts = stats_vals[si].attempts;
+                    item.past_pass = stats_vals[si].passes;
+                    item.past_fail = stats_vals[si].fails;
+                    item.fail_count = stats_vals[si].fails;
+                    item.has_experience = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Add experience-sourced items (from similar_tasks.json) not already in scan
+    if (similar_tasks) |tasks_json| {
+        addSimilarTaskItems(result, tasks_json);
+    }
+}
+
+fn loadSimilarTasks(allocator: Allocator) ?[]const u8 {
+    return std.fs.cwd().readFileAlloc(allocator, ".trinity/experience/similar_tasks.json", 256 * 1024) catch null;
+}
+
+fn addSimilarTaskItems(result: *ScanResult, tasks_json: []const u8) void {
+    // Parse similar_tasks.json entries and add unmatched ones as experience source
+    var pos: usize = 0;
+    while (pos < tasks_json.len and result.count < MAX_ITEMS) {
+        const obj_start = std.mem.indexOfPos(u8, tasks_json, pos, "{") orelse break;
+        const obj_end = std.mem.indexOfPos(u8, tasks_json, obj_start, "}") orelse break;
+        const obj = tasks_json[obj_start .. obj_end + 1];
+
+        // Check if task_id already exists in result
+        if (extractEpisodeString(obj, "task_id")) |tid| {
+            var already_present = false;
+            for (0..result.count) |i| {
+                if (std.mem.indexOf(u8, result.items[i].idStr(), tid) != null) {
+                    already_present = true;
+                    break;
+                }
+            }
+            if (!already_present) {
+                var item = ScanItem{
+                    .source = .experience_similar,
+                    .priority = .low,
+                    .has_experience = true,
+                    .created_at = std.time.timestamp(),
+                };
+                item.setId(tid);
+                if (extractEpisodeString(obj, "title")) |t| item.setTitle(t);
+                if (extractEpisodeU32(obj, "fail_count")) |fc| {
+                    item.fail_count = fc;
+                    item.past_fail = fc;
+                }
+                result.addItem(item);
+            }
+        }
+        pos = obj_end + 1;
+    }
+}
+
+fn extractEpisodeString(json: []const u8, key: []const u8) ?[]const u8 {
+    var search_buf: [140]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":\"", .{key}) catch return null;
+    const start = (std.mem.indexOf(u8, json, search) orelse return null) + search.len;
+    const end = std.mem.indexOfPos(u8, json, start, "\"") orelse return null;
+    return json[start..end];
+}
+
+fn extractEpisodeU32(json: []const u8, key: []const u8) ?u32 {
+    var search_buf: [140]u8 = undefined;
+    const search = std.fmt.bufPrint(&search_buf, "\"{s}\":", .{key}) catch return null;
+    const start = (std.mem.indexOf(u8, json, search) orelse return null) + search.len;
+    var val_start = start;
+    while (val_start < json.len and (json[val_start] == ' ' or json[val_start] == '\t')) : (val_start += 1) {}
+    var end = val_start;
+    while (end < json.len and json[end] >= '0' and json[end] <= '9') : (end += 1) {}
+    if (end == val_start) return null;
+    return std.fmt.parseInt(u32, json[val_start..end], 10) catch null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // RENDER TABLE
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -385,7 +538,7 @@ fn renderTable(result: *const ScanResult) void {
     print("  {s}---  ------  ------------  -------------------------{s}\n", .{ GRAY, RESET });
 
     for (result.items[0..result.count]) |item| {
-        print("  {s}{s}{s}  {s}    {s:<12}  {s}\n", .{
+        print("  {s}{s}{s}  {s}    {s:<12}  {s}", .{
             item.priority.color(),
             item.priority.tag(),
             RESET,
@@ -393,6 +546,12 @@ fn renderTable(result: *const ScanResult) void {
             item.idStr(),
             item.titleStr(),
         });
+        if (item.has_experience) {
+            print("  {s}[exp: {d}P/{d}F]{s}", .{
+                CYAN, item.past_pass, item.past_fail, RESET,
+            });
+        }
+        print("\n", .{});
     }
 
     print("\n  {s}Total: {d} items{s}\n\n", .{ GRAY, result.count, RESET });
@@ -448,6 +607,8 @@ pub fn collectScanResults(allocator: Allocator) ScanResult {
     scanDirty(allocator, &result);
     scanDoctor(&result);
     scanPipeline(&result);
+    // Issue #420: enrich with experience context from episodes + similar_tasks.json
+    scanExperience(allocator, &result);
     result.sort();
     return result;
 }
@@ -495,6 +656,50 @@ test "ScanResult empty" {
     const result = ScanResult{};
     try std.testing.expectEqual(@as(usize, 0), result.count);
     try std.testing.expectEqual(@as(u32, 0), result.total_issues);
+}
+
+test "ScanItem experience context fields" {
+    var item = ScanItem{
+        .source = .github_issues,
+        .priority = .high,
+        .has_experience = true,
+        .past_attempts = 5,
+        .past_pass = 3,
+        .past_fail = 2,
+    };
+    item.setId("#420");
+    item.setTitle("dev loop implementation");
+
+    try std.testing.expect(item.has_experience);
+    try std.testing.expectEqual(@as(u32, 5), item.past_attempts);
+    try std.testing.expectEqual(@as(u32, 3), item.past_pass);
+    try std.testing.expectEqual(@as(u32, 2), item.past_fail);
+    try std.testing.expectEqualStrings("#420", item.idStr());
+}
+
+test "extractEpisodeString basic" {
+    const json = "{\"task\":\"implement loop\",\"verdict\":\"PASS\"}";
+    const task = extractEpisodeString(json, "task");
+    try std.testing.expect(task != null);
+    try std.testing.expectEqualStrings("implement loop", task.?);
+
+    const verdict = extractEpisodeString(json, "verdict");
+    try std.testing.expect(verdict != null);
+    try std.testing.expectEqualStrings("PASS", verdict.?);
+
+    const missing = extractEpisodeString(json, "nonexistent");
+    try std.testing.expect(missing == null);
+}
+
+test "extractEpisodeU32 basic" {
+    const json = "{\"issue\":420,\"fail_count\":3}";
+    const issue = extractEpisodeU32(json, "issue");
+    try std.testing.expect(issue != null);
+    try std.testing.expectEqual(@as(u32, 420), issue.?);
+
+    const fc = extractEpisodeU32(json, "fail_count");
+    try std.testing.expect(fc != null);
+    try std.testing.expectEqual(@as(u32, 3), fc.?);
 }
 
 test "ScanItem setId and setTitle" {
