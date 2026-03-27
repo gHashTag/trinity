@@ -49117,3 +49117,4 @@ error: FileNotFound
     defer std.process.argsFree(allocator, args);
                               ^
 👑 Queen Trinity starting daemon mode (PID 80020)
+👑 Queen Trinity starting daemon mode (PID 79635)

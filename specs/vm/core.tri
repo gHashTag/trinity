@@ -1,0 +1,92 @@
+# VM Core — Source of Truth
+# Common Virtual Machine State for all Trinity VMs
+# φ² + 1/φ² = 3 | TRINITY
+
+name: vm_core
+version: "0.1.0"
+module: vm.core
+description: "Core VM state structure (TTT Dogfood v0.1)"
+
+types:
+  VMState:
+    description: "Common VM state structure shared by all VM implementations"
+    fields:
+      - name: pc
+        type: u32
+        description: "Program counter"
+      - name: ip
+        type: u32
+        description: "Instruction pointer (stack-based VMs)"
+      - name: sp
+        type: u32
+        description: "Stack pointer"
+      - name: fp
+        type: u32
+        description: "Frame pointer (register-based VMs)"
+      - name: halted
+        type: bool
+        description: "Halted flag"
+      - name: allocator
+        type: "std.mem.Allocator"
+        description: "Allocator for dynamic memory"
+      - name: instructions_executed
+        type: u64
+        description: "Execution metrics"
+      - name: start_time
+        type: i128
+        description: "Execution start time (nanoseconds)"
+      - name: end_time
+        type: i128
+        description: "Execution end time (nanoseconds)"
+
+functions:
+  resetExecution:
+    params:
+      - name: self
+        type: "*VMState"
+    returns: "void"
+    description: "Reset execution state to initial values"
+
+  getExecutionTimeNs:
+    params:
+      - name: self
+        type: "*const VMState"
+    returns: "u64"
+    description: "Get execution time in nanoseconds"
+
+  getIPS:
+    params:
+      - name: self
+        type: "*const VMState"
+    returns: "f64"
+    description: "Get instructions per second"
+
+constants:
+  DEFAULT_STACK_SIZE:
+    type: u32
+    value: 65536
+    description: "Default stack size in bytes"
+
+  MAX_INSTRUCTIONS:
+    type: u64
+    value: 1000000
+    description: "Maximum instructions before forced halt"
+
+behaviors:
+  - name: initialization
+    description: "All counters default to zero"
+    implementation: |
+      pc = 0, ip = 0, sp = 0, fp = 0
+      halted = false
+      instructions_executed = 0
+
+  - name: time_tracking
+    description: "Track execution start and end times"
+    implementation: |
+      start_time captured at VM init
+      end_time captured at halt
+      getExecutionTimeNs returns end_time - start_time
+
+  - name: ips_calculation
+    description: "Calculate instructions per second"
+    formula: "instructions_executed / (execution_time_ns / 1e9)"

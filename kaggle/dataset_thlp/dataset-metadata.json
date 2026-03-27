@@ -1,0 +1,17 @@
+{
+  "title": "Trinity Cognitive Probes - THLP Learning Track",
+  "id": "playra/trinity-cognitive-probes-thlp",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "subtitle": "Hippocampal Learning Probe for AGI Assessment",
+  "description": "\n**Part of the DeepMind AGI Hackathon Submission**\n\nThe THLP (Trinity Hippocampal Learning Probe) track evaluates few-shot learning, belief updating, and error-driven learning capabilities.\n\n**Contains:**\n- 2,400 test items\n- Ground truth labels\n- Difficulty levels (\u03c6-scaled: 3, 5, 8, 13, 21)\n- 5 cognitive task types\n\n**Neural Analog:** Hippocampal cache invalidation triggers belief revision\n\n**Expected Baselines:**\n- Claude 3.5 Sonnet: ~64% accuracy (real pilot data)\n- Nemotron 120B: ~22% accuracy (real pilot data)\n- 42% spread = excellent task differentiation\n\n**Evaluation Metrics:**\n- Accuracy: Binary correct/incorrect per item\n- ECE (Expected Calibration Error): Confidence calibration\n- Brier Score: Mean squared error of probabilities\n- Composite: 60% accuracy + 20% calibration + 20% mean score\n\n**Organization:** gHashTag/trinity\n**License:** MIT\n",
+  "resources": [
+    {
+      "path": "data/thlp_learning.csv",
+      "description": "THLP Learning Track - 2,400 items with ground truth"
+    }
+  ]
+}
