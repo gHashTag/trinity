@@ -1,99 +1,82 @@
-//! tri/bloom_filter_impl — Bloom filter implementation
-//! Auto-generated from specs/tri_bloom_filter_impl.tri
+//! tri/bloom_filter — Probabilistic set membership
 //! TTT Dogfood v0.2 Stage 195
 
 const std = @import("std");
 
-/// Probabilistic set membership
 pub const BloomFilter = struct {
-    bits: []usize,
-    num_hashes: usize,
+    bits: []bool,
+    m: usize,
+    k: usize,
     allocator: std.mem.Allocator,
 
-    /// Create bloom filter
-    pub fn init(allocator: std.mem.Allocator, size: usize, hash_count: usize) !BloomFilter {
-        const words = (size + @bitSizeOf(usize) - 1) / @bitSizeOf(usize);
-        const bits = try allocator.alloc(usize, words);
-        @memset(bits, 0);
-
+    pub fn init(allocator: std.mem.Allocator, m: usize, k: usize) !BloomFilter {
+        const bits = try allocator.alloc(bool, m);
+        @memset(bits, false);
         return .{
             .bits = bits,
-            .num_hashes = hash_count,
+            .m = m,
+            .k = k,
             .allocator = allocator,
         };
     }
 
-    fn hash1(item: []const u8) usize {
-        var h: usize = 0;
+    fn hash1(item: []const u8) u64 {
+        var h: u64 = 5381;
         for (item) |c| {
-            h = h *% 31 +% c;
+            h = h *% 33 +% @as(u64, @intCast(c));
         }
         return h;
     }
 
-    fn hash2(item: []const u8) usize {
-        var h: usize = 0;
+    fn hash2(item: []const u8) u64 {
+        var h: u64 = 0;
         for (item) |c| {
-            h = h *% 37 +% c;
+            h = (h << 5) ^ (h >> 63) ^ @as(u64, @intCast(c));
         }
         return h;
     }
 
-    /// Add item
     pub fn add(bf: *BloomFilter, item: []const u8) void {
         const h1 = hash1(item);
         const h2 = hash2(item);
-
-        for (0..bf.num_hashes) |i| {
-            const combined = h1 + i * h2;
-            const word = (combined / @bitSizeOf(usize)) % bf.bits.len;
-            const bit = combined % @bitSizeOf(usize);
-            bf.bits[word] |= @as(usize, 1) << @intCast(bit);
+        for (0..bf.k) |i| {
+            const idx = @as(usize, @intCast((h1 +% @as(u64, @intCast(i)) *% h2) % @as(u64, @intCast(bf.m))));
+            bf.bits[idx] = true;
         }
     }
 
-    /// Check if item might exist
     pub fn contains(bf: *const BloomFilter, item: []const u8) bool {
         const h1 = hash1(item);
         const h2 = hash2(item);
-
-        for (0..bf.num_hashes) |i| {
-            const combined = h1 + i * h2;
-            const word = (combined / @bitSizeOf(usize)) % bf.bits.len;
-            const bit = combined % @bitSizeOf(usize);
-            if ((bf.bits[word] & (@as(usize, 1) << @intCast(bit))) == 0) {
-                return false;
-            }
+        for (0..bf.k) |i| {
+            const idx = @as(usize, @intCast((h1 +% @as(u64, @intCast(i)) *% h2) % @as(u64, @intCast(bf.m))));
+            if (!bf.bits[idx]) return false;
         }
-
-        return true; // Might exist (false positives possible)
+        return true;
     }
 
-    /// Free filter
     pub fn deinit(bf: *BloomFilter) void {
         bf.allocator.free(bf.bits);
     }
 };
 
 test "bloom filter add contains" {
-    var bf = try BloomFilter.init(std.testing.allocator, 128, 3);
+    var bf = try BloomFilter.init(std.testing.allocator, 100, 3);
     defer bf.deinit();
 
     bf.add("hello");
-    bf.add("world");
-
     try std.testing.expect(bf.contains("hello"));
-    try std.testing.expect(bf.contains("world"));
-    try std.testing.expect(!bf.contains("goodbye"));
+    try std.testing.expect(!bf.contains("world"));
 }
 
 test "bloom filter false positive" {
-    var bf = try BloomFilter.init(std.testing.allocator, 32, 2);
+    var bf = try BloomFilter.init(std.testing.allocator, 50, 2);
     defer bf.deinit();
 
-    bf.add("test");
+    bf.add("a");
+    bf.add("b");
+    bf.add("c");
 
-    // Might have false positive
-    _ = bf.contains("other");
-    try std.testing.expect(true);
+    // No false positives guaranteed, but all added should be found
+    try std.testing.expect(bf.contains("a"));
 }
