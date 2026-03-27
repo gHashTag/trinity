@@ -57,11 +57,14 @@ pub const CLARA_KEYWORDS = [_][]const u8{
     "medical guidance",
 };
 
+// NOTE: Communities must be created on Zenodo before referencing
+// https://zenodo.org/communities/
+// For CLARA submission, communities are optional (skip if not yet created)
 pub const CLARA_COMMUNITIES = [_][]const u8{
-    "darpa-clara",
-    "trinity",
-    "neuro-symbolic-ai",
-    "high-assurance-systems",
+    // "darpa-clara",     // Create on Zenodo first
+    // "trinity",         // Create on Zenodo first
+    "neuro-symbolic-ai", // Existing community
+    // "high-assurance-systems", // Create on Zenodo first
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
