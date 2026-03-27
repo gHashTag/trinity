@@ -1,0 +1,97 @@
+{
+  "title": "Trinity S³AI Framework — Complete Research Platform v8.0",
+  "creators": [
+    {
+      "name": "Vasilev, Dmitrii",
+      "orcid": "0009-0008-4294-6159",
+      "affiliation": "Trinity Research Collective"
+    }
+  ],
+  "description": "Trinity S³AI (Scientific Swarm AI) is a comprehensive research framework for building pure-Zig autonomous agent systems with balanced ternary computing, FPGA acceleration, and formal verification. This parent collection encompasses 7 component bundles covering neural network training (B001), FPGA synthesis (B002), processor architecture (B003), consciousness modeling (B004), language design (B005), numerical encoding (B006), and vector-symbolic operations (B007). All components implement V15 scientific rigor with 95%/99% confidence intervals, effect sizes (Cohen's d), and bootstrap validation (10,000 resamples). v8.0 includes cross-bundle citation analysis showing h-index, g-index, bibliographic coupling, dependency graphs, unified bibliography, LaTeX tables, peer review templates, and multiple citation formats.",
+  "keywords": [
+    "Trinity Framework",
+    "autonomous agents",
+    "balanced ternary",
+    "FPGA acceleration",
+    "formal verification",
+    "V15 scientific rigor",
+    "cross-bundle citations",
+    "bibliography manager",
+    "LaTeX tables",
+    "peer review templates"
+  ],
+  "publication_date": "2026-03-27",
+  "version": "8.0",
+  "doi": "10.5281/zenodo.19227879",
+  "related_identifiers": [
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227865",
+      "relation": "isPartOf",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227835",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227843",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227841",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227745",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227867",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227843",
+      "relation": "references",
+      "resource_type": "software"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.19227779",
+      "relation": "references",
+      "resource_type": "software"
+    }
+  ],
+  "references": [
+    "Vasilev, D. (2026). Trinity B001: HSLM-1.95M Ternary Neural Networks. Zenodo. https://doi.org/10.5281/zenodo.19227865",
+    "Vasilev, D. (2026). Trinity B002: Zero-DSP FPGA Accelerator. Zenodo. https://doi.org/10.5281/zenodo.19227867",
+    "Vasilev, D. (2026). Trinity B003: TRI-27 ISA. Zenodo. https://doi.org/10.5281/zenodo.19227867",
+    "Vasilev, D. (2026). Trinity B004: Queen Lotus Consciousness Cycle. Zenodo. https://doi.org/10.5281/zenodo.19227839",
+    "Vasilev, D. (2026). Trinity B005: Tri Language. Zenodo. https://doi.org/10.5281/zenodo.19227841",
+    "Vasilev, D. (2026). Trinity B006: Sacred GF16/TF3 Encoding. Zenodo. https://doi.org/10.5281/zenodo.19227843",
+    "Vasilev, D. (2026). Trinity B007: VSA Operations. Zenodo. https://doi.org/10.5281/zenodo.19227745"
+  ],
+  "license": "CC-BY-4.0",
+  "access_right": "open",
+  "resource_type": {
+    "type": "software",
+    "title": "Trinity S³AI Framework — Complete Research Platform"
+  },
+  "communities": [
+    {
+      "identifier": "trinity-research"
+    }
+  ],
+  "grants": []
+}
