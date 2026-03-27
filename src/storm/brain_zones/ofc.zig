@@ -99,7 +99,7 @@ pub fn analyze(allocator: std.mem.Allocator, task: []const u8, results: []const 
 
     // Calculate total
     score.total = score.spec_drift + score.destructive + score.test_bypass +
-                   score.perf_regression + score.transparency;
+        score.perf_regression + score.transparency;
 
     const reasons_slice = try allocator.dupe([]const u8, reasons.items);
 

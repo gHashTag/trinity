@@ -119,7 +119,7 @@ test "bfs single vertex" {
     var graph = try Graph.init(std.testing.allocator, 1);
     defer graph.deinit();
 
-    const result = try traverse(&graph, 0, std.testing.allocator);
+    var result = try traverse(&graph, 0, std.testing.allocator);
     defer result.deinit();
 
     try std.testing.expectEqual(@as(usize, 1), result.order.len);

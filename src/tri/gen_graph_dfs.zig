@@ -32,7 +32,7 @@ pub fn traverse(graph: *const BFSGraph, start: usize, allocator: std.mem.Allocat
     var post_idx: usize = 0;
 
     const dfsInner = struct {
-        fn dfs(g: *const anytype, v: usize, vis: []bool, pre: []usize, post: []usize, pi: *usize, po: *usize) void {
+        fn dfs(g: *const BFSGraph, v: usize, vis: []bool, pre: []usize, post: []usize, pi: *usize, po: *usize) void {
             vis[v] = true;
             pre[pi.*] = v;
             pi.* += 1;

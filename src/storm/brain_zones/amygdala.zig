@@ -112,5 +112,5 @@ pub fn cmdCheckFear(allocator: std.mem.Allocator, args: []const u8) !u8 {
 
     return try std.fmt.allocPrint(allocator,
         \\Blocked: {s}
-    , .{ if (is_blocked) "YES ❌" else "NO ✅" });
+    , .{if (is_blocked) "YES ❌" else "NO ✅"});
 }

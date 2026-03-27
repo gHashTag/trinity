@@ -113,7 +113,7 @@ test "dijkstra single vertex" {
     var graph = try WeightedGraph.init(std.testing.allocator, 1);
     defer graph.deinit();
 
-    const result = try shortestPath(&graph, 0, std.testing.allocator);
+    var result = try shortestPath(&graph, 0, std.testing.allocator);
     defer result.deinit();
 
     try std.testing.expectEqual(@as(f64, 0), result.distance[0]);

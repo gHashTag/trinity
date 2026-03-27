@@ -442,9 +442,8 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     };
     defer f.close();
 
-    // Seek to end and append
-    const pos = try f.getEndPos();
-    try f.seekTo(pos);
+    // Seek to end before writing (append mode)
+    try f.seekFromEnd(0);
     try f.writeAll(formatted);
 }
 

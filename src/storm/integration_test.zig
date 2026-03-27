@@ -84,10 +84,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Golden Chain Init",
@@ -147,10 +144,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Engine Init",
@@ -182,10 +176,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Consult",
@@ -222,10 +213,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Record Failure",
@@ -255,10 +243,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Checkpoint Directory",
@@ -282,7 +267,7 @@ pub const IntegrationTest = struct {
         for (dirs) |dir| {
             std.fs.cwd().makePath(dir) catch |err| {
                 if (err != error.PathAlreadyExists) {
-                    error_msg = try std.fmt.allocPrint(self.allocator, "Failed to create {s}: {}", .{dir, err});
+                    error_msg = try std.fmt.allocPrint(self.allocator, "Failed to create {s}: {}", .{ dir, err });
                     std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
                     return;
                 }
@@ -300,10 +285,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Link Validation",
@@ -360,10 +342,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Handoff Validation",
@@ -387,11 +366,7 @@ pub const IntegrationTest = struct {
             if (gc.GoldenChain.validateHandoff(undefined, h.from, h.to)) |_| {
                 // Valid, continue
             } else |err| {
-                error_msg = try std.fmt.allocPrint(
-                    self.allocator,
-                    "Valid handoff {s}->{s} failed: {}",
-                    .{ @tagName(h.from), @tagName(h.to), err }
-                );
+                error_msg = try std.fmt.allocPrint(self.allocator, "Valid handoff {s}->{s} failed: {}", .{ @tagName(h.from), @tagName(h.to), err });
                 std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
                 return;
             }
@@ -408,10 +383,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Timeout Handler",
@@ -455,10 +427,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Parallel Executor",
@@ -534,10 +503,7 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Chain Execution",

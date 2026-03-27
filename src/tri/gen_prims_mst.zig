@@ -84,10 +84,12 @@ pub fn mst(graph: *PrimGraph, allocator: std.mem.Allocator) !MSTResult {
         var min_w: i64 = std.math.maxInt(i64);
 
         for (0..n) |v| {
-            if (!in_mst[v] and min_edge[v]) |e| {
-                if (e.weight < min_w) {
-                    min_w = e.weight;
-                    u = v;
+            if (!in_mst[v]) {
+                if (min_edge[v]) |e| {
+                    if (e.weight < min_w) {
+                        min_w = e.weight;
+                        u = v;
+                    }
                 }
             }
         }
