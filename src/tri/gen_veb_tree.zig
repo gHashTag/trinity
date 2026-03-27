@@ -32,7 +32,7 @@ pub const VEBTree = struct {
     fn high(tree: *const VEBTree, x: u64) u64 {
         const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
         const size = @as(u64, @intCast(@ceil(upper)));
-        return x / size;
+        return @divTrunc(x, size);
     }
 
     fn low(tree: *const VEBTree, x: u64) u64 {

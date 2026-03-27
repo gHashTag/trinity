@@ -27,7 +27,7 @@ pub const LRUCache = struct {
         head.next = tail;
         tail.prev = head;
 
-        var cache = LRUCache{
+        const cache = LRUCache{
             .capacity = capacity,
             .map = std.AutoHashMap(usize, *LRUNode).init(allocator),
             .list_head = head,
