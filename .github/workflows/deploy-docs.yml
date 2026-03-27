@@ -33,12 +33,10 @@ jobs:
 
       # Build Website (Vite React SPA)
       - name: Install apps/website dependencies
-        working-directory: apps/website
-        run: npm install
+        run: cd apps/website && npm install
 
       - name: Build apps/website
-        working-directory: apps/website
-        run: npm run build:ci
+        run: cd apps/website && npm run build:ci
 
       # Build Docsite (Docusaurus)
       - name: Install docs dependencies
