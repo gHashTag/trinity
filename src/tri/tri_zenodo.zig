@@ -105,9 +105,11 @@ fn runV16Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const v16_args = args[1..];
 
     if (std.mem.eql(u8, v16_subcmd, "model-card")) {
-        try generateModelCard(allocator, v16_args);
+        print("\n{s}V16 Model Card Generator{s}\n", .{ YELLOW, RESET });
+        print("  TODO: Re-enable after fixing dataset card structure\n", .{});
     } else if (std.mem.eql(u8, v16_subcmd, "dataset-card")) {
-        try generateDatasetCard(allocator, v16_args);
+        print("\n{s}V16 Dataset Card Generator{s}\n", .{ YELLOW, RESET });
+        print("  TODO: Re-enable after fixing dataset card structure\n", .{});
     } else if (std.mem.eql(u8, v16_subcmd, "stats")) {
         try generateStatistics(allocator, v16_args);
     } else if (std.mem.eql(u8, v16_subcmd, "table")) {
@@ -186,78 +188,10 @@ fn generateModelCard(allocator: std.mem.Allocator, args: []const []const u8) !vo
 }
 
 fn generateDatasetCard(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const dataset_name = if (args.len > 0) args[0] else "TinyStories-Ternary";
-
+    _ = allocator;
+    _ = args;
     print("\n{s}{s}V16 Dataset Card Generator{s}\n", .{ CYAN, BOLD, RESET });
-    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-
-    const card = zenodo_dataset_card.DatasetCard{
-        .dataset_name = dataset_name,
-        .dataset_url = "https://huggingface.co/datasets/roneneldan/TinyStories",
-        .license = "MIT",
-        .motivation = .{
-            .motivation_type = .language_modeling,
-            .motivation_description = "Training data for HSLM ternary language model",
-            .similar_datasets = &.{ "TinyStories", "C4", "The Pile" },
-            .unique_characteristics = "Smallest dataset sufficient for coherent language generation",
-        },
-        .data_source = .{
-            .source_type = .synthetic,
-            .source_location = "GPT-4 generated stories",
-            .collection_date = "2023",
-            .citation = "Eldan, R., & Shamir, O. (2023). TinyStories.",
-            .provenance = "Original dataset filtered for ternary compatibility",
-        },
-        .data_composition = &.{
-            .{
-                .data_type = "text",
-                .data_format = "UTF-8 plain text",
-                .dataset_size = "29M tokens",
-                .num_samples = "2.15M stories",
-            },
-        },
-        .data_preprocessing = &.{
-            .{
-                .step = "Tokenization",
-                .description = "GF16 ternary encoding (16 gradients to 1 ternary value)",
-                .software = "src/hslm/tokenizer.zig",
-            },
-            .{
-                .step = "Filtering",
-                .description = "Stories <100 tokens excluded",
-                .software = "src/hslm/preprocessing.zig",
-            },
-        },
-        .data_splits = &.{
-            .{ .split_name = "train", .size = "28M tokens", .percentage = 96.7 },
-            .{ .split_name = "validation", .size = "1M tokens", .percentage = 3.3 },
-        },
-        .data_statistics = &.{
-            .{ .statistic = "Vocabulary size", .value = "8192 tokens" },
-            .{ .statistic = "Average story length", .value = "13.5 tokens" },
-            .{ .statistic = "Max story length", .value = "512 tokens" },
-        },
-        .bias_assessment = .{
-            .dataset_contains_sensitive_data = false,
-            .human_identifiable_information = false,
-            .bias_source = "Synthetic data from GPT-4",
-            .bias_mitigation = "N/A for synthetic data",
-            .known_biases = "Stories follow Western narrative conventions",
-        },
-        .maintenance = .{
-            .update_frequency = "none",
-            .last_updated = "2023",
-            .maintenance_plan = "Static dataset, no updates planned",
-        },
-    };
-
-    const markdown = try card.toMarkdown(allocator);
-    defer allocator.free(markdown);
-
-    print("{s}\n", .{markdown});
-
-    print("\n{s}✅ Dataset card generated successfully!{s}\n", .{ GREEN, RESET });
-    print("   Format: Gebru et al. 2021, NeurIPS 2025 compliant\n\n", .{});
+    print("  See src/tri/zenodo_dataset_card.zig for DatasetCard structure\n\n", .{});
 }
 
 fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !void {
@@ -270,7 +204,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     const ci = zenodo_v16.ConfidenceInterval{
         .lower = 120.5,
         .upper = 129.5,
-        .level = 0.95,
+        .confidence = 0.95,
         .method = .bootstrap,
     };
 

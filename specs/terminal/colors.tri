@@ -1,0 +1,160 @@
+# ANSI Terminal Colors — Source of Truth
+# φ² + 1/φ² = 3 | TRINITY
+
+name: ansi_colors
+version: "0.1.0"
+module: terminal.colors
+description: "ANSI 256-color terminal codes (TTT Dogfood v0.1)"
+
+types:
+  ColorCode:
+    description: "ANSI escape sequence for 256-color mode"
+    underlying: "[]const u8"
+
+constants:
+  # Standard Colors (RGB values in ANSI 256-color mode)
+  GREEN:
+    type: ColorCode
+    value: "\\x1b[38;2;0;229;153m"
+    description: "Bright green (RGB: 0, 229, 153)"
+
+  GOLDEN:
+    type: ColorCode
+    value: "\\x1b[38;2;255;215;0m"
+    description: "Golden yellow (RGB: 255, 215, 0)"
+
+  WHITE:
+    type: ColorCode
+    value: "\\x1b[38;2;255;255;255m"
+    description: "Pure white (RGB: 255, 255, 255)"
+
+  GRAY:
+    type: ColorCode
+    value: "\\x1b[38;2;156;156;160m"
+    description: "Medium gray (RGB: 156, 156, 160)"
+
+  RED:
+    type: ColorCode
+    value: "\\x1b[38;2;239;68;68m"
+    description: "Bright red (RGB: 239, 68, 68)"
+
+  CYAN:
+    type: ColorCode
+    value: "\\x1b[38;2;0;255;255m"
+    description: "Bright cyan (RGB: 0, 255, 255)"
+
+  PURPLE:
+    type: ColorCode
+    value: "\\x1b[38;2;170;102;255m"
+    description: "Bright purple (RGB: 170, 102, 255)"
+
+  YELLOW:
+    type: ColorCode
+    value: "\\x1b[38;2;255;255;0m"
+    description: "Pure yellow (RGB: 255, 255, 0)"
+
+  RESET:
+    type: ColorCode
+    value: "\\x1b[0m"
+    description: "Reset all attributes"
+
+functions:
+  printGold:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in golden color, then reset"
+    template: "std.debug.print(GOLDEN ++ fmt ++ RESET, args)"
+
+  printGreen:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in green color, then reset"
+    template: "std.debug.print(GREEN ++ fmt ++ RESET, args)"
+
+  printWhite:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in white color, then reset"
+    template: "std.debug.print(WHITE ++ fmt ++ RESET, args)"
+
+  printYellow:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in yellow color, then reset"
+    template: "std.debug.print(YELLOW ++ fmt ++ RESET, args)"
+
+  printCyan:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in cyan color, then reset"
+    template: "std.debug.print(CYAN ++ fmt ++ RESET, args)"
+
+  printRed:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in red color, then reset"
+    template: "std.debug.print(RED ++ fmt ++ RESET, args)"
+
+  printPurple:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in purple color, then reset"
+    template: "std.debug.print(PURPLE ++ fmt ++ RESET, args)"
+
+  printGray:
+    params:
+      - name: fmt
+        type: "[]const u8"
+      - name: args
+        type: "anytype"
+    returns: "void"
+    description: "Print in gray color, then reset"
+    template: "std.debug.print(GRAY ++ fmt ++ RESET, args)"
+
+behaviors:
+  - name: color_constants
+    description: "All colors are comptime-known string constants"
+    implementation: |
+      Colors are defined as const []const u8 with ANSI escape sequences.
+      Format: \\x1b[38;2;R;G;Bm for RGB colors, \\x1b[0m for reset.
+
+  - name: print_functions
+    description: "Print functions concatenate color + format + reset"
+    implementation: |
+      Each print function uses std.debug.print() with:
+      COLOR ++ fmt ++ RESET as the format string.
+      The ++ operator concatenates comptime strings.
+
+constraints:
+  - All color constants are comptime-known
+  - Print functions use comptime string concatenation
+  - No runtime allocation required
+  - std.debug.print for output (no allocator needed)
