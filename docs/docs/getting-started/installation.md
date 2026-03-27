@@ -21,9 +21,9 @@ Complete installation guide for Trinity.
 
 ```bash
 # Option 1: Direct download (recommended)
-curl -LO https://ziglang.org/download/0.15.0/zig-macos-aarch64-0.15.0.tar.xz
-tar -xf zig-macos-aarch64-0.15.0.tar.xz
-export PATH="$PWD/zig-macos-aarch64-0.15.0:$PATH"
+curl -LO https://ziglang.org/download/0.15.2/zig-macos-aarch64-0.15.2.tar.xz
+tar -xf zig-macos-aarch64-0.15.2.tar.xz
+export PATH="$PWD/zig-macos-aarch64-0.15.2:$PATH"
 
 # Option 2: Homebrew
 brew install zig@0.15
@@ -32,9 +32,9 @@ brew install zig@0.15
 ### Linux
 
 ```bash
-curl -LO https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
-tar -xf zig-linux-x86_64-0.15.0.tar.xz
-export PATH="$PWD/zig-linux-x86_64-0.15.0:$PATH"
+curl -LO https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz
+tar -xf zig-linux-x86_64-0.15.2.tar.xz
+export PATH="$PWD/zig-linux-x86_64-0.15.2:$PATH"
 ```
 
 ### Windows

@@ -11,6 +11,24 @@
     },
     {
       "pattern": "node_modules"
+    },
+    {
+      "pattern": "^https://zenodo\\.org"
+    },
+    {
+      "pattern": "^https://trinity\\.ai"
+    },
+    {
+      "pattern": "^https://trinity-os\\.fly\\.dev"
+    },
+    {
+      "pattern": "^https://dl\\.acm\\.org"
+    },
+    {
+      "pattern": "^https://www\\.sciencedirect\\.com"
+    },
+    {
+      "pattern": "^https://github\\.com/gHashTag/trinity/discussions"
     }
   ],
   "replacementPatterns": [

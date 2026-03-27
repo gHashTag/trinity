@@ -18,9 +18,9 @@ error: no field or member function named 'addStaticLibrary'
 
 **Solution:** Install Zig 0.15.x:
 ```bash
-curl -LO https://ziglang.org/download/0.15.0/zig-macos-aarch64-0.15.0.tar.xz
-tar -xf zig-macos-aarch64-0.15.0.tar.xz
-export PATH="$PWD/zig-macos-aarch64-0.15.0:$PATH"
+curl -LO https://ziglang.org/download/0.15.2/zig-macos-aarch64-0.15.2.tar.xz
+tar -xf zig-macos-aarch64-0.15.2.tar.xz
+export PATH="$PWD/zig-macos-aarch64-0.15.2:$PATH"
 ```
 
 ### Build Failures
