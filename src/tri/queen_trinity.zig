@@ -275,7 +275,7 @@ fn runQueenStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
     // Create PID file
-    const pid = std.os.linux.getpid();
+    const pid = std.c.getpid();
     {
         var f = try std.fs.cwd().createFile(PID_FILE, .{});
         defer f.close();

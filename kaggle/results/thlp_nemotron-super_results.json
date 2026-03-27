@@ -1,0 +1,442 @@
+[
+  {
+    "item_id": "thlp_belief_0047",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 7488
+  },
+  {
+    "item_id": "thlp_belief_0235",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 6660
+  },
+  {
+    "item_id": "thlp_error_0307",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: mammals",
+    "ground_truth": "Mammals",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 2392
+  },
+  {
+    "item_id": "thlp_fewshot_0334",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 9",
+    "ground_truth": "9",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 11984
+  },
+  {
+    "item_id": "thlp_reward_0221",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:Incorrect. Try again.",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 4317
+  },
+  {
+    "item_id": "thlp_reward_0263",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Incorrect. Try again.",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 7344
+  },
+  {
+    "item_id": "thlp_error_0060",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 56",
+    "ground_truth": "54",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 2628
+  },
+  {
+    "item_id": "thlp_reward_0339",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Incorrect. Try again.",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 12485
+  },
+  {
+    "item_id": "thlp_belief_0135",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 2641
+  },
+  {
+    "item_id": "thlp_reward_0419",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:Incorrect",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 5220
+  },
+  {
+    "item_id": "thlp_reward_0266",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Correct! Good speed.",
+    "ground_truth": "positive_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 2942
+  },
+  {
+    "item_id": "thlp_fewshot_0361",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "",
+    "ground_truth": "Cherry",
+    "confidence": 0.99,
+    "correct": false,
+    "latency_ms": 5912
+  },
+  {
+    "item_id": "thlp_error_0429",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Whales are mammals.",
+    "ground_truth": "Mammals",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 4539
+  },
+  {
+    "item_id": "thlp_context_0325",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 10",
+    "ground_truth": "10",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 12668
+  },
+  {
+    "item_id": "thlp_error_0011",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Whalesare mammals.",
+    "ground_truth": "Mammals",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 3779
+  },
+  {
+    "item_id": "thlp_reward_0201",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Incorrect",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 1558
+  },
+  {
+    "item_id": "thlp_fewshot_0007",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: drib",
+    "ground_truth": "drib",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 6862
+  },
+  {
+    "item_id": "thlp_fewshot_0201",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Cherry",
+    "ground_truth": "Cherry",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 16598
+  },
+  {
+    "item_id": "thlp_reward_0342",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Correct! Good speed.",
+    "ground_truth": "positive_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 14730
+  },
+  {
+    "item_id": "thlp_reward_0281",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:Incorrect. Try again.",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 2501
+  },
+  {
+    "item_id": "thlp_belief_0149",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 5900
+  },
+  {
+    "item_id": "thlp_fewshot_0451",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: drib",
+    "ground_truth": "drib",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 7092
+  },
+  {
+    "item_id": "thlp_reward_0084",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Correct! Good speed.",
+    "ground_truth": "positive_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 24993
+  },
+  {
+    "item_id": "thlp_reward_0333",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Incorrect",
+    "ground_truth": "negative_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 8179
+  },
+  {
+    "item_id": "thlp_belief_0212",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Canberra",
+    "ground_truth": "Canberra",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 6868
+  },
+  {
+    "item_id": "thlp_belief_0113",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 2808
+  },
+  {
+    "item_id": "thlp_context_0096",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:",
+    "ground_truth": "10",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 8568
+  },
+  {
+    "item_id": "thlp_fewshot_0107",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: drib",
+    "ground_truth": "drib",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 1840
+  },
+  {
+    "item_id": "thlp_belief_0335",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 3298
+  },
+  {
+    "item_id": "thlp_belief_0082",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Canberra",
+    "ground_truth": "Canberra",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 1429
+  },
+  {
+    "item_id": "thlp_reward_0334",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:Correct! Good speed.",
+    "ground_truth": "positive_reward",
+    "confidence": 0.99,
+    "correct": false,
+    "latency_ms": 3957
+  },
+  {
+    "item_id": "thlp_error_0354",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 56",
+    "ground_truth": "54",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 3390
+  },
+  {
+    "item_id": "thlp_fewshot_0384",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: odd",
+    "ground_truth": "odd",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 11866
+  },
+  {
+    "item_id": "thlp_fewshot_0223",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: drib",
+    "ground_truth": "drib",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 4020
+  },
+  {
+    "item_id": "thlp_fewshot_0431",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: drib",
+    "ground_truth": "drib",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 5728
+  },
+  {
+    "item_id": "thlp_reward_0344",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Correct! Good speed.",
+    "ground_truth": "positive_reward",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 21300
+  },
+  {
+    "item_id": "thlp_error_0079",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: mammals",
+    "ground_truth": "Mammals",
+    "confidence": 0.99,
+    "correct": true,
+    "latency_ms": 4862
+  },
+  {
+    "item_id": "thlp_belief_0092",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Canberra",
+    "ground_truth": "Canberra",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 10716
+  },
+  {
+    "item_id": "thlp_belief_0244",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: Canberra",
+    "ground_truth": "Canberra",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 9709
+  },
+  {
+    "item_id": "thlp_belief_0323",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer:100\u00b0C",
+    "ground_truth": "100\u00b0C",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 12843
+  },
+  {
+    "item_id": "thlp_error_0404",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 56",
+    "ground_truth": "54",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 9329
+  },
+  {
+    "item_id": "thlp_fewshot_0154",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 9",
+    "ground_truth": "9",
+    "confidence": 1.0,
+    "correct": true,
+    "latency_ms": 8675
+  },
+  {
+    "item_id": "thlp_belief_0145",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "",
+    "ground_truth": "100\u00b0C",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 3573
+  },
+  {
+    "item_id": "thlp_error_0308",
+    "track": "thlp",
+    "model": "nemotron-super",
+    "response": "Answer: 56",
+    "ground_truth": "54",
+    "confidence": 1.0,
+    "correct": false,
+    "latency_ms": 4413
+  }
+]
