@@ -122,7 +122,7 @@ pub const LRUCache = struct {
 
         cache.allocator.destroy(cache.list_head);
         cache.allocator.destroy(cache.list_tail);
-        cache.map.deinit();
+        cache.map.deinit(cache.allocator);
     }
 };
 

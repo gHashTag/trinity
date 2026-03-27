@@ -54,8 +54,6 @@ pub fn neighbor(cell: GeoCell, direction: u8) GeoCell {
 
 /// Get all 8 neighbors
 pub fn neighbors(cell: GeoCell, allocator: std.mem.Allocator) ![]GeoCell {
-    _ = cell;
-
     // Return 8 cells (simplified)
     const result = try allocator.alloc(GeoCell, 8);
     for (0..8) |i| {

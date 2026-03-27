@@ -138,7 +138,7 @@ pub const Octree = struct {
         return result.toOwnedSlice(allocator);
     }
 
-    fn queryRecursive(node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
+    fn queryRecursive(ot: *Octree, node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
         if (!boxOverlap(node.bounds, bounds)) return;
 
         if (node.data) |data| {
@@ -150,7 +150,7 @@ pub const Octree = struct {
         if (node.divided) {
             for (node.children) |maybe_child| {
                 if (maybe_child) |child| {
-                    try ot.queryRecursive(child, bounds, result);
+                    try ot.queryRecursive(ot, child, bounds, result);
                 }
             }
         }
