@@ -8,7 +8,7 @@
 
 ## Overview
 
-TRI‑27 — тритный (ternary) RISC процессор с 27 тритными регистрами и полным стеком разработки: от ISA до FPGA.
+The TRI-27 is a ternary RISC processor with 27 trit registers and a full development stack: from ISA to FPGA.
 
 ### In Trinity S³AI
 
