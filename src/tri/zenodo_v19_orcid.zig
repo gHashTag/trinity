@@ -321,8 +321,8 @@ pub const AuthorList = struct {
             if (author.orcid) |orcid| {
                 const valid = validateOrcid(orcid);
                 if (!valid.valid) {
-                    const err_msg = std.fmt.allocPrint(std.heap.page_allocator, "Invalid ORCID for {s}: {s}", .{ author.name, valid.err_msg orelse "unknown error" }) catch "allocation failed";
-                    return .{ .valid = false, .err_msg = err_msg };
+                    // Return static error message (no allocation)
+                    return .{ .valid = false, .err_msg = "Invalid ORCID found in author list" };
                 }
             }
         }
