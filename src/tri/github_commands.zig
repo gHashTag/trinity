@@ -168,9 +168,10 @@ fn issueCreate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: 
 }
 
 /// `tri issue comment <N> [--agent <name>] [--step <text>] [--status <S>] [--thought <t>] [--action <a>] [--result <r>] [--next <n>]`
+/// Issue #420: Added --phase <N/M> for dev loop step tracking (e.g., --phase "3/10")
 fn issueComment(allocator: std.mem.Allocator, args: []const []const u8, dry_run: bool) !void {
     if (args.len == 0) {
-        std.debug.print("{s}Usage: tri issue comment <N> [--agent <name>] [--step <text>] [--status <STATUS>]{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("{s}Usage: tri issue comment <N> [--agent <name>] [--step <text>] [--status <STATUS>] [--phase <N/M>]{s}\n", .{ GOLDEN, RESET });
         return;
     }
 
@@ -186,6 +187,8 @@ fn issueComment(allocator: std.mem.Allocator, args: []const []const u8, dry_run:
     var action: ?[]const u8 = null;
     var result_text: ?[]const u8 = null;
     var next: ?[]const u8 = null;
+    // Issue #420: dev loop phase tracking
+    var phase: ?[]const u8 = null;
 
     // Parse flags
     var i: usize = 1;
@@ -211,6 +214,9 @@ fn issueComment(allocator: std.mem.Allocator, args: []const []const u8, dry_run:
         } else if (std.mem.eql(u8, args[i], "--next") and i + 1 < args.len) {
             i += 1;
             next = args[i];
+        } else if (std.mem.eql(u8, args[i], "--phase") and i + 1 < args.len) {
+            i += 1;
+            phase = args[i];
         }
     }
 
@@ -221,21 +227,41 @@ fn issueComment(allocator: std.mem.Allocator, args: []const []const u8, dry_run:
     var comment_buf: [4096]u8 = undefined;
     var pos: usize = 0;
 
-    // Header
-    const header = try std.fmt.bufPrint(comment_buf[pos..], "{s} **Agent: {s}**\n", .{ agent_emoji, agent_name });
-    pos += header.len;
+    // Issue #420: Dev loop step-tracking format
+    // Format: "{emoji} [{STATUS}] Step {N}/{M} — {detail}"
+    if (phase) |ph| {
+        const phase_line = try std.fmt.bufPrint(comment_buf[pos..], "{s} [{s}] Step {s}", .{ status_emoji, status_str, ph });
+        pos += phase_line.len;
+        if (step) |s| {
+            const detail = try std.fmt.bufPrint(comment_buf[pos..], " — {s}", .{s});
+            pos += detail.len;
+        }
+        const nl = try std.fmt.bufPrint(comment_buf[pos..], "\n", .{});
+        pos += nl.len;
 
-    // Step
-    if (step) |s| {
-        const step_line = try std.fmt.bufPrint(comment_buf[pos..], "📋 **Step**: {s}\n", .{s});
-        pos += step_line.len;
+        // Add agent line if set
+        if (!std.mem.eql(u8, agent_name, "unknown")) {
+            const agent_line = try std.fmt.bufPrint(comment_buf[pos..], "Agent: {s}\n", .{agent_name});
+            pos += agent_line.len;
+        }
+    } else {
+        // Legacy Protocol v2 format
+        // Header
+        const header = try std.fmt.bufPrint(comment_buf[pos..], "{s} **Agent: {s}**\n", .{ agent_emoji, agent_name });
+        pos += header.len;
+
+        // Step
+        if (step) |s| {
+            const step_line = try std.fmt.bufPrint(comment_buf[pos..], "📋 **Step**: {s}\n", .{s});
+            pos += step_line.len;
+        }
+
+        // Status
+        const status_line = try std.fmt.bufPrint(comment_buf[pos..], "🔄 **Status**: {s} {s}\n", .{ status_emoji, status_str });
+        pos += status_line.len;
     }
 
-    // Status
-    const status_line = try std.fmt.bufPrint(comment_buf[pos..], "🔄 **Status**: {s} {s}\n", .{ status_emoji, status_str });
-    pos += status_line.len;
-
-    // Details
+    // Details (both formats)
     if (thought) |t| {
         const line = try std.fmt.bufPrint(comment_buf[pos..], "**Thought**: {s}\n", .{t});
         pos += line.len;
