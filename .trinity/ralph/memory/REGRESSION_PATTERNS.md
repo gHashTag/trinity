@@ -5214,3 +5214,18 @@ root-cause: Auto-fix not yet implemented for this error type
   Auto-fix attempted
 
 - **Manual review required:** Yes
+---
+date: 2026-03-26T07:58:30+00:00
+anti-pattern: Zig syntax error error
+root-cause: Auto-fix not yet implemented for this error type
+---
+### formatting check failed (run 'zig fmt generated/elo.zig' to fix)
+
+- **Anti-pattern:** Zig syntax error error
+- **Symptom:** formatting check failed (run 'zig fmt generated/elo.zig' to fix)
+- **Correct approach:** TBD
+- **Files:** generated/elo.zig:1:1
+- **Attempted fixes:**
+  Auto-fix attempted
+
+- **Manual review required:** Yes
