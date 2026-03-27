@@ -35,7 +35,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Run Brain Health Check
         id: health
@@ -133,7 +133,7 @@ jobs:
 
       - name: Build All Binaries
         run: |
-          zig build
+          zig build -Dci=true
 
   # =========================================================================
   # Phase 2: Unit Tests — Individual Brain Regions
@@ -165,7 +165,7 @@ jobs:
 
       - name: Test ${{ matrix.region }}
         run: |
-          zig build test-${{ matrix.region }}
+          zig build test-${{ matrix.region }} -Dci=true
 
   # =========================================================================
   # Phase 3: Integration Test — Brain Aggregator
@@ -188,7 +188,7 @@ jobs:
 
       - name: Test Brain Integration
         run: |
-          zig build test-brain
+          zig build test-brain -Dci=true
 
   # =========================================================================
   # Phase 4: Stress Test — "Functional MRI" Gate
@@ -213,7 +213,7 @@ jobs:
         id: stress
         run: |
           # Run stress test and capture output
-          zig build test-brain-stress 2>&1 | tee /tmp/stress-output.txt
+          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/stress-output.txt
 
           # Extract score from output
           STRESS_SCORE=$(grep "Score:" /tmp/stress-output.txt | tail -1 | grep -oE "[0-9]+" || echo "0")
@@ -327,7 +327,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: CLI Commands Test
         run: |
@@ -366,7 +366,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Export Metrics
         run: |
@@ -461,11 +461,11 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Run Full Stress Test
         run: |
-          zig build test-brain-stress 2>&1 | tee /tmp/weekly-stress.txt
+          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/weekly-stress.txt
 
       - name: Record Weekly Snapshot
         run: |

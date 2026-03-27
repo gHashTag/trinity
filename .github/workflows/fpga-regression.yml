@@ -89,7 +89,7 @@ jobs:
 
       - name: "🏗️ Build Trinity"
         run: |
-          zig build 2>&1 || echo "⚠️ Build warnings present"
+          zig build -Dci=true 2>&1 || echo "⚠️ Build warnings present"
           echo "✅ Trinity build complete"
 
       - name: "🧠 Run FPGA Tests (${{ matrix.consciousness }})"

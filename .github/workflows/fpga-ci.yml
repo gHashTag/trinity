@@ -141,7 +141,7 @@ jobs:
 
       - name: Build and run tests
         run: |
-          zig build test 2>&1 | tee test-output.txt
+          zig build test -Dci=true 2>&1 | tee test-output.txt
 
       - name: Check test results
         run: |
