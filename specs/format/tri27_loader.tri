@@ -1,0 +1,77 @@
+# TRI-27 Binary Loader — Source of Truth
+# Minimal stub implementation for TRI-27 ISA loader
+# φ² + 1/φ² = 3 | TRINITY
+
+name: tri27_loader
+version: "0.1.0"
+module: format.tri27_loader
+description: "TRI-27 binary loader (TTT Dogfood v0.1)"
+
+types:
+  LoadError:
+    description: "Error types for loading TRI-27 binaries"
+    enum_type: "error"
+    values:
+      - name: InvalidMagic
+        description: "Invalid magic number in file header"
+      - name: FileTooLarge
+        description: "File exceeds maximum size limit"
+      - name: OutOfBounds
+        description: "Memory access out of bounds"
+
+  LoadResult:
+    description: "Result of loading binary file"
+    fields:
+      - name: entry_point
+        type: u32
+        description: "Entry point address"
+      - name: instruction_count
+        type: u32
+        description: "Number of instructions loaded (always 0 for loader)"
+      - name: code_size
+        type: u32
+        description: "Size of code section"
+      - name: data_size
+        type: u32
+        description: "Size of data section (always 0 for loader)"
+
+constants:
+  MAX_FILE_SIZE:
+    type: u32
+    value: 65536
+    description: "Maximum file size in bytes (64KB)"
+
+functions:
+  loadBinary:
+    params:
+      - name: path
+        type: "[]const u8"
+      - name: mem
+        type: "*Memory"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!LoadResult"
+    description: "Load binary file and copy data to memory (little-endian)"
+    formula: |
+      Open file, check size <= MAX_FILE_SIZE
+      Read entry point (u32, 4 bytes, little-endian)
+      Copy data byte-by-byte using mem.writeWord()
+
+behaviors:
+  - name: little_endian
+    description: "All values are read as little-endian"
+    implementation: |
+      std.mem.readInt(u32, data, .little) for entry point
+      Byte-by-byte copy for memory compatibility
+
+  - name: size_limit
+    description: "Prevent loading files larger than 64KB"
+    implementation: |
+      Check stat.size <= MAX_FILE_SIZE
+      Return FileTooLarge error if exceeded
+
+constraints:
+  - Maximum file size is 64KB (65536 bytes)
+  - Entry point is always at offset 0
+  - Data size always 0 (stub implementation)
+  - Instruction count always 0 (stub implementation)

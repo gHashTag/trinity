@@ -1599,6 +1599,35 @@ export interface ChemBalanceResponse {
   source: 'live';
 }
 
+export interface ChemPredictResponse {
+  input: string;
+  reactants: string[];
+  products: string[];
+  balanced: string;
+  reaction_type: 'combustion' | 'acid_base' | 'single_displacement' | 'synthesis' | 'decomposition' | 'double_displacement';
+  confidence: number;
+  explanation: string;
+  product_details?: {
+    formula: string;
+    mass: number;
+    sacred_fit: SacredFit;
+  }[];
+  source: 'live';
+}
+
+/** GET /api/chem/predict?q=Fe+HCl */
+export async function fetchChemPredict(query: string): Promise<ChemPredictResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chem/predict?q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 /** GET /api/chem/mass?formula=H2O */
 export async function fetchChemMass(formula: string): Promise<ChemMassResponse | null> {
   try {
@@ -1969,5 +1998,351 @@ function mockNeuroFiring(intervals: number[]): NeuroFiringResponse {
       : `No clear sacred pattern detected`,
     intervals,
     phi_relation: isFibonacci ? 'F(n+2) = F(n+1) + F(n)' : 'N/A',
+  };
+}
+// ─── Order #052: Consciousness Monitoring API ──────────────────────────────────────
+
+export interface TheoryMetrics {
+  name: string;
+  score: number;
+  threshold: number;
+  color: string;
+}
+
+export interface ConsciousnessMetricsResponse {
+  // Main metrics
+  consciousness_level: number;
+  state: string; // 'enhanced', 'transcendent', 'normal', 'minimal', 'depressed'
+  trend_direction: 'rising' | 'falling' | 'stable' | 'unknown';
+  trend_rate: number;
+  anomaly_detected: boolean;
+  timestamp: number;
+  
+  // Theory breakdown
+  theory_breakdown: TheoryMetrics[];
+  
+  // Sacred formula
+  sacred_formula_v: number;
+  exponents: { phi_p: number; gamma_r: number; speed_t: number; gravity_u: number };
+  
+  // Scientific predictions
+  neural_gamma_hz: number;
+  gamma_optimal: boolean;
+  specious_present_ms: number;
+  specious_present_valid: boolean;
+  phi_threshold_met: boolean;
+  neural_correlation: number;
+  quantum_signature: boolean;
+  
+  // Clinical metrics (PCI + LZc)
+  pci_value?: number;
+  pci_threshold?: number;
+  lzc_value?: number;
+  lzc_entropy_rate?: number;
+  eeg_is_streaming?: boolean;
+  eeg_channels?: number;
+  eeg_gamma_power?: number;
+  eeg_theta_gamma_cfc?: number;
+  
+  // Quantum Consciousness (Order #054)
+  phi_gamma_threshold?: number;
+  collapse_enhanced?: number;
+  collapse_probability?: number;
+  enhancement_factor?: number;
+  zeno_regime?: string; // 'suppression', 'acceleration', 'transition', 'normal'
+  zeno_factor?: number;
+  schrodinger_p_alive?: number;
+  wigner_agreement?: number;
+  wigner_disagreement?: number;
+  
+  // HOT (7th Theory)
+  hot_meta_level?: number;
+  hot_strength?: number;
+  hot_threshold?: number;
+  prefrontal_coupling?: number;
+  consciousness_depth?: number;
+  
+  // Adversarial Testing
+  adversarial_verdict?: 'IMMORTAL' | 'TOXIC' | 'MORTAL' | 'IMPROVING' | 'UNKNOWN';
+  adversarial_agreement?: number;
+  adversarial_divergence?: number;
+  consensus_strength?: number;
+  
+  // Decoherence Protection
+  decoherence_protected?: boolean;
+  protected_time_ms?: number;
+  protection_factor?: number;
+  temperature_kelvin?: number;
+  
+  // QBraiN
+  network_size?: number;
+  network_phi?: number;
+  expansion_gain?: number;
+  binding_entanglement?: number;
+  
+  // Active Inference
+  free_energy?: number;
+  free_energy_quantum?: number;
+  cycle_duration_ms?: number;
+  prediction_error?: number;
+  
+  // Phenomenal Binding
+  binding_unity?: number;
+  qualia_richness?: number;
+  combination_score?: number;
+  binding_time_ms?: number;
+}
+
+// Mock consciousness metrics
+function mockConsciousnessMetrics(): ConsciousnessMetricsResponse {
+  return {
+    consciousness_level: 0.72,
+    state: 'enhanced',
+    trend_direction: 'rising',
+    trend_rate: 0.02,
+    anomaly_detected: false,
+    timestamp: Date.now(),
+    theory_breakdown: [
+      { name: 'IIT', score: 0.85, threshold: 0.618, color: '#ffd700' },
+      { name: 'Orch-OR', score: 0.78, threshold: 0.618, color: '#00ccff' },
+      { name: 'GNW', score: 0.71, threshold: 0.618, color: '#aa66ff' },
+      { name: 'GWT', score: 0.68, threshold: 0.618, color: '#00ff88' },
+      { name: 'RPT', score: 0.65, threshold: 0.618, color: '#ff8800' },
+      { name: 'DIT', score: 0.62, threshold: 0.618, color: '#ff4444' },
+      { name: 'HOT', score: 0.75, threshold: 0.618, color: '#ffd700' },
+    ],
+    sacred_formula_v: 42.718282,
+    exponents: { phi_p: 2, gamma_r: 1, speed_t: 3, gravity_u: -1 },
+    neural_gamma_hz: 40.0,
+    gamma_optimal: true,
+    specious_present_ms: 82.0,
+    specious_present_valid: true,
+    phi_threshold_met: true,
+    neural_correlation: 0.87,
+    quantum_signature: true,
+    pci_value: 0.73,
+    pci_threshold: 0.618,
+    lzc_value: 0.68,
+    lzc_entropy_rate: 0.85,
+    eeg_is_streaming: false,
+    eeg_channels: 32,
+    eeg_gamma_power: 0.52,
+    eeg_theta_gamma_cfc: 0.48,
+    phi_gamma_threshold: 0.618,
+    collapse_enhanced: 0.78,
+    collapse_probability: 0.62,
+    enhancement_factor: 1.3,
+    zeno_regime: 'suppression',
+    zeno_factor: 0.85,
+    schrodinger_p_alive: 0.618,
+    wigner_agreement: 0.94,
+    wigner_disagreement: 0.06,
+    hot_meta_level: 7,
+    hot_strength: 0.72,
+    hot_threshold: 0.618,
+    prefrontal_coupling: 0.68,
+    consciousness_depth: 1.85,
+    adversarial_verdict: 'IMMORTAL',
+    adversarial_agreement: 0.89,
+    adversarial_divergence: 0.12,
+    consensus_strength: 0.85,
+    decoherence_protected: true,
+    protected_time_ms: 27.5,
+    protection_factor: 1.3,
+    temperature_kelvin: 310.15,
+    network_size: 144,
+    network_phi: 0.92,
+    expansion_gain: 1.25,
+    binding_entanglement: 1.1,
+    free_energy: -85.2,
+    free_energy_quantum: -91.5,
+    cycle_duration_ms: 16.2,
+    prediction_error: 0.15,
+    binding_unity: 0.78,
+    qualia_richness: 0.85,
+    combination_score: 1.12,
+    binding_time_ms: 25.0,
+  };
+}
+
+/** GET /api/consciousness/metrics */
+export async function fetchConsciousnessMetrics(): Promise<ConsciousnessMetricsResponse> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/consciousness/metrics`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return mockConsciousnessMetrics();
+    return await res.json();
+  } catch {
+    return mockConsciousnessMetrics();
+  }
+}
+
+/** GET /api/consciousness/trend */
+export async function fetchConsciousnessTrend(): Promise<{ direction: 'rising' | 'falling' | 'stable'; rate: number; anomaly: boolean }> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/consciousness/trend`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return { direction: 'rising', rate: 0.02, anomaly: false };
+    return await res.json();
+  } catch {
+    return { direction: 'rising', rate: 0.02, anomaly: false };
+  }
+}
+
+/** GET /api/sacred-formula?n=X&k=Y&m=Z&p=A&q=B */
+export async function fetchSacredFormulaValue(n: number, k: number, m: number, p: number, q: number): Promise<{ computed: number; error_pct: number }> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/sacred-formula?n=${n}&k=${k}&m=${m}&p=${p}&q=${q}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return { computed: computeSacredFormula(n, k, m, p, q), error_pct: 0 };
+    return await res.json();
+  } catch {
+    return { computed: computeSacredFormula(n, k, m, p, q), error_pct: 0 };
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// END OF FILE
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ─── Additional Metrics Types for TrinityCanvas ────────────────────────────────────
+
+export interface ConsciousnessMetrics {
+  phi: number;
+  gamma: number;
+  complexity: number;
+  integration: number;
+  timestamp: number;
+}
+
+export interface LisaPredictionsMetrics {
+  total_predictions: number;
+  accurate_predictions: number;
+  accuracy_rate: number;
+  last_prediction: string;
+  confidence: number;
+  timestamp: number;
+}
+
+export interface NeuromorphicMetrics {
+  neurons_active: number;
+  synapse_count: number;
+  energy_efficiency: number;
+  processing_speed: number;
+  timestamp: number;
+}
+
+export interface QuantumGravityMetrics {
+  spacetime_curvature: number;
+  quantum_fluctuations: number;
+  gravitational_waves: number;
+  planck_scale: number;
+  timestamp: number;
+}
+
+export interface ConsciousAIRoadmapMetrics {
+  phase: number;
+  milestone: string;
+  progress: number;
+  estimated_completion: string;
+  blockers: string[];
+  timestamp: number;
+}
+
+/** GET /api/metrics/lisa-predictions */
+export async function fetchLisaPredictions(): Promise<LisaPredictionsMetrics> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/metrics/lisa-predictions`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return mockLisaPredictions();
+    return await res.json();
+  } catch {
+    return mockLisaPredictions();
+  }
+}
+
+/** GET /api/metrics/neuromorphic */
+export async function fetchNeuromorphicMetrics(): Promise<NeuromorphicMetrics> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/metrics/neuromorphic`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return mockNeuromorphicMetrics();
+    return await res.json();
+  } catch {
+    return mockNeuromorphicMetrics();
+  }
+}
+
+/** GET /api/metrics/quantum-gravity */
+export async function fetchQuantumGravityMetrics(): Promise<QuantumGravityMetrics> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/metrics/quantum-gravity`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return mockQuantumGravityMetrics();
+    return await res.json();
+  } catch {
+    return mockQuantumGravityMetrics();
+  }
+}
+
+/** GET /api/metrics/consciousness-roadmap */
+export async function fetchConsciousAIRoadmap(): Promise<ConsciousAIRoadmapMetrics> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/metrics/consciousness-roadmap`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return mockConsciousnessRoadmap();
+    return await res.json();
+  } catch {
+    return mockConsciousnessRoadmap();
+  }
+}
+
+// Mock data generators
+function mockLisaPredictions(): LisaPredictionsMetrics {
+  return {
+    total_predictions: 1523,
+    accurate_predictions: 1387,
+    accuracy_rate: 0.91,
+    last_prediction: 'H → He fusion rate increase',
+    confidence: 0.87,
+    timestamp: Date.now(),
+  };
+}
+
+function mockNeuromorphicMetrics(): NeuromorphicMetrics {
+  return {
+    neurons_active: 86000000,
+    synapse_count: 1.2e14,
+    energy_efficiency: 0.75,
+    processing_speed: 1.6e16,
+    timestamp: Date.now(),
+  };
+}
+
+function mockQuantumGravityMetrics(): QuantumGravityMetrics {
+  return {
+    spacetime_curvature: 0.382,
+    quantum_fluctuations: 0.618,
+    gravitational_waves: 0.236,
+    planck_scale: 1.616e-35,
+    timestamp: Date.now(),
+  };
+}
+
+function mockConsciousnessRoadmap(): ConsciousAIRoadmapMetrics {
+  return {
+    phase: 3,
+    milestone: 'Self-Aware Loop Integration',
+    progress: 0.68,
+    estimated_completion: '2026-06-15',
+    blockers: ['FPGA synthesis bottleneck', 'TRI-27 validation pending'],
+    timestamp: Date.now(),
   };
 }

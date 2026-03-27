@@ -1,0 +1,31 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// VSA Core — Text Encoding Specification
+// ═══════════════════════════════════════════════════════════════════════════════
+// Encode/decode text to/from hypervectors
+//
+// φ² + 1/φ² = 3 | TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const TEXT_VECTOR_DIM: usize = 1000;
+
+struct Codebook {
+    vectors: [256][]const Trit,
+    allocator: std.mem.Allocator,
+    dim: usize,
+}
+
+fn initCodebook(allocator: std.mem.Allocator, dim: usize) Codebook;
+fn getVector(self: Codebook, char: u8) []const Trit;
+fn deinitCodebook(self: Codebook) void;
+
+fn encodeText(allocator: std.mem.Allocator, codebook: Codebook, text: []const u8) []Trit;
+fn encodeTextWords(allocator: std.mem.Allocator, codebook: Codebook, text: []const u8) []Trit;
+fn decodeText(allocator: std.mem.Allocator, codebook: Codebook, encoded: []const Trit, max_len: usize) []u8;
+fn textSimilarity(a: []const Trit, b: []const Trit) f64;
+fn textsAreSimilar(a: []const Trit, b: []const Trit, threshold: f64) bool;
+fn findBestMatch(allocator: std.mem.Allocator, codebook: Codebook, query: []const u8, corpus: []const []const u8) SearchResult;
+
+struct SearchResult {
+    index: usize,
+    similarity: f64,
+}

@@ -1,0 +1,17 @@
+// VSA Simple Specification
+// Standalone VSA operations with no external dependencies
+// φ² + 1/φ² = 3 | TRINITY
+
+struct Vector {
+    data: []Trit,
+    len: usize,
+    allocator: std.mem.Allocator,
+}
+
+fn init(allocator: std.mem.Allocator, len: usize) Vector;
+fn deinit(self: Vector) void;
+fn clone(self: Vector) Vector;
+
+fn bind(allocator: std.mem.Allocator, a: Vector, b: Vector) Vector;
+fn bundle2(allocator: std.mem.Allocator, a: Vector, b: Vector) Vector;
+fn cosineSimilarity(a: Vector, b: Vector) f64;

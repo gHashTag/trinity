@@ -1,0 +1,86 @@
+# ELO Rating System — Source of Truth
+# LMSYS-style ELO: K=32, E = 1/(1+10^((Rb-Ra)/400)), Ra' = Ra + K*(S-E)
+# φ² + 1/φ² = 3 | TRINITY
+
+name: elo_rating
+version: "0.1.0"
+module: arena.elo
+description: "Standard ELO rating computation (TTT Dogfood v0.1)"
+
+types:
+  Verdict:
+    description: "Battle outcome verdict"
+    enum: [a_wins, b_wins, tie]
+
+constants:
+  K_FACTOR:
+    type: f64
+    value: 32.0
+    description: "K-factor: controls how much a single game affects the rating"
+
+functions:
+  expectedScore:
+    params:
+      - name: rating_a
+        type: f64
+      - name: rating_b
+        type: f64
+    returns: f64
+    description: "Expected score of player A against player B"
+    formula: "1 / (1 + 10^((rating_b - rating_a) / 400))"
+
+  updateRatings:
+    params:
+      - name: rating_a
+        type: f64
+      - name: rating_b
+        type: f64
+      - name: verdict
+        type: Verdict
+    returns: "struct { f64, f64 }"
+    description: "Update ratings after a battle, returns { new_rating_a, new_rating_b }"
+    formula: |
+      ea = expectedScore(rating_a, rating_b)
+      eb = 1 - ea
+      sa = 1.0 if verdict == a_wins else 0.0 if verdict == b_wins else 0.5
+      sb = 1 - sa
+      new_a = rating_a + K_FACTOR * (sa - ea)
+      new_b = rating_b + K_FACTOR * (sb - eb)
+      return { new_a, new_b }
+
+  formatElo:
+    params:
+      - name: elo
+        type: f64
+      - name: buf
+        type: "[]u8"
+    returns: "[]const u8"
+    description: "Format ELO as integer string into buffer"
+
+behaviors:
+  - name: expected_score_formula
+    description: "Logistic function for expected score"
+    implementation: |
+      E = 1 / (1 + 10^((Rb - Ra) / 400))
+      - Equal ratings → E = 0.5
+      - Higher rated player → E > 0.5
+      - 200 point difference → E ≈ 0.76
+
+  - name: rating_update
+    description: "K-factor adjustment based on actual vs expected"
+    implementation: |
+      Ra' = Ra + K * (Sa - Ea)
+      Where Sa = 1 (win), 0.5 (tie), 0 (loss)
+      K = 32 (standard for LMSYS)
+
+  - name: total_conservation
+    description: "Total ELO is conserved in zero-sum games"
+    implementation: |
+      For every rating gain, there is an equal loss.
+      Ra' + Rb' = Ra + Rb (within floating-point precision)
+
+constraints:
+  - K_FACTOR is fixed at 32.0 (LMSYS standard)
+  - Rating scale is unbounded (typically 400-3000 range)
+  - Base-10 logarithm in expected score formula
+  - Division by 400 is standard ELO scaling factor
