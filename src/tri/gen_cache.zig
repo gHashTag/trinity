@@ -13,7 +13,7 @@ pub const LRUCache = struct {
         return .{
             .capacity = capacity,
             .store = std.StringHashMap([]const u8).init(allocator),
-            .order = std.ArrayList([]const u8).initCapacity(allocator, 16),
+            .order = std.ArrayList([]const u8).initCapacity(allocator, 16) catch unreachable,
             .allocator = allocator,
         };
     }

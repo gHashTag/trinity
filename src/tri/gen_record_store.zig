@@ -9,9 +9,9 @@ pub const RecordStore = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, column_count: usize) !RecordStore {
-        var columns = std.ArrayList(std.ArrayList(i32)).init(allocator);
+        var columns = try std.ArrayList(std.ArrayList(i32)).initCapacity(allocator, column_count);
         for (0..column_count) |_| {
-            try columns.append(std.ArrayList(i32).init(allocator));
+            try columns.append(allocator, std.ArrayList(i32).initCapacity(allocator, 16) catch unreachable);
         }
         return .{
             .columns = columns,
@@ -37,8 +37,8 @@ pub const RecordStore = struct {
     }
 
     pub fn deinit(store: *RecordStore) void {
-        for (store.columns.items) |col| {
-            col.deinit(store.allocator);
+        for (store.columns.items, 0..) |_, i| {
+            store.columns.items[i].deinit(store.allocator);
         }
         store.columns.deinit(store.allocator);
     }

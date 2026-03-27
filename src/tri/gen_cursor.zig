@@ -6,11 +6,13 @@ const std = @import("std");
 pub const Cursor = struct {
     position: usize,
     data: std.ArrayList(i32),
+    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) Cursor {
         return .{
             .position = 0,
-            .data = std.ArrayList(i32).initCapacity(allocator, 16),
+            .data = std.ArrayList(i32).initCapacity(allocator, 16) catch unreachable,
+            .allocator = allocator,
         };
     }
 
@@ -26,13 +28,13 @@ pub const Cursor = struct {
     }
 
     pub fn deinit(cursor: *Cursor) void {
-        cursor.data.deinit(cursor.data.allocator);
+        cursor.data.deinit(cursor.allocator);
     }
 };
 
 test "cursor" {
     var cursor = Cursor.init(std.testing.allocator);
-    try cursor.data.append(cursor.data.allocator, 42);
+    try cursor.data.append(cursor.allocator, 42);
     defer cursor.deinit();
     try std.testing.expectEqual(@as(i32, 42), cursor.next().?);
 }

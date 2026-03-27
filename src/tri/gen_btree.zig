@@ -34,6 +34,6 @@ pub const BTree = struct {
 
 test "btree" {
     var tree = BTree.init(std.testing.allocator);
-    _ = try tree.insert(42);
-    _ = tree;
+    try tree.insert(42);
+    try std.testing.expectEqual(false, tree.search(99));
 }

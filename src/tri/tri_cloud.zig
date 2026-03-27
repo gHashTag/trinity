@@ -132,8 +132,6 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return mailCheck(allocator, sub_args);
     } else if (eql(u8, subcmd, "mail-apply")) {
         return mailApply(allocator, sub_args);
-    } else if (eql(u8, subcmd, "mail-test")) {
-        return mailTest(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -207,7 +205,6 @@ fn cloudStatus(allocator: Allocator) !void {
     print("  Max agents: 10\n", .{});
     print("  Config: Railway (GraphQL API)\n", .{});
     print("  Image: ghcr.io/ghashtag/trinity-agent:latest\n", .{});
-    _ = allocator;
 }
 
 /// tri cloud logs [service] — Get deployment logs
@@ -1416,8 +1413,6 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
 
 /// tri cloud metrics — Show aggregate agent metrics
 fn cloudMetrics(allocator: Allocator) !void {
-    _ = allocator;
-
     const summary = cloud_orchestrator.getMetrics();
 
     print("\n{s}{s}", .{ GOLDEN, BOLD });
@@ -2287,10 +2282,8 @@ fn printUsage() void {
     print("  {s}tri cloud mail-setup <provider> <domain>{s}  Generate DNS records for email\n", .{ GREEN, RESET });
     print("  {s}tri cloud mail-apply <provider> <domain>{s}   Auto-add DNS records via UD CLI\n", .{ GREEN, RESET });
     print("  {s}tri cloud mail-check <domain>{s}              Verify MX records\n", .{ GREEN, RESET });
-    print("  {s}tri cloud mail-test <email>{s}                Test SMTP and send test email\n", .{ GREEN, RESET });
     print("  {s}  Providers: zoho, gmail, proton, migadu, outlook{s}\n", .{ GRAY, RESET });
     print("  {s}  mail-apply requires: npm install -g @unstoppabledomains/cli && ud login{s}\n", .{ GRAY, RESET });
-    print("  {s}  mail-test requires: brew install swaks{s}\n", .{ GRAY, RESET });
     print("\n  {s}IDE (Code Server):{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud ide status{s}          Code-server service status\n", .{ GREEN, RESET });
     print("  {s}tri cloud ide url{s}             Print public URL\n", .{ GREEN, RESET });
@@ -2770,7 +2763,6 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
 
 /// tri cloud mail-test <email> -- Show SMTP test command
 fn mailTest(allocator: Allocator, args: []const []const u8) !void {
-    _ = allocator;
     if (args.len < 1) {
         print("{s}Usage: tri cloud mail-test <email@domain.com>{s}\n", .{ YELLOW, RESET });
         print("\n  Shows the swaks command to test SMTP and send email.\n", .{});
@@ -2821,7 +2813,10 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
         const check_result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = &check_argv,
-        }) catch {};
+        }) catch |err| {
+            print("{s}Error checking for swaks: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            return;
+        };
         if (check_result.stdout.len == 0) {
             print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
             print("Install: brew install swaks\n", .{});
@@ -2847,7 +2842,7 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
     var password_buf: [256]u8 = undefined;
     const stdin_file = std.io.getStdin().reader();
     const password_len = stdin_file.read(password_buf[0..]) catch |err| {
-        print("\n{s}Error reading password: {}{s}\n", .{ RED, err, RESET });
+        print("\n{s}Error reading password: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     const password = std.mem.trimRight(u8, password_buf[0..password_len], &[_]u8{ '\r', '\n' });
