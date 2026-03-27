@@ -24,7 +24,9 @@ pub fn buildTree(frequencies: []const usize, allocator: std.mem.Allocator) !*Huf
 
     var nodes = std.ArrayList(*HuffmanNode).initCapacity(allocator, 256) catch unreachable;
     defer {
+        // Clean up any remaining nodes (only happens on error)
         for (nodes.items) |n| {
+            // Only free leaf nodes that haven't been incorporated into tree
             if (n.left == null and n.right == null) {
                 allocator.destroy(n);
             }
@@ -47,7 +49,11 @@ pub fn buildTree(frequencies: []const usize, allocator: std.mem.Allocator) !*Huf
     }
 
     if (nodes.items.len == 0) return error.NoFrequencies;
-    if (nodes.items.len == 1) return nodes.items[0];
+    if (nodes.items.len == 1) {
+        const root = nodes.items[0];
+        nodes.items.len = 0; // Prevent cleanup
+        return root;
+    }
 
     // Build tree by combining lowest frequency nodes
     while (nodes.items.len > 1) {
@@ -78,6 +84,13 @@ pub fn buildTree(frequencies: []const usize, allocator: std.mem.Allocator) !*Huf
     const root = nodes.items[0];
     nodes.items.len = 0; // Prevent cleanup
     return root;
+}
+
+/// Free Huffman tree recursively
+pub fn freeTree(node: *HuffmanNode, allocator: std.mem.Allocator) void {
+    if (node.left) |left| freeTree(left, allocator);
+    if (node.right) |right| freeTree(right, allocator);
+    allocator.destroy(node);
 }
 
 /// Generate Huffman codes from tree
@@ -130,7 +143,7 @@ pub fn encode(data: []const u8, codes: []const HuffmanCode, allocator: std.mem.A
 test "huffman build tree" {
     const freq = [_]usize{ 1, 2, 3, 4 };
     const tree = try buildTree(&freq, std.testing.allocator);
-    defer std.testing.allocator.destroy(tree);
+    defer freeTree(tree, std.testing.allocator);
 
     try std.testing.expect(tree.freq > 0);
 }
@@ -138,7 +151,7 @@ test "huffman build tree" {
 test "huffman generate codes" {
     const freq = [_]usize{ 1, 2, 3, 4 };
     const tree = try buildTree(&freq, std.testing.allocator);
-    defer std.testing.allocator.destroy(tree);
+    defer freeTree(tree, std.testing.allocator);
 
     const codes = try generateCodes(tree, std.testing.allocator);
     defer std.testing.allocator.free(codes);

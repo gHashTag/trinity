@@ -20,7 +20,7 @@ pub const TestResult = struct {
     name: []const u8,
     passed: bool,
     duration_ms: u64,
-    error: ?[]const u8 = null,
+    err_msg: ?[]const u8 = null,
 };
 
 /// Integration test suite
@@ -38,7 +38,7 @@ pub const IntegrationTest = struct {
         var results = std.ArrayList(TestResult).init(self.allocator);
         defer {
             for (results.items) |r| {
-                if (r.error) |err| self.allocator.free(err);
+                if (r.err_msg) |err| self.allocator.free(err);
             }
             results.deinit();
         }
@@ -93,7 +93,7 @@ pub const IntegrationTest = struct {
                 .name = "Golden Chain Init",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -156,7 +156,7 @@ pub const IntegrationTest = struct {
                 .name = "Experience Engine Init",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -191,7 +191,7 @@ pub const IntegrationTest = struct {
                 .name = "Experience Consult",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -231,7 +231,7 @@ pub const IntegrationTest = struct {
                 .name = "Experience Record Failure",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -264,7 +264,7 @@ pub const IntegrationTest = struct {
                 .name = "Checkpoint Directory",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -309,7 +309,7 @@ pub const IntegrationTest = struct {
                 .name = "Link Validation",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -369,7 +369,7 @@ pub const IntegrationTest = struct {
                 .name = "Handoff Validation",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -417,7 +417,7 @@ pub const IntegrationTest = struct {
                 .name = "Timeout Handler",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -464,7 +464,7 @@ pub const IntegrationTest = struct {
                 .name = "Parallel Executor",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -543,7 +543,7 @@ pub const IntegrationTest = struct {
                 .name = "Chain Execution",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -585,7 +585,7 @@ pub const IntegrationTest = struct {
                 color, r.name, ms_str, status, RESET,
             });
 
-            if (r.error) |err| {
+            if (r.err_msg) |err| {
                 std.debug.print("\n    {s}Error: {s}{s}\n", .{ YELLOW, err, RESET });
             }
 

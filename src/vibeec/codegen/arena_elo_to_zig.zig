@@ -173,7 +173,7 @@ const ARENA_ELO_TEMPLATE =
     \\    defer std.testing.allocator.free(formatted);
     \\    try std.testing.expectEqualSlices(u8, "100.0", formatted);
     \\}
-    \\
+;
 
 pub fn generateArenaElo(allocator: Allocator) ![]const u8 {
     return allocator.dupe(u8, ARENA_ELO_TEMPLATE);

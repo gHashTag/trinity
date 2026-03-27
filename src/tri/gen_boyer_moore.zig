@@ -31,7 +31,6 @@ pub fn buildBadChar(pattern: []const u8) BMBadChar {
 
 /// Find all pattern occurrences with bad character heuristic
 pub fn search(text: []const u8, pattern: []const u8, bad_char: BMBadChar) []usize {
-    _ = bad_char;
     const n = text.len;
     const m = pattern.len;
 
@@ -50,7 +49,12 @@ pub fn search(text: []const u8, pattern: []const u8, bad_char: BMBadChar) []usiz
 
         if (j == 0) {
             match_count += 1;
-            i += if (m < 2) 1 else bad_char.table[text[i + m]];
+            // Advance by pattern length or 1, with bounds check
+            if (i + m < n and m >= 2) {
+                i += bad_char.table[text[i + m]];
+            } else {
+                i += if (m < 2) 1 else m;
+            }
         } else {
             i += bad_char.table[text[i + m - 1]];
         }

@@ -1,0 +1,38 @@
+name: tri_rabin_karp
+version: "0.1.0"
+language: zig
+module: tri.rabin_karp
+description: "Rabin-Karp rolling hash string search"
+
+types:
+  RKState:
+    description: "Rolling hash state"
+    fields:
+      pattern_hash: "u64"
+      pattern_len: "usize"
+      base: "u64"
+      modulus: "u64"
+
+functions:
+  init:
+    params:
+      - name: pattern
+        type: "[]const u8"
+    returns: "RKState"
+    description: "Initialize with pattern hash"
+
+  search:
+    params:
+      - name: state
+        type: "*RKState"
+      - name: text
+        type: "[]const u8"
+    returns: "[]usize"
+    description: "Find all pattern occurrences"
+
+behaviors:
+  - name: rolling_hash
+    description: "O(1) hash update when sliding window"
+    implementation: |
+      h = (h - old * base^(m-1)) * base + new
+      Use large prime modulus to avoid collisions.

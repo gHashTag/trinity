@@ -49141,3 +49141,5 @@ thread 78348051 panic: access of union field 'Exited' while field 'Signal' is ac
 👑 Queen Trinity starting daemon mode (PID 71418)
 👑 Queen Trinity starting daemon mode (PID 86879)
 👑 Queen Trinity starting daemon mode (PID 90936)
+👑 Queen Trinity starting daemon mode (PID 73443)
+👑 Queen Trinity starting daemon mode (PID 84427)

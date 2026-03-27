@@ -37,7 +37,7 @@ pub const HABENULA = struct {
 
     /// Detect unfair reward/effort ratio for a task
     pub fn detectUnfair(self: *HABENULA, task: []const u8) !FairnessResult {
-        const log = std.log.scoped(.level = .info);
+        const log = std.log.scoped("habenula");
         log.info("🔍 HABENULA: Checking fairness for task '{s}'", .{task});
 
         // Find all episodes for this task

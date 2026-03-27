@@ -28,10 +28,10 @@ const VbtSpec = struct {
 };
 
 const VbtEncoding = struct {
-    trit_n: []const u8,   // -1
-    trit_z: []const u8,   // 0
-    trit_p: []const u8,   // +1
-    binary: []const u8,  // "00=-1, 01=0, 10=+1"
+    trit_n: []const u8, // -1
+    trit_z: []const u8, // 0
+    trit_p: []const u8, // +1
+    binary: []const u8, // "00=-1, 01=0, 10=+1"
 };
 
 const VbtType = struct {
@@ -331,14 +331,15 @@ fn generate_zig_from_ternary(spec: *const VbtSpec, allocator: Allocator) ![]cons
                 try zig_code.appendSlice(allocator, "    // MARKOV CHAIN STATE MACHINE\n");
                 try zig_code.appendSlice(allocator, "    // States: ");
                 const state_count = @min(3, behavior.markov_chain.items.len);
-                for (behavior.markov_chain.items, 0..state_count) |idx| {
-                    const trans = behavior.markov_chain.items[idx];
+                for (behavior.markov_chain.items[0..state_count], 0..) |trans, idx| {
+                    _ = idx;
                     try zig_code.appendSlice(allocator, trans.state);
                     if (idx < state_count - 1) {
                         try zig_code.appendSlice(allocator, " -> ");
                     }
                 }
                 try zig_code.appendSlice(allocator, "\n");
+                for (behavior.markov_chain.items[0..state_count]) |trans| {
                     try zig_code.appendSlice(allocator, "        state = \"");
                     try zig_code.appendSlice(allocator, trans.to);
                     try zig_code.appendSlice(allocator, "\";\n");

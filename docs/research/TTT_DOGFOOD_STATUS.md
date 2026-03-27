@@ -6,6 +6,7 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Phase | Stages | Modules | Status |
 |-------|--------|---------|--------|
+| Phase 10 | 151-160 | 10 advanced algorithms | ✅ Complete |
 | Phase 9 | 141-150 | 10 advanced algorithms | ✅ Complete |
 | Phase 8 | 131-140 | 10 data structures | ✅ Complete |
 | Phase 7 | 121-130 | 10 modules | ✅ Complete |
@@ -16,39 +17,36 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 | Phase 2 | 71-80 | 10 modules | ✅ Complete |
 | Phase 1 | 1-70 | Foundation | ✅ Complete |
 
-**Total: 150 stages, 100% passing tests**
+**Total: 160 stages, 100% passing tests**
 
-## Phase 9 Modules (Stages 141-150)
+## Phase 10 Modules (Stages 151-160)
 
 | Stage | Spec File | Implementation | Tests | LOC |
 |-------|-----------|----------------|-------|-----|
-| 141 | `tri_bloom_filter.tri` | `gen_bloom_filter.zig` | 3/3 | ~105 |
-| 142 | `tri_lru_cache.tri` | `gen_lru_cache.zig` | 3/3 | ~175 |
-| 143 | `tri_priority_queue.tri` | `gen_priority_queue.zig` | 3/3 | ~130 |
-| 144 | `tri_graph.tri` | (existed) | - | - |
-| 145 | `tri_topological.tri` | `gen_topological.zig` | 2/2 | ~165 |
-| 146 | `tri_disjoint_set.tri` | `gen_disjoint_set.zig` | 4/4 | ~155 |
-| 147 | `tri_fib_heap.tri` | `gen_fib_heap.zig` | 3/3 | ~200 |
-| 148 | `tri_rb_tree.tri` | `gen_rb_tree.zig` | 3/3 | ~315 |
-| 149 | `tri_avl_tree.tri` | `gen_avl_tree.zig` | 4/4 | ~290 |
-| 150 | `tri_splay_tree.tri` | `gen_splay_tree.zig` | 4/4 | ~265 |
+| 151 | `tri_huffman.tri` | `gen_huffman.zig` | 2/2 | ~130 |
+| 152 | `tri_lzw.tri` | `gen_lzw.zig` | 2/2 | ~155 |
+| 153 | `tri_galois.tri` | `gen_galois.zig` | 4/4 | ~115 |
+| 154 | `tri_reed_solomon.tri` | `gen_reed_solomon.zig` | 3/3 | ~85 |
+| 155 | `tri_sha256.tri` | `gen_sha256.zig` | 2/2 | ~180 |
+| 156 | `tri_hmac.tri` | `gen_hmac.zig` | 4/4 | ~70 |
+| 157 | `tri_kmp.tri` | `gen_kmp.zig` | 3/3 | ~90 |
+| 158 | `tri_boyer_moore.tri` | `gen_boyer_moore.zig` | 3/3 | ~90 |
+| 159 | `tri_levenshtein.tri` | `gen_levenshtein.zig` | 6/6 | ~80 |
+| 160 | `tri_bezier.tri` | `gen_bezier.zig` | 3/3 | ~120 |
 
-**Phase 9 Total: ~1800 LOC, 29/29 tests passing**
+**Phase 10 Total: ~1120 LOC, 32/32 tests passing**
 
-## Advanced Algorithms Implemented
+## Compression & Crypto Implemented (Phases 9-10)
 
-- **Bloom Filter** (Stage 141): Probabilistic set membership with configurable hash count
-- **LRU Cache** (Stage 142): Least-recently-used cache with doubly-linked list + HashMap
-- **Priority Queue** (Stage 143): Min-heap with push/pop/peek operations
-- **Topological Sort** (Stage 145): Kahn's algorithm for DAG cycle detection
-- **Disjoint Set** (Stage 146): Union-Find with path compression + union by rank
-- **Fibonacci Heap** (Stage 147): Amortized O(1) insert, O(log n) extract-min
-- **Red-Black Tree** (Stage 148): Self-balancing BST with color-based rebalancing
-- **AVL Tree** (Stage 149): Height-balanced BST with rotations
-- **Splay Tree** (Stage 150): Self-adjusting BST with splay operations
-
-## Next Phases
-
-- **Phase 10** (151-160): Platform-specific modules, compression, crypto
+- **Huffman Coding** (Stage 151): Prefix-free compression with frequency-based trees
+- **LZW Compression** (Stage 152): Dictionary-based compression with dynamic growth
+- **GF(256) Arithmetic** (Stage 153): Galois field for Reed-Solomon error correction
+- **Reed-Solomon** (Stage 154): Erasure coding for data recovery
+- **SHA-256** (Stage 155): Cryptographic hash function
+- **HMAC** (Stage 156): Message authentication code
+- **KMP String Search** (Stage 157): Knuth-Morris-Pratt with prefix function
+- **Boyer-Moore** (Stage 158): Fast pattern search with bad character heuristic
+- **Levenshtein Distance** (Stage 159): Edit distance for string comparison
+- **Bezier Curves** (Stage 160): Interpolation and curve evaluation
 
 φ² + 1/φ² = 3 | TRINITY

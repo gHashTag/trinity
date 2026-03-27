@@ -212,7 +212,7 @@ fn generate_simple_zig(spec: *const SimpleSpec, allocator: std.mem.Allocator) ![
     try zig_code.appendSlice( spec.name);
     try zig_code.appendSlice( "\\n// ════════════════════════════════════════════════════\\n\\n");
 
-    try zig_code.appendSlice( "const std = @import(\\"std\\");\\n\\n");
+    try zig_code.appendSlice( "const std = @import(\"std\");\\n\\n");
 
     // Generate REAL Functions
     try zig_code.appendSlice( "// ════════════════════════════════════════════════\\n");
@@ -250,7 +250,7 @@ fn generate_simple_zig(spec: *const SimpleSpec, allocator: std.mem.Allocator) ![
             try zig_code.appendSlice( "}\\n\\n");
         } else {
             // Fallback: test (no implementation)
-            try zig_code.appendSlice( "test \\"");
+            try zig_code.appendSlice( "test \"\\x0a");
             try zig_code.appendSlice( behavior.name);
             try zig_code.appendSlice( "\\\" {\\n");
             try zig_code.appendSlice( "    // Given: ");

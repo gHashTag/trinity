@@ -77,7 +77,7 @@ pub fn search(text: []const u8, prefix: *KMPPrefix) []usize {
 
 test "kmp build prefix" {
     const pattern = "ABABCABAB";
-    const prefix = try buildPrefix(pattern, std.testing.allocator);
+    var prefix = try buildPrefix(pattern, std.testing.allocator);
     defer prefix.deinit();
 
     try std.testing.expectEqual(@as(usize, 9), prefix.table.len);

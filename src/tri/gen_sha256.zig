@@ -42,9 +42,9 @@ pub const SHA256 = struct {
         // Prepare message schedule
         for (0..16) |i| {
             w[i] = @as(u32, @intCast(sha.buffer[i * 4])) << 24 |
-                    @as(u32, @intCast(sha.buffer[i * 4 + 1])) << 16 |
-                    @as(u32, @intCast(sha.buffer[i * 4 + 2])) << 8 |
-                    @as(u32, @intCast(sha.buffer[i * 4 + 3]));
+                @as(u32, @intCast(sha.buffer[i * 4 + 1])) << 16 |
+                @as(u32, @intCast(sha.buffer[i * 4 + 2])) << 8 |
+                @as(u32, @intCast(sha.buffer[i * 4 + 3]));
         }
 
         for (16..64) |i| {

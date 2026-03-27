@@ -33,7 +33,7 @@ pub const WaveExecutor = struct {
 
     /// Execute tasks in waves (parallel batches)
     pub fn executeWaves(self: *WaveExecutor, tasks: []const []const u8) !WaveResult {
-        const log = std.log.scoped(.level = .info);
+        const log = std.log.scoped("wave_executor");
         log.info("🌊 Wave Executor: {d} tasks, {d} agents, {d} concurrent",
             .{tasks.len, self.config.num_agents, self.config.max_concurrent});
 

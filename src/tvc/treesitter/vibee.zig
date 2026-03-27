@@ -153,7 +153,7 @@ pub const Symbol = struct {
         variant,
         behavior,
         algorithm,
-        test,
+        testing,
         module,
         import,
     };
@@ -428,7 +428,7 @@ pub const Vibeeparser = struct {
 
         try symbols.append(Symbol{
             .id = @intCast(symbols.items.len + 1),
-            .kind = .test,
+            .kind = .testing,
             .name = name,
             .qualified_name = qualified_name,
             .signature = null,

@@ -1,0 +1,63 @@
+name: tri_b_tree
+version: "0.1.0"
+language: zig
+module: tri.b_tree
+description: "B-Tree - multiway balanced tree for disk storage"
+
+types:
+  BTreeNode:
+    description: "B-Tree node with multiple keys and children"
+    fields:
+      keys: "[]usize"
+      children: "[]?*BTreeNode"
+      leaf: "bool"
+      count: "usize"
+
+  BTree:
+    description: "B-Tree with minimum degree t"
+    fields:
+      root: "?*BTreeNode"
+      t: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: min_degree
+        type: "usize"
+    returns: "BTree"
+    description: "Create B-tree with min degree t (max 2t-1 keys)"
+
+  search:
+    params:
+      - name: tree
+        type: "*BTree"
+      - name: key
+        type: "usize"
+    returns: "bool"
+    description: "Check if key exists in tree"
+
+  insert:
+    params:
+      - name: tree
+        type: "*BTree"
+      - name: key
+        type: "usize"
+    returns: "!void"
+    description: "Insert key, split nodes as needed"
+
+  deinit:
+    params:
+      - name: tree
+        type: "*BTree"
+    returns: "void"
+    description: "Free all nodes"
+
+behaviors:
+  - name: split_child
+    description: "Split full child node during insertion"
+    implementation: |
+      When node has 2t-1 keys, split into two t-1 key nodes.
+      Promote median key to parent.

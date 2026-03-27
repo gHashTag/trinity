@@ -1,0 +1,25 @@
+name: tri_counting_sort
+version: "0.1.0"
+language: zig
+module: tri.counting_sort
+description: "Counting Sort - O(n+k) integer sorting"
+
+functions:
+  sort:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]usize"
+      - name: max_val
+        type: "usize"
+    returns: "[]usize"
+    description: "Sort integers using counting sort"
+
+behaviors:
+  - name: frequency_count
+    description: "Count occurrences of each value"
+    implementation: |
+      Create count array of size max_val+1.
+      Count frequencies, then cumulative sum.
+      Place elements in output array.

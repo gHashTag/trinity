@@ -211,7 +211,12 @@ pub const CoarNotification = struct {
             try writer.writeAll("  \"topics\": [\n");
             for (self.topics, 0..) |topic, i| {
                 const comma = if (i < self.topics.len - 1) "," else "";
-                try writer.print("    \"{{\"id\": \"https://openalex.org/topics/{s}\", \"name\": \"{s}\"}}{s}\n", .{ topic, topic, comma });
+                try writer.writeAll("    {\"id\": \"https://openalex.org/topics/");
+                try writer.print("{s}", .{topic});
+                try writer.writeAll("\", \"name\": \"");
+                try writer.print("{s}", .{topic});
+                try writer.writeAll("\"}");
+                try writer.print("{s}\n", .{comma});
             }
             try writer.writeAll("  ],\n");
         }
@@ -324,7 +329,9 @@ pub const OpenAlexWork = struct {
             try writer.writeAll("  \"concepts\": [\n");
             for (self.concepts, 0..) |concept, i| {
                 const comma = if (i < self.concepts.len - 1) "," else "";
-                try writer.print("    \"{{\"name\": \"{s}\"}}{s}\n", .{ concept, comma });
+                try writer.writeAll("    {\"name\": \"");
+                try writer.print("{s}", .{concept});
+                try writer.print("\"}}{s}\n", .{comma});
             }
             try writer.writeAll("  ],\n");
         }

@@ -430,8 +430,9 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     const log_file = ".trinity/queen/HIVELOG.md";
     std.fs.cwd().makePath(".trinity/queen") catch {};
 
-    var f = std.fs.cwd().openFile(log_file, .{ .mode = .read_write }) catch {
-        // File doesn't exist, create it
+    // Try to append to existing file, or create new one
+    var f = std.fs.cwd().openFile(log_file, .{ .mode = .write_only }) catch {
+        // File doesn't exist, create it with header
         var new_f = try std.fs.cwd().createFile(log_file, .{});
         defer new_f.close();
         try new_f.writeAll("# Queen Trinity Hive Log\n\n");
@@ -440,6 +441,7 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     };
     defer f.close();
 
+    // Seek to end and append
     const pos = try f.getEndPos();
     try f.seekTo(pos);
     try f.writeAll(formatted);
