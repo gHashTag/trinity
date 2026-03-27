@@ -129,7 +129,7 @@ Single .tri source compiles to:
 
 ## Files
 
-- Metadata: `docs/research/.zenodo.B005_v8.0.json`
+- Metadata: `docs/research/.zenodo.B005_v9.0.json`
 - Compiler: `src/vibee/`
 - Specs: `specs/tri/*.tri`
 - Roadmap: `docs/research/tri_language_roadmap.md`
