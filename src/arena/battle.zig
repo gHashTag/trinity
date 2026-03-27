@@ -178,9 +178,11 @@ pub const Arena = struct {
         const fb = self.findFighter(fighter_b_name) orelse return;
 
         const elo_verdict = std.meta.stringToEnum(elo.Verdict, @tagName(verdict)) orelse return;
-        const new_ratings = elo.updateRatings(fa.elo, fb.elo, elo_verdict);
-        fa.elo = new_ratings[0];
-        fb.elo = new_ratings[1];
+        var ra = fa.elo;
+        var rb = fb.elo;
+        elo.updateRatings(.{ .verdict = elo_verdict }, &ra, &rb) catch return;
+        fa.elo = ra;
+        fb.elo = rb;
 
         switch (verdict) {
             .a_wins => {
@@ -333,8 +335,8 @@ pub const Arena = struct {
             if (!first) writer.writeAll(",") catch return;
             first = false;
 
-            var elo_buf: [16]u8 = undefined;
-            const elo_str = elo.formatElo(f.elo, &elo_buf);
+            const elo_str = try elo.formatElo(f.elo, self.allocator);
+            defer self.allocator.free(elo_str);
 
             std.fmt.format(writer,
                 \\{{"name":"{s}","elo":{s},"wins":{d},"losses":{d},"ties":{d}}}
@@ -477,8 +479,8 @@ pub const Arena = struct {
 
         for (0..count) |rank| {
             const f = &self.fighters[indices[rank]];
-            var elo_buf: [16]u8 = undefined;
-            const elo_str = elo.formatElo(f.elo, &elo_buf);
+            const elo_str = elo.formatElo(f.elo, self.allocator) catch "N/A";
+            defer if (elo_str[0] != 'N') self.allocator.free(elo_str);
             const total = f.wins + f.losses + f.ties;
 
             const color = if (rank == 0) GOLDEN else if (rank < 3) CYAN else GREEN;
