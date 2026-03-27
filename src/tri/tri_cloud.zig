@@ -132,6 +132,8 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return mailCheck(allocator, sub_args);
     } else if (eql(u8, subcmd, "mail-apply")) {
         return mailApply(allocator, sub_args);
+    } else if (eql(u8, subcmd, "mail-test")) {
+        return mailTest(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -2285,8 +2287,10 @@ fn printUsage() void {
     print("  {s}tri cloud mail-setup <provider> <domain>{s}  Generate DNS records for email\n", .{ GREEN, RESET });
     print("  {s}tri cloud mail-apply <provider> <domain>{s}   Auto-add DNS records via UD CLI\n", .{ GREEN, RESET });
     print("  {s}tri cloud mail-check <domain>{s}              Verify MX records\n", .{ GREEN, RESET });
+    print("  {s}tri cloud mail-test <email>{s}                Test SMTP and send test email\n", .{ GREEN, RESET });
     print("  {s}  Providers: zoho, gmail, proton, migadu, outlook{s}\n", .{ GRAY, RESET });
-    print("  {s}  Requires: npm install -g @unstoppabledomains/cli && ud login{s}\n", .{ GRAY, RESET });
+    print("  {s}  mail-apply requires: npm install -g @unstoppabledomains/cli && ud login{s}\n", .{ GRAY, RESET });
+    print("  {s}  mail-test requires: brew install swaks{s}\n", .{ GRAY, RESET });
     print("\n  {s}IDE (Code Server):{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud ide status{s}          Code-server service status\n", .{ GREEN, RESET });
     print("  {s}tri cloud ide url{s}             Print public URL\n", .{ GREEN, RESET });
@@ -2762,6 +2766,197 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
     print("  2. Add domain in provider dashboard\n", .{});
     print("  3. Wait 10-30 minutes for DNS propagation\n", .{});
     print("  4. Verify: tri cloud mail-check {s}\n\n", .{domain});
+}
+
+/// tri cloud mail-test <email> -- Test SMTP connection and send test email
+fn mailTest(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud mail-test <email@domain.com>{s}\n", .{ YELLOW, RESET });
+        print("\n  Tests SMTP connection and sends a test email.\n", .{});
+        print("  Will prompt for password interactively.\n", .{});
+        print("\n  Example: tri cloud mail-test info@t27.ai\n", .{});
+        print("\n  Requires: swaks (install with: brew install swaks)\n", .{});
+        return;
+    }
+
+    const email = args[0];
+
+    // Parse email to get domain and determine SMTP server
+    const at_idx = std.mem.lastIndexOfScalar(u8, email, '@') orelse {
+        print("{s}Error: Invalid email address{s}\n", .{ RED, RESET });
+        return;
+    };
+    const domain = email[at_idx + 1 ..];
+
+    print("\n{s}📧 Testing Email for {s}{s}\n", .{ BOLD, email, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Determine SMTP server based on domain
+    const smtp_server: struct { host: []const u8, port: u16 } = blk: {
+        if (std.mem.endsWith(u8, domain, "zoho.com") or
+            std.mem.indexOf(u8, domain, ".zoho.com") != null or
+            std.mem.indexOf(u8, domain, ".zohomail.com") != null)
+        {
+            break :blk .{ .host = "smtp.zoho.com", .port = 587 };
+        } else if (std.mem.indexOf(u8, domain, "gmail.com") != null or
+            std.mem.indexOf(u8, domain, "googlemail.com") != null)
+        {
+            break :blk .{ .host = "smtp.gmail.com", .port = 587 };
+        } else if (std.mem.indexOf(u8, domain, "outlook.com") != null or
+            std.mem.indexOf(u8, domain, "hotmail.com") != null)
+        {
+            break :blk .{ .host = "smtp.office365.com", .port = 587 };
+        } else {
+            print("{s}Warning: Unknown SMTP server for {s}{s}\n", .{ YELLOW, domain, RESET });
+            print("Defaulting to: smtp.zoho.com:587\n\n", .{});
+            break :blk .{ .host = "smtp.zoho.com", .port = 587 };
+        }
+    };
+
+    print("{s}SMTP Server:{s} {s}:{d}\n\n", .{ BOLD, RESET, smtp_server.host, smtp_server.port });
+
+    // Check if swaks is installed
+    {
+        const check_argv = [_][]const u8{ "which", "swaks" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch |err| {
+            print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
+            print("Install: brew install swaks\n", .{});
+            print("Or: apt install swaks\n\n", .{});
+            return;
+        };
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+
+        if (check_result.stdout.len == 0) {
+            print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
+            print("Install: brew install swaks\n\n", .{});
+            return;
+        }
+    }
+
+    print("{s}✓ swaks found{s}\n", .{ GREEN, RESET });
+    print("\n{s}→ Enter password for {s}:{s} ", .{ YELLOW, email, RESET });
+
+    // Read password from stdin
+    var password_buf: [256]u8 = undefined;
+    const password_len = std.io.getStdIn().read(password_buf[0..]) catch |err| {
+        print("\n{s}Error reading password: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    const password = std.mem.trimRight(u8, password_buf[0..password_len], &[_]u8{ '\r', '\n' });
+
+    print("\n\n{s}Testing SMTP connection...{s}\n\n", .{ BOLD, RESET });
+
+    // Prepare swaks command
+    const port_str = try std.fmt.allocPrint(allocator, "{d}", .{smtp_server.port});
+    defer allocator.free(port_str);
+
+    const server_str = try std.fmt.allocPrint(allocator, "{s}:{s}", .{ smtp_server.host, port_str });
+    defer allocator.free(server_str);
+
+    // Create a temporary file for the password to avoid passing it in command line
+    const tmp_dir = std.posix.getenv("TMPDIR") orelse "/tmp";
+    const pass_file = try std.fmt.allocPrint(allocator, "{s}/tri_mail_test_XXXXXX", .{tmp_dir});
+    defer allocator.free(pass_file);
+
+    // Use mkstemp to create a secure temp file
+    // Since we can't easily use mkstemp, we'll use a different approach
+    // Write password to temp file
+    const pass_path = try std.fmt.allocPrint(allocator, "{s}/.tri_mail_test.pass", .{tmp_dir});
+    defer allocator.free(pass_path);
+
+    {
+        const pass_file_obj = try std.fs.cwd().createFile(pass_path, .{ .read = true });
+        defer pass_file_obj.close();
+        try pass_file_obj.writeAll(password);
+    }
+    defer std.fs.cwd().deleteFile(pass_path) catch {};
+
+    // Run swaks with password from file
+    const test_to = try std.fmt.allocPrint(allocator, "--to={s}", .{email});
+    defer allocator.free(test_to);
+
+    const test_from = try std.fmt.allocPrint(allocator, "--from={s}", .{email});
+    defer allocator.free(test_from);
+
+    const server_arg = try std.fmt.allocPrint(allocator, "--server={s}", .{server_str});
+    defer allocator.free(server_arg);
+
+    const auth_user = try std.fmt.allocPrint(allocator, "--auth-user={s}", .{email});
+    defer allocator.free(auth_user);
+
+    // Note: swaks doesn't support reading password from file easily
+    // We'll use environment variable instead
+    var env_map = try std.process.getEnvMap(allocator);
+    defer env_map.deinit();
+    try env_map.put("TRI_MAIL_PASSWORD", password);
+
+    const argv = [_][]const u8{
+        "swaks",
+        "--to",
+        email,
+        "--from",
+        email,
+        "--server",
+        server_str,
+        "--auth",
+        "--auth-user",
+        email,
+        "--auth-password",
+        password,
+        "--h-Subject",
+        "Test email from tri",
+        "--body",
+        "This is a test email sent from tri CLI.",
+    };
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &argv,
+        .env_map = &env_map,
+    }) catch |err| {
+        print("{s}Error running swaks: {}{s}\n", .{ RED, err, RESET });
+        return;
+    };
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    // Parse swaks output
+    const stdout_str = result.stdout;
+    const stderr_str = result.stderr;
+
+    if (std.mem.indexOf(u8, stdout_str, "250") != null or
+        std.mem.indexOf(u8, stdout_str, "250 OK") != null or
+        std.mem.indexOf(u8, stdout_str, "Accepted") != null)
+    {
+        print("{s}✓ Email sent successfully!{s}\n\n", .{ GREEN, RESET });
+        print("Check your inbox at {s}\n\n", .{email});
+    } else if (std.mem.indexOf(u8, stdout_str, "535") != null or
+        std.mem.indexOf(u8, stdout_str, "530") != null or
+        std.mem.indexOf(u8, stdout_str, "authentication") != null)
+    {
+        print("{s}✗ Authentication failed{s}\n", .{ RED, RESET });
+        print("Check your username and password.\n", .{});
+        print("For Zoho: use the full email address as username.\n\n", .{});
+    } else if (std.mem.indexOf(u8, stdout_str, "Connection refused") != null or
+        std.mem.indexOf(u8, stdout_str, "Connection timed out") != null)
+    {
+        print("{s}✗ Connection failed{s}\n", .{ RED, RESET });
+        print("Check if SMTP server {s}:{d} is accessible.\n\n", .{ smtp_server.host, smtp_server.port });
+    } else {
+        print("{s}⚠ Unknown result{s}\n\n", .{ YELLOW, RESET });
+        print("Output:\n{s}\n", .{stdout_str});
+    }
+
+    // Clear password from memory
+    @memset(password_buf[0..password_len], 0);
 }
 
 fn printApiInitError(err: anyerror) void {

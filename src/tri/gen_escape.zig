@@ -4,7 +4,7 @@
 const std = @import("std");
 
 pub fn escapeJson(allocator: std.mem.Allocator, str: []const u8) ![]u8 {
-    var result = std.ArrayList(u8).init(allocator);
+    var result = try std.ArrayList(u8).initCapacity(allocator, str.len * 2);
 
     for (str) |c| {
         switch (c) {

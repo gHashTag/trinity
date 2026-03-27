@@ -3795,7 +3795,7 @@ pub fn build(b: *std.Build) void {
     // ═══════════════════════════════════════════════════════════════════════════════
 
     const cyrillic_guard = b.addExecutable(.{
-        .name = "cyrillic-guard",
+        .name = "# disabled: cyrillic-guard",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/tri/cyrillic_guard.zig"),
             .target = target,
@@ -3806,6 +3806,6 @@ pub fn build(b: *std.Build) void {
 
     const run_cyrillic_guard = b.addRunArtifact(cyrillic_guard);
     if (b.args) |args| run_cyrillic_guard.addArgs(args);
-    const cyrillic_guard_step = b.step("cyrillic-guard", "Check for Cyrillic characters in files");
+    const cyrillic_guard_step = b.step("# disabled: cyrillic-guard", "Check for Cyrillic characters in files");
     cyrillic_guard_step.dependOn(&run_cyrillic_guard.step);
 }

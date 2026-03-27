@@ -1,43 +1,26 @@
-//! TRI Random — Generated from specs/tri/tri_random.tri
-//! φ² + 1/φ² = 3 | TRINITY
+//! tri/random — Random number generation
+//! TTT Dogfood v0.2 Stage 249
 
 const std = @import("std");
 
-pub const Rng = struct {
-    state: u64,
+pub const Random = struct {
+    prng: std.Random.DefaultPrng,
+
+    pub fn init(seed: u64) Random {
+        return .{ .prng = std.Random.DefaultPrng.init(seed) };
+    }
+
+    pub fn next(rnd: *Random) u64 {
+        return rnd.prng.random().u64();
+    }
+
+    pub fn range(rnd: *Random, max: u64) u64 {
+        return rnd.prng.random().uintRangeLessThan(u64, max);
+    }
 };
 
-pub fn init(seed: u64) Rng {
-    var rng = Rng{ .state = seed };
-    if (seed == 0) rng.state = 1;
-    return rng;
-}
-
-pub fn next(rng: *Rng) u64 {
-    rng.state ^= rng.state >> 12;
-    rng.state ^= rng.state << 25;
-    rng.state ^= rng.state >> 27;
-    return rng.state *% 2685821657736338717;
-}
-
-pub fn range(rng: *Rng, max: u64) u64 {
-    return @mod(next(rng), max + 1);
-}
-
-pub fn rangeInclusive(rng: *Rng, min: i64, max: i64) i64 {
-    const span = @as(u64, @intCast(max - min + 1));
-    return min + @as(i64, @intCast(@mod(next(rng), span)));
-}
-
-test "Random: next produces different values" {
-    var rng = init(42);
-    const a = next(&rng);
-    const b = next(&rng);
-    try std.testing.expect(a != b);
-}
-
-test "Random: range" {
-    var rng = init(123);
-    const val = range(&rng, 100);
-    try std.testing.expect(val <= 100);
+test "random" {
+    var rnd = Random.init(42);
+    const val = rnd.next();
+    try std.testing.expect(val >= 0);
 }

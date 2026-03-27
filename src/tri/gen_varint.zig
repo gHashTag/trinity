@@ -21,7 +21,7 @@ pub fn decodeVarint(data: []const u8) struct { value: u64, bytes: usize } {
     var shift: usize = 0;
 
     for (data, 0..) |byte, i| {
-        value |= @as(u64, byte & 0x7F) << shift;
+        value |= (@as(u64, byte & 0x7F)) << @intCast(shift);
         if ((byte & 0x80) == 0) {
             return .{ .value = value, .bytes = i + 1 };
         }

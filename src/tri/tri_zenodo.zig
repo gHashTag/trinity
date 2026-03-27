@@ -894,7 +894,7 @@ fn printV21Help() void {
 // V22 REPRODUCIBILITY CHECKLIST (NeurIPS/ICLR 2025)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runV22Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+fn runV22Command(_: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
         printV22Help();
         return;
