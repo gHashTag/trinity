@@ -1,89 +1,11 @@
-// @origin(manual) @regen(manual-impl)
-// ═══════════════════════════════════════════════════════════════════════════════
-// ARENA ELO — Standard ELO Rating Computation
-// ═══════════════════════════════════════════════════════════════════════════════
-//
-// LMSYS-style ELO: K=32, E = 1/(1+10^((Rb-Ra)/400)), Ra' = Ra + K*(S-E)
-//
-// φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
+// ELO Rating Selector — Self-hosted from .tri spec
+// φ² + 1/φ² = 3 | TRINITY
 
-const std = @import("std");
-const types = @import("types.zig");
+const gen = @import("gen_elo.zig");
 
-/// K-factor: controls how much a single game affects the rating
-pub const K_FACTOR: f64 = 32.0;
-
-/// Expected score of player A against player B
-pub fn expectedScore(rating_a: f64, rating_b: f64) f64 {
-    return 1.0 / (1.0 + std.math.pow(f64, 10.0, (rating_b - rating_a) / 400.0));
-}
-
-/// Update ratings after a battle
-/// Returns: { new_rating_a, new_rating_b }
-pub fn updateRatings(rating_a: f64, rating_b: f64, verdict: types.Verdict) struct { f64, f64 } {
-    const ea = expectedScore(rating_a, rating_b);
-    const eb = 1.0 - ea;
-
-    const sa: f64 = switch (verdict) {
-        .a_wins => 1.0,
-        .b_wins => 0.0,
-        .tie => 0.5,
-    };
-    const sb: f64 = 1.0 - sa;
-
-    const new_a = rating_a + K_FACTOR * (sa - ea);
-    const new_b = rating_b + K_FACTOR * (sb - eb);
-
-    return .{ new_a, new_b };
-}
-
-/// Format ELO as integer string into buffer
-pub fn formatElo(elo: f64, buf: []u8) []const u8 {
-    const elo_int: i32 = @intFromFloat(@round(elo));
-    return std.fmt.bufPrint(buf, "{d}", .{elo_int}) catch "???";
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Tests
-// ─────────────────────────────────────────────────────────────────────────────
-
-test "expected score equal ratings" {
-    const e = expectedScore(1000.0, 1000.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), e, 0.001);
-}
-
-test "expected score higher rated player" {
-    const e = expectedScore(1200.0, 1000.0);
-    // 1200 vs 1000: expected ~0.76 for higher rated
-    try std.testing.expect(e > 0.7);
-    try std.testing.expect(e < 0.8);
-}
-
-test "update ratings a_wins" {
-    const result = updateRatings(1000.0, 1000.0, .a_wins);
-    // Equal ratings, A wins → A gains 16, B loses 16
-    try std.testing.expectApproxEqAbs(@as(f64, 1016.0), result[0], 0.1);
-    try std.testing.expectApproxEqAbs(@as(f64, 984.0), result[1], 0.1);
-}
-
-test "update ratings tie" {
-    const result = updateRatings(1000.0, 1000.0, .tie);
-    // Equal ratings, tie → no change
-    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), result[0], 0.1);
-    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), result[1], 0.1);
-}
-
-test "update ratings conserves total" {
-    const result = updateRatings(1200.0, 800.0, .b_wins);
-    // Total ELO should be conserved
-    const total_before = 1200.0 + 800.0;
-    const total_after = result[0] + result[1];
-    try std.testing.expectApproxEqAbs(total_before, total_after, 0.001);
-}
-
-test "format elo" {
-    var buf: [16]u8 = undefined;
-    const s = formatElo(1042.7, &buf);
-    try std.testing.expectEqualStrings("1043", s);
-}
+// Re-export all constants and functions
+pub const Verdict = gen.Verdict;
+pub const K_FACTOR = gen.K_FACTOR;
+pub const expectedScore = gen.expectedScore;
+pub const updateRatings = gen.updateRatings;
+pub const formatElo = gen.formatElo;
