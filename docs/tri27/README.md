@@ -10,6 +10,33 @@
 
 TRI‑27 — тритный (ternary) RISC процессор с 27 тритными регистрами и полным стеком разработки: от ISA до FPGA.
 
+### In Trinity S³AI
+
+**TRI-27 is the Central Execution Engine** of Trinity S³AI:
+
+| Aspect | Role in Trinity |
+|--------|-----------------|
+| **Kernel** | Executes all Trinity workloads — from VSA operations to HSLM training |
+| **φ-Structure** | 27 registers = 3³ reflects `φ² + 1/φ² = 3` |
+| **Strand III** | Language & Hardware Bridge between math (Strand I) and brain (Strand II) |
+| **Dual Target** | Zig CPU emulator for development + Verilog FPGA for production |
+
+```
+Trinity S³AI Stack:
+┌─────────────────────────────────────────┐
+│  Strand I: Math (φ² + 1/φ² = 3)        │
+├─────────────────────────────────────────┤
+│  Strand II: Brain (Cognitive Arch)     │
+├─────────────────────────────────────────┤
+│  Strand III: TRI-27 Kernel ← YOU ARE   │
+│    • 27×32-bit registers (t0-t26)      │
+│    • 36 opcodes (arith, logic, ternary) │
+│    • Zig CPU + Verilog FPGA targets     │
+└─────────────────────────────────────────┘
+```
+
+[Back to Trinity Architecture](../ARCHITECTURE.md) | [Trinity S³AI Architecture](../trinity_s3ai_architecture.md)
+
 ### Architecture
 
 ```
