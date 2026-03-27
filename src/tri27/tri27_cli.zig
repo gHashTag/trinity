@@ -333,6 +333,18 @@ fn runExperienceCommand(_: Allocator, args: []const []const u8) !void {
     }
 }
 
+fn runTokenCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    if (args.len < 1) return;
+    print("\n{s}Token Commands{s}\n", .{ GREEN, RESET });
+    print("  tri27 token balance      - Check token balance\n", .{});
+    print("  tri27 token stake <days>   - Stake tokens\n", .{});
+    print("  tri27 token unstake        - Unstake tokens\n", .{});
+    print("  tri27 token claim          - Claim rewards\n", .{});
+    print("  tri27 token approve <spender> <amount>  - Approve spending\n", .{});
+    print("  tri27 token send <to> <amount>   - Send tokens\n", .{});
+}
+
 fn printHelp() void {
     print("\n{s}TRI-27 — Ternary Computing ISA{s}\n", .{ BOLD, RESET });
     print("{s}═════════════════════════════════════{s}\n\n", .{ DIM, RESET });
