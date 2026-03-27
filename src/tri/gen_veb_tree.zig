@@ -15,7 +15,7 @@ pub const VEBTree = struct {
 
     pub fn init(allocator: std.mem.Allocator, universe_size: u64) !VEBTree {
         const upper = @sqrt(@as(f64, @floatFromInt(universe_size)));
-        const cluster_size = @as(usize, @intCast(@ceil(upper)));
+        const cluster_size = @as(usize, @intFromFloat(upper));
         const cluster = try allocator.alloc(?*VEBTree, cluster_size);
         @memset(cluster, null);
 
@@ -31,13 +31,13 @@ pub const VEBTree = struct {
 
     fn high(tree: *const VEBTree, x: u64) u64 {
         const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
-        const size = @as(u64, @intCast(@ceil(upper)));
+        const size = @as(u64, @intFromFloat(upper));
         return @divTrunc(x, size);
     }
 
     fn low(tree: *const VEBTree, x: u64) u64 {
         const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
-        const size = @as(u64, @intCast(@ceil(upper)));
+        const size = @as(u64, @intFromFloat(upper));
         return x % size;
     }
 
@@ -60,13 +60,13 @@ pub const VEBTree = struct {
 
             if (tree.cluster[i] == null) {
                 const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
-                const size = @as(u64, @intCast(@ceil(upper)));
+                const size = @as(u64, @intFromFloat(upper));
                 const sub = try tree.allocator.create(VEBTree);
                 sub.* = try VEBTree.init(tree.allocator, size);
                 tree.cluster[i] = sub;
 
                 if (tree.summary == null) {
-                    const s_size = @as(u64, @intCast(@ceil(upper)));
+                    const s_size = @as(u64, @intFromFloat(upper));
                     const sum = try tree.allocator.create(VEBTree);
                     sum.* = try VEBTree.init(tree.allocator, s_size);
                     tree.summary = sum;

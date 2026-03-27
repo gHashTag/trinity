@@ -88,13 +88,42 @@ fn checkPath(allocator: std.mem.Allocator, path: []const u8) !struct {
     var files_with_cyrillic: usize = 0;
     var total_files: usize = 0;
 
-    _ = std.fs.cwd().statFile(path) catch {
-        // Try directory walk
-        var dir = std.fs.cwd().openDir(path, .{ .iterate = true }) catch |err| {
-            std.debug.print("Error opening {s}: {}\n", .{ path, err });
-            return .{ .files_with_cyrillic = 0, .total_files = 0 };
-        };
-        defer dir.close();
+    // Check if path is a file or directory
+    const is_dir = std.fs.cwd().statFile(path)) catch |err| {
+        if (err == error.IsDir) {
+            // It's a directory - walk it
+            return walkDirectory(allocator, path);
+        }
+        std.debug.print("Error accessing {s}: {}\n", .{ path, err });
+        return .{ .files_with_cyrillic = 0, .total_files = 0 };
+    };
+
+    // Single file
+    total_files = 1;
+    const result = checkFile(allocator, path) catch {
+        return .{ .files_with_cyrillic = 0, .total_files = 0 };
+    };
+
+    if (result.has_cyrillic) {
+        files_with_cyrillic = 1;
+        std.debug.print("  ❌ {s}:{d}\n", .{ path, result.first_line });
+    }
+
+    return .{ .files_with_cyrillic = files_with_cyrillic, .total_files = total_files };
+}
+
+fn walkDirectory(allocator: std.mem.Allocator, path: []const u8) !struct {
+    files_with_cyrillic: usize,
+    total_files: usize,
+} {
+    var files_with_cyrillic: usize = 0;
+    var total_files: usize = 0;
+
+    var dir = std.fs.cwd().openDir(path, .{ .iterate = true }) catch |err| {
+        std.debug.print("Error opening {s}: {}\n", .{ path, err });
+        return .{ .files_with_cyrillic = 0, .total_files = 0 };
+    };
+    defer dir.close();
 
         var walker = dir.walk(allocator) catch |err| {
             std.debug.print("Error walking {s}: {}\n", .{ path, err });
