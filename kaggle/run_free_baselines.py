@@ -34,14 +34,25 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Configuration
 # ============================================================================
 
+# Updated March 2026 - verified working free models
 OPENROUTER_FREE_MODELS = {
-    "deepseek-r1": "deepseek/deepseek-r1:free",
-    "qwen3-coder": "qwen/qwen3-coder-480b:free",
-    "mimo-v2": "xiaomi/mimo-v2-flash:free",
-    "gpt-oss": "openai/gpt-oss-120b:free",
-    "llama-3.3": "meta-llama/llama-3.3-70b:free",
-    "glm-4.5-air": "z-ai/glm-4.5-air:free",
-    "nemotron": "nvidia/nemotron-3-super-120b:free",
+    # Top tier - best for reasoning
+    "nemotron-super": "nvidia/nemotron-3-super-120b-a12b:free",  # 120B, 262K ctx
+    "qwen3-next": "qwen/qwen3-next-80b-a3b-instruct:free",      # 80B, 262K ctx
+    "llama-3.3": "meta-llama/llama-3.3-70b-instruct:free",     # 70B, GPT-4 level
+
+    # Mid tier - good balance
+    "mistral-small": "mistralai/mistral-small-3.1-24b-instruct:free",  # 24B
+    "gpt-oss-120b": "openai/gpt-oss-120b:free",                # 120B open weights
+    "glm-4.5-air": "z-ai/glm-4.5-air:free",                    # Multilingual
+
+    # Fast tier - for quick iterations
+    "qwen3-4b": "qwen/qwen3-4b:free",                          # 4B
+    "gemma-3-27b": "google/gemma-3-27b-it:free",               # 27B multimodal
+
+    # Specialized
+    "trinity-mini": "arcee-ai/trinity-mini:free",               # Small but capable
+    "hermes-3-405b": "nousresearch/hermes-3-llama-3.1-405b:free",  # 405B
 }
 
 TRACKS = {
@@ -266,6 +277,22 @@ Confidence: [0.0 to 1.0]"""
 
     # Extract answer (before "Confidence:" line)
     response = result["content"]
+
+    # Handle None/empty responses gracefully
+    if not response or not response.strip():
+        # Model returned empty or None - treat as wrong
+        return BenchmarkResult(
+            item_id=item.id,
+            track=item.track,
+            model=model_name,
+            response="",
+            ground_truth=item.ground_truth,
+            confidence=0.5,  # Default confidence
+            correct=False,
+            latency_ms=result.get("latency_ms", 0),
+        )
+
+    # Extract answer (before "Confidence:" line)
     lines = response.split('\n')
     answer_lines = []
     for line in lines:
@@ -436,12 +463,12 @@ def main():
     if args.model:
         models = [args.model]
     elif args.pilot:
-        # Pilot: 3 fastest models
-        models = ["mimo-v2", "llama-3.3", "glm-4.5-air"]
+        # Pilot: 3 top-tier models (verified working March 2026)
+        models = ["nemotron-super", "qwen3-next", "llama-3.3"]
     elif args.full:
         models = list(OPENROUTER_FREE_MODELS.keys())
     else:
-        models = ["mimo-v2"]  # Default: single fastest model
+        models = ["llama-3.3"]  # Default: reliable GPT-4 level
 
     # Determine max items
     if args.max_items:

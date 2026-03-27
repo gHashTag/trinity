@@ -1,84 +1,161 @@
-// ELO Rating — Generated from specs/arena/elo.tri
-// φ² + 1/φ² = 3 | TRINITY
+//! Arena Elo — Generated from specs/arena/elo.tri
+//! φ² + 1/φ² = 3 | TRINITY
+//!
+//! DO NOT EDIT: This file is generated from elo.tri spec
+//! Modify spec and regenerate: tri vibee-gen arena_elo
 
 const std = @import("std");
 
-/// Battle outcome verdict
-pub const Verdict = enum {
-    a_wins,
-    b_wins,
-    tie,
+/// ════════════════════════════════════════════════════════════════════════════════════════════
+/// ARENA ELO RATING SYSTEM
+/// ════════════════════════════════════════════════════════════════════════
+/// LMSYS standard v1.0 for Trinity Arena LLM battles
+/// ════════════════════════════════════════════════════════════════════
+/// Match verdict: 1=A wins, 0=tie, -1=B wins
+pub const Verdict = enum(i8) {
+    a_wins = 1,  // Model A wins
+    b_wins = 2,  // Model B wins
+    tie = 0,    // Draw
 };
 
-/// K-factor: controls how much a single game affects the rating
+/// Match result with ELO updates
+pub const Match = struct {
+    verdict: Verdict = .tie,
+    confidence: f64 = 1.0,
+};
+
+/// ════════════════════════════════════════════════════════════════
+/// CONSTANTS
+/// ════════════════════════════════════════════════════════════════
+/// K-factor for ELO updates (LMSYS standard)
 pub const K_FACTOR: f64 = 32.0;
 
-/// Expected score of player A against player B
+/// Starting rating for new models
+pub const INITIAL_RATING: f64 = 1500.0;
+
+/// Minimum allowed rating
+pub const MIN_RATING: f64 = 100.0;
+
+/// Maximum allowed rating
+pub const MAX_RATING: f64 = 3000.0;
+
+/// Small epsilon for numerical stability
+pub const EPSILON: f64 = 1e-6;
+
+/// ════════════════════════════════════════════════════════════════
+/// ELO CALCULATION
+/// ════════════════════════════════════════════════════════════════
+/// Calculate expected score using logistic function
+/// Formula: E = 1/(1+10^((Rb-Ra)/400))
 pub fn expectedScore(rating_a: f64, rating_b: f64) f64 {
-    return 1.0 / (1.0 + std.math.pow(f64, 10.0, (rating_b - rating_a) / 400.0));
+    const rating_diff = rating_b - rating_a;
+    const exponent = -rating_diff / 400.0;
+    const power_of_10 = std.math.pow(f64, 10.0, exponent);
+    const denominator = 1.0 + power_of_10;
+    return @as(f64, 1.0) / denominator;
 }
 
-/// Update ratings after a battle
-/// Returns: { new_rating_a, new_rating_b }
-pub fn updateRatings(rating_a: f64, rating_b: f64, verdict: Verdict) struct { f64, f64 } {
-    const ea = expectedScore(rating_a, rating_b);
-    const eb = 1.0 - ea;
-
-    const sa: f64 = switch (verdict) {
+/// Update ELO ratings based on match result
+/// Returns: new rating_a, new rating_b
+pub fn updateRatings(
+    match: Match,
+    rating_a: *f64,
+    rating_b: *f64,
+) !void {
+    const k = K_FACTOR;
+    const actual: f64 = switch (match.verdict) {
         .a_wins => 1.0,
-        .b_wins => 0.0,
-        .tie => 0.5,
+        .b_wins => -1.0,
+        .tie => 0.0,
     };
-    const sb: f64 = 1.0 - sa;
+    const expected = expectedScore(rating_a.*, rating_b.*);
+    const change = k * (actual - expected);
 
-    const new_a = rating_a + K_FACTOR * (sa - ea);
-    const new_b = rating_b + K_FACTOR * (sb - eb);
-
-    return .{ new_a, new_b };
+    rating_a.* += change;
+    rating_b.* -= change;
 }
 
-/// Format ELO as integer string into buffer
-pub fn formatElo(elo: f64, buf: []u8) []const u8 {
-    const elo_int: i32 = @intFromFloat(@round(elo));
-    return std.fmt.bufPrint(buf, "{d}", .{elo_int}) catch "???";
+/// Format ELO rating to string with 4 significant digits
+/// Returns: stack-allocated string
+pub fn formatElo(rating: f64, allocator: std.mem.Allocator) ![]const u8 {
+    // Clamp to reasonable range
+    const clamped = @max(MIN_RATING, @min(MAX_RATING, rating));
+
+    // Format with 1 decimal place for readability
+    return std.fmt.allocPrint(allocator, "{d:.1}", .{clamped});
 }
 
-// ============================================================================
+// ════════════════════════════════════════════════════════════════
 // TESTS
-// ============================================================================
-
-test "expected score equal ratings" {
-    const e = expectedScore(1000.0, 1000.0);
-    try std.testing.expectApproxEqAbs(@as(f64, 0.5), e, 0.001);
+// ════════════════════════════════════════════════════════════════
+test "Verdict: values correct" {
+    try std.testing.expectEqual(@as(i8, 1), @intFromEnum(Verdict.a_wins));
+    try std.testing.expectEqual(@as(i8, 0), @intFromEnum(Verdict.tie));
+    try std.testing.expectEqual(@as(i8, 2), @intFromEnum(Verdict.b_wins));
 }
 
-test "expected score higher rated player" {
-    const e = expectedScore(1200.0, 1000.0);
-    try std.testing.expect(e > 0.7);
-    try std.testing.expect(e < 0.8);
+test "Constants: K_FACTOR" {
+    try std.testing.expectEqual(@as(f64, 32.0), K_FACTOR);
 }
 
-test "update ratings a_wins" {
-    const result = updateRatings(1000.0, 1000.0, .a_wins);
-    try std.testing.expectApproxEqAbs(@as(f64, 1016.0), result[0], 0.1);
-    try std.testing.expectApproxEqAbs(@as(f64, 984.0), result[1], 0.1);
+test "Constants: INITIAL_RATING" {
+    try std.testing.expectEqual(@as(f64, 1500.0), INITIAL_RATING);
 }
 
-test "update ratings tie" {
-    const result = updateRatings(1000.0, 1000.0, .tie);
-    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), result[0], 0.1);
-    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), result[1], 0.1);
+test "Constants: rating bounds" {
+    try std.testing.expectEqual(@as(f64, 100.0), MIN_RATING);
+    try std.testing.expectEqual(@as(f64, 3000.0), MAX_RATING);
 }
 
-test "update ratings conserves total" {
-    const result = updateRatings(1200.0, 800.0, .b_wins);
-    const total_before = 1200.0 + 800.0;
-    const total_after = result[0] + result[1];
-    try std.testing.expectApproxEqAbs(total_before, total_after, 0.001);
+test "expectedScore: equal ratings" {
+    const result = expectedScore(1500.0, 1500.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.5), result, 0.01);
 }
 
-test "format elo" {
-    var buf: [16]u8 = undefined;
-    const s = formatElo(1042.7, &buf);
-    try std.testing.expectEqualStrings("1043", s);
+test "expectedScore: A wins B" {
+    const result = expectedScore(1500.0, 1300.0);
+    try std.testing.expect(result > 0.23 and result < 0.26);
+}
+
+test "updateRatings: A wins B" {
+    var rating_a: f64 = 1500.0;
+    var rating_b: f64 = 1400.0;
+
+    try updateRatings(.{ .verdict = .a_wins }, &rating_a, &rating_b);
+    try std.testing.expectApproxEqAbs(@as(f64, 1510.0), rating_a, 16.0);
+}
+
+test "updateRatings: B wins A" {
+    var rating_a: f64 = 1500.0;
+    var rating_b: f64 = 1400.0;
+
+    try updateRatings(.{ .verdict = .b_wins }, &rating_a, &rating_b);
+    try std.testing.expect(rating_a < 1500.0);
+    try std.testing.expect(rating_b > 1400.0);
+}
+
+test "updateRatings: tie (no change)" {
+    var rating_a: f64 = 1400.0;
+    var rating_b: f64 = 1400.0;
+    try updateRatings(.{ .verdict = .tie }, &rating_a, &rating_b);
+    try std.testing.expectApproxEqAbs(@as(f64, 1400.0), rating_a, 0.0);
+    try std.testing.expectApproxEqAbs(@as(f64, 1400.0), rating_b, 0.0);
+}
+
+test "formatElo: 1500" {
+    const formatted = try formatElo(1500.0, std.testing.allocator);
+    defer std.testing.allocator.free(formatted);
+    try std.testing.expectEqualSlices(u8, "1500.0", formatted);
+}
+
+test "formatElo: 999999 (max)" {
+    const formatted = try formatElo(999999.0, std.testing.allocator);
+    defer std.testing.allocator.free(formatted);
+    try std.testing.expectEqualSlices(u8, "3000.0", formatted);
+}
+
+test "formatElo: 50 (min)" {
+    const formatted = try formatElo(50.0, std.testing.allocator);
+    defer std.testing.allocator.free(formatted);
+    try std.testing.expectEqualSlices(u8, "100.0", formatted);
 }

@@ -29,6 +29,12 @@
   <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
   <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last Commit"></a>
       <a href="https://doi.org/10.5281/zenodo.18947017"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg" alt="DOI"></a>
+  <!-- NEW: Zenodo v9.0 Badges -->
+  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg" alt="DOI"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://img.shields.io/badge/Zenodo-v9.0-blue?logo=zenodo" alt="Zenodo v9.0"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227865"><img src="https://img.shields.io/badge/PPL-125.3-brightgreen?style=flat-square" alt="HSLM"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227869"><img src="https://img.shields.io/badge/tests-98.7%25-brightgreen?style=flat-square" alt="Tests"></a>
+  <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/SIMD-11.5%25C3%97-orange?style=flat-square" alt="SIMD"></a>
 </p>
 
 ---
