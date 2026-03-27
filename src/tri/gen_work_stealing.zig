@@ -10,7 +10,7 @@ pub const WorkStealingDeque = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, capacity: usize) !WorkStealingDeque {
-        var tasks = try std.ArrayList(i64).initCapacity(allocator, capacity);
+        const tasks = try std.ArrayList(i64).initCapacity(allocator, capacity);
         return .{
             .tasks = tasks,
             .bottom = 0,

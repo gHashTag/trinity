@@ -51,6 +51,7 @@ test "hazard pointer acquire release" {
     const hazard = registry.acquire();
     try std.testing.expect(hazard != null);
     if (hazard) |h| {
-        h.release();
+        h.pointer = null;
+        h.active = false;
     }
 }
