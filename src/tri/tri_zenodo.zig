@@ -269,53 +269,58 @@ fn generateLatexTable(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
     // Create a booktabs table with significance markers
-    var table = zenodo_latex_table.LaTeXTable.init(allocator);
-    defer table.deinit();
+    const table = zenodo_latex_table.LaTeXTable{
+        .caption = "Ternary Encoding Comparison (ICLR 2025 Format)",
+        .label = "tab:ternary-comparison",
+        .alignments = &.{ .left, .center, .center, .center, .center },
+        .rows = &.{
+            // Header row
+            .{
+                .cells = &.{
+                    .{ .content = "Encoding", .bold = true },
+                    .{ .content = "Params", .bold = true },
+                    .{ .content = "PPL", .bold = true },
+                    .{ .content = "Size (KB)", .bold = true },
+                    .{ .content = "DSP\\%", .bold = true },
+                },
+                .is_header = true,
+            },
+            // Data rows
+            .{
+                .cells = &.{
+                    .{ .content = "GF16" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "125.0", .significance = "***" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "TF3" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "98.2", .significance = "**" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "Float32", .bold = true },
+                    .{ .content = "1.95M" },
+                    .{ .content = "68.5" },
+                    .{ .content = "7800" },
+                    .{ .content = "15" },
+                },
+            },
+        },
+        .footnotes = &.{
+            "Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)",
+            "All results on TinyStories validation set (1M tokens)",
+        },
+    };
 
-    try table.setCaption("Ternary Encoding Comparison (ICLR 2025 Format)");
-    try table.setLabel("tab:ternary-comparison");
-
-    // Add header row
-    try table.appendHeaderRow(&.{
-        .{ .text = "Encoding", .alignment = .left },
-        .{ .text = "Params", .alignment = .center },
-        .{ .text = "PPL", .alignment = .center },
-        .{ .text = "Size (KB)", .alignment = .center },
-        .{ .text = "DSP\\%", .alignment = .center },
-    });
-
-    // Add data rows with significance markers
-    try table.appendRow(&.{
-        .{ .text = "GF16" },
-        .{ .text = "1.95M" },
-        .{ .text = "125.0$^{***}$" },
-        .{ .text = "385" },
-        .{ .text = "0" },
-    });
-
-    try table.appendRow(&.{
-        .{ .text = "TF3" },
-        .{ .text = "1.95M" },
-        .{ .text = "98.2$^{**}$" },
-        .{ .text = "385" },
-        .{ .text = "0" },
-    });
-
-    try table.appendRow(&.{
-        .text = "Float32",
-        .bold = true,
-    }, &.{
-        .{ .text = "1.95M" },
-        .{ .text = "68.5" },
-        .{ .text = "7800" },
-        .{ .text = "15" },
-    });
-
-    // Add footnotes
-    try table.addFootnote("Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)");
-    try table.addFootnote("All results on TinyStories validation set (1M tokens)");
-
-    const latex = try table.toLaTeX(allocator);
+    const latex = try table.generate(allocator);
     defer allocator.free(latex);
 
     print("{s}\n", .{latex});
