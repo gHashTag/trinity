@@ -371,27 +371,32 @@ fn generateParetoFrontier(allocator: std.mem.Allocator, args: []const []const u8
     print("\n{s}{s}V16 Pareto Frontier Analysis (MLSys 2025){s}\n", .{ CYAN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-    // Create Pareto frontier for accuracy vs model size
-    var frontier = zenodo_v16_extensions.ParetoFrontier{
-        .x_axis_name = "Model Size (KB)",
-        .y_axis_name = "Perplexity (lower is better)",
-        .points = std.ArrayList(zenodo_v16_extensions.ParetoPoint).init(allocator),
+    // Define Pareto points (x=size in KB, y=perplexity)
+    const points = [_]zenodo_v16_extensions.ParetoPoint{
+        .{ .x_value = 385.0, .y_value = 125.0, .model_name = "HSLM-GF16", .is_pareto_optimal = false },
+        .{ .x_value = 385.0, .y_value = 98.2, .model_name = "HSLM-TF3", .is_pareto_optimal = true },
+        .{ .x_value = 7800.0, .y_value = 68.5, .model_name = "Float32", .is_pareto_optimal = true },
+        .{ .x_value = 192.0, .y_value = 145.0, .model_name = "HSLM-8bit", .is_pareto_optimal = false },
     };
-    defer frontier.points.deinit();
 
-    // Add points (x=size, y=ppl, name)
-    try frontier.points.append(.{ .x = 385, .y = 125.0, .name = "HSLM-GF16" });
-    try frontier.points.append(.{ .x = 385, .y = 98.2, .name = "HSLM-TF3" });
-    try frontier.points.append(.{ .x = 7800, .y = 68.5, .name = "Float32" });
-    try frontier.points.append(.{ .x = 192, .y = 145.0, .name = "HSLM-8bit" });
+    // Create Pareto frontier for accuracy vs model size
+    const frontier = zenodo_v16_extensions.ParetoFrontier{
+        .metric_x_name = "Model Size (KB)",
+        .metric_y_name = "Perplexity (lower is better)",
+        .higher_x_better = false,
+        .higher_y_better = false,
+        .points = &points,
+    };
 
-    // Calculate Pareto-optimal points
-    const pareto_optimal = try frontier.getParetoOptimal(allocator);
-    defer allocator.free(pareto_optimal);
+    // Generate formatted Markdown output
+    const md = try frontier.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("{s}\n", .{md});
 
     print("Model Accuracy vs Size Trade-off:\n\n", .{});
-    for (pareto_optimal, 0..) |pt, i| {
-        print("  {d}. {s}: Size={d} KB, PPL={d:.1}\n", .{ i + 1, pt.name, pt.x, pt.y });
+    for (points, 0..) |pt, i| {
+        print("  {d}. {s}: Size={d:.0} KB, PPL={d:.1}\n", .{ i + 1, pt.model_name, pt.x_value, pt.y_value });
     }
 
     print("\n{s}✅ Pareto frontier calculated!{s}\n", .{ GREEN, RESET });
