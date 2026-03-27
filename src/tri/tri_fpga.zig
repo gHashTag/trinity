@@ -1819,6 +1819,34 @@ fn printPowerUsage() !void {
     , .{ CYAN, RESET });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// UART COMMANDS (Stubs for V16 integration)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("\n{s}fpga build-uart: Build UART firmware for FPGA{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  TODO: Implement UART firmware build pipeline\n\n", .{});
+    return error.NotImplemented;
+}
+
+pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("\n{s}fpga flash-uart: Flash UART firmware to FPGA{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  TODO: Implement UART firmware flash pipeline\n\n", .{});
+    return error.NotImplemented;
+}
+
+pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+    std.debug.print("\n{s}fpga uart-test: Test UART communication with FPGA{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  TODO: Implement UART test suite\n\n", .{});
+    return error.NotImplemented;
+}
+
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
 

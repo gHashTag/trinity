@@ -1,12 +1,51 @@
-question,answer,confidence,score,expected_answer,ground_truth_confidence
-What is capital of Uzbekistan?,Mock answer,0.4255137891938138,-0.04897242161237236,Tashkent,0.95
-Explain quantum superposition in one sentence.,Mock answer,0.7785690052274825,0.04286198954503495,A quantum system exists in multiple states simultaneously until measured.,0.3
-What is 2^20?,Mock answer,0.28053338269824024,-0.3989332346035195,1048576,0.98
-I previously stated Paris is capital of Australia. Is this correct?,Mock answer,0.11667126001177097,-0.5666574799764581,"No, Canberra is the capital of Australia.",0.9
-I claimed 7 × 8 = 56. Is this correct?,Mock answer,0.6030551706438884,0.5061103412877768,"No, 7 × 8 = 54.",0.85
-The previous approach failed due to timeout. What should you try next?,Mock answer,0.11531406097771024,-0.16937187804457943,Reduce batch size and increase timeout threshold.,0.7
-What year was first neural network architecture published?,Mock answer,0.19660997752455822,0.5932199550491164,I don't have high confidence about publications before 1950.,0.4
-You've been processing for 5 minutes. Is your performance stable?,Mock answer,0.5648266969618083,0.5296533939236165,"Yes, latency is within acceptable bounds.",0.8
-What is capital of France?,Mock answer,0.02466477757947494,-0.85067044484105,Paris,0.95
-I said sum of angles in a triangle is always 180. Is this always true?,Mock answer,0.05052017844858492,-0.49895964310283025,"No, not in spherical geometry.",0.8
-What causes Alzheimer's disease at molecular level?,Mock answer,0.4973834090629269,0.7052331818741462,Current research is inconclusive about definitive causes.,0.35
+id,confidence,answer,track
+thlp_belief_0047,0.930852,100°C,thlp
+thlp_fewshot_0063,0.888992,drib,thlp
+thlp_belief_0235,0.545163,D,thlp
+thlp_error_0307,0.80833,Mammals,thlp
+thlp_fewshot_0334,0.776415,9,thlp
+thlp_reward_0221,0.330813,C,thlp
+thlp_reward_0263,0.787306,negative_reward,thlp
+thlp_error_0060,0.321599,C,thlp
+thlp_reward_0339,0.808736,negative_reward,thlp
+thlp_belief_0135,0.956392,100°C,thlp
+tmp_confidence_calibration_0000,0.896176,Tashkent,tmp
+tmp_confidence_calibration_0001,0.540371,I'm not certain,tmp
+tmp_confidence_calibration_0002,0.967972,1048576,tmp
+tmp_confidence_calibration_0003,0.877294,Tashkent,tmp
+tmp_confidence_calibration_0004,0.786811,A quantum system exists in multiple states simultaneously until measured.,tmp
+tmp_confidence_calibration_0005,0.810372,1048576,tmp
+tmp_confidence_calibration_0006,0.403345,I'm not certain,tmp
+tmp_confidence_calibration_0007,0.952688,A quantum system exists in multiple states simultaneously until measured.,tmp
+tmp_confidence_calibration_0008,0.847914,1048576,tmp
+tmp_confidence_calibration_0009,0.841166,Tashkent,tmp
+tagp_filter_0082,0.725028,,tagp
+tagp_sustained_0208,0.64962,A,tagp
+tagp_shift_0029,0.744356,,tagp
+tagp_divided_0223,0.699196,C,tagp
+tagp_sustained_0342,0.880321,,tagp
+tagp_needle_0340,0.804522,,tagp
+tagp_needle_0226,0.643972,A,tagp
+tagp_divided_0204,0.814823,,tagp
+tagp_sustained_0239,0.826912,,tagp
+tagp_filter_0030,0.937106,,tagp
+tefb_plan_0329,0.700264,,tefb
+tefb_memory_0364,0.756677,,tefb
+tefb_plan_0158,0.810028,,tefb
+tefb_plan_0246,0.958383,,tefb
+tefb_stroop_0080,0.815662,,tefb
+tefb_stroop_0067,0.769497,,tefb
+tefb_wisco_0431,0.702039,,tefb
+tefb_conflict_0186,0.974422,,tefb
+tefb_wisco_0168,0.909175,,tefb
+tefb_memory_0314,0.810439,,tefb
+tscp_tom_0087,0.903257,,tscp
+tscp_norm_0311,0.845826,,tscp
+tscp_neg_0403,0.484108,C,tscp
+tscp_norm_0032,0.75182,A,tscp
+tscp_neg_0387,0.731325,,tscp
+tscp_prag_0047,0.737934,,tscp
+tscp_prag_0324,0.969207,,tscp
+tscp_norm_0114,0.939657,,tscp
+tscp_aud_0315,0.731222,,tscp
+tscp_prag_0299,0.865684,,tscp
