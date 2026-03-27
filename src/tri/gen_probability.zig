@@ -4,6 +4,8 @@
 
 const std = @import("std");
 
+const pi = 3.14159265358979323846;
+
 /// Simple PRNG state
 pub const PRNG = struct {
     state: u64,
@@ -57,7 +59,7 @@ pub fn normal(mean: f64, std_dev: f64, rng: *PRNG) f64 {
     const u_b = rng.float();
 
     const ln_u_a = std.math.log(f64, std.math.e, u_a);
-    const z0 = std.math.sqrt(-2.0 * ln_u_a) * std.math.cos(2.0 * std.pi * u_b);
+    const z0 = std.math.sqrt(-2.0 * ln_u_a) * std.math.cos(2.0 * pi * u_b);
 
     return mean + std_dev * z0;
 }
