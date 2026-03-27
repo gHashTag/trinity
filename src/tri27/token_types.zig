@@ -339,7 +339,7 @@ pub fn zeroAddress() [32]u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TESTS - Generated from behaviors and test_cases
+// TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "phi_constants" {
@@ -348,4 +348,194 @@ test "phi_constants" {
     try std.testing.expectApproxEqAbs(phi_val * phi_inv_val, 1.0, 1e-10);
     const phi_sq_val: f64 = PHI_SQ;
     try std.testing.expectApproxEqAbs(phi_sq_val - phi_val, 1.0, 1e-10);
+}
+
+test "TokenAccount struct layout" {
+    const account = TokenAccount{
+        .balance = 1_000_000_000_000_000_000,
+        .nonce = 5,
+        .allowance = 500_000_000_000_000_000,
+    };
+    try std.testing.expectEqual(@as(u128, 1_000_000_000_000_000_000), account.balance);
+    try std.testing.expectEqual(@as(u64, 5), account.nonce);
+    try std.testing.expectEqual(@as(u128, 500_000_000_000_000_000), account.allowance);
+}
+
+test "TokenStake struct layout" {
+    const stake = TokenStake{
+        .staker = [_]u8{0x01} ** 32,
+        .amount = 100 * ONE_TRI,
+        .lock_time = 1000,
+        .unlock_time = 2000,
+        .is_active = true,
+    };
+    try std.testing.expectEqual(@as(u128, 100 * ONE_TRI), stake.amount);
+    try std.testing.expect(stake.is_active);
+}
+
+test "formatTokenAmount - integer" {
+    const result = try formatTokenAmount(std.testing.allocator, 100 * ONE_TRI);
+    defer std.testing.allocator.free(result);
+    try std.testing.expectEqualStrings("100 TRI", result);
+}
+
+test "formatTokenAmount - with decimals" {
+    const result = try formatTokenAmount(std.testing.allocator, 100 * ONE_TRI + 500_000_000_000_000_000);
+    defer std.testing.allocator.free(result);
+    try std.testing.expectEqualStrings("100.5 TRI", result);
+}
+
+test "formatTokenAmount - with trailing zeros" {
+    const result = try formatTokenAmount(std.testing.allocator, 100 * ONE_TRI + 100_000_000_000_000_000);
+    defer std.testing.allocator.free(result);
+    try std.testing.expectEqualStrings("100.1 TRI", result);
+}
+
+test "parseTokenAmount - integer" {
+    const result = try parseTokenAmount("100");
+    try std.testing.expectEqual(@as(u128, 100 * ONE_TRI), result);
+}
+
+test "parseTokenAmount - with decimals" {
+    const result = try parseTokenAmount("100.5");
+    try std.testing.expectEqual(@as(u128, 100 * ONE_TRI + 500_000_000_000_000_000), result);
+}
+
+test "parseTokenAmount - with many decimals" {
+    const result = try parseTokenAmount("1.123456789012345678");
+    try std.testing.expectEqual(@as(u128, ONE_TRI + 123_456_789_012_345_678), result);
+}
+
+test "parseTokenAmount - invalid format" {
+    const result = parseTokenAmount("abc");
+    try std.testing.expectError(error.InvalidFormat, result);
+}
+
+test "calculateAPY - 10% return over 30 days" {
+    const staked = ONE_TRI;
+    const rewards = ONE_TRI / 10; // 10% return
+    const lock_period: i64 = 30 * 24 * 3600;
+
+    const apy = calculateAPY(staked, rewards, lock_period);
+    // 10% * (365/30) ≈ 121.67%
+    try std.testing.expectApproxEqRel(apy, 121.67, 0.01);
+}
+
+test "calculateAPY - zero stake" {
+    const apy = calculateAPY(0, 100, 86400);
+    try std.testing.expectEqual(@as(f64, 0.0), apy);
+}
+
+test "isValidAddress - zero address" {
+    const addr = zeroAddress();
+    try std.testing.expect(!isValidAddress(addr));
+}
+
+test "isValidAddress - valid address" {
+    var addr = zeroAddress();
+    addr[0] = 0x01;
+    try std.testing.expect(isValidAddress(addr));
+}
+
+test "TokenState - getBalance returns 0 for unknown address" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    const balance = state.getBalance(addr);
+    try std.testing.expectEqual(@as(u128, 0), balance);
+}
+
+test "TokenState - updateBalance add" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    try state.updateBalance(addr, 100 * ONE_TRI);
+
+    const balance = state.getBalance(addr);
+    try std.testing.expectEqual(@as(u128, 100 * ONE_TRI), balance);
+}
+
+test "TokenState - updateBalance subtract" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    try state.updateBalance(addr, 100 * ONE_TRI);
+    try state.updateBalance(addr, -30 * ONE_TRI);
+
+    const balance = state.getBalance(addr);
+    try std.testing.expectEqual(@as(u128, 70 * ONE_TRI), balance);
+}
+
+test "TokenState - updateBalance insufficient" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    try state.updateBalance(addr, 10 * ONE_TRI);
+
+    const result = state.updateBalance(addr, -20 * ONE_TRI);
+    try std.testing.expectError(error.InsufficientBalance, result);
+}
+
+test "TokenState - stake operations" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    const now = std.time.timestamp();
+
+    const stake = TokenStake{
+        .staker = addr,
+        .amount = 100 * ONE_TRI,
+        .lock_time = now,
+        .unlock_time = now + 86400,
+        .is_active = true,
+    };
+
+    try state.stakes.put(addr, stake);
+
+    const retrieved = state.getStake(addr);
+    try std.testing.expect(retrieved != null);
+    try std.testing.expectEqual(@as(u128, 100 * ONE_TRI), retrieved.?.amount);
+}
+
+test "TokenState - isStakeUnlocked" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    const now = std.time.timestamp();
+
+    const stake = TokenStake{
+        .staker = addr,
+        .amount = 100 * ONE_TRI,
+        .lock_time = now - 1000,
+        .unlock_time = now - 100, // Already unlocked
+        .is_active = true,
+    };
+
+    try state.stakes.put(addr, stake);
+    try std.testing.expect(state.isStakeUnlocked(addr));
+}
+
+test "TokenState - isStakeUnlocked still locked" {
+    var state = TokenState.init(std.testing.allocator);
+    defer state.deinit();
+
+    const addr = [_]u8{0x01} ** 32;
+    const now = std.time.timestamp();
+
+    const stake = TokenStake{
+        .staker = addr,
+        .amount = 100 * ONE_TRI,
+        .lock_time = now - 1000,
+        .unlock_time = now + 86400, // Still locked
+        .is_active = true,
+    };
+
+    try state.stakes.put(addr, stake);
+    try std.testing.expect(!state.isStakeUnlocked(addr));
 }

@@ -41,6 +41,8 @@ pub fn runTri27Command(allocator: Allocator, args: []const []const u8) !void {
         return runExperienceCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "isa")) {
         return runIsaCommand();
+    } else if (std.mem.eql(u8, subcmd, "token")) {
+        return runTokenCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help") or std.mem.eql(u8, subcmd, "-h")) {
         printHelp();
     } else {
