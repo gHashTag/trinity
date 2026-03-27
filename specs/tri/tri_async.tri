@@ -1,0 +1,52 @@
+name: tri_async
+version: "0.1.0"
+module: tri.async
+description: "TRI Async — future and promise primitives"
+
+types:
+  Future(T):
+    description: "Async computation result"
+    fields:
+      completed: bool
+      value: T
+
+  Promise(T):
+    description: "Writable async value"
+    fields:
+      fulfilled: bool
+      future: "Future(T)"
+
+functions:
+  newPromise:
+    returns: "Promise(T)"
+    description: "Create unfulfilled promise"
+
+  fulfill:
+    params:
+      - name: promise
+        type: "Promise(T)"
+      - name: value
+        type: "T"
+    returns: "void"
+    description: "Fulfill promise with value"
+
+  await:
+    params:
+      - name: future
+        type: "Future(T)"
+    returns: "T"
+    description: "Wait for future completion"
+
+  map:
+    params:
+      - name: future
+        type: "Future(T)"
+      - name: fn
+        type: "fn(T) -> U"
+    returns: "Future(U)"
+    description: "Transform future result"
+
+behaviors:
+  - name: single_assignment
+    description: "Promises can only be fulfilled once"
+    note: "Subsequent fulfill calls are ignored"

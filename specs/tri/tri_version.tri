@@ -1,0 +1,63 @@
+name: tri_version
+version: "0.1.0"
+module: tri.version
+description: "TRI version utilities — semantic versioning"
+
+types:
+  Version:
+    description: "Semantic version"
+    fields:
+      major: u32
+      minor: u32
+      patch: u32
+      pre: ?[]const u8
+      build: ?[]const u8
+
+  VersionReq:
+    description: "Version requirement"
+    fields:
+      op: RequirementOp
+      version: Version
+
+  RequirementOp:
+    description: "Comparison operators"
+    enum:
+      - exact
+      - greater
+      - greater_eq
+      - less
+      - less_eq
+      - caret
+      - tilde
+      - compatible
+
+functions:
+  parse:
+    params:
+      - name: version_str
+        type: "[]const u8"
+    returns: "!Version"
+    description: "Parse semantic version string"
+
+  satisfies:
+    params:
+      - name: version
+        type: "Version"
+      - name: req
+        type: "VersionReq"
+    returns: "bool"
+    description: "Check if version satisfies requirement"
+
+  compare:
+    params:
+      - name: a
+        type: "Version"
+      - name: b
+        type: "Version"
+    returns: "Ordering"
+    description: "Compare two versions"
+
+behaviors:
+  - name: semver
+    description: "Semantic Versioning 2.0.0"
+    note: "MAJOR.MINOR.PATCH-PRERELEASE+BUILD"

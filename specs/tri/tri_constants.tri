@@ -1,0 +1,85 @@
+name: tri_constants
+version: "0.1.0"
+module: tri.constants
+description: "TRI constants — sacred numbers and system limits"
+
+types:
+  SystemLimits:
+    description: "System resource limits"
+    fields:
+      max_path_len: usize
+      max_line_len: usize
+      max_args: usize
+      max_env_vars: usize
+
+  SacredConstants:
+    description: "Sacred mathematical constants"
+    fields:
+      phi: f64
+      pi: f64
+      e: f64
+      sqrt2: f64
+      sqrt3: f64
+      golden_ratio: f64
+
+functions:
+  maxPathLen:
+    returns: "usize"
+    description: "Maximum path length"
+
+  maxLineLen:
+    returns: "usize"
+    description: "Maximum line length for parsing"
+
+  maxArgs:
+    returns: "usize"
+    description: "Maximum command arguments"
+
+  maxEnvVars:
+    returns: "usize"
+    description: "Maximum environment variables"
+
+  getPHI:
+    returns: "f64"
+    description: "Golden ratio φ = (1 + √5) / 2"
+
+  getPI:
+    returns: "f64"
+    description: "Circle constant π"
+
+  getE:
+    returns: "f64"
+    description: "Euler's number e"
+
+  getSQRT2:
+    returns: "f64"
+    description: "Square root of 2"
+
+  getSQRT3:
+    returns: "f64"
+    description: "Square root of 3"
+
+  getGoldenRatio:
+    returns: "f64"
+    description: "Golden ratio (alias for PHI)"
+
+  getSystemLimits:
+    returns: "SystemLimits"
+    description: "Get all system limits as struct"
+
+  getSacredConstants:
+    returns: "SacredConstants"
+    description: "Get all sacred constants as struct"
+
+behaviors:
+  - name: trinity_identity
+    description: "φ² + 1/φ² = 3 (Trinity Identity)"
+    note: "PHI^2 + 1/PHI^2 = 3 within floating precision"
+
+  - name: max_path_cross_platform
+    description: "PATH_MAX varies by platform (4096 typical)"
+    note: "Use conservative 4096 for cross-platform"
+
+  - name: compile_time_constants
+    description: "All constants are comptime-known"
+    note: "No runtime overhead for constant access"

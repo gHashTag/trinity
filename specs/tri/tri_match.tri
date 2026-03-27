@@ -1,0 +1,50 @@
+name: tri_match
+version: "0.1.0"
+module: tri.match
+description: "TRI pattern matching — exhaustiveness checking"
+
+types:
+  Match:
+    description: "Pattern match result"
+    fields:
+      matched: bool
+      captures: []MatchCapture
+
+  MatchCapture:
+    description: "Captured value from match"
+    fields:
+      name: []const u8
+      value: []const u8
+
+functions:
+  matchLiteral:
+    params:
+      - name: input
+        type: "[]const u8"
+      - name: pattern
+        type: "[]const u8"
+    returns: "bool"
+    description: "Match literal string pattern"
+
+  matchType:
+    params:
+      - name: type_name
+        type: "[]const u8"
+      - name: value
+        type: "any"
+    returns: "bool"
+    description: "Check if value matches type"
+
+  exhaustive:
+    params:
+      - name: cases
+        type: "[][]const u8"
+      - name: handled
+        type: "[]bool"
+    returns: "bool"
+    description: "Check if all cases are handled"
+
+behaviors:
+  - name: compile_time_exhaustive
+    description: "Check exhaustiveness at compile time when possible"
+    note: "Prevents unhandled enum cases"

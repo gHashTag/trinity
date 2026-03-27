@@ -1,0 +1,64 @@
+name: tri_map
+version: "0.1.0"
+module: tri.map
+description: "TRI Map — immutable key-value store"
+
+types:
+  Map(K, V):
+    description: "Immutable map from keys to values"
+    fields:
+      keys: "[]K"
+      values: "[]V"
+
+functions:
+  empty:
+    returns: "Map(K, V)"
+    description: "Create empty map"
+
+  singleton:
+    params:
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "Map(K, V)"
+    description: "Create map with one entry"
+
+  get:
+    params:
+      - name: map
+        type: "Map(K, V)"
+      - name: key
+        type: "K"
+    returns: "Option(V)"
+    description: "Get value by key"
+
+  set:
+    params:
+      - name: map
+        type: "Map(K, V)"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "Map(K, V)"
+    description: "Insert or update key"
+
+  keys:
+    params:
+      - name: map
+        type: "Map(K, V)"
+    returns: "[]K"
+    description: "Get all keys"
+
+  values:
+    params:
+      - name: map
+        type: "Map(K, V)"
+    returns: "[]V"
+    description: "Get all values"
+
+behaviors:
+  - name: functional
+    description: "Operations return new maps"
+    note: "Original map unchanged"

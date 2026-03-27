@@ -1,0 +1,58 @@
+name: tri_tuple
+version: "0.1.0"
+module: tri.tuple
+description: "TRI Tuple — fixed-size product type"
+
+types:
+  Tuple2(A, B):
+    description: "Pair of values"
+    fields:
+      first: A
+      second: B
+
+  Tuple3(A, B, C):
+    description: "Triple of values"
+    fields:
+      first: A
+      second: B
+      third: C
+
+functions:
+  pair:
+    params:
+      - name: a
+        type: "A"
+      - name: b
+        type: "B"
+    returns: "Tuple2(A, B)"
+    description: "Create pair"
+
+  triple:
+    params:
+      - name: a
+        type: "A"
+      - name: b
+        type: "B"
+      - name: c
+        type: "C"
+    returns: "Tuple3(A, B, C)"
+    description: "Create triple"
+
+  fst:
+    params:
+      - name: pair
+        type: "Tuple2(A, B)"
+    returns: "A"
+    description: "Get first element"
+
+  snd:
+    params:
+      - name: pair
+        type: "Tuple2(A, B)"
+    returns: "B"
+    description: "Get second element"
+
+behaviors:
+  - name: product_type
+    description: "Combines multiple types"
+    note: "Immutable fixed-size collection"

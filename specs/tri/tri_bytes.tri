@@ -1,0 +1,88 @@
+name: tri_bytes
+version: "0.1.0"
+module: tri.bytes
+description: "TRI Bytes — byte array utilities"
+
+types:
+  Bytes:
+    description: "Mutable byte slice wrapper"
+    fields:
+      data: "[]u8"
+      owned: bool
+
+functions:
+  empty:
+    returns: "Bytes"
+    description: "Create empty bytes"
+
+  fromSlice:
+    params:
+      - name: slice
+        type: "[]const u8"
+    returns: "Bytes"
+    description: "Wrap slice (non-owning)"
+
+  clone:
+    params:
+      - name: bytes
+        type: "Bytes"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Bytes"
+    description: "Create owned copy"
+
+  equals:
+    params:
+      - name: a
+        type: "Bytes"
+      - name: b
+        type: "Bytes"
+    returns: "bool"
+    description: "Constant-time comparison"
+
+  slice:
+    params:
+      - name: bytes
+        type: "Bytes"
+      - name: start
+        type: "usize"
+      - name: end
+        type: "usize"
+    returns: "Bytes"
+    description: "Create view subrange"
+
+  concat:
+    params:
+      - name: a
+        type: "Bytes"
+      - name: b
+        type: "Bytes"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Bytes"
+    description: "Join two byte arrays"
+
+  indexOf:
+    params:
+      - name: bytes
+        type: "Bytes"
+      - name: pattern
+        type: "[]const u8"
+    returns: "?usize"
+    description: "Find pattern or null"
+
+  split:
+    params:
+      - name: bytes
+        type: "Bytes"
+      - name: delimiter
+        type: "u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]Bytes"
+    description: "Split by byte"
+
+behaviors:
+  - name: zero_copy
+    description: "Views share underlying data"
+    note: "Owner responsible for lifetime"

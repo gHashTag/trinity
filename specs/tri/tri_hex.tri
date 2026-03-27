@@ -1,0 +1,44 @@
+name: tri_hex
+version: "0.1.0"
+module: tri.hex
+description: "TRI Hex — hexadecimal encoding"
+
+types:
+  Hex:
+    description: "Hex codec"
+    fields:
+      uppercase: bool
+
+functions:
+  lowerCase:
+    returns: "Hex"
+    description: "Lowercase a-f encoder"
+
+  upperCase:
+    returns: "Hex"
+    description: "Uppercase A-F encoder"
+
+  encode:
+    params:
+      - name: codec
+        type: "Hex"
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Convert bytes to hex string"
+
+  decode:
+    params:
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Parse hex string to bytes"
+
+behaviors:
+  - name: byte_perfect
+    description: "Every byte becomes 2 chars"
+    note: "Case-insensitive decode"

@@ -1,0 +1,104 @@
+name: tri_json
+version: "0.1.0"
+module: tri.json
+description: "TRI JSON utilities — simple JSON value type and parsing"
+
+types:
+  JsonType:
+    description: "JSON value types"
+    enum:
+      - null
+      - boolean
+      - number
+      - string
+      - array
+      - object
+
+  JsonValue:
+    description: "JSON value (variant type)"
+    fields:
+      type: JsonType
+      string: ?[]const u8
+      number: ?f64
+      boolean: ?bool
+      array: ?[]JsonValue
+      object: ?[]JsonEntry
+
+  JsonEntry:
+    description: "JSON object key-value pair"
+    fields:
+      key: []const u8
+      value: JsonValue
+
+functions:
+  nullValue:
+    returns: "JsonValue"
+    description: "Create null JSON value"
+
+  boolValue:
+    params:
+      - name: b
+        type: "bool"
+    returns: "JsonValue"
+    description: "Create boolean JSON value"
+
+  numberValue:
+    params:
+      - name: n
+        type: "f64"
+    returns: "JsonValue"
+    description: "Create number JSON value"
+
+  stringValue:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: s
+        type: "[]const u8"
+    returns: "!JsonValue"
+    description: "Create string JSON value"
+
+  arrayValue:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: items
+        type: "[]JsonValue"
+    returns: "!JsonValue"
+    description: "Create array JSON value"
+
+  objectValue:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: entries
+        type: "[]JsonEntry"
+    returns: "!JsonValue"
+    description: "Create object JSON value"
+
+  get:
+    params:
+      - name: obj
+        type: "JsonValue"
+      - name: key
+        type: "[]const u8"
+    returns: "?JsonValue"
+    description: "Get object property by key"
+
+  getAt:
+    params:
+      - name: arr
+        type: "JsonValue"
+      - name: index
+        type: "usize"
+    returns: "?JsonValue"
+    description: "Get array element by index"
+
+behaviors:
+  - name: minimal_parser
+    description: "Simplified JSON parser for basic use cases"
+    note: "Not a full-featured JSON parser"
+
+  - name: memory_ownership
+    description: "Caller owns returned memory"
+    note: "Use allocator for all string/array allocations"

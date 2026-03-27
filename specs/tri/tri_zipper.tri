@@ -1,0 +1,53 @@
+name: tri_zipper
+version: "0.1.0"
+module: tri.zipper
+description: "TRI Zipper — functional cursor for tree navigation"
+
+types:
+  Zipper(T):
+    description: "Focus point with left and right contexts"
+    fields:
+      focus: T
+      left: "List(T)"
+      right: "List(T)"
+
+functions:
+  current:
+    params:
+      - name: zipper
+        type: "Zipper(T)"
+    returns: "T"
+    description: "Get focused element"
+
+  goDown:
+    params:
+      - name: zipper
+        type: "Zipper(T)"
+    returns: "Zipper(T)"
+    description: "Move focus to left child"
+
+  goUp:
+    params:
+      - name: zipper
+        type: "Zipper(T)"
+    returns: "Zipper(T)"
+    description: "Move focus to parent"
+
+  goLeft:
+    params:
+      - name: zipper
+        type: "Zipper(T)"
+    returns: "Zipper(T)"
+    description: "Move focus left sibling"
+
+  goRight:
+    params:
+      - name: zipper
+        type: "Zipper(T)"
+    returns: "Zipper(T)"
+    description: "Move focus right sibling"
+
+behaviors:
+  - name: functional_navigation
+    description: "Immutable tree traversal"
+    note: "O(1) movement between siblings"

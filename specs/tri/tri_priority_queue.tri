@@ -1,0 +1,44 @@
+name: tri_priority_queue
+version: "0.1.0"
+module: tri.priority_queue
+description: "TRI Priority queue — min-heap"
+
+types:
+  PriorityQueue(T):
+    description: "Min-heap priority queue"
+    fields:
+      items: "[]T"
+      count: usize
+
+functions:
+  new:
+    returns: "PriorityQueue(T)"
+    description: "Create empty queue"
+
+  insert:
+    params:
+      - name: queue
+        type: "PriorityQueue(T)"
+      - name: value
+        type: "T"
+    returns: "void"
+    description: "Insert value"
+
+  extractMin:
+    params:
+      - name: queue
+        type: "PriorityQueue(T)"
+    returns: "Option(T)"
+    description: "Remove and return minimum"
+
+  peekMin:
+    params:
+      - name: queue
+        type: "PriorityQueue(T)"
+    returns: "Option(T)"
+    description: "Get minimum without removing"
+
+behaviors:
+  - name: heap_property
+    description: "Parent <= children"
+    note: "O(log n) insert and extract"

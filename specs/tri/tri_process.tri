@@ -1,0 +1,30 @@
+name: tri_process
+version: "0.1.0"
+module: tri.process
+description: "TRI process utilities — command execution helpers"
+
+types:
+  ProcessResult:
+    description: "Result of process execution"
+    fields:
+      exit_code: u8
+      stdout: []const u8
+      stderr: []const u8
+      success: bool
+
+functions:
+  run:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: command
+        type: "[]const u8"
+      - name: args
+        type: "[][]const u8"
+    returns: "!ProcessResult"
+    description: "Run command and wait for completion"
+
+behaviors:
+  - name: sync_execution
+    description: "Synchronous command execution"
+    note: "Blocks until process completes"

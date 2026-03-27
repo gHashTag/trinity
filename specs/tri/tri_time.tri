@@ -1,0 +1,73 @@
+name: tri_time
+version: "0.1.0"
+module: tri.time
+description: "TRI time utilities — timestamp, duration, and formatting"
+
+types:
+  Timestamp:
+    description: "Unix timestamp in milliseconds"
+    underlying: "u64"
+
+  Duration:
+    description: "Time duration in milliseconds"
+    underlying: "u64"
+
+  DateTime:
+    description: "Date and time components"
+    fields:
+      year: i32
+      month: u8
+      day: u8
+      hour: u8
+      minute: u8
+      second: u8
+      millis: u16
+
+functions:
+  now:
+    returns: "Timestamp"
+    description: "Get current Unix timestamp in milliseconds"
+
+  fromSeconds:
+    params:
+      - name: secs
+        type: "u64"
+    returns: "Timestamp"
+    description: "Create timestamp from seconds"
+
+  toSeconds:
+    params:
+      - name: ts
+        type: "Timestamp"
+    returns: "u64"
+    description: "Convert timestamp to seconds"
+
+  elapsed:
+    params:
+      - name: start
+        type: "Timestamp"
+    returns: "Duration"
+    description: "Get duration since timestamp"
+
+  duration:
+    params:
+      - name: millis
+        type: "u64"
+    returns: "Duration"
+    description: "Create duration from milliseconds"
+
+  formatDuration:
+    params:
+      - name: dur
+        type: "Duration"
+    returns: "[]const u8"
+    description: "Format duration as human-readable string"
+
+behaviors:
+  - name: monotonic_clock
+    description: "Uses monotonic clock for elapsed time"
+    note: "Not affected by system time changes"
+
+  - name: unix_epoch
+    description: "Timestamps are relative to Unix epoch"
+    note: "1970-01-01 00:00:00 UTC"

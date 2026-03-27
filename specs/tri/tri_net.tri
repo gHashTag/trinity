@@ -1,0 +1,44 @@
+name: tri_net
+version: "0.1.0"
+module: tri.net
+description: "TRI network utilities — IP addresses and ports"
+
+types:
+  IpAddress:
+    description: "IP address (IPv4 or IPv6)"
+    fields:
+      is_v6: bool
+      bytes: [16]u8
+
+  SocketAddr:
+    description: "Socket address"
+    fields:
+      ip: IpAddress
+      port: u16
+
+functions:
+  parseIp:
+    params:
+      - name: addr
+        type: "[]const u8"
+    returns: "?IpAddress"
+    description: "Parse IP address string"
+
+  isLocalhost:
+    params:
+      - name: addr
+        type: "IpAddress"
+    returns: "bool"
+    description: "Check if address is localhost"
+
+  isValidPort:
+    params:
+      - name: port
+        type: "u16"
+    returns: "bool"
+    description: "Check if port is valid (1-65535)"
+
+behaviors:
+  - name: ipv4_ipv6
+    description: "Supports both IPv4 and IPv6"
+    note: "IPv4 stored as first 4 bytes, rest zero"

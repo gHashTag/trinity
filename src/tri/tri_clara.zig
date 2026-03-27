@@ -144,7 +144,7 @@ pub fn runClaraPackage(allocator: std.mem.Allocator, args: []const []const u8) !
     std.debug.print("TA1 Deliverables ({d} items):\n", .{deliverables.len});
 
     for (deliverables) |item| {
-        std.debug.print("  📄 {s}: {s}\n", .{item.name});
+        std.debug.print("  📄 {s}\n", .{item.name});
         std.debug.print("     📁 {s}\n", .{item.path});
         std.debug.print("   {s}\n", .{item.description});
     }

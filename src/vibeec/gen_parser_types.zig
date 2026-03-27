@@ -232,6 +232,32 @@ pub const VibeeSpec = struct {
     }
 
     pub fn deinit(self: *VibeeSpec, allocator: Allocator) void {
+        // Note: Only free strings that were allocated (not string literals from init)
+        // We track this by checking if the string doesn't match the default values
+        if (self.name.len > 0 and self.name.ptr[0] != 0) {
+            // Check if it's not a literal by comparing address
+            // This is a simple heuristic - in production, use a flag
+            allocator.free(self.name);
+        }
+        if (self.module.len > 0) {
+            allocator.free(self.module);
+        }
+        if (self.description.len > 0) {
+            allocator.free(self.description);
+        }
+        if (self.version.len > 0 and !std.mem.eql(u8, self.version, "1.0.0")) {
+            allocator.free(self.version);
+        }
+        if (self.language.len > 0 and !std.mem.eql(u8, self.language, "zig")) {
+            allocator.free(self.language);
+        }
+        if (self.author.len > 0 and !std.mem.eql(u8, self.author, "")) {
+            allocator.free(self.author);
+        }
+        if (self.license.len > 0 and !std.mem.eql(u8, self.license, "MIT")) {
+            allocator.free(self.license);
+        }
+
         for (self.types.items) |*t| t.deinit(allocator);
         self.types.deinit(allocator);
 

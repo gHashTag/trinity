@@ -121,13 +121,13 @@ pub const TVCGate = struct {
 
     /// Execute TVC Gate check
     /// Returns hit with cached response, or miss to continue pipeline
-    pub fn execute(self: *Self, query: []const u8) TVCGateResult {
+    pub fn execute(self: *Self, allocator: std.mem.Allocator, query: []const u8) TVCGateResult {
         if (query.len == 0) {
             return .miss;
         }
 
         // Search TVC corpus
-        if (self.corpus.search(query, self.similarity_threshold)) |result| {
+        if (self.corpus.search(allocator, query, self.similarity_threshold)) |result| {
             self.total_hits += 1;
 
             if (self.verbose) {
@@ -158,8 +158,8 @@ pub const TVCGate = struct {
     }
 
     /// Store query/response pair after pipeline execution
-    pub fn storeResponse(self: *Self, query: []const u8, response: []const u8) !u64 {
-        const entry_id = try self.corpus.store(query, response);
+    pub fn storeResponse(self: *Self, allocator: std.mem.Allocator, query: []const u8, response: []const u8) !u64 {
+        const entry_id = try self.corpus.store(allocator, query, response);
         self.total_stores += 1;
         self.stores_since_save += 1;
 
@@ -184,11 +184,11 @@ pub const TVCGate = struct {
     }
 
     /// Execute as Golden Chain link (returns LinkMetrics)
-    pub fn executeAsLink(self: *Self, query: []const u8) ChainError!LinkMetrics {
+    pub fn executeAsLink(self: *Self, allocator: std.mem.Allocator, query: []const u8) ChainError!LinkMetrics {
         var metrics = LinkMetrics{};
         const start = std.time.milliTimestamp();
 
-        const result = self.execute(query);
+        const result = self.execute(allocator, query);
         metrics.duration_ms = @intCast(std.time.milliTimestamp() - start);
 
         switch (result) {
@@ -284,14 +284,14 @@ test "TVCGate basic hit/miss" {
     var gate = TVCGate.init(corpus);
 
     // Initially should miss
-    const result1 = gate.execute("What is VSA?");
+    const result1 = gate.execute(std.testing.allocator, "What is VSA?");
     try std.testing.expect(!result1.isHit());
 
     // Store a response
-    _ = try gate.storeResponse("What is VSA?", "VSA is Vector Symbolic Architecture.");
+    _ = try gate.storeResponse(std.testing.allocator, "What is VSA?", "VSA is Vector Symbolic Architecture.");
 
     // Now should hit on similar query
-    const result2 = gate.execute("What is VSA?");
+    const result2 = gate.execute(std.testing.allocator, "What is VSA?");
     try std.testing.expect(result2.isHit());
 }
 
@@ -301,10 +301,10 @@ test "TVCGate statistics" {
     var gate = TVCGate.init(corpus);
 
     // Execute some queries
-    _ = gate.execute("Query 1");
-    _ = gate.execute("Query 2");
-    _ = try gate.storeResponse("Query 1", "Response 1");
-    _ = gate.execute("Query 1");
+    _ = gate.execute(std.testing.allocator, "Query 1");
+    _ = gate.execute(std.testing.allocator, "Query 2");
+    _ = try gate.storeResponse(std.testing.allocator, "Query 1", "Response 1");
+    _ = gate.execute(std.testing.allocator, "Query 1");
 
     const stats = gate.getStats();
     try std.testing.expect(stats.total_misses == 2);
@@ -317,6 +317,6 @@ test "TVCGate as link" {
     defer corpus.deinitHeap(std.testing.allocator);
     var gate = TVCGate.init(corpus);
 
-    const metrics = try gate.executeAsLink("Test query");
+    const metrics = try gate.executeAsLink(std.testing.allocator, "Test query");
     try std.testing.expect(metrics.improvement_rate == 0.0); // Miss
 }

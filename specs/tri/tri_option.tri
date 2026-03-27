@@ -1,0 +1,44 @@
+name: tri_option
+version: "0.1.0"
+module: tri.option
+description: "TRI Option type — optional values without null"
+
+types:
+  Option(T):
+    description: "Optional value that may or may not be be present"
+    fields:
+      is_some: bool
+      value: T
+
+functions:
+  some:
+    params:
+      - name: value
+        type: "T"
+    returns: "Option(T)"
+    description: "Create optional with value"
+
+  none:
+    returns: "Option(void)"
+    description: "Create empty optional"
+
+  unwrapOr:
+    params:
+      - name: opt
+        type: "Option(T)"
+      - name: default
+        type: "T"
+    returns: "T"
+    description: "Get value or return default"
+
+  isSome:
+    params:
+      - name: opt
+        type: "Option(T)"
+    returns: "bool"
+    description: "Check if has value"
+
+behaviors:
+  - name: null_safe
+    description: "Eliminates null pointer issues"
+    note: "Forces explicit handling of empty case"

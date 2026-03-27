@@ -1,0 +1,141 @@
+name: tri_collections
+version: "0.1.0"
+module: tri.collections
+description: "TRI collections — stack, queue, and ring buffer"
+
+types:
+  Stack(T):
+    description: "LIFO stack with dynamic growth"
+    fields:
+      items: []T
+      capacity: usize
+      count: usize
+
+  Queue(T):
+    description: "FIFO queue with dynamic growth"
+    fields:
+      items: []T
+      head: usize
+      tail: usize
+      count: usize
+
+  RingBuffer(T):
+    description: "Fixed-size circular buffer"
+    fields:
+      items: []T
+      head: usize
+      tail: usize
+      capacity: usize
+
+functions:
+  # Stack operations
+  stackInit:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "!Stack(T)"
+    description: "Create new stack"
+
+  stackPush:
+    params:
+      - name: stack
+        type: "*Stack(T)"
+      - name: item
+        type: "T"
+    returns: "!void"
+    description: "Push item onto stack"
+
+  stackPop:
+    params:
+      - name: stack
+        type: "*Stack(T)"
+    returns: "?T"
+    description: "Pop item from stack"
+
+  stackPeek:
+    params:
+      - name: stack
+        type: "*Stack(T)"
+    returns: "?T"
+    description: "Peek at top item"
+
+  stackIsEmpty:
+    params:
+      - name: stack
+        type: "*Stack(T)"
+    returns: "bool"
+    description: "Check if stack is empty"
+
+  # Queue operations
+  queueInit:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "!Queue(T)"
+    description: "Create new queue"
+
+  queueEnqueue:
+    params:
+      - name: queue
+        type: "*Queue(T)"
+      - name: item
+        type: "T"
+    returns: "!void"
+    description: "Add item to back of queue"
+
+  queueDequeue:
+    params:
+      - name: queue
+        type: "*Queue(T)"
+    returns: "?T"
+    description: "Remove item from front of queue"
+
+  queuePeek:
+    params:
+      - name: queue
+        type: "*Queue(T)"
+    returns: "?T"
+    description: "Peek at front item"
+
+  # Ring buffer operations
+  ringInit:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "!RingBuffer(T)"
+    description: "Create new ring buffer"
+
+  ringWrite:
+    params:
+      - name: ring
+        type: "*RingBuffer(T)"
+      - name: item
+        type: "T"
+    returns: "!void"
+    description: "Write item to ring"
+
+  ringRead:
+    params:
+      - name: ring
+        type: "*RingBuffer(T)"
+    returns: "?T"
+    description: "Read item from ring"
+
+behaviors:
+  - name: stack_lifo
+    description: "Stack is Last-In-First-Out"
+    note: "Most recently pushed item is popped first"
+
+  - name: queue_fifo
+    description: "Queue is First-In-First-Out"
+    note: "Oldest enqueued item is dequeued first"
+
+  - name: ring_overwrite
+    description: "Ring buffer overwrites oldest when full"
+    note: "No allocation, fixed capacity"

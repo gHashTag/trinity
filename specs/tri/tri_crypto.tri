@@ -1,0 +1,81 @@
+name: tri_crypto
+version: "0.1.0"
+module: tri.crypto
+description: "TRI crypto primitives — hashing, XOR, and base64"
+
+types:
+  HashResult:
+    description: "Fixed-size hash result (256 bits)"
+    fields:
+      data: [32]u8
+
+  Base64Error:
+    description: "Base64 encoding/decoding errors"
+    enum:
+      - invalid_length
+      - invalid_char
+      - padding_error
+
+functions:
+  # Hash functions
+  sha256:
+    params:
+      - name: data
+        type: "[]const u8"
+    returns: "HashResult"
+    description: "Compute SHA-256 hash"
+
+  # XOR operations
+  xorBytes:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+    returns: "[]u8"
+    description: "XOR two byte arrays (same length)"
+
+  xorRepeat:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: key
+        type: "[]const u8"
+    returns: "[]u8"
+    description: "XOR data with repeating key"
+
+  # Base64 encoding/decoding
+  base64Encode:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: data
+        type: "[]const u8"
+    returns: "![]u8"
+    description: "Encode bytes to base64"
+
+  base64Decode:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: data
+        type: "[]const u8"
+    returns: "![]u8"
+    description: "Decode base64 to bytes"
+
+behaviors:
+  - name: sha256_fixed_output
+    description: "SHA-256 always produces 32-byte hash"
+    note: "Suitable for cryptographic hashing"
+
+  - name: xor_same_length
+    description: "xorBytes requires equal length inputs"
+    note: "Use xorRepeat for key shorter than data"
+
+  - name: base64_standard
+    description: "Standard base64 with = padding"
+    note: "Uses RFC 4648 alphabet"
+
+  - name: no_external_deps
+    description: "Pure Zig implementation"
+    note: "No OpenSSL or other crypto libraries"

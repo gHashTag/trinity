@@ -1,0 +1,48 @@
+name: tri_result
+version: "0.1.0"
+module: tri.result
+description: "TRI Result type — error handling without exceptions"
+
+types:
+  Result(T, E):
+    description: "Result that is either Ok(value) or Err(error)"
+    fields:
+      is_ok: bool
+      value: T
+      error: E
+
+functions:
+  ok:
+    params:
+      - name: value
+        type: "T"
+    returns: "Result(T, E)"
+    description: "Create success result"
+
+  err:
+    params:
+      - name: error
+        type: "E"
+    returns: "Result(T, E)"
+    description: "Create error result"
+
+  unwrapOr:
+    params:
+      - name: result
+        type: "Result(T, E)"
+      - name: default
+        type: "T"
+    returns: "T"
+    description: "Get value or return default"
+
+  isError:
+    params:
+      - name: result
+        type: "Result(T, E)"
+    returns: "bool"
+    description: "Check if is error"
+
+behaviors:
+  - name: explicit_error_handling
+    description: "Forces checking error case"
+    note: "Cannot ignore error, must explicitly unwrap"

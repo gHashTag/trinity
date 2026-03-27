@@ -1,0 +1,63 @@
+name: tri_set
+version: "0.1.0"
+module: tri.set
+description: "TRI Set — immutable set"
+
+types:
+  Set(T):
+    description: "Immutable set of unique values"
+    fields:
+      items: "[]T"
+
+functions:
+  empty:
+    returns: "Set(T)"
+    description: "Create empty set"
+
+  singleton:
+    params:
+      - name: value
+        type: "T"
+    returns: "Set(T)"
+    description: "Create set with one element"
+
+  insert:
+    params:
+      - name: set
+        type: "Set(T)"
+      - name: value
+        type: "T"
+    returns: "Set(T)"
+    description: "Add element (if not present)"
+
+  contains:
+    params:
+      - name: set
+        type: "Set(T)"
+      - name: value
+        type: "T"
+    returns: "bool"
+    description: "Check membership"
+
+  remove:
+    params:
+      - name: set
+        type: "Set(T)"
+      - name: value
+        type: "T"
+    returns: "Set(T)"
+    description: "Remove element"
+
+  union:
+    params:
+      - name: a
+        type: "Set(T)"
+      - name: b
+        type: "Set(T)"
+    returns: "Set(T)"
+    description: "Set union"
+
+behaviors:
+  - name: no_duplicates
+    description: "Sets contain unique values"
+    note: "Insert returns same set if value exists"

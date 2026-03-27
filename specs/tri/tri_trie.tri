@@ -1,0 +1,77 @@
+name: tri_trie
+version: "0.1.0"
+module: tri.trie
+description: "TRI Trie — prefix tree for string keys"
+
+types:
+  TrieNode(T):
+    description: "Trie node with children"
+    fields:
+      is_end: bool
+      value: "T"
+      children: "std.StringHashMap(*TrieNode(T))"
+
+  Trie(T):
+    description: "Prefix tree root"
+    fields:
+      root: "*TrieNode(T)"
+      size: usize
+
+functions:
+  empty:
+    returns: "Trie(T)"
+    description: "Create empty trie"
+
+  insert:
+    params:
+      - name: trie
+        type: "*Trie(T)"
+      - name: key
+        type: "[]const u8"
+      - name: value
+        type: "T"
+    returns: "void"
+    description: "Insert key-value pair"
+
+  get:
+    params:
+      - name: trie
+        type: "*const Trie(T)"
+      - name: key
+        type: "[]const u8"
+    returns: "?T"
+    description: "Lookup by exact key"
+
+  hasPrefix:
+    params:
+      - name: trie
+        type: "*const Trie(T)"
+      - name: prefix
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if any key has prefix"
+
+  keysWithPrefix:
+    params:
+      - name: trie
+        type: "*const Trie(T)"
+      - name: prefix
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "[][]const u8"
+    description: "List all keys with prefix"
+
+  remove:
+    params:
+      - name: trie
+        type: "*Trie(T)"
+      - name: key
+        type: "[]const u8"
+    returns: "bool"
+    description: "Delete key, true if existed"
+
+behaviors:
+  - name: prefix_search
+    description: "O(k) lookup where k = key length"
+    note: "No hash collisions, ordered traversal"

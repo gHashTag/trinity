@@ -1,0 +1,35 @@
+name: tri_pattern
+version: "0.1.0"
+module: tri.pattern
+description: "TRI pattern utilities — glob patterns and wildcards"
+
+types:
+  MatchResult:
+    description: "Pattern match result"
+    fields:
+      matches: bool
+      captured: []const u8
+
+functions:
+  globMatch:
+    params:
+      - name: pattern
+        type: "[]const u8"
+      - name: text
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if text matches glob pattern"
+
+  wildcardMatch:
+    params:
+      - name: pattern
+        type: "[]const u8"
+      - name: text
+        type: "[]const u8"
+    returns: "bool"
+    description: "Simple * and ? wildcard matching"
+
+behaviors:
+  - name: glob_syntax
+    description: "Standard glob pattern syntax"
+    note: "Supports * (any chars) and ? (single char)"

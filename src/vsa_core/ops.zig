@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // VSA Core — Operations (SOURCE OF TRUTH SELECTOR)
 // ═══════════════════════════════════════════════════════════════════════════════
-// TTT Dogfood Stage 1.0: Using GENERATED implementation from .tri spec
-// Source: specs/vsa/ops.tri → tri_to_zig.zig → gen_ops.zig
+// TTT Dogfood v0.2: FULLY SELF-HOSTED from .tri spec
+// Source: specs/vsa/ops.tri → VIBEE codegen → gen_ops.zig → this selector
 //
 // φ² + 1/φ² = 3 | TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
