@@ -225,41 +225,35 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("  t-statistic: {d:.2}\n", .{test_result.statistic});
     print("  p-value: {d:.4}\n", .{test_result.p_value});
     print("  Significance: {s}\n", .{test_result.significance.toSymbol()});
-    print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size});
+    print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size orelse 0.0});
     print("  Interpretation: {s}\n\n", .{test_result.interpretation});
 
     // Demonstrate experiment comparison
     const exp1 = zenodo_v16.ExperimentResultEnhanced{
-        .name = "HSLM-TF3",
-        .value = 125.0,
-        .std = 8.5,
+        .experiment_id = "HSLM-TF3",
+        .mean = 125.0,
+        .std_dev = 8.5,
+        .n_samples = 100,
         .ci = ci,
-        .statistical_test = test_result,
-        .baseline_name = "Float32",
-        .baseline_value = 68.5,
-        .improvement = -82.48,
-        .improvement_percentage = -120.4,
+        .significance = .double_star,
     };
 
     const exp2 = zenodo_v16.ExperimentResultEnhanced{
-        .name = "HSLM-GF16",
-        .value = 98.2,
-        .std = 6.2,
-        .ci = .{ .lower = 95.0, .upper = 101.4, .level = 0.95, .method = .bootstrap },
-        .statistical_test = test_result,
-        .baseline_name = "Float32",
-        .baseline_value = 68.5,
-        .improvement = -43.4,
-        .improvement_percentage = -63.4,
+        .experiment_id = "HSLM-GF16",
+        .mean = 98.2,
+        .std_dev = 6.2,
+        .n_samples = 100,
+        .ci = .{ .lower = 95.0, .upper = 101.4, .confidence = 0.95, .method = .bootstrap },
+        .significance = .star,
     };
 
     const comparison = zenodo_v16.ExperimentComparisonEnhanced{
-        .title = "Ternary Encoding Comparison",
         .metric_name = "Perplexity (lower is better)",
         .results = &.{ exp1, exp2 },
+        .baseline = "Float32",
     };
 
-    const table = try comparison.toMarkdownTable(allocator);
+    const table = try comparison.generateComparisonTable(allocator);
     defer allocator.free(table);
 
     print("{s}\n", .{table});
