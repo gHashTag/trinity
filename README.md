@@ -49,6 +49,25 @@
 
 ---
 
+## TRI-27 — Trinity Kernel
+
+**TRI-27 is the ternary computing kernel** that executes all Trinity workloads:
+
+| Component | Value |
+|-----------|-------|
+| **Registers** | 27×32-bit (t0-t26) = 3 banks × 9 (Coptic alphabet) |
+| **Opcodes** | 36 — arithmetic, logic, control, ternary, sacred |
+| **Memory** | 64KB byte-addressable |
+| **Targets** | Zig CPU emulator + Verilog FPGA |
+
+```
+φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
+```
+
+[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri-lang/emu/specs/tri27_isa.md)
+
+---
+
 ## For Scientific Collaborators
 
 **TRINITY is a unified research framework** connecting fundamental physics through a single mathematical identity: `φ² + φ⁻² = 3`. From this root, candidate formulas for gravitational constant **G**, consciousness threshold **C**, temporal perception **t_present**, and fermion generations **N_gen** are derived.

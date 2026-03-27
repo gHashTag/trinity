@@ -6,6 +6,39 @@
 
 ---
 
+## TRI-27 — The Trinity Kernel
+
+**TRI-27 is the ternary computing kernel** at the heart of Trinity S³AI:
+
+| Component | Value |
+|-----------|-------|
+| **Registers** | 27×32-bit (t0-t26) = 3 banks × 9 (Coptic alphabet) |
+| **Opcodes** | 36 — arithmetic, logic, control, ternary, sacred |
+| **Memory** | 64KB byte-addressable |
+| **Targets** | Zig CPU emulator + Verilog FPGA |
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  TRI-27 TERNARY KERNEL                      │
+├─────────────────────────────────────────────────────────────┤
+│  Registers: 27× (t0-t26) = 3 banks × 9                      │
+│  Opcodes: 36 (arith, logic, ctrl, ternary, sacred)          │
+│  Memory: 64KB byte-addressable                               │
+│  φ² + 1/φ² = 3 → 3^27 = 7.6T states (ternary completeness)  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Why TRI-27 is the Kernel
+
+1. **φ-Structured**: 27 registers = 3³, directly reflecting `φ² + 1/φ² = 3`
+2. **Ternary Complete**: 3^27 states = maximum information density
+3. **Dual Target**: Zig software emulation + Verilog FPGA synthesis
+4. **Bridge Layer**: Connects Trinity math (Strand I) to hardware (Strand III)
+
+[Full TRI-27 Documentation](docs/tri27/README.md)
+
+---
+
 ## 🧠 Level 1: Upper Layer (Brand & Science Framework)
 
 ### Scientific Foundation
