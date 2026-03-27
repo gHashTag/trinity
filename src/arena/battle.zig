@@ -177,7 +177,8 @@ pub const Arena = struct {
         const fa = self.findFighter(fighter_a_name) orelse return;
         const fb = self.findFighter(fighter_b_name) orelse return;
 
-        const new_ratings = elo.updateRatings(fa.elo, fb.elo, verdict);
+        const elo_verdict = std.meta.stringToEnum(elo.Verdict, @tagName(verdict)) orelse return;
+        const new_ratings = elo.updateRatings(fa.elo, fb.elo, elo_verdict);
         fa.elo = new_ratings[0];
         fb.elo = new_ratings[1];
 
