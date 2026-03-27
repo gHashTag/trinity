@@ -1,0 +1,67 @@
+name: tri_csv
+version: "0.1.0"
+module: tri.csv
+description: "TRI CSV — comma-separated values"
+
+types:
+  CsvRow:
+    description: "CSV data row"
+    fields:
+      fields: "[][]const u8"
+
+  CsvDocument:
+    description: "CSV document"
+    fields:
+      headers: "[]CsvRow"
+      rows: "[]CsvRow"
+      delimiter: "u8"
+
+functions:
+  parse:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!CsvDocument"
+    description: "Parse CSV format"
+
+  get:
+    params:
+      - name: doc
+        type: "CsvDocument"
+      - name: row
+        type: "usize"
+      - name: col
+        type: "usize"
+    returns: "?[]const u8"
+    description: "Get cell value"
+
+  set:
+    params:
+      - name: doc
+        type: "*CsvDocument"
+      - name: row
+        type: "usize"
+      - name: col
+        type: "usize"
+      - name: value
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Set cell value"
+
+  serialize:
+    params:
+      - name: doc
+        type: "CsvDocument"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Convert to CSV string"
+
+behaviors:
+  - name: rfc4180
+    description: "RFC 4180 compliant"
+    note: "Handles quotes, escapes"

@@ -1,0 +1,54 @@
+name: tri_text
+version: "0.1.0"
+module: tri.text
+description: "TRI text utilities — word wrapping and text metrics"
+
+types:
+  TextMetrics:
+    description: "Text measurement"
+    fields:
+      width: usize
+      height: usize
+      lines: usize
+
+functions:
+  wordWrap:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: text
+        type: "[]const u8"
+      - name: width
+        type: "usize"
+    returns: "![]u8"
+    description: "Wrap text to specified width"
+
+  countWords:
+    params:
+      - name: text
+        type: "[]const u8"
+    returns: "usize"
+    description: "Count words in text"
+
+  countLines:
+    params:
+      - name: text
+        type: "[]const u8"
+    returns: "usize"
+    description: "Count lines in text"
+
+  indent:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: text
+        type: "[]const u8"
+      - name: spaces
+        type: "usize"
+    returns: "![]u8"
+    description: "Indent each line with spaces"
+
+behaviors:
+  - name: unicode_aware
+    description: "Basic ASCII text processing"
+    note: "Full Unicode support requires additional work"

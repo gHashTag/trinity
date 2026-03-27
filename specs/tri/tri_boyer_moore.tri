@@ -1,0 +1,35 @@
+name: tri_boyer_moore
+version: "0.1.0"
+language: zig
+module: tri.boyer_moore
+description: "Boyer-Moore string search"
+
+types:
+  BMBadChar:
+    description: "Bad character skip table"
+    fields:
+      table: "[256]usize"
+      pattern_len: "usize"
+
+functions:
+  build_bad_char:
+    params:
+      - name: pattern
+        type: "[]const u8"
+    returns: "BMBadChar"
+    description: "Build bad character table"
+
+  search:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: pattern
+        type: "[]const u8"
+      - name: bad_char
+        type: "*const BMBadChar"
+    returns: "[]usize"
+    description: "Find all pattern occurrences with bad char heuristic"
+
+behaviors:
+  - name: "skip_gallop"
+    description: "Skip sections of text using bad character rule"

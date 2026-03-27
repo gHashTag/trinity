@@ -1,0 +1,45 @@
+id,confidence,answer,track
+thlp_belief_0047,0.99,Answer:100°C,thlp
+thlp_belief_0235,1.0,Answer: 100°C,thlp
+thlp_error_0307,1.0,Answer: mammals,thlp
+thlp_fewshot_0334,0.99,Answer: 9,thlp
+thlp_reward_0221,1.0,Answer:Incorrect. Try again.,thlp
+thlp_reward_0263,1.0,Answer: Incorrect. Try again.,thlp
+thlp_error_0060,1.0,Answer: 56,thlp
+thlp_reward_0339,1.0,Answer: Incorrect. Try again.,thlp
+thlp_belief_0135,0.99,Answer: 100°C,thlp
+thlp_reward_0419,1.0,Answer:Incorrect,thlp
+thlp_reward_0266,1.0,Answer: Correct! Good speed.,thlp
+thlp_fewshot_0361,0.99,,thlp
+thlp_error_0429,1.0,Answer: Whales are mammals.,thlp
+thlp_context_0325,1.0,Answer: 10,thlp
+thlp_error_0011,1.0,Answer: Whalesare mammals.,thlp
+thlp_reward_0201,1.0,Answer: Incorrect,thlp
+thlp_fewshot_0007,1.0,Answer: drib,thlp
+thlp_fewshot_0201,1.0,Answer: Cherry,thlp
+thlp_reward_0342,1.0,Answer: Correct! Good speed.,thlp
+thlp_reward_0281,1.0,Answer:Incorrect. Try again.,thlp
+thlp_belief_0149,0.99,Answer: 100°C,thlp
+thlp_fewshot_0451,1.0,Answer: drib,thlp
+thlp_reward_0084,1.0,Answer: Correct! Good speed.,thlp
+thlp_reward_0333,1.0,Answer: Incorrect,thlp
+thlp_belief_0212,1.0,Answer: Canberra,thlp
+thlp_belief_0113,0.99,Answer: 100°C,thlp
+thlp_context_0096,0.5,Answer:,thlp
+thlp_fewshot_0107,0.99,Answer: drib,thlp
+thlp_belief_0335,1.0,Answer: 100°C,thlp
+thlp_belief_0082,1.0,Answer: Canberra,thlp
+thlp_reward_0334,0.99,Answer:Correct! Good speed.,thlp
+thlp_error_0354,1.0,Answer: 56,thlp
+thlp_fewshot_0384,1.0,Answer: odd,thlp
+thlp_fewshot_0223,1.0,Answer: drib,thlp
+thlp_fewshot_0431,0.99,Answer: drib,thlp
+thlp_reward_0344,1.0,Answer: Correct! Good speed.,thlp
+thlp_error_0079,0.99,Answer: mammals,thlp
+thlp_belief_0092,1.0,Answer: Canberra,thlp
+thlp_belief_0244,1.0,Answer: Canberra,thlp
+thlp_belief_0323,1.0,Answer:100°C,thlp
+thlp_error_0404,1.0,Answer: 56,thlp
+thlp_fewshot_0154,1.0,Answer: 9,thlp
+thlp_belief_0145,1.0,,thlp
+thlp_error_0308,1.0,Answer: 56,thlp

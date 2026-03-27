@@ -1,0 +1,58 @@
+name: tri_graph_bfs
+version: "0.1.0"
+language: zig
+module: tri.graph_bfs
+description: "Breadth-First Search for graph traversal"
+
+types:
+  Graph:
+    description: "Adjacency list graph"
+    fields:
+      adj: "[][]usize"
+      allocator: "std.mem.Allocator"
+
+  BFSResult:
+    description: "BFS traversal result"
+    fields:
+      order: "[]usize"
+      distance: "[]usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: vertex_count
+        type: "usize"
+    returns: "Graph"
+    description: "Create graph with n vertices"
+
+  addEdge:
+    params:
+      - name: graph
+        type: "*Graph"
+      - name: from
+        type: "usize"
+      - name: to
+        type: "usize"
+    returns: "void"
+    description: "Add directed edge"
+
+  traverse:
+    params:
+      - name: graph
+        type: "*Graph"
+      - name: start
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "BFSResult"
+    description: "BFS from start vertex"
+
+  deinit:
+    params:
+      - name: graph
+        type: "*Graph"
+    returns: "void"
+    description: "Free graph memory"

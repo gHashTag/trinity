@@ -1,0 +1,29 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "thlp_learning",
+    "description": "THLP Learning Track - Hippocampal Learning Probe for AGI Assessment"
+  },
+  "modelVersion": {},
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-03-27T09:37:12.493826Z",
+  "endTime": "2026-03-27T09:37:12.493875Z",
+  "conversations": [
+    {
+      "id": "thlp_learning-ffe62276",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "dictResult": {
+        "answer": "A",
+        "confidence": 0.85,
+        "item_id": "item_002"
+      }
+    }
+  ],
+  "pyRunId": "thlp_learning-Run #2"
+}

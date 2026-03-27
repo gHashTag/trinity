@@ -1,0 +1,37 @@
+name: tri_reed_solomon
+version: "0.1.0"
+language: zig
+module: tri.reed_solomon
+description: "Reed-Solomon error correction"
+
+types:
+  RSCode:
+    description: "Reed-Solomon codec"
+    fields:
+      data_shards: "usize"
+      parity_shards: "usize"
+
+functions:
+  encode:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: parity_count
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Generate parity shards"
+
+  decode:
+    params:
+      - name: shards
+        type: "[]const ?u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Reconstruct data from available shards"
+
+behaviors:
+  - name: "max_recovery"
+    description: "Can recover from up to parity_shards/2 erasures"

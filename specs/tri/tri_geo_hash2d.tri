@@ -1,0 +1,49 @@
+name: tri_geo_hash2d
+version: "0.1.0"
+language: zig
+module: tri.geo_hash2d
+description: "2D Geohashing for spatial coordinates"
+
+types:
+  GeoCell:
+    description: "Geohash cell"
+    fields:
+      x: "i64"
+      y: "i64"
+      z: "i64"
+      level: "usize"
+
+functions:
+  encode:
+    params:
+      - name: lat
+        type: "f64"
+      - name: lon
+        type: "f64"
+      - name: level
+        type: "usize"
+    returns: "GeoCell"
+    description: "Encode lat/lon to geohash"
+
+  decode:
+    params:
+      - name: cell
+        type: "GeoCell"
+    returns: "struct { lat: f64, lon: f64 }"
+    description: "Decode geohash to lat/lon"
+
+  neighbor:
+    params:
+      - name: cell
+        type: "GeoCell"
+      - name: direction
+        type: "u8"
+    returns: "GeoCell"
+    description: "Get adjacent cell (0-7 for N,NE,E,SE,S,SW,W,NW)"
+
+  neighbors:
+    params:
+      - name: cell
+        type: "GeoCell"
+    returns: "[]GeoCell"
+    description: "Get all 8 neighbors"

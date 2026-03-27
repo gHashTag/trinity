@@ -1,0 +1,20 @@
+name: tri_selection_sort
+version: "0.1.0"
+language: zig
+module: tri.selection_sort
+description: "Selection Sort - O(n^2) minimal writes"
+
+functions:
+  sort:
+    params:
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort in place using selection sort"
+
+behaviors:
+  - name: select_minimum
+    description: "Find minimum, swap to front"
+    implementation: |
+      For each position i, find minimum in [i..n]
+      and swap it to position i.

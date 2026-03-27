@@ -1,0 +1,64 @@
+name: tri_skiplist_impl
+version: "0.1.0"
+language: zig
+module: tri.skiplist_impl
+description: "Skip list implementation"
+
+types:
+  SkipNode:
+    description: "Skip list node with forward pointers"
+    fields:
+      value: "i64"
+      forward: "[][]?SkipNode"
+      level: "usize"
+
+  SkipList:
+    description: "Probabilistic skip list"
+    fields:
+      head: "*SkipNode"
+      max_level: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: max_level
+        type: "usize"
+    returns: "SkipList"
+    description: "Create skip list"
+
+  insert:
+    params:
+      - name: sl
+        type: "*SkipList"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Insert value"
+
+  search:
+    params:
+      - name: sl
+        type: "*SkipList"
+      - name: value
+        type: "i64"
+    returns: "bool"
+    description: "Check if value exists"
+
+  delete:
+    params:
+      - name: sl
+        type: "*SkipList"
+      - name: value
+        type: "i64"
+    returns: "bool"
+    description: "Remove value"
+
+  deinit:
+    params:
+      - name: sl
+        type: "*SkipList"
+    returns: "void"
+    description: "Free list"

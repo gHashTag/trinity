@@ -1,0 +1,89 @@
+name: tri_filesystem
+version: "0.1.0"
+module: tri.filesystem
+description: "TRI filesystem utilities — path operations and file utilities"
+
+types:
+  PathError:
+    description: "Path operation errors"
+    enum:
+      - invalid_path
+      - not_found
+      - not_a_directory
+      - not_a_file
+      - permission_denied
+
+  FileInfo:
+    description: "File metadata information"
+    fields:
+      path: []const u8
+      size: u64
+      is_dir: bool
+      is_file: bool
+      modified: u64
+
+functions:
+  # Path operations
+  join:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: parts
+        type: "[][]const u8"
+    returns: "![]u8"
+    description: "Join path parts with platform separator"
+
+  basename:
+    params:
+      - name: path
+        type: "[]const u8"
+    returns: "[]const u8"
+    description: "Get final component of path"
+
+  dirname:
+    params:
+      - name: path
+        type: "[]const u8"
+    returns: "[]const u8"
+    description: "Get directory part of path"
+
+  ext:
+    params:
+      - name: path
+        type: "[]const u8"
+    returns: "[]const u8"
+    description: "Get file extension (without dot)"
+
+  hasExt:
+    params:
+      - name: path
+        type: "[]const u8"
+      - name: ext
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if path has given extension"
+
+  isAbsolute:
+    params:
+      - name: path
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if path is absolute"
+
+  normalize:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: path
+        type: "[]const u8"
+    returns: "![]u8"
+    description: "Normalize path (remove . and ..)"
+
+behaviors:
+  - name: cross_platform
+    description: "Handles both / and \\ separators"
+    note: "Normalizes to platform-specific separator"
+
+  - name: no_trailing_separator
+    description: "Results don't end with separator (except root)"
+    note: "Cleaner paths for string operations"

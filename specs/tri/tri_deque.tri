@@ -1,0 +1,62 @@
+name: tri_deque
+version: "0.1.0"
+language: zig
+module: tri.deque
+description: "Double-ended queue"
+
+types:
+  Deque:
+    description: "Double-ended queue with dynamic array"
+    fields:
+      data: "[]i64"
+      front: "usize"
+      back: "usize"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "Deque"
+    description: "Create empty deque"
+
+  pushFront:
+    params:
+      - name: deque
+        type: "*Deque"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Add to front"
+
+  pushBack:
+    params:
+      - name: deque
+        type: "*Deque"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Add to back"
+
+  popFront:
+    params:
+      - name: deque
+        type: "*Deque"
+    returns: "i64"
+    description: "Remove from front"
+
+  popBack:
+    params:
+      - name: deque
+        type: "*Deque"
+    returns: "i64"
+    description: "Remove from back"
+
+  deinit:
+    params:
+      - name: deque
+        type: "*Deque"
+    returns: "void"
+    description: "Free deque"

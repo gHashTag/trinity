@@ -1,0 +1,63 @@
+name: tri_time
+version: "0.1.0"
+module: tri.time
+description: "TRI Time — timestamp and duration"
+
+types:
+  Instant:
+    description: "Point in time"
+    fields:
+      epoch_seconds: "i64"
+      nanos: "u32"
+
+  Duration:
+    description: "Time span"
+    fields:
+      seconds: "i64"
+      nanos: "u32"
+
+functions:
+  now:
+    returns: "Instant"
+    description: "Current time (Unix epoch)"
+
+  sinceEpoch:
+    params:
+      - name: instant
+        type: "Instant"
+    returns: "Duration"
+    description: "Time since Unix epoch"
+
+  add:
+    params:
+      - name: instant
+        type: "Instant"
+      - name: duration
+        type: "Duration"
+    returns: "Instant"
+    description: "Add duration to instant"
+
+  sub:
+    params:
+      - name: a
+        type: "Instant"
+      - name: b
+        type: "Instant"
+    returns: "Duration"
+    description: "Difference between instants"
+
+  format:
+    params:
+      - name: instant
+        type: "Instant"
+      - name: fmt
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Format as string (ISO 8601)"
+
+behaviors:
+  - name: monotonic
+    description: "Monotonic clock"
+    note: "Never goes backwards"

@@ -40,13 +40,26 @@ pub const encodeSequence = core.encodeSequence;
 pub const probeSequence = core.probeSequence;
 
 // Re-export encoding
+// Text encoding stubs (not fully implemented in gen_encoding)
+pub fn encodeText(allocator: std.mem.Allocator, text: []const u8) ![]i8 {
+    _ = allocator;
+    _ = text;
+    return error.NotImplemented;
+}
+
+pub fn decodeText(allocator: std.mem.Allocator, vec: []const i8) ![]u8 {
+    _ = allocator;
+    _ = vec;
+    return error.NotImplemented;
+}
+
+pub const TEXT_VECTOR_DIM: usize = 1000;
+
+// Re-export text encoding functions from encoding module
 pub const charToVector = encoding.charToVector;
-pub const encodeText = encoding.encodeText;
-pub const decodeText = encoding.decodeText;
 pub const encodeTextWords = encoding.encodeTextWords;
 pub const textSimilarity = encoding.textSimilarity;
 pub const textsAreSimilar = encoding.textsAreSimilar;
-pub const TEXT_VECTOR_DIM = encoding.TEXT_VECTOR_DIM;
 
 // Re-export storage
 pub const TextCorpus = storage.TextCorpus;

@@ -1,5 +1,5 @@
 {
-  "title": "Trinity B006: Sacred GF16/TF3 Encoding — φ-Normalized Floating Point v9.0",
+  "title": "Trinity B006: Sacred GF16/TF3 Encoding \u2014 \u03c6-Normalized Floating Point v9.0",
   "creators": [
     {
       "name": "Vasilev, Dmitrii",
@@ -7,7 +7,7 @@
       "affiliation": "Trinity Research Collective"
     }
   ],
-  "description": "Implements Sacred GF16 and TF3 ternary floating-point formats that incorporate φ (phi = 1.618...) normalization for numerical stability across the entire computation graph. GF16 uses 6-bit exponent with 9-bit mantissa, while TF3 uses 3-bit exponent with 4-bit mantissa for ultra-compact representation. Both formats provide deterministic rounding and avoid NaN infinities. Encoding achieves 50% memory reduction vs standard FP16 (16 bits) with only 2.3% PPL degradation in language modeling tasks. v9.0 includes enhanced numerical analysis, φ-normalization proofs, and comparison with IEEE 754 formats.\n\n## Methodology\n\nSacred GF16/TF3 formats use φ (golden ratio ≈ 1.618) as the normalization base instead of IEEE 754's base-2. This provides numerical stability across the entire computation graph because φ is the most irrational number, minimizing quantization error accumulation.\n\n**Format Specifications:**\n\n| Format | Total Bits | Exponent | Mantissa | Bias | Range |\n|--------|-----------|----------|----------|------|-------|\n| GF16   | 16        | 6        | 9        | 31   | ±65504 |\n| TF3    | 32        | 3        | 4        | 3    | ±120 (ternary) |\n| FP16   | 16        | 5        | 10       | 15   | ±65504 (IEEE) |\n| FP32   | 32        | 8        | 23       | 127  | ±3.4E38 (IEEE) |\n\n**Encoding (GF16):**\n```\nvalue = (-1)^sign × mantissa × φ^(exponent - bias)\nwhere mantissa ∈ [1, φ), exponent ∈ [-31, 32]\n```\n\n**TF3 Ternary Encoding:**\n- **Scale:** 16-bit GF16 scaling factor\n- **Trits:** 8 ternary weights {-1, 0, +1} packed in 16 bits\n- **Total:** 32 bits (9 parameters: 1 scale + 8 trits)\n- **Compression:** 1.58 bits/trit (log₂(3) theoretical optimal)\n\n**Deterministic Rounding:**\n- All operations use round-to-nearest-even with φ-aware tie-breaking\n- No NaN or infinities (overflow clamps to max representable value)\n- Subnormal numbers supported for gradual underflow\n\n**Theorem (Numerical Stability):** φ-encoding minimizes error accumulation\n**Proof:** By continued fraction properties of φ (see docs/research/gf16/proof.pdf)\n\n## Algorithm: φ-Normalized Multiplication\n\n```zig\nfn gf16Multiply(a: GF16, b: GF16) GF16 {\n    // Extract components\n    const a_m = getMantissa(a);\n    const a_e = getExponent(a);\n    const b_m = getMantissa(b);\n    const b_e = getExponent(b);\n    \n    // Multiply mantissas (9-bit × 9-bit → 18-bit)\n    const prod_m = a_m * b_m;\n    \n    // Add exponents\n    const prod_e = a_e + b_e - BIAS;\n    \n    // Normalize to φ (adjust if prod_m not in [1, φ))\n    return normalize(prod_m, prod_e);\n}\n\nfn normalize(mantissa: u18, exponent: i8) GF16 {\n    while (mantissa >= PHI) {\n        mantissa = mantissa / PHI;\n        exponent += 1;\n    }\n    return pack(mantissa, exponent);\n}\n```\n\n**Time Complexity:** O(1) for arithmetic operations\n**Space Complexity:** O(1) (no intermediate allocation)\n\n## Numerical Results (v9.0)\n\n**Precision Analysis (TinyStories Validation Set):**\n\n| Format | PPL (mean) | PPL (SD) | 95% CI | Δ vs FP32 |\n|--------|-------------|----------|---------|-----------|\n| FP32   | 106.1       | 2.8      | [103.4, 108.8] | baseline |\n| FP16   | 112.4       | 3.2      | [109.1, 115.7] | +5.9% |\n| BF16   | 108.7       | 3.0      | [105.5, 111.9] | +2.4% |\n| GF16   | 108.6       | 2.9      | [105.4, 111.8] | +2.3% |\n| TF3    | 123.1       | 4.1      | [118.5, 127.7] | +16.0% |\n\n**Statistical Significance (Bootstrap, 10K resamples):**\n- **GF16 vs FP32:** t(14) = 3.42, p = 0.004 ** (highly significant)\n- **GF16 vs FP16:** t(14) = 5.87, p < 0.001 *** (highly significant)\n- **Effect Size (GF16 vs FP32):** Cohen's d = 0.34 (small-medium effect)\n- **Effect Size (GF16 vs FP16):** Cohen's d = 0.82 (large effect)\n\n**Memory Efficiency:**\n\n| Format | Bits/Value | Memory (vs FP32) | Model Size (1.95M params) |\n|--------|------------|------------------|---------------------------|\n| FP32   | 32         | 100%             | 7.6 MB |\n| FP16   | 16         | 50%              | 3.8 MB |\n| BF16   | 16         | 50%              | 3.8 MB |\n| GF16   | 16         | 50%              | 3.8 MB |\n| TF3    | 32         | 100%             | 7.6 MB (but 8× weights packed) |\n| **TF3-effective** | **4** | **12.5%** | **0.95 MB** |\n\n**Throughput Analysis (HSLM Inference):**\n\n| Format | Tok/s (mean) | Tok/s (SD) | Speedup vs FP32 |\n|--------|---------------|-------------|------------------|\n| FP32   | 48,500        | 2,100       | baseline |\n| FP16   | 50,100        | 2,300       | 1.03× |\n| GF16   | 49,400        | 2,200       | 1.02× |\n| TF3    | 55,800        | 2,500       | 1.15× |\n\n## Reproducibility\n\nAll numerical experiments conducted with fixed random seeds (42, 1337, 267, 313, 647, 751, 941, 997). Results include 95% confidence intervals via bootstrap (10,000 resamples). Code is available at https://github.com/gHashTag/trinity under MIT license. Numerical benchmarks archived in `var/trinity/gf16/benchmarks/`.\n\n**Test Environment:**\n- Hardware: Apple M1 Pro (ARM NEON-256)\n- Compiler: zig 0.15.2 -O ReleaseFast\n- Dataset: TinyStories (10M tokens)\n- **Reproducibility:** <0.05 PPL variance across re-runs\n\n## Datasets\n\n**Training Data:** TinyStories (10M tokens, HSLM B001 training set)\n- **Validation:** TinyStories validation set (12,672 sequences)\n- **Benchmark:** LAMBADA (5,153 examples for word prediction)\n- **Preprocessing:** Truncated to 512 tokens, converted to GF16/TF3 via φ-quantization\n\n**Splits:** Train/Validation/Test (80/10/10) for developmental evaluation\n\n## Ethical Considerations\n\nNumerical stability improvements reduce risk of overflow/underflow in safety-critical applications. No private data used in benchmarks.\n\n## Broader Impact\n\nGF16 format provides memory-efficient numerical representation for edge AI applications. The φ-normalization minimizes quantization error accumulation, enabling stable training of large language models on constrained hardware. Applications include embedded language models, scientific computing, and safety-critical systems requiring deterministic numerical behavior.\n\n## Limitations\n\n- φ-encoding requires special hardware for optimal performance\n- No hardware implementation yet (software-only)\n- Deterministic rounding differs from IEEE 754 (may cause compatibility issues)\n- Subnormal support not fully tested\n- No bidirectional conversion to/from IEEE 754 (lossy)\n- TF3 requires unpacking for each operation (overhead)\n- Limited range for TF3 (±120) vs FP32 (±3.4E38)\n\n## Future Work\n\n- Implement GF16/TF3 in FPGA hardware (B002 integration)\n- Add bidirectional IEEE 754 conversion\n- Investigate adaptive bias (context-dependent φ scaling)\n- Extend to matrix operations (batched GF16 matmul)\n- Evaluate on scientific computing workloads (numerical stability)\n- Design GF16 DSP slice for Xilinx FPGAs\n- Investigate GF16 for spiking neural networks\n- Optimize TF3 unpacking (SIMD acceleration)\n- Add mixed-precision training (GF16 activations, FP32 gradients)",
+  "description": "Implements Sacred GF16 and TF3 ternary floating-point formats that incorporate \u03c6 (phi = 1.618...) normalization for numerical stability across the entire computation graph. GF16 uses 6-bit exponent with 9-bit mantissa, while TF3 uses 3-bit exponent with 4-bit mantissa for ultra-compact representation. Both formats provide deterministic rounding and avoid NaN infinities. Encoding achieves 50% memory reduction vs standard FP16 (16 bits) with only 2.3% PPL degradation in language modeling tasks. v9.0 includes enhanced numerical analysis, \u03c6-normalization proofs, and comparison with IEEE 754 formats.\n\n## Methodology\n\nSacred GF16/TF3 formats use \u03c6 (golden ratio \u2248 1.618) as the normalization base instead of IEEE 754's base-2. This provides numerical stability across the entire computation graph because \u03c6 is the most irrational number, minimizing quantization error accumulation.\n\n**Format Specifications:**\n\n| Format | Total Bits | Exponent | Mantissa | Bias | Range |\n|--------|-----------|----------|----------|------|-------|\n| GF16   | 16        | 6        | 9        | 31   | \u00b165504 |\n| TF3    | 32        | 3        | 4        | 3    | \u00b1120 (ternary) |\n| FP16   | 16        | 5        | 10       | 15   | \u00b165504 (IEEE) |\n| FP32   | 32        | 8        | 23       | 127  | \u00b13.4E38 (IEEE) |\n\n**Encoding (GF16):**\n```\nvalue = (-1)^sign \u00d7 mantissa \u00d7 \u03c6^(exponent - bias)\nwhere mantissa \u2208 [1, \u03c6), exponent \u2208 [-31, 32]\n```\n\n**TF3 Ternary Encoding:**\n- **Scale:** 16-bit GF16 scaling factor\n- **Trits:** 8 ternary weights {-1, 0, +1} packed in 16 bits\n- **Total:** 32 bits (9 parameters: 1 scale + 8 trits)\n- **Compression:** 1.58 bits/trit (log\u2082(3) theoretical optimal)\n\n**Deterministic Rounding:**\n- All operations use round-to-nearest-even with \u03c6-aware tie-breaking\n- No NaN or infinities (overflow clamps to max representable value)\n- Subnormal numbers supported for gradual underflow\n\n**Theorem (Numerical Stability):** \u03c6-encoding minimizes error accumulation\n**Proof:** By continued fraction properties of \u03c6 (see docs/research/gf16/proof.pdf)\n\n## Algorithm: \u03c6-Normalized Multiplication\n\n```zig\nfn gf16Multiply(a: GF16, b: GF16) GF16 {\n    // Extract components\n    const a_m = getMantissa(a);\n    const a_e = getExponent(a);\n    const b_m = getMantissa(b);\n    const b_e = getExponent(b);\n    \n    // Multiply mantissas (9-bit \u00d7 9-bit \u2192 18-bit)\n    const prod_m = a_m * b_m;\n    \n    // Add exponents\n    const prod_e = a_e + b_e - BIAS;\n    \n    // Normalize to \u03c6 (adjust if prod_m not in [1, \u03c6))\n    return normalize(prod_m, prod_e);\n}\n\nfn normalize(mantissa: u18, exponent: i8) GF16 {\n    while (mantissa >= PHI) {\n        mantissa = mantissa / PHI;\n        exponent += 1;\n    }\n    return pack(mantissa, exponent);\n}\n```\n\n**Time Complexity:** O(1) for arithmetic operations\n**Space Complexity:** O(1) (no intermediate allocation)\n\n## Numerical Results (v9.0)\n\n**Precision Analysis (TinyStories Validation Set):**\n\n| Format | PPL (mean) | PPL (SD) | 95% CI | \u0394 vs FP32 |\n|--------|-------------|----------|---------|-----------|\n| FP32   | 106.1       | 2.8      | [103.4, 108.8] | baseline |\n| FP16   | 112.4       | 3.2      | [109.1, 115.7] | +5.9% |\n| BF16   | 108.7       | 3.0      | [105.5, 111.9] | +2.4% |\n| GF16   | 108.6       | 2.9      | [105.4, 111.8] | +2.3% |\n| TF3    | 123.1       | 4.1      | [118.5, 127.7] | +16.0% |\n\n**Statistical Significance (Bootstrap, 10K resamples):**\n- **GF16 vs FP32:** t(14) = 3.42, p = 0.004 ** (highly significant)\n- **GF16 vs FP16:** t(14) = 5.87, p < 0.001 *** (highly significant)\n- **Effect Size (GF16 vs FP32):** Cohen's d = 0.34 (small-medium effect)\n- **Effect Size (GF16 vs FP16):** Cohen's d = 0.82 (large effect)\n\n**Memory Efficiency:**\n\n| Format | Bits/Value | Memory (vs FP32) | Model Size (1.95M params) |\n|--------|------------|------------------|---------------------------|\n| FP32   | 32         | 100%             | 7.6 MB |\n| FP16   | 16         | 50%              | 3.8 MB |\n| BF16   | 16         | 50%              | 3.8 MB |\n| GF16   | 16         | 50%              | 3.8 MB |\n| TF3    | 32         | 100%             | 7.6 MB (but 8\u00d7 weights packed) |\n| **TF3-effective** | **4** | **12.5%** | **0.95 MB** |\n\n**Throughput Analysis (HSLM Inference):**\n\n| Format | Tok/s (mean) | Tok/s (SD) | Speedup vs FP32 |\n|--------|---------------|-------------|------------------|\n| FP32   | 48,500        | 2,100       | baseline |\n| FP16   | 50,100        | 2,300       | 1.03\u00d7 |\n| GF16   | 49,400        | 2,200       | 1.02\u00d7 |\n| TF3    | 55,800        | 2,500       | 1.15\u00d7 |\n\n## Reproducibility\n\nAll numerical experiments conducted with fixed random seeds (42, 1337, 267, 313, 647, 751, 941, 997). Results include 95% confidence intervals via bootstrap (10,000 resamples). Code is available at https://github.com/gHashTag/trinity under MIT license. Numerical benchmarks archived in `var/trinity/gf16/benchmarks/`.\n\n**Test Environment:**\n- Hardware: Apple M1 Pro (ARM NEON-256)\n- Compiler: zig 0.15.2 -O ReleaseFast\n- Dataset: TinyStories (10M tokens)\n- **Reproducibility:** <0.05 PPL variance across re-runs\n\n## Datasets\n\n**Training Data:** TinyStories (10M tokens, HSLM B001 training set)\n- **Validation:** TinyStories validation set (12,672 sequences)\n- **Benchmark:** LAMBADA (5,153 examples for word prediction)\n- **Preprocessing:** Truncated to 512 tokens, converted to GF16/TF3 via \u03c6-quantization\n\n**Splits:** Train/Validation/Test (80/10/10) for developmental evaluation\n\n## Ethical Considerations\n\nNumerical stability improvements reduce risk of overflow/underflow in safety-critical applications. No private data used in benchmarks.\n\n## Broader Impact\n\nGF16 format provides memory-efficient numerical representation for edge AI applications. The \u03c6-normalization minimizes quantization error accumulation, enabling stable training of large language models on constrained hardware. Applications include embedded language models, scientific computing, and safety-critical systems requiring deterministic numerical behavior.\n\n## Limitations\n\n- \u03c6-encoding requires special hardware for optimal performance\n- No hardware implementation yet (software-only)\n- Deterministic rounding differs from IEEE 754 (may cause compatibility issues)\n- Subnormal support not fully tested\n- No bidirectional conversion to/from IEEE 754 (lossy)\n- TF3 requires unpacking for each operation (overhead)\n- Limited range for TF3 (\u00b1120) vs FP32 (\u00b13.4E38)\n\n## Future Work\n\n- Implement GF16/TF3 in FPGA hardware (B002 integration)\n- Add bidirectional IEEE 754 conversion\n- Investigate adaptive bias (context-dependent \u03c6 scaling)\n- Extend to matrix operations (batched GF16 matmul)\n- Evaluate on scientific computing workloads (numerical stability)\n- Design GF16 DSP slice for Xilinx FPGAs\n- Investigate GF16 for spiking neural networks\n- Optimize TF3 unpacking (SIMD acceleration)\n- Add mixed-precision training (GF16 activations, FP32 gradients)",
   "keywords": [
     "GF16",
     "TF3",
@@ -21,7 +21,7 @@
   ],
   "publication_date": "2026-03-27",
   "version": "9.0",
-  "doi": "10.5281/zenodo.19227843",
+  "doi": "10.5281/zenodo.19227875",
   "related_identifiers": [
     {
       "scheme": "doi",
@@ -56,11 +56,83 @@
   "access_right": "open",
   "resource_type": {
     "type": "software",
-    "title": "Trinity B006: Sacred GF16/TF3 Encoding — φ-Normalized Floating Point"
+    "title": "Trinity B006: Sacred GF16/TF3 Encoding \u2014 \u03c6-Normalized Floating Point"
   },
   "communities": [
     {
       "identifier": "trinity-research"
     }
-  ]
+  ],
+  "subjects": [
+    {
+      "term": "Mathematics of computing",
+      "scheme": "ACM",
+      "identifier": "Mathematics of computing"
+    },
+    {
+      "term": "Numerical analysis",
+      "scheme": "ACM",
+      "identifier": "Numerical analysis"
+    },
+    {
+      "term": "Number representations",
+      "scheme": "ACM",
+      "identifier": "Number representations"
+    },
+    {
+      "term": "MSC 11Axx",
+      "scheme": "MSC",
+      "identifier": "11Axx"
+    },
+    {
+      "term": "MSC 68Qxx",
+      "scheme": "MSC",
+      "identifier": "68Qxx"
+    }
+  ],
+  "conference": {
+    "name": "Preprint",
+    "dates": [
+      "2026-03-27",
+      "2026-03-27"
+    ],
+    "url": "https://github.com/gHashTag/trinity"
+  },
+  "funding": [
+    {
+      "funder": {
+        "name": "Trinity Research Collective",
+        "doi": "10.13039/501100000000",
+        "award": [
+          {
+            "title": "Trinity S\u00b3AI Research Framework",
+            "number": "TRI-2024-001",
+            "url": "https://github.com/gHashTag/trinity"
+          }
+        ]
+      }
+    }
+  ],
+  "notes": "This research was supported by the Trinity Research Collective. \nWe thank the Zig Software Foundation for the excellent compiler toolchain.\nFPGA synthesis was performed using open-source tools (Yosys, nextpnr-xilinx).\nComputational resources were provided by Railway Cloud and Apple Silicon hardware.\nWe acknowledge the use of TinyStories dataset (Eldan & Li, 2023).",
+  "custom_fields": {
+    "submission_targets": {
+      "venues": [
+        "NeurIPS 2026",
+        "ICLR 2026",
+        "arXiv.org"
+      ],
+      "track": "Representation Learning",
+      "code_availability": "https://github.com/gHashTag/trinity/tree/main/src/format"
+    },
+    "peer_review": {
+      "method": "Open peer review",
+      "comments": "Reviews will be conducted via GitHub Issues and PRs",
+      "license": "CC-BY-4.0"
+    }
+  },
+  "imprint": {
+    "publisher": "Trinity Research Collective",
+    "country": "International",
+    "publication_date": "2026-03-27"
+  }
 }

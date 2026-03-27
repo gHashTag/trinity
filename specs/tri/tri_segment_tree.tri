@@ -1,0 +1,60 @@
+name: tri_segment_tree
+version: "0.1.0"
+language: zig
+module: tri.segment_tree
+description: "Segment Tree for range queries with point updates"
+
+types:
+  SegmentTree:
+    description: "Binary tree for range queries"
+    fields:
+      data: "[]i64"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]const i64"
+    returns: "SegmentTree"
+    description: "Build segment tree from array"
+
+  query:
+    params:
+      - name: tree
+        type: "*SegmentTree"
+      - name: left
+        type: "usize"
+      - name: right
+        type: "usize"
+    returns: "i64"
+    description: "Sum query on range [left, right]"
+
+  update:
+    params:
+      - name: tree
+        type: "*SegmentTree"
+      - name: index
+        type: "usize"
+      - name: value
+        type: "i64"
+    returns: "void"
+    description: "Update element at index"
+
+  deinit:
+    params:
+      - name: tree
+        type: "*SegmentTree"
+    returns: "void"
+    description: "Free tree memory"
+
+behaviors:
+  - name: range_sum
+    description: "Answer sum queries in O(log n)"
+    implementation: |
+      Tree size is next power of 2.
+      Leaf at index i stores original[i].
+      Internal node stores sum of children.

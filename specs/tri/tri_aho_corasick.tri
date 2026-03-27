@@ -1,0 +1,60 @@
+name: tri_aho_corasick
+version: "0.1.0"
+language: zig
+module: tri.aho_corasick
+description: "Aho-Corasick multi-pattern string search"
+
+types:
+  ACTrieNode:
+    description: "Trie node with failure link"
+    fields:
+      children: "[256]?*ACTrieNode"
+      fail: "*ACTrieNode"
+      output: "[][]const u8"
+      char: "u8"
+
+  ACAutomaton:
+    description: "Aho-Corasick automaton"
+    fields:
+      root: "*ACTrieNode"
+      patterns: "[][]const u8"
+      allocator: "std.mem.Allocator"
+
+functions:
+  build:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: patterns
+        type: "[][]const u8"
+    returns: "ACAutomaton"
+    description: "Build automaton from patterns"
+
+  search:
+    params:
+      - name: ac
+        type: "*ACAutomaton"
+      - name: text
+        type: "[]const u8"
+    returns: "[]Match"
+    description: "Find all pattern matches"
+
+  deinit:
+    params:
+      - name: ac
+        type: "*ACAutomaton"
+    returns: "void"
+    description: "Free automaton memory"
+
+types_extra:
+  Match:
+    fields:
+      pattern: "[]const u8"
+      position: "usize"
+
+behaviors:
+  - name: failure_links
+    description: "BFS to build failure links"
+    implementation: |
+      Root's children fail to root.
+      For other nodes, follow parent's fail.

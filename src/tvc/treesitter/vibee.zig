@@ -88,17 +88,16 @@ pub const TypeInfo = struct {
 };
 
 pub const TypeKind = enum {
-        struct,
-        enum,
-        union,
-    };
+    type_struct,
+    type_enum,
+    type_union,
+};
 
-    pub const FieldInfo = struct {
-        name: []const u8,
-        type_annotation: []const u8,
-        default_value: ?[]const u8,
-        constraint: ?[]const u8,
-    };
+pub const FieldInfo = struct {
+    name: []const u8,
+    type_annotation: []const u8,
+    default_value: ?[]const u8,
+    constraint: ?[]const u8,
 };
 
 /// VIBEE behavior (Given/When/Then)
@@ -154,7 +153,7 @@ pub const Symbol = struct {
         variant,
         behavior,
         algorithm,
-        test,
+        testing,
         module,
         import,
     };
@@ -429,7 +428,7 @@ pub const Vibeeparser = struct {
 
         try symbols.append(Symbol{
             .id = @intCast(symbols.items.len + 1),
-            .kind = .test,
+            .kind = .testing,
             .name = name,
             .qualified_name = qualified_name,
             .signature = null,

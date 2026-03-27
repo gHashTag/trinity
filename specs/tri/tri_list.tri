@@ -1,0 +1,74 @@
+name: tri_list
+version: "0.1.0"
+module: tri.list
+description: "TRI List type — immutable linked list"
+
+types:
+  List(T):
+    description: "Immutable linked list"
+    fields:
+      is_empty: bool
+      head: T
+      tail: "List(T)"
+
+functions:
+  empty:
+    returns: "List(void)"
+    description: "Create empty list"
+
+  cons:
+    params:
+      - name: head
+        type: "T"
+      - name: tail
+        type: "List(T)"
+    returns: "List(T)"
+    description: "Prepend element to list"
+
+  head:
+    params:
+      - name: list
+        type: "List(T)"
+    returns: "T"
+    description: "Get first element"
+
+  tail:
+    params:
+      - name: list
+        type: "List(T)"
+    returns: "List(T)"
+    description: "Get rest of list"
+
+  map:
+    params:
+      - name: list
+        type: "List(T)"
+      - name: fn
+        type: "fn(T) -> U"
+    returns: "List(U)"
+    description: "Transform each element"
+
+  filter:
+    params:
+      - name: list
+        type: "List(T)"
+      - name: pred
+        type: "fn(T) -> bool"
+    returns: "List(T)"
+    description: "Keep matching elements"
+
+  fold:
+    params:
+      - name: list
+        type: "List(T)"
+      - name: init
+        type: "U"
+      - name: fn
+        type: "fn(U, T) -> U"
+    returns: "U"
+    description: "Reduce list to single value"
+
+behaviors:
+  - name: persistent
+    description: "Lists are immutable — operations return new lists"
+    note: "Original list unchanged by cons/map/filter"

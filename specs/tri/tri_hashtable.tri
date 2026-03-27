@@ -1,0 +1,61 @@
+name: tri_hashtable
+version: "0.1.0"
+module: tri.hashtable
+description: "TRI Hash table — key-value map"
+
+types:
+  HashEntry(K, V):
+    description: "Hash table entry"
+    fields:
+      key: K
+      value: V
+      used: bool
+
+  HashTable(K, V):
+    description: "Open addressing hash table"
+    fields:
+      entries: "[]HashEntry(K, V)"
+      capacity: usize
+      count: usize
+
+functions:
+  new:
+    params:
+      - name: capacity
+        type: "usize"
+    returns: "HashTable(K, V)"
+    description: "Create hash table"
+
+  get:
+    params:
+      - name: table
+        type: "HashTable(K, V)"
+      - name: key
+        type: "K"
+    returns: "Option(V)"
+    description: "Get value by key"
+
+  set:
+    params:
+      - name: table
+        type: "HashTable(K, V)"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "bool"
+    description: "Insert key-value pair"
+
+  remove:
+    params:
+      - name: table
+        type: "HashTable(K, V)"
+      - name: key
+        type: "K"
+    returns: "bool"
+    description: "Remove key"
+
+behaviors:
+  - name: open_addressing
+    description: "Uses linear probing"
+    note: "Resizes when 75% full"

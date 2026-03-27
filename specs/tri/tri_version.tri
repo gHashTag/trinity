@@ -1,0 +1,49 @@
+name: tri_version
+version: "0.1.0"
+module: tri.version
+description: "TRI Version — semantic versioning"
+
+types:
+  Version:
+    description: "Semantic version"
+    fields:
+      major: "usize"
+      minor: "usize"
+      patch: "usize"
+      prerelease: "[]const u8"
+      build: "[]const u8"
+
+functions:
+  parse:
+    params:
+      - name: version_str
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Version"
+    description: "Parse version string"
+
+  compare:
+    params:
+      - name: a
+        type: "Version"
+      - name: b
+        type: "Version"
+    returns: "i8"
+    description: "Compare versions (-1, 0, 1)"
+
+  next:
+    params:
+      - name: version
+        type: "Version"
+      - name: part
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Version"
+    description: "Increment version part"
+
+behaviors:
+  - name: semver
+    description: "Semantic versioning"
+    note: "MAJOR.MINOR.PATCH format"

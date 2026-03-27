@@ -1,0 +1,34 @@
+name: tri_radix
+version: "0.1.0"
+module: tri.radix
+description: "TRI Radix — radix sort"
+
+types:
+  RadixSort:
+    description: "Radix sort configuration"
+    fields:
+      base: "usize"
+
+functions:
+  sort_u8:
+    params:
+      - name: items
+        type: "[]u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Sort bytes using radix sort"
+
+  sort_u32:
+    params:
+      - name: items
+        type: "[]u32"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u32"
+    description: "Sort 32-bit integers"
+
+behaviors:
+  - name: stable
+    description: "Stable radix sort"
+    note: "O(nw) complexity"

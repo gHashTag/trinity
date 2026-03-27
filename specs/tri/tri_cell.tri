@@ -1,0 +1,48 @@
+name: tri_cell
+version: "0.1.0"
+module: tri.cell
+description: "TRI Cell — mutable shared memory"
+
+types:
+  Cell(T):
+    description: "Mutable memory cell"
+    fields:
+      value: T
+
+functions:
+  newCell:
+    params:
+      - name: initial
+        type: "T"
+    returns: "Cell(T)"
+    description: "Create cell with initial value"
+
+  get:
+    params:
+      - name: cell
+        type: "Cell(T)"
+    returns: "T"
+    description: "Read current value"
+
+  set:
+    params:
+      - name: cell
+        type: "Cell(T)"
+      - name: value
+        type: "T"
+    returns: "void"
+    description: "Update cell value"
+
+  update:
+    params:
+      - name: cell
+        type: "Cell(T)"
+      - name: fn
+        type: "fn(T) -> T"
+    returns: "void"
+    description: "Transform cell value"
+
+behaviors:
+  - name: mutable
+    description: "Cells provide mutable state in functional context"
+    note: "Use sparingly — prefer immutable data"

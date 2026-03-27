@@ -1,4 +1,5 @@
 const std = @import("std");
+const array_list = std.array_list;
 
 // SIMPLE COMPILER - Generates REAL Zig code from .tri
 // AVOIDS complex state machine parser_v3.zig
@@ -9,7 +10,7 @@ const Behavior = struct {
     when: []const u8,
     then: []const u8,
     description: []const u8,
-    code: []const u8, // ✅  
+    code: []const u8, // ✅
 };
 
 pub fn main() !void {
@@ -32,7 +33,7 @@ pub fn main() !void {
     }
 
     // Parse VIBEE spec (SIMPLE YAML PARSER)
-    const spec = try parse_simple_spec(spec_path, allocator);
+    var spec = try parse_simple_spec(spec_path, allocator);
     defer spec.deinit(allocator);
 
     // Generate Zig code (REAL FUNCTIONS)
@@ -54,14 +55,15 @@ pub fn main() !void {
 
 const SimpleSpec = struct {
     name: []const u8,
-    behaviors: std.ArrayList(Behavior),
-    constants: std.ArrayList(Constant),
-    types: std.ArrayList(Type),
+    behaviors: array_list.AlignedManaged(Behavior, null),
+    constants: array_list.AlignedManaged(Constant, null),
+    types: array_list.AlignedManaged(Type, null),
 
     pub fn deinit(self: *SimpleSpec, allocator: std.mem.Allocator) void {
-        self.behaviors.deinit(allocator);
-        self.constants.deinit(allocator);
-        self.types.deinit(allocator);
+        _ = allocator;
+        self.behaviors.deinit();
+        self.constants.deinit();
+        self.types.deinit();
     }
 };
 
@@ -72,7 +74,7 @@ const Constant = struct {
 
 const Type = struct {
     name: []const u8,
-    fields: std.ArrayList(Field),
+    fields: array_list.AlignedManaged(Field, null),
 };
 
 const Field = struct {
@@ -86,18 +88,22 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
 
     const content = try file.readToEndAlloc(allocator, 1024 * 1024);
 
+    const behaviors = array_list.AlignedManaged(Behavior, null).init(allocator);
+    const constants = array_list.AlignedManaged(Constant, null).init(allocator);
+    const types = array_list.AlignedManaged(Type, null).init(allocator);
+
     var spec = SimpleSpec{
         .name = "",
-        .behaviors = std.ArrayList(Behavior).init(allocator),
-        .constants = std.ArrayList(Constant).init(allocator),
-        .types = std.ArrayList(Type).init(allocator),
+        .behaviors = behaviors,
+        .constants = constants,
+        .types = types,
     };
 
     var lines = std.mem.splitSequence(u8, content, "\\n");
     var in_behaviors = false;
-    var current_behavior: ?Behavior = null;
+    var current_behavior: ?*Behavior = null;
     var in_code_block = false;
-    var code_lines = std.ArrayList([]const u8).init(allocator);
+    var code_lines = array_list.AlignedManaged([]const u8, null).init(allocator);
 
     while (lines.next()) |line| {
         const trimmed = std.mem.trim(u8, line, &std.ascii.whitespace);
@@ -117,7 +123,7 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
 
             if (in_behaviors) {
                 // Save previous behavior
-                if (current_behavior) |*prev| {
+                if (current_behavior) |prev| {
                     if (code_lines.items.len > 0) {
                         const code_str = try allocator.dupe(u8, code_lines.items[0]);
                         var merged_code = code_str;
@@ -128,7 +134,7 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
                         }
                         prev.code = merged_code;
                     }
-                    try spec.behaviors.append(prev);
+                    try spec.behaviors.append(prev.*);
                 }
 
                 // Start new behavior
@@ -142,11 +148,11 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
                 });
 
                 current_behavior = &spec.behaviors.items[spec.behaviors.items.len - 1];
-                code_lines.deinit(allocator);
-                code_lines = std.ArrayList([]const u8).init(allocator);
+                code_lines.deinit();
+                code_lines = array_list.AlignedManaged([]const u8, null).init(allocator);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    code: |")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |_| {
                 const code_start = std.mem.indexOf(u8, trimmed, "|").? + 1;
                 const first_line = std.mem.trim(u8, trimmed[code_start..], &std.ascii.whitespace);
 
@@ -165,26 +171,26 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
             // Empty line ends code block
             in_code_block = false;
         } else if (std.mem.startsWith(u8, trimmed, "    given:")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |b| {
                 b.given = try allocator.dupe(u8, trimmed[9..]);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    when:")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |b| {
                 b.when = try allocator.dupe(u8, trimmed[8..]);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    then:")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |b| {
                 b.then = try allocator.dupe(u8, trimmed[8..]);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    description:")) {
-            if (current_behavior) |*b| {
+            if (current_behavior) |b| {
                 b.description = try allocator.dupe(u8, trimmed[14..]);
             }
         }
     }
 
     // Save last behavior
-    if (current_behavior) |*b| {
+    if (current_behavior) |b| {
         if (code_lines.items.len > 0) {
             const code_str = try allocator.dupe(u8, code_lines.items[0]);
             var merged_code = code_str;
@@ -195,78 +201,78 @@ fn parse_simple_spec(path: []const u8, allocator: std.mem.Allocator) !SimpleSpec
             }
             b.code = merged_code;
         }
-        try spec.behaviors.append(b);
+        try spec.behaviors.append(b.*);
     }
 
     return spec;
 }
 
 fn generate_simple_zig(spec: *const SimpleSpec, allocator: std.mem.Allocator) ![]const u8 {
-    var zig_code = std.ArrayList(u8).init(allocator);
-    defer zig_code.deinit(allocator);
+    var zig_code = array_list.AlignedManaged(u8, null).init(allocator);
+    defer zig_code.deinit();
 
     // Header
-    try zig_code.appendSlice( "// ════════════════════════════════════════════════════════\\n");
-    try zig_code.appendSlice( "// SIMPLE COMPILATION - REAL FUNCTIONS\\n");
-    try zig_code.appendSlice( "// From: ");
-    try zig_code.appendSlice( spec.name);
-    try zig_code.appendSlice( "\\n// ════════════════════════════════════════════════════\\n\\n");
+    try zig_code.appendSlice("// ════════════════════════════════════════════════════════\\n");
+    try zig_code.appendSlice("// SIMPLE COMPILATION - REAL FUNCTIONS\\n");
+    try zig_code.appendSlice("// From: ");
+    try zig_code.appendSlice(spec.name);
+    try zig_code.appendSlice("\\n// ════════════════════════════════════════════════════\\n\\n");
 
-    try zig_code.appendSlice( "const std = @import(\\"std\\");\\n\\n");
+    try zig_code.appendSlice("const std = @import(\"std\");\\n\\n");
 
     // Generate REAL Functions
-    try zig_code.appendSlice( "// ════════════════════════════════════════════════\\n");
-    try zig_code.appendSlice( "// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\\n");
-    try zig_code.appendSlice( "// ══════════════════════════════════════════════════════\\n\\n");
+    try zig_code.appendSlice("// ════════════════════════════════════════════════\\n");
+    try zig_code.appendSlice("// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\\n");
+    try zig_code.appendSlice("// ══════════════════════════════════════════════════════\\n\\n");
 
     for (spec.behaviors.items) |behavior| {
         if (behavior.code.len > 0) {
             // Generate REAL function with implementation
-            try zig_code.appendSlice( "pub fn ");
-            try zig_code.appendSlice( behavior.name);
-            try zig_code.appendSlice( "() ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( " !void {\\n");
+            try zig_code.appendSlice("pub fn ");
+            try zig_code.appendSlice(behavior.name);
+            try zig_code.appendSlice("() ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice(" !void {\\n");
 
-            try zig_code.appendSlice( "    // ");
-            try zig_code.appendSlice( behavior.description);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Given: ");
-            try zig_code.appendSlice( behavior.given);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // When: ");
-            try zig_code.appendSlice( behavior.when);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Then: ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( "\\n\\n");
+            try zig_code.appendSlice("    // ");
+            try zig_code.appendSlice(behavior.description);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Given: ");
+            try zig_code.appendSlice(behavior.given);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // When: ");
+            try zig_code.appendSlice(behavior.when);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Then: ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice("\\n\\n");
 
             // WRITE THE ACTUAL IMPLEMENTATION
-            try zig_code.appendSlice( "    // === REAL CODE ===\\n");
-            try zig_code.appendSlice( "    ");
-            try zig_code.appendSlice( behavior.code);
-            try zig_code.appendSlice( "\\n");
+            try zig_code.appendSlice("    // === REAL CODE ===\\n");
+            try zig_code.appendSlice("    ");
+            try zig_code.appendSlice(behavior.code);
+            try zig_code.appendSlice("\\n");
 
-            try zig_code.appendSlice( "}\\n\\n");
+            try zig_code.appendSlice("}\\n\\n");
         } else {
             // Fallback: test (no implementation)
-            try zig_code.appendSlice( "test \\"");
-            try zig_code.appendSlice( behavior.name);
-            try zig_code.appendSlice( "\\\" {\\n");
-            try zig_code.appendSlice( "    // Given: ");
-            try zig_code.appendSlice( behavior.given);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // When: ");
-            try zig_code.appendSlice( behavior.when);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Then: ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Golden identity verification\\n");
-            try zig_code.appendSlice( "    const phi_sq = PHI * PHI;\\n");
-            try zig_code.appendSlice( "    const inv_phi_sq = 1.0 / phi_sq;\\n");
-            try zig_code.appendSlice( "    try std.testing.expectApproxEqAbs(GOLDEN_IDENTITY, phi_sq + inv_phi_sq, 0.0001);\\n");
-            try zig_code.appendSlice( "}\\n\\n");
+            try zig_code.appendSlice("test \"\\x0a");
+            try zig_code.appendSlice(behavior.name);
+            try zig_code.appendSlice("\\\" {\\n");
+            try zig_code.appendSlice("    // Given: ");
+            try zig_code.appendSlice(behavior.given);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // When: ");
+            try zig_code.appendSlice(behavior.when);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Then: ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Golden identity verification\\n");
+            try zig_code.appendSlice("    const phi_sq = PHI * PHI;\\n");
+            try zig_code.appendSlice("    const inv_phi_sq = 1.0 / phi_sq;\\n");
+            try zig_code.appendSlice("    try std.testing.expectApproxEqAbs(GOLDEN_IDENTITY, phi_sq + inv_phi_sq, 0.0001);\\n");
+            try zig_code.appendSlice("}\\n\\n");
         }
     }
 

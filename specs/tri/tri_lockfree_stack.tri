@@ -1,0 +1,42 @@
+name: tri_lockfree_stack
+version: "0.1.0"
+language: zig
+module: tri.lockfree_stack
+description: "Lock-free stack using CAS"
+
+types:
+  LFNode:
+    description: "Lock-free node"
+    fields:
+      value: "i64"
+      next: "?*LFNode"
+
+  LockFreeStack:
+    description: "Lock-free Treiber stack"
+    fields:
+      head: "?*LFNode"
+
+functions:
+  init:
+    returns: "LockFreeStack"
+    description: "Create empty stack"
+
+  push:
+    params:
+      - name: s
+        type: "*LockFreeStack"
+      - name: value
+        type: "i64"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Push value (CAS-based)"
+
+  pop:
+    params:
+      - name: s
+        type: "*LockFreeStack"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "i64"
+    description: "Pop value (CAS-based)"

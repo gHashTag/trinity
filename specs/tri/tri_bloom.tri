@@ -1,0 +1,47 @@
+name: tri_bloom
+version: "0.1.0"
+module: tri.bloom
+description: "TRI Bloom — probabilistic filter"
+
+types:
+  BloomFilter:
+    description: "Bloom filter"
+    fields:
+      bits: "[]bool"
+      num_hashes: "usize"
+      size: "usize"
+
+functions:
+  init:
+    params:
+      - name: size
+        type: "usize"
+      - name: num_hashes
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!BloomFilter"
+    description: "Create bloom filter"
+
+  add:
+    params:
+      - name: filter
+        type: "*BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "void"
+    description: "Add item to filter"
+
+  contains:
+    params:
+      - name: filter
+        type: "BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if item might exist"
+
+behaviors:
+  - name: probabilistic
+    description: "False positives possible"
+    note: "No false negatives"

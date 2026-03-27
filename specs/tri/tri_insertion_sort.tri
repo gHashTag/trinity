@@ -1,0 +1,20 @@
+name: tri_insertion_sort
+version: "0.1.0"
+language: zig
+module: tri.insertion_sort
+description: "Insertion Sort - O(n^2) but fast for small arrays"
+
+functions:
+  sort:
+    params:
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort in place using insertion sort"
+
+behaviors:
+  - name: insert_into_sorted
+    description: "Build sorted portion one element at a time"
+    implementation: |
+      For each element, insert into correct position
+      in the already-sorted prefix.

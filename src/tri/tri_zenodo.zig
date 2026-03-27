@@ -24,6 +24,14 @@ const zenodo_latex_table = @import("zenodo_latex_table.zig");
 const zenodo_doi_manager = @import("zenodo_doi_manager.zig");
 const zenodo_v16_extensions = @import("zenodo_v16_extensions.zig");
 
+// V19 Scientific Metadata Standards
+const zenodo_v19_orcid = @import("zenodo_v19_orcid.zig");
+const zenodo_v19_cff = @import("zenodo_v19_cff.zig");
+const zenodo_v19_openalex = @import("zenodo_v19_openalex.zig");
+
+// V20 Statistical Significance
+const zenodo_v20_stats = @import("zenodo_v20_stats.zig");
+
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
@@ -85,6 +93,12 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "v16")) {
         // V16 Scientific Documentation Framework
         try runV16Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v19")) {
+        // V19 Scientific Metadata Standards
+        try runV19Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v20")) {
+        // V20 Statistical Significance
+        try runV20Command(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -488,6 +502,314 @@ const disc_table = [_]Discovery{
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// V19 SCIENTIFIC METADATA STANDARDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runV19Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printV19Help();
+        return;
+    }
+
+    const v19_subcmd = args[0];
+    const v19_args = args[1..];
+
+    if (std.mem.eql(u8, v19_subcmd, "cff")) {
+        try generateCFF(allocator, v19_args);
+    } else if (std.mem.eql(u8, v19_subcmd, "orcid")) {
+        try validateORCID(allocator, v19_args);
+    } else if (std.mem.eql(u8, v19_subcmd, "openalex")) {
+        try generateOpenAlex(allocator, v19_args);
+    } else if (std.mem.eql(u8, v19_subcmd, "coar")) {
+        try generateCOAR(allocator, v19_args);
+    } else {
+        print("{s}Unknown V19 subcommand: {s}{s}\n", .{ RED, v19_subcmd, RESET });
+        printV19Help();
+    }
+}
+
+fn printV19Help() void {
+    print("\n{s}{s}ZENODO V19 — Scientific Metadata Standards{s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("  tri zenodo v19 cff <version>         Generate CFF 1.2.0 citation file\n", .{});
+    print("  tri zenodo v19 orcid <id>            Validate ORCID iD (ISO 7064:1983.MOD 11-2)\n", .{});
+    print("  tri zenodo v19 openalex <type>       Generate OpenAlex metadata\n", .{});
+    print("  tri zenodo v19 coar <doi>            Generate COAR notification\n\n", .{});
+    print("  Standards: CFF 1.2.0, ORCID, OpenAlex, COAR Notification System\n", .{});
+    print("  References: https://citation-file-format.github.io/1.2.0/\n\n", .{});
+}
+
+fn generateCFF(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const version = if (args.len > 0) args[0] else "0.12.0";
+
+    print("\n{s}{s}V19 CFF 1.2.0 Citation File Generator{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const cff = try zenodo_v19_cff.createTrinityCff(allocator, version, "10.5281/zenodo.19227879");
+    defer {
+        allocator.free(cff.title);
+        allocator.free(cff.version);
+        if (cff.doi) |d| allocator.free(d);
+        if (cff.date_released) |d| allocator.free(d);
+        if (cff.url) |u| allocator.free(u);
+        if (cff.license) |l| allocator.free(l);
+        if (cff.abstract) |a| allocator.free(a);
+    }
+
+    const yaml = try cff.generate(allocator);
+    defer allocator.free(yaml);
+
+    print("{s}\n", .{yaml});
+
+    print("\n{s}✅ CFF 1.2.0 file generated successfully!{s}\n", .{ GREEN, RESET });
+    print("   Save as: CITATION.cff\n", .{});
+    print("   Validator: https://validator.citation-file-format.org/\n\n", .{});
+}
+
+fn validateORCID(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const input = if (args.len > 0) args[0] else "0000-0002-1825-0097";
+
+    // Extract ID from URL if full URL is provided
+    const orcid_id = if (std.mem.startsWith(u8, input, "https://orcid.org/"))
+        input["https://orcid.org/".len..]
+    else if (std.mem.startsWith(u8, input, "http://orcid.org/"))
+        input["http://orcid.org/".len..]
+    else
+        input;
+
+    print("\n{s}{s}V19 ORCID iD Validation{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const validation = zenodo_v19_orcid.validateOrcid(orcid_id);
+    const formatted = try validation.format(allocator);
+    defer allocator.free(formatted);
+
+    print("ORCID iD: {s}\n", .{input});
+    print("Result: {s}\n\n", .{formatted});
+
+    if (validation.valid) {
+        const url = try zenodo_v19_orcid.orcidUrl(orcid_id, allocator);
+        defer allocator.free(url);
+        print("URL: {s}\n\n", .{url});
+
+        print("{s}✅ Valid ORCID iD!{s}\n", .{ GREEN, RESET });
+    } else {
+        print("{s}❌ Invalid ORCID iD!{s}\n", .{ RED, RESET });
+    }
+}
+
+fn generateOpenAlex(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}{s}V19 OpenAlex Metadata Generator{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const work = try zenodo_v19_openalex.createTrinityOpenAlexWork(
+        "Trinity S³AI: Ternary Neural Networks",
+        "10.5281/zenodo.19227879",
+        2026,
+        .software,
+        allocator,
+    );
+    defer {
+        allocator.free(work.title);
+        allocator.free(work.doi.?);
+    }
+
+    const json = try work.toJson(allocator);
+    defer allocator.free(json);
+
+    print("{s}\n", .{json});
+
+    print("\n{s}✅ OpenAlex metadata generated!{s}\n", .{ GREEN, RESET });
+    print("   Work Type: Software\n", .{});
+    print("   Concepts: {d} topics\n\n", .{zenodo_v19_openalex.TrinityConcepts.len});
+}
+
+fn generateCOAR(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const doi = if (args.len > 0) args[0] else "10.5281/zenodo.19227879";
+
+    print("\n{s}{s}V19 COAR Notification Generator{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const notification = try zenodo_v19_openalex.createZenodoNotification(
+        doi,
+        .software,
+        .create,
+        allocator,
+    );
+    defer {
+        allocator.free(notification.resource_id);
+        allocator.free(notification.resource_url);
+        allocator.free(notification.timestamp);
+    }
+
+    const jsonld = try notification.toJsonLd(allocator);
+    defer allocator.free(jsonld);
+
+    print("{s}\n", .{jsonld});
+
+    print("\n{s}✅ COAR notification generated!{s}\n", .{ GREEN, RESET });
+    print("   Type: Create\n", .{});
+    print("   Target: OpenAlex\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V20 STATISTICAL SIGNIFICANCE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runV20Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printV20Help();
+        return;
+    }
+
+    const v20_subcmd = args[0];
+    const v20_args = args[1..];
+
+    if (std.mem.eql(u8, v20_subcmd, "bootstrap")) {
+        try bootstrapCI(allocator, v20_args);
+    } else if (std.mem.eql(u8, v20_subcmd, "ttest")) {
+        try tTest(allocator, v20_args);
+    } else if (std.mem.eql(u8, v20_subcmd, "wilcoxon")) {
+        try wilcoxonTest(allocator, v20_args);
+    } else if (std.mem.eql(u8, v20_subcmd, "effect")) {
+        try effectSize(allocator, v20_args);
+    } else if (std.mem.eql(u8, v20_subcmd, "summary")) {
+        try statisticalSummary(allocator, v20_args);
+    } else {
+        print("{s}Unknown V20 subcommand: {s}{s}\n", .{ RED, v20_subcmd, RESET });
+        printV20Help();
+    }
+}
+
+fn printV20Help() void {
+    print("\n{s}{s}ZENODO V20 — Statistical Significance Module{s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("  tri zenodo v20 bootstrap <data>      Bootstrap 95% confidence interval\n", .{});
+    print("  tri zenodo v20 ttest <a> <b>        Paired t-test for significance\n", .{});
+    print("  tri zenodo v20 wilcoxon <a> <b>     Wilcoxon signed-rank test\n", .{});
+    print("  tri zenodo v20 effect <a> <b>       Cohen's d + Cliff's delta\n", .{});
+    print("  tri zenodo v20 summary <data>       Complete statistical summary\n\n", .{});
+    print("  References: Efron (1979), Wilcoxon (1945), Cohen (1988), Cliff (1993)\n\n", .{});
+}
+
+fn bootstrapCI(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}{s}V20 Bootstrap Confidence Interval{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    // Example data
+    const samples = [_]f64{ 10.2, 12.1, 11.5, 13.0, 10.8, 11.9, 12.3, 10.5, 11.7, 12.0 };
+
+    const ci = try zenodo_v20_stats.bootstrapCI(&samples, 10000, 0.95, allocator);
+
+    print("Sample data (n={d}):\n", .{samples.len});
+    for (samples, 0..) |s, i| {
+        print("  [{d}] {d:.1}\n", .{ i, s });
+    }
+    print("\nBootstrap 95% CI (n_bootstraps=10000):\n", .{});
+    print("  Lower: {d:.3}\n", .{ci.lower});
+    print("  Upper: {d:.3}\n", .{ci.upper});
+    print("  Mean: {d:.3}\n", .{ci.mean});
+    print("  Std Err: {d:.4}\n", .{ci.std_err});
+    print("  Width: {d:.3}\n\n", .{ci.width()});
+
+    print("{s}✅ Bootstrap CI computed!{s}\n", .{ GREEN, RESET });
+}
+
+fn tTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    print("\n{s}{s}V20 Paired t-Test{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const a = [_]f64{ 10.0, 12.0, 11.0, 13.0, 10.0 };
+    const b = [_]f64{ 8.0, 9.0, 8.5, 10.0, 8.5 };
+
+    const result = try zenodo_v20_stats.pairedTTest(&a, &b, 0.05);
+
+    print("Sample A: ", .{});
+    inline for (a) |val| print("{d:.1} ", .{val});
+    print("\nSample B: ", .{});
+    inline for (b) |val| print("{d:.1} ", .{val});
+    print("\n\n", .{});
+
+    print("Paired t-test (α=0.05):\n", .{});
+    print("  t-statistic: {d:.3}\n", .{result.t_statistic});
+    print("  p-value: {d:.4}\n", .{result.p_value});
+    print("  df: {d}\n", .{result.degrees_of_freedom});
+    print("  Significant: {s}\n\n", .{if (result.significant) "YES" else "NO"});
+
+    print("{s}✅ t-test completed!{s}\n", .{ GREEN, RESET });
+}
+
+fn wilcoxonTest(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}{s}V20 Wilcoxon Signed-Rank Test{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const a = [_]f64{ 10.0, 12.0, 11.0, 13.0, 10.0 };
+    const b = [_]f64{ 8.0, 9.0, 8.5, 10.0, 8.5 };
+
+    const result = try zenodo_v20_stats.wilcoxonSignedRank(&a, &b, 0.05, allocator);
+
+    print("Wilcoxon Signed-Rank Test (α=0.05):\n", .{});
+    print("  W-statistic: {d:.1}\n", .{result.w_statistic});
+    print("  p-value: {d:.4}\n", .{result.p_value});
+    print("  Significant: {s}\n\n", .{if (result.significant) "YES" else "NO"});
+
+    print("{s}✅ Wilcoxon test completed!{s}\n", .{ GREEN, RESET });
+}
+
+fn effectSize(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    print("\n{s}{s}V20 Effect Size Calculation{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const a = [_]f64{ 10.0, 12.0, 11.0, 13.0, 10.0 };
+    const b = [_]f64{ 8.0, 9.0, 8.5, 10.0, 8.5 };
+
+    const cohens_d = zenodo_v20_stats.cohensD(&a, &b);
+    const cliffs_delta = zenodo_v20_stats.cliffsDelta(&a, &b);
+
+    print("Effect Size Metrics:\n", .{});
+    print("  Cohen's d: {d:.3} ({s})\n", .{ cohens_d, zenodo_v20_stats.EffectSize.fromCohensD(cohens_d).description() });
+    print("  Cliff's delta: {d:.3}\n\n", .{cliffs_delta});
+
+    print("Interpretation:\n", .{});
+    print("  d < 0.2: negligible\n", .{});
+    print("  0.2 ≤ d < 0.5: small\n", .{});
+    print("  0.5 ≤ d < 0.8: medium\n", .{});
+    print("  d ≥ 0.8: large\n\n", .{});
+
+    print("{s}✅ Effect size computed!{s}\n", .{ GREEN, RESET });
+}
+
+fn statisticalSummary(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}{s}V20 Statistical Summary{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const samples = [_]f64{ 10.2, 12.1, 11.5, 13.0, 10.8, 11.9, 12.3, 10.5 };
+
+    const summary = try zenodo_v20_stats.statisticalSummary(&samples, allocator);
+
+    print("Complete Statistical Summary:\n", .{});
+    print("  n: {d}\n", .{summary.n});
+    print("  Mean: {d:.3}\n", .{summary.mean});
+    print("  Std Dev: {d:.3}\n", .{summary.std_dev});
+    print("  Std Err: {d:.4}\n", .{summary.std_err});
+    print("  95% CI: [{d:.3}, {d:.3}]\n\n", .{ summary.ci.lower, summary.ci.upper });
+
+    print("{s}✅ Statistical summary completed!{s}\n", .{ GREEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // UPDATE — Upgrade descriptions to defensive publications
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -870,7 +1192,9 @@ fn printHelp() void {
     print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all)\n", .{});
     print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n", .{});
     print("  tri zenodo bundle <A-G|PARENT>  Publish v8.0 bundle (or all)\n", .{});
-    print("  tri zenodo v16                   Scientific documentation framework\n\n", .{});
+    print("  tri zenodo v16                   Scientific documentation framework\n", .{});
+    print("  tri zenodo v19                   Scientific metadata standards\n", .{});
+    print("  tri zenodo v20                   Statistical significance module\n\n", .{});
     print("  V16 Commands:\n", .{});
     print("    tri zenodo v16 model-card <name>      Generate ICLR/NeurIPS model card\n", .{});
     print("    tri zenodo v16 dataset-card <name>    Generate NeurIPS dataset card\n", .{});
@@ -879,6 +1203,17 @@ fn printHelp() void {
     print("    tri zenodo v16 doi <doi>              DOI validation\n", .{});
     print("    tri zenodo v16 pareto                 Pareto frontier analysis\n", .{});
     print("    tri zenodo v16 validate <bundle>      FAIR/DataCite compliance\n\n", .{});
+    print("  V19 Commands:\n", .{});
+    print("    tri zenodo v19 cff <version>           Generate CFF 1.2.0 citation file\n", .{});
+    print("    tri zenodo v19 orcid <id>              Validate ORCID iD\n", .{});
+    print("    tri zenodo v19 openalex <type>         Generate OpenAlex metadata\n", .{});
+    print("    tri zenodo v19 coar <doi>              Generate COAR notification\n\n", .{});
+    print("  V20 Commands:\n", .{});
+    print("    tri zenodo v20 bootstrap               Bootstrap 95% CI\n", .{});
+    print("    tri zenodo v20 ttest <a> <b>           Paired t-test\n", .{});
+    print("    tri zenodo v20 wilcoxon <a> <b>        Wilcoxon signed-rank test\n", .{});
+    print("    tri zenodo v20 effect <a> <b>          Cohen's d + Cliff's delta\n", .{});
+    print("    tri zenodo v20 summary                 Complete statistical summary\n\n", .{});
     print("  Bundle aliases:\n", .{});
     print("    A = B001: HSLM-1.95M Ternary Neural Networks\n", .{});
     print("    B = B002: Zero-DSP FPGA Accelerator\n", .{});

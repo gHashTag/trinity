@@ -1,0 +1,57 @@
+name: tri_fs
+version: "0.1.0"
+module: tri.fs
+description: "TRI FS — filesystem operations"
+
+types:
+  Path:
+    description: "Filesystem path"
+    fields:
+      parts: "[][]const u8"
+      absolute: "bool"
+
+  FileInfo:
+    description: "File metadata"
+    fields:
+      size: "u64"
+      is_dir: "bool"
+      is_file: "bool"
+      modified: "Instant"
+
+functions:
+  join:
+    params:
+      - name: base
+        type: "Path"
+      - name: suffix
+        type: "Path"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Path"
+    description: "Concatenate paths"
+
+  basename:
+    params:
+      - name: path
+        type: "Path"
+    returns: "[]const u8"
+    description: "Get filename without directory"
+
+  dirname:
+    params:
+      - name: path
+        type: "Path"
+    returns: "[]const u8"
+    description: "Get directory path"
+
+  extension:
+    params:
+      - name: path
+        type: "Path"
+    returns: "?[]const u8"
+    description: "Get file extension or null"
+
+behaviors:
+  - name: cross_platform
+    description: "Platform-aware paths"
+    note: "Handles / and \\ separators"

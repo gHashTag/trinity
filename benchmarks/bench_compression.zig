@@ -37,10 +37,14 @@ fn packTrits5(trits: [5]Trit) u8 {
 
 fn unpackTrits5(byte_val: u8) [5]Trit {
     var v: u16 = byte_val;
-    const d0 = v % 3; v /= 3;
-    const d1 = v % 3; v /= 3;
-    const d2 = v % 3; v /= 3;
-    const d3 = v % 3; v /= 3;
+    const d0 = v % 3;
+    v /= 3;
+    const d1 = v % 3;
+    v /= 3;
+    const d2 = v % 3;
+    v /= 3;
+    const d3 = v % 3;
+    v /= 3;
     const d4 = v % 3;
     return .{
         @as(i8, @intCast(d0)) - 1,
@@ -348,7 +352,10 @@ fn benchTCV1(trits: []const Trit, ds_name: []const u8) CompressionResult {
 
     var ok = true;
     for (0..trits.len) |i| {
-        if (unp_buf[i] != trits[i]) { ok = false; break; }
+        if (unp_buf[i] != trits[i]) {
+            ok = false;
+            break;
+        }
     }
 
     return .{
@@ -397,7 +404,10 @@ fn benchTCV2(trits: []const Trit, ds_name: []const u8) CompressionResult {
     if (ok) {
         doUnpackTrits(dec_buf[0..dec_len], &unp_buf, trits.len);
         for (0..trits.len) |i| {
-            if (unp_buf[i] != trits[i]) { ok = false; break; }
+            if (unp_buf[i] != trits[i]) {
+                ok = false;
+                break;
+            }
         }
     }
 
@@ -550,9 +560,9 @@ fn benchGzipReference(binary: []const u8, ds_name: []const u8) PipelineResult {
 fn printTritResult(r: CompressionResult) void {
     const ok_str: []const u8 = if (r.roundtrip_ok) "OK" else "FAIL";
     std.debug.print("  {s:<18} {s:<12} {d:>6}  {d:>6} -> {d:>6}  {d:>6.2}x  {d:>8.1}us  {d:>8.1}us  {s}\n", .{
-        r.compressor, r.dataset_name, r.trit_count,
+        r.compressor,     r.dataset_name,     r.trit_count,
         r.original_bytes, r.compressed_bytes, r.ratio,
-        r.compress_us, r.decompress_us, ok_str,
+        r.compress_us,    r.decompress_us,    ok_str,
     });
 }
 
@@ -560,7 +570,9 @@ fn printPipeResult(r: PipelineResult) void {
     const ok_str: []const u8 = if (r.roundtrip_ok) "OK" else "FAIL";
     std.debug.print("  {s:<24} {s:<8} {d:>7} -> {d:>7}  {d:>6.2}x  {d:>8.1}us  {s}\n", .{
         r.pipeline_name, r.dataset_name,
-        r.binary_size, r.final_size, r.ratio, r.total_us, ok_str,
+        r.binary_size,   r.final_size,
+        r.ratio,         r.total_us,
+        ok_str,
     });
 }
 

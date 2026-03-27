@@ -1,0 +1,74 @@
+name: tri_uuid
+version: "0.1.0"
+module: tri.uuid
+description: "TRI UUID — unique identifiers"
+
+types:
+  UUID:
+    description: "128-bit UUID"
+    fields:
+      data: "[16]u8"
+
+  Variant:
+    description: "UUID variant enum"
+    enum: [0, 2, 6, 7]
+
+  Version:
+    description: "UUID version enum"
+    enum: [1, 2, 3, 4, 5]
+
+functions:
+  nil:
+    returns: "UUID"
+    description: "All-zero UUID"
+
+  v4:
+    params:
+      - name: rng
+        type: "*std.rand.DefaultPrng"
+    returns: "UUID"
+    description: "Generate random UUID (version 4)"
+
+  parse:
+    params:
+      - name: str
+        type: "[]const u8"
+    returns: "!UUID"
+    description: "Parse xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+  format:
+    params:
+      - name: uuid
+        type: "UUID"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Format with hyphens"
+
+  equals:
+    params:
+      - name: a
+        type: "UUID"
+      - name: b
+        type: "UUID"
+    returns: "bool"
+    description: "Compare two UUIDs"
+
+  variant:
+    params:
+      - name: uuid
+        type: "UUID"
+    returns: "Variant"
+    description: "Get UUID variant"
+
+  version:
+    params:
+      - name: uuid
+        type: "UUID"
+    returns: "?Version"
+    description: "Get UUID version or null"
+
+behaviors:
+  - name: rfc4122
+    description: "RFC 4122 compliant"
+    note: "128-bit unique identifier"

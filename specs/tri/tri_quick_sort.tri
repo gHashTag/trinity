@@ -1,0 +1,32 @@
+name: tri_quick_sort
+version: "0.1.0"
+language: zig
+module: tri.quick_sort
+description: "Quick Sort - in-place partition sort"
+
+functions:
+  sort:
+    params:
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort in place using Lomuto partition"
+
+  sortRange:
+    params:
+      - name: values
+        type: "[]i64"
+      - name: low
+        type: "usize"
+      - name: high
+        type: "usize"
+    returns: "void"
+    description: "Sort subarray [low, high]"
+
+behaviors:
+  - name: lomuto_partition
+    description: "Use last element as pivot"
+    implementation: |
+      Pivot = values[high]
+      Partition: elements < pivot to left
+      Recursively sort both partitions

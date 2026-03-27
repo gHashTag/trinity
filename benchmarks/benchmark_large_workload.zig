@@ -34,7 +34,8 @@ fn v6SacredIdentity() bool {
 }
 
 fn v6IdealGas(p: f64, v: f64, n: f64, t: f64) f64 {
-    _ = p; _ = v;
+    _ = p;
+    _ = v;
     const R = 8.314462618; // J/(mol·K)
     return n * R * t;
 }
@@ -76,7 +77,8 @@ inline fn jitSacredIdentityInline() bool {
 
 // Simulated JIT ideal gas (inline R constant)
 inline fn jitIdealGasInline(p: f64, v: f64, n: f64, t: f64) f64 {
-    _ = p; _ = v;
+    _ = p;
+    _ = v;
     const R = 8.314462618;
     return n * R * t;
 }

@@ -1,0 +1,63 @@
+name: tri_base64
+version: "0.1.0"
+module: tri.base64
+description: "TRI Base64 — standard encoding"
+
+types:
+  Base64:
+    description: "Base64 codec"
+    fields:
+      alphabet: "[]const u8"
+      padding: bool
+
+functions:
+  standard:
+    returns: "Base64"
+    description: "RFC 4648 standard with padding"
+
+  urlSafe:
+    returns: "Base64"
+    description: "URL-safe variant"
+
+  encode:
+    params:
+      - name: codec
+        type: "Base64"
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Encode to base64"
+
+  decode:
+    params:
+      - name: codec
+        type: "Base64"
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Decode from base64"
+
+  encodedLength:
+    params:
+      - name: codec
+        type: "Base64"
+      - name: input_len
+        type: "usize"
+    returns: "usize"
+    description: "Calculate output size"
+
+  decodedLength:
+    params:
+      - name: input
+        type: "[]const u8"
+    returns: "!usize"
+    description: "Calculate decoded size or error"
+
+behaviors:
+  - name: rfc4648
+    description: "RFC 4648 compliant"
+    note: "Handles padding correctly"

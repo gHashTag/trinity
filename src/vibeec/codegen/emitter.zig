@@ -992,7 +992,8 @@ pub const ZigCodeGen = struct {
         try self.writeConstants(spec.constants.items);
         try self.writeTypes(spec.types.items);
         try self.writeMemoryBuffers();
-        try self.writeCreationPatterns(spec.creation_patterns.items, spec.types.items);
+        // TODO: Re-enable when CreationPattern is available
+        // try self.writeCreationPatterns(spec.algorithms.items, spec.types.items);
         try self.writeBehaviorFunctions(spec.behaviors.items);
 
         var test_gen = TestGenerator.init(&self.builder, self.allocator);

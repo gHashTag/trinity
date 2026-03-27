@@ -1,0 +1,37 @@
+name: tri_mime
+version: "0.1.0"
+module: tri.mime
+description: "TRI MIME — email format"
+
+types:
+  Email:
+    description: "Email message"
+    fields:
+      from: "[]const u8"
+      to: "[][]const u8"
+      subject: "[]const u8"
+      body: "[]const u8"
+
+functions:
+  parse:
+    params:
+      - name: raw
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Email"
+    description: "Parse email format"
+
+  format:
+    params:
+      - name: email
+        type: "Email"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Format as RFC 5322"
+
+behaviors:
+  - name: rfc5322
+    description: "RFC 5322 compliant"
+    note: "Internet message format"

@@ -9,7 +9,7 @@ const Behavior = struct {
     when: []const u8,
     then: []const u8,
     description: []const u8,
-    code: []const u8, // ✅  
+    code: []const u8, // ✅
 };
 
 pub fn main() !void {
@@ -206,67 +206,67 @@ fn generate_simple_zig(spec: *const SimpleSpec, allocator: std.mem.Allocator) ![
     defer zig_code.deinit(allocator);
 
     // Header
-    try zig_code.appendSlice( "// ════════════════════════════════════════════════════════\\n");
-    try zig_code.appendSlice( "// SIMPLE COMPILATION - REAL FUNCTIONS\\n");
-    try zig_code.appendSlice( "// From: ");
-    try zig_code.appendSlice( spec.name);
-    try zig_code.appendSlice( "\\n// ════════════════════════════════════════════════════\\n\\n");
+    try zig_code.appendSlice("// ════════════════════════════════════════════════════════\\n");
+    try zig_code.appendSlice("// SIMPLE COMPILATION - REAL FUNCTIONS\\n");
+    try zig_code.appendSlice("// From: ");
+    try zig_code.appendSlice(spec.name);
+    try zig_code.appendSlice("\\n// ════════════════════════════════════════════════════\\n\\n");
 
-    try zig_code.appendSlice( "const std = @import(\\"std\\");\\n\\n");
+    try zig_code.appendSlice("const std = @import(\"std\");\\n\\n");
 
     // Generate REAL Functions
-    try zig_code.appendSlice( "// ════════════════════════════════════════════════\\n");
-    try zig_code.appendSlice( "// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\\n");
-    try zig_code.appendSlice( "// ══════════════════════════════════════════════════════\\n\\n");
+    try zig_code.appendSlice("// ════════════════════════════════════════════════\\n");
+    try zig_code.appendSlice("// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\\n");
+    try zig_code.appendSlice("// ══════════════════════════════════════════════════════\\n\\n");
 
     for (spec.behaviors.items) |behavior| {
         if (behavior.code.len > 0) {
             // Generate REAL function with implementation
-            try zig_code.appendSlice( "pub fn ");
-            try zig_code.appendSlice( behavior.name);
-            try zig_code.appendSlice( "() ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( " !void {\\n");
+            try zig_code.appendSlice("pub fn ");
+            try zig_code.appendSlice(behavior.name);
+            try zig_code.appendSlice("() ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice(" !void {\\n");
 
-            try zig_code.appendSlice( "    // ");
-            try zig_code.appendSlice( behavior.description);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Given: ");
-            try zig_code.appendSlice( behavior.given);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // When: ");
-            try zig_code.appendSlice( behavior.when);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Then: ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( "\\n\\n");
+            try zig_code.appendSlice("    // ");
+            try zig_code.appendSlice(behavior.description);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Given: ");
+            try zig_code.appendSlice(behavior.given);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // When: ");
+            try zig_code.appendSlice(behavior.when);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Then: ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice("\\n\\n");
 
             // WRITE THE ACTUAL IMPLEMENTATION
-            try zig_code.appendSlice( "    // === REAL CODE ===\\n");
-            try zig_code.appendSlice( "    ");
-            try zig_code.appendSlice( behavior.code);
-            try zig_code.appendSlice( "\\n");
+            try zig_code.appendSlice("    // === REAL CODE ===\\n");
+            try zig_code.appendSlice("    ");
+            try zig_code.appendSlice(behavior.code);
+            try zig_code.appendSlice("\\n");
 
-            try zig_code.appendSlice( "}\\n\\n");
+            try zig_code.appendSlice("}\\n\\n");
         } else {
             // Fallback: test (no implementation)
-            try zig_code.appendSlice( "test \\"");
-            try zig_code.appendSlice( behavior.name);
-            try zig_code.appendSlice( "\\\" {\\n");
-            try zig_code.appendSlice( "    // Given: ");
-            try zig_code.appendSlice( behavior.given);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // When: ");
-            try zig_code.appendSlice( behavior.when);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Then: ");
-            try zig_code.appendSlice( behavior.then);
-            try zig_code.appendSlice( "\\n");
-            try zig_code.appendSlice( "    // Golden identity verification\\n");
-            try zig_code.appendSlice( "    const phi_sq = PHI * PHI;\\n");
-            try zig_code.appendSlice( "    const inv_phi_sq = 1.0 / phi_sq;\\n");
-            try zig_code.appendSlice( "    try std.testing.expectApproxEqAbs(GOLDEN_IDENTITY, phi_sq + inv_phi_sq, 0.0001);\\n");
-            try zig_code.appendSlice( "}\\n\\n");
+            try zig_code.appendSlice("test \"\\x0a");
+            try zig_code.appendSlice(behavior.name);
+            try zig_code.appendSlice("\\\" {\\n");
+            try zig_code.appendSlice("    // Given: ");
+            try zig_code.appendSlice(behavior.given);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // When: ");
+            try zig_code.appendSlice(behavior.when);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Then: ");
+            try zig_code.appendSlice(behavior.then);
+            try zig_code.appendSlice("\\n");
+            try zig_code.appendSlice("    // Golden identity verification\\n");
+            try zig_code.appendSlice("    const phi_sq = PHI * PHI;\\n");
+            try zig_code.appendSlice("    const inv_phi_sq = 1.0 / phi_sq;\\n");
+            try zig_code.appendSlice("    try std.testing.expectApproxEqAbs(GOLDEN_IDENTITY, phi_sq + inv_phi_sq, 0.0001);\\n");
+            try zig_code.appendSlice("}\\n\\n");
         }
     }
 

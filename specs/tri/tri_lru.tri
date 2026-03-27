@@ -1,0 +1,51 @@
+name: tri_lru
+version: "0.1.0"
+module: tri.lru
+description: "TRI LRU — cache eviction"
+
+types:
+  LRU(K, V):
+    description: "Least Recently Used cache"
+    fields:
+      capacity: "usize"
+      entries: "std.HashMap(K, V)"
+      access_list: "[]K"
+
+functions:
+  init:
+    params:
+      - name: capacity
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!LRU(K, V)"
+    description: "Create LRU cache"
+
+  get:
+    params:
+      - name: cache
+        type: "*LRU(K, V)"
+      - name: key
+        type: "K"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "?V"
+    description: "Get value, update access order"
+
+  put:
+    params:
+      - name: cache
+        type: "*LRU(K, V)"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Store key-value pair"
+
+behaviors:
+  - name: eviction
+    description: "Evicts least recently used"
+    note: "O(1) operations"

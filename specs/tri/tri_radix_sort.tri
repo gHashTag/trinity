@@ -1,0 +1,39 @@
+name: tri_radix_sort
+version: "0.1.0"
+language: zig
+module: tri.radix_sort
+description: "Radix Sort - O(n) integer sorting"
+
+types:
+  RadixSorter:
+    description: "Radix sort state"
+    fields:
+      base: "usize"
+      max_digits: "usize"
+
+functions:
+  sort:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]usize"
+    returns: "[]usize"
+    description: "Sort integers using LSD radix sort"
+
+  sortInPlace:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]usize"
+    returns: "void"
+    description: "Sort array in place"
+
+behaviors:
+  - name: lsd_radix
+    description: "Least significant digit first"
+    implementation: |
+      Process digits from right to left.
+      Stable counting sort per digit.
+      Base 256 for byte-level sorting.

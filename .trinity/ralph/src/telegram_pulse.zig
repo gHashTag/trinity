@@ -155,9 +155,7 @@ pub fn sendHeartbeat(allocator: Allocator, config: PulseConfig, loop_count: u32,
 /// Telegram Bot API forbids webhook and getUpdates simultaneously
 pub fn deleteWebhook(allocator: Allocator, config: PulseConfig) !void {
     var url_buffer: [512]u8 = undefined;
-    const url = try std.fmt.bufPrint(&url_buffer,
-        "https://api.telegram.org/bot{s}/deleteWebhook?drop_pending_updates=true",
-        .{config.bot_token});
+    const url = try std.fmt.bufPrint(&url_buffer, "https://api.telegram.org/bot{s}/deleteWebhook?drop_pending_updates=true", .{config.bot_token});
 
     const uri = std.Uri.parse(url) catch return error.InvalidUrl;
 
@@ -224,9 +222,7 @@ pub fn sendMessage(allocator: Allocator, config: PulseConfig, text: []const u8) 
 /// Returns true if webhook is active, false otherwise
 pub fn getWebhookInfo(allocator: Allocator, config: PulseConfig) !bool {
     var url_buffer: [512]u8 = undefined;
-    const url = try std.fmt.bufPrint(&url_buffer,
-        "https://api.telegram.org/bot{s}/getWebhookInfo",
-        .{config.bot_token});
+    const url = try std.fmt.bufPrint(&url_buffer, "https://api.telegram.org/bot{s}/getWebhookInfo", .{config.bot_token});
 
     const uri = std.Uri.parse(url) catch return error.InvalidUrl;
 
@@ -251,14 +247,16 @@ pub fn getWebhookInfo(allocator: Allocator, config: PulseConfig) !bool {
     defer allocator.free(body);
 
     // Check if "url":null or "url":"http"/"url":"https"
-    const null_pattern = \\,"url":null
-;
+    const null_pattern = 
+        \\,"url":null
+    ;
     if (std.mem.indexOf(u8, body, null_pattern)) |_| {
         return false; // No webhook set
     }
 
-    const http_pattern = \\,"url":"http
-;
+    const http_pattern = 
+        \\,"url":"http
+    ;
     if (std.mem.indexOf(u8, body, http_pattern)) |_| {
         return true; // Webhook is set
     }

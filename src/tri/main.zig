@@ -43,6 +43,7 @@ const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
 const env_loader = @import("env_loader.zig");
 const golden_chain = @import("golden_chain");
+const tri_clara = @import("tri_clara.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -310,6 +311,13 @@ pub fn main() !void {
             // bare `tri spec` → specexec demo (existing behavior)
             logAgentCommand(args[arg_idx..]);
             demos.runSpecExecDemo();
+            return;
+        }
+        // CLARA namespace: route `tri clara <command>` to CLARA proposal commands
+        if (std.mem.eql(u8, first_arg, "clara")) {
+            const clara_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try tri_clara.main(allocator, clara_args);
             return;
         }
         // Bench namespace: route `tri bench compare/record/history` to perf_benchmark

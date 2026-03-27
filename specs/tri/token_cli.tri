@@ -1,0 +1,253 @@
+# TRI-27 Token CLI — Command-line interface for TRI-27 token operations
+# ════════════════════════════════════════════════════
+#
+# Module: wallet_commands (tri27/wallet_commands)
+# Purpose: Token management CLI for TRI-27 VM
+# Parent: #435
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ════════════════════════════════════════════════════
+
+name: token_cli
+version: "1.0.0"
+language: zig
+module: tri27.wallet_commands
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: token_types
+    used_as: Token data structures
+  - module: token_ffi
+    used_as: Web3 contract interface
+
+types:
+  Address:
+    zig: "[20]u8"
+    description: EVM address (20 bytes)
+
+  Hash32:
+    zig: "[32]u8"
+    description: 32-byte transaction or block hash
+
+  TokenCommand:
+    description: Individual CLI command
+    fields:
+      - name: string
+      - description: string
+      - group: string
+      - handler: string
+      - subcommands: []TokenCommand
+
+  CommandResult:
+    description: Result of CLI command execution
+    fields:
+      - success: bool
+      - message: ?string
+      - data: ?CommandData
+
+  CommandData:
+    description: Data returned by commands
+    values:
+      - balance: BalanceData
+      - stake: StakeData
+      - unstake: UnstakeData
+      - claim: ClaimData
+      - send: SendData
+      - list: ListData
+      - rewards_pending: RewardsPendingData
+      - rewards_claim: RewardsClaimData
+
+  BalanceData:
+    description: Token balance information
+    fields:
+      - address: Address
+      - balance_tri: u128
+      - formatted: string
+      - raw_wei: u128
+
+  StakeData:
+    description: Stake information
+    fields:
+      - staker: Address
+      - amount_tri: u128
+      - lock_period_days: u64
+      - unlock_time: i64
+      - can_unstake: bool
+      - progress: f64
+      - tx_hash: ?Hash32
+
+  UnstakeData:
+    description: Unstake result
+    fields:
+      - amount_tri: u128
+      - status: UnstakeStatus
+      - tx_hash: ?Hash32
+
+  SendData:
+    description: Send transaction result
+    fields:
+      - tx_hash: Hash32
+      - from_address: Address
+      - to_address: Address
+      - amount_tri: u128
+
+  ClaimData:
+    description: Claim result
+    fields:
+      - amount_tri: u128
+      - tx_hash: Hash32
+
+  ListData:
+    description: List of stakes/rewards
+    fields:
+      - items: []ListItem
+
+  ListItem:
+    description: Single list item (stake or reward)
+    fields:
+      - @"type": string
+      - value: string
+      - tx_hash: ?Hash32
+      - unlock_time: ?i64
+
+  RewardsPendingData:
+    description: Pending rewards information
+    fields:
+      - pending_tri: u128
+      - last_epoch: u64
+      - apy: f64
+      - total_staked_tri: u128
+
+  RewardsClaimData:
+    description: Claimed rewards information
+    fields:
+      - claimed_tri: u128
+      - tx_hash: Hash32
+
+  UnstakeStatus:
+    description: Unstake status
+    values:
+      - success: unstaked
+      - pending: in_progress
+      - failed: error
+      - locked: lock_period_active
+
+  WalletError:
+    description: Wallet operation errors
+    values:
+      - InvalidAddress: Invalid EVM address
+      - InsufficientBalance: Insufficient token balance
+      - InvalidAmount: Invalid stake or send amount
+      - InvalidLockPeriod: Lock period must be 7-365 days
+      - StakeNotFound: No active stake found for address
+      - StakeLocked: Stake is still locked
+      - NetworkError: RPC or network failure
+      - RpcError: Contract call reverted
+      - GasEstimationFailed: Could not estimate gas
+
+behaviors:
+  balance:
+    given: address
+    when: Checking token balance
+    then:
+      - Validate address format (42 hex chars)
+      - Convert to [20]u8
+      - Call token_ffi.Erc20Ops.balanceOf()
+      - Format balance as TRI string with 18 decimals
+      - Return BalanceData
+
+  stake:
+    given: amount, lock_period_days
+    when: Staking TRI tokens
+    then:
+      - Validate amount >= 100 TRI
+      - Validate lock_period_days (7-365)
+      - Calculate unlock_time = current_time + (lock_period_days * 86400)
+      - Get wallet address (from TokenAccount or parameter)
+      - Create StakeInfo with staker, amount, lock info
+      - Call Tri27Ops.encodeStake(amount, lock_period_days)
+      - Get transaction hash from FFI
+      - Return StakeData with tx_hash
+
+  unstake:
+    given: address
+    when: Unstaking TRI tokens
+    then:
+      - Get wallet address
+      - Get StakeInfo from StakingState
+      - Verify current_time >= unlock_time
+      - If locked: return error
+      - Call Tri27Ops.encodeUnstake()
+      - Get transaction hash from FFI
+      - Return UnstakeData with tx_hash and amount
+
+  claim:
+    given: address
+    when: Claiming staking rewards
+    then:
+      - Get wallet address
+      - Get pending rewards from RewardCalculator
+      - Calculate claim amount
+      - Call Tri27Ops.encodeClaimRewards()
+      - Get transaction hash from FFI
+      - Reset pending rewards
+      - Return ClaimData with tx_hash and claimed amount
+
+  send:
+    given: to, amount
+    when: Sending TRI tokens
+    then:
+      - Validate addresses
+      - Validate amount
+      - Get wallet addresses
+      - Calculate gas
+      - Call Erc20Ops.encodeTransfer(to, amount)
+      - Get transaction hash from FFI
+      - Return SendData with tx_hash, from, to, amount
+
+  list:
+    given: filter_type
+    when: Listing stakes and rewards
+    then:
+      - Get wallet address
+      - Based on filter_type:
+        - stakes: Get all StakeInfo from StakingState
+        - rewards: Get pending/claimed rewards
+      - all: Get all stakes and rewards combined
+      - Format as ListItem array
+      - Return ListData
+
+  rewards_pending:
+    given: address
+    when: Checking pending rewards
+    then:
+      - Get wallet address
+      - Calculate pending rewards (from RewardCalculator)
+      - Return RewardsPendingData with pending TRI, epoch, APY, total staked
+
+  rewards_claim:
+    given: address
+    when: Claiming rewards
+    then:
+      - Get wallet address
+      - Verify pending rewards > 0
+      - Get claimed amount
+      - Call Tri27Ops.encodeClaimRewards()
+      - Get transaction hash from FFI
+      - Reset pending rewards
+      - Return RewardsClaimData with claimed TRI, tx_hash
+
+  format:
+    given: amount_wei
+    when: Formatting TRI amount
+    then:
+      - Calculate TRI amount
+      - Format using TokenFormatAmount
+      - Return formatted string
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/tri27/wallet_commands.zig"
+  lines: 400-500
+  complexity: "high - CLI routing, UX formatting, error handling, wallet integration"

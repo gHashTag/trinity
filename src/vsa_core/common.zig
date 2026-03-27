@@ -1,43 +1,40 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VSA Core — Common Types
-// ═══════════════════════════════════════════════════════════════════════════════
-// Core type definitions for VSA operations
+// VSA Core — Common Types (Selector)
+// ═══════════════════════════════════════════════════════════════════════════════════
+// This file re-exports from generated code (gen_common.zig)
+// DO NOT EDIT: Modify common.tri spec and regenerate
 //
 // φ² + 1/φ² = 3 | TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════════════════
 
-const std = @import("std");
+// Types (re-exported from gen_common)
+pub const Trit = @import("gen_common.zig").Trit;
+pub const TritRange = @import("gen_common.zig").TritRange;
+pub const SearchResult = @import("gen_common.zig").SearchResult;
+pub const Vec32i8 = @import("gen_common.zig").Vec32i8;
+pub const Vec32i16 = @import("gen_common.zig").Vec32i16;
 
-/// Balanced ternary value {-1, 0, 1}
-pub const Trit = i8;
+// Constants (re-exported from gen_common)
+pub const SIMD_WIDTH = @import("gen_common.zig").SIMD_WIDTH;
+pub const NEGATIVE = @import("gen_common.zig").NEGATIVE;
+pub const ZERO = @import("gen_common.zig").ZERO;
+pub const POSITIVE = @import("gen_common.zig").POSITIVE;
+pub const ValidRange = @import("gen_common.zig").ValidRange;
 
-/// SIMD vector width (32 trits)
-pub const SIMD_WIDTH: usize = 32;
+// Trit utilities (re-exported from gen_common)
+pub const isNegative = @import("gen_common.zig").isNegative;
+pub const isZero = @import("gen_common.zig").isZero;
+pub const isPositive = @import("gen_common.zig").isPositive;
+pub const isNonZero = @import("gen_common.zig").isNonZero;
+pub const tritValue = @import("gen_common.zig").tritValue;
+pub const tritFromInt = @import("gen_common.zig").tritFromInt;
+pub const isTritValid = @import("gen_common.zig").isTritValid;
+pub const normalizeTrit = @import("gen_common.zig").normalizeTrit;
+pub const countNonZero = @import("gen_common.zig").countNonZero;
+pub const allSame = @import("gen_common.zig").allSame;
+pub const countTrit = @import("gen_common.zig").countTrit;
 
-/// 32-bit signed integer vector
-pub const Vec32i8 = @Vector(32, i8);
-
-/// 32-bit signed integer vector (for accumulation)
-pub const Vec32i16 = @Vector(32, i16);
-
-/// Search result struct
-pub const SearchResult = struct {
-    index: usize,
-    similarity: f64,
-};
-
-test "Trit range" {
-    const t1: Trit = -1;
-    const t2: Trit = 0;
-    const t3: Trit = 1;
-
-    try std.testing.expectEqual(@as(i8, -1), t1);
-    try std.testing.expectEqual(@as(i8, 0), t2);
-    try std.testing.expectEqual(@as(i8, 1), t3);
-}
-
-test "SIMD vectors" {
-    const v: Vec32i8 = @splat(1);
-    try std.testing.expectEqual(@as(i8, 1), v[0]);
-    try std.testing.expectEqual(@as(i8, 1), v[31]);
-}
+// SIMD utilities (re-exported from gen_common)
+pub const broadcastTrit = @import("gen_common.zig").broadcastTrit;
+pub const loadTrits = @import("gen_common.zig").loadTrits;
+pub const storeTrits = @import("gen_common.zig").storeTrits;

@@ -1,0 +1,43 @@
+name: tri_base32
+version: "0.1.0"
+module: tri.base32
+description: "TRI Base32 — binary-to-text encoding"
+
+types:
+  Base32:
+    description: "Base32 codec"
+    fields:
+      alphabet: "[]const u8"
+      padding: bool
+
+functions:
+  standard:
+    returns: "Base32"
+    description: "RFC 4648 Base32"
+
+  encode:
+    params:
+      - name: codec
+        type: "Base32"
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Encode to Base32"
+
+  decode:
+    params:
+      - name: codec
+        type: "Base32"
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]const u8"
+    description: "Decode from Base32"
+
+behaviors:
+  - name: rfc4648
+    description: "RFC 4648 compliant"
+    note: "Binary-to-text encoding"

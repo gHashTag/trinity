@@ -1,0 +1,53 @@
+name: tri_rsa
+version: "0.1.0"
+language: zig
+module: tri.rsa
+description: "RSA encryption (simplified)"
+
+types:
+  RSAKeyPair:
+    description: "Public/private key pair"
+    fields:
+      public_e: "u64"
+      public_n: "u64"
+      private_d: "u64"
+      private_n: "u64"
+
+functions:
+  generate:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: bit_size
+        type: "usize"
+    returns: "RSAKeyPair"
+    description: "Generate RSA key pair"
+
+  encrypt:
+    params:
+      - name: message
+        type: "u64"
+      - name: e
+        type: "u64"
+      - name: n
+        type: "u64"
+    returns: "u64"
+    description: "Encrypt with public key"
+
+  decrypt:
+    params:
+      - name: ciphertext
+        type: "u64"
+      - name: d
+        type: "u64"
+      - name: n
+        type: "u64"
+    returns: "u64"
+    description: "Decrypt with private key"
+
+behaviors:
+  - name: modular_exponentiation
+    description: "Fast exponentiation mod n"
+    implementation: |
+      Use square-and-multiply algorithm.
+      (m^e) mod n efficiently.

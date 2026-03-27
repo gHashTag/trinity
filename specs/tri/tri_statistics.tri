@@ -1,0 +1,56 @@
+name: tri_statistics
+version: "0.1.0"
+language: zig
+module: tri.statistics
+description: "Statistical functions"
+
+functions:
+  mean:
+    params:
+      - name: values
+        type: "[]f64"
+    returns: "f64"
+    description: "Arithmetic mean"
+
+  variance:
+    params:
+      - name: values
+        type: "[]f64"
+    returns: "f64"
+    description: "Sample variance"
+
+  stdDev:
+    params:
+      - name: values
+        type: "[]f64"
+    returns: "f64"
+    description: "Standard deviation"
+
+  median:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]f64"
+    returns: "f64"
+    description: "Median value"
+
+  percentile:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]f64"
+      - name: p
+        type: "f64"
+    returns: "f64"
+    description: "P-th percentile (0-100)"
+
+  correlation:
+    params:
+      - name: x
+        type: "[]f64"
+      - name: y
+        type: "[]f64"
+    returns: "f64"
+    description: "Pearson correlation coefficient"

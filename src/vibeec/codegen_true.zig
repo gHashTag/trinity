@@ -197,18 +197,18 @@ fn parse_true_spec(path: []const u8, allocator: Allocator) !TrueSpec {
                 b.description = try allocator.dupe(u8, trimmed[14..]);
             }
         } else if (std.mem.startsWith(u8, trimmed, "    name:")) {
-             if (current_type) |*t| {
-                 t.name = try allocator.dupe(u8, trimmed[8..]);
-             }
+            if (current_type) |*t| {
+                t.name = try allocator.dupe(u8, trimmed[8..]);
+            }
         } else if (std.mem.startsWith(u8, trimmed, "    type:")) {
-             if (current_type) |*t| {
-                 t.kind = try allocator.dupe(u8, trimmed[8..]);
-             }
+            if (current_type) |*t| {
+                t.kind = try allocator.dupe(u8, trimmed[8..]);
+            }
         } else if (std.mem.startsWith(u8, trimmed, "    value:")) {
             if (current_behavior) |*b| {
-                 // Parse constant value
-                 const val_str = try allocator.dupe(u8, trimmed[9..]);
-                 b.code = val_str;
+                // Parse constant value
+                const val_str = try allocator.dupe(u8, trimmed[9..]);
+                b.code = val_str;
             }
         }
     }
@@ -319,17 +319,18 @@ fn generate_true_zig(spec: *const TrueSpec, allocator: Allocator) ![]const u8 {
             } else {
                 // Fallback: test (but we want real code)
                 try zig_code.appendSlice(allocator, "// Test stub (no implementation)\n");
-                try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\n\", .{");
+                try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\x0a\", .{");
                 try zig_code.appendSlice(allocator, behavior.name);
                 try zig_code.appendSlice(allocator, "\"});\n");
                 try zig_code.appendSlice(allocator, "}\n\n");
-            } else {
+            }
+            if (false) {
                 // Fallback: test (but we want real code)
                 try zig_code.appendSlice(allocator, "// Test stub (no implementation)\n");
                 try zig_code.appendSlice(allocator, "test \"");
                 try zig_code.appendSlice(allocator, behavior.name);
                 try zig_code.appendSlice(allocator, "\" {\n");
-                try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\n\", .{");
+                try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\x0a\", .{");
                 try zig_code.appendSlice(allocator, behavior.name);
                 try zig_code.appendSlice(allocator, "\"});\n");
                 try zig_code.appendSlice(allocator, "}\n\n");

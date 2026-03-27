@@ -1,0 +1,48 @@
+name: tri_cont
+version: "0.1.0"
+module: tri.cont
+description: "TRI Continuation — CPS transform"
+
+types:
+  Cont(R, T):
+    description: "Continuation-passing style ((T -> R) -> R)"
+    fields:
+      run: "fn((T -> R)) -> R"
+
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "Cont(R, T)"
+    description: "Return value in CPS"
+
+  callCC:
+    params:
+      - name: fn
+        type: "fn((T -> Cont(R, void))) -> Cont(R, T)"
+    returns: "Cont(R, T)"
+    description: "Call with current continuation"
+
+  runCont:
+    params:
+      - name: cont
+        type: "Cont(R, T)"
+      - name: fn
+        type: "fn(T) -> R"
+    returns: "R"
+    description: "Execute continuation"
+
+  map:
+    params:
+      - name: cont
+        type: "Cont(R, T)"
+      - name: fn
+        type: "fn(T) -> U"
+    returns: "Cont(R, U)"
+    description: "Transform continuation result"
+
+behaviors:
+  - name: cps_transform
+    description: "Explicit continuation passing"
+    note: "Enables control flow abstractions"

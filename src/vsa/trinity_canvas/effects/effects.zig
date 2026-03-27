@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -41,8 +41,7 @@ pub const PHOENIX: i64 = 999;
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Type of visual effect
-pub const EffectType = struct {
-};
+pub const EffectType = struct {};
 
 /// Single visual effect instance
 pub const CosmicEffect = struct {
@@ -58,7 +57,7 @@ pub const CosmicEffect = struct {
 
 /// Manages all active effects
 pub const EffectSystem = struct {
-    effects: Array<CosmicEffect, 16>,
+    effects: [16]CosmicEffect,
     count: USize,
 };
 
@@ -84,8 +83,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -142,7 +141,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: System startup
 /// Then: Initialize empty effects array
 pub fn init() !void {
-// Initialize empty effects array
+    // Initialize empty effects array
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -151,7 +150,7 @@ pub fn init() !void {
 /// When: Creating nova burst
 /// Then: Add nova effect at position
 pub fn nova() !void {
-// Add nova effect at position
+    // Add nova effect at position
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -160,7 +159,7 @@ pub fn nova() !void {
 /// When: Creating ripple
 /// Then: Add ripple effect
 pub fn ripple() !void {
-// Add ripple effect
+    // Add ripple effect
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -169,7 +168,7 @@ pub fn ripple() !void {
 /// When: Each frame
 /// Then: Update all effects, remove finished
 pub fn update() !void {
-// Update: Update all effects, remove finished
+    // Update: Update all effects, remove finished
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -179,7 +178,7 @@ pub fn update() !void {
 /// When: Rendering
 /// Then: Draw all active effects
 pub fn draw() !void {
-// Draw all active effects
+    // Draw all active effects
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -189,46 +188,46 @@ pub fn draw() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: Nothing
-// When: System startup
-// Then: Initialize empty effects array
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: Nothing
+    // When: System startup
+    // Then: Initialize empty effects array
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "nova_behavior" {
-// Given: x, y
-// When: Creating nova burst
-// Then: Add nova effect at position
-// Test nova: verify behavior is callable
-const func = @TypeOf(nova);
+    // Given: x, y
+    // When: Creating nova burst
+    // Then: Add nova effect at position
+    // Test nova: verify behavior is callable
+    const func = @TypeOf(nova);
     try std.testing.expect(func != void);
 }
 
 test "ripple_behavior" {
-// Given: x, y, radius
-// When: Creating ripple
-// Then: Add ripple effect
-// Test ripple: verify behavior is callable
-const func = @TypeOf(ripple);
+    // Given: x, y, radius
+    // When: Creating ripple
+    // Then: Add ripple effect
+    // Test ripple: verify behavior is callable
+    const func = @TypeOf(ripple);
     try std.testing.expect(func != void);
 }
 
 test "update_behavior" {
-// Given: Delta time
-// When: Each frame
-// Then: Update all effects, remove finished
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: Delta time
+    // When: Each frame
+    // Then: Update all effects, remove finished
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "draw_behavior" {
-// Given: Nothing
-// When: Rendering
-// Then: Draw all active effects
-// Test draw: verify behavior is callable
-const func = @TypeOf(draw);
+    // Given: Nothing
+    // When: Rendering
+    // Then: Draw all active effects
+    // Test draw: verify behavior is callable
+    const func = @TypeOf(draw);
     try std.testing.expect(func != void);
 }
 

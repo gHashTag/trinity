@@ -1,0 +1,37 @@
+name: tri_topological
+version: "0.1.0"
+language: zig
+module: tri.topological
+description: "Topological sort for DAGs"
+
+types:
+  TopologicalSort:
+    description: "Topological ordering result"
+    fields:
+      order: "[]usize"
+      has_cycle: "bool"
+
+functions:
+  sort:
+    params:
+      - name: graph
+        type: "*const Graph"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!TopologicalSort"
+    description: "Kahn's algorithm for topological sorting"
+
+  is_valid:
+    params:
+      - name: result
+        type: "TopologicalSort"
+      - name: graph
+        type: "*const Graph"
+    returns: "bool"
+    description: "Verify ordering respects edges"
+
+behaviors:
+  - name: "dag_only"
+    description: "Only works for directed acyclic graphs"
+  - name: "edge_direction"
+    description: "If u -> v is edge, u appears before v in order"

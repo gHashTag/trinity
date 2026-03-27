@@ -1,0 +1,58 @@
+name: tri_json
+version: "0.1.0"
+module: tri.json
+description: "TRI JSON — data format handling"
+
+types:
+  JsonValue:
+    description: "JSON value variant"
+    fields:
+      type: "JsonType"
+      data: "*JsonValueData"
+
+  JsonType:
+    description: "Value kind"
+    enum: [Null, Bool, Number, String, Array, Object]
+
+  JsonArray:
+    description: "JSON array"
+    fields:
+      items: "[]JsonValue"
+
+  JsonObject:
+    description: "JSON object"
+    fields:
+      fields: "std.StringHashMap(JsonValue)"
+
+functions:
+  parse:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!JsonValue"
+    description: "Parse JSON text"
+
+  stringify:
+    params:
+      - name: value
+        type: "JsonValue"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Convert to JSON string"
+
+  get:
+    params:
+      - name: obj
+        type: "JsonObject"
+      - name: key
+        type: "[]const u8"
+    returns: "?JsonValue"
+    description: "Get object field"
+
+behaviors:
+  - name: rfc8259
+    description: "RFC 8259 compliant"
+    note: "Full JSON spec support"

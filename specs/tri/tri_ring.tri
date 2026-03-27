@@ -1,0 +1,56 @@
+name: tri_ring
+version: "0.1.0"
+module: tri.ring
+description: "TRI Ring buffer — fixed-size circular buffer"
+
+types:
+  Ring(T):
+    description: "Fixed-size circular buffer"
+    fields:
+      buffer: "[]T"
+      head: usize
+      tail: usize
+      capacity: usize
+
+functions:
+  new:
+    params:
+      - name: capacity
+        type: "usize"
+    returns: "Ring(T)"
+    description: "Create ring buffer"
+
+  push:
+    params:
+      - name: ring
+        type: "Ring(T)"
+      - name: value
+        type: "T"
+    returns: "bool"
+    description: "Add to back, false if full"
+
+  pop:
+    params:
+      - name: ring
+        type: "Ring(T)"
+    returns: "Option(T)"
+    description: "Remove from front"
+
+  isEmpty:
+    params:
+      - name: ring
+        type: "Ring(T)"
+    returns: "bool"
+    description: "Check if empty"
+
+  isFull:
+    params:
+      - name: ring
+        type: "Ring(T)"
+    returns: "bool"
+    description: "Check if full"
+
+behaviors:
+  - name: circular
+    description: "Wraps around when full"
+    note: "Overwrites old data when pushing to full ring"

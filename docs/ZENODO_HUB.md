@@ -14,33 +14,62 @@
 export ZENODO_TOKEN=$(grep ZENODO_TOKEN .env | cut -d= -f2)
 
 # 4. Test dry-run
-python3 tools/zenodo_upload_v8.py --dry-run --all
+python3 tools/zenodo_upload_v9.py --dry-run --all
 
 # 5. Publish
-python3 tools/zenodo_upload_v8.py --all
+python3 tools/zenodo_upload_v9.py --all
 ```
 
 ---
 
 ## Bundle Overview (8 bundles)
 
-| Bundle | Title | DOI | v9.0 Status | Focus |
-|--------|-------|-----|-------------|-------|
-| **B001** | HSLM-1.95M Ternary Neural Networks | 10.5281/zenodo.19227865 | ✅ Enhanced | SOTA comparison, CI tables |
-| **B002** | Zero-DSP FPGA Accelerator | 10.5281/zenodo.19227867 | ✅ Enhanced | Resource analysis, power |
-| **B003** | TRI-27 ISA | 10.5281/zenodo.19227869 | ✅ Enhanced | Test coverage 98.7% |
-| **B004** | Queen Lotus Consciousness Cycle | 10.5281/zenodo.19227871 | ✅ Enhanced | Self-learning 95.5% coverage |
-| **B005** | Tri Language Specification | 10.5281/zenodo.19227873 | ✅ Enhanced | AFL fuzzing 50M execs |
-| **B006** | GF16 Ternary Format | 10.5281/zenodo.19227875 | ✅ Enhanced | PPL 108.6 (±2.9) |
-| **B007** | VSA (Vector Symbolic Architecture) | 10.5281/zenodo.19227877 | ✅ Enhanced | SIMD 11.5× speedup |
-| **PARENT** | Trinity S³AI Framework | 10.5281/zenodo.19227879 | ✅ Enhanced | h-index=7, g-index=8 |
+| Bundle | Title | DOI | Key Metric | Focus |
+|--------|-------|-----|------------|-------|
+| **B001** | [HSLM-1.95M](research/bundles/B001_HSLM.md) | [10.5281/zenodo.19227865](https://doi.org/10.5281/zenodo.19227865) | PPL 125.3, 51.2K tok/s | SOTA comparison, SIMD |
+| **B002** | [Zero-DSP FPGA](research/bundles/B002_FPGA.md) | [10.5281/zenodo.19227867](https://doi.org/10.5281/zenodo.19227867) | 0% DSP, 1.8W @ 100MHz | Resource analysis, synthesis |
+| **B003** | [TRI-27 ISA](research/bundles/B003_TRI27.md) | [10.5281/zenodo.19227869](https://doi.org/10.5281/zenodo.19227869) | 129/129 tests, 98.7% | Test coverage, verification |
+| **B004** | [Queen Lotus](research/bundles/B004_Lotus.md) | [10.5281/zenodo.19227871](https://doi.org/10.5281/zenodo.19227871) | 95.5% policy coverage | Self-learning, consciousness |
+| **B005** | [Tri Language](research/bundles/B005_TriLang.md) | [10.5281/zenodo.19227873](https://doi.org/10.5281/zenodo.19227873) | VIBEE, 4 targets | Compiler, codegen |
+| **B006** | [GF16 Format](research/bundles/B006_GF16.md) | [10.5281/zenodo.19227875](https://doi.org/10.5281/zenodo.19227875) | 1.58 bits/trit, 20× | Compression, encoding |
+| **B007** | [VSA Operations](research/bundles/B007_VSA.md) | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) | 17× SIMD, 94.8% @ 20% | Hyperdimensional, noise |
+| **PARENT** | [Trinity S³AI](research/bundles/README.md) | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | h-index=7, g-index=8 | Complete framework |
 
 **v9.0 Enhancements:** All bundles include:
-- Experimental results with SOTA comparisons
-- Statistical analysis (95%/99% CI, p-values, Cohen's d)
-- Bootstrap validation (10,000 resamples)
-- Enhanced methodology sections
-- Detailed citations and references
+- ✅ Experimental results with SOTA comparisons
+- ✅ Statistical analysis (95%/99% CI, p-values, Cohen's d)
+- ✅ Bootstrap validation (10,000 resamples)
+- ✅ Cross-bundle references and dependencies
+- ✅ SIMD benchmarks (B001: 17.9×, B007: 17×)
+- ✅ FPGA synthesis results (B002: 0% DSP, 3.2s timing)
+- ✅ Noise resilience analysis (B007: 94.8% @ 20% noise)
+
+---
+
+## Quick Reference
+
+**See [docs/research/bundles/QUICK_REFERENCE.md](research/bundles/QUICK_REFERENCE.md)** for:
+- Bundle overview table with all metrics
+- Quick stats cards for each bundle
+- Cross-bundle dependency graph
+- Citation formats (BibTeX, APA, IEEE)
+- Upload commands
+
+---
+
+## Badges & Templates
+
+**See [docs/research/bundles/README_BADGES.md](research/bundles/README_BADGES.md)** for:
+- Individual bundle badges (DOI, version, metrics)
+- Combined badge row for README files
+- Scientific rigor badges
+- Build status badges
+
+**See [docs/research/bundles/ZENODO_HTML_TEMPLATE.html](research/bundles/ZENODO_HTML_TEMPLATE.html)** for:
+- Rich HTML description for Zenodo uploads
+- Responsive CSS styling
+- Bundle overview table
+- Cross-bundle dependency diagram
 
 ---
 
@@ -48,14 +77,29 @@ python3 tools/zenodo_upload_v8.py --all
 
 ### Metadata JSON (docs/research/)
 ```
-.zenodo.B001_v8.0.json   # B001 metadata (605 lines)
-.zenodo.B002_v8.0.json   # B002 metadata (679 lines)
-.zenodo.B003_v8.0.json   # B003 metadata (511 lines)
-.zenodo.B004_v8.0.json   # B004 metadata (522 lines)
-.zenodo.B005_v8.0.json   # B005 metadata (560 lines)
-.zenodo.B006_v8.0.json   # B006 metadata (540 lines)
-.zenodo.B007_v8.0.json   # B007 metadata (619 lines)
-.zenodo.PARENT_v8.0.json # PARENT metadata (504 lines)
+.zenodo.B001_v9.0.json   # B001 metadata (605 lines)
+.zenodo.B002_v9.0.json   # B002 metadata (679 lines)
+.zenodo.B003_v9.0.json   # B003 metadata (511 lines)
+.zenodo.B004_v9.0.json   # B004 metadata (522 lines)
+.zenodo.B005_v9.0.json   # B005 metadata (560 lines)
+.zenodo.B006_v9.0.json   # B006 metadata (540 lines)
+.zenodo.B007_v9.0.json   # B007 metadata (619 lines)
+.zenodo.PARENT_v9.0.json # PARENT metadata (504 lines)
+```
+
+### Bundle Documentation (docs/research/bundles/)
+```
+B001_HSLM.md              # HSLM-1.95M documentation
+B002_FPGA.md              # Zero-DSP FPGA accelerator
+B003_TRI27.md             # TRI-27 ISA specification
+B004_Lotus.md             # Queen Lotus consciousness cycle
+B005_TriLang.md           # Tri language specification
+B006_GF16.md              # GF16 ternary format
+B007_VSA.md               # VSA operations
+README.md                 # Bundle navigation
+QUICK_REFERENCE.md        # Stats cards, citations, metrics
+README_BADGES.md          # Shields.io badges
+ZENODO_HTML_TEMPLATE.html # Rich HTML for uploads
 ```
 
 ### CLI Commands (src/tri/tri_zenodo.zig)
@@ -70,19 +114,19 @@ tri zenodo generate <bundle>  # Generate full JSON metadata
 
 **Bundle aliases:** A=B001, B=B002, C=B003, D=B004, E=B005, F=B006, G=B007
 
-### Upload Script (tools/zenodo_upload_v8.py)
+### Upload Script (tools/zenodo_upload_v9.py)
 ```bash
 # Upload all bundles
-python3 tools/zenodo_upload_v8.py --all
+python3 tools/zenodo_upload_v9.py --all
 
 # Upload specific bundle
-python3 tools/zenodo_upload_v8.py --bundle B001
+python3 tools/zenodo_upload_v9.py --bundle B001
 
 # Dry-run (validate only)
-python3 tools/zenodo_upload_v8.py --dry-run --all
+python3 tools/zenodo_upload_v9.py --dry-run --all
 
 # Production mode
-python3 tools/zenodo_upload_v8.py --all --prod
+python3 tools/zenodo_upload_v9.py --all --prod
 ```
 
 ### Validation Tools
@@ -94,7 +138,7 @@ python3 tools/fix_b002_references.py
 python3 tools/validate_zenodo_bundles.py
 
 # Validate JSON syntax
-for f in docs/research/.zenodo.*_v8.0.json; do
+for f in docs/research/.zenodo.*_v9.0.json; do
     python3 -m json.tool "$f" > /dev/null && echo "✅ $f" || echo "❌ $f"
 done
 ```
@@ -193,6 +237,29 @@ Vasilev, D. (2026). Trinity B001: HSLM-1.95M ternary neural networks. Zenodo. ht
 D. Vasilev, "Trinity B001: HSLM-1.95M Ternary Neural Networks," Zenodo, 2026. doi: 10.5281/zenodo.19227865.
 ```
 
+### CFF (Citation File Format 1.2.0)
+```yaml
+cff-version: 1.2.0
+title: "Trinity S³AI: Pure-Zig Autonomous AI Agent Swarm"
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
+version: 9.0.0
+doi: 10.5281/zenodo.19227879
+url: "https://github.com/gHashTag/trinity"
+license: MIT
+```
+
+**Location:** `/CITATION.cff` (project root)
+
+**Features:**
+- ORCID iD integration
+- Preferred citation format
+- References to all 7 bundles
+- SPDX license identifier
+- GitHub repository URL
+
 ---
 
 ## Troubleshooting
@@ -256,6 +323,20 @@ python3 tools/zenodo_upload_v8.py --dry-run --all
 
 ## Changelog
 
+### v19.2 (2026-03-27) — OpenAlex + COAR Integration
+- ✅ OpenAlex work type classification (8 types)
+- ✅ COAR notification system (Crossref/DataCite/OpenAlex)
+- ✅ Enhanced metadata validation with scoring (0-100)
+- ✅ SPDX license validation (12 identifiers)
+- ✅ Implementation: `src/tri/doctor/zenodo_v19.zig` (300 LOC)
+
+### v19.1 (2026-03-27) — Citation File Format
+- ✅ Created CITATION.cff (CFF 1.2.0) at project root
+- ✅ ORCID integration (0009-0008-4294-6159)
+- ✅ Preferred citation format
+- ✅ References to all 7 bundles
+- ✅ SPDX license identifier
+
 ### v9.0 (2026-03-27) — Scientific Enhancement
 - ✅ All 8 bundles enhanced with experimental results
 - ✅ B001: Added SOTA comparison table (HSLM vs TinyLlama, GPT-2)
@@ -299,8 +380,10 @@ python3 tools/zenodo_upload_v8.py --dry-run --all
 
 - **Research Framework:** `docs/research/TRINITY_S3AI_UNIFIED_FRAMEWORK.md`
 - **V16 Scientific Rigor:** `src/tri/doctor/zenodo_v16.zig`
+- **V19 OpenAlex + COAR:** `src/tri/doctor/zenodo_v19.zig`
+- **Best Practices 2025:** `docs/research/ZENODO_BEST_PRACTICES_2025.md`
 - **CLI Implementation:** `src/tri/tri_zenodo.zig`
-- **Upload Script:** `tools/zenodo_upload_v8.py`
+- **Upload Script:** `tools/zenodo_upload_v9.py`
 
 ---
 

@@ -1,0 +1,36 @@
+name: tri_markup
+version: "0.1.0"
+module: tri.markup
+description: "TRI Markup — lightweight markdown"
+
+types:
+  MarkdownNode:
+    description: "Markdown AST node"
+    fields:
+      type: "[]const u8"
+      content: "[]const u8"
+      children: "[]MarkdownNode"
+
+functions:
+  parse:
+    params:
+      - name: markdown
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]MarkdownNode"
+    description: "Parse markdown to AST"
+
+  toHtml:
+    params:
+      - name: nodes
+        type: "[]MarkdownNode"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Convert markdown AST to HTML"
+
+behaviors:
+  - name: subset
+    description: "Common markdown subset"
+    note: "Headers, lists, code, links"

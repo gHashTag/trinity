@@ -20,7 +20,7 @@ pub const TestResult = struct {
     name: []const u8,
     passed: bool,
     duration_ms: u64,
-    error: ?[]const u8 = null,
+    err_msg: ?[]const u8 = null,
 };
 
 /// Integration test suite
@@ -38,7 +38,7 @@ pub const IntegrationTest = struct {
         var results = std.ArrayList(TestResult).init(self.allocator);
         defer {
             for (results.items) |r| {
-                if (r.error) |err| self.allocator.free(err);
+                if (r.err_msg) |err| self.allocator.free(err);
             }
             results.deinit();
         }
@@ -84,16 +84,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Golden Chain Init",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -147,16 +144,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Engine Init",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -182,16 +176,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Consult",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -222,16 +213,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Experience Record Failure",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -255,16 +243,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Checkpoint Directory",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -282,7 +267,7 @@ pub const IntegrationTest = struct {
         for (dirs) |dir| {
             std.fs.cwd().makePath(dir) catch |err| {
                 if (err != error.PathAlreadyExists) {
-                    error_msg = try std.fmt.allocPrint(self.allocator, "Failed to create {s}: {}", .{dir, err});
+                    error_msg = try std.fmt.allocPrint(self.allocator, "Failed to create {s}: {}", .{ dir, err });
                     std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
                     return;
                 }
@@ -300,16 +285,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Link Validation",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -360,16 +342,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Handoff Validation",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -387,11 +366,7 @@ pub const IntegrationTest = struct {
             if (gc.GoldenChain.validateHandoff(undefined, h.from, h.to)) |_| {
                 // Valid, continue
             } else |err| {
-                error_msg = try std.fmt.allocPrint(
-                    self.allocator,
-                    "Valid handoff {s}->{s} failed: {}",
-                    .{ @tagName(h.from), @tagName(h.to), err }
-                );
+                error_msg = try std.fmt.allocPrint(self.allocator, "Valid handoff {s}->{s} failed: {}", .{ @tagName(h.from), @tagName(h.to), err });
                 std.debug.print("{s}FAIL{s}\n", .{ RED, RESET });
                 return;
             }
@@ -408,16 +383,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Timeout Handler",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -455,16 +427,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Parallel Executor",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -534,16 +503,13 @@ pub const IntegrationTest = struct {
 
         defer {
             const end = std.time.nanoTimestamp();
-            const duration_ms = @as(u64, @intFromFloat(@divTrunc(
-                @as(f128, @floatFromInt(end - start)),
-                1_000_000
-            )));
+            const duration_ms = @as(u64, @intFromFloat(@divTrunc(@as(f128, @floatFromInt(end - start)), 1_000_000)));
 
             try results.append(.{
                 .name = "Chain Execution",
                 .passed = passed,
                 .duration_ms = duration_ms,
-                .error = error_msg,
+                .err_msg = error_msg,
             });
         }
 
@@ -585,7 +551,7 @@ pub const IntegrationTest = struct {
                 color, r.name, ms_str, status, RESET,
             });
 
-            if (r.error) |err| {
+            if (r.err_msg) |err| {
                 std.debug.print("\n    {s}Error: {s}{s}\n", .{ YELLOW, err, RESET });
             }
 
@@ -620,8 +586,8 @@ pub fn main() !u8 {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    const test = IntegrationTest.init(allocator);
-    try test.runAll();
+    const integration_test = IntegrationTest.init(allocator);
+    try integration_test.runAll();
 
     return 0;
 }

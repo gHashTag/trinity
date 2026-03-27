@@ -1,0 +1,45 @@
+name: tri_bloom_filter
+version: "0.1.0"
+language: zig
+module: tri.bloom_filter
+description: "Bloom filter — probabilistic set membership"
+
+types:
+  BloomFilter:
+    description: "Space-efficient probabilistic data structure"
+    fields:
+      bits: "[]bool"
+      hash_count: "usize"
+      size: "usize"
+
+functions:
+  init:
+    params:
+      - name: size
+        type: "usize"
+      - name: hash_count
+        type: "usize"
+    returns: "BloomFilter"
+    description: "Create empty bloom filter"
+
+  add:
+    params:
+      - name: filter
+        type: "*BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "void"
+    description: "Add item to filter"
+
+  contains:
+    params:
+      - name: filter
+        type: "*const BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if item possibly in filter (false positives possible)"
+
+behaviors:
+  - name: "probabilistic_membership"
+    description: "May return true for items not added (false positive), never false negative"
