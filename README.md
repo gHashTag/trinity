@@ -713,7 +713,7 @@ tri test <file>        # Generate tests
 tri help               # Full help
 ```
 
-Multilingual: Russian, English, Chinese -- auto-detected.
+Multilingual: English, Chinese -- auto-detected.
 
 ---
 
