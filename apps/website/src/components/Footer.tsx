@@ -138,7 +138,7 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://t.me/vibee_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram group (opens in new tab)">
+                  <a href="https://t.me/t27_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram group (opens in new tab)">
                     Telegram
                   </a>
                 </li>
