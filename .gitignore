@@ -319,3 +319,4 @@ data/cifar-10/
 .trinity/mu/
 .ralph/
 .trinity/scholar/state/
+fpga/build-deps/
