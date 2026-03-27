@@ -161,8 +161,8 @@ pub const RpcAdapter = struct {
         const tx_hex = bytesToHex(signed_tx);
         const params_json = std.fmt.allocPrint(
             self.allocator,
-            \\{{"method":"eth_sendRawTransaction","params":["{s}"],"id":"{d}}}
-            .,
+            \\{{"method":"eth_sendRawTransaction","params":["{s}"],"id":{d}}}
+            ,
             tx_hex,
         );
 
