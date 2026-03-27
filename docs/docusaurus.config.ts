@@ -9,9 +9,9 @@ const config: Config = {
   tagline: 'Ternary Computing Framework with VSA, BitNet & VIBEE',
   favicon: 'img/favicon.ico',
 
-  future: {
-    v4: true,
-  },
+  // future: {
+  //   v4: true,
+  // },
 
   // Custom domain deployment (t27.ai)
   url: 'https://t27.ai',
