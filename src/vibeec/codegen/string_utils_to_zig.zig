@@ -272,7 +272,7 @@ const STRING_UTILS_TEMPLATE =
     \\    try std.testing.expectEqualSlices(u8, "12345", result);
     \\}
     \\
-    ;
+;
 
 pub fn generateStringUtils(allocator: Allocator) ![]const u8 {
     return allocator.dupe(u8, STRING_UTILS_TEMPLATE);

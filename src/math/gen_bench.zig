@@ -436,13 +436,13 @@ pub fn printBenchmarkResults(suite: BenchmarkSuite, format: OutputFormat) !void 
             std.debug.print("╔══════════════════════════════════════════════════════════════════════════════╗\n", .{});
             std.debug.print("║                    SACRED MATHEMATICS — BENCHMARK RESULTS                   ║\n", .{});
             std.debug.print("╠══════════════════════════════════════════════════════════════════════════════╣\n", .{});
-            std.debug.print("║  {:30} {:>15} {:>12}                                  ║\n", .{"Benchmark", "Ops/sec", "Time (ns)"});
+            std.debug.print("║  {:30} {:>15} {:>12}                                  ║\n", .{ "Benchmark", "Ops/sec", "Time (ns)" });
             std.debug.print("║  ──────────────────────────────────────────────────────────────────────────  ║\n", .{});
 
             for (suite.results) |r| {
                 const ops_str = formatOpsPerSec(r.ops_per_second);
                 const time_str = formatTime(r.avg_time_ns);
-                std.debug.print("║  {:30} {:>15} {:>12}                                  ║\n", .{r.name, ops_str, time_str});
+                std.debug.print("║  {:30} {:>15} {:>12}                                  ║\n", .{ r.name, ops_str, time_str });
             }
 
             std.debug.print("║                                                                            ║\n", .{});
@@ -455,7 +455,7 @@ pub fn printBenchmarkResults(suite: BenchmarkSuite, format: OutputFormat) !void 
             std.debug.print("  \"results\": [\n", .{});
             for (suite.results, 0..) |r, i| {
                 const comma = if (i < suite.results.len - 1) "," else "";
-                std.debug.print("    {{\"name\": \"{s}\", \"ops_per_second\": {d:.2}, \"avg_time_ns\": {d:.2}}}{}\n", .{r.name, r.ops_per_second, r.avg_time_ns, comma});
+                std.debug.print("    {{\"name\": \"{s}\", \"ops_per_second\": {d:.2}, \"avg_time_ns\": {d:.2}}}{}\n", .{ r.name, r.ops_per_second, r.avg_time_ns, comma });
             }
             std.debug.print("  ]\n", .{});
             std.debug.print("}}\n", .{});

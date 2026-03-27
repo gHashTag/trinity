@@ -9,7 +9,6 @@ const std = @import("std");
 /// ═══════════════════════════════════════════════════════════════
 /// TERNARY VALUES
 /// ══════════════════════════════════════════════════════════════
-
 /// Balanced ternary digit: {-1, 0, +1}
 pub const Trit = enum(i8) {
     /// False / Negative
@@ -42,7 +41,6 @@ pub const Trit = enum(i8) {
 /// ═════════════════════════════════════════════════════════════════════
 /// TERNARY LOGIC GATES
 /// ══════════════════════════════════════════════════════════════
-
 /// Logical NOT: flips {-1 → +1, 0 → 0}
 /// Invariant: tritNot(tritNot(x)) == x
 pub fn tritNot(x: Trit) Trit {
@@ -76,7 +74,6 @@ pub fn tritMajority(a: Trit, b: Trit, c: Trit) Trit {
 /// ═════════════════════════════════════════════════════════════════
 /// TEKUM: Balanced Ternary Integer
 /// ═════════════════════════════════════════════════════════════
-
 /// Ternary array (least significant trit at index 0)
 pub const Tekum = struct {
     /// Trit array (least significant at index 0)

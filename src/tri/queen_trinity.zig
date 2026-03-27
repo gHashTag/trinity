@@ -300,13 +300,13 @@ fn workOnGithubIssue(allocator: std.mem.Allocator, cycle: u64) !bool {
 
     // Extract issue number (simple parsing)
     const number_start = std.mem.indexOf(u8, issue_str, "\"number\":") orelse return false;
-    const num_part = issue_str[number_start + 9..];
+    const num_part = issue_str[number_start + 9 ..];
     const number_end = std.mem.indexOf(u8, num_part, ",") orelse num_part.len;
     const number_str = num_part[0..number_end];
 
     // Extract title
     const title_start = std.mem.indexOf(u8, issue_str, "\"title\":") orelse return false;
-    const title_part = issue_str[title_start + 9..];
+    const title_part = issue_str[title_start + 9 ..];
     const title_end = std.mem.indexOf(u8, title_part, "\"}") orelse title_part.len;
     const title_json = title_part[0..title_end];
 

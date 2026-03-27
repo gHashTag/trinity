@@ -205,7 +205,7 @@ pub fn runPhiCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     };
 
     const result = gen_eval.phiPower(n);
-    std.debug.print("φ^{d} = {d:.16}\n", .{n, result});
+    std.debug.print("φ^{d} = {d:.16}\n", .{ n, result });
 }
 
 /// Compute Fibonacci F(n)
@@ -222,7 +222,7 @@ pub fn runFibCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     };
 
     const result = gen_eval.fibonacciBigInt(allocator, n) catch |err| {
-        std.debug.print("Error computing F({d}): {}\n", .{n, err});
+        std.debug.print("Error computing F({d}): {}\n", .{ n, err });
         return;
     };
     defer allocator.free(result.value_str);
@@ -244,7 +244,7 @@ pub fn runLucasCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     };
 
     const result = gen_eval.lucasBigInt(allocator, n) catch |err| {
-        std.debug.print("Error computing L({d}): {}\n", .{n, err});
+        std.debug.print("Error computing L({d}): {}\n", .{ n, err });
         return;
     };
     defer allocator.free(result.value_str);
@@ -291,7 +291,7 @@ pub fn runSpiralCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     const plot = parseFlag(args, "plot") != null;
 
     std.debug.print("φ-Spiral (n={d}):\n", .{n});
-    std.debug.print("{s:>10} {s:>10} {s:>10}\n", .{"x", "y", "r"});
+    std.debug.print("{s:>10} {s:>10} {s:>10}\n", .{ "x", "y", "r" });
     std.debug.print("────────────────────────────────\n", .{});
 
     const angle = @as(f64, @floatFromInt(n)) * PHI;
@@ -299,7 +299,7 @@ pub fn runSpiralCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     const x = radius * @cos(angle);
     const y = radius * @sin(angle);
 
-    std.debug.print("{d:>10.4} {d:>10.4} {d:>10.4}\n", .{x, y, radius});
+    std.debug.print("{d:>10.4} {d:>10.4} {d:>10.4}\n", .{ x, y, radius });
 
     if (plot) {
         std.debug.print("\nASCII Plot:\n", .{});
@@ -366,8 +366,8 @@ pub fn runCompareCommand(allocator: std.mem.Allocator, args: [][]const u8) void 
         20;
 
     std.debug.print("Comparing φ^n, F(n), L(n) for n=0..{d}:\n", .{max_n});
-    std.debug.print("{s:>5} {s:>15} {s:>15} {s:>15}\n", .{"n", "φ^n", "F(n)", "L(n)"});
-    std.debug.print("{s:>5} {s:>15} {s:>15} {s:>15}\n", .{"─────", "───────────────", "───────────────", "───────────────"});
+    std.debug.print("{s:>5} {s:>15} {s:>15} {s:>15}\n", .{ "n", "φ^n", "F(n)", "L(n)" });
+    std.debug.print("{s:>5} {s:>15} {s:>15} {s:>15}\n", .{ "─────", "───────────────", "───────────────", "───────────────" });
 
     var i: usize = 0;
     while (i < @min(max_n, 20)) : (i += 1) {
@@ -375,7 +375,7 @@ pub fn runCompareCommand(allocator: std.mem.Allocator, args: [][]const u8) void 
         const fib_val = if (i < gen_eval.fibonacci_cache.len) gen_eval.fibonacci_cache[i] else 0;
         const lucas_val = if (i < gen_eval.lucas_cache.len) gen_eval.lucas_cache[i] else 0;
 
-        std.debug.print("{d:>5} {d:>15.6} {d:>15} {d:>15}\n", .{i, phi_val, fib_val, lucas_val});
+        std.debug.print("{d:>5} {d:>15.6} {d:>15} {d:>15}\n", .{ i, phi_val, fib_val, lucas_val });
     }
 }
 
@@ -399,11 +399,11 @@ pub fn runBenchCommand(allocator: std.mem.Allocator, args: [][]const u8) void {
     };
     defer allocator.free(suite.results);
 
-    std.debug.print("\n{s:>30} {s:>15}\n", .{"Benchmark", "Ops/sec"});
-    std.debug.print("{s:>30} {s:>15}\n", .{"─────────────────────────────", "───────────────"});
+    std.debug.print("\n{s:>30} {s:>15}\n", .{ "Benchmark", "Ops/sec" });
+    std.debug.print("{s:>30} {s:>15}\n", .{ "─────────────────────────────", "───────────────" });
 
     for (suite.results) |r| {
-        std.debug.print("{s:>30} {d:>15.0}\n", .{r.name, r.ops_per_second});
+        std.debug.print("{s:>30} {d:>15.0}\n", .{ r.name, r.ops_per_second });
     }
 }
 
@@ -419,7 +419,7 @@ pub fn runIdentitiesCommand(allocator: std.mem.Allocator, args: [][]const u8) vo
     std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
 
     for (identities) |id| {
-        std.debug.print("║  {s}: {s}\n", .{id.name, id.formula});
+        std.debug.print("║  {s}: {s}\n", .{ id.name, id.formula });
         if (id.verified) {
             std.debug.print("║    ✓ {s}\n", .{id.proof});
         }

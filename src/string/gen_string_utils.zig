@@ -9,7 +9,6 @@ const std = @import("std");
 /// ═══════════════════════════════════════════════════════════════════════════
 /// STRING TRIMMING
 /// ═══════════════════════════════════════════════════════════════════════════
-
 /// Trim leading and trailing whitespace
 pub fn trim(s: []const u8) []const u8 {
     return std.mem.trim(u8, s, &std.ascii.whitespace);
@@ -36,7 +35,6 @@ pub fn trimRight(s: []const u8) []const u8 {
 /// ═══════════════════════════════════════════════════════════════════════════
 /// STRING SEARCHING
 /// ═══════════════════════════════════════════════════════════════════════════
-
 /// Check if string starts with prefix
 pub fn startsWith(s: []const u8, prefix: []const u8) bool {
     if (prefix.len > s.len) return false;
@@ -58,7 +56,6 @@ pub fn contains(haystack: []const u8, needle: []const u8) bool {
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// STRING VALIDATION
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Check if all characters are ASCII
 pub fn isAscii(s: []const u8) bool {
     for (s) |c| {
@@ -81,7 +78,6 @@ pub fn isAlnum(s: []const u8) bool {
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// STRING COMPARISON
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Case-insensitive string comparison (ASCII only)
 pub fn equalCaseInsensitive(a: []const u8, b: []const u8) bool {
     if (a.len != b.len) return false;
@@ -96,7 +92,6 @@ pub fn equalCaseInsensitive(a: []const u8, b: []const u8) bool {
 /// ═════════════════════════════════════════════════════════════════════════════════════
 /// STRING CONCATENATION
 /// ═══════════════════════════════════════════════════════════════════════════════
-
 /// Join strings with separator
 pub fn join(allocator: std.mem.Allocator, parts: []const []const u8, sep: []const u8) ![]u8 {
     if (parts.len == 0) return allocator.dupe(u8, "");
@@ -111,10 +106,10 @@ pub fn join(allocator: std.mem.Allocator, parts: []const []const u8, sep: []cons
     var offset: usize = 0;
 
     for (parts, 0..) |part, i| {
-        @memcpy(result[offset..offset + part.len], part);
+        @memcpy(result[offset .. offset + part.len], part);
         offset += part.len;
         if (i < parts.len - 1) {
-            @memcpy(result[offset..offset + sep.len], sep);
+            @memcpy(result[offset .. offset + sep.len], sep);
             offset += sep.len;
         }
     }

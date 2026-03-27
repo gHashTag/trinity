@@ -55,17 +55,18 @@ pub fn Trie(comptime V: type) type {
             for (key) |c| {
                 const char_str = &[1]u8{c};
                 const entry = try current.children.getOrPut(char_str);
-                if (!entry.exists) {
+                if (!entry.found_existing) {
                     const node = try self.allocator.create(TrieNode(V));
                     node.* = TrieNode(V).init(self.allocator);
                     entry.value_ptr.* = node;
                 }
                 current = entry.value_ptr.*;
             }
-            const was_new = !current.is_end;
+            if (!current.is_end) {
+                self.size += 1;
+            }
             current.is_end = true;
             current.value = value;
-            if (was_new) self.size += 1;
         }
 
         /// Lookup by exact key

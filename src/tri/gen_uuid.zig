@@ -31,7 +31,7 @@ pub const UUID = struct {
     }
 
     /// Generate random UUID (version 4)
-    pub fn v4(rng: *std.rand.DefaultPrng) UUID {
+    pub fn v4(rng: *std.Random.DefaultPrng) UUID {
         var data: [16]u8 = undefined;
         rng.fill(&data);
 
@@ -125,7 +125,7 @@ test "UUID.nil" {
 }
 
 test "UUID.v4" {
-    var rng = std.rand.DefaultPrng.init(42);
+    var rng = std.Random.DefaultPrng.init(42);
     const uuid = UUID.v4(&rng);
     try std.testing.expectEqual(@as(?Version, Version.random), uuid.version());
     try std.testing.expectEqual(Variant.rfc4122, uuid.variant());
@@ -139,7 +139,7 @@ test "UUID.parse format" {
 }
 
 test "UUID.equals" {
-    var rng = std.rand.DefaultPrng.init(42);
+    var rng = std.Random.DefaultPrng.init(42);
     const a = UUID.v4(&rng);
     const b = UUID.v4(&rng);
     try std.testing.expect(!a.equals(b));

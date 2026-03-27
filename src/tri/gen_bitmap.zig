@@ -28,7 +28,7 @@ pub const Bitmap = struct {
     pub fn get(self: Bitmap, index: usize) bool {
         if (index >= self.capacity) return false;
         const word = index / USIZE_BITS;
-        const bit = index % USIZE_BITS;
+        const bit = @as(u6, @intCast(index % USIZE_BITS));
         return (self.bits[word] & (@as(usize, 1) << bit)) != 0;
     }
 
@@ -36,7 +36,7 @@ pub const Bitmap = struct {
     pub fn set(self: *Bitmap, index: usize) void {
         if (index >= self.capacity) return;
         const word = index / USIZE_BITS;
-        const bit = index % USIZE_BITS;
+        const bit = @as(u6, @intCast(index % USIZE_BITS));
         self.bits[word] |= @as(usize, 1) << bit;
     }
 
@@ -44,7 +44,7 @@ pub const Bitmap = struct {
     pub fn clear(self: *Bitmap, index: usize) void {
         if (index >= self.capacity) return;
         const word = index / USIZE_BITS;
-        const bit = index % USIZE_BITS;
+        const bit = @as(u6, @intCast(index % USIZE_BITS));
         self.bits[word] &= ~(@as(usize, 1) << bit);
     }
 
@@ -52,7 +52,7 @@ pub const Bitmap = struct {
     pub fn flip(self: *Bitmap, index: usize) void {
         if (index >= self.capacity) return;
         const word = index / USIZE_BITS;
-        const bit = index % USIZE_BITS;
+        const bit = @as(u6, @intCast(index % USIZE_BITS));
         self.bits[word] ^= @as(usize, 1) << bit;
     }
 

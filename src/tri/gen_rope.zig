@@ -92,14 +92,14 @@ test "Rope.empty" {
 }
 
 test "Rope.fromString" {
-    var rope = try Rope.fromString("hello", std.testing.allocator);
+    const rope = try Rope.fromString("hello", std.testing.allocator);
     _ = rope;
     // Allocator cleanup skipped for test
 }
 
 test "Rope.concat" {
-    var a = try Rope.fromString("hello", std.testing.allocator);
-    var b = try Rope.fromString(" world", std.testing.allocator);
-    var combined = try a.concat(b, std.testing.allocator);
+    const a = try Rope.fromString("hello", std.testing.allocator);
+    const b = try Rope.fromString(" world", std.testing.allocator);
+    const combined = try a.concat(b, std.testing.allocator);
     try std.testing.expectEqual(@as(usize, 11), combined.length);
 }

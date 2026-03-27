@@ -9,7 +9,6 @@ const std = @import("std");
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// ERROR TYPES
 /// ═════════════════════════════════════════════════════════════════════════════════════════
-
 pub const LoadError = enum(u8) {
     /// Invalid magic number in file header
     InvalidMagic = 0,
@@ -24,7 +23,6 @@ pub const LoadError = enum(u8) {
 /// ═══════════════════════════════════════════════════════════════════════════════════════
 /// LOAD RESULT
 /// ═══════════════════════════════════════════════════════════════════════════════════════════════════
-
 /// Result of loading binary file
 pub const LoadResult = struct {
     /// Entry point address
@@ -43,7 +41,6 @@ pub const LoadResult = struct {
 /// ═══════════════════════════════════════════════════════════════════════════════════════════
 /// CONSTANTS
 /// ═════════════════════════════════════════════════════════════════════════════════════════════════
-
 /// Maximum file size in bytes (64KB)
 pub const MAX_FILE_SIZE: u32 = 65536;
 
@@ -53,7 +50,6 @@ pub const TRI27_MAGIC: u32 = 0x54524927;
 /// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════
 /// LOAD FUNCTION
 /// ═════════════════════════════════════════════════════════════════════════════════════════
-
 /// Load binary file and copy data to memory (little-endian)
 pub fn loadBinary(path: []const u8, mem: [*]u8, mem_size: usize) !LoadResult {
     // Check file size

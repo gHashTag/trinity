@@ -8,8 +8,8 @@ const std = @import("std");
 pub fn Builder(comptime T: type) type {
     return struct {
         items: []T = &[_]T{},
-        capacity: usize = 0,
-        len: usize = 0,
+        cap: usize = 0,
+        count: usize = 0,
         allocator: std.mem.Allocator,
 
         const Self = @This();
@@ -19,8 +19,8 @@ pub fn Builder(comptime T: type) type {
             const items = try allocator.alloc(T, capacity);
             return .{
                 .items = items,
-                .capacity = capacity,
-                .len = 0,
+                .cap = capacity,
+                .count = 0,
                 .allocator = allocator,
             };
         }
@@ -29,76 +29,76 @@ pub fn Builder(comptime T: type) type {
         pub fn empty(allocator: std.mem.Allocator) Self {
             return .{
                 .items = &[_]T{},
-                .capacity = 0,
-                .len = 0,
+                .cap = 0,
+                .count = 0,
                 .allocator = allocator,
             };
         }
 
         /// Free resources
         pub fn deinit(self: Self) void {
-            if (self.capacity > 0) {
+            if (self.cap > 0) {
                 self.allocator.free(self.items);
             }
         }
 
         /// Add single item
         pub fn append(self: *Self, item: T) !void {
-            if (self.len >= self.capacity) {
-                const new_cap = if (self.capacity == 0) 4 else self.capacity * 2;
+            if (self.count >= self.cap) {
+                const new_cap = if (self.cap == 0) 4 else self.cap * 2;
                 const new_items = try self.allocator.realloc(self.items, new_cap);
                 self.items = new_items;
-                self.capacity = new_cap;
+                self.cap = new_cap;
             }
-            self.items[self.len] = item;
-            self.len += 1;
+            self.items[self.count] = item;
+            self.count += 1;
         }
 
         /// Add multiple items
         pub fn appendSlice(self: *Self, slice: []const T) !void {
-            const needed = self.len + slice.len;
-            if (needed > self.capacity) {
-                var new_cap = self.capacity;
+            const needed = self.count + slice.len;
+            if (needed > self.cap) {
+                var new_cap = self.cap;
                 while (new_cap < needed) {
                     new_cap = if (new_cap == 0) 4 else new_cap * 2;
                 }
                 const new_items = try self.allocator.realloc(self.items, new_cap);
                 self.items = new_items;
-                self.capacity = new_cap;
+                self.cap = new_cap;
             }
-            @memcpy(self.items[self.len..][0..slice.len], slice);
-            self.len += slice.len;
+            @memcpy(self.items[self.count..][0..slice.len], slice);
+            self.count += slice.len;
         }
 
         /// Current item count
         pub fn len(self: Self) usize {
-            return self.len;
+            return self.count;
         }
 
         /// Allocated space
         pub fn capacity(self: Self) usize {
-            return self.capacity;
+            return self.cap;
         }
 
         /// Convert to owned slice, consume builder
         pub fn finish(self: Self) ![]T {
-            if (self.len == 0) {
-                if (self.capacity > 0) {
+            if (self.count == 0) {
+                if (self.cap > 0) {
                     self.allocator.free(self.items);
                 }
                 return &[_]T{};
             }
-            if (self.len == self.capacity) {
+            if (self.count == self.cap) {
                 return self.items;
             }
             // Shrink to fit
-            const exact = try self.allocator.realloc(self.items, self.len);
+            const exact = try self.allocator.realloc(self.items, self.count);
             return exact;
         }
 
         /// Clear without freeing
         pub fn reset(self: *Self) void {
-            self.len = 0;
+            self.count = 0;
         }
     };
 }

@@ -16,10 +16,10 @@ pub const Bytes = struct {
     }
 
     /// Wrap slice (non-owning)
-    pub fn fromSlice(slice: []const u8) Bytes {
+    pub fn fromSlice(input: []const u8) Bytes {
         // Cast away const for internal use
         return .{
-            .data = @constCast(slice),
+            .data = @constCast(input),
             .owned = false,
         };
     }
@@ -33,8 +33,10 @@ pub const Bytes = struct {
 
     /// Free owned data
     pub fn deinit(self: Bytes) void {
-        if (self.owned and self.allocator) |alloc| {
-            alloc.free(self.data);
+        if (self.owned) {
+            if (self.allocator) |alloc| {
+                alloc.free(self.data);
+            }
         }
     }
 
@@ -88,23 +90,23 @@ test "Bytes.empty" {
 }
 
 test "Bytes.fromSlice" {
-    const slice = "hello";
-    var b = Bytes.fromSlice(slice);
-    try std.testing.expectEqualSlices(u8, slice, b.data);
+    const input = "hello";
+    const b = Bytes.fromSlice(input);
+    try std.testing.expectEqualSlices(u8, input, b.data);
 }
 
 test "Bytes.equals" {
-    var a = Bytes.fromSlice("test");
-    var b = Bytes.fromSlice("test");
-    var c = Bytes.fromSlice("other");
+    const a = Bytes.fromSlice("test");
+    const b = Bytes.fromSlice("test");
+    const c = Bytes.fromSlice("other");
     try std.testing.expect(a.equals(b));
     try std.testing.expect(!a.equals(c));
 }
 
 test "Bytes.concat" {
-    var a = Bytes.fromSlice("hello");
-    var b = Bytes.fromSlice(" world");
-    var result = try a.concat(b, std.testing.allocator);
+    const a = Bytes.fromSlice("hello");
+    const b = Bytes.fromSlice(" world");
+    const result = try a.concat(b, std.testing.allocator);
     defer result.deinit();
     try std.testing.expectEqualSlices(u8, "hello world", result.data);
 }

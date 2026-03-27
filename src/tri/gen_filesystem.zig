@@ -244,7 +244,7 @@ test "Filesystem: join" {
     }
 
     {
-        const result = try join(allocator, &[_][]const u8{ "single" });
+        const result = try join(allocator, &[_][]const u8{"single"});
         defer allocator.free(result);
         try std.testing.expectEqualStrings("single", result);
     }

@@ -34,7 +34,8 @@ pub fn matchLiteral(input: []const u8, pattern: []const u8) !bool {
 
     // Fast path: no wildcards
     if (std.mem.indexOfScalar(u8, pattern, '*') == null and
-        std.mem.indexOfScalar(u8, pattern, '?') == null) {
+        std.mem.indexOfScalar(u8, pattern, '?') == null)
+    {
         return std.mem.eql(u8, input, pattern);
     }
 
@@ -231,7 +232,7 @@ test "matchEnum exact match" {
 
 test "matchEnum wildcard" {
     const TestEnum = enum { a, b, c };
-    const cases = [_][]const u8{ "*" };
+    const cases = [_][]const u8{"*"};
     try std.testing.expect(matchEnum(TestEnum, .a, &cases));
     try std.testing.expect(matchEnum(TestEnum, .b, &cases));
     try std.testing.expect(matchEnum(TestEnum, .c, &cases));

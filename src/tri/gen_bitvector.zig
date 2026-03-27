@@ -32,7 +32,7 @@ pub const BitVector = struct {
     /// Append bit
     pub fn push(self: *BitVector, bit: bool) !void {
         const word_index = self.length / USIZE_BITS;
-        const bit_index = self.length % USIZE_BITS;
+        const bit_index = @as(u6, @intCast(self.length % USIZE_BITS));
 
         if (word_index >= self.bits.len) {
             // Need to grow
@@ -55,7 +55,7 @@ pub const BitVector = struct {
         if (self.length == 0) return null;
         self.length -= 1;
         const word_index = self.length / USIZE_BITS;
-        const bit_index = self.length % USIZE_BITS;
+        const bit_index = @as(u6, @intCast(self.length % USIZE_BITS));
         return (self.bits[word_index] & (@as(usize, 1) << bit_index)) != 0;
     }
 
@@ -63,7 +63,7 @@ pub const BitVector = struct {
     pub fn get(self: BitVector, index: usize) bool {
         if (index >= self.length) return false;
         const word_index = index / USIZE_BITS;
-        const bit_index = index % USIZE_BITS;
+        const bit_index = @as(u6, @intCast(index % USIZE_BITS));
         return (self.bits[word_index] & (@as(usize, 1) << bit_index)) != 0;
     }
 
@@ -71,7 +71,7 @@ pub const BitVector = struct {
     pub fn set(self: *BitVector, index: usize, value: bool) void {
         if (index >= self.length) return;
         const word_index = index / USIZE_BITS;
-        const bit_index = index % USIZE_BITS;
+        const bit_index = @as(u6, @intCast(index % USIZE_BITS));
         if (value) {
             self.bits[word_index] |= @as(usize, 1) << bit_index;
         } else {

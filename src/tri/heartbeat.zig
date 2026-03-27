@@ -409,9 +409,8 @@ fn saveDecideState(energy: f32, total: u32, passes: u32, fails: u32, decision: [
     const json = std.fmt.bufPrint(&buf,
         \\{{"energy":{d},"total":{d},"passes":{d},"fails":{d},"decision":"{s}","timestamp":{d}}}
     , .{
-        energy_pct, total, passes, fails,
-        decision[0..@min(decision.len, 64)],
-        std.time.timestamp(),
+        energy_pct,                          total,                passes, fails,
+        decision[0..@min(decision.len, 64)], std.time.timestamp(),
     }) catch return;
     file.writeAll(json) catch {};
 }

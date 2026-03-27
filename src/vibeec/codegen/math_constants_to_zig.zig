@@ -252,7 +252,7 @@ const MATH_CONSTANTS_TEMPLATE =
     \\    try std.testing.expect(SU3_CONSTANT > 0.92 and SU3_CONSTANT < 0.93);
     \\}
     \\
-    ;
+;
 
 pub fn generateMathConstants(allocator: Allocator) ![]const u8 {
     return allocator.dupe(u8, MATH_CONSTANTS_TEMPLATE);

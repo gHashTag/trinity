@@ -9,7 +9,6 @@ const std = @import("std");
 /// ═══════════════════════════════════════════════════════════════════════════
 /// TRI ERROR HANDLING
 /// ═════════════════════════════════════════════════════════════════
-
 /// Error type for TRI operations
 pub const TriError = enum {
     /// Command was not found in registry

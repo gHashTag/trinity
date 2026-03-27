@@ -53,7 +53,7 @@ pub const Base64 = struct {
                 output[out_idx + 2] = '=';
                 output[out_idx + 3] = '=';
             } else {
-                output.len = out_idx + 2;
+                return output[0..(out_idx + 2)];
             }
         } else if (remaining == 2) {
             const triple = (@as(usize, input[i]) << 16) | (@as(usize, input[i + 1]) << 8);
@@ -63,7 +63,7 @@ pub const Base64 = struct {
             if (codec.padding) {
                 output[out_idx + 3] = '=';
             } else {
-                output.len = out_idx + 3;
+                return output[0..(out_idx + 3)];
             }
         }
 
@@ -104,7 +104,7 @@ pub const Base64 = struct {
 
             if (bits >= 8) {
                 bits -= 8;
-                output[out_idx] = @intCast((accum >> bits) & 0xFF);
+                output[out_idx] = @as(u8, @intCast((accum >> bits) & 0xFF));
                 out_idx += 1;
             }
         }
@@ -117,7 +117,8 @@ pub const Base64 = struct {
         _ = codec;
         const full_groups = input_len / 3;
         const remainder = input_len % 3;
-        return full_groups * 4 + if (remainder == 0) 0 else 4;
+        if (remainder == 0) return full_groups * 4;
+        return full_groups * 4 + 4;
     }
 };
 
@@ -140,5 +141,5 @@ test "Base64.urlSafe" {
     const result = try codec.encode("hello?", std.testing.allocator);
     defer std.testing.allocator.free(result);
     // URL-safe should use - and _ instead of + and /
-    _ = result;
+    try std.testing.expect(result.len > 0);
 }

@@ -159,7 +159,7 @@ test "B2T Core: decode basic" {
     // 0xA0 = 0b10100000
     // Bits from LSB: 00, 00, 10, 10
     // Which gives trits: zero, zero, neg, neg
-    const input1 = BinaryInput{ .data = &[_]u8{ 0xA0 } };
+    const input1 = BinaryInput{ .data = &[_]u8{0xA0} };
 
     const result1 = try decode(allocator, input1);
     defer allocator.free(result1.trits);
@@ -177,7 +177,7 @@ test "B2T Core: decode with padding" {
     // Single byte: 0x82 = 0b10000010
     // Bits: 10, 00, 00, 10
     // Trits: neg, zero, zero, neg
-    const input_array = [_]u8{ 0x82 };
+    const input_array = [_]u8{0x82};
     const input = BinaryInput{ .data = &input_array };
 
     const result = try decode(allocator, input);

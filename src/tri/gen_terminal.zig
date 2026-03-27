@@ -35,7 +35,7 @@ pub fn getSize() TerminalSize {
 pub fn colorize(allocator: std.mem.Allocator, text: []const u8, fg: Color) ![]u8 {
     const codes = [_]u8{ 30, 31, 32, 33, 34, 35, 36, 37, 39 };
     const code = codes[@intFromEnum(fg)];
-    return std.fmt.allocPrint(allocator, "\x1b[{d}m{s}\x1b[0m", .{code, text});
+    return std.fmt.allocPrint(allocator, "\x1b[{d}m{s}\x1b[0m", .{ code, text });
 }
 
 pub fn reset() []const u8 {
