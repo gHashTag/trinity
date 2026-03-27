@@ -325,170 +325,167 @@ tri lucas 10           # Lucas L(10)
 tri spiral 5           # φ-spiral coordinates
 ```
 
-### All Commands (30+ command groups)
+### All Commands (100+ commands)
 
-> **Note:** `tri test` has limited functionality. Use `zig build test` for full testing.
+> **Note:** Run `tri help` to see all commands by category.
 
 ```bash
 tri help               # Show all commands by category
 tri help --search test # Search commands
-tri help fix           # Detailed command help
 ```
 
-#### Development Workflow
+#### Core Commands
 
 | Command | Description |
 |---------|-------------|
-| `tri dev status` | Show development session status |
-| `tri dev start --issue <N>` | Start session for GitHub issue |
-| `tri dev test` | Run tests and mark as passed |
-| `tri dev commit "msg"` | Commit with issue ID |
-| `tri dev ship` | Mark changes as delivered |
-| `tri dev reset` | Reset changes back to ACTIVE state |
-| `tri dev unblock` | Clear BLOCKED state |
-| `tri dev log` | Show state history |
+| `tri chat` | Interactive chat (v2.1: vision + voice + tools) |
+| `tri code` | Generate code from prompt |
+| `tri gen` | Compile VIBEE spec to Zig/Verilog |
+| `tri convert` | Convert WASM/Binary to Ternary |
+| `tri serve` | Start HTTP API server |
+| `tri bench` | Run performance benchmarks |
+| `tri evolve` | Evolve fingerprint (Firebird) |
 
-#### Git & GitHub Integration
-
-| Command | Description |
-|---------|-------------|
-| `tri git status` | Working tree status |
-| `tri git commit "msg"` | Commit with auto-format |
-| `tri git diff` | Show changes |
-| `tri git log` | Commit history |
-| `tri issue list` | List GitHub issues |
-| `tri issue create` | Create new issue |
-| `tri board <action>` | Project board operations |
-| `tri pr <action>` | Pull request management |
-| `tri agent run <N>` | Autonomous issue resolution (8-step cycle) |
-| `tri graphql <query>` | Run GitHub GraphQL query |
-
-#### Cloud & Training Farm
+#### SWE Agent
 
 | Command | Description |
 |---------|-------------|
-| `tri cloud status` | Cloud containers overview |
-| `tri cloud spawn <N>` | Spawn container for issue |
-| `tri cloud kill <N>` | Destroy container |
-| `tri cloud agents` | List active agents |
-| `tri cloud sync` | Reconcile with Railway |
-| `tri farm status` | Training farm overview |
-| `tri farm recycle` | Recycle underperforming services |
-| `tri farm evolve` | SEBO hyperparameter optimization |
-| `tri farm inject` | Inject new configurations |
-| `tri deploy <action>` | Deployment management |
-| `tri train <action>` | Training operations |
+| `tri fix <file>` | Detect and fix bugs |
+| `tri explain <file>` | Explain code or concept |
+| `tri test <file>` | Generate tests |
+| `tri doc <file>` | Generate documentation |
+| `tri refactor <file>` | Suggest refactoring |
+| `tri reason` | Chain-of-thought reasoning |
 
-#### Pipeline & Code Generation
+#### Git Integration
 
 | Command | Description |
 |---------|-------------|
-| `tri pipeline run "<task>"` | Golden Chain 28-link pipeline |
-| `tri chain` | Run chain command |
-| `tri vibee` | VIBEE compiler CLI |
-| `tri spec create <name>` | Create .tri specification |
-| `tri spec-match` | Match issue to spec template |
-| `tri gen` | Generate code from spec |
+| `tri status` | Git status --short |
+| `tri diff` | Git diff |
+| `tri log` | Git log --oneline -10 |
+| `tri commit` | Git add -A && commit |
 
-#### Agents & Swarms
+#### Golden Chain Pipeline
 
 | Command | Description |
 |---------|-------------|
-| `tri faculty` | Agent status dashboard (A2A) |
-| `tri swarm <action>` | Swarm management |
-| `tri queen <subcommand>` | Queen Trinity UI |
-| `tri phoenix <subcommand>` | Phoenix cell system |
-| `tri mu <command>` | Agent TRI (Memory Unit) |
-| `tri notify "msg"` | Telegram notification |
+| `tri pipeline run <task>` | Execute 17-link development cycle |
+| `tri pipeline status` | Show pipeline state |
+| `tri decompose <task>` | Break task into sub-tasks |
+| `tri verify` | Run tests + benchmarks (Links 7-11) |
+| `tri verdict` | Generate toxic verdict (Link 14) |
 
-#### FPGA & Hardware
-
-| Command | Description |
-|---------|-------------|
-| `tri fpga build` | Build FPGA bitstream |
-| `tri fpga flash` | Flash bitstream to FPGA |
-| `tri fpga uart` | UART communication test |
-| `tri sacred-const` | Show sacred constants (φ, π, e) |
-
-#### Mathematical & Research
+#### Sacred Mathematics (v3.6)
 
 | Command | Description |
 |---------|-------------|
-| `tri constants` | Show φ, π, e, Lucas, Fibonacci |
+| `tri constants` | Show all sacred constants (φ, π, e, μ, χ, σ, ε...) |
 | `tri phi <n>` | Compute φ^n |
+| `tri fib <n>` | Fibonacci F(n) with BigInt |
 | `tri lucas <n>` | Lucas L(n) |
 | `tri spiral <n>` | φ-spiral coordinates |
-| `tri formula <name>` | Evaluate sacred formula |
-| `tri sebo` | Sacred EVolutionary Objective Search |
-| `tri research <action>` | Research operations |
+| `tri gematria <text>` | Coptic gematria + sacred formula |
+| `tri formula <value>` | Sacred formula decomposition |
+| `tri sacred` | 32 constants + 9 predictions table |
 
-#### Memory & Learning
-
-| Command | Description |
-|---------|-------------|
-| `tri memory list` | List stored memories |
-| `tri memory read <key>` | Read memory entry |
-| `tri memory write <key> <value>` | Store memory |
-| `tri memory search <query>` | Semantic search |
-| `tri experience save` | Save experience |
-| `tri experience recall` | Recall experiences |
-
-#### Utilities
+#### Sacred Biology (v14.0)
 
 | Command | Description |
 |---------|-------------|
-| `tri doctor` | Codebase health scanner |
-| `tri clean` | Clean build artifacts |
-| `tri fmt` | Format code (zig fmt) |
-| `tri stats` | Codebase metrics |
-| `tri ui [build\|kill]` | Queen UI launcher |
+| `tri bio dna <seq>` | DNA analysis with sacred mathematics |
+| `tri bio rna <seq>` | RNA analysis with sacred mathematics |
+| `tri bio protein <seq>` | Protein analysis (1-letter codes) |
+| `tri bio phi-genome` | Sacred genome patterns |
+| `tri bio codon <codon>` | Codon → amino acid lookup |
+
+#### Sacred Cosmology (v15.0)
+
+| Command | Description |
+|---------|-------------|
+| `tri cosmos hubble` | Resolve Hubble tension via Sacred Formula |
+| `tri cosmos dark` | Dark energy/matter as φ-patterns |
+| `tri cosmos predict` | Predict new constants and stability islands |
+| `tri cosmos expand` | Universe expansion timeline |
+| `tri cosmos big-bang` | Big Bang through sacred lens |
+
+#### Sacred Neuroscience (v16.0)
+
+| Command | Description |
+|---------|-------------|
+| `tri neuro waves [freq]` | Brain waves (φ-patterned frequencies) |
+| `tri neuro consciousness [C t E]` | Compute consciousness level Ψ |
+| `tri neuro regions` | Sacred brain regions (φ-index) |
+| `tri neuro network` | Analyze neural network sacredness |
+| `tri neuro synapse` | Synaptic transmission timing |
+| `tri neuro neurons` | Brain statistics & sacred constants |
+
+#### Sacred Intelligence
+
+| Command | Description |
+|---------|-------------|
+| `tri intelligence` | Sacred formula + gematria analysis |
+| `tri intel` | Alias for intelligence |
+
+#### Sacred Agents (Cycle 98)
+
+| Command | Description |
+|---------|-------------|
+| `tri identity` | Show Sacred Intelligence identity |
+| `tri swarm` | Multi-agent Sacred Swarm status |
+| `tri govern` | Sacred Governance rules (φ-Rules) |
+| `tri dashboard` | 3-column Sacred Dashboard |
+| `tri omega` | Master coordinator - all agents |
+| `tri math-agent` | Sacred Math Agent - self-aware |
+
+#### Autonomous Evolution (Cycle 97)
+
+| Command | Description |
+|---------|-------------|
+| `tri auto-commit` | Autonomous sacred patch commits (φ-guided) |
+| `tri ml-optimize` | ML-based patch optimization |
+| `tri deploy-dashboard` | Deploy production dashboard |
+| `tri self-host` | Self-hosting loop |
+| `tri safeguards show` | Show safeguard status |
+
+#### Dev Utilities
+
+| Command | Description |
+|---------|-------------|
+| `tri doctor` | Codebase health (scan/mark/report/plan/heal) |
+| `tri clean` | Clean build artifacts (.zig-cache, zig-out) |
+| `tri fmt` | Format Zig source (zig fmt src/) |
+| `tri stats` | Project statistics (files, LOC, specs, tests) |
+| `tri igla` | IGLA initiative status (parser coverage) |
 | `tri version` | Show version info |
-| `tri autocomplete` | Shell autocomplete setup |
 
-#### Testing
+#### Demo & Benchmark Commands
 
-| Command | Description |
-|---------|-------------|
-| `tri test` | ⚠️ Limited - use `zig build test` instead |
-| `tri test e2e` | Run E2E toxic test suite |
-| `tri test --repl` | Run REPL tests (WIP - use `zig build test`) |
+| Category | Commands |
+|----------|----------|
+| **TVC** | `tri tvc-demo`, `tri tvc-stats` |
+| **Multi-Agent** | `tri agents-demo`, `tri agents-bench` |
+| **Long Context** | `tri context-demo`, `tri context-bench` |
+| **RAG** | `tri rag-demo`, `tri rag-bench` |
+| **Voice** | `tri voice-demo`, `tri voice-bench` |
+| **Sandbox** | `tri sandbox-demo`, `tri sandbox-bench` |
+| **Streaming** | `tri stream-demo`, `tri stream-bench` |
+| **Vision** | `tri vision-demo`, `tri vision-bench` |
+| **Fine-tuning** | `tri finetune-demo`, `tri finetune-bench` |
+| **Multi-modal** | `tri multimodal-demo`, `tri multimodal-bench` |
+| **Tool Use** | `tri tooluse-demo`, `tri tooluse-bench` |
+| **Unified Agent** | `tri unified-demo`, `tri unified-bench` |
+| **Autonomous** | `tri auto-demo`, `tri auto-bench` |
+| **Orchestration** | `tri orch-demo`, `tri orch-bench` |
+| **Memory** | `tri memory-demo`, `tri memory-bench` |
 
-#### TRI-27 Token & Staking
+#### REPL Commands (in interactive mode)
 
-TRI-27 VM includes integrated $TRI token functionality for staking, rewards, and wallet operations.
-
-| Command | Description |
-|---------|-------------|
-| `tri27 token balance <address>` | Check $TRI token balance (18 decimals) |
-| `tri27 token stake <amount> <days>` | Stake tokens for 7-365 days lock period |
-| `tri27 token unstake <address>` | Unstake tokens (must be past lock period) |
-| `tri27 token claim <address>` | Claim pending staking rewards |
-| `tri27 wallet list` | List all stakes and rewards |
-| `tri27 stake info <address>` | View stake details (amount, lock period, progress) |
-| `tri27 rewards pending <address>` | Check pending reward amount and APY |
-
-**Coptic Register Mapping:**
-- `t18` — Current token balance (read-only)
-- `t19` — Pending rewards (read-only)
-- `t20` — Staked amount (read-only)
-- `t21` — Total staked across network (read-only)
-- `t22` — Current APY (read-only)
-
-**APY Formula:** `base 5% + lock_bonus (max 10%) + staked_bonus (max 5%) = capped at 20%`
-
-See [TRI-27 Documentation](docs/tri27/README.md) for full ISA reference and integration guide.
-
-#### Namespaced Commands
-
-Namespace-aware syntax: `tri <namespace> <command>`
-
-| Namespace | Example Commands |
-|-----------|-----------------|
-| `tri dev` | `tri dev status`, `tri dev test`, `tri dev commit` |
-| `tri mcp` | `tri mcp tools`, `tri mcp export` |
-| `tri agent` | `tri agent issue`, `tri agent board` |
-| `tri system` | `tri system doctor`, `tri system clean` |
-| `tri forge` | FPGA commands (via `tri fpga`) |
+```
+/chat /code /fix /explain /test /doc /reason
+/zig /python /rust /js    Set language
+/stats /verbose /help /quit
+```
 
 ### Build from Source
 
