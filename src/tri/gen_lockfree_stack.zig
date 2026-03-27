@@ -52,7 +52,7 @@ test "lockfree stack push pop" {
     var stack = LockFreeStack.init(std.testing.allocator);
     defer {
         while (stack.pop()) |_| {}
-    };
+    }
 
     try stack.push(1);
     try stack.push(2);
@@ -65,7 +65,7 @@ test "lockfree stack empty" {
     var stack = LockFreeStack.init(std.testing.allocator);
     defer {
         while (stack.pop()) |_| {}
-    };
+    }
 
     try std.testing.expect(stack.isEmpty());
     try std.testing.expect(stack.pop() == null);

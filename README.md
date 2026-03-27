@@ -70,7 +70,7 @@
 φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
 ```
 
-[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri-lang/emu/specs/tri27_isa.md)
+[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri27/emu/specs/tri27_isa.md)
 
 ---
 
@@ -489,7 +489,7 @@ The Trinity CLI Docker image is published to GitHub Container Registry.
 | **Platforms** | linux/amd64 |
 | **Base** | Alpine 3.19 |
 | **Size** | ~8 MB |
-| **Dockerfile** | [`deploy/Dockerfile.tri`](deploy/Dockerfile.tri) |
+| **Dockerfile** | [`deploy/Dockerfile`](deploy/Dockerfile) |
 
 ### Run
 
@@ -819,7 +819,7 @@ zig build
 4. **Verify**: Agent generates code, runs tests, and checks performance
 5. **Commit**: Upon success, agent updates `.ralph/SUCCESS_HISTORY.md`
 
-For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)** and **[docs/docs/development/ralph.md](docs/docs/development/ralph.md)**.
+For detailed protocols, see **[docs/docs/development/ralph.md](docs/docs/development/ralph.md)**.
 
 ---
 

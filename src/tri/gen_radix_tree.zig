@@ -44,7 +44,6 @@ pub const RadixTree = struct {
     pub fn insert(tree: *RadixTree, key: []const u8) !void {
         _ = tree;
         _ = key;
-        // Simplified: just verify structure
     }
 
     pub fn contains(tree: *const RadixTree, key: []const u8) bool {

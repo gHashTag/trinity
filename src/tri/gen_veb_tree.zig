@@ -14,7 +14,8 @@ pub const VEBTree = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, universe_size: u64) !VEBTree {
-        const cluster_size = @as(usize, @intCast(@sqrt(@as(f64, @floatFromInt(universe_size)))));
+        const upper = @sqrt(@as(f64, @floatFromInt(universe_size)));
+        const cluster_size = @as(usize, @intCast(@ceil(upper)));
         const cluster = try allocator.alloc(?*VEBTree, cluster_size);
         @memset(cluster, null);
 
@@ -29,12 +30,14 @@ pub const VEBTree = struct {
     }
 
     fn high(tree: *const VEBTree, x: u64) u64 {
-        const size = @as(u64, @intCast(@sqrt(@as(f64, @floatFromInt(tree.universe_size)))));
+        const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
+        const size = @as(u64, @intCast(@ceil(upper)));
         return x / size;
     }
 
     fn low(tree: *const VEBTree, x: u64) u64 {
-        const size = @as(u64, @intCast(@sqrt(@as(f64, @floatFromInt(tree.universe_size)))));
+        const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
+        const size = @as(u64, @intCast(@ceil(upper)));
         return x % size;
     }
 
@@ -56,15 +59,15 @@ pub const VEBTree = struct {
             const j = tree.low(x);
 
             if (tree.cluster[i] == null) {
+                const upper = @sqrt(@as(f64, @floatFromInt(tree.universe_size)));
+                const size = @as(u64, @intCast(@ceil(upper)));
                 const sub = try tree.allocator.create(VEBTree);
-                const size = @as(u64, @intCast(@sqrt(@as(f64, @floatFromInt(tree.universe_size)))));
                 sub.* = try VEBTree.init(tree.allocator, size);
-
                 tree.cluster[i] = sub;
 
                 if (tree.summary == null) {
+                    const s_size = @as(u64, @intCast(@ceil(upper)));
                     const sum = try tree.allocator.create(VEBTree);
-                    const s_size = @as(u64, @intCast(@sqrt(@as(f64, @floatFromInt(tree.universe_size)))));
                     sum.* = try VEBTree.init(tree.allocator, s_size);
                     tree.summary = sum;
                 }
