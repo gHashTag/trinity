@@ -108,7 +108,7 @@ test "bfs traverse" {
     try graph.addEdge(2, 3);
     try graph.addEdge(3, 3);
 
-    const result = try traverse(&graph, 2, std.testing.allocator);
+    var result = try traverse(&graph, 2, std.testing.allocator);
     defer result.deinit();
 
     try std.testing.expectEqual(@as(usize, 0), result.distance[2]);

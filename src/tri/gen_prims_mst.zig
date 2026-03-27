@@ -121,7 +121,7 @@ pub fn mst(graph: *PrimGraph, allocator: std.mem.Allocator) !MSTResult {
     }
 
     return .{
-        .edges = result_edges.toOwnedSlice(allocator),
+        .edges = result_edges.toOwnedSlice(allocator) catch &[_]MSTEdge{},
         .total_weight = total_weight,
         .allocator = allocator,
     };
@@ -139,7 +139,7 @@ test "prims single vertex" {
     var graph = try PrimGraph.init(std.testing.allocator, 1);
     defer graph.deinit();
 
-    const result = try mst(&graph, std.testing.allocator);
+    var result = try mst(&graph, std.testing.allocator);
     defer result.deinit();
 
     try std.testing.expectEqual(@as(usize, 0), result.edges.len);

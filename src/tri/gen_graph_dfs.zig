@@ -24,7 +24,7 @@ pub fn traverse(graph: *const BFSGraph, start: usize, allocator: std.mem.Allocat
     const preorder = try allocator.alloc(usize, n);
     const postorder = try allocator.alloc(usize, n);
 
-    var visited = try allocator.alloc(bool, n);
+    const visited = try allocator.alloc(bool, n);
     defer allocator.free(visited);
     @memset(visited, false);
 
@@ -67,7 +67,7 @@ test "dfs traverse" {
     try graph.addEdge(1, 2);
     try graph.addEdge(2, 3);
 
-    const result = try traverse(&graph, 0, std.testing.allocator);
+    var result = try traverse(&graph, 0, std.testing.allocator);
     defer result.deinit();
 
     try std.testing.expect(result.preorder.len > 0);

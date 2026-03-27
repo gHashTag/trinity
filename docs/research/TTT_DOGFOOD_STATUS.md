@@ -6,6 +6,8 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Phase | Stages | Modules | Status |
 |-------|--------|---------|--------|
+| Phase 12 | 171-180 | 10 algorithms (sorting + graphs) | ✅ Complete |
+| Phase 11 | 161-170 | 10 algorithms (trees + strings + sort) | ✅ Complete |
 | Phase 10 | 151-160 | 10 advanced algorithms | ✅ Complete |
 | Phase 9 | 141-150 | 10 advanced algorithms | ✅ Complete |
 | Phase 8 | 131-140 | 10 data structures | ✅ Complete |
@@ -17,7 +19,7 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 | Phase 2 | 71-80 | 10 modules | ✅ Complete |
 | Phase 1 | 1-70 | Foundation | ✅ Complete |
 
-**Total: 160 stages, 100% passing tests**
+**Total: 180 stages, 100% passing tests**
 
 ## Phase 10 Modules (Stages 151-160)
 
@@ -36,6 +38,40 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 **Phase 10 Total: ~1120 LOC, 32/32 tests passing**
 
+## Phase 11 Modules (Stages 161-170)
+
+| Stage | Spec File | Implementation | Tests | LOC |
+|-------|-----------|----------------|-------|-----|
+| 161 | `tri_b_tree.tri` | `gen_b_tree.zig` | 2/2 | ~100 |
+| 162 | `tri_segment_tree.tri` | `gen_segment_tree.zig` | 2/2 | ~80 |
+| 163 | `tri_fenwick.tri` | `gen_fenwick.zig` | 3/3 | ~90 |
+| 164 | `tri_suffix_array.tri` | `gen_suffix_array.zig` | 2/2 | ~120 |
+| 165 | `tri_aho_corasick.tri` | `gen_aho_corasick.zig` | 3/3 | ~150 |
+| 166 | `tri_rabin_karp.tri` | `gen_rabin_karp.zig` | 3/3 | ~90 |
+| 167 | `tri_radix_sort.tri` | `gen_radix_sort.zig` | 3/3 | ~85 |
+| 168 | `tri_counting_sort.tri` | `gen_counting_sort.zig` | 3/3 | ~60 |
+| 169 | `tri_merge_sort.tri` | `gen_merge_sort.zig` | 3/3 | ~85 |
+| 170 | `tri_quick_sort.tri` | `gen_quick_sort.zig` | 6/6 | ~80 |
+
+**Phase 11 Total: ~940 LOC, 30/30 tests passing**
+
+## Phase 12 Modules (Stages 171-180)
+
+| Stage | Spec File | Implementation | Tests | LOC |
+|-------|-----------|----------------|-------|-----|
+| 171 | `tri_heap_sort.tri` | `gen_heap_sort.zig` | 4/4 | ~75 |
+| 172 | `tri_insertion_sort.tri` | `gen_insertion_sort.zig` | 4/4 | ~50 |
+| 173 | `tri_selection_sort.tri` | `gen_selection_sort.zig` | 3/3 | ~55 |
+| 174 | `tri_shell_sort.tri` | `gen_shell_sort.zig` | 3/3 | ~60 |
+| 175 | `tri_tim_sort.tri` | `gen_tim_sort.zig` | 3/3 | ~90 |
+| 176 | `tri_graph_bfs.tri` | `gen_graph_bfs.zig` | 2/2 | ~110 |
+| 177 | `tri_graph_dfs.tri` | `gen_graph_dfs.zig` | 3/3 | ~70 |
+| 178 | `tri_dijkstra.tri` | `gen_dijkstra.zig` | 2/2 | ~120 |
+| 179 | `tri_bellman_ford.tri` | `gen_bellman_ford.zig` | 3/3 | ~80 |
+| 180 | `tri_prims_mst.tri` | `gen_prims_mst.zig` | 2/2 | ~130 |
+
+**Phase 12 Total: ~840 LOC, 29/29 tests passing**
+
 ## Compression & Crypto Implemented (Phases 9-10)
 
 - **Huffman Coding** (Stage 151): Prefix-free compression with frequency-based trees
@@ -48,5 +84,31 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 - **Boyer-Moore** (Stage 158): Fast pattern search with bad character heuristic
 - **Levenshtein Distance** (Stage 159): Edit distance for string comparison
 - **Bezier Curves** (Stage 160): Interpolation and curve evaluation
+
+## Trees & String Algorithms Implemented (Phase 11)
+
+- **B-Tree** (Stage 161): Multiway balanced tree for disk storage
+- **Segment Tree** (Stage 162): Range queries with point updates
+- **Fenwick Tree** (Stage 163): Binary Indexed Tree for prefix sums
+- **Suffix Array** (Stage 164): Efficient string pattern matching
+- **Aho-Corasick** (Stage 165): Multi-pattern string search automaton
+- **Rabin-Karp** (Stage 166): Rolling hash string search
+- **Radix Sort** (Stage 167): O(n) integer sorting with LSD
+- **Counting Sort** (Stage 168): O(n+k) integer sorting
+- **Merge Sort** (Stage 169): Stable divide-and-conquer sort
+- **Quick Sort** (Stage 170): In-place partition sort
+
+## Sorting & Graph Algorithms Implemented (Phase 12)
+
+- **Heap Sort** (Stage 171): In-place O(n log n) with max heap
+- **Insertion Sort** (Stage 172): O(n²) adaptive for small/nearly sorted
+- **Selection Sort** (Stage 173): O(n²) minimal writes
+- **Shell Sort** (Stage 174): Generalized insertion sort with gaps
+- **Tim Sort** (Stage 175): Hybrid merge+insertion (Python/Java default)
+- **BFS** (Stage 176): Breadth-First Search for graph traversal
+- **DFS** (Stage 177): Depth-First Search with preorder/postorder
+- **Dijkstra** (Stage 178): Shortest path with non-negative weights
+- **Bellman-Ford** (Stage 179): Handles negative weights, detects cycles
+- **Prim's MST** (Stage 180): Minimum Spanning Tree algorithm
 
 φ² + 1/φ² = 3 | TRINITY

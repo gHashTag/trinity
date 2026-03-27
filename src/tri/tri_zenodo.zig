@@ -566,7 +566,15 @@ fn generateCFF(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 
 fn validateORCID(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const orcid_id = if (args.len > 0) args[0] else "0000-0002-1825-0097";
+    const input = if (args.len > 0) args[0] else "0000-0002-1825-0097";
+
+    // Extract ID from URL if full URL is provided
+    const orcid_id = if (std.mem.startsWith(u8, input, "https://orcid.org/"))
+        input["https://orcid.org/".len..]
+    else if (std.mem.startsWith(u8, input, "http://orcid.org/"))
+        input["http://orcid.org/".len..]
+    else
+        input;
 
     print("\n{s}{s}V19 ORCID iD Validation{s}\n", .{ CYAN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
@@ -575,7 +583,7 @@ fn validateORCID(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const formatted = try validation.format(allocator);
     defer allocator.free(formatted);
 
-    print("ORCID iD: {s}\n", .{orcid_id});
+    print("ORCID iD: {s}\n", .{input});
     print("Result: {s}\n\n", .{formatted});
 
     if (validation.valid) {

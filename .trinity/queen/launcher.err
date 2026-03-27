@@ -49146,3 +49146,23 @@ thread 78348051 panic: access of union field 'Exited' while field 'Signal' is ac
 👑 Queen Trinity starting daemon mode (PID 7609)
 👑 Queen Trinity starting daemon mode (PID 69869)
 👑 Queen Trinity starting daemon mode (PID 91396)
+thread 88657485 panic: access of union field 'Exited' while field 'Signal' is active
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:412:23: 0x10220c493 in checkBuild (tri)
+    // Check if process exited cleanly (exit code 0)
+                      ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:357:36: 0x10220e3f3 in runQueenStart (tri)
+        const build_ok = checkBuild(allocator) catch false;
+                                   ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:29: 0x10220f4a3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+                            ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:42: 0x10259218f in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+                                         ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/start.zig:627:37: 0x1025a778f in main (tri)
+            const result = root.main() catch |err| {
+                                    ^
+???:?:?: 0x1810bf153 in ??? (???)
+???:?:?: 0x965c7fffffffffff in ??? (???)
+👑 Queen Trinity starting daemon mode (PID 38095)
+👑 Queen Trinity starting daemon mode (PID 67439)
