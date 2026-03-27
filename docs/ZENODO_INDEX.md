@@ -30,11 +30,32 @@
 | B007 | `research/.zenodo.B007_v9.0.json` | [10.5281/zenodo.19227877](https://doi.org/10.5281/zenodo.19227877) | ✅ Valid |
 | PARENT | `research/.zenodo.PARENT_v9.0.json` | [10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879) | ✅ Valid |
 
+### Scientific Figures (12 PNG)
+
+| Figure | File | Bundle | Size | Status |
+|--------|------|--------|------|--------|
+| Training Curve | `B001-Fig1_training_curve.png` | B001 | 170 KB | ✅ |
+| Format Comparison | `B001-Fig2_format_comparison.png` | B001 | 75 KB | ✅ |
+| FPGA Resources | `B002-Fig1_fpga_resources.png` | B002 | 99 KB | ✅ |
+| Power Analysis | `B002-Fig2_power_analysis.png` | B002 | 82 KB | ✅ |
+| Register Layout | `B003-Fig1_register_layout.png` | B003 | 104 KB | ✅ |
+| Lotus Cycle | `B004-Fig1_lotus_cycle.png` | B004 | 133 KB | ✅ |
+| Type Hierarchy | `B005-Fig1_type_hierarchy.png` | B005 | 120 KB | ✅ |
+| GF16 Layout | `B006-Fig1_gf16_layout.png` | B006 | 79 KB | ✅ |
+| φ Heatmap | `B006-Fig2_phi_heatmap.png` | B006 | 100 KB | ✅ |
+| VSA Structure | `B007-Fig1_vsa_structure.png` | B007 | 84 KB | ✅ |
+| SIMD Speedup | `B007-Fig2_simd_speedup.png` | B007 | 91 KB | ✅ |
+
+**Figure Specifications:** 300 DPI, PNG format, Trinity color palette
+
 ### Validation
 
 ```bash
 # Validate all bundles
 python3 tools/validate_zenodo_v19.py --all
+
+# Generate figures
+cd docs/research/figures && python3 generate_all.py
 
 # Result: ✅ All 8 bundles VALID (100/100 score)
 ```

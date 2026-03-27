@@ -1,8 +1,28 @@
-# Zenodo v9.0 Upload Guide — Step-by-Step
+# Trinity Zenodo v9.0 Upload Guide
+
+**Complete Step-by-Step Instructions for Publishing to Zenodo**
 
 > φ² + 1/φ² = 3 | TRINITY
-> **Status:** Ready for Publication
-> **Date:** 2026-03-27
+> **Version:** 9.0 | **Date:** 2026-03-27
+> **Status:** ✅ Ready for Publication
+
+---
+
+## Quick Start (5 Minutes)
+
+```bash
+# 1. Set API token
+export ZENODO_TOKEN="your_token_here"
+
+# 2. Validate metadata
+python3 tools/validate_zenodo_v19.py --all
+
+# 3. Dry-run test
+python3 tools/zenodo_upload_v9.py --dry-run --all
+
+# 4. Upload all bundles
+python3 tools/zenodo_upload_v9.py --all
+```
 
 ---
 
@@ -11,19 +31,27 @@
 ### 1. Zenodo Account
 - Create account: https://zenodo.org/signup
 - Verify email address
+- Link ORCID profile (0009-0008-4294-6159)
 
 ### 2. API Token
 - Go to: https://zenodo.org/account/settings/applications/tokens/new
 - Click "New token"
-- Scopes: `deposit:write`, `deposit:actions:update`
+- Required scopes:
+  - `deposit:write` — Create/modify depositions
+  - `deposit:actions` — Publish depositions
+  - `files:write` — Upload files
 - Copy token to clipboard
 
 ### 3. Set Environment Variable
 ```bash
+# Option A: Environment variable (recommended for CI)
 export ZENODO_TOKEN="your_token_here"
-# Or add to .env file:
+
+# Option B: .env file (add to .gitignore!)
 echo "ZENODO_TOKEN=your_token_here" >> .env
 ```
+
+**⚠️ SECURITY:** Never commit `.env` with real tokens!
 
 ### 4. Verify Token
 ```bash
@@ -34,19 +62,86 @@ Expected output: JSON array of your depositions (may be empty `[]`)
 
 ---
 
+## Required Files Checklist
+
+### Metadata Files (8 JSON)
+| Bundle | File | Status |
+|--------|------|--------|
+| B001 | `docs/research/.zenodo.B001_v9.0.json` | ✅ |
+| B002 | `docs/research/.zenodo.B002_v9.0.json` | ✅ |
+| B003 | `docs/research/.zenodo.B003_v9.0.json` | ✅ |
+| B004 | `docs/research/.zenodo.B004_v9.0.json` | ✅ |
+| B005 | `docs/research/.zenodo.B005_v9.0.json` | ✅ |
+| B006 | `docs/research/.zenodo.B006_v9.0.json` | ✅ |
+| B007 | `docs/research/.zenodo.B007_v9.0.json` | ✅ |
+| PARENT | `docs/research/.zenodo.PARENT_v9.0.json` | ✅ |
+
+### Figure Files (12 PNG)
+| Figure | File | Size | Status |
+|--------|------|------|--------|
+| B001-Fig1 | `B001-Fig1_training_curve.png` | ~170 KB | ✅ |
+| B001-Fig2 | `B001-Fig2_format_comparison.png` | ~75 KB | ✅ |
+| B002-Fig1 | `B002-Fig1_fpga_resources.png` | ~99 KB | ✅ |
+| B002-Fig2 | `B002-Fig2_power_analysis.png` | ~82 KB | ✅ |
+| B003-Fig1 | `B003-Fig1_register_layout.png` | ~104 KB | ✅ |
+| B004-Fig1 | `B004-Fig1_lotus_cycle.png` | ~133 KB | ✅ |
+| B005-Fig1 | `B005-Fig1_type_hierarchy.png` | ~120 KB | ✅ |
+| B006-Fig1 | `B006-Fig1_gf16_layout.png` | ~79 KB | ✅ |
+| B006-Fig2 | `B006-Fig2_phi_heatmap.png` | ~100 KB | ✅ |
+| B007-Fig1 | `B007-Fig1_vsa_structure.png` | ~84 KB | ✅ |
+| B007-Fig2 | `B007-Fig2_simd_speedup.png` | ~91 KB | ✅ |
+
+### Generate Figures (if needed)
+```bash
+cd docs/research/figures
+python3 generate_all.py
+```
+
+---
+
+---
+
 ## Step-by-Step Upload
 
-### Option A: Upload All Bundles (Recommended)
+### Step 1: Validate Metadata (2 minutes)
 
 ```bash
-# Dry-run (validation only)
-python3 tools/zenodo_upload_v9.py --dry-run --all
+# Validate all 8 bundles
+python3 tools/validate_zenodo_v19.py --all
 
-# Actual upload
+# Expected output:
+# ✅ B001: VALID (100/100)
+# ✅ B002: VALID (100/100)
+# ✅ B003: VALID (100/100)
+# ✅ B004: VALID (100/100)
+# ✅ B005: VALID (100/100)
+# ✅ B006: VALID (100/100)
+# ✅ B007: VALID (100/100)
+# ✅ PARENT: VALID (100/100)
+#
+# ✅ All bundles VALID!
+# Average Score: 100/100
+```
+
+### Step 2: Dry-Run Test (1 minute)
+
+```bash
+# Test upload without actually publishing
+python3 tools/zenodo_upload_v9.py --dry-run --all
+```
+
+### Step 3: Upload Bundles
+
+#### Option A: Upload All Bundles (Recommended)
+
+```bash
+# Upload all 8 bundles sequentially
 python3 tools/zenodo_upload_v9.py --all
 ```
 
-### Option B: Upload Individual Bundle
+**Expected Duration:** ~10 minutes (1 minute per bundle)
+
+#### Option B: Upload Individual Bundle
 
 ```bash
 # B001 (HSLM)
@@ -55,14 +150,28 @@ python3 tools/zenodo_upload_v9.py --bundle B001
 # B002 (FPGA)
 python3 tools/zenodo_upload_v9.py --bundle B002
 
-# ... etc
+# Or use aliases (A-G)
+python3 tools/zenodo_upload_v9.py --alias A  # B001
+python3 tools/zenodo_upload_v9.py --alias B  # B002
 ```
 
-### Option C: Upload Parent Collection Only
+#### Option C: Upload Parent Collection Only
 
 ```bash
 python3 tools/zenodo_upload_v9.py --bundle PARENT
 ```
+
+### Upload Process Details
+
+For each bundle, the script performs 4 steps:
+
+| Step | Action | Duration |
+|------|--------|----------|
+| 1/4 | Create deposition (draft) | ~5 sec |
+| 2/4 | Update metadata with v9.0 JSON | ~10 sec |
+| 3/4 | Upload figure files (12 PNG) | ~30 sec |
+| 4/4 | Publish and return DOI | ~10 sec |
+| **Total** | **Per bundle** | **~1 min** |
 
 ---
 
