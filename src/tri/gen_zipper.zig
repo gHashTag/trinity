@@ -16,8 +16,8 @@ pub fn Zipper(comptime T: type) type {
         /// Create zipper from slice
         pub fn fromSlice(items: []const T, allocator: std.mem.Allocator) !Self {
             if (items.len == 0) return error.EmptySlice;
-            const left_list = try std.ArrayList(T).initCapacity(allocator, items.len);
-            const right_list = try std.ArrayList(T).initCapacity(allocator, items.len - 1);
+            var left_list = try std.ArrayList(T).initCapacity(allocator, items.len);
+            var right_list = try std.ArrayList(T).initCapacity(allocator, items.len - 1);
             try right_list.appendSlice(allocator, items[1..]);
             return .{
                 .focus = items[0],
