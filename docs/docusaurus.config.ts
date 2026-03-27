@@ -19,7 +19,7 @@ const config: Config = {
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',
-  trailingSlash: false,
+  trailingSlash: true,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',

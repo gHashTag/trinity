@@ -196,6 +196,7 @@ quantum-runtime.html
 assets/
 icons/
 img/
+!docs/static/img/
 favicon.ico
 manifest.json
 og-image.svg
