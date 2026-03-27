@@ -85,40 +85,45 @@ pub const KDTree = struct {
     }
 
     pub fn range(tree: *const KDTree, center: []const f64, radius: f64, allocator: std.mem.Allocator) ![][]f64 {
-        var result = std.ArrayList([]f64).init(allocator);
-        defer result.deinit();
+        var result = try std.ArrayList([]f64).initCapacity(allocator, 16);
+        defer result.deinit(allocator);
 
         if (tree.root) |root| {
-            try rangeRecursive(root, center, radius, &result, 0);
+            try rangeRecursive(root, center, radius, &result, 0, allocator);
         }
 
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(allocator);
     }
 
-    fn rangeRecursive(node: *KDNode, center: []const f64, radius: f64, result: *std.ArrayList([]f64), depth: usize) !void {
+    fn rangeRecursive(node: ?*KDNode, center: []const f64, radius: f64, result: *std.ArrayList([]f64), depth: usize, allocator: std.mem.Allocator) !void {
         if (node == null) return;
 
-        const dist = distance(node.point, center);
+        const n = node.?;
+        const dist = distance(n.point, center);
         if (dist <= radius) {
-            try result.append(node.point);
+            try result.append(allocator, n.point);
         }
 
-        const axis = depth % node.point.len;
-        const diff = center[axis] - node.point[axis];
+        const axis = depth % n.point.len;
+        const diff = center[axis] - n.point[axis];
 
         if (diff > 0) {
-            if (node.left) |left| {
-                try rangeRecursive(left, center, radius, result, depth + 1);
+            if (n.left) |left| {
+                try rangeRecursive(left, center, radius, result, depth + 1, allocator);
             }
-            if (diff < radius and node.right) |right| {
-                try rangeRecursive(right, center, radius, result, depth + 1);
+            if (diff < radius) {
+                if (n.right) |right| {
+                    try rangeRecursive(right, center, radius, result, depth + 1, allocator);
+                }
             }
         } else {
-            if (node.right) |right| {
-                try rangeRecursive(right, center, radius, result, depth + 1);
+            if (n.right) |right| {
+                try rangeRecursive(right, center, radius, result, depth + 1, allocator);
             }
-            if (diff < radius and node.left) |left| {
-                try rangeRecursive(left, center, radius, result, depth + 1);
+            if (diff < radius) {
+                if (n.left) |left| {
+                    try rangeRecursive(left, center, radius, result, depth + 1, allocator);
+                }
             }
         }
     }
@@ -134,46 +139,56 @@ pub const KDTree = struct {
 
     pub fn deinit(tree: *KDTree) void {
         if (tree.root) |root| {
-            freeRecursive(root);
-            tree.allocator.destroy(root);
+            freeRecursive(root, tree.allocator);
         }
     }
 
-    fn freeRecursive(node: ?*KDNode) void {
+    fn freeRecursive(node: ?*KDNode, allocator: std.mem.Allocator) void {
         if (node) |n| {
-            freeRecursive(n.left);
-            freeRecursive(n.right);
+            freeRecursive(n.left, allocator);
+            freeRecursive(n.right, allocator);
             n.deinit();
+            allocator.destroy(n);
         }
     }
 };
 
 test "kd tree build" {
-    const pt1: []f64 = &[_]f64{ 2, 3 };
-    const pt2: []f64 = &[_]f64{ 5, 4 };
-    const pt3: []f64 = &[_]f64{ 9, 6 };
-    const pt4: []f64 = &[_]f64{ 4, 7 };
-    const pt5: []f64 = &[_]f64{ 8, 1 };
+    const p1: []const f64 = &[_]f64{ 2, 3 };
+    const p2: []const f64 = &[_]f64{ 5, 4 };
+    const p3: []const f64 = &[_]f64{ 9, 6 };
+    const p4: []const f64 = &[_]f64{ 4, 7 };
+    const p5: []const f64 = &[_]f64{ 8, 1 };
 
-    const point_arrays = &[_][]const f64{ pt1, pt2, pt3, pt4, pt5 };
+    var slice = try std.testing.allocator.alloc([]const f64, 5);
+    defer std.testing.allocator.free(slice);
+    slice[0] = p1;
+    slice[1] = p2;
+    slice[2] = p3;
+    slice[3] = p4;
+    slice[4] = p5;
 
-    var tree = try KDTree.build(std.testing.allocator, point_arrays, 2);
+    var tree = try KDTree.build(std.testing.allocator, slice, 2);
     defer tree.deinit();
 
     try std.testing.expect(tree.root != null);
 }
 
 test "kd tree nearest" {
-    const pt1: []f64 = &[_]f64{ 2, 3 };
-    const pt2: []f64 = &[_]f64{ 5, 4 };
-    const pt3: []f64 = &[_]f64{ 9, 6 };
+    const p1: []const f64 = &[_]f64{ 2, 3 };
+    const p2: []const f64 = &[_]f64{ 5, 4 };
+    const p3: []const f64 = &[_]f64{ 9, 6 };
 
-    const point_arrays = &[_][]const f64{ pt1, pt2, pt3 };
+    var slice = try std.testing.allocator.alloc([]const f64, 3);
+    defer std.testing.allocator.free(slice);
+    slice[0] = p1;
+    slice[1] = p2;
+    slice[2] = p3;
 
-    var tree = try KDTree.build(std.testing.allocator, point_arrays, 2);
+    var tree = try KDTree.build(std.testing.allocator, slice, 2);
     defer tree.deinit();
 
-    const target_arr: []const f64 = &[_]f64{ 3, 3 };
+    const target_arr = &[_]f64{ 3, 3 };
     const nearest = tree.nearest(target_arr);
     defer tree.allocator.free(nearest);
 
@@ -181,16 +196,20 @@ test "kd tree nearest" {
 }
 
 test "kd tree range" {
-    const pt1: []f64 = &[_]f64{ 1, 1 };
-    const pt2: []f64 = &[_]f64{ 2, 2 };
-    const pt3: []f64 = &[_]f64{ 10, 10 };
+    const p1: []const f64 = &[_]f64{ 1, 1 };
+    const p2: []const f64 = &[_]f64{ 2, 2 };
+    const p3: []const f64 = &[_]f64{ 10, 10 };
 
-    const point_arrays = &[_][]const f64{ pt1, pt2, pt3 };
+    var slice = try std.testing.allocator.alloc([]const f64, 3);
+    defer std.testing.allocator.free(slice);
+    slice[0] = p1;
+    slice[1] = p2;
+    slice[2] = p3;
 
-    var tree = try KDTree.build(std.testing.allocator, point_arrays, 2);
+    var tree = try KDTree.build(std.testing.allocator, slice, 2);
     defer tree.deinit();
 
-    const center_arr: []const f64 = &[_]f64{ 5, 5 };
+    const center_arr = &[_]f64{ 5, 5 };
     const result = try tree.range(center_arr, 5, std.testing.allocator);
     defer std.testing.allocator.free(result);
 

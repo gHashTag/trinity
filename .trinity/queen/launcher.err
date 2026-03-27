@@ -49167,3 +49167,52 @@ thread 88657485 panic: access of union field 'Exited' while field 'Signal' is ac
 👑 Queen Trinity starting daemon mode (PID 38095)
 👑 Queen Trinity starting daemon mode (PID 67439)
 👑 Queen Trinity starting daemon mode (PID 79765)
+👑 Queen Trinity starting daemon mode (PID 54340)
+👑 Queen Trinity starting daemon mode (PID 46242)
+error: NotOpenForWriting
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1300:22: 0x100f6d76f in write (tri)
+            .BADF => return error.NotOpenForWriting, // can be a race condition.
+                     ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:971:5: 0x100f46c9f in write (tri)
+    return posix.write(self.handle, bytes);
+    ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:978:18: 0x100f29783 in writeAll (tri)
+        index += try self.write(bytes[index..]);
+                 ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:447:5: 0x100fdd69f in logToHive__anon_20561 (tri)
+    try f.writeAll(formatted);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:372:13: 0x100fde737 in runQueenStart (tri)
+            try logToHive(allocator, cycle, "📝 Dirty files detected", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x100fdf4b7 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:9: 0x1013747fb in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 51178)
+error: NotOpenForWriting
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1300:22: 0x1027e576f in write (tri)
+            .BADF => return error.NotOpenForWriting, // can be a race condition.
+                     ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:971:5: 0x1027bec9f in write (tri)
+    return posix.write(self.handle, bytes);
+    ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:978:18: 0x1027a1783 in writeAll (tri)
+        index += try self.write(bytes[index..]);
+                 ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:447:5: 0x10285569f in logToHive__anon_20561 (tri)
+    try f.writeAll(formatted);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:372:13: 0x102856737 in runQueenStart (tri)
+            try logToHive(allocator, cycle, "📝 Dirty files detected", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x1028574b7 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:9: 0x102bec7fb in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 53510)
+error: NotOpenForWriting

@@ -432,7 +432,7 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     std.fs.cwd().makePath(".trinity/queen") catch {};
 
     // Try to append to existing file, or create new one
-    var f = std.fs.cwd().openFile(log_file, .{ .mode = .write_only, .truncate = false }) catch {
+    var f = std.fs.cwd().openFile(log_file, .{}) catch {
         // File doesn't exist, create it with header
         var new_f = try std.fs.cwd().createFile(log_file, .{});
         defer new_f.close();

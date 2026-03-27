@@ -119,7 +119,7 @@ pub const QuadTree = struct {
         if (qt.root) |root| {
             try qt.queryRecursive(root, range, &result, allocator);
         }
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(allocator);
     }
 
     fn queryRecursive(qt: *QuadTree, node: *QuadNode, range: Rect, result: *std.ArrayList([2]f64), allocator: std.mem.Allocator) !void {
