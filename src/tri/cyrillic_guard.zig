@@ -89,7 +89,7 @@ fn checkPath(allocator: std.mem.Allocator, path: []const u8) !struct {
     var total_files: usize = 0;
 
     // Check if path is a file or directory
-    const is_dir = std.fs.cwd().statFile(path)) catch |err| {
+    const is_dir = std.fs.cwd().statFile(path) catch |err| {
         if (err == error.IsDir) {
             // It's a directory - walk it
             return walkDirectory(allocator, path);

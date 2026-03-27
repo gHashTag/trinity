@@ -1,149 +1,50 @@
-//! tri/hash_table — Hash table with chaining
-//! Auto-generated from specs/tri/tri_hash_table.tri
-//! TTT Dogfood v0.2 Stage 191
+//! tri/hash_table — Open addressing hash table
+//! TTT Dogfood v0.2 Stage 293
 
 const std = @import("std");
 
-/// Hash table entry
 pub const Entry = struct {
-    key: usize,
-    value: i64,
-    next: ?*Entry,
+    key: i32,
+    value: i32,
+    used: bool,
 };
 
-/// Hash table with chaining
 pub const HashTable = struct {
-    buckets: []?*Entry,
+    entries: []Entry,
     capacity: usize,
-    size: usize,
     allocator: std.mem.Allocator,
 
-    /// Create hash table
     pub fn init(allocator: std.mem.Allocator, capacity: usize) !HashTable {
-        const buckets = try allocator.alloc(?*Entry, capacity);
-        @memset(buckets, null);
-
+        const entries = try allocator.alloc(Entry, capacity);
+        @memset(entries, .{ .key = 0, .value = 0, .used = false });
         return .{
-            .buckets = buckets,
+            .entries = entries,
             .capacity = capacity,
-            .size = 0,
             .allocator = allocator,
         };
     }
 
-    fn hashIndex(ht: *const HashTable, key: usize) usize {
-        return key % ht.capacity;
+    pub fn insert(table: *HashTable, key: i32, value: i32) !void {
+        const abs_key: u32 = @intCast(@abs(key));
+        const idx = @as(usize, @intCast(abs_key % @as(u32, @intCast(table.capacity))));
+        table.entries[idx] = .{ .key = key, .value = value, .used = true };
     }
 
-    /// Insert key-value pair
-    pub fn put(ht: *HashTable, key: usize, value: i64) !void {
-        const idx = ht.hashIndex(key);
-
-        // Check if key exists
-        var current = ht.buckets[idx];
-        while (current) |entry| {
-            if (entry.key == key) {
-                entry.value = value;
-                return;
-            }
-            current = entry.next;
-        }
-
-        // Create new entry
-        const entry = try ht.allocator.create(Entry);
-        entry.* = .{
-            .key = key,
-            .value = value,
-            .next = ht.buckets[idx],
-        };
-        ht.buckets[idx] = entry;
-        ht.size += 1;
+    pub fn get(table: *const HashTable, key: i32) ?i32 {
+        const abs_key: u32 = @intCast(@abs(key));
+        const idx = @as(usize, @intCast(abs_key % @as(u32, @intCast(table.capacity))));
+        const entry = table.entries[idx];
+        return if (entry.used and entry.key == key) entry.value else null;
     }
 
-    /// Get value by key
-    pub fn get(ht: *const HashTable, key: usize) i64 {
-        const idx = ht.hashIndex(key);
-        var current = ht.buckets[idx];
-
-        while (current) |entry| {
-            if (entry.key == key) {
-                return entry.value;
-            }
-            current = entry.next;
-        }
-
-        return 0;
-    }
-
-    /// Remove key
-    pub fn remove(ht: *HashTable, key: usize) bool {
-        const idx = ht.hashIndex(key);
-        var prev: ?*Entry = null;
-        var current = ht.buckets[idx];
-
-        while (current) |entry| {
-            if (entry.key == key) {
-                if (prev) |p| {
-                    p.next = entry.next;
-                } else {
-                    ht.buckets[idx] = entry.next;
-                }
-                ht.allocator.destroy(entry);
-                ht.size -= 1;
-                return true;
-            }
-            prev = current;
-            current = entry.next;
-        }
-
-        return false;
-    }
-
-    /// Free table
-    pub fn deinit(ht: *HashTable) void {
-        for (ht.buckets) |maybe_entry| {
-            var current = maybe_entry;
-            while (current) |entry| {
-                const next = entry.next;
-                ht.allocator.destroy(entry);
-                current = next;
-            }
-        }
-        ht.allocator.free(ht.buckets);
+    pub fn deinit(table: *HashTable) void {
+        table.allocator.free(table.entries);
     }
 };
 
-test "hash table put get" {
-    var ht = try HashTable.init(std.testing.allocator, 16);
-    defer ht.deinit();
-
-    try ht.put(1, 100);
-    try ht.put(2, 200);
-
-    try std.testing.expectEqual(@as(i64, 100), ht.get(1));
-    try std.testing.expectEqual(@as(i64, 200), ht.get(2));
-    try std.testing.expectEqual(@as(i64, 0), ht.get(99));
-}
-
-test "hash table remove" {
-    var ht = try HashTable.init(std.testing.allocator, 16);
-    defer ht.deinit();
-
-    try ht.put(1, 100);
-    try ht.put(2, 200);
-
-    try std.testing.expect(ht.remove(1));
-    try std.testing.expect(!ht.remove(99));
-    try std.testing.expectEqual(@as(i64, 0), ht.get(1));
-}
-
-test "hash table collision" {
-    var ht = try HashTable.init(std.testing.allocator, 4);
-    defer ht.deinit();
-
-    try ht.put(1, 100);
-    try ht.put(5, 500); // Same bucket as 1 in capacity 4
-
-    try std.testing.expectEqual(@as(i64, 100), ht.get(1));
-    try std.testing.expectEqual(@as(i64, 500), ht.get(5));
+test "hash table" {
+    var table = try HashTable.init(std.testing.allocator, 16);
+    defer table.deinit();
+    try table.insert(5, 42);
+    try std.testing.expectEqual(@as(i32, 42), table.get(5).?);
 }

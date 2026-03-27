@@ -2768,14 +2768,14 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
     print("  4. Verify: tri cloud mail-check {s}\n\n", .{domain});
 }
 
-/// tri cloud mail-test <email> -- Test SMTP connection and send test email
+/// tri cloud mail-test <email> -- Show SMTP test command
 fn mailTest(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
     if (args.len < 1) {
         print("{s}Usage: tri cloud mail-test <email@domain.com>{s}\n", .{ YELLOW, RESET });
-        print("\n  Tests SMTP connection and sends a test email.\n", .{});
-        print("  Will prompt for password interactively.\n", .{});
+        print("\n  Shows the swaks command to test SMTP and send email.\n", .{});
         print("\n  Example: tri cloud mail-test info@t27.ai\n", .{});
-        print("\n  Requires: swaks (install with: brew install swaks)\n", .{});
+        print("\n  Install swaks: brew install swaks\n", .{});
         return;
     }
 
@@ -2821,12 +2821,13 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
         const check_result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = &check_argv,
-        }) catch |_| {
+        }) catch {};
+        if (check_result.stdout.len == 0) {
             print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
             print("Install: brew install swaks\n", .{});
             print("Or: apt install swaks\n\n", .{});
             return;
-        };
+        }
         defer {
             allocator.free(check_result.stdout);
             allocator.free(check_result.stderr);
@@ -2844,9 +2845,9 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
 
     // Read password from stdin
     var password_buf: [256]u8 = undefined;
-    const stdin_file = std.io.getStdInHandle();
-    const password_len = stdin_file.read(password_buf[0..]) catch |_| {
-        print("\n{s}Error reading password{s}\n", .{ RED, RESET });
+    const stdin_file = std.io.getStdin().reader();
+    const password_len = stdin_file.read(password_buf[0..]) catch |err| {
+        print("\n{s}Error reading password: {}{s}\n", .{ RED, err, RESET });
         return;
     };
     const password = std.mem.trimRight(u8, password_buf[0..password_len], &[_]u8{ '\r', '\n' });
