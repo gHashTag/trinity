@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Zenodo v8.0 Bundle Upload Script
-Uploads enhanced v8.0 bundle metadata to Zenodo.
+Zenodo v9.0 Bundle Upload Script
+Uploads enhanced v9.0 bundle metadata to Zenodo.
 
 Usage:
-    python3 tools/zenodo_upload_v8.py --bundle B001
-    python3 tools/zenodo_upload_v8.py --all
-    python3 tools/zenodo_upload_v8.py --dry-run --all
+    python3 tools/zenodo_upload_v9.py --bundle B001
+    python3 tools/zenodo_upload_v9.py --all
+    python3 tools/zenodo_upload_v9.py --dry-run --all
 """
 
 import json
@@ -18,14 +18,14 @@ from typing import Optional
 
 # Bundle configuration
 BUNDLES = {
-    "B001": {"json": "docs/research/.zenodo.B001_v8.0.json", "alias": "A"},
-    "B002": {"json": "docs/research/.zenodo.B002_v8.0.json", "alias": "B"},
-    "B003": {"json": "docs/research/.zenodo.B003_v8.0.json", "alias": "C"},
-    "B004": {"json": "docs/research/.zenodo.B004_v8.0.json", "alias": "D"},
-    "B005": {"json": "docs/research/.zenodo.B005_v8.0.json", "alias": "E"},
-    "B006": {"json": "docs/research/.zenodo.B006_v8.0.json", "alias": "F"},
-    "B007": {"json": "docs/research/.zenodo.B007_v8.0.json", "alias": "G"},
-    "PARENT": {"json": "docs/research/.zenodo.PARENT_v8.0.json", "alias": "PARENT"},
+    "B001": {"json": "docs/research/.zenodo.B001_v9.0.json", "alias": "A", "doi": "10.5281/zenodo.19227865"},
+    "B002": {"json": "docs/research/.zenodo.B002_v9.0.json", "alias": "B", "doi": "10.5281/zenodo.19227867"},
+    "B003": {"json": "docs/research/.zenodo.B003_v9.0.json", "alias": "C", "doi": "10.5281/zenodo.19227869"},
+    "B004": {"json": "docs/research/.zenodo.B004_v9.0.json", "alias": "D", "doi": "10.5281/zenodo.19227871"},
+    "B005": {"json": "docs/research/.zenodo.B005_v9.0.json", "alias": "E", "doi": "10.5281/zenodo.19227873"},
+    "B006": {"json": "docs/research/.zenodo.B006_v9.0.json", "alias": "F", "doi": "10.5281/zenodo.19227875"},
+    "B007": {"json": "docs/research/.zenodo.B007_v9.0.json", "alias": "G", "doi": "10.5281/zenodo.19227877"},
+    "PARENT": {"json": "docs/research/.zenodo.PARENT_v9.0.json", "alias": "PARENT", "doi": "10.5281/zenodo.19227879"},
 }
 
 ZENODO_API = "https://zenodo.org/api"
