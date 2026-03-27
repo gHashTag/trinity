@@ -173,7 +173,7 @@ fn generateDomain(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(vars_json);
 
     const resp = api.query(gql, vars_json) catch |err| {
-        print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+        print("  {s}❌ API error: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(resp);
@@ -222,7 +222,7 @@ fn cloudLogs(allocator: Allocator, args: []const []const u8) !void {
 
     // Get services first, then deployments for the first/named service
     const services_json = api.getServices() catch |err| {
-        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch services: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(services_json);
@@ -260,7 +260,7 @@ fn cloudVars(allocator: Allocator, args: []const []const u8) !void {
         }
 
         api.upsertVariable(service_id, env_id, key, value) catch |err| {
-            print("{s}Failed to set variable: {}{s}\n", .{ RED, err, RESET });
+            print("{s}Failed to set variable: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
 
@@ -280,7 +280,7 @@ fn cloudVars(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const response = api.getVariables(service_id, env_id) catch |err| {
-        print("{s}Failed to fetch variables: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch variables: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(response);
@@ -309,7 +309,7 @@ fn cloudDeploy(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Triggering redeployment...{s}\n", .{ YELLOW, RESET });
 
     const response = api.redeployService(service_id, env_id) catch |err| {
-        print("{s}Failed to redeploy: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to redeploy: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(response);
@@ -348,7 +348,7 @@ fn cloudExec(allocator: Allocator, args: []const []const u8) !void {
     print("{s}$ {s}{s}\n", .{ GRAY, cmd, RESET });
 
     const output = ssh.exec(allocator, cmd) catch |err| {
-        print("{s}SSH exec failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH exec failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -363,7 +363,7 @@ fn cloudPull(allocator: Allocator) !void {
     print("{s}Pulling latest code on Railway...{s}\n", .{ CYAN, RESET });
 
     const output = ssh.pullCode(allocator) catch |err| {
-        print("{s}Pull failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Pull failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -380,7 +380,7 @@ fn cloudSSHStatus(allocator: Allocator) !void {
     const ssh = railway_ssh.RailwaySSH.initDefault();
 
     const output = ssh.getStatus(allocator) catch |err| {
-        print("{s}SSH status failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH status failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -422,7 +422,7 @@ fn cloudSpawn(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const result = cloud_orchestrator.spawnAgentOnAccount(allocator, issue_num, account_hint) catch |err| {
-        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to spawn agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -523,7 +523,7 @@ fn cloudSpawnAll(allocator: Allocator, args: []const []const u8) !void {
         print("{s}Spawning agent for #{d}...{s} ", .{ CYAN, issue_num, RESET });
 
         const result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-            print("{s}FAILED: {}{s}\n", .{ RED, err, RESET });
+            print("{s}FAILED: {s}{s}\n", .{ RED, @errorName(err), RESET });
             failed += 1;
             continue;
         };
@@ -572,7 +572,7 @@ fn cloudKill(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Killing agent for issue #{d}...{s}\n", .{ YELLOW, issue_num, RESET });
 
     cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-        print("{s}Failed to kill agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to kill agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -846,7 +846,7 @@ fn cloudSync(allocator: Allocator) !void {
     defer api.deinit();
 
     const services_json = api.getServices() catch |err| {
-        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch services: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(services_json);
@@ -873,7 +873,7 @@ fn cloudCleanup(allocator: Allocator) !void {
     print("{s}Cleaning up inactive agents...{s}\n", .{ CYAN, RESET });
 
     const cleaned = cloud_orchestrator.cleanupDone(allocator) catch |err| {
-        print("{s}Cleanup failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Cleanup failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1045,7 +1045,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
     // Step 1: Spawn agent
     print("\n{s}[1/6] Spawning agent...{s}\n", .{ CYAN, RESET });
     const spawn_result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to spawn agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1155,10 +1155,10 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
 
             print("  {s}Killing and respawning...{s}\n", .{ YELLOW, RESET });
             cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-                std.log.warn("tri_cloud: killAgent failed for issue {d}: {}", .{ issue_num, err });
+                std.log.warn("tri_cloud: killAgent failed for issue {d}: {s}", .{ issue_num, @errorName(err) });
             };
             _ = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-                print("  {s}✗ Respawn failed: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Respawn failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
                 break;
             };
             print("  {s}✓ Respawned (retry {d}){s}\n", .{ GREEN, retry_count, RESET });
@@ -1176,7 +1176,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
 
                 // Step 5: Verify PR (local build)
                 const verify_result = cloudVerifyPR(allocator, issue_num) catch |err| {
-                    print("  {s}⚠ Verification failed: {}{s}\n", .{ YELLOW, err, RESET });
+                    print("  {s}⚠ Verification failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
                     print("  {s}PR created but needs manual review{s}\n", .{ YELLOW, RESET });
                     break;
                 };
@@ -1184,7 +1184,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
                 if (verify_result) {
                     print("\n{s}[5/6] PR verified, auto-merging...{s}\n", .{ CYAN, RESET });
                     _ = cloudMergePR(allocator, issue_num) catch |err| {
-                        print("  {s}⚠ Auto-merge failed: {}{s}\n", .{ YELLOW, err, RESET });
+                        print("  {s}⚠ Auto-merge failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
                         print("  {s}Manual merge required{s}\n", .{ YELLOW, RESET });
                     };
                 } else {
@@ -1201,7 +1201,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
     // Step 6: Cleanup
     print("\n{s}[6/6] Cleaning up agent...{s}\n", .{ CYAN, RESET });
     cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-        std.log.warn("tri_cloud: killAgent cleanup failed for issue {d}: {}", .{ issue_num, err });
+        std.log.warn("tri_cloud: killAgent cleanup failed for issue {d}: {s}", .{ issue_num, @errorName(err) });
     };
     print("{s}✓ Agent destroyed{s}\n", .{ GREEN, RESET });
 
@@ -1223,7 +1223,7 @@ fn cloudVerify(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Verifying PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
 
     const passed = cloudVerifyPR(allocator, issue_num) catch |err| {
-        print("{s}Verification failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Verification failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1249,7 +1249,7 @@ fn cloudMerge(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Merging PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
 
     _ = cloudMergePR(allocator, issue_num) catch |err| {
-        print("{s}Merge failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Merge failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1341,7 +1341,7 @@ fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
     const github_client = @import("github_client.zig");
 
     var client = github_client.GitHubClient.init(allocator, false) catch |err| {
-        print("  {s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        print("  {s}GitHub client init failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return error.MergeFailed;
     };
     defer client.deinit();
@@ -1476,7 +1476,7 @@ fn cloudRecordMetrics(allocator: Allocator, args: []const []const u8) !void {
         lines_removed,
         pr_number,
     ) catch |err| {
-        print("{s}Failed to record metrics: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to record metrics: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1537,22 +1537,22 @@ fn cloudApiCheck(allocator: Allocator) !void {
         .extra_headers = &extra_headers,
         .redirect_behavior = .unhandled,
     }) catch |err| {
-        print(" {s}Connection failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Connection failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer req.deinit();
 
     req.transfer_encoding = .{ .content_length = body.len };
     var body_writer = req.sendBodyUnflushed(&.{}) catch |err| {
-        print(" {s}Send failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Send failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     body_writer.writer.writeAll(body) catch |err| {
-        print(" {s}Write failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Write failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     body_writer.end() catch |err| {
-        print(" {s}End failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}End failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     if (req.connection) |conn| conn.flush() catch |err| {
@@ -1561,7 +1561,7 @@ fn cloudApiCheck(allocator: Allocator) !void {
 
     var redirect_buf: [0]u8 = .{};
     var response = req.receiveHead(&redirect_buf) catch |err| {
-        print(" {s}Receive failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Receive failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1630,14 +1630,14 @@ fn cloudRedeploy(allocator: Allocator, args: []const []const u8) !void {
 
     // 1. Update ISSUE_NUMBER env var
     api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
-        print("{s}Failed to update env vars: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to update env vars: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     print(" {s}ISSUE_NUMBER={s} set{s}\n", .{ GREEN, issue_str, RESET });
 
     // 2. Trigger redeploy
     const deploy_resp = api.redeployService(service_id, env_id) catch |err| {
-        print("{s}Failed to trigger deploy: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to trigger deploy: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     allocator.free(deploy_resp);
@@ -1860,7 +1860,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     ;
 
     const output = ssh.exec(allocator, check_cmd) catch |err| {
-        print(" {s}SSH: {s}  Connection failed ({})  {s}\n", .{ RED, "❌", err, RESET });
+        print(" {s}SSH: {s}  Connection failed ({})  {s}\n", .{ RED, "❌", @errorName(err), RESET });
         print(" {s}Bridge:{s} {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}tmux:{s}   {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}Procs:{s}  {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
@@ -2016,7 +2016,7 @@ fn cloudRestart(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Restarting {s}...{s}\n", .{ CYAN, service, RESET });
 
     const output = ssh.exec(allocator, cmd) catch |err| {
-        print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -2036,7 +2036,7 @@ fn cloudBridge(allocator: Allocator, args: []const []const u8) !void {
 
     if (eql(u8, subcmd, "status")) {
         const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null || echo 'FAIL'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2046,14 +2046,14 @@ fn cloudBridge(allocator: Allocator, args: []const []const u8) !void {
         var cmd_buf: [128]u8 = undefined;
         const cmd = std.fmt.bufPrint(&cmd_buf, "tail -{s} /data/bridge.log 2>/dev/null || echo 'No bridge.log'", .{lines}) catch return;
         const output = ssh.exec(allocator, cmd) catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
         print("{s}", .{output});
     } else if (eql(u8, subcmd, "queue")) {
         const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null | grep -o '\"queue_[^}]*' || echo 'FAIL'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2070,7 +2070,7 @@ fn cloudTmux(allocator: Allocator, args: []const []const u8) !void {
 
     if (eql(u8, subcmd, "list")) {
         const output = ssh.exec(allocator, "tmux list-sessions 2>/dev/null || echo 'No tmux sessions'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2080,7 +2080,7 @@ fn cloudTmux(allocator: Allocator, args: []const []const u8) !void {
         const lines_str = if (args.len > 2) args[2] else "50";
         const lines = std.fmt.parseInt(u32, lines_str, 10) catch 50;
         const output = ssh.tmuxCapture(allocator, session, lines) catch |err| {
-            print("{s}Capture failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}Capture failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2122,7 +2122,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "run", "list", "--workflow", "ci-runner.yml", "--limit", "5" },
         }) catch |err| {
-            print("{s}❌ Failed to get CI status: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to get CI status: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2140,7 +2140,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "workflow", "run", "ci-runner.yml" },
         }) catch |err| {
-            print("{s}❌ Failed to trigger CI: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to trigger CI: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2160,7 +2160,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "run", "view", "--log-failed" },
         }) catch |err| {
-            print("{s}❌ Failed to get CI logs: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to get CI logs: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2205,7 +2205,7 @@ fn cloudIde(allocator: Allocator, args: []const []const u8) !void {
         defer allocator.free(vars_json);
 
         const resp = api.query(gql, vars_json) catch |err| {
-            print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+            print("  {s}❌ API error: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(resp);
@@ -2411,7 +2411,7 @@ fn mailCheck(allocator: Allocator, args: []const []const u8) !void {
         .allocator = allocator,
         .argv = &argv,
     }) catch |err| {
-        print("{s}Error running dig: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Error running dig: {s}{s}\n", .{ RED, @errorName(err), RESET });
         print("Install dig: brew install bind (macOS) or apt install dnsutils (Linux)\n\n", .{});
         return;
     };
@@ -2484,7 +2484,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &check_argv,
         }) catch |err| {
-            print("{s}Error checking UD login: {}{s}\n", .{ RED, err, RESET });
+            print("{s}Error checking UD login: {s}{s}\n", .{ RED, @errorName(err), RESET });
             print("Run: ud login\n\n", .{});
             return;
         };
@@ -2524,7 +2524,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     .allocator = allocator,
                     .argv = &argv,
                 }) catch |err| {
-                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
                     continue;
                 };
                 defer {
@@ -2547,7 +2547,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     .allocator = allocator,
                     .argv = &spf_argv,
                 }) catch |err| {
-                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                    print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
                     return;
                 };
                 defer {
@@ -2580,7 +2580,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     .allocator = allocator,
                     .argv = &argv,
                 }) catch |err| {
-                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
                     continue;
                 };
                 defer {
@@ -2609,7 +2609,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     added_count += 1;
                 }
             } else |err| {
-                print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
             }
         },
         .proton => {
@@ -2628,7 +2628,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     .allocator = allocator,
                     .argv = &argv,
                 }) catch |err| {
-                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
                     continue;
                 };
                 defer {
@@ -2657,7 +2657,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     added_count += 1;
                 }
             } else |err| {
-                print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
             }
         },
         .migadu => {
@@ -2676,7 +2676,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     .allocator = allocator,
                     .argv = &argv,
                 }) catch |err| {
-                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
                     continue;
                 };
                 defer {
@@ -2705,7 +2705,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     added_count += 1;
                 }
             } else |err| {
-                print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
             }
         },
         .outlook => {
@@ -2730,7 +2730,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     added_count += 1;
                 }
             } else |err| {
-                print("  {s}✗ Failed to add MX: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Failed to add MX: {s}{s}\n", .{ RED, @errorName(err), RESET });
             }
 
             // SPF
@@ -2748,7 +2748,7 @@ fn mailApply(allocator: Allocator, args: []const []const u8) !void {
                     added_count += 1;
                 }
             } else |err| {
-                print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
             }
         },
         .custom => {
@@ -2821,7 +2821,7 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
         const check_result = std.process.Child.run(.{
             .allocator = allocator,
             .argv = &check_argv,
-        }) catch |err| {
+        }) catch |_| {
             print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
             print("Install: brew install swaks\n", .{});
             print("Or: apt install swaks\n\n", .{});
@@ -2844,8 +2844,9 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
 
     // Read password from stdin
     var password_buf: [256]u8 = undefined;
-    const password_len = std.io.getStdIn().read(password_buf[0..]) catch |err| {
-        print("\n{s}Error reading password: {}{s}\n", .{ RED, err, RESET });
+    const stdin_file = std.io.getStdInHandle();
+    const password_len = stdin_file.read(password_buf[0..]) catch |_| {
+        print("\n{s}Error reading password{s}\n", .{ RED, RESET });
         return;
     };
     const password = std.mem.trimRight(u8, password_buf[0..password_len], &[_]u8{ '\r', '\n' });
@@ -2920,7 +2921,7 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
         .argv = &argv,
         .env_map = &env_map,
     }) catch |err| {
-        print("{s}Error running swaks: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Error running swaks: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer {
@@ -2930,7 +2931,7 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
 
     // Parse swaks output
     const stdout_str = result.stdout;
-    const stderr_str = result.stderr;
+    _ = result.stderr; // Referenced but not needed for parsing
 
     if (std.mem.indexOf(u8, stdout_str, "250") != null or
         std.mem.indexOf(u8, stdout_str, "250 OK") != null or
@@ -2951,7 +2952,7 @@ fn mailTest(allocator: Allocator, args: []const []const u8) !void {
         print("{s}✗ Connection failed{s}\n", .{ RED, RESET });
         print("Check if SMTP server {s}:{d} is accessible.\n\n", .{ smtp_server.host, smtp_server.port });
     } else {
-        print("{s}⚠ Unknown result{s}\n\n", .{ YELLOW, RESET });
+        print("{s}? Unknown result{s}\n\n", .{ YELLOW, RESET });
         print("Output:\n{s}\n", .{stdout_str});
     }
 
@@ -2969,7 +2970,7 @@ fn printApiInitError(err: anyerror) void {
             print("{s}Error: No Railway project configured{s}\n", .{ RED, RESET });
             print("Set RAILWAY_PROJECT_ID or add .railway.json\n", .{});
         },
-        else => print("{s}Error initializing Railway API: {}{s}\n", .{ RED, err, RESET }),
+        else => print("{s}Error initializing Railway API: {s}{s}\n", .{ RED, @errorName(err), RESET }),
     }
 }
 
