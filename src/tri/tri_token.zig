@@ -51,7 +51,7 @@ fn showStatus(allocator: std.mem.Allocator, rotator: *const token_rotator.TokenR
     std.debug.print("\n  🔄 Token Rotator Status\n", .{});
     std.debug.print("  {s}\n", .{"=" ** 35});
 
-    // Время последней ротации
+    // Time since last rotation
     const time_diff = now - rotator.last_rotation;
     const time_str = if (time_diff < 60) try std.fmt.allocPrint(allocator, "{}s ago", .{time_diff}) else if (time_diff < 3600) try std.fmt.allocPrint(allocator, "{d:.1}m ago", .{@as(f64, @floatFromInt(time_diff)) / 60.0}) else try std.fmt.allocPrint(allocator, "{d:.1}h ago", .{@as(f64, @floatFromInt(time_diff)) / 3600.0});
     defer allocator.free(time_str);
@@ -69,7 +69,7 @@ fn showStatus(allocator: std.mem.Allocator, rotator: *const token_rotator.TokenR
     for (rotator.tokens.items, 0..) |token, i| {
         const is_current = i == rotator.current_index;
 
-        // Статус emoji
+        // Status emoji
         const emoji = switch (token.status) {
             .active => if (is_current) "🟢" else "🟢",
             .rate_limited => "🔴",
@@ -78,16 +78,16 @@ fn showStatus(allocator: std.mem.Allocator, rotator: *const token_rotator.TokenR
 
         std.debug.print("    {s} ", .{emoji});
 
-        // Индикатор текущего токена
+        // Current token indicator
         if (is_current) std.debug.print("[CURRENT] ", .{});
 
-        // Имя env var
+        // Environment variable name
         std.debug.print("{s} ", .{token.name});
 
-        // Статус текст
+        // Status text
         std.debug.print("({s}) ", .{@tagName(token.status)});
 
-        // Детали для rate_limited
+        // Details for rate_limited
         if (token.status == .rate_limited) {
             if (token.reset_at) |reset| {
                 const remaining = reset - now;
@@ -131,17 +131,17 @@ fn resetTokens(rotator: *token_rotator.TokenRotator) !void {
 fn testToken(allocator: std.mem.Allocator, rotator: *token_rotator.TokenRotator) !void {
     std.debug.print("🧪 Testing active token...\n", .{});
 
-    // Получаем текущий токен
+    // Get current token
     const token = try rotator.getActiveToken();
     defer allocator.free(token);
 
-    // Проверяем что токен не пустой
+    // Verify token is not empty
     if (token.len == 0) {
         std.debug.print("❌ Token is empty or not set\n", .{});
         return;
     }
 
-    // Показываем токен (маскируем середину для безопасности)
+    // Show token (mask middle for security)
     const masked = try maskToken(allocator, token);
     defer allocator.free(masked);
 

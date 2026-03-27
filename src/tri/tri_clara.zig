@@ -479,7 +479,7 @@ pub fn runClaraDemo(allocator: std.mem.Allocator, args: []const []const u8) !voi
     std.debug.print("{s}╚════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
 
     std.debug.print("{s}φ² + 1/φ² = 3 | TRINITY{s}\n\n", .{ CYAN, RESET });
-    std.debug.print("{s}Run tests:{s} zig test src/tri/clara/verification.zig -f CLARA\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Run tests:{s} zig test src/tri/clara/verification.zig --test-filter CLARA\n", .{ YELLOW, RESET });
     std.debug.print("{s}Proposal:{s} docs/proposals/DARPA_CLARA_PROPOSAL.md\n\n", .{ YELLOW, RESET });
 }
 
