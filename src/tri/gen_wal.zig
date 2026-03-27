@@ -9,7 +9,7 @@ pub const WAL = struct {
 
     pub fn init(allocator: std.mem.Allocator) WAL {
         return .{
-            .entries = std.ArrayList([]const u8).initCapacity(allocator, 16),
+            .entries = std.ArrayList([]const u8).initCapacity(allocator, 16) catch unreachable,
             .allocator = allocator,
         };
     }

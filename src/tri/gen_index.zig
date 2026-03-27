@@ -17,7 +17,7 @@ pub const InvertedIndex = struct {
     pub fn add(idx: *InvertedIndex, term: []const u8, doc_id: usize) !void {
         const gop = try idx.index.getOrPut(term);
         if (!gop.found_existing) {
-            gop.value_ptr.* = std.ArrayList(usize).initCapacity(idx.allocator, 4);
+            gop.value_ptr.* = try std.ArrayList(usize).initCapacity(idx.allocator, 4);
         }
         try gop.value_ptr.append(idx.allocator, doc_id);
     }
