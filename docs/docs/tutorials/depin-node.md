@@ -1,3 +1,8 @@
+---
+sidebar_position: 9
+description: "Launch a Trinity DePIN network node"
+---
+
 # DePIN Node Tutorial
 
 **15 minutes to launch a Trinity DePIN node**

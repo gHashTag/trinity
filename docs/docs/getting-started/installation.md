@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+description: "Complete installation guide for Trinity and Zig"
 ---
 
 # Installation
@@ -10,7 +11,7 @@ Complete installation guide for Trinity.
 
 | Requirement | Minimum |
 |-------------|---------|
-| Zig | 0.13.0 |
+| Zig | 0.15.x |
 | RAM | 4 GB |
 | Disk | 1 GB |
 
@@ -20,20 +21,20 @@ Complete installation guide for Trinity.
 
 ```bash
 # Option 1: Direct download (recommended)
-curl -LO https://ziglang.org/download/0.13.0/zig-macos-aarch64-0.13.0.tar.xz
-tar -xf zig-macos-aarch64-0.13.0.tar.xz
-export PATH="$PWD/zig-macos-aarch64-0.13.0:$PATH"
+curl -LO https://ziglang.org/download/0.15.0/zig-macos-aarch64-0.15.0.tar.xz
+tar -xf zig-macos-aarch64-0.15.0.tar.xz
+export PATH="$PWD/zig-macos-aarch64-0.15.0:$PATH"
 
 # Option 2: Homebrew
-brew install zig@0.13
+brew install zig@0.15
 ```
 
 ### Linux
 
 ```bash
-curl -LO https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz
-tar -xf zig-linux-x86_64-0.13.0.tar.xz
-export PATH="$PWD/zig-linux-x86_64-0.13.0:$PATH"
+curl -LO https://ziglang.org/download/0.15.0/zig-linux-x86_64-0.15.0.tar.xz
+tar -xf zig-linux-x86_64-0.15.0.tar.xz
+export PATH="$PWD/zig-linux-x86_64-0.15.0:$PATH"
 ```
 
 ### Windows
@@ -46,7 +47,7 @@ export PATH="$PWD/zig-linux-x86_64-0.13.0:$PATH"
 
 ```bash
 zig version
-# Output: 0.13.0
+# Output: 0.15.x
 ```
 
 ## Clone Repository
@@ -83,7 +84,7 @@ zig test src/vsa.zig
 
 If you see errors like `no field named 'addStaticLibrary'`, you have the wrong Zig version.
 
-**Solution:** Install Zig 0.13.0 as shown above.
+**Solution:** Install Zig 0.15.x as shown above.
 
 ### Build Failures
 

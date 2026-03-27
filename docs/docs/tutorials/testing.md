@@ -1,3 +1,8 @@
+---
+sidebar_position: 7
+description: "Testing best practices in Trinity"
+---
+
 # Testing Tutorial
 
 **15 minutes to learn testing in Trinity**

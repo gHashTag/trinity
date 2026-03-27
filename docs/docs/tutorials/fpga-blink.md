@@ -1,3 +1,8 @@
+---
+sidebar_position: 5
+description: "First FPGA synthesis and hardware deployment"
+---
+
 # FPGA Blink: First Hardware Project
 
 **20 minutes for your first FPGA synthesis and flashing**

@@ -1,3 +1,8 @@
+---
+sidebar_position: 3
+description: "Learn Vector Symbolic Architecture operations"
+---
+
 # VSA Operations Tutorial
 
 **15 minutes to learn Vector Symbolic Architecture**

@@ -1,3 +1,8 @@
+---
+sidebar_position: 1
+description: "5-minute quickstart guide for Trinity"
+---
+
 # Quick Start
 
 **5 minutes to run your first Trinity program**

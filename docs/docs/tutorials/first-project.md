@@ -1,3 +1,8 @@
+---
+sidebar_position: 2
+description: "Create your first VIBEE project from scratch"
+---
+
 # First Project: VIBEE Spec to Code
 
 **15 minutes to create your first complete VIBEE project**

@@ -1,5 +1,6 @@
 ---
 sidebar_position: 3
+description: "IDE and development environment setup for Trinity"
 ---
 
 # Development Setup

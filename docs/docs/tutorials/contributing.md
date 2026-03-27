@@ -1,3 +1,8 @@
+---
+sidebar_position: 10
+description: "How to contribute to the Trinity project"
+---
+
 # Contributing Tutorial
 
 **15 minutes to your first contribution to Trinity**

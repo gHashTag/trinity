@@ -1,3 +1,8 @@
+---
+sidebar_position: 8
+description: "Deploy Trinity to production environments"
+---
+
 # Deployment Tutorial
 
 **20 minutes to deploy Trinity on Fly.io**

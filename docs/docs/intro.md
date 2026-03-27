@@ -1,6 +1,8 @@
 ---
 sidebar_position: 1
 slug: /
+description: "Trinity — Ternary Computing Framework with VSA, BitNet LLM inference, and VIBEE compiler"
+keywords: [ternary, computing, VSA, BitNet, VIBEE, Zig, FPGA, hyperdimensional]
 ---
 
 # Trinity Documentation
@@ -71,6 +73,38 @@ zig build test
 1. [Installation](/getting-started/installation)
 2. [Quick Start](/tutorials/quick-start)
 3. [Development Setup](/getting-started/development-setup)
+
+## Choose Your Path
+
+<div className="row">
+<div className="col col--4">
+
+### I'm New Here
+Start with the basics and build up.
+1. [Quick Start](/tutorials/quick-start) — 5 min
+2. [First Project](/tutorials/first-project) — 15 min
+3. [Sacred Math](/tutorials/sacred-math) — 10 min
+
+</div>
+<div className="col col--4">
+
+### I Want to Build
+Jump straight into development.
+1. [Installation](/getting-started/installation)
+2. [VSA Operations](/tutorials/vsa-operations) — 15 min
+3. [API Reference](/api/)
+
+</div>
+<div className="col col--4">
+
+### I'm a Researcher
+Explore the mathematical foundations.
+1. [Mathematical Foundations](/math-foundations/)
+2. [Benchmarks](/benchmarks/)
+3. [Research Archive](/research/)
+
+</div>
+</div>
 
 ## Community
 

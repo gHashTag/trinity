@@ -1,3 +1,8 @@
+---
+sidebar_position: 6
+description: "LLM inference with ternary weights"
+---
+
 # BitNet Inference Tutorial
 
 **20 minutes to your first LLM inference with ternary weights**

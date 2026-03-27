@@ -1,5 +1,6 @@
 ---
 sidebar_position: 110
+description: "Frequently asked questions about the Trinity ternary computing framework"
 ---
 
 # FAQ

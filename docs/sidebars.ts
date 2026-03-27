@@ -13,9 +13,13 @@ const sidebars: SidebarsConfig = {
       items: [
         'tutorials/quick-start',
         'tutorials/first-project',
-        'tutorials/fpga-blink',
+        'tutorials/vsa-operations',
         'tutorials/sacred-math',
+        'tutorials/fpga-blink',
         'tutorials/bitnet-inference',
+        'tutorials/testing',
+        'tutorials/deployment',
+        'tutorials/depin-node',
         'tutorials/contributing',
       ],
     },
@@ -29,6 +33,7 @@ const sidebars: SidebarsConfig = {
         'guides/performance-tuning',
         'guides/security',
         'guides/testing',
+        'development/ralph',
       ],
     },
     {
@@ -107,6 +112,14 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'category',
+          label: 'MCP Protocol',
+          collapsed: true,
+          items: [
+            'mcp/tools-reference',
+          ],
+        },
+        {
+          type: 'category',
           label: 'Cheatsheets',
           collapsed: true,
           items: [
@@ -155,10 +168,10 @@ const sidebars: SidebarsConfig = {
       label: 'Architecture Decisions',
       description: 'ADR: Historical record of architectural choices',
       items: [
-        'adr/template',
-        'adr/vibee-compiler',
-        'adr/ternary-representation',
-        'adr/sacred-constants-unified',
+        'adr/000-template',
+        'adr/001-vibee-compiler',
+        'adr/002-ternary-representation',
+        'adr/003-sacred-constants-unified',
       ],
     },
     // ═══════════════════════════════════════════════════════════════════════════
@@ -171,6 +184,7 @@ const sidebars: SidebarsConfig = {
         'overview/introduction',
         'overview/roadmap',
         'overview/tech-tree',
+        'architecture/overview',
       ],
     },
     {
@@ -240,25 +254,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Development',
-      items: [
-        'development/ralph',
-      ],
-    },
-    {
-      type: 'category',
       label: 'Deployment',
       items: [
         'deployment/index',
         'deployment/runpod',
         'deployment/local',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Architecture',
-      items: [
-        'architecture/overview',
       ],
     },
     {

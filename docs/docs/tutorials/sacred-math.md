@@ -1,3 +1,8 @@
+---
+sidebar_position: 4
+description: "Understanding sacred mathematics and the Trinity identity"
+---
+
 # Sacred Mathematics Tutorial
 
 **10 minutes to understand the sacred mathematics of Trinity**

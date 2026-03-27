@@ -1,5 +1,6 @@
 ---
 sidebar_position: 100
+description: "Guide to contributing to the Trinity project"
 ---
 
 # Contributing to Trinity
