@@ -511,8 +511,8 @@ TRINITY is an open research framework. We welcome:
 - Independent replication
 - Novel predictions
 
-**Repository:** https://github.com/frankbria/trinity
-**Issues:** https://github.com/frankbria/trinity/issues
+**Repository:** https://github.com/gHashTag/trinity
+**Issues:** https://github.com/gHashTag/trinity/issues
 
 ### 10.2 Citation Guidelines
 
@@ -591,7 +591,7 @@ For rejected hypotheses:
 
 **Document Version:** 1.3
 **Last Updated:** 2026-03-07 (PMNS Complete — 18 results, 13 smoking guns + 1 CKM-sensitive + 4 PMNS ultra-precise)
-**Repository:** `/Users/playra/trinity-w1/docsite/docs/research/trinity-status-2026.md`
+**Repository:** `/Users/playra/trinity/docsite/docs/research/trinity-status-2026.md`
 
 ---
 
