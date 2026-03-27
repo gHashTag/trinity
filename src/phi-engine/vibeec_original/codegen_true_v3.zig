@@ -237,7 +237,7 @@ fn generate_zig(behaviors: std.ArrayList(struct {
             try zig_code.appendSlice(allocator, "test \"");
             try zig_code.appendSlice(allocator, behavior.name);
             try zig_code.appendSlice(allocator, "\" {\n");
-            try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\n\", .{\");
+            try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\x0a\", .{");
             try zig_code.appendSlice(allocator, behavior.name);
             try zig_code.appendSlice(allocator, "\"});\n");
             try zig_code.appendSlice(allocator, "}\n\n");

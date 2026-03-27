@@ -1,0 +1,58 @@
+name: tri_disjoint_set
+version: "0.1.0"
+language: zig
+module: tri.disjoint_set
+description: "Disjoint Set Union (Union-Find) data structure"
+
+types:
+  DisjointSet:
+    description: "Union-Find with path compression and union by rank"
+    fields:
+      parent: "[]usize"
+      rank: "[]usize"
+      count: "usize"
+
+functions:
+  init:
+    params:
+      - name: size
+        type: "usize"
+    returns: "DisjointSet"
+    description: "Create N disjoint singletons"
+
+  find:
+    params:
+      - name: ds
+        type: "*DisjointSet"
+      - name: x
+        type: "usize"
+    returns: "usize"
+    description: "Find root with path compression"
+
+  union:
+    params:
+      - name: ds
+        type: "*DisjointSet"
+      - name: x
+        type: "usize"
+      - name: y
+        type: "usize"
+    returns: "void"
+    description: "Merge sets containing x and y"
+
+  connected:
+    params:
+      - name: ds
+        type: "*const DisjointSet"
+      - name: x
+        type: "usize"
+      - name: y
+        type: "usize"
+    returns: "bool"
+    description: "Check if x and y in same set"
+
+behaviors:
+  - name: "path_compression"
+    description: "Flatten tree during find for amortized O(alpha(n))"
+  - name: "union_by_rank"
+    description: "Attach shorter tree under taller tree root"

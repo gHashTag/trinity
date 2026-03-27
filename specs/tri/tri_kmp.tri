@@ -1,0 +1,35 @@
+name: tri_kmp
+version: "0.1.0"
+language: zig
+module: tri.kmp
+description: "Knuth-Morris-Pratt string search"
+
+types:
+  KMPPrefix:
+    description: "KMP prefix function (failure links)"
+    fields:
+      table: "[]usize"
+      pattern: "[]const u8"
+
+functions:
+  build_prefix:
+    params:
+      - name: pattern
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!KMPPrefix"
+    description: "Build prefix function for pattern"
+
+  search:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: prefix
+        type: "*const KMPPrefix"
+    returns: "[]usize"
+    description: "Find all pattern occurrences"
+
+behaviors:
+  - name: "linear_time"
+    description: "O(n + m) time where n=text length, m=pattern length"

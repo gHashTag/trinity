@@ -26,8 +26,8 @@ pub const AsmError = error{
     EmptySource,
     OutOfMemory,
     // Bank validation errors (Issue #407)
-    SacredOpRequiresBank1,    // FADD/FMUL require Bank 1
-    AluOpRequiresBank0,       // ADD/SUB require Bank 0
+    SacredOpRequiresBank1, // FADD/FMUL require Bank 1
+    AluOpRequiresBank0, // ADD/SUB require Bank 0
     CannotStoreToConstantBank, // ST_F rejects Bank 2
 };
 

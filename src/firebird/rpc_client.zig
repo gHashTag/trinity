@@ -83,6 +83,15 @@ pub const LogEntry = struct {
     transaction_hash: []const u8,
 };
 
+pub const TransactionReceipt = struct {
+    tx_hash: []const u8,
+    block_number: u64,
+    gas_used: u64,
+    status: bool, // true = success, false = failure
+    contract_address: ?Address,
+    logs: []LogEntry,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // RPC CLIENT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -291,6 +300,18 @@ pub const RpcClient = struct {
         };
 
         return std.fmt.parseInt(u64, gas_hex[2..], 16);
+    }
+
+    /// Get transaction receipt
+    pub fn getTransactionReceipt(self: *RpcClient, tx_hash: []const u8) !?TransactionReceipt {
+        _ = tx_hash;
+
+        // Call eth_getTransactionReceipt
+        const result = try self.call("eth_getTransactionReceipt", &.{});
+
+        // For mock implementation: return null (pending)
+        // In production: parse JSON response
+        return null;
     }
 
     // ═════════════════════════════════════════════════════════════════════════

@@ -843,7 +843,7 @@ pub const IglaHybridChat = struct {
 
         // ══════ LEVEL 2: TVC Corpus Cache (fast, minimal energy) ══════
         if (self.corpus) |corpus| {
-            if (corpus.search(query, self.config.tvc_similarity_threshold)) |tvc_result| {
+            if (corpus.search(self.allocator, query, self.config.tvc_similarity_threshold)) |tvc_result| {
                 self.last_routing = .RouteTVC;
                 self.energy.tvc_hits += 1;
                 const elapsed = @as(u64, @intCast(std.time.microTimestamp() - start));
@@ -1289,7 +1289,7 @@ pub const IglaHybridChat = struct {
     /// Save LLM response to TVC corpus for future fast retrieval
     fn saveToTVC(self: *Self, query: []const u8, response: []const u8) void {
         if (self.corpus) |corpus| {
-            _ = corpus.store(query, response) catch {
+            _ = corpus.store(self.allocator, query, response) catch {
                 return; // Silent fail — don't break chat flow
             };
             self.tvc_stores_since_save += 1;
@@ -1331,7 +1331,7 @@ pub const IglaHybridChat = struct {
 
         // Filter 5: Deduplication — check if similar query already in TVC
         if (self.corpus) |corpus| {
-            if (corpus.search(query, self.config.max_save_similarity)) |_| {
+            if (corpus.search(self.allocator, query, self.config.max_save_similarity)) |_| {
                 return .FilteredDedup; // Similar query already cached
             }
         }

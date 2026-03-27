@@ -1,0 +1,27 @@
+name: tri_bellman_ford
+version: "0.1.0"
+language: zig
+module: tri.bellman_ford
+description: "Bellman-Ford shortest path (handles negative weights)"
+
+types:
+  Edge:
+    description: "Weighted edge"
+    fields:
+      from: "usize"
+      to: "usize"
+      weight: "i64"
+
+functions:
+  shortestPath:
+    params:
+      - name: edges
+        type: "[]Edge"
+      - name: vertex_count
+        type: "usize"
+      - name: start
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "[]i64"
+    description: "Find shortest paths, detect negative cycles"

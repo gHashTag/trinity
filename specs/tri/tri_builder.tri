@@ -1,0 +1,83 @@
+name: tri_builder
+version: "0.1.0"
+module: tri.builder
+description: "TRI Builder — efficient sequential construction"
+
+types:
+  Builder(T):
+    description: "Grow-only buffer for construction"
+    fields:
+      items: "[]T"
+      capacity: usize
+      len: usize
+
+functions:
+  init:
+    params:
+      - name: capacity
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Builder(T)"
+    description: "Create with pre-allocated capacity"
+
+  empty:
+    returns: "Builder(T)"
+    description: "Create empty builder"
+
+  append:
+    params:
+      - name: builder
+        type: "*Builder(T)"
+      - name: item
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add single item"
+
+  appendSlice:
+    params:
+      - name: builder
+        type: "*Builder(T)"
+      - name: slice
+        type: "[]const T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add multiple items"
+
+  len:
+    params:
+      - name: builder
+        type: "Builder(T)"
+    returns: "usize"
+    description: "Current item count"
+
+  capacity:
+    params:
+      - name: builder
+        type: "Builder(T)"
+    returns: "usize"
+    description: "Allocated space"
+
+  finish:
+    params:
+      - name: builder
+        type: "Builder(T)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]T"
+    description: "Convert to owned slice, consume builder"
+
+  reset:
+    params:
+      - name: builder
+        type: "*Builder(T)"
+    returns: "void"
+    description: "Clear without freeing"
+
+behaviors:
+  - name: amortized
+    description: "O(1) amortized append"
+    note: "Exponential growth strategy"

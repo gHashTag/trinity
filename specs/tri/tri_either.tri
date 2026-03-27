@@ -1,0 +1,57 @@
+name: tri_either
+version: "0.1.0"
+module: tri.either
+description: "TRI Either type — one of two possible values"
+
+types:
+  Either(L, R):
+    description: "One of Left or Right value"
+    fields:
+      is_left: bool
+      left: L
+      right: R
+
+functions:
+  left:
+    params:
+      - name: value
+        type: "L"
+    returns: "Either(L, R)"
+    description: "Create Left variant"
+
+  right:
+    params:
+      - name: value
+        type: "R"
+    returns: "Either(L, R)"
+    description: "Create Right variant"
+
+  isLeft:
+    params:
+      - name: either
+        type: "Either(L, R)"
+    returns: "bool"
+    description: "Check if is Left"
+
+  isRight:
+    params:
+      - name: either
+        type: "Either(L, R)"
+    returns: "bool"
+    description: "Check if is Right"
+
+  unwrap:
+    params:
+      - name: either
+        type: "Either(L, R)"
+      - name: "default_left
+        type: "L"
+      - name: "default_right
+        type: "R"
+    returns: "?T"
+    description: "Get value (merged type)"
+
+behaviors:
+  - name: type_safe_sum
+    description: "Either represents tagged union"
+    note: "Left and Right cannot both be active"

@@ -1,0 +1,43 @@
+name: tri_reader
+version: "0.1.0"
+module: tri.reader
+description: "TRI Reader monad — environment reading"
+
+types:
+  Reader(R, T):
+    description: "Environment reader R -> T"
+    fields:
+      run: "fn(R) -> T"
+
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "Reader(R, T)"
+    description: "Ignore environment, return value"
+
+  ask:
+    returns: "Reader(R, R)"
+    description: "Get the environment"
+
+  asks:
+    params:
+      - name: fn
+        type: "fn(R) -> T"
+    returns: "Reader(R, T)"
+    description: "Query environment"
+
+  local:
+    params:
+      - name: fn
+        type: "fn(R) -> R"
+      - name: reader
+        type: "Reader(R, T)"
+    returns: "Reader(R, T)"
+    description: "Modify environment for subcomputation"
+
+behaviors:
+  - name: pure_computation
+    description: "Reader enables implicit environment passing"
+    note: "No mutation — just reading shared context"

@@ -1,0 +1,207 @@
+name: vsa_ops
+version: "0.2.0"
+module: vsa_core.ops
+description: "VSA operations (TTT Dogfood v0.2) — fully self-hosted from Tri spec"
+
+types:
+  Trit:
+    description: "Balanced ternary value"
+    underlying: "i8"
+    enum: [-1, 0, 1]
+
+  TritEncoding:
+    description: "Binary encoding for trits"
+    enum:
+      - balanced_two_bit
+      - packed_four
+      - sparse
+
+  SearchResult:
+    description: "Result of nearest neighbor search"
+    fields:
+      index: usize
+      similarity: f64
+      distance: f64
+
+functions:
+  # Pure operations (no allocator)
+  cosineSimilarity:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "f64"
+    description: "Cosine similarity in [-1, 1]"
+
+  hammingDistance:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "usize"
+    description: "Count of differing positions"
+
+  hammingSimilarity:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "f64"
+    description: "1 - normalized hamming distance"
+
+  dotSimilarity:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "i64"
+    description: "Dot product similarity"
+
+  vectorNorm:
+    params:
+      - name: v
+        type: "[]const Trit"
+    returns: "f64"
+    description: "L2 vector norm"
+
+  countNonZero:
+    params:
+      - name: v
+        type: "[]const Trit"
+    returns: "usize"
+    description: "Count non-zero trits"
+
+  dotProduct:
+    params:
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "i64"
+    description: "Dot product accumulation"
+
+  # Allocator-using operations
+  bind:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "[]Trit"
+    description: "XOR-like binding (allocates result)"
+
+  unbind:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: bound
+        type: "[]const Trit"
+      - name: key
+        type: "[]const Trit"
+    returns: "[]Trit"
+    description: "Self-inverse binding operation"
+
+  bundle2:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+    returns: "[]Trit"
+    description: "Majority vote for 2 vectors"
+
+  bundle3:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const Trit"
+      - name: b
+        type: "[]const Trit"
+      - name: c
+        type: "[]const Trit"
+    returns: "[]Trit"
+    description: "Majority vote for 3 vectors"
+
+  bundleN:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: vectors
+        type: "[][]const Trit"
+    returns: "[]Trit"
+    description: "Majority vote for N vectors"
+
+  permute:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: v
+        type: "[]const Trit"
+      - name: n
+        type: "usize"
+    returns: "[]Trit"
+    description: "Cyclic permutation (rotate left)"
+
+  inversePermute:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: v
+        type: "[]const Trit"
+      - name: n
+        type: "usize"
+    returns: "[]Trit"
+    description: "Inverse permutation (rotate right)"
+
+  randomVector:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: len
+        type: "usize"
+      - name: seed
+        type: "u64"
+    returns: "[]Trit"
+    description: "Generate random trit vector (Xorshift64*)"
+
+  encodeSequence:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: symbols
+        type: "[]const usize"
+      - name: vector_size
+        type: "usize"
+    returns: "[]Trit"
+    description: "Encode symbol sequence into trit vector"
+
+  probeSequence:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: vector
+        type: "[]const Trit"
+      - name: symbol
+        type: "usize"
+      - name: vector_size
+        type: "usize"
+    returns: "?SearchResult"
+    description: "Probe for symbol in encoded sequence"
+
+behaviors:
+  - name: simd_bind
+    description: "Use SIMD for binding: Vec32i8 multiplication"
+    note: "Load 32 trits into Vec32i8, multiply element-wise"
+
+  - name: triton_identity
+    description: "Triton self-inverse property: unbind(bind(a, a)) = all(1)"
+    note: "Fundamental for cleanup operations"

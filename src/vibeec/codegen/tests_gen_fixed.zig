@@ -98,3 +98,13 @@ pub const TestGenerator = struct {
         try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
         try self.builder.newline();
 
+        // Generate test for each test case
+        for (test_cases) |tc| {
+            try self.builder.writeLine("test \"");
+            try self.builder.writeLine(tc.name);
+            try self.builder.writeLine("\" {");
+            // TODO: Add test body based on tc.expected
+            try self.builder.writeLine("}");
+        }
+    }
+};

@@ -1,0 +1,111 @@
+name: tri_array
+version: "0.1.0"
+module: tri.array
+description: "TRI array utilities — slices, views, and operations"
+
+types:
+  ArrayView(T):
+    description: "Non-owning view into a slice"
+    fields:
+      ptr: [*]T
+      len: usize
+
+  SliceRange:
+    description: "Range for slice operations"
+    fields:
+      start: usize
+      end: usize
+      step: i64
+
+functions:
+  slice:
+    params:
+      - name: arr
+        type: "[]const T"
+      - name: start
+        type: "usize"
+      - name: end
+        type: "usize"
+    returns: "[]const T"
+    description: "Get sub-slice [start:end)"
+
+  sliceFrom:
+    params:
+      - name: arr
+        type: "[]const T"
+      - name: start
+        type: "usize"
+    returns: "[]const T"
+    description: "Get sub-slice from start to end"
+
+  first:
+    params:
+      - name: arr
+        type: "[]const T"
+    returns: "T"
+    description: "Get first element"
+
+  last:
+    params:
+      - name: arr
+        type: "[]const T"
+    returns: "T"
+    description: "Get last element"
+
+  isEmpty:
+    params:
+      - name: arr
+        type: "[]const T"
+    returns: "bool"
+    description: "Check if array is empty"
+
+  contains:
+    params:
+      - name: arr
+        type: "[]const T"
+      - name: item
+        type: "T"
+    returns: "bool"
+    description: "Check if array contains item"
+
+  indexOf:
+    params:
+      - name: arr
+        type: "[]const T"
+      - name: item
+        type: "T"
+    returns: "?usize"
+    description: "Find index of item"
+
+  reverse:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: arr
+        type: "[]const T"
+    returns: "[]T"
+    description: "Create reversed copy"
+
+  concat:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: a
+        type: "[]const T"
+      - name: b
+        type: "[]const T"
+    returns: "[]T"
+    description: "Concatenate two arrays"
+
+behaviors:
+  - name: slice_bounds_check
+    description: "All slice operations validate bounds"
+    note: "Panic if start > end or end > len"
+
+  - name: const_slices
+    description: "Input slices are never mutated"
+    note: "Output slices are new allocations or views"
+
+  - name: zero_copy_views
+    description: "ArrayView provides zero-copy access"
+    note: "Use for read-only traversal"

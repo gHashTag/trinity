@@ -1,0 +1,69 @@
+name: tri_quadtree
+version: "0.1.0"
+language: zig
+module: tri.quadtree
+description: "Quadtree for 2D spatial partitioning"
+
+types:
+  Rect:
+    description: "Rectangle boundary"
+    fields:
+      x: "f64"
+      y: "f64"
+      width: "f64"
+      height: "f64"
+
+  QuadNode:
+    description: "Quadtree node"
+    fields:
+      boundary: "Rect"
+      children: "[4]?QuadNode"
+      points: "[][2]f64"
+      divided: "bool"
+      allocator: "std.mem.Allocator"
+
+  QuadTree:
+    description: "Quadtree for spatial queries"
+    fields:
+      root: "?QuadNode"
+      capacity: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: boundary
+        type: "Rect"
+      - name: capacity
+        type: "usize"
+    returns: "QuadTree"
+    description: "Create quadtree"
+
+  insert:
+    params:
+      - name: qt
+        type: "*QuadTree"
+      - name: x
+        type: "f64"
+      - name: y
+        type: "f64"
+    returns: "!void"
+    description: "Insert point"
+
+  query:
+    params:
+      - name: qt
+        type: "*QuadTree"
+      - name: range
+        type: "Rect"
+    returns: "[][2]f64"
+    description: "Find points in range"
+
+  deinit:
+    params:
+      - name: qt
+        type: "*QuadTree"
+    returns: "void"
+    description: "Free tree"

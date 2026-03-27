@@ -1,0 +1,164 @@
+name: riemann_gamma
+version: "1.0.0"
+language: zig
+module: math.riemann_gamma
+description: "Riemann-γ: φ-based scaling in number theory (TTT Dogfood v0.1)"
+
+types:
+  Complex:
+    description: "Complex number for zeta function"
+    fields:
+      - name: re
+        type: f64
+        description: "Real part"
+      - name: im
+        type: f64
+        description: "Imaginary part"
+
+behaviors:
+  - name: Complex.init
+    given: "Real and imaginary parts"
+    when: "Creating a complex number"
+    then: "Returns Complex with re and im set"
+
+  - name: Complex.add
+    given: "Two complex numbers a and b"
+    when: "Adding complex numbers"
+    then: "Returns (a.re+b.re, a.im+b.im)"
+
+  - name: Complex.mul
+    given: "Two complex numbers a and b"
+    when: "Multiplying complex numbers"
+    then: "Returns (a.re*b.re - a.im*b.im, a.re*b.im + a.im*b.re)"
+
+  - name: Complex.abs
+    given: "A complex number z"
+    when: "Computing magnitude"
+    then: "Returns sqrt(z.re² + z.im²)"
+
+constants:
+  - name: PHI
+    type: f64
+    value: 1.6180339887498948482
+    description: "Golden ratio φ = (1 + √5)/2"
+
+  - name: PHI_CUBED
+    type: f64
+    value: 4.23606797749978969641
+    description: "φ³ = 4.23606797749978969641..."
+
+  - name: GAMMA
+    type: f64
+    value: 0.23606797749978969641
+    description: "Barbero-Immirzi parameter γ = φ⁻³"
+
+  - name: TRINITY
+    type: f64
+    value: 3.0
+    description: "Fundamental TRINITY identity: φ² + φ⁻² = 3"
+
+  - name: PI
+    type: f64
+    value: 3.14159265358979323846
+    description: "π constant"
+
+functions:
+  - name: gammaFn
+    params:
+      - name: x
+        type: f64
+        description: "Real argument"
+    returns: f64
+    description: "Gamma function Γ(x) via Lanczos approximation"
+
+  - name: zeta
+    params:
+      - name: s
+        type: Complex
+        description: "Complex argument"
+      - name: terms
+        type: usize
+        description: "Number of series terms"
+    returns: Complex
+    description: "Riemann zeta function ζ(s) using Dirichlet eta"
+
+  - name: isZetaZero
+    params:
+      - name: s
+        type: Complex
+        description: "Complex argument"
+      - name: tolerance
+        type: f64
+        description: "Tolerance for zero detection"
+    returns: bool
+    description: "Check if ζ(s) is close to zero"
+
+  - name: primeCountPhi
+    params:
+      - name: x
+        type: f64
+        description: "Upper bound"
+    returns: f64
+    description: "φ-scaled prime number theorem: π(x) ≈ x/(φ×ln(x)×(1-γ))"
+
+  - name: primeCountStandard
+    params:
+      - name: x
+        type: f64
+        description: "Upper bound"
+    returns: f64
+    description: "Standard prime number theorem: π(x) ≈ x/ln(x)"
+
+  - name: primeCountGamma
+    params:
+      - name: x
+        type: f64
+        description: "Upper bound"
+    returns: f64
+    description: "γ-corrected prime number theorem: π(x) ≈ x/(ln(x)×(1+γ/√ln(x)))"
+
+  - name: onCriticalLine
+    params:
+      - name: s
+        type: Complex
+        description: "Complex argument"
+    returns: bool
+    description: "Check if s is on the critical line Re(s) = 1/2"
+
+  - name: gammaCriticalLine
+    returns: f64
+    description: "γ-hypothesis: Critical line position from φ³"
+
+  - name: zeroSpacingPhi
+    params:
+      - name: t
+        type: f64
+        description: "Height on critical line"
+    returns: f64
+    description: "φ-based zero spacing: ~2π/(φ×ln(t))"
+
+  - name: zeroSpacingStandard
+    params:
+      - name: t
+        type: f64
+        description: "Height on critical line"
+    returns: f64
+    description: "Standard zero spacing: ~2π/ln(t)"
+
+test_cases:
+  - name: "phi cubed and gamma"
+    description: "Verify φ³ and γ values"
+  - name: "TRINITY identity"
+    description: "Verify φ² + φ⁻² = 3"
+  - name: "zeta of 2"
+    description: "Verify ζ(2) = π²/6 (Basel problem)"
+  - name: "zeta of -1"
+    description: "Verify ζ(-1) = -1/12"
+  - name: "critical line"
+    description: "Verify critical line detection"
+  - name: "prime count gamma"
+    description: "Compare φ-scaled vs standard prime counting"
+  - name: "zero spacing"
+    description: "Verify φ-based zero spacing ratio"
+  - name: "gamma critical line"
+    description: "Verify γ-critical line hypothesis"

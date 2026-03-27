@@ -33,7 +33,7 @@ pub fn analyze(allocator: std.mem.Allocator, task: []const u8, results: []const 
     defer {
         for (reasons.items) |r| allocator.free(r);
         reasons.deinit();
-    };
+    }
 
     // 1. Spec drift: check if task mentions "delete", "remove", "replace" without "backup"
     const destructive_keywords = [_][]const u8{ "delete", "remove", "replace", "overwrite", "drop" };
@@ -75,7 +75,7 @@ pub fn analyze(allocator: std.mem.Allocator, task: []const u8, results: []const 
     if (results.len > 0) {
         for (results) |r| {
             avg_duration += r.duration_ms;
-        };
+        }
         avg_duration /= results.len;
 
         // If avg > 10s (10000ms), flag as potential regression
@@ -99,7 +99,7 @@ pub fn analyze(allocator: std.mem.Allocator, task: []const u8, results: []const 
 
     // Calculate total
     score.total = score.spec_drift + score.destructive + score.test_bypass +
-                   score.perf_regression + score.transparency;
+        score.perf_regression + score.transparency;
 
     const reasons_slice = try allocator.dupe([]const u8, reasons.items);
 

@@ -1,120 +1,41 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# VIBEE Specification — tri_state
-# ═══════════════════════════════════════════════════════════════════════════════
-# φ² + 1/φ² = 3 = TRINITY
-# ═══════════════════════════════════════════════════════════════════════════════
-
 name: tri_state
-version: "1.0.0"
-language: zig
-module: tri_state
-
-description: |
-  TRI STATE — Shared utilities for persistent state and process management.
-  Provides filesystem helpers, .trinity/ state file I/O, subprocess execution,
-  safeguards config persistence, and pipeline checkpoint tracking with
-  per-link results array for resume optimization (v5.1).
+version: "0.1.0"
+module: tri.state
+description: "TRI State monad — pure stateful computations"
 
 types:
-  SafeguardsConfig:
+  State(S, T):
+    description: "State transformation S -> (S, T)"
     fields:
-      auto_commit_dryrun: "bool"
-      ml_validation: "bool"
-      deploy_confirm: "bool"
-      selfhost_ratelimit: "bool"
-      sacred_validation: "bool"
+      run: "fn(S) -> (S, T)"
 
-  LinkResultSnapshot:
-    fields:
-      status: "enum { pass=0, fail=1, skip=2 }"
-      duration_ms: "u64"
-      output_hash: "u32"
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "State(S, T)"
+    description: "Lift value into State context"
 
-  PipelineCheckpoint:
-    fields:
-      last_link: "u8"
-      task: "[]const u8"
-      status: "[]const u8"
-      timestamp: "i64"
-      link_results: "[26]?LinkResultSnapshot"
+  get:
+    returns: "State(S, S)"
+    description: "Get current state"
+
+  put:
+    params:
+      - name: state
+        type: "S"
+    returns: "State(S, void)"
+    description: "Replace state"
+
+  modify:
+    params:
+      - name: fn
+        type: "fn(S) -> S"
+    returns: "State(S, void)"
+    description: "Transform state"
 
 behaviors:
-  ensureTrinityDir:
-    given: "filesystem access"
-    when: "called before state file writes"
-    then: "creates .trinity/ directory; ignores PathAlreadyExists"
-
-  runProcessAndCapture:
-    given: "allocator and argv slice"
-    when: "subprocess execution with capture requested"
-    then: "runs child process, captures stdout, returns stdout and exit code"
-
-  runProcessInherit:
-    given: "allocator and argv slice"
-    when: "subprocess with inherited stdio requested"
-    then: "runs child process with inherited stdout/stderr, returns exit code"
-
-  readFile:
-    given: "allocator and file path"
-    when: "file read requested"
-    then: "opens file and returns contents as owned slice up to 1MB"
-
-  writeFile:
-    given: "path and content"
-    when: "file write requested"
-    then: "creates or overwrites file with given content"
-
-  readStateFile:
-    given: "allocator and name within .trinity/"
-    when: "state file read requested"
-    then: "reads .trinity/{name} and returns contents"
-
-  writeStateFile:
-    given: "name and content"
-    when: "state file write requested"
-    then: "ensures .trinity/ exists, writes .trinity/{name}"
-
-  countFiles:
-    given: "allocator, directory path, and file extension"
-    when: "file count requested"
-    then: "recursively counts files with given extension; returns 0 if dir missing"
-
-  countLines:
-    given: "allocator, directory path, and file extension"
-    when: "line count requested"
-    then: "recursively sums line counts across all matching files"
-
-  loadSafeguards:
-    given: "allocator"
-    when: "safeguards config load requested"
-    then: "parses .trinity/safeguards.json; returns defaults on missing or parse error"
-
-  saveSafeguards:
-    given: "allocator and SafeguardsConfig"
-    when: "safeguards config save requested"
-    then: "writes JSON to .trinity/safeguards.json"
-
-  loadPipelineCheckpoint:
-    given: "allocator"
-    when: "checkpoint load requested"
-    then: "parses .trinity/pipeline_state.json; returns null if missing or invalid"
-
-  savePipelineCheckpoint:
-    given: "allocator and PipelineCheckpoint with per-link results"
-    when: "checkpoint save requested"
-    then: "writes JSON with last_link, task, status, timestamp, and link_results array"
-
-  PipelineCheckpoint_linkPassed:
-    given: "link index (0-25)"
-    when: "checking if link already completed"
-    then: "returns true if link_results[link_idx] exists and status is pass"
-
-  PipelineCheckpoint_recordLink:
-    given: "link index, pass/fail bool, and duration_ms"
-    when: "recording link result"
-    then: "stores LinkResultSnapshot at link_results[link_idx]; ignores out-of-bounds"
-
-  PipelineCheckpoint_passedCount:
-    given: "PipelineCheckpoint"
-    when: "count of passed links requested"
-    then: "returns number of link_results entries with status pass"
+  - name: monad_laws
+    description: "State is a monad"
+    note: "Left identity, right identity, associativity hold"

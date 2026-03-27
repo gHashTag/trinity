@@ -1,0 +1,70 @@
+name: tri_logging
+version: "0.1.0"
+module: tri.logging
+description: "TRI logging utilities — log levels and formatted output"
+
+types:
+  LogLevel:
+    description: "Logging severity levels"
+    enum:
+      - debug
+      - info
+      - warn
+      - error
+
+  LogEntry:
+    description: "Single log entry"
+    fields:
+      level: LogLevel
+      message: []const u8
+      timestamp: u64
+      tag: ?[]const u8
+
+functions:
+  levelToString:
+    params:
+      - name: level
+        type: "LogLevel"
+    returns: "[]const u8"
+    description: "Convert log level to string"
+
+  levelFromString:
+    params:
+      - name: s
+        type: "[]const u8"
+    returns: "?LogLevel"
+    description: "Parse log level from string"
+
+  levelColor:
+    params:
+      - name: level
+        type: "LogLevel"
+    returns: "[]const u8"
+    description: "Get ANSI color code for level"
+
+  formatEntry:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: entry
+        type: "LogEntry"
+    returns: "![]u8"
+    description: "Format log entry for output"
+
+  shouldLog:
+    params:
+      - name: msg_level
+        type: "LogLevel"
+      - name: min_level
+        type: "LogLevel"
+    returns: "bool"
+    description: "Check if message should be logged"
+
+behaviors:
+  - name: level_hierarchy
+    description: "debug < info < warn < error"
+    note: "Higher levels include lower levels"
+
+  - name: color_output
+    description: "Uses ANSI colors for terminal output"
+    note: "Can be disabled for file logging"

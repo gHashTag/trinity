@@ -70,7 +70,7 @@
 φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
 ```
 
-[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri-lang/emu/specs/tri27_isa.md)
+[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri27/emu/specs/tri27_isa.md)
 
 ---
 
@@ -405,6 +405,31 @@ tri help fix           # Detailed command help
 | `tri test e2e` | Run E2E toxic test suite |
 | `tri test --repl` | Run REPL tests |
 
+#### TRI-27 Token & Staking
+
+TRI-27 VM includes integrated $TRI token functionality for staking, rewards, and wallet operations.
+
+| Command | Description |
+|---------|-------------|
+| `tri27 token balance <address>` | Check $TRI token balance (18 decimals) |
+| `tri27 token stake <amount> <days>` | Stake tokens for 7-365 days lock period |
+| `tri27 token unstake <address>` | Unstake tokens (must be past lock period) |
+| `tri27 token claim <address>` | Claim pending staking rewards |
+| `tri27 wallet list` | List all stakes and rewards |
+| `tri27 stake info <address>` | View stake details (amount, lock period, progress) |
+| `tri27 rewards pending <address>` | Check pending reward amount and APY |
+
+**Coptic Register Mapping:**
+- `t18` — Current token balance (read-only)
+- `t19` — Pending rewards (read-only)
+- `t20` — Staked amount (read-only)
+- `t21` — Total staked across network (read-only)
+- `t22` — Current APY (read-only)
+
+**APY Formula:** `base 5% + lock_bonus (max 10%) + staked_bonus (max 5%) = capped at 20%`
+
+See [TRI-27 Documentation](docs/tri27/README.md) for full ISA reference and integration guide.
+
 #### Namespaced Commands
 
 Namespace-aware syntax: `tri <namespace> <command>`
@@ -489,7 +514,7 @@ The Trinity CLI Docker image is published to GitHub Container Registry.
 | **Platforms** | linux/amd64 |
 | **Base** | Alpine 3.19 |
 | **Size** | ~8 MB |
-| **Dockerfile** | [`deploy/Dockerfile.tri`](deploy/Dockerfile.tri) |
+| **Dockerfile** | [`deploy/Dockerfile`](deploy/Dockerfile) |
 
 ### Run
 
@@ -713,7 +738,7 @@ tri test <file>        # Generate tests
 tri help               # Full help
 ```
 
-Multilingual: Russian, English, Chinese -- auto-detected.
+Multilingual: English, Chinese -- auto-detected.
 
 ---
 
@@ -819,7 +844,7 @@ zig build
 4. **Verify**: Agent generates code, runs tests, and checks performance
 5. **Commit**: Upon success, agent updates `.ralph/SUCCESS_HISTORY.md`
 
-For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)** and **[docs/docs/development/ralph.md](docs/docs/development/ralph.md)**.
+For detailed protocols, see **[docs/docs/development/ralph.md](docs/docs/development/ralph.md)**.
 
 ---
 

@@ -119,9 +119,11 @@ pub fn main() !void {
 
     print("Indexing {d} lines from '{s}'...\n", .{ total_lines, file_path });
 
-    // Encode query
+    // Encode query to HybridBigInt (stub: hash-based)
     var timer = try std.time.Timer.start();
-    var query_vec = vsa.encodeTextWords(query_text);
+    var query_hash: i64 = 0;
+    for (query_text) |c| query_hash = query_hash *% 31 + @as(i64, @intCast(c));
+    var query_vec = HybridBigInt.fromI64(query_hash);
 
     // Encode all lines and compute similarity (use heap for results array)
     const results = try allocator.alloc(SearchResult, total_lines);
@@ -132,7 +134,10 @@ pub fn main() !void {
         const len = @min(line_lens[line_idx], 4096);
         const line_text = file_data[start .. start + len];
 
-        var line_vec = vsa.encodeTextWords(line_text);
+        // Encode line to HybridBigInt (stub: hash-based)
+        var line_hash: i64 = 0;
+        for (line_text) |c| line_hash = line_hash *% 31 + @as(i64, @intCast(c));
+        var line_vec = HybridBigInt.fromI64(line_hash);
         const sim = vsa.cosineSimilarity(&query_vec, &line_vec);
 
         results[line_idx] = .{

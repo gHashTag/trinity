@@ -1,0 +1,22 @@
+name: tri_tim_sort
+version: "0.1.0"
+language: zig
+module: tri.tim_sort
+description: "Tim Sort - hybrid merge+insertion (Python/Java default)"
+
+functions:
+  sort:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort using Tim Sort algorithm"
+
+behaviors:
+  - name: min_runs
+    description: "Find runs, merge using galloping mode"
+    implementation: |
+      Identify natural runs, extend to min_run=32.
+      Merge runs using stack-based merging with gallop.

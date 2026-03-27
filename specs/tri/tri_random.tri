@@ -1,0 +1,50 @@
+name: tri_random
+version: "0.1.0"
+module: tri.random
+description: "TRI random utilities — PRNG and sampling"
+
+types:
+  Rng:
+    description: "Random number generator state"
+    fields:
+      state: u64
+
+functions:
+  init:
+    params:
+      - name: seed
+        type: "u64"
+    returns: "Rng"
+    description: "Initialize RNG with seed"
+
+  next:
+    params:
+      - name: rng
+        type: "*Rng"
+    returns: "u64"
+    description: "Get next random u64"
+
+  range:
+    params:
+      - name: rng
+        type: "*Rng"
+      - name: max
+        type: "u64"
+    returns: "u64"
+    description: "Random number in [0, max)"
+
+  rangeInclusive:
+    params:
+      - name: rng
+        type: "*Rng"
+      - name: min
+        type: "i64"
+      - name: max
+        type: "i64"
+    returns: "i64"
+    description: "Random number in [min, max]"
+
+behaviors:
+  - name: xorshift64
+    description: "Xorshift64* PRNG algorithm"
+    note: "Fast, non-cryptographic PRNG"

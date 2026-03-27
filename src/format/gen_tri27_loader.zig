@@ -18,11 +18,7 @@ pub const LoadResult = struct {
     data_size: u32,
 };
 
-pub fn loadBinary(
-    path: []const u8,
-    comptime memType: type,
-    allocator: std.mem.Allocator
-) !LoadResult {
+pub fn loadBinary(path: []const u8, comptime memType: type, allocator: std.mem.Allocator) !LoadResult {
     _ = memType;
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();

@@ -26,6 +26,7 @@ const railway_ssh = @import("railway_ssh.zig");
 const cloud_orchestrator = @import("cloud_orchestrator.zig");
 const railway_farm = @import("railway_farm.zig");
 const cloud_train = @import("cloud_train.zig");
+const dns_mail = @import("dns_mail.zig");
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -125,6 +126,12 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (eql(u8, subcmd, "hub")) {
         const tri_hub = @import("tri_hub.zig");
         return tri_hub.runHubCommand(allocator, sub_args);
+    } else if (eql(u8, subcmd, "mail-setup")) {
+        return mailSetup(allocator, sub_args);
+    } else if (eql(u8, subcmd, "mail-check")) {
+        return mailCheck(allocator, sub_args);
+    } else if (eql(u8, subcmd, "mail-apply")) {
+        return mailApply(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -164,7 +171,7 @@ fn generateDomain(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(vars_json);
 
     const resp = api.query(gql, vars_json) catch |err| {
-        print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+        print("  {s}❌ API error: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(resp);
@@ -193,12 +200,11 @@ fn generateDomain(allocator: Allocator, args: []const []const u8) !void {
 }
 
 /// tri cloud status — Print agent service count and health
-fn cloudStatus(allocator: Allocator) !void {
+fn cloudStatus(_: Allocator) !void {
     print("Trinity Cloud Status\n", .{});
     print("  Max agents: 10\n", .{});
     print("  Config: Railway (GraphQL API)\n", .{});
     print("  Image: ghcr.io/ghashtag/trinity-agent:latest\n", .{});
-    _ = allocator;
 }
 
 /// tri cloud logs [service] — Get deployment logs
@@ -213,7 +219,7 @@ fn cloudLogs(allocator: Allocator, args: []const []const u8) !void {
 
     // Get services first, then deployments for the first/named service
     const services_json = api.getServices() catch |err| {
-        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch services: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(services_json);
@@ -251,7 +257,7 @@ fn cloudVars(allocator: Allocator, args: []const []const u8) !void {
         }
 
         api.upsertVariable(service_id, env_id, key, value) catch |err| {
-            print("{s}Failed to set variable: {}{s}\n", .{ RED, err, RESET });
+            print("{s}Failed to set variable: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
 
@@ -271,7 +277,7 @@ fn cloudVars(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const response = api.getVariables(service_id, env_id) catch |err| {
-        print("{s}Failed to fetch variables: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch variables: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(response);
@@ -300,7 +306,7 @@ fn cloudDeploy(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Triggering redeployment...{s}\n", .{ YELLOW, RESET });
 
     const response = api.redeployService(service_id, env_id) catch |err| {
-        print("{s}Failed to redeploy: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to redeploy: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(response);
@@ -339,7 +345,7 @@ fn cloudExec(allocator: Allocator, args: []const []const u8) !void {
     print("{s}$ {s}{s}\n", .{ GRAY, cmd, RESET });
 
     const output = ssh.exec(allocator, cmd) catch |err| {
-        print("{s}SSH exec failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH exec failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -354,7 +360,7 @@ fn cloudPull(allocator: Allocator) !void {
     print("{s}Pulling latest code on Railway...{s}\n", .{ CYAN, RESET });
 
     const output = ssh.pullCode(allocator) catch |err| {
-        print("{s}Pull failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Pull failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -371,7 +377,7 @@ fn cloudSSHStatus(allocator: Allocator) !void {
     const ssh = railway_ssh.RailwaySSH.initDefault();
 
     const output = ssh.getStatus(allocator) catch |err| {
-        print("{s}SSH status failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH status failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -413,7 +419,7 @@ fn cloudSpawn(allocator: Allocator, args: []const []const u8) !void {
     }
 
     const result = cloud_orchestrator.spawnAgentOnAccount(allocator, issue_num, account_hint) catch |err| {
-        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to spawn agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -514,7 +520,7 @@ fn cloudSpawnAll(allocator: Allocator, args: []const []const u8) !void {
         print("{s}Spawning agent for #{d}...{s} ", .{ CYAN, issue_num, RESET });
 
         const result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-            print("{s}FAILED: {}{s}\n", .{ RED, err, RESET });
+            print("{s}FAILED: {s}{s}\n", .{ RED, @errorName(err), RESET });
             failed += 1;
             continue;
         };
@@ -563,7 +569,7 @@ fn cloudKill(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Killing agent for issue #{d}...{s}\n", .{ YELLOW, issue_num, RESET });
 
     cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-        print("{s}Failed to kill agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to kill agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -837,7 +843,7 @@ fn cloudSync(allocator: Allocator) !void {
     defer api.deinit();
 
     const services_json = api.getServices() catch |err| {
-        print("{s}Failed to fetch services: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to fetch services: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(services_json);
@@ -864,7 +870,7 @@ fn cloudCleanup(allocator: Allocator) !void {
     print("{s}Cleaning up inactive agents...{s}\n", .{ CYAN, RESET });
 
     const cleaned = cloud_orchestrator.cleanupDone(allocator) catch |err| {
-        print("{s}Cleanup failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Cleanup failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1036,7 +1042,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
     // Step 1: Spawn agent
     print("\n{s}[1/6] Spawning agent...{s}\n", .{ CYAN, RESET });
     const spawn_result = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-        print("{s}Failed to spawn agent: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to spawn agent: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1146,10 +1152,10 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
 
             print("  {s}Killing and respawning...{s}\n", .{ YELLOW, RESET });
             cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-                std.log.warn("tri_cloud: killAgent failed for issue {d}: {}", .{ issue_num, err });
+                std.log.warn("tri_cloud: killAgent failed for issue {d}: {s}", .{ issue_num, @errorName(err) });
             };
             _ = cloud_orchestrator.spawnAgent(allocator, issue_num) catch |err| {
-                print("  {s}✗ Respawn failed: {}{s}\n", .{ RED, err, RESET });
+                print("  {s}✗ Respawn failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
                 break;
             };
             print("  {s}✓ Respawned (retry {d}){s}\n", .{ GREEN, retry_count, RESET });
@@ -1167,7 +1173,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
 
                 // Step 5: Verify PR (local build)
                 const verify_result = cloudVerifyPR(allocator, issue_num) catch |err| {
-                    print("  {s}⚠ Verification failed: {}{s}\n", .{ YELLOW, err, RESET });
+                    print("  {s}⚠ Verification failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
                     print("  {s}PR created but needs manual review{s}\n", .{ YELLOW, RESET });
                     break;
                 };
@@ -1175,7 +1181,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
                 if (verify_result) {
                     print("\n{s}[5/6] PR verified, auto-merging...{s}\n", .{ CYAN, RESET });
                     _ = cloudMergePR(allocator, issue_num) catch |err| {
-                        print("  {s}⚠ Auto-merge failed: {}{s}\n", .{ YELLOW, err, RESET });
+                        print("  {s}⚠ Auto-merge failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
                         print("  {s}Manual merge required{s}\n", .{ YELLOW, RESET });
                     };
                 } else {
@@ -1192,7 +1198,7 @@ fn cloudPipeline(allocator: Allocator, args: []const []const u8) !void {
     // Step 6: Cleanup
     print("\n{s}[6/6] Cleaning up agent...{s}\n", .{ CYAN, RESET });
     cloud_orchestrator.killAgent(allocator, issue_num) catch |err| {
-        std.log.warn("tri_cloud: killAgent cleanup failed for issue {d}: {}", .{ issue_num, err });
+        std.log.warn("tri_cloud: killAgent cleanup failed for issue {d}: {s}", .{ issue_num, @errorName(err) });
     };
     print("{s}✓ Agent destroyed{s}\n", .{ GREEN, RESET });
 
@@ -1214,7 +1220,7 @@ fn cloudVerify(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Verifying PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
 
     const passed = cloudVerifyPR(allocator, issue_num) catch |err| {
-        print("{s}Verification failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Verification failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1240,7 +1246,7 @@ fn cloudMerge(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Merging PR for issue #{d}...{s}\n", .{ CYAN, issue_num, RESET });
 
     _ = cloudMergePR(allocator, issue_num) catch |err| {
-        print("{s}Merge failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Merge failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1332,7 +1338,7 @@ fn cloudMergePR(allocator: Allocator, issue_num: u32) !void {
     const github_client = @import("github_client.zig");
 
     var client = github_client.GitHubClient.init(allocator, false) catch |err| {
-        print("  {s}GitHub client init failed: {}{s}\n", .{ RED, err, RESET });
+        print("  {s}GitHub client init failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return error.MergeFailed;
     };
     defer client.deinit();
@@ -1406,9 +1412,7 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// tri cloud metrics — Show aggregate agent metrics
-fn cloudMetrics(allocator: Allocator) !void {
-    _ = allocator;
-
+fn cloudMetrics(_: Allocator) !void {
     const summary = cloud_orchestrator.getMetrics();
 
     print("\n{s}{s}", .{ GOLDEN, BOLD });
@@ -1467,7 +1471,7 @@ fn cloudRecordMetrics(allocator: Allocator, args: []const []const u8) !void {
         lines_removed,
         pr_number,
     ) catch |err| {
-        print("{s}Failed to record metrics: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to record metrics: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1528,22 +1532,22 @@ fn cloudApiCheck(allocator: Allocator) !void {
         .extra_headers = &extra_headers,
         .redirect_behavior = .unhandled,
     }) catch |err| {
-        print(" {s}Connection failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Connection failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer req.deinit();
 
     req.transfer_encoding = .{ .content_length = body.len };
     var body_writer = req.sendBodyUnflushed(&.{}) catch |err| {
-        print(" {s}Send failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Send failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     body_writer.writer.writeAll(body) catch |err| {
-        print(" {s}Write failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Write failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     body_writer.end() catch |err| {
-        print(" {s}End failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}End failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     if (req.connection) |conn| conn.flush() catch |err| {
@@ -1552,7 +1556,7 @@ fn cloudApiCheck(allocator: Allocator) !void {
 
     var redirect_buf: [0]u8 = .{};
     var response = req.receiveHead(&redirect_buf) catch |err| {
-        print(" {s}Receive failed: {}{s}\n", .{ RED, err, RESET });
+        print(" {s}Receive failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
 
@@ -1621,14 +1625,14 @@ fn cloudRedeploy(allocator: Allocator, args: []const []const u8) !void {
 
     // 1. Update ISSUE_NUMBER env var
     api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
-        print("{s}Failed to update env vars: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to update env vars: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     print(" {s}ISSUE_NUMBER={s} set{s}\n", .{ GREEN, issue_str, RESET });
 
     // 2. Trigger redeploy
     const deploy_resp = api.redeployService(service_id, env_id) catch |err| {
-        print("{s}Failed to trigger deploy: {}{s}\n", .{ RED, err, RESET });
+        print("{s}Failed to trigger deploy: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     allocator.free(deploy_resp);
@@ -1851,7 +1855,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     ;
 
     const output = ssh.exec(allocator, check_cmd) catch |err| {
-        print(" {s}SSH: {s}  Connection failed ({})  {s}\n", .{ RED, "❌", err, RESET });
+        print(" {s}SSH: {s}  Connection failed ({s})  {s}\n", .{ RED, "❌", @errorName(err), RESET });
         print(" {s}Bridge:{s} {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}tmux:{s}   {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}Procs:{s}  {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
@@ -2007,7 +2011,7 @@ fn cloudRestart(allocator: Allocator, args: []const []const u8) !void {
     print("{s}Restarting {s}...{s}\n", .{ CYAN, service, RESET });
 
     const output = ssh.exec(allocator, cmd) catch |err| {
-        print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+        print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return;
     };
     defer allocator.free(output);
@@ -2027,7 +2031,7 @@ fn cloudBridge(allocator: Allocator, args: []const []const u8) !void {
 
     if (eql(u8, subcmd, "status")) {
         const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null || echo 'FAIL'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2037,14 +2041,14 @@ fn cloudBridge(allocator: Allocator, args: []const []const u8) !void {
         var cmd_buf: [128]u8 = undefined;
         const cmd = std.fmt.bufPrint(&cmd_buf, "tail -{s} /data/bridge.log 2>/dev/null || echo 'No bridge.log'", .{lines}) catch return;
         const output = ssh.exec(allocator, cmd) catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
         print("{s}", .{output});
     } else if (eql(u8, subcmd, "queue")) {
         const output = ssh.exec(allocator, "curl -sf --max-time 5 http://localhost:8077/px/status?token=$PX_BRIDGE_TOKEN 2>/dev/null | grep -o '\"queue_[^}]*' || echo 'FAIL'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2061,7 +2065,7 @@ fn cloudTmux(allocator: Allocator, args: []const []const u8) !void {
 
     if (eql(u8, subcmd, "list")) {
         const output = ssh.exec(allocator, "tmux list-sessions 2>/dev/null || echo 'No tmux sessions'") catch |err| {
-            print("{s}SSH failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}SSH failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2071,7 +2075,7 @@ fn cloudTmux(allocator: Allocator, args: []const []const u8) !void {
         const lines_str = if (args.len > 2) args[2] else "50";
         const lines = std.fmt.parseInt(u32, lines_str, 10) catch 50;
         const output = ssh.tmuxCapture(allocator, session, lines) catch |err| {
-            print("{s}Capture failed: {}{s}\n", .{ RED, err, RESET });
+            print("{s}Capture failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(output);
@@ -2113,7 +2117,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "run", "list", "--workflow", "ci-runner.yml", "--limit", "5" },
         }) catch |err| {
-            print("{s}❌ Failed to get CI status: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to get CI status: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2131,7 +2135,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "workflow", "run", "ci-runner.yml" },
         }) catch |err| {
-            print("{s}❌ Failed to trigger CI: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to trigger CI: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2151,7 +2155,7 @@ fn cloudCi(allocator: Allocator, args: []const []const u8) !void {
             .allocator = allocator,
             .argv = &.{ "gh", "run", "view", "--log-failed" },
         }) catch |err| {
-            print("{s}❌ Failed to get CI logs: {}{s}\n", .{ RED, err, RESET });
+            print("{s}❌ Failed to get CI logs: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(result.stdout);
@@ -2196,7 +2200,7 @@ fn cloudIde(allocator: Allocator, args: []const []const u8) !void {
         defer allocator.free(vars_json);
 
         const resp = api.query(gql, vars_json) catch |err| {
-            print("  {s}❌ API error: {}{s}\n", .{ RED, err, RESET });
+            print("  {s}❌ API error: {s}{s}\n", .{ RED, @errorName(err), RESET });
             return;
         };
         defer allocator.free(resp);
@@ -2274,11 +2278,682 @@ fn printUsage() void {
     print("  {s}tri cloud hub status{s}          Pipeline state\n", .{ GREEN, RESET });
     print("  {s}tri cloud hub gate{s}            Check CI gate (pass/fail)\n", .{ GREEN, RESET });
     print("  {s}tri cloud hub pipeline{s}        Full: CI → gate → farm recycle\n", .{ GREEN, RESET });
+    print("\n  {s}Email DNS Setup:{s}\n", .{ BOLD, RESET });
+    print("  {s}tri cloud mail-setup <provider> <domain>{s}  Generate DNS records for email\n", .{ GREEN, RESET });
+    print("  {s}tri cloud mail-apply <provider> <domain>{s}   Auto-add DNS records via UD CLI\n", .{ GREEN, RESET });
+    print("  {s}tri cloud mail-check <domain>{s}              Verify MX records\n", .{ GREEN, RESET });
+    print("  {s}  Providers: zoho, gmail, proton, migadu, outlook{s}\n", .{ GRAY, RESET });
+    print("  {s}  mail-apply requires: npm install -g @unstoppabledomains/cli && ud login{s}\n", .{ GRAY, RESET });
     print("\n  {s}IDE (Code Server):{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud ide status{s}          Code-server service status\n", .{ GREEN, RESET });
     print("  {s}tri cloud ide url{s}             Print public URL\n", .{ GREEN, RESET });
     print("  {s}tri cloud ide restart{s}         Redeploy code-server\n", .{ GREEN, RESET });
     print("\n  {s}Env vars: RAILWAY_API_TOKEN[_2,_3], RAILWAY_PROJECT_ID[_2,_3], RAILWAY_ENVIRONMENT_ID[_2,_3]{s}\n\n", .{ GRAY, RESET });
+}
+
+/// tri cloud mail-setup <provider> <domain> — Generate email DNS records
+fn mailSetup(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri cloud mail-setup <provider> <domain>{s}\n", .{ YELLOW, RESET });
+        print("\n  {s}Providers:{s}\n", .{ BOLD, RESET });
+        print("    {s}zoho{s}     - Zoho Mail (5 free mailboxes)\n", .{ GREEN, RESET });
+        print("    {s}gmail{s}    - Google Workspace (Gmail)\n", .{ GREEN, RESET });
+        print("    {s}proton{s}   - Proton Mail (privacy-focused)\n", .{ GREEN, RESET });
+        print("    {s}migadu{s}   - Migadu (email hosting)\n", .{ GREEN, RESET });
+        print("    {s}outlook{s}  - Microsoft 365 (Outlook)\n", .{ GREEN, RESET });
+        print("\n  Example: tri cloud mail-setup zoho t27.ai\n", .{});
+        return;
+    }
+
+    const provider_str = args[0];
+    const domain = args[1];
+
+    const provider_opt = dns_mail.MailProvider.fromString(provider_str);
+    if (provider_opt == null) {
+        print("Error: Unknown mail provider '{s}'\n", .{provider_str});
+        return error.InvalidProvider;
+    }
+    const provider = provider_opt.?;
+
+    print("\n{s}📧 {s} Mail DNS Records for {s}{s}\n", .{ BOLD, provider.displayName(), domain, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Provider-specific records
+    switch (provider) {
+        .zoho => {
+            print("{s}MX Records (Priority matters!):{s}\n", .{ BOLD, RESET });
+            print("  Type: MX    Name: @    Priority: 10    Value: mx.zoho.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 20    Value: mx2.zoho.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 50    Value: mx3.zoho.com.\n\n", .{});
+
+            print("{s}TXT Record (SPF):{s}\n", .{ BOLD, RESET });
+            print("  Type: TXT   Name: @    Value: \"v=spf1 include:zoho.com ~all\"\n\n", .{});
+
+            print("{s}CNAME Records (optional - for webmail):{s}\n", .{ BOLD, RESET });
+            print("  Type: CNAME Name: mail    Value: business.zoho.com.\n", .{});
+            print("  Type: CNAME Name: smtp    Value: smtp.zoho.com.\n\n", .{});
+        },
+        .gmail => {
+            print("{s}MX Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: MX    Name: @    Priority: 1     Value: aspmx.l.google.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 5     Value: alt1.aspmx.l.google.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 5     Value: alt2.aspmx.l.google.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 10    Value: alt3.aspmx.l.google.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 10    Value: alt4.aspmx.l.google.com.\n\n", .{});
+
+            print("{s}TXT Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: TXT   Name: @    Value: \"v=spf1 include:_spf.google.com ~all\"\n\n", .{});
+        },
+        .proton => {
+            print("{s}MX Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: MX    Name: @    Priority: 10    Value: mail.protonmail.ch.\n", .{});
+            print("  Type: MX    Name: @    Priority: 20    Value: mailsec.protonmail.ch.\n\n", .{});
+
+            print("{s}TXT Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: TXT   Name: @    Value: \"v=spf1 include:protonmail.ch ~all\"\n\n", .{});
+            print("  Type: TXT   Name: protonmail-verification    Value: \"[get from Proton dashboard]\"\n\n", .{});
+        },
+        .migadu => {
+            print("{s}MX Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: MX    Name: @    Priority: 10    Value: mx1.migadu.com.\n", .{});
+            print("  Type: MX    Name: @    Priority: 20    Value: mx2.migadu.com.\n\n", .{});
+
+            print("{s}TXT Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: TXT   Name: @    Value: \"v=spf1 include:_spf.migadu.com ~all\"\n\n", .{});
+        },
+        .outlook => {
+            print("{s}MX Records:{s}\n", .{ BOLD, RESET });
+            const mx1 = try std.fmt.allocPrint(allocator, "{s}.mail.protection.outlook.com.", .{domain});
+            defer allocator.free(mx1);
+            print("  Type: MX    Name: @    Priority: 0     Value: {s}\n", .{mx1});
+            print("  Type: MX    Name: @    Priority: 10    Value: {s}\n\n", .{mx1});
+
+            print("{s}TXT Records:{s}\n", .{ BOLD, RESET });
+            print("  Type: TXT   Name: @    Value: \"v=spf1 include:spf.protection.outlook.com ~all\"\n", .{});
+            print("  Type: TXT   Name: @    Value: \"MS=[verify with Microsoft]\"\n\n", .{});
+        },
+        .custom => {
+            print("{s}Custom provider: use your provider's DNS documentation{s}\n\n", .{ YELLOW, RESET });
+        },
+    }
+
+    print("{s}Next steps:{s}\n", .{ BOLD, RESET });
+    print("  1. Open your DNS provider dashboard\n", .{});
+    print("  2. Add the MX records (priority matters!)\n", .{});
+    print("  3. Add the TXT records (SPF is critical)\n", .{});
+    print("  4. Wait 10-30 minutes for DNS propagation\n", .{});
+    print("  5. Verify: tri cloud mail-check {s}\n\n", .{domain});
+    print("  Create account: {s}{s}{s}\n\n", .{ GRAY, provider.signupUrl(), RESET });
+}
+
+/// tri cloud mail-check <domain> — Verify MX records
+fn mailCheck(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud mail-check <domain>{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    const domain = args[0];
+
+    print("\n{s}🔍 Checking DNS records for {s}{s}\n", .{ BOLD, domain, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Run dig +short MX
+    const argv = [_][]const u8{ "dig", "+short", "MX", domain };
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &argv,
+    }) catch |err| {
+        print("{s}Error running dig: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        print("Install dig: brew install bind (macOS) or apt install dnsutils (Linux)\n\n", .{});
+        return;
+    };
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.stdout.len == 0) {
+        print("{s}⚠ No MX records found for {s}{s}\n", .{ YELLOW, domain, RESET });
+        print("Records may still be propagating. Try again in 10-30 minutes.\n\n", .{});
+    } else {
+        print("{s}MX Records:{s}\n", .{ BOLD, RESET });
+        var lines = std.mem.splitScalar(u8, result.stdout, '\n');
+        var count: usize = 0;
+        while (lines.next()) |line| {
+            if (line.len > 0) {
+                print("  {s}{s}{s}\n", .{ GREEN, line, RESET });
+                count += 1;
+            }
+        }
+        print("\n  {d} MX record(s) found.\n\n", .{count});
+    }
+}
+
+/// tri cloud mail-apply <provider> <domain> — Automatically add DNS records via UD CLI
+fn mailApply(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri cloud mail-apply <provider> <domain>{s}\n", .{ YELLOW, RESET });
+        print("\n  Requires: npm install -g @unstoppabledomains/cli\n", .{});
+        print("  Then: ud login\n", .{});
+        print("\n  Example: tri cloud mail-apply zoho t27.ai\n", .{});
+        return;
+    }
+
+    const provider_str = args[0];
+    const domain = args[1];
+
+    const provider = dns_mail.MailProvider.fromString(provider_str) orelse {
+        print("{s}Error: Unknown provider '{s}'{s}\n", .{ RED, provider_str, RESET });
+        print("Available: zoho, gmail, proton, migadu, outlook, custom\n", .{});
+        return;
+    };
+
+    print("\n{s}🔧 Applying DNS Records for {s} to {s}{s}\n", .{ BOLD, provider.displayName(), domain, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Check if ud CLI is installed
+    {
+        const check_argv = [_][]const u8{ "ud", "--version" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch {
+            print("{s}Error: UD CLI not found{s}\n", .{ RED, RESET });
+            print("Install: npm install -g @unstoppabledomains/cli\n", .{});
+            print("Then: ud login\n\n", .{});
+            return;
+        };
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+    }
+
+    // Check if logged in
+    {
+        const check_argv = [_][]const u8{ "ud", "domains", "list" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch |err| {
+            print("{s}Error checking UD login: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            print("Run: ud login\n\n", .{});
+            return;
+        };
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+
+        if (check_result.stderr.len > 0 and std.mem.indexOf(u8, check_result.stderr, "Not logged in") != null) {
+            print("{s}Error: Not logged in to UD{s}\n", .{ RED, RESET });
+            print("Run: ud login\n\n", .{});
+            return;
+        }
+    }
+
+    print("{s}✓ UD CLI ready{s}\n\n", .{ GREEN, RESET });
+
+    // Add MX records based on provider
+    var added_count: usize = 0;
+
+    switch (provider) {
+        .zoho => {
+            // MX records
+            const MXRecord = struct { priority: u16, value: []const u8 };
+            const mx_records = [3]MXRecord{
+                .{ .priority = 10, .value = "mx.zoho.com." },
+                .{ .priority = 20, .value = "mx2.zoho.com." },
+                .{ .priority = 50, .value = "mx3.zoho.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                } else {
+                    print("  {s}✗{s} MX {d} {s}: {s}\n", .{ RED, RESET, mx.priority, mx.value, result.stderr });
+                }
+            }
+
+            // SPF TXT record
+            {
+                const spf_argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:zoho.com ~all\",\"ttl\":3600}}" };
+                const spf_result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &spf_argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
+                    return;
+                };
+                defer {
+                    allocator.free(spf_result.stdout);
+                    allocator.free(spf_result.stderr);
+                }
+
+                if (spf_result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .gmail => {
+            const MXRecord = struct { priority: u16, value: []const u8 };
+            const mx_records = [5]MXRecord{
+                MXRecord{ .priority = 1, .value = "aspmx.l.google.com." },
+                MXRecord{ .priority = 5, .value = "alt1.aspmx.l.google.com." },
+                MXRecord{ .priority = 5, .value = "alt2.aspmx.l.google.com." },
+                MXRecord{ .priority = 10, .value = "alt3.aspmx.l.google.com." },
+                MXRecord{ .priority = 10, .value = "alt4.aspmx.l.google.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            if (std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:_spf.google.com ~all\",\"ttl\":3600}}" },
+            })) |result| {
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            } else |err| {
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+        },
+        .proton => {
+            const MXRecord = struct { priority: u16, value: []const u8 };
+            const mx_records = [2]MXRecord{
+                MXRecord{ .priority = 10, .value = "mail.protonmail.ch." },
+                MXRecord{ .priority = 20, .value = "mailsec.protonmail.ch." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            if (std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:protonmail.ch ~all\",\"ttl\":3600}}" },
+            })) |result| {
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            } else |err| {
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+        },
+        .migadu => {
+            const MXRecord = struct { priority: u16, value: []const u8 };
+            const mx_records = [2]MXRecord{
+                MXRecord{ .priority = 10, .value = "mx1.migadu.com." },
+                MXRecord{ .priority = 20, .value = "mx2.migadu.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {s}{s}\n", .{ RED, mx.priority, mx.value, @errorName(err), RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            if (std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:_spf.migadu.com ~all\",\"ttl\":3600}}" },
+            })) |result| {
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            } else |err| {
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+        },
+        .outlook => {
+            const mx_value = try std.fmt.allocPrint(allocator, "{s}.mail.protection.outlook.com.", .{domain});
+            defer allocator.free(mx_value);
+
+            // Build MX JSON data
+            const mx_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":0}}", .{mx_value});
+            defer allocator.free(mx_data);
+
+            if (std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", mx_data },
+            })) |result| {
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {s}\n", .{ GREEN, RESET, mx_value });
+                    added_count += 1;
+                }
+            } else |err| {
+                print("  {s}✗ Failed to add MX: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+
+            // SPF
+            if (std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:spf.protection.outlook.com ~all\",\"ttl\":3600}}" },
+            })) |spf_result| {
+                defer {
+                    allocator.free(spf_result.stdout);
+                    allocator.free(spf_result.stderr);
+                }
+
+                if (spf_result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            } else |err| {
+                print("  {s}✗ Failed to add SPF TXT: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+        },
+        .custom => {
+            print("{s}Custom provider: use UD CLI manually{s}\n", .{ YELLOW, RESET });
+            print("  ud domains dns records add {s} --data '<JSON>'\n\n", .{domain});
+            return;
+        },
+    }
+
+    print("\n{s}══════════════════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+    print("{s}✓ Added {d} record(s){s}\n\n", .{ GREEN, added_count, RESET });
+
+    print("{s}Next steps:{s}\n", .{ BOLD, RESET });
+    print("  1. Register at {s}\n", .{provider.signupUrl()});
+    print("  2. Add domain in provider dashboard\n", .{});
+    print("  3. Wait 10-30 minutes for DNS propagation\n", .{});
+    print("  4. Verify: tri cloud mail-check {s}\n\n", .{domain});
+}
+
+/// tri cloud mail-test <email> -- Show SMTP test command
+fn mailTest(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri cloud mail-test <email@domain.com>{s}\n", .{ YELLOW, RESET });
+        print("\n  Shows the swaks command to test SMTP and send email.\n", .{});
+        print("\n  Example: tri cloud mail-test info@t27.ai\n", .{});
+        print("\n  Install swaks: brew install swaks\n", .{});
+        return;
+    }
+
+    const email = args[0];
+
+    // Parse email to get domain and determine SMTP server
+    const at_idx = std.mem.lastIndexOfScalar(u8, email, '@') orelse {
+        print("{s}Error: Invalid email address{s}\n", .{ RED, RESET });
+        return;
+    };
+    const domain = email[at_idx + 1 ..];
+
+    print("\n{s}📧 Testing Email for {s}{s}\n", .{ BOLD, email, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Determine SMTP server based on domain
+    const smtp_server: struct { host: []const u8, port: u16 } = blk: {
+        if (std.mem.endsWith(u8, domain, "zoho.com") or
+            std.mem.indexOf(u8, domain, ".zoho.com") != null or
+            std.mem.indexOf(u8, domain, ".zohomail.com") != null)
+        {
+            break :blk .{ .host = "smtp.zoho.com", .port = 587 };
+        } else if (std.mem.indexOf(u8, domain, "gmail.com") != null or
+            std.mem.indexOf(u8, domain, "googlemail.com") != null)
+        {
+            break :blk .{ .host = "smtp.gmail.com", .port = 587 };
+        } else if (std.mem.indexOf(u8, domain, "outlook.com") != null or
+            std.mem.indexOf(u8, domain, "hotmail.com") != null)
+        {
+            break :blk .{ .host = "smtp.office365.com", .port = 587 };
+        } else {
+            print("{s}Warning: Unknown SMTP server for {s}{s}\n", .{ YELLOW, domain, RESET });
+            print("Defaulting to: smtp.zoho.com:587\n\n", .{});
+            break :blk .{ .host = "smtp.zoho.com", .port = 587 };
+        }
+    };
+
+    print("{s}SMTP Server:{s} {s}:{d}\n\n", .{ BOLD, RESET, smtp_server.host, smtp_server.port });
+
+    // Check if swaks is installed
+    {
+        const check_argv = [_][]const u8{ "which", "swaks" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch |err| {
+            print("{s}Error checking for swaks: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            return;
+        };
+        if (check_result.stdout.len == 0) {
+            print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
+            print("Install: brew install swaks\n", .{});
+            print("Or: apt install swaks\n\n", .{});
+            return;
+        }
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+
+        if (check_result.stdout.len == 0) {
+            print("{s}Error: swaks not found{s}\n", .{ RED, RESET });
+            print("Install: brew install swaks\n\n", .{});
+            return;
+        }
+    }
+
+    print("{s}✓ swaks found{s}\n", .{ GREEN, RESET });
+    print("\n{s}→ Enter password for {s}:{s} ", .{ YELLOW, email, RESET });
+
+    // Read password from stdin
+    var password_buf: [256]u8 = undefined;
+    const stdin_file = std.io.getStdin().reader();
+    const password_len = stdin_file.read(password_buf[0..]) catch |err| {
+        print("\n{s}Error reading password: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return;
+    };
+    const password = std.mem.trimRight(u8, password_buf[0..password_len], &[_]u8{ '\r', '\n' });
+
+    print("\n\n{s}Testing SMTP connection...{s}\n\n", .{ BOLD, RESET });
+
+    // Prepare swaks command
+    const port_str = try std.fmt.allocPrint(allocator, "{d}", .{smtp_server.port});
+    defer allocator.free(port_str);
+
+    const server_str = try std.fmt.allocPrint(allocator, "{s}:{s}", .{ smtp_server.host, port_str });
+    defer allocator.free(server_str);
+
+    // Create a temporary file for the password to avoid passing it in command line
+    const tmp_dir = std.posix.getenv("TMPDIR") orelse "/tmp";
+    const pass_file = try std.fmt.allocPrint(allocator, "{s}/tri_mail_test_XXXXXX", .{tmp_dir});
+    defer allocator.free(pass_file);
+
+    // Use mkstemp to create a secure temp file
+    // Since we can't easily use mkstemp, we'll use a different approach
+    // Write password to temp file
+    const pass_path = try std.fmt.allocPrint(allocator, "{s}/.tri_mail_test.pass", .{tmp_dir});
+    defer allocator.free(pass_path);
+
+    {
+        const pass_file_obj = try std.fs.cwd().createFile(pass_path, .{ .read = true });
+        defer pass_file_obj.close();
+        try pass_file_obj.writeAll(password);
+    }
+    defer std.fs.cwd().deleteFile(pass_path) catch {};
+
+    // Run swaks with password from file
+    const test_to = try std.fmt.allocPrint(allocator, "--to={s}", .{email});
+    defer allocator.free(test_to);
+
+    const test_from = try std.fmt.allocPrint(allocator, "--from={s}", .{email});
+    defer allocator.free(test_from);
+
+    const server_arg = try std.fmt.allocPrint(allocator, "--server={s}", .{server_str});
+    defer allocator.free(server_arg);
+
+    const auth_user = try std.fmt.allocPrint(allocator, "--auth-user={s}", .{email});
+    defer allocator.free(auth_user);
+
+    // Note: swaks doesn't support reading password from file easily
+    // We'll use environment variable instead
+    var env_map = try std.process.getEnvMap(allocator);
+    defer env_map.deinit();
+    try env_map.put("TRI_MAIL_PASSWORD", password);
+
+    const argv = [_][]const u8{
+        "swaks",
+        "--to",
+        email,
+        "--from",
+        email,
+        "--server",
+        server_str,
+        "--auth",
+        "--auth-user",
+        email,
+        "--auth-password",
+        password,
+        "--h-Subject",
+        "Test email from tri",
+        "--body",
+        "This is a test email sent from tri CLI.",
+    };
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &argv,
+        .env_map = &env_map,
+    }) catch |err| {
+        print("{s}Error running swaks: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return;
+    };
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    // Parse swaks output
+    const stdout_str = result.stdout;
+    _ = result.stderr; // Referenced but not needed for parsing
+
+    if (std.mem.indexOf(u8, stdout_str, "250") != null or
+        std.mem.indexOf(u8, stdout_str, "250 OK") != null or
+        std.mem.indexOf(u8, stdout_str, "Accepted") != null)
+    {
+        print("{s}✓ Email sent successfully!{s}\n\n", .{ GREEN, RESET });
+        print("Check your inbox at {s}\n\n", .{email});
+    } else if (std.mem.indexOf(u8, stdout_str, "535") != null or
+        std.mem.indexOf(u8, stdout_str, "530") != null or
+        std.mem.indexOf(u8, stdout_str, "authentication") != null)
+    {
+        print("{s}✗ Authentication failed{s}\n", .{ RED, RESET });
+        print("Check your username and password.\n", .{});
+        print("For Zoho: use the full email address as username.\n\n", .{});
+    } else if (std.mem.indexOf(u8, stdout_str, "Connection refused") != null or
+        std.mem.indexOf(u8, stdout_str, "Connection timed out") != null)
+    {
+        print("{s}✗ Connection failed{s}\n", .{ RED, RESET });
+        print("Check if SMTP server {s}:{d} is accessible.\n\n", .{ smtp_server.host, smtp_server.port });
+    } else {
+        print("{s}? Unknown result{s}\n\n", .{ YELLOW, RESET });
+        print("Output:\n{s}\n", .{stdout_str});
+    }
+
+    // Clear password from memory
+    @memset(password_buf[0..password_len], 0);
 }
 
 fn printApiInitError(err: anyerror) void {
@@ -2291,7 +2966,7 @@ fn printApiInitError(err: anyerror) void {
             print("{s}Error: No Railway project configured{s}\n", .{ RED, RESET });
             print("Set RAILWAY_PROJECT_ID or add .railway.json\n", .{});
         },
-        else => print("{s}Error initializing Railway API: {}{s}\n", .{ RED, err, RESET }),
+        else => print("{s}Error initializing Railway API: {s}{s}\n", .{ RED, @errorName(err), RESET }),
     }
 }
 

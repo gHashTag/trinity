@@ -1,0 +1,55 @@
+name: tri_probability
+version: "0.1.0"
+language: zig
+module: tri.probability
+description: "Probability distributions and sampling"
+
+functions:
+  bernoulli:
+    params:
+      - name: p
+        type: "f64"
+      - name: rng
+        type: "*std.Random.Default"
+    returns: "bool"
+    description: "Bernoulli trial with probability p"
+
+  binomial:
+    params:
+      - name: n
+        type: "usize"
+      - name: p
+        type: "f64"
+      - name: rng
+        type: "*std.Random.Default"
+    returns: "usize"
+    description: "Binomial distribution B(n,p)"
+
+  poisson:
+    params:
+      - name: lambda
+        type: "f64"
+      - name: rng
+        type: "*std.Random.Default"
+    returns: "usize"
+    description: "Poisson distribution"
+
+  normal:
+    params:
+      - name: mean
+        type: "f64"
+      - name: std_dev
+        type: "f64"
+      - name: rng
+        type: "*std.Random.Default"
+    returns: "f64"
+    description: "Normal distribution (Box-Muller)"
+
+  exponential:
+    params:
+      - name: lambda
+        type: "f64"
+      - name: rng
+        type: "*std.Random.Default"
+    returns: "f64"
+    description: "Exponential distribution"

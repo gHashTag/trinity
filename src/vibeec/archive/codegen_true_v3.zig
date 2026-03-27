@@ -23,9 +23,9 @@ pub fn main() !void {
     defer std.process.argsFree(allocator, args);
 
     if (args.len < 2) {
-        std.debug.print("Usage: {s} <spec.tri> [output.zig]\n", .{args[0]});
-        std.debug.print("\n", .{});
-        std.debug.print("TRUE COMPILER v3.0 (Anonymous Structs)\n", .{});
+        std.debug.print("Usage: {s} <spec.tri> [output.zig]\x0a", .{args[0]});
+        std.debug.print("\x0a", .{});
+        std.debug.print("TRUE COMPILER v3.0 (Anonymous Structs)\x0a", .{});
         return error.Usage;
     }
 
@@ -60,11 +60,11 @@ pub fn main() !void {
     defer file.close();
     try file.writeAll(zig_code);
 
-    std.debug.print("✓ TRUE COMPILATION: {s}\n", .{output_path});
-    std.debug.print("  Behaviors: {d}\n", .{behaviors.items.len});
-    std.debug.print("  Real Functions: {d}\n", .{behaviors.items.len});
-    std.debug.print("  Size: {d} bytes\n", .{zig_code.len});
-    std.debug.print("  Code is: REAL IMPLEMENTATIONS\n", .{});
+    std.debug.print("✓ TRUE COMPILATION: {s}\x0a", .{output_path});
+    std.debug.print("  Behaviors: {d}\x0a", .{behaviors.items.len});
+    std.debug.print("  Real Functions: {d}\x0a", .{behaviors.items.len});
+    std.debug.print("  Size: {d} bytes\x0a", .{zig_code.len});
+    std.debug.print("  Code is: REAL IMPLEMENTATIONS\x0a", .{});
 }
 
 fn parse_behaviors(path: []const u8, allocator: Allocator) !std.ArrayList(struct {
@@ -90,7 +90,7 @@ fn parse_behaviors(path: []const u8, allocator: Allocator) !std.ArrayList(struct
         code: []const u8,
     }).init(allocator);
 
-    var lines = std.mem.splitSequence(u8, content, "\n");
+    var lines = std.mem.splitSequence(u8, content, "\x0a");
 
     var in_behaviors = false;
     var current_behavior: ?struct {
@@ -145,7 +145,7 @@ fn parse_behaviors(path: []const u8, allocator: Allocator) !std.ArrayList(struct
             const indented_code = std.mem.trim(u8, trimmed, &std.ascii.whitespace);
             const old_code = if (current_behavior) |*b| b.code else "";
 
-            const new_code = try std.fmt.allocPrint(allocator, "{s}\n{s}", .{ old_code, indented_code });
+            const new_code = try std.fmt.allocPrint(allocator, "{s}\x0a{s}", .{ old_code, indented_code });
             if (current_behavior) |*b| {
                 allocator.free(b.code);
                 b.code = new_code;
@@ -187,18 +187,18 @@ fn generate_zig(behaviors: std.ArrayList(struct {
     defer zig_code.deinit(allocator);
 
     // Header
-    try zig_code.appendSlice(allocator, "// ═════════════════════════════════════════════════════════════════\n");
-    try zig_code.appendSlice(allocator, "// TRUE COMPILATION v3.0 - REAL FUNCTIONS\n");
-    try zig_code.appendSlice(allocator, "// ═════════════════════════════════════════════════════════════════\n");
-    try zig_code.appendSlice(allocator, "\n");
+    try zig_code.appendSlice(allocator, "// ═════════════════════════════════════════════════════════════════\x0a");
+    try zig_code.appendSlice(allocator, "// TRUE COMPILATION v3.0 - REAL FUNCTIONS\x0a");
+    try zig_code.appendSlice(allocator, "// ═════════════════════════════════════════════════════════════════\x0a");
+    try zig_code.appendSlice(allocator, "\x0a");
 
-    try zig_code.appendSlice(allocator, "const std = @import(\"std\");\n\n");
+    try zig_code.appendSlice(allocator, "const std = @import(\"std\");\x0a\x0a");
 
     // Generate REAL Functions
-    try zig_code.appendSlice(allocator, "// ═══════════════════════════════════════════════════════════════════\n");
-    try zig_code.appendSlice(allocator, "// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\n");
-    try zig_code.appendSlice(allocator, "// ═══════════════════════════════════════════════════════════════════\n");
-    try zig_code.appendSlice(allocator, "\n");
+    try zig_code.appendSlice(allocator, "// ═══════════════════════════════════════════════════════════════════\x0a");
+    try zig_code.appendSlice(allocator, "// REAL FUNCTIONS (FROM IMPLEMENTATIONS)\x0a");
+    try zig_code.appendSlice(allocator, "// ═══════════════════════════════════════════════════════════════════\x0a");
+    try zig_code.appendSlice(allocator, "\x0a");
 
     for (behaviors.items) |behavior| {
         if (behavior.code.len > 0) {
@@ -207,40 +207,42 @@ fn generate_zig(behaviors: std.ArrayList(struct {
             try zig_code.appendSlice(allocator, behavior.name);
             try zig_code.appendSlice(allocator, "() ");
             try zig_code.appendSlice(allocator, behavior.then);
-            try zig_code.appendSlice(allocator, " !void {\n");
+            try zig_code.appendSlice(allocator, " !void {\x0a");
 
             try zig_code.appendSlice(allocator, "    // ");
             try zig_code.appendSlice(allocator, behavior.description);
-            try zig_code.appendSlice(allocator, "\n\n");
+            try zig_code.appendSlice(allocator, "\x0a\x0a");
 
             try zig_code.appendSlice(allocator, "    // Given: ");
             try zig_code.appendSlice(allocator, behavior.given);
-            try zig_code.appendSlice(allocator, "\n");
+            try zig_code.appendSlice(allocator, "\x0a");
             try zig_code.appendSlice(allocator, "    // When: ");
             try zig_code.appendSlice(allocator, behavior.when);
-            try zig_code.appendSlice(allocator, "\n");
+            try zig_code.appendSlice(allocator, "\x0a");
             try zig_code.appendSlice(allocator, "    // Then: ");
             try zig_code.appendSlice(allocator, behavior.then);
-            try zig_code.appendSlice(allocator, "\n");
-            try zig_code.appendSlice(allocator, "\n");
+            try zig_code.appendSlice(allocator, "\x0a");
+            try zig_code.appendSlice(allocator, "\x0a");
 
             // WRITE THE ACTUAL IMPLEMENTATION
-            try zig_code.appendSlice(allocator, "    // === REAL CODE ===\n");
+            try zig_code.appendSlice(allocator, "    // === REAL CODE ===\x0a");
             try zig_code.appendSlice(allocator, "    ");
             try zig_code.appendSlice(allocator, behavior.code);
-            try zig_code.appendSlice(allocator, "\n");
+            try zig_code.appendSlice(allocator, "\x0a");
 
-            try zig_code.appendSlice(allocator, "}\n\n");
+            try zig_code.appendSlice(allocator, "}\x0a\x0a");
         } else {
             // Fallback: test (no implementation)
-            try zig_code.appendSlice(allocator, "// Test stub (no implementation)\n");
+            try zig_code.appendSlice(allocator, "// Test stub (no implementation)\x0a");
             try zig_code.appendSlice(allocator, "test \"");
             try zig_code.appendSlice(allocator, behavior.name);
-            try zig_code.appendSlice(allocator, "\" {\n");
-            try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\n\", .{\");
+            try zig_code.appendSlice(allocator, "\" {\x0a");
+            try zig_code.appendSlice(allocator, "    std.debug.print(\"Test: {s}\\x0a\", .{");
             try zig_code.appendSlice(allocator, behavior.name);
-            try zig_code.appendSlice(allocator, "\"});\n");
-            try zig_code.appendSlice(allocator, "}\n\n");
+            try zig_code.appendSlice(allocator, "\"});\x0a");
+            try zig_code.appendSlice(allocator, behavior.name);
+            try zig_code.appendSlice(allocator, "\"});\x0a");
+            try zig_code.appendSlice(allocator, "}\x0a\x0a");
         }
     }
 

@@ -1,0 +1,32 @@
+name: tri_merge_sort
+version: "0.1.0"
+language: zig
+module: tri.merge_sort
+description: "Merge Sort - stable divide-and-conquer"
+
+functions:
+  sort:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]i64"
+    returns: "[]i64"
+    description: "Sort using merge sort (stable)"
+
+  sortInPlace:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort in place using auxiliary buffer"
+
+behaviors:
+  - name: divide_merge
+    description: "Split in half, recursively sort, merge"
+    implementation: |
+      Divide array into two halves.
+      Recursively sort each half.
+      Merge sorted halves in O(n) time.

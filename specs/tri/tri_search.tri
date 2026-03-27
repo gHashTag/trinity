@@ -1,21 +1,44 @@
 name: tri_search
-version: "1.0.0"
-language: zig
+version: "0.1.0"
 module: tri.search
+description: "TRI Search — search algorithms"
 
-description: |
-  TRI Search — TVC-powered code search.
+types:
+  SearchResult:
+    description: "Search result"
+    fields:
+      index: "?usize"
+      found: "bool"
 
-  Usage: tri search <query> [--top-k N] [--min-sim X] [--format json|pretty]
+functions:
+  binary:
+    params:
+      - name: sorted
+        type: "[]const T"
+      - name: target
+        type: "T"
+    returns: "SearchResult"
+    description: "Binary search in sorted array"
 
-  Uses TVC (Ternary Vector Computing) for semantic code search
-  across the repository with phi-similarity scoring.
+  linear:
+    params:
+      - name: items
+        type: "[]const T"
+      - name: target
+        type: "T"
+    returns: "SearchResult"
+    description: "Linear scan"
+
+  lowerBound:
+    params:
+      - name: sorted
+        type: "[]const T"
+      - name: value
+        type: "T"
+    returns: "usize"
+    description: "First position >= value"
 
 behaviors:
-  - name: runSearchCommand
-    given: Allocator and args slice
-    when: User runs `tri search <query>`
-    then: Searches codebase using TVC embeddings, returns top-k matches
-
-export_functions:
-  - runSearchCommand
+  - name: logn
+    description: "O(log n) binary search"
+    note: "Requires sorted input"

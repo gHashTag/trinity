@@ -1,0 +1,77 @@
+name: tri_fenwick
+version: "0.1.0"
+language: zig
+module: tri.fenwick
+description: "Fenwick Tree (Binary Indexed Tree) for prefix sums"
+
+types:
+  FenwickTree:
+    description: "Compact prefix sum tree"
+    fields:
+      data: "[]i64"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: size
+        type: "usize"
+    returns: "FenwickTree"
+    description: "Create tree of given size"
+
+  build:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: values
+        type: "[]const i64"
+    returns: "FenwickTree"
+    description: "Build tree from initial array"
+
+  query:
+    params:
+      - name: tree
+        type: "*FenwickTree"
+      - name: index
+        type: "usize"
+    returns: "i64"
+    description: "Prefix sum [0..index]"
+
+  rangeQuery:
+    params:
+      - name: tree
+        type: "*FenwickTree"
+      - name: left
+        type: "usize"
+      - name: right
+        type: "usize"
+    returns: "i64"
+    description: "Sum on range [left, right]"
+
+  update:
+    params:
+      - name: tree
+        type: "*FenwickTree"
+      - name: index
+        type: "usize"
+      - name: delta
+        type: "i64"
+    returns: "void"
+    description: "Add delta to element at index"
+
+  deinit:
+    params:
+      - name: tree
+        type: "*FenwickTree"
+    returns: "void"
+    description: "Free tree memory"
+
+behaviors:
+  - name: lsb_operation
+    description: "Use least significant bit for navigation"
+    implementation: |
+      Parent of i is i - (i & (-i))
+      To update i, add to i, then i += (i & (-i))

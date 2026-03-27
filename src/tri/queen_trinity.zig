@@ -271,6 +271,61 @@ const PID_FILE = "/tmp/trinity-queen.pid";
 const HEARTBEAT_FILE = ".trinity/queen/heartbeat.json";
 const DAEMON_SLEEP_SEC = 60;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// GITHUB INTEGRATION — Queen works on issues!
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn workOnGithubIssue(allocator: std.mem.Allocator, cycle: u64) !bool {
+    _ = cycle;
+
+    // Fetch open GitHub issues
+    const result = try std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "issue", "list", "--state", "open", "--limit", "1", "--json", "number,title" },
+    });
+    defer {
+        allocator.free(result.stdout);
+        allocator.free(result.stderr);
+    }
+
+    if (result.term.Exited != 0 or result.stdout.len == 0) {
+        return false; // No issues or gh error
+    }
+
+    // Parse JSON to get issue number
+    const issue_str = result.stdout;
+    if (std.mem.indexOf(u8, issue_str, "\"number\":") == null) {
+        return false;
+    }
+
+    // Extract issue number (simple parsing)
+    const number_start = std.mem.indexOf(u8, issue_str, "\"number\":") orelse return false;
+    const num_part = issue_str[number_start + 9 ..];
+    const number_end = std.mem.indexOf(u8, num_part, ",") orelse num_part.len;
+    const number_str = num_part[0..number_end];
+
+    // Extract title
+    const title_start = std.mem.indexOf(u8, issue_str, "\"title\":") orelse return false;
+    const title_part = issue_str[title_start + 9 ..];
+    const title_end = std.mem.indexOf(u8, title_part, "\"}") orelse title_part.len;
+    const title_json = title_part[0..title_end];
+
+    std.debug.print("🔧 Queen working on issue #{s}: {s}\n", .{ number_str, title_json });
+
+    // TODO: Actually work on the issue
+    // For now, just comment that Queen is aware
+    const comment = try std.fmt.allocPrint(allocator, "👑 Queen acknowledges issue #{s} (cycle check)", .{number_str});
+    defer allocator.free(comment);
+
+    // Comment on issue (disabled for now - uncomment when ready)
+    // _ = std.process.Child.run(.{
+    //     .allocator = allocator,
+    //     .argv = &.{ "gh", "issue", "comment", number_str, "--body", comment },
+    // });
+
+    return true;
+}
+
 fn runQueenStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
 
@@ -300,6 +355,15 @@ fn runQueenStart(allocator: std.mem.Allocator, args: []const []const u8) !void {
         // OBSERVE: check system state
         const dirty = countDirtyFiles(allocator) catch 0;
         const build_ok = checkBuild(allocator) catch false;
+
+        // GITHUB INTEGRATION: work on issues!
+        if (build_ok and dirty == 0) {
+            // System clean — work on GitHub issues
+            const issue_worked = try workOnGithubIssue(allocator, cycle);
+            if (issue_worked) {
+                try logToHive(allocator, cycle, "🔧 Worked on GitHub issue", .{});
+            }
+        }
 
         // DECIDE + ACT: log issues
         if (!build_ok) {
@@ -345,7 +409,8 @@ fn checkBuild(allocator: std.mem.Allocator) !bool {
         allocator.free(result.stdout);
         allocator.free(result.stderr);
     }
-    return result.term.Exited == 0;
+    // Check if process exited cleanly (exit code 0)
+    return result.term == .Exited and result.term.Exited == 0;
 }
 
 fn updateHeartbeat(allocator: std.mem.Allocator, cycle: u64, timestamp: i64) !void {
@@ -364,14 +429,21 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     defer allocator.free(formatted);
 
     const log_file = ".trinity/queen/HIVELOG.md";
-    var f = std.fs.cwd().openFile(log_file, .{ .mode = .read_write }) catch {
-        // File doesn't exist, create it
-        return; // Skip logging for first run
+    std.fs.cwd().makePath(".trinity/queen") catch {};
+
+    // Try to append to existing file, or create new one
+    var f = std.fs.cwd().openFile(log_file, .{ .mode = .write_only }) catch {
+        // File doesn't exist, create it with header
+        var new_f = try std.fs.cwd().createFile(log_file, .{});
+        defer new_f.close();
+        try new_f.writeAll("# Queen Trinity Hive Log\n\n");
+        try new_f.writeAll(formatted);
+        return;
     };
     defer f.close();
 
-    const pos = try f.getEndPos();
-    try f.seekTo(pos);
+    // Seek to end before writing (append mode)
+    try f.seekFromEnd(0);
     try f.writeAll(formatted);
 }
 

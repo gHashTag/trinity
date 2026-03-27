@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'website/**'
+      - 'apps/website/**'
       - 'docs/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,13 +34,11 @@ jobs:
           node-version: '20'
 
       # Build Website (Vite React SPA)
-      - name: Install website dependencies
-        working-directory: website
-        run: npm install
+      - name: Install apps/website dependencies
+        run: cd apps/website && npm install
 
-      - name: Build website
-        working-directory: website
-        run: npm run build
+      - name: Build apps/website
+        run: cd apps/website && npm run build:ci
 
       # Build Docsite (Docusaurus)
       - name: Install docs dependencies
@@ -50,22 +50,23 @@ jobs:
         run: npm run build
 
       # Combine builds
-      - name: Combine website + docs
+      - name: Combine apps/website + docs
         run: |
           mkdir -p combined
-          cp -r website/dist/* combined/
+          cp -r apps/website/dist/* combined/
+          # Copy CNAME from public (if exists)
+          cp apps/website/public/CNAME combined/ 2>/dev/null || true
           mkdir -p combined/docs
           cp -r docs/build/* combined/docs/
           touch combined/.nojekyll
 
       # Deploy to gh-pages branch directly
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./combined
-          publish_branch: gh-pages
-          force_orphan: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy: ${{ github.event.head_commit.message }}'
+        run: |
+          cd combined
+          git init
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Deploy: ${{ github.event.head_commit.message }}'
+          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/gHashTag/trinity.git HEAD:gh-pages

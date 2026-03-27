@@ -1,0 +1,10 @@
+//! TRI Platform Module Selector
+pub const Os = @import("gen_platform.zig").Os;
+pub const Arch = @import("gen_platform.zig").Arch;
+pub const Platform = @import("gen_platform.zig").Platform;
+pub const getPlatform = @import("gen_platform.zig").getPlatform;
+pub const isLinux = @import("gen_platform.zig").isLinux;
+pub const isWindows = @import("gen_platform.zig").isWindows;
+pub const isMac = @import("gen_platform.zig").isMac;
+pub const is64Bit = @import("gen_platform.zig").is64Bit;
+pub const pathSeparator = @import("gen_platform.zig").pathSeparator;

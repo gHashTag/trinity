@@ -1,0 +1,63 @@
+name: tri_tree
+version: "0.1.0"
+module: tri.tree
+description: "TRI Tree — immutable binary tree"
+
+types:
+  Tree(T):
+    description: "Binary tree with leaf and branch nodes"
+    fields:
+      is_leaf: bool
+      value: T
+      left: "Tree(T)"
+      right: "Tree(T)"
+
+functions:
+  leaf:
+    params:
+      - name: value
+        type: "T"
+    returns: "Tree(T)"
+    description: "Create leaf node"
+
+  branch:
+    params:
+      - name: left
+        type: "Tree(T)"
+      - name: right
+        type: "Tree(T)"
+    returns: "Tree(T)"
+    description: "Create branch node"
+
+  isLeaf:
+    params:
+      - name: tree
+        type: "Tree(T)"
+    returns: "bool"
+    description: "Check if is leaf"
+
+  height:
+    params:
+      - name: tree
+        type: "Tree(T)"
+    returns: "usize"
+    description: "Get tree height"
+
+  size:
+    params:
+      - name: tree
+        type: "Tree(T)"
+    returns: "usize"
+    description: "Count nodes"
+
+  inorder:
+    params:
+      - name: tree
+        type: "Tree(T)"
+    returns: "[]T"
+    description: "In-order traversal"
+
+behaviors:
+  - name: immutable
+    description: "Operations return new trees"
+    note: "Original tree unchanged"

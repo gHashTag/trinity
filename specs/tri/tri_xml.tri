@@ -1,0 +1,37 @@
+name: tri_xml
+version: "0.1.0"
+module: tri.xml
+description: "TRI XML — markup format"
+
+types:
+  XmlNode:
+    description: "XML node"
+    fields:
+      tag: "[]const u8"
+      attributes: "std.StringHashMap([]const u8)"
+      children: "[]XmlNode"
+      text: "[]const u8"
+
+functions:
+  parse:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!XmlNode"
+    description: "Parse XML document"
+
+  format:
+    params:
+      - name: node
+        type: "XmlNode"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Serialize to XML"
+
+behaviors:
+  - name: simple
+    description: "Simplified XML parser"
+    note: "No DTD, namespaces"

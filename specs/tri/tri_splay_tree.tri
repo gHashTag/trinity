@@ -1,0 +1,62 @@
+name: tri_splay_tree
+version: "0.1.0"
+language: zig
+module: tri.splay_tree
+description: "Splay tree — self-adjusting BST"
+
+types:
+  SplayTree:
+    generic: "K, V"
+    description: "Self-adjusting binary search tree"
+    fields:
+      root: "?*SplayNode"
+      size: "usize"
+
+  SplayNode:
+    generic: "K, V"
+    fields:
+      key: "K"
+      value: "V"
+      left: "?*SplayNode"
+      right: "?*SplayNode"
+      parent: "?*SplayNode"
+
+functions:
+  init:
+    returns: "SplayTree"
+    description: "Create empty splay tree"
+
+  find:
+    params:
+      - name: tree
+        type: "*SplayTree"
+      - name: key
+        type: "K"
+    returns: "?V"
+    description: "Find key and splay to root"
+
+  insert:
+    params:
+      - name: tree
+        type: "*SplayTree"
+      - name: key
+        type: "K"
+      - name: value
+        type: "V"
+    returns: "!void"
+    description: "Insert and splay to root"
+
+  delete:
+    params:
+      - name: tree
+        type: "*SplayTree"
+      - name: key
+        type: "K"
+    returns: "bool"
+    description: "Remove key if present"
+
+behaviors:
+  - name: "splay_operation"
+    description: "Move accessed node to root via zig/zig-zag/zig-zig rotations"
+  - name: "amortized_log_n"
+    description: "O(log n) amortized, O(n) worst case per operation"

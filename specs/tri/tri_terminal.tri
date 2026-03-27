@@ -1,0 +1,52 @@
+name: tri_terminal
+version: "0.1.0"
+module: tri.terminal
+description: "TRI terminal utilities — ANSI codes and screen size"
+
+types:
+  Color:
+    description: "Terminal colors"
+    enum:
+      - black
+      - red
+      - green
+      - yellow
+      - blue
+      - magenta
+      - cyan
+      - white
+      - default
+
+  Style:
+    description: "Text styles"
+    enum:
+      - bold
+      - dim
+      - italic
+      - underline
+      - reverse
+
+functions:
+  getSize:
+    returns: "TerminalSize"
+    description: "Get terminal size"
+
+  colorize:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: text
+        type: "[]const u8"
+      - name: fg
+        type: "Color"
+    returns: "![]u8"
+    description: "Apply color to text"
+
+  reset:
+    returns: "[]const u8"
+    description: "Get ANSI reset code"
+
+behaviors:
+  - name: ansi_codes
+    description: "Uses ANSI escape codes"
+    note: "Works on most modern terminals"

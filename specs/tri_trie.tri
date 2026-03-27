@@ -1,0 +1,58 @@
+name: tri_trie
+version: "0.1.0"
+module: tri.trie
+description: "TRI Trie — prefix tree"
+
+types:
+  TrieNode:
+    description: "Trie node"
+    fields:
+      children: "std.HashMap(u8, TrieNode)"
+      is_end: "bool"
+
+  Trie:
+    description: "Prefix tree"
+    fields:
+      root: "TrieNode"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Trie"
+    description: "Create empty trie"
+
+  insert:
+    params:
+      - name: trie
+        type: "*Trie"
+      - name: word
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Insert word"
+
+  search:
+    params:
+      - name: trie
+        type: "Trie"
+      - name: word
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if word exists"
+
+  prefix:
+    params:
+      - name: trie
+        type: "Trie"
+      - name: prefix
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if any words with prefix"
+
+behaviors:
+  - name: prefix
+    description: "Prefix search"
+    note: "O(m) where m is key length"

@@ -1,0 +1,49 @@
+name: tri_maybe
+version: "0.1.0"
+module: tri.maybe
+description: "TRI Maybe type — lazy computation with deferred execution"
+
+types:
+  Maybe(T):
+    description: "Lazy optional value with deferred computation"
+    fields:
+      computed: bool
+      value: T
+
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "Maybe(T)"
+    description: "Lift value into Maybe context"
+
+  bind:
+    params:
+      - name: maybe
+        type: "Maybe(T)"
+      - name: fn
+        type: "fn(T) -> Maybe(U)"
+    returns: "Maybe(U)"
+    description: "Chain Maybe computations (monadic bind)"
+
+  map:
+    params:
+      - name: maybe
+        type: "Maybe(T)"
+      - name: fn
+        type: "fn(T) -> U"
+    returns: "Maybe(U)"
+    description: "Transform value if present"
+
+  join:
+    params:
+      - name: nested
+        type: "Maybe(Maybe(T))"
+    returns: "Maybe(T)"
+    description: "Flatten nested Maybe"
+
+behaviors:
+  - name: monad_laws
+    description: "Satisfies monad laws: left identity, right identity, associativity"
+    note: "Maybe is a monad with pure/Bind"

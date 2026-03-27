@@ -229,11 +229,9 @@ fn postStepComment(allocator: Allocator, issue_num: u32, phase: LoopPhase, detai
     };
 
     const r = runTriCommand(allocator, &.{
-        "tri", "issue", "comment", issue_arg,
-        "--status", status,
-        "--phase",  phase_arg,
-        "--step",   detail,
-        "--agent",  "dev-loop",
+        "tri",      "issue", "comment", issue_arg,
+        "--status", status,  "--phase", phase_arg,
+        "--step",   detail,  "--agent", "dev-loop",
     });
     allocator.free(r.output);
 }
@@ -332,9 +330,9 @@ fn executePhase(allocator: Allocator, phase: LoopPhase, issue_num: u32) LoopStep
             var task_buf: [64]u8 = undefined;
             const task_str = std.fmt.bufPrint(&task_buf, "dev loop issue #{d}", .{issue_num}) catch "dev loop";
             const r = runTriCommand(allocator, &.{
-                "tri", "experience", "save",
-                "--task",    task_str,
-                "--verdict", "PASS",
+                "tri",    "experience", "save",
+                "--task", task_str,     "--verdict",
+                "PASS",
             });
             step.success = r.success;
             step.setOutput(if (r.success) "Experience saved" else "Experience save failed");

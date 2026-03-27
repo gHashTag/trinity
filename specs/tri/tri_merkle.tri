@@ -1,0 +1,47 @@
+name: tri_merkle
+version: "0.1.0"
+module: tri.merkle
+description: "TRI Merkle — hash tree"
+
+types:
+  MerkleNode:
+    description: "Merkle tree node"
+    fields:
+      hash: "[]u8"
+      left: "?MerkleNode"
+      right: "?MerkleNode"
+
+  MerkleTree:
+    description: "Merkle hash tree"
+    fields:
+      root: "?MerkleNode"
+      leaves: "[][]u8"
+
+functions:
+  from_leaves:
+    params:
+      - name: data
+        type: "[][]u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!MerkleTree"
+    description: "Build tree from leaf data"
+
+  root_hash:
+    params:
+      - name: tree
+        type: "MerkleTree"
+    returns: "[]u8"
+    description: "Get root hash"
+
+  verify:
+    params:
+      - name: tree
+        type: "MerkleTree"
+    returns: "bool"
+    description: "Verify tree integrity"
+
+behaviors:
+  - name: hash
+    description: "Hash-based verification"
+    note: "Merkle proof support"

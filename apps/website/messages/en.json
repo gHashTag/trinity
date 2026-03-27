@@ -2,9 +2,11 @@
   "lang": "en",
   "langSwitch": "RU",
   "langHref": "?lang=ru",
-  "nav": ["TRINITY", "Theorems", "Solution", "Benchmarks", "Calculator", "DePIN", "Tech Tree", "Team", "Science", "Invest"],
+  "nav": ["TRINITY", "Theorems", "Publications", "Solution", "Benchmarks", "Calculator", "DePIN", "Team", "Invest"],
   "hero": {
     "tag": "GPU-Verified Green AI Economy",
+    "badge_publications": "7 PUBLICATIONS",
+    "badge_doi": "DOI-VERIFIED",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "298K tokens/s on RTX 3090 | 274K on A100 | VERIFIED",
     "quote": "\"Not a claim — a theorem. Not a promise — a proof. Not simulated — GPU verified.\"",
@@ -28,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "Dashboard",
+    "tree": "Research Lab",
     "docs": "Docs"
   },
   "theorems": {
@@ -151,6 +154,12 @@
       "trit": "Ternary Trit",
       "efficiency": "+58% Density"
     }
+  },
+  "publications": {
+    "badge": "SCIENTIFIC PUBLICATIONS",
+    "title": "DOI-Backed Research Results",
+    "subtitle": "All research published on Zenodo with permanent DOI identifiers.",
+    "viewAll": "View Full Documentation →"
   },
   "calculator": {
     "title": "Savings <span class=\"grad\">Calculator</span>",

@@ -1,25 +1,77 @@
 name: tri_config
-version: "1.0.0"
-language: zig
+version: "0.1.0"
 module: tri.config
+description: "TRI config utilities — configuration file parsing"
 
-description: |
-  TRI CLI — Configuration File Support.
+types:
+  ConfigValue:
+    description: "Configuration value (string, number, bool, or null)"
+    fields:
+      string: ?[]const u8
+      number: ?f64
+      boolean: ?bool
+      is_null: bool
 
-  Supports ~/.trirc and .trirc.local files.
-  Key-value config with section support.
+  ConfigEntry:
+    description: "Single configuration key-value pair"
+    fields:
+      key: []const u8
+      value: ConfigValue
+
+  Config:
+    description: "Configuration container"
+    fields:
+      entries: []ConfigEntry
+      error: ?[]const u8
+
+functions:
+  parse:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: content
+        type: "[]const u8"
+    returns: "!Config"
+    description: "Parse simple key=value config format"
+
+  getString:
+    params:
+      - name: config
+        type: "Config"
+      - name: key
+        type: "[]const u8"
+      - name: default
+        type: "[]const u8"
+    returns: "[]const u8"
+    description: "Get string value with default"
+
+  getNumber:
+    params:
+      - name: config
+        type: "Config"
+      - name: key
+        type: "[]const u8"
+      - name: default
+        type: "f64"
+    returns: "f64"
+    description: "Get number value with default"
+
+  getBool:
+    params:
+      - name: config
+        type: "Config"
+      - name: key
+        type: "[]const u8"
+      - name: default
+        type: "bool"
+    returns: "bool"
+    description: "Get boolean value with default"
 
 behaviors:
-  - name: loadConfig
-    given: Allocator
-    when: Called at CLI startup
-    then: Loads ~/.trirc then .trirc.local (local overrides global)
+  - name: simple_format
+    description: "Simple key=value format, one per line"
+    note: "Comments start with #, strings can be quoted"
 
-  - name: getConfigValue
-    given: Key string
-    when: Called
-    then: Returns value for key or null
-
-export_functions:
-  - loadConfig
-  - getConfigValue
+  - name: type_coercion
+    description: "Values are parsed as their natural type"
+    note: "true/false become bool, numbers become f64"

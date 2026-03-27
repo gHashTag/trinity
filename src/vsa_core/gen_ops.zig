@@ -14,7 +14,6 @@ const Vec32i8 = common.Vec32i8;
 const Vec32i16 = common.Vec32i16;
 const SIMD_WIDTH = common.SIMD_WIDTH;
 
-
 pub fn bind(allocator: std.mem.Allocator, a: []const Trit, b: []const Trit) ![]Trit {
     const len = @max(a.len, b.len);
     var result = try allocator.alloc(Trit, len);

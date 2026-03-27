@@ -1,0 +1,53 @@
+name: tri_sql
+version: "0.1.0"
+module: tri.sql
+description: "TRI SQL — query builder"
+
+types:
+  QueryType:
+    description: "Query type"
+    enum: [Select, Insert, Update, Delete]
+
+  SqlQuery:
+    description: "SQL query"
+    fields:
+      type: "QueryType"
+      table: "[]const u8"
+      columns: "[][]const u8"
+      where_clause: "[]const u8"
+      values: "[][]const u8"
+
+functions:
+  select:
+    params:
+      - name: table
+        type: "[]const u8"
+      - name: columns
+        type: "[][]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!SqlQuery"
+    description: "Create SELECT query"
+
+  where:
+    params:
+      - name: query
+        type: "SqlQuery"
+      - name: condition
+        type: "[]const u8"
+    returns: "SqlQuery"
+    description: "Add WHERE clause"
+
+  build:
+    params:
+      - name: query
+        type: "SqlQuery"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Build SQL string"
+
+behaviors:
+  - name: builder
+    description: "Query builder pattern"
+    note: "Fluent API for SQL"

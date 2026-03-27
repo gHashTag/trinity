@@ -1,0 +1,42 @@
+name: tri_levenshtein
+version: "0.1.0"
+language: zig
+module: tri.levenshtein
+description: "Levenshtein edit distance"
+
+types:
+  EditOp:
+    enum: ["INSERT", "DELETE", "SUBSTITUTE", "MATCH"]
+
+  EditPath:
+    description: "Sequence of edit operations"
+    fields:
+      ops: "[]EditOp"
+      distance: "usize"
+
+functions:
+  distance:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!usize"
+    description: "Compute minimum edit distance"
+
+  align:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!EditPath"
+    description: "Compute edit path with operations"
+
+behaviors:
+  - name: "dynamic_programming"
+    description: "O(n*m) time, O(min(n,m)) space with optimization"

@@ -1,0 +1,50 @@
+name: tri_bloom_filter_impl
+version: "0.1.0"
+language: zig
+module: tri.bloom_filter_impl
+description: "Bloom filter implementation"
+
+types:
+  BloomFilter:
+    description: "Probabilistic set membership"
+    fields:
+      bits: "[]usize"
+      num_hashes: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: size
+        type: "usize"
+      - name: hash_count
+        type: "usize"
+    returns: "BloomFilter"
+    description: "Create bloom filter"
+
+  add:
+    params:
+      - name: bf
+        type: "*BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "void"
+    description: "Add item"
+
+  contains:
+    params:
+      - name: bf
+        type: "*BloomFilter"
+      - name: item
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if item might exist"
+
+  deinit:
+    params:
+      - name: bf
+        type: "*BloomFilter"
+    returns: "void"
+    description: "Free filter"

@@ -1,0 +1,42 @@
+name: tri_variant
+version: "0.1.0"
+module: tri.variant
+description: "TRI Variant — tagged union"
+
+types:
+  Variant(T):
+    description: "Tagged union of variants"
+    fields:
+      tag: "[]const u8"
+      value: T
+
+functions:
+  make:
+    params:
+      - name: tag
+        type: "[]const u8"
+      - name: value
+        type: "T"
+    returns: "Variant(T)"
+    description: "Create variant with tag"
+
+  getTag:
+    params:
+      - name: variant
+        type: "Variant(T)"
+    returns: "[]const u8"
+    description: "Get variant tag"
+
+  match:
+    params:
+      - name: variant
+        type: "Variant(T)"
+      - name: handlers
+        type: "map"
+    returns: "T"
+    description: "Match tag to handler"
+
+behaviors:
+  - name: type_safe_union
+    description: "One of many types"
+    note: "Tag determines active variant"

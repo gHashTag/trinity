@@ -1,0 +1,20 @@
+name: tri_shell_sort
+version: "0.1.0"
+language: zig
+module: tri.shell_sort
+description: "Shell Sort - generalized insertion sort with gaps"
+
+functions:
+  sort:
+    params:
+      - name: values
+        type: "[]i64"
+    returns: "void"
+    description: "Sort using gap sequence (Shell's original: n/2, n/4, ...)"
+
+behaviors:
+  - name: gap_sequence
+    description: "Sort elements at gap distance, reduce gap"
+    implementation: |
+      Start with gap = n/2, g-sorted insertion sort.
+      Reduce gap until 1, then final insertion sort.

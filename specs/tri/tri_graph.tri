@@ -1,0 +1,56 @@
+name: tri_graph
+version: "0.1.0"
+module: tri.graph
+description: "TRI Graph — graph data structures"
+
+types:
+  Graph(T):
+    description: "Directed graph"
+    fields:
+      nodes: "std.HashMap(T, []T)"
+      directed: "bool"
+
+  GraphPath:
+    description: "Path through graph"
+    fields:
+      nodes: "[]T"
+      cost: "f64"
+
+functions:
+  empty:
+    params:
+      - name: directed
+        type: "bool"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Graph(T)"
+    description: "Create empty graph"
+
+  addNode:
+    params:
+      - name: graph
+        type: "*Graph(T)"
+      - name: node
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add node to graph"
+
+  addEdge:
+    params:
+      - name: graph
+        type: "*Graph(T)"
+      - name: from
+        type: "T"
+      - name: to
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add edge between nodes"
+
+behaviors:
+  - name: adjacency
+    description: "Adjacency list representation"
+    note: "Efficient neighbor queries"

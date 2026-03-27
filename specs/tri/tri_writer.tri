@@ -1,0 +1,47 @@
+name: tri_writer
+version: "0.1.0"
+module: tri.writer
+description: "TRI Writer monad — logging output"
+
+types:
+  Writer(W, T):
+    description: "Value paired with log"
+    fields:
+      value: T
+      output: W
+
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "Writer(W, T)"
+    description: "Return value with empty log"
+
+  tell:
+    params:
+      - name: output
+        type: "W"
+    returns: "Writer(W, void)"
+    description: "Emit log entry"
+
+  listen:
+    params:
+      - name: writer
+        type: "Writer(W, T)"
+    returns: "Writer(W, (T, W))"
+    description: "Extract output"
+
+  censor:
+    params:
+      - name: fn
+        type: "fn(W) -> W"
+      - name: writer
+        type: "Writer(W, T)"
+    returns: "Writer(W, T)"
+    description: "Modify output"
+
+behaviors:
+  - name: monoid_output
+    description: "Output type must be a monoid"
+    note: "Logs are accumulated via append"

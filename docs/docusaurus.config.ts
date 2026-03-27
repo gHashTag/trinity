@@ -13,9 +13,9 @@ const config: Config = {
     v4: true,
   },
 
-  // GitHub Pages deployment
-  url: 'https://gHashTag.github.io',
-  baseUrl: '/trinity/docs/',
+  // Custom domain deployment (t27.ai)
+  url: 'https://t27.ai',
+  baseUrl: '/docs/',
   organizationName: 'gHashTag',
   projectName: 'trinity',
   deploymentBranch: 'gh-pages',
@@ -54,7 +54,7 @@ const config: Config = {
           editUrl: 'https://github.com/gHashTag/trinity/tree/main/docs/',
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
-          routeBasePath: '/', // Docs at root of /trinity/docs/
+          routeBasePath: '/', // Docs at root of /docs/
         },
         blog: false,
         theme: {

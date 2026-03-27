@@ -37,7 +37,7 @@ const WARMUP: u64 = 10_000;
 
 pub const Trit = enum(i8) {
     negative = -1, // ▽ FALSE
-    zero = 0, // ○ UNKNOWN  
+    zero = 0, // ○ UNKNOWN
     positive = 1, // △ TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {

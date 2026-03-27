@@ -27,7 +27,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
 
     var j: usize = 0;
     while (j <= b.len) : (j + 1) {
-        const insert_cost = @as(u8, if (a[i] == b[j]) 1 else 0;
+        const insert_cost = if (a[i] == b[j]) @as(u8, 1) else @as(u8, 0);
         matrix[j + 1][i] = insert_cost + matrix[j][i];
         j += 1;
     }
@@ -35,7 +35,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
     // Fill diagonal
     i = 0;
     while (i <= max_len) : (i + 1) {
-        const delete_cost = @as(u8, if (a[i - 1] == b[j]) 1 else 0;
+        const delete_cost = if (a[i - 1] == b[j]) @as(u8, 1) else @as(u8, 0);
         matrix[j + 1][i] = delete_cost + matrix[j][i];
         i += 1;
     }
@@ -45,11 +45,11 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
     var last_col = b.len + 1;
     var result = matrix[last_row][b.len];
 
-    while (last_row > 0) : (last_row - 1) : ({
+    while (last_row > 0) {
         // Move up
         for (0..b.len) |col| {
             const cost = matrix[last_row - 1][col];
-            const new_cost = cost + @as(u8, if (a[last_row - 1] == b[col]) 0 else 1);
+            const new_cost = cost + if (a[last_row - 1] == b[col]) @as(u8, 0) else @as(u8, 1);
             if (new_cost < matrix[last_row][col]) {
                 matrix[last_row - 1][col] = new_cost;
                 result = new_cost;
@@ -58,7 +58,7 @@ fn levenshtein(a: []const u8, b: []const u8) usize {
             }
         }
         // Move left
-        const move_left = @as(u8, if (a[last_row] == b[last_row - 1]) 1 else 0;
+        const move_left = if (a[last_row] == b[last_row - 1]) @as(u8, 1) else @as(u8, 0);
         if (move_left != 0) {
             matrix[last_row - 1][last_row - 1] = move_left;
             last_col -= 1;
@@ -75,14 +75,14 @@ pub fn recordFailure(self: *ExperienceEngine, task: []const u8, error_code: Erro
         self.blacklist = std.StringHashMap(Error).init(self.allocator);
     }
 
-    const err_entry: try self.blacklist.getOrPut(self.allocator, task, .{
+    const err_entry = try self.blacklist.getOrPut(self.allocator, task, .{
         .code = error_code,
         .message = "",
     });
     defer self.allocator.free(err_entry.value_ptr.message);
 
     // Check if already at MAX_FAILURES
-    const count: self.blacklist.get(task) orelse 0;
+    const count = self.blacklist.get(task) orelse 0;
     if (count + 1 >= MAX_FAILURES) {
         // Add to blacklist with PERSISTENT error
         _ = try self.blacklist.put(self.allocator, task, .{
@@ -112,5 +112,5 @@ pub fn cmdCheckFear(allocator: std.mem.Allocator, args: []const u8) !u8 {
 
     return try std.fmt.allocPrint(allocator,
         \\Blocked: {s}
-    , .{ if (is_blocked) "YES ❌" else "NO ✅" });
+    , .{if (is_blocked) "YES ❌" else "NO ✅"});
 }
