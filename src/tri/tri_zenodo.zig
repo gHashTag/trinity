@@ -1057,7 +1057,7 @@ fn runClaraCommand(allocator: std.mem.Allocator, args: []const []const u8) !void
         print("\n{s}{s}CLARA Verification Suite{s}\n", .{ CYAN, BOLD, RESET });
         print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
         print("Running CLARA verification tests...\n\n", .{});
-        print("{s}zig test src/tri/clara/verification.zig -f CLARA{s}\n\n", .{ YELLOW, RESET });
+        print("{s}zig test src/vsa.zig --test-filter CLARA{s}\n\n", .{ YELLOW, RESET });
         print("{s}Note: Implement src/tri/clara/verification.zig first.{s}\n\n", .{ YELLOW, RESET });
     } else if (std.mem.eql(u8, clara_subcmd, "bench")) {
         print("\n{s}{s}CLARA Benchmark Suite{s}\n", .{ CYAN, BOLD, RESET });

@@ -1,28 +1,28 @@
-//! Sacred Types — единственный источник правды для форматов Trinity.
-//! Везде использовать только эти типы; сырой f16/u16/i8 запрещён.
+//! Sacred Types — single source of truth for Trinity formats.
+//! Use only these types everywhere; raw f16/u16/i8 is forbidden.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
 
-/// Золотое сечение φ = (1 + √5) / 2
+/// Golden ratio φ = (1 + √5) / 2
 pub const PHI = 1.6180339887498948482;
 pub const PHI_SQ = PHI * PHI;
 pub const INV_PHI = 1.0 / PHI;
 pub const TRINITY = PHI_SQ + 1.0 / PHI_SQ; // = 3.0
 
-// Compile-time верификация Sacred констант
+// Compile-time verification of Sacred constants
 comptime {
     if (@abs(TRINITY - 3.0) > 1e-15)
         @compileError("φ² + 1/φ² ≠ 3 — Trinity math broken!");
 }
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
-// GF16: Sacred Format для HSLM weights, activations, gradients
+// GF16: Sacred Format for HSLM weights, activations, gradients
 // [sign:1][exp:6][mant:9] = 16 bit
 // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
-/// GF16: Sacred 16-bit формат для HSLM.
+/// GF16: Sacred 16-bit format for HSLM.
 ///
 /// **Phi-optimal distribution** — Unlike IEEE 754 f16 [sign:1][exp:5][mant:10],
 /// GF16 has phi-optimal bit distribution: [sign:1][exp:6][mant:9].
@@ -57,7 +57,7 @@ pub const GF16 = packed struct(u16) {
     /// Lower is better — GF16 achieves 0.049 (vs 0.082 for IEEE f16)
     pub const phi_distance: comptime_float = @abs(6.0 / 9.0 - 1.0 / PHI);
 
-    /// Создать GF16 из f32
+    /// Create GF16 from f32
     pub fn fromF32(v: f32) GF16 {
         if (v == 0.0) return .{ .mant = 0, .exp = 0, .sign = 0 };
         if (!std.math.isFinite(v)) {
@@ -67,7 +67,7 @@ pub const GF16 = packed struct(u16) {
         const sign_bit: u1 = @intFromBool(v < 0);
         const abs_v = @abs(v);
 
-        // Найти экспоненту
+        // Find exponent
         var exp: i8 = 0;
         var mant_f = abs_v;
         while (mant_f >= 1.0 and exp < 31) : (exp += 1) mant_f /= 2.0;
@@ -85,7 +85,7 @@ pub const GF16 = packed struct(u16) {
         };
     }
 
-    /// Конвертировать GF16 в f32
+    /// Convert GF16 to f32
     pub fn toF32(self: GF16) f32 {
         if (self.exp == 0 and self.mant == 0) {
             return if (self.sign == 1) -0.0 else 0.0;
@@ -101,22 +101,22 @@ pub const GF16 = packed struct(u16) {
         return if (self.sign == 1) -value else value;
     }
 
-    /// Сложение GF16 (через f32 для точности)
+    /// GF16 addition (via f32 for precision)
     pub fn add(a: GF16, b: GF16) GF16 {
         return fromF32(a.toF32() + b.toF32());
     }
 
-    /// Вычитание GF16
+    /// GF16 subtraction
     pub fn sub(a: GF16, b: GF16) GF16 {
         return fromF32(a.toF32() - b.toF32());
     }
 
-    /// Умножение GF16
+    /// GF16 multiplication
     pub fn mul(a: GF16, b: GF16) GF16 {
         return fromF32(a.toF32() * b.toF32());
     }
 
-    /// Деление GF16
+    /// GF16 division
     pub fn div(a: GF16, b: GF16) GF16 {
         return fromF32(a.toF32() / b.toF32());
     }
@@ -140,7 +140,7 @@ pub const GF16 = packed struct(u16) {
         };
     }
 
-    /// Абсолютное значение
+    /// Absolute value
     pub fn abs(self: GF16) GF16 {
         return .{
             .mant = self.mant,
@@ -151,26 +151,26 @@ pub const GF16 = packed struct(u16) {
 };
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
-// TF3: Ternary Format для VSA, sensation, ternary weights
+// TF3: Ternary Format for VSA, sensation, ternary weights
 // [sign:1][exp:6][mant:11] = 18 bit
 // ═════════════════════════════════════════════════════════════════════════════════════════════
 
-/// TF3: Sacred ternary формат для VSA.
-/// Упрощённая версия для демонстрации Sacred Trinity концепции.
+/// TF3: Sacred ternary format for VSA.
+/// Simplified version for Sacred Trinity concept demonstration.
 ///
-/// Структура: [sign:1][exp:6][mant:11] = 18 bit
-/// - sign: 1 бит знака
-/// - exp: 6 бит экспоненты (значения -31..+32)
-/// - mant: 11 бит мантиссы
+/// Structure: [sign:1][exp:6][mant:11] = 18 bit
+/// - sign: 1 sign bit
+/// - exp: 6 exponent bits (values -31..+32)
+/// - mant: 11 mantissa bits
 pub const TF3 = packed struct(u18) {
     mant: u11,
     exp: u6,
     sign: u1,
 
-    /// phi-distance для тернарного формата
+    /// phi-distance for ternary format
     pub const phi_distance: comptime_float = @abs(3.0 / 11.0 - 1.0 / PHI);
 
-    /// Создать TF3 из f32 (упрощённая версия)
+    /// Create TF3 from f32 (simplified version)
     pub fn fromF32(v: f32) TF3 {
         if (v == 0.0) return .{ .mant = 0, .exp = 0, .sign = 0 };
         if (!std.math.isFinite(v)) {
@@ -180,19 +180,19 @@ pub const TF3 = packed struct(u18) {
         const sign_bit: u1 = @intFromBool(v < 0);
         const abs_v = @abs(v);
 
-        // Найти экспоненту (тернарная база 3)
-        // Используем i16 для избежания overflow во время вычислений
+        // Find exponent (ternary base 3)
+        // Use i16 to avoid overflow during calculations
         var exp: i16 = 0;
         var mant_f = abs_v;
 
-        // Нормализовать: mant_f в [1/3, 1)
+        // Normalize: mant_f in [1/3, 1)
         const MAX_EXP: i16 = 31;
         const MIN_EXP: i16 = -31;
 
         while (mant_f >= 1.0 and exp < MAX_EXP) : (exp += 1) mant_f /= 3.0;
         while (mant_f < 1.0 / 3.0 and exp > MIN_EXP) : (exp -= 1) mant_f *= 3.0;
 
-        // Clamp и конвертация в u6 (biased exponent)
+        // Clamp and convert to u6 (biased exponent)
         const exp_biased = @min(@max(exp + 31, 0), 63);
         const exp_u6: u6 = @intCast(exp_biased);
         const mant_u11: u11 = @intFromFloat(@min(mant_f * 2047.0, 2047.0));
@@ -204,7 +204,7 @@ pub const TF3 = packed struct(u18) {
         };
     }
 
-    /// Конвертировать TF3 в f32
+    /// Convert TF3 to f32
     pub fn toF32(self: TF3) f32 {
         if (self.exp == 0 and self.mant == 0) {
             return if (self.sign == 1) -0.0 else 0.0;
@@ -230,7 +230,7 @@ pub const TF3 = packed struct(u18) {
         return fromF32(1.0);
     }
 
-    /// Получить знак {-1, 0, +1}
+    /// Get sign {-1, 0, +1}
     pub fn getSign(self: TF3) i8 {
         return if (self.sign == 1) -1 else if (self.mant == 0) 0 else 1;
     }
@@ -241,7 +241,7 @@ pub const TF3 = packed struct(u18) {
 // ═══════════════════════════════════════════════════════════════════════════════════════════
 
 comptime {
-    // Проверка packed struct размеров
+    // Check packed struct sizes
     std.debug.assert(@sizeOf(GF16) == 2);
     std.debug.assert(@sizeOf(TF3) == @sizeOf(u18));
 }

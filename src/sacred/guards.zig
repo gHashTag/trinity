@@ -1,5 +1,5 @@
-//! Compile-time Guards против известных anti-patterns.
-//! Если код нарушает guard — ошибка компиляции.
+//! Compile-time Guards against known anti-patterns.
+//! If code violates guard — compile error.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -7,11 +7,11 @@ const std = @import("std");
 const sacred_types = @import("sacred_types.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TYPE GUARDS — Запрет сырых типов вместо Sacred Types
+// TYPE GUARDS — Forbid raw types instead of Sacred Types
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Запретить прямое использование сырых контейнеров под форматы.
-/// Использовать Sacred Types (GF16, TF3) вместо u16, i8.
+/// Forbid direct use of raw containers for formats.
+/// Use Sacred Types (GF16, TF3) instead of u16, i8.
 pub fn forbidRawFormat(comptime T: type, comptime ctx: []const u8) void {
     comptime {
         const is_raw = T == u16 or T == u32 or T == i8 or T == u8;
@@ -22,7 +22,7 @@ pub fn forbidRawFormat(comptime T: type, comptime ctx: []const u8) void {
     }
 }
 
-/// Проверить что тип — Sacred Type
+/// Verify type is Sacred Type
 pub fn requireSacredType(comptime T: type, comptime ctx: []const u8) void {
     comptime {
         const is_sacred = T == sacred_types.GF16 or T == sacred_types.TF3;
@@ -32,7 +32,7 @@ pub fn requireSacredType(comptime T: type, comptime ctx: []const u8) void {
     }
 }
 
-/// Запретить сырой f32 в Sacred слоях
+/// Forbid raw f32 in Sacred layers
 pub fn forbidRawF32(comptime T: type, comptime ctx: []const u8) void {
     comptime {
         if (T == f32 or T == f64) {
@@ -42,10 +42,10 @@ pub fn forbidRawF32(comptime T: type, comptime ctx: []const u8) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// DIMENSION GUARDS — Запрет магических чисел размерностей
+// DIMENSION GUARDS — Forbid magic dimension numbers
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Запретить «случайные» размерности для ternary / Sacred блоков
+/// Forbid "random" dimensions for ternary / Sacred blocks
 pub fn assertTernaryDim(comptime dim: usize, comptime ctx: []const u8) void {
     comptime {
         if (dim == 0) @compileError(ctx ++ ": dim cannot be zero");
@@ -56,7 +56,7 @@ pub fn assertTernaryDim(comptime dim: usize, comptime ctx: []const u8) void {
     }
 }
 
-/// Проверить что размерность в Sacred Dimensions
+/// Verify dimension is in Sacred Dimensions
 pub fn assertSacredDim(comptime dim: usize, comptime ctx: []const u8) void {
     comptime {
         const sacred_dims = [_]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
@@ -68,10 +68,10 @@ pub fn assertSacredDim(comptime dim: usize, comptime ctx: []const u8) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ALLOCATION GUARDS — Запрет прямых alloc/free
+// ALLOCATION GUARDS — Forbid direct alloc/free
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить что используется ArenaAllocator или другой scoped allocator
+/// Verify ArenaAllocator or other scoped allocator is used
 pub fn forbidStdPageAllocator(comptime ctx: []const u8) void {
     comptime {
         @compileError(ctx ++ ": use ArenaAllocator or GPA, not std.heap.page_allocator directly");
@@ -79,10 +79,10 @@ pub fn forbidStdPageAllocator(comptime ctx: []const u8) void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// OPTIMIZER GUARDS — Запрет опасных настроек
+// OPTIMIZER GUARDS — Forbid dangerous settings
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить что LR schedule не flat
+/// Verify LR schedule is not flat
 pub fn assertNotFlatLR(comptime schedule: []const u8, comptime ctx: []const u8) void {
     comptime {
         if (std.mem.eql(u8, schedule, "flat")) {
@@ -91,7 +91,7 @@ pub fn assertNotFlatLR(comptime schedule: []const u8, comptime ctx: []const u8) 
     }
 }
 
-/// Проверить что kill_ppl_30k корректный
+/// Verify kill_ppl_30k is correct
 pub fn assertKillPPL(comptime kill_ppl: comptime_int, comptime ctx: []const u8) void {
     comptime {
         if (kill_ppl < 400) {
@@ -101,10 +101,10 @@ pub fn assertKillPPL(comptime kill_ppl: comptime_int, comptime ctx: []const u8) 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FPGA GUARDS — Запрет опасных операций
+// FPGA GUARDS — Forbid dangerous operations
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить что fxload используется перед JTAG
+/// Verify fxload is used before JTAG
 pub fn assertFxloadBeforeJTAG(comptime fxload_done: bool, comptime ctx: []const u8) void {
     comptime {
         if (!fxload_done) {
@@ -114,25 +114,25 @@ pub fn assertFxloadBeforeJTAG(comptime fxload_done: bool, comptime ctx: []const 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// RAILWAY GUARDS — Проверка конфигурации сервисов
+// RAILWAY GUARDS — Service configuration validation
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Railway service configuration validator (comptime struct check)
 pub fn validateRailwayConfig(comptime T: type) void {
     comptime {
-        // Проверка наличия полей
+        // Check field presence
         if (!@hasField(T, "startCommand")) {
             @compileError("Railway config missing startCommand field");
         }
 
-        // Для training сервисов startCommand должен быть null
-        // (проверка runtime, но guard здесь как reminder)
+        // For training services startCommand must be null
+        // (runtime check, but guard here as reminder)
     }
 }
 
 /// Runtime Railway config checker
 pub const RailwayConfigGuard = struct {
-    /// Проверить что startCommand null (training services)
+    /// Verify startCommand is null (training services)
     pub fn assertNoStartCommand(_: RailwayConfigGuard, startCommand: ?[]const u8, ctx: []const u8) !void {
         if (startCommand != null) {
             return error.StartCommandNotNull;
@@ -140,14 +140,14 @@ pub const RailwayConfigGuard = struct {
         _ = ctx;
     }
 
-    /// Проверить что kill_ppl_30k >= 400
+    /// Verify kill_ppl_30k >= 400
     pub fn assertKillPPLSafe(_: RailwayConfigGuard, kill_ppl_30k: i64) !void {
         if (kill_ppl_30k < 400) {
             return error.KillPPLTooLow;
         }
     }
 
-    /// Проверить что builder = NIXPACKS
+    /// Verify builder = NIXPACKS
     pub fn assertNixpacksBuilder(_: RailwayConfigGuard, builder: []const u8) !void {
         if (!std.mem.eql(u8, builder, "NIXPACKS")) {
             return error.WrongBuilder;
@@ -168,14 +168,14 @@ pub const HSLMConfigGuard = struct {
         BatchSizeNotMultiple,
     };
 
-    /// Проверить LR schedule
+    /// Verify LR schedule
     pub fn assertLRSchedule(_: HSLMConfigGuard, schedule: []const u8) Error!void {
         if (std.mem.eql(u8, schedule, "flat")) {
             return Error.FlatLRSchedule;
         }
     }
 
-    /// Проверить контекстную длину
+    /// Verify context length
     pub fn assertContextLength(_: HSLMConfigGuard, ctx_len: usize) Error!void {
         var n = ctx_len;
         while (n % 3 == 0 and n > 1) n /= 3;
@@ -184,7 +184,7 @@ pub const HSLMConfigGuard = struct {
         }
     }
 
-    /// Проверить batch size (должен быть кратен 3 для ternary)
+    /// Verify batch size (must be multiple of 3 for ternary)
     pub fn assertBatchSize(_: HSLMConfigGuard, batch: usize) Error!void {
         if (batch % 3 != 0) {
             return Error.BatchSizeNotMultiple;
