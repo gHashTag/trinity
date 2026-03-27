@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import QuantumLab from './pages/QuantumLab.tsx'
@@ -15,7 +15,7 @@ import { I18nProvider } from './i18n/context.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/dashboard" element={<ProductionDashboard />} />
@@ -29,7 +29,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/viz/*" element={<Navigate to="/quantum" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </I18nProvider>
   </StrictMode>,
 )
