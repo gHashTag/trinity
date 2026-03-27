@@ -6,14 +6,12 @@ const std = @import("std");
 pub const ThreadPool = struct {
     num_threads: usize,
     shutdown: bool,
-    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, num_threads: usize) !ThreadPool {
         _ = allocator;
         return .{
             .num_threads = num_threads,
             .shutdown = false,
-            .allocator = allocator,
         };
     }
 
@@ -23,6 +21,6 @@ pub const ThreadPool = struct {
 };
 
 test "thread pool init" {
-    var pool = try ThreadPool.init(std.testing.allocator, 4);
+    const pool = try ThreadPool.init(std.testing.allocator, 4);
     try std.testing.expectEqual(@as(usize, 4), pool.num_threads);
 }

@@ -8,14 +8,12 @@ const EPOCH_COUNT = 3;
 pub const EpochManager = struct {
     current_epoch: usize,
     counters: [EPOCH_COUNT]usize,
-    allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) !EpochManager {
         _ = allocator;
         return .{
             .current_epoch = 0,
             .counters = [_]usize{0} ** EPOCH_COUNT,
-            .allocator = allocator,
         };
     }
 
