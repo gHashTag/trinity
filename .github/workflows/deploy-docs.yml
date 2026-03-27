@@ -60,12 +60,11 @@ jobs:
 
       # Deploy to gh-pages branch directly
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./combined
-          publish_branch: gh-pages
-          force_orphan: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy: ${{ github.event.head_commit.message }}'
+        run: |
+          cd combined
+          git init
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Deploy: ${{ github.event.head_commit.message }}'
+          git push --force https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/gHashTag/trinity.git HEAD:gh-pages
