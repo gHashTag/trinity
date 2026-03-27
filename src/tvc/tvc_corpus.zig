@@ -206,7 +206,13 @@ pub const TVCCorpus = struct {
         defer allocator.free(response_vec);
 
         // 2. Bind query and response (creates association)
-        var bound_vec = vsa.bind(&query_vec, &response_vec);
+        // Stub: create a simple HybridBigInt from the hash
+        var hash_val: i64 = 0;
+        for (query) |c| hash_val = hash_val *% 31 + @as(i64, @intCast(c));
+        var query_hybrid = HybridBigInt.fromI64(hash_val);
+        for (response) |c| hash_val = hash_val *% 31 + @as(i64, @intCast(c));
+        var response_hybrid = HybridBigInt.fromI64(hash_val);
+        var bound_vec = vsa.bind(&query_hybrid, &response_hybrid);
 
         // 3. Create entry
         var entry = &self.entries[self.count];
@@ -245,22 +251,24 @@ pub const TVCCorpus = struct {
 
     /// Search TVC for similar query
     /// Returns result if similarity >= threshold
-    pub fn search(self: *Self, allocator: std.mem.Allocator, query: []const u8, threshold: f64) ?TVCSearchResult {
+    pub fn search(self: *Self, allocator: std.mem.Allocator, query: []const u8, threshold: f64) !?TVCSearchResult {
         if (self.count == 0 or query.len == 0) return null;
 
         self.total_queries += 1;
 
-        // Encode query (stub: allocate empty vector)
+        // Encode query to HybridBigInt (stub: hash-based)
         // TODO: Implement proper text encoding
-        var query_vec = try allocator.alloc(i8, 100);
-        defer allocator.free(query_vec);
+        var hash_val: i64 = 0;
+        for (query) |c| hash_val = hash_val *% 31 + @as(i64, @intCast(c));
+        const query_hybrid = HybridBigInt.fromI64(hash_val);
 
         var best_idx: usize = 0;
         var best_sim: f64 = -2.0;
 
         // Linear search for best match
         for (0..self.count) |i| {
-            const sim = vsa.cosineSimilarity(&query_vec, &self.entries[i].query_vec);
+            // Stub: use bound_vec for similarity comparison
+            const sim = vsa.cosineSimilarity(&query_hybrid, &self.entries[i].bound_vec);
             if (sim > best_sim) {
                 best_sim = sim;
                 best_idx = i;

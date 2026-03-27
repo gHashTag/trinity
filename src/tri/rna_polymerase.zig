@@ -443,7 +443,7 @@ pub const PipelineExecutor = struct {
     fn storeToTVC(self: *PipelineExecutor) void {
         if (self.tvc_gate) |gate| {
             if (self.generated_response) |response| {
-                _ = gate.storeResponse(self.state.task_description, response) catch |err| {
+                _ = gate.storeResponse(self.allocator, self.state.task_description, response) catch |err| {
                     std.debug.print("{s}[TVC] Failed to store response: {}{s}\n", .{ GOLDEN, err, RESET });
                 };
             }
@@ -530,7 +530,7 @@ pub const PipelineExecutor = struct {
         }
 
         const gate = self.tvc_gate.?;
-        const result = gate.execute(self.state.task_description);
+        const result = gate.execute(self.allocator, self.state.task_description);
 
         switch (result) {
             .hit => |h| {
