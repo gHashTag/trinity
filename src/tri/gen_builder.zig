@@ -15,11 +15,11 @@ pub fn Builder(comptime T: type) type {
         const Self = @This();
 
         /// Create with pre-allocated capacity
-        pub fn init(capacity: usize, allocator: std.mem.Allocator) !Self {
-            const items = try allocator.alloc(T, capacity);
+        pub fn withCapacity(cap_arg: usize, allocator: std.mem.Allocator) !Self {
+            const items = try allocator.alloc(T, cap_arg);
             return .{
                 .items = items,
-                .cap = capacity,
+                .cap = cap_arg,
                 .count = 0,
                 .allocator = allocator,
             };
@@ -110,7 +110,7 @@ test "Builder.empty" {
 }
 
 test "Builder.append" {
-    var b = try Builder(i32).init(4, std.testing.allocator);
+    var b = try Builder(i32).withCapacity(4, std.testing.allocator);
     defer b.deinit();
     try b.append(1);
     try b.append(2);
@@ -127,7 +127,7 @@ test "Builder.appendSlice" {
 }
 
 test "Builder.finish" {
-    var b = try Builder(i32).init(4, std.testing.allocator);
+    var b = try Builder(i32).withCapacity(4, std.testing.allocator);
     try b.appendSlice(&[_]i32{ 1, 2, 3 });
     const result = try b.finish();
     defer std.testing.allocator.free(result);
@@ -145,7 +145,7 @@ test "Builder.grow" {
 }
 
 test "Builder.reset" {
-    var b = try Builder(i32).init(4, std.testing.allocator);
+    var b = try Builder(i32).withCapacity(4, std.testing.allocator);
     defer b.deinit();
     try b.append(1);
     try b.append(2);

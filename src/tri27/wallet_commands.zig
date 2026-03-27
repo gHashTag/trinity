@@ -69,7 +69,7 @@ pub const ListData = struct {
 };
 
 pub const ListItem = struct {
-    @"type": []const u8,
+    type: []const u8,
     value: []const u8,
 };
 
@@ -84,14 +84,14 @@ pub const UnstakeStatus = enum {
 // ERROR TYPES
 // ══════════════════════════════════════════════════════════════
 
-pub const WalletError = error {
-    InvalidAddress = 0,
-    InsufficientBalance = 1,
-    InvalidAmount = 2,
-    InvalidLockPeriod = 3,
-    StakeNotFound = 4,
-    StakeLocked = 5,
-    FfiError = 6,
+pub const WalletError = error{
+    InvalidAddress,
+    InsufficientBalance,
+    InvalidAmount,
+    InvalidLockPeriod,
+    StakeNotFound,
+    StakeLocked,
+    FfiError,
 };
 
 // ══════════════════════════════════════════════════════════
@@ -193,8 +193,8 @@ fn runStake(allocator: Allocator, args: []const []const u8) CommandResult {
     const amount_hex = args[0];
     const lock_period_hex = args[1];
 
-    const amount = std.fmt.parseInt(u64, amount_hex, 10) catch 0 else return 100;
-    const lock_period = std.fmt.parseInt(u64, lock_period_hex, 10) catch 0 else return 30;
+    const amount = std.fmt.parseInt(u64, amount_hex, 10) catch return 100;
+    const lock_period = std.fmt.parseInt(u64, lock_period_hex, 10) catch return 30;
 
     if (amount < 100) {
         return .{
@@ -401,6 +401,6 @@ test "unstake command with missing args" {
 test "balance command - stub FFI" {
     const allocator = std.testing.allocator;
 
-    const result = runBalance(allocator, &[_]u8{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+    const result = runBalance(allocator, &[_]u8{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
     try std.testing.expect(result.success);
 }

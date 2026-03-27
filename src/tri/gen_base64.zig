@@ -91,7 +91,7 @@ pub const Base64 = struct {
         const output = try allocator.alloc(u8, output_len);
 
         var out_idx: usize = 0;
-        var accum: usize = 0;
+        var accum: u64 = 0;
         var bits: usize = 0;
 
         for (input) |c| {
@@ -99,12 +99,14 @@ pub const Base64 = struct {
             const val = decode_table[c];
             if (val == 255) return error.InvalidCharacter;
 
-            accum = (accum << 6) | val;
+            accum = (accum << 6) | @as(u64, val);
             bits += 6;
 
             if (bits >= 8) {
                 bits -= 8;
-                output[out_idx] = @as(u8, @intCast((accum >> bits) & 0xFF));
+                const shift = @as(u5, @intCast(bits));
+                const byte_val = @as(u8, @truncate((accum >> shift) & 0xFF));
+                output[out_idx] = byte_val;
                 out_idx += 1;
             }
         }

@@ -8,13 +8,16 @@ const std = @import("std");
 pub fn TrieNode(comptime V: type) type {
     return struct {
         is_end: bool = false,
-        value: V = undefined,
-        children: std.StringHashMap(*TrieNode(V)),
+        value: V,
+        children: std.HashMap(u8, *TrieNode(V), std.hash_map.AutoContext(u8), 80),
 
         const Self = @This();
 
         pub fn init(allocator: std.mem.Allocator) Self {
-            return .{ .children = std.StringHashMap(*TrieNode(V)).init(allocator) };
+            return .{
+                .value = undefined,
+                .children = std.HashMap(u8, *TrieNode(V), std.hash_map.AutoContext(u8), 80).init(allocator),
+            };
         }
 
         pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
@@ -53,17 +56,13 @@ pub fn Trie(comptime V: type) type {
         pub fn insert(self: *Self, key: []const u8, value: V) !void {
             var current = self.root;
             for (key) |c| {
-                const char_str = &[1]u8{c};
-                const entry = try current.children.getOrPut(char_str);
+                const entry = try current.children.getOrPut(c);
                 if (!entry.found_existing) {
                     const node = try self.allocator.create(TrieNode(V));
                     node.* = TrieNode(V).init(self.allocator);
                     entry.value_ptr.* = node;
                 }
                 current = entry.value_ptr.*;
-            }
-            if (!current.is_end) {
-                self.size += 1;
             }
             current.is_end = true;
             current.value = value;
@@ -73,8 +72,7 @@ pub fn Trie(comptime V: type) type {
         pub fn get(self: *const Self, key: []const u8) ?V {
             var current = self.root;
             for (key) |c| {
-                const char_str = &[1]u8{c};
-                if (current.children.get(char_str)) |node| {
+                if (current.children.get(c)) |node| {
                     current = node;
                 } else return null;
             }
@@ -86,8 +84,7 @@ pub fn Trie(comptime V: type) type {
         pub fn hasPrefix(self: *const Self, prefix: []const u8) bool {
             var current = self.root;
             for (prefix) |c| {
-                const char_str = &[1]u8{c};
-                if (current.children.get(char_str)) |node| {
+                if (current.children.get(c)) |node| {
                     current = node;
                 } else return false;
             }
@@ -99,8 +96,7 @@ pub fn Trie(comptime V: type) type {
             // Simplified: mark as not end, don't prune nodes
             var current = self.root;
             for (key) |c| {
-                const char_str = &[1]u8{c};
-                if (current.children.get(char_str)) |node| {
+                if (current.children.get(c)) |node| {
                     current = node;
                 } else return false;
             }

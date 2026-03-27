@@ -33,7 +33,7 @@ pub fn verifyFile(path: []const u8, strict: bool) !VerificationResult {
         return .{
             .path = path,
             .valid = false,
-            .error = "T27NotSignedByTriCli",
+            .err = "T27NotSignedByTriCli",
             .message = "File does not contain TRI27_SIGNATURE header",
         };
     };
@@ -45,7 +45,7 @@ pub fn verifyFile(path: []const u8, strict: bool) !VerificationResult {
         return .{
             .path = path,
             .valid = false,
-            .error = "T27SignatureMismatch",
+            .err = "T27SignatureMismatch",
             .message = "Signature verification failed",
         };
     }
@@ -59,7 +59,7 @@ pub fn verifyFile(path: []const u8, strict: bool) !VerificationResult {
     return .{
         .path = path,
         .valid = true,
-        .error = null,
+        .err = null,
         .message = "Signature verified",
     };
 }
@@ -91,7 +91,7 @@ pub fn verifyAll(strict: bool) ![]VerificationResult {
 pub const VerificationResult = struct {
     path: []const u8,
     valid: bool,
-    error: ?[]const u8,
+    err: ?[]const u8,
     message: []const u8,
 };
 
@@ -103,13 +103,13 @@ pub fn runVerify(options: VerifyOptions) !u8 {
 
         for (results) |result| {
             if (!result.valid) {
-                std.debug.print("❌ {s}: {s}\n", .{result.path, result.message});
-                if (result.error) |err| {
+                std.debug.print("❌ {s}: {s}\n", .{ result.path, result.message });
+                if (result.err) |err| {
                     std.debug.print("   Error: {s}\n", .{err});
                 }
                 exit_code = 1;
             } else {
-                std.debug.print("✅ {s}: {s}\n", .{result.path, result.message});
+                std.debug.print("✅ {s}: {s}\n", .{ result.path, result.message });
             }
         }
 
@@ -119,7 +119,7 @@ pub fn runVerify(options: VerifyOptions) !u8 {
             for (results) |r| {
                 if (r.valid) count += 1;
             }
-            break : count;
+            break :count;
         };
 
         std.debug.print("\nSummary: {d}/{d} files valid\n", .{ valid, total });
@@ -131,13 +131,13 @@ pub fn runVerify(options: VerifyOptions) !u8 {
         const result = try verifyFile(file_path, options.strict);
 
         if (!result.valid) {
-            std.debug.print("❌ {s}: {s}\n", .{result.path, result.message});
-            if (result.error) |err| {
+            std.debug.print("❌ {s}: {s}\n", .{ result.path, result.message });
+            if (result.err) |err| {
                 std.debug.print("   Error: {s}\n", .{err});
             }
             return 1;
         } else {
-            std.debug.print("✅ {s}: {s}\n", .{result.path, result.message});
+            std.debug.print("✅ {s}: {s}\n", .{ result.path, result.message });
             return 0;
         }
     }
@@ -166,7 +166,7 @@ test "verifyFile rejects unsigned file" {
 
     const result = try verifyFile(path, false);
     try std.testing.expect(!result.valid);
-    try std.testing.expectEqualStrings("T27NotSignedByTriCli", result.error.?);
+    try std.testing.expectEqualStrings("T27NotSignedByTriCli", result.err.?);
 }
 
 test "verifyFile accepts signed file" {

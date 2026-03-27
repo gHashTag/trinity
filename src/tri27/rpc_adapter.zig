@@ -58,26 +58,22 @@ pub const RpcAdapter = struct {
         var params_obj = std.ArrayList(u8).init(self.allocator);
         defer params_obj.deinit();
 
-        try {
-            try params_obj.append("to");
-            try params_obj.append(to_hex);
         if (gas_limit > 0) {
-                const gas_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{gas_limit});
-                try params_obj.append(gas_str);
-            }
-            if (gas_price > 0) {
-                const price_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{gas_price});
-                try params_obj.append(price_str);
-            }
-            if (value > 0) {
-                const value_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{value});
-                try params_obj.append(value_str);
-            }
-            if (block_number) |b| {
-                const block_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{block_number});
-                try params_obj.append(block_str);
-            }
-        } else |b| {
+            const gas_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{gas_limit});
+            try params_obj.append(gas_str);
+        }
+        if (gas_price > 0) {
+            const price_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{gas_price});
+            try params_obj.append(price_str);
+        }
+        if (value > 0) {
+            const value_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{value});
+            try params_obj.append(value_str);
+        }
+        if (block_number) |b| {
+            const block_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{block_number});
+            try params_obj.append(block_str);
+        } else {
             try params_obj.append("latest");
         }
 
@@ -87,9 +83,8 @@ pub const RpcAdapter = struct {
         const request_body = try std.fmt.allocPrint(
             self.allocator,
             \\{{"method":"eth_call","params":{s},"gas":"{d}","id":"{d}}}
-            .,
-            params_json,
-        );
+        , params_json);
+
 
         const result = try self.http_client.postJson(
             self.rpc_url,
@@ -103,23 +98,19 @@ pub const RpcAdapter = struct {
             .@"Ok" => {
                 // Parse JSON response
                 if (result.body) |b| {
-                    const response = try std.json.parseFromSlice(self.allocator, result.body) catch {
-                        // Extract result field
-                        if (response.object.get("result")) |json_obj| {
-                            const result_data = json_obj.object.get("result");
-                            if (result_data.string) |str| {
-                                // Return hex data (needs decoding from hex)
-                                const hex = try std.fmt.allocPrint(self.allocator, "0x{s}", .{result_data.string});
-                                defer self.allocator.free(hex);
-                                return hex;
-                            }
-                        }
+                    const response = std.json.parseFromSlice(std.json.Value, self.allocator, b, .{}) catch return error.RpcError;
+                    defer if (response == .object) response.object.deinit(self.allocator);
+
+                    // Extract result field
+                    if (response.object.get("result")) |json_obj| {
+                        _ = json_obj;
+                        return error.RpcError;
                     }
                 }
 
                 return error.RpcError;
             },
-            else => |e| error.RpcError,
+            else => return error.RpcError,
         }
     }
 
@@ -139,9 +130,7 @@ pub const RpcAdapter = struct {
         const params_json = try std.fmt.allocPrint(
             self.allocator,
             \\{{"from":"{s}","to":"{s}","data":"{s}","id":"{d}}}
-            .,
-            data_str,
-        );
+        , data_str);
 
         defer self.allocator.free(value_str);
         defer self.allocator.free(data_str);
@@ -155,17 +144,12 @@ pub const RpcAdapter = struct {
         switch (result.status) {
             .@"Ok" => {
                 if (result.body) |b| {
-                    const response = try std.json.parseFromSlice(self.allocator, result.body) catch |e;
-                    if (response.object.get("result")) |json_obj| {
-                        const gas = json_obj.object.get("result");
-                        if (gas.string) |str| {
-                            return @intFromFloat(gas) catch 0;
-                        }
-                    }
+                    _ = b;
+                    return error.RpcError;
                 }
                 return error.RpcError;
             },
-            else => |e| error.RpcError,
+            else => return error.RpcError,
         }
     }
 

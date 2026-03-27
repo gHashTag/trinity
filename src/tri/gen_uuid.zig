@@ -6,10 +6,9 @@ const std = @import("std");
 
 /// UUID variant enum
 pub const Variant = enum(u2) {
-    ncs = 0,
-    rfc4122 = 2,
-    microsoft = 6,
-    future = 7,
+    ncs = 0, // 0b00 - NCS backward compatibility
+    rfc4122 = 2, // 0b10 - RFC 4122
+    microsoft = 3, // 0b11 - Microsoft GUID
 };
 
 /// UUID version enum
@@ -52,11 +51,16 @@ pub const UUID = struct {
 
         var data: [16]u8 = undefined;
         var idx: usize = 0;
+        var i: usize = 0;
 
-        for (0..36) |i| {
-            if (i == 8 or i == 13 or i == 18 or i == 23) continue;
+        while (i < 36) {
+            if (i == 8 or i == 13 or i == 18 or i == 23) {
+                i += 1;
+                continue;
+            }
             data[idx] = try hexToVal(str[i], str[i + 1]);
             idx += 1;
+            i += 2;
         }
 
         return .{ .data = data };
@@ -91,7 +95,8 @@ pub const UUID = struct {
 
     /// Get UUID variant
     pub fn variant(uuid: UUID) Variant {
-        const v = uuid.data[8] >> 6;
+        // Variant is in bits 7-6 of byte 8 (0b10xxxxxx = RFC 4122)
+        const v = (uuid.data[8] >> 6) & 0x3;
         return @enumFromInt(v);
     }
 

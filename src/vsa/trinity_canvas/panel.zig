@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -70,9 +70,9 @@ pub const GlassPanel = struct {
     is_resizing: bool,
     drag_offset_x: f64,
     drag_offset_y: f64,
-    chat_messages: Array<String[256], 8>,
-    chat_msg_lens: Array<USize, 8>,
-    chat_msg_is_user: Array<Bool, 8>,
+    chat_messages: [8][256]u8,
+    chat_msg_lens: [8]USize,
+    chat_msg_is_user: [8]bool,
     chat_msg_count: USize,
     chat_input: String[256],
     chat_input_len: USize,
@@ -87,7 +87,7 @@ pub const GlassPanel = struct {
     voice_recording: bool,
     voice_wave_phase: f64,
     voice_amplitude: f64,
-    finder_entries: Array<FinderEntry, 64>,
+    finder_entries: [64]FinderEntry,
     finder_entry_count: USize,
     finder_path: String[512],
     finder_path_len: USize,
@@ -123,8 +123,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -181,7 +181,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: Creating new panel
 /// Then: Initialize all fields with defaults
 pub fn init() !void {
-// Initialize all fields with defaults
+    // Initialize all fields with defaults
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -190,7 +190,7 @@ pub fn init() !void {
 /// When: Each frame
 /// Then: Animate position, scale, opacity, panel-specific updates
 pub fn update() !void {
-// Update: Animate position, scale, opacity, panel-specific updates
+    // Update: Animate position, scale, opacity, panel-specific updates
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -200,7 +200,7 @@ pub fn update() !void {
 /// When: Rendering panel
 /// Then: Draw background, title bar, content, handle
 pub fn draw() !void {
-// Draw background, title bar, content, handle
+    // Draw background, title bar, content, handle
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -209,7 +209,7 @@ pub fn draw() !void {
 /// When: Rendering title bar
 /// Then: Draw traffic light buttons, centered title
 pub fn draw_title_bar() !void {
-// Draw traffic light buttons, centered title
+    // Draw traffic light buttons, centered title
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -218,7 +218,7 @@ pub fn draw_title_bar() !void {
 /// When: Rendering content area
 /// Then: Dispatch to panel-type-specific drawer
 pub fn draw_content() !void {
-// Dispatch to panel-type-specific drawer
+    // Dispatch to panel-type-specific drawer
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -227,7 +227,7 @@ pub fn draw_content() !void {
 /// When: Hit testing
 /// Then: Return true if point inside panel bounds
 pub fn is_point_inside() !void {
-// Return true if point inside panel bounds
+    // Return true if point inside panel bounds
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -236,7 +236,7 @@ pub fn is_point_inside() !void {
 /// When: Hit testing for drag
 /// Then: Return true if point in title bar area
 pub fn is_point_in_title_bar() !void {
-// Return true if point in title bar area
+    // Return true if point in title bar area
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -245,7 +245,7 @@ pub fn is_point_in_title_bar() !void {
 /// When: Hit testing close button
 /// Then: Return true if point on red button
 pub fn is_point_on_close() !void {
-// Return true if point on red button
+    // Return true if point on red button
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -254,7 +254,7 @@ pub fn is_point_on_close() !void {
 /// When: Hit testing resize handle
 /// Then: Return true if point in bottom-right corner
 pub fn is_point_on_resize() !void {
-// Return true if point in bottom-right corner
+    // Return true if point in bottom-right corner
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -263,7 +263,7 @@ pub fn is_point_on_resize() !void {
 /// When: Panel gains focus
 /// Then: Set is_focused, start ripple animation
 pub fn focus() !void {
-// Set is_focused, start ripple animation
+    // Set is_focused, start ripple animation
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -272,7 +272,7 @@ pub fn focus() !void {
 /// When: Panel loses focus
 /// Then: Clear is_focused, restore pre-focus position
 pub fn unfocus() !void {
-// Clear is_focused, restore pre-focus position
+    // Clear is_focused, restore pre-focus position
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -281,7 +281,7 @@ pub fn unfocus() !void {
 /// When: JARVIS-style focus
 /// Then: Trigger spherical morph animation
 pub fn jarvis_focus() !void {
-// Trigger spherical morph animation
+    // Trigger spherical morph animation
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -290,7 +290,7 @@ pub fn jarvis_focus() !void {
 /// When: Adding chat message
 /// Then: Append to messages array, scroll if needed
 pub fn add_chat_message() !void {
-// Add: Append to messages array, scroll if needed
+    // Add: Append to messages array, scroll if needed
     // Append item to collection, check capacity
     const capacity: usize = 100;
     const count: usize = 1;
@@ -302,7 +302,7 @@ pub fn add_chat_message() !void {
 /// When: Opening finder directory
 /// Then: Populate finder_entries array
 pub fn load_directory() !void {
-// I/O: Populate finder_entries array
+    // I/O: Populate finder_entries array
     // Deserialize state from persistent storage
     const loaded = @as([]const u8, "loaded_state");
     _ = loaded;
@@ -313,127 +313,127 @@ pub fn load_directory() !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: PanelType, x, y, width, height, title
-// When: Creating new panel
-// Then: Initialize all fields with defaults
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: PanelType, x, y, width, height, title
+    // When: Creating new panel
+    // Then: Initialize all fields with defaults
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "update_behavior" {
-// Given: Delta time, global time
-// When: Each frame
-// Then: Animate position, scale, opacity, panel-specific updates
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: Delta time, global time
+    // When: Each frame
+    // Then: Animate position, scale, opacity, panel-specific updates
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "draw_behavior" {
-// Given: Time, font
-// When: Rendering panel
-// Then: Draw background, title bar, content, handle
-// Test draw: verify behavior is callable
-const func = @TypeOf(draw);
+    // Given: Time, font
+    // When: Rendering panel
+    // Then: Draw background, title bar, content, handle
+    // Test draw: verify behavior is callable
+    const func = @TypeOf(draw);
     try std.testing.expect(func != void);
 }
 
 test "draw_title_bar_behavior" {
-// Given: Rect, alpha
-// When: Rendering title bar
-// Then: Draw traffic light buttons, centered title
-// Test draw_title_bar: verify behavior is callable
-const func = @TypeOf(draw_title_bar);
+    // Given: Rect, alpha
+    // When: Rendering title bar
+    // Then: Draw traffic light buttons, centered title
+    // Test draw_title_bar: verify behavior is callable
+    const func = @TypeOf(draw_title_bar);
     try std.testing.expect(func != void);
 }
 
 test "draw_content_behavior" {
-// Given: Rect, time, font, alpha
-// When: Rendering content area
-// Then: Dispatch to panel-type-specific drawer
-// Test draw_content: verify behavior is callable
-const func = @TypeOf(draw_content);
+    // Given: Rect, time, font, alpha
+    // When: Rendering content area
+    // Then: Dispatch to panel-type-specific drawer
+    // Test draw_content: verify behavior is callable
+    const func = @TypeOf(draw_content);
     try std.testing.expect(func != void);
 }
 
 test "is_point_inside_behavior" {
-// Given: Point x, y
-// When: Hit testing
-// Then: Return true if point inside panel bounds
-// Test is_point_inside: verify behavior is callable
-const func = @TypeOf(is_point_inside);
+    // Given: Point x, y
+    // When: Hit testing
+    // Then: Return true if point inside panel bounds
+    // Test is_point_inside: verify behavior is callable
+    const func = @TypeOf(is_point_inside);
     try std.testing.expect(func != void);
 }
 
 test "is_point_in_title_bar_behavior" {
-// Given: Point x, y
-// When: Hit testing for drag
-// Then: Return true if point in title bar area
-// Test is_point_in_title_bar: verify behavior is callable
-const func = @TypeOf(is_point_in_title_bar);
+    // Given: Point x, y
+    // When: Hit testing for drag
+    // Then: Return true if point in title bar area
+    // Test is_point_in_title_bar: verify behavior is callable
+    const func = @TypeOf(is_point_in_title_bar);
     try std.testing.expect(func != void);
 }
 
 test "is_point_on_close_behavior" {
-// Given: Point x, y
-// When: Hit testing close button
-// Then: Return true if point on red button
-// Test is_point_on_close: verify behavior is callable
-const func = @TypeOf(is_point_on_close);
+    // Given: Point x, y
+    // When: Hit testing close button
+    // Then: Return true if point on red button
+    // Test is_point_on_close: verify behavior is callable
+    const func = @TypeOf(is_point_on_close);
     try std.testing.expect(func != void);
 }
 
 test "is_point_on_resize_behavior" {
-// Given: Point x, y
-// When: Hit testing resize handle
-// Then: Return true if point in bottom-right corner
-// Test is_point_on_resize: verify behavior is callable
-const func = @TypeOf(is_point_on_resize);
+    // Given: Point x, y
+    // When: Hit testing resize handle
+    // Then: Return true if point in bottom-right corner
+    // Test is_point_on_resize: verify behavior is callable
+    const func = @TypeOf(is_point_on_resize);
     try std.testing.expect(func != void);
 }
 
 test "focus_behavior" {
-// Given: Nothing
-// When: Panel gains focus
-// Then: Set is_focused, start ripple animation
-// Test focus: verify behavior is callable
-const func = @TypeOf(focus);
+    // Given: Nothing
+    // When: Panel gains focus
+    // Then: Set is_focused, start ripple animation
+    // Test focus: verify behavior is callable
+    const func = @TypeOf(focus);
     try std.testing.expect(func != void);
 }
 
 test "unfocus_behavior" {
-// Given: Nothing
-// When: Panel loses focus
-// Then: Clear is_focused, restore pre-focus position
-// Test unfocus: verify behavior is callable
-const func = @TypeOf(unfocus);
+    // Given: Nothing
+    // When: Panel loses focus
+    // Then: Clear is_focused, restore pre-focus position
+    // Test unfocus: verify behavior is callable
+    const func = @TypeOf(unfocus);
     try std.testing.expect(func != void);
 }
 
 test "jarvis_focus_behavior" {
-// Given: Nothing
-// When: JARVIS-style focus
-// Then: Trigger spherical morph animation
-// Test jarvis_focus: verify behavior is callable
-const func = @TypeOf(jarvis_focus);
+    // Given: Nothing
+    // When: JARVIS-style focus
+    // Then: Trigger spherical morph animation
+    // Test jarvis_focus: verify behavior is callable
+    const func = @TypeOf(jarvis_focus);
     try std.testing.expect(func != void);
 }
 
 test "add_chat_message_behavior" {
-// Given: Message text, is_user
-// When: Adding chat message
-// Then: Append to messages array, scroll if needed
-// Test add_chat_message: verify behavior is callable
-const func = @TypeOf(add_chat_message);
+    // Given: Message text, is_user
+    // When: Adding chat message
+    // Then: Append to messages array, scroll if needed
+    // Test add_chat_message: verify behavior is callable
+    const func = @TypeOf(add_chat_message);
     try std.testing.expect(func != void);
 }
 
 test "load_directory_behavior" {
-// Given: Path string
-// When: Opening finder directory
-// Then: Populate finder_entries array
-// Test load_directory: verify behavior is callable
-const func = @TypeOf(load_directory);
+    // Given: Path string
+    // When: Opening finder directory
+    // Then: Populate finder_entries array
+    // Test load_directory: verify behavior is callable
+    const func = @TypeOf(load_directory);
     try std.testing.expect(func != void);
 }
 

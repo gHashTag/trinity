@@ -16,7 +16,7 @@ pub fn Zipper(comptime T: type) type {
         /// Create zipper from slice
         pub fn fromSlice(items: []const T, allocator: std.mem.Allocator) !Self {
             if (items.len == 0) return error.EmptySlice;
-            var left_list = try std.ArrayList(T).initCapacity(allocator, items.len);
+            const left_list = try std.ArrayList(T).initCapacity(allocator, items.len);
             var right_list = try std.ArrayList(T).initCapacity(allocator, items.len - 1);
             try right_list.appendSlice(allocator, items[1..]);
             return .{
@@ -34,13 +34,16 @@ pub fn Zipper(comptime T: type) type {
         /// Move focus to left sibling
         pub fn goLeft(self: Self, allocator: std.mem.Allocator) !Self {
             if (self.left.items.len == 0) return error.NoLeft;
-            const new_focus = self.left.pop();
-            var new_right = try std.ArrayList(T).initCapacity(self.left.allocator, self.right.items.len + 1);
+            const idx = self.left.items.len - 1;
+            const new_focus = self.left.items[idx];
+            var new_right = try std.ArrayList(T).initCapacity(allocator, self.right.items.len + 1);
             try new_right.append(allocator, self.focus);
             try new_right.appendSlice(allocator, self.right.items);
+            var new_left = try std.ArrayList(T).initCapacity(allocator, idx);
+            try new_left.appendSlice(allocator, self.left.items[0..idx]);
             return .{
                 .focus = new_focus,
-                .left = self.left,
+                .left = new_left,
                 .right = new_right,
             };
         }
@@ -48,14 +51,17 @@ pub fn Zipper(comptime T: type) type {
         /// Move focus to right sibling
         pub fn goRight(self: Self, allocator: std.mem.Allocator) !Self {
             if (self.right.items.len == 0) return error.NoRight;
-            const new_focus = self.right.pop();
-            var new_left = try std.ArrayList(T).initCapacity(self.right.allocator, self.left.items.len + 1);
+            // Get first element from right list
+            const new_focus = self.right.items[0];
+            var new_left = try std.ArrayList(T).initCapacity(allocator, self.left.items.len + 1);
             try new_left.appendSlice(allocator, self.left.items);
             try new_left.append(allocator, self.focus);
+            var new_right = try std.ArrayList(T).initCapacity(allocator, self.right.items.len - 1);
+            try new_right.appendSlice(allocator, self.right.items[1..]);
             return .{
                 .focus = new_focus,
                 .left = new_left,
-                .right = self.right,
+                .right = new_right,
             };
         }
 
