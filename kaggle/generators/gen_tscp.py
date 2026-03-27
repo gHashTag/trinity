@@ -227,7 +227,7 @@ NEGOTIATION_SCENARIOS = [
     {
         "level": 3,
         "scenario": "Three siblings inherit $300K. Sibling A cared for parents for 5 years. Sibling B visited monthly. Sibling C lived abroad with no contact.",
-        "equal_split": 100K each,
+        "equal_split": "100K each",
         "effort_disparity": "A did most work, B some, C none",
         "fair_proposal": "A deserves largest share, B some, C minimal",
         "expected": "Equitable split: A > B > C"

@@ -62,6 +62,9 @@ def load_metadata(bundle_id: str) -> dict:
     with open(json_path) as f:
         return json.load(f)
 
+    with open(json_path) as f:
+        return json.load(f)
+
 
 def curl_get(url: str, token: str) -> str:
     """Perform GET request via curl."""

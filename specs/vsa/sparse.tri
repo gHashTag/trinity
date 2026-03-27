@@ -1,0 +1,21 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// VSA Core — Sparse Operations Specification
+// ═══════════════════════════════════════════════════════════════════════════════
+// Efficient operations on sparse trit representations
+//
+// φ² + 1/φ² = 3 | TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+struct SparseVector {
+    indices: []const usize,
+    values: []const Trit,
+    len: usize,
+}
+
+fn fromDense(allocator: std.mem.Allocator, dense: []const Trit) SparseVector;
+fn toDense(self: SparseVector, allocator: std.mem.Allocator) []Trit;
+fn dotProductSparse(self: SparseVector, other: SparseVector) i64;
+fn cosineSimilaritySparse(self: SparseVector, other: SparseVector) f64;
+fn sparsity(self: SparseVector) f64;
+fn memoryUsage(self: SparseVector) usize;
+fn deinitSparse(self: SparseVector, allocator: std.mem.Allocator) void;

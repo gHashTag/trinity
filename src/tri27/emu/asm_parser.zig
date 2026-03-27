@@ -291,7 +291,7 @@ pub const Assembler = struct {
         // Try Coptic glyph first (Issue #407)
         if (glyphToReg(trimmed)) |reg| {
             return reg.regIndex();
-        } else |_| {
+        } else {
             // Not a Coptic glyph, try ASCII format
             const num_str = if (trimmed.len > 1 and (trimmed[0] == 'r' or trimmed[0] == 'R' or trimmed[0] == 't' or trimmed[0] == 'T'))
                 trimmed[1..]
