@@ -102,7 +102,7 @@ Note: models differ in size (HSLM ~60K params vs LLaMA-7B), but the hardware eff
 | Embedding | ~245 | 0.02% | 4.9 us |
 | 4x TrinityBlock | ~1,440,000 | 98.2% | 28.8 ms |
 | LM Head | ~31,000 | 2.1% | 0.62 ms |
-| Argmax | ~1 | <0.01% | 20 ns |
+| Argmax | ~1 | `&lt;0.01%` | 20 ns |
 | **Total per token** | **~1,460,000** | **100%** | **29.2 ms** |
 
 MatVec dominates at 98.2%. With only 5.8% LUT utilization, there is significant headroom for parallel MAC lanes (4-8x speedup possible without additional BRAM).
