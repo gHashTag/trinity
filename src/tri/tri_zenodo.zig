@@ -105,6 +105,12 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "v20")) {
         // V20 Statistical Significance
         try runV20Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v21")) {
+        // V21 Broader Impact Statement
+        try runV21Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v22")) {
+        // V22 Reproducibility Checklist
+        try runV22Command(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
