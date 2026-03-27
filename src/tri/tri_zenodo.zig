@@ -106,11 +106,13 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         // V20 Statistical Significance
         try runV20Command(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "v21")) {
-        // V21 Broader Impact Statement
-        try runV21Command(allocator, sub_args);
+        // V21 Broader Impact Statement (NOT YET IMPLEMENTED)
+        print("{s}⚠️  V21 broader impact module not yet available{s}\n\n", .{ YELLOW, RESET });
+        print("  TODO: Implement zenodo_v21_broader_impact.zig\n\n", .{});
     } else if (std.mem.eql(u8, subcmd, "v22")) {
-        // V22 Reproducibility Checklist
-        try runV22Command(allocator, sub_args);
+        // V22 Reproducibility Checklist (NOT YET IMPLEMENTED)
+        print("{s}⚠️  V22 reproducibility module not yet available{s}\n\n", .{ YELLOW, RESET });
+        print("  TODO: Implement zenodo_v22_reproducibility.zig\n\n", .{});
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
