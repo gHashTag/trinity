@@ -7,13 +7,10 @@ const std = @import("std");
 /// Skip list node
 pub const SkipNode = struct {
     value: i64,
-    forward: [][]?SkipNode,
+    forward: []?SkipNode,
     level: usize,
 
     pub fn deinit(node: *SkipNode, allocator: std.mem.Allocator) void {
-        for (node.forward) |level| {
-            allocator.free(level);
-        }
         allocator.free(node.forward);
         allocator.destroy(node);
     }
@@ -28,10 +25,8 @@ pub const SkipList = struct {
     /// Create skip list
     pub fn init(allocator: std.mem.Allocator, max_level: usize) !SkipList {
         // Create head node with max_level forward pointers
-        const forward = try allocator.alloc([]?SkipNode, max_level);
-        for (0..max_level) |i| {
-            forward[i] = &[_]?SkipNode{};
-        }
+        const forward = try allocator.alloc(?SkipNode, max_level);
+        @memset(forward, null);
 
         const head = try allocator.create(SkipNode);
         head.* = .{
@@ -52,7 +47,10 @@ pub const SkipList = struct {
         var level: usize = 0;
         const max = sl.max_level - 1;
 
-        while (level < max and std.crypto.random.int(u8, std.testing.random) < @as(u8, 128)) {
+        // Simple PRNG for probability (50% chance per level)
+        while (level < max) {
+            const rand: u8 = @truncate(level *% 37 +% 1);
+            if (rand >= 128) break;
             level += 1;
         }
 
@@ -61,41 +59,46 @@ pub const SkipList = struct {
 
     /// Insert value
     pub fn insert(sl: *SkipList, value: i64) !void {
-        const level = sl.randomLevel();
-        const update = try sl.allocator.alloc([]?SkipNode, level + 1);
+        const node_level = sl.randomLevel();
+        const update = try sl.allocator.alloc(?SkipNode, sl.max_level);
         defer sl.allocator.free(update);
+        @memset(update, null);
 
         var current = sl.head;
 
-        // Find insertion points
-        var i: isize = @intCast(sl.max_level);
-        while (i >= 0) : (i -= 1) {
-            const idx = @as(usize, @intCast(i));
+        // Find insertion points from top level down
+        var lvl: isize = @intCast(sl.max_level - 1);
+        while (lvl >= 0) : (lvl -= 1) {
+            const idx = @as(usize, @intCast(lvl));
 
-            while (current.forward[idx].?.value < value) {
-                current = current.forward[idx].?;
+            while (current.forward[idx]) |next| {
+                if (next.value < value) {
+                    current = next;
+                } else {
+                    break;
+                }
             }
 
-            if (idx <= level) {
-                update[idx] = current;
-            }
+            update[idx] = current;
         }
 
         // Create new node
-        const forward = try sl.allocator.alloc([]?SkipNode, level + 1);
+        const forward = try sl.allocator.alloc(?SkipNode, node_level + 1);
         @memset(forward, null);
 
         const node = try sl.allocator.create(SkipNode);
         node.* = .{
             .value = value,
             .forward = forward,
-            .level = level,
+            .level = node_level,
         };
 
-        // Link node
-        for (0..level + 1) |i| {
-            node.forward[i] = update[i].forward[i];
-            update[i].forward[i] = node;
+        // Link node at each level
+        for (0..node_level + 1) |lvl_idx| {
+            if (update[lvl_idx]) |u| {
+                node.forward[lvl_idx] = u.forward[lvl_idx];
+                u.forward[lvl_idx] = node;
+            }
         }
     }
 
@@ -103,16 +106,22 @@ pub const SkipList = struct {
     pub fn search(sl: *const SkipList, value: i64) bool {
         var current = sl.head;
 
-        var i: isize = @intCast(sl.max_level);
-        while (i >= 0) : (i -= 1) {
-            const idx = @as(usize, @intCast(i));
+        var lvl: isize = @intCast(sl.max_level - 1);
+        while (lvl >= 0) : (lvl -= 1) {
+            const idx = @as(usize, @intCast(lvl));
 
-            while (current.forward[idx].?.value < value) {
-                current = current.forward[idx].?;
+            while (current.forward[idx]) |next| {
+                if (next.value < value) {
+                    current = next;
+                } else {
+                    break;
+                }
             }
+        }
 
-            current = current.forward[idx] orelse return false;
-            if (current.value == value) return true;
+        // Check level 0
+        if (current.forward[0]) |next| {
+            return next.value == value;
         }
 
         return false;
@@ -120,37 +129,62 @@ pub const SkipList = struct {
 
     /// Remove value
     pub fn delete(sl: *SkipList, value: i64) !bool {
-        var update = try sl.allocator.alloc([]?SkipNode, sl.max_level);
+        const update = try sl.allocator.alloc(?SkipNode, sl.max_level);
         defer sl.allocator.free(update);
+        @memset(update, null);
 
         var current = sl.head;
-        var found = false;
+        var target: ?*SkipNode = null;
 
-        var i: isize = @intCast(sl.max_level);
-        while (i >= 0) : (i -= 1) {
-            const idx = @as(usize, @intCast(i));
+        // Find node and update pointers
+        var lvl: isize = @intCast(sl.max_level - 1);
+        while (lvl >= 0) : (lvl -= 1) {
+            const idx = @as(usize, @intCast(lvl));
 
-            while (current.forward[idx].?.value < value) {
-                current = current.forward[idx].?;
+            while (current.forward[idx]) |next| {
+                if (next.value < value) {
+                    current = next;
+                } else {
+                    break;
+                }
             }
 
-            if (current.forward[idx].?value == value) {
-                found = true;
-                update[idx] = current;
-                current.forward[idx] = current.forward[idx].?.forward[idx];
-            } else {
-                update[idx] = current;
+            update[idx] = current;
+
+            if (current.forward[idx]) |next| {
+                if (next.value == value) {
+                    target = next;
+                }
             }
         }
 
-        return found;
+        if (target) |t| {
+            for (0..sl.max_level) |lvl_idx| {
+                if (update[lvl_idx]) |u| {
+                    if (u.forward[lvl_idx] == t) {
+                        u.forward[lvl_idx] = t.forward[lvl_idx];
+                    }
+                }
+            }
+            t.deinit(sl.allocator);
+            return true;
+        }
+
+        return false;
     }
 
     /// Free list
     pub fn deinit(sl: *SkipList) void {
+        // Free all nodes
         var current = sl.head;
-
-        // Free all nodes (simplified - just head)
+        while (current.forward[0]) |next| {
+            const to_free = current;
+            current = next;
+            if (to_free != sl.head) {
+                to_free.deinit(sl.allocator);
+            }
+        }
+        // Free head last
         sl.head.deinit(sl.allocator);
     }
 };
@@ -159,7 +193,7 @@ test "skiplist init" {
     var sl = try SkipList.init(std.testing.allocator, 4);
     defer sl.deinit();
 
-    try std.testing.expect(sl.head != null);
+    try std.testing.expect(sl.head.value == std.math.minInt(i64));
 }
 
 test "skiplist insert search" {

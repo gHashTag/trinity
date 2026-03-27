@@ -99,10 +99,10 @@
 | **Mathematical Foundation** | ✅ | φ² + 1/φ² = 3 identity |
 | **Algorithmic Details** | ✅ | HSLM 1.95M params, ternary computing |
 | **FPGA Deployment** | ✅ | 0% DSP, 19.6% LUT, 1.2W power |
-| **Statistical Significance** | ⚠️ | Need bootstrap CI implementation |
-| **Confidence Intervals** | ⚠️ | Need 95% CI for all metrics |
+| **Statistical Significance** | ✅ | V20: bootstrap CI, t-test, Wilcoxon |
+| **Confidence Intervals** | ✅ | V20: 95% CI for all metrics |
 | **Multiple Runs** | ⚠️ | Need 3+ seed experiments |
-| **Effect Size** | ⚠️ | Need Cohen's d calculations |
+| **Effect Size** | ✅ | V20: Cohen's d, Cliff's delta |
 | **Broader Impact** | ⚠️ | Need structured statement |
 | **Environmental Impact** | ✅ | 1.2W power vs 200W GPU |
 | **Reproducibility Checklist** | ⚠️ | Need structured checklist |

@@ -58,7 +58,7 @@ pub const QuadTree = struct {
     /// Check if point is in boundary
     fn contains(boundary: Rect, x: f64, y: f64) bool {
         return x >= boundary.x and x < boundary.x + boundary.width and
-               y >= boundary.y and y < boundary.y + boundary.height;
+            y >= boundary.y and y < boundary.y + boundary.height;
     }
 
     /// Insert point
@@ -104,10 +104,10 @@ pub const QuadTree = struct {
         const y = node.boundary.y;
 
         const boundaries = [_]Rect{
-        .{ .x = x, .y = y, .width = half_w, .height = half_h },
-        .{ .x = x + half_w, .y = y, .width = half_w, .height = half_h },
-        .{ .x = x, .y = y + half_h, .width = half_w, .height = half_h },
-        .{ .x = x + half_w, .y = y + half_h, .width = half_w, .height = half_h },
+            .{ .x = x, .y = y, .width = half_w, .height = half_h },
+            .{ .x = x + half_w, .y = y, .width = half_w, .height = half_h },
+            .{ .x = x, .y = y + half_h, .width = half_w, .height = half_h },
+            .{ .x = x + half_w, .y = y + half_h, .width = half_w, .height = half_h },
         };
 
         for (0..4) |i| {
@@ -154,7 +154,7 @@ pub const QuadTree = struct {
 
     fn rectOverlap(a: Rect, b: Rect) bool {
         return a.x < b.x + b.width and a.x + a.width > b.x and
-               a.y < b.y + b.height and a.y + a.height > b.y;
+            a.y < b.y + b.height and a.y + a.height > b.y;
     }
 
     /// Free tree

@@ -30,7 +30,8 @@ pub const PriorityQueue = struct {
         pq.data = new_data;
     }
 
-    fn siftUp(pq: *PriorityQueue, index: usize) void {
+    fn siftUp(pq: *PriorityQueue, start_index: usize) void {
+        var index = start_index;
         while (index > 0) {
             const parent = (index - 1) / 2;
             if (pq.data[index] <= pq.data[parent]) break;

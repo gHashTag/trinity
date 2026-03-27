@@ -41,8 +41,8 @@ pub const BloomFilter = struct {
 
     /// Add item
     pub fn add(bf: *BloomFilter, item: []const u8) void {
-        const h1 = bf.hash1(item);
-        const h2 = bf.hash2(item);
+        const h1 = hash1(item);
+        const h2 = hash2(item);
 
         for (0..bf.num_hashes) |i| {
             const combined = h1 + i * h2;
@@ -54,8 +54,8 @@ pub const BloomFilter = struct {
 
     /// Check if item might exist
     pub fn contains(bf: *const BloomFilter, item: []const u8) bool {
-        const h1 = bf.hash1(item);
-        const h2 = bf.hash2(item);
+        const h1 = hash1(item);
+        const h2 = hash2(item);
 
         for (0..bf.num_hashes) |i| {
             const combined = h1 + i * h2;
