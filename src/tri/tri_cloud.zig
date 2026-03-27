@@ -200,7 +200,7 @@ fn generateDomain(allocator: Allocator, args: []const []const u8) !void {
 }
 
 /// tri cloud status — Print agent service count and health
-fn cloudStatus(_allocator: Allocator) !void {
+fn cloudStatus(_: Allocator) !void {
     print("Trinity Cloud Status\n", .{});
     print("  Max agents: 10\n", .{});
     print("  Config: Railway (GraphQL API)\n", .{});
@@ -1412,7 +1412,7 @@ fn extractJsonStr(json: []const u8, key: []const u8) ?[]const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// tri cloud metrics — Show aggregate agent metrics
-fn cloudMetrics(_allocator: Allocator) !void {
+fn cloudMetrics(_: Allocator) !void {
     const summary = cloud_orchestrator.getMetrics();
 
     print("\n{s}{s}", .{ GOLDEN, BOLD });

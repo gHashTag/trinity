@@ -361,6 +361,41 @@ Website: `gHashTag.github.io/trinity/` | Docs: `gHashTag.github.io/trinity/docs/
 
 Build docs: `cd docs && npm run build` (NOT `docsite/` — moved to `docs/`)
 
+### Website & Docs Deployment Rules
+
+**CRITICAL: Custom Domain t27.ai**
+
+1. **Vite config** (`apps/website/vite.config.ts`):
+   - `base: '/'` для кастомного домена
+   - НЕ использовать `base: '/trinity/'`
+
+2. **Docusaurus config** (`docs/docusaurus.config.ts`):
+   - `url: 'https://t27.ai'`
+   - `baseUrl: '/docs/'`
+   - НЕ использовать GitHub Pages URLs
+
+3. **HTML meta tags** (`apps/website/index.html`):
+   - Open Graph URLs: `https://t27.ai/`
+   - Twitter card URLs: `https://t27.ai/`
+   - Canonical URL: `https://t27.ai/`
+   - JSON-LD structured data: `https://t27.ai/`
+
+4. **Component links** (`apps/website/src/components/Navigation.tsx`, `Footer.tsx`):
+   - DOCS_URL: `https://t27.ai/docs/`
+   - НЕ использовать GitHub Pages URLs
+
+5. **Deployment workflow** (`.github/workflows/deploy-docs.yml`):
+   - Комбинировать `apps/website/dist/*` + `docs/build/*`
+   - Копировать `CNAME` из `apps/website/public/CNAME`
+   - Деплоить в корень gh-pages branch
+
+6. **При изменении домена:**
+   - Обновить BOTH: vite.config.ts AND docusaurus.config.ts
+   - Обновить index.html (OG, Twitter, canonical, JSON-LD)
+   - Обновить компоненты (Navigation, Footer)
+   - Обновить CNAME файл
+   - Проверить GitHub Pages settings via API
+
 ## Supervisor Mode
 
 Doctor system enforces pipeline-first development. `tri doctor` is the single source of truth.

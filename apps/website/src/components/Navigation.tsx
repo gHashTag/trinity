@@ -4,8 +4,8 @@ import LanguageSwitcher from './LanguageSwitcher'
 
 const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
 const BASE = import.meta.env.BASE_URL
-// Docs always points to GitHub Pages (in dev and production)
-const DOCS_URL = 'https://ghashtag.github.io/trinity/docs/'
+// Docs points to t27.ai/docs/ (custom domain)
+const DOCS_URL = 'https://t27.ai/docs/'
 
 export default memo(function Navigation() {
   const { t } = useI18n()

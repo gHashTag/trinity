@@ -64,7 +64,7 @@ export default function Footer() {
                 <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
                 <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
                 <li>
-                  <a href="https://ghashtag.github.io/trinity/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
+                  <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
                     {t.footer?.docs || 'Documentation'}
                   </a>
                 </li>
