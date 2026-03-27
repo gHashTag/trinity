@@ -9,7 +9,7 @@ pub const RoaringBitmap = struct {
 
     pub fn init(allocator: std.mem.Allocator) !RoaringBitmap {
         return .{
-            .containers = std.ArrayList(u64).init(allocator),
+            .containers = try std.ArrayList(u64).initCapacity(allocator, 4),
             .allocator = allocator,
         };
     }
@@ -42,7 +42,7 @@ pub const RoaringBitmap = struct {
     }
 
     pub fn deinit(rb: *RoaringBitmap) void {
-        rb.containers.deinit();
+        rb.containers.deinit(rb.allocator);
     }
 };
 

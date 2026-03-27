@@ -20,7 +20,7 @@ pub const QDigest = struct {
 
     pub fn init(allocator: std.mem.Allocator) !QDigest {
         return .{
-            .nodes = std.ArrayList(Node).init(allocator),
+            .nodes = try std.ArrayList(Node).initCapacity(allocator, K),
             .size = 0,
             .max_size = K,
             .k = 1.0,
@@ -62,7 +62,7 @@ pub const QDigest = struct {
     }
 
     pub fn deinit(qd: *QDigest) void {
-        qd.nodes.deinit();
+        qd.nodes.deinit(qd.allocator);
     }
 };
 

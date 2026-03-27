@@ -13,7 +13,10 @@ pub const CountMinSketch = struct {
         const table = try allocator.alloc(std.ArrayList(u64), depth);
         for (0..depth) |i| {
             table[i] = try std.ArrayList(u64).initCapacity(allocator, width);
-            _ = try table[i].appendNTimes(allocator, 0, width);
+            var j: usize = 0;
+            while (j < width) : (j += 1) {
+                try table[i].append(allocator, 0);
+            }
         }
 
         return .{
@@ -51,8 +54,8 @@ pub const CountMinSketch = struct {
     }
 
     pub fn deinit(cms: *CountMinSketch) void {
-        for (cms.table) |row| {
-            row.deinit(cms.allocator);
+        for (0..cms.depth) |i| {
+            cms.table[i].deinit(cms.allocator);
         }
         cms.allocator.free(cms.table);
     }

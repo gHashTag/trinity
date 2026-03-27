@@ -29,7 +29,7 @@ pub const BitapState = struct {
         }
 
         for (text) |t| {
-            const char_mask: u256 = if (t >= 'a' and t <= 'z') @as(u256, 1) << @as(u6, t - 'a') else 0;
+            const char_mask: u256 = if (t >= 'a' and t <= 'z') @as(u256, 1) << @as(u3, t - 'a') else 0;
             vp = (vp | char_mask) +% 1;
             vm = (vm | char_mask) +% 1;
 
@@ -40,7 +40,7 @@ pub const BitapState = struct {
     }
 
     pub fn deinit(bitap: *BitapState) void {
-        bitap.masks.deinit(bitap.masks.allocator);
+        bitap.masks.deinit(std.testing.allocator);
     }
 };
 

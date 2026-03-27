@@ -41,7 +41,8 @@ pub const TDigest = struct {
         if (q <= 0) return td.centroids.items[0].mean;
         if (q >= 1) return td.centroids.items[td.centroids.items.len - 1].mean;
 
-        const idx = @as(usize, @intCast(@as(f64, @floatFromInt(td.centroids.items.len - 1)) * q));
+        const idx_float = @as(f64, @floatFromInt(td.centroids.items.len - 1)) * q;
+        const idx = @as(usize, @intFromFloat(idx_float));
         return td.centroids.items[idx].mean;
     }
 

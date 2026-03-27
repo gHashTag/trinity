@@ -9,8 +9,9 @@ pub const XorFilter = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !XorFilter {
+        var fingerprints = try std.ArrayList(u64).initCapacity(allocator, size);
         return .{
-            .fingerprints = try std.ArrayList(u64).initCapacity(allocator, size),
+            .fingerprints = fingerprints,
             .size = size,
             .allocator = allocator,
         };
@@ -41,7 +42,7 @@ pub const XorFilter = struct {
     }
 
     pub fn deinit(xf: *XorFilter) void {
-        xf.fingerprints.deinit();
+        xf.fingerprints.deinit(xf.allocator);
     }
 };
 

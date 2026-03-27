@@ -74,7 +74,7 @@ pub const BKTree = struct {
     }
 
     pub fn find(tree: *BKTree, word: []const u8, max_dist: usize) !std.ArrayList([]const u8) {
-        var results = std.ArrayList([]const u8).init(tree.allocator);
+        var results = try std.ArrayList([]const u8).initCapacity(tree.allocator, 4);
         if (tree.root) |r| {
             try tree.findRecursive(r, word, max_dist, &results);
         }
@@ -114,7 +114,7 @@ test "bk tree insert find" {
     try tree.insert("help");
 
     const results = try tree.find("helo", 2);
-    defer results.deinit();
+    defer results.deinit(tree.allocator);
 
-    try std.testing.expect(results.len > 0);
+    try std.testing.expect(results.items.len > 0);
 }

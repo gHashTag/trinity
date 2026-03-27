@@ -33,12 +33,12 @@ pub const HyperLogLog = struct {
     }
 
     pub fn add(hll: *HyperLogLog, value: []const u8) void {
-        const x = hash64(std.hash.Wyhash.hash(value));
+        const x = hash64(std.hash.Wyhash.hash(0, value));
         const index = x >> (64 - hll.p);
 
         const rho = @as(u8, @intCast(@clz(x << hll.p)));
         const reg = @max(hll.registers[index], rho);
-        hl l.registers[index] = reg;
+        hll.registers[index] = reg;
     }
 
     pub fn count(hll: *const HyperLogLog) f64 {
