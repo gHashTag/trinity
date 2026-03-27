@@ -1,0 +1,86 @@
+name: tri_matrix
+version: "0.1.0"
+language: zig
+module: tri.matrix
+description: "Matrix operations"
+
+types:
+  Matrix:
+    description: "2D matrix"
+    fields:
+      data: "[]f64"
+      rows: "usize"
+      cols: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: rows
+        type: "usize"
+      - name: cols
+        type: "usize"
+    returns: "Matrix"
+    description: "Create rows x cols matrix"
+
+  get:
+    params:
+      - name: m
+        type: "*Matrix"
+      - name: row
+        type: "usize"
+      - name: col
+        type: "usize"
+    returns: "f64"
+    description: "Get element at (row, col)"
+
+  set:
+    params:
+      - name: m
+        type: "*Matrix"
+      - name: row
+        type: "usize"
+      - name: col
+        type: "usize"
+      - name: value
+        type: "f64"
+    returns: "void"
+    description: "Set element at (row, col)"
+
+  multiply:
+    params:
+      - name: a
+        type: "*Matrix"
+      - name: b
+        type: "*Matrix"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "Matrix"
+    description: "Matrix multiplication"
+
+  transpose:
+    params:
+      - name: m
+        type: "*Matrix"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "Matrix"
+    description: "Matrix transpose"
+
+  identity:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: size
+        type: "usize"
+    returns: "Matrix"
+    description: "Create identity matrix"
+
+  deinit:
+    params:
+      - name: m
+        type: "*Matrix"
+    returns: "void"
+    description: "Free matrix"
