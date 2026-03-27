@@ -1,0 +1,40 @@
+name: tri_hmac
+version: "0.1.0"
+language: zig
+module: tri.hmac
+description: "HMAC message authentication"
+
+types:
+  HMAC:
+    description: "HMAC state"
+    fields:
+      opad: "[64]u8"
+      inner: "SHA256"
+
+functions:
+  init:
+    params:
+      - name: key
+        type: "[]const u8"
+    returns: "HMAC"
+    description: "Initialize HMAC with key"
+
+  update:
+    params:
+      - name: hmac
+        type: "*HMAC"
+      - name: data
+        type: "[]const u8"
+    returns: "void"
+    description: "Add data to MAC"
+
+  final:
+    params:
+      - name: hmac
+        type: "*HMAC"
+    returns: "[32]u8"
+    description: "Finalize and return MAC"
+
+behaviors:
+  - name: "key_padding"
+    description: "Key padded to 64 bytes with ipad/opad"

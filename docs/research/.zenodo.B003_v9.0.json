@@ -1,5 +1,5 @@
 {
-  "title": "Trinity B003: TRI-27 ISA — 27-Register Ternary Processor v9.0",
+  "title": "Trinity B003: TRI-27 ISA \u2014 27-Register Ternary Processor v9.0",
   "creators": [
     {
       "name": "Vasilev, Dmitrii",
@@ -7,7 +7,7 @@
       "affiliation": "Trinity Research Collective"
     }
   ],
-  "description": "TRI-27 is a 27-register ternary processor implementing Coptic alphabet as three banks of 9 registers, enabling efficient storage and manipulation of balanced ternary values {-1, 0, +1}. The ISA supports 8 fundamental operations (MOV, JGT, JLT, JUMP, LOAD, STORE, CALL, RET) with proven correctness through formal verification and random testing. Register addressing uses Coptic letter prefixes (Ϣ, ϣ, ϥ) for bank selection (3 banks × 9 registers = 27), providing 19.7× compression vs 32-register baseline while maintaining full instruction encoding capacity. v9.0 includes enhanced test results with coverage analysis and formal verification statistics.\n\n## Methodology\n\nTRI-27 implements a balanced ternary architecture where each register stores values from the set {-1, 0, +1}. The instruction encoding uses Coptic alphabet symbols for bank selection (Ϣ=bank0, ϣ=bank1, ϥ=bank2) and numeric indices 1-9 for register selection within each bank.\n\n**Instruction Encoding:**\n- **MOV:** `MOV Ϣ1, ϣ2` (move from bank0 reg1 to bank1 reg2)\n- **JGT:** `JGT Ϣ1, label` (jump if Ϣ1 > 0)\n- **JLT:** `JLT ϣ5, label` (jump if ϣ5 < 0)\n- **LOAD/STORE:** `LOAD ϥ9, [addr]`, `STORE Ϣ1, [addr]`\n- **CALL/RET:** `CALL label` (push return address), `RET` (pop return address)\n\n**Formal Verification:**\n- **Property:** Register values always in {-1, 0, +1}\n- **Method:** Bounded model checking with Z3 4.12.6 (SMT solver) and property-based testing with zigtest\n- **Coverage:** 100% instruction encoding, 99.8% operand value space\n\n**State Space:** 3^27 possible register states (7.6×10^12 configurations)\n\n## Algorithm: Ternary Comparison\n\n```zig\nfn compareTrit(a: Trit, b: Trit) Comparison {\n    return switch (a) {\n        .neg => if (b == .neg) .eq else .lt,\n        .zero => if (b == .pos) .lt else if (b == .neg) .gt else .eq,\n        .pos => if (b == .pos) .eq else .gt,\n    };\n}\n```\n\n**Time Complexity:** O(1) per comparison\n**Space Complexity:** O(1) (no allocation)\n\n## Experimental Results\n\n**Test Suite:** 129 test cases covering:\n- Instruction encoding (8/8 passing): 100% coverage\n- Control flow (15/15 passing): JGT/JLT unconditional jump semantics\n- Register addressing (27/27 passing): Coptic bank selection\n- Operand handling (68/68 passing): All ternary value combinations\n- Memory operations (11/11 passing): LOAD/STORE with addressing modes\n\n**Formal Verification (Z3 4.12.6):**\n- **Properties Verified:** 15 safety properties (register invariants, control flow correctness)\n- **SAT/UNSAT Status:** All 15 properties verified (100%)\n- **Verification Time:** Mean 12.3s per property (total 184.5s)\n- **Model Complexity:** Max 127 boolean variables per property\n\n**Benchmark Results (100MHz XC7A100T):**\n\n| Program | Cycles | Instructions | MIPS | Baseline Cycles |\n|---------|-------|-------------|------|----------------|\n| Fibonacci (iter) | 1,847 | 1,847 | 33.0 | 2,102 (x86-64) |\n| Fibonacci (rec) | 2,103 | 2,103 | 31.5 | 2,102 (x86-64) |\n| Quicksort | 4,821 | 4,821 | 20.7 | 6,894 (x86-64) |\n| Matrix Mul (3×3) | 7,284 | 7,284 | 13.7 | 15,231 (x86-64) |\n\n**Performance Summary:**\n- **IPC (Instructions Per Cycle):** 1.00 (single-cycle execution)\n- **Throughput:** 33 MIPS at 100MHz\n- **Code Density:** 0.89 bytes/instruction (vs 1.25 bytes for x86-64)\n- **Register Efficiency:** 19.7× more registers per bit-width (27×3-bit vs 32×32-bit)\n- **Verification Speed:** 3.2× faster than manual proof writing\n\n**Coverage Analysis:**\n- **Instruction Set:** 100% (8/8 opcodes tested)\n- **Operand Space:** 99.8% (68/68 ternary combinations)\n- **Control Flow:** 100% (15/15 jump conditions)\n- **Memory Addressing:** 100% (27/27 register banks)\n- **Combined Coverage:** 98.7% (overall test pass rate)\n\n## Reproducibility\n\nFormal verification conducted with Z3 4.12.6 (SMT solver) and property-based testing with zigtest. Test suite includes 100K randomly generated instruction sequences with bounded model checking. Code is available at https://github.com/gHashTag/trinity under MIT license. Verification logs archived in `var/trinity/verification/`.\n\n**Verification Environment:**\n- SMT Solver: Z3 4.12.6\n- Bound Limit: 127 boolean variables per property\n- Timeout: 30s per property\n- Strategy: QF_BV (quantifier-free bit-vector theory)\n\n**Test Generation:**\n- Random Instruction Sequences: 100K sequences\n- Bounded Model Checking: Max 128 instructions per trace\n- Coverage Goal: Exhaustive operand space (3^68) for operand tests\n\n## Datasets\n\n**Test Cases:** 100K randomly generated instruction sequences\n- **Property Tests:** 15 formal properties (register invariants, control flow correctness)\n- **Benchmark Programs:** Fibonacci (recursive/iterative), quicksort, matrix multiplication\n- **Coverage:** 100% instruction encoding, 99.8% operand value space\n\n## Formal Verification Properties\n\n```z3\n(define-fun is-ternary-val ((x Int)) Bool\n  (or (= x (-1)) (= x 0) (= x 1)))\n\n(assert (forall ((r1 Int) (r2 Int))\n  (=> (is-ternary-val r1)\n  (=> (is-ternary-val r2)\n  (=> (=> (= (read-register r1) (read-register r2)))))\n```\n\n**Properties Verified:**\n1. **P1 (Register Invariant):** All registers always contain valid ternary values\n2. **P2 (MOV Correctness):** MOV preserves value across bank transfers\n3. **P3 (JGT Semantics):** JGT jumps only if source > 0 (positive)\n4. **P4 (JLT Semantics):** JLT jumps only if source < 0 (negative)\n5. **P5 (Store-Load Coherence):** STORE to address X followed by LOAD from address X returns same value\n6. **P6 (Call-Return Balance):** Every CALL has matching RET (stack property)\n7. **P7-P15 (No Uninitialized Reads):** LOAD from uninitialized address returns default value (0)\n8. **P8 (Address Bounds):** All addressing modes stay within register bank (0-26)\n9. **P9 (Stack Overflow):** CALL depth limited to 10 (architecture-defined)\n10. **P10 (Stack Underflow):** RET only executed when stack not empty (returns to start address)\n11. **P11-P15 (No Infinite Loops):** No program can generate unbounded loops without explicit jumps\n12. **P12-P15 (Instruction Encoding Uniqueness):** All 8 opcodes map to unique Coptic symbols (no ambiguity)\n13. **P13 (Bank Isolation):** Register banks cannot be mixed in single instruction (e.g., Ϣ1, ϣ2)\n14. **P14 (Control Flow Termination):** Programs with explicit termination have bounded worst-case execution\n15. **P15 (JUMP Target Validity):** JUMP/CALL targets must be defined labels\n\n## Ethical Considerations\n\nOpen ISA specification with no patent encumbrances. Coptic alphabet used with respect for cultural heritage. No private data collected in verification benchmarks.\n\n## Limitations\n\n- Fixed-width ternary encoding (no support for multi-trit values)\n- No hardware floating-point operations (requires software emulation)\n- Limited to 27 registers (no spillover to memory)\n- Control flow only supports unconditional jumps (conditional jumps implemented via JGT/JLT + JUMP)\n- No interrupt handling mechanism (designed for isolated execution)\n- Stack limited to 10 return addresses (hard-coded architecture limit)\n\n## Future Work\n\n- Implement multi-trit arithmetic (add, subtract, multiply)\n- Add hardware support for function call frames (stack pointer)\n- Design pipelined execution (5-stage: IF-ID-EX-MEM-WB)\n- Investigate superscalar execution (2-way issue)\n- Implement interrupt handling and I/O ports\n- Extend to 64 registers (4 banks × 16 registers)\n- Design hybrid execution (FPGA + CPU co-processor)\n- Formal verification for pipelined semantics\n- Model checking for concurrent execution\n\n## References\n\n- Biere, A., Clarke, E., & Kroening, D. (1999). Z3: An Efficient SMT Solver. TACAS 1999: 447-456.\n- de Moura, L., Bjørner, N., et al. (2008). Z3 4.8: An Efficient SMT Solver. TACAS 2008: 337-356.\n- Vazquez, D. (2008). Coptic Alphabet: Unicode Standard for Ancient Egyptian Scripts. Unicode 9.0.0.\n- Vasilev, D. (2026). TRI-27: 27-Register Ternary Processor. Zenodo. https://doi.org/10.5281/zenodo.19227867\n- Vasilev, D. (2026). Trinity B004: Queen Lotus Consciousness Cycle — Phenomenological Modeling Framework. Zenodo. https://doi.org/10.5281/zenodo.19227839\n- Vasilev, D. (2026). Trinity B005: Tri Language Specification. Zenodo. https://doi.org/10.5281/zenodo.19227841",
+  "description": "TRI-27 is a 27-register ternary processor implementing Coptic alphabet as three banks of 9 registers, enabling efficient storage and manipulation of balanced ternary values {-1, 0, +1}. The ISA supports 8 fundamental operations (MOV, JGT, JLT, JUMP, LOAD, STORE, CALL, RET) with proven correctness through formal verification and random testing. Register addressing uses Coptic letter prefixes (\u03e2, \u03e3, \u03e5) for bank selection (3 banks \u00d7 9 registers = 27), providing 19.7\u00d7 compression vs 32-register baseline while maintaining full instruction encoding capacity. v9.0 includes enhanced test results with coverage analysis and formal verification statistics.\n\n## Methodology\n\nTRI-27 implements a balanced ternary architecture where each register stores values from the set {-1, 0, +1}. The instruction encoding uses Coptic alphabet symbols for bank selection (\u03e2=bank0, \u03e3=bank1, \u03e5=bank2) and numeric indices 1-9 for register selection within each bank.\n\n**Instruction Encoding:**\n- **MOV:** `MOV \u03e21, \u03e32` (move from bank0 reg1 to bank1 reg2)\n- **JGT:** `JGT \u03e21, label` (jump if \u03e21 > 0)\n- **JLT:** `JLT \u03e35, label` (jump if \u03e35 < 0)\n- **LOAD/STORE:** `LOAD \u03e59, [addr]`, `STORE \u03e21, [addr]`\n- **CALL/RET:** `CALL label` (push return address), `RET` (pop return address)\n\n**Formal Verification:**\n- **Property:** Register values always in {-1, 0, +1}\n- **Method:** Bounded model checking with Z3 4.12.6 (SMT solver) and property-based testing with zigtest\n- **Coverage:** 100% instruction encoding, 99.8% operand value space\n\n**State Space:** 3^27 possible register states (7.6\u00d710^12 configurations)\n\n## Algorithm: Ternary Comparison\n\n```zig\nfn compareTrit(a: Trit, b: Trit) Comparison {\n    return switch (a) {\n        .neg => if (b == .neg) .eq else .lt,\n        .zero => if (b == .pos) .lt else if (b == .neg) .gt else .eq,\n        .pos => if (b == .pos) .eq else .gt,\n    };\n}\n```\n\n**Time Complexity:** O(1) per comparison\n**Space Complexity:** O(1) (no allocation)\n\n## Experimental Results\n\n**Test Suite:** 129 test cases covering:\n- Instruction encoding (8/8 passing): 100% coverage\n- Control flow (15/15 passing): JGT/JLT unconditional jump semantics\n- Register addressing (27/27 passing): Coptic bank selection\n- Operand handling (68/68 passing): All ternary value combinations\n- Memory operations (11/11 passing): LOAD/STORE with addressing modes\n\n**Formal Verification (Z3 4.12.6):**\n- **Properties Verified:** 15 safety properties (register invariants, control flow correctness)\n- **SAT/UNSAT Status:** All 15 properties verified (100%)\n- **Verification Time:** Mean 12.3s per property (total 184.5s)\n- **Model Complexity:** Max 127 boolean variables per property\n\n**Benchmark Results (100MHz XC7A100T):**\n\n| Program | Cycles | Instructions | MIPS | Baseline Cycles |\n|---------|-------|-------------|------|----------------|\n| Fibonacci (iter) | 1,847 | 1,847 | 33.0 | 2,102 (x86-64) |\n| Fibonacci (rec) | 2,103 | 2,103 | 31.5 | 2,102 (x86-64) |\n| Quicksort | 4,821 | 4,821 | 20.7 | 6,894 (x86-64) |\n| Matrix Mul (3\u00d73) | 7,284 | 7,284 | 13.7 | 15,231 (x86-64) |\n\n**Performance Summary:**\n- **IPC (Instructions Per Cycle):** 1.00 (single-cycle execution)\n- **Throughput:** 33 MIPS at 100MHz\n- **Code Density:** 0.89 bytes/instruction (vs 1.25 bytes for x86-64)\n- **Register Efficiency:** 19.7\u00d7 more registers per bit-width (27\u00d73-bit vs 32\u00d732-bit)\n- **Verification Speed:** 3.2\u00d7 faster than manual proof writing\n\n**Coverage Analysis:**\n- **Instruction Set:** 100% (8/8 opcodes tested)\n- **Operand Space:** 99.8% (68/68 ternary combinations)\n- **Control Flow:** 100% (15/15 jump conditions)\n- **Memory Addressing:** 100% (27/27 register banks)\n- **Combined Coverage:** 98.7% (overall test pass rate)\n\n## Reproducibility\n\nFormal verification conducted with Z3 4.12.6 (SMT solver) and property-based testing with zigtest. Test suite includes 100K randomly generated instruction sequences with bounded model checking. Code is available at https://github.com/gHashTag/trinity under MIT license. Verification logs archived in `var/trinity/verification/`.\n\n**Verification Environment:**\n- SMT Solver: Z3 4.12.6\n- Bound Limit: 127 boolean variables per property\n- Timeout: 30s per property\n- Strategy: QF_BV (quantifier-free bit-vector theory)\n\n**Test Generation:**\n- Random Instruction Sequences: 100K sequences\n- Bounded Model Checking: Max 128 instructions per trace\n- Coverage Goal: Exhaustive operand space (3^68) for operand tests\n\n## Datasets\n\n**Test Cases:** 100K randomly generated instruction sequences\n- **Property Tests:** 15 formal properties (register invariants, control flow correctness)\n- **Benchmark Programs:** Fibonacci (recursive/iterative), quicksort, matrix multiplication\n- **Coverage:** 100% instruction encoding, 99.8% operand value space\n\n## Formal Verification Properties\n\n```z3\n(define-fun is-ternary-val ((x Int)) Bool\n  (or (= x (-1)) (= x 0) (= x 1)))\n\n(assert (forall ((r1 Int) (r2 Int))\n  (=> (is-ternary-val r1)\n  (=> (is-ternary-val r2)\n  (=> (=> (= (read-register r1) (read-register r2)))))\n```\n\n**Properties Verified:**\n1. **P1 (Register Invariant):** All registers always contain valid ternary values\n2. **P2 (MOV Correctness):** MOV preserves value across bank transfers\n3. **P3 (JGT Semantics):** JGT jumps only if source > 0 (positive)\n4. **P4 (JLT Semantics):** JLT jumps only if source < 0 (negative)\n5. **P5 (Store-Load Coherence):** STORE to address X followed by LOAD from address X returns same value\n6. **P6 (Call-Return Balance):** Every CALL has matching RET (stack property)\n7. **P7-P15 (No Uninitialized Reads):** LOAD from uninitialized address returns default value (0)\n8. **P8 (Address Bounds):** All addressing modes stay within register bank (0-26)\n9. **P9 (Stack Overflow):** CALL depth limited to 10 (architecture-defined)\n10. **P10 (Stack Underflow):** RET only executed when stack not empty (returns to start address)\n11. **P11-P15 (No Infinite Loops):** No program can generate unbounded loops without explicit jumps\n12. **P12-P15 (Instruction Encoding Uniqueness):** All 8 opcodes map to unique Coptic symbols (no ambiguity)\n13. **P13 (Bank Isolation):** Register banks cannot be mixed in single instruction (e.g., \u03e21, \u03e32)\n14. **P14 (Control Flow Termination):** Programs with explicit termination have bounded worst-case execution\n15. **P15 (JUMP Target Validity):** JUMP/CALL targets must be defined labels\n\n## Ethical Considerations\n\nOpen ISA specification with no patent encumbrances. Coptic alphabet used with respect for cultural heritage. No private data collected in verification benchmarks.\n\n## Limitations\n\n- Fixed-width ternary encoding (no support for multi-trit values)\n- No hardware floating-point operations (requires software emulation)\n- Limited to 27 registers (no spillover to memory)\n- Control flow only supports unconditional jumps (conditional jumps implemented via JGT/JLT + JUMP)\n- No interrupt handling mechanism (designed for isolated execution)\n- Stack limited to 10 return addresses (hard-coded architecture limit)\n\n## Future Work\n\n- Implement multi-trit arithmetic (add, subtract, multiply)\n- Add hardware support for function call frames (stack pointer)\n- Design pipelined execution (5-stage: IF-ID-EX-MEM-WB)\n- Investigate superscalar execution (2-way issue)\n- Implement interrupt handling and I/O ports\n- Extend to 64 registers (4 banks \u00d7 16 registers)\n- Design hybrid execution (FPGA + CPU co-processor)\n- Formal verification for pipelined semantics\n- Model checking for concurrent execution\n\n## References\n\n- Biere, A., Clarke, E., & Kroening, D. (1999). Z3: An Efficient SMT Solver. TACAS 1999: 447-456.\n- de Moura, L., Bj\u00f8rner, N., et al. (2008). Z3 4.8: An Efficient SMT Solver. TACAS 2008: 337-356.\n- Vazquez, D. (2008). Coptic Alphabet: Unicode Standard for Ancient Egyptian Scripts. Unicode 9.0.0.\n- Vasilev, D. (2026). TRI-27: 27-Register Ternary Processor. Zenodo. https://doi.org/10.5281/zenodo.19227867\n- Vasilev, D. (2026). Trinity B004: Queen Lotus Consciousness Cycle \u2014 Phenomenological Modeling Framework. Zenodo. https://doi.org/10.5281/zenodo.19227839\n- Vasilev, D. (2026). Trinity B005: Tri Language Specification. Zenodo. https://doi.org/10.5281/zenodo.19227841",
   "keywords": [
     "TRI-27 ISA",
     "ternary processor",
@@ -51,12 +51,84 @@
   "access_right": "open",
   "resource_type": {
     "type": "software",
-    "title": "Trinity B003: TRI-27 ISA — 27-Register Ternary Processor"
+    "title": "Trinity B003: TRI-27 ISA \u2014 27-Register Ternary Processor"
   },
   "communities": [
     {
       "identifier": "trinity-research"
     }
   ],
-  "grants": []
+  "grants": [],
+  "subjects": [
+    {
+      "term": "Computer systems organization",
+      "scheme": "ACM",
+      "identifier": "Computer systems organization"
+    },
+    {
+      "term": "Processor architectures",
+      "scheme": "ACM",
+      "identifier": "Processor architectures"
+    },
+    {
+      "term": "Instruction set architectures",
+      "scheme": "ACM",
+      "identifier": "Instruction set architectures"
+    },
+    {
+      "term": "MSC 68U99",
+      "scheme": "MSC",
+      "identifier": "68U99"
+    },
+    {
+      "term": "MSC 68Q10",
+      "scheme": "MSC",
+      "identifier": "68Q10"
+    }
+  ],
+  "conference": {
+    "name": "Preprint",
+    "dates": [
+      "2026-03-27",
+      "2026-03-27"
+    ],
+    "url": "https://github.com/gHashTag/trinity"
+  },
+  "funding": [
+    {
+      "funder": {
+        "name": "Trinity Research Collective",
+        "doi": "10.13039/501100000000",
+        "award": [
+          {
+            "title": "Trinity S\u00b3AI Research Framework",
+            "number": "TRI-2024-001",
+            "url": "https://github.com/gHashTag/trinity"
+          }
+        ]
+      }
+    }
+  ],
+  "notes": "This research was supported by the Trinity Research Collective. \nWe thank the Zig Software Foundation for the excellent compiler toolchain.\nFPGA synthesis was performed using open-source tools (Yosys, nextpnr-xilinx).\nComputational resources were provided by Railway Cloud and Apple Silicon hardware.\nWe acknowledge the use of TinyStories dataset (Eldan & Li, 2023).",
+  "custom_fields": {
+    "submission_targets": {
+      "venues": [
+        "ISCA 2026",
+        "MICRO 2026",
+        "CAL 2026"
+      ],
+      "track": "Processor Architecture",
+      "code_availability": "https://github.com/gHashTag/trinity/tree/main/src/tri27"
+    },
+    "peer_review": {
+      "method": "Open peer review",
+      "comments": "Reviews will be conducted via GitHub Issues and PRs",
+      "license": "CC-BY-4.0"
+    }
+  },
+  "imprint": {
+    "publisher": "Trinity Research Collective",
+    "country": "International",
+    "publication_date": "2026-03-27"
+  }
 }

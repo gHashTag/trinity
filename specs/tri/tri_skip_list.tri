@@ -1,0 +1,54 @@
+name: tri_skip_list
+version: "0.1.0"
+module: tri.skip_list
+description: "TRI SkipList — probabilistic structure"
+
+types:
+  SkipNode(T):
+    description: "Skip list node"
+    fields:
+      value: "T"
+      forward: "[]?SkipNode(T)"
+      level: "usize"
+
+  SkipList(T):
+    description: "Skip list"
+    fields:
+      head: "SkipNode(T)"
+      max_level: "usize"
+      level: "usize"
+
+functions:
+  init:
+    params:
+      - name: max_level
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!SkipList(T)"
+    description: "Create skip list"
+
+  insert:
+    params:
+      - name: list
+        type: "*SkipList(T)"
+      - name: value
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Insert value"
+
+  search:
+    params:
+      - name: list
+        type: "SkipList(T)"
+      - name: value
+        type: "T"
+    returns: "bool"
+    description: "Check if value exists"
+
+behaviors:
+  - name: probabilistic
+    description: "Random level selection"
+    note: "O(log n) search expected"

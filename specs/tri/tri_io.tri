@@ -1,0 +1,49 @@
+name: tri_io
+version: "0.1.0"
+module: tri.io
+description: "TRI IO — tagged IO operations"
+
+types:
+  IO(T):
+    description: "Tagged IO computation"
+    fields:
+      performed: bool
+      value: T
+
+functions:
+  pure:
+    params:
+      - name: value
+        type: "T"
+    returns: "IO(T)"
+    description: "Lift pure value into IO"
+
+  map:
+    params:
+      - name: io
+        type: "IO(T)"
+      - name: fn
+        type: "fn(T) -> U"
+    returns: "IO(U)"
+    description: "Transform IO result"
+
+  bind:
+    params:
+      - name: io
+        type: "IO(T)"
+      - name: fn
+        type: "fn(T) -> IO(U)"
+    returns: "IO(U)"
+    description: "Chain IO operations"
+
+  perform:
+    params:
+      - name: io
+        type: "IO(T)"
+    returns: "T"
+    description: "Execute IO computation"
+
+behaviors:
+  - name: io_tagging
+    description: "Tag effects for type safety"
+    note: "IO cannot be escaped — must be explicit"

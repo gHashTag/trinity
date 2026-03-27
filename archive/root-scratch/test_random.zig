@@ -7,4 +7,3 @@ test "Random init test" {
     const val = rng.float(f32);
     _ = val;
 }
-

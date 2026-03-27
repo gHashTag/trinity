@@ -54,10 +54,10 @@ test "vsa_core: all modules importable" {
 test "vsa_core: core operations work" {
     const a = [_]Trit{ 1, -1, 0, 1 };
     const b = [_]Trit{ 1, 1, 0, -1 };
-    
+
     const dot = dotProduct(&a, &b);
     try std.testing.expectEqual(@as(i64, -1), dot);
-    
+
     const sim = cosineSimilarity(&a, &b);
     try std.testing.expect(sim < 1.0 and sim > -1.0);
 }
@@ -66,7 +66,7 @@ test "vsa_core: sparse operations work" {
     const dense = [_]Trit{ 0, 1, 0, -1 };
     var sparse = try SparseVector.fromDense(std.testing.allocator, &dense);
     defer sparse.deinitSparse(std.testing.allocator);
-    
+
     try std.testing.expectEqual(@as(usize, 2), sparse.indices.len);
 }
 

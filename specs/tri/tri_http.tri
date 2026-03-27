@@ -1,0 +1,93 @@
+name: tri_http
+version: "0.1.0"
+module: tri.http
+description: "TRI HTTP utilities — URL parsing and HTTP status codes"
+
+types:
+  HttpMethod:
+    description: "HTTP methods"
+    enum:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - PATCH
+      - HEAD
+      - OPTIONS
+
+  HttpStatus:
+    description: "HTTP status codes"
+    fields:
+      code: u16
+      reason: []const u8
+
+  Url:
+    description: "Parsed URL components"
+    fields:
+      scheme: ?[]const u8
+      host: ?[]const u8
+      port: ?u16
+      path: []const u8
+      query: ?[]const u8
+      fragment: ?[]const u8
+
+functions:
+  methodToString:
+    params:
+      - name: method
+        type: "HttpMethod"
+    returns: "[]const u8"
+    description: "Convert method to string"
+
+  statusFromCode:
+    params:
+      - name: code
+        type: "u16"
+    returns: "HttpStatus"
+    description: "Get status info from code"
+
+  isSuccess:
+    params:
+      - name: code
+        type: "u16"
+    returns: "bool"
+    description: "Check if status is 2xx"
+
+  isRedirect:
+    params:
+      - name: code
+        type: "u16"
+    returns: "bool"
+    description: "Check if status is 3xx"
+
+  isClientError:
+    params:
+      - name: code
+        type: "u16"
+    returns: "bool"
+    description: "Check if status is 4xx"
+
+  isServerError:
+    params:
+      - name: code
+        type: "u16"
+    returns: "bool"
+    description: "Check if status is 5xx"
+
+  parseUrl:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: url
+        type: "[]const u8"
+    returns: "!Url"
+    description: "Parse URL into components"
+
+behaviors:
+  - name: url_validation
+    description: "Basic URL validation and parsing"
+    note: "Supports http, https schemes"
+
+  - name: standard_codes
+    description: "Standard HTTP status codes"
+    note: "200, 201, 301, 302, 400, 401, 403, 404, 500, 502, 503"

@@ -2,8 +2,10 @@
   "lang": "es",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Teoremas", "Solucion", "Benchmarks", "Calculadora", "DePIN", "Arbol Tech", "Equipo", "Ciencia", "Invertir"],
+  "nav": ["TRINITY", "Teoremas", "Publicaciones", "Solucion", "Benchmarks", "Calculadora", "DePIN", "Equipo", "Invertir"],
   "hero": {
+    "badge_publications": "7 PUBLICACIONES",
+    "badge_doi": "DOI-VERIFICADO",
     "tag": "Economia IA Verde Verificada por GPU",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "298K tokens/s en RTX 3090 | 274K en A100 | VERIFICADO",
@@ -28,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "Panel",
+    "tree": "Lab. Investigacion",
     "docs": "Docs"
   },
   "theorems": {
@@ -243,6 +246,12 @@
       { "value": "80.2%", "label": "Densidad +", "color": "yellow" },
       { "value": "0.17%", "label": "Entropia", "color": "green" }
     ]
+  },
+  "publications": {
+    "badge": "PUBLICACIONES CIENTÍFICAS",
+    "title": "Resultados de Investigación con DOI",
+    "subtitle": "Toda la investigación publicada en Zenodo con identificadores DOI permanentes.",
+    "viewAll": "Ver Documentación Completa →"
   },
   "benchmarks": {
     "title": "Benchmarks Verificados por <span class=\"grad\">GPU</span>",

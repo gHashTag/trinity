@@ -1,0 +1,23 @@
+name: tri_prims_mst
+version: "0.1.0"
+language: zig
+module: tri.prims_mst
+description: "Prim's Minimum Spanning Tree algorithm"
+
+types:
+  MSTResult:
+    description: "Minimum spanning tree"
+    fields:
+      edges: "[]Edge"
+      total_weight: "i64"
+      allocator: "std.mem.Allocator"
+
+functions:
+  mst:
+    params:
+      - name: graph
+        type: "*Graph"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "MSTResult"
+    description: "Find MST using Prim's algorithm"

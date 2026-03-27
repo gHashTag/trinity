@@ -17,7 +17,7 @@ test "Benchmark Bind 1000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("BIND 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BIND 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Bundle 1000D" {
@@ -33,7 +33,7 @@ test "Benchmark Bundle 1000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("BUNDLE 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BUNDLE 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Similarity 1000D" {
@@ -49,7 +49,7 @@ test "Benchmark Similarity 1000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("SIMILARITY 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("SIMILARITY 1000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Bind 4000D" {
@@ -65,7 +65,7 @@ test "Benchmark Bind 4000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("BIND 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BIND 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Bundle 4000D" {
@@ -81,7 +81,7 @@ test "Benchmark Bundle 4000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000.0);
-    std.debug.print("BUNDLE 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BUNDLE 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Similarity 4000D" {
@@ -97,7 +97,7 @@ test "Benchmark Similarity 4000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("SIMILARITY 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("SIMILARITY 4000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Bind 10000D" {
@@ -113,7 +113,7 @@ test "Benchmark Bind 10000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("BIND 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BIND 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Bundle 10000D" {
@@ -129,7 +129,7 @@ test "Benchmark Bundle 10000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("BUNDLE 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("BUNDLE 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Benchmark Similarity 10000D" {
@@ -145,7 +145,7 @@ test "Benchmark Similarity 10000D" {
 
     const elapsed_ns = timer.read() - start;
     const ops_per_sec = @as(f64, @floatFromInt(ITERATIONS)) / (@as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0);
-    std.debug.print("SIMILARITY 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS))});
+    std.debug.print("SIMILARITY 10000D: {d:.2} ops/sec ({d:.2} ns/op)\n", .{ ops_per_sec, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(ITERATIONS)) });
 }
 
 test "Memory Efficiency Analysis" {

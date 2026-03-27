@@ -444,7 +444,7 @@ export default function ProductionDashboard() {
           background: `${GOLD}15`,
           border: `1px solid ${GOLD}33`,
         }}>Dashboard</span>
-        <a href={`${import.meta.env.BASE_URL}docs/`} style={{
+        <a href="https://ghashtag.github.io/trinity/docs/" target="_blank" rel="noopener noreferrer" style={{
           color: '#888',
           fontSize: 12,
           textDecoration: 'none',

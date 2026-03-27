@@ -1,0 +1,52 @@
+name: tri_interval
+version: "0.1.0"
+module: tri.interval
+description: "TRI Interval — range operations"
+
+types:
+  Interval:
+    description: "Numeric interval"
+    fields:
+      start: "i64"
+      end: "i64"
+      inclusive: "bool"
+
+  IntervalSet:
+    description: "Set of intervals"
+    fields:
+      intervals: "[]Interval"
+
+functions:
+  create:
+    params:
+      - name: start
+        type: "i64"
+      - name: end
+        type: "i64"
+    returns: "Interval"
+    description: "Create interval"
+
+  overlaps:
+    params:
+      - name: a
+        type: "Interval"
+      - name: b
+        type: "Interval"
+    returns: "bool"
+    description: "Check if intervals overlap"
+
+  union:
+    params:
+      - name: a
+        type: "IntervalSet"
+      - name: b
+        type: "IntervalSet"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!IntervalSet"
+    description: "Union of interval sets"
+
+behaviors:
+  - name: ranges
+    description: "Range operations"
+    note: "Merge overlapping intervals"

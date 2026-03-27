@@ -1,0 +1,51 @@
+name: tri_ecc
+version: "0.1.0"
+language: zig
+module: tri.ecc
+description: "Elliptic Curve Cryptography basics"
+
+types:
+  ECPoint:
+    description: "Point on elliptic curve"
+    fields:
+      x: "f64"
+      y: "f64"
+      is_infinity: "bool"
+
+  EllipticCurve:
+    description: "Elliptic curve y^2 = x^3 + ax + b"
+    fields:
+      a: "f64"
+      b: "f64"
+
+functions:
+  add:
+    params:
+      - name: curve
+        type: "*EllipticCurve"
+      - name: p
+        type: "ECPoint"
+      - name: q
+        type: "ECPoint"
+    returns: "ECPoint"
+    description: "Add two points on curve"
+
+  multiply:
+    params:
+      - name: curve
+        type: "*EllipticCurve"
+      - name: p
+        type: "ECPoint"
+      - name: k
+        type: "u64"
+    returns: "ECPoint"
+    description: "Scalar multiplication (double-and-add)"
+
+  isOnCurve:
+    params:
+      - name: curve
+        type: "*EllipticCurve"
+      - name: p
+        type: "ECPoint"
+    returns: "bool"
+    description: "Check if point satisfies curve equation"

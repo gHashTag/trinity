@@ -68,7 +68,7 @@ pub const SymbolKind = enum {
     enum_variant,
     import,
     module,
-    test,
+    test_case,
 };
 
 /// Output format for results
@@ -592,10 +592,8 @@ pub const CodeIndexer = struct {
         const end_time = std.time.nanoTimestamp();
         const query_time = @as(u64, @intCast((end_time - start_time) / 1_000_000));
         self.stats.queries_processed += 1;
-        self.stats.avg_query_time_ms = (
-            self.stats.avg_query_time_ms * @as(f64, @floatFromInt(self.stats.queries_processed - 1)) +
-            @as(f64, @floatFromInt(query_time))
-        ) / @as(f64, @floatFromInt(self.stats.queries_processed));
+        self.stats.avg_query_time_ms = (self.stats.avg_query_time_ms * @as(f64, @floatFromInt(self.stats.queries_processed - 1)) +
+            @as(f64, @floatFromInt(query_time))) / @as(f64, @floatFromInt(self.stats.queries_processed));
 
         return SearchResults{
             .results = try self.allocator.dupe(SearchResult, results.items),

@@ -1,0 +1,60 @@
+name: tri_linked_list
+version: "0.1.0"
+language: zig
+module: tri.linked_list
+description: "Doubly linked list"
+
+types:
+  ListNode:
+    description: "List node with prev/next pointers"
+    fields:
+      value: "T"
+      prev: "?ListNode"
+      next: "?ListNode"
+
+  LinkedList:
+    description: "Doubly linked list"
+    fields:
+      head: "?ListNode"
+      tail: "?ListNode"
+      length: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    returns: "LinkedList"
+    description: "Create empty list"
+
+  append:
+    params:
+      - name: list
+        type: "*LinkedList"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Add value to end"
+
+  prepend:
+    params:
+      - name: list
+        type: "*LinkedList"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Add value to front"
+
+  remove:
+    params:
+      - name: list
+        type: "*LinkedList"
+      - name: value
+        type: "i64"
+    returns: "bool"
+    description: "Remove first occurrence"
+
+  deinit:
+    params:
+      - name: list
+        type: "*LinkedList"
+    returns: "void"
+    description: "Free all nodes"

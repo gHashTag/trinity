@@ -1,0 +1,54 @@
+name: tri_set
+version: "0.1.0"
+module: tri.set
+description: "TRI Set — set data structure"
+
+types:
+  HashSet(T):
+    description: "Hash set"
+    fields:
+      items: "std.HashMap(T, void)"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HashSet(T)"
+    description: "Create empty set"
+
+  add:
+    params:
+      - name: set
+        type: "*HashSet(T)"
+      - name: item
+        type: "T"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Add item to set"
+
+  contains:
+    params:
+      - name: set
+        type: "HashSet(T)"
+      - name: item
+        type: "T"
+    returns: "bool"
+    description: "Check membership"
+
+  union:
+    params:
+      - name: a
+        type: "HashSet(T)"
+      - name: b
+        type: "HashSet(T)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HashSet(T)"
+    description: "Set union"
+
+behaviors:
+  - name: unique
+    description: "No duplicates"
+    note: "O(1) average operations"

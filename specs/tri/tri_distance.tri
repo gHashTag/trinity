@@ -1,0 +1,51 @@
+name: tri_distance
+version: "0.1.0"
+module: tri.distance
+description: "TRI Distance — string metrics"
+
+types:
+  DistanceMetric:
+    description: "Distance metric type"
+    enum: [Levenshtein, Hamming, Jaro, JaroWinkler]
+
+functions:
+  levenshtein:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+    returns: "usize"
+    description: "Edit distance"
+
+  hamming:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+    returns: "usize"
+    description: "Bit/character differences"
+
+  jaro:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+    returns: "f64"
+    description: "Jaro similarity"
+
+  jaroWinkler:
+    params:
+      - name: a
+        type: "[]const u8"
+      - name: b
+        type: "[]const u8"
+    returns: "f64"
+    description: "Jaro-Winkler similarity"
+
+behaviors:
+  - name: metrics
+    description: "Multiple distance metrics"
+    note: "String similarity algorithms"

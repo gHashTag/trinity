@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinity v9.0 - Zenodo Description Template</title>
+    <style>
+        :root {
+            --trinity-blue: #3498db;
+            --trinity-green: #2ecc71;
+            --trinity-purple: #9b59b6;
+            --trinity-orange: #e67e22;
+            --trinity-red: #e74c3c;
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text-light: #eaeaea;
+            --text-muted: #a0a0a0;
+        }
+        body {
+            font-family: 'Apple System', 'Roboto', 'Segoe UI', 'DejaVu Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--trinity-blue);
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(135deg, var(--trinity-blue), var(--trinity-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header .version {
+            font-size: 1.2em;
+            color: var(--trinity-green);
+            margin-top: 10px;
+        }
+        .header .doi {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: var(--bg-card);
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .section {
+            margin: 40px 0;
+        }
+        .section h2 {
+            color: var(--trinity-blue);
+            border-left: 4px solid var(--trinity-purple);
+            padding-left: 15px;
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: var(--trinity-green);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--trinity-blue);
+        }
+        .stat-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--trinity-blue);
+        }
+        .stat-box .label {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .badge {
+            background: var(--trinity-blue);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+        .badge.green { background: var(--trinity-green); }
+        .badge.purple { background: var(--trinity-purple); }
+        .badge.orange { background: var(--trinity-orange); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--trinity-blue);
+        }
+        th {
+            background: var(--bg-dark);
+            color: var(--trinity-blue);
+        }
+        pre {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--trinity-purple);
+        }
+        code {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--trinity-green);
+        }
+        .citation-box {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--trinity-green);
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 2px solid var(--trinity-blue);
+            color: var(--text-muted);
+        }
+        .bundle-links a {
+            color: var(--trinity-blue);
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .bundle-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TRINITY</h1>
+            <div class="version">Version 9.0 — Scientific Publication Bundle</div>
+            <div class="doi">DOI: 10.5281/zenodo.19227879</div>
+            <div class="badge-row" style="justify-content: center;">
+                <span class="badge">Pure Zig</span>
+                <span class="badge green">Zero Dependencies</span>
+                <span class="badge purple">Ternary Computing</span>
+                <span class="badge orange">FPGA Ready</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Overview</h2>
+            <p>
+                Trinity is a pure-Zig autonomous AI agent swarm implementing ternary neural networks
+                with zero-DSP FPGA deployment. This bundle contains the complete v9.0 scientific
+                publication package including all 7 sub-bundles, figures, metadata, and reproducibility
+                documentation.
+            </p>
+            <p style="text-align: center; font-size: 1.2em; color: var(--trinity-purple);">
+                <strong>φ² + 1/φ² = 3</strong>
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Bundle Contents</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="value">7</div>
+                    <div class="label">Sub-Bundles</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">4,950</div>
+                    <div class="label">Total LOC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">12</div>
+                    <div class="label">Figures</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">8</div>
+                    <div class="label">DOIs</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Sub-Bundles</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bundle</th>
+                        <th>Title</th>
+                        <th>LOC</th>
+                        <th>DOI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>B001</strong></td>
+                        <td>HSLM-1.95M Ternary Neural Networks</td>
+                        <td>708</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227865">10.5281/zenodo.19227865</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B002</strong></td>
+                        <td>Zero-DSP FPGA Implementation</td>
+                        <td>743</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227867">10.5281/zenodo.19227867</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B003</strong></td>
+                        <td>TRI-27 ISA Specification</td>
+                        <td>628</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227869">10.5281/zenodo.19227869</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B004</strong></td>
+                        <td>Queen Lotus Consciousness Cycle</td>
+                        <td>852</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227871">10.5281/zenodo.19227871</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B005</strong></td>
+                        <td>Tri Language Specification</td>
+                        <td>642</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227873">10.5281/zenodo.19227873</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B006</strong></td>
+                        <td>GF16 Format Specification</td>
+                        <td>586</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227875">10.5281/zenodo.19227875</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>B007</strong></td>
+                        <td>VSA Operations Library</td>
+                        <td>791</td>
+                        <td><a href="https://doi.org/10.5281/zenodo.19227877">10.5281/zenodo.19227877</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Quick Start</h2>
+            <div class="card">
+                <h3>Installation</h3>
+                <pre><code>git clone https://github.com/gHashTag/trinity.git
+cd trinity
+zig build tri
+./zig-out/bin/tri --help</code></pre>
+            </div>
+            <div class="card">
+                <h3>Run Tests</h3>
+                <pre><code>zig build test</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Citation</h2>
+            <div class="citation-box">
+                <h3>BibTeX</h3>
+                <pre><code>@software{trinity_v9,
+  title={Trinity: Complete Scientific Collection v9.0},
+  author={Vasilev, Dmitrii},
+  year={2026},
+  doi={10.5281/zenodo.19227879},
+  publisher={Zenodo}
+}</code></pre>
+            </div>
+            <div class="citation-box">
+                <h3>APA</h3>
+                <pre><code>Vasilev, D. (2026). Trinity: Complete scientific collection v9.0. Zenodo. https://doi.org/10.5281/zenodo.19227879</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>License</h2>
+            <p>This work is licensed under the <strong>MIT License</strong>.</p>
+            <div class="badge-row">
+                <span class="badge green">MIT License</span>
+                <span class="badge">Open Source</span>
+                <span class="badge purple">FAIR Compliant</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Links</h2>
+            <div class="bundle-links">
+                <a href="https://github.com/gHashTag/trinity">GitHub Repository</a>
+                <a href="https://gHashTag.github.io/trinity">Documentation</a>
+                <a href="https://doi.org/10.5281/zenodo.19227879">Zenodo Record</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>φ² + 1/φ² = 3 | TRINITY</p>
+            <p>© 2026 Dmitrii Vasilev | ORCID: 0009-0008-4294-6159</p>
+        </div>
+    </div>
+</body>
+</html>

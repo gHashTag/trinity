@@ -1,0 +1,54 @@
+name: tri_color
+version: "0.1.0"
+module: tri.color
+description: "TRI Color — color manipulation"
+
+types:
+  Color:
+    description: "RGBA color"
+    fields:
+      r: "u8"
+      g: "u8"
+      b: "u8"
+      a: "u8"
+
+  ColorSpace:
+    description: "Color space"
+    enum: [RGB, HSV, HSL, LAB]
+
+functions:
+  rgb:
+    params:
+      - name: r
+        type: "u8"
+      - name: g
+        type: "u8"
+      - name: b
+        type: "u8"
+    returns: "Color"
+    description: "Create RGB color"
+
+  toHex:
+    params:
+      - name: color
+        type: "Color"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Convert to hex string"
+
+  blend:
+    params:
+      - name: a
+        type: "Color"
+      - name: b
+        type: "Color"
+      - name: factor
+        type: "f64"
+    returns: "Color"
+    description: "Linear interpolate colors"
+
+behaviors:
+  - name: alpha
+    description: "Alpha channel support"
+    note: "Transparent colors"

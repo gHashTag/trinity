@@ -1,0 +1,35 @@
+name: tri_compress
+version: "0.1.0"
+module: tri.compress
+description: "TRI Compress — data compression"
+
+types:
+  Compressed:
+    description: "Compressed data"
+    fields:
+      data: "[]u8"
+      original_len: "usize"
+
+functions:
+  compress:
+    params:
+      - name: input
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Compressed"
+    description: "Compress data (DEFLATE)"
+
+  decompress:
+    params:
+      - name: compressed
+        type: "Compressed"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Decompress data"
+
+behaviors:
+  - name: lossless
+    description: "Lossless compression"
+    note: "Original data fully recoverable"

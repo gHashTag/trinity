@@ -1,0 +1,50 @@
+name: tri_stack
+version: "0.1.0"
+module: tri.stack
+description: "TRI Stack — LIFO stack"
+
+types:
+  Stack(T):
+    description: "Last-in-first-out stack"
+    fields:
+      items: "[]T"
+
+functions:
+  empty:
+    returns: "Stack(T)"
+    description: "Create empty stack"
+
+  push:
+    params:
+      - name: stack
+        type: "Stack(T)"
+      - name: value
+        type: "T"
+    returns: "Stack(T)"
+    description: "Push onto top"
+
+  pop:
+    params:
+      - name: stack
+        type: "Stack(T)"
+    returns: "Stack(T)"
+    description: "Remove from top"
+
+  peek:
+    params:
+      - name: stack
+        type: "Stack(T)"
+    returns: "Option(T)"
+    description: "Get top element"
+
+  isEmpty:
+    params:
+      - name: stack
+        type: "Stack(T)"
+    returns: "bool"
+    description: "Check if empty"
+
+behaviors:
+  - name: lifo
+    description: "Last-in-first-out ordering"
+    note: "O(1) push and pop"

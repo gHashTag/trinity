@@ -1,0 +1,86 @@
+name: tri_bitvector
+version: "0.1.0"
+module: tri.bitvector
+description: "TRI BitVector — growable bit array"
+
+types:
+  BitVector:
+    description: "Dynamic bit array"
+    fields:
+      bits: "[]usize"
+      length: usize
+
+functions:
+  empty:
+    returns: "BitVector"
+    description: "Create empty bit vector"
+
+  withCapacity:
+    params:
+      - name: bits
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!BitVector"
+    description: "Pre-allocate for n bits"
+
+  push:
+    params:
+      - name: bv
+        type: "*BitVector"
+      - name: bit
+        type: "bool"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Append bit"
+
+  pop:
+    params:
+      - name: bv
+        type: "*BitVector"
+    returns: "?bool"
+    description: "Remove last bit"
+
+  get:
+    params:
+      - name: bv
+        type: "BitVector"
+      - name: index
+        type: "usize"
+    returns: "bool"
+    description: "Get bit at index"
+
+  set:
+    params:
+      - name: bv
+        type: "*BitVector"
+      - name: index
+        type: "usize"
+      - name: value
+        type: "bool"
+    returns: "void"
+    description: "Set bit at index"
+
+  len:
+    params:
+      - name: bv
+        type: "BitVector"
+    returns: "usize"
+    description: "Number of bits"
+
+  append:
+    params:
+      - name: bv
+        type: "*BitVector"
+      - name: other
+        type: "BitVector"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Concatenate bit vectors"
+
+behaviors:
+  - name: dynamic
+    description: "Grows as needed"
+    note: "Amortized O(1) push"

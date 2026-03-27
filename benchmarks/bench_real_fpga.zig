@@ -83,9 +83,7 @@ pub fn main() !void {
         } else if (report.roundtrip_ns < 20000) {
             try std.Io.Writer.print(stdout, "✅ GOOD (< 20 µs)\n", .{});
         } else {
-            try std.Io.Writer.print(stdout, "⚠️  HIGH LATENCY ({d:.1}× overhead)\n", .{
-                @as(f64, @floatFromInt(report.overhead_ns)) / @as(f64, @floatFromInt(report.fpga_ns))
-            });
+            try std.Io.Writer.print(stdout, "⚠️  HIGH LATENCY ({d:.1}× overhead)\n", .{@as(f64, @floatFromInt(report.overhead_ns)) / @as(f64, @floatFromInt(report.fpga_ns))});
         }
     } else {
         try std.Io.Writer.print(stdout, "│  CPU Fallback: Run bench_vsa_pipeline for CPU timing\n", .{});

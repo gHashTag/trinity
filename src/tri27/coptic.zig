@@ -17,37 +17,37 @@ const std = @import("std");
 /// Coptic Register — enum of 27 Coptic glyphs mapped to TRI-27 registers
 pub const CopticReg = enum(u5) {
     // Bank 0: ALU registers (Units 1-9)
-    alpha = 0,    // Ⲁ  → t0 (accumulator)
-    beta = 1,     // Ⲃ  → t1 (base pointer)
-    gamma = 2,    // Ⲅ  → t2 (general)
-    dalda = 3,    // Ⲇ  → t3
-    ei = 4,       // Ⲉ  → t4
-    sou = 5,      // Ⲋ  → t5
-    zeta = 6,     // Ⲍ  → t6
-    ita = 7,      // Ⲏ  → t7
-    tita = 8,     // Ⲑ  → t8
+    alpha = 0, // Ⲁ  → t0 (accumulator)
+    beta = 1, // Ⲃ  → t1 (base pointer)
+    gamma = 2, // Ⲅ  → t2 (general)
+    dalda = 3, // Ⲇ  → t3
+    ei = 4, // Ⲉ  → t4
+    sou = 5, // Ⲋ  → t5
+    zeta = 6, // Ⲍ  → t6
+    ita = 7, // Ⲏ  → t7
+    tita = 8, // Ⲑ  → t8
 
     // Bank 1: Sacred accumulators (Tens 10-90)
-    iota = 9,      // Ⲓ  → t9 (GF16 accumulator)
-    kappa = 10,    // Ⲕ  → t10
-    laula = 11,    // Ⲗ  → t11
-    mi = 12,       // Ⲙ  → t12
-    ni = 13,       // Ⲛ  → t13
-    ksi = 14,      // Ⲝ  → t14
-    o = 15,        // Ⲟ  → t15
-    pi = 16,       // Ⲡ  → t16
-    ro = 17,       // Ⲣ  → t17
+    iota = 9, // Ⲓ  → t9 (GF16 accumulator)
+    kappa = 10, // Ⲕ  → t10
+    laula = 11, // Ⲗ  → t11
+    mi = 12, // Ⲙ  → t12
+    ni = 13, // Ⲛ  → t13
+    ksi = 14, // Ⲝ  → t14
+    o = 15, // Ⲟ  → t15
+    pi = 16, // Ⲡ  → t16
+    ro = 17, // Ⲣ  → t17
 
     // Bank 2: Constants (Hundreds 100-900)
-    sima = 18,     // Ⲥ  → t18 (constant register)
-    tau = 19,      // Ⲧ  → t19
-    ypsilon = 20,   // Ⲩ  → t20
-    phi = 21,      // Ⲫ  → t21
-    chi = 22,      // Ⲭ  → t22
-    psi = 23,      // Ⲯ  → t23
-    omega = 24,    // Ⲱ  → t24
-    shai = 25,     // Ϣ  → t25
-    fay = 26,      // Ϥ  → t26
+    sima = 18, // Ⲥ  → t18 (constant register)
+    tau = 19, // Ⲧ  → t19
+    ypsilon = 20, // Ⲩ  → t20
+    phi = 21, // Ⲫ  → t21
+    chi = 22, // Ⲭ  → t22
+    psi = 23, // Ⲯ  → t23
+    omega = 24, // Ⲱ  → t24
+    shai = 25, // Ϣ  → t25
+    fay = 26, // Ϥ  → t26
 
     /// Returns the bank number (0, 1, or 2) for this register
     pub fn bank(self: CopticReg) u2 {
@@ -69,7 +69,7 @@ pub const CopticReg = enum(u5) {
 pub const coptic_glyphs = [27][]const u8{
     "Ⲁ", "Ⲃ", "Ⲅ", "Ⲇ", "Ⲉ", "Ⲋ", "Ⲍ", "Ⲏ", "Ⲑ",
     "Ⲓ", "Ⲕ", "Ⲗ", "Ⲙ", "Ⲛ", "Ⲝ", "Ⲟ", "Ⲡ", "Ⲣ",
-    "Ⲥ", "Ⲧ", "Ⲩ", "Ⲫ", "Ⲭ", "Ⲯ", "Ⲱ", "Ϣ", "Ϥ",
+    "Ⲥ", "Ⲧ", "Ⲩ", "Ⲫ", "Ⲭ", "Ⲯ", "Ⲱ", "Ϣ",  "Ϥ",
 };
 
 /// Lookup table: Coptic glyph → CopticReg (O(N) for small N=27)

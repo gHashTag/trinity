@@ -33,9 +33,8 @@ pub const WaveExecutor = struct {
 
     /// Execute tasks in waves (parallel batches)
     pub fn executeWaves(self: *WaveExecutor, tasks: []const []const u8) !WaveResult {
-        const log = std.log.scoped(.level = .info);
-        log.info("🌊 Wave Executor: {d} tasks, {d} agents, {d} concurrent",
-            .{tasks.len, self.config.num_agents, self.config.max_concurrent});
+        const log = std.log.scoped("wave_executor");
+        log.info("🌊 Wave Executor: {d} tasks, {d} agents, {d} concurrent", .{ tasks.len, self.config.num_agents, self.config.max_concurrent });
 
         var wave_num: usize = 0;
         var completed: usize = 0;
@@ -57,8 +56,7 @@ pub const WaveExecutor = struct {
             const end_idx = @min(start_idx + self.config.max_concurrent, tasks.len);
             const wave_tasks = tasks[start_idx..end_idx];
 
-            log.info("Wave {d}: {d} tasks ({d}..{d}/{d})",
-                .{wave_num, wave_tasks.len, start_idx, end_idx, tasks.len});
+            log.info("Wave {d}: {d} tasks ({d}..{d}/{d})", .{ wave_num, wave_tasks.len, start_idx, end_idx, tasks.len });
 
             // Execute wave in parallel using threads
             const wave_results = try self.executeWave(wave_tasks);
@@ -80,8 +78,7 @@ pub const WaveExecutor = struct {
                 }
             }
 
-            log.info("Wave {d} complete: {d} succeeded, {d} failed",
-                .{wave_num, completed - (all_results.items.len - wave_results.len) - completed, failed});
+            log.info("Wave {d} complete: {d} succeeded, {d} failed", .{ wave_num, completed - (all_results.items.len - wave_results.len) - completed, failed });
 
             start_idx = end_idx;
         }

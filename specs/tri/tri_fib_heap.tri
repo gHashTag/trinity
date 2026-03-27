@@ -1,0 +1,48 @@
+name: tri_fib_heap
+version: "0.1.0"
+language: zig
+module: tri.fib_heap
+description: "Fibonacci heap — amortized O(1) insert/decrease"
+
+types:
+  FibHeap:
+    generic: "T"
+    description: "Fibonacci heap with min-heap property"
+    fields:
+      min: "?*FibNode"
+      roots: "ArrayList(*FibNode)"
+      size: "usize"
+
+  FibNode:
+    generic: "T"
+    fields:
+      value: "T"
+      degree: "usize"
+      parent: "?*FibNode"
+      children: "ArrayList(*FibNode)"
+      marked: "bool"
+
+functions:
+  init:
+    returns: "FibHeap"
+    description: "Create empty Fibonacci heap"
+
+  insert:
+    params:
+      - name: heap
+        type: "*FibHeap"
+      - name: value
+        type: "T"
+    returns: "!void"
+    description: "Insert value (O(1) amortized)"
+
+  extract_min:
+    params:
+      - name: heap
+        type: "*FibHeap"
+    returns: "?T"
+    description: "Remove and return minimum (O(log n) amortized)"
+
+behaviors:
+  - name: "lazy_consolidation"
+    description: "Delay tree merging until extract_min"

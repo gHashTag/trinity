@@ -49117,3 +49117,52 @@ error: FileNotFound
     defer std.process.argsFree(allocator, args);
                               ^
 👑 Queen Trinity starting daemon mode (PID 80020)
+👑 Queen Trinity starting daemon mode (PID 79635)
+thread 78348051 panic: access of union field 'Exited' while field 'Signal' is active
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:412:23: 0x1004a8493 in checkBuild (tri)
+    return result.term.Exited == 0;
+                      ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:437:9: 0x1004a94a7 in logToHive__anon_20560 (tri)
+        try new_f.writeAll("# Queen Trinity Hive Log\n\n");
+        ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:369:13: 0x1004aa46b in runQueenStart (tri)
+        if (!build_ok) {
+            ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fmt.zig:636:48: 0x10081863f in allocPrint__anon_78688 (tri)
+    var aw = try Writer.Allocating.initCapacity(gpa, fmt.len);
+                                               ^
+/Users/playra/trinity-w1/src/tri/main.zig:66:31: 0x10082d873 in main (tri)
+    defer std.process.argsFree(allocator, args);
+                              ^
+???:?:?: 0x1810bf153 in ??? (???)
+???:?:?: 0xb06dffffffffffff in ??? (???)
+👑 Queen Trinity starting daemon mode (PID 19843)
+👑 Queen Trinity starting daemon mode (PID 63136)
+👑 Queen Trinity starting daemon mode (PID 71418)
+👑 Queen Trinity starting daemon mode (PID 86879)
+👑 Queen Trinity starting daemon mode (PID 90936)
+👑 Queen Trinity starting daemon mode (PID 73443)
+👑 Queen Trinity starting daemon mode (PID 84427)
+👑 Queen Trinity starting daemon mode (PID 7609)
+👑 Queen Trinity starting daemon mode (PID 69869)
+👑 Queen Trinity starting daemon mode (PID 91396)
+thread 88657485 panic: access of union field 'Exited' while field 'Signal' is active
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:412:23: 0x10220c493 in checkBuild (tri)
+    // Check if process exited cleanly (exit code 0)
+                      ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:357:36: 0x10220e3f3 in runQueenStart (tri)
+        const build_ok = checkBuild(allocator) catch false;
+                                   ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:29: 0x10220f4a3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+                            ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:42: 0x10259218f in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+                                         ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/start.zig:627:37: 0x1025a778f in main (tri)
+            const result = root.main() catch |err| {
+                                    ^
+???:?:?: 0x1810bf153 in ??? (???)
+???:?:?: 0x965c7fffffffffff in ??? (???)
+👑 Queen Trinity starting daemon mode (PID 38095)
+👑 Queen Trinity starting daemon mode (PID 67439)

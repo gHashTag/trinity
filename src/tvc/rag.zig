@@ -163,7 +163,7 @@ pub const RAGRetriever = struct {
                 self.allocator.free(item.key);
             }
             scores.deinit();
-        };
+        }
 
         var symbol_iter = self.symbols.iterator();
         while (symbol_iter.next()) |entry| {

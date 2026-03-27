@@ -1,0 +1,97 @@
+name: tri_bitmap
+version: "0.1.0"
+module: tri.bitmap
+description: "TRI Bitmap — fixed-size bit set"
+
+types:
+  Bitmap:
+    description: "Fixed-capacity bit set"
+    fields:
+      bits: "[]usize"
+      capacity: usize
+
+functions:
+  init:
+    params:
+      - name: capacity
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Bitmap"
+    description: "Create bitmap with n bits"
+
+  get:
+    params:
+      - name: bitmap
+        type: "Bitmap"
+      - name: index
+        type: "usize"
+    returns: "bool"
+    description: "Test bit at index"
+
+  set:
+    params:
+      - name: bitmap
+        type: "*Bitmap"
+      - name: index
+        type: "usize"
+    returns: "void"
+    description: "Set bit to 1"
+
+  clear:
+    params:
+      - name: bitmap
+        type: "*Bitmap"
+      - name: index
+        type: "usize"
+    returns: "void"
+    description: "Set bit to 0"
+
+  flip:
+    params:
+      - name: bitmap
+        type: "*Bitmap"
+      - name: index
+        type: "usize"
+    returns: "void"
+    description: "Toggle bit"
+
+  setAll:
+    params:
+      - name: bitmap
+        type: "*Bitmap"
+    returns: "void"
+    description: "Set all bits to 1"
+
+  clearAll:
+    params:
+      - name: bitmap
+        type: "*Bitmap"
+    returns: "void"
+    description: "Set all bits to 0"
+
+  count:
+    params:
+      - name: bitmap
+        type: "Bitmap"
+    returns: "usize"
+    description: "Count set bits (popcount)"
+
+  findFirst:
+    params:
+      - name: bitmap
+        type: "Bitmap"
+    returns: "?usize"
+    description: "Index of first set bit"
+
+  findLast:
+    params:
+      - name: bitmap
+        type: "Bitmap"
+    returns: "?usize"
+    description: "Index of last set bit"
+
+behaviors:
+  - name: compact
+    description: "Uses usize words for efficiency"
+    note: "O(n/word_size) operations"

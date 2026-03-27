@@ -1,0 +1,57 @@
+name: tri_url
+version: "0.1.0"
+module: tri.url
+description: "TRI URL — URL parsing and encoding"
+
+types:
+  Url:
+    description: "Parsed URL"
+    fields:
+      scheme: "[]const u8"
+      host: "[]const u8"
+      port: "?u16"
+      path: "[]const u8"
+      query: "[]const u8"
+      fragment: "[]const u8"
+
+functions:
+  parse:
+    params:
+      - name: str
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Url"
+    description: "Parse URL string"
+
+  encode:
+    params:
+      - name: component
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Percent-encode component"
+
+  decode:
+    params:
+      - name: encoded
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Percent-decode string"
+
+  toString:
+    params:
+      - name: url
+        type: "Url"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Reconstruct URL string"
+
+behaviors:
+  - name: rfc3986
+    description: "RFC 3986 compliant"
+    note: "URL parsing and encoding"

@@ -1,0 +1,47 @@
+name: tri_suffix_array
+version: "0.1.0"
+language: zig
+module: tri.suffix_array
+description: "Suffix Array for efficient string processing"
+
+types:
+  SuffixArray:
+    description: "Sorted suffix indices"
+    fields:
+      data: "[]usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  build:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: text
+        type: "[]const u8"
+    returns: "SuffixArray"
+    description: "Build suffix array using SA-IS simplified"
+
+  search:
+    params:
+      - name: sa
+        type: "*SuffixArray"
+      - name: text
+        type: "[]const u8"
+      - name: pattern
+        type: "[]const u8"
+    returns: "[]usize"
+    description: "Find all pattern occurrences via binary search"
+
+  deinit:
+    params:
+      - name: sa
+        type: "*SuffixArray"
+    returns: "void"
+    description: "Free array memory"
+
+behaviors:
+  - name: suffix_sorting
+    description: "Sort all suffixes by their starting index"
+    implementation: |
+      Suffix array SA[i] = starting position of i-th smallest suffix.
+      Binary search on SA for pattern matching.

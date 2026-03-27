@@ -5,7 +5,7 @@
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 // Golden identity: φ² + 1/φ² = 3
 //
-// Author: 
+// Author:
 // DO NOT EDIT - This file is auto-generated
 //
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -36,7 +36,7 @@ pub const PHOENIX: i64 = 999;
 
 /// Manages all panels
 pub const PanelSystem = struct {
-    panels: Array<GlassPanel, 8>,
+    panels: [8]GlassPanel,
     count: USize,
     active_panel: ?[]const u8,
     drag_panel: ?[]const u8,
@@ -65,8 +65,8 @@ export fn get_f64_buffer_ptr() [*]f64 {
 /// Trit - ternary digit (-1, 0, +1)
 pub const Trit = enum(i8) {
     negative = -1, // FALSE
-    zero = 0,      // UNKNOWN
-    positive = 1,  // TRUE
+    zero = 0, // UNKNOWN
+    positive = 1, // TRUE
 
     pub fn trit_and(a: Trit, b: Trit) Trit {
         return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
@@ -123,7 +123,7 @@ fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
 /// When: System startup
 /// Then: Initialize empty panel array
 pub fn init() !void {
-// Initialize empty panel array
+    // Initialize empty panel array
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -132,7 +132,7 @@ pub fn init() !void {
 /// When: Creating new panel
 /// Then: Add panel to array, return index
 pub fn spawn() !void {
-// Add panel to array, return index
+    // Add panel to array, return index
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -141,7 +141,7 @@ pub fn spawn() !void {
 /// When: Closing panel
 /// Then: Start closing animation, remove when done
 pub fn close() !void {
-// Start closing animation, remove when done
+    // Start closing animation, remove when done
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -150,7 +150,7 @@ pub fn close() !void {
 /// When: Each frame
 /// Then: Update all panels, handle drag/resize, scroll
 pub fn update() !void {
-// Update: Update all panels, handle drag/resize, scroll
+    // Update: Update all panels, handle drag/resize, scroll
     // Mutate state based on new data
     const state_changed = true;
     _ = state_changed;
@@ -160,7 +160,7 @@ pub fn update() !void {
 /// When: Rendering
 /// Then: Draw all open panels in z-order
 pub fn draw() !void {
-// Draw all open panels in z-order
+    // Draw all open panels in z-order
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -169,7 +169,7 @@ pub fn draw() !void {
 /// When: Focus request
 /// Then: Find existing panel of type or spawn new, bring to front
 pub fn focus_by_type() !void {
-// Find existing panel of type or spawn new, bring to front
+    // Find existing panel of type or spawn new, bring to front
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -178,7 +178,7 @@ pub fn focus_by_type() !void {
 /// When: JARVIS-style focus
 /// Then: Find/spawn panel, trigger JARVIS animation
 pub fn jarvis_focus() !void {
-// Find/spawn panel, trigger JARVIS animation
+    // Find/spawn panel, trigger JARVIS animation
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -187,7 +187,7 @@ pub fn jarvis_focus() !void {
 /// When: ESC pressed
 /// Then: Unfocus all panels, restore positions
 pub fn unfocus_all() !void {
-// Unfocus all panels, restore positions
+    // Unfocus all panels, restore positions
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -196,7 +196,7 @@ pub fn unfocus_all() !void {
 /// When: Panel clicked
 /// Then: Move panel to end of array (top z-order)
 pub fn bring_to_front() !void {
-// Move panel to end of array (top z-order)
+    // Move panel to end of array (top z-order)
     const result = @as([]const u8, "implemented");
     _ = result;
 }
@@ -205,24 +205,24 @@ pub fn bring_to_front() !void {
 /// When: Mouse pressed
 /// Then: Check for panel hit, start drag/resize if needed
 pub fn handle_mouse_down() !void {
-// Response: Check for panel hit, start drag/resize if needed
-_ = @as([]const u8, "Check for panel hit, start drag/resize if needed");
+    // Response: Check for panel hit, start drag/resize if needed
+    _ = @as([]const u8, "Check for panel hit, start drag/resize if needed");
 }
 
 /// Nothing
 /// When: Mouse released
 /// Then: End any drag/resize operation
 pub fn handle_mouse_up() !void {
-// Response: End any drag/resize operation
-_ = @as([]const u8, "End any drag/resize operation");
+    // Response: End any drag/resize operation
+    _ = @as([]const u8, "End any drag/resize operation");
 }
 
 /// Mouse x, y
 /// When: Mouse moved while dragging/resizing
 /// Then: Update panel position/size
 pub fn handle_mouse_move() !void {
-// Response: Update panel position/size
-_ = @as([]const u8, "Update panel position/size");
+    // Response: Update panel position/size
+    _ = @as([]const u8, "Update panel position/size");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -230,109 +230,109 @@ _ = @as([]const u8, "Update panel position/size");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "init_behavior" {
-// Given: Nothing
-// When: System startup
-// Then: Initialize empty panel array
-// Test init: verify lifecycle function exists
-try std.testing.expect(@TypeOf(init) != void);
+    // Given: Nothing
+    // When: System startup
+    // Then: Initialize empty panel array
+    // Test init: verify lifecycle function exists
+    try std.testing.expect(@TypeOf(init) != void);
 }
 
 test "spawn_behavior" {
-// Given: PanelType, x, y, width, height, title
-// When: Creating new panel
-// Then: Add panel to array, return index
-// Test spawn: verify behavior is callable
-const func = @TypeOf(spawn);
+    // Given: PanelType, x, y, width, height, title
+    // When: Creating new panel
+    // Then: Add panel to array, return index
+    // Test spawn: verify behavior is callable
+    const func = @TypeOf(spawn);
     try std.testing.expect(func != void);
 }
 
 test "close_behavior" {
-// Given: Panel index
-// When: Closing panel
-// Then: Start closing animation, remove when done
-// Test close: verify behavior is callable
-const func = @TypeOf(close);
+    // Given: Panel index
+    // When: Closing panel
+    // Then: Start closing animation, remove when done
+    // Test close: verify behavior is callable
+    const func = @TypeOf(close);
     try std.testing.expect(func != void);
 }
 
 test "update_behavior" {
-// Given: dt, time, mouse_x, mouse_y, mouse_pressed, mouse_down, mouse_released, mouse_wheel
-// When: Each frame
-// Then: Update all panels, handle drag/resize, scroll
-// Test update: verify behavior is callable
-const func = @TypeOf(update);
+    // Given: dt, time, mouse_x, mouse_y, mouse_pressed, mouse_down, mouse_released, mouse_wheel
+    // When: Each frame
+    // Then: Update all panels, handle drag/resize, scroll
+    // Test update: verify behavior is callable
+    const func = @TypeOf(update);
     try std.testing.expect(func != void);
 }
 
 test "draw_behavior" {
-// Given: Time, font
-// When: Rendering
-// Then: Draw all open panels in z-order
-// Test draw: verify behavior is callable
-const func = @TypeOf(draw);
+    // Given: Time, font
+    // When: Rendering
+    // Then: Draw all open panels in z-order
+    // Test draw: verify behavior is callable
+    const func = @TypeOf(draw);
     try std.testing.expect(func != void);
 }
 
 test "focus_by_type_behavior" {
-// Given: PanelType, x, y, width, height, title
-// When: Focus request
-// Then: Find existing panel of type or spawn new, bring to front
-// Test focus_by_type: verify behavior is callable
-const func = @TypeOf(focus_by_type);
+    // Given: PanelType, x, y, width, height, title
+    // When: Focus request
+    // Then: Find existing panel of type or spawn new, bring to front
+    // Test focus_by_type: verify behavior is callable
+    const func = @TypeOf(focus_by_type);
     try std.testing.expect(func != void);
 }
 
 test "jarvis_focus_behavior" {
-// Given: PanelType, x, y, width, height, title
-// When: JARVIS-style focus
-// Then: Find/spawn panel, trigger JARVIS animation
-// Test jarvis_focus: verify behavior is callable
-const func = @TypeOf(jarvis_focus);
+    // Given: PanelType, x, y, width, height, title
+    // When: JARVIS-style focus
+    // Then: Find/spawn panel, trigger JARVIS animation
+    // Test jarvis_focus: verify behavior is callable
+    const func = @TypeOf(jarvis_focus);
     try std.testing.expect(func != void);
 }
 
 test "unfocus_all_behavior" {
-// Given: Nothing
-// When: ESC pressed
-// Then: Unfocus all panels, restore positions
-// Test unfocus_all: verify behavior is callable
-const func = @TypeOf(unfocus_all);
+    // Given: Nothing
+    // When: ESC pressed
+    // Then: Unfocus all panels, restore positions
+    // Test unfocus_all: verify behavior is callable
+    const func = @TypeOf(unfocus_all);
     try std.testing.expect(func != void);
 }
 
 test "bring_to_front_behavior" {
-// Given: Panel index
-// When: Panel clicked
-// Then: Move panel to end of array (top z-order)
-// Test bring_to_front: verify behavior is callable
-const func = @TypeOf(bring_to_front);
+    // Given: Panel index
+    // When: Panel clicked
+    // Then: Move panel to end of array (top z-order)
+    // Test bring_to_front: verify behavior is callable
+    const func = @TypeOf(bring_to_front);
     try std.testing.expect(func != void);
 }
 
 test "handle_mouse_down_behavior" {
-// Given: Mouse x, y
-// When: Mouse pressed
-// Then: Check for panel hit, start drag/resize if needed
-// Test handle_mouse_down: verify behavior is callable
-const func = @TypeOf(handle_mouse_down);
+    // Given: Mouse x, y
+    // When: Mouse pressed
+    // Then: Check for panel hit, start drag/resize if needed
+    // Test handle_mouse_down: verify behavior is callable
+    const func = @TypeOf(handle_mouse_down);
     try std.testing.expect(func != void);
 }
 
 test "handle_mouse_up_behavior" {
-// Given: Nothing
-// When: Mouse released
-// Then: End any drag/resize operation
-// Test handle_mouse_up: verify behavior is callable
-const func = @TypeOf(handle_mouse_up);
+    // Given: Nothing
+    // When: Mouse released
+    // Then: End any drag/resize operation
+    // Test handle_mouse_up: verify behavior is callable
+    const func = @TypeOf(handle_mouse_up);
     try std.testing.expect(func != void);
 }
 
 test "handle_mouse_move_behavior" {
-// Given: Mouse x, y
-// When: Mouse moved while dragging/resizing
-// Then: Update panel position/size
-// Test handle_mouse_move: verify behavior is callable
-const func = @TypeOf(handle_mouse_move);
+    // Given: Mouse x, y
+    // When: Mouse moved while dragging/resizing
+    // Then: Update panel position/size
+    // Test handle_mouse_move: verify behavior is callable
+    const func = @TypeOf(handle_mouse_move);
     try std.testing.expect(func != void);
 }
 

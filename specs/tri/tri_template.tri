@@ -1,0 +1,44 @@
+name: tri_template
+version: "0.1.0"
+module: tri.template
+description: "TRI Template — text templating"
+
+types:
+  Template:
+    description: "Compiled template"
+    fields:
+      parts: "[]TemplatePart"
+    description: "Template parts"
+
+  TemplatePart:
+    description: "Template part"
+    fields:
+      is_literal: "bool"
+      text: "[]const u8"
+      variable: "[]const u8"
+
+functions:
+  compile:
+    params:
+      - name: source
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Template"
+    description: "Compile template"
+
+  render:
+    params:
+      - name: template
+        type: "Template"
+      - name: context
+        type: "std.StringHashMap([]const u8)"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Render template with context"
+
+behaviors:
+  - name: variables
+    description: "{{variable}} syntax"
+    note: "Double brace delimiters"

@@ -1,0 +1,79 @@
+name: tri_bitset
+version: "0.1.0"
+language: zig
+module: tri.bitset
+description: "Bitset for boolean operations"
+
+types:
+  Bitset:
+    description: "Fixed-size bitset"
+    fields:
+      data: "[]usize"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: bit_count
+        type: "usize"
+    returns: "Bitset"
+    description: "Create bitset for n bits"
+
+  set:
+    params:
+      - name: bs
+        type: "*Bitset"
+      - name: index
+        type: "usize"
+    returns: "void"
+    description: "Set bit to 1"
+
+  clear:
+    params:
+      - name: bs
+        type: "*Bitset"
+      - name: index
+        type: "usize"
+    returns: "void"
+    description: "Set bit to 0"
+
+  test:
+    params:
+      - name: bs
+        type: "*Bitset"
+      - name: index
+        type: "usize"
+    returns: "bool"
+    description: "Check if bit is set"
+
+  union:
+    params:
+      - name: a
+        type: "*Bitset"
+      - name: b
+        type: "*Bitset"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "Bitset"
+    description: "Bitwise OR"
+
+  intersect:
+    params:
+      - name: a
+        type: "*Bitset"
+      - name: b
+        type: "*Bitset"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "Bitset"
+    description: "Bitwise AND"
+
+  deinit:
+    params:
+      - name: bs
+        type: "*Bitset"
+    returns: "void"
+    description: "Free bitset"

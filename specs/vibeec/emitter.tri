@@ -1,0 +1,41 @@
+name: vibeec_emitter
+version: "0.2.0"
+module: vibeec.emitter
+description: "VIBEE emitter — Zig code generation from Tri specs"
+
+types:
+  CodeBuilder:
+    description: "Incremental Zig code builder"
+    fields:
+      buffer: []u8
+      allocator: std.mem.Allocator
+
+  EmitterResult:
+    description: "Result of code generation"
+    fields:
+      code: []const u8
+      errors: []const u8
+
+functions:
+  emitZig:
+    params:
+      - name: spec
+        type: "TriSpec"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!EmitterResult"
+    description: "Generate Zig code from Tri specification"
+
+  buildCode:
+    params:
+      - name: builder
+        type: "*CodeBuilder"
+      - name: code
+        type: "[]const u8"
+    returns: "!void"
+    description: "Append code to builder buffer"
+
+behaviors:
+  - name: zig_target
+    description: "Generates Zig 0.15 compatible code"
+    note: "Handles API differences from Zig 0.14"

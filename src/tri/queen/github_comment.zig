@@ -22,7 +22,7 @@ pub fn createIssueComment(allocator: Allocator, data: CommentData) !void {
     const url = try std.fmt.allocPrint(
         allocator,
         "https://api.github.com/{s}/{s}/{s}",
-        .{REPO, data.issue_number, ISSUE_COMMENT_API},
+        .{ REPO, data.issue_number, ISSUE_COMMENT_API },
     );
 
     const body_json = try std.json.stringifyAlloc(
@@ -59,11 +59,14 @@ pub fn createIssueComment(allocator: Allocator, data: CommentData) !void {
         const error_body = try response.body.reader.readAllAlloc(allocator, 1024) catch "";
         defer allocator.free(error_body);
 
-        std.debug.print("{s}Failed to create comment: {d}{s}\n", .{ .error(31m), error_body });
+        std.debug.print("\x1b[31mFailed to create comment: {d}\x1b[0m\n", .{response.status});
+        if (error_body.len > 0) {
+            std.debug.print("Response: {s}\n", .{error_body});
+        }
         return;
     }
 
-    std.debug.print("{s}✅ Comment created on issue #{d}{s}\n", .{ .error(32m, data.issue_number, .error(32m });
+    std.debug.print("\x1b[32m✅ Comment created on issue #{d}\x1b[0m\n", .{data.issue_number});
 }
 
 /// Format Lotus Cycle progress comment

@@ -1,0 +1,76 @@
+name: tri_args
+version: "0.1.0"
+module: tri.args
+description: "TRI argument parser — command-line argument parsing"
+
+types:
+  Arg:
+    description: "Single argument definition"
+    fields:
+      name: []const u8
+      short: ?u8
+      long: ?[]const u8
+      description: []const u8
+      required: bool
+
+  ArgValue:
+    description: "Parsed argument value"
+    fields:
+      name: []const u8
+      value: ?[]const u8
+      present: bool
+
+  ParseResult:
+    description: "Result of argument parsing"
+    fields:
+      positional: [][]const u8
+      named: []ArgValue
+      error: ?[]const u8
+
+functions:
+  parse:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: args
+        type: "[][]const u8"
+      - name: spec
+        type: "[]Arg"
+    returns: "!ParseResult"
+    description: "Parse command-line arguments"
+
+  hasFlag:
+    params:
+      - name: result
+        type: "ParseResult"
+      - name: name
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check if flag was present"
+
+  getValue:
+    params:
+      - name: result
+        type: "ParseResult"
+      - name: name
+        type: "[]const u8"
+    returns: "?[]const u8"
+    description: "Get value for named argument"
+
+  getPositional:
+    params:
+      - name: result
+        type: "ParseResult"
+      - name: index
+        type: "usize"
+    returns: "?[]const u8"
+    description: "Get positional argument by index"
+
+behaviors:
+  - name: gnu_style
+    description: "GNU-style arguments: --long value, -s value"
+    note: "Supports both short (-f) and long (--file) forms"
+
+  - name: double_dash
+    description: "-- separates options from positional args"
+    note: "Everything after -- is treated as positional"

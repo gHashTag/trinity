@@ -1,0 +1,58 @@
+name: tri_priority_queue
+version: "0.1.0"
+language: zig
+module: tri.priority_queue
+description: "Priority queue (binary heap)"
+
+types:
+  PriorityQueue:
+    description: "Max priority queue"
+    fields:
+      data: "[]i64"
+      size: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "PriorityQueue"
+    description: "Create empty priority queue"
+
+  enqueue:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Insert with priority"
+
+  dequeue:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "i64"
+    description: "Remove max element"
+
+  peek:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "i64"
+    description: "Get max without removing"
+
+  isEmpty:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "bool"
+    description: "Check if empty"
+
+  deinit:
+    params:
+      - name: pq
+        type: "*PriorityQueue"
+    returns: "void"
+    description: "Free queue"

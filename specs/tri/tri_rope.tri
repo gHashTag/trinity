@@ -1,0 +1,51 @@
+name: tri_rope
+version: "0.1.0"
+module: tri.rope
+description: "TRI Rope — immutable string for efficient edits"
+
+types:
+  Rope:
+    description: "Binary tree string representation"
+    fields:
+      is_leaf: bool
+      text: "[]const u8"
+      left: "*Rope"
+      right: "*Rope"
+      length: usize
+
+functions:
+  empty:
+    returns: "Rope"
+    description: "Create empty rope"
+
+  fromString:
+    params:
+      - name: str
+        type: "[]const u8"
+    returns: "Rope"
+    description: "Create rope from string"
+
+  concat:
+    params:
+      - name: a
+        type: "Rope"
+      - name: b
+        type: "Rope"
+    returns: "Rope"
+    description: "Concatenate two ropes"
+
+  slice:
+    params:
+      - name: rope
+        type: "Rope"
+      - name: start
+        type: "usize"
+      - name: end
+        type: "usize"
+    returns: "Rope"
+    description: "Extract substring"
+
+behaviors:
+  - name: balanced
+    description: "Tree stays balanced"
+    note: "O(log n) concatenation"

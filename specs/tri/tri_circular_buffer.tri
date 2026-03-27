@@ -1,0 +1,55 @@
+name: tri_circular_buffer
+version: "0.1.0"
+language: zig
+module: tri.circular_buffer
+description: "Circular buffer / ring buffer"
+
+types:
+  CircularBuffer:
+    description: "Fixed-size ring buffer"
+    fields:
+      data: "[]i64"
+      head: "usize"
+      tail: "usize"
+      capacity: "usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  init:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: capacity
+        type: "usize"
+    returns: "CircularBuffer"
+    description: "Create buffer with given capacity"
+
+  write:
+    params:
+      - name: buf
+        type: "*CircularBuffer"
+      - name: value
+        type: "i64"
+    returns: "!void"
+    description: "Write value (overwrites if full)"
+
+  read:
+    params:
+      - name: buf
+        type: "*CircularBuffer"
+    returns: "i64"
+    description: "Read next value"
+
+  isEmpty:
+    params:
+      - name: buf
+        type: "*CircularBuffer"
+    returns: "bool"
+    description: "Check if buffer is empty"
+
+  deinit:
+    params:
+      - name: buf
+        type: "*CircularBuffer"
+    returns: "void"
+    description: "Free buffer"

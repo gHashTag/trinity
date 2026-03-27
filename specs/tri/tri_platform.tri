@@ -1,0 +1,59 @@
+name: tri_platform
+version: "0.1.0"
+module: tri.platform
+description: "TRI platform utilities — OS and architecture detection"
+
+types:
+  Os:
+    description: "Operating system"
+    enum:
+      - linux
+      - windows
+      - macos
+      - bsd
+      - unknown
+
+  Arch:
+    description: "CPU architecture"
+    enum:
+      - x86_64
+      - aarch64
+      - arm
+      - riscv
+      - unknown
+
+  Platform:
+    description: "Combined platform info"
+    fields:
+      os: Os
+      arch: Arch
+
+functions:
+  getPlatform:
+    returns: "Platform"
+    description: "Get current platform"
+
+  isLinux:
+    returns: "bool"
+    description: "Check if running on Linux"
+
+  isWindows:
+    returns: "bool"
+    description: "Check if running on Windows"
+
+  isMac:
+    returns: "bool"
+    description: "Check if running on macOS"
+
+  is64Bit:
+    returns: "bool"
+    description: "Check if 64-bit architecture"
+
+  pathSeparator:
+    returns: "u8"
+    description: "Get path separator for platform"
+
+behaviors:
+  - name: compile_time
+    description: "Platform detected at compile time"
+    note: "Uses builtin.os and builtin.cpu"

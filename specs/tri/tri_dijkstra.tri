@@ -1,0 +1,25 @@
+name: tri_dijkstra
+version: "0.1.0"
+language: zig
+module: tri.dijkstra
+description: "Dijkstra's shortest path algorithm"
+
+types:
+  DijkstraResult:
+    description: "Shortest path result"
+    fields:
+      distance: "[]f64"
+      parent: "[]?usize"
+      allocator: "std.mem.Allocator"
+
+functions:
+  shortestPath:
+    params:
+      - name: graph
+        type: "*Graph"
+      - name: start
+        type: "usize"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "DijkstraResult"
+    description: "Find shortest paths from start to all vertices"

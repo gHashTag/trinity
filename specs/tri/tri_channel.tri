@@ -1,0 +1,48 @@
+name: tri_channel
+version: "0.1.0"
+module: tri.channel
+description: "TRI Channel — CSP-style communication"
+
+types:
+  Channel(T):
+    description: "Async communication channel"
+    fields:
+      capacity: usize
+      sender_count: usize
+      receiver_count: usize
+
+functions:
+  newChannel:
+    params:
+      - name: capacity
+        type: "usize"
+    returns: "Channel(T)"
+    description: "Create buffered channel"
+
+  send:
+    params:
+      - name: channel
+        type: "Channel(T)"
+      - name: value
+        type: "T"
+    returns: "bool"
+    description: "Send value, return true if successful"
+
+  recv:
+    params:
+      - name: channel
+        type: "Channel(T)"
+    returns: "Maybe(T)"
+    description: "Receive value, empty if closed"
+
+  close:
+    params:
+      - name: channel
+        type: "Channel(T)"
+    returns: "void"
+    description: "Close channel"
+
+behaviors:
+  - name: go_semantics
+    description: "Go-like channel semantics"
+    note: "Blocking send on full, blocking recv on empty"

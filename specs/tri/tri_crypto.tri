@@ -1,0 +1,44 @@
+name: tri_crypto
+version: "0.1.0"
+module: tri.crypto
+description: "TRI Crypto — cryptographic primitives"
+
+types:
+  KeyPair:
+    description: "Public/private key pair"
+    fields:
+      public_key: "[]u8"
+      private_key: "[]u8"
+
+functions:
+  generateKeyPair:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!KeyPair"
+    description: "Generate new key pair"
+
+  sha256:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "SHA-256 hash"
+
+  hmac:
+    params:
+      - name: key
+        type: "[]const u8"
+      - name: message
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "HMAC signature"
+
+behaviors:
+  - name: secure
+    description: "Cryptographic operations"
+    note: "Uses std.crypto primitives"

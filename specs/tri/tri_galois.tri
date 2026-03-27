@@ -1,0 +1,50 @@
+name: tri_galois
+version: "0.1.0"
+language: zig
+module: tri.galois
+description: "GF(256) arithmetic for Reed-Solomon"
+
+types:
+  GF256:
+    description: "Galois Field GF(2^8)"
+    fields:
+      value: "u8"
+
+functions:
+  add:
+    params:
+      - name: a
+        type: "GF256"
+      - name: b
+        type: "GF256"
+    returns: "GF256"
+    description: "Addition is XOR"
+
+  mul:
+    params:
+      - name: a
+        type: "GF256"
+      - name: b
+        type: "GF256"
+    returns: "GF256"
+    description: "Multiplication in GF(256)"
+
+  exp:
+    params:
+      - name: a
+        type: "GF256"
+      - name: power
+        type: "u8"
+    returns: "GF256"
+    description: "Exponentiation"
+
+  inv:
+    params:
+      - name: a
+        type: "GF256"
+    returns: "GF256"
+    description: "Multiplicative inverse"
+
+behaviors:
+  - name: "irreducible_polynomial"
+    description: "x^8 + x^4 + x^3 + x + 1 (0x11B in AES)"

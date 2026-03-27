@@ -1,0 +1,37 @@
+name: tri_html
+version: "0.1.0"
+module: tri.html
+description: "TRI HTML — web markup"
+
+types:
+  HtmlNode:
+    description: "HTML element"
+    fields:
+      tag: "[]const u8"
+      attributes: "std.StringHashMap([]const u8)"
+      children: "[]HtmlNode"
+      inner_text: "[]const u8"
+
+functions:
+  parse:
+    params:
+      - name: html
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!HtmlNode"
+    description: "Parse HTML document"
+
+  querySelector:
+    params:
+      - name: node
+        type: "HtmlNode"
+      - name: selector
+        type: "[]const u8"
+    returns: "?HtmlNode"
+    description: "Find element by CSS selector"
+
+behaviors:
+  - name: subset
+    description: "HTML5 subset"
+    note: "Common elements only"

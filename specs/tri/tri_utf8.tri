@@ -1,0 +1,53 @@
+name: tri_utf8
+version: "0.1.0"
+module: tri.utf8
+description: "TRI UTF-8 — Unicode string handling"
+
+types:
+  Codepoint:
+    description: "Unicode code point"
+    underlying: "u21"
+
+  Rune:
+    description: "UTF-8 encoded character"
+    fields:
+      bytes: "[4]u8"
+      len: "u8"
+
+functions:
+  decode:
+    params:
+      - name: str
+        type: "[]const u8"
+      - name: index
+        type: "usize"
+    returns: "Rune"
+    description: "Decode UTF-8 character at index"
+
+  encode:
+    params:
+      - name: codepoint
+        type: "Codepoint"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Encode codepoint to UTF-8"
+
+  countCodepoints:
+    params:
+      - name: str
+        type: "[]const u8"
+    returns: "usize"
+    description: "Count Unicode characters"
+
+  validate:
+    params:
+      - name: str
+        type: "[]const u8"
+    returns: "bool"
+    description: "Check valid UTF-8"
+
+behaviors:
+  - name: unicode
+    description: "Full Unicode support"
+    note: "Handles surrogate pairs, combining marks"

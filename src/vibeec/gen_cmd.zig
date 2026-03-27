@@ -250,9 +250,8 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     const source = try file.readToEndAlloc(allocator, 1024 * 1024);
     defer allocator.free(source);
 
-    var parser = vibee_parser.VibeeParser.init(allocator, source);
-    var spec = try parser.parse();
-    defer spec.deinit();
+    var spec = try vibee_parser.parse(allocator, source);
+    defer spec.deinit(allocator);
 
     const dir_path = std.fs.path.dirname(output_path) orelse ".";
     std.fs.cwd().makePath(dir_path) catch {};
@@ -260,23 +259,23 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     const out_file = try std.fs.cwd().createFile(output_path, .{});
     defer out_file.close();
 
-    if (std.mem.eql(u8, spec.language, "verilog") or std.mem.eql(u8, spec.language, "varlog")) {
-        const output = try verilog_codegen.generateVerilog(allocator, &spec);
+    if (std.mem.eql(u8, spec.spec.language, "verilog") or std.mem.eql(u8, spec.spec.language, "varlog")) {
+        const output = try verilog_codegen.generateVerilog(allocator, &spec.spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
-    } else if (isMultiLangTarget(spec.language)) {
-        const output = try generateMultiLang(allocator, &spec);
+    } else if (isMultiLangTarget(spec.spec.language)) {
+        const output = try generateMultiLang(allocator, &spec.spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
     } else {
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
-        const output = try codegen.generate(&spec);
+        const output = try codegen.generate(&spec.spec);
         defer allocator.free(output);
         try out_file.writeAll(output);
     }
 
     // AGENT MU: Post-generation verification (Zig code only)
-    if (std.mem.eql(u8, spec.language, "zig")) {
+    if (std.mem.eql(u8, spec.spec.language, "zig")) {
         try out_file.sync();
 
         const config = agent_mu.Config{

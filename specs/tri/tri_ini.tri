@@ -1,0 +1,65 @@
+name: tri_ini
+version: "0.1.0"
+module: tri.ini
+description: "TRI INI — configuration file format"
+
+types:
+  IniFile:
+    description: "INI configuration"
+    fields:
+      sections: "std.StringHashMap(IniSection)"
+
+  IniSection:
+    description: "INI section"
+    fields:
+      keys: "std.StringHashMap([]const u8)"
+
+functions:
+  parse:
+    params:
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!IniFile"
+    description: "Parse INI format"
+
+  get:
+    params:
+      - name: ini
+        type: "IniFile"
+      - name: section
+        type: "[]const u8"
+      - name: key
+        type: "[]const u8"
+    returns: "?[]const u8"
+    description: "Get value or null"
+
+  set:
+    params:
+      - name: ini
+        type: "*IniFile"
+      - name: section
+        type: "[]const u8"
+      - name: key
+        type: "[]const u8"
+      - name: value
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!void"
+    description: "Set key-value pair"
+
+  serialize:
+    params:
+      - name: ini
+        type: "IniFile"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Convert to INI string"
+
+behaviors:
+  - name: simple
+    description: "Simple key-value format"
+    note: "Sections with key=value pairs"

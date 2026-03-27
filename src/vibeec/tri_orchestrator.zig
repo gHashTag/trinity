@@ -17,24 +17,24 @@ const std = @import("std");
 // SACRED CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PHI = 1.618033988749895;       // Golden ratio
-pub const MU = 0.0382;                    // Sacred learning rate
-pub const CHI = 0.23607;                  // Chi constant
-pub const SIGMA = 1.618;                  // Sigma
-pub const EPSILON = 0.333;                // Epsilon
-pub const SACRED_THRESHOLD = 0.95;       // Quality gate threshold
-pub const TOTAL_LINKS = 999;              // PHI LOOP total links
-pub const MAX_SUB_AGENTS = 200;           // Maximum sub-agents
-pub const CIRCUIT_BREAK_THRESHOLD = 10;  // Max failures before circuit break
+pub const PHI = 1.618033988749895; // Golden ratio
+pub const MU = 0.0382; // Sacred learning rate
+pub const CHI = 0.23607; // Chi constant
+pub const SIGMA = 1.618; // Sigma
+pub const EPSILON = 0.333; // Epsilon
+pub const SACRED_THRESHOLD = 0.95; // Quality gate threshold
+pub const TOTAL_LINKS = 999; // PHI LOOP total links
+pub const MAX_SUB_AGENTS = 200; // Maximum sub-agents
+pub const CIRCUIT_BREAK_THRESHOLD = 10; // Max failures before circuit break
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRINITY REALMS
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Realm = enum {
-    razum,      // Mind - Gold #ffd700
-    materiya,   // Matter - Cyan #00ccff
-    dukh,       // Spirit - Purple #aa66ff
+    razum, // Mind - Gold #ffd700
+    materiya, // Matter - Cyan #00ccff
+    dukh, // Spirit - Purple #aa66ff
 
     pub fn color(self: Realm) []const u8 {
         return switch (self) {
@@ -54,9 +54,9 @@ pub const Realm = enum {
 };
 
 pub const NodeType = enum {
-    alpha,  // Razum
-    beta,   // Materiya
-    gamma,  // Dukh
+    alpha, // Razum
+    beta, // Materiya
+    gamma, // Dukh
 
     pub fn realm(self: NodeType) Realm {
         return switch (self) {
@@ -76,8 +76,8 @@ pub const NodeType = enum {
 
     pub fn phiWeight(self: NodeType) f64 {
         return switch (self) {
-            .alpha => PHI,       // φ for intelligence
-            .beta => 1.0,        // 1 for neutral
+            .alpha => PHI, // φ for intelligence
+            .beta => 1.0, // 1 for neutral
             .gamma => 1.0 / PHI, // 1/φ for action
         };
     }
@@ -93,7 +93,7 @@ pub const OrchestratorPhase = enum {
     plan,
     spec_create,
     gen,
-    test,
+    testing,
     bench,
     verdict,
     git,
@@ -108,7 +108,7 @@ pub const OrchestratorPhase = enum {
             .plan => "PLAN",
             .spec_create => "SPEC_CREATE",
             .gen => "GEN",
-            .test => "TEST",
+            .testing => "TEST",
             .bench => "BENCH",
             .verdict => "VERDICT",
             .git => "GIT",
@@ -120,7 +120,7 @@ pub const OrchestratorPhase = enum {
 };
 
 pub const LoopDecision = enum {
-    continue,
+    cont,
     stop,
     retry,
     skip,
@@ -215,7 +215,7 @@ pub const WorkflowResult = struct {
     phase: OrchestratorPhase,
     success: bool,
     output: []const u8,
-    error: ?[]const u8,
+    err_msg: ?[]const u8,
     duration_ms: u64,
     timestamp: i64,
 
@@ -224,7 +224,7 @@ pub const WorkflowResult = struct {
             .phase = phase,
             .success = false,
             .output = "",
-            .error = null,
+            .err_msg = null,
             .duration_ms = 0,
             .timestamp = std.time.timestamp(),
         };
@@ -241,8 +241,8 @@ pub const VerdictResult = struct {
 
     pub fn passes(self: *const VerdictResult) bool {
         return self.passes_threshold and
-               self.trinity_identity and
-               self.confidence >= 0.95;
+            self.trinity_identity and
+            self.confidence >= 0.95;
     }
 };
 
@@ -280,7 +280,7 @@ pub const ClusterNode = struct {
 
     pub fn isHealthy(self: *const ClusterNode) bool {
         return self.health >= 0.5 and
-               (self.status == .active or self.status == .busy);
+            (self.status == .active or self.status == .busy);
     }
 
     pub fn canAcceptTask(self: *const ClusterNode) bool {
@@ -322,7 +322,7 @@ pub const TriOrchestrator = struct {
             .status = .initializing,
             .health = 1.0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"routing", "planning", "analysis"},
+            .capabilities = &[_][]const u8{ "routing", "planning", "analysis" },
         };
 
         nodes[1] = ClusterNode{
@@ -332,7 +332,7 @@ pub const TriOrchestrator = struct {
             .status = .initializing,
             .health = 1.0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"storage", "memory", "data"},
+            .capabilities = &[_][]const u8{ "storage", "memory", "data" },
         };
 
         nodes[2] = ClusterNode{
@@ -342,7 +342,7 @@ pub const TriOrchestrator = struct {
             .status = .initializing,
             .health = 1.0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"execution", "tools", "actions"},
+            .capabilities = &[_][]const u8{ "execution", "tools", "actions" },
         };
 
         return TriOrchestrator{
@@ -384,7 +384,7 @@ pub const TriOrchestrator = struct {
             std.debug.print("║  TRI CLI ONLY ORCHESTRATOR v8.27 — STRICT MODE                 ║\n", .{});
             std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
             std.debug.print("║  Task: {s:55} ║\n", .{task});
-            std.debug.print("║  φ² + 1/φ² = {d:.3} {s:40} ║\n", .{PHI * PHI + 1.0 / (PHI * PHI), if (verifyTrinityIdentity()) "✓" else "✗"});
+            std.debug.print("║  φ² + 1/φ² = {d:.3} {s:40} ║\n", .{ PHI * PHI + 1.0 / (PHI * PHI), if (verifyTrinityIdentity()) "✓" else "✗" });
             std.debug.print("╚═══════════════════════════════════════════════════════════════╝\n\n", .{});
         }
 
@@ -395,69 +395,69 @@ pub const TriOrchestrator = struct {
             }
             var result = WorkflowResult.init(.idle);
             result.success = false;
-            result.error = try self.allocator.dupe(u8, "Circuit breaker is open");
+            result.err_msg = try self.allocator.dupe(u8, "Circuit breaker is open");
             return result;
         }
 
         // Phase 1: tri decompose <task>
         self.state.current_phase = .decompose;
-        const decompose_result = try self.executeTriCommand(&.{"tri", "decompose", task});
+        const decompose_result = try self.executeTriCommand(&.{ "tri", "decompose", task });
         if (!decompose_result.success) {
             return self.handleFailure(.decompose, decompose_result);
         }
 
         // Phase 2: tri plan <subtasks>
         self.state.current_phase = .plan;
-        const plan_result = try self.executeTriCommand(&.{"tri", "plan"});
+        const plan_result = try self.executeTriCommand(&.{ "tri", "plan" });
         if (!plan_result.success) {
             return self.handleFailure(.plan, plan_result);
         }
 
         // Phase 3: tri spec create <plan>
         self.state.current_phase = .spec_create;
-        const spec_result = try self.executeTriCommand(&.{"tri", "spec-create", "auto"});
+        const spec_result = try self.executeTriCommand(&.{ "tri", "spec-create", "auto" });
         if (!spec_result.success) {
             return self.handleFailure(.spec_create, spec_result);
         }
 
         // Phase 4: tri gen <spec.tri>
         self.state.current_phase = .gen;
-        const gen_result = try self.executeTriCommand(&.{"tri", "gen", "auto.tri"});
+        const gen_result = try self.executeTriCommand(&.{ "tri", "gen", "auto.tri" });
         if (!gen_result.success) {
             return self.handleFailure(.gen, gen_result);
         }
 
         // Phase 5: tri test
-        self.state.current_phase = .test;
-        const test_result = try self.executeTriCommand(&.{"tri", "test"});
+        self.state.current_phase = .testing;
+        const test_result = try self.executeTriCommand(&.{ "tri", "test" });
         if (!test_result.success) {
-            return self.handleFailure(.test, test_result);
+            return self.handleFailure(.testing, test_result);
         }
 
         // Phase 6: tri bench
         self.state.current_phase = .bench;
-        const bench_result = try self.executeTriCommand(&.{"tri", "bench"});
+        const bench_result = try self.executeTriCommand(&.{ "tri", "bench" });
         if (!bench_result.success) {
             return self.handleFailure(.bench, bench_result);
         }
 
         // Phase 7: tri verdict
         self.state.current_phase = .verdict;
-        const verdict_result = try self.executeTriCommand(&.{"tri", "verdict"});
+        const verdict_result = try self.executeTriCommand(&.{ "tri", "verdict" });
         if (!verdict_result.success) {
             return self.handleFailure(.verdict, verdict_result);
         }
 
         // Phase 8: tri git commit (if verdict passes)
         self.state.current_phase = .git;
-        const git_result = try self.executeTriCommand(&.{"tri", "git", "commit", "-m", "auto-commit from orchestrator"});
+        const git_result = try self.executeTriCommand(&.{ "tri", "git", "commit", "-m", "auto-commit from orchestrator" });
         if (!git_result.success) {
             return self.handleFailure(.git, git_result);
         }
 
         // Phase 9: tri loop decide
         self.state.current_phase = .loop_decide;
-        const decide_result = try self.executeTriCommand(&.{"tri", "loop-decide"});
+        const decide_result = try self.executeTriCommand(&.{ "tri", "loop-decide" });
         if (!decide_result.success) {
             return self.handleFailure(.loop_decide, decide_result);
         }
@@ -491,7 +491,7 @@ pub const TriOrchestrator = struct {
             result.output = try self.allocator.dupe(u8, cmd_result.output);
         } else {
             result.success = false;
-            result.error = try self.allocator.dupe(u8, cmd_result.error_message orelse "Unknown error");
+            result.err_msg = try self.allocator.dupe(u8, cmd_result.error_message orelse "Unknown error");
             result.output = try self.allocator.dupe(u8, cmd_result.output);
         }
 
@@ -550,10 +550,10 @@ pub const TriOrchestrator = struct {
     /// Handle workflow failure with rollback
     fn handleFailure(self: *TriOrchestrator, phase: OrchestratorPhase, result: WorkflowResult) !WorkflowResult {
         self.state.failed_links += 1;
-        self.circuit_breaker.trip(result.error orelse "Unknown error");
+        self.circuit_breaker.trip(result.err_msg orelse "Unknown error");
 
         if (self.config.enable_rollback) {
-            _ = try self.executeTriCommand(&.{"tri", "git", "reset", "--hard", "HEAD"});
+            _ = try self.executeTriCommand(&.{ "tri", "git", "reset", "--hard", "HEAD" });
         }
 
         if (self.circuit_breaker.shouldTrip()) {
@@ -567,7 +567,7 @@ pub const TriOrchestrator = struct {
 
         var failed_result = WorkflowResult.init(phase);
         failed_result.success = false;
-        failed_result.error = try self.allocator.dupe(u8, result.error orelse "Unknown error");
+        failed_result.err_msg = try self.allocator.dupe(u8, result.err_msg orelse "Unknown error");
         failed_result.output = result.output;
 
         return failed_result;
@@ -614,7 +614,7 @@ pub const TriOrchestrator = struct {
             const weight = vote.node_type.phiWeight() * vote.confidence;
             total_weight += weight;
 
-            if (vote.decision == .continue) {
+            if (vote.decision == .cont) {
                 proceed_weight += weight;
             }
         }
@@ -627,7 +627,7 @@ pub const TriOrchestrator = struct {
         );
 
         const final_decision: LoopDecision = if (agreement >= 0.5)
-            .continue
+            .cont
         else if (agreement >= 0.3)
             .retry
         else

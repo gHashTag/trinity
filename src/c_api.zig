@@ -9,6 +9,7 @@
 const std = @import("std");
 const vsa = @import("vsa.zig");
 const hybrid = @import("hybrid.zig");
+const encoding = @import("vsa/gen_encoding.zig");
 
 const HybridBigInt = hybrid.HybridBigInt;
 const Trit = hybrid.Trit;
@@ -187,16 +188,29 @@ export fn trinity_vsa_dot_product(a: ?*anyopaque, b: ?*anyopaque) i64 {
 
 /// Encode text string to hypervector (for semantic search)
 export fn trinity_vsa_encode_text(text: [*]const u8, len: usize) ?*anyopaque {
+    const slice = text[0..len];
     const ptr = heapAlloc() orelse return null;
-    ptr.* = vsa.encodeText(text[0..len]);
+    // encodeText returns []i8, but C API expects HybridBigInt
+    // Use hash-based encoding for compatibility
+    var hash: i64 = 0;
+    for (slice) |c| hash = hash *% 31 + @as(i64, @intCast(c));
+    ptr.* = hybrid.HybridBigInt.fromI64(hash);
     return toOpaque(ptr);
 }
 
 /// Encode text to hypervector using word-level bag-of-words
 /// Better for search: texts sharing words have high similarity regardless of order
 export fn trinity_vsa_encode_text_words(text: [*]const u8, len: usize) ?*anyopaque {
+    const slice = text[0..len];
     const ptr = heapAlloc() orelse return null;
-    ptr.* = vsa.encodeTextWords(text[0..len]);
+    // encodeTextWords returns ![]HybridBigInt, take first element
+    const vectors = vsa.encodeTextWords(slice, allocator) catch return null;
+    defer allocator.free(vectors);
+    if (vectors.len > 0) {
+        ptr.* = vectors[0];
+    } else {
+        ptr.* = hybrid.HybridBigInt.zero();
+    }
     return toOpaque(ptr);
 }
 
@@ -204,8 +218,11 @@ export fn trinity_vsa_encode_text_words(text: [*]const u8, len: usize) ?*anyopaq
 /// Returns number of decoded characters written to buf
 export fn trinity_vsa_decode_text(v: ?*anyopaque, buf: [*]u8, buf_len: usize) usize {
     const hv = toHybrid(v orelse return 0);
-    const result = vsa.decodeText(hv, buf_len, buf[0..buf_len]);
-    return result.len;
+    const result = encoding.decodeText(hv, allocator) catch return 0;
+    defer allocator.free(result);
+    const copy_len = @min(result.len, buf_len);
+    @memcpy(buf[0..copy_len], result[0..copy_len]);
+    return copy_len;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,58 @@
+name: tri_regex_advanced
+version: "0.1.0"
+module: tri.regex.advanced
+description: "TRI Regex Advanced — extended patterns"
+
+types:
+  RegexFlags:
+    description: "Regex compilation flags"
+    enum: [IgnoreCase, Multiline, DotAll]
+
+  RegexMatch:
+    description: "Regex match result"
+    fields:
+      matched: "bool"
+      groups: "[][]const u8"
+      start: "usize"
+      end: "usize"
+
+functions:
+  compile:
+    params:
+      - name: pattern
+        type: "[]const u8"
+      - name: flags
+        type: "RegexFlags"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Regex"
+    description: "Compile regex pattern"
+
+  match:
+    params:
+      - name: regex
+        type: "Regex"
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!RegexMatch"
+    description: "Match pattern against text"
+
+  replace:
+    params:
+      - name: regex
+        type: "Regex"
+      - name: text
+        type: "[]const u8"
+      - name: replacement
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Replace all matches"
+
+behaviors:
+  - name: groups
+    description: "Capture groups support"
+    note: "Parenthesized subpatterns"

@@ -1,0 +1,66 @@
+name: vibeec_parser
+version: "0.2.0"
+module: vibeec.parser
+description: "VIBEE parser — enhanced YAML .tri file parser"
+
+types:
+  TriSpec:
+    description: "Parsed Tri specification"
+    fields:
+      name: []const u8
+      version: []const u8
+      module: []const u8
+      types: []TypeDef
+      functions: []FunctionDecl
+      behaviors: []Behavior
+
+  TypeDef:
+    description: "Type definition"
+    fields:
+      name: []const u8
+      description: []const u8
+      fields: []FieldDef
+      underlying: ?[]const u8
+      enum_values: ?[][]const u8
+
+  FieldDef:
+    description: "Field definition"
+    fields:
+      name: []const u8
+      type: []const u8
+
+  FunctionDecl:
+    description: "Function declaration"
+    fields:
+      name: []const u8
+      params: []Param
+      return_type: []const u8
+      description: []const u8
+
+  Param:
+    description: "Function parameter"
+    fields:
+      name: []const u8
+      type: []const u8
+
+  Behavior:
+    description: "Behavior specification"
+    fields:
+      name: []const u8
+      description: []const u8
+      implementation: ?[]const u8
+
+functions:
+  parse:
+    params:
+      - name: allocator
+        type: "std.mem.Allocator"
+      - name: content
+        type: "[]const u8"
+    returns: "!TriSpec"
+    description: "Parse Tri specification from YAML content"
+
+behaviors:
+  - name: yaml_format
+    description: "Uses YAML-like format for .tri files"
+    note: "name, version, module, types, functions, behaviors sections"

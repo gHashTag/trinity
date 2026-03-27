@@ -9,6 +9,7 @@ import CosmicChat from './pages/CosmicChat.tsx'
 import TrinityCanvas from './pages/TrinityCanvas.tsx'
 import TrinityCanvasWasm from './components/TrinityCanvasWasm.tsx'
 import ProductionDashboard from './components/ProductionDashboard.tsx'
+import TechTreePage from './pages/TechTreePage.tsx'
 import { I18nProvider } from './i18n/context.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<App />} />
           <Route path="/dashboard" element={<ProductionDashboard />} />
+          <Route path="/tree" element={<TechTreePage />} />
           <Route path="/canvas" element={<TrinityCanvas />} />
           <Route path="/quantum" element={<QuantumLab />} />
           <Route path="/lab" element={<QuantumLab />} />

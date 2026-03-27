@@ -11,16 +11,16 @@ const encoder = @import("./asm_encoder.zig");
 pub fn assemble(source: []const u8) !void {
     _ = source;
     const tbin = "test.tbin";
-    
+
     // Emit .tbin format
     std.debug.print("Assembling {s}...\n", .{source});
-    
+
     // For now, just emit NOPs (will parse real instructions later)
     for (0..10) |_| {
         const word = encoder.encodeInstruction(std.heap.page_allocator, "nop", 0, 0, 0);
         try std.io.writeAll(std.heap.page_allocator, word);
     }
-    
+
     std.debug.print("Wrote {d} instructions (NOP placeholders)\n", .{word.len});
 }
 

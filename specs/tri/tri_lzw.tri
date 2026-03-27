@@ -1,0 +1,35 @@
+name: tri_lzw
+version: "0.1.0"
+language: zig
+module: tri.lzw
+description: "LZW compression — dictionary-based"
+
+types:
+  LZWDict:
+    description: "LZW dictionary"
+    fields:
+      entries: "[]const []const u8"
+      size: "usize"
+
+functions:
+  compress:
+    params:
+      - name: data
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u16"
+    description: "Compress data using LZW"
+
+  decompress:
+    params:
+      - name: compressed
+        type: "[]const u16"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Decompress LZW data"
+
+behaviors:
+  - name: "dictionary_growth"
+    description: "Dictionary grows dynamically up to max code size"

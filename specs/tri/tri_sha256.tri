@@ -1,0 +1,45 @@
+name: tri_sha256
+version: "0.1.0"
+language: zig
+module: tri.sha256
+description: "SHA-256 cryptographic hash"
+
+types:
+  SHA256:
+    description: "SHA-256 state"
+    fields:
+      state: "[8]u32"
+      buffer: "[64]u8"
+      count: "u64"
+
+functions:
+  init:
+    returns: "SHA256"
+    description: "Initialize SHA-256 state"
+
+  update:
+    params:
+      - name: sha
+        type: "*SHA256"
+      - name: data
+        type: "[]const u8"
+    returns: "void"
+    description: "Add data to hash"
+
+  final:
+    params:
+      - name: sha
+        type: "*SHA256"
+    returns: "[32]u8"
+    description: "Finalize and return hash"
+
+  hash:
+    params:
+      - name: data
+        type: "[]const u8"
+    returns: "[32]u8"
+    description: "One-shot SHA-256"
+
+behaviors:
+  - name: "merkle_damgard"
+    description: "Merkle-Damgard construction with 64-byte blocks"

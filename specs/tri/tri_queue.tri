@@ -1,0 +1,51 @@
+name: tri_queue
+version: "0.1.0"
+module: tri.queue
+description: "TRI Queue — FIFO queue"
+
+types:
+  Queue(T):
+    description: "First-in-first-out queue"
+    fields:
+      front: "[]T"
+      back: "[]T"
+
+functions:
+  empty:
+    returns: "Queue(T)"
+    description: "Create empty queue"
+
+  enqueue:
+    params:
+      - name: queue
+        type: "Queue(T)"
+      - name: value
+        type: "T"
+    returns: "Queue(T)"
+    description: "Add to back"
+
+  dequeue:
+    params:
+      - name: queue
+        type: "Queue(T)"
+    returns: "Queue(T)"
+    description: "Remove from front"
+
+  peek:
+    params:
+      - name: queue
+        type: "Queue(T)"
+    returns: "Option(T)"
+    description: "Get front element"
+
+  isEmpty:
+    params:
+      - name: queue
+        type: "Queue(T)"
+    returns: "bool"
+    description: "Check if empty"
+
+behaviors:
+  - name: fifo
+    description: "First-in-first-out ordering"
+    note: "Amortized O(1) operations"

@@ -37,7 +37,7 @@ pub const HABENULA = struct {
 
     /// Detect unfair reward/effort ratio for a task
     pub fn detectUnfair(self: *HABENULA, task: []const u8) !FairnessResult {
-        const log = std.log.scoped(.level = .info);
+        const log = std.log.scoped("habenula");
         log.info("🔍 HABENULA: Checking fairness for task '{s}'", .{task});
 
         // Find all episodes for this task
@@ -51,8 +51,7 @@ pub const HABENULA = struct {
                 .is_suspicious = false,
                 .ratio = 1.0,
                 .median_reward = 0.0,
-                .reason = try std.fmt.allocPrint(self.allocator,
-                    "No experience episodes found: {}", .{err}),
+                .reason = try std.fmt.allocPrint(self.allocator, "No experience episodes found: {}", .{err}),
             };
         };
         defer dir.close();
@@ -100,9 +99,7 @@ pub const HABENULA = struct {
                 .is_suspicious = false,
                 .ratio = 1.0,
                 .median_reward = 0.0,
-                .reason = try std.fmt.allocPrint(self.allocator,
-                    "Insufficient data ({d} episodes) - requires minimum 3",
-                    .{episodes.items.len}),
+                .reason = try std.fmt.allocPrint(self.allocator, "Insufficient data ({d} episodes) - requires minimum 3", .{episodes.items.len}),
             };
         }
 
@@ -146,24 +143,17 @@ pub const HABENULA = struct {
         else
             1.0;
 
-        log.info("Median reward: {d:.2}, Weighted avg: {d:.2}, Ratio: {d:.2}",
-            .{median_reward, weighted_avg_reward, ratio });
+        log.info("Median reward: {d:.2}, Weighted avg: {d:.2}, Ratio: {d:.2}", .{ median_reward, weighted_avg_reward, ratio });
 
         // Determine suspiciousness
         const is_suspicious = ratio > 2.0;
 
-        var reason = try std.fmt.allocPrint(self.allocator,
-            "Reward/Effort ratio: {d:.2}x (median: {d:.2})",
-            .{ratio, median_reward});
+        var reason = try std.fmt.allocPrint(self.allocator, "Reward/Effort ratio: {d:.2}x (median: {d:.2})", .{ ratio, median_reward });
 
         if (is_suspicious) {
-            reason = try std.fmt.allocPrint(self.allocator,
-                "{s} - SUSPICIOUS (2× threshold exceeded)",
-                .{reason});
+            reason = try std.fmt.allocPrint(self.allocator, "{s} - SUSPICIOUS (2× threshold exceeded)", .{reason});
         } else {
-            reason = try std.fmt.allocPrint(self.allocator,
-                "{s} - within normal range",
-                .{reason});
+            reason = try std.fmt.allocPrint(self.allocator, "{s} - within normal range", .{reason});
         }
 
         return .{
