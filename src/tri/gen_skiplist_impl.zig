@@ -7,7 +7,7 @@ const std = @import("std");
 /// Skip list node
 pub const SkipNode = struct {
     value: i64,
-    forward: []?SkipNode,
+    forward: []?*SkipNode,
     level: usize,
 
     pub fn deinit(node: *SkipNode, allocator: std.mem.Allocator) void {
@@ -25,7 +25,7 @@ pub const SkipList = struct {
     /// Create skip list
     pub fn init(allocator: std.mem.Allocator, max_level: usize) !SkipList {
         // Create head node with max_level forward pointers
-        const forward = try allocator.alloc(?SkipNode, max_level);
+        const forward = try allocator.alloc(?*SkipNode, max_level);
         @memset(forward, null);
 
         const head = try allocator.create(SkipNode);
@@ -60,7 +60,7 @@ pub const SkipList = struct {
     /// Insert value
     pub fn insert(sl: *SkipList, value: i64) !void {
         const node_level = sl.randomLevel();
-        const update = try sl.allocator.alloc(?SkipNode, sl.max_level);
+        const update = try sl.allocator.alloc(?*SkipNode, sl.max_level);
         defer sl.allocator.free(update);
         @memset(update, null);
 
@@ -83,7 +83,7 @@ pub const SkipList = struct {
         }
 
         // Create new node
-        const forward = try sl.allocator.alloc(?SkipNode, node_level + 1);
+        const forward = try sl.allocator.alloc(?*SkipNode, node_level + 1);
         @memset(forward, null);
 
         const node = try sl.allocator.create(SkipNode);
@@ -129,7 +129,7 @@ pub const SkipList = struct {
 
     /// Remove value
     pub fn delete(sl: *SkipList, value: i64) !bool {
-        const update = try sl.allocator.alloc(?SkipNode, sl.max_level);
+        const update = try sl.allocator.alloc(?*SkipNode, sl.max_level);
         defer sl.allocator.free(update);
         @memset(update, null);
 
@@ -175,14 +175,12 @@ pub const SkipList = struct {
 
     /// Free list
     pub fn deinit(sl: *SkipList) void {
-        // Free all nodes
-        var current = sl.head;
-        while (current.forward[0]) |next| {
-            const to_free = current;
+        // Free all nodes except head first
+        var current = sl.head.forward[0];
+        while (current) |node| {
+            const next = node.forward[0];
+            node.deinit(sl.allocator);
             current = next;
-            if (to_free != sl.head) {
-                to_free.deinit(sl.allocator);
-            }
         }
         // Free head last
         sl.head.deinit(sl.allocator);
