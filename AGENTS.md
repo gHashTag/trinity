@@ -30,8 +30,8 @@ Trinity S³AI implements a multi-agent swarm architecture using pure Zig. Each a
 
 **Key Files**:
 - `src/ralph/ralph_agent.zig` — Main daemon logic
-- `.ralph/state.json` — Agent state persistence
-- `.ralph/memory/` — Agent memory and handover data
+- `.trinity/ralph/state.json` — Agent state persistence
+- `.trinity/ralph/memory/` — Agent memory and handover data
 
 **Commands**:
 ```bash
@@ -56,7 +56,7 @@ tri agent kill <N>      # Kill agent container
 
 **Key Files**:
 - `src/mu/mu_agent.zig` — Memory agent logic
-- `.ralph/memory/` — Persistent memory storage
+- `.trinity/ralph/memory/` — Persistent memory storage
 
 ### Scholar Agent (`scholar-agent`)
 
@@ -284,10 +284,10 @@ PR merge triggers `agent-cleanup.yml`:
 
 ## State Management
 
-### Agent State Directory: `.ralph/`
+### Agent State Directory: `.trinity/ralph/`
 
 ```
-.ralph/
+.trinity/ralph/
 ├── state.json           # Current agent state
 ├── identity.json        # Agent identity and capabilities
 ├── memory/              # Persistent learnings
@@ -406,7 +406,7 @@ tri agent run 123
 
 **Check agent state**:
 ```bash
-cat .ralph/state.json | jq
+cat .trinity/ralph/state.json | jq
 cat .trinity/dev_session.json | jq
 ```
 
