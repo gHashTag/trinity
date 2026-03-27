@@ -161,6 +161,7 @@ pub const JsonLdGenerator = struct {
     /// Validate against Schema.org
     pub fn validateSchemaOrg(self: JsonLdGenerator, allocator: std.mem.Allocator) !ValidationResult {
         var errors = try std.ArrayList([]const u8).initCapacity(allocator, 10);
+        defer errors.deinit(allocator);
 
         // Required fields
         if (self.metadata.title.len == 0) {
@@ -179,7 +180,6 @@ pub const JsonLdGenerator = struct {
         }
 
         const errors_slice = try errors.toOwnedSlice(allocator);
-        errors.deinit(allocator);
 
         return ValidationResult{
             .valid = errors_slice.len == 0,
@@ -235,9 +235,7 @@ pub const ValidationResult = struct {
     errors: []const []const u8,
 
     pub fn deinit(self: ValidationResult, allocator: std.mem.Allocator) void {
-        for (self.errors) |err| {
-            allocator.free(err);
-        }
+        // Only free the slice itself, not individual strings (they're literals)
         if (self.errors.len > 0) {
             allocator.free(self.errors);
         }
