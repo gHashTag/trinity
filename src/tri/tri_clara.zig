@@ -332,25 +332,25 @@ fn usage(args: []const []const u8) !void {
 // ==================== MAIN DISPATCHER ====================
 //
 pub fn main(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    if (args.len < 2) {
+    if (args.len < 1) {
         try usage(args);
         return;
     }
 
-    const command = args[1];
+    const command = args[0];
 
     if (std.mem.eql(u8, command, "compose")) {
-        try runClaraCompose(allocator, args[2..]);
+        try runClaraCompose(allocator, args[1..]);
     } else if (std.mem.eql(u8, command, "verify")) {
-        try runClaraVerify(allocator, args[2..]);
+        try runClaraVerify(allocator, args[1..]);
     } else if (std.mem.eql(u8, command, "package")) {
-        try runClaraPackage(allocator, args[2..]);
+        try runClaraPackage(allocator, args[1..]);
     } else if (std.mem.eql(u8, command, "test")) {
-        try runClaraTest(allocator, args[2..]);
+        try runClaraTest(allocator, args[1..]);
     } else if (std.mem.eql(u8, command, "status")) {
-        try runClaraStatus(allocator, args[2..]);
+        try runClaraStatus(allocator, args[1..]);
     } else if (std.mem.eql(u8, command, "benchmark")) {
-        try runClaraBenchmark(allocator, args[2..]);
+        try runClaraBenchmark(allocator, args[1..]);
     } else {
         std.debug.print("Error: Unknown command '{s}'\n\n", .{command});
         std.debug.print("Available commands: compose, verify, package, test, status, benchmark\n", .{});
