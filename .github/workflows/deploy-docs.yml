@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'website/**'
+      - 'apps/website/**'
       - 'docs/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
@@ -32,12 +32,12 @@ jobs:
           node-version: '20'
 
       # Build Website (Vite React SPA)
-      - name: Install website dependencies
-        working-directory: website
+      - name: Install apps/website dependencies
+        working-directory: apps/website
         run: npm install
 
-      - name: Build website
-        working-directory: website
+      - name: Build apps/website
+        working-directory: apps/website
         run: npm run build
 
       # Build Docsite (Docusaurus)
@@ -50,10 +50,10 @@ jobs:
         run: npm run build
 
       # Combine builds
-      - name: Combine website + docs
+      - name: Combine apps/website + docs
         run: |
           mkdir -p combined
-          cp -r website/dist/* combined/
+          cp -r apps/website/dist/* combined/
           mkdir -p combined/docs
           cp -r docs/build/* combined/docs/
           touch combined/.nojekyll
