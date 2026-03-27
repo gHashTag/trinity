@@ -1,0 +1,183 @@
+# TRI-27 Token System - Staking Module Specification
+# ════════════════════════════════════════════════════════════════
+#
+# Module: staking
+# Purpose: TRI-27 token staking with lock periods, APY, and slashing
+# Parent: #443
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ════════════════════════════════════════════════════════════════
+
+name: staking
+version: "1.0.0"
+language: zig
+module: tri27.staking
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: token_types
+    used_as: Token data structures
+  - module: coptic
+    used_as: Coptic register mapping
+
+types:
+  StakingState:
+    description: Global staking state management
+    fields:
+      - name: total_staked
+        type: u128
+        description: Total tokens staked across all nodes
+      - name: stakers
+        type: "AutoHashMap([32]u8, StakeInfo)"
+        description: Node address -> stake info mapping
+      - name: reward_pool
+        type: u128
+        description: Available rewards for distribution
+      - name: apy
+        type: f64
+        description: Current Annual Percentage Yield
+
+  StakeInfo:
+    description: Individual stake information
+    fields:
+      - name: staker
+        type: "[32]u8"
+        description: Node address
+      - name: amount
+        type: u128
+        description: Staked amount in 18-decimal units
+      - name: stake_time
+        type: i64
+        description: Unix timestamp when stake was created
+      - name: lock_period_days
+        type: u64
+        description: Lock period in days (7-365)
+      - name: unlock_time
+        type: i64
+        description: Unix timestamp when unlock is available
+      - name: is_active
+        type: bool
+        description: Whether stake is currently active
+      - name: slash_count
+        type: u32
+        description: Number of slashing events
+      - name: slashed_amount
+        type: u128
+        description: Total amount slashed
+
+  SlashReason:
+    description: Reasons for slashing a stake
+    values:
+      - name: Manipulation
+        description: Price manipulation (50% slash)
+      - name: Theft
+        description: Theft of compute resources (100% slash)
+      - name: Downtime
+        description: Excessive node downtime (10% slash)
+      - name: DoubleSign
+        description: Equivocation/double signing (100% slash)
+
+  RewardEpoch:
+    description: Reward distribution epoch
+    fields:
+      - name: epoch_id
+        type: u64
+        description: Epoch number
+      - name: start_time
+        type: i64
+        description: Epoch start timestamp
+      - name: end_time
+        type: i64
+        description: Epoch end timestamp
+      - name: total_compute
+        type: u64
+        description: Total compute units contributed
+      - name: rewards_distributed
+        type: u128
+        description: Rewards distributed this epoch
+
+behaviors:
+  stakeTokens:
+    given: amount, lock_period_days
+    when: Staking tokens
+    then:
+      - Validate amount >= minimum stake
+      - Validate lock_period_days between 7 and 365
+      - Check not already staked
+      - Create StakeInfo with current timestamp
+      - Calculate unlock_time = stake_time + (lock_period_days * 86400)
+      - Add to stakers hashmap
+      - Update total_staked
+      - Return success or error
+
+  unstakeTokens:
+    given: staker address
+    when: Unstaking tokens
+    then:
+      - Check stake exists
+      - Verify current time >= unlock_time
+      - Check no active slashing
+      - Remove from stakers
+      - Return remaining amount (staked - slashed)
+
+  slashStake:
+    given: staker address, reason
+    when: Penalizing misbehavior
+    then:
+      - Get StakeInfo for staker
+      - Calculate slash amount based on reason
+      - Add to slashed_amount
+      - Update slash_count
+      - If slashed >= amount, deactivate stake
+      - Burn slashed tokens
+
+  calculateAPY:
+    given: lock_period_days, total_staked
+    when: Computing APY
+    then:
+      - Base APY = 5% for 30-day lock
+      - Lock bonus: +0.1% per additional 30 days
+      - Cap at 20% APY for 365-day lock
+      - Total staked bonus: +0.01% per 100K TRI staked
+      - APY = min(20%, base + lock_bonus + staked_bonus)
+
+  calculateReward:
+    given: compute_units, uptime_seconds, latency_ms
+    when: Calculating reward for compute contribution
+    then:
+      - base_reward = 1 TRI per 1000 compute units
+      - uptime_bonus = 1.0 if uptime > 99% else 0.5
+      - latency_factor = 1.0 if latency < 100ms else 0.8
+      - reward = base_reward * compute_units / 1000 * uptime_bonus * latency_factor
+
+  distributeRewards:
+    given: epoch_id
+    when: Distributing epoch rewards
+    when:
+      - Calculate total rewards for epoch
+      - Iterate over active stakers
+      - Distribute proportional to stake * uptime
+      - Update reward_pool
+      - Record RewardEpoch
+
+  initStakingState:
+    given: allocator
+    when: Initializing staking
+    then:
+      - Create empty StakingState
+      - Set apy to 0.05 (5%)
+      - Return pointer to state
+
+  getStakeInfo:
+    given: staker address
+    when: Reading stake information
+    then:
+      - Lookup staker in hashmap
+      - Return StakeInfo or null
+
+implementation:
+  cycle: "73"
+  extracted_from: "src/tri27/staking.zig"
+  lines: 400-500
+  complexity: "medium - depends on std hashmap and time calculations"
