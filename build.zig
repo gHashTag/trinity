@@ -3790,4 +3790,22 @@ pub fn build(b: *std.Build) void {
     sacred_trinity_step.dependOn(caps_step);
     // Note: fpga-synth is optional (requires Docker) - not auto-included
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CYRILLIC GUARD — Block commits with Cyrillic characters (U+0400–U+04FF)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const cyrillic_guard = b.addExecutable(.{
+        .name = "cyrillic-guard",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/cyrillic_guard.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(cyrillic_guard);
+
+    const run_cyrillic_guard = b.addRunArtifact(cyrillic_guard);
+    if (b.args) |args| run_cyrillic_guard.addArgs(args);
+    const cyrillic_guard_step = b.step("cyrillic-guard", "Check for Cyrillic characters in files");
+    cyrillic_guard_step.dependOn(&run_cyrillic_guard.step);
 }
