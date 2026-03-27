@@ -4,6 +4,8 @@ import LanguageSwitcher from './LanguageSwitcher'
 
 const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
 const BASE = import.meta.env.BASE_URL
+// Docs always points to GitHub Pages (in dev and production)
+const DOCS_URL = 'https://ghashtag.github.io/trinity/docs/'
 
 export default memo(function Navigation() {
   const { t } = useI18n()
@@ -83,7 +85,7 @@ export default memo(function Navigation() {
           {t.navExtra?.tree || 'Research Lab'}
         </a>
         <a
-          href={`${BASE}docs/`}
+          href={DOCS_URL}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
@@ -155,7 +157,7 @@ export default memo(function Navigation() {
                 {t.navExtra?.tree || 'Research Lab'}
               </a>
               <a
-                href={`${BASE}docs/`}
+                href={DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'var(--accent)' }}
