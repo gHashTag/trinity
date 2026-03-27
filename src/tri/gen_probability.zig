@@ -14,7 +14,8 @@ pub const PRNG = struct {
 
     pub fn float(self: *PRNG) f64 {
         self.state = self.state *% 6364136223846793005 +% 1442695040888963407;
-        return @as(f64, @floatFromInt(self.state >> 11)) / @as(f64, @floatFromInt(u64 >> 11));
+        const max_u64: u64 = 1 << 53; // 53 bits of precision
+        return @as(f64, @floatFromInt(self.state & (max_u64 - 1))) / @as(f64, @floatFromInt(max_u64));
     }
 };
 
@@ -68,7 +69,7 @@ pub fn exponential(lambda: f64, rng: *PRNG) f64 {
 }
 
 test "bernoulli" {
-    var rng = PRNG.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(12345);
     var count: usize = 0;
     for (0..1000) |_| {
         if (bernoulli(0.5, &rng)) count += 1;
@@ -78,28 +79,28 @@ test "bernoulli" {
 }
 
 test "binomial" {
-    var rng = PRNG.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(12345);
     const result = binomial(100, 0.5, &rng);
     // Should be around 50
     try std.testing.expect(result > 25 and result < 75);
 }
 
 test "poisson" {
-    var rng = PRNG.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(12345);
     const result = poisson(10.0, &rng);
     // Should be around 10
     try std.testing.expect(result > 0 and result < 30);
 }
 
 test "normal" {
-    var rng = PRNG.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(12345);
     const result = normal(0.0, 1.0, &rng);
     // Should be within reasonable range
     try std.testing.expect(result > -10 and result < 10);
 }
 
 test "exponential" {
-    var rng = PRNG.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(12345);
     const result = exponential(1.0, &rng);
     // Should be positive
     try std.testing.expect(result >= 0);
