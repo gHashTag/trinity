@@ -1823,6 +1823,9 @@ fn printPowerUsage() !void {
 // UART Build/Flash/Test Commands — tri fpga build-uart / flash-uart / uart-test
 // =========================================================================
 
+/// Alias for findSerialDevice — detects USB-UART devices (CH340/FTDI).
+const detectUartDevice = findSerialDevice;
+
 pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = args;
     const device = try detectUartDevice(allocator) orelse {
