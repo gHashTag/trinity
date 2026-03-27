@@ -47,7 +47,7 @@ pub fn buildPrefix(pattern: []const u8, allocator: std.mem.Allocator) !KMPPrefix
 }
 
 /// Find all pattern occurrences using KMP
-pub fn search(text: []const u8, prefix: *const KMPPrefix) []usize {
+pub fn search(text: []const u8, prefix: *KMPPrefix) []usize {
     // Count matches first
     var match_count: usize = 0;
     var i: usize = 0;
@@ -71,8 +71,7 @@ pub fn search(text: []const u8, prefix: *const KMPPrefix) []usize {
         }
     }
 
-    // Allocate and fill matches (simplified - uses testing allocator)
-    _ = match_count;
+    // Simplified: return empty slice
     return &[_]usize{};
 }
 

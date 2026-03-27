@@ -30,19 +30,28 @@ pub const BezierCurve = struct {
     pub fn evaluate(curve: *const BezierCurve, t: f64) Point {
         if (t < 0 or t > 1) return .{ .x = 0, .y = 0 };
 
-        var control = curve.control;
-        var n = curve.control.len;
+        const control_len = curve.control.len;
 
-        // De Casteljau algorithm
+        // De Casteljau algorithm - work with values directly
+        var x_vals: [10]f64 = undefined;
+        var y_vals: [10]f64 = undefined;
+
+        for (curve.control, 0..) |p, i| {
+            x_vals[i] = p.x;
+            y_vals[i] = p.y;
+        }
+
+        var n = control_len;
+
         while (n > 1) {
             for (0..n - 1) |i| {
-                control[i].x = (1 - t) * control[i].x + t * control[i + 1].x;
-                control[i].y = (1 - t) * control[i].y + t * control[i + 1].y;
+                x_vals[i] = (1 - t) * x_vals[i] + t * x_vals[i + 1];
+                y_vals[i] = (1 - t) * y_vals[i] + t * y_vals[i + 1];
             }
             n -= 1;
         }
 
-        return control[0];
+        return .{ .x = x_vals[0], .y = y_vals[0] };
     }
 };
 

@@ -30,7 +30,7 @@ pub fn buildBadChar(pattern: []const u8) BMBadChar {
 }
 
 /// Find all pattern occurrences with bad character heuristic
-pub fn search(text: []const u8, pattern: []const u8, bad_char: *const BMBadChar) []usize {
+pub fn search(text: []const u8, pattern: []const u8, bad_char: BMBadChar) []usize {
     _ = bad_char;
     const n = text.len;
     const m = pattern.len;
@@ -56,7 +56,6 @@ pub fn search(text: []const u8, pattern: []const u8, bad_char: *const BMBadChar)
         }
     }
 
-    _ = match_count;
     return &[_]usize{};
 }
 
@@ -72,7 +71,7 @@ test "bm search" {
     const text = "ABABABAB";
     const bc = buildBadChar(pattern);
 
-    const matches = search(text, pattern, &bc);
+    const matches = search(text, pattern, bc);
 
     _ = matches;
     try std.testing.expect(true);
@@ -83,7 +82,7 @@ test "bm no match" {
     const text = "ABABABAB";
     const bc = buildBadChar(pattern);
 
-    const matches = search(text, pattern, &bc);
+    const matches = search(text, pattern, bc);
 
     _ = matches;
     try std.testing.expect(true);

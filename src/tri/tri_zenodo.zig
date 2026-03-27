@@ -24,6 +24,14 @@ const zenodo_latex_table = @import("zenodo_latex_table.zig");
 const zenodo_doi_manager = @import("zenodo_doi_manager.zig");
 const zenodo_v16_extensions = @import("zenodo_v16_extensions.zig");
 
+// V19 Scientific Metadata Standards
+const zenodo_v19_orcid = @import("zenodo_v19_orcid.zig");
+const zenodo_v19_cff = @import("zenodo_v19_cff.zig");
+const zenodo_v19_openalex = @import("zenodo_v19_openalex.zig");
+
+// V20 Statistical Significance
+const zenodo_v20_stats = @import("zenodo_v20_stats.zig");
+
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
@@ -85,6 +93,12 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "v16")) {
         // V16 Scientific Documentation Framework
         try runV16Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v19")) {
+        // V19 Scientific Metadata Standards
+        try runV19Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v20")) {
+        // V20 Statistical Significance
+        try runV20Command(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
