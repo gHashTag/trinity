@@ -1,131 +1,141 @@
-//! tri/priority_queue — Min-heap priority queue
-//! Auto-generated from specs/tri/tri_priority_queue.tri
-//! TTT Dogfood v0.2 Stage 88
+//! tri/priority_queue — Max priority queue (binary heap)
+//! Auto-generated from specs/tri_priority_queue.tri
+//! TTT Dogfood v0.2 Stage 192
 
 const std = @import("std");
 
-/// Min-heap priority queue (simplified for integers)
-pub fn PriorityQueueInt(comptime T: type) type {
-    return struct {
-        items: []T,
-        count: usize,
+/// Max priority queue
+pub const PriorityQueue = struct {
+    data: []i64,
+    size: usize,
+    allocator: std.mem.Allocator,
 
-        const Self = @This();
+    /// Create empty priority queue
+    pub fn init(allocator: std.mem.Allocator) !PriorityQueue {
+        const data = try allocator.alloc(i64, 16);
+        return .{
+            .data = data,
+            .size = 0,
+            .allocator = allocator,
+        };
+    }
 
-        /// Create empty queue
-        pub fn new() Self {
-            return .{ .items = &[_]T{}, .count = 0 };
+    fn ensureCapacity(pq: *PriorityQueue) !void {
+        if (pq.size < pq.data.len) return;
+
+        const new_len = pq.data.len * 2;
+        const new_data = try pq.allocator.alloc(i64, new_len);
+        @memcpy(new_data[0..pq.data.len], pq.data);
+        pq.allocator.free(pq.data);
+        pq.data = new_data;
+    }
+
+    fn siftUp(pq: *PriorityQueue, index: usize) void {
+        while (index > 0) {
+            const parent = (index - 1) / 2;
+            if (pq.data[index] <= pq.data[parent]) break;
+
+            const tmp = pq.data[index];
+            pq.data[index] = pq.data[parent];
+            pq.data[parent] = tmp;
+            index = parent;
         }
+    }
 
-        /// Get parent index
-        fn parent(idx: usize) usize {
-            return (idx - 1) / 2;
-        }
+    fn siftDown(pq: *PriorityQueue, index: usize) void {
+        const n = pq.size;
+        while (true) {
+            const left = 2 * index + 1;
+            const right = 2 * index + 2;
+            var largest = index;
 
-        /// Get left child index
-        fn leftChild(idx: usize) usize {
-            return 2 * idx + 1;
-        }
-
-        /// Get right child index
-        fn rightChild(idx: usize) usize {
-            return 2 * idx + 2;
-        }
-
-        /// Swap two elements
-        fn swap(self: *Self, i: usize, j: usize) void {
-            const temp = self.items[i];
-            self.items[i] = self.items[j];
-            self.items[j] = temp;
-        }
-
-        /// Bubble up element
-        fn bubbleUp(self: *Self, start_idx: usize) void {
-            var idx = start_idx;
-            while (idx > 0) {
-                const parent_idx = Self.parent(idx);
-                if (self.items[idx] < self.items[parent_idx]) {
-                    self.swap(idx, parent_idx);
-                    idx = parent_idx;
-                } else break;
+            if (left < n and pq.data[left] > pq.data[largest]) {
+                largest = left;
             }
-        }
-
-        /// Bubble down element
-        fn bubbleDown(self: *Self, start_idx: usize) void {
-            var idx = start_idx;
-            while (idx < self.count) {
-                const left = Self.leftChild(idx);
-                const right = Self.rightChild(idx);
-                var smallest = idx;
-
-                if (left < self.count and self.items[left] < self.items[smallest]) {
-                    smallest = left;
-                }
-                if (right < self.count and self.items[right] < self.items[smallest]) {
-                    smallest = right;
-                }
-
-                if (smallest != idx) {
-                    self.swap(idx, smallest);
-                    idx = smallest;
-                } else break;
-            }
-        }
-
-        /// Insert value
-        pub fn insert(self: *Self, allocator: std.mem.Allocator, val: T) !void {
-            if (self.items.len <= self.count) {
-                const new_items = try allocator.alloc(T, self.count * 2 + 1);
-                @memcpy(new_items[0..self.items.len], self.items);
-                self.items = new_items;
+            if (right < n and pq.data[right] > pq.data[largest]) {
+                largest = right;
             }
 
-            self.items[self.count] = val;
-            self.count += 1;
-            self.bubbleUp(self.count - 1);
+            if (largest == index) break;
+
+            const tmp = pq.data[index];
+            pq.data[index] = pq.data[largest];
+            pq.data[largest] = tmp;
+            index = largest;
+        }
+    }
+
+    /// Insert with priority
+    pub fn enqueue(pq: *PriorityQueue, value: i64) !void {
+        try pq.ensureCapacity();
+
+        pq.data[pq.size] = value;
+        pq.siftUp(pq.size);
+        pq.size += 1;
+    }
+
+    /// Remove max element
+    pub fn dequeue(pq: *PriorityQueue) i64 {
+        if (pq.size == 0) return 0;
+
+        const max = pq.data[0];
+        pq.size -= 1;
+
+        if (pq.size > 0) {
+            pq.data[0] = pq.data[pq.size];
+            pq.siftDown(0);
         }
 
-        /// Remove and return minimum
-        pub fn extractMin(self: *Self) ?T {
-            if (self.count == 0) return null;
+        return max;
+    }
 
-            const min_val = self.items[0];
-            self.items[0] = self.items[self.count - 1];
-            self.count -= 1;
-            self.bubbleDown(0);
-            return min_val;
-        }
+    /// Get max without removing
+    pub fn peek(pq: *const PriorityQueue) i64 {
+        if (pq.size == 0) return 0;
+        return pq.data[0];
+    }
 
-        /// Get minimum without removing
-        pub fn peekMin(self: Self) ?T {
-            if (self.count == 0) return null;
-            return self.items[0];
-        }
-    };
+    /// Check if empty
+    pub fn isEmpty(pq: *const PriorityQueue) bool {
+        return pq.size == 0;
+    }
+
+    /// Free queue
+    pub fn deinit(pq: *PriorityQueue) void {
+        pq.allocator.free(pq.data);
+    }
+};
+
+test "priority queue enqueue dequeue" {
+    var pq = try PriorityQueue.init(std.testing.allocator);
+    defer pq.deinit();
+
+    try pq.enqueue(3);
+    try pq.enqueue(1);
+    try pq.enqueue(5);
+    try pq.enqueue(2);
+
+    try std.testing.expectEqual(@as(i64, 5), pq.dequeue());
+    try std.testing.expectEqual(@as(i64, 3), pq.dequeue());
+    try std.testing.expectEqual(@as(i64, 2), pq.dequeue());
+    try std.testing.expectEqual(@as(i64, 1), pq.dequeue());
 }
 
-test "PriorityQueueInt.new" {
-    const pq = PriorityQueueInt(i32).new();
-    try std.testing.expect(pq.peekMin() == null);
+test "priority queue peek" {
+    var pq = try PriorityQueue.init(std.testing.allocator);
+    defer pq.deinit();
+
+    try pq.enqueue(10);
+    try pq.enqueue(5);
+
+    try std.testing.expectEqual(@as(i64, 10), pq.peek());
+    try std.testing.expectEqual(@as(i64, 10), pq.peek()); // Should still be there
 }
 
-test "PriorityQueueInt.insert" {
-    var pq = PriorityQueueInt(i32).new();
-    try pq.insert(std.testing.allocator, 3);
-    try pq.insert(std.testing.allocator, 1);
-    try pq.insert(std.testing.allocator, 2);
+test "priority queue empty" {
+    var pq = try PriorityQueue.init(std.testing.allocator);
+    defer pq.deinit();
 
-    try std.testing.expectEqual(@as(i32, 1), pq.peekMin().?);
-}
-
-test "PriorityQueueInt.extractMin" {
-    var pq = PriorityQueueInt(i32).new();
-    try pq.insert(std.testing.allocator, 3);
-    try pq.insert(std.testing.allocator, 1);
-    try pq.insert(std.testing.allocator, 2);
-
-    try std.testing.expectEqual(@as(i32, 1), pq.extractMin().?);
-    try std.testing.expectEqual(@as(i32, 2), pq.extractMin().?);
-    try std.testing.expectEqual(@as(i32, 3), pq.extractMin().?);
+    try std.testing.expect(pq.isEmpty());
+    try std.testing.expectEqual(@as(i64, 0), pq.dequeue());
 }
