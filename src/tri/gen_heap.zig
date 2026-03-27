@@ -14,13 +14,13 @@ pub fn Heap(comptime T: type) type {
         /// Create empty heap
         pub fn empty(allocator: std.mem.Allocator) Self {
             return .{
-                .items = std.ArrayList(T).init(allocator),
+                .items = std.ArrayList(T).initCapacity(allocator, 0) catch unreachable,
             };
         }
 
         /// Free resources
-        pub fn deinit(self: *Self) void {
-            self.items.deinit();
+        pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
+            self.items.deinit(allocator);
         }
 
         /// Get number of elements
@@ -31,19 +31,19 @@ pub fn Heap(comptime T: type) type {
         /// Insert item
         pub fn push(self: *Self, item: T, allocator: std.mem.Allocator) !void {
             try self.items.append(allocator, item);
-            self.siftUp(allocator);
+            self.siftUp();
         }
 
         /// Extract max element
-        pub fn pop(self: *Self, allocator: std.mem.Allocator) ?T {
+        pub fn pop(self: *Self) ?T {
             if (self.items.items.len == 0) return null;
 
             const max = self.items.items[0];
-            const last = self.items.pop().?;
+            const last = self.items.pop() orelse return null;
 
             if (self.items.items.len > 0) {
                 self.items.items[0] = last;
-                self.siftDown(allocator);
+                self.siftDown();
             }
 
             return max;
@@ -56,7 +56,7 @@ pub fn Heap(comptime T: type) type {
         }
 
         /// Move last element up to restore heap property
-        fn siftUp(self: *Self, allocator: std.mem.Allocator) void {
+        fn siftUp(self: *Self) void {
             var idx = self.items.items.len - 1;
             while (idx > 0) {
                 const parent_idx = (idx - 1) / 2;
@@ -72,7 +72,7 @@ pub fn Heap(comptime T: type) type {
         }
 
         /// Move root element down to restore heap property
-        fn siftDown(self: *Self, allocator: std.mem.Allocator) void {
+        fn siftDown(self: *Self) void {
             var idx: usize = 0;
             const len = self.items.items.len;
 
@@ -103,7 +103,7 @@ pub fn Heap(comptime T: type) type {
 
 test "heap push pop" {
     var heap = Heap(i32).empty(std.testing.allocator);
-    defer heap.deinit();
+    defer heap.deinit(std.testing.allocator);
 
     try heap.push(5, std.testing.allocator);
     try heap.push(3, std.testing.allocator);
@@ -112,16 +112,16 @@ test "heap push pop" {
 
     try std.testing.expectEqual(@as(usize, 4), heap.size());
 
-    const max1 = heap.pop(std.testing.allocator);
+    const max1 = heap.pop();
     try std.testing.expectEqual(@as(i32, 7), max1);
 
-    const max2 = heap.pop(std.testing.allocator);
+    const max2 = heap.pop();
     try std.testing.expectEqual(@as(i32, 5), max2);
 }
 
 test "heap peek" {
     var heap = Heap(i32).empty(std.testing.allocator);
-    defer heap.deinit();
+    defer heap.deinit(std.testing.allocator);
 
     try heap.push(5, std.testing.allocator);
     try heap.push(3, std.testing.allocator);

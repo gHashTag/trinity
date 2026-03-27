@@ -10,12 +10,12 @@ pub const SearchResult = struct {
     found: bool,
 
     /// Create found result
-    pub fn found(idx: usize) SearchResult {
+    pub fn initFound(idx: usize) SearchResult {
         return .{ .index = idx, .found = true };
     }
 
     /// Create not found result
-    pub fn notFound() SearchResult {
+    pub fn initNotFound() SearchResult {
         return .{ .index = null, .found = false };
     }
 };
@@ -28,7 +28,7 @@ pub fn binary(comptime T: type, sorted: []const T, target: T) SearchResult {
     while (left < right) {
         const mid = left + (right - left) / 2;
         if (sorted[mid] == target) {
-            return SearchResult.found(mid);
+            return SearchResult.initFound(mid);
         } else if (sorted[mid] < target) {
             left = mid + 1;
         } else {
@@ -36,17 +36,17 @@ pub fn binary(comptime T: type, sorted: []const T, target: T) SearchResult {
         }
     }
 
-    return SearchResult.notFound();
+    return SearchResult.initNotFound();
 }
 
 /// Linear scan (O(n))
 pub fn linear(comptime T: type, items: []const T, target: T) SearchResult {
     for (items, 0..) |item, i| {
         if (item == target) {
-            return SearchResult.found(i);
+            return SearchResult.initFound(i);
         }
     }
-    return SearchResult.notFound();
+    return SearchResult.initNotFound();
 }
 
 /// Lower bound: first position >= value

@@ -10,7 +10,7 @@ pub const Compressed = struct {
     original_len: usize,
 
     /// Free resources
-    pub fn deinit(self: *Compressed, allocator: std.mem.Allocator) void {
+    pub fn deinit(self: Compressed, allocator: std.mem.Allocator) void {
         allocator.free(self.data);
     }
 };
@@ -25,8 +25,8 @@ pub fn compress(input: []const u8, allocator: std.mem.Allocator) !Compressed {
         };
     }
 
-    var result = std.ArrayList(u8).init(allocator);
-    errdefer result.deinit();
+    var result = std.ArrayList(u8).initCapacity(allocator, 0) catch unreachable;
+    errdefer result.deinit(allocator);
 
     var i: usize = 0;
     while (i < input.len) {
@@ -57,8 +57,8 @@ pub fn decompress(compressed: Compressed, allocator: std.mem.Allocator) ![]u8 {
         return allocator.dupe(u8, "");
     }
 
-    var result = std.ArrayList(u8).init(allocator);
-    errdefer result.deinit();
+    var result = std.ArrayList(u8).initCapacity(allocator, 0) catch unreachable;
+    errdefer result.deinit(allocator);
 
     var i: usize = 0;
     while (i < compressed.data.len) {

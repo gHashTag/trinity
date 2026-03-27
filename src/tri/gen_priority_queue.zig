@@ -40,7 +40,8 @@ pub fn PriorityQueueInt(comptime T: type) type {
         }
 
         /// Bubble up element
-        fn bubbleUp(self: *Self, idx: usize) void {
+        fn bubbleUp(self: *Self, start_idx: usize) void {
+            var idx = start_idx;
             while (idx > 0) {
                 const parent_idx = Self.parent(idx);
                 if (self.items[idx] < self.items[parent_idx]) {
@@ -51,7 +52,8 @@ pub fn PriorityQueueInt(comptime T: type) type {
         }
 
         /// Bubble down element
-        fn bubbleDown(self: *Self, idx: usize) void {
+        fn bubbleDown(self: *Self, start_idx: usize) void {
+            var idx = start_idx;
             while (idx < self.count) {
                 const left = Self.leftChild(idx);
                 const right = Self.rightChild(idx);

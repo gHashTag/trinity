@@ -35,8 +35,8 @@ pub fn encode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) ![
             if (i + 4 < input.len) input[i + 4] else 0,
         };
 
-        // Encode to 8 characters
-        const quintet = [8]u5{
+        // Encode to 8 characters (using u8 to avoid truncation)
+        const quintet = [8]u8{
             bytes[0] >> 3,
             ((bytes[0] & 0x07) << 2) | (bytes[1] >> 6),
             (bytes[1] >> 1) & 0x1F,
@@ -49,13 +49,7 @@ pub fn encode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) ![
 
         // Determine how many chars are valid
         const remaining = input.len - i;
-        const valid_chars = switch (remaining) {
-            1 => 2,
-            2 => 4,
-            3 => 5,
-            4 => 7,
-            else => 8,
-        };
+        const valid_chars: usize = if (remaining == 1) 2 else if (remaining == 2) 4 else if (remaining == 3) 5 else if (remaining == 4) 7 else 8;
 
         for (quintet[0..valid_chars]) |idx| {
             try result.append(allocator, codec.alphabet[idx]);
@@ -87,7 +81,8 @@ pub fn decode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) ![
     var result = try std.ArrayList(u8).initCapacity(allocator, output_len);
 
     // Build decode lookup
-    var lookup = [256]u8{0xFF} ** 256;
+    var lookup: [256]u8 = undefined;
+    @memset(&lookup, 0xFF);
     for (codec.alphabet, 0..) |c, i| {
         lookup[c] = @intCast(i);
     }
@@ -96,7 +91,7 @@ pub fn decode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) ![
     while (i < input.len and input[i] != '=') : (i += 8) {
         // Get up to 8 characters
         const chars_len = @min(8, input.len - i);
-        var indices: [8]u5 = undefined;
+        var indices: [8]u8 = undefined;
         var valid_count: usize = 0;
 
         for (0..chars_len) |j| {
@@ -118,14 +113,7 @@ pub fn decode(codec: Base32, input: []const u8, allocator: std.mem.Allocator) ![
         };
 
         // Determine output bytes based on valid chars
-        const output_bytes = switch (valid_count) {
-            2 => 1,
-            4 => 2,
-            5 => 3,
-            7 => 4,
-            8 => 5,
-            else => return error.InvalidLength,
-        };
+        const output_bytes: usize = if (valid_count == 2) 1 else if (valid_count == 4) 2 else if (valid_count == 5) 3 else if (valid_count == 7) 4 else if (valid_count == 8) 5 else return error.InvalidLength;
 
         for (bytes[0..output_bytes]) |b| {
             try result.append(allocator, b);

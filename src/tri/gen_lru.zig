@@ -31,7 +31,7 @@ pub fn LRU(comptime K: type, comptime V: type) type {
             return .{
                 .capacity = capacity,
                 .entries = std.HashMap(K, V, Context, 80).init(allocator),
-                .access_list = std.ArrayList(K).init(allocator),
+                .access_list = std.ArrayList(K).initCapacity(allocator, 0) catch unreachable,
             };
         }
 
@@ -65,7 +65,7 @@ pub fn LRU(comptime K: type, comptime V: type) type {
 
                 // Evict if over capacity
                 while (self.entries.count() > self.capacity) {
-                    self.evict(allocator);
+                    self.evict();
                 }
             } else {
                 // Update access order for existing key
@@ -74,7 +74,7 @@ pub fn LRU(comptime K: type, comptime V: type) type {
         }
 
         /// Evict least recently used entry
-        fn evict(self: *Self, allocator: std.mem.Allocator) void {
+        fn evict(self: *Self) void {
             if (self.access_list.items.len == 0) return;
 
             const lru_key = self.access_list.orderedRemove(0);

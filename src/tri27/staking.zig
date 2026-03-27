@@ -207,13 +207,12 @@ pub const StakingState = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        const entry = self.stakes.getPtr(staker) orelse {
+        const entry = self.stakes.getPtr(staker) orelse
             return .{
                 .success = false,
                 .staked_wei = 0,
                 .reason = .not_staked,
             };
-        }
 
         if (!entry.canUnstake()) {
             return .{
@@ -281,27 +280,19 @@ pub const StakingState = struct {
     }
 
     pub fn slashForManipulation(self: *StakingState, staker: [32]u8) u128 {
-        return @as(u128, @intFromFloat(
-            @as(f64, @floatFromInt(self.getRemainingStake(staker))) * 0.50
-        ));
+        return @as(u128, @intFromFloat(@as(f64, @floatFromInt(self.getRemainingStake(staker))) * 0.50));
     }
 
     pub fn slashForTheft(self: *StakingState, staker: [32]u8) u128 {
-        return @as(u128, @intFromFloat(
-            @as(f64, @floatFromInt(self.getRemainingStake(staker)))
-        ));
+        return @as(u128, @intFromFloat(@as(f64, @floatFromInt(self.getRemainingStake(staker)))));
     }
 
     pub fn slashForDowntime(self: *StakingState, staker: [32]u8) u128 {
-        return @as(u128, @intFromFloat(
-            @as(f64, @floatFromInt(self.getRemainingStake(staker))) * 0.10
-        ));
+        return @as(u128, @intFromFloat(@as(f64, @floatFromInt(self.getRemainingStake(staker))) * 0.10));
     }
 
     pub fn slashForDoubleSign(self: *StakingState, staker: [32]u8) u128 {
-        return @as(u128, @intFromFloat(
-            @as(f64, @floatFromInt(self.getRemainingStake(staker)))
-        ));
+        return @as(u128, @intFromFloat(@as(f64, @floatFromInt(self.getRemainingStake(staker)))));
     }
 
     pub fn slashStake(

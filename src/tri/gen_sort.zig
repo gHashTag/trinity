@@ -12,14 +12,14 @@ pub const SortOrder = enum {
 
 /// Sort slice (generic for orderable types)
 pub fn sort(comptime T: type, items: []const T, order: SortOrder, allocator: std.mem.Allocator) ![]T {
-    var result = try allocator.dupe(T, items);
+    const result = try allocator.dupe(T, items);
     errdefer allocator.free(result);
 
-    std.mem.sort(T, result, {}, struct {
-        fn compare(_: void, a: T, b: T) bool {
-            return switch (order) {
-                .Ascending => if (@typeInfo(T) == .float) a < b else a < b,
-                .Descending => if (@typeInfo(T) == .float) a > b else a > b,
+    std.mem.sort(T, result, order, struct {
+        fn compare(o: SortOrder, a: T, b: T) bool {
+            return switch (o) {
+                .Ascending => a < b,
+                .Descending => a > b,
             };
         }
     }.compare);
@@ -28,13 +28,13 @@ pub fn sort(comptime T: type, items: []const T, order: SortOrder, allocator: std
 }
 
 /// Sort by key function (returns std.math.Order)
-pub fn sortBy(comptime T: type, items: []const T, key_fn: fn(T) std.math.Order, allocator: std.mem.Allocator) ![]T {
-    var result = try allocator.dupe(T, items);
+pub fn sortBy(comptime T: type, items: []const T, key_fn: fn (T) std.math.Order, allocator: std.mem.Allocator) ![]T {
+    const result = try allocator.dupe(T, items);
     errdefer allocator.free(result);
 
     std.mem.sort(T, result, key_fn, struct {
-        fn compare(key_fn_ptr: fn(T) std.math.Order, a: T, b: T) bool {
-            return key_fn_ptr(a).compare(key_fn_ptr(b)) == .lt;
+        fn compare(fn_ptr: fn (T) std.math.Order, a: T, b: T) bool {
+            return fn_ptr(a).compare(fn_ptr(b)) == .lt;
         }
     }.compare);
 

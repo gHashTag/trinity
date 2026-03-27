@@ -17,8 +17,10 @@ pub fn Set(comptime T: type) type {
         }
 
         /// Create set with one element
-        pub fn singleton(val: T) Self {
-            return .{ .items = &[_]T{val} };
+        pub fn singleton(allocator: std.mem.Allocator, val: T) !Self {
+            const new_items = try allocator.alloc(T, 1);
+            new_items[0] = val;
+            return .{ .items = new_items };
         }
 
         /// Check membership
@@ -79,21 +81,26 @@ test "Set.empty" {
 }
 
 test "Set.singleton" {
-    const set = Set(i32).singleton(42);
+    const set = try Set(i32).singleton(std.testing.allocator, 42);
+    defer std.testing.allocator.free(set.items);
     try std.testing.expectEqual(@as(usize, 1), set.size());
     try std.testing.expect(set.contains(42));
 }
 
 test "Set.contains" {
-    const set = Set(i32).singleton(42);
+    const set = try Set(i32).singleton(std.testing.allocator, 42);
+    defer std.testing.allocator.free(set.items);
     try std.testing.expect(set.contains(42));
     try std.testing.expect(!set.contains(99));
 }
 
 test "Set.setUnion" {
-    const set1 = Set(i32).singleton(1);
-    const set2 = Set(i32).singleton(2);
+    const set1 = try Set(i32).singleton(std.testing.allocator, 1);
+    defer std.testing.allocator.free(set1.items);
+    const set2 = try Set(i32).singleton(std.testing.allocator, 2);
+    defer std.testing.allocator.free(set2.items);
     const union_set = try set1.setUnion(set2, std.testing.allocator);
+    defer std.testing.allocator.free(union_set.items);
 
     try std.testing.expect(union_set.contains(1));
     try std.testing.expect(union_set.contains(2));
