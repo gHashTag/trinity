@@ -42,22 +42,24 @@ pub fn distance(a: []const u8, b: []const u8, allocator: std.mem.Allocator) !usi
         prev[j] = j;
     }
 
-    for (1..m + 1) |i| {
-        curr[0] = i;
+    for (0..m) |i| {
+        curr[0] = i + 1;
 
-        for (1..n + 1) |j| {
-            const cost = if (a[i - 1] == b[j - 1]) @as(usize, 0) else 1;
+        for (0..n) |j| {
+            const cost = if (a[i] == b[j]) @as(usize, 0) else 1;
 
-            curr[j] = @min(
-                @min(curr[j - 1] + 1, prev[j] + 1),
-                prev[j - 1] + cost,
+            curr[j + 1] = @min(
+                @min(curr[j] + 1, prev[j + 1] + 1),
+                prev[j] + cost,
             );
         }
 
         // Swap
-        const tmp = prev;
-        _ = @memcpy(curr[0..], prev[0..]);
-        _ = @memcpy(tmp[0..], curr[0..]);
+        for (0..n + 1) |j| {
+            const tmp = prev[j];
+            prev[j] = curr[j];
+            curr[j] = tmp;
+        }
     }
 
     return prev[n];

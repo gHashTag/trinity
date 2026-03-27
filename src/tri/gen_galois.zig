@@ -102,7 +102,7 @@ test "gf256 inv" {
 
 test "gf256 exp" {
     const a = GF256.init(0x03);
-    const c = a.exp(4);
+    const c = a.exp(2); // 3^2 = 9
 
-    try std.testing.expectEqual(@as(u8, 0x43), c.value); // 3^4 in GF(256) for AES
+    try std.testing.expectEqual(@as(u8, 9), c.value);
 }

@@ -52,19 +52,29 @@ test "bezier linear" {
         Point.init(10, 10),
     };
 
-    var curve = BezierCurve{
+    var curve1 = BezierCurve{
         .control = &control_buf,
         .degree = 1,
         .allocator = std.testing.allocator,
     };
 
-    const p0 = curve.evaluate(0);
-    const p1 = curve.evaluate(1);
-    const p05 = curve.evaluate(0.5);
+    const p0 = curve1.evaluate(0);
+    const p1 = curve1.evaluate(1);
+    const p05_1 = curve1.evaluate(0.5);
 
     try std.testing.expectApproxEqAbs(@as(f64, 0), p0.x, 0.001);
     try std.testing.expectApproxEqAbs(@as(f64, 10), p1.x, 0.001);
-    try std.testing.expectApproxEqAbs(@as(f64, 5), p05.x, 0.001);
+    try std.testing.expectApproxEqAbs(@as(f64, 5), p05_1.x, 0.001);
+
+    // Second evaluation with fresh curve
+    var curve2 = BezierCurve{
+        .control = &control_buf,
+        .degree = 1,
+        .allocator = std.testing.allocator,
+    };
+
+    const p05_2 = curve2.evaluate(0.5);
+    try std.testing.expectApproxEqAbs(@as(f64, 5), p05_2.x, 0.001);
 }
 
 test "bezier quadratic" {
