@@ -30,7 +30,7 @@ pub const CuckooFilter = struct {
         return h & mask;
     }
 
-    fn indexOf(cf: *const Cuckoo, fingerprint: u64, index: u64) u64 {
+    fn indexOf(cf: *const CuckooFilter, fingerprint: u64, index: u64) u64 {
         const alt = (index >> 1) ^ (index << 1);
         return (index + alt) % cf.size;
     }

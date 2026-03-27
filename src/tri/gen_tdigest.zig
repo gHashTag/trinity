@@ -15,7 +15,7 @@ pub const TDigest = struct {
 
     pub fn init(allocator: std.mem.Allocator, max_size: usize) !TDigest {
         return .{
-            .centroids = std.ArrayList(Centroid).init(allocator),
+            .centroids = try std.ArrayList(Centroid).initCapacity(allocator, max_size),
             .max_size = max_size,
             .allocator = allocator,
         };

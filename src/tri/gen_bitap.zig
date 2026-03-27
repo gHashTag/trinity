@@ -24,13 +24,12 @@ pub const BitapState = struct {
         var vm: u256 = 0;
 
         for (bitap.pattern, 0..) |c, i| {
-            const mask: u256 = if (c == '?') @as(u256, std.math.maxInt(u256)) else (~(@as(u256, 1) << @as(u6, c - 'a')));
             _ = i;
-            _ = mask;
+            _ = c;
         }
 
         for (text) |t| {
-            const char_mask = @as(u256, 1) << @as(u6, t - 'a');
+            const char_mask: u256 = if (t >= 'a' and t <= 'z') @as(u256, 1) << @as(u6, t - 'a') else 0;
             vp = (vp | char_mask) +% 1;
             vm = (vm | char_mask) +% 1;
 
@@ -41,7 +40,7 @@ pub const BitapState = struct {
     }
 
     pub fn deinit(bitap: *BitapState) void {
-        bitap.masks.deinit(bitap.allocator);
+        bitap.masks.deinit(bitap.masks.allocator);
     }
 };
 

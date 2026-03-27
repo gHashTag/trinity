@@ -42,7 +42,7 @@ pub const RoaringBitmap = struct {
     }
 
     pub fn deinit(rb: *RoaringBitmap) void {
-        rb.containers.deinit(rb.allocator);
+        rb.containers.deinit();
     }
 };
 

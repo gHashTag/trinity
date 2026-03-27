@@ -12,7 +12,7 @@ pub const CountMinSketch = struct {
     pub fn init(allocator: std.mem.Allocator, depth: usize, width: usize) !CountMinSketch {
         const table = try allocator.alloc(std.ArrayList(u64), depth);
         for (0..depth) |i| {
-            table[i] = std.ArrayList(u64).initCapacity(allocator, width);
+            table[i] = try std.ArrayList(u64).initCapacity(allocator, width);
             _ = try table[i].appendNTimes(allocator, 0, width);
         }
 

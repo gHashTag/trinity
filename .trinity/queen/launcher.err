@@ -49284,3 +49284,38 @@ error: NotOpenForWriting
         try queen_trinity.runQueenCommand(allocator, queen_args);
         ^
 👑 Queen Trinity starting daemon mode (PID 71476)
+👑 Queen Trinity starting daemon mode (PID 50169)
+error: NotOpenForWriting
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:370:13: 0x100d96657 in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x100d974b7 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:9: 0x10112c7fb in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 56066)
+error: NotOpenForWriting
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1300:22: 0x10024176f in write (tri)
+            .BADF => return error.NotOpenForWriting, // can be a race condition.
+                     ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:971:5: 0x10021ac9f in write (tri)
+    return posix.write(self.handle, bytes);
+    ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/File.zig:978:18: 0x1001fd783 in writeAll (tri)
+        index += try self.write(bytes[index..]);
+                 ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:447:5: 0x1002b169f in logToHive__anon_20561 (tri)
+    try f.writeAll(formatted);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:370:13: 0x1002b2657 in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x1002b34b7 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:178:9: 0x1006487fb in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 57092)

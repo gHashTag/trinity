@@ -5,19 +5,19 @@ const std = @import("std");
 
 pub const HyperLogLog = struct {
     registers: []u8,
-    precision: u8,
+    p: u6,
     allocator: std.mem.Allocator,
 
     const ALPHA: f64 = 0.7213;
 
-    pub fn init(allocator: std.mem.Allocator, precision: u8) !HyperLogLog {
-        const m = @as(usize, 1) << @as(usize, precision);
+    pub fn init(allocator: std.mem.Allocator, p: u6) !HyperLogLog {
+        const m = @as(usize, 1) << p;
         const registers = try allocator.alloc(u8, m);
         @memset(registers, 0);
 
         return .{
             .registers = registers,
-            .precision = precision,
+            .p = p,
             .allocator = allocator,
         };
     }
@@ -34,15 +34,15 @@ pub const HyperLogLog = struct {
 
     pub fn add(hll: *HyperLogLog, value: []const u8) void {
         const x = hash64(std.hash.Wyhash.hash(value));
-        const index = @as(usize, @intCast(x >> (64 - hll.precision)));
+        const index = x >> (64 - hll.p);
 
-        const rho = @as(u8, @intCast(@clz(x << hll.precision)));
+        const rho = @as(u8, @intCast(@clz(x << hll.p)));
         const reg = @max(hll.registers[index], rho);
-        hll.registers[index] = reg;
+        hl l.registers[index] = reg;
     }
 
     pub fn count(hll: *const HyperLogLog) f64 {
-        const m = @as(f64, @floatFromInt(hll.registers.len));
+        const m = @as(f64, @floatFromInt(@as(usize, 1) << hll.p));
         var sum: f64 = 0;
         for (hll.registers) |r| {
             sum += @as(f64, @floatFromInt(r));

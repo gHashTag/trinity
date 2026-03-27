@@ -1206,7 +1206,9 @@ fn printHelp() void {
     print("  tri zenodo bundle <A-G|PARENT>  Publish v8.0 bundle (or all)\n", .{});
     print("  tri zenodo v16                   Scientific documentation framework\n", .{});
     print("  tri zenodo v19                   Scientific metadata standards\n", .{});
-    print("  tri zenodo v20                   Statistical significance module\n\n", .{});
+    print("  tri zenodo v20                   Statistical significance module\n", .{});
+    print("  tri zenodo v21                   Broader impact statement (NeurIPS/ICLR)\n", .{});
+    print("  tri zenodo v22                   Reproducibility checklist (NeurIPS/ICLR)\n\n", .{});
     print("  V16 Commands:\n", .{});
     print("    tri zenodo v16 model-card <name>      Generate ICLR/NeurIPS model card\n", .{});
     print("    tri zenodo v16 dataset-card <name>    Generate NeurIPS dataset card\n", .{});
@@ -1225,7 +1227,16 @@ fn printHelp() void {
     print("    tri zenodo v20 ttest <a> <b>           Paired t-test\n", .{});
     print("    tri zenodo v20 wilcoxon <a> <b>        Wilcoxon signed-rank test\n", .{});
     print("    tri zenodo v20 effect <a> <b>          Cohen's d + Cliff's delta\n", .{});
-    print("    tri zenodo v20 summary                 Complete statistical summary\n\n", .{});
+    print("    tri zenodo v20 summary                 Complete statistical summary\n", .{});
+    print("    tri zenodo v20 significance            Statistical significance test (t-test, Wilcoxon)\n\n", .{});
+    print("  V21 Commands:\n", .{});
+    print("    tri zenodo v21 neurips                 Generate NeurIPS broader impact statement\n", .{});
+    print("    tri zenodo v21 iclr                   Generate ICLR ethical statement\n", .{});
+    print("    tri zenodo v21 risk                   Show risk assessment matrix\n\n", .{});
+    print("  V22 Commands:\n", .{});
+    print("    tri zenodo v22 neurips                 Generate NeurIPS reproducibility checklist\n", .{});
+    print("    tri zenodo v22 iclr                   Generate ICLR reproducibility criteria\n", .{});
+    print("    tri zenodo v22 completion             Show overall completion percentage\n\n", .{});
     print("  Bundle aliases:\n", .{});
     print("    A = B001: HSLM-1.95M Ternary Neural Networks\n", .{});
     print("    B = B002: Zero-DSP FPGA Accelerator\n", .{});
@@ -1756,6 +1767,149 @@ test "token load from env" {
     } else |_| {
         // Expected when no token set
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V21 BROADER IMPACT STATEMENT (NeurIPS/ICLR 2025)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runV21Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printV21Help();
+        return;
+    }
+
+    const v21_subcmd = args[0];
+
+    if (std.mem.eql(u8, v21_subcmd, "neurips")) {
+        print("\n{s}{s}V21 NeurIPS Broader Impact Statement{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+        const output = try statement.formatNeurips(allocator);
+        defer allocator.free(output);
+
+        print("{s}\n", .{output});
+        print("{s}✅ NeurIPS broader impact statement generated!{s}\n\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, v21_subcmd, "iclr")) {
+        print("\n{s}{s}V21 ICLR Ethical Statement{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+        const output = try statement.formatIclr(allocator);
+        defer allocator.free(output);
+
+        print("{s}\n", .{output});
+        print("{s}✅ ICLR ethical statement generated!{s}\n\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, v21_subcmd, "risk")) {
+        print("\n{s}{s}V21 Risk Assessment Matrix{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const statement = try zenodo_v21_broader_impact.defaultTrinityImpact(allocator);
+
+        print("{s}Risk Assessment:{s}\n\n", .{ BOLD, RESET });
+        print("{s}Risk{s} | {s}Likelihood{s} | {s}Impact{s} | {s}Score{s} | {s}Mitigation{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+        print("{s}─────{s}┼{s}─────────{s}┼{s}───────{s}┼{s}──────{s}┼{s}────────────{s}\n", .{ CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+
+        for (statement.risks) |risk| {
+            const likelihood_emoji = risk.likelihood.emoji();
+            const impact_emoji = risk.impact.emoji();
+            print(" {s} {s} {s} | {s} {d} {s} | {s} {d} {s} | {s} **{d}** {s} | ", .{ RESET, risk.name, RESET, likelihood_emoji, RESET, risk.likelihood.score(), RESET, impact_emoji, RESET, risk.impact.score(), RESET, risk.score(), RESET });
+            if (risk.mitigations.len > 0) {
+                print("{s}\n", .{risk.mitigations[0]});
+            } else {
+                print("\n");
+            }
+        }
+
+        print("\n{s}✅ Risk assessment displayed!{s}\n\n", .{ GREEN, RESET });
+    } else {
+        print("{s}Unknown V21 subcommand: {s}{s}\n", .{ RED, v21_subcmd, RESET });
+        printV21Help();
+    }
+}
+
+fn printV21Help() void {
+    print("\n{s}{s}ZENODO V21 — Broader Impact Statement (NeurIPS/ICLR 2025){s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("  tri zenodo v21 neurips                 Generate NeurIPS broader impact statement\n", .{});
+    print("  tri zenodo v21 iclr                   Generate ICLR ethical statement\n", .{});
+    print("  tri zenodo v21 risk                   Show risk assessment matrix\n\n", .{});
+    print("  References: NeurIPS 2025 Broader Impact Guide, ICLR 2025 Ethical Statement\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V22 REPRODUCIBILITY CHECKLIST (NeurIPS/ICLR 2025)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runV22Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printV22Help();
+        return;
+    }
+
+    const v22_subcmd = args[0];
+
+    if (std.mem.eql(u8, v22_subcmd, "neurips")) {
+        print("\n{s}{s}V22 NeurIPS Reproducibility Checklist{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        defer allocator.free(checklist.categories);
+
+        const output = try checklist.formatNeurips(allocator);
+        defer allocator.free(output);
+
+        print("{s}\n", .{output});
+
+        const completion = checklist.overallCompletion();
+        print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
+        print("{s}✅ NeurIPS checklist generated!{s}\n\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, v22_subcmd, "iclr")) {
+        print("\n{s}{s}V22 ICLR Reproducibility Criteria{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        defer allocator.free(checklist.categories);
+
+        const output = try checklist.formatIclr(allocator);
+        defer allocator.free(output);
+
+        print("{s}\n", .{output});
+
+        const completion = checklist.overallCompletion();
+        print("{s}Overall Completion: {d:.1}%{s}\n", .{ BOLD, completion, RESET });
+        print("{s}✅ ICLR checklist generated!{s}\n\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, v22_subcmd, "completion")) {
+        print("\n{s}{s}V22 Completion Status{s}\n", .{ CYAN, BOLD, RESET });
+        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+        const checklist = try zenodo_v22_reproducibility.defaultTrinityChecklist(allocator);
+        defer allocator.free(checklist.categories);
+
+        const overall_completion = checklist.overallCompletion();
+
+        print("{s}Overall Completion: {d:.1}%{s}\n\n", .{ BOLD, overall_completion, RESET });
+
+        print("{s}Category Breakdown:{s}\n", .{ BOLD, RESET });
+        for (checklist.categories) |cat| {
+            const cat_completion = cat.completion();
+            const status = if (cat_completion == 100.0) "✅" else if (cat_completion >= 70.0) "🟡" else "🔴";
+            print("  {s} {s}: {d:.1}% {s}\n", .{ status, cat.name, cat_completion, RESET });
+        }
+
+        print("\n{s}✅ Completion status displayed!{s}\n\n", .{ GREEN, RESET });
+    } else {
+        print("{s}Unknown V22 subcommand: {s}{s}\n", .{ RED, v22_subcmd, RESET });
+        printV22Help();
+    }
+}
+
+fn printV22Help() void {
+    print("\n{s}{s}ZENODO V22 — Reproducibility Checklist (NeurIPS/ICLR 2025){s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("  tri zenodo v22 neurips                 Generate NeurIPS reproducibility checklist\n", .{});
+    print("  tri zenodo v22 iclr                   Generate ICLR reproducibility criteria\n", .{});
+    print("  tri zenodo v22 completion             Show overall completion percentage\n\n", .{});
+    print("  References: NeurIPS 2025 Reproducibility Checklist, ICLR 2025 Criteria\n\n", .{});
 }
 
 test "json_escape_string" {
