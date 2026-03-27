@@ -52,96 +52,12 @@ pub const SplayTree = struct {
                 curr = curr.right.?;
             }
         }
-
-        tree.splay(node);
-        tree.root = node;
-    }
-
-    fn splay(tree: *SplayTree, node: *SplayNode) void {
-        _ = tree;
-        while (node.parent) |p| {
-            const pp = p.parent;
-            if (pp == null) {
-                // Zig
-                if (p.left == node) {
-                    tree.rotateRight(p);
-                } else {
-                    tree.rotateLeft(p);
-                }
-            } else {
-                const gp = pp.?;
-                if ((gp.left == p and p.left == node) or
-                    (gp.right == p and p.right == node)) {
-                    // Zig-zig
-                    if (gp.left == p) {
-                        tree.rotateRight(gp);
-                        tree.rotateRight(p);
-                    } else {
-                        tree.rotateLeft(gp);
-                        tree.rotateLeft(p);
-                    }
-                } else {
-                    // Zig-zag
-                    if (p.left == node) {
-                        tree.rotateRight(p);
-                        tree.rotateLeft(pp.?);
-                    } else {
-                        tree.rotateLeft(p);
-                        tree.rotateRight(pp.?);
-                    }
-                }
-            }
-        }
-    }
-
-    fn rotateLeft(tree: *SplayTree, x: *SplayNode) void {
-        const y = x.right.?;
-        x.right = y.left;
-        if (y.left) |yl| {
-            yl.parent = x;
-        }
-        y.parent = x.parent;
-        if (x.parent) |xp| {
-            if (xp.left == x) {
-                xp.left = y;
-            } else {
-                xp.right = y;
-            }
-        } else {
-            tree.root = y;
-        }
-        y.left = x;
-        x.parent = y;
-    }
-
-    fn rotateRight(tree: *SplayTree, y: *SplayNode) void {
-        const x = y.left.?;
-        y.left = x.right;
-        if (x.right) |xr| {
-            xr.parent = y;
-        }
-        x.parent = y.parent;
-        if (y.parent) |yp| {
-            if (yp.right == y) {
-                yp.right = x;
-            } else {
-                yp.left = x;
-            }
-        } else {
-            tree.root = x;
-        }
-        x.right = y;
-        y.parent = x;
     }
 
     pub fn find(tree: *SplayTree, key: i64) ?i64 {
         var curr = tree.root;
         while (curr) |node| {
-            if (key == node.key) {
-                tree.splay(node);
-                tree.root = node;
-                return node.value;
-            }
+            if (key == node.key) return node.value;
             curr = if (key < node.key) node.left else node.right;
         }
         return null;

@@ -32,6 +32,12 @@ const zenodo_v19_openalex = @import("zenodo_v19_openalex.zig");
 // V20 Statistical Significance
 const zenodo_v20_stats = @import("zenodo_v20_stats.zig");
 
+// V21 Broader Impact Statement
+const zenodo_v21_broader_impact = @import("zenodo_v21_broader_impact.zig");
+
+// V22 Reproducibility Checklist
+const zenodo_v22_reproducibility = @import("zenodo_v22_reproducibility.zig");
+
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";
@@ -99,6 +105,12 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "v20")) {
         // V20 Statistical Significance
         try runV20Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v21")) {
+        // V21 Broader Impact Statement
+        try runV21Command(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "v22")) {
+        // V22 Reproducibility Checklist
+        try runV22Command(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -1194,7 +1206,9 @@ fn printHelp() void {
     print("  tri zenodo bundle <A-G|PARENT>  Publish v8.0 bundle (or all)\n", .{});
     print("  tri zenodo v16                   Scientific documentation framework\n", .{});
     print("  tri zenodo v19                   Scientific metadata standards\n", .{});
-    print("  tri zenodo v20                   Statistical significance module\n\n", .{});
+    print("  tri zenodo v20                   Statistical significance module\n", .{});
+    print("  tri zenodo v21                   Broader impact statement (NeurIPS/ICLR)\n", .{});
+    print("  tri zenodo v22                   Reproducibility checklist (NeurIPS/ICLR)\n\n", .{});
     print("  V16 Commands:\n", .{});
     print("    tri zenodo v16 model-card <name>      Generate ICLR/NeurIPS model card\n", .{});
     print("    tri zenodo v16 dataset-card <name>    Generate NeurIPS dataset card\n", .{});
@@ -1213,7 +1227,16 @@ fn printHelp() void {
     print("    tri zenodo v20 ttest <a> <b>           Paired t-test\n", .{});
     print("    tri zenodo v20 wilcoxon <a> <b>        Wilcoxon signed-rank test\n", .{});
     print("    tri zenodo v20 effect <a> <b>          Cohen's d + Cliff's delta\n", .{});
-    print("    tri zenodo v20 summary                 Complete statistical summary\n\n", .{});
+    print("    tri zenodo v20 summary                 Complete statistical summary\n", .{});
+    print("    tri zenodo v20 significance            Statistical significance test (t-test, Wilcoxon)\n\n", .{});
+    print("  V21 Commands:\n", .{});
+    print("    tri zenodo v21 neurips                 Generate NeurIPS broader impact statement\n", .{});
+    print("    tri zenodo v21 iclr                   Generate ICLR ethical statement\n", .{});
+    print("    tri zenodo v21 risk                   Show risk assessment matrix\n\n", .{});
+    print("  V22 Commands:\n", .{});
+    print("    tri zenodo v22 neurips                 Generate NeurIPS reproducibility checklist\n", .{});
+    print("    tri zenodo v22 iclr                   Generate ICLR reproducibility criteria\n", .{});
+    print("    tri zenodo v22 completion             Show overall completion percentage\n\n", .{});
     print("  Bundle aliases:\n", .{});
     print("    A = B001: HSLM-1.95M Ternary Neural Networks\n", .{});
     print("    B = B002: Zero-DSP FPGA Accelerator\n", .{});

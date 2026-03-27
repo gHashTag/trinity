@@ -127,7 +127,6 @@ pub const Octree = struct {
     }
 
     fn queryRecursive(ot: *Octree, node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
-        _ = ot;
         _ = bounds;
         if (node.data) |data| {
             try result.append(ot.allocator, data);
@@ -152,12 +151,8 @@ pub const Octree = struct {
 
 test "octree init" {
     const bounds = BBox{
-        .min_x = 0,
-        .min_y = 0,
-        .min_z = 0,
-        .max_x = 100,
-        .max_y = 100,
-        .max_z = 100,
+        .min_x = 0, .min_y = 0, .min_z = 0,
+        .max_x = 100, .max_y = 100, .max_z = 100,
     };
     var ot = try Octree.init(std.testing.allocator, bounds, 10);
     defer ot.deinit();
@@ -167,12 +162,8 @@ test "octree init" {
 
 test "octree insert" {
     const bounds = BBox{
-        .min_x = 0,
-        .min_y = 0,
-        .min_z = 0,
-        .max_x = 100,
-        .max_y = 100,
-        .max_z = 100,
+        .min_x = 0, .min_y = 0, .min_z = 0,
+        .max_x = 100, .max_y = 100, .max_z = 100,
     };
     var ot = try Octree.init(std.testing.allocator, bounds, 10);
     defer ot.deinit();

@@ -101,7 +101,7 @@ pub const SkipList = struct {
 test "skiplist init" {
     var list = try SkipList.init(std.testing.allocator);
     defer list.deinit();
-    try std.testing.expect(list.head != null);
+    try std.testing.expect(list.head.forward.len > 0);
 }
 
 test "skiplist insert search" {
