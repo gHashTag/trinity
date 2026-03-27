@@ -31,6 +31,12 @@ Phenomenological modeling framework for consciousness cycles based on lotus flow
 - Research: `docs/research/queen_lotus_experiments.md`
 - UI: `apps/queen/`
 
+## Related Bundles
+
+**B004 Lotus** enables:
+- [B007 VSA](B007_VSA.md) — Consciousness state binding (17× faster SIMD)
+- [B001 HSLM](B001_HSLM.md) — φ-normalized ternary encoding
+
 ## Citation
 
 ```bibtex
