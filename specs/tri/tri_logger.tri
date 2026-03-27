@@ -1,0 +1,61 @@
+name: tri_logger
+version: "0.1.0"
+module: tri.logger
+description: "TRI Logger — structured logging"
+
+types:
+  Level:
+    description: "Log severity"
+    enum: [Trace, Debug, Info, Warn, Error, Fatal]
+
+  LogEntry:
+    description: "Log record"
+    fields:
+      timestamp: "Instant"
+      level: "Level"
+      message: "[]const u8"
+      fields: "std.StringHashMap([]const u8)"
+
+  Logger:
+    description: "Logger instance"
+    fields:
+      name: "[]const u8"
+      min_level: "Level"
+      writers: "[]LogWriter"
+
+functions:
+  new:
+    params:
+      - name: name
+        type: "[]const u8"
+      - name: min_level
+        type: "Level"
+    returns: "Logger"
+    description: "Create named logger"
+
+  log:
+    params:
+      - name: logger
+        type: "*Logger"
+      - name: level
+        type: "Level"
+      - name: message
+        type: "[]const u8"
+    returns: "void"
+    description: "Write log entry"
+
+  withField:
+    params:
+      - name: entry
+        type: "*LogEntry"
+      - name: key
+        type: "[]const u8"
+      - name: value
+        type: "[]const u8"
+    returns: "void"
+    description: "Add structured field"
+
+behaviors:
+  - name: structured
+    description: "Structured logging"
+    note: "Key-value pairs, levels"

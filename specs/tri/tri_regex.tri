@@ -1,0 +1,53 @@
+name: tri_regex
+version: "0.1.0"
+module: tri.regex
+description: "TRI Regex — simple pattern matching"
+
+types:
+  Regex:
+    description: "Compiled pattern"
+    fields:
+      pattern: "[]const u8"
+      compiled: "bool"
+
+  Match:
+    description: "Pattern match result"
+    fields:
+      start: "usize"
+      end: "usize"
+      groups: "[][]const u8"
+
+functions:
+  compile:
+    params:
+      - name: pattern
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Regex"
+    description: "Parse regex pattern"
+
+  match:
+    params:
+      - name: regex
+        type: "Regex"
+      - name: text
+        type: "[]const u8"
+    returns: "?Match"
+    description: "Find first match or null"
+
+  findAll:
+    params:
+      - name: regex
+        type: "Regex"
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]Match"
+    description: "Find all matches"
+
+behaviors:
+  - name: subset
+    description: "Limited regex syntax"
+    note: "Literal, ., *, +, ?, |, [] groups"

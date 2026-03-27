@@ -1,73 +1,63 @@
 name: tri_time
 version: "0.1.0"
 module: tri.time
-description: "TRI time utilities — timestamp, duration, and formatting"
+description: "TRI Time — timestamp and duration"
 
 types:
-  Timestamp:
-    description: "Unix timestamp in milliseconds"
-    underlying: "u64"
+  Instant:
+    description: "Point in time"
+    fields:
+      epoch_seconds: "i64"
+      nanos: "u32"
 
   Duration:
-    description: "Time duration in milliseconds"
-    underlying: "u64"
-
-  DateTime:
-    description: "Date and time components"
+    description: "Time span"
     fields:
-      year: i32
-      month: u8
-      day: u8
-      hour: u8
-      minute: u8
-      second: u8
-      millis: u16
+      seconds: "i64"
+      nanos: "u32"
 
 functions:
   now:
-    returns: "Timestamp"
-    description: "Get current Unix timestamp in milliseconds"
+    returns: "Instant"
+    description: "Current time (Unix epoch)"
 
-  fromSeconds:
+  sinceEpoch:
     params:
-      - name: secs
-        type: "u64"
-    returns: "Timestamp"
-    description: "Create timestamp from seconds"
-
-  toSeconds:
-    params:
-      - name: ts
-        type: "Timestamp"
-    returns: "u64"
-    description: "Convert timestamp to seconds"
-
-  elapsed:
-    params:
-      - name: start
-        type: "Timestamp"
+      - name: instant
+        type: "Instant"
     returns: "Duration"
-    description: "Get duration since timestamp"
+    description: "Time since Unix epoch"
 
-  duration:
+  add:
     params:
-      - name: millis
-        type: "u64"
-    returns: "Duration"
-    description: "Create duration from milliseconds"
-
-  formatDuration:
-    params:
-      - name: dur
+      - name: instant
+        type: "Instant"
+      - name: duration
         type: "Duration"
-    returns: "[]const u8"
-    description: "Format duration as human-readable string"
+    returns: "Instant"
+    description: "Add duration to instant"
+
+  sub:
+    params:
+      - name: a
+        type: "Instant"
+      - name: b
+        type: "Instant"
+    returns: "Duration"
+    description: "Difference between instants"
+
+  format:
+    params:
+      - name: instant
+        type: "Instant"
+      - name: fmt
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Format as string (ISO 8601)"
 
 behaviors:
-  - name: monotonic_clock
-    description: "Uses monotonic clock for elapsed time"
-    note: "Not affected by system time changes"
-
-  - name: unix_epoch
-    description: "Timestamps are relative to Unix epoch"
-    note: "1970-01-01 00:00:00 UTC"
+  - name: monotonic
+    description: "Monotonic clock"
+    note: "Never goes backwards"

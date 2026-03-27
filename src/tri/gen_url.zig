@@ -70,8 +70,9 @@ pub fn encode(component: []const u8, allocator: std.mem.Allocator) ![]u8 {
             try result.append(allocator, c);
         } else {
             try result.append(allocator, '%');
-            try result.append(allocator, std.fmt.hexToChar[0][c >> 4]);
-            try result.append(allocator, std.fmt.hexToChar[0][c & 0x0F]);
+            const hex_chars = "0123456789ABCDEF";
+            try result.append(allocator, hex_chars[c >> 4]);
+            try result.append(allocator, hex_chars[c & 0x0F]);
         }
     }
     return result.toOwnedSlice(allocator);

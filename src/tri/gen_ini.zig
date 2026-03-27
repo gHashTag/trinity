@@ -68,7 +68,7 @@ test "parse simple" {
     defer {
         var iter = result.sections.iterator();
         while (iter.next()) |entry| {
-            entry.value_ptr.keys.deinit();
+            entry.value_ptr.*.keys.deinit();
         }
         result.sections.deinit();
     }

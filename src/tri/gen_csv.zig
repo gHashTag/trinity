@@ -78,8 +78,8 @@ test "parse simple" {
     const text = "name,age\nAlice,30\nBob,25";
     const doc = try parse(text, std.testing.allocator);
     defer {
-        for (doc.headers.items) |h| h.deinit(std.testing.allocator);
-        for (doc.rows.items) |r| r.deinit(std.testing.allocator);
+        for (doc.headers.items) |*h| h.deinit(std.testing.allocator);
+        for (doc.rows.items) |*r| r.deinit(std.testing.allocator);
         doc.headers.deinit(std.testing.allocator);
         doc.rows.deinit(std.testing.allocator);
     }

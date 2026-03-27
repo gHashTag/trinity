@@ -237,6 +237,29 @@ Vasilev, D. (2026). Trinity B001: HSLM-1.95M ternary neural networks. Zenodo. ht
 D. Vasilev, "Trinity B001: HSLM-1.95M Ternary Neural Networks," Zenodo, 2026. doi: 10.5281/zenodo.19227865.
 ```
 
+### CFF (Citation File Format 1.2.0)
+```yaml
+cff-version: 1.2.0
+title: "Trinity S³AI: Pure-Zig Autonomous AI Agent Swarm"
+authors:
+  - family-names: "Vasilev"
+    given-names: "Dmitrii"
+    orcid: "https://orcid.org/0009-0008-4294-6159"
+version: 9.0.0
+doi: 10.5281/zenodo.19227879
+url: "https://github.com/gHashTag/trinity"
+license: MIT
+```
+
+**Location:** `/CITATION.cff` (project root)
+
+**Features:**
+- ORCID iD integration
+- Preferred citation format
+- References to all 7 bundles
+- SPDX license identifier
+- GitHub repository URL
+
 ---
 
 ## Troubleshooting

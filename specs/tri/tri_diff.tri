@@ -1,0 +1,59 @@
+name: tri_diff
+version: "0.1.0"
+module: tri.diff
+description: "TRI Diff — text difference"
+
+types:
+  Edit:
+    description: "Single edit operation"
+    enum: [Copy, Insert, Delete]
+
+  Hunk:
+    description: "Edit region"
+    fields:
+      op: "Edit"
+      old_start: "usize"
+      old_len: "usize"
+      new_text: "[]const u8"
+
+  Diff:
+    description: "List of edits"
+    fields:
+      hunks: "[]Hunk"
+
+functions:
+  compute:
+    params:
+      - name: old_text
+        type: "[]const u8"
+      - name: new_text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Diff"
+    description: "Compute edit script"
+
+  apply:
+    params:
+      - name: diff
+        type: "Diff"
+      - name: text
+        type: "[]const u8"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "![]u8"
+    description: "Apply edits to text"
+
+  invert:
+    params:
+      - name: diff
+        type: "Diff"
+      - name: allocator
+        type: "std.mem.Allocator"
+    returns: "!Diff"
+    description: "Swap old/new for reverse patch"
+
+behaviors:
+  - name: myers
+    description: "Myers diff algorithm"
+    note: "O(nd) time, O(d) space"

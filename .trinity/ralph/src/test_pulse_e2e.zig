@@ -107,7 +107,7 @@ fn answerCallbackQuery(allocator: std.mem.Allocator, config: telegram_pulse.Puls
     ;
 
     var body_buffer: [1024]u8 = undefined;
-    const body = try std.fmt.bufPrint(&body_buffer, body_template, .{callback_id, text});
+    const body = try std.fmt.bufPrint(&body_buffer, body_template, .{ callback_id, text });
 
     const headers = [_]std.http.Header{
         .{ .name = "User-Agent", .value = "RALPH-PULSE/2.0" },
@@ -187,7 +187,7 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
         // Debug: Log first 500 chars of response
         if (response_body.len > 0) {
             const debug_len = @min(500, response_body.len);
-            std.debug.print("[DEBUG] Response ({d} bytes): {s}...\n", .{response_body.len, response_body[0..debug_len]});
+            std.debug.print("[DEBUG] Response ({d} bytes): {s}...\n", .{ response_body.len, response_body[0..debug_len] });
         }
 
         // Skip empty responses
@@ -197,8 +197,9 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
         }
 
         // === HANDLE CALLBACK QUERIES (InlineKeyboard) ===
-        const callback_pattern = \\callback_query
-;
+        const callback_pattern = 
+            \\callback_query
+        ;
         if (std.mem.indexOf(u8, response_body, callback_pattern)) |cb_idx| {
             std.debug.print("[CALLBACK] Detected callback query!\n", .{});
 
@@ -207,9 +208,7 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
             const data_with_comma = ",\"data\":\"";
             const data_no_comma = "\"data\":\"";
 
-            const data_idx = if (std.mem.indexOf(u8, response_body[cb_idx..], data_with_comma)) |i| i
-                else if (std.mem.indexOf(u8, response_body[cb_idx..], data_no_comma)) |i| i
-                else null;
+            const data_idx = if (std.mem.indexOf(u8, response_body[cb_idx..], data_with_comma)) |i| i else if (std.mem.indexOf(u8, response_body[cb_idx..], data_no_comma)) |i| i else null;
 
             if (data_idx) |data_start_idx| {
                 // Determine which pattern matched and calculate start position
@@ -223,8 +222,9 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
                     std.debug.print("[CALLBACK] Command from callback: {s}\n", .{command});
 
                     // Extract callback query id (look for "id":" pattern before "data")
-                    const id_pattern = \\id:
-;
+                    const id_pattern = 
+                        \\id:
+                    ;
                     if (std.mem.indexOfPos(u8, response_body[cb_idx..], 0, id_pattern)) |id_idx| {
                         const id_start = cb_idx + id_idx + 4;
                         var id_end = id_start;
@@ -242,7 +242,6 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
                     }
                 }
             }
-
         }
 
         // === HANDLE REGULAR MESSAGES ===
@@ -250,9 +249,7 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
         const message_text_pattern_comma = ",\"text\":\"";
         const message_text_pattern_no_comma = "\"text\":\"";
 
-        const text_idx = if (std.mem.indexOf(u8, response_body, message_text_pattern_comma)) |i| i
-            else if (std.mem.indexOf(u8, response_body, message_text_pattern_no_comma)) |i| i
-            else null;
+        const text_idx = if (std.mem.indexOf(u8, response_body, message_text_pattern_comma)) |i| i else if (std.mem.indexOf(u8, response_body, message_text_pattern_no_comma)) |i| i else null;
 
         if (text_idx) |idx| {
             const found_comma = std.mem.indexOf(u8, response_body, message_text_pattern_comma) != null;
@@ -298,9 +295,7 @@ fn startPolling(allocator: std.mem.Allocator, config: telegram_pulse.PulseConfig
             const idx_comma = std.mem.indexOfPos(u8, response_body, search_idx, update_id_with_comma);
             const idx_no_comma = std.mem.indexOfPos(u8, response_body, search_idx, update_id_no_comma);
 
-            const idx = if (idx_comma) |ic| if (idx_no_comma) |in| if (ic < in) ic else in else ic
-                else if (idx_no_comma) |in| in
-                else null;
+            const idx = if (idx_comma) |ic| if (idx_no_comma) |in| if (ic < in) ic else in else ic else if (idx_no_comma) |in| in else null;
 
             if (idx) |i| {
                 // Extract offset: pattern len is 12 for both ("update_id": = 12 chars)
