@@ -52,10 +52,10 @@ pub fn poisson(lambda: f64, rng: *PRNG) usize {
 /// Normal distribution (Box-Muller)
 pub fn normal(mean: f64, std_dev: f64, rng: *PRNG) f64 {
     // Box-Muller transform
-    const u1 = rng.float();
-    const u2 = rng.float();
+    const u_a = rng.float();
+    const u_b = rng.float();
 
-    const z0 = std.math.sqrt(-2.0 * std.math.log(u1)) * std.math.cos(2.0 * std.pi * u2);
+    const z0 = std.math.sqrt(-2.0 * std.math.log(u_a)) * std.math.cos(2.0 * std.pi * u_b);
 
     return mean + std_dev * z0;
 }
