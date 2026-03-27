@@ -32,6 +32,12 @@ const zenodo_v19_openalex = @import("zenodo_v19_openalex.zig");
 // V20 Statistical Significance
 const zenodo_v20_stats = @import("zenodo_v20_stats.zig");
 
+// V21 Broader Impact Statement
+const zenodo_v21_broader_impact = @import("zenodo_v21_broader_impact.zig");
+
+// V22 Reproducibility Checklist
+const zenodo_v22_reproducibility = @import("zenodo_v22_reproducibility.zig");
+
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GREEN = "\x1b[32m";

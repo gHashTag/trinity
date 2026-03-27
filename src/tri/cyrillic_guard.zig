@@ -131,7 +131,11 @@ fn walkDirectory(allocator: std.mem.Allocator, path: []const u8) ScanResult {
 fn checkPath(allocator: std.mem.Allocator, path: []const u8) !ScanResult {
     // Try to stat - if it's a file, process it; if directory, walk it
     const stat_result = std.fs.cwd().statFile(path);
-    if (stat_result) |_| {
+    if (stat_result) |stat| {
+        // Check the kind - directory or file?
+        if (stat.kind == .directory) {
+            return walkDirectory(allocator, path);
+        }
         // It's a file
         const result = checkFile(allocator, path) catch {
             return ScanResult{ .files_with_cyrillic = 0, .total_files = 0 };
