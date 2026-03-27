@@ -66,5 +66,6 @@ test "parse simple" {
     const text = "[section1]\nkey1=value1\nkey2=value2";
     const result = try parse(text, std.testing.allocator);
     // Memory leak acceptable in test context
-    try std.testing.expect(result.get("section1", "key1") != null;
+    const val = result.get("section1", "key1");
+    try std.testing.expect(val != null);
 }
