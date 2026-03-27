@@ -67,6 +67,13 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         } else {
             try updateAllRecords(allocator);
         }
+    } else if (std.mem.eql(u8, subcmd, "bundle")) {
+        // Publish v8.0 bundles from pre-generated JSON metadata
+        if (sub_args.len > 0) {
+            try publishBundleV8(allocator, sub_args[0]);
+        } else {
+            try publishAllBundlesV8(allocator);
+        }
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -493,9 +500,189 @@ fn printHelp() void {
     print("  tri zenodo status               Show current record info\n", .{});
     print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
     print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all)\n", .{});
-    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n\n", .{});
+    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n", .{});
+    print("  tri zenodo bundle <A-G|PARENT>  Publish v8.0 bundle (or all)\n\n", .{});
+    print("  Bundle aliases:\n", .{});
+    print("    A = B001: HSLM-1.95M Ternary Neural Networks\n", .{});
+    print("    B = B002: Zero-DSP FPGA Accelerator\n", .{});
+    print("    C = B003: TRI-27 ISA\n", .{});
+    print("    D = B004: Queen Lotus Consciousness Cycle\n", .{});
+    print("    E = B005: Tri Language\n", .{});
+    print("    F = B006: Sacred GF16/TF3 Encoding\n", .{});
+    print("    G = B007: VSA Operations\n", .{});
+    print("    PARENT = Complete Research Platform\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V8.0 BUNDLE PUBLISHING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const BundleV8 = struct {
+    id: []const u8,
+    alias: []const u8,
+    json_path: []const u8,
+};
+
+const bundle_v8_table = [_]BundleV8{
+    .{ .id = "B001", .alias = "A", .json_path = "docs/research/.zenodo.B001_v8.0.json" },
+    .{ .id = "B002", .alias = "B", .json_path = "docs/research/.zenodo.B002_v8.0.json" },
+    .{ .id = "B003", .alias = "C", .json_path = "docs/research/.zenodo.B003_v8.0.json" },
+    .{ .id = "B004", .alias = "D", .json_path = "docs/research/.zenodo.B004_v8.0.json" },
+    .{ .id = "B005", .alias = "E", .json_path = "docs/research/.zenodo.B005_v8.0.json" },
+    .{ .id = "B006", .alias = "F", .json_path = "docs/research/.zenodo.B006_v8.0.json" },
+    .{ .id = "B007", .alias = "G", .json_path = "docs/research/.zenodo.B007_v8.0.json" },
+    .{ .id = "PARENT", .alias = "PARENT", .json_path = "docs/research/.zenodo.PARENT_v8.0.json" },
+};
+
+fn publishBundleV8(allocator: std.mem.Allocator, bundle_id: []const u8) !void {
+    // Resolve alias to bundle
+    for (bundle_v8_table) |bundle| {
+        if (std.mem.eql(u8, bundle.id, bundle_id) or std.mem.eql(u8, bundle.alias, bundle_id)) {
+            try publishOneBundleV8(allocator, bundle);
+            return;
+        }
+    }
+    print("{s}Unknown bundle: {s}. Valid: A-G, PARENT (or B001-B007, PARENT){s}\n", .{ RED, bundle_id, RESET });
+}
+
+fn publishAllBundlesV8(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}ZENODO V8.0 BUNDLES — Publishing 8 records{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    var success: usize = 0;
+    var fail: usize = 0;
+
+    for (bundle_v8_table) |bundle| {
+        publishOneBundleV8(allocator, bundle) catch |err| {
+            print("{s}Failed {s}: {}{s}\n", .{ RED, bundle.id, err, RESET });
+            fail += 1;
+            continue;
+        };
+        success += 1;
+    }
+
+    print("\n{s}Results: {d} published, {d} failed{s}\n\n", .{ GREEN, success, fail, RESET });
+}
+
+fn publishOneBundleV8(allocator: std.mem.Allocator, bundle: BundleV8) !void {
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    print("{s}[{s}]{s} Publishing v8.0 bundle...\n", .{ CYAN, bundle.id, RESET });
+
+    // Step 1: Read JSON metadata
+    print("  1/5 Reading metadata from {s}...\n", .{bundle.json_path});
+    const json_file = std.fs.cwd().openFile(bundle.json_path, .{}) catch {
+        print("  {s}File not found: {s}{s}\n", .{ RED, bundle.json_path, RESET });
+        return error.FileNotFound;
+    };
+    defer json_file.close();
+    const json_content = json_file.readToEndAlloc(allocator, 131072) catch return error.ReadFailed;
+    defer allocator.free(json_content);
+
+    // Extract title from JSON (simple parsing)
+    const title = jsonExtractString(json_content, "title") orelse "Unknown Title";
+
+    // Step 2: Create deposition
+    print("  2/5 Creating deposition...\n", .{});
+    const create_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions", .{API});
+    defer allocator.free(create_url);
+
+    // Build minimal metadata for creation (will update after)
+    const create_body = try std.fmt.allocPrint(allocator,
+        \\{{"metadata":{{"title":"{s}","upload_type":"software"}}}}
+    , .{title});
+    defer allocator.free(create_body);
+
+    const resp = try curlPost(allocator, create_url, token, create_body);
+    defer allocator.free(resp);
+
+    const dep_id = jsonExtractString(resp, "id") orelse {
+        print("  {s}Failed to create deposition{s}\n", .{ RED, RESET });
+        return error.CreateFailed;
+    };
+    print("     Draft ID: {s}\n", .{dep_id});
+
+    // Step 3: Update with full metadata
+    print("  3/5 Updating metadata...\n", .{});
+    const draft_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}", .{ API, dep_id });
+    defer allocator.free(draft_url);
+
+    // Use the full JSON content as metadata body
+    const meta_body = try std.fmt.allocPrint(allocator, "{{\"metadata\":{s}}}", .{json_content});
+    defer allocator.free(meta_body);
+
+    _ = try curlPut(allocator, draft_url, token, meta_body);
+
+    // Step 4: Upload files (figures)
+    print("  4/5 Uploading files...\n", .{});
+    const files_dir = "docs/research/figures";
+
+    // Upload each figure file if exists
+    const figure_patterns = [_][]const u8{
+        "B001-Fig1_training_curve.png",
+        "B001-Fig2_format_comparison.png",
+        "B002-Fig1_fpga_resources.png",
+        "B002-Fig2_power_analysis.png",
+        "B003-Fig1_register_layout.png",
+        "B004-Fig1_lotus_cycle.png",
+        "B005-Fig1_type_hierarchy.png",
+        "B006-Fig1_gf16_layout.png",
+        "B006-Fig2_phi_heatmap.png",
+        "B007-Fig1_vsa_structure.png",
+        "B007-Fig2_simd_speedup.png",
+    };
+
+    var uploaded: usize = 0;
+    for (figure_patterns) |fig| {
+        // Check if file exists
+        const fig_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ files_dir, fig });
+        defer allocator.free(fig_path);
+
+        if (std.fs.cwd().openFile(fig_path, .{})) |file| {
+            file.close();
+            // Upload via curl
+            const files_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/files", .{ API, dep_id });
+            defer allocator.free(files_url);
+
+            const auth = try std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token});
+            defer allocator.free(auth);
+            const file_arg = try std.fmt.allocPrint(allocator, "file=@{s}", .{fig_path});
+            defer allocator.free(file_arg);
+            const name_arg = try std.fmt.allocPrint(allocator, "name={s}", .{fig});
+            defer allocator.free(name_arg);
+
+            const upload_result = std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &.{ "curl", "-s", "-X", "POST", files_url, "-H", auth, "-F", file_arg, "-F", name_arg },
+            }) catch continue;
+            allocator.free(upload_result.stdout);
+            allocator.free(upload_result.stderr);
+            uploaded += 1;
+        } else |_| {
+            // File doesn't exist, skip
+        }
+    }
+    print("     Uploaded {d} figure files\n", .{uploaded});
+
+    // Step 5: Publish
+    print("  5/5 Publishing...\n", .{});
+    const pub_url = try std.fmt.allocPrint(allocator, "{s}/deposit/depositions/{s}/actions/publish", .{ API, dep_id });
+    defer allocator.free(pub_url);
+    const pub_resp = try curlPost(allocator, pub_url, token, null);
+    defer allocator.free(pub_resp);
+
+    const doi = jsonExtractString(pub_resp, "doi") orelse jsonExtractString(json_content, "doi") orelse "pending";
+    const concept_doi = jsonExtractString(pub_resp, "conceptdoi") orelse "pending";
+
+    print("  {s}[{s}] Published!{s}\n", .{ GREEN, bundle.id, RESET });
+    print("     DOI: {s}\n", .{doi});
+    if (!std.mem.eql(u8, concept_doi, "pending")) {
+        print("     Concept DOI: {s}\n", .{concept_doi});
+    }
+    print("     URL: https://doi.org/{s}\n\n", .{doi});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -861,4 +1048,24 @@ test "update_records_table_valid" {
         try std.testing.expect(rec.file.len > 0);
     }
     try std.testing.expectEqual(@as(usize, 5), update_records.len);
+}
+
+test "bundle_v8_table_valid" {
+    for (bundle_v8_table) |bundle| {
+        try std.testing.expect(bundle.id.len > 0);
+        try std.testing.expect(bundle.alias.len > 0);
+        try std.testing.expect(bundle.json_path.len > 0);
+    }
+    try std.testing.expectEqual(@as(usize, 8), bundle_v8_table.len);
+}
+
+test "bundle_v8_aliases_unique" {
+    const allocator = std.testing.allocator;
+    var seen = std.StringHashMap(void).init(allocator);
+    defer seen.deinit();
+
+    for (bundle_v8_table) |bundle| {
+        try std.testing.expect(!seen.contains(bundle.alias));
+        try seen.put(bundle.alias, {});
+    }
 }
