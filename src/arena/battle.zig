@@ -177,7 +177,7 @@ pub const Arena = struct {
         const fa = self.findFighter(fighter_a_name) orelse return;
         const fb = self.findFighter(fighter_b_name) orelse return;
 
-        const new_ratings = elo.updateRatings(fa.elo, fb.elo, verdict);
+        const new_ratings = elo.updateRatings(fa.elo, fb.elo, @enumFromInt(@intFromEnum(verdict)));
         fa.elo = new_ratings[0];
         fb.elo = new_ratings[1];
 

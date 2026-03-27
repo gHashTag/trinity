@@ -225,41 +225,35 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("  t-statistic: {d:.2}\n", .{test_result.statistic});
     print("  p-value: {d:.4}\n", .{test_result.p_value});
     print("  Significance: {s}\n", .{test_result.significance.toSymbol()});
-    print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size});
+    print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size orelse 0.0});
     print("  Interpretation: {s}\n\n", .{test_result.interpretation});
 
     // Demonstrate experiment comparison
     const exp1 = zenodo_v16.ExperimentResultEnhanced{
-        .name = "HSLM-TF3",
-        .value = 125.0,
-        .std = 8.5,
+        .experiment_id = "HSLM-TF3",
+        .mean = 125.0,
+        .std_dev = 8.5,
+        .n_samples = 100,
         .ci = ci,
-        .statistical_test = test_result,
-        .baseline_name = "Float32",
-        .baseline_value = 68.5,
-        .improvement = -82.48,
-        .improvement_percentage = -120.4,
+        .significance = .double_star,
     };
 
     const exp2 = zenodo_v16.ExperimentResultEnhanced{
-        .name = "HSLM-GF16",
-        .value = 98.2,
-        .std = 6.2,
-        .ci = .{ .lower = 95.0, .upper = 101.4, .level = 0.95, .method = .bootstrap },
-        .statistical_test = test_result,
-        .baseline_name = "Float32",
-        .baseline_value = 68.5,
-        .improvement = -43.4,
-        .improvement_percentage = -63.4,
+        .experiment_id = "HSLM-GF16",
+        .mean = 98.2,
+        .std_dev = 6.2,
+        .n_samples = 100,
+        .ci = .{ .lower = 95.0, .upper = 101.4, .confidence = 0.95, .method = .bootstrap },
+        .significance = .star,
     };
 
     const comparison = zenodo_v16.ExperimentComparisonEnhanced{
-        .title = "Ternary Encoding Comparison",
         .metric_name = "Perplexity (lower is better)",
         .results = &.{ exp1, exp2 },
+        .baseline = "Float32",
     };
 
-    const table = try comparison.toMarkdownTable(allocator);
+    const table = try comparison.generateComparisonTable(allocator);
     defer allocator.free(table);
 
     print("{s}\n", .{table});
@@ -275,53 +269,58 @@ fn generateLatexTable(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
     // Create a booktabs table with significance markers
-    var table = zenodo_latex_table.LaTeXTable.init(allocator);
-    defer table.deinit();
+    const table = zenodo_latex_table.LaTeXTable{
+        .caption = "Ternary Encoding Comparison (ICLR 2025 Format)",
+        .label = "tab:ternary-comparison",
+        .alignments = &.{ .left, .center, .center, .center, .center },
+        .rows = &.{
+            // Header row
+            .{
+                .cells = &.{
+                    .{ .content = "Encoding", .bold = true },
+                    .{ .content = "Params", .bold = true },
+                    .{ .content = "PPL", .bold = true },
+                    .{ .content = "Size (KB)", .bold = true },
+                    .{ .content = "DSP\\%", .bold = true },
+                },
+                .is_header = true,
+            },
+            // Data rows
+            .{
+                .cells = &.{
+                    .{ .content = "GF16" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "125.0", .significance = "***" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "TF3" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "98.2", .significance = "**" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "Float32", .bold = true },
+                    .{ .content = "1.95M" },
+                    .{ .content = "68.5" },
+                    .{ .content = "7800" },
+                    .{ .content = "15" },
+                },
+            },
+        },
+        .footnotes = &.{
+            "Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)",
+            "All results on TinyStories validation set (1M tokens)",
+        },
+    };
 
-    try table.setCaption("Ternary Encoding Comparison (ICLR 2025 Format)");
-    try table.setLabel("tab:ternary-comparison");
-
-    // Add header row
-    try table.appendHeaderRow(&.{
-        .{ .text = "Encoding", .alignment = .left },
-        .{ .text = "Params", .alignment = .center },
-        .{ .text = "PPL", .alignment = .center },
-        .{ .text = "Size (KB)", .alignment = .center },
-        .{ .text = "DSP\\%", .alignment = .center },
-    });
-
-    // Add data rows with significance markers
-    try table.appendRow(&.{
-        .{ .text = "GF16" },
-        .{ .text = "1.95M" },
-        .{ .text = "125.0$^{***}$" },
-        .{ .text = "385" },
-        .{ .text = "0" },
-    });
-
-    try table.appendRow(&.{
-        .{ .text = "TF3" },
-        .{ .text = "1.95M" },
-        .{ .text = "98.2$^{**}$" },
-        .{ .text = "385" },
-        .{ .text = "0" },
-    });
-
-    try table.appendRow(&.{
-        .text = "Float32",
-        .bold = true,
-    }, &.{
-        .{ .text = "1.95M" },
-        .{ .text = "68.5" },
-        .{ .text = "7800" },
-        .{ .text = "15" },
-    });
-
-    // Add footnotes
-    try table.addFootnote("Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)");
-    try table.addFootnote("All results on TinyStories validation set (1M tokens)");
-
-    const latex = try table.toLaTeX(allocator);
+    const latex = try table.generate(allocator);
     defer allocator.free(latex);
 
     print("{s}\n", .{latex});
@@ -372,27 +371,32 @@ fn generateParetoFrontier(allocator: std.mem.Allocator, args: []const []const u8
     print("\n{s}{s}V16 Pareto Frontier Analysis (MLSys 2025){s}\n", .{ CYAN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-    // Create Pareto frontier for accuracy vs model size
-    var frontier = zenodo_v16_extensions.ParetoFrontier{
-        .x_axis_name = "Model Size (KB)",
-        .y_axis_name = "Perplexity (lower is better)",
-        .points = std.ArrayList(zenodo_v16_extensions.ParetoPoint).init(allocator),
+    // Define Pareto points (x=size in KB, y=perplexity)
+    const points = [_]zenodo_v16_extensions.ParetoPoint{
+        .{ .x_value = 385.0, .y_value = 125.0, .model_name = "HSLM-GF16", .is_pareto_optimal = false },
+        .{ .x_value = 385.0, .y_value = 98.2, .model_name = "HSLM-TF3", .is_pareto_optimal = true },
+        .{ .x_value = 7800.0, .y_value = 68.5, .model_name = "Float32", .is_pareto_optimal = true },
+        .{ .x_value = 192.0, .y_value = 145.0, .model_name = "HSLM-8bit", .is_pareto_optimal = false },
     };
-    defer frontier.points.deinit();
 
-    // Add points (x=size, y=ppl, name)
-    try frontier.points.append(.{ .x = 385, .y = 125.0, .name = "HSLM-GF16" });
-    try frontier.points.append(.{ .x = 385, .y = 98.2, .name = "HSLM-TF3" });
-    try frontier.points.append(.{ .x = 7800, .y = 68.5, .name = "Float32" });
-    try frontier.points.append(.{ .x = 192, .y = 145.0, .name = "HSLM-8bit" });
+    // Create Pareto frontier for accuracy vs model size
+    const frontier = zenodo_v16_extensions.ParetoFrontier{
+        .metric_x_name = "Model Size (KB)",
+        .metric_y_name = "Perplexity (lower is better)",
+        .higher_x_better = false,
+        .higher_y_better = false,
+        .points = &points,
+    };
 
-    // Calculate Pareto-optimal points
-    const pareto_optimal = try frontier.getParetoOptimal(allocator);
-    defer allocator.free(pareto_optimal);
+    // Generate formatted Markdown output
+    const md = try frontier.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("{s}\n", .{md});
 
     print("Model Accuracy vs Size Trade-off:\n\n", .{});
-    for (pareto_optimal, 0..) |pt, i| {
-        print("  {d}. {s}: Size={d} KB, PPL={d:.1}\n", .{ i + 1, pt.name, pt.x, pt.y });
+    for (points, 0..) |pt, i| {
+        print("  {d}. {s}: Size={d:.0} KB, PPL={d:.1}\n", .{ i + 1, pt.model_name, pt.x_value, pt.y_value });
     }
 
     print("\n{s}✅ Pareto frontier calculated!{s}\n", .{ GREEN, RESET });

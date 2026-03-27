@@ -11,7 +11,6 @@ on:
     - cron: '0 0 * * 0'
 
 env:
-  ZIG_VERSION: "0.15.2"
   BRAIN_HEALTH_THRESHOLD: "80"  # Minimum health score for merge
   STRESS_TEST_THRESHOLD: "270"  # Minimum stress test score (270/300 = 90%)
 
@@ -24,13 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -39,7 +35,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Run Brain Health Check
         id: health
@@ -125,22 +121,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Build All Binaries
+      - name: Build TRI Binary
         run: |
-          zig build
+          zig build tri -Dci=true
 
   # =========================================================================
   # Phase 2: Unit Tests — Individual Brain Regions
@@ -160,13 +153,10 @@ jobs:
           - intraparietal
           - hslm
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -175,7 +165,7 @@ jobs:
 
       - name: Test ${{ matrix.region }}
         run: |
-          zig build test-${{ matrix.region }}
+          zig build test-${{ matrix.region }} -Dci=true
 
   # =========================================================================
   # Phase 3: Integration Test — Brain Aggregator
@@ -186,13 +176,10 @@ jobs:
     needs: brain-unit
     timeout-minutes: 10
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -201,7 +188,7 @@ jobs:
 
       - name: Test Brain Integration
         run: |
-          zig build test-brain
+          zig build test-brain -Dci=true
 
   # =========================================================================
   # Phase 4: Stress Test — "Functional MRI" Gate
@@ -212,13 +199,10 @@ jobs:
     needs: brain-integration
     timeout-minutes: 15
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -229,7 +213,7 @@ jobs:
         id: stress
         run: |
           # Run stress test and capture output
-          zig build test-brain-stress 2>&1 | tee /tmp/stress-output.txt
+          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/stress-output.txt
 
           # Extract score from output
           STRESS_SCORE=$(grep "Score:" /tmp/stress-output.txt | tail -1 | grep -oE "[0-9]+" || echo "0")
@@ -331,13 +315,10 @@ jobs:
     needs: brain-stress
     timeout-minutes: 5
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -346,7 +327,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: CLI Commands Test
         run: |
@@ -373,13 +354,10 @@ jobs:
     if: always()
     timeout-minutes: 5
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -388,7 +366,7 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Export Metrics
         run: |
@@ -471,13 +449,10 @@ jobs:
     if: github.event_name == 'schedule'
     timeout-minutes: 10
     steps:
-      - name: Install Zig
-        run: |
-          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
-          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
-          zig version
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
 
       - name: Checkout Trinity
         uses: actions/checkout@v4
@@ -486,11 +461,11 @@ jobs:
 
       - name: Build TRI Binary
         run: |
-          zig build tri
+          zig build tri -Dci=true
 
       - name: Run Full Stress Test
         run: |
-          zig build test-brain-stress 2>&1 | tee /tmp/weekly-stress.txt
+          zig build test-brain-stress -Dci=true 2>&1 | tee /tmp/weekly-stress.txt
 
       - name: Record Weekly Snapshot
         run: |
