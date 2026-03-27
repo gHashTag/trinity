@@ -127,7 +127,6 @@ pub const Octree = struct {
     }
 
     fn queryRecursive(ot: *Octree, node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
-        _ = bounds;
         if (node.data) |data| {
             try result.append(ot.allocator, data);
         }

@@ -120,7 +120,6 @@ pub const QuadTree = struct {
     }
 
     fn queryRecursive(qt: *QuadTree, node: *QuadNode, range: Rect, result: *std.ArrayList([2]f64), allocator: std.mem.Allocator) !void {
-        _ = range;
         if (node.point_count > 0) {
             try result.append(allocator, .{ node.boundary.x, node.boundary.y });
         }

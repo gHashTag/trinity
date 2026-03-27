@@ -34,8 +34,8 @@ pub const SkipList = struct {
     fn randomLevel(list: *const SkipList) usize {
         _ = list;
         var level: usize = 0;
-        var rng = std.rand.DefaultPrng.init(0);
-        while (level < 15 and rng.random().float(f64) < 0.5) {
+        var prng = std.Random.DefaultPrng.init(0);
+        while (level < 15 and prng.random().float(f64) < 0.5) {
             level += 1;
         }
         return level;
