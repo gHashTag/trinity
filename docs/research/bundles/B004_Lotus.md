@@ -1,8 +1,8 @@
 # B004: Queen Lotus Consciousness Cycle
 
 **DOI:** 10.5281/zenodo.19227871
-**Version:** 8.0
-**LOC:** 522
+**Version:** 9.0
+**LOC:** 603
 
 ## Overview
 

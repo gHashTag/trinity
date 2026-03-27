@@ -1,8 +1,8 @@
 # B002: Zero-DSP FPGA Accelerator
 
 **DOI:** 10.5281/zenodo.19227867
-**Version:** 8.0
-**LOC:** 679
+**Version:** 9.0
+**LOC:** 743
 
 ## Overview
 

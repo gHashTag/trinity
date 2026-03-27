@@ -1,8 +1,8 @@
 # B007: VSA (Vector Symbolic Architecture)
 
 **DOI:** 10.5281/zenodo.19227877
-**Version:** 8.0
-**LOC:** 619
+**Version:** 9.0
+**LOC:** 711
 
 ## Overview
 
