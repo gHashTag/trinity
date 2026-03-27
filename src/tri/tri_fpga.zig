@@ -1819,6 +1819,41 @@ fn printPowerUsage() !void {
     , .{ CYAN, RESET });
 }
 
+// =========================================================================
+// UART Build/Flash/Test Commands — tri fpga build-uart / flash-uart / uart-test
+// =========================================================================
+
+pub fn runFpgaBuildUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    const device = try detectUartDevice(allocator) orelse {
+        std.debug.print("{s}Error:{s} No UART device found. Connect USB-UART cable.\n", .{ RED, RESET });
+        return;
+    };
+    std.debug.print("{s}UART Build:{s} Synthesizing UART bridge for device {s}\n", .{ CYAN, RESET, device });
+    // Delegates to synth with uart target
+    return runFpgaSynthCommand(allocator, &[_][]const u8{"uart"});
+}
+
+pub fn runFpgaFlashUartCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    const device = try detectUartDevice(allocator) orelse {
+        std.debug.print("{s}Error:{s} No UART device found. Connect USB-UART cable.\n", .{ RED, RESET });
+        return;
+    };
+    std.debug.print("{s}UART Flash:{s} Flashing bitstream via {s}\n", .{ CYAN, RESET, device });
+    return runFpgaFlashCommand(allocator, &[_][]const u8{ "--device", device });
+}
+
+pub fn runFpgaUartTestCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+    const device = try detectUartDevice(allocator) orelse {
+        std.debug.print("{s}Error:{s} No UART device found. Connect USB-UART cable.\n", .{ RED, RESET });
+        return;
+    };
+    std.debug.print("{s}UART Test:{s} Running loopback test on {s}\n", .{ CYAN, RESET, device });
+    try uartPing(allocator, device);
+}
+
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
 

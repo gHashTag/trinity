@@ -13,6 +13,7 @@
 pub const SegBit = struct {
     frame_offset: u8,
     bit_index: u8,
+    inverted: bool = false,
 };
 
 /// A feature entry: feature name → array of config bits.
