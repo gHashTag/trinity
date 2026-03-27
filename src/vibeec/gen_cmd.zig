@@ -250,8 +250,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
     const source = try file.readToEndAlloc(allocator, 1024 * 1024);
     defer allocator.free(source);
 
-    var parser = vibee_parser.VibeeParser.init(allocator, source);
-    var spec = try parser.parse();
+    var spec = try vibee_parser.parse(allocator, source);
     defer spec.deinit();
 
     const dir_path = std.fs.path.dirname(output_path) orelse ".";
