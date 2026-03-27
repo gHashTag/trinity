@@ -1,10 +1,8 @@
-//! tri/octree — Octree for 3D spatial partitioning
-//! Auto-generated from specs/tri_octree.tri
+//! tri/octree — 3D spatial partitioning
 //! TTT Dogfood v0.2 Stage 199
 
 const std = @import("std");
 
-/// 3D bounding box
 pub const BBox = struct {
     min_x: f64,
     min_y: f64,
@@ -14,7 +12,6 @@ pub const BBox = struct {
     max_z: f64,
 };
 
-/// Octree node
 pub const OctNode = struct {
     bounds: BBox,
     children: [8]?*OctNode,
@@ -32,13 +29,11 @@ pub const OctNode = struct {
     }
 };
 
-/// 3D spatial partitioning
 pub const Octree = struct {
     root: ?*OctNode,
     min_size: f64,
     allocator: std.mem.Allocator,
 
-    /// Create octree
     pub fn init(allocator: std.mem.Allocator, bounds: BBox, min_size: f64) !Octree {
         const root = try allocator.create(OctNode);
         root.* = .{
@@ -56,25 +51,22 @@ pub const Octree = struct {
         };
     }
 
-    /// Check if point is in bounds
     fn contains(bounds: BBox, x: f64, y: f64, z: f64) bool {
         return x >= bounds.min_x and x <= bounds.max_x and
             y >= bounds.min_y and y <= bounds.max_y and
             z >= bounds.min_z and z <= bounds.max_z;
     }
 
-    /// Insert point with data
     pub fn insert(ot: *Octree, x: f64, y: f64, z: f64, data: ?*const anyopaque) !void {
         const root = ot.root orelse return;
-        try ot.insertRecursive(root, x, y, z, data);
+        try insertRecursive(ot, root, x, y, z, data);
     }
 
-    fn insertRecursive(node: *OctNode, x: f64, y: f64, z: f64, data: ?*const anyopaque) !void {
-        if (!node.contains(node.bounds, x, y, z)) return;
+    fn insertRecursive(ot: *Octree, node: *OctNode, x: f64, y: f64, z: f64, data: ?*const anyopaque) !void {
+        if (!contains(node.bounds, x, y, z)) return;
 
         const size_x = node.bounds.max_x - node.bounds.min_x;
         if (size_x < ot.min_size or node.data != null) {
-            // Leaf node or too small
             node.data = data;
             return;
         }
@@ -83,18 +75,16 @@ pub const Octree = struct {
             try ot.subdivide(node);
         }
 
-        // Insert into appropriate octant
         for (node.children) |maybe_child| {
             if (maybe_child) |child| {
-                if (child.contains(child.bounds, x, y, z)) {
-                    ot.insertRecursive(child, x, y, z, data);
+                if (contains(child.bounds, x, y, z)) {
+                    try insertRecursive(ot, child, x, y, z, data);
                     return;
                 }
             }
         }
     }
 
-    /// Subdivide node into 8 octants
     fn subdivide(ot: *Octree, node: *OctNode) !void {
         const mid_x = (node.bounds.min_x + node.bounds.max_x) / 2;
         const mid_y = (node.bounds.min_y + node.bounds.max_y) / 2;
@@ -103,10 +93,10 @@ pub const Octree = struct {
         const bounds = [_]BBox{
             .{ .min_x = node.bounds.min_x, .min_y = node.bounds.min_y, .min_z = node.bounds.min_z, .max_x = mid_x, .max_y = mid_y, .max_z = mid_z },
             .{ .min_x = mid_x, .min_y = node.bounds.min_y, .min_z = node.bounds.min_z, .max_x = node.bounds.max_x, .max_y = mid_y, .max_z = mid_z },
-            .{ .min_x = node.bounds.min_x, .min_y = mid_y, .min_z = node.bounds.min_z, .max_x = mid_x, .max_y = mid_y, .max_z = node.bounds.max_z },
-            .{ .min_x = mid_x, .min_y = mid_y, .min_z = mid_z, .max_x = node.bounds.max_x, .max_y = node.bounds.max_y, .max_z = mid_z },
+            .{ .min_x = node.bounds.min_x, .min_y = mid_y, .min_z = node.bounds.min_z, .max_x = mid_x, .max_y = mid_y, .max_z = mid_z },
+            .{ .min_x = mid_x, .min_y = mid_y, .min_z = mid_z, .max_x = node.bounds.max_x, .max_y = mid_y, .max_z = mid_z },
             .{ .min_x = node.bounds.min_x, .min_y = node.bounds.min_y, .min_z = mid_z, .max_x = mid_x, .max_y = mid_y, .max_z = node.bounds.max_z },
-            .{ .min_x = node.bounds.min_x, .min_y = node.bounds.min_y, .min_z = mid_z, .max_x = mid_x, .max_y = node.bounds.max_y, .max_z = node.bounds.max_z },
+            .{ .min_x = mid_x, .min_y = node.bounds.min_y, .min_z = mid_z, .max_x = node.bounds.max_x, .max_y = mid_y, .max_z = node.bounds.max_z },
             .{ .min_x = mid_x, .min_y = mid_y, .min_z = mid_z, .max_x = node.bounds.max_x, .max_y = mid_y, .max_z = node.bounds.max_z },
             .{ .min_x = mid_x, .min_y = mid_y, .min_z = mid_z, .max_x = node.bounds.max_x, .max_y = node.bounds.max_y, .max_z = node.bounds.max_z },
         };
@@ -122,53 +112,35 @@ pub const Octree = struct {
             };
             node.children[i] = child;
         }
-
         node.divided = true;
     }
 
-    /// Find data in region
     pub fn query(ot: *Octree, bounds: BBox, allocator: std.mem.Allocator) ![]?*const anyopaque {
         var result = std.ArrayList(?*const anyopaque).init(allocator);
         defer result.deinit();
 
         if (ot.root) |root| {
-            try ot.queryRecursive(root, bounds, &result);
+            try queryRecursive(ot, root, bounds, &result);
         }
 
         return result.toOwnedSlice(allocator);
     }
 
-    fn queryRecursive(node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
-        if (!boxOverlap(node.bounds, bounds)) return;
-
+    fn queryRecursive(ot: *Octree, node: *OctNode, bounds: BBox, result: *std.ArrayList(?*const anyopaque)) !void {
+        _ = ot;
         if (node.data) |data| {
-            if (containsBox(node.bounds, bounds)) {
-                try result.append(data);
-            }
+            try result.append(ot.allocator, data);
         }
 
         if (node.divided) {
             for (node.children) |maybe_child| {
                 if (maybe_child) |child| {
-                    try ot.queryRecursive(child, bounds, result);
+                    try queryRecursive(ot, child, bounds, result);
                 }
             }
         }
     }
 
-    fn boxOverlap(a: BBox, b: BBox) bool {
-        return a.min_x <= b.max_x and a.max_x >= b.min_x and
-            a.min_y <= b.max_y and a.max_y >= b.min_y and
-            a.min_z <= b.max_z and a.max_z >= b.min_z;
-    }
-
-    fn containsBox(inner: BBox, outer: BBox) bool {
-        return inner.min_x >= outer.min_x and inner.max_x <= outer.max_x and
-            inner.min_y >= outer.min_y and inner.max_y <= outer.max_y and
-            inner.min_z >= outer.min_z and inner.max_z <= outer.max_z;
-    }
-
-    /// Free tree
     pub fn deinit(ot: *Octree) void {
         if (ot.root) |root| {
             root.deinit();
@@ -179,12 +151,8 @@ pub const Octree = struct {
 
 test "octree init" {
     const bounds = BBox{
-        .min_x = 0,
-        .min_y = 0,
-        .min_z = 0,
-        .max_x = 100,
-        .max_y = 100,
-        .max_z = 100,
+        .min_x = 0, .min_y = 0, .min_z = 0,
+        .max_x = 100, .max_y = 100, .max_z = 100,
     };
     var ot = try Octree.init(std.testing.allocator, bounds, 10);
     defer ot.deinit();
@@ -194,12 +162,8 @@ test "octree init" {
 
 test "octree insert" {
     const bounds = BBox{
-        .min_x = 0,
-        .min_y = 0,
-        .min_z = 0,
-        .max_x = 100,
-        .max_y = 100,
-        .max_z = 100,
+        .min_x = 0, .min_y = 0, .min_z = 0,
+        .max_x = 100, .max_y = 100, .max_z = 100,
     };
     var ot = try Octree.init(std.testing.allocator, bounds, 10);
     defer ot.deinit();
@@ -207,6 +171,5 @@ test "octree insert" {
     try ot.insert(50, 50, 50, null);
     try ot.insert(25, 25, 25, null);
 
-    // Just verify no crash
     try std.testing.expect(true);
 }

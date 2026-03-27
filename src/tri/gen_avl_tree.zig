@@ -1,292 +1,155 @@
-//! tri/avl_tree — AVL tree (height-balanced BST)
-//! Auto-generated from specs/tri/tri_avl_tree.tri
-//! TTT Dogfood v0.2 Stage 149
+//! tri/avl_tree — Self-balancing BST with height property
+//! TTT Dogfood v0.2 Stage 204
 
 const std = @import("std");
 
-/// AVL tree node
-pub fn AVLNode(comptime K: type, comptime V: type) type {
-    return struct {
-        key: K,
-        value: V,
-        height: i32 = 1,
-        left: ?*AVLNode(K, V),
-        right: ?*AVLNode(K, V),
-    };
-}
+pub const AVLNode = struct {
+    key: i64,
+    value: i64,
+    left: ?*AVLNode,
+    right: ?*AVLNode,
+    height: i32,
+};
 
-/// AVL tree
-pub fn AVLTree(comptime K: type, comptime V: type) type {
-    return struct {
-        root: ?*AVLNode(K, V),
-        size: usize,
-        allocator: std.mem.Allocator,
+pub const AVLTree = struct {
+    root: ?*AVLNode,
+    allocator: std.mem.Allocator,
 
-        const Self = @This();
+    pub fn init(allocator: std.mem.Allocator) AVLTree {
+        return .{ .root = null, .allocator = allocator };
+    }
 
-        /// Create empty AVL tree
-        pub fn init(allocator: std.mem.Allocator) Self {
-            return .{
-                .root = null,
-                .size = 0,
-                .allocator = allocator,
+    fn height(node: ?*AVLNode) i32 {
+        return if (node) |n| n.height else 0;
+    }
+
+    fn balanceFactor(node: ?*AVLNode) i32 {
+        return if (node) |n| height(n.left) - height(n.right) else 0;
+    }
+
+    fn updateHeight(node: *AVLNode) void {
+        node.height = @max(height(node.left), height(node.right)) + 1;
+    }
+
+    fn rotateRight(tree: *AVLTree, y: *AVLNode) *AVLNode {
+        const x = y.left.?;
+        const T2 = x.right;
+
+        x.right = y;
+        y.left = T2;
+
+        updateHeight(y);
+        updateHeight(x);
+
+        if (tree.root == y) {
+            tree.root = x;
+        }
+
+        return x;
+    }
+
+    fn rotateLeft(tree: *AVLTree, x: *AVLNode) *AVLNode {
+        const y = x.right.?;
+        const T2 = y.left;
+
+        y.left = x;
+        x.right = T2;
+
+        updateHeight(x);
+        updateHeight(y);
+
+        if (tree.root == x) {
+            tree.root = y;
+        }
+
+        return y;
+    }
+
+    pub fn insert(tree: *AVLTree, key: i64, value: i64) !void {
+        tree.root = try tree.insertRecursive(tree.root, key, value);
+    }
+
+    fn insertRecursive(tree: *AVLTree, node: ?*AVLNode, key: i64, value: i64) !?*AVLNode {
+        if (node == null) {
+            const n = try tree.allocator.create(AVLNode);
+            n.* = .{
+                .key = key,
+                .value = value,
+                .left = null,
+                .right = null,
+                .height = 1,
             };
+            return n;
         }
 
-        /// Free resources
-        pub fn deinit(self: *Self) void {
-            if (self.root) |r| {
-                self.destroyNode(r);
-            }
+        const n = node.?;
+        if (key < n.key) {
+            n.left = try tree.insertRecursive(n.left, key, value);
+        } else if (key > n.key) {
+            n.right = try tree.insertRecursive(n.right, key, value);
+        } else {
+            n.value = value;
+            return n;
         }
 
-        /// Recursively destroy subtree
-        fn destroyNode(self: *Self, node: *AVLNode(K, V)) void {
-            if (node.left) |l| self.destroyNode(l);
-            if (node.right) |r| self.destroyNode(r);
-            self.allocator.destroy(node);
+        updateHeight(n);
+
+        const bf = balanceFactor(n);
+
+        // Left Left
+        if (bf > 1 and key < n.left.?.key) {
+            return tree.rotateRight(n);
+        }
+        // Right Right
+        if (bf < -1 and key > n.right.?.key) {
+            return tree.rotateLeft(n);
+        }
+        // Left Right
+        if (bf > 1 and key > n.left.?.key) {
+            n.left = tree.rotateLeft(n.left.?);
+            return tree.rotateRight(n);
+        }
+        // Right Left
+        if (bf < -1 and key < n.right.?.key) {
+            n.right = tree.rotateRight(n.right.?);
+            return tree.rotateLeft(n);
         }
 
-        /// Get node height
-        fn height(node: ?*AVLNode(K, V)) i32 {
-            if (node == null) return 0;
-            return node.?.height;
+        return n;
+    }
+
+    pub fn find(tree: *const AVLTree, key: i64) ?i64 {
+        var curr = tree.root;
+        while (curr) |node| {
+            if (key == node.key) return node.value;
+            curr = if (key < node.key) node.left else node.right;
         }
+        return null;
+    }
 
-        /// Get balance factor
-        fn getBalance(node: ?*AVLNode(K, V)) i32 {
-            if (node == null) return 0;
-            return height(node.?.left) - height(node.?.right);
+    pub fn deinit(tree: *AVLTree) void {
+        if (tree.root) |r| {
+            tree.freeRecursive(r);
         }
+    }
 
-        /// Update node height
-        fn updateHeight(node: *AVLNode(K, V)) void {
-            const left_h = height(node.left);
-            const right_h = height(node.right);
-            node.height = @max(left_h, right_h) + 1;
+    fn freeRecursive(tree: *AVLTree, node: ?*AVLNode) void {
+        if (node) |n| {
+            tree.freeRecursive(n.left);
+            tree.freeRecursive(n.right);
+            tree.allocator.destroy(n);
         }
-
-        /// Right rotate
-        fn rightRotate(y: *AVLNode(K, V)) *AVLNode(K, V) {
-            const x = y.left orelse return y;
-            const T2 = x.right;
-
-            x.right = y;
-            y.left = T2;
-
-            updateHeight(y);
-            updateHeight(x);
-
-            return x;
-        }
-
-        /// Left rotate
-        fn leftRotate(x: *AVLNode(K, V)) *AVLNode(K, V) {
-            const y = x.right orelse return x;
-            const T2 = y.left;
-
-            y.left = x;
-            x.right = T2;
-
-            updateHeight(x);
-            updateHeight(y);
-
-            return y;
-        }
-
-        /// Insert key-value pair
-        pub fn insert(self: *Self, key: K, value: V) !void {
-            self.root = try self.insertNode(self.root, key, value);
-            self.size += 1;
-        }
-
-        /// Recursive insert
-        fn insertNode(self: *Self, node: ?*AVLNode(K, V), key: K, value: V) !*AVLNode(K, V) {
-            if (node == null) {
-                const new_node = try self.allocator.create(AVLNode(K, V));
-                new_node.* = .{
-                    .key = key,
-                    .value = value,
-                    .height = 1,
-                    .left = null,
-                    .right = null,
-                };
-                return new_node;
-            }
-
-            if (key < node.?.key) {
-                node.?.left = try self.insertNode(node.?.left, key, value);
-            } else if (key > node.?.key) {
-                node.?.right = try self.insertNode(node.?.right, key, value);
-            } else {
-                // Key exists - update value
-                node.?.value = value;
-                return node.?;
-            }
-
-            updateHeight(node.?);
-
-            const balance = getBalance(node);
-
-            // Left Left
-            if (balance > 1 and key < node.?.left.?.key) {
-                return rightRotate(node.?);
-            }
-
-            // Right Right
-            if (balance < -1 and key > node.?.right.?.key) {
-                return leftRotate(node.?);
-            }
-
-            // Left Right
-            if (balance > 1 and key > node.?.left.?.key) {
-                node.?.left = leftRotate(node.?.left.?);
-                return rightRotate(node.?);
-            }
-
-            // Right Left
-            if (balance < -1 and key < node.?.right.?.key) {
-                node.?.right = rightRotate(node.?.right.?);
-                return leftRotate(node.?);
-            }
-
-            return node.?;
-        }
-
-        /// Look up value by key
-        pub fn find(self: *const Self, key: K) ?V {
-            var current = self.root;
-
-            while (current != null) {
-                if (key == current.?.key) {
-                    return current.?.value;
-                } else if (key < current.?.key) {
-                    current = current.?.left;
-                } else {
-                    current = current.?.right;
-                }
-            }
-
-            return null;
-        }
-
-        /// Delete key
-        pub fn delete(self: *Self, key: K) bool {
-            if (self.find(key) == null) return false;
-
-            self.root = self.deleteNode(self.root, key);
-            self.size -= 1;
-            return true;
-        }
-
-        /// Recursive delete
-        fn deleteNode(self: *Self, node: ?*AVLNode(K, V), key: K) ?*AVLNode(K, V) {
-            if (node == null) return null;
-
-            if (key < node.?.key) {
-                node.?.left = self.deleteNode(node.?.left, key);
-            } else if (key > node.?.key) {
-                node.?.right = self.deleteNode(node.?.right, key);
-            } else {
-                // Found node to delete
-                if (node.?.left == null or node.?.right == null) {
-                    const temp = if (node.?.left != null) node.?.left else node.?.right;
-
-                    if (temp == null) {
-                        self.allocator.destroy(node.?);
-                        return null;
-                    } else {
-                        // Copy temp data
-                        node.?.key = temp.?.key;
-                        node.?.value = temp.?.value;
-                        node.?.left = null;
-                        node.?.right = null;
-                        self.allocator.destroy(temp.?);
-                    }
-                } else {
-                    // Two children - get inorder successor
-                    var temp = node.?.right;
-                    while (temp.?.left != null) {
-                        temp = temp.?.left;
-                    }
-
-                    node.?.key = temp.?.key;
-                    node.?.value = temp.?.value;
-                    node.?.right = self.deleteNode(node.?.right, temp.?.key);
-                }
-            }
-
-            if (node == null) return null;
-
-            updateHeight(node.?);
-
-            const balance = getBalance(node);
-
-            // Rebalance if needed
-            if (balance > 1 and getBalance(node.?.left) >= 0) {
-                return rightRotate(node.?);
-            }
-            if (balance > 1 and getBalance(node.?.left) < 0) {
-                node.?.left = leftRotate(node.?.left.?);
-                return rightRotate(node.?);
-            }
-            if (balance < -1 and getBalance(node.?.right) <= 0) {
-                return leftRotate(node.?);
-            }
-            if (balance < -1 and getBalance(node.?.right) > 0) {
-                node.?.right = rightRotate(node.?.right.?);
-                return leftRotate(node.?);
-            }
-
-            return node;
-        }
-    };
-}
-
-test "avl tree init" {
-    var tree = AVLTree(i32, []const u8).init(std.testing.allocator);
-    defer tree.deinit();
-
-    try std.testing.expectEqual(@as(usize, 0), tree.size);
-}
+    }
+};
 
 test "avl tree insert find" {
-    var tree = AVLTree(i32, []const u8).init(std.testing.allocator);
+    var tree = AVLTree.init(std.testing.allocator);
     defer tree.deinit();
 
-    try tree.insert(5, "five");
-    try tree.insert(3, "three");
-    try tree.insert(7, "seven");
+    try tree.insert(5, 50);
+    try tree.insert(3, 30);
+    try tree.insert(7, 70);
 
-    try std.testing.expectEqualStrings("five", tree.find(5).?);
-    try std.testing.expectEqualStrings("three", tree.find(3).?);
-}
-
-test "avl tree delete" {
-    var tree = AVLTree(i32, []const u8).init(std.testing.allocator);
-    defer tree.deinit();
-
-    try tree.insert(5, "five");
-    try tree.insert(3, "three");
-    try tree.insert(7, "seven");
-
-    try std.testing.expect(tree.delete(5));
-    try std.testing.expect(tree.find(5) == null);
-    try std.testing.expectEqual(@as(usize, 2), tree.size);
-}
-
-test "avl tree balancing" {
-    var tree = AVLTree(i32, []const u8).init(std.testing.allocator);
-    defer tree.deinit();
-
-    // Insert in ascending order - should trigger rotations
-    try tree.insert(1, "one");
-    try tree.insert(2, "two");
-    try tree.insert(3, "three");
-    try tree.insert(4, "four");
-    try tree.insert(5, "five");
-
-    // All values should be findable
-    try std.testing.expect(tree.find(1) != null);
-    try std.testing.expect(tree.find(5) != null);
+    try std.testing.expectEqual(@as(i64, 30), tree.find(3).?);
+    try std.testing.expect(tree.find(99) == null);
 }

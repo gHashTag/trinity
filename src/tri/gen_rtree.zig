@@ -1,90 +1,69 @@
-//! tri/rtree — Spatial index
-//! Auto-generated from specs/tri/tri_rtree.tri
-//! TTT Dogfood v0.2 Stage 133
+//! tri/rtree — R-tree spatial index
+//! TTT Dogfood v0.2 Stage 201
 
 const std = @import("std");
 
-/// Rectangle
 pub const Rect = struct {
     x_min: f64,
     y_min: f64,
     x_max: f64,
     y_max: f64,
 
-    /// Create rectangle
-    pub fn create(x_min: f64, y_min: f64, x_max: f64, y_max: f64) Rect {
-        return .{
-            .x_min = x_min,
-            .y_min = y_min,
-            .x_max = x_max,
-            .y_max = y_max,
-        };
-    }
-
-    /// Check if rectangles overlap
-    pub fn overlaps(self: Rect, other: Rect) bool {
-        return !(self.x_max < other.x_min or other.x_max < self.x_min or
-            self.y_max < other.y_min or other.y_max < self.y_min);
+    pub fn intersects(self: Rect, other: Rect) bool {
+        return self.x_min <= other.x_max and self.x_max >= other.x_min and
+            self.y_min <= other.y_max and self.y_max >= other.y_min;
     }
 };
 
-/// R-tree node
-pub const RTreeNode = struct {
-    rect: Rect,
-    children: std.ArrayList(RTreeNode),
-    is_leaf: bool,
-
-    /// Free resources
-    pub fn deinit(self: *RTreeNode, allocator: std.mem.Allocator) void {
-        self.children.deinit(allocator);
-    }
-};
-
-/// R-tree spatial index
 pub const RTree = struct {
-    root: ?RTreeNode,
-    max_entries: usize,
+    rects: std.ArrayList(Rect),
+    data: std.ArrayList(?*const anyopaque),
+    allocator: std.mem.Allocator,
 
-    /// Create R-tree
-    pub fn init(max_entries: usize) RTree {
+    pub fn init(allocator: std.mem.Allocator) !RTree {
         return .{
-            .root = null,
-            .max_entries = max_entries,
+            .rects = try std.ArrayList(Rect).initCapacity(allocator, 16),
+            .data = try std.ArrayList(?*const anyopaque).initCapacity(allocator, 16),
+            .allocator = allocator,
         };
     }
 
-    /// Insert rectangle (simplified)
-    pub fn insert(tree: *RTree, rect: Rect, allocator: std.mem.Allocator) !void {
-        _ = tree;
-        _ = rect;
-        _ = allocator;
-        // Simplified implementation
+    pub fn insert(rt: *RTree, rect: Rect, datum: ?*const anyopaque) !void {
+        try rt.rects.append(rt.allocator, rect);
+        try rt.data.append(rt.allocator, datum);
     }
 
-    /// Find overlapping rectangles
-    pub fn query(tree: *const RTree, search_rect: Rect, allocator: std.mem.Allocator) ![]Rect {
-        _ = tree;
-        _ = search_rect;
-        return allocator.alloc(Rect, 0);
+    pub fn search(rt: *const RTree, query: Rect, allocator: std.mem.Allocator) ![]?*const anyopaque {
+        var result = try std.ArrayList(?*const anyopaque).initCapacity(allocator, 4);
+        defer result.deinit(allocator);
+
+        for (rt.rects.items, rt.data.items) |rect, datum| {
+            if (rect.intersects(query)) {
+                try result.append(allocator, datum);
+            }
+        }
+
+        return result.toOwnedSlice(allocator);
+    }
+
+    pub fn deinit(rt: *RTree) void {
+        rt.rects.deinit(rt.allocator);
+        rt.data.deinit(rt.allocator);
     }
 };
 
-test "rect create" {
-    const rect = Rect.create(0, 0, 10, 10);
-    try std.testing.expectEqual(@as(f64, 0), rect.x_min);
-    try std.testing.expectEqual(@as(f64, 10), rect.x_max);
-}
+test "rtree insert search" {
+    var rt = try RTree.init(std.testing.allocator);
+    defer rt.deinit();
 
-test "rect overlaps" {
-    const a = Rect.create(0, 0, 10, 10);
-    const b = Rect.create(5, 5, 15, 15);
-    try std.testing.expect(a.overlaps(b));
+    const d1: i64 = 1;
+    const d2: i64 = 2;
 
-    const c = Rect.create(20, 20, 30, 30);
-    try std.testing.expect(!a.overlaps(c));
-}
+    try rt.insert(.{ .x_min = 0, .y_min = 0, .x_max = 10, .y_max = 10 }, &d1);
+    try rt.insert(.{ .x_min = 20, .y_min = 20, .x_max = 30, .y_max = 30 }, &d2);
 
-test "rtree init" {
-    const tree = RTree.init(4);
-    try std.testing.expect(tree.root == null);
+    const results = try rt.search(.{ .x_min = 5, .y_min = 5, .x_max = 15, .y_max = 15 }, std.testing.allocator);
+    defer std.testing.allocator.free(results);
+
+    try std.testing.expect(results.len == 1);
 }

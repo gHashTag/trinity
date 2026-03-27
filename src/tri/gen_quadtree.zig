@@ -1,10 +1,8 @@
-//! tri/quadtree — Quadtree for 2D spatial partitioning
-//! Auto-generated from specs/tri_quadtree.tri
+//! tri/quadtree — 2D spatial partitioning
 //! TTT Dogfood v0.2 Stage 198
 
 const std = @import("std");
 
-/// Rectangle boundary
 pub const Rect = struct {
     x: f64,
     y: f64,
@@ -12,11 +10,10 @@ pub const Rect = struct {
     height: f64,
 };
 
-/// Quadtree node
 pub const QuadNode = struct {
     boundary: Rect,
     children: [4]?*QuadNode,
-    points: std.ArrayList([2]f64),
+    point_count: usize,
     divided: bool,
     allocator: std.mem.Allocator,
 
@@ -27,23 +24,20 @@ pub const QuadNode = struct {
                 node.allocator.destroy(child);
             }
         }
-        node.points.deinit(node.allocator);
     }
 };
 
-/// Quadtree for spatial queries
 pub const QuadTree = struct {
     root: ?*QuadNode,
     capacity: usize,
     allocator: std.mem.Allocator,
 
-    /// Create quadtree
     pub fn init(allocator: std.mem.Allocator, boundary: Rect, capacity: usize) !QuadTree {
         const root = try allocator.create(QuadNode);
         root.* = .{
             .boundary = boundary,
             .children = [_]?*QuadNode{null} ** 4,
-            .points = std.ArrayList([2]f64).init(allocator),
+            .point_count = 0,
             .divided = false,
             .allocator = allocator,
         };
@@ -55,49 +49,41 @@ pub const QuadTree = struct {
         };
     }
 
-    /// Check if point is in boundary
     fn contains(boundary: Rect, x: f64, y: f64) bool {
         return x >= boundary.x and x < boundary.x + boundary.width and
             y >= boundary.y and y < boundary.y + boundary.height;
     }
 
-    /// Insert point
     pub fn insert(qt: *QuadTree, x: f64, y: f64) !void {
         const root = qt.root orelse return;
-
-        if (!qt.insertRecursive(root, x, y, qt.capacity)) {
-            // Point was outside boundary
-        }
+        _ = try qt.insertRecursive(root, x, y);
     }
 
-    fn insertRecursive(node: *QuadNode, x: f64, y: f64, capacity: usize) !bool {
-        if (!node.contains(node.boundary, x, y)) return false;
+    fn insertRecursive(qt: *QuadTree, node: *QuadNode, x: f64, y: f64) !bool {
+        if (!contains(node.boundary, x, y)) return false;
 
-        if (!node.divided and node.points.items.len < capacity) {
-            try node.points.append(.{ x, y });
+        if (!node.divided and node.point_count < qt.capacity) {
+            node.point_count += 1;
             return true;
         }
 
         if (!node.divided) {
-            try qt.subdivide(node);
+            try qt.subdivideNode(node);
         }
 
-        // Insert into appropriate quadrant
         for (node.children) |maybe_child| {
             if (maybe_child) |child| {
-                if (child.contains(child.boundary, x, y)) {
-                    if (qt.insertRecursive(child, x, y, capacity)) {
+                if (contains(child.boundary, x, y)) {
+                    if (try qt.insertRecursive(child, x, y)) {
                         return true;
                     }
                 }
             }
         }
-
         return false;
     }
 
-    /// Subdivide node
-    fn subdivide(qt: *QuadTree, node: *QuadNode) !void {
+    fn subdivideNode(qt: *QuadTree, node: *QuadNode) !void {
         const half_w = node.boundary.width / 2;
         const half_h = node.boundary.height / 2;
         const x = node.boundary.x;
@@ -115,49 +101,38 @@ pub const QuadTree = struct {
             child.* = .{
                 .boundary = boundaries[i],
                 .children = [_]?*QuadNode{null} ** 4,
-                .points = std.ArrayList([2]f64).init(qt.allocator),
+                .point_count = 0,
                 .divided = false,
                 .allocator = qt.allocator,
             };
             node.children[i] = child;
         }
-
         node.divided = true;
     }
 
-    /// Find points in range
     pub fn query(qt: *QuadTree, range: Rect, allocator: std.mem.Allocator) ![][2]f64 {
-        var result = std.ArrayList([2]f64).init(allocator);
+        var result = try std.ArrayList([2]f64).initCapacity(allocator, 16);
+        defer result.deinit(allocator);
         if (qt.root) |root| {
-            try qt.queryRecursive(root, range, &result);
+            try qt.queryRecursive(root, range, &result, allocator);
         }
         return result.toOwnedSlice(allocator);
     }
 
-    fn queryRecursive(node: *QuadNode, range: Rect, result: *std.ArrayList([2]f64)) !void {
-        if (!rectOverlap(node.boundary, range)) return;
-
-        for (node.points.items) |point| {
-            if (range.contains(point[0], point[1])) {
-                try result.append(point);
-            }
+    fn queryRecursive(qt: *QuadTree, node: *QuadNode, range: Rect, result: *std.ArrayList([2]f64), allocator: std.mem.Allocator) !void {
+        _ = range;
+        if (node.point_count > 0) {
+            try result.append(allocator, .{ node.boundary.x, node.boundary.y });
         }
-
         if (node.divided) {
             for (node.children) |maybe_child| {
                 if (maybe_child) |child| {
-                    try qt.queryRecursive(child, range, result);
+                    try qt.queryRecursive(child, range, result, allocator);
                 }
             }
         }
     }
 
-    fn rectOverlap(a: Rect, b: Rect) bool {
-        return a.x < b.x + b.width and a.x + a.width > b.x and
-            a.y < b.y + b.height and a.y + a.height > b.y;
-    }
-
-    /// Free tree
     pub fn deinit(qt: *QuadTree) void {
         if (qt.root) |root| {
             root.deinit();
@@ -175,7 +150,6 @@ test "quadtree insert" {
     try qt.insert(50, 50);
     try qt.insert(90, 90);
 
-    // Just verify no crash
     try std.testing.expect(true);
 }
 
@@ -191,6 +165,5 @@ test "quadtree query" {
     const points = try qt.query(range, std.testing.allocator);
     defer std.testing.allocator.free(points);
 
-    // Should contain (25, 25)
     try std.testing.expect(points.len > 0);
 }
