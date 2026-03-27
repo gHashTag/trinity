@@ -48968,3 +48968,152 @@ Commands:
   tri queen blocked   Show events that need manual intervention
 
 👑 Queen Trinity starting daemon mode (PID 53583)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x10493cd87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x10490ae9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x1048f951f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:367:13: 0x1049b86af in logToHive__anon_20467 (tri)
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x1049b959b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x1049ba4b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x104d28697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 59515)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x10411cd87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x1040eae9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x1040d951f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:367:13: 0x1041986af in logToHive__anon_20467 (tri)
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x10419959b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x10419a4b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x104508697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 63830)
+error: FileNotFound
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x10088159b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x1008824b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x100bf0697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 68881)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x102c80d87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x102c4ee9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x102c3d51f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:367:13: 0x102cfc6af in logToHive__anon_20467 (tri)
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x102cfd59b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x102cfe4b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x10306c697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 71667)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x102eb4d87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x102e82e9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x102e7151f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:367:13: 0x102f306af in logToHive__anon_20467 (tri)
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x102f3159b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x102f324b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x1032a0697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 72789)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x100984d87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x100952e9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x10094151f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:367:13: 0x100a006af in logToHive__anon_20467 (tri)
+    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:306:13: 0x100a0159b in runQueenStart (tri)
+            try logToHive(allocator, cycle, "⚠️ Build broken", .{});
+            ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x100a024b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:177:9: 0x100d70697 in main (tri)
+        try queen_trinity.runQueenCommand(allocator, queen_args);
+        ^
+👑 Queen Trinity starting daemon mode (PID 74375)
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x102eb8d87 in openatZ (tri)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x102e86e9b in openFileZ (tri)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x102e7551f in openFile (tri)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:373:32: 0x102f346af in logToHive__anon_20467 (tri)
+    const pos = try f.getEndPos();
+                               ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:286:36: 0x102f3559b in runQueenStart (tri)
+    defer std.fs.deleteFileAbsolute(PID_FILE) catch {};
+                                   ^
+/Users/playra/trinity-w1/src/tri/queen_trinity.zig:253:9: 0x102f364b3 in runQueenCommand (tri)
+        return runQueenStart(allocator, args[1..]);
+        ^
+/Users/playra/trinity-w1/src/tri/main.zig:65:31: 0x1032a4697 in main (tri)
+    defer std.process.argsFree(allocator, args);
+                              ^
+👑 Queen Trinity starting daemon mode (PID 80020)
