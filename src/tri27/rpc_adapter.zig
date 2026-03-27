@@ -41,9 +41,9 @@ pub const RpcAdapter = struct {
         self: *RpcAdapter,
         to: [20]u8,
         data: []const u8,
-    gas_limit: u64,
-    gas_price: u128,
-    value: u128,
+        gas_limit: u64,
+        gas_price: u128,
+        value: u128,
         block_number: ?u64,
     ) ![]const u8 {
         const to_hex = addressToHex(to);
@@ -80,11 +80,9 @@ pub const RpcAdapter = struct {
         const params_json = try std.json.stringifyAlloc(self.allocator, params_obj.items);
         defer self.allocator.free(params_json);
 
-        const request_body = try std.fmt.allocPrint(
-            self.allocator,
+        const request_body = try std.fmt.allocPrint(self.allocator,
             \\{{"method":"eth_call","params":{s},"gas":"{d}","id":"{d}}}
         , params_json);
-
 
         const result = try self.http_client.postJson(
             self.rpc_url,
@@ -95,7 +93,7 @@ pub const RpcAdapter = struct {
         defer self.allocator.free(request_body);
 
         switch (result.status) {
-            .@"Ok" => {
+            .Ok => {
                 // Parse JSON response
                 if (result.body) |b| {
                     const response = std.json.parseFromSlice(std.json.Value, self.allocator, b, .{}) catch return error.RpcError;
@@ -127,8 +125,7 @@ pub const RpcAdapter = struct {
         const value_str = std.fmt.allocPrint(self.allocator, "0x{x}", .{value});
         const data_str = std.fmt.allocPrint(self.allocator, "0x{s}", .{value_str});
 
-        const params_json = try std.fmt.allocPrint(
-            self.allocator,
+        const params_json = try std.fmt.allocPrint(self.allocator,
             \\{{"from":"{s}","to":"{s}","data":"{s}","id":"{d}}}
         , data_str);
 
@@ -142,7 +139,7 @@ pub const RpcAdapter = struct {
         );
 
         switch (result.status) {
-            .@"Ok" => {
+            .Ok => {
                 if (result.body) |b| {
                     _ = b;
                     return error.RpcError;
@@ -162,7 +159,7 @@ pub const RpcAdapter = struct {
         const params_json = std.fmt.allocPrint(
             self.allocator,
             \\{{"method":"eth_sendRawTransaction","params":["{s}"],"id":{d}}}
-            ,
+        ,
             tx_hex,
         );
 
@@ -177,9 +174,12 @@ pub const RpcAdapter = struct {
         defer self.allocator.free(params_json);
 
         switch (result.status) {
-            .@"Ok" => {
+            .Ok => {
                 if (result.body) |b| {
-                    const response = try std.json.parseFromSlice(self.allocator, result.body) catch |e;
+                    const response = std.json.parseFromSlice(std.json.Value, self.allocator, result.body, .{}) catch |e| {
+                        _ = e;
+                        return error.RpcError;
+                    };
                     if (response.object.get("result")) |json_obj| {
                         const tx_hash = json_obj.object.get("result");
                         if (tx_hash.string) |str| {
@@ -200,10 +200,14 @@ pub const RpcAdapter = struct {
     ) !?TransactionReceipt {
         _ = tx_hash;
 
+        const tx_hex = std.fmt.allocPrint(self.allocator, "0x{x}", .{tx_hash});
+        defer self.allocator.free(tx_hex);
+
         const params_json = std.fmt.allocPrint(
             self.allocator,
-            \\{{"method":"eth_getTransactionReceipt","params":["{s}],"id":"{d}}}
-            .,
+            \\{{"method":"eth_getTransactionReceipt","params":["{s}"],"id":1}}
+        ,
+            tx_hex,
         );
 
         defer self.allocator.free(params_json);
@@ -217,9 +221,12 @@ pub const RpcAdapter = struct {
         defer self.allocator.free(params_json);
 
         switch (result.status) {
-            .@"Ok" => {
+            .Ok => {
                 if (result.body) |b| {
-                    const response = try std.json.parseFromSlice(self.allocator, result.body) catch |e;
+                    const response = std.json.parseFromSlice(std.json.Value, self.allocator, result.body, .{}) catch |e| {
+                        _ = e;
+                        return error.RpcError;
+                    };
                     if (response.object.get("result")) |json_obj| {
                         const receipt = json_obj.object.get("result");
 
@@ -276,5 +283,3 @@ pub const RpcAdapter = struct {
         transaction_hash: [32]u8,
     };
 };
-
-pub const error = error.RpcError;
