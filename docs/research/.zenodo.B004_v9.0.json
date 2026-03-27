@@ -93,5 +93,42 @@
       "2026-03-27"
     ],
     "url": "https://github.com/gHashTag/trinity"
+  },
+  "funding": [
+    {
+      "funder": {
+        "name": "Trinity Research Collective",
+        "doi": "10.13039/501100000000",
+        "award": [
+          {
+            "title": "Trinity S\u00b3AI Research Framework",
+            "number": "TRI-2024-001",
+            "url": "https://github.com/gHashTag/trinity"
+          }
+        ]
+      }
+    }
+  ],
+  "notes": "This research was supported by the Trinity Research Collective. \nWe thank the Zig Software Foundation for the excellent compiler toolchain.\nFPGA synthesis was performed using open-source tools (Yosys, nextpnr-xilinx).\nComputational resources were provided by Railway Cloud and Apple Silicon hardware.\nWe acknowledge the use of TinyStories dataset (Eldan & Li, 2023).",
+  "custom_fields": {
+    "submission_targets": {
+      "venues": [
+        "AAAI 2026",
+        "IJCAI 2026",
+        "AAMAS 2026"
+      ],
+      "track": "Cognitive Systems",
+      "code_availability": "https://github.com/gHashTag/trinity/tree/main/src/tri/queen"
+    },
+    "peer_review": {
+      "method": "Open peer review",
+      "comments": "Reviews will be conducted via GitHub Issues and PRs",
+      "license": "CC-BY-4.0"
+    }
+  },
+  "imprint": {
+    "publisher": "Trinity Research Collective",
+    "country": "International",
+    "publication_date": "2026-03-27"
   }
 }
