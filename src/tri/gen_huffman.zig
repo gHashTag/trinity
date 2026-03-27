@@ -20,10 +20,11 @@ pub const HuffmanEncoder = struct {
     codes: std.ArrayList(HuffmanCode),
     allocator: std.mem.Allocator,
 
-    pub fn init(allocator: std.mem.Allocator) HuffmanEncoder {
+    pub fn init(allocator: std.mem.Allocator) !HuffmanEncoder {
+        const codes = try std.ArrayList(HuffmanCode).initCapacity(allocator, 0);
         return .{
             .root = null,
-            .codes = std.ArrayList(HuffmanCode).initCapacity(allocator, 0),
+            .codes = codes,
             .allocator = allocator,
         };
     }
@@ -45,7 +46,7 @@ pub const HuffmanEncoder = struct {
 };
 
 test "huffman init" {
-    var encoder = HuffmanEncoder.init(std.testing.allocator);
+    var encoder = try HuffmanEncoder.init(std.testing.allocator);
     defer encoder.deinit();
     try std.testing.expect(encoder.root == null);
 }
