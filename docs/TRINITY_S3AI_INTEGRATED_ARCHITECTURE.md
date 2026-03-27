@@ -1,49 +1,49 @@
-# Trinity S³AI — Интегрированная архитектура Trinity
+# Trinity S³AI — Integrated Trinity Architecture
 
-> **Единый документ для всей системы Trinity**: от нейроанатомических карт до FPGA выполнения
+> **Single document for the entire Trinity system**: from neuroanatomical maps to FPGA execution
 >
-> **Связующие уровни**: Science → Language/VM → Hardware — BDD → Tests
-> **Цель**: Показать, как каждый уровень использует результаты следующего уровня
+> **Binding layers**: Science → Language/VM → Hardware — BDD → Tests
+> **Goal**: Show how each level uses results from the next level
 
 ---
 
-## 🧠 Level 1: Научные Рамки (Science Framework)
+## 🧠 Level 1: Science Framework
 
-### Текущая документация
+### Current Documentation
 - **Trinity S³AI Architecture** — `docs/trinity_s3ai_architecture.md`
-- **Связные карты мозга** — см. `docs/trinity_s3ai_brain_maps.md` (если есть, иначе создать по аналогиям)
-- **Связь с Sacred Formula** — `φ² + 1/φ² = 3` задаёт пропорции
+- **Brain connectivity maps** — see `docs/trinity_s3ai_brain_maps.md` (if exists, otherwise create by analogy)
+- **Connection to Sacred Formula** — `φ² + 1/φ² = 3` sets proportions
 
-### Ближайшие спецификации
-- **Hippocampus (Angular Gyrus)** — пространственные вычисления
-- **Orbitofrontal Cortex** — сенсомоторная интеграция и принятие решений
-- **Amygdala** — эмоциональная обработка и детекция угроз
+### Upcoming Specifications
+- **Hippocampus (Angular Gyrus)** — spatial computing
+- **Orbitofrontal Cortex** — sensorimotor integration and decision making
+- **Amygdala** — emotional processing and threat detection
 
 ---
 
-## 📝 Level 2: Язык и VM (Tri + TRI-27)
+## 📝 Level 2: Language and VM (Tri + TRI-27)
 
-### Tri — Текнарный Язык
-- **Спецификация** — `specs/tri/lang-ref/language_spec.md`
-- **Компилятор** — tric (VIBEE Codegen)
+### Tri — Ternary Language
+- **Specification** — `specs/tri/lang-ref/language_spec.md`
+- **Compiler** — tric (VIBEE Codegen)
 - **AST** — `.tri` → Zig/Verilog
-- **Типы** — Trit, GF16, TF3
-- **Интерфейсы** — для интеграции с FPGA
+- **Types** — Trit, GF16, TF3
+- **Interfaces** — for FPGA integration
 
 ### TRI-27 ISA
-- **CPU State** — 27 тритных регистра (t0-t26) + 3 float (f0-f2)
-- **Opcodes** — 27 опкодов (arithmetic, logic, control, тернарный, sacred)
-- **Формат** — `.tbin` файлы (см. ниже)
-- **Исполнители** — tri-emu (CLI), tri-hw (FPGA)
+- **CPU State** — 27 trit registers (t0-t26) + 3 float (f0-f2)
+- **Opcodes** — 27 opcodes (arithmetic, logic, control, ternary, sacred)
+- **Format** — `.tbin` files (see below)
+- **Executors** — tri-emu (CLI), tri-hw (FPGA)
 
-#### Связи с Level 1
-- **Neuro модули** → TRI-27 байткод для:
-  - Связные операции (VSA, bind, bundle, dot)
-  - Свящённые вычисления (Sacred ALU: φ_const, pi_const, e_const)
-  - Тернарные операции (DOT, BIND, BUNDLE2, BUNDLE3)
-  - Контроль потоки (вызовы, условия, события)
+#### Connections to Level 1
+- **Neuro modules** → TRI-27 bytecode for:
+  - Associative operations (VSA, bind, bundle, dot)
+  - Sacred computations (Sacred ALU: φ_const, pi_const, e_const)
+  - Ternary operations (DOT, BIND, BUNDLE2, BUNDLE3)
+  - Control flow (calls, conditions, events)
 
-- **Научные рамки** → .tri файлы используют научную терминологию:
+- **Scientific frameworks** → .tri files use scientific terminology:
   - `intraparietal_sulcus` — Working Memory
   - `angulargyrus` — Semantic Reasoning
   - `fusiform_gyrus` — Sensory Integration
@@ -54,177 +54,177 @@
 
 ## ⚡ Level 3: FPGA/Hardware
 
-### Sacred ALU — φ-Математическое Ядро
-- **Модуль** — `fpga/openxc7-synth/sacred_alu.v`
-- **Состав**:
-  - φ-арифметика (golden angles, φ^n, φ × π)
-  - π-тригонометрия (π-константы)
-  - e-экспонента (e^n, decay)
-  - GF16/TF3 — квантованный форматы для тернарных весов
-  - Тернарные квантования (трёхмерный, bind, bundle, dot)
+### Sacred ALU — φ-Mathematical Core
+- **Module** — `fpga/openxc7-synth/sacred_alu.v`
+- **Components**:
+  - φ-arithmetic (golden angles, φ^n, φ × π)
+  - π-trigonometry (π-constants)
+  - e-exponential (e^n, decay)
+  - GF16/TF3 — quantized formats for ternary weights
+  - Ternary quantizations (three-dimensional, bind, bundle, dot)
 
 ### TMU — Ternary Matrix Unit
-- **Модуль** — `fpga/openxc7-synth/hslm_ternary_mac.v`
-- **Состав**:
-  - K×K матрицы (хранение весов)
-  - Dot product pipeline (векторное/конволюционное умножение)
-  - Bind/bundle операции (интеграция с VSA)
-  - Ternарный формат (хранение 3-тритов в байт)
+- **Module** — `fpga/openxc7-synth/hslm_ternary_mac.v`
+- **Components**:
+  - K×K matrices (weight storage)
+  - Dot product pipeline (vector/convolution multiplication)
+  - Bind/bundle operations (VSA integration)
+  - Ternary format (3-trit storage per byte)
 
 ### FPGA Bitstream Pipeline
 ```
-.tri spec → Zig код → Verilog → .bit
+.tri spec → Zig code → Verilog → .bit
 ↓
-tric (VIBEE codegen)  ← .tri компилятор
+tric (VIBEE codegen)  ← .tri compiler
 ↓
 Yosys synthesis → .blif → .net → .pcf → .bit
 ↓
-openxc7 synthesis → .bitstream → .bit файл
+openxc7 synthesis → .bitstream → .bit file
 ```
 
-#### Связи с Level 2
-- **TRI-27 ISA** → аппаратное исполнение инструкций
-- **Sacred ALU** → аппаратная поддержка математики
-- **TMU** → аппаратная обработка векторов
+#### Connections to Level 2
+- **TRI-27 ISA** → hardware instruction execution
+- **Sacred ALU** → hardware math support
+- **TMU** → hardware vector processing
 
 ---
 
-## 🧪 Level 4: BDD — Поведение и Тестирование
+## 🧪 Level 4: BDD — Behavior and Testing
 
-### Поведение (Behavior-Driven Development)
-**Спецификации BDD для:**
+### Behavior (Behavior-Driven Development)
+**BDD Specifications for:**
 - `docs/docs/adr/003-sacred-constants-unified.md`
 - `docs/docs/adr/001-vibee-compiler.md`
 - `docs/docs/adr/002-ternary-presentation.md`
 - `docs/internal/agents.md`
 
-#### Ближайшие спецификации
-- **Behavior** — `docs/docs/internal/ACTIONS.md` (словарный формат поведения)
-- **Grammar** — `specs/tri/lang-ref/grammar.tri` (уже есть)
-- **Types** — `specs/tri/lang-ref/types.tri` (уже есть)
-- **Tokens** — `specs/tri/lang-ref/tokens.tri` (уже есть)
+#### Upcoming Specifications
+- **Behavior** — `docs/docs/internal/ACTIONS.md` (dictionary format of behavior)
+- **Grammar** — `specs/tri/lang-ref/grammar.tri` (already exists)
+- **Types** — `specs/tri/lang-ref/types.tri` (already exists)
+- **Tokens** — `specs/tri/lang-ref/tokens.tri` (already exists)
 
-#### Использование BDD
+#### BDD Usage
 ```zig
-// .tri файл для мозга "intraparietal_sulcus" зоны
+// .tri file for "intraparietal_sulcus" brain zone
 module {
-    // Использует VSA модуль для состояния
-    // Вызывает Sacred ALU операции для φ-вычислений
+    // Uses VSA module for state
+    // Calls Sacred ALU operations for φ-computations
 }
 
-// Синтез TRI-27 ISA опкодов для математики
+// TRI-27 ISA opcode synthesis for math
 const sacred_alu_phi_const = try executeSacredOp(SACRED.PHI_CONST);
 const sacred_alu_pi_const = try executeSacredOp(SACRED.PI_CONST);
 ```
 
-// Исполняет FPGA операции для инференса
+// Executes FPGA operations for inference
 try sacred_alu_dot = executeSacredOp(SACRED.DOT, &a, &b);
 try sacred_alu_fadd = executeSacredOp(SACRED.FADD, &a, &b);
 ```
 
 ```
 
-#### Тестовые примеры
+#### Test Examples
 ```zig
-// Пример 1: PHI-константа в нейро-зоне
+// Example 1: PHI-constant in neuro-zone
 fn initBrainZone(name: []const u8, size: u32) !void {
-    // Выделяем векторное состояние для зоны "intraparietal_sulcus"
-    // На практике это будет вызывать sacred_alu_phi_const из TRI-27
+    // Allocate vector state for "intraparietal_sulcus" zone
+    // In practice this will call sacred_alu_phi_const from TRI-27
 }
 
-// Пример 2: Связь двух зон
+// Example 2: Connection between two zones
 fn bindZones(zoneA: VSAState, zoneB: VSAState) !void {
-    // Использует sacred_alu_bind для ассоциации
+    // Uses sacred_alu_bind for association
     const similarity = sacred_alu_cosine_similarity(zoneA, zoneB);
-    // Если similarity > 0.8, зоны связаны
+    // If similarity > 0.8, zones are connected
 }
 
-// Пример 3: Исполнение через TMU
+// Example 3: Execution through TMU
 fn executeThroughTernary(input: []Trit) !void {
-    // Используем TMU модуль для обработки вектора
-    // Связываем через Sacred ALU для φ-вычислений
+    // Use TMU module for vector processing
+    // Bind through Sacred ALU for φ-computations
 }
 
-// Пример 4: Условное ветвление
+// Example 4: Conditional branching
 fn processDecision(condition: BrainContext) bool !void {
-    // Использует decision-making из "orbital_frontal_cortex"
-    // Возвращает true/false на основе нескольких входов
-    // Если true → продолжаем, если false → альтернативный путь
+    // Uses decision-making from "orbital_frontal_cortex"
+    // Returns true/false based on multiple inputs
+    // If true → continue, if false → alternative path
 }
 ```
 
 ---
 
-## 🔗 Поток Данных Между Уровнями
+## 🔗 Data Flow Between Levels
 
 ```
 ┌────────────────────────────────────┐
-│ Level 1: Научные рамки (Science)               │
+│ Level 1: Scientific Framework              │
 │  - intraparietal_sulcus (Working Memory)         │
 │   - angulargyrus (Reasoning)               │
 │   - fusiform_gyrus (Sensory)             │
 │   - orbital_frontal (Decision)        │
 │   - amygdala (Emotion)                 │
 ├─────────────────────────────────────┤
-│            │ Связь через .tri файлы        │
-│            │      TRI-27 байткод (VM + ISA) │
+│            │ Connection through .tri files        │
+│            │      TRI-27 bytecode (VM + ISA) │
 │            └─────────────────────────────────────┘
                           │
-                          │ аппаратно FPGA для инференса │
+                          │ FPGA hardware for inference │
                           └─────────────────────────────────────┘
-                                      │ Sacred ALU: φ-математика │
-                                      │ TMU: тернарная матрица  │
+                                      │ Sacred ALU: φ-math │
+                                      │ TMU: ternary matrix  │
                                       └─────────────────────────────────────┘
                           ↓
-│                   Проверяем состояние                │
-│                   BDD тесты (behaviour)  │
+│                   Verify state                │
+│                   BDD tests (behaviour)  │
 └─────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📚 Использование
+## 📚 Usage
 
-### Разработка .tri файла для нейро-зоны
+### Developing .tri file for neuro-zone
 
 ```bash
-# 1. Создаём .tri файл для "intraparietal_sulcus" зоны
+# 1. Create .tri file for "intraparietal_sulcus" zone
 tri create brain_zone --name intraparietal_sulcus \
     --weights 16384 --connections 4096 \
     --trit27-ops "DOT, BIND, BUNDLE2" \
     --output zone.bin
 
-# 2. Выполняем .tri файл на FPGA
+# 2. Execute .tri file on FPGA
 tri compile brain_zone --name intraparietal_sulcus \
     --target fpga \
     --sacred_alu_ops "PHI_CONST, PI_CONST, E_CONST" \
     --output intraparietal_sulcus.bin
 
-# 3. Запускаем эмуляцию
+# 3. Run emulation
 tri run brain_zone --name intraparietal_sulcus \
     --weights zone.bin \
     --backend tri27emu
 ```
 
-### Разработка TRI-27 программы
+### Developing TRI-27 program
 
 ```zig
-// TRI-27 программа для нейро-вычислений
+// TRI-27 program for neural computing
 const std = @import("std");
 const vm = @import("trinity/tri27/emu");
 const sacred_alu = @import("fpga/sacred_alu");
 
 pub fn runNeuralInference() !void {
-    // 1. Инициализируем TRI-27 CPU
+    // 1. Initialize TRI-27 CPU
     var cpu = try vm.CPU.init();
 
-    // 2. Загружаем веса из нейро-зоны
+    // 2. Load weights from neuro-zone
     try vm.loadFpgaWeights(&cpu, "intraparietal_sulcus.bin");
 
-    // 3. Выполняем вычисления через Sacred ALU
+    // 3. Execute computations through Sacred ALU
     try sacred_alu.setMode(.phi_computation);
 
-    // 4. Выполняем векторные операции
+    // 4. Execute vector operations
     try vm.executeOpcodes(&[
         .opcode = .DOT,
         .a = &weights,
@@ -232,17 +232,17 @@ pub fn runNeuralInference() !void {
     .result = &cpu.regs[0],
     ]);
 
-    // 5. Принятие решений через Amygdala
+    // 5. Decision making through Amygdala
     const decision = try amygdala.evaluate(inputs: &cpu.regs);
     if (decision.go) {
-        // Продолжаем дальше по выбранному пути
+        // Continue along selected path
     try vm.executeOpcodes(&[
             .opcode = .HALT,
             .target = "fusiform_gyrus_zone",
         .input = inputs,
         ]);
     } else {
-        // Альтернативный путь (например, логирование)
+        // Alternative path (e.g., logging)
         try vm.executeOpcodes(&[
             .opcode = .JZ,
             .target = "log_decision",
@@ -253,10 +253,10 @@ pub fn runNeuralInference() !void {
 }
 ```
 
-### Формат .tbin (для TRI-27)
+### .tbin Format (for TRI-27)
 
 ```zig
-// .tbin формат для TRI-27
+// .tbin format for TRI-27
 pub const TBINHeader = extern struct {
     magic: [4]u8 = .{'t', 'r', 'i', 'n'}, // "TRI27"
     version: u8 = 1,
@@ -276,24 +276,24 @@ pub const TBINCodeSection = extern struct {
 };
 ```
 
-// Функции для создания .tbin файлов
+// Functions for creating .tbin files
 fn createTBin(program: []const TBIInstruction) ![]u8 {
-    // Заголовок (magic, version, секции, размеры)
+    // Header (magic, version, sections, sizes)
     var header: TBINHeader = ...;
 
-    // Конвертируем в bytearray
+    // Convert to bytearray
     var code = std.ArrayList(u8).init(allocator);
 
-    // Пишем опкоды
+    // Write opcodes
     for (instruction) &program) {
         try code.append(serializeInstruction(instruction));
     }
 
-    // Вычисляем смещения
+    // Calculate offsets
     header.code_size = code.items.len;
     header.data_size = calculateDataSize(program);
 
-    // Формируем bytearray
+    // Form bytearray
     return code.toOwnedSlice();
 }
 
@@ -308,30 +308,30 @@ fn calculateDataSize(program: []const TBIInstruction) u32 {
 
 ---
 
-## � Примеры Использования
+## 📖 Usage Examples
 
-### Пример 1: Простое вычисление с Sacred ALU
+### Example 1: Simple computation with Sacred ALU
 ```zig
-// Вычисление φ² через Sacred ALU
+// Computing φ² through Sacred ALU
 const sacred_alu = @import("fpga/sacred_alu");
 
 fn main() !void {
     const phi_result = try sacred_alu.phi_pow();
 
-    // φ_result содержит f-регистр с результатом φ^10
+    // φ_result contains f-register with result of φ^10
     try std.debug.print("φ^10 = {d:.6}\n", .{phi_result});
 }
 }
 ```
 
-### Пример 2: Полноценная сеть через TMU
+### Example 2: Full network through TMU
 ```zig
-// Полноценная нейро сеть с 3 слоями:
+// Full neural network with 3 layers:
 // 1. intraparietal_sulcus — Working Memory (VSA)
-// 2. fusiform_gyrus — Semantic Reasoning (текст)
+// 2. fusiform_gyrus — Semantic Reasoning (text)
 // 3. orbital_frontal_cortex — Executive Decision
 
-// Связь через .tri файлы
+// Connection through .tri files
 trinity config:
   modules:
     - intraparietal_sulcus: VSA + Sacred ALU
@@ -339,73 +339,73 @@ trinity config:
     - orbital_frontal_cortex: Decision
     - amygdala: Emotion
 
-// Поток данных
+// Data flow
 Working Memory → VSA → Sacred ALU → Orbital → Amygdala → Decision → Output
 ```
 
 ---
 
-## 📊 Модель Использования
+## 📊 Usage Model
 
 ```zig
-// Единая система Trinity S³AI работает по 3 уровням:
+// Unified Trinity S³AI system operates at 3 levels:
 
-1. **НАУЧНЫЕ РАМКИ** (уровень 1)
-   - intraparietal_sulcus: хранит состояние
-   - fusiform_gyrus: выполняет вычисления
-   - orbital_cortex: принимает решения
-   - amygdala проверяет угрозы
+1. **SCIENTIFIC FRAMEWORKS** (level 1)
+   - intraparietal_sulcus: stores state
+   - fusiform_gyrus: executes computations
+   - orbital_cortex: makes decisions
+   - amygdala checks threats
 
-2. **ЯЗЫК И ISA** (уровень 2)
-   - .tri компилятор создаёт TRI-27 байткод
-   - tri-emu исполняет байткод
-   - tri-hw исполняет на FPGA
+2. **LANGUAGE AND ISA** (level 2)
+   - .tri compiler creates TRI-27 bytecode
+   - tri-emu executes bytecode
+   - tri-hw executes on FPGA
 
-3. **АППАРАТУРА** (уровень 3)
-   - Sacred ALU исполняет φ-математику
-   - TMU исполняет тернарные операции
-   - FPGA загружает битстрим и исполняет
+3. **HARDWARE** (level 3)
+   - Sacred ALU executes φ-mathematics
+   - TMU executes ternary operations
+   - FPGA loads bitstream and executes
 
-4. **ПОВЕДЕНИЕ** (уровень 4)
-   - BDD спецификации описывают поведение
-   - Все изменения валидируются через BDD тесты
+4. **BEHAVIOR** (level 4)
+   - BDD specifications describe behavior
+   - All changes validated through BDD tests
 ```
 
 ---
 
-## 🔗 Консиструкции
+## 🔗 Constructions
 
-### Функциональный стиль (требование из контракта)
-- ✅ Только функции верхнего уровня
-- ✅ Только `struct` и `enum` (нет классов)
-- ✅ Только `match` для ветвлений (нет виртуального dispatch)
-- ✅ Неизменяемые значения по умолчанию
-- ✅ Модульность через файлы/модули (module tri.vsa_ops, etc.)
+### Functional style (requirement from contract)
+- ✅ Only top-level functions
+- ✅ Only `struct` and `enum` (no classes)
+- ✅ Only `match` for branching (no virtual dispatch)
+- ✅ Immutable values by default
+- ✅ Modularity through files/modules (module tri.vsa_ops, etc.)
 
-### Жёсткий запрет
-- ❌ Никаких `class`, `object`, `this`, `super`, `interface`
-- ❌ Никаких методов, привязанных к типам
-- ❌ Никакого наследования и виртуальных таблиц
-- ❌ Никаких исключений и throw/try-catch
-- ❌ Никаких скрытого состояния (global mutable, this)
+### Strict prohibition
+- ❌ No `class`, `object`, `this`, `super`, `interface`
+- ❌ No methods bound to types
+- ❌ No inheritance and virtual tables
+- ❌ No exceptions and throw/try-catch
+- ❌ No hidden state (global mutable, this)
 
 ### Enforcement
-- **Parser**: Detects and отклоняет любые .tri файлы с запрещёнными конструкциями
-- **Linter**: Отклоняет любые попытки ввести императив
-- **Formatter**: Автоматически исправляет всё к функциональному стилю
-- **VM Core**: Проверяет, что все VM используют консолидированное VM-ядро
+- **Parser**: Detects and rejects any .tri files with forbidden constructions
+- **Linter**: Rejects any attempts to introduce imperative
+- **Formatter**: Automatically fixes everything to functional style
+- **VM Core**: Verifies that all VMs use consolidated VM-core
 
 ---
 
 ## 📖
 
-Для более информации:
-- **Architecture**: `docs/trinity_s3ai_architecture.md` — 3-уровневая архитектура
-- **Language**: `specs/tri/lang-ref/language_spec.md` — спецификация Tri
-- **Hardware**: `fpga/README.md` — FPGA синтез
-- **BDD Docs**: `docs/docs/adr/*` — спецификации поведения
+For more information:
+- **Architecture**: `docs/trinity_s3ai_architecture.md` — 3-level architecture
+- **Language**: `specs/tri/lang-ref/language_spec.md` — Tri specification
+- **Hardware**: `fpga/README.md` — FPGA synthesis
+- **BDD Docs**: `docs/docs/adr/*` — behavior specifications
 
 ---
 
-**Ключевой инсайт**: Все спецификации используют единое φ-структуру.
-**От нейро-карт до FPGA — единый поток через функциональный Tri язык.**
+**Key insight**: All specifications use unified φ-structure.
+**From neuro-maps to FPGA — unified flow through functional Tri language.**

@@ -18,7 +18,7 @@ pub const LMFDBEntry = struct {
     coefficients: [2]i64, // [a, b] for y^2 = x^3 + ax + b (minimal model)
     rank: u8, // Analytic rank
     torsion: u8, // Torsion subgroup order
-    sha: u64, // Order of Tate-Shafarevich group |Ш(E/Q)|
+    sha: u64, // Order of Tate-Shafarevich group |Sha(E/Q)|
     generators: []Generator, // Mordell-Weil generators
     tamagawa: []u32, // Tamagawa numbers at bad primes
     regulator: f64, // Canonical height regulator

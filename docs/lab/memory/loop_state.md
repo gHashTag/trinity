@@ -1,63 +1,63 @@
-# UART Echo Loop State — Автономный цикл
+# UART Echo Loop State — Autonomous Cycle
 
-## 2026-03-23 23:59 — Финальный отчёт
+## 2026-03-23 23:59 — Final Report
 
-### ✅ Выполнено
+### ✅ Completed
 
-| Задача | Статус |
-|-------|---------|
-| uart_echo_top.v | ✅ Создан с PING протоколом |
-| uart_echo_top.xdc | ✅ Создан (J2: M22/K20/L20/T23) |
-| uart_bridge_fixed.v | ✅ UART мост FT232RL ↔ FPGA (L20/K20/M22/T23) |
-| uart_bridge_fixed.xdc | ✅ Constraints файл создан |
-| uart_bridge_fixed.bit | ✅ Битстрим готов (3.6 MB) |
-| **uart_echo_test.zig** | ❌ **Задача отменена** |
-| uart_echo_test_README.md | ✅ README для использования |
-| fpga/program_uart.zig | ✅ Утилита для прошивки FPGA |
-| specs/fpga/uart_test_workflow.tri | ✅ .tri spec для автоматизации |
-| GitHub issue | ✅ #397 (#357) создан |
+| Task | Status |
+|------|--------|
+| uart_echo_top.v | ✅ Created with PING protocol |
+| uart_echo_top.xdc | ✅ Created (J2: M22/K20/L20/T23) |
+| uart_bridge_fixed.v | ✅ UART bridge FT232RL ↔ FPGA (L20/K20/M22/T23) |
+| uart_bridge_fixed.xdc | ✅ Constraints file created |
+| uart_bridge_fixed.bit | ✅ Bitstream ready (3.6 MB) |
+| **uart_echo_test.zig** | ❌ **Task cancelled** |
+| uart_echo_test_README.md | ✅ README for usage |
+| fpga/program_uart.zig | ✅ FPGA flashing utility |
+| specs/fpga/uart_test_workflow.tri | ✅ .tri spec for automation |
+| GitHub issue | ✅ #397 (#357) created |
 
-### 📋 Выполненные улучшения (v2.0 → v2.1)
+### 📋 Completed Improvements (v2.0 → v2.1)
 
-1. ✅ **Параметры командной строки:**
-   - `--baud <rate>` — скорость UART (default: 115200)
-   - `--delay <ms>` — задержка между тестами (default: 200)
-   - `--timeout <ms>` — таймаут чтения (default: 2000)
-   - `-v` / `--verbose` — подробное логирование
-   - `--help` — справка
+1. ✅ **Command-line Parameters:**
+   - `--baud <rate>` — UART speed (default: 115200)
+   - `--delay <ms>` — delay between tests (default: 200)
+   - `--timeout <ms>` — read timeout (default: 2000)
+   - `-v` / `--verbose` — verbose logging
+   - `--help` — help
 
-2. ✅ **Использование std.os.write():**
-   - Прямая запись в порт вместо stdout.writeAll()
-   - Проверка количества записанных байтов
-   - Обработка ошибок записи
+2. ✅ **Using std.os.write():**
+   - Direct port write instead of stdout.writeAll()
+   - Check number of bytes written
+   - Handle write errors
 
-3. ✅ **Подробное логирование (verbose mode):**
-   - Вывод конфигурации при запуске
-   - Подробности операций чтения/записи
-   - Детализация несовпадений байтов
+3. ✅ **Verbose Logging:**
+   - Output configuration at startup
+   - Read/write operation details
+   - Byte mismatch details
 
-4. ✅ **PING/PONG протокол:**
-   - Константы PING_BYTE (0x03) и PONG_BYTE (0x83)
-   - Режимы: echo и ping-pong
-   - Параметр `--mode echo` / `--mode ping-pong`
-   - Функция pingPong() для PING/PONG теста
+4. ✅ **PING/PONG Protocol:**
+   - Constants PING_BYTE (0x03) and PONG_BYTE (0x83)
+   - Modes: echo and ping-pong
+   - Parameter `--mode echo` / `--mode ping-pong`
+   - Function pingPong() for PING/PONG test
 
-### ⚠️  Текущая блокировка
+### ⚠️ Current Blocker
 
-**Результат задачи uart_echo_test улучшения (v2.1):**
-- Время: 2026-03-21 → 2026-03-23 23:59 (через 2 дня 10 часов)
-- Результат: ❌ Задача отменена из-за истечения времени
-- Причина: Файл uart_echo_test.zig был повреждён при попытках исправления
+**Result of uart_echo_test improvement task (v2.1):**
+- Time: 2026-03-21 → 2026-03-23 23:59 (2 days 10 hours)
+- Result: ❌ Task cancelled due to timeout
+- Reason: File uart_echo_test.zig was corrupted during fix attempts
 
-**Доступные файлы:**
-- uart_bridge_fixed.bit — 3.6 MB, готов для прошивки
-- uart_echo_test_README.md — README с использованием
+**Available Files:**
+- uart_bridge_fixed.bit — 3.6 MB, ready for flashing
+- uart_echo_test_README.md — README with usage
 
-**Коммиты:**
-- v2.1: 2bf4d46535 — параметры, логирование, PING/PONG режим
-- v2.1: 885e590ab4 — попытка фиксации
+**Commits:**
+- v2.1: 2bf4d46535 — parameters, logging, PING/PONG mode
+- v2.1: 885e590ab4 — fix attempt
 
-**Обновление:** 2026-03-23 23:59
-**Автономный цикл:** В работе (10 минут)
+**Update:** 2026-03-23 23:59
+**Autonomous Cycle:** In progress (10 minutes)
 
-*Луп работает — НЕ прерывать*
+*Loop is running — DO NOT interrupt*

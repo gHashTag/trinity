@@ -2,42 +2,42 @@
 
 ## Overview
 
-Sacred — слой форматов данных и арифметики для Trinity S³AI. GF16 (Golden Format 16) и TF3 (Ternary Folding 3) — φ-based форматы для эффективного представления данных на FPGA.
+Sacred is the data format and arithmetic layer for Trinity S³AI. GF16 (Golden Format 16) and TF3 (Ternary Folding 3) are φ-based formats for efficient data representation on FPGA.
 
-**Математическая основа**: φ² + 1/φ² = 3, distance в GF16 использует φ-based метрику.
+**Mathematical Foundation**: φ² + 1/φ² = 3, distance in GF16 uses φ-based metric.
 
 ---
 
 ## GF16 Format
 
-### Спецификация
+### Specification
 
-| Биты | Поле | Значение |
-|------|------|----------|
-| [15] | sign | Знак (0=+, 1=-) |
-| [14:9] | exp | Экспонента (6 бит) |
-| [8:0] | mant | Мантисса (9 бит) |
+| Bits | Field | Value |
+|------|-------|-------|
+| [15] | sign | Sign (0=+, 1=-) |
+| [14:9] | exp | Exponent (6 bits) |
+| [8:0] | mant | Mantissa (9 bits) |
 
-**Характеристики**:
+**Characteristics**:
 - exp=6 (vs FP16: 5, BF16: 8)
 - mant=9 (vs FP16: 10, BF16: 7)
 - φ-based distance: d(a, b) = \|a - b\| / φ
 
-**Преимущества**:
-- Увеличенный range за счёт exp=6
-- Уменьшенная precision за счёт mant=9
-- FPGA-friendly: упаковывается в 16-bit BRAM
+**Advantages**:
+- Increased range due to exp=6
+- Reduced precision due to mant=9
+- FPGA-friendly: fits in 16-bit BRAM
 
 ### GF16 Arithmetic
 
-**Файл**: `src/hslm/f16_utils.zig`
+**File**: `src/hslm/f16_utils.zig`
 
 #### Saturating multiplication
 ```zig
 pub fn gf16MulSaturated(a: u16, b: u16, limit: u16) u16
 ```
 
-**Поведение**:
+**Behavior**:
 - (a × b) clamped to [-limit, limit]
 - Matches sacred_alu.v multiplier (DSP48E1, single-cycle)
 - Returns packed u16 in GF16 format
@@ -47,7 +47,7 @@ pub fn gf16MulSaturated(a: u16, b: u16, limit: u16) u16
 pub fn gf16Div(a: u16, b: u16) u16
 ```
 
-**Поведение**:
+**Behavior**:
 - IEEE754 compliant
 - Division by zero → ±inf (clamped to max GF16)
 - Fast approximation: result ≈ a / b
@@ -58,34 +58,34 @@ pub fn addVecGF16(a: []const u16, b: []const u16, output: []u16) void
 pub fn mulVecGF16(input: []const u16, scalar: u16, output: []u16) void
 ```
 
-**Применение**: batch processing для inference pipeline
+**Application**: batch processing for inference pipeline
 
 ---
 
 ## TF3 Format
 
-### Спецификация
+### Specification
 
-Ternary Folding Format — 9 параметров для компактного хранения тернарных весов.
+Ternary Folding Format — 9 parameters for compact storage of ternary weights.
 
-| Параметр | Биты | Значение |
-|----------|------|----------|
+| Parameter | Bits | Value |
+|----------|------|-------|
 | scale | 16 | Scaling factor (GF16) |
-| w1-w8 | 2×8=16 | 8 тернарных весов {-1, 0, +1} |
+| w1-w8 | 2×8=16 | 8 ternary weights {-1, 0, +1} |
 
-**Характеристики**:
-- 9 параметров = 32 бита
-- Упаковка 8 весов в 16 бит (2 бита на вес)
+**Characteristics**:
+- 9 parameters = 32 bits
+- Packing 8 weights in 16 bits (2 bits per weight)
 - Total overhead: 1.58 bits per weight (log₂(3))
 
-**Преимущества**:
-- Компактность: 8× меньше чем FP32
-- FPGA-friendly: выравнивание на 32 бита
+**Advantages**:
+- Compactness: 8× smaller than FP32
+- FPGA-friendly: 32-bit alignment
 - Dot-product: unpack → multiply → accumulate
 
 ### TF3 Arithmetic
 
-**Тернарный вес**:
+**Ternary weight**:
 - `00` = 0 (zero)
 - `01` = +1 (positive)
 - `11` = -1 (negative)
@@ -105,9 +105,9 @@ for i in 0..8:
 
 ### Sacred ALU Verilog
 
-**Файл**: `fpga/openxc7-synth/sacred_alu.v`
+**File**: `fpga/openxc7-synth/sacred_alu.v`
 
-#### Модуль ternary_mac_unit
+#### ternary_mac_unit module
 ```verilog
 module ternary_mac_unit #(
     parameter INPUT_WIDTH = 16,   // Q8.8 fixed-point
@@ -124,9 +124,9 @@ module ternary_mac_unit #(
 );
 ```
 
-**Ключевые особенности**:
+**Key Features**:
 - 0 DSP — pure LUT logic
-- 3 LUT на вес (MUX + negate)
+- 3 LUT per weight (MUX + negate)
 - Pipeline: IF → ID → EX → MEM → WB
 
 #### Ternary MUX
@@ -139,40 +139,40 @@ wire signed [INPUT_WIDTH:0] mac_val =
 
 ---
 
-## Экспериментальные задачи
+## Experimental Tasks
 
-### Задача 1: Сравнение с FP16/BF16
-**Гипотеза H1**: GF16 достигает FP16 точности с <1% ошибки при меньших ресурсах.
+### Task 1: Comparison with FP16/BF16
+**Hypothesis H1**: GF16 achieves FP16 accuracy with <1% error using fewer resources.
 
-**Метрики**:
-- LUT/FF/DSP utilisation на XC7A100T
-- Время выполнения (ns/op)
-- Потребляемая энергия (J/op)
+**Metrics**:
+- LUT/FF/DSP utilisation on XC7A100T
+- Execution time (ns/op)
+- Energy consumption (J/op)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
-# Синтез sacred_alu.v
+# Synthesize sacred_alu.v
 cd fpga/openxc7-synth
 yosys sacred_alu.v -p "synth_xilinx" -o sacred_alu_synth.v
 # LUT/FF/DSP report
 
-# Бенчмарк на CPU
+# Benchmark on CPU
 tri sacred bench gf16 --compare-to fp16,bf16 --size 1000000
 ```
 
-**Ожидаемый результат**:
-- GF16 vs FP16: <1% ошибка, 20% меньше LUT
-- GF16 vs BF16: <0.5% ошибка, comparable LUT
+**Expected Result**:
+- GF16 vs FP16: <1% error, 20% fewer LUT
+- GF16 vs BF16: <0.5% error, comparable LUT
 
-### Задача 2: Throughput comparison
-**Гипотеза H2**: Sacred ALU (FPGA) > CPU SIMD в 10-100× по throughput.
+### Task 2: Throughput comparison
+**Hypothesis H2**: Sacred ALU (FPGA) > CPU SIMD by 10-100× in throughput.
 
-**Метрики**:
+**Metrics**:
 - GOP/s (giga-operations per second)
 - Latency (ns/op)
-- Tok/s для HSLM inference
+- Tok/s for HSLM inference
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # CPU baseline
 tri sacred bench cpu --ops 1000000 --threads 8
@@ -184,20 +184,20 @@ tri fpga synth sacred_alu --target xc7a100t --clock 100MHz
 tri bench compare cpu.json fpga.json
 ```
 
-**Ожидаемый результат**:
+**Expected Result**:
 - CPU (M1 Pro): ~10 GOP/s
 - FPGA (100MHz): ~50 GOP/s (5× faster)
 - FPGA (400MHz): ~200 GOP/s (20× faster)
 
-### Задача 3: Energy efficiency
-**Гипотеза H3**: Sacred ALU (0 DSP) < 1W на 100MHz.
+### Task 3: Energy efficiency
+**Hypothesis H3**: Sacred ALU (0 DSP) < 1W at 100MHz.
 
-**Метрики**:
-- Мощность (W)
-- Энергия на операцию (J/op)
+**Metrics**:
+- Power (W)
+- Energy per operation (J/op)
 - Tok/s/W
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # FPGA power measurement (requires hardware)
 tri fpga power sacred_alu --clock 100MHz --duration 60s
@@ -207,7 +207,7 @@ tri fpga power sacred_alu --clock 100MHz --duration 60s
 # energy_per_op = power / (ops_per_sec)
 ```
 
-**Ожидаемый результат**:
+**Expected Result**:
 - XC7A100T @ 100MHz: ~0.5W
 - Energy/op: ~10 pJ/op
 - Tok/s/W: ~70 (vs CPU: ~200)
@@ -216,7 +216,7 @@ tri fpga power sacred_alu --clock 100MHz --duration 60s
 
 ## FPGA Synthesis Results
 
-### Реальные данные (Yosys 0.63)
+### Real Data (Yosys 0.63)
 
 | Module | LUT | BRAM36-eq | FF | DSP48 |
 |--------|-----|-----------|-----|-------|
@@ -234,14 +234,14 @@ tri fpga power sacred_alu --clock 100MHz --duration 60s
 
 ---
 
-## Бенчмарки
+## Benchmarks
 
 ### CPU baseline
 ```bash
 tri sacred bench --format gf16,tf3,fp16,bf16 --size 1000000
 ```
 
-| Формат | Ops/sec | Latency (ns/op) | Energy (J/op) |
+| Format | Ops/sec | Latency (ns/op) | Energy (J/op) |
 |--------|---------|-----------------|---------------|
 | GF16 | ~20M | ~50 | ~5 nJ |
 | TF3 | ~15M | ~67 | ~7 nJ |
@@ -253,8 +253,8 @@ tri sacred bench --format gf16,tf3,fp16,bf16 --size 1000000
 tri fpga synth sacred_alu --target xc7a100t --clock 100MHz
 ```
 
-| Частота | LUT | BRAM | DSP | Tok/s | Power (W) |
-|---------|-----|------|-----|-------|-----------|
+| Frequency | LUT | BRAM | DSP | Tok/s | Power (W) |
+|-----------|-----|------|-----|-------|-----------|
 | 50MHz | 4,267 | 135 | 0 | 35 | ~0.25 |
 | 100MHz | 4,267 | 135 | 0 | 70 | ~0.5 |
 | 200MHz | 4,267 | 135 | 0 | 140 | ~1.0 |
@@ -268,7 +268,7 @@ tri fpga synth sacred_alu --target xc7a100t --clock 100MHz
 tri fpga report sacred_alu --format csv > fpga_resources.csv
 ```
 
-**Формат**:
+**Format**:
 ```csv
 module,lut,ff,bram36,dsp,clock_mhz,tok_s,power_w
 sacred_alu,4267,2449,135,0,100,70,0.5
@@ -279,7 +279,7 @@ sacred_alu,4267,2449,135,0,100,70,0.5
 tri bench compare cpu.json fpga.json --format csv > bench_comparison.csv
 ```
 
-**Формат**:
+**Format**:
 ```csv
 platform,ops_sec,latency_ns,energy_j_p,tok_s,power_w
 cpu_m1,20M,50,5e-9,6318,30
@@ -299,9 +299,9 @@ fpga_100MHz,70M,14,7e-9,70,0.5
 
 ---
 
-## Связь с другими компонентами
+## Integration with Other Components
 
-| Компонент | Интерфейс | Файл |
+| Component | Interface | File |
 |-----------|-----------|------|
 | HSLM | Weight storage | `src/hslm/f16_utils.zig` |
 | TRI-27 | Dot-product opcode | `src/tri27/emu/executor.zig` |

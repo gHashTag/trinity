@@ -2,59 +2,59 @@
 
 ## Overview
 
-Trinity S³AI — целостная система для исследования и разработки тернарных нейросетей, объединяющая три оси (S³), восемь уровней стека и полную воспроизводимость.
+Trinity S³AI is a unified system for research and development of ternary neural networks, combining three axes (S³), eight levels of the stack, and full reproducibility.
 
-**Математическая основа**: φ² + 1/φ² = 3, где φ = (1 + √5)/2 — золотое сечение. Число 3 — фундаментальная константа тернарных вычислений.
+**Mathematical Foundation**: φ² + 1/φ² = 3, where φ = (1 + √5)/2 is the golden ratio. The number 3 is the fundamental constant of ternary computing.
 
 ---
 
-## Три оси S³
+## Three S³ Axes
 
-### Sacred (Священный)
-Слой форматов данных и арифметики:
-- **GF16**: 16-битный формат с exp=6, mant=9, φ-based distance
-- **TF3**: тернарный folding формат, 9 параметров
-- **FPGA ALU**: 0 DSP, чисто LUT-реализация
+### Sacred
+Data format and arithmetic layer:
+- **GF16**: 16-bit format with exp=6, mant=9, φ-based distance
+- **TF3**: ternary folding format, 9 parameters
+- **FPGA ALU**: 0 DSP, pure LUT implementation
 
-**Ключевые файлы**:
+**Key Files**:
 - `src/hslm/f16_utils.zig` — GF16/TF3 implementation
 - `fpga/openxc7-synth/sacred_alu.v` — FPGA ALU
 
-**Научные вопросы**:
-1. Как GF16 distance (φ-based) влияет на качество представления?
-2. Можно ли достичь FP16 точности с меньшими битами на экспоненту?
+**Scientific Questions**:
+1. How does GF16 distance (φ-based) affect representation quality?
+2. Can FP16 accuracy be achieved with fewer exponent bits?
 
-### Superhuman (Сверхчеловеческий)
-Оркестрация self-learning:
-- **Queen Lotus Cycle**: Phases 0-5, замкнутый цикл адаптации
+### Superhuman
+Self-learning orchestration:
+- **Queen Lotus Cycle**: Phases 0-5, closed adaptation loop
 - **Tri27Config**: kill_threshold, crash_rate_limit, byzantine_rate_limit
-- **Episodes**: JSONL логирование всех событий
+- **Episodes**: JSONL logging of all events
 
-**Ключевые файлы**:
+**Key Files**:
 - `src/tri/queen/self_learning.zig` — Self-Learning
 - `src/tri/queen/observe.zig` — Phase 1
 - `src/tri/queen/plan.zig` — Phase 2
 - `src/tri/queen/evaluate.zig` — Phase 3
 - `src/tri/queen/act.zig` — Phase 4
 
-**Научные вопросы**:
-1. **H1**: self_learning снижает crash/byzantine rate vs фиксированный конфиг
-2. **H2**: feedback loop ускоряет выход на стабильный режим
+**Scientific Questions**:
+1. **H1**: self_learning reduces crash/byzantine rate vs fixed config
+2. **H2**: feedback loop accelerates reaching stable mode
 
-### Specialized (Специализированный)
-Узко специализированные операции:
-- **TRI-27**: тернарный ISA с 36 опкодами
-- **Dot-product**: тернарный MAC без умножения
+### Specialized
+Narrowly specialized operations:
+- **TRI-27**: ternary ISA with 36 opcodes
+- **Dot-product**: ternary MAC without multiplication
 - **TNN**: Ternary Neural Network
 
-**Ключевые файлы**:
+**Key Files**:
 - `src/tri27/isa.zig` — ISA specification
 - `src/tri27/emu/` — Zig backend (CPU)
 - `src/tri27/verilog_backend.zig` — Verilog backend
 
-**Научные вопросы**:
-1. Какова energy/latency trade-off TRI-27 VM vs Sacred ALU vs CPU SIMD?
-2. Влияет ли тернарный ISA на code density?
+**Scientific Questions**:
+1. What is the energy/latency trade-off TRI-27 VM vs Sacred ALU vs CPU SIMD?
+2. Does ternary ISA affect code density?
 
 ---
 
@@ -88,50 +88,50 @@ Level 1: FPGA bitstream (XC7A100T)
 
 ---
 
-## Карта кода
+## Code Map
 
 ### HSLM (Hybrid Symbolic Language Model)
-| Путь | LOC | Назначение |
-|------|-----|------------|
-| `src/hslm/model.zig` | ~800 | 1.95M параметров, powers-of-three |
+| Path | LOC | Purpose |
+|------|-----|---------|
+| `src/hslm/model.zig` | ~800 | 1.95M parameters, powers-of-three |
 | `src/hslm/train.zig` | ~600 | Training loop |
 | `src/hslm/tjepa.zig` | ~568 | T-JEPA implementation |
 | `src/hslm/trinity_block.zig` | ~400 | TNN + Sacred Attention |
 | `src/hslm/f16_utils.zig` | ~1085 | GF16/TF3 arithmetic |
 | `src/hslm/tokenizer.zig` | ~300 | BPE tokenizer |
-| **Всего** | **~4000** | **Pure Zig, std only** |
+| **Total** | **~4000** | **Pure Zig, std only** |
 
 ### TRI-27 (Ternary Computing ISA)
-| Путь | LOC | Назначение |
-|------|-----|------------|
+| Path | LOC | Purpose |
+|------|-----|---------|
 | `src/tri27/isa.zig` | ~300 | ISA reference |
 | `src/tri27/emu/decoder.zig` | ~200 | Instruction decoder |
 | `src/tri27/emu/executor.zig` | ~400 | Execution engine |
 | `src/tri27/emu/cpu_state.zig` | ~150 | CPU state, registers |
 | `src/tri27/verilog_backend.zig` | ~200 | Zig → Verilog |
-| **Всего** | **~1250** | **36 opcodes, 27 registers** |
+| **Total** | **~1250** | **36 opcodes, 27 registers** |
 
 ### Queen (Self-Learning Orchestrator)
-| Путь | LOC | Назначение |
-|------|-----|------------|
+| Path | LOC | Purpose |
+|------|-----|---------|
 | `src/tri/queen/self_learning.zig` | ~338 | Phase 5: Self-Learning |
 | `src/tri/queen/observe.zig` | ~150 | Phase 1: Observe |
 | `src/tri/queen/plan.zig` | ~100 | Phase 2: Plan |
 | `src/tri/queen/evaluate.zig` | ~100 | Phase 3: Evaluate |
 | `src/tri/queen/act.zig` | ~100 | Phase 4: Act |
-| **Всего** | **~788** | **Closed-loop learning** |
+| **Total** | **~788** | **Closed-loop learning** |
 
 ### FPGA (Synthesis & Bitstreams)
-| Путь | LOC | Назначение |
-|------|-----|------------|
+| Path | LOC | Purpose |
+|------|-----|---------|
 | `fpga/openxc7-synth/hslm_ternary_mac.v` | ~300 | Zero-DSP MAC |
 | `fpga/openxc7-synth/sacred_alu.v` | ~200 | GF16/TF3 ALU |
 | `src/hslm/fpga_backend.zig` | ~400 | Weight export |
-| **Всего** | **~900** | **Yosys 0.63 + nextpnr** |
+| **Total** | **~900** | **Yosys 0.63 + nextpnr** |
 
 ---
 
-## Экспериментальные Pipelines
+## Experimental Pipelines
 
 ### HSLM Training
 ```bash
@@ -167,77 +167,77 @@ cd fpga/openxc7-synth
 
 ---
 
-## Научные гипотезы
+## Scientific Hypotheses
 
 ### H1: Self-Learning Reduces Crash Rate
-**Утверждение**: Tri27Config с auto_adapt=true показывает <5% crash rate vs ~15% с фиксированным конфигом.
+**Claim**: Tri27Config with auto_adapt=true shows <5% crash rate vs ~15% with fixed config.
 
-**Метрики**:
+**Metrics**:
 - crash_rate = crashes / total_episodes
 - byzantine_rate = byzantine / total_episodes
 - success_rate = successful / total_episodes
 
-**Эксперимент**: A/B тест на Railway farm (Queen vs без Queen)
+**Experiment**: A/B test on Railway farm (Queen vs no Queen)
 
 ### H2: Ternary ISA Improves Code Density
-**Утверждение**: TRI-27 код в 2-3× компактнее бинарного RISC для тех же алгоритмов.
+**Claim**: TRI-27 code is 2-3× more compact than binary RISC for the same algorithms.
 
-**Метрики**:
+**Metrics**:
 - instructions_per_algorithm
-- bytes_per_instruction (4 bytes для TRI-27)
+- bytes_per_instruction (4 bytes for TRI-27)
 - cyclomatic_complexity
 
-**Эксперимент**: Компиляция benchmark suite → TRI-27 vs x86_64 vs ARM64
+**Experiment**: Compile benchmark suite → TRI-27 vs x86_64 vs ARM64
 
 ### H3: Zero-DSP FPGA Matches DSP Accuracy
-**Утверждение**: Sacred ALU (LUT-only) достигает FP16 точности с <1% ошибки.
+**Claim**: Sacred ALU (LUT-only) achieves FP16 accuracy with <1% error.
 
-**Метрики**:
+**Metrics**:
 - LUT/FF/DSP utilisation
 - timing_critical_path (ns)
 - inference_accuracy (%)
 
-**Эксперимент**: Синтез sacred_alu.v → сравнение с DSP48E1 baseline
+**Experiment**: Synthesize sacred_alu.v → comparison with DSP48E1 baseline
 
 ---
 
-## Публикации
+## Publications
 
 ### Paper 1: HSLM (TinyStories)
-**Статус**: ✅ Published (Zenodo 18950696)
+**Status**: ✅ Published (Zenodo 18950696)
 
-**Содержание**:
+**Content**:
 - 1.95M ternary params, PPL=125
 - 5 independent runs, 2 platforms (M1 Pro, Railway)
 - FPGA inference: 35 tok/s @ 0.5W on $30 Artix-7
 
-**Файлы**: `docs/lab/papers/hslm/draft.md`
+**Files**: `docs/lab/papers/hslm/draft.md`
 
 ### Paper 2: Trinity FPGA
-**Статус**: ✅ Published (Zenodo 18939352)
+**Status**: ✅ Published (Zenodo 18939352)
 
-**Содержание**:
+**Content**:
 - Zero-DSP ternary inference
 - Yosys 0.63 + nextpnr open toolchain
 - 4,267 LUT, 0 DSP, 135 BRAM36-eq
 
-**Файлы**: `docs/lab/papers/trinity-fpga/draft.md`
+**Files**: `docs/lab/papers/trinity-fpga/draft.md`
 
 ### Paper 3: TRI-27 + Queen
-**Статус**: 🔄 In Progress
+**Status**: 🔄 In Progress
 
-**Содержание**:
+**Content**:
 - TRI-27 ternary ISA
 - Queen Lotus Cycle (Phases 0-5)
 - Self-Learning experimental results
 
-**Файлы**: `docs/research/tri27_platform.md`, `docs/research/queen_lotus_experiments.md`
+**Files**: `docs/research/tri27_platform.md`, `docs/research/queen_lotus_experiments.md`
 
 ---
 
-## Базовые метрики
+## Baseline Metrics
 
-| Компонент | Tests | LOC | Params | Status |
+| Component | Tests | LOC | Params | Status |
 |-----------|-------|-----|--------|--------|
 | HSLM | 74/74 | ~4000 | 1.95M | ✅ PPL=125 |
 | TRI-27 | 68/68 | ~1250 | — | ✅ All passing |
@@ -246,7 +246,7 @@ cd fpga/openxc7-synth
 
 ---
 
-## DOI и цитирование
+## DOI and Citation
 
 ```
 Vasilev Dmitrii (2026). Trinity S³AI: FPGA Autoregressive Ternary LLM.
@@ -263,12 +263,12 @@ Zenodo. DOI: 10.5281/zenodo.18950696
 
 ---
 
-## Следующие шаги
+## Next Steps
 
-1. ✅ Создать `docs/research/` структуру
-2. ⏳ Заполнить компонентные доки гипотезами
-3. ⏳ Связать эксперименты с кодом (file paths, modules)
-4. ⏳ Подготовить Paper 3 submission
+1. ✅ Create `docs/research/` structure
+2. ⏳ Fill component docs with hypotheses
+3. ⏳ Link experiments with code (file paths, modules)
+4. ⏳ Prepare Paper 3 submission
 
 ---
 

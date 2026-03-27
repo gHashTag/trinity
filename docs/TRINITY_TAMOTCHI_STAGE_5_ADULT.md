@@ -1,68 +1,68 @@
-# Этап 5: Взрослый (Adult) — Самостоятельная экосистема
+# Stage 5: Adult — Autonomous Ecosystem
 
-**Цель:** Полностью автономный daemon, который сам:
-- Распределяет ресурсы
-- Исправляет ошибки
-- Отдыхает по расписанию
-- Отчитывается в человеке
+**Goal:** Fully autonomous daemon that independently:
+- Allocates resources
+- Fixes errors
+- Rests on schedule
+- Reports to humans
 
-**Время:** 12+ часов непрерывной работы
+**Time:** 12+ hours of continuous operation
 
 ---
 
-## Чек-лист
+## Checklist
 
-### ✅ 5.1 Динамическое распределение ресурсов (Голод)
+### ✅ 5.1 Dynamic Resource Allocation (Hunger)
 ```bash
-# Watch-dog в reticular_aras автоматически проверяет пул шагов
-# Если падает ниже 20% → автоматически вызывает train allocate
+# Watch-dog in reticular_aras automatically checks step pool
+# If falls below 20% → automatically calls train allocate
 
-# Проверка автодовател:
+# Check auto-feeder:
 tri doctor diagnose reticular_aras
 
-# Ручное пополнение если нужно:
+# Manual refill if needed:
 tri train allocate --steps 50000
 ```
 
-### ✅ 5.2 Поддержание среднего ΔPPL ≥ 0 (Счастье)
+### ✅ 5.2 Maintain Average ΔPPL ≥ 0 (Happiness)
 ```bash
-# Queen отслеживает тренд PPL
-# Если стагнация >2ч → инициировать experimental wave
+# Queen tracks PPL trend
+# If stagnation >2h → initiate experimental wave
 
-# Ручной триггер если нужно:
+# Manual trigger if needed:
 tri farm evolve step
 
-# Фиксация вех в Zenodo (раз в неделю или при major рекордах)
+# Record milestones in Zenodo (weekly or on major records)
 ```
 
-### ✅ 5.3 Самолечение (Дисциплина)
+### ✅ 5.3 Self-Healing (Discipline)
 ```bash
-# Auto-heal при обнаружении FAIL
+# Auto-heal when FAIL detected
 tri doctor auto-heal
 
-# Или модульная диагностика:
+# Or module diagnostics:
 tri doctor diagnose queen_dlpfc --fix
 tri doctor diagnose queen_ofc --fix
 tri doctor diagnose queen_actions --fix
 ```
 
-### ✅ 5.4 Циркадный ритм (Сон)
+### ✅ 5.4 Circadian Rhythm (Sleep)
 ```bash
-# Активная фаза 4ч → отдых 1ч → повтор
-# Реализуется через cron или внутренний планировщик Queen
+# Active phase 4h → rest 1h → repeat
+# Implemented via cron or Queen internal scheduler
 
-# Встроенный режим:
-tri queen start --daemon --interval 240 --allow-auto-actions   # 4ч активной
-# Затем internal scheduler переключает на:
-# --interval 60 --no-auto-actions                                   # 1ч отдыха
+# Built-in mode:
+tri queen start --daemon --interval 240 --allow-auto-actions   # 4h active
+# Then internal scheduler switches to:
+# --interval 60 --no-auto-actions                                   # 1h rest
 ```
 
-### ✅ 5.5 Проверка здоровья всех модулей
+### ✅ 5.5 Health Check of All Modules
 ```bash
-# Полная диагностика:
+# Full diagnostics:
 tri doctor diagnose all
 
-# Или по модулям:
+# Or by module:
 tri doctor diagnose phoenix_medulla phoenix_pons phoenix_locus_coeruleus
 tri doctor diagnose queen_dlpfc queen_ofc queen_actions
 tri doctor diagnose thalamus hippocampus
@@ -71,39 +71,39 @@ tri doctor diagnose reticular_aras reticular_raphe
 
 ---
 
-## Критерии завершения этапа
+## Stage Completion Criteria
 
-Этап **Adult** считается пройденным, когда:
-- [x] Daemon работает 24+ часа без перезапуска
-- [x] Auto-heal исправляет ≥3 проблемы автоматически
-- [x] PPL стабильно улучшается или держится (ΔPPL ≥ 0)
-- [x] Arousal редко превышает .alert (<5% времени)
-- [x] Telegram сообщения информативны, с контекстом
-- [x] Система работает автономно недели без вмешательства
-
----
-
-## Режим полного автопилота
-
-Когда Adult пройден, Queen может работать полностью автономно:
-
-### Минимальное вмешательство человека:
-1. **Раз в неделю** — пополнить Railway токены
-2. **Раз в месяц** — проверить Zenodo вехи
-3. **При экстренных ситуациях** — arousal = emergency
-
-### Queen сама:
-- ✅ Распределяет вычислительные ресурсы
-- ✅ Экспериментирует с гиперпараметрами
-- ✅ Исправляет ошибки build/farm
-- ✅ Отдыхает по циркадному ритму
-- ✅ Отчитывается в человеке
+The **Adult** stage is considered passed when:
+- [x] Daemon runs 24+ hours without restart
+- [x] Auto-heal fixes ≥3 issues automatically
+- [x] PPL steadily improves or holds (ΔPPL ≥ 0)
+- [x] Arousal rarely exceeds .alert (<5% of time)
+- [x] Telegram messages are informative, with context
+- [x] System works autonomously for weeks without intervention
 
 ---
 
-## Пример взрослого отчёта в Telegram
+## Full Autopilot Mode
 
-**Нормальный режим:**
+When Adult is passed, Queen can work fully autonomously:
+
+### Minimal Human Intervention:
+1. **Once a week** — refill Railway tokens
+2. **Once a month** — check Zenodo milestones
+3. **In emergencies** — arousal = emergency
+
+### Queen Herself:
+- ✅ Allocates compute resources
+- ✅ Experiments with hyperparameters
+- ✅ Fixes build/farm errors
+- ✅ Rests on circadian rhythm
+- ✅ Reports to humans
+
+---
+
+## Example Adult Report in Telegram
+
+**Normal Mode:**
 ```
 🧠 Queen Status Briefing
 
@@ -118,7 +118,7 @@ Training in progress.
 ✅ All systems nominal.
 ```
 
-**После auto-heal:**
+**After Auto-Heal:**
 ```
 🔧 Auto-heal complete
 
@@ -130,7 +130,7 @@ Fixed 2 issues:
 ⚡ Arousal: normal (was alert)
 ```
 
-**Новый рекорд:**
+**New Record:**
 ```
 🎉 MILESTONE ACHIEVED
 
@@ -143,41 +143,41 @@ Saving to Zenodo...
 
 ---
 
-## Переход к production
+## Transition to Production
 
-Когда Adult пройден → Queen готова к production:
+When Adult is passed → Queen is ready for production:
 
 ```bash
-# Полный автопилот (круглосуточно)
+# Full autopilot (24/7)
 tri queen start --daemon --interval 300 --allow-auto-actions
 
-# Мониторинг из другого терминала:
+# Monitor from another terminal:
 watch -n 60 'tail -5 .trinity/memory/phoenix/current.jsonl'
 ```
 
-### Ежедневная проверка (раз в сутки):
+### Daily Check (once daily):
 ```bash
-# Быстрая проверка здоровья
+# Quick health check
 tri doctor diagnose all
 
-# Статистика за день
+# Daily statistics
 tail -100 .trinity/queen/audit.jsonl | grep -E "(auto-heal|farm_recycle|new_record)"
 ```
 
 ---
 
-## Архивные метрики
+## Archive Metrics
 
-Для долгосрочного анализа:
+For long-term analysis:
 
 ```bash
-# История arousal изменений
+# History of arousal changes
 grep "arousal" .trinity/memory/locus_coeruleus/current.jsonl
 
-# История PPL рекордов
+# History of PPL records
 grep "new_record" .trinity/memory/hippocampus/current.jsonl
 
-# История auto-heal
+# History of auto-heal
 grep "auto-heal" .trinity/queen/audit.jsonl
 ```
 
@@ -185,7 +185,7 @@ grep "auto-heal" .trinity/queen/audit.jsonl
 
 ## φ² + 1/φ² = 3
 
-*Поздравляем! Ваш Queen TRINITY теперь полностью самостоятельный AI-организм.*
+*Congratulations! Your Queen TRINITY is now a fully autonomous AI organism.*
 
 ---
 

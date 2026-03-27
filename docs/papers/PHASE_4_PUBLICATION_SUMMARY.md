@@ -9,7 +9,7 @@
 
 ## EXECUTIVE SUMMARY
 
-**Phase 4: Публикация + LISA Prediction Roadmap**
+**Phase 4: Publication + LISA Prediction Roadmap**
 
 This phase prepares all TRINITY v10.2 research for arXiv publication and provides testable predictions for the LISA mission (2035).
 

@@ -11,7 +11,7 @@
 //    over the real locus and compare against Cremona's Ω values
 //
 // 3. BSD CONSISTENCY: For rank 0 curves, verify that
-//    |Ш|_an = L(E,1) × |T|² / (Ω × c × R) is a perfect square integer
+//    |Sha|_an = L(E,1) × |T|^2 / (Omega × c × R) is a perfect square integer
 //    using Cremona's L-values but OUR independently computed Ω
 //
 // φ² + 1/φ² = 3 = TRINITY

@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-Trinity S³AI — целостная исследовательская система, объединяющая три оси (Sacred, Superhuman, Specialized), восемь уровней стека разработки, и полную воспроизводимость экспериментов.
+Trinity S³AI is a unified research system combining three axes (Sacred, Superhuman, Specialized), eight levels of the development stack, and full experiment reproducibility.
 
-**Основание**: φ² + 1/φ² = 3, где φ = (1 + √5)/2 — золотое сечение тернарного вычисления.
+**Foundation**: φ² + 1/φ² = 3, where φ = (1 + √5)/2 is the golden ratio of ternary computing.
 
 ---
 
@@ -12,9 +12,9 @@ Trinity S³AI — целостная исследовательская сист
 
 ### 1.1 Three S³ Axes
 
-| Ось | Компонент | Научные вопросы |
-|-----|-----------|------------------|
-| **Sacred** | GF16/TF3 + FPGA ALU | • FP16 vs GF16 точность? • Zero-DSP feasibility? |
+| Axis | Component | Scientific Questions |
+|------|-----------|----------------------|
+| **Sacred** | GF16/TF3 + FPGA ALU | • FP16 vs GF16 accuracy? • Zero-DSP feasibility? |
 | **Superhuman** | Queen + Self-Learning | • Auto-adaptation efficacy? • Convergence rate? |
 | **Specialized** | TRI-27 + Tri Language | • Ternary vs binary expressiveness? • Code density? |
 
@@ -58,8 +58,8 @@ Level 1: FPGA bitstream (XC7A100T)
 
 ### 1.3 Component Map
 
-| Компонент | LOC | Status | Научные статьи |
-|-----------|-----|--------|------------------|
+| Component | LOC | Status | Scientific Papers |
+|-----------|-----|--------|-------------------|
 | HSLM | ~4000 | ✅ PPL=125 on TinyStories | Paper 1 |
 | TRI-27 | ~1250 | ✅ 68/68 tests passing | Paper 3 (planned) |
 | Queen | ~788 | ✅ 4/4 Self-Learning tests | Paper 3 (planned) |
@@ -74,14 +74,14 @@ Level 1: FPGA bitstream (XC7A100T)
 
 ### 2.1 H1 (Sacred): GF16 Matches FP16 with 20% Fewer Resources
 
-**Утверждение**: GF16 format (exp=6, mant=9) достигает FP16 точности (<1% MSE) с 37.8% меньшим использованием LUT на XC7A100T.
+**Claim**: GF16 format (exp=6, mant=9) achieves FP16 accuracy (<1% MSE) with 37.8% fewer LUTs on XC7A100T.
 
-**Метрики**:
+**Metrics**:
 - LUT utilisation: GF16 vs FP16 vs DSP48 baseline
 - Timing error: |error_GF16 - error_FP16| / error_FP16 × 100%
 - Throughput parity: ops/sec (GF16) / ops/sec (FP16)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # FPGA synthesis
 tri fpga synth sacred_alu --target xc7a100t --clock 100MHz
@@ -93,40 +93,40 @@ tri sacred bench --format gf16,fp16 --size 1000000 --ops dot_product
 tri bench compare cpu.json fpga.json --format csv
 ```
 
-**Ожидаемый результат**: GF16 использует 37.8% меньше LUT при сопоставимой точности.
+**Expected Result**: GF16 uses 37.8% fewer LUTs with comparable accuracy.
 
 ---
 
 ### 2.2 H2 (Sacred): Zero-DSP Ternary Inference Matches DSP48 Accuracy
 
-**Утверждение**: Тринарные MAC (0 DSP) достигают accuracy DSP48 (full-precision multipliers) с <0.5% LUT overhead.
+**Claim**: Ternary MAC (0 DSP) achieves DSP48 accuracy (full-precision multipliers) with <0.5% LUT overhead.
 
-**Метрики**:
+**Metrics**:
 - MSE on TinyStories: |MSE_ternary - MSE_DSP48| / MSE_DSP48 × 100
 - LUT ratio: LUT_ternary / LUT_DSP48
 - Energy per operation: J/op (ternary) vs J/op (DSP)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # Inference accuracy test
 tri sacred bench --format ternary,dsp48 --dataset tinystories --size 1000000
 ```
 
-**Ожидаемый результат**: MSE < 0.5%, LUT ratio < 0.7, 70 tok/s/W energy efficiency.
+**Expected Result**: MSE < 0.5%, LUT ratio < 0.7, 70 tok/s/W energy efficiency.
 
 ---
 
 ### 2.3 H3 (Superhuman): Self-Learning Reduces Crash Rate by 3×
 
-**Утверждение**: Tri27Config с `auto_adapt=true` снижает crash rate до <5% vs ~15% с фиксированным конфигом.
+**Claim**: Tri27Config with `auto_adapt=true` reduces crash rate to <5% vs ~15% with fixed config.
 
-**Метрики**:
+**Metrics**:
 - crash_rate = crashes / total_episodes
 - byzantine_rate = byzantine / total_episodes
 - success_rate = successful / total_episodes
-- time_to_stable = episodes до quality=good
+- time_to_stable = episodes until quality=good
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # A/B test on Railway farm (48h duration)
 tri farm ab-test \
@@ -137,40 +137,40 @@ tri farm ab-test \
     --metrics crash_rate,byzantine_rate,success_rate,ppl
 ```
 
-**Ожидаемый результат**: Queen enabled показывает crash_rate < 0.05, time_to_stable < 100 episodes.
+**Expected Result**: Queen enabled shows crash_rate < 0.05, time_to_stable < 100 episodes.
 
 ---
 
 ### 2.4 H4 (Superhuman): Feedback Loop Accelerates Convergence 2×
 
-**Утверждение**: Системы с self-learning достигают стабильного режима (quality=good) в 2× быстрее, чем системы без адаптации.
+**Claim**: Systems with self-learning reach stable mode (quality=good) 2× faster than systems without adaptation.
 
-**Метрики**:
+**Metrics**:
 - convergence_rate = episodes / time_to_stable
-- adaptation_events = количество изменений Tri27Config
+- adaptation_events = number of Tri27Config changes
 - quality_transitions = unknown → unstable → good (transitions per episode)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # Monitor convergence
 tri queen self-learning --window 20 --monitor 168h
 tri plot convergence.jsonl --x steps --y quality
 ```
 
-**Ожидаемый результат**: Convergence rate >0.02 episodes/sec, >2× faster than no-Queen baseline.
+**Expected Result**: Convergence rate >0.02 episodes/sec, >2× faster than no-Queen baseline.
 
 ---
 
 ### 2.5 H5 (Specialized): Ternary ISA Improves Code Density 2.5×
 
-**Утверждение**: TRI-27 код в 2-3× компактнее бинарного RISC для тех же алгоритмов за счёт встроенных тернарных операций (dot, bundle).
+**Claim**: TRI-27 code is 2-3× more compact than binary RISC for the same algorithms due to built-in ternary operations (dot, bundle).
 
-**Метрики**:
+**Metrics**:
 - instructions_per_algorithm (TRI-27 vs x86_64)
-- bytes_per_instruction (4 bytes для TRI-27)
+- bytes_per_instruction (4 bytes for TRI-27)
 - cyclomatic_complexity (Böhm-Jacopini index)
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # Compile benchmark suite to both targets
 tri build --target zig --spec benchmarks.tri
@@ -180,20 +180,20 @@ tri build --target verilog --spec benchmarks.tri
 tri bench compare --size 1000 --inputs test_vectors.json
 ```
 
-**Ожидаемый результат**: TRI-27 использует 40-60% меньше инструкций для matrix operations.
+**Expected Result**: TRI-27 uses 40-60% fewer instructions for matrix operations.
 
 ---
 
 ### 2.6 H6 (Cross-Axis): Zero-DSP FPGA Matches CPU SIMD Throughput 10×
 
-**Утверждение**: Sacred ALU (FPGA) достигает 50 GOP/s vs 5 GOP/s CPU SIMD, при 1/10th стоимости.
+**Claim**: Sacred ALU (FPGA) achieves 50 GOP/s vs 5 GOP/s CPU SIMD at 1/10th cost.
 
-**Метрики**:
+**Metrics**:
 - GOP/s (giga-operations per second)
 - Latency (ns/op)
 - Cost per GOP/s: $/GOPs
 
-**Эксперимент**:
+**Experiment**:
 ```bash
 # Maximize throughput
 tri fpga synth sacred_alu --target xc7a100t --clock 400MHz
@@ -201,7 +201,7 @@ tri sacred bench cpu --ops 1000000 --threads 8
 tri bench compare cpu.json fpga.json
 ```
 
-**Ожидаемый результат**: FPGA (100MHz): ~50 GOP/s vs CPU: ~5 GOP/s at 10× lower cost ($30 vs $300+).
+**Expected Result**: FPGA (100MHz): ~50 GOP/s vs CPU: ~5 GOP/s at 10× lower cost ($30 vs $300+).
 
 ---
 
@@ -226,7 +226,7 @@ tri train monitor --checkpoint data/checkpoints/best.ckpt \
 tri plot loss_curve.jsonl --x steps --y loss
 ```
 
-**Ожидаемый результат**: PPL=125 ± 6, convergence by step 95K.
+**Expected Result**: PPL=125 ± 6, convergence by step 95K.
 
 ---
 
@@ -246,7 +246,7 @@ tri queen config set kill_threshold 7.0
 tri queen config set crash_rate_limit 0.05
 ```
 
-**Ожидаемый результат**: Quality=good, crash_rate < 0.05, time_to_stable < 100 episodes.
+**Expected Result**: Quality=good, crash_rate < 0.05, time_to_stable < 100 episodes.
 
 ---
 
@@ -268,7 +268,7 @@ tri bench compare results/sacred_alu_resources.csv \
     > results/benchmark_comparison.csv
 ```
 
-**Ожидаемый результат**: GF16 vs FP16: <1% error, 37.8% fewer LUT.
+**Expected Result**: GF16 vs FP16: <1% error, 37.8% fewer LUT.
 
 ---
 
@@ -287,7 +287,7 @@ tri farm ab-test \
 tri farm analyze --experiment <experiment-id> --metrics quality
 ```
 
-**Ожидаемый результат**: Statistical significance (p < 0.05) showing Queen efficacy.
+**Expected Result**: Statistical significance (p < 0.05) showing Queen efficacy.
 
 ---
 
@@ -306,7 +306,7 @@ tri tri27 run code_density.tbin --benchmark
 tri bench compare --size 1000
 ```
 
-**Ожидаемый результат**: TRI-27 uses 40-60% fewer instructions for matrix ops.
+**Expected Result**: TRI-27 uses 40-60% fewer instructions for matrix ops.
 
 ---
 
@@ -392,16 +392,16 @@ tri bench compare --size 1000
 
 ### 5.1 HSLM Components
 
-| Файл | LOC | Научные статьи |
-|------|-----|------------------|
+| File | LOC | Scientific Papers |
+|------|-----|-------------------|
 | `src/hslm/model.zig` | ~800 | Paper 1: Architecture |
 | `src/hslm/tjepa.zig` | ~568 | Paper 1: T-JEPA section |
 | `src/hslm/f16_utils.zig` | ~1085 | Paper 1: GF16/TF3 section |
 
 ### 5.2 TRI-27 Components
 
-| Файл | LOC | Научные статьи |
-|------|-----|------------------|
+| File | LOC | Scientific Papers |
+|------|-----|-------------------|
 | `src/tri27/isa.zig` | ~300 | Paper 2: ISA section |
 | `src/tri27/emu/executor.zig` | ~400 | Paper 2: Execution engine |
 | `src/tri27/tri27_cli.zig` | ~200 | Paper 2: CLI |
@@ -409,16 +409,16 @@ tri bench compare --size 1000
 
 ### 5.3 Queen Components
 
-| Файл | LOC | Научные статьи |
-|------|-----|------------------|
+| File | LOC | Scientific Papers |
+|------|-----|-------------------|
 | `src/tri/queen/self_learning.zig` | ~338 | Paper 2: Self-Learning |
 | `src/tri/queen/observe.zig` | ~150 | Paper 2: Observe phase |
 | `src/tri/queen/plan.zig` | ~100 | Paper 2: Plan phase |
 
 ### 5.4 FPGA Components
 
-| Файл | LOC | Научные статьи |
-|------|-----|------------------|
+| File | LOC | Scientific Papers |
+|------|-----|-------------------|
 | `fpga/openxc7-synth/sacred_alu.v` | ~200 | Paper 1: Sacred ALU |
 | `fpga/openxc7-synth/hslm_ternary_mac.v` | ~300 | Paper 1: Ternary MAC |
 | `src/hslm/fpga_backend.zig` | ~400 | Paper 1: Weight export |
@@ -486,8 +486,8 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ### 7.1 HSLM Metrics
 
-| Метрика | Целевое значение | Формула расчёта |
-|---------|----------------|------------------|
+| Metric | Target Value | Calculation Formula |
+|---------|--------------|---------------------|
 | PPL | ≤130 | exp(loss) |
 | Loss | 4.83 | running average at step 100K |
 | Crash rate | ≤5% | crashes / total_episodes |
@@ -496,8 +496,8 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ### 7.2 FPGA Metrics
 
-| Метрика | Целевое значение | Как измерить |
-|---------|----------------|------------|
+| Metric | Target Value | How to Measure |
+|---------|--------------|----------------|
 | LUT utilisation | ≤40% | LUT_used / LUT_total |
 | DSP usage | 0 | DSP_used (HSLM uses 0) |
 | BRAM utilisation | ≤100% | BRAM_used / BRAM_total |
@@ -507,8 +507,8 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ### 7.3 TRI-27 Metrics
 
-| Метрика | Целевое значение | Как измерить |
-|---------|----------------|------------|
+| Metric | Target Value | How to Measure |
+|---------|--------------|----------------|
 | Opcode coverage | 100% | unique opcodes used / total opcodes |
 | Test pass rate | 100% | passing tests / total tests |
 | Code density | ≥0.8 | instructions / byte |
@@ -516,8 +516,8 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ### 7.4 Queen Metrics
 
-| Метрика | Целевое значение | Как измерить |
-|---------|----------------|------------|
+| Metric | Target Value | How to Measure |
+|---------|--------------|----------------|
 | Recall accuracy | ≥0.8 | Jaccard@threshold=0.3 |
 | Adaptation rate | ≥0.1 | config changes / episodes |
 | Convergence rate | ≥0.01 | good episodes / total time |

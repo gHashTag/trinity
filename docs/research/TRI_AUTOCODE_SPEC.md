@@ -13,12 +13,12 @@
 
 ## Overview
 
-Этот документ объединяет:
-1. ✅ **Research Layer** (Issue #406) — научная документация
-2. **Coptic Extension** (Issue #407) — регистры и валидация
-3. **NA-R11 Law** — защита .t27 файлов
-4. **Tri Language DNA** — волны 1-4 фич из functional PLs
-5. **Autocodegeneration Architecture** — 8 паттернов LLM→Tri
+This document combines:
+1. ✅ **Research Layer** (Issue #406) — scientific documentation
+2. **Coptic Extension** (Issue #407) — registers and validation
+3. **NA-R11 Law** — .t27 file protection
+4. **Tri Language DNA** — waves 1-4 features from functional PLs
+5. **Autocodegeneration Architecture** — 8 patterns LLM→Tri
 
 ---
 
@@ -26,15 +26,15 @@
 
 ### Completed Files
 
-| Файл | LOC | Purpose |
+| File | LOC | Purpose |
 |------|-----|---------|
 | `trinity_s3ai_overview.md` | ~350 | Master doc: S³ axes, 8-level stack |
 | `TRINITY_S3AI_UNIFIED_FRAMEWORK.md` | ~450 | Unified framework master |
-| `tri27_platform.md` | ~340 | TRI-27 как исследовательская платформа |
+| `tri27_platform.md` | ~340 | TRI-27 as research platform |
 | `queen_lotus_experiments.md` | ~420 | Lotus Cycle, Paper 2 (H4-H6) |
-| `sacred_formats_fpga.md` | ~310 | GF16/TF3 + FPGA ALU бенчмарки |
+| `sacred_formats_fpga.md` | ~310 | GF16/TF3 + FPGA ALU benchmarks |
 | `tri_language_roadmap.md` | ~460 | Tri Language roadmap |
-| `t27_format.md` | ~300 | .t27 бинарный формат спецификация |
+| `t27_format.md` | ~300 | .t27 binary format specification |
 | `reticular_raphe.t27` | ~180 | Reference implementation example |
 
 **Total**: ~2810 LOC ✅
@@ -45,12 +45,12 @@
 
 ### Purpose
 
-Символические имена регистров через 27 коптских глифов. 3-bank архитектура памяти.
+Symbolic register names via 27 Coptic glyphs. 3-bank memory architecture.
 
 ### 3-Bank Architecture
 
-| Bank | Глифы | Диапазон | Назначение | Кол-во |
-|------|-------|----------|-----------|--------|
+| Bank | Glyphs | Range | Purpose | Count |
+|------|--------|-------|---------|-------|
 | 0 | Ⲁ-Ⲑ | t0-t8 | ALU registers (integer ops) | 9 |
 | 1 | Ⲓ-Ⲣ | t9-t17 | Sacred accumulators (FADD/FMUL) | 9 |
 | 2 | Ⲥ-Ϥ | t18-t26 | Constants (immutable) | 9 |
