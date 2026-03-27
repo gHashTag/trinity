@@ -71,14 +71,14 @@ export default memo(function Navigation() {
           </a>
         ))}
         <a
-          href={`${BASE}dashboard`}
+          href="#/dashboard"
           style={{ color: '#00ccff', fontWeight: 600 }}
           aria-label="Go to Dashboard"
         >
           {t.navExtra?.dashboard || 'Dashboard'}
         </a>
         <a
-          href={`${BASE}tree`}
+          href="#/tree"
           style={{ color: '#ffd700', fontWeight: 600 }}
           aria-label="Go to Research Lab"
         >
