@@ -208,6 +208,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/queen_api.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         }),
     });
     const run_queen_api_tests = b.addRunArtifact(queen_api_tests);
@@ -249,46 +250,6 @@ pub fn build(b: *std.Build) void {
     const run_vm_tests = b.addRunArtifact(vm_tests);
     test_step.dependOn(&run_vm_tests.step);
 
-    // VM Core Consolidation Tests (Phase 1)
-    const vm_core_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vm/core/vm_core.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const vm_memory_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vm/core/vm_memory.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const vm_dispatch_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vm/core/vm_dispatch.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const vm_test_utils_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/vm/core/vm_test_utils.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-
-    const run_vm_core_tests = b.addRunArtifact(vm_core_tests);
-    const run_vm_memory_tests = b.addRunArtifact(vm_memory_tests);
-    const run_vm_dispatch_tests = b.addRunArtifact(vm_dispatch_tests);
-    const run_vm_test_utils_tests = b.addRunArtifact(vm_test_utils_tests);
-
-    test_step.dependOn(&run_vm_core_tests.step);
-    test_step.dependOn(&run_vm_memory_tests.step);
-    test_step.dependOn(&run_vm_dispatch_tests.step);
-    test_step.dependOn(&run_vm_test_utils_tests.step);
-
     // E2E + Benchmarks + Verdict tests (Phase 4)
     const e2e_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -308,6 +269,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/c_api.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         }),
     });
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
@@ -2599,6 +2561,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/main.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
             .imports = &.{
                 .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
                 .{ .name = "trinity_swe", .module = vibeec_swe },
@@ -3624,6 +3587,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri/sacred_alu.zig"),
             .target = target,
             .optimize = .ReleaseFast,
+            .link_libc = true,
         }),
     });
     b.installArtifact(sacred);

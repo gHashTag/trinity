@@ -225,9 +225,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("  t-statistic: {d:.2}\n", .{test_result.statistic});
     print("  p-value: {d:.4}\n", .{test_result.p_value});
     print("  Significance: {s}\n", .{test_result.significance.toSymbol()});
-    if (test_result.effect_size) |es| {
-        print("  Effect size (Cohen's d): {d:.2}\n", .{es});
-    }
+    print("  Effect size (Cohen's d): {d:.2}\n", .{test_result.effect_size orelse 0.0});
     print("  Interpretation: {s}\n\n", .{test_result.interpretation});
 
     // Demonstrate experiment comparison
@@ -235,7 +233,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
         .experiment_id = "HSLM-TF3",
         .mean = 125.0,
         .std_dev = 8.5,
-        .n_samples = 1000,
+        .n_samples = 100,
         .ci = ci,
         .significance = .double_star,
     };
@@ -244,7 +242,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
         .experiment_id = "HSLM-GF16",
         .mean = 98.2,
         .std_dev = 6.2,
-        .n_samples = 1000,
+        .n_samples = 100,
         .ci = .{ .lower = 95.0, .upper = 101.4, .confidence = 0.95, .method = .bootstrap },
         .significance = .star,
     };
@@ -252,7 +250,7 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     const comparison = zenodo_v16.ExperimentComparisonEnhanced{
         .metric_name = "Perplexity (lower is better)",
         .results = &.{ exp1, exp2 },
-        .baseline = null,
+        .baseline = "Float32",
     };
 
     const table = try comparison.generateComparisonTable(allocator);
@@ -264,6 +262,72 @@ fn generateStatistics(allocator: std.mem.Allocator, args: []const []const u8) !v
     print("   Compliance: NeurIPS 2025, ICLR 2025 statistical rigor requirements\n\n", .{});
 }
 
+fn generateLatexTable(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}{s}V16 LaTeX Table Generator (booktabs){s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    // Create a booktabs table with significance markers
+    const table = zenodo_latex_table.LaTeXTable{
+        .caption = "Ternary Encoding Comparison (ICLR 2025 Format)",
+        .label = "tab:ternary-comparison",
+        .alignments = &.{ .left, .center, .center, .center, .center },
+        .rows = &.{
+            // Header row
+            .{
+                .cells = &.{
+                    .{ .content = "Encoding", .bold = true },
+                    .{ .content = "Params", .bold = true },
+                    .{ .content = "PPL", .bold = true },
+                    .{ .content = "Size (KB)", .bold = true },
+                    .{ .content = "DSP\\%", .bold = true },
+                },
+                .is_header = true,
+            },
+            // Data rows
+            .{
+                .cells = &.{
+                    .{ .content = "GF16" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "125.0", .significance = "***" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "TF3" },
+                    .{ .content = "1.95M" },
+                    .{ .content = "98.2", .significance = "**" },
+                    .{ .content = "385" },
+                    .{ .content = "0" },
+                },
+            },
+            .{
+                .cells = &.{
+                    .{ .content = "Float32", .bold = true },
+                    .{ .content = "1.95M" },
+                    .{ .content = "68.5" },
+                    .{ .content = "7800" },
+                    .{ .content = "15" },
+                },
+            },
+        },
+        .footnotes = &.{
+            "Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)",
+            "All results on TinyStories validation set (1M tokens)",
+        },
+    };
+
+    const latex = try table.generate(allocator);
+    defer allocator.free(latex);
+
+    print("{s}\n", .{latex});
+
+    print("\n{s}✅ LaTeX table generated!{s}\n", .{ GREEN, RESET });
+    print("   Format: ICLR/NeurIPS/MLSys booktabs standard\n\n", .{});
+}
 
 fn manageDOI(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len < 1) {
@@ -302,20 +366,20 @@ fn manageDOI(allocator: std.mem.Allocator, args: []const []const u8) !void {
 }
 
 fn generateParetoFrontier(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
     _ = args;
 
     print("\n{s}{s}V16 Pareto Frontier Analysis (MLSys 2025){s}\n", .{ CYAN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
 
-    // Create Pareto frontier for accuracy vs model size
+    // Define Pareto points (x=size in KB, y=perplexity)
     const points = [_]zenodo_v16_extensions.ParetoPoint{
-        .{ .x_value = 385, .y_value = 125.0, .model_name = "HSLM-GF16" },
-        .{ .x_value = 385, .y_value = 98.2, .model_name = "HSLM-TF3" },
-        .{ .x_value = 7800, .y_value = 68.5, .model_name = "Float32" },
-        .{ .x_value = 192, .y_value = 145.0, .model_name = "HSLM-8bit" },
+        .{ .x_value = 385.0, .y_value = 125.0, .model_name = "HSLM-GF16", .is_pareto_optimal = false },
+        .{ .x_value = 385.0, .y_value = 98.2, .model_name = "HSLM-TF3", .is_pareto_optimal = true },
+        .{ .x_value = 7800.0, .y_value = 68.5, .model_name = "Float32", .is_pareto_optimal = true },
+        .{ .x_value = 192.0, .y_value = 145.0, .model_name = "HSLM-8bit", .is_pareto_optimal = false },
     };
 
+    // Create Pareto frontier for accuracy vs model size
     const frontier = zenodo_v16_extensions.ParetoFrontier{
         .metric_x_name = "Model Size (KB)",
         .metric_y_name = "Perplexity (lower is better)",
@@ -324,8 +388,14 @@ fn generateParetoFrontier(allocator: std.mem.Allocator, args: []const []const u8
         .points = &points,
     };
 
+    // Generate formatted Markdown output
+    const md = try frontier.formatAsMarkdown(allocator);
+    defer allocator.free(md);
+
+    print("{s}\n", .{md});
+
     print("Model Accuracy vs Size Trade-off:\n\n", .{});
-    for (frontier.points, 0..) |pt, i| {
+    for (points, 0..) |pt, i| {
         print("  {d}. {s}: Size={d:.0} KB, PPL={d:.1}\n", .{ i + 1, pt.model_name, pt.x_value, pt.y_value });
     }
 
@@ -1375,39 +1445,4 @@ test "bundle_v8_aliases_unique" {
         try std.testing.expect(!seen.contains(bundle.alias));
         try seen.put(bundle.alias, {});
     }
-}
-fn generateLatexTable(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = allocator;
-    _ = args;
-
-    print("\n{s}{s}V16 LaTeX Table Generator (booktabs){s}\n", .{ CYAN, BOLD, RESET });
-    print("{s}═════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
-
-    // Simple LaTeX table output
-    const latex =
-        \\ \\\\begin{table}[htbp]
-        \\ \\\\\\centering
-        \\ \\\\\\begin{tabular}{|l|c|c|c|}
-        \\ \\\\\\hline
-        \\ \\\\textbf{Encoding} \\\\ \\\\textbf{Params} \\\\ \\\\textbf{PPL} \\\\ \\\\textbf{Size (KB)} \\\\\\
-        \\ \\\\\\hline
-        \\ \\\\ GF16 \\\\ 1.95M \\\\ 125.0$^{***}$ \\\\ 385 \\\\ 0 \\\\\\
-        \\ \\\\ TF3 \\\\ 1.95M \\\\ 98.2$^{**}$ \\\\ 385 \\\\ 0 \\\\\\
-        \\ \\\\\\hline
-        \\ \\\\\\multicolumn{4}{|r}{\\\\\textbf{Float32} \\\\\\
-        \\ \\\\\\hline
-        \\end{tabular}
-        \\ \\\\caption{Ternary Encoding Comparison (ICLR 2025 Format)}
-        \\ \\\\label{tab:ternary-comparison}
-        \\ \\\\begin{tablenotes}
-        \\ \\\\item Significance levels: $^{***}$p<0.001, $^{**}$p<0.01, $^{*}$p<0.05 (two-tailed t-test)\\\\
-        \\ \\\\item All results on TinyStories validation set (1M tokens)\\\\
-        \\ \\\\end{tablenotes}
-        \\ \\\\end{table}
-    ;
-
-    print("{s}\n", .{latex});
-
-    print("\n{s}✅ LaTeX table generated!{s}\n", .{ GREEN, RESET });
-    print("   Format: ICLR/NeurIPS/MLSys booktabs standard\n\n", .{});
 }

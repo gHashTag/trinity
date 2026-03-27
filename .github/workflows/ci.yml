@@ -35,7 +35,7 @@ jobs:
         run: |
           # Run tests with Zig's built-in leak detection
           # Tests using std.testing.allocator will automatically detect leaks
-          zig build test 2>&1 | tee test-output.txt
+          zig build test -Dci=true 2>&1 | tee test-output.txt
           # Check for any memory leak indicators
           if grep -i "leak\|memory.*leak\|allocation.*leak" test-output.txt; then
             echo "::error::Memory leaks detected in tests"
