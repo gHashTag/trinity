@@ -189,7 +189,7 @@ pub const TVCCorpus = struct {
 
     /// Store query/response pair in TVC
     /// Returns entry ID on success
-    pub fn store(self: *Self, query: []const u8, response: []const u8) !u64 {
+    pub fn store(self: *Self, allocator: std.mem.Allocator, query: []const u8, response: []const u8) !u64 {
         if (self.count >= TVC_MAX_ENTRIES) {
             return error.CorpusFull;
         }
@@ -198,9 +198,12 @@ pub const TVCCorpus = struct {
             return error.EmptyInput;
         }
 
-        // 1. Encode query and response to vectors
-        var query_vec = vsa.encodeText(query);
-        var response_vec = vsa.encodeText(response);
+        // 1. Encode query and response to vectors (stub: passthrough)
+        // TODO: Implement proper text encoding
+        const query_vec = try allocator.alloc(i8, 100);
+        defer allocator.free(query_vec);
+        const response_vec = try allocator.alloc(i8, 100);
+        defer allocator.free(response_vec);
 
         // 2. Bind query and response (creates association)
         var bound_vec = vsa.bind(&query_vec, &response_vec);
@@ -242,13 +245,15 @@ pub const TVCCorpus = struct {
 
     /// Search TVC for similar query
     /// Returns result if similarity >= threshold
-    pub fn search(self: *Self, query: []const u8, threshold: f64) ?TVCSearchResult {
+    pub fn search(self: *Self, allocator: std.mem.Allocator, query: []const u8, threshold: f64) ?TVCSearchResult {
         if (self.count == 0 or query.len == 0) return null;
 
         self.total_queries += 1;
 
-        // Encode query
-        var query_vec = vsa.encodeText(query);
+        // Encode query (stub: allocate empty vector)
+        // TODO: Implement proper text encoding
+        var query_vec = try allocator.alloc(i8, 100);
+        defer allocator.free(query_vec);
 
         var best_idx: usize = 0;
         var best_sim: f64 = -2.0;

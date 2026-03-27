@@ -130,6 +130,8 @@ pub fn runCloudCommand(allocator: Allocator, args: []const []const u8) !void {
         return mailSetup(allocator, sub_args);
     } else if (eql(u8, subcmd, "mail-check")) {
         return mailCheck(allocator, sub_args);
+    } else if (eql(u8, subcmd, "mail-apply")) {
+        return mailApply(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printUsage();
@@ -2281,8 +2283,10 @@ fn printUsage() void {
     print("  {s}tri cloud hub pipeline{s}        Full: CI → gate → farm recycle\n", .{ GREEN, RESET });
     print("\n  {s}Email DNS Setup:{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud mail-setup <provider> <domain>{s}  Generate DNS records for email\n", .{ GREEN, RESET });
+    print("  {s}tri cloud mail-apply <provider> <domain>{s}   Auto-add DNS records via UD CLI\n", .{ GREEN, RESET });
     print("  {s}tri cloud mail-check <domain>{s}              Verify MX records\n", .{ GREEN, RESET });
     print("  {s}  Providers: zoho, gmail, proton, migadu, outlook{s}\n", .{ GRAY, RESET });
+    print("  {s}  Requires: npm install -g @unstoppabledomains/cli && ud login{s}\n", .{ GRAY, RESET });
     print("\n  {s}IDE (Code Server):{s}\n", .{ BOLD, RESET });
     print("  {s}tri cloud ide status{s}          Code-server service status\n", .{ GREEN, RESET });
     print("  {s}tri cloud ide url{s}             Print public URL\n", .{ GREEN, RESET });
@@ -2307,7 +2311,12 @@ fn mailSetup(allocator: Allocator, args: []const []const u8) !void {
     const provider_str = args[0];
     const domain = args[1];
 
-    const provider = dns_mail.MailProvider.fromString(provider_str);
+    const provider_opt = dns_mail.MailProvider.fromString(provider_str);
+    if (provider_opt == null) {
+        print("Error: Unknown mail provider '{s}'\n", .{provider_str});
+        return error.InvalidProvider;
+    }
+    const provider = provider_opt.?;
 
     print("\n{s}📧 {s} Mail DNS Records for {s}{s}\n", .{ BOLD, provider.displayName(), domain, RESET });
     print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
@@ -2377,7 +2386,7 @@ fn mailSetup(allocator: Allocator, args: []const []const u8) !void {
     print("  3. Add the TXT records (SPF is critical)\n", .{});
     print("  4. Wait 10-30 minutes for DNS propagation\n", .{});
     print("  5. Verify: tri cloud mail-check {s}\n\n", .{domain});
-    print("  Create account: {s}{s}\n\n", .{ GRAY, provider.signupUrl(), RESET });
+    print("  Create account: {s}{s}{s}\n\n", .{ GRAY, provider.signupUrl(), RESET });
 }
 
 /// tri cloud mail-check <domain> — Verify MX records
@@ -2422,6 +2431,340 @@ fn mailCheck(allocator: Allocator, args: []const []const u8) !void {
         }
         print("\n  {d} MX record(s) found.\n\n", .{count});
     }
+}
+
+/// tri cloud mail-apply <provider> <domain> — Automatically add DNS records via UD CLI
+fn mailApply(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri cloud mail-apply <provider> <domain>{s}\n", .{ YELLOW, RESET });
+        print("\n  Requires: npm install -g @unstoppabledomains/cli\n", .{});
+        print("  Then: ud login\n", .{});
+        print("\n  Example: tri cloud mail-apply zoho t27.ai\n", .{});
+        return;
+    }
+
+    const provider_str = args[0];
+    const domain = args[1];
+
+    const provider = dns_mail.MailProvider.fromString(provider_str);
+
+    print("\n{s}🔧 Applying DNS Records for {s} to {s}{s}\n", .{ BOLD, provider.displayName(), domain, RESET });
+    print("{s}══════════════════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Check if ud CLI is installed
+    {
+        const check_argv = [_][]const u8{ "ud", "--version" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch {
+            print("{s}Error: UD CLI not found{s}\n", .{ RED, RESET });
+            print("Install: npm install -g @unstoppabledomains/cli\n", .{});
+            print("Then: ud login\n\n", .{});
+            return;
+        };
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+    }
+
+    // Check if logged in
+    {
+        const check_argv = [_][]const u8{ "ud", "domains", "list" };
+        const check_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &check_argv,
+        }) catch |err| {
+            print("{s}Error checking UD login: {}{s}\n", .{ RED, err, RESET });
+            print("Run: ud login\n\n", .{});
+            return;
+        };
+        defer {
+            allocator.free(check_result.stdout);
+            allocator.free(check_result.stderr);
+        }
+
+        if (check_result.stderr.len > 0 and std.mem.indexOf(u8, check_result.stderr, "Not logged in") != null) {
+            print("{s}Error: Not logged in to UD{s}\n", .{ RED, RESET });
+            print("Run: ud login\n\n", .{});
+            return;
+        }
+    }
+
+    print("{s}✓ UD CLI ready{s}\n\n", .{ GREEN, RESET });
+
+    // Add MX records based on provider
+    var added_count: usize = 0;
+
+    switch (provider) {
+        .zoho => {
+            // MX records
+            const mx_records = [3]struct { priority: u16, value: []const u8 }{
+                .{ 10, "mx.zoho.com." },
+                .{ 20, "mx2.zoho.com." },
+                .{ 50, "mx3.zoho.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                } else {
+                    print("  {s}✗{s} MX {d} {s}: {s}\n", .{ RED, RESET, mx.priority, mx.value, result.stderr });
+                }
+            }
+
+            // SPF TXT record
+            {
+                const spf_data = "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:zoho.com ~all\",\"ttl\":3600}}";
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", spf_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .gmail => {
+            const mx_records = [5]struct { priority: u16, value: []const u8 }{
+                .{ 1, "aspmx.l.google.com." },
+                .{ 5, "alt1.aspmx.l.google.com." },
+                .{ 5, "alt2.aspmx.l.google.com." },
+                .{ 10, "alt3.aspmx.l.google.com." },
+                .{ 10, "alt4.aspmx.l.google.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            {
+                const spf_data = "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:_spf.google.com ~all\",\"ttl\":3600}}";
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", spf_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .proton => {
+            const mx_records = [2]struct { priority: u16, value: []const u8 }{
+                .{ 10, "mail.protonmail.ch." },
+                .{ 20, "mailsec.protonmail.ch." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            {
+                const spf_data = "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:protonmail.ch ~all\",\"ttl\":3600}}";
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", spf_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .migadu => {
+            const mx_records = [2]struct { priority: u16, value: []const u8 }{
+                .{ 10, "mx1.migadu.com." },
+                .{ 20, "mx2.migadu.com." },
+            };
+
+            for (mx_records) |mx| {
+                const json_data = try std.fmt.allocPrint(allocator, "{{\"type\":\"MX\",\"hostName\":\"@\",\"value\":\"{s}\",\"ttl\":3600,\"priority\":{d}}}", .{ mx.value, mx.priority });
+                defer allocator.free(json_data);
+
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", json_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add MX {d} {s}: {}{s}\n", .{ RED, mx.priority, mx.value, err, RESET });
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} MX {d} {s}\n", .{ GREEN, RESET, mx.priority, mx.value });
+                    added_count += 1;
+                }
+            }
+
+            // SPF
+            {
+                const spf_data = "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:_spf.migadu.com ~all\",\"ttl\":3600}}";
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", spf_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .outlook => {
+            const mx_value = try std.fmt.allocPrint(allocator, "{s}.mail.protection.outlook.com.", .{domain});
+            defer allocator.free(mx_value);
+
+            const mx_data = try std.fmt.allocPrint(allocator, '{{{{"type":"MX","hostName":"@","value":"{s}","ttl":3600,"priority":0}}}}', .{mx_value});
+            defer allocator.free(mx_data);
+
+            const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", mx_data };
+            const result = std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &argv,
+            }) catch |err| {
+                print("  {s}✗ Failed to add MX: {}{s}\n", .{ RED, err, RESET });
+            };
+            defer {
+                allocator.free(result.stdout);
+                allocator.free(result.stderr);
+            }
+
+            if (result.stdout.len > 0) {
+                print("  {s}✓{s} MX {s}\n", .{ GREEN, RESET, mx_value });
+                added_count += 1;
+            }
+
+            // SPF
+            {
+                const spf_data = "{{\"type\":\"TXT\",\"hostName\":\"@\",\"value\":\"v=spf1 include:spf.protection.outlook.com ~all\",\"ttl\":3600}}";
+                const argv = [_][]const u8{ "ud", "domains", "dns", "records", "add", domain, "--data", spf_data };
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &argv,
+                }) catch |err| {
+                    print("  {s}✗ Failed to add SPF TXT: {}{s}\n", .{ RED, err, RESET });
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.stdout.len > 0) {
+                    print("  {s}✓{s} TXT SPF record\n", .{ GREEN, RESET });
+                    added_count += 1;
+                }
+            }
+        },
+        .custom => {
+            print("{s}Custom provider: use UD CLI manually{s}\n", .{ YELLOW, RESET });
+            print("  ud domains dns records add {s} --data '<JSON>'\n\n", .{domain});
+            return;
+        },
+    }
+
+    print("\n{s}══════════════════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+    print("{s}✓ Added {d} record(s){s}\n\n", .{ GREEN, added_count, RESET });
+
+    print("{s}Next steps:{s}\n", .{ BOLD, RESET });
+    print("  1. Register at {s}\n", .{provider.signupUrl()});
+    print("  2. Add domain in provider dashboard\n", .{});
+    print("  3. Wait 10-30 minutes for DNS propagation\n", .{});
+    print("  4. Verify: tri cloud mail-check {s}\n\n", .{domain});
 }
 
 fn printApiInitError(err: anyerror) void {

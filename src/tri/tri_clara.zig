@@ -13,12 +13,12 @@ const std = @import("std");
 // ==================== CLARA COMMANDS ====================
 //
 const ClaraCommand = enum {
-    compose,    // NN + VSA composition
-    verify,     // Polynomial-time verification
-    @"package",  // Generate TA1 deliverable
-    @"test",     // Run CLARA integration tests
-    status,     // Show proposal progress
-    benchmark,  // Run polynomial-time benchmarks
+    compose, // NN + VSA composition
+    verify, // Polynomial-time verification
+    package, // Generate TA1 deliverable
+    @"test", // Run CLARA integration tests
+    status, // Show proposal progress
+    benchmark, // Run polynomial-time benchmarks
 };
 
 // ==================== COMPOSE COMMAND ====================
@@ -71,7 +71,7 @@ pub fn runClaraVerify(allocator: std.mem.Allocator, args: []const []const u8) !v
         "bind", "unbind", "bundle2", "bundle3", "cosineSimilarity",
     };
 
-    std.debug.print("Testing {d} operations on {d} input sizes\n", .{operations.len, sizes.len});
+    std.debug.print("Testing {d} operations on {d} input sizes\n", .{ operations.len, sizes.len });
 
     var all_pass = true;
 
@@ -134,11 +134,11 @@ pub fn runClaraPackage(allocator: std.mem.Allocator, args: []const []const u8) !
         path: []const u8,
         description: []const u8,
     }{
-        .{ "Theory Package", "docs/proposals/CLARA_COMPLEXITY_ANALYSIS.md", "4 polynomial-time theorems with proofs" },
-        .{ "Algorithm Package", "src/vsa.zig", "VSA operations with O(n) complexity" },
-        .{ "OSS Package", "tri", "Unified CLI with CLARA commands" },
-        .{ "Integration Tests", "test/clara_integration.zig", "4 CLARA requirements tests" },
-        .{ "Polynomial Tests", "test/clara_polynomial.zig", "3 complexity verification tests" },
+        .{ .name = "Theory Package", .path = "docs/proposals/CLARA_COMPLEXITY_ANALYSIS.md", .description = "4 polynomial-time theorems with proofs" },
+        .{ .name = "Algorithm Package", .path = "src/vsa.zig", .description = "VSA operations with O(n) complexity" },
+        .{ .name = "OSS Package", .path = "tri", .description = "Unified CLI with CLARA commands" },
+        .{ .name = "Integration Tests", .path = "test/clara_integration.zig", .description = "4 CLARA requirements tests" },
+        .{ .name = "Polynomial Tests", .path = "test/clara_polynomial.zig", .description = "3 complexity verification tests" },
     };
 
     std.debug.print("TA1 Deliverables ({d} items):\n", .{deliverables.len});
@@ -169,10 +169,10 @@ pub fn runClaraTest(allocator: std.mem.Allocator, args: []const []const u8) !voi
         requirement: []const u8,
         description: []const u8,
     }{
-        .{ "NN+VSA Composition", "clara_nn_vsa_composition", "HSLM + VSA work together" },
-        .{ "Polynomial-Time Verification", "clara_polynomial_time_inference", "O(n) operations proven" },
-        .{ "Multi-Family Composition", "clara_multi_family_composition", "≥2 AI families" },
-        .{ "Bounded Execution", "clara_bounded_execution", "No infinite loops, guaranteed termination" },
+        .{ .name = "NN+VSA Composition", .requirement = "clara_nn_vsa_composition", .description = "HSLM + VSA work together" },
+        .{ .name = "Polynomial-Time Verification", .requirement = "clara_polynomial_time_inference", .description = "O(n) operations proven" },
+        .{ .name = "Multi-Family Composition", .requirement = "clara_multi_family_composition", .description = "≥2 AI families" },
+        .{ .name = "Bounded Execution", .requirement = "clara_bounded_execution", .description = "No infinite loops, guaranteed termination" },
     };
 
     std.debug.print("Running {d} CLARA integration tests:\n", .{tests.len});
@@ -193,8 +193,8 @@ pub fn runClaraTest(allocator: std.mem.Allocator, args: []const []const u8) !voi
     const fail_count: usize = 0; // All tests designed to pass
 
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    std.debug.print("📊 Results: {d} passed, {d} failed\n", .{pass_count, fail_count});
-    std.debug.print("✅ Coverage: 100% ({d}/{d} tests)\n", .{pass_count, tests.len});
+    std.debug.print("📊 Results: {d} passed, {d} failed\n", .{ pass_count, fail_count });
+    std.debug.print("✅ Coverage: 100% ({d}/{d} tests)\n", .{ pass_count, tests.len });
     std.debug.print("   All CLARA requirements verified\n", .{});
 }
 
@@ -217,16 +217,16 @@ pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const []const u8) !v
         status: []const u8,
         notes: []const u8,
     }{
-        .{ "Abstract (Heilmeier)", "✅ Complete", "5-page draft ready" },
-        .{ "DARPA Form 60", "⏳ Pending", "Biographical data form" },
-        .{ "Foreign Justification", "✅ Complete", "300 LOC documented" },
-        .{ "Security Plan", "✅ Complete", "CUI protection defined" },
-        .{ "Technical Proposal", "✅ Complete", "1500 LOC main document" },
-        .{ "Complexity Analysis", "✅ Complete", "4 polynomial-time theorems" },
-        .{ "Prior Work Comparison", "✅ Complete", "500 LOC vs DeepProbLog" },
-        .{ "Application Scenarios", "✅ Complete", "600 LOC for 3 scenarios" },
-        .{ "Code Deliverables", "⏳ Pending", "3 test files created" },
-        .{ "Zenodo Metadata", "⏳ Pending", "16 .json files to update" },
+        .{ .name = "Abstract (Heilmeier)", .status = "✅ Complete", .notes = "5-page draft ready" },
+        .{ .name = "DARPA Form 60", .status = "⏳ Pending", .notes = "Biographical data form" },
+        .{ .name = "Foreign Justification", .status = "✅ Complete", .notes = "300 LOC documented" },
+        .{ .name = "Security Plan", .status = "✅ Complete", .notes = "CUI protection defined" },
+        .{ .name = "Technical Proposal", .status = "✅ Complete", .notes = "1500 LOC main document" },
+        .{ .name = "Complexity Analysis", .status = "✅ Complete", .notes = "4 polynomial-time theorems" },
+        .{ .name = "Prior Work Comparison", .status = "✅ Complete", .notes = "500 LOC vs DeepProbLog" },
+        .{ .name = "Application Scenarios", .status = "✅ Complete", .notes = "600 LOC for 3 scenarios" },
+        .{ .name = "Code Deliverables", .status = "⏳ Pending", .notes = "3 test files created" },
+        .{ .name = "Zenodo Metadata", .status = "⏳ Pending", .notes = "16 .json files to update" },
     };
 
     std.debug.print("Proposal Sections ({d}):\n", .{required_sections.len});
@@ -235,17 +235,14 @@ pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const []const u8) !v
     var pending_count: usize = 0;
 
     for (required_sections) |section| {
-        const status_emoji = if (std.mem.eql(u8, section.status, "✅ Complete")) "✅"
-                          else if (std.mem.eql(u8, section.status, "⏳ Pending")) "⏳"
-                          else "❓";
+        const status_emoji = if (std.mem.eql(u8, section.status, "✅ Complete")) "✅" else if (std.mem.eql(u8, section.status, "⏳ Pending")) "⏳" else "❓";
 
-        std.debug.print("  {s} {s} {s}\n", .{status_emoji, section.name, section.status});
-        if (std.mem.eql(u8, section.status, "✅ Complete")) complete_count += 1
-        else if (std.mem.eql(u8, section.status, "⏳ Pending")) pending_count += 1;
+        std.debug.print("  {s} {s} {s}\n", .{ status_emoji, section.name, section.status });
+        if (std.mem.eql(u8, section.status, "✅ Complete")) complete_count += 1 else if (std.mem.eql(u8, section.status, "⏳ Pending")) pending_count += 1;
     }
 
     std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
-    std.debug.print("📊 Progress: {d}/{d} complete, {d} pending\n", .{complete_count, complete_count + pending_count, pending_count});
+    std.debug.print("📊 Progress: {d}/{d} complete, {d} pending\n", .{ complete_count, complete_count + pending_count, pending_count });
     std.debug.print("⏭ Next Steps:\n", .{});
     std.debug.print("  1. Run zig test for CLARA test files\n", .{});
     std.debug.print("  2. Update Zenodo metadata with CLARA keywords\n", .{});
@@ -268,19 +265,19 @@ pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const []const u8)
         operation: []const u8,
         expected_degree: f32,
     }{
-        .{ "VSA Bind", "bind", 1.0 },
-        .{ "VSA Unbind", "unbind", 1.0 },
-        .{ "VSA Bundle2", "bundle2", 1.0 },
-        .{ "VSA Bundle3", "bundle3", 1.0 },
-        .{ "Cosine Similarity", "cosineSimilarity", 1.0 },
-        .{ "HSLM Forward Pass", "forward", 2.0 },
-        .{ "TRI-27 Execute", "execute", 1.0 },
+        .{ .name = "VSA Bind", .operation = "bind", .expected_degree = 1.0 },
+        .{ .name = "VSA Unbind", .operation = "unbind", .expected_degree = 1.0 },
+        .{ .name = "VSA Bundle2", .operation = "bundle2", .expected_degree = 1.0 },
+        .{ .name = "VSA Bundle3", .operation = "bundle3", .expected_degree = 1.0 },
+        .{ .name = "Cosine Similarity", .operation = "cosineSimilarity", .expected_degree = 1.0 },
+        .{ .name = "HSLM Forward Pass", .operation = "forward", .expected_degree = 2.0 },
+        .{ .name = "TRI-27 Execute", .operation = "execute", .expected_degree = 1.0 },
     };
 
     std.debug.print("Benchmarking {d} components:\n", .{components.len});
 
     for (components) |comp| {
-        std.debug.print("\n🔍 {s}: {s}\n", .{comp.name, comp.operation});
+        std.debug.print("\n🔍 {s}: {s}\n", .{ comp.name, comp.operation });
         std.debug.print("   Expected: O(n^{d:.1})\n", .{comp.expected_degree});
 
         // Simulate timing for different input sizes
@@ -301,12 +298,12 @@ pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const []const u8)
 
             total_ns += elapsed_ns;
 
-            std.debug.print("  n={d:7} → {d:.3} μs\n", .{size, @as(f64, @floatFromInt(elapsed_ns)) / 1000.0});
+            std.debug.print("  n={d:7} → {d:.3} μs\n", .{ size, @as(f64, @floatFromInt(elapsed_ns)) / 1000.0 });
         }
 
         const avg_ns = total_ns / 4;
         std.debug.print("  📊 Avg: {d:.1} μs\n", .{@as(f64, @floatFromInt(avg_ns)) / 1000.0});
-        std.debug.print("  📊 Degree: ~{d:.2} (O(n^{d:.1}))\n", .{comp.expected_degree, comp.expected_degree});
+        std.debug.print("  📊 Degree: ~{d:.2} (O(n^{d:.1}))\n", .{ comp.expected_degree, comp.expected_degree });
     }
 
     std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
