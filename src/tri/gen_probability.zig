@@ -3,16 +3,29 @@
 //! TTT Dogfood v0.2 Stage 185
 
 const std = @import("std");
-const Random = std.Random.Default;
+
+/// Simple PRNG state
+pub const PRNG = struct {
+    state: u64,
+
+    pub fn init(seed: u64) PRNG {
+        return .{ .state = seed };
+    }
+
+    pub fn float(self: *PRNG) f64 {
+        self.state = self.state *% 6364136223846793005 +% 1442695040888963407;
+        return @as(f64, @floatFromInt(self.state >> 11)) / @as(f64, @floatFromInt(u64 >> 11));
+    }
+};
 
 /// Bernoulli trial with probability p
-pub fn bernoulli(p: f64, rng: *Random) bool {
-    const u = rng.float(f64);
+pub fn bernoulli(p: f64, rng: *PRNG) bool {
+    const u = rng.float();
     return u < p;
 }
 
 /// Binomial distribution B(n,p)
-pub fn binomial(n: usize, p: f64, rng: *Random) usize {
+pub fn binomial(n: usize, p: f64, rng: *PRNG) usize {
     var count: usize = 0;
     for (0..n) |_| {
         if (bernoulli(p, rng)) count += 1;
@@ -21,7 +34,7 @@ pub fn binomial(n: usize, p: f64, rng: *Random) usize {
 }
 
 /// Poisson distribution
-pub fn poisson(lambda: f64, rng: *Random) usize {
+pub fn poisson(lambda: f64, rng: *PRNG) usize {
     if (lambda <= 0) return 0;
 
     const L = std.math.exp(-lambda);
@@ -30,33 +43,32 @@ pub fn poisson(lambda: f64, rng: *Random) usize {
 
     while (prod > L) {
         k += 1;
-        prod *= rng.float(f64);
+        prod *= rng.float();
     }
 
     return k - 1;
 }
 
 /// Normal distribution (Box-Muller)
-pub fn normal(mean: f64, std_dev: f64, rng: *Random) f64 {
+pub fn normal(mean: f64, std_dev: f64, rng: *PRNG) f64 {
     // Box-Muller transform
-    const u1 = rng.float(f64);
-    const u2 = rng.float(f64);
+    const u1 = rng.float();
+    const u2 = rng.float();
 
     const z0 = std.math.sqrt(-2.0 * std.math.log(u1)) * std.math.cos(2.0 * std.pi * u2);
-    // const z1 = std.math.sqrt(-2.0 * std.math.log(u1)) * std.math.sin(2.0 * std.pi * u2);
 
     return mean + std_dev * z0;
 }
 
 /// Exponential distribution
-pub fn exponential(lambda: f64, rng: *Random) f64 {
+pub fn exponential(lambda: f64, rng: *PRNG) f64 {
     if (lambda <= 0) return 0;
-    const u = rng.float(f64);
+    const u = rng.float();
     return -std.math.log(1.0 - u) / lambda;
 }
 
 test "bernoulli" {
-    var rng = Random.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(@intCast(std.testing.timestamp));
     var count: usize = 0;
     for (0..1000) |_| {
         if (bernoulli(0.5, &rng)) count += 1;
@@ -66,28 +78,28 @@ test "bernoulli" {
 }
 
 test "binomial" {
-    var rng = Random.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(@intCast(std.testing.timestamp));
     const result = binomial(100, 0.5, &rng);
     // Should be around 50
     try std.testing.expect(result > 25 and result < 75);
 }
 
 test "poisson" {
-    var rng = Random.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(@intCast(std.testing.timestamp));
     const result = poisson(10.0, &rng);
     // Should be around 10
     try std.testing.expect(result > 0 and result < 30);
 }
 
 test "normal" {
-    var rng = Random.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(@intCast(std.testing.timestamp));
     const result = normal(0.0, 1.0, &rng);
     // Should be within reasonable range
     try std.testing.expect(result > -10 and result < 10);
 }
 
 test "exponential" {
-    var rng = Random.init(@intCast(std.testing.timestamp));
+    var rng = PRNG.init(@intCast(std.testing.timestamp));
     const result = exponential(1.0, &rng);
     // Should be positive
     try std.testing.expect(result >= 0);
