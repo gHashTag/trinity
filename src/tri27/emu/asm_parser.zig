@@ -289,7 +289,7 @@ pub const Assembler = struct {
         const trimmed = std.mem.trim(u8, reg_str, &std.ascii.whitespace);
 
         // Try Coptic glyph first (Issue #407)
-        if (glyphToReg(trim)) |reg| {
+        if (glyphToReg(trimmed)) |reg| {
             return reg.regIndex();
         } else |_| {
             // Not a Coptic glyph, try ASCII format
