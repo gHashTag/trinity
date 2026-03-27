@@ -482,8 +482,8 @@ def generate_planning_items(target_count: int = 480) -> List[ExecutiveItem]:
             neural_analog=TASK_DESCRIPTONS["multi_step_planning"]["neural_analog"],
             distractor=distractor,
             note=note,
-            ambiguities=ambiguity,
-            hidden_rules=hidden_rule,
+            ambiguity=ambiguity,
+            hidden_rule=hidden_rule,
             partial_credit_possible=partial
         )
         items.append(item)
@@ -532,8 +532,8 @@ def generate_stroop_items(target_count: int = 480) -> List[ExecutiveItem]:
             neural_analog=TASK_DESCRIPTONS["stroop_inhibition"]["neural_analog"],
             distractor=distractor,
             note=note,
-            ambiguities=ambiguity,
-            hidden_rules=hidden_rule,
+            ambiguity=ambiguity,
+            hidden_rule=hidden_rule,
             partial_credit_possible=partial
         )
         items.append(item)
@@ -553,7 +553,22 @@ def generate_wisconsin_items(target_count: int = 480) -> List[ExecutiveItem]:
         # Adaptation attempts (how many feedback cycles)
         adaptation_cycles = [1, 2, 3, 5, 8][level_idx]
 
+        # Build complexity fields
+        distractor = scenario.get("distractor", "")
+        note = scenario.get("note", "")
+        ambiguity = scenario.get("hidden_rule", "")
+        hidden_rule = scenario.get("note", "")  # Use 'note' as hidden rule indicator
+        partial = "distractor" in scenario or "note" in scenario
+
         context = f"Cards: {scenario['cards']}\nCorrect sort: {scenario['correct_sort']}\nFeedback: {scenario['feedback']}\nNew cards: {scenario['new_cards']}"
+        if distractor:
+            context += f"\n[DI-STRACTOR] {distractor}"
+        if note:
+            context += f"\n[NOTE] {note}"
+        if ambiguity:
+            context += f"\n[COMPLEX] {ambiguity}"
+        if hidden_rule:
+            context += f"\n[HIDDEN] {hidden_rule}"
 
         item = ExecutiveItem(
             id=f"tefb_wisco_{i:04d}",
@@ -564,7 +579,12 @@ def generate_wisconsin_items(target_count: int = 480) -> List[ExecutiveItem]:
             expected_result=scenario["expected"],
             difficulty=difficulty * adaptation_cycles,
             brain_zone=TASK_DESCRIPTONS["wisconsin_card_sort"]["brain_zone"],
-            neural_analog=TASK_DESCRIPTONS["wisconsin_card_sort"]["neural_analog"]
+            neural_analog=TASK_DESCRIPTONS["wisconsin_card_sort"]["neural_analog"],
+            distractor=distractor,
+            note=note,
+            ambiguity=ambiguity,
+            hidden_rule=hidden_rule,
+            partial_credit_possible=partial
         )
         items.append(item)
 
@@ -581,7 +601,19 @@ def generate_memory_items(target_count: int = 480) -> List[ExecutiveItem]:
         scenario = MEMORY_SCENARIOS[level_idx]
         difficulty = calculate_phi_score(level_idx)
 
+        # Build complexity fields
+        distractor = scenario.get("distractor", "")
+        note = scenario.get("note", "")
+        complexity = scenario.get("complexity", "")
+        partial = "distractor" in scenario or "note" in scenario or "complexity" in scenario
+
         context = f"Data: {scenario['data']}\nOperations: {scenario['operations']}"
+        if distractor:
+            context += f"\n[DI-STRACTOR] {distractor}"
+        if note:
+            context += f"\n[NOTE] {note}"
+        if complexity:
+            context += f"\n[COMPLEX] {complexity}"
 
         item = ExecutiveItem(
             id=f"tefb_memory_{i:04d}",
@@ -592,7 +624,12 @@ def generate_memory_items(target_count: int = 480) -> List[ExecutiveItem]:
             expected_result=scenario["expected"],
             difficulty=difficulty * scenario["items"],
             brain_zone=TASK_DESCRIPTONS["working_memory"]["brain_zone"],
-            neural_analog=TASK_DESCRIPTONS["working_memory"]["neural_analog"]
+            neural_analog=TASK_DESCRIPTONS["working_memory"]["neural_analog"],
+            distractor=distractor,
+            note=note,
+            ambiguity=complexity,
+            hidden_rule="",
+            partial_credit_possible=partial
         )
         items.append(item)
 
@@ -611,7 +648,19 @@ def generate_conflict_items(target_count: int = 480) -> List[ExecutiveItem]:
         # Conflict severity (how contradictory)
         conflict_severity = [1, 2, 3, 4, 5][level_idx]
 
+        # Build complexity fields
+        distractor = scenario.get("distractor", "")
+        note = scenario.get("note", "")
+        ambiguity = scenario.get("ambiguity", "")
+        partial = "distractor" in scenario or "note" in scenario or "ambiguity" in scenario
+
         context = f"Instruction 1: {scenario['instruction_1']}\nInstruction 2: {scenario['instruction_2']}\nInput: {scenario['input']}"
+        if distractor:
+            context += f"\n[DI-STRACTOR] {distractor}"
+        if note:
+            context += f"\n[NOTE] {note}"
+        if ambiguity:
+            context += f"\n[AMBIGUOUS] {ambiguity}"
 
         item = ExecutiveItem(
             id=f"tefb_conflict_{i:04d}",
@@ -622,7 +671,12 @@ def generate_conflict_items(target_count: int = 480) -> List[ExecutiveItem]:
             expected_result=scenario["expected"],
             difficulty=difficulty * conflict_severity,
             brain_zone=TASK_DESCRIPTONS["conflicting_instructions"]["brain_zone"],
-            neural_analog=TASK_DESCRIPTONS["conflicting_instructions"]["neural_analog"]
+            neural_analog=TASK_DESCRIPTONS["conflicting_instructions"]["neural_analog"],
+            distractor=distractor,
+            note=note,
+            ambiguity=ambiguity,
+            hidden_rule="",
+            partial_credit_possible=partial
         )
         items.append(item)
 
