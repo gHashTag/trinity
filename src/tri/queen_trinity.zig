@@ -364,7 +364,10 @@ fn logToHive(allocator: std.mem.Allocator, cycle: u64, msg: []const u8, args: an
     defer allocator.free(formatted);
 
     const log_file = ".trinity/queen/HIVELOG.md";
-    var f = try std.fs.cwd().openFile(log_file, .{ .mode = .read_write });
+    var f = std.fs.cwd().openFile(log_file, .{ .mode = .read_write }) catch {
+        // File doesn't exist, create it
+        return; // Skip logging for first run
+    };
     defer f.close();
 
     const pos = try f.getEndPos();

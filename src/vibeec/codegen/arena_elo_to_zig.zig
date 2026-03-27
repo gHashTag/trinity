@@ -59,7 +59,7 @@ const ARENA_ELO_TEMPLATE =
     \\/// Formula: E = 1/(1+10^((Rb-Ra)/400))
     \\pub fn expectedScore(rating_a: f64, rating_b: f64) f64 {
     \\    const rating_diff = rating_b - rating_a;
-    \\    const exponent = -rating_diff / 400.0;
+    \\    const exponent = rating_diff / 400.0;
     \\    const power_of_10 = std.math.pow(f64, 10.0, exponent);
     \\    const denominator = 1.0 + power_of_10;
     \\    return 1.0 / denominator;

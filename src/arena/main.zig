@@ -427,8 +427,8 @@ fn handleLeaderboard(stream: std.net.Stream, arena_state: *battle_mod.Arena) !vo
         if (!first) try writer.writeAll(",");
         first = false;
 
-        var elo_buf: [16]u8 = undefined;
-        const elo_str = elo.formatElo(f.elo, &elo_buf);
+        const elo_str = try elo.formatElo(f.elo, arena_state.allocator);
+        defer arena_state.allocator.free(elo_str);
 
         try std.fmt.format(writer,
             \\{{"name":"{s}","elo":{s},"wins":{d},"losses":{d},"ties":{d}}}
