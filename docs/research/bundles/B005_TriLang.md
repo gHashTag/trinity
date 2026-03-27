@@ -38,6 +38,15 @@ fn map<T, U>(self: Option<T>, f: fn(T) -> U) -> Option<U> {
 - Specs: `specs/tri/*.tri`
 - Roadmap: `docs/research/tri_language_roadmap.md`
 
+## Related Bundles
+
+**B005 TriLang** compiles to:
+- [B001 HSLM](B001_HSLM.md) — Neural network inference code
+- [B002 FPGA](B002_FPGA.md) — Hardware acceleration
+
+**B005 TriLang** uses:
+- [B006 GF16](B006_GF16.md) — Ternary data serialization
+
 ## Citation
 
 ```bibtex

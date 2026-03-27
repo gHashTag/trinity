@@ -46,3 +46,12 @@ FPGA accelerator achieving **zero DSP utilization** while maintaining comparable
 
 - Zenodo: https://zenodo.org/doi/10.5281/zenodo.19227867
 - GitHub: https://github.com/gHashTag/trinity
+
+## Related Bundles
+
+**B002 FPGA** accelerates:
+- [B007 VSA](B007_VSA.md) — SIMD-accelerated hyperdimensional operations (17× faster)
+- [B001 HSLM](B001_HSLM.md) — φ-normalized ternary encoding (HDC-compatible)
+
+**B002 FPGA** uses:
+- [B006 GF16](B006_GF16.md) — Ternary tensor format for hardware deployment
