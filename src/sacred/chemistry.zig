@@ -6,8 +6,8 @@
 const std = @import("std");
 
 // Try to import sacred_const module (available via build.zig)
-const sacred_const = if (@hasDecl(@import("builtin"), "test"))
-    // Fallback values when testing standalone
+const sacred_const = if (true)
+    // Use fallback values for now
     struct {
         pub const physics = struct {
             pub const BOHR_RADIUS: f64 = 0.529e-10;
@@ -21,9 +21,7 @@ const sacred_const = if (@hasDecl(@import("builtin"), "test"))
             pub const STANDARD_PRESSURE: f64 = 101325;
             pub const MOLAR_VOLUME_STP: f64 = 22.414;
         };
-    }
-else
-    @import("const");
+    };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHEMICAL ELEMENT STRUCTURE
@@ -219,8 +217,8 @@ pub fn getElement(input: anytype) ?*const Element {
     if (T == []const u8) {
         // Search by symbol
         const symbol = @as([]const u8, input);
-        inline for (&PERIODIC_TABLE) |*elem| {
-            if (std.ascii.eqlIgnoreCase(elem.symbol, symbol)) return elem;
+        for (&PERIODIC_TABLE, 0..) |*elem, i| {
+            if (std.ascii.eqlIgnoreCase(elem.symbol, symbol)) return &PERIODIC_TABLE[i];
         }
         return null;
     } else if (T == u8 or T == u16 or T == u32 or T == i32 or T == i64 or T == usize) {
@@ -412,7 +410,7 @@ test "parseFormula simple" {
     const testing = std.testing;
     const allocator = std.testing.allocator;
 
-    const result = try parseFormula(allocator, "H2O");
+    var result = try parseFormula(allocator, "H2O");
     defer result.deinit();
 
     try testing.expectEqual(@as(u32, 2), result.get("H").?);
