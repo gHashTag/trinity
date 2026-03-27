@@ -1855,7 +1855,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     ;
 
     const output = ssh.exec(allocator, check_cmd) catch |err| {
-        print(" {s}SSH: {s}  Connection failed ({})  {s}\n", .{ RED, "❌", @errorName(err), RESET });
+        print(" {s}SSH: {s}  Connection failed ({s})  {s}\n", .{ RED, "❌", @errorName(err), RESET });
         print(" {s}Bridge:{s} {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}tmux:{s}   {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
         print(" {s}Procs:{s}  {s}  Cannot check (SSH down){s}\n", .{ RED, "❌", GRAY, RESET });
