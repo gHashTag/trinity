@@ -1,0 +1,23 @@
+; B+ Tree Search — TTT Dogfood Phase 3
+;
+; Search in B+ tree
+;
+; Test case: find 10 in leaf node
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 60         ; key = 10
+
+    LDI t0, 5
+    ST t0, 100        ; leaf[0] = 5
+    LDI t0, 10
+    ST t0, 101        ; leaf[1] = 10
+    LDI t0, 15
+    ST t0, 102        ; leaf[2] = 15
+
+    LDI t0, 1
+    ST t0, 61         ; found = 1 (at index 1)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0702a7001218

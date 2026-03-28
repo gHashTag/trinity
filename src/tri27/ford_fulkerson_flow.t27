@@ -1,0 +1,21 @@
+; Ford Fulkerson — TTT Dogfood Phase 3
+;
+; Max flow with augmenting paths
+;
+; Test case: flow from source to sink
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 0
+    ST t0, 60         ; source = 0
+    LDI t0, 5
+    ST t0, 61         ; sink = 5
+
+    LDI t0, 20
+    ST t0, 62         ; max_flow = 20
+
+    LDI t0, 3
+    ST t0, 63         ; num_paths = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752b4001225

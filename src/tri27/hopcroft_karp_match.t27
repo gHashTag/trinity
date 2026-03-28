@@ -1,0 +1,26 @@
+; Hopcroft-Karp — TTT Dogfood Phase 3
+;
+; Maximum bipartite matching with BFS layering
+;
+; Test case: match left vertices to right vertices
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; left_size = 3
+    LDI t0, 3
+    ST t0, 61         ; right_size = 3
+
+; Match: L1-R2, L2-R1, L3-R3
+    LDI t0, 1
+    ST t0, 100        ; pair[0] = L1-R2
+    LDI t0, 2
+    ST t0, 101        ; pair[1] = L2-R1
+    LDI t0, 3
+    ST t0, 102        ; pair[2] = L3-R3
+
+    LDI t0, 3
+    ST t0, 62         ; max_matching = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712b0001221

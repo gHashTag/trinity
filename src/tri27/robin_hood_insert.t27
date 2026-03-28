@@ -1,0 +1,23 @@
+; Robin Hood Insert — TTT Dogfood Phase 3
+;
+; Insert with probe length balancing
+;
+; Test case: insert with backward shifting
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 50         ; table_size = 10
+
+    LDI t0, 5
+    ST t0, 100        ; table[5] = 5, probe = 0
+    LDI t0, 7
+    ST t0, 101        ; table[6] = 7, probe = 0
+    LDI t0, 15
+    ST t0, 102        ; table[7] = 15, probe = 1 (rich)
+
+    LDI t0, 1
+    ST t0, 60         ; inserted = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0702af001220

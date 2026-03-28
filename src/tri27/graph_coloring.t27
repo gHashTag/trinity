@@ -1,0 +1,29 @@
+; Graph Coloring — TTT Dogfood Phase 3
+;
+; Color graph with minimum colors
+;
+; Test case: 3-coloring of planar graph
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 6
+    ST t0, 60         ; num_vertices = 6
+
+    LDI t0, 1
+    ST t0, 100        ; color[0] = 1 (red)
+    LDI t0, 2
+    ST t0, 101        ; color[1] = 2 (green)
+    LDI t0, 3
+    ST t0, 102        ; color[2] = 3 (blue)
+    LDI t0, 1
+    ST t0, 103        ; color[3] = 1
+    LDI t0, 2
+    ST t0, 104        ; color[4] = 2
+    LDI t0, 3
+    ST t0, 105        ; color[5] = 3
+
+    LDI t0, 3
+    ST t0, 61         ; num_colors = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712b8001229

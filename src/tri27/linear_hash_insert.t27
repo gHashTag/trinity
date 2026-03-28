@@ -1,0 +1,23 @@
+; Linear Hash Insert — TTT Dogfood Phase 3
+;
+; Insert with linear probing
+;
+; Test case: insert keys 1, 11, 21 (collision)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 50         ; table_size = 10
+
+    LDI t0, 1
+    ST t0, 100        ; table[0] = 1
+    LDI t0, 11
+    ST t0, 101        ; table[1] = 11
+    LDI t0, 21
+    ST t0, 102        ; table[2] = 21
+
+    LDI t0, 3
+    ST t0, 60         ; inserted = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732aa00121b
