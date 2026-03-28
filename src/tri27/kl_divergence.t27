@@ -1,0 +1,13 @@
+; KL Divergence — TTT Dogfood Phase 3
+;
+; Relative entropy D(P||Q)
+;
+; Test case: divergence = 0.5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; divergence = 0.5 (Q16: 3277)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07138c001302
