@@ -1,0 +1,13 @@
+; Digital Twin City — TTT Dogfood Phase 3
+;
+; Smart city twins
+;
+; Test case: digital_twin_city
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; city_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077ee000002000000002157

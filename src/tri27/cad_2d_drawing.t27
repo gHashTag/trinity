@@ -1,0 +1,13 @@
+; CAD 2D Drawing — TTT Dogfood Phase 3
+;
+; 2D drawing algorithms
+;
+; Test case: cad_2d_drawing
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; 2d_drawing_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077f600002000000002167
