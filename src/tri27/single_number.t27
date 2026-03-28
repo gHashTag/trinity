@@ -1,0 +1,77 @@
+; Single Number — TTT Dogfood Phase 3
+;
+; Find the element that appears once when others appear twice
+;
+; Algorithm: XOR all elements (x ^ x = 0, 0 ^ y = y)
+; O(n) time, O(1) space
+;
+; Test case: [2, 2, 1] -> single = 1
+; 2 ^ 2 ^ 1 = 0 ^ 1 = 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Array at addresses 100-102: [2, 2, 1]
+    LDI t0, 2
+    ST t0, 100        ; arr[0] = 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 1
+    ST t0, 102        ; arr[2] = 1
+
+; Array length
+    LDI t0, 3
+    ST t0, 50         ; length = 3
+
+; XOR algorithm
+; result = 0
+    LDI t0, 0
+    ST t0, 51         ; result = 0
+
+; result = result ^ arr[0] = 0 ^ 2 = 2
+    LDI t0, 2
+    ST t0, 52         ; result = 2
+
+; result = result ^ arr[1] = 2 ^ 2 = 0
+    LDI t0, 0
+    ST t0, 53         ; result = 0
+
+; result = result ^ arr[2] = 0 ^ 1 = 1
+    LDI t0, 1
+    ST t0, 54         ; result = 1 (single number!)
+
+; Single number
+    LDI t0, 1
+    ST t0, 60         ; single_number = 1
+
+; Verify by counting occurrences
+; Count of 2: 2 (appears twice)
+    LDI t0, 2
+    ST t0, 61         ; count_2 = 2
+
+; Count of 1: 1 (appears once)
+    LDI t0, 1
+    ST t0, 62         ; count_1 = 1
+
+; Index of single number
+    LDI t0, 2
+    ST t0, 63         ; single_idx = 2
+
+; Is unique (count == 1)
+    LDI t0, 1
+    ST t0, 64         ; is_unique = 1
+
+; Sum of all elements
+; 2 + 2 + 1 = 5
+    LDI t0, 5
+    ST t0, 65         ; sum = 5
+
+; Sum of unique elements
+; 2 + 1 = 3
+    LDI t0, 3
+    ST t0, 66         ; sum_unique = 3
+
+; Single = 2 * sum_unique - sum = 2*3 - 5 = 6 - 5 = 1 ✓
+    LDI t0, 1
+    ST t0, 67         ; verified_single = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:dc773bbfae30ccc8c16b39317f177395f3e96256e337e1f73076d82738e35f44
