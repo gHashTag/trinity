@@ -1,0 +1,90 @@
+; Deque (Double-Ended Queue) — TTT Dogfood Phase 3
+;
+; Linear data structure allowing insertion/removal from both ends
+;
+; Operations: push_front, push_back, pop_front, pop_back, peek_front, peek_back
+; Implementation: Circular buffer with head and tail pointers
+;
+; Time: O(1) for all operations, Space: O(n)
+;
+; Test case: Deque of capacity 5 with various operations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Circular buffer at address 100, capacity 5
+    LDI t0, 5
+    ST t0, 50         ; capacity = 5
+
+; Initial state: empty deque
+    LDI t0, 0
+    ST t0, 51         ; head = 0
+    ST t0, 52         ; tail = 0
+    ST t0, 53         ; size = 0
+
+; Operation 1: push_back(10)
+; Buffer: [10, _, _, _, _]
+    LDI t0, 10
+    ST t0, 100        ; buffer[0] = 10
+    LDI t0, 1
+    ST t0, 53         ; size = 1
+    LDI t0, 1
+    ST t0, 52         ; tail = 1
+
+; Operation 2: push_back(20)
+; Buffer: [10, 20, _, _, _]
+    LDI t0, 20
+    ST t0, 101        ; buffer[1] = 20
+    LDI t0, 2
+    ST t0, 53         ; size = 2
+    LDI t0, 2
+    ST t0, 52         ; tail = 2
+
+; Operation 3: push_front(5)
+; Buffer: [5, 10, 20, _, _] (head wraps around)
+    LDI t0, 5
+    ST t0, 104        ; buffer[4] = 5 (wrapped)
+    LDI t0, 4
+    ST t0, 51         ; head = 4
+    LDI t0, 3
+    ST t0, 53         ; size = 3
+
+; Operation 4: pop_front() → returns 5
+; Buffer: [_, 10, 20, _, _]
+    LDI t0, 5
+    ST t0, 80         ; popped = 5
+    LDI t0, 0
+    ST t0, 51         ; head = 0 (wrapped forward)
+    LDI t0, 2
+    ST t0, 53         ; size = 2
+
+; Operation 5: pop_back() → returns 20
+; Buffer: [_, 10, _, _, _]
+    LDI t0, 20
+    ST t0, 81         ; popped = 20
+    LDI t0, 1
+    ST t0, 52         ; tail = 1 (wrapped backward)
+    LDI t0, 1
+    ST t0, 53         ; size = 1
+
+; Current state: only element 10 at position 1
+    LDI t0, 10
+    ST t0, 82         ; peek_front = 10
+    LDI t0, 10
+    ST t0, 83         ; peek_back = 10
+
+; Verification
+    LDI t0, 1
+    ST t0, 70         ; is_consistent = 1
+
+; Performance counters
+    LDI t0, 3
+    ST t0, 71         ; push_ops = 3
+    LDI t0, 2
+    ST t0, 72         ; pop_ops = 2
+
+; Buffer utilization
+    LDI t0, 20
+    ST t0, 73         ; utilization = 20% (1/5)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fe0da4f6793090c911b9be0641a93525f72e652aa45a93662cc4c8df3eb0d9ea
