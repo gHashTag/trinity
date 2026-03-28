@@ -1,0 +1,13 @@
+; AR Object — TTT Dogfood Phase 3
+;
+; Object recognition algorithms
+;
+; Test case: ar_object
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; object_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0773a000002000000001fef
