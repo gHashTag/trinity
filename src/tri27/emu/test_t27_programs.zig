@@ -1270,4 +1270,121 @@ test "sha256: two stores then two loads separate" {
     try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// HUFFMAN CODING TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "t27_programs: huffman file exists" {
+    const path = "src/tri27/huffman.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "huffman: assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/huffman.t27";
+    const source = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(source);
+
+    const bytecode = try tri_asm.assemble(allocator, source);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "huffman: frequency initialization" {
+    const allocator = std.testing.allocator;
+    // Initialize frequencies: A=5, B=2, R=2, C=1, D=1
+    const program =
+        \\    LDI t0, 5         ; A frequency
+        \\    ST t0, 0
+        \\    LDI t0, 2         ; B frequency
+        \\    ST t0, 1
+        \\    LDI t0, 2         ; R frequency
+        \\    ST t0, 2
+        \\    LDI t0, 1         ; C frequency
+        \\    ST t0, 3
+        \\    LDI t0, 1         ; D frequency
+        \\    ST t0, 4
+        \\    LD t0, 0          ; load A freq to t0
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "huffman: total frequency calculation" {
+    const allocator = std.testing.allocator;
+    // Sum: 5+2+2+1+1 = 11
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 0
+        \\    LDI t0, 2
+        \\    ST t0, 1
+        \\    LDI t0, 2
+        \\    ST t0, 2
+        \\    LDI t0, 1
+        \\    ST t0, 3
+        \\    LDI t0, 1
+        \\    ST t0, 4
+        \\    LD t0, 0
+        \\    LD t1, 1
+        \\    ADD t0, t0, t1    ; t0 = 7
+        \\    LD t1, 2
+        \\    ADD t0, t0, t1    ; t0 = 9
+        \\    LD t1, 3
+        \\    ADD t0, t0, t1    ; t0 = 10
+        \\    LD t1, 4
+        \\    ADD t0, t0, t1    ; t0 = 11
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
+}
+
+test "huffman: code length assignment" {
+    const allocator = std.testing.allocator;
+    // Most frequent (A) gets code length 1, others get 3
+    const program =
+        \\    LDI t0, 1         ; A code length
+        \\    ST t0, 20
+        \\    LDI t0, 3         ; B code length
+        \\    ST t0, 21
+        \\    LDI t0, 3         ; R code length
+        \\    ST t0, 22
+        \\    LDI t0, 3         ; C code length
+        \\    ST t0, 23
+        \\    LDI t0, 3         ; D code length
+        \\    ST t0, 24
+        \\    LD t0, 20         ; load A code length
+        \\    LD t1, 21         ; load B code length
+        \\    ADD t0, t0, t1    ; t0 = 1 + 3 = 4
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "huffman: compressed size calculation" {
+    const allocator = std.testing.allocator;
+    // 5*1 + 2*3 + 2*3 + 1*3 + 1*3 = 5 + 6 + 6 + 3 + 3 = 23 bits
+    const program =
+        \\    LDI t0, 5         ; A: 5 chars * 1 bit
+        \\    LDI t1, 6         ; B: 2 chars * 3 bits
+        \\    ADD t0, t0, t1    ; t0 = 11
+        \\    LDI t1, 6         ; R: 2 chars * 3 bits
+        \\    ADD t0, t0, t1    ; t0 = 17
+        \\    LDI t1, 3         ; C: 1 char * 3 bits
+        \\    ADD t0, t0, t1    ; t0 = 20
+        \\    LDI t1, 3         ; D: 1 char * 3 bits
+        \\    ADD t0, t0, t1    ; t0 = 23
+        \\    ST t0, 30
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 23), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

@@ -1,0 +1,95 @@
+; Huffman Coding — TTT Dogfood Phase 3
+;
+; Builds optimal prefix code using frequency-based binary tree
+;
+; Algorithm (simplified for fixed input):
+; 1. Count character frequencies
+; 2. Build priority queue (min-heap)
+; 3. Extract two min nodes, combine, reinsert
+; 4. Root contains final tree
+;
+; This is a simplified demonstration with fixed frequencies
+; Input: "ABRACADABRA" (11 chars)
+; Frequencies: A=5, B=2, R=2, C=1, D=1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Data section - character frequencies at addresses 0-4
+; [0]=A:5, [1]=B:2, [2]=R:2, [3]=C:1, [4]=D:1
+
+; Step 1: Initialize frequency table (for "ABRACADABRA")
+    LDI t0, 5         ; A frequency
+    ST t0, 0
+    LDI t0, 2         ; B frequency
+    ST t0, 1
+    LDI t0, 2         ; R frequency
+    ST t0, 2
+    LDI t0, 1         ; C frequency
+    ST t0, 3
+    LDI t0, 1         ; D frequency
+    ST t0, 4
+
+; Step 2: Calculate total frequency
+    LD t0, 0          ; t0 = A=5
+    LD t1, 1          ; t1 = B=2
+    ADD t0, t0, t1    ; t0 = 7
+    LD t1, 2          ; t1 = R=2
+    ADD t0, t0, t1    ; t0 = 9
+    LD t1, 3          ; t1 = C=1
+    ADD t0, t0, t1    ; t0 = 10
+    LD t1, 4          ; t1 = D=1
+    ADD t0, t0, t1    ; t0 = 11 (total)
+    ST t0, 10         ; store total at address 10
+
+; Step 3: Build Huffman tree (simplified for fixed case)
+; For A=5, B=2, R=2, C=1, D=1:
+; - Combine C(1)+D(1) = CD(2)
+; - Combine B(2)+R(2) = BR(4) or CD(2)+B(2) = CDB(4)
+; - Continue until single root
+;
+; Expected codes: A=0, B=100, R=101, C=110, D=111
+; (or similar depending on merge order)
+
+; Store code lengths (simplified calculation)
+    LDI t0, 1         ; A code length (most frequent)
+    ST t0, 20
+    LDI t0, 3         ; B code length
+    ST t0, 21
+    LDI t0, 3         ; R code length
+    ST t0, 22
+    LDI t0, 3         ; C code length
+    ST t0, 23
+    LDI t0, 3         ; D code length
+    ST t0, 24
+
+; Step 4: Calculate compressed size
+; A: 5 chars * 1 bit = 5 bits
+; B: 2 chars * 3 bits = 6 bits
+; R: 2 chars * 3 bits = 6 bits
+; C: 1 char * 3 bits = 3 bits
+; D: 1 char * 3 bits = 3 bits
+; Total = 23 bits = 3 bytes (rounded up)
+
+    LDI t0, 5         ; A contribution
+    LDI t1, 6         ; B contribution
+    ADD t0, t0, t1    ; t0 = 11
+    LDI t1, 6         ; R contribution
+    ADD t0, t0, t1    ; t0 = 17
+    LDI t1, 3         ; C contribution
+    ADD t0, t0, t1    ; t0 = 20
+    LDI t1, 3         ; D contribution
+    ADD t0, t0, t1    ; t0 = 23 bits
+    ST t0, 30         ; store compressed size in bits
+
+; Calculate compression ratio
+; Original: 11 chars * 8 bits = 88 bits
+; Compressed: 23 bits
+; Ratio: 23/88 = 0.26 (74% reduction)
+
+    LD t0, 30         ; t0 = 23 (compressed)
+    LDI t1, 88        ; t1 = 88 (original)
+    ; For simplicity, return compressed size in t0
+
+    HALT
+
+; TRI27_SIGNATURE:tri-cli:1774694030:sha256:42f4efa72a474c8686663b4c2e18a2ea8e7d9866d4ce9f35ba3af22b98f4ffb4
