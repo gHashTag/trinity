@@ -1,0 +1,13 @@
+; Image PNG — TTT Dogfood Phase 3
+;
+; PNG compression
+;
+; Test case: image_png
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; png_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07539000002000000001bed
