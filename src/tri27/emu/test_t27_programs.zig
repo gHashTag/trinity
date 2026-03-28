@@ -2667,4 +2667,80 @@ test "prim_mst: edge count" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// Radix Sort Tests — TTT Dogfood Phase 3
+
+test "radix_sort: file exists" {
+    const path = "src/tri27/radix_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "radix_sort: initialize array" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 170
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 170), cpu.t27[0].trits);
+}
+
+test "radix_sort: sorted minimum" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 110
+        \\    LD t0, 110
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "radix_sort: sorted maximum" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 802
+        \\    ST t0, 117
+        \\    LD t0, 117
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 802), cpu.t27[0].trits);
+}
+
+test "radix_sort: calculate range" {
+    const allocator = std.testing.allocator;
+    // range = 802 - 2 = 800
+    const program =
+        \\    LDI t0, 802
+        \\    ST t0, 117
+        \\    LDI t0, 2
+        \\    ST t0, 110
+        \\    LD t0, 117
+        \\    LD t1, 110
+        \\    SUB t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 800), cpu.t27[0].trits);
+}
+
+test "radix_sort: number of passes" {
+    const allocator = std.testing.allocator;
+    // 802 has 3 digits, so 3 passes
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

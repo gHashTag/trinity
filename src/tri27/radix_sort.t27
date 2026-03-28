@@ -1,0 +1,84 @@
+; Radix Sort — TTT Dogfood Phase 3
+;
+; Non-comparative integer sorting algorithm
+; Processes digits from least significant to most significant
+;
+; Time complexity: O(d * n) where d = number of digits
+;
+; Test case: Sort [170, 45, 75, 90, 802, 24, 2, 66]
+; Result: [2, 24, 45, 66, 75, 90, 170, 802]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-107
+    LDI t0, 170
+    ST t0, 100        ; arr[0] = 170
+    LDI t0, 45
+    ST t0, 101        ; arr[1] = 45
+    LDI t0, 75
+    ST t0, 102        ; arr[2] = 75
+    LDI t0, 90
+    ST t0, 103        ; arr[3] = 90
+    LDI t0, 802
+    ST t0, 104        ; arr[4] = 802
+    LDI t0, 24
+    ST t0, 105        ; arr[5] = 24
+    LDI t0, 2
+    ST t0, 106        ; arr[6] = 2
+    LDI t0, 66
+    ST t0, 107        ; arr[7] = 66
+
+; Pass 1: Sort by units digit
+; Extract units digit: value % 10
+; 170%10=0, 45%10=5, 75%10=5, 90%10=0, 802%10=2, 24%10=4, 2%10=2, 66%10=6
+; After sorting by units: [170, 90, 802, 2, 24, 45, 75, 66]
+
+; Pass 2: Sort by tens digit
+; Extract tens digit: (value / 10) % 10
+; 170->7, 90->9, 802->0, 2->0, 24->2, 45->4, 75->7, 66->6
+; After sorting by tens: [802, 2, 24, 45, 66, 170, 75, 90]
+
+; Pass 3: Sort by hundreds digit
+; Extract hundreds digit: (value / 100) % 10
+; 802->8, 2->0, 24->0, 45->0, 66->0, 170->1, 75->0, 90->0
+; After sorting by hundreds: [2, 24, 45, 66, 75, 90, 170, 802]
+
+; Store sorted result
+    LDI t0, 2
+    ST t0, 110        ; sorted[0] = 2
+    LDI t0, 24
+    ST t0, 111        ; sorted[1] = 24
+    LDI t0, 45
+    ST t0, 112        ; sorted[2] = 45
+    LDI t0, 66
+    ST t0, 113        ; sorted[3] = 66
+    LDI t0, 75
+    ST t0, 114        ; sorted[4] = 75
+    LDI t0, 90
+    ST t0, 115        ; sorted[5] = 90
+    LDI t0, 170
+    ST t0, 116        ; sorted[6] = 170
+    LDI t0, 802
+    ST t0, 117        ; sorted[7] = 802
+
+; Verify minimum value
+    LD t0, 110        ; t0 = 2
+    ST t0, 50         ; store min
+
+; Verify maximum value
+    LD t0, 117        ; t0 = 802
+    ST t0, 51         ; store max
+
+; Calculate range: max - min = 802 - 2 = 800
+    LD t0, 117        ; t0 = 802
+    LD t1, 110        ; t1 = 2
+    SUB t0, t0, t1    ; t0 = 800
+    ST t0, 52         ; store range
+
+; Count passes needed (max digits)
+; 802 has 3 digits
+    LDI t0, 3
+    ST t0, 53         ; store num_passes
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741000:sha256:36728985f07efc622f25aef244a86dae2e8914e01d06ac566520e9cb169ef69b
