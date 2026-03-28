@@ -155,10 +155,6 @@ fn runMetaCommand(allocator: Allocator, args: []const []const u8) !void {
         const filter_prefix = track_filter[0..filter_prefix_len];
         const matches_shorthand = track_filter.len < 7 and std.mem.eql(u8, filter_prefix, track.id[0..filter_prefix_len]);
 
-        // Debug output
-        print("[DEBUG] filter='{s}', track.id='{s}', filter_prefix='{s}', prefix_len={d}, matches_shorthand={}\n",
-              .{track_filter, track.id, filter_prefix, filter_prefix_len, matches_shorthand});
-
         // Check filter match (exact match only, no substrings)
         const filter_matches = std.mem.eql(u8, track_filter, "all") or
             matches_shorthand or

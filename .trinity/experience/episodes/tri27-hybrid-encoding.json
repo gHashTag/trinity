@@ -68,7 +68,16 @@
     "Bit field overlap is subtle — exhaustive testing needed",
     "ISA documentation must match implementation exactly",
     "Hybrid encoding preserves functionality for both instruction types",
-    "15-bit immediate range sufficient for most use cases"
+    "15-bit immediate range sufficient for most use cases",
+    "BUNDLE3 is NOT an immediate instruction — it's 3-operand with special encoding (src1=4bits, src2=5bits, v3=5bits)"
+  ],
+
+  "related_fixes": [
+    {
+      "issue": 470,
+      "description": "Property-based fuzzer discovered BUNDLE3 was incorrectly classified as immediate",
+      "fix": "Removed BUNDLE3 from has_imm lists, added proper src2 extraction"
+    }
   ],
 
   "metadata": {

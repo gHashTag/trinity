@@ -165,6 +165,14 @@ This eliminates the overlap while maintaining full register range for 3-operand 
 - **BUNDLE2**: If either operand is zero, return other; else (a+b)/2
 - **BUNDLE3**: Returns first operand if two match; otherwise returns first
 
+**BUNDLE3 Special Encoding:**
+BUNDLE3 uses a special 3-operand encoding (not immediate):
+- src1: bits 13-16 (4 bits, range 0-15)
+- src2: bits 18-22 (5 bits, range 0-26)
+- v3 (third source): bits 23-27 (5 bits, range 0-26, stored in `cond` field)
+
+This encoding allows BUNDLE3 to access three source operands within 32 bits.
+
 ### 6. Sacred Constant Operations (0x80-0x92)
 
 | Opcode | Value | Description | Cycles |
