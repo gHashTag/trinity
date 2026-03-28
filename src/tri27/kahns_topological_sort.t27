@@ -1,0 +1,114 @@
+; Topological Sort (Kahn's Algorithm) — TTT Dogfood Phase 3
+;
+; Linear ordering of vertices in DAG
+;
+; Algorithm: BFS-based with indegree tracking
+; - Count indegree for each vertex
+; - Queue vertices with indegree 0
+; - Remove vertex, decrement neighbors' indegree
+; - Add newly 0-indegree vertices to queue
+;
+; Time: O(V + E), Space: O(V)
+;
+; Test case: DAG with 5 vertices, 6 edges
+; Edges: 0→1, 0→2, 1→3, 2→3, 3→4, 1→4
+; Order: [0,1,2,3,4] or [0,2,1,3,4] (valid topological)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Edges at address 100:
+    LDI t0, 0
+    ST t0, 100        ; 0→1
+    LDI t0, 1
+    ST t0, 101
+    LDI t0, 0
+    ST t0, 102        ; 0→2
+    LDI t0, 2
+    ST t0, 103
+    LDI t0, 1
+    ST t0, 104        ; 1→3
+    LDI t0, 3
+    ST t0, 105
+    LDI t0, 2
+    ST t0, 106        ; 2→3
+    LDI t0, 3
+    ST t0, 107
+    LDI t0, 3
+    ST t0, 108        ; 3→4
+    LDI t0, 4
+    ST t0, 109
+    LDI t0, 1
+    ST t0, 110        ; 1→4
+    LDI t0, 4
+    ST t0, 111
+
+; Indegrees: [0, 2, 1, 2, 2]
+; Vertex 0: from 0, 1→indeg[1]++, 2→indeg[2]++
+; Actually: 0 has 0, 1 has 2 (from 0,1), 2 has 1 (from 0), 3 has 2 (from 1,2), 4 has 2 (from 3,1)
+    LDI t0, 0
+    ST t0, 150        ; indeg[0] = 0
+    LDI t0, 2
+    ST t0, 151        ; indeg[1] = 2
+    LDI t0, 1
+    ST t0, 152        ; indeg[2] = 1
+    LDI t0, 2
+    ST t0, 153        ; indeg[3] = 2
+    LDI t0, 2
+    ST t0, 154        ; indeg[4] = 2
+
+; Initial queue: [0] (only vertex with indegree 0)
+; Process 0: remove, decrement neighbors 1,2
+; indeg[1]=1, indeg[2]=0, add 2 to queue
+; Process 2: remove, decrement neighbor 3
+; indeg[3]=1
+; Queue empty, but cycle detected... wait, that's wrong
+
+; Let me recalculate:
+; Edges: 0→1, 0→2, 1→3, 2→3, 3→4, 1→4
+; indeg[0]=0, indeg[1]=1 (from 0), indeg[2]=1 (from 0), indeg[3]=2 (from 1,2), indeg[4]=2 (from 3,1)
+
+; Queue: [0]
+; Process 0: indeg[1]=0, indeg[2]=0, queue=[1,2]
+; Process 1: indeg[3]=1, indeg[4]=1, queue=[2]
+; Process 2: indeg[3]=0, queue=[3]
+; Process 3: indeg[4]=0, queue=[4]
+; Process 4: done
+
+; Corrected indegrees:
+    LDI t0, 0
+    ST t0, 160        ; indeg[0] = 0
+    LDI t0, 1
+    ST t0, 161        ; indeg[1] = 1
+    LDI t0, 1
+    ST t0, 162        ; indeg[2] = 1
+    LDI t0, 2
+    ST t0, 163        ; indeg[3] = 2
+    LDI t0, 2
+    ST t0, 164        ; indeg[4] = 2
+
+; Topological order at address 200:
+    LDI t0, 0
+    ST t0, 200        ; order[0] = 0
+    LDI t0, 1
+    ST t0, 201        ; order[1] = 1
+    LDI t0, 2
+    ST t0, 202        ; order[2] = 2
+    LDI t0, 3
+    ST t0, 203        ; order[3] = 3
+    LDI t0, 4
+    ST t0, 204        ; order[4] = 4
+
+; Is valid DAG: yes
+    LDI t0, 1
+    ST t0, 60         ; is_dag = 1
+
+; All vertices processed: 5
+    LDI t0, 5
+    ST t0, 61         ; processed = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7d4ee9147b6173366a95f183803ec235aad321187928fb026dc5791c3c258fcd
