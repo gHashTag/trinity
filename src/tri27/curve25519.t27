@@ -1,6 +1,6 @@
 ; Curve25519 — TTT Dogfood Phase 3
 ;
-| Elliptic curve
+; Elliptic curve
 ;
 ; Test case: curve25519
 ;

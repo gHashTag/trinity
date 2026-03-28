@@ -1,6 +1,6 @@
 ; SHAKE128 — TTT Dogfood Phase 3
 ;
-| XOF hash
+; XOF hash
 ;
 ; Test case: shake128
 ;

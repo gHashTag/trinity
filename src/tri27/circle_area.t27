@@ -1,6 +1,6 @@
 ; Circle Area — TTT Dogfood Phase 3
 ;
-| pi * r^2
+; pi * r^2
 ;
 ; Test case: circle_area
 ;
