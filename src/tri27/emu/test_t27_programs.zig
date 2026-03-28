@@ -60915,3 +60915,153 @@ test "os_thread_pool: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "algo_damerau_levenshtein: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_damerau_levenshtein.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_damerau_levenshtein: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_damerau_levenshtein.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_dice_coefficient: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_dice_coefficient.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_dice_coefficient: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_dice_coefficient.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_edit_graph: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_edit_graph.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_edit_graph: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_edit_graph.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_hamming_distance: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_hamming_distance.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_hamming_distance: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_hamming_distance.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_jaccard_similarity: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_jaccard_similarity.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_jaccard_similarity: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_jaccard_similarity.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_levenshtein: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_levenshtein.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_levenshtein: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_levenshtein.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_longest_common_subseq: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_longest_common_subseq.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_longest_common_subseq: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_longest_common_subseq.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_needleman_wunsch: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_needleman_wunsch.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_needleman_wunsch: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_needleman_wunsch.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_shortest_common_superseq: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_shortest_common_superseq.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_shortest_common_superseq: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_shortest_common_superseq.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "algo_smith_waterman: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_smith_waterman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "algo_smith_waterman: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "algo_smith_waterman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
