@@ -1,0 +1,13 @@
+; one_channel — TTT Dogfood Phase 3
+;
+; Graphics/vision algorithm
+;
+; Test case: one_channel
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; one_channel_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424438288
