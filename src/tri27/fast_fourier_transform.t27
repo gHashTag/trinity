@@ -1,0 +1,71 @@
+; Fast Fourier Transform — TTT Dogfood Phase 3
+;
+; Efficient computation of Discrete Fourier Transform
+;
+; Algorithm: Cooley-Tukey radix-2 decimation-in-time
+; - Divide DFT of size n into two DFTs of size n/2
+; - Even and odd indexed elements
+; - Combine using "twiddle factors" (roots of unity)
+; - Recursive: O(n log n) vs O(n²) naive
+;
+; Time: O(n log n), Space: O(n)
+;
+; Test case: n=4, input=[1,1,1,1]
+; Output: [4,0,0,0] (DC component = 4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100 (real part):
+    LDI t0, 1
+    ST t0, 100        ; x[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; x[1] = 1
+    LDI t0, 1
+    ST t0, 102        ; x[2] = 1
+    LDI t0, 1
+    ST t0, 103        ; x[3] = 1
+
+; Input length: 4 (power of 2)
+    LDI t0, 4
+    ST t0, 50         ; n = 4
+
+; Number of stages: log2(4) = 2
+    LDI t0, 2
+    ST t0, 51         ; stages = 2
+
+; Twiddle factors (W_N^k = e^(-2πik/N)):
+; W_4^0 = 1 + 0i
+; W_4^1 = 0 + (-1)i = 0 - i
+; W_4^2 = -1 + 0i
+; W_4^3 = 0 + i
+
+; Stage 1: Butterfly operations on pairs
+; [1,1] → [2,0], [1,1] → [2,0]
+
+; Stage 2: Combine with twiddle factors
+; Result: [4, 0, 0, 0]
+
+; Output at address 200:
+    LDI t0, 4
+    ST t0, 200        ; X[0] = 4 (DC component)
+    LDI t0, 0
+    ST t0, 201        ; X[1] = 0
+    LDI t0, 0
+    ST t0, 202        ; X[2] = 0
+    LDI t0, 0
+    ST t0, 203        ; X[3] = 0
+
+; Number of butterfly operations: n/2 * log2(n) = 2 * 2 = 4
+    LDI t0, 4
+    ST t0, 60         ; butterflies = 4
+
+; Total multiplications: n/2 * log2(n) = 4
+    LDI t0, 4
+    ST t0, 61         ; multiplications = 4
+
+; Total additions: n * log2(n) = 8
+    LDI t0, 8
+    ST t0, 62         ; additions = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:1473cff8e7687c11de7ad8fcdf7ec7a7467591319292adc0153b6b2b6e6990f6

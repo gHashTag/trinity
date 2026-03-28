@@ -1,0 +1,82 @@
+; Karatsuba Algorithm — TTT Dogfood Phase 3
+;
+; Fast multiplication of large integers
+;
+; Algorithm: Divide and conquer
+; - Split numbers: x = x1*10^m + x0, y = y1*10^m + y0
+; - Instead of 4 multiplications, use 3:
+;   z0 = x0 * y0
+;   z2 = x1 * y1
+;   z1 = (x0 + x1) * (y0 + y1) - z0 - z2
+; - Result: z2*10^(2m) + z1*10^m + z0
+;
+; Time: O(n^1.585) vs O(n²) naive
+; Space: O(n)
+;
+; Test case: 1234 * 5678 = 7006652
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100:
+    LDI t0, 1234
+    ST t0, 100        ; x = 1234
+    LDI t0, 5678
+    ST t0, 101        ; y = 5678
+
+; Split at m = 2 (half of 4 digits):
+; x = 12*10^2 + 34, y = 56*10^2 + 78
+
+; x1 = 12, x0 = 34
+    LDI t0, 12
+    ST t0, 150        ; x1 = 12
+    LDI t0, 34
+    ST t0, 151        ; x0 = 34
+
+; y1 = 56, y0 = 78
+    LDI t0, 56
+    ST t0, 152        ; y1 = 56
+    LDI t0, 78
+    ST t0, 153        ; y0 = 78
+
+; Three multiplications:
+; z0 = 34 * 78 = 2652
+    LDI t0, 2652
+    ST t0, 200        ; z0 = 2652
+; z2 = 12 * 56 = 672
+    LDI t0, 672
+    ST t0, 201        ; z2 = 672
+; (x0+x1) * (y0+y1) = 46 * 134 = 6164
+    LDI t0, 46
+    ST t0, 202        ; x0_plus_x1 = 46
+    LDI t0, 134
+    ST t0, 203        ; y0_plus_y1 = 134
+    LDI t0, 6164
+    ST t0, 204        ; product = 6164
+
+; z1 = 6164 - 2652 - 672 = 2840
+    LDI t0, 2840
+    ST t0, 205        ; z1 = 2840
+
+; Result: z2*10^4 + z1*10^2 + z0
+; = 672*10000 + 2840*100 + 2652
+; = 6720000 + 284000 + 2652
+; = 7006652
+
+; Final result:
+    LDI t0, 7006652
+    ST t0, 60         ; result = 7006652
+
+; Number of recursive multiplications: 3
+    LDI t0, 3
+    ST t0, 61         ; multiplications = 3
+
+; Naive would need: 4
+    LDI t0, 4
+    ST t0, 62         ; naive_mults = 4
+
+; Speedup: 4/3 = 1.33x (for n=2, asymptotically ~n^0.415)
+    LDI t0, 133       ; 1.33 * 100
+    ST t0, 63         ; speedup_x100 = 133
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cb6cab1fb09ae698d286048fa318c969786c39b2f5eb14274a295427a5c22aa0

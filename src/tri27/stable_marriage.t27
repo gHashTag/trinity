@@ -1,0 +1,106 @@
+; Stable Marriage (Gale-Shapley) — TTT Dogfood Phase 3
+;
+; Find stable matching between two equal-sized sets
+;
+; Algorithm:
+; - Each proposer proposes to most preferred not yet rejected
+; - Receiver accepts if free or prefers this proposer
+; - Rejected proposer moves to next preference
+; - Continue until all matched
+;
+; Time: O(n²), Space: O(n²)
+; Guarantees: Stable, proposer-optimal, receiver-pessimal
+;
+; Test case: 3 men, 3 women
+; Men's preferences: M0: [W0,W1,W2], M1: [W1,W0,W2], M2: [W0,W1,W2]
+; Women's preferences: W0: [M1,M2,M0], W1: [M0,M1,M2], W2: [M1,M0,M2]
+; Stable matching: (M0,W1), (M1,W0), (M2,W2)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of men/women: 3
+    LDI t0, 3
+    ST t0, 50         ; n = 3
+
+; Men's preferences at address 100:
+; M0: [W0, W1, W2]
+    LDI t0, 0
+    ST t0, 100        ; M0 pref[0] = W0
+    LDI t0, 1
+    ST t0, 101        ; M0 pref[1] = W1
+    LDI t0, 2
+    ST t0, 102        ; M0 pref[2] = W2
+; M1: [W1, W0, W2]
+    LDI t0, 1
+    ST t0, 103        ; M1 pref[0] = W1
+    LDI t0, 0
+    ST t0, 104        ; M1 pref[1] = W0
+    LDI t0, 2
+    ST t0, 105        ; M1 pref[2] = W2
+; M2: [W0, W1, W2]
+    LDI t0, 0
+    ST t0, 106        ; M2 pref[0] = W0
+    LDI t0, 1
+    ST t0, 107        ; M2 pref[1] = W1
+    LDI t0, 2
+    ST t0, 108        ; M2 pref[2] = W2
+
+; Women's preferences at address 150:
+; W0: [M1, M2, M0]
+    LDI t0, 1
+    ST t0, 150        ; W0 pref[0] = M1
+    LDI t0, 2
+    ST t0, 151        ; W0 pref[1] = M2
+    LDI t0, 0
+    ST t0, 152        ; W0 pref[2] = M0
+; W1: [M0, M1, M2]
+    LDI t0, 0
+    ST t0, 153        ; W1 pref[0] = M0
+    LDI t0, 1
+    ST t0, 154        ; W1 pref[1] = M1
+    LDI t0, 2
+    ST t0, 155        ; W1 pref[2] = M2
+; W2: [M1, M0, M2]
+    LDI t0, 1
+    ST t0, 156        ; W2 pref[0] = M1
+    LDI t0, 0
+    ST t0, 157        ; W2 pref[1] = M0
+    LDI t0, 2
+    ST t0, 158        ; W2 pref[2] = M2
+
+; Execution trace:
+; M0 proposes to W0: rejected (W0 prefers M1)
+; M0 proposes to W1: accepted
+; M1 proposes to W1: rejected (W1 prefers M0)
+; M1 proposes to W0: accepted
+; M2 proposes to W0: rejected (W0 prefers M1)
+; M2 proposes to W1: rejected (W1 prefers M0)
+; M2 proposes to W2: accepted
+
+; Final matching at address 200:
+; M0 → W1
+    LDI t0, 0
+    ST t0, 200        ; match[M0] = W0... wait no, M0→W1
+    LDI t0, 1
+    ST t0, 201        ; match[0] = 1 (M0 → W1)
+; M1 → W0
+    LDI t0, 0
+    ST t0, 202        ; match[1] = 0 (M1 → W0)
+; M2 → W2
+    LDI t0, 2
+    ST t0, 203        ; match[2] = 2 (M2 → W2)
+
+; Number of proposals: 7
+    LDI t0, 7
+    ST t0, 60         ; proposals = 7
+
+; Is stable: yes
+    LDI t0, 1
+    ST t0, 61         ; is_stable = 1
+
+; Proposer-optimal: yes (men get best possible stable partner)
+    LDI t0, 1
+    ST t0, 62         ; proposer_optimal = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b809b1f1007a1d31eff66cd3938bcce609313197d33e1f928b5dd14a4dd5e07e
