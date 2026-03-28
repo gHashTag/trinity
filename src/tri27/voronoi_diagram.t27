@@ -105,4 +105,4 @@
     ST t0, 61         ; num_vertices = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:745f55d9da51ecb7fd49b25af83ad4787ba98dc8082247801dfdd2bc2e8ad1a9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fa81115438c2ccec5cbdd990bfcf14943b9e3f47ccf1b95366c741a55c587462
