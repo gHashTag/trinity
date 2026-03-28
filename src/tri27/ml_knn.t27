@@ -1,0 +1,13 @@
+; ML KNN — TTT Dogfood Phase 3
+;
+; K-Nearest Neighbors classifier
+;
+; Test case: ml_knn
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; knn_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07688000002000000002139

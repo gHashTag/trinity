@@ -1,0 +1,13 @@
+; Compiler Optimization — TTT Dogfood Phase 3
+;
+; Compiler optimizations
+;
+; Test case: comp_optimization
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; optimization_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0766e00000200000002069

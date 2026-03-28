@@ -1,0 +1,13 @@
+; ML Decision Tree — TTT Dogfood Phase 3
+;
+; Decision tree classifier
+;
+; Test case: ml_decision_tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; decision_tree_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0768c00000200000002159

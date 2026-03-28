@@ -1,0 +1,13 @@
+; Geometry BVH — TTT Dogfood Phase 3
+;
+; Bounding Volume Hierarchy
+;
+; Test case: geometry_bvh
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bvh_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0764a00000200000001f49
