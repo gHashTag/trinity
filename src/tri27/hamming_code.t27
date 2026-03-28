@@ -17,7 +17,7 @@
     LDI t0, 0
     ST t0, 63         ; p3 = 0
 
-    LDI t0, 0b1010101 ; 0x55
+    LDI t0, 85        ; 0b1010101 = 0x55
     ST t0, 64         ; encoded = 1010101
 
     HALT
