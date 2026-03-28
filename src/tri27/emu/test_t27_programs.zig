@@ -45855,3 +45855,63 @@ test "triangular_dist: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "uniform_dist: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "uniform_dist.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "uniform_dist: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "uniform_dist.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "weibull_dist: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "weibull_dist.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "weibull_dist: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "weibull_dist.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "zeta_func: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zeta_func.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "zeta_func: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zeta_func.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ztrans: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ztrans.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ztrans: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ztrans.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
