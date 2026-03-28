@@ -1,6 +1,6 @@
 ; String Reverse Find — TTT Dogfood Phase 3
 ;
-| Search from end
+; Search from end
 ;
 ; Test case: str_rfind
 ;

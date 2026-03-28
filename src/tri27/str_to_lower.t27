@@ -1,6 +1,6 @@
 ; String to Lower — TTT Dogfood Phase 3
 ;
-| Lowercase convert
+; Lowercase convert
 ;
 ; Test case: str_to_lower
 ;

@@ -1,6 +1,6 @@
 ; String Find — TTT Dogfood Phase 3
 ;
-| Search substring
+; Search substring
 ;
 ; Test case: str_find
 ;

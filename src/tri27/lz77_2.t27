@@ -1,6 +1,6 @@
 ; LZ77 V2 — TTT Dogfood Phase 3
 ;
-| Sliding window alt
+; Sliding window alt
 ;
 ; Test case: lz77_2
 ;

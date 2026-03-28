@@ -1,6 +1,6 @@
 ; String Join — TTT Dogfood Phase 3
 ;
-| Concat with sep
+; Concat with sep
 ;
 ; Test case: str_join
 ;

@@ -1,6 +1,6 @@
 ; String to Upper — TTT Dogfood Phase 3
 ;
-| Uppercase convert
+; Uppercase convert
 ;
 ; Test case: str_to_upper
 ;

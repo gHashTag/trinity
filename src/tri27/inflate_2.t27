@@ -1,6 +1,6 @@
 ; Inflate V2 — TTT Dogfood Phase 3
 ;
-| Deflate decompress alt
+; Deflate decompress alt
 ;
 ; Test case: inflate_2
 ;

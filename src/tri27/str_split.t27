@@ -1,6 +1,6 @@
 ; String Split — TTT Dogfood Phase 3
 ;
-| Divide by delim
+; Divide by delim
 ;
 ; Test case: str_split
 ;

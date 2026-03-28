@@ -1,6 +1,6 @@
 ; String Trim — TTT Dogfood Phase 3
 ;
-| Remove whitespace
+; Remove whitespace
 ;
 ; Test case: str_trim
 ;

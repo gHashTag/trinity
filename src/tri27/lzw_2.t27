@@ -1,6 +1,6 @@
 ; LZW V2 — TTT Dogfood Phase 3
 ;
-| Lempel-Ziv-Welch alt
+; Lempel-Ziv-Welch alt
 ;
 ; Test case: lzw_2
 ;
