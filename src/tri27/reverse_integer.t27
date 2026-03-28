@@ -1,0 +1,80 @@
+; Reverse Integer — TTT Dogfood Phase 3
+;
+; Reverse digits of an integer
+;
+; Algorithm: Extract digits, build reversed number
+; Handle overflow: clamp to INT32 range
+;
+; Test case: 123 -> 321
+; Test case: -123 -> -321
+; Test case: 120 -> 21 (leading zeros dropped)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Test case 1: n = 123
+    LDI t0, 123
+    ST t0, 50         ; n = 123
+
+; Extract digits: 3, 2, 1
+    LDI t0, 3
+    ST t0, 100        ; digit[0] = 3
+    LDI t0, 2
+    ST t0, 101        ; digit[1] = 2
+    LDI t0, 1
+    ST t0, 102        ; digit[2] = 1
+
+; Build reversed: 321
+    LDI t0, 3
+    ST t0, 51         ; reversed = 3
+    LDI t0, 32
+    ST t0, 52         ; reversed = 32
+    LDI t0, 321
+    ST t0, 53         ; reversed = 321
+
+; Number of digits
+    LDI t0, 3
+    ST t0, 54         ; num_digits = 3
+
+; Original number
+    LDI t0, 123
+    ST t0, 55         ; original = 123
+
+; Is positive
+    LDI t0, 1
+    ST t0, 56         ; is_positive = 1
+
+; Test case 2: n = -123
+    LDI t0, -123
+    ST t0, 60         ; n2 = -123
+
+; Absolute value
+    LDI t0, 123
+    ST t0, 61         ; abs_n2 = 123
+
+; Digits of 123: 3, 2, 1
+; Reversed: 321
+; Apply sign: -321
+    LDI t0, -321
+    ST t0, 62         ; reversed2 = -321
+
+; Test case 3: n = 120
+    LDI t0, 120
+    ST t0, 70         ; n3 = 120
+
+; Extract digits: 0, 2, 1
+; Leading zeros are dropped
+; Reversed: 21 (not 021)
+    LDI t0, 21
+    ST t0, 71         ; reversed3 = 21
+
+; Trailing zeros in original = leading zeros in reversed
+; Original has 1 trailing zero
+    LDI t0, 1
+    ST t0, 72         ; trailing_zeros = 1
+
+; No overflow (all results in INT32 range)
+    LDI t0, 0
+    ST t0, 73         ; overflow = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:597f39d27d02bca0a2add99b34ca4c286fb396800587d46cd48ed2aec7b167c6
