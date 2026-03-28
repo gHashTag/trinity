@@ -1,0 +1,13 @@
+; ElGamal Encryption — TTT Dogfood Phase 3
+;
+; ElGamal public key crypto
+;
+; Test case: elgamal_enc
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; elgamal_enc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07199f001917

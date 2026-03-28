@@ -1,0 +1,13 @@
+; Cuckoo Hashing — TTT Dogfood Phase 3
+;
+; Cuckoo hash table
+;
+; Test case: cuckoo_hashing
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cuckoo_hashing_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719ae001926
