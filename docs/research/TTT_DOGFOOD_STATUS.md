@@ -28,11 +28,11 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Metric | Count |
 |--------|-------|
-| Total .t27 files | 145 |
-| Files with tests | 145 |
+| Total .t27 files | 156 |
+| Files with tests | 156 |
 | Test coverage | 100% |
-| Total tests | 1109 |
-| Tests passing | 1109 (100%) |
+| Total tests | 1175 |
+| Tests passing | 1175 (100%) |
 
 ### Algorithm Categories Implemented in .t27
 
@@ -40,18 +40,20 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 |----------|-------|-------|
 | Sorting | 12 | bubble_sort, bucket_sort, cycle_sort, heap_sort, insertion_sort, merge_sort, quick_sort, quicksort, radix_sort, selection_sort, shell_sort, stack_sort, tim_sort |
 | Search | 8 | astar_search, binary_search, bfs, breadth_first_search, depth_first_search, dfs, string_search, substring_search |
-| Graph | 11 | astar_search, bellman_ford, best_time_stock, bipartite_check, bfs, dfs, dijkstra, floyd_warshall, minimum_spanning_tree, strongly_connected_components, topological_sort, topological_sort_dfs |
+| Graph | 15 | astar_search, bellman_ford, best_time_stock, bipartite_check, bipartite_matching, bfs, dfs, dijkstra, floyd_warshall, minimum_spanning_tree, network_flow, strongly_connected_components, topological_sort, topological_sort_dfs |
 | Trees | 9 | avl_tree, b_tree, binary_tree, binary_tree_traversal, red_black_tree, segment_tree, splay_tree, trie, trie_prefix_tree |
 | String | 20 | atoi, boyer_moore, kmp, rabin_karp, strcat, strchr, strcmp, strcpy, strcspn, strlen, strncmp, strncat, strrchr, strrev, strspn, strstr, strtok, word_break |
 | Compression | 2 | huffman, huffman_coding |
 | Dynamic Programming | 17 | climb_stairs, coin_change, coin_change_2, edit_distance, fibonacci, fibonacci_sequence, knapsack, kadane, lcs, lcs_string, longest_common_subsequence, longest_increasing_subsequence, longest_increasing_subsequence2, paint_house, palindrome_partition, partition_equal_subset_sum, subset_sum |
 | Data Structures | 17 | bloom_filter, circular_buffer, deque, hash_table, heapify, linked_list, lru_cache, max_heap, merge, min_stack, memset, priority_queue, queue, skip_list, stack, union_find |
-| Math | 13 | abs, factorial, factorize, fast_pow, gcd, is_prime, lcm, matrix_multiply, matrix_transpose, power_mod, reverse_integer, sqrt_binary_search, sqrt_newton |
+| Math | 16 | abs, chinese_remainder, euler_totient, factorial, factorize, fast_pow, gcd, is_prime, lcm, matrix_multiply, matrix_transpose, mod_exp, power_mod, reverse_integer, sqrt_binary_search, sqrt_newton |
 | Advanced | 3 | bit_manipulation, fft, bit_ops |
 | Crypto | 2 | crypto_ops, sha256_schedule |
 | Brain | 5 | locus_coeruleus_backoff, ppl_calculator, reticular_raphe, vsa_bind, vsa_bundle2 |
 | Graph MST | 2 | kruskal_mst, prim_mst |
-| Memory | 1 | memset |
+| Geometry | 3 | convex_hull, line_intersection, point_in_polygon |
+| Memory | 4 | memcmp, memcpy, memmove, memset |
+| Number Theory | 3 | chinese_remainder, euler_totient, mod_exp |
 | Other | 27 | contains_duplicate, count_bits, gas_station, is_palindrome_number, is_power_of_two, jump_game, majority_element, n_queens, next_permutation, pascals_triangle, prefix_sum, product_except_self, quickselect, rotate_array, russian_doll, sieve, single_number, sliding_window, tower_of_hanoi, trapping_rain_water, two_pointers, valid_parentheses, water_jugs |
 
 **φ² + 1/φ² = 3 | TRINITY**
