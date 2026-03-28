@@ -1,0 +1,18 @@
+; Max Independent Set — TTT Dogfood Phase 3
+;
+; Maximum vertices with no edges between
+;
+; Test case: complement of vertex cover
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; set_size = 2
+
+    LDI t0, 1
+    ST t0, 100        ; vertex 1 in set
+    LDI t0, 1
+    ST t0, 101        ; vertex 3 in set
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742330011a4

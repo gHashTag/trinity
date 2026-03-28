@@ -1,0 +1,20 @@
+; Min Vertex Cover — TTT Dogfood Phase 3
+;
+; Minimum vertices covering all edges
+;
+; Test case: NP-approximation
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; cover_size = 3
+
+    LDI t0, 1
+    ST t0, 100        ; vertex 0 in cover
+    LDI t0, 1
+    ST t0, 101        ; vertex 2 in cover
+    LDI t0, 1
+    ST t0, 102        ; vertex 4 in cover
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732320011a3

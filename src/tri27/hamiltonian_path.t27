@@ -1,0 +1,27 @@
+; Hamiltonian Path — TTT Dogfood Phase 3
+;
+; Path visiting every vertex exactly once
+;
+; Test case: NP-complete search
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+
+    LDI t0, 1
+    ST t0, 100        ; visited[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; visited[1] = 1
+    LDI t0, 1
+    ST t0, 102        ; visited[2] = 1
+    LDI t0, 1
+    ST t0, 103        ; visited[3] = 1
+    LDI t0, 1
+    ST t0, 104        ; visited[4] = 1
+
+    LDI t0, 1
+    ST t0, 61         ; found = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:070227001198

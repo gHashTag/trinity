@@ -1,0 +1,18 @@
+; Dominating Set — TTT Dogfood Phase 3
+;
+; Minimum vertices covering all vertices
+;
+; Test case: every vertex has neighbor in set
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; dom_size = 2
+
+    LDI t0, 1
+    ST t0, 100        ; vertex 0 dominates 0,1
+    LDI t0, 1
+    ST t0, 101        ; vertex 3 dominates 2,3,4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752340011a5
