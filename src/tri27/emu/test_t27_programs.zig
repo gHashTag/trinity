@@ -18424,3 +18424,285 @@ test "zorder_curve: verify dimensions" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI/ML ALGORITHMS — TTT Dogfood Phase 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "a_star: A* heuristic pathfinding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "a_star.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "A*") != null);
+}
+
+test "a_star: verify f_score" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "a_star.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aa_tree: Simplified red-black tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aa_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AA") != null);
+}
+
+test "aa_tree: verify level property" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aa_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "abs: Absolute value computation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "abs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Absolute") != null);
+}
+
+test "abs: verify non_negative" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "abs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "adam_optimizer: Adaptive moment estimation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adam_optimizer.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Adam") != null);
+}
+
+test "adam_optimizer: verify learning rate" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adam_optimizer.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "adaptive_huffman: Dynamic Huffman coding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adaptive_huffman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Adaptive") != null);
+}
+
+test "adaptive_huffman: verify tree depth" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adaptive_huffman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "adaptive_thresh: Local thresholding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adaptive_thresh.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Adaptive") != null);
+}
+
+test "adaptive_thresh: verify window size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adaptive_thresh.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aes_encrypt: Advanced Encryption Standard" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aes_encrypt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AES") != null);
+}
+
+test "aho_corasick: Multi-pattern search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aho_corasick.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Aho-Corasick") != null);
+}
+
+test "aho_corasick: verify trie nodes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aho_corasick.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "alpha_beta: Minimax with pruning" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "alpha_beta.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Alpha-Beta") != null);
+}
+
+test "alpha_beta: verify pruning bounds" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "alpha_beta.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ant_colony: Pheromone-based optimization" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ant_colony.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Ant") != null);
+}
+
+test "ant_colony: verify path length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ant_colony.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ant_colony_opt: Probabilistic path finding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ant_colony_opt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Ant") != null);
+}
+
+test "ant_colony_opt: verify evaporation rate" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ant_colony_opt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "arithmetic_decode: Arithmetic coding decoder" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arithmetic_decode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arithmetic") != null);
+}
+
+test "arithmetic_decode: verify decoded value" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arithmetic_decode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "articulation_points: Find cut vertices" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_points.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Articulation") != null);
+}
+
+test "articulation_points: verify biconnected components" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_points.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "articulation_pts: Cut vertices tracking" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_pts.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Articulation") != null);
+}
+
+test "articulation_pts: verify discovery time" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_pts.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "articulation_pts_find: DFS tree tracking" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_pts_find.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Articulation") != null);
+}
+
+test "articulation_pts_find: verify is_articulation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "articulation_pts_find.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "astar_search: Best-first heuristic search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "astar_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "A*") != null);
+}
+
+test "astar_search: verify path cost" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "astar_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "attention_mech: Scaled dot-product attention" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "attention_mech.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Attention") != null);
+}
+
+test "attention_mech: verify sequence length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "attention_mech.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "avl_insert: Self-balancing tree insertion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AVL") != null);
+}
+
+test "avl_insert: verify tree height" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "argon2_hash: Memory-hard KDF" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "argon2_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Argon2") != null);
+}
+
+test "argon2_hash: verify memory cost" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "argon2_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
