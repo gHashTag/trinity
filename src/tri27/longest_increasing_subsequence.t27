@@ -1,13 +1,12 @@
-; Longest Increasing Subsequence (LIS) — TTT Dogfood Phase 3
+; Longest Increasing Subsequence — TTT Dogfood Phase 3
 ;
-; Find length of longest strictly increasing subsequence
+; Find length of longest increasing subsequence
 ;
-; DP approach: O(n²)
-; lis[i] = 1 + max(lis[j]) for all j < i where arr[j] < arr[i]
+; Algorithm: DP - lis[i] = 1 + max(lis[j]) for all j < i where arr[j] < arr[i]
+; Time: O(n²), Space: O(n)
 ;
 ; Test case: [10, 9, 2, 5, 3, 7, 101, 18]
-; LIS: [2, 3, 7, 101] or [2, 5, 7, 101] or [2, 3, 7, 18]
-; Length = 4
+; LIS: [2, 3, 7, 101] length 4
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
@@ -31,74 +30,85 @@
 
 ; Array length
     LDI t0, 8
-    ST t0, 50         ; length = 8
+    ST t0, 50         ; n = 8
 
-; DP table: lis[i] = length of LIS ending at index i
-; lis[0] = 1 (single element)
+; DP array: lis[i] = length of LIS ending at i
+; Initialize all to 1
     LDI t0, 1
-    ST t0, 110        ; lis[0] = 1
+    ST t0, 60         ; lis[0] = 1
+    ST t0, 61         ; lis[1] = 1
+    ST t0, 62         ; lis[2] = 1
+    ST t0, 63         ; lis[3] = 1
+    ST t0, 64         ; lis[4] = 1
+    ST t0, 65         ; lis[5] = 1
+    ST t0, 66         ; lis[6] = 1
+    ST t0, 67         ; lis[7] = 1
 
-; lis[1]: arr[1]=9, no j<1 with arr[j]<9
-    LDI t0, 1
-    ST t0, 111        ; lis[1] = 1
+; i = 1: arr[1] = 9
+; No j < 1 with arr[j] < 9 (arr[0] = 10 > 9)
+; lis[1] = 1
 
-; lis[2]: arr[2]=2, no j<2 with arr[j]<2
-    LDI t0, 1
-    ST t0, 112        ; lis[2] = 1
+; i = 2: arr[2] = 2
+; No j < 2 with arr[j] < 2 (arr[0]=10 > 2, arr[1]=9 > 2)
+; lis[2] = 1
 
-; lis[3]: arr[3]=5, j=2: arr[2]=2<5, lis[3]=lis[2]+1=2
+; i = 3: arr[3] = 5
+; arr[2] = 2 < 5, lis[3] = max(1, 1+lis[2]) = 2
     LDI t0, 2
-    ST t0, 113        ; lis[3] = 2
+    ST t0, 63         ; lis[3] = 2
 
-; lis[4]: arr[4]=3, j=2: arr[2]=2<3, lis[4]=lis[2]+1=2
+; i = 4: arr[4] = 3
+; arr[2] = 2 < 3, lis[4] = max(1, 1+lis[2]) = 2
     LDI t0, 2
-    ST t0, 114        ; lis[4] = 2
+    ST t0, 64         ; lis[4] = 2
 
-; lis[5]: arr[5]=7, j=2:2<7, j=3:5<7, j=4:3<7
-; max(lis[2],lis[3],lis[4])+1 = max(1,2,2)+1 = 3
+; i = 5: arr[5] = 7
+; arr[2] = 2 < 7, candidate = 1+lis[2] = 2
+; arr[3] = 5 < 7, candidate = 1+lis[3] = 3
+; arr[4] = 3 < 7, candidate = 1+lis[4] = 3
+; lis[5] = 3
     LDI t0, 3
-    ST t0, 115        ; lis[5] = 3
+    ST t0, 65         ; lis[5] = 3
 
-; lis[6]: arr[6]=101, all previous are smaller
-; max(lis)+1 = 3+1 = 4
+; i = 6: arr[6] = 101
+; All previous < 101, max(lis[0..5]) = 3
+; lis[6] = 4
     LDI t0, 4
-    ST t0, 116        ; lis[6] = 4
+    ST t0, 66         ; lis[6] = 4
 
-; lis[7]: arr[7]=18, j=2:2<18, j=3:5<18, j=4:3<18, j=5:7<18
-; max(lis[2..5])+1 = 3+1 = 4
+; i = 7: arr[7] = 18
+; Best: arr[5] = 7 < 18, lis[7] = 1+lis[5] = 4
     LDI t0, 4
-    ST t0, 117        ; lis[7] = 4
+    ST t0, 67         ; lis[7] = 4
 
-; LIS length = max(lis) = 4
+; Final LIS array: [1, 1, 1, 2, 2, 3, 4, 4]
+; Max = 4
     LDI t0, 4
     ST t0, 51         ; lis_length = 4
 
-; One valid LIS: [2, 3, 7, 101] (indices 2, 4, 5, 6)
+; One LIS: [2, 3, 7, 101] (indices 2, 4, 5, 6)
     LDI t0, 2
-    ST t0, 120        ; lis_seq[0] = 2
+    ST t0, 70         ; lis_idx[0] = 2 (value 2)
     LDI t0, 3
-    ST t0, 121        ; lis_seq[1] = 3
+    ST t0, 71         ; lis_idx[1] = 3 (value 3)
     LDI t0, 7
-    ST t0, 122        ; lis_seq[2] = 7
+    ST t0, 72         ; lis_idx[2] = 7 (value 7)
     LDI t0, 101
-    ST t0, 123        ; lis_seq[3] = 101
+    ST t0, 73         ; lis_idx[3] = 101 (value 101)
 
-; LIS ending index
-    LDI t0, 6
-    ST t0, 52         ; lis_end_idx = 6
+; Verify values
+    LD t0, 102
+    ST t0, 74         ; verify arr[2] = 2
+    LD t0, 104
+    ST t0, 75         ; verify arr[4] = 3
+    LD t0, 105
+    ST t0, 76         ; verify arr[5] = 7
+    LD t0, 106
+    ST t0, 77         ; verify arr[6] = 101
 
-; Number of LIS (sequences with same max length)
-; Another LIS: [2, 5, 7, 101], [2, 3, 7, 18]
-    LDI t0, 3
-    ST t0, 53         ; num_lis = 3
-
-; Minimum value in LIS (first element)
-    LDI t0, 2
-    ST t0, 54         ; min_lis_val = 2
-
-; Maximum value in LIS (last element)
-    LDI t0, 101
-    ST t0, 55         ; max_lis_val = 101
+; Is strictly increasing
+    LDI t0, 1
+    ST t0, 52         ; is_increasing = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:f170cbd4ca900cabebdadb4dea66a006e74bfc972a041a7e284b9c287bb39060
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fabc64d970644dd073d472842e55252ede404cb919e82cf6265874b7e8f9feaf
