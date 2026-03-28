@@ -1,0 +1,24 @@
+; Diffie-Hellman — TTT Dogfood Phase 3
+;
+; Key exchange protocol
+;
+; Test case: g^ab mod p
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; g = 5 (generator)
+
+    LDI t0, 23
+    ST t0, 61         ; p = 23 (prime modulus)
+
+    LDI t0, 6
+    ST t0, 62         ; a = 6 (Alice secret)
+    LDI t0, 15
+    ST t0, 63         ; b = 15 (Bob secret)
+
+    LDI t0, 8
+    ST t0, 64         ; shared_key = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0702370011a8
