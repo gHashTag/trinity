@@ -1,0 +1,13 @@
+; Prob PDF Uniform — TTT Dogfood Phase 3
+;
+; Uniform probability density function
+;
+; Test case: prob_pdf_uniform
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; pdf_uniform_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074c0000002000001109

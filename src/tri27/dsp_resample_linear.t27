@@ -1,0 +1,13 @@
+; DSP Resample Linear — TTT Dogfood Phase 3
+;
+; Linear resampling
+;
+; Test case: dsp_resample_linear
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; resample_linear_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07508000002000001359

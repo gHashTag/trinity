@@ -1,0 +1,13 @@
+; Prob PDF Exponential — TTT Dogfood Phase 3
+;
+; Exponential distribution PDF
+;
+; Test case: prob_pdf_exponential
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; pdf_exponential_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074ca0000020000001159

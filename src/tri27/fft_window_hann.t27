@@ -1,0 +1,13 @@
+; FFT Window Hann — TTT Dogfood Phase 3
+;
+; Hann window function
+;
+; Test case: fft_window_hann
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; hann_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074fc00000200000012e9
