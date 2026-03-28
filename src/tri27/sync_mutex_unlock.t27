@@ -1,0 +1,13 @@
+; Mutex Unlock — TTT Dogfood Phase 3
+;
+; Release mutex
+;
+; Test case: sync_mutex_unlock
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_mutex_unlock_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071f70001da9

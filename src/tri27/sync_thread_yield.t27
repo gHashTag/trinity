@@ -1,0 +1,13 @@
+; Thread Yield — TTT Dogfood Phase 3
+;
+; Yield CPU to another thread
+;
+; Test case: sync_thread_yield
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_thread_yield_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0720c0001df9

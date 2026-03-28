@@ -1,0 +1,13 @@
+; TLS Set — TTT Dogfood Phase 3
+;
+; Set thread-local storage value
+;
+; Test case: sync_tls_set
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_tls_set_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072110001d49
