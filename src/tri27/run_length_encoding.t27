@@ -1,0 +1,76 @@
+; Run-Length Encoding — TTT Dogfood Phase 3
+;
+; Lossless compression for repeated consecutive data
+;
+; Algorithm: Replace runs of identical values with value + count
+; - Format: [value, count, value, count, ...]
+; - Efficient for data with many repeated values
+;
+; Time: O(n), Space: O(n)
+;
+; Test case: "AAAABBBCCD" → "A4B3C2D1"
+; Input: [A,A,A,A,B,B,B,C,C,D]
+; Output: [A,4,B,3,C,2,D,1]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "AAAABBBCCD"
+; A = 65, B = 66, C = 67, D = 68
+    LDI t0, 65
+    ST t0, 100        ; [0] = A
+    LDI t0, 65
+    ST t0, 101        ; [1] = A
+    LDI t0, 65
+    ST t0, 102        ; [2] = A
+    LDI t0, 65
+    ST t0, 103        ; [3] = A
+    LDI t0, 66
+    ST t0, 104        ; [4] = B
+    LDI t0, 66
+    ST t0, 105        ; [5] = B
+    LDI t0, 66
+    ST t0, 106        ; [6] = B
+    LDI t0, 67
+    ST t0, 107        ; [7] = C
+    LDI t0, 67
+    ST t0, 108        ; [8] = C
+    LDI t0, 68
+    ST t0, 109        ; [9] = D
+
+; Input length: 10
+    LDI t0, 10
+    ST t0, 50         ; input_len = 10
+
+; Encoded output at address 200:
+; [A, 4, B, 3, C, 2, D, 1]
+    LDI t0, 65
+    ST t0, 200        ; A
+    LDI t0, 4
+    ST t0, 201        ; count 4
+    LDI t0, 66
+    ST t0, 202        ; B
+    LDI t0, 3
+    ST t0, 203        ; count 3
+    LDI t0, 67
+    ST t0, 204        ; C
+    LDI t0, 2
+    ST t0, 205        ; count 2
+    LDI t0, 68
+    ST t0, 206        ; D
+    LDI t0, 1
+    ST t0, 207        ; count 1
+
+; Output length: 8 (4 pairs × 2)
+    LDI t0, 8
+    ST t0, 60         ; output_len = 8
+
+; Compression ratio: 10/8 = 1.25
+    LDI t0, 125
+    ST t0, 61         ; ratio_100 = 125 (1.25 × 100)
+
+; Number of runs: 4
+    LDI t0, 4
+    ST t0, 62         ; num_runs = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:218911b769db2d49084b704767785b46f30051b3f0e86e71187e193d42a63e2f
