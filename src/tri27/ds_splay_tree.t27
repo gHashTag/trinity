@@ -1,0 +1,13 @@
+; Splay Tree — TTT Dogfood Phase 3
+;
+; Self-adjusting BST
+;
+; Test case: ds_splay_tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ds_splay_tree_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0723000001d39

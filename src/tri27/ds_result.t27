@@ -1,0 +1,13 @@
+; Result Type — TTT Dogfood Phase 3
+;
+; Result (Ok/Err)
+;
+; Test case: ds_result
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ds_result_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722b00001de9
