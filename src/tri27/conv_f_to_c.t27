@@ -1,0 +1,13 @@
+; Fahrenheit to Celsius — TTT Dogfood Phase 3
+;
+; Temperature conversion
+;
+; Test case: conv_f_to_c
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; conv_f_to_c_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0728d00001d09

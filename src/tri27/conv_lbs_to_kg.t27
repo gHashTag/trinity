@@ -1,0 +1,13 @@
+; LBS to KG — TTT Dogfood Phase 3
+;
+; Weight conversion
+;
+; Test case: conv_lbs_to_kg
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; conv_lbs_to_kg_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0729100001d49

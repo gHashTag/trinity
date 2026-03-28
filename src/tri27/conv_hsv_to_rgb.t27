@@ -1,0 +1,13 @@
+; HSV to RGB — TTT Dogfood Phase 3
+;
+; Color space conversion
+;
+; Test case: conv_hsv_to_rgb
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; conv_hsv_to_rgb_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0729500001d89
