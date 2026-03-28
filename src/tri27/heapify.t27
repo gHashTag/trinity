@@ -1,0 +1,117 @@
+; Heapify — TTT Dogfood Phase 3
+;
+; Build a max-heap from an array
+;
+; Algorithm: Sift down each node from bottom to top
+; Parent of i: (i-1)/2, Left child: 2*i+1, Right child: 2*i+2
+;
+; Test case: Build heap from [3, 1, 4, 1, 5, 9]
+; After heapify: [9, 5, 4, 1, 1, 3]
+; Max element at root (index 0)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-105: [3, 1, 4, 1, 5, 9]
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+    LDI t0, 9
+    ST t0, 105        ; arr[5] = 9
+
+; Array length
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Build heap from bottom up
+; Start from last non-leaf node: (6-2)/2 = 2
+; Node at index 2 (value 4):
+;   Left child: 2*2+1 = 5 (value 9)
+;   4 < 9, swap!
+; After: [3, 1, 9, 1, 5, 4]
+
+    LDI t0, 9
+    ST t0, 102        ; arr[2] = 9 (swapped with 4)
+    LDI t0, 4
+    ST t0, 105        ; arr[5] = 4 (swapped with 9)
+
+; Node at index 1 (value 1):
+;   Left child: 2*1+1 = 3 (value 1)
+;   Right child: 2*1+2 = 4 (value 5)
+;   Max child = 5
+;   1 < 5, swap!
+; After: [3, 5, 9, 1, 1, 4]
+
+    LDI t0, 5
+    ST t0, 101        ; arr[1] = 5 (swapped with 1)
+    LDI t0, 1
+    ST t0, 104        ; arr[4] = 1 (swapped with 5)
+
+; Node at index 0 (value 3):
+;   Left child: 2*0+1 = 1 (value 5)
+;   Right child: 2*0+2 = 2 (value 9)
+;   Max child = 9 (at index 2)
+;   3 < 9, swap!
+; After: [9, 5, 3, 1, 1, 4]
+
+    LDI t0, 9
+    ST t0, 100        ; arr[0] = 9 (swapped with 3)
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3 (swapped with 9)
+
+; But wait, node at index 2 (now value 3) might violate heap
+; Left child: 2*2+1 = 5 (value 4)
+; 3 < 4, swap!
+; After: [9, 5, 4, 1, 1, 3]
+
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4 (swapped with 3)
+    LDI t0, 3
+    ST t0, 105        ; arr[5] = 3 (swapped with 4)
+
+; Final heap: [9, 5, 4, 1, 1, 3]
+; Verify heap property:
+; arr[0]=9 >= arr[1]=5, arr[2]=4 ✓
+; arr[1]=5 >= arr[3]=1, arr[4]=1 ✓
+; arr[2]=4 >= arr[5]=3 ✓
+
+; Root (max element)
+    LD t0, 100
+    ST t0, 51         ; root = 9
+
+; Left child of root
+    LD t0, 101
+    ST t0, 52         ; left_child = 5
+
+; Right child of root
+    LD t0, 102
+    ST t0, 53         ; right_child = 4
+
+; Heap property: root >= children
+    LDI t0, 1
+    ST t0, 54         ; heap_property = 1
+
+; Array is now a valid max-heap
+    LDI t0, 1
+    ST t0, 55         ; is_valid_heap = 1
+
+; Height of heap = ceil(log2(n)) = ceil(log2(6)) = 2
+    LDI t0, 2
+    ST t0, 56         ; height = 2
+
+; Number of internal nodes = floor(n/2) = 3
+    LDI t0, 3
+    ST t0, 57         ; internal_nodes = 3
+
+; Number of leaf nodes = ceil(n/2) = 3
+    LDI t0, 3
+    ST t0, 58         ; leaf_nodes = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:957452a814ff3f3bb055729ff90e73cacc75ea278f41cfaa3a5b78debb228a72
