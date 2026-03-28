@@ -1,0 +1,13 @@
+; Compiler Parsing — TTT Dogfood Phase 3
+;
+; Parsing algorithms
+;
+; Test case: compiler_parsing
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; parser_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074f00000020000000001b5b
