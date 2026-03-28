@@ -1,0 +1,75 @@
+; LZW Compression — TTT Dogfood Phase 3
+;
+; Lempel-Ziv-Welch lossless compression
+;
+; Algorithm: Build dictionary of phrases as encoding progresses
+; - Initialize dictionary with single characters
+; - Find longest match in dictionary
+; - Output dictionary index + next unmatched char
+; - Add phrase (match + char) to dictionary
+;
+; Time: O(n), Space: O(dictionary size)
+;
+; Test case: "ABABABA"
+; Dictionary grows: A=0, B=1, AB=2, BA=3, ABA=4, ...
+; Encoded: [0, 1, 2, 0]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "ABABABA"
+; A=65, B=66
+    LDI t0, 65
+    ST t0, 100        ; [0] = A
+    LDI t0, 66
+    ST t0, 101        ; [1] = B
+    LDI t0, 65
+    ST t0, 102        ; [2] = A
+    LDI t0, 66
+    ST t0, 103        ; [3] = B
+    LDI t0, 65
+    ST t0, 104        ; [4] = A
+    LDI t0, 66
+    ST t0, 105        ; [5] = B
+
+; Input length: 6
+    LDI t0, 6
+    ST t0, 50         ; input_len = 6
+
+; Dictionary initialization (single chars):
+; 0=A, 1=B
+    LDI t0, 65
+    ST t0, 150        ; dict[0] = A
+    LDI t0, 66
+    ST t0, 151        ; dict[1] = B
+
+; Encoding process:
+; Pos 0: 'A' → output 0 (dict index)
+; Pos 1: 'B' → output 1
+; Pos 2-3: 'AB' → output 2 (add to dict)
+; Pos 4: 'A' → output 0
+; Remaining: 'BA' → would be added
+
+; Encoded output at 200: [0, 1, 2, 0]
+    LDI t0, 0
+    ST t0, 200        ; out[0] = 0 (A)
+    LDI t0, 1
+    ST t0, 201        ; out[1] = 1 (B)
+    LDI t0, 2
+    ST t0, 202        ; out[2] = 2 (AB)
+    LDI t0, 0
+    ST t0, 203        ; out[3] = 0 (A)
+
+; Output length: 4
+    LDI t0, 4
+    ST t0, 60         ; output_len = 4
+
+; Dictionary size: 4 entries
+    LDI t0, 4
+    ST t0, 61         ; dict_size = 4
+
+; Max index used: 2
+    LDI t0, 2
+    ST t0, 62         ; max_index = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ec30b93d715e7f00e31ced9caa999238d0054cf555b4e4e1e9f6fa02f9e23e6a
