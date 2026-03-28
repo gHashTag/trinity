@@ -1,6 +1,6 @@
 ; Red-Black Insert — TTT Dogfood Phase 3
 ;
-| RB tree insert
+; RB tree insert
 ;
 ; Test case: rb_insert
 ;

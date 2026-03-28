@@ -1,6 +1,6 @@
 ; Skip List Insert — TTT Dogfood Phase 3
 ;
-| Probabilistic structure
+; Probabilistic structure
 ;
 ; Test case: skiplist_insert
 ;

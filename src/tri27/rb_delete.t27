@@ -1,6 +1,6 @@
 ; Red-Black Delete — TTT Dogfood Phase 3
 ;
-| RB tree remove
+; RB tree remove
 ;
 ; Test case: rb_delete
 ;

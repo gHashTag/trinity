@@ -1,6 +1,6 @@
 ; B-Tree Insert — TTT Dogfood Phase 3
 ;
-| Balanced tree insert
+; Balanced tree insert
 ;
 ; Test case: btree_insert
 ;

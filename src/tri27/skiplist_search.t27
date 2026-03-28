@@ -1,6 +1,6 @@
 ; Skip List Search — TTT Dogfood Phase 3
 ;
-| Fast lookup
+; Fast lookup
 ;
 ; Test case: skiplist_search
 ;
