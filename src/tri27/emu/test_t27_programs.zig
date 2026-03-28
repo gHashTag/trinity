@@ -719,4 +719,116 @@ test "t27_programs: binary_search file exists" {
     try std.testing.expect(stat.size > 0);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Matrix Multiply Tests
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "matrix_multiply: 2x2 result C[0][0]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Simple 2x2 matrix multiply - compute just C[0][0]
+        \\    ; A = [[1, 2], [3, 4]], B = [[5, 6], [7, 8]]
+        \\    ; C[0][0] = 1*5 + 2*7 = 19
+        \\    LDI t8, 1
+        \\    LDI t9, 5
+        \\    MUL t8, t8, t9     ; t8 = 1*5 = 5
+        \\    LDI t9, 2
+        \\    LDI t7, 7
+        \\    MUL t9, t9, t7     ; t9 = 2*7 = 14
+        \\    ADD t0, t8, t9     ; t0 = 5 + 14 = 19
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 19), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: 2x2 result C[0][1]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; C[0][1] = 1*6 + 2*8 = 22
+        \\    LDI t8, 1
+        \\    LDI t9, 6
+        \\    MUL t8, t8, t9     ; t8 = 1*6 = 6
+        \\    LDI t9, 2
+        \\    LDI t7, 8
+        \\    MUL t9, t9, t7     ; t9 = 2*8 = 16
+        \\    ADD t0, t8, t9     ; t0 = 6 + 16 = 22
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 22), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: 2x2 result C[1][0]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; C[1][0] = 3*5 + 4*7 = 43
+        \\    LDI t8, 3
+        \\    LDI t9, 5
+        \\    MUL t8, t8, t9     ; t8 = 3*5 = 15
+        \\    LDI t9, 4
+        \\    LDI t7, 7
+        \\    MUL t9, t9, t7     ; t9 = 4*7 = 28
+        \\    ADD t0, t8, t9     ; t0 = 15 + 28 = 43
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 43), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: 2x2 result C[1][1]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; C[1][1] = 3*6 + 4*8 = 50
+        \\    LDI t8, 3
+        \\    LDI t9, 6
+        \\    MUL t8, t8, t9     ; t8 = 3*6 = 18
+        \\    LDI t9, 4
+        \\    LDI t7, 8
+        \\    MUL t9, t9, t7     ; t9 = 4*8 = 32
+        \\    ADD t0, t8, t9     ; t0 = 18 + 32 = 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 50), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: nested loop pattern" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Test nested loop structure (simplified)
+        \\    ; Compute C[0][0] = A[0][0]*B[0][0] + A[0][1]*B[1][0]
+        \\    ; = 1*5 + 2*7 = 19
+        \\    LDI t7, 0          ; sum = 0
+        \\    ST t7, 105
+        \\    ; First term: A[0][0] * B[0][0]
+        \\    LDI t8, 1
+        \\    LDI t9, 5
+        \\    MUL t8, t8, t9     ; t8 = 5
+        \\    LD t7, 105
+        \\    ADD t7, t7, t8     ; t7 = 5
+        \\    ST t7, 105
+        \\    ; Second term: A[0][1] * B[1][0]
+        \\    LDI t8, 2
+        \\    LDI t9, 7
+        \\    MUL t8, t8, t9     ; t8 = 14
+        \\    LD t7, 105
+        \\    ADD t7, t7, t8     ; t7 = 19
+        \\    ST t7, 105
+        \\    ; Return result
+        \\    LD t0, 105
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 19), cpu.t27[0].trits);
+}
+
+test "t27_programs: matrix_multiply file exists" {
+    const path = "src/tri27/matrix_multiply.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

@@ -1,0 +1,131 @@
+; Matrix Multiplication — TTT Dogfood Phase 3
+; Compute C = A × B where A is m×k, B is k×n, C is m×n
+;
+; Algorithm:
+;   for i in 0..m-1:
+;     for j in 0..n-1:
+;       C[i][j] = sum(A[i][p] * B[p][j] for p in 0..k-1)
+;
+; Test case: 2×2 matrix multiplication
+;   A = [[1, 2], [3, 4]]
+;   B = [[5, 6], [7, 8]]
+;   C = [[19, 22], [43, 50]]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+.data
+    ; Matrix A (2x2): row-major order
+    .dword 1 2 3 4
+    ; Matrix B (2x2): row-major order
+    .dword 5 6 7 8
+
+.code
+; Entry point
+; Input: t0 = m (rows of A), t1 = k (cols of A / rows of B), t2 = n (cols of B)
+; For 2x2: t0=2, t1=2, t2=2
+main:
+    ; Initialize matrix dimensions
+    LDI t0, 2          ; m = 2
+    LDI t1, 2          ; k = 2
+    LDI t2, 2          ; n = 2
+
+    ; Store dimensions in memory
+    ST t0, 100         ; m at address 100
+    ST t1, 101         ; k at address 101
+    ST t2, 102         ; n at address 102
+
+    ; Initialize loop counters
+    LDI t3, 0          ; i = 0
+    ST t3, 103         ; i counter at 103
+
+; Outer loop: for i in 0..m-1
+outer_loop:
+    LD t3, 103         ; t3 = i
+    LD t4, 100         ; t4 = m
+    SUB t5, t3, t4
+    JZ t5, outer_done  ; if i == m, done
+
+    LDI t4, 0          ; j = 0
+    ST t4, 104         ; j counter at 104
+
+; Middle loop: for j in 0..n-1
+middle_loop:
+    LD t4, 104         ; t4 = j
+    LD t5, 102         ; t5 = n
+    SUB t6, t4, t5
+    JZ t6, middle_done ; if j == n, increment i
+
+    ; Initialize accumulator
+    LDI t7, 0          ; sum = 0
+    ST t7, 105         ; sum at 105
+
+    LDI t5, 0          ; p = 0
+    ST t5, 106         ; p counter at 106
+
+; Inner loop: for p in 0..k-1
+inner_loop:
+    LD t5, 106         ; t5 = p
+    LD t6, 101         ; t6 = k
+    SUB t7, t5, t6
+    JZ t7, inner_done  ; if p == k, store result
+
+    ; Load A[i][p] (A is at base address 0)
+    LD t7, 103         ; t7 = i
+    LD t8, 101         ; t8 = k
+    MUL t7, t7, t8     ; t7 = i * k
+    ADD t7, t7, t5     ; t7 = i*k + p
+    LDI t8, 0          ; Base address of A (0)
+    ADD t7, t7, t8     ; t7 = offset + base_A
+    LD t8, t7          ; t8 = A[i][p]
+
+    ; Load B[p][j] (B is at base address 4, after A's 4 elements)
+    LD t7, 104         ; t7 = j
+    LD t9, 102         ; t9 = n
+    MUL t7, t5, t9     ; t7 = p * n
+    ADD t7, t7, t4     ; t7 = p*n + j
+    LDI t9, 4          ; Base address of B (4, after A)
+    ADD t7, t7, t9     ; t7 = offset + base_B
+    LD t9, t7          ; t9 = B[p][j]
+
+    ; Multiply and accumulate
+    MUL t8, t8, t9     ; t8 = A[i][p] * B[p][j]
+    LD t7, 105         ; t7 = current sum
+    ADD t7, t7, t8     ; t7 = sum + product
+    ST t7, 105         ; store updated sum
+
+    ; Increment p
+    LD t5, 106
+    LDI t7, 1
+    ADD t5, t5, t7
+    ST t5, 106
+    JUMP inner_loop
+
+inner_done:
+    ; Store C[i][j] (C is at base address 8, after A's 4 + B's 4 elements)
+    LD t7, 105         ; t7 = sum
+    LD t8, 103         ; t8 = i
+    LD t9, 102         ; t9 = n
+    MUL t8, t8, t9     ; t8 = i * n
+    LD t9, 104         ; t9 = j
+    ADD t8, t8, t9     ; t8 = i*n + j
+    LDI t9, 8          ; Base address of C (8, after A and B)
+    ADD t8, t8, t9     ; t8 = offset + base_C
+    ST t7, t8          ; C[i][j] = sum
+
+    ; Increment j
+    LD t4, 104
+    LDI t7, 1
+    ADD t4, t4, t7
+    ST t4, 104
+    JUMP middle_loop
+
+middle_done:
+    ; Increment i
+    LD t3, 103
+    LDI t7, 1
+    ADD t3, t3, t7
+    ST t3, 103
+    JUMP outer_loop
+
+outer_done:
+    HALT
