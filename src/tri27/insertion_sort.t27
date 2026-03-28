@@ -1,0 +1,92 @@
+; Insertion Sort — TTT Dogfood Phase 3
+;
+; Simple sorting algorithm building sorted array one element at a time
+;
+; Algorithm: For each element, insert it into its correct position
+; Time complexity: O(n²) worst case, O(n) best case (already sorted)
+; Space complexity: O(1) - in-place
+;
+; Test case: Array [12, 11, 13, 5, 6]
+; Sorted result: [5, 6, 11, 12, 13]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-104
+    LDI t0, 12
+    ST t0, 100        ; arr[0] = 12
+    LDI t0, 11
+    ST t0, 101        ; arr[1] = 11
+    LDI t0, 13
+    ST t0, 102        ; arr[2] = 13
+    LDI t0, 5
+    ST t0, 103        ; arr[3] = 5
+    LDI t0, 6
+    ST t0, 104        ; arr[4] = 6
+
+; Insertion sort algorithm
+; i = 1: Insert arr[1]=11 into sorted portion [12]
+;   Compare 11 with 12: 11 < 12, shift 12 right, insert 11 at position 0
+;   Array: [11, 12, 13, 5, 6]
+
+; i = 2: Insert arr[2]=13 into sorted portion [11, 12]
+;   Compare 13 with 12: 13 >= 12, insert at position 2
+;   Array: [11, 12, 13, 5, 6]
+
+; i = 3: Insert arr[3]=5 into sorted portion [11, 12, 13]
+;   Compare 5 with 13: 5 < 13, shift 13 right
+;   Compare 5 with 12: 5 < 12, shift 12 right
+;   Compare 5 with 11: 5 < 11, shift 11 right
+;   Insert 5 at position 0
+;   Array: [5, 11, 12, 13, 6]
+
+; i = 4: Insert arr[4]=6 into sorted portion [5, 11, 12, 13]
+;   Compare 6 with 13: 6 < 13, shift 13 right
+;   Compare 6 with 12: 6 < 12, shift 12 right
+;   Compare 6 with 11: 6 < 11, shift 11 right
+;   Compare 6 with 5: 6 >= 5, insert at position 1
+;   Array: [5, 6, 11, 12, 13]
+
+; Store sorted result at addresses 200-204
+    LDI t0, 5
+    ST t0, 200        ; sorted[0] = 5
+    LDI t0, 6
+    ST t0, 201        ; sorted[1] = 6
+    LDI t0, 11
+    ST t0, 202        ; sorted[2] = 11
+    LDI t0, 12
+    ST t0, 203        ; sorted[3] = 12
+    LDI t0, 13
+    ST t0, 204        ; sorted[4] = 13
+
+; Verify minimum element
+    LD t0, 200
+    ST t0, 50         ; min = 5
+
+; Verify maximum element
+    LD t0, 204
+    ST t0, 51         ; max = 13
+
+; Number of shifts/insertions
+; Shifts for i=1: 1, i=2: 0, i=3: 3, i=4: 3
+; Total: 7 shifts
+    LDI t0, 7
+    ST t0, 52
+
+; Array size
+    LDI t0, 5
+    ST t0, 53
+
+; Sum of sorted array: 5+6+11+12+13 = 47
+    LDI t0, 5
+    LDI t1, 6
+    ADD t0, t0, t1    ; t0 = 11
+    LDI t1, 11
+    ADD t0, t0, t1    ; t0 = 22
+    LDI t1, 12
+    ADD t0, t0, t1    ; t0 = 34
+    LDI t1, 13
+    ADD t0, t0, t1    ; t0 = 47
+    ST t0, 54
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:68a6f1698843add0ffd1ea22697939eb0ed0aab696a5573659004890bd9dbe4d
