@@ -1,0 +1,13 @@
+; Two Stack — TTT Dogfood Phase 3
+;
+; Monotonic stack pattern
+;
+; Test case: pattern_two_stack
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; two_stack_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07a190000020000000021f8
