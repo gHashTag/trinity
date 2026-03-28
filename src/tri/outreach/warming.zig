@@ -57,7 +57,7 @@ pub const schedule = [_]WarmingWeek{
         .focus = "Golden Ratio Allies (parallel discovery — high reply rate expected)",
         .scientists = &[_][]const u8{
             "Michael Sherbon", // α↔φ parallel discovery
-            "Kostas Karpougas", // φ⁵ formulas
+            "Stergios Pellis", // φ⁵ formulas (sterpellis@gmail.com)
             "Enos Øye", // α↔φ via electron wavelength
         },
     },
@@ -253,7 +253,7 @@ test "shouldSendThisWeek" {
 
     // Week 1 (days 15-21)
     try std.testing.expect(shouldSendThisWeek(15, "Michael Sherbon"));
-    try std.testing.expect(shouldSendThisWeek(15, "Kostas Karpougas"));
+    try std.testing.expect(shouldSendThisWeek(15, "Stergios Pellis"));
     try std.testing.expect(!shouldSendThisWeek(15, "Denis Kleyko")); // Week 2 only
 }
 

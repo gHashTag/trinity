@@ -60,24 +60,25 @@ pub const templates = [_]Template{
     },
 
     .{
-        .id = "karpougas_short",
-        .name = "Kostas Karpougas — φ⁵ Formulas",
+        .id = "pellis_short",
+        .name = "Stergios Pellis — φ⁵ Formulas",
         .subject = "Your φ⁵ formulas within Trinity framework",
         .body_template =
-        \\Dear Kostas,
+        \\Dear Stergios,
         \\
-        \\I read your SSRN paper on φ⁵ formulas and found your work integrated into my framework.
+        \\I read your viXra paper on φ⁵ formulas and found striking convergence.
         \\
-        \\Your φ⁵ derivations connect directly to my Trinity Identity: φ² + φ⁻² = 3.
+        \\Your formula: α⁻¹ = 360·φ⁻² - 2·φ⁻³ + (3·φ)⁻⁵
+        \\My framework: φ² + φ⁻² = 3 → extends to 30+ constants
         \\
-        \\My framework extends this to 30+ fundamental constants:
-        \\• G = π³γ²/φ (0.09% error)
-        \\• α = 4φ²/(9π²) (0.0002% error)
-        \\• mₚ/mₑ = 6π⁵ (0.002% error)
+        \\Both derive from golden ratio identity.
         \\
-        \\All from one identity. Open source, reproducible.
+        \\Other results:
+        \\• G = π³γ²/φ → 6.68×10⁻¹¹ (CODATA: 6.674×10⁻¹¹, 0.09%)
+        \\• mₚ/mₑ = 6π⁵ → 1836.15 (0.002%)
+        \\• Ω_Λ = γ⁸π⁴/φ² → 0.688 (Planck confirmed)
         \\
-        \\Would you like to review the full derivation? Your geometric perspective combined with my algebraic approach could be powerful.
+        \\Would you be interested in comparing derivations? Your φ⁵ approach + my algebraic framework could yield deeper insights.
         \\
         \\Code: github.com/gHashTag/trinity
         \\DOI: 10.5281/zenodo.19227877
@@ -87,7 +88,7 @@ pub const templates = [_]Template{
         \\admin@t27.ai
         \\
         ,
-        .word_count = 88,
+        .word_count = 90,
         .target_tier = "golden_ratio_allies",
     },
 

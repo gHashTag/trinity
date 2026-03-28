@@ -69,7 +69,7 @@ fn showHelp() !void {
         \\  4. Start warming: Week 1 = 2 emails/day
         \\
         \\WARMING SCHEDULE:
-        \\  Week 1: 2 emails/day (Sherbon, Karpougas)
+        \\  Week 1: 2 emails/day (Sherbon, Pellis)
         \\  Week 2: 3 emails/day (VSA experts)
         \\  Week 3: 5 emails/day (LQG physicists)
         \\  Week 4: 7 emails/day (Particle physics)
@@ -398,8 +398,8 @@ fn getTodayQueue(allocator: std.mem.Allocator, week: u32) std.ArrayList(QueueIte
     // For now, return hardcoded list based on week
     const scientists = switch (week) {
         1 => [_]QueueItem{
-            .{ .name = "Michael Sherbon", .email = "research@example.com", .status = "queued" },
-            .{ .name = "Kostas Karpougas", .email = "research@example.com", .status = "queued" },
+            .{ .name = "Michael Sherbon", .email = "michael.sherbon@case.edu", .status = "queued" },
+            .{ .name = "Stergios Pellis", .email = "sterpellis@gmail.com", .status = "queued" },
         },
         2 => [_]QueueItem{
             .{ .name = "Denis Kleyko", .email = "denis.kleyko@oru.se", .status = "queued" },
@@ -422,7 +422,7 @@ fn getTodayQueue(allocator: std.mem.Allocator, week: u32) std.ArrayList(QueueIte
 
 fn getTemplateForScientist(name: []const u8) []const u8 {
     if (std.mem.indexOf(u8, name, "Sherbon")) |_| return "sherbon_short";
-    if (std.mem.indexOf(u8, name, "Karpougas")) |_| return "karpougas_short";
+    if (std.mem.indexOf(u8, name, "Pellis")) |_| return "pellis_short";
     if (std.mem.indexOf(u8, name, "Hossenfelder")) |_| return "hossenfelder_short";
     if (std.mem.indexOf(u8, name, "Kleyko")) |_| return "kleyko_short";
     if (std.mem.indexOf(u8, name, "Kanerva")) |_| return "kanerva_short";
