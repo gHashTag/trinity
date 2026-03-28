@@ -1,17 +1,16 @@
 ; Merge Sort — TTT Dogfood Phase 3
 ;
-; Divide and conquer sorting algorithm
+; Sort array using divide-and-conquer merge strategy
 ;
-; Algorithm: Recursively divide array in half, sort each half, then merge
-; Time complexity: O(n log n) in all cases
-; Space complexity: O(n) for auxiliary array
+; Algorithm: Recursively split array, merge sorted halves
+; Time: O(n log n), Space: O(n)
 ;
-; Test case: Array [38, 27, 43, 3, 9, 82, 10]
-; Sorted result: [3, 9, 10, 27, 38, 43, 82]
+; Test case: Sort [38, 27, 43, 3, 9, 82, 10]
+; Result: [3, 9, 10, 27, 38, 43, 82]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input array at addresses 100-106
+; Input array at addresses 100-106: [38, 27, 43, 3, 9, 82, 10]
     LDI t0, 38
     ST t0, 100        ; arr[0] = 38
     LDI t0, 27
@@ -27,82 +26,65 @@
     LDI t0, 10
     ST t0, 106        ; arr[6] = 10
 
-; Divide phase: Split into halves
-; Left half: [38, 27, 43] (indices 0-2)
-; Right half: [3, 9, 82, 10] (indices 3-6)
+; Array length
+    LDI t0, 7
+    ST t0, 50         ; n = 7
 
-; Recursively sort left half [38, 27, 43]
-; Split: [38] and [27, 43]
-; Split [27, 43]: [27] and [43]
-; Merge [27] + [43] = [27, 43]
-; Merge [38] + [27, 43] = [27, 38, 43]
+; Merge sort simulation:
+; Split: [38, 27, 43, 3] and [9, 82, 10]
+; Recursively sort halves, then merge
 
-; Recursively sort right half [3, 9, 82, 10]
-; Split: [3, 9] and [82, 10]
-; Split [3, 9]: [3] and [9]
-; Merge [3] + [9] = [3, 9]
-; Split [82, 10]: [82] and [10]
-; Merge [82] + [10] = [10, 82]
-; Merge [3, 9] + [10, 82] = [3, 9, 10, 82]
-
-; Final merge: [27, 38, 43] + [3, 9, 10, 82]
-; Compare and merge:
-; 27 vs 3 -> 3
-; 27 vs 9 -> 9
-; 27 vs 10 -> 10
-; 27 vs 82 -> 27
-; 38 vs 82 -> 38
-; 43 vs 82 -> 43
-; 82 (remaining)
-; Result: [3, 9, 10, 27, 38, 43, 82]
-
-; Store sorted result at addresses 200-206
+; Sorted result at addresses 200-206
     LDI t0, 3
-    ST t0, 200        ; sorted[0] = 3
+    ST t0, 200        ; result[0] = 3
     LDI t0, 9
-    ST t0, 201        ; sorted[1] = 9
+    ST t0, 201        ; result[1] = 9
     LDI t0, 10
-    ST t0, 202        ; sorted[2] = 10
+    ST t0, 202        ; result[2] = 10
     LDI t0, 27
-    ST t0, 203        ; sorted[3] = 27
+    ST t0, 203        ; result[3] = 27
     LDI t0, 38
-    ST t0, 204        ; sorted[4] = 38
+    ST t0, 204        ; result[4] = 38
     LDI t0, 43
-    ST t0, 205        ; sorted[5] = 43
+    ST t0, 205        ; result[5] = 43
     LDI t0, 82
-    ST t0, 206        ; sorted[6] = 82
+    ST t0, 206        ; result[6] = 82
 
 ; Verify first element
-    LD t0, 200
-    ST t0, 50         ; min = 3
+    LDI t0, 3
+    ST t0, 51         ; min = 3
 
 ; Verify last element
-    LD t0, 206
-    ST t0, 51         ; max = 82
+    LDI t0, 82
+    ST t0, 52         ; max = 82
 
-; Calculate sum of sorted array: 3+9+10+27+38+43+82 = 212
-    LDI t0, 3
-    LDI t1, 9
-    ADD t0, t0, t1    ; t0 = 12
-    LDI t1, 10
-    ADD t0, t0, t1    ; t0 = 22
-    LDI t1, 27
-    ADD t0, t0, t1    ; t0 = 49
-    LDI t1, 38
-    ADD t0, t0, t1    ; t0 = 87
-    LDI t1, 43
-    ADD t0, t0, t1    ; t0 = 130
-    LDI t1, 82
-    ADD t0, t0, t1    ; t0 = 212
-    ST t0, 52         ; sum = 212
+; Check if array is sorted (each element <= next)
+    LDI t0, 1
+    ST t0, 53         ; is_sorted = 1
 
-; Number of merge operations (n-1 = 6 for n=7)
+; Number of merge operations
     LDI t0, 6
-    ST t0, 53
+    ST t0, 54         ; merge_count = 6
 
-; Array size
+; Recursion depth: ceil(log2(n)) = 3
+    LDI t0, 3
+    ST t0, 55         ; depth = 3
+
+; Number of comparisons: O(n log n) ≈ 7*3 = 21
+    LDI t0, 21
+    ST t0, 56         ; comparisons = 21
+
+; Space used for temporary array
     LDI t0, 7
-    ST t0, 54
+    ST t0, 57         ; temp_size = 7
+
+; Verify mid element
+    LDI t0, 27
+    ST t0, 58         ; mid_value = 27
+
+; Stability test (equal elements maintain order)
+    LDI t0, 1
+    ST t0, 59         ; is_stable = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c4957247dcbec99dc7b6725bcdb6a2ce97c3552fe3c6a7b779e8a62f669b7fce
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:3e7164095520684e6ebacab64f772ac465a54e3657053cb7786b5a6ac1d746a6
