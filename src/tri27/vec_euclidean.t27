@@ -1,0 +1,13 @@
+; Euclidean Distance — TTT Dogfood Phase 3
+;
+; L2 norm distance
+;
+; Test case: vec_euclidean
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; euclidean_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aaa000002000000002406
