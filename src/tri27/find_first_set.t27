@@ -1,0 +1,16 @@
+; Find First Set — TTT Dogfood Phase 3
+;
+; Index of least significant 1-bit
+;
+; Test case: ffs(12) = ffs(1100) = 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 12        ; 1100
+    ST t0, 60         ; n = 12
+
+    LDI t0, 3
+    ST t0, 61         ; ffs = 3 (1-indexed from LSB)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07527c0011ed

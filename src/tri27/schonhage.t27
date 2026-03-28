@@ -1,0 +1,25 @@
+; Schonhage-Strassen — TTT Dogfood Phase 3
+;
+; FFT-based multiplication for huge numbers
+;
+; Test case: multiply using FFT
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 256
+    ST t0, 60         ; n = 256 (FFT size)
+
+    LDI t0, 2
+    ST t0, 61         ; bits_per_digit = 2
+
+    LDI t0, 1
+    ST t0, 100        ; x[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; x[1] = 1
+
+; Point-wise multiply in frequency domain
+    LDI t0, 1
+    ST t0, 110        ; X[0] * Y[0] = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722710011e2

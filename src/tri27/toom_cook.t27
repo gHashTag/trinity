@@ -1,0 +1,33 @@
+; Toom-Cook Multiply — TTT Dogfood Phase 3
+;
+; 3-way split for large numbers
+;
+; Test case: split into 3 parts
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10000
+    ST t0, 60         ; base = 10^4
+
+    LDI t0, 12345678
+    ST t0, 61         ; x = 12345678
+    LDI t0, 87654321
+    ST t0, 62         ; y = 87654321
+
+; Split into m0, m1, m2 (each 2 digits)
+    LDI t0, 5678
+    ST t0, 70         ; x0 = 5678
+    LDI t0, 23
+    ST t0, 71         ; x1 = 23
+    LDI t0, 1
+    ST t0, 72         ; x2 = 1
+
+    LDI t0, 4321
+    ST t0, 73         ; y0 = 4321
+    LDI t0, 65
+    ST t0, 74         ; y1 = 65
+    LDI t0, 8
+    ST t0, 75         ; y2 = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712700011e1

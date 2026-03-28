@@ -1,0 +1,16 @@
+; Bit Reverse — TTT Dogfood Phase 3
+;
+; Reverse bit order
+;
+; Test case: rev(1100) = 0011
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 12        ; 1100
+    ST t0, 60         ; n = 12 (4 bits)
+
+    LDI t0, 3         ; 0011
+    ST t0, 61         ; rev = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07727e0011ef

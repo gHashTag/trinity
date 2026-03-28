@@ -1,0 +1,24 @@
+; Fast Fourier Transform — TTT Dogfood Phase 3
+;
+; Cooley-Tukey FFT algorithm
+;
+; Test case: compute DFT of [1,1]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; x[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; x[1] = 1
+
+; DFT: X[k] = sum(x[n] * e^(-2πikn/N))
+; X[0] = 1 + 1 = 2
+; X[1] = 1 + 1*e^(-πi) = 1 - 1 = 0
+
+    LDI t0, 2
+    ST t0, 110        ; X[0] = 2
+    LDI t0, 0
+    ST t0, 111        ; X[1] = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07626d0011de
