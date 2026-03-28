@@ -145,7 +145,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                     std.log.debug("analysis_engine: write dirty increased failed: {}", .{err});
                 };
             } else if (active == 6 and snapshot.compile_rate >= 95) {
-                w.print("Всё работает штатно.", .{}) catch |err| {
+                w.print("Everything works normally.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write all working failed: {}", .{err});
                 };
             } else {
@@ -156,7 +156,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
         } else {
             // No delta — static fallback (first run)
             if (active == 6 and snapshot.compile_rate >= 95) {
-                w.print("Всё работает штатно.", .{}) catch |err| {
+                w.print("Everything works normally.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write all working fallback failed: {}", .{err});
                 };
             } else if (active < 4) {
