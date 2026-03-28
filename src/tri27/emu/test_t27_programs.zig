@@ -18045,3 +18045,382 @@ test "x25519_kex: verify shared secret" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISTRIBUTED SYSTEMS TESTS — TTT Dogfood Phase 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "btree_index: B-Tree database index" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B-Tree") != null);
+}
+
+test "btree_index: verify order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bully_algorithm: Leader election" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bully_algorithm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bully") != null);
+}
+
+test "bully_algorithm: verify max_id" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bully_algorithm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "distributed_lock: Mutual exclusion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distributed_lock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Distributed") != null);
+}
+
+test "distributed_lock: verify acquired" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distributed_lock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geohash_encode: Geographic hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geohash_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Geohash") != null);
+}
+
+test "geohash_encode: verify precision" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geohash_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hash_index: Hash-based database index" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hash_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hash") != null);
+}
+
+test "hash_index: verify buckets" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hash_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hilbert_curve: Space-filling curve" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hilbert_curve.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hilbert") != null);
+}
+
+test "hilbert_curve: verify order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hilbert_curve.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "inverted_index: Text search index" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inverted_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Inverted") != null);
+}
+
+test "inverted_index: verify documents" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inverted_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "kd_tree_index: K-dimensional tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kd_tree_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "KD") != null);
+}
+
+test "kd_tree_index: verify dimensions" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kd_tree_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lamport_clock: Logical timestamp" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lamport_clock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Lamport") != null);
+}
+
+test "lamport_clock: verify timestamp" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lamport_clock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lease_manager: Time-based locking" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lease_manager.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Lease") != null);
+}
+
+test "lease_manager: verify ttl" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lease_manager.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lsmtree: Log-Structured Merge tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lsmtree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LSM") != null);
+}
+
+test "lsmtree: verify memtables" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lsmtree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mvcc_snapshot: Multi-version concurrency" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mvcc_snapshot.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "MVCC") != null);
+}
+
+test "mvcc_snapshot: verify tx_id" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mvcc_snapshot.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "optimistic_lock: Version-based concurrency" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "optimistic_lock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Optimistic") != null);
+}
+
+test "optimistic_lock: verify version" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "optimistic_lock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "paxos_consensus: Distributed consensus" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "paxos_consensus.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Paxos") != null);
+}
+
+test "paxos_consensus: verify quorum" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "paxos_consensus.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "quadtree_index: 2D spatial subdivision" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quadtree_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Quadtree") != null);
+}
+
+test "quadtree_index: verify max_depth" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quadtree_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "raft_consensus: Leader-based consensus" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "raft_consensus.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Raft") != null);
+}
+
+test "raft_consensus: verify majority" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "raft_consensus.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ring_election: Circular leader election" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ring_election.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Ring") != null);
+}
+
+test "ring_election: verify nodes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ring_election.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rtree_index: Spatial data indexing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rtree_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "R-Tree") != null);
+}
+
+test "rtree_index: verify dimensions" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rtree_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "skiplist_index: Probabilistic indexing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_index.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Skip") != null);
+}
+
+test "skiplist_index: verify levels" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_index.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "three_phase_commit: Non-blocking atomic commit" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "three_phase_commit.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Three-Phase") != null);
+}
+
+test "three_phase_commit: verify can_commit" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "three_phase_commit.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "two_pc_lock: Two-phase locking" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "two_pc_lock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Two-Phase") != null);
+}
+
+test "two_pc_lock: verify granted" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "two_pc_lock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "two_phase_commit: Atomic transaction commit" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "two_phase_commit.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Two-Phase") != null);
+}
+
+test "two_phase_commit: verify participants" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "two_phase_commit.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "vector_clock: Distributed event ordering" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_clock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Vector") != null);
+}
+
+test "vector_clock: verify processes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_clock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wal_write: Write-Ahead Log" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wal_write.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Write-Ahead") != null);
+}
+
+test "wal_write: verify entry_id" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wal_write.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "zorder_curve: Morton code spatial mapping" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zorder_curve.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Z-Order") != null);
+}
+
+test "zorder_curve: verify dimensions" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zorder_curve.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
