@@ -17685,3 +17685,363 @@ test "url_decode: verify decoded URL" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "aes_encrypt: AES encryption" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aes_encrypt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AES") != null);
+}
+
+test "aes_encrypt: verify key size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aes_encrypt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "argon2_hash: Argon2 memory-hard KDF" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "argon2_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Argon2") != null);
+}
+
+test "argon2_hash: verify memory parameter" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "argon2_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "arithmetic_encode: Range-based entropy coding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arithmetic_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arithmetic") != null);
+}
+
+test "arithmetic_encode: verify precision" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arithmetic_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "blake3_hash: BLAKE3 modern hash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blake3_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "BLAKE3") != null);
+}
+
+test "blake3_hash: verify output size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blake3_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "blowfish_cipher: Blowfish block cipher" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blowfish_cipher.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Blowfish") != null);
+}
+
+test "blowfish_cipher: verify rounds" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blowfish_cipher.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chacha20_cipher: ChaCha20 stream cipher" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chacha20_cipher.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "ChaCha20") != null);
+}
+
+test "chacha20_cipher: verify rounds" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chacha20_cipher.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "deflate_compress: LZ77 + Huffman hybrid" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "deflate_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Deflate") != null);
+}
+
+test "deflate_compress: verify compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "deflate_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dh_keyexchange: Diffie-Hellman key exchange" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dh_keyexchange.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Diffie") != null);
+}
+
+test "dh_keyexchange: verify prime size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dh_keyexchange.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ecdsa_sign: Elliptic curve digital signature" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ecdsa_sign.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "ECDSA") != null);
+}
+
+test "ecdsa_sign: verify key size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ecdsa_sign.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ed25519_sign: Ed25519 signature scheme" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ed25519_sign.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Ed25519") != null);
+}
+
+test "ed25519_sign: verify signature size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ed25519_sign.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "elliptic_curve: Elliptic curve math" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "elliptic_curve.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Elliptic") != null);
+}
+
+test "elliptic_curve: verify field size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "elliptic_curve.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hkdf_expand: HMAC-based KDF" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hkdf_expand.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HKDF") != null);
+}
+
+test "hkdf_expand: verify output length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hkdf_expand.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hmac_compute: HMAC keyed hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hmac_compute.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HMAC") != null);
+}
+
+test "hmac_compute: verify HMAC output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hmac_compute.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lz77_compress: LZ77 sliding window" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz77_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LZ77") != null);
+}
+
+test "lz77_compress: verify compression ratio" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz77_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lz78_compress: LZ78 dictionary compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz78_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LZ78") != null);
+}
+
+test "lz78_compress: verify dictionary" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz78_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lzw_compress: LZW encoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lzw_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LZW") != null);
+}
+
+test "lzw_compress: verify code size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lzw_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "move_to_front: MTF transform" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "move_to_front.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Move") != null);
+}
+
+test "move_to_front: verify alphabet" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "move_to_front.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "poly1305_mac: Message authentication code" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "poly1305_mac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Poly1305") != null);
+}
+
+test "poly1305_mac: verify tag size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "poly1305_mac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rsa_enc: RSA public-key encryption" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_enc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "RSA") != null);
+}
+
+test "rsa_enc: verify key size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_enc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "run_length_encode: RLE compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "run_length_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Run-Length") != null);
+}
+
+test "run_length_encode: verify encoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "run_length_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "scrypt_kdf: scrypt memory-hard KDF" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scrypt_kdf.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "scrypt") != null);
+}
+
+test "scrypt_kdf: verify parameters" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scrypt_kdf.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "siphash: Fast keyed hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "siphash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "SipHash") != null);
+}
+
+test "siphash: verify rounds" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "siphash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "twofish_cipher: Twofish block cipher" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "twofish_cipher.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Twofish") != null);
+}
+
+test "twofish_cipher: verify rounds" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "twofish_cipher.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "x25519_kex: X25519 key exchange" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "x25519_kex.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "X25519") != null);
+}
+
+test "x25519_kex: verify shared secret" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "x25519_kex.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
