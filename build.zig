@@ -3008,6 +3008,22 @@ pub fn build(b: *std.Build) void {
     const tri27_t27_programs_tests_step = b.step("test-tri27-t27", "Run TTT Dogfood .t27 Program Tests");
     tri27_t27_programs_tests_step.dependOn(&run_tri27_t27_programs_tests.step);
 
+    // TRI-27 Encoder Fuzzer (Property-based tests for Issue #469 regression prevention)
+    const tri27_fuzzer_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/test_encoder_fuzz.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    tri27_fuzzer_mod.addImport("cpu_state", tri27_cpu_mod);
+    tri27_fuzzer_mod.addImport("executor", tri27_executor_mod);
+
+    const tri27_fuzzer_tests = b.addTest(.{
+        .root_module = tri27_fuzzer_mod,
+    });
+    const run_tri27_fuzzer_tests = b.addRunArtifact(tri27_fuzzer_tests);
+    const tri27_fuzzer_tests_step = b.step("test-tri27-fuzz", "Run TRI-27 Encoder Fuzzer (Property-based Tests)");
+    tri27_fuzzer_tests_step.dependOn(&run_tri27_fuzzer_tests.step);
+
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{
         .root_module = b.createModule(.{
