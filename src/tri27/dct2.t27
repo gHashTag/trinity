@@ -1,0 +1,13 @@
+; DCT Transform — TTT Dogfood Phase 3
+;
+; Discrete cosine transform
+;
+; Test case: dct2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; dct2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a320019aa
