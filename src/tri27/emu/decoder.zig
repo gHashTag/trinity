@@ -119,7 +119,7 @@ pub fn decode(word: u32) Instruction {
 
     // Determine if instruction has immediate or src2
     const has_imm = switch (opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
         else => false,
     };
 
@@ -178,7 +178,7 @@ pub fn encode(inst: Instruction) u32 {
     };
 
     const has_imm = switch (inst.opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
         else => false,
     };
 
