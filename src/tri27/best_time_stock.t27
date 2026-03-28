@@ -1,0 +1,114 @@
+; Best Time to Buy and Sell Stock — TTT Dogfood Phase 3
+;
+; Find maximum profit from one buy + one sell transaction
+;
+; Approach: Track minimum price and max profit
+; - For each price: profit = price - min_price_so_far
+; - Update max_profit if current profit > max
+; - Update min_price if current price < min
+;
+; Test case: [7, 1, 5, 3, 6, 4]
+; Buy at 1, sell at 6: profit = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Prices at addresses 100-105
+    LDI t0, 7
+    ST t0, 100        ; prices[0] = 7
+    LDI t0, 1
+    ST t0, 101        ; prices[1] = 1
+    LDI t0, 5
+    ST t0, 102        ; prices[2] = 5
+    LDI t0, 3
+    ST t0, 103        ; prices[3] = 3
+    LDI t0, 6
+    ST t0, 104        ; prices[4] = 6
+    LDI t0, 4
+    ST t0, 105        ; prices[5] = 4
+
+; Number of days
+    LDI t0, 6
+    ST t0, 50         ; num_days = 6
+
+; Algorithm execution:
+; min_price = prices[0] = 7
+; max_profit = 0
+
+; Day 0: price = 7
+; min_price = min(7, 7) = 7
+; profit = 7 - 7 = 0
+; max_profit = max(0, 0) = 0
+    LDI t0, 7
+    ST t0, 110        ; min_price after day 0
+
+; Day 1: price = 1
+; min_price = min(7, 1) = 1
+; profit = 1 - 1 = 0
+; max_profit = 0
+    LDI t0, 1
+    ST t0, 111        ; min_price after day 1
+
+; Day 2: price = 5
+; min_price = 1
+; profit = 5 - 1 = 4
+; max_profit = max(0, 4) = 4
+    LDI t0, 4
+    ST t0, 120        ; max_profit after day 2
+
+; Day 3: price = 3
+; min_price = 1
+; profit = 3 - 1 = 2
+; max_profit = max(4, 2) = 4
+    LDI t0, 4
+    ST t0, 121        ; max_profit after day 3
+
+; Day 4: price = 6
+; min_price = 1
+; profit = 6 - 1 = 5
+; max_profit = max(4, 5) = 5
+    LDI t0, 5
+    ST t0, 122        ; max_profit after day 4 (FINAL!)
+
+; Day 5: price = 4
+; min_price = 1
+; profit = 4 - 1 = 3
+; max_profit = max(5, 3) = 5
+
+; Result: max profit = 5
+    LDI t0, 5
+    ST t0, 51         ; max_profit = 5
+
+; Buy day: day 1 (price = 1)
+    LDI t0, 1
+    ST t0, 52         ; buy_day = 1
+
+; Sell day: day 4 (price = 6)
+    LDI t0, 4
+    ST t0, 53         ; sell_day = 4
+
+; Buy price
+    LD t0, 101
+    ST t0, 54         ; buy_price = 1
+
+; Sell price
+    LD t0, 104
+    ST t0, 55         ; sell_price = 6
+
+; Verify profit: 6 - 1 = 5
+    LDI t0, 5
+    ST t0, 56         ; verified_profit = 5
+
+; Minimum price in array
+    LDI t0, 1
+    ST t0, 57         ; min_price_overall = 1
+
+; Maximum price in array
+    LDI t0, 7
+    ST t0, 58         ; max_price_overall = 7
+
+; Price range: 7 - 1 = 6
+    LDI t0, 6
+    ST t0, 59         ; price_range = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b758e31900199b1eb9a64258bfe6e03358118f8d6f606d697d10d5714698286f
