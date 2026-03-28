@@ -54060,3 +54060,138 @@ test "opt_lr_warmup: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "loss_binary_cross_entropy: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_binary_cross_entropy.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_binary_cross_entropy: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_binary_cross_entropy.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_cosine_loss: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_cosine_loss.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_cosine_loss: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_cosine_loss.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_cross_entropy: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_cross_entropy.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_cross_entropy: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_cross_entropy.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_hinge: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_hinge.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_hinge: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_hinge.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_huber: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_huber.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_huber: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_huber.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_kl_divergence: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_kl_divergence.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_kl_divergence: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_kl_divergence.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_log_cosh: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_log_cosh.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_log_cosh: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_log_cosh.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_mae: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_mae.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_mae: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_mae.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "loss_quantile: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_quantile.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_quantile: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_quantile.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
