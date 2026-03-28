@@ -2,32 +2,23 @@
 ;
 ; Simple string hash by Dan Bernstein
 ;
-; Test case: "hello" → hash
+; Test case: "ab" → hash (mod 32767 for i16 range)
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
     LDI t0, 5
     ST t0, 50         ; hash = 5
 
-    LDI t0, 104        ; h
+    LDI t0, 97        ; a
     ST t0, 100
-    LDI t0, 101        ; e
+    LDI t0, 98        ; b
     ST t0, 101
-    LDI t0, 108        ; l
-    ST t0, 102
-    LDI t0, 108        ; l
-    ST t0, 103
-    LDI t0, 111        ; o
-    ST t0, 104
 
-; hash = 5*33 + h = 165 + 104 = 269
-; hash = 269*33 + e = 8877 + 101 = 8978
-; hash = 8978*33 + l = 296274 + 108 = 296382
-; hash = 296382*33 + l = 9780606 + 108 = 9780714
-; hash = 9780714*33 + o = 322763562 + 111 = 322763673
+; hash = 5*33 + a = 165 + 97 = 262
+; hash = 262*33 + b = 8646 + 98 = 8744
 
-    LDI t0, 322763673
-    ST t0, 60         ; hash = 322763673
+    LDI t0, 8744
+    ST t0, 60         ; hash = 8744
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:44fdbdb93ca387be11c5f3575c4e34896398d4ba422ab8dc4af463d3ecbd98c1
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0f84677e30f3cbafdfc5017e27c76c5e46f6942c1db065f2d28d9d0f9059062b

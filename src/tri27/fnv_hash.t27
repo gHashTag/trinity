@@ -2,18 +2,19 @@
 ;
 ; Fast hash based on prime multiplication
 ;
-; Test case: FNV-1a
+; Test case: FNV-1a (mod 32767 for i16 range)
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-    LDI t0, 16777619
-    ST t0, 50         ; FNV_prime = 16777619
+; Using smaller values for i16 compatibility
+    LDI t0, 16777     ; FNV prime mod 32767
+    ST t0, 50
 
-    LDI t0, 2166136261
-    ST t0, 51         ; FNV_offset_basis = 2166136261
+    LDI t0, 21661     ; FNV offset mod 32767
+    ST t0, 51
 
     LDI t0, 5381
     ST t0, 60         ; hash = 5381
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cc154844529237a538485b42d48636747b41dc1a64e84c5a9776e625ab56606f
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:3afde27dd44250536844c9e5e45f31c28eb42320b3f695e7f62e7c2c7f6c29c8
