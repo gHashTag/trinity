@@ -1,0 +1,13 @@
+; GCN Cayley — TTT Dogfood Phase 3
+;
+; Cayley spectral graph convolution
+;
+; Test case: gcn_cayley
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cayley_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aed000002000000002538

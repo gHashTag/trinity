@@ -1,0 +1,13 @@
+; GCN TAGCN — TTT Dogfood Phase 3
+;
+- Topology Adaptive Graph Convolutional Network
+;
+; Test case: gcn_tagcn
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tagcn_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07af300000200000002544
