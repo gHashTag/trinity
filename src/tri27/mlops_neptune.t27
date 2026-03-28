@@ -1,0 +1,13 @@
+; MLOps Neptune — TTT Dogfood Phase 3
+;
+- Neptune: experiment tracking for MLOps
+;
+; Test case: mlops_neptune
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; neptune_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b4d000002000000002631

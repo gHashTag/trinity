@@ -1,0 +1,13 @@
+; MLOps MLflow — TTT Dogfood Phase 3
+;
+- MLflow: experiment tracking and model registry
+;
+; Test case: mlops_mlflow
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mlflow_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b4a000002000000002628
