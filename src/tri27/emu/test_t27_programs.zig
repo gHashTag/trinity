@@ -9227,3 +9227,87 @@ test "power_mod: number of squarings" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// substring_search.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "substring_search: file exists" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/substring_search.t27";
+    const file = try std.fs.cwd().readFileAlloc(allocator, path, 100000);
+    defer allocator.free(file);
+    try std.testing.expect(file.len > 0);
+}
+
+test "substring_search: text length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 11
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
+}
+
+test "substring_search: pattern length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "substring_search: found at index" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "substring_search: found flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "substring_search: comparisons count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "substring_search: exact match" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
