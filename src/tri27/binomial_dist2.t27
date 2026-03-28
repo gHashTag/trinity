@@ -1,6 +1,6 @@
 ; Binomial V2 — TTT Dogfood Phase 3
 ;
-| n trials alt
+; n trials alt
 ;
 ; Test case: binomial_dist2
 ;

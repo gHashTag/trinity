@@ -1,6 +1,6 @@
 ; Beta Distribution V2 — TTT Dogfood Phase 3
 ;
-| [0,1] domain alt
+; [0,1] domain alt
 ;
 ; Test case: beta_dist2
 ;
