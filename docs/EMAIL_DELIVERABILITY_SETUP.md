@@ -1,58 +1,227 @@
-# Email Deliverability Setup for t27.ai
+# Email Deliverability Setup for t27.ai (Unstoppable Domains + Zoho)
 
-## CRITICAL: DNS Records Required Before First Email
+## ⚠️ CRITICAL: DNS Records Required Before First Email
 
-**Without SPF/DKIM/DMARC, ~70% of emails from admin@t27.ai will be marked as spam**, especially by .edu and institutional servers.
+**Without SPF/DKIM/DMARC/MX, ~70% of emails from admin@t27.ai will be marked as spam**.
 
-## Step 1: Add TXT Records to t27.ai DNS
+---
 
-### SPF Record (Sender Policy Framework)
-```
-Type: TXT
-Name: t27.ai.
-Value: "v=spf1 include:zoho.com ~all"
-```
+## Phase 1: Zoho Admin Console — Get Exact Records
 
-### DKIM Record (DomainKeys Identified Mail)
-```
-Type: TXT
-Name: zmail._domainkey.t27.ai.
-Value: "v=DKIM1; k=rsa; p=<YOUR_PUBLIC_KEY_FROM_ZOHO>"
-```
+1. Log into **Zoho Mail Admin Console**
+2. Navigate to **Domains → [t27.ai]**
+3. Keep this open — you'll need records from each tab (MX, SPF, DKIM, DMARC)
 
-**How to get the key:**
-1. Log into Zoho Mail
-2. Go to Settings → Domain Verification
-3. Find DKIM and copy the public key
+---
 
-### DMARC Record
-```
-Type: TXT
-Name: _dmarc.t27.ai.
-Value: "v=DMARC1; p=none; rua=mailto:admin@t27.ai"
-```
+## Phase 2: Unstoppable Domains — Add DNS Records
 
-## Step 2: Verify DNS Propagation
+### Step 1: MX Records (REQUIRED for replies)
+
+**Zoho Admin Console → Domains → t27.ai → Email Configuration → MX tab**
+
+Open: https://unstoppabledomains.com/manage?page=dns&domain=t27.ai
+
+| Type | Name | Value | Priority |
+|------|------|-------|----------|
+| MX | @ | `mx.zoho.com` | 10 |
+| MX | @ | `mx2.zoho.com` | 20 |
+| MX | @ | `mx3.zoho.com` | 50 |
+
+**Add all three** via "Add another record" in one session.
+
+> **⚠️ Without MX:** Scientists' replies will bounce!
+
+### Step 2: SPF Record
+
+**Zoho shows:** `v=spf1 include:zohomail.com ~all`
+
+In Unstoppable Domains → DNS Records → Add new record:
+- **Type:** TXT
+- **Name:** `@`
+- **Value:** `"v=spf1 include:zohomail.com ~all"`
+
+> **⚠️ NOTE:** Use `zohomail.com`, NOT `zoho.com` — different domains!
+
+### Step 3: DKIM Record (NOT Optional!)
+
+**Zoho Admin Console → Email Authentication → DKIM tab → Add**
+1. Selector name: `zoho` (or any name)
+2. Key length: **1024 bits**
+3. Zoho generates TXT record → copy it
+
+In Unstoppable Domains → DNS Records → Add new record:
+- **Type:** TXT
+- **Name:** `zoho._domainkey` (or whatever Zoho shows)
+- **Value:** (paste long key from Zoho)
+
+Save → Return to Zoho → **Verify**
+
+> **⚠️ DKIM is REQUIRED** — Without it, DMARC alignment fails and emails go to spam.
+
+### Step 4: DMARC Record
+
+**Zoho Admin Console → DMARC tab → Generate policy**
+
+In Unstoppable Domains → DNS Records → Add new record:
+- **Type:** TXT
+- **Name:** `_dmarc`
+- **Value:** `"v=DMARC1; p=none; rua=mailto:admin@t27.ai; ruf=mailto:admin@t27.ai"`
+
+---
+
+## Phase 3: Verify in Zoho
+
+After adding records, wait for propagation (Unstoppable Domains: usually <1 hour, max 48 hours).
+
+**Zoho Admin Console → Domains → t27.ai**
+1. Click **Verify** on each tab (MX, SPF, DKIM, DMARC)
+2. All four should show green checkmarks ✅
+
+---
+
+## Phase 4: Test Email Score
+
+**Goal: 9+/10 on mail-tester.com**
 
 ```bash
-# Check SPF
-dig txt t27.ai +short
+# 1. Get unique address from mail-tester.com
+# https://www.mail-tester.com/
 
-# Check DKIM
-dig txt zmail._domainkey.t27.ai +short
+# 2. Send test email
+tri outreach test --to=<unique-address>@mail-tester.com
 
-# Check DMARC
-dig txt _dmarc.t27.ai +short
-
-# Use Zoho's verification tool
-# Visit: https://zohomail.tools/#runChecks
+# 3. Check score
+# Should be 9+/10 before proceeding
 ```
 
-## Step 3: Test Email Score
+---
 
-Before sending to scientists, test with:
-- https://www.mail-tester.com/ — Send email, get score
-- https://www.gmail.com/checkyourdomain/ — Google's tool
+## Unstoppable Domains Specifics
+
+| Setting | Value |
+|----------|-------|
+| **Name field** | Enter `@` or `_dmarc` or `zoho._domainkey` — **WITHOUT** `.t27.ai` suffix |
+| **TTL** | Leave default (1 hour) |
+| **Quotes** | Include quotes for SPF/DMARC: `"v=spf1..."` |
+| **DKIM** | NOT optional — required for DMARC alignment |
+
+---
+
+## 14-Day Manual Warmup (REQUIRED!)
+
+**Even with 10/10 score, new domains get greylisted.**
+
+### Days 1-14: Manual Warmup
+
+| Action | Frequency | Purpose |
+|--------|-----------|---------|
+| Send to yourself | 2-3/day | Build positive engagement |
+| Open replies | Immediately | Signals "real human" |
+| Mark "not spam" | If in spam | Train filters |
+| Reply to self | Each email | Creates thread signals |
+
+**Target accounts:** Your personal Gmail, Outlook, Yahoo.
+
+```bash
+# Example pattern
+tri outreach test --to=your-personal@gmail.com
+# Then: Open, reply, mark important
+```
+
+### Days 15-21: Engaged Contacts (3-5/day)
+
+Sherbon, Karpougas (high reply rate expected)
+
+### Days 22-28: Scaling (5-8/day)
+
+VSA experts, LQG physicists
+
+### Day 29+: Full Volume (10/day)
+
+All tiers
+
+---
+
+## RFC 8058 List-Unsubscribe Header
+
+**Gmail requires this since Feb 2024.**
+
+```zig
+// In src/tri/outreach/smtp.zig
+headers: &.{
+    .{ .name = "List-Unsubscribe", .value = "<https://t27.ai/unsubscribe?id={uuid}>" },
+    .{ .name = "List-Unsubscribe-Post", .value = "List-Unsubscribe=One-Click" },
+}
+```
+
+---
+
+## Secondary Domain (Recommended)
+
+**Never use primary domain for cold outreach!**
+
+| Domain | Purpose | Cost |
+|--------|---------|------|
+| `t27.ai` | Primary — replies, collaborations | — |
+| `trynity.ai` or `t27mail.com` | Cold outreach only | ~$10/year |
+
+**From:** `outreach@trynity.ai`
+**Reply-To:** `admin@t27.ai`
+
+> **Why:** If secondary domain gets blacklisted, primary remains clean.
+
+---
+
+## Checklist Before First Email
+
+- [ ] MX records (10/20/50 priorities)
+- [ ] SPF with `zohomail.com` (NOT `zoho.com`)
+- [ ] DKIM from Zoho Admin Console (1024-bit key)
+- [ ] DMARC with `rua` and `ruf`
+- [ ] Verified in Zoho (4 green checkmarks)
+- [ ] mail-tester.com score 9+/10
+- [ ] 14-day manual warmup completed
+- [ ] List-Unsubscribe header implemented
+- [ ] Consider secondary domain for outreach
+
+---
+
+## Timeline
+
+| Day | Action |
+|-----|--------|
+| 0 | Add DNS records in UD (15 min) |
+| 1 | DNS propagation (usually <1 hour for UD) |
+| 2 | Verify in Zoho (4 green checks) |
+| 3 | Test on mail-tester.com → 9+/10 |
+| 4-17 | 14-day manual warmup (send to self) |
+| 18 | First real emails (Sherbon, Karpougas) |
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Check DNS propagation
+dig mx t27.ai +short
+dig txt t27.ai +short
+dig txt zoho._domainkey.t27.ai +short
+dig txt _dmarc.t27.ai +short
+
+# Test email
+tri outreach test --to=admin@t27.ai
+tri outreach test --to=<mail-tester-address>
+
+# Check warming status
+tri outreach status
+
+# Send first batch (after warmup)
+tri outreach send --dry-run  # Preview
+tri outreach send --batch=day1  # Actually send
+```
+
+---
 
 ## Why This Matters
 
@@ -60,17 +229,22 @@ Before sending to scientists, test with:
 |---------|----------------|--------------|
 | Spam filter | ~70% blocked | <5% blocked |
 | .edu delivery | Often rejected | Accepted |
+| Replies lost | No MX = bounce | Delivered |
 | Inbox placement | Spam folder | Inbox |
 | Reply rate | 1-2% | 10-20% |
 
-## Timeline
-
-- **Day 0**: Add DNS records (30 min)
-- **Day 1**: DNS propagation (24-48 hours)
-- **Day 3**: Verify with Zoho tool
-- **Day 4**: Send first warming emails
+---
 
 ## References
 
-- [Zoho Email Deliverability Toolkit](https://www.joellipman.com/articles/crm/zoho/zoho-email-deliverability-spf-dkim-dmarc-toolkit.html)
-- [DMARC.org](https://dmarc.org/)
+- [Zoho DKIM Setup](https://inboxgreen.email/guides/zoho-mail/dkim)
+- [Zoho MX Setup](https://hackmd.io/@VeZd7WLKSNimxK_Val9mFA/how-to-set-up-zoho-mail-for-my-custom-business-domain)
+- [UD DNS Explained](https://support.unstoppabledomains.com/support/solutions/articles/48001273539-dns-records-explained)
+- [Domain Warmup Guide](https://leadsmonky.com/warm-up-your-email-domain-for-cold-outreach/)
+- [Mail-tester Best Practices](https://inventoryalarm.com/mail-tester-10-out-of-10-score/)
+- [Secondary Domain Strategy](https://www.emareach.com/blog/how-to-scale-cold-emailing-using-domain-warm-up-tools)
+- [RFC 8058](https://www.rfc-editor.org/rfc/rfc8058.html)
+
+---
+
+**φ² + 1/φ² = 3 = TRINITY**
