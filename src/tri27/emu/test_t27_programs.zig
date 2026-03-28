@@ -588,17 +588,16 @@ test "binary_search: find middle element in 3-element array" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    ; Check if equals t1
-        \\    SUB t0, t1
-        \\    JZ found_0
-        \\    ; Restore target, check t2
-        \\    ADD t0, t1
-        \\    SUB t0, t2
-        \\    JZ found_1
-        \\    ; Restore target, check t3
-        \\    ADD t0, t2
-        \\    SUB t0, t3
-        \\    JZ found_2
+        \\    ; Use t4 as temp to preserve target in t0
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t1
+        \\    JZ t4, found_0
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t2
+        \\    JZ t4, found_1
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t3
+        \\    JZ t4, found_2
         \\    ; Not found
         \\    LDI t0, -1
         \\    HALT
@@ -623,13 +622,13 @@ test "binary_search: find first element" {
         \\    ; Use t4 as temp to preserve target in t0
         \\    MOV t4, t0
         \\    SUB t4, t4, t1
-        \\    JZ found_0
+        \\    JZ t4, found_0
         \\    MOV t4, t0
         \\    SUB t4, t4, t2
-        \\    JZ found_1
+        \\    JZ t4, found_1
         \\    MOV t4, t0
         \\    SUB t4, t4, t3
-        \\    JZ found_2
+        \\    JZ t4, found_2
         \\    LDI t0, -1
         \\    HALT
         \\found_0:
@@ -653,7 +652,7 @@ test "binary_search: find last element" {
         \\    ; Use t4 as temp to preserve target in t0
         \\    MOV t4, t0
         \\    SUB t4, t4, t3
-        \\    JZ found_2
+        \\    JZ t4, found_2
         \\    LDI t0, -1
         \\    HALT
         \\found_2:
@@ -671,13 +670,13 @@ test "binary_search: element not found" {
         \\    ; Use t4 as temp to preserve target in t0
         \\    MOV t4, t0
         \\    SUB t4, t4, t1
-        \\    JZ found_0
+        \\    JZ t4, found_0
         \\    MOV t4, t0
         \\    SUB t4, t4, t2
-        \\    JZ found_1
+        \\    JZ t4, found_1
         \\    MOV t4, t0
         \\    SUB t4, t4, t3
-        \\    JZ found_2
+        \\    JZ t4, found_2
         \\    LDI t0, -1
         \\    HALT
         \\found_0:
@@ -701,7 +700,7 @@ test "binary_search: single element array, found" {
         \\    ; Use t4 as temp to preserve target in t0
         \\    MOV t4, t0
         \\    SUB t4, t4, t1
-        \\    JZ found
+        \\    JZ t4, found
         \\    LDI t0, -1
         \\    HALT
         \\found:
