@@ -1,6 +1,6 @@
 ; Matrix Inverse V2 — TTT Dogfood Phase 3
 ;
-| B = A^-1 alt
+; B = A^-1 alt
 ;
 ; Test case: matrix_inverse2
 ;

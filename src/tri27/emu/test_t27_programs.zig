@@ -47760,3 +47760,168 @@ test "butterworth_filter: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "matrix_add: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_add.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_add: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_add.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_cholesky: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_cholesky.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_cholesky: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_cholesky.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_determinant2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_determinant2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_determinant2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_determinant2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_eigen2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_eigen2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_eigen2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_eigen2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_inverse2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_inverse2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_inverse2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_inverse2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_mult: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_mult.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_mult: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_mult.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_rank2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_rank2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_rank2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_rank2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_sub: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_sub.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_sub: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_sub.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_svd2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_svd2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_svd2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_svd2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_trace2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_trace2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_trace2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_trace2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_transpose2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_transpose2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_transpose2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_transpose2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

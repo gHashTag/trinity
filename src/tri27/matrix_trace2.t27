@@ -1,6 +1,6 @@
 ; Matrix Trace V2 — TTT Dogfood Phase 3
 ;
-| Sum diagonal alt
+; Sum diagonal alt
 ;
 ; Test case: matrix_trace2
 ;

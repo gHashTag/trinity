@@ -1,6 +1,6 @@
 ; SVD V2 — TTT Dogfood Phase 3
 ;
-| Singular value alt
+; Singular value alt
 ;
 ; Test case: matrix_svd2
 ;

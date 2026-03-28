@@ -1,6 +1,6 @@
 ; Matrix Determinant V2 — TTT Dogfood Phase 3
 ;
-| det(A) alt
+; det(A) alt
 ;
 ; Test case: matrix_determinant2
 ;
