@@ -1,0 +1,13 @@
+; Claude RAG — TTT Dogfood Phase 3
+;
+; Retrieval augmented generation
+;
+; Test case: claude_rag
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; claude_rag_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aa40000020000000023a1

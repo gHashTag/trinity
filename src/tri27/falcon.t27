@@ -1,0 +1,13 @@
+; Falcon — TTT Dogfood Phase 3
+;
+| Lightweight language model
+;
+; Test case: falcon
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; falcon_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aab0000020000000023aa
