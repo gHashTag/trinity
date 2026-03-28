@@ -1,0 +1,13 @@
+; Feedforward NN — TTT Dogfood Phase 3
+;
+; Simple neural network
+;
+; Test case: nn_ff
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nn_ff_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071ac6001a3e

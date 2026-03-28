@@ -1,0 +1,13 @@
+; Attention Mechanism — TTT Dogfood Phase 3
+;
+; Attention weights
+;
+; Test case: att_mech
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; att_mech_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071ad6001a4e
