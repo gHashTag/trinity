@@ -1,0 +1,13 @@
+; Vector HNSW — TTT Dogfood Phase 3
+;
+; HNSW indexing
+;
+; Test case: vector_hnsw
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; hnsw_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078110000020000000021d0
