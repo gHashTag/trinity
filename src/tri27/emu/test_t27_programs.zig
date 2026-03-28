@@ -15404,3 +15404,72 @@ test "binary_indexed_tree: bit node 3" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
+
+// sqrt tests
+test "sqrt: file exists" {
+    const path = "src/tri27/sqrt.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "sqrt: sqrt 25" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "sqrt: sqrt 2" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "sqrt: sqrt 10" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "sqrt: sqrt 100" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "sqrt: perfect squares count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 11
+        \\    ST t0, 64
+        \\    LD t0, 64
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
+}
