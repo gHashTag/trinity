@@ -1,6 +1,6 @@
 ; BLAKE RNG — TTT Dogfood Phase 3
 ;
-| Hash-based RNG
+; Hash-based RNG
 ;
 ; Test case: rng_blake
 ;

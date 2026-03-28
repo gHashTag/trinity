@@ -1,6 +1,6 @@
 ; Xorshift RNG — TTT Dogfood Phase 3
 ;
-| XOR-shift basic
+; XOR-shift basic
 ;
 ; Test case: rng_xorshift
 ;

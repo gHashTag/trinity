@@ -1,6 +1,6 @@
 ; Mersenne Twister — TTT Dogfood Phase 3
 ;
-| High-quality RNG
+; High-quality RNG
 ;
 ; Test case: rng_mersenne
 ;

@@ -1,6 +1,6 @@
 ; PCG Random — TTT Dogfood Phase 3
 ;
-| Permuted congruential
+; Permuted congruential
 ;
 ; Test case: rng_pcg
 ;

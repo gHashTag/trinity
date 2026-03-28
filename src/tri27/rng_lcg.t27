@@ -1,6 +1,6 @@
 ; LCG RNG — TTT Dogfood Phase 3
 ;
-| Linear congruential
+; Linear congruential
 ;
 ; Test case: rng_lcg
 ;
