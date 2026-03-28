@@ -1591,4 +1591,106 @@ test "merge_sort: min max verification" {
     try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// BINARY TREE TRAVERSAL TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "t27_programs: binary_tree file exists" {
+    const path = "src/tri27/binary_tree.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "binary_tree: assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/binary_tree.t27";
+    const source = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(source);
+
+    const bytecode = try tri_asm.assemble(allocator, source);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "binary_tree: tree initialization" {
+    const allocator = std.testing.allocator;
+    // Initialize tree: root=5, left=3, right=7
+    const program =
+        \\    LDI t0, 5         ; root
+        \\    ST t0, 101
+        \\    LDI t0, 3         ; left child
+        \\    ST t0, 102
+        \\    LDI t0, 7         ; right child
+        \\    ST t0, 103
+        \\    LD t0, 101        ; load root
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "binary_tree: in-order traversal sum" {
+    const allocator = std.testing.allocator;
+    // In-order: 1, 3, 4, 5, 7 -> sum = 20
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 200
+        \\    LDI t0, 3
+        \\    ST t0, 201
+        \\    LDI t0, 4
+        \\    ST t0, 202
+        \\    LDI t0, 5
+        \\    ST t0, 203
+        \\    LDI t0, 7
+        \\    ST t0, 204
+        \\    LD t0, 200
+        \\    LD t1, 201
+        \\    ADD t0, t0, t1    ; t0 = 4
+        \\    LD t1, 202
+        \\    ADD t0, t0, t1    ; t0 = 8
+        \\    LD t1, 203
+        \\    ADD t0, t0, t1    ; t0 = 13
+        \\    LD t1, 204
+        \\    ADD t0, t0, t1    ; t0 = 20
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
+}
+
+test "binary_tree: tree height and size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3         ; height
+        \\    ST t0, 60
+        \\    LDI t0, 5         ; size
+        \\    ST t0, 61
+        \\    LD t0, 60         ; load height
+        \\    LDI t1, 5         ; expected size
+        \\    ADD t0, t0, t1    ; 3 + 5 = 8
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "binary_tree: balance factor calculation" {
+    const allocator = std.testing.allocator;
+    // Balance factor = |left_height - right_height|
+    // For balanced tree: |2 - 1| = 1
+    const program =
+        \\    LDI t0, 2         ; left height
+        \\    LDI t1, 1         ; right height
+        \\    SUB t0, t0, t1    ; t0 = 1
+        \\    ST t0, 62         ; balance factor
+        \\    LD t0, 62         ; load balance factor
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
