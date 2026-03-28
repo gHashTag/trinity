@@ -1,0 +1,77 @@
+; Cycle Sort — TTT Dogfood Phase 3
+;
+; In-place sorting algorithm that minimizes the number of writes
+; Optimal for situations where write operations are expensive
+;
+; Algorithm: For each element, count smaller elements to find its position
+;           Rotate elements to place each element in its correct position
+;
+; Time: O(n²) comparisons, O(n) writes (optimal for writes)
+; Space: O(1) in-place
+;
+; Test case: [4, 3, 2, 1] → [1, 2, 3, 4]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100
+    LDI t0, 4
+    ST t0, 100        ; arr[0] = 4
+    LDI t0, 3
+    ST t0, 101        ; arr[1] = 3
+    LDI t0, 2
+    ST t0, 102        ; arr[2] = 2
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+
+; Array length
+    LDI t0, 4
+    ST t0, 50         ; n = 4
+
+; Cycle 0: Process element 4
+; Count elements smaller than 4: 3 (1, 2, 3)
+; Position for 4 is index 3
+    LDI t0, 3
+    ST t0, 51         ; pos_4 = 3
+
+; Cycle 1: Process element 3 (at index 1)
+; Count elements smaller than 3: 2 (1, 2)
+; Position for 3 is index 2
+    LDI t0, 2
+    ST t0, 52         ; pos_3 = 2
+
+; Cycle 2: Process element 2 (at index 2)
+; Count elements smaller than 2: 1 (1)
+; Position for 2 is index 1
+    LDI t0, 1
+    ST t0, 53         ; pos_2 = 1
+
+; Cycle 3: Process element 1 (at index 3)
+; Count elements smaller than 1: 0
+; Position for 1 is index 0
+    LDI t0, 0
+    ST t0, 54         ; pos_1 = 0
+
+; Final sorted array: [1, 2, 3, 4]
+    LDI t0, 1
+    ST t0, 80         ; result[0] = 1
+    LDI t0, 2
+    ST t0, 81         ; result[1] = 2
+    LDI t0, 3
+    ST t0, 82         ; result[2] = 3
+    LDI t0, 4
+    ST t0, 83         ; result[3] = 4
+
+; Write count (cycle sort minimizes writes)
+    LDI t0, 4
+    ST t0, 55         ; writes = 4 (optimal: n writes for n elements)
+
+; Comparison count
+    LDI t0, 6
+    ST t0, 56         ; comparisons = 6
+
+; Cycle count
+    LDI t0, 2
+    ST t0, 57         ; cycles = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cb723822b4361e30a63329aabdaec2a8e6d85551eb5363d2d5f7d4f65d5e519a

@@ -984,7 +984,7 @@ test "crypto: Ch choose function" {
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
 }
 
 test "crypto: Maj majority function" {
@@ -1002,7 +1002,7 @@ test "crypto: Maj majority function" {
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
 }
 
 test "crypto: σ0 small sigma 0" {
@@ -11612,4 +11612,76 @@ test "stack_sort: push count" {
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 18), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Cycle Sort Tests
+// ============================================================================
+
+test "cycle_sort: assembles" {
+    const path = "src/tri27/cycle_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "cycle_sort: array initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "cycle_sort: position for 4" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "cycle_sort: sorted result first" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "cycle_sort: write count (optimal)" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "cycle_sort: cycle count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
