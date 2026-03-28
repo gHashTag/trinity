@@ -108,27 +108,27 @@ All documentation now references this manifest as the source of truth for:
 
 ---
 
-## Toxic Verdict (Честная Оценка)
+## Toxic Verdict (Honest Assessment)
 
-### Что было (What Was Wrong)
+### What Was Wrong
 
-1. **Три разных версии правды** — 3588/3588, 3584/3589, 3600/3610 в разных документах
-2. **"100% certified"** — вводило в заблуждение при наличии documented caveats
-3. **Нет единого источника** — каждый документ изобретал свои числа
+1. **Three different versions of truth** — 3588/3588, 3584/3589, 3600/3610 in different docs
+2. **"100% certified"** — misleading given documented caveats
+3. **No single source** — each doc invented its own numbers
 
-### Что исправлено (What Was Fixed)
+### What Was Fixed
 
-1. **Единый manifest** — `ga_certification_manifest_v2.2.0.json` как SSOT
-2. **Честная формулировка** — "certified with documented caveats"
-3. **Все цифры выровнены** — 3600/3610 (99.72%) везде
-4. **Автовалидация** — `validate_ga_consistency.sh` для будущих релизов
+1. **Single manifest** — `ga_certification_manifest_v2.2.0.json` as SSOT
+2. **Honest wording** — "certified with documented caveats"
+3. **All numbers aligned** — 3600/3610 (99.72%) everywhere
+4. **Auto-validation** — `validate_ga_consistency.sh` for future releases
 
-### Честная оценка (Honest Assessment)
+### Honest Assessment
 
-**Было:** GA certification pack существует, но метрики рассинхронизированы.
-**Стало:** Единый source of truth, все метрики согласованы, валидация проходит.
+**Before:** GA certification pack exists, but metrics desynchronized.
+**After:** Single source of truth, all metrics aligned, validation passes.
 
-**Рекомендация:** FINALIZE AND TAG — можно делать финальный annotated tag.
+**Recommendation:** FINALIZE AND TAG — ready to create final annotated tag.
 
 ---
 

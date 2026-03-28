@@ -65,7 +65,7 @@ pub fn assertPhiDistance(comptime distance: comptime_float, max: comptime_float)
     }
 }
 
-/// Вычислить phi-distance для формата с n_total бит, n_exp бит
+/// Compute phi-distance for format with n_total bits, n_exp bits
 pub fn computePhiDistance(comptime n_total: comptime_int, comptime n_exp: comptime_int) comptime_float {
     const n_mant = n_total - n_exp - 1; // -1 for sign
     return @abs(@as(comptime_float, @floatFromInt(n_exp)) / @as(comptime_float, @floatFromInt(n_mant)) - 1.0 / phi);

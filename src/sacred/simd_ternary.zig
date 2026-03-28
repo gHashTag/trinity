@@ -8,25 +8,25 @@ const std = @import("std");
 /// Optimal SIMD vector width for i8
 pub const SIMD_WIDTH = std.simd.suggestVectorLength(i8) orelse 32;
 
-/// SIMD-тип для тернарных векторов
+/// SIMD type for ternary vectors
 pub const TritVector = @Vector(SIMD_WIDTH, i8);
 
-/// SIMD-тип для аккумуляторов (i16 для избежания переполнения)
+/// SIMD type for accumulators (i16 to avoid overflow)
 pub const TritVectorWide = @Vector(SIMD_WIDTH, i16);
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY DOT PRODUCT — SIMD скалярное произведение
+// TERNARY DOT PRODUCT — SIMD scalar product
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Тернатрное скалярное произведение (через SIMD)
+/// Ternary scalar product (via SIMD)
 /// Returns: a[0]*b[0] + a[1]*b[1] + ... + a[N-1]*b[N-1]
 pub fn tritDot(a: TritVector, b: TritVector) i32 {
-    const product = a * b; // 1 SIMD инструкция
+    const product = a * b; // 1 SIMD instruction
     const product_wide: TritVectorWide = product;
     return @reduce(.Add, product_wide);
 }
 
-/// Скалярное произведение для срезов с автовыравниванием
+/// Scalar product for slices with auto-alignment
 pub fn tritDotSlice(a: []const i8, b: []const i8) i32 {
     std.debug.assert(a.len == b.len);
 
@@ -36,7 +36,7 @@ pub fn tritDotSlice(a: []const i8, b: []const i8) i32 {
     var acc: i32 = 0;
     var i: usize = 0;
 
-    // SIMD часть
+    // SIMD part
     while (i < num_vecs * vec_len) : (i += vec_len) {
         const a_vec: TritVector = a[i..][0..vec_len].*;
         const b_vec: TritVector = b[i..][0..vec_len].*;
@@ -52,7 +52,7 @@ pub fn tritDotSlice(a: []const i8, b: []const i8) i32 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY BIND — element-wise умножение (XOR-like)
+// TERNARY BIND — element-wise multiplication (XOR-like)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// Ternary bind (element-wise mul)
@@ -60,7 +60,7 @@ pub fn tritBind(a: TritVector, b: TritVector) TritVector {
     return a * b;
 }
 
-/// Bind для срезов
+/// Bind for slices
 pub fn tritBindSlice(dst: []i8, a: []const i8, b: []const i8) void {
     std.debug.assert(dst.len >= a.len);
     std.debug.assert(a.len == b.len);
@@ -70,7 +70,7 @@ pub fn tritBindSlice(dst: []i8, a: []const i8, b: []const i8) void {
 
     var i: usize = 0;
 
-    // SIMD часть
+    // SIMD part
     while (i < num_vecs * vec_len) : (i += vec_len) {
         const a_vec: TritVector = a[i..][0..vec_len].*;
         const b_vec: TritVector = b[i..][0..vec_len].*;
@@ -88,7 +88,7 @@ pub fn tritBindSlice(dst: []i8, a: []const i8, b: []const i8) void {
 // TERNARY BUNDLE — majority vote
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Ternary bundle 2 вектора (majority vote)
+/// Ternary bundle 2 vectors (majority vote)
 pub fn tritBundle2(a: TritVector, b: TritVector) TritVector {
     const a_wide: TritVectorWide = a;
     const b_wide: TritVectorWide = b;
@@ -108,7 +108,7 @@ pub fn tritBundle2(a: TritVector, b: TritVector) TritVector {
     return @as(TritVector, @truncate(out));
 }
 
-/// Ternary bundle 3 вектора
+/// Ternary bundle 3 vectors
 pub fn tritBundle3(a: TritVector, b: TritVector, c: TritVector) TritVector {
     const a_wide: TritVectorWide = a;
     const b_wide: TritVectorWide = b;
@@ -129,7 +129,7 @@ pub fn tritBundle3(a: TritVector, b: TritVector, c: TritVector) TritVector {
     return @as(TritVector, @truncate(out));
 }
 
-/// Bundle N векторов (majority vote)
+/// Bundle N vectors (majority vote)
 pub fn tritBundleN(vecs: []const TritVector) TritVector {
     if (vecs.len == 0) return @splat(@as(i8, 0));
     if (vecs.len == 1) return vecs[0];
@@ -155,7 +155,7 @@ pub fn tritBundleN(vecs: []const TritVector) TritVector {
     return @as(TritVector, @truncate(out));
 }
 
-/// Bundle для срезов
+/// Bundle for slices
 pub fn tritBundleSlice(dst: []i8, vecs: []const []const i8) void {
     const vec_len = SIMD_WIDTH;
 
@@ -168,7 +168,7 @@ pub fn tritBundleSlice(dst: []i8, vecs: []const []const i8) void {
 
     var i: usize = 0;
 
-    // SIMD часть
+    // SIMD part
     while (i < num_vecs * vec_len) : (i += vec_len) {
         var simd_vecs: std.BoundedArray(TritVector, 32) = .{};
         for (vecs) |v| {
@@ -214,10 +214,10 @@ pub fn tritPermuteRight(v: TritVector, comptime k: comptime_int) TritVector {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY SIMILARITY — cosine similarity для тритов
+// TERNARY SIMILARITY — cosine similarity for trits
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Cosine similarity для двух тернарных векторов
+/// Cosine similarity for two ternary vectors
 pub fn tritCosineSim(a: TritVector, b: TritVector) f64 {
     const dot = tritDot(a, b);
     const norm_a = tritNorm(a);
@@ -228,7 +228,7 @@ pub fn tritCosineSim(a: TritVector, b: TritVector) f64 {
     return @as(f64, @floatFromInt(dot)) / (@as(f64, norm_a) * @as(f64, norm_b));
 }
 
-/// L2 норма тернарного вектора (sqrt of sum of squares)
+/// L2 norm of ternary vector (sqrt of sum of squares)
 pub fn tritNorm(v: TritVector) f64 {
     const squares = v * v;
     const squares_wide: TritVectorWide = squares;
@@ -237,10 +237,10 @@ pub fn tritNorm(v: TritVector) f64 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY COUNT — подсчёт ненулевых тритов
+// TERNARY COUNT — count non-zero trits
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Подсчитать количество ненулевых тритов в векторе
+/// Count number of non-zero trits in vector
 pub fn tritCountNonZero(v: TritVector) usize {
     const zeros = @as(TritVector, @splat(0));
     const nonzero = v != zeros;
@@ -252,7 +252,7 @@ pub fn tritCountNonZero(v: TritVector) usize {
     return count;
 }
 
-/// Подсчитать количество положительных тритов
+/// Count number of positive trits
 pub fn tritCountPositive(v: TritVector) usize {
     const zeros = @as(TritVector, @splat(0));
     const positive = v > zeros;
@@ -263,7 +263,7 @@ pub fn tritCountPositive(v: TritVector) usize {
     return count;
 }
 
-/// Подсчитать количество отрицательных тритов
+/// Count number of negative trits
 pub fn tritCountNegative(v: TritVector) usize {
     const zeros = @as(TritVector, @splat(0));
     const negative = v < zeros;
@@ -285,14 +285,14 @@ pub fn tritRandom(comptime seed: u64) TritVector {
 
     var result: TritVector = undefined;
     inline for (0..SIMD_WIDTH) |i| {
-        // Используем i для вариации seed
+        // Use i for seed variation
         const t = random.intRangeAtMost(i8, -1, 1);
         result[i] = t;
     }
     return result;
 }
 
-/// Случайный тернарный вектор (runtime seed)
+/// Random ternary vector (runtime seed)
 pub fn tritRandomRuntime(seed: u64) TritVector {
     var rng = std.Random.DefaultPrng.init(seed);
     const random = rng.random();
@@ -308,17 +308,17 @@ pub fn tritRandomRuntime(seed: u64) TritVector {
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Создать нулевой вектор
+/// Create zero vector
 pub inline fn tritZero() TritVector {
     return @splat(@as(i8, 0));
 }
 
-/// Создать вектор из единиц
+/// Create vector of ones
 pub inline fn tritOnes() TritVector {
     return @splat(@as(i8, 1));
 }
 
-/// Создать вектор из -1
+/// Create vector of -1
 pub inline fn tritMinusOnes() TritVector {
     return @splat(@as(i8, -1));
 }
@@ -359,7 +359,7 @@ test "tritDot mixed" {
     }
 
     const result = tritDot(a, b);
-    // Половина 1*1 = 1, половина (-1)*1 = -1, сумма = 0
+    // Half 1*1 = 1, half (-1)*1 = -1, sum = 0
     try std.testing.expectEqual(@as(i32, 0), result);
 }
 
