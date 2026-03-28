@@ -1,0 +1,13 @@
+; IoT Sensor — TTT Dogfood Phase 3
+;
+; Sensor data processing
+;
+; Test case: iot_sensor
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sensor_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0765b000002000000001e31

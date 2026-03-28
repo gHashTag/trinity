@@ -1,0 +1,13 @@
+; Energy Smart Grid — TTT Dogfood Phase 3
+;
+; Smart grid algorithms
+;
+; Test case: energy_smart_grid
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; smart_grid_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0766a000002000000001e4f

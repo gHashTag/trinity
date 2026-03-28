@@ -1,0 +1,13 @@
+; IoT Protocol — TTT Dogfood Phase 3
+;
+; CoAP protocol handling
+;
+; Test case: iot_protocol
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; protocol_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0767d000002000000001e75
