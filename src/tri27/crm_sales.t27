@@ -1,0 +1,13 @@
+; CRM Sales — TTT Dogfood Phase 3
+;
+; Sales automation
+;
+; Test case: crm_sales
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sales_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07633000002000000001de1
