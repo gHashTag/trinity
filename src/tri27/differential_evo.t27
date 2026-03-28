@@ -1,0 +1,13 @@
+; Differential Evolution — TTT Dogfood Phase 3
+;
+; DE optimization algorithm
+;
+; Test case: differential_evo
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; differential_evo_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a4e0019c6

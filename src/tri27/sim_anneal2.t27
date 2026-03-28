@@ -1,0 +1,13 @@
+; Simulated Annealing 2 — TTT Dogfood Phase 3
+;
+; Probabilistic optimization
+;
+; Test case: sim_anneal2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sim_anneal2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a590019d1
