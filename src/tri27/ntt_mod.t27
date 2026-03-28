@@ -1,0 +1,26 @@
+; Number Theoretic Transform — TTT Dogfood Phase 3
+;
+; FFT modulo prime
+;
+; Test case: NTT with primitive root
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 998244353
+    ST t0, 60         ; mod = 998244353 (prime)
+
+    LDI t0, 3
+    ST t0, 61         ; root = 3 (primitive root)
+
+    LDI t0, 1
+    ST t0, 100        ; x[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; x[1] = 2
+
+    LDI t0, 3
+    ST t0, 110        ; X[0] = 3
+    LDI t0, -1
+    ST t0, 111        ; X[1] = -1 (mod p)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07726e0011df

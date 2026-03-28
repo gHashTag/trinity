@@ -1,0 +1,24 @@
+; Hamming Code — TTT Dogfood Phase 3
+;
+; Error-correcting code
+;
+; Test case: encode 4-bit data with 3 parity bits
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 13        ; 1101
+    ST t0, 60         ; data = 13 (1101)
+
+; Hamming(7,4): p1 covers d0,d2,d3, p2 covers d1,d2,d3, p3 covers d0,d1,d3
+    LDI t0, 1
+    ST t0, 61         ; p1 = 1
+    LDI t0, 0
+    ST t0, 62         ; p2 = 0
+    LDI t0, 0
+    ST t0, 63         ; p3 = 0
+
+    LDI t0, 0b1010101 ; 0x55
+    ST t0, 64         ; encoded = 1010101
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0772760011e7

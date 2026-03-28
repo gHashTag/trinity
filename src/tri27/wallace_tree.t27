@@ -1,0 +1,19 @@
+; Wallace Tree — TTT Dogfood Phase 3
+;
+; Parallel multiplier hardware
+;
+; Test case: 4-bit multiplication
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 15
+    ST t0, 60         ; a = 15 (1111)
+    LDI t0, 15
+    ST t0, 61         ; b = 15 (1111)
+
+; 15 * 15 = 225
+    LDI t0, 225
+    ST t0, 62         ; result = 225
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742730011e4

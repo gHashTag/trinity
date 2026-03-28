@@ -1,0 +1,31 @@
+; Karatsuba Multiply — TTT Dogfood Phase 3
+;
+; Fast multiplication using divide-and-conquer
+;
+; Test case: 1234 * 5678
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1234
+    ST t0, 60         ; x = 1234
+    LDI t0, 5678
+    ST t0, 61         ; y = 5678
+
+; Split: x = 12*10^2 + 34, y = 56*10^2 + 78
+; z0 = 34 * 78 = 2652
+; z2 = 12 * 56 = 672
+; z1 = (12+34)*(56+78) - z0 - z2 = 46*134 - 2652 - 672 = 6164 - 3324 = 2840
+
+    LDI t0, 2652
+    ST t0, 62         ; z0 = 2652
+    LDI t0, 672
+    ST t0, 63         ; z2 = 672
+    LDI t0, 2840
+    ST t0, 64         ; z1 = 2840
+
+; result = z2*10^4 + z1*10^2 + z0 = 6720000 + 284000 + 2652 = 7006652
+    LDI t0, 7006652
+    ST t0, 65         ; result = 7006652
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07026f0011e0

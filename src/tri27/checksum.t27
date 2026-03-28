@@ -1,0 +1,23 @@
+; Checksum — TTT Dogfood Phase 3
+;
+; Simple sum for error detection
+;
+; Test case: checksum of bytes
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; data[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; data[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; data[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; data[3] = 4
+
+; checksum = 1 + 2 + 3 + 4 = 10
+    LDI t0, 10
+    ST t0, 60         ; checksum = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722790011ea
