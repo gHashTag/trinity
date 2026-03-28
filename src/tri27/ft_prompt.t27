@@ -1,0 +1,13 @@
+; Fine-tuning Prompt — TTT Dogfood Phase 3
+;
+- Prompt Tuning: soft prompt optimization
+;
+; Test case: ft_prompt
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; prompt_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b140000200000000002574

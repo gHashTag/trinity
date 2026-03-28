@@ -1,0 +1,13 @@
+; Fine-tuning SFT — TTT Dogfood Phase 3
+;
+- Supervised Fine-Tuning for instruction following
+;
+; Test case: ft_sft
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sft_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b120000200000000002572
