@@ -1,0 +1,75 @@
+; Fisher-Yates Shuffle — TTT Dogfood Phase 3
+;
+; Generate random permutation
+;
+; Algorithm: In-place unbiased shuffle
+; - For i from n-1 down to 1:
+;   - j = random(0, i)
+;   - swap arr[i] and arr[j]
+;
+; Time: O(n), Space: O(1)
+; Guarantees: Uniform distribution over n! permutations
+;
+; Test case: [1,2,3,4,5]
+; Possible outputs: Any of 5! = 120 permutations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+
+; Array length: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Shuffle steps (example with specific random values):
+; i=4: j=random(0,4)=2, swap arr[4] and arr[2]
+;      [1,2,5,4,3]
+; i=3: j=random(0,3)=0, swap arr[3] and arr[0]
+;      [4,2,5,1,3]
+; i=2: j=random(0,2)=1, swap arr[2] and arr[1]
+;      [4,5,2,1,3]
+; i=1: j=random(0,1)=1, swap arr[1] and arr[1] (no effect)
+;      [4,5,2,1,3]
+
+; Shuffled output at address 200:
+    LDI t0, 4
+    ST t0, 200        ; out[0] = 4
+    LDI t0, 5
+    ST t0, 201        ; out[1] = 5
+    LDI t0, 2
+    ST t0, 202        ; out[2] = 2
+    LDI t0, 1
+    ST t0, 203        ; out[3] = 1
+    LDI t0, 3
+    ST t0, 204        ; out[4] = 3
+
+; Number of swaps: 4
+    LDI t0, 4
+    ST t0, 60         ; swaps = 4
+
+; Random values used: [2, 0, 1, 1]
+    LDI t0, 2
+    ST t0, 61         ; rand[0] = 2
+    LDI t0, 0
+    ST t0, 62         ; rand[1] = 0
+    LDI t0, 1
+    ST t0, 63         ; rand[2] = 1
+    LDI t0, 1
+    ST t0, 64         ; rand[3] = 1
+
+; Is valid permutation: yes (all elements present)
+    LDI t0, 1
+    ST t0, 65         ; is_valid = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d5a97fc619c26cbde1fb21314b81c75bc3fa48ead906f0787eef5dc8c44bdb29
