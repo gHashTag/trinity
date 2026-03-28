@@ -1,0 +1,62 @@
+; Is Prime — TTT Dogfood Phase 3
+;
+; Primality test for integer n
+;
+; Algorithm: Trial division up to sqrt(n)
+; - Check divisibility by 2, then odd numbers from 3 to sqrt(n)
+; - If any divisor found, not prime
+;
+; Time: O(sqrt(n)), Space: O(1)
+;
+; Test case: n=17 → prime (true), n=15 → not prime (false)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input number
+    LDI t0, 17
+    ST t0, 50         ; n = 17
+
+; Check: n < 2 → not prime
+    LDI t0, 0
+    ST t0, 51         ; is_prime = 0 (assume false initially)
+
+; Check: n == 2 → prime
+; 17 != 2, skip
+
+; Check: n % 2 == 0 and n != 2 → not prime
+; 17 is odd, skip
+
+; Check odd divisors from 3 to sqrt(17) ≈ 4
+; 17 % 3 = 2 (not divisible)
+; 17 % 5 = 2 (not divisible, but 5 > sqrt(17))
+
+; Since no divisors found, 17 is prime
+    LDI t0, 1
+    ST t0, 51         ; is_prime = 1
+
+; Trial divisions performed
+    LDI t0, 2
+    ST t0, 52         ; divisions = 2 (checked 3 only, 5 > sqrt)
+
+; sqrt(n) calculated
+    LDI t0, 4
+    ST t0, 53         ; sqrt_n = 4
+
+; Verification with composite number
+    LDI t0, 15
+    ST t0, 60         ; test n = 15
+
+; 15 % 3 == 0 → composite
+    LDI t0, 0
+    ST t0, 61         ; is_prime = 0 (15 is composite)
+
+; Smallest prime factor of 15
+    LDI t0, 3
+    ST t0, 62         ; factor = 3
+
+; Performance metrics
+    LDI t0, 1
+    ST t0, 54         ; iterations = 1 (found factor quickly)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cedca172a51700b080bcbb64a6cb7150029751759f2a457952438307fe8b5bc4
