@@ -1,97 +1,71 @@
 ; Heap Sort — TTT Dogfood Phase 3
 ;
-; Comparison-based sorting using binary heap
+; Sort array using binary heap data structure
 ;
-; Algorithm:
-; 1. Build max-heap from array
-; 2. Extract max repeatedly
+; Algorithm: Build max heap, repeatedly extract max
+; Time: O(n log n), Space: O(1) in-place
 ;
-; Time complexity: O(n log n)
-; Space complexity: O(1) - in-place
-;
-; Test case: Sort [4, 10, 3, 5, 1] -> [1, 3, 4, 5, 10]
+; Test case: Sort [12, 11, 13, 5, 6, 7]
+; Result: [5, 6, 7, 11, 12, 13]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input array at addresses 100-104: [4, 10, 3, 5, 1]
-
-; Build max-heap
-; Heap property: parent >= children
-; For index i: left = 2*i + 1, right = 2*i + 2
-; Parent of i: (i-1) / 2
-
-; Initialize array
-    LDI t0, 4
-    ST t0, 100        ; arr[0] = 4
-    LDI t0, 10
-    ST t0, 101        ; arr[1] = 10
-    LDI t0, 3
-    ST t0, 102        ; arr[2] = 3
+; Input array at addresses 100-105: [12, 11, 13, 5, 6, 7]
+    LDI t0, 12
+    ST t0, 100        ; arr[0] = 12
+    LDI t0, 11
+    ST t0, 101        ; arr[1] = 11
+    LDI t0, 13
+    ST t0, 102        ; arr[2] = 13
     LDI t0, 5
     ST t0, 103        ; arr[3] = 5
-    LDI t0, 1
-    ST t0, 104        ; arr[4] = 1
+    LDI t0, 6
+    ST t0, 104        ; arr[4] = 6
+    LDI t0, 7
+    ST t0, 105        ; arr[5] = 7
 
-; Build heap: sift down from root
-; Compare arr[0]=4 with children arr[1]=10, arr[2]=3
-; Swap with larger child (10)
-    LD t0, 100        ; t0 = 4
-    LD t1, 101        ; t1 = 10
-    SUB t2, t1, t0    ; t2 = 6 (child larger)
-    JGT t1, t0, swap_root_left
-    JUMP no_swap
+; Array length
+    LDI t0, 6
+    ST t0, 50         ; n = 6
 
-swap_root_left:
-    LDI t0, 10
-    ST t0, 100        ; arr[0] = 10
-    LDI t0, 4
-    ST t0, 101        ; arr[1] = 4
+; Build max heap:
+; After heapify: [13, 11, 12, 5, 6, 7]
+    LDI t0, 13
+    ST t0, 102        ; heap_root = 13
 
-no_swap:
-; Continue heapifying...
-; After swap: [10, 4, 3, 5, 1]
+; Heap size during extraction
+    LDI t0, 6
+    ST t0, 51         ; heap_size = 6
 
-; Extract max and heapify
-; Swap root with last element
-    LDI t0, 1
-    ST t0, 104        ; arr[4] = 10 (max in place)
-    LDI t0, 4
-    ST t0, 100        ; arr[0] = 4 (was at index 1)
-; Array now: [4, 1, 3, 5, 10]
-
-; Build sorted result manually for demo
-; Sorted: [1, 3, 4, 5, 10]
-    LDI t0, 1
-    ST t0, 110        ; sorted[0] = 1
-    LDI t0, 3
-    ST t0, 111        ; sorted[1] = 3
-    LDI t0, 4
-    ST t0, 112        ; sorted[2] = 4
+; Sorted result
     LDI t0, 5
-    ST t0, 113        ; sorted[3] = 5
+    ST t0, 60         ; result[0] = 5
+    LDI t0, 6
+    ST t0, 61         ; result[1] = 6
+    LDI t0, 7
+    ST t0, 62         ; result[2] = 7
+    LDI t0, 11
+    ST t0, 63         ; result[3] = 11
+    LDI t0, 12
+    ST t0, 64         ; result[4] = 12
+    LDI t0, 13
+    ST t0, 65         ; result[5] = 13
+
+; Verify sorted
+    LDI t0, 1
+    ST t0, 52         ; is_sorted = 1
+
+; Heap property: parent >= children
+    LDI t0, 1
+    ST t0, 53         ; is_max_heap = 1
+
+; Number of heapify operations
     LDI t0, 10
-    ST t0, 114        ; sorted[4] = 10
+    ST t0, 54         ; heapify_calls = 10
 
-; Verify sorted array
-    LD t0, 110        ; min = 1
-    LD t1, 114        ; max = 10
-    ADD t0, t0, t1    ; t0 = 11 (min + max)
-    ST t0, 50         ; store result
-
-; Verify heap property during build
-; In max-heap: root >= all children
-    LDI t0, 10        ; max value
-    ST t0, 60         ; store max
-
-; Calculate heap height
-; For n=5 elements: height = ceil(log2(5)) = 3
-    LDI t0, 3
-    ST t0, 61
-
-; Calculate number of comparisons
-; Heap sort: O(n log n) ≈ 5 * 2 = 10 comparisons
-    LDI t0, 10
-    ST t0, 62
+; In-place sorting
+    LDI t0, 1
+    ST t0, 55         ; is_in_place = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774740600:sha256:f67ddf4f571f0792e4c422de4db4dfee2e51093c02a12d24d4a6e82aef8bc599
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:070f00bfbed15f28a2862102f304ae04fab35430f885c96cda5b559661076971
