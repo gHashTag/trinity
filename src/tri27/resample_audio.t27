@@ -6,10 +6,10 @@
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-    LDI t0, 44100
-    ST t0, 60         ; in_rate = 44100
-    LDI t0, 48000
-    ST t0, 61         ; out_rate = 48000
+    LDI t0, 4410      ; truncated for 15-bit limit
+    ST t0, 60         ; in_rate = 4410 (truncated)
+    LDI t0, 4800      ; truncated for 15-bit limit
+    ST t0, 61         ; out_rate = 4800 (truncated)
 
     HALT
 ; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713590012cf
