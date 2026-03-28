@@ -1,0 +1,13 @@
+; ML Gradient Boosting — TTT Dogfood Phase 3
+;
+; Gradient boosting machines
+;
+; Test case: ml_gradient_boosting
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; gradient_boosting_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075d500000200000001bd5

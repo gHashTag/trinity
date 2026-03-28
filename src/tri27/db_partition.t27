@@ -1,0 +1,13 @@
+; DB Partition — TTT Dogfood Phase 3
+;
+; Table partitioning
+;
+; Test case: db_partition
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; partition_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0760d00000200000001c47

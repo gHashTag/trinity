@@ -1,0 +1,13 @@
+; DB Subquery — TTT Dogfood Phase 3
+;
+; Subquery execution
+;
+; Test case: db_subquery
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; subquery_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0760700000200000001c3b

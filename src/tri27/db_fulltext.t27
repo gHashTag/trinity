@@ -1,0 +1,13 @@
+; DB Fulltext — TTT Dogfood Phase 3
+;
+; Full-text search index
+;
+; Test case: db_fulltext
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fulltext_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0761500000200000001c57

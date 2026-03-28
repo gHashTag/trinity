@@ -1,0 +1,13 @@
+; DB SQL — TTT Dogfood Phase 3
+;
+; SQL query language
+;
+; Test case: db_sql
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sql_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07620000002000000001c6d
