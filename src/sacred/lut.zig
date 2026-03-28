@@ -166,7 +166,7 @@ pub const SacredDimensionsLUT = struct {
     pub const idx_19683: u5 = 9; // 19683 = 3^9
     pub const idx_59049: u5 = 10; // 59049 = 3^10 (max trits)
 
-    /// Получить размерность по индексу
+    /// Get dimension by index
     pub inline fn dim(comptime k: u5) comptime_int {
         comptime {
             if (k >= 11) @compileError("dim: k must be < 11");
