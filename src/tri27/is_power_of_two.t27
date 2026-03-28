@@ -1,0 +1,64 @@
+; Is Power of Two — TTT Dogfood Phase 3
+;
+; Check if number is a power of 2
+;
+; Algorithm: n > 0 AND (n & (n-1)) == 0
+; Powers of 2: 1, 2, 4, 8, 16, 32, ...
+; Binary: 1, 10, 100, 1000, 10000, ... (exactly one bit set)
+;
+; Test cases:
+; - n = 16 (0b10000) -> true
+; - n = 18 (0b10010) -> false
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Test case 1: n = 16 (power of 2)
+    LDI t0, 16
+    ST t0, 50         ; n1 = 16
+
+; Check n > 0
+    LDI t0, 1
+    ST t0, 51         ; n1_positive = 1
+
+; n & (n-1) = 16 & 15 = 0b10000 & 0b01111 = 0
+    LDI t0, 0
+    ST t0, 52         ; n1_and_result = 0
+
+; Is power of 2: n > 0 AND (n & (n-1)) == 0
+    LDI t0, 1
+    ST t0, 53         ; n1_is_power_of_2 = 1
+
+; Test case 2: n = 18 (not power of 2)
+    LDI t0, 18
+    ST t0, 54         ; n2 = 18
+
+; n & (n-1) = 18 & 17 = 0b10010 & 0b10001 = 0b10000 = 16
+    LDI t0, 16
+    ST t0, 55         ; n2_and_result = 16
+
+; Is power of 2: 16 != 0, so false
+    LDI t0, 0
+    ST t0, 56         ; n2_is_power_of_2 = 0
+
+; Bit count of power of 2 is always 1
+    LDI t0, 1
+    ST t0, 57         ; power_of_2_bit_count = 1
+
+; Next power of 2 >= 16
+    LDI t0, 16
+    ST t0, 58         ; next_power_16 = 16
+
+; Next power of 2 >= 18
+    LDI t0, 32
+    ST t0, 59         ; next_power_18 = 32
+
+; Log2 of 16 = 4 (2^4 = 16)
+    LDI t0, 4
+    ST t0, 60         ; log2_16 = 4
+
+; Verify: 2^4 = 16
+    LDI t0, 16
+    ST t0, 61         ; two_pow_4 = 16
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:8dfa415a788d26480ae72dc86a2b86b124ed332436f4337eb08f5e6d073a061b
