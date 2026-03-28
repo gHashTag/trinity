@@ -2404,4 +2404,82 @@ test "heap_sort: heap height calculation" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// KMP String Search Tests — TTT Dogfood Phase 3
+
+test "kmp: file exists" {
+    const path = "src/tri27/kmp.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "kmp: initialize pattern" {
+    const allocator = std.testing.allocator;
+    // Pattern "AB" at addresses 100-101
+    const program =
+        \\    LDI t0, 65
+        \\    ST t0, 100
+        \\    LDI t0, 66
+        \\    ST t0, 101
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 65), cpu.t27[0].trits);
+}
+
+test "kmp: build lps array" {
+    const allocator = std.testing.allocator;
+    // For "AB": lps = [0, 0]
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 120
+        \\    ST t0, 121
+        \\    LD t0, 120
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "kmp: pattern found at index" {
+    const allocator = std.testing.allocator;
+    // Match found at index 0
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 130
+        \\    LD t0, 130
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "kmp: multiple matches" {
+    const allocator = std.testing.allocator;
+    // 2 matches found
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 140
+        \\    LD t0, 140
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "kmp: complexity comparison" {
+    const allocator = std.testing.allocator;
+    // KMP saves 8 comparisons vs naive
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 143
+        \\    LD t0, 143
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

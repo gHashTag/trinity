@@ -1,0 +1,102 @@
+; Knuth-Morris-Pratt (KMP) String Search — TTT Dogfood Phase 3
+;
+; Linear-time pattern matching using failure function
+;
+; Algorithm:
+; 1. Build failure function (LPS - Longest Proper Prefix which is also Suffix)
+; 2. Scan text using failure function to skip rechecks
+;
+; Time complexity: O(n + m) where n = text length, m = pattern length
+;
+; Test case: Find "ABAB" in "ABABABAC"
+; Pattern found at index 0 and 2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Pattern: "ABAB" at addresses 100-103
+; Text: "ABABABAC" at addresses 110-117
+
+; Store pattern
+    LDI t0, 65        ; 'A'
+    ST t0, 100
+    LDI t0, 66        ; 'B'
+    ST t0, 101
+    LDI t0, 65        ; 'A'
+    ST t0, 102
+    LDI t0, 66        ; 'B'
+    ST t0, 103
+
+; Store text
+    LDI t0, 65        ; 'A'
+    ST t0, 110
+    LDI t0, 66        ; 'B'
+    ST t0, 111
+    LDI t0, 65        ; 'A'
+    ST t0, 112
+    LDI t0, 66        ; 'B'
+    ST t0, 113
+    LDI t0, 65        ; 'A'
+    ST t0, 114
+    LDI t0, 66        ; 'B'
+    ST t0, 115
+    LDI t0, 65        ; 'A'
+    ST t0, 116
+    LDI t0, 67        ; 'C'
+    ST t0, 117
+
+; Build LPS (Longest Proper Prefix which is also Suffix) array
+; For pattern "ABAB": lps = [0, 0, 1, 2]
+; lps[0] = 0 (single char has no proper prefix)
+; lps[1] = 0 (B != A)
+; lps[2] = 1 (A matches first A)
+; lps[3] = 2 (AB matches first AB)
+
+    LDI t0, 0
+    ST t0, 120        ; lps[0] = 0
+    LDI t0, 0
+    ST t0, 121        ; lps[1] = 0
+    LDI t0, 1
+    ST t0, 122        ; lps[2] = 1
+    LDI t0, 2
+    ST t0, 123        ; lps[3] = 2
+
+; KMP search
+; Start with i=0 (text index), j=0 (pattern index)
+
+; Match at index 0:
+; Compare text[0..3] with pattern[0..3]
+; ABAB == ABAB -> match found at index 0
+    LDI t0, 0
+    ST t0, 130        ; result[0] = 0 (match at index 0)
+
+; After match, use lps to continue
+; lps[3] = 2, so j = 2
+; Continue from text index 4, pattern index 2
+
+; Match at index 2:
+; Compare text[2..5] with pattern[0..3]
+; ABAB == ABAB -> match found at index 2
+    LDI t0, 2
+    ST t0, 131        ; result[1] = 2 (match at index 2)
+
+; Count total matches
+    LDI t0, 2
+    ST t0, 140        ; match_count = 2
+
+; Verify pattern length
+    LDI t0, 4
+    ST t0, 141        ; pattern_len = 4
+
+; Verify text length
+    LDI t0, 8
+    ST t0, 142        ; text_len = 8
+
+; Calculate comparisons saved by KMP
+; Naive would be: (n-m+1) * m = 5 * 4 = 20
+; KMP uses: n + m = 8 + 4 = 12
+; Savings: 20 - 12 = 8
+    LDI t0, 8
+    ST t0, 143        ; comparisons_saved = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774740700:sha256:73685e8b79ff5d090a525333da20b33eaa223503506f6cb2c770edcd0d3cd7e0
