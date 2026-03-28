@@ -10777,3 +10777,255 @@ test "valid_parentheses: equal opens and closes" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// reverse_integer.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "reverse_integer: file exists" {
+    const path = "src/tri27/reverse_integer.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "reverse_integer: input n" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 123
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 123), cpu.t27[0].trits);
+}
+
+test "reverse_integer: reversed result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 321
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 321), cpu.t27[0].trits);
+}
+
+test "reverse_integer: negative reversed" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, -321
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, -321), cpu.t27[0].trits);
+}
+
+test "reverse_integer: trailing zeros case" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 21
+        \\    ST t0, 71
+        \\    LD t0, 71
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 21), cpu.t27[0].trits);
+}
+
+test "reverse_integer: no overflow" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 73
+        \\    LD t0, 73
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "reverse_integer: is positive" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// sqrt_newton.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "sqrt_newton: file exists" {
+    const path = "src/tri27/sqrt_newton.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "sqrt_newton: input n" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 16
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 16), cpu.t27[0].trits);
+}
+
+test "sqrt_newton: result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "sqrt_newton: verify square" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 16
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 16), cpu.t27[0].trits);
+}
+
+test "sqrt_newton: iterations" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "sqrt_newton: is perfect square" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 58
+        \\    LD t0, 58
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "sqrt_newton: floor sqrt" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 59
+        \\    LD t0, 59
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// heapify.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "heapify: file exists" {
+    const path = "src/tri27/heapify.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "heapify: array length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "heapify: root value" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 9
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+}
+
+test "heapify: heap property" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "heapify: is valid heap" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "heapify: height" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "heapify: internal nodes" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
