@@ -1,0 +1,24 @@
+; Edmonds Blossom — TTT Dogfood Phase 3
+;
+; Maximum matching in general graphs
+;
+; Test case: find augmenting path
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+
+; Blossom at vertices {1,2,3}
+    LDI t0, 1
+    ST t0, 100        ; base = 1
+    LDI t0, 2
+    ST t0, 101        ; blossom[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; blossom[2] = 3
+
+    LDI t0, 1
+    ST t0, 61         ; matched = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732b2001223

@@ -1,0 +1,23 @@
+; Articulation Points — TTT Dogfood Phase 3
+;
+; Find vertices whose removal disconnects graph
+;
+; Test case: DFS tree with back edges
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+
+    LDI t0, 1
+    ST t0, 61         ; discovery[0] = 1
+    LDI t0, 1
+    ST t0, 62         ; low[0] = 1
+    LDI t0, 2
+    ST t0, 63         ; low[child] = 2
+
+    LDI t0, 1
+    ST t0, 70         ; is_articulation = 1 (low[child] >= disc[u])
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752bc00122d

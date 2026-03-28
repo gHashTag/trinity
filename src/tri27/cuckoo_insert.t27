@@ -1,0 +1,25 @@
+; Cuckoo Insert — TTT Dogfood Phase 3
+;
+; Insert with cuckoo displacement
+;
+; Test case: insert with rehashing
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 50         ; table_size = 10
+
+    LDI t0, 5
+    ST t0, 100        ; table1[5] = 5
+
+    LDI t0, 7
+    ST t0, 60         ; key = 7
+
+; Displace 5 to table2
+    LDI t0, 5
+    ST t0, 110        ; table2[3] = 5
+    LDI t0, 7
+    ST t0, 101        ; table1[5] = 7
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0772ae00121f

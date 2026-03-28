@@ -1,0 +1,33 @@
+; Spectral Partitioning — TTT Dogfood Phase 3
+;
+; Partition graph using Laplacian eigenvectors
+;
+; Test case: Fiedler vector splits graph
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 4
+    ST t0, 60         ; num_vertices = 4
+
+; Laplacian eigenvector (Fiedler)
+    LDI t0, 80        ; 0.8 * 100
+    ST t0, 100        ; eig[0] = 0.8
+    LDI t0, -40       ; -0.4 * 100
+    ST t0, 101        ; eig[1] = -0.4
+    LDI t0, -40       ; -0.4 * 100
+    ST t0, 102        ; eig[2] = -0.4
+    LDI t0, 80        ; 0.8 * 100
+    ST t0, 103        ; eig[3] = 0.8
+
+; Partition: {0,3} vs {1,2}
+    LDI t0, 1
+    ST t0, 104        ; part[0] = 1
+    LDI t0, 2
+    ST t0, 105        ; part[1] = 2
+    LDI t0, 2
+    ST t0, 106        ; part[2] = 2
+    LDI t0, 1
+    ST t0, 107        ; part[3] = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742c3001234

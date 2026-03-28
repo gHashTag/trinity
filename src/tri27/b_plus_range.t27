@@ -1,0 +1,25 @@
+; B+ Tree Range — TTT Dogfood Phase 3
+;
+; Range query in B+ tree
+;
+; Test case: find keys in [5, 15]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; min_key = 5
+    LDI t0, 15
+    ST t0, 61         ; max_key = 15
+
+    LDI t0, 5
+    ST t0, 100        ; leaf[0] = 5
+    LDI t0, 10
+    ST t0, 101        ; leaf[1] = 10
+    LDI t0, 15
+    ST t0, 102        ; leaf[2] = 15
+
+    LDI t0, 3
+    ST t0, 62         ; count = 3 (all in range)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712a8001219

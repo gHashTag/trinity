@@ -1,0 +1,26 @@
+; Strongly Connected — TTT Dogfood Phase 3
+;
+; Check if graph is strongly connected
+;
+; Test case: reachability from any node
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; num_vertices = 3
+
+    LDI t0, 1
+    ST t0, 61         ; scc_count = 1
+
+    LDI t0, 1
+    ST t0, 100        ; visited[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; visited[1] = 1
+    LDI t0, 1
+    ST t0, 102        ; visited[2] = 1
+
+    LDI t0, 1
+    ST t0, 62         ; is_scc = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742bb00122c

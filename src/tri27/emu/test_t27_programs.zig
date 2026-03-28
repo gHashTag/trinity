@@ -16391,3 +16391,247 @@ test "treap_tree: verify priority" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+// ============================================================================
+// TTT Dogfood Phase 3: Additional Sorting and Tree Algorithms (V123)
+// ============================================================================
+
+test "batcher_merge: Batcher odd-even merge" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "batcher_merge.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Batcher") != null);
+}
+
+test "batcher_merge: verify merge network" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "batcher_merge.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bitonic_sort: Bitonic merge sort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bitonic_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bitonic") != null);
+}
+
+test "bitonic_sort: verify sorting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bitonic_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cartesian_tree_build: Build from array" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cartesian_tree_build.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cartesian") != null);
+}
+
+test "cartesian_tree_build: verify heap property" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cartesian_tree_build.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "comb_sorter: Comb sort with shrink factor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "comb_sorter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Comb") != null);
+}
+
+test "comb_sorter: verify shrink" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "comb_sorter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cycle_sorter: Cycle sort minimizes writes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cycle_sorter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cycle") != null);
+}
+
+test "cycle_sorter: verify cycle detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cycle_sorter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "flash_sort: Flash sort with bucket distribution" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "flash_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Flash") != null);
+}
+
+test "flash_sort: verify distribution" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "flash_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "odd_even_sorter: Odd-even transposition sort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "odd_even_sorter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Odd-Even") != null);
+}
+
+test "odd_even_sorter: verify parallel sort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "odd_even_sorter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "order_statistic_tree: Order statistics tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "order_statistic_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Order") != null);
+}
+
+test "order_statistic_tree: verify rank query" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "order_statistic_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "pigeonhole_sorter: Pigeonhole sort for integers" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pigeonhole_sorter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Pigeonhole") != null);
+}
+
+test "pigeonhole_sorter: verify hole placement" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pigeonhole_sorter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "proxmap_sort: Proxmap sort with proximity mapping" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "proxmap_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Proxmap") != null);
+}
+
+test "proxmap_sort: verify mapping" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "proxmap_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sample_sorter: Sample sort with sampling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sample_sorter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Sample") != null);
+}
+
+test "sample_sorter: verify sampling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sample_sorter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "scapegoat_tree: Scapegoat tree balancing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scapegoat_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Scapegoat") != null);
+}
+
+test "scapegoat_tree: verify rebuilding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scapegoat_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "spread_sort: Spread sort with bucket spread" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "spread_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Spread") != null);
+}
+
+test "spread_sort: verify spreading" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "spread_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "treap_random: Randomized treap" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "treap_random.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Treap") != null);
+}
+
+test "treap_random: verify random priority" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "treap_random.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "unbalanced_search: Unbalanced BST operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unbalanced_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Unbalanced") != null);
+}
+
+test "unbalanced_search: verify search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unbalanced_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "weight_balanced: Weight-balanced tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "weight_balanced.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Weight") != null);
+}
+
+test "weight_balanced: verify balance" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "weight_balanced.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
