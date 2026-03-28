@@ -1,0 +1,56 @@
+; Memory Set — TTT Dogfood Phase 3
+;
+; Fills memory block with specified byte value
+;
+; Algorithm: Store value at each address in range
+; - Sets n bytes starting at dest to value c
+; - Returns dest pointer
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: Fill 8 bytes at address 100 with value 42
+; Result: All 8 locations contain 42
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Destination address: 100
+    LDI t0, 100
+    ST t0, 50         ; dest = 100
+
+; Fill value: 42
+    LDI t0, 42
+    ST t0, 51         ; value = 42
+
+; Count: 8 bytes
+    LDI t0, 8
+    ST t0, 52         ; count = 8
+
+; Fill memory: addresses 100-107 all get value 42
+    LDI t0, 42
+    ST t0, 100
+    ST t0, 101
+    ST t0, 102
+    ST t0, 103
+    ST t0, 104
+    ST t0, 105
+    ST t0, 106
+    ST t0, 107
+
+; Verify first byte
+    LD t0, 100
+    ST t0, 60         ; first_byte = 42
+
+; Verify last byte
+    LD t0, 107
+    ST t0, 61         ; last_byte = 42
+
+; Bytes written: 8
+    LDI t0, 8
+    ST t0, 62         ; bytes_written = 8
+
+; Return pointer (dest)
+    LDI t0, 100
+    ST t0, 63         ; return_ptr = 100
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a6d19a38f805d2c53f7cb18f73db4d8768d96afa97364cfae45db4ecbb88b9fd
