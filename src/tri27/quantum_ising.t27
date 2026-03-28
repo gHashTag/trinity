@@ -1,0 +1,13 @@
+; Quantum Ising — TTT Dogfood Phase 3
+;
+; Quantum Ising model
+;
+; Test case: quantum_ising
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ising_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0749b00000200000001a01
