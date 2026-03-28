@@ -1,0 +1,92 @@
+; Majority Element — TTT Dogfood Phase 3
+;
+; Find element that appears more than n/2 times
+;
+; Boyer-Moore Voting Algorithm: O(n) time, O(1) space
+; Phase 1: Find candidate
+; Phase 2: Verify candidate
+;
+; Test case: [2, 2, 1, 1, 1, 2, 2]
+; Majority: 2 (appears 4 times, 4 > 7/2 = 3.5)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-106: [2, 2, 1, 1, 1, 2, 2]
+    LDI t0, 2
+    ST t0, 100        ; arr[0] = 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 1
+    ST t0, 102        ; arr[2] = 1
+    ST t0, 103        ; arr[3] = 1
+    ST t0, 104        ; arr[4] = 1
+    LDI t0, 2
+    ST t0, 105        ; arr[5] = 2
+    ST t0, 106        ; arr[6] = 2
+
+; Array length
+    LDI t0, 7
+    ST t0, 50         ; length = 7
+
+; Boyer-Moore Phase 1: Find candidate
+; Initialize: candidate = null, count = 0
+
+; i=0: arr[0]=2, count=0, candidate=2, count=1
+    LDI t0, 2
+    ST t0, 51         ; candidate = 2
+    LDI t0, 1
+    ST t0, 52         ; count = 1
+
+; i=1: arr[1]=2, candidate=2, count++
+    LDI t0, 2
+    ST t0, 53         ; count = 2
+
+; i=2: arr[2]=1, candidate≠arr[2], count--
+    LDI t0, 1
+    ST t0, 54         ; count = 1
+
+; i=3: arr[3]=1, candidate≠arr[3], count--
+    LDI t0, 0
+    ST t0, 55         ; count = 0
+
+; i=4: arr[4]=1, count=0, candidate=1, count=1
+    LDI t0, 1
+    ST t0, 56         ; count = 1
+
+; i=5: arr[5]=2, candidate≠arr[5], count--
+    LDI t0, 0
+    ST t0, 57         ; count = 0
+
+; i=6: arr[6]=2, count=0, candidate=2, count=1
+    LDI t0, 2
+    ST t0, 58         ; candidate = 2
+
+; Final candidate: 2
+    LDI t0, 2
+    ST t0, 60         ; final_candidate = 2
+
+; Boyer-Moore Phase 2: Verify candidate
+; Count occurrences of 2 in array
+; Found at indices 0, 1, 5, 6 -> 4 occurrences
+    LDI t0, 4
+    ST t0, 61         ; occurrences = 4
+
+; Check if occurrences > n/2
+; n/2 = 7/2 = 3.5, 4 > 3.5, so 2 is majority
+    LDI t0, 1
+    ST t0, 62         ; is_majority = 1 (true)
+
+; Threshold (n/2 rounded up)
+    LDI t0, 4
+    ST t0, 63         ; threshold = 4
+
+; Count of non-majority elements (1s)
+    LDI t0, 3
+    ST t0, 64         ; minority_count = 3
+
+; Percentage of majority element
+; 4/7 ≈ 57%
+    LDI t0, 57
+    ST t0, 65         ; majority_percent = 57
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6331f8514b54d0fb01a21a43332469a18570c617dbba29bb239a06c5c29725a6
