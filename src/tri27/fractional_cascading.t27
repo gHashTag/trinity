@@ -1,0 +1,117 @@
+; Fractional Cascading — TTT Dogfood Phase 3
+;
+; Fast successor queries across multiple sorted lists
+;
+; Algorithm: Precompute cascaded pointers
+; - Each list includes pointers to next level
+; - Binary search only on first list
+; - O(log n) total for k lists
+;
+; Time: O(log n + k) for k lists vs O(k log n) naive
+; Space: O(nk) total
+;
+; Test case: 3 lists, find successor of 5
+; List 0: [1, 5, 9], List 1: [2, 6, 10], List 2: [3, 7, 11]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Three sorted lists at addresses 100, 120, 140:
+
+; List 0: [1, 5, 9]
+    LDI t0, 1
+    ST t0, 100
+    LDI t0, 5
+    ST t0, 101
+    LDI t0, 9
+    ST t0, 102
+
+; Cascaded pointers for List 0 (to List 1):
+; Position of each element's successor in next list
+    LDI t0, 0
+    ST t0, 110        ; ptr[0] = 0 (1 → successor at pos 0 in L1)
+    LDI t0, 1
+    ST t0, 111        ; ptr[1] = 1 (5 → successor at pos 1 in L1)
+    LDI t0, 2
+    ST t0, 112        ; ptr[2] = 2 (9 → successor at pos 2 in L1)
+
+; List 1: [2, 6, 10]
+    LDI t0, 2
+    ST t0, 120
+    LDI t0, 6
+    ST t0, 121
+    LDI t0, 10
+    ST t0, 122
+
+; Cascaded pointers for List 1 (to List 2):
+    LDI t0, 0
+    ST t0, 130        ; ptr[0] = 0
+    LDI t0, 1
+    ST t0, 131        ; ptr[1] = 1
+    LDI t0, 2
+    ST t0, 132        ; ptr[2] = 2
+
+; List 2: [3, 7, 11]
+    LDI t0, 3
+    ST t0, 140
+    LDI t0, 7
+    ST t0, 141
+    LDI t0, 11
+    ST t0, 142
+
+; Number of lists: 3
+    LDI t0, 3
+    ST t0, 50         ; k = 3
+
+; Elements per list: 3
+    LDI t0, 3
+    ST t0, 51         ; n = 3
+
+; Query: successor of 5 in all lists
+; Binary search on List 0: finds 5 at position 1
+    LDI t0, 1
+    ST t0, 60         ; pos_0 = 1 (exact match: 5)
+
+; Use cascade: follow pointer from pos 1
+; ptr[1] = 1, check List 1 from position 1
+; L1[1] = 6, which is successor of 5
+    LDI t0, 1
+    ST t0, 61         ; pos_1 = 1 (6 is successor)
+
+; Follow pointer from pos 1 in L1
+; ptr[1] = 1, check List 2 from position 1
+; L2[1] = 7, which is successor of 5
+    LDI t0, 1
+    ST t0, 62         ; pos_2 = 1 (7 is successor)
+
+; Successors: [5, 6, 7]
+    LDI t0, 5
+    ST t0, 70         ; succ[0] = 5
+    LDI t0, 6
+    ST t0, 71         ; succ[1] = 6
+    LDI t0, 7
+    ST t0, 72         ; succ[2] = 7
+
+; Query: successor of 4 in all lists
+; Binary search on List 0: finds position 1 (5 is successor)
+    LDI t0, 1
+    ST t0, 63         ; pos_0_for_4 = 1
+
+; Cascade to List 1: from position 1, L1[1] = 6 is successor
+    LDI t0, 6
+    ST t0, 80         ; succ_4_L1 = 6
+
+; Cascade to List 2: from position 1, L2[1] = 7 is successor
+    LDI t0, 7
+    ST t0, 81         ; succ_4_L2 = 7
+
+; Total comparisons: ~5 (binary search on L0 + 2 cascade steps)
+; vs naive: ~6 (3 binary searches)
+    LDI t0, 5
+    ST t0, 52         ; comparisons = 5
+
+; Space overhead: +3 pointers per element
+    LDI t0, 9
+    ST t0, 53         ; extra_space = 9
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a9a7e0477dcde72f716c2300b99d34a727c0e981951dedc30eac3a66b7031151

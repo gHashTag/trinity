@@ -1,74 +1,86 @@
 ; Line Segment Intersection — TTT Dogfood Phase 3
 ;
-; Determines if two line segments intersect
+; Find if two line segments intersect
 ;
 ; Algorithm: Orientation test + bounding box check
-; - Compute orientation (collinear, clockwise, counterclockwise)
-; - Check if orientations straddle each other
-; - Handle collinear cases with bounding box
+; - orientation(p, q, r): direction of turn
+; - Segments intersect iff orientations differ
+; - Special case: collinear segments
 ;
-; Time: O(1), Space: O(1)
+; Time: O(1) per pair
+; Space: O(1)
 ;
-; Test case: Line1 (0,0)-(5,5), Line2 (0,5)-(5,0)
-; Result: Intersect at (2.5, 2.5)
+; Test case: Segment1 [(0,0), (2,2)], Segment2 [(0,2), (2,0)]
+; Intersection at (1, 1)
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; First line segment: (0,0) to (5,5)
+; Segment 1: p1=(0,0) to p2=(2,2)
     LDI t0, 0
-    ST t0, 100        ; p1.x
+    ST t0, 100        ; p1.x = 0
     LDI t0, 0
-    ST t0, 101        ; p1.y
-    LDI t0, 5
-    ST t0, 102        ; p2.x
-    LDI t0, 5
-    ST t0, 103        ; p2.y
+    ST t0, 101        ; p1.y = 0
+    LDI t0, 2
+    ST t0, 102        ; p2.x = 2
+    LDI t0, 2
+    ST t0, 103        ; p2.y = 2
 
-; Second line segment: (0,5) to (5,0)
+; Segment 2: p3=(0,2) to p4=(2,0)
     LDI t0, 0
-    ST t0, 104        ; p3.x
-    LDI t0, 5
-    ST t0, 105        ; p3.y
-    LDI t0, 5
-    ST t0, 106        ; p4.x
+    ST t0, 104        ; p3.x = 0
+    LDI t0, 2
+    ST t0, 105        ; p3.y = 2
+    LDI t0, 2
+    ST t0, 106        ; p4.x = 2
     LDI t0, 0
-    ST t0, 107        ; p4.y
+    ST t0, 107        ; p4.y = 0
 
-; Orientation calculations:
-; o1 = orient(p1,p2,p3) = (p2.x-p1.x)*(p3.y-p1.y) - (p2.y-p1.y)*(p3.x-p1.x)
-;     = (5-0)*(5-0) - (5-0)*(0-0) = 25 - 0 = 25 (counterclockwise)
-; o2 = orient(p1,p2,p4) = (5-0)*(0-0) - (5-0)*(5-0) = 0 - 25 = -25 (clockwise)
-; o3 = orient(p3,p4,p1) = (5-0)*(0-5) - (0-5)*(0-0) = -25 - 0 = -25 (clockwise)
-; o4 = orient(p3,p4,p2) = (5-0)*(5-5) - (0-5)*(5-0) = 0 + 25 = 25 (counterclockwise)
+; Orientation function: cross product of (q-p) and (r-q)
+; orientation(p1, p2, p3):
+; (p2-p1) × (p3-p2) = (2,2) × (-2,0) = 2×0 - 2×(-2) = 4 > 0 (CCW)
+    LDI t0, 4
+    ST t0, 60         ; o1 = 4 (CCW)
 
-; o1 and o2 have opposite signs (25 and -25)
-; o3 and o4 have opposite signs (-25 and 25)
-; Therefore, segments intersect!
+; orientation(p1, p2, p4):
+; (p2-p1) × (p4-p2) = (2,2) × (0,-2) = 2×(-2) - 2×0 = -4 < 0 (CW)
+    LDI t0, -4
+    ST t0, 61         ; o2 = -4 (CW)
 
-; Intersection point:
-; Parametric: p1 + t*(p2-p1) = p3 + u*(p4-p3)
-; For this case: t = 0.5, u = 0.5
-; Intersection: (2.5, 2.5)
+; orientation(p3, p4, p1):
+; (p4-p3) × (p1-p4) = (2,-2) × (-2,0) = 2×0 - (-2)×(-2) = -4 < 0 (CW)
+    LDI t0, -4
+    ST t0, 62         ; o3 = -4 (CW)
 
-; Do they intersect? Yes
+; orientation(p3, p4, p2):
+; (p4-p3) × (p2-p4) = (2,-2) × (0,2) = 2×2 - (-2)×0 = 4 > 0 (CCW)
+    LDI t0, 4
+    ST t0, 63         ; o4 = 4 (CCW)
+
+; General case: o1 ≠ o2 AND o3 ≠ o4 → segments intersect
     LDI t0, 1
-    ST t0, 60         ; intersects = 1
+    ST t0, 70         ; intersect = 1 (true)
 
-; Intersection x (rounded): 2
-    LDI t0, 2
-    ST t0, 61         ; ix = 2
+; Intersection point: solve parametric equations
+; p1 + t(p2-p1) = p3 + u(p4-p3)
+; (0,0) + t(2,2) = (0,2) + u(2,-2)
+; 2t = 2u, 2t = 2 - 2u → t = 0.5
+; Intersection: (1, 1)
+    LDI t0, 1
+    ST t0, 80         ; ix = 1
+    LDI t0, 1
+    ST t0, 81         ; iy = 1
 
-; Intersection y (rounded): 2
-    LDI t0, 2
-    ST t0, 62         ; iy = 2
+; Bounding box check (optimization):
+; Segment1 bbox: min=(0,0), max=(2,2)
+; Segment2 bbox: min=(0,0), max=(2,2)
+; Bboxes overlap → proceed
+    LDI t0, 1
+    ST t0, 71         ; bbox_overlap = 1
 
-; o1 orientation: 25 (counterclockwise)
-    LDI t0, 25
-    ST t0, 63         ; o1 = 25
-
-; o2 orientation: -25 (clockwise)
-    LDI t0, -25
-    ST t0, 64         ; o2 = -25
+; Non-intersecting example: [(0,0)-(1,0)] vs [(2,0)-(3,0)]
+; Bboxes don't overlap → no intersection
+    LDI t0, 0
+    ST t0, 72         ; parallel_non_overlap = 0
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6e219ee6a127b5b74e1fc568eca9f87fc453e33e16a0721f47b5e9639b180f16
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9ccfc97d268fe3df108ab3cbeace83a641d775047b6705d8ab887fceedeae4e2

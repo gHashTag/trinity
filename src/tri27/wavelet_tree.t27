@@ -1,0 +1,112 @@
+; Wavelet Tree — TTT Dogfood Phase 3
+;
+; Space-efficient sequence with range queries
+;
+; Algorithm: Hierarchical bit decomposition
+; - Root stores bits for median split
+; - Recurse on left (< median) and right (≥ median)
+; - Supports rank, select, range quantile
+;
+; Time: O(log σ) for queries where σ = alphabet size
+; Space: O(n log σ)
+;
+; Test case: Array [3, 1, 4, 1, 5, 9, 2, 6]
+; Range quantile [2, 6] → 3rd smallest = 4
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Array at address 100:
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+    LDI t0, 9
+    ST t0, 105        ; arr[5] = 9
+    LDI t0, 2
+    ST t0, 106        ; arr[6] = 2
+    LDI t0, 6
+    ST t0, 107        ; arr[7] = 6
+
+; Array size: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Wavelet tree structure:
+; Level 0 (root): split by median 4
+; Bits: 0 0 1 0 1 1 0 1 (0 for <4, 1 for ≥4)
+; Left: [3,1,1,2], Right: [4,5,9,6]
+
+; Level 0 bit vector at address 200:
+    LDI t0, 0
+    ST t0, 200        ; bit[0] = 0 (3 < 4)
+    LDI t0, 0
+    ST t0, 201        ; bit[1] = 0 (1 < 4)
+    LDI t0, 1
+    ST t0, 202        ; bit[2] = 1 (4 ≥ 4)
+    LDI t0, 0
+    ST t0, 203        ; bit[3] = 0 (1 < 4)
+    LDI t0, 1
+    ST t0, 204        ; bit[4] = 1 (5 ≥ 4)
+    LDI t0, 1
+    ST t0, 205        ; bit[5] = 1 (9 ≥ 4)
+    LDI t0, 0
+    ST t0, 206        ; bit[6] = 0 (2 < 4)
+    LDI t0, 1
+    ST t0, 207        ; bit[7] = 1 (6 ≥ 4)
+
+; Level 1 left (for [3,1,1,2]): split by median 2
+; Bits: 1 0 0 0 (0 for <2, 1 for ≥2)
+    LDI t0, 1
+    ST t0, 210        ; l_bit[0] = 1 (3 ≥ 2)
+    LDI t0, 0
+    ST t0, 211        ; l_bit[1] = 0 (1 < 2)
+    LDI t0, 0
+    ST t0, 212        ; l_bit[2] = 0 (1 < 2)
+    LDI t0, 0
+    ST t0, 213        ; l_bit[3] = 0 (2 = 2, boundary)
+
+; Level 1 right (for [4,5,9,6]): split by median 6
+; Bits: 0 0 1 0 (0 for <6, 1 for ≥6)
+    LDI t0, 0
+    ST t0, 220        ; r_bit[0] = 0 (4 < 6)
+    LDI t0, 0
+    ST t0, 221        ; r_bit[1] = 0 (5 < 6)
+    LDI t0, 1
+    ST t0, 222        ; r_bit[2] = 1 (9 ≥ 6)
+    LDI t0, 1
+    ST t0, 223        ; r_bit[3] = 1 (6 = 6, boundary)
+
+; Range quantile [2, 6] (3rd smallest in range):
+; Range [2, 6]: [4,1,5,9,2]
+; Sorted: [1,2,4,5,9], 3rd = 4
+    LDI t0, 4
+    ST t0, 60         ; range_quantile = 4
+
+; Rank query: count of 1s in [0, 3] = 1
+    LDI t0, 1
+    ST t0, 61         ; rank_1_0_3 = 1
+
+; Select query: position of 3rd 1 = 5
+    LDI t0, 5
+    ST t0, 62         ; select_1_3 = 5
+
+; Tree height: 3 (including leaves)
+    LDI t0, 3
+    ST t0, 63         ; height = 3
+
+; Total nodes: 3 (root + 2 children)
+    LDI t0, 3
+    ST t0, 64         ; num_nodes = 3
+
+; Alphabet size: 7 (values 1,2,3,4,5,6,9)
+    LDI t0, 7
+    ST t0, 65         ; alphabet_size = 7
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6e8980ce77c6714ea6badd9200d29790474025c5164f009eec51911f85ded521

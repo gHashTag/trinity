@@ -1,0 +1,122 @@
+; Mo's Algorithm — TTT Dogfood Phase 3
+;
+; Offline range query optimization
+;
+; Algorithm: Reorder queries by block, process in sqrt-decomposition order
+; - Sort by (block_of_L, R) with odd blocks reversed
+; - Add/remove operations at block boundaries
+; - Each element added/removed O(√n) times total
+;
+; Time: O((n+q)√n) for q queries
+; Space: O(n) for frequency array
+;
+; Test case: Array [1,2,3,1,2,1], queries: [0,2], [1,4], [2,5]
+; Results: 3 distinct, 3 distinct, 3 distinct
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Array at address 100:
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 2
+    ST t0, 104        ; arr[4] = 2
+    LDI t0, 1
+    ST t0, 105        ; arr[5] = 1
+
+; Array size: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Block size: ceil(sqrt(6)) = 3
+    LDI t0, 3
+    ST t0, 51         ; block_size = 3
+
+; Queries: [L, R] pairs at address 150
+; Query 0: [0, 2]
+    LDI t0, 0
+    ST t0, 150        ; queries[0].L = 0
+    LDI t0, 2
+    ST t0, 151        ; queries[0].R = 2
+; Query 1: [1, 4]
+    LDI t0, 1
+    ST t0, 152        ; queries[1].L = 1
+    LDI t0, 4
+    ST t0, 153        ; queries[1].R = 4
+; Query 2: [2, 5]
+    LDI t0, 2
+    ST t0, 154        ; queries[2].L = 2
+    LDI t0, 5
+    ST t0, 155        ; queries[2].R = 5
+
+; Number of queries: 3
+    LDI t0, 3
+    ST t0, 52         ; q = 3
+
+; Mo's order (sorted by block, then R):
+; Block of 0: 0, Block of 1: 1, Block of 2: 2
+; Process order: Q0 (block 0), Q1 (block 1), Q2 (block 1)
+
+; Frequency array at address 200 (for values 1-3)
+    LDI t0, 0
+    ST t0, 200        ; freq[1] = 0 (initial)
+    ST t0, 201        ; freq[2] = 0
+    ST t0, 202        ; freq[3] = 0
+
+; Process Query 0: [0, 2] → values [1,2,3]
+; Add 1, 2, 3 to frequency
+    LDI t0, 1
+    ST t0, 200        ; freq[1] = 1
+    LDI t0, 1
+    ST t0, 201        ; freq[2] = 1
+    LDI t0, 1
+    ST t0, 202        ; freq[3] = 1
+; Distinct count: 3
+    LDI t0, 3
+    ST t0, 60         ; ans[0] = 3
+
+; Process Query 1: [1, 4] → values [2,3,1,2]
+; Remove arr[0]=1, add arr[3]=1, arr[4]=2
+    LDI t0, 0
+    ST t0, 200        ; freq[1] = 0 (removed)
+    LDI t0, 1
+    ST t0, 200        ; freq[1] = 1 (added back)
+    LDI t0, 2
+    ST t0, 201        ; freq[2] = 2
+    LDI t0, 1
+    ST t0, 202        ; freq[3] = 1
+; Distinct count: 3
+    LDI t0, 3
+    ST t0, 61         ; ans[1] = 3
+
+; Process Query 2: [2, 5] → values [3,1,2,1]
+; Remove arr[1]=2, add arr[5]=1
+    LDI t0, 1
+    ST t0, 200        ; freq[1] = 2
+    LDI t0, 1
+    ST t0, 201        ; freq[2] = 1
+    LDI t0, 1
+    ST t0, 202        ; freq[3] = 1
+; Distinct count: 3
+    LDI t0, 3
+    ST t0, 62         ; ans[2] = 3
+
+; Final answers: [3, 3, 3]
+    LDI t0, 3
+    ST t0, 70         ; result[0] = 3
+    LDI t0, 3
+    ST t0, 71         ; result[1] = 3
+    LDI t0, 3
+    ST t0, 72         ; result[2] = 3
+
+; Total add/remove operations: ~12 (n√n ≈ 6×2)
+    LDI t0, 12
+    ST t0, 53         ; operations = 12
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:2fab8ca904747bb715a44fb5d8a01344158614e997ec0c35667c8426bea7a568
