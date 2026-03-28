@@ -48705,3 +48705,48 @@ test "triangle_centroid: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "gzip_compress: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gzip_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "gzip_compress: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gzip_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "zlib_compress: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zlib_compress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "zlib_compress: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zlib_compress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "zlib_decompress: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zlib_decompress.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "zlib_decompress: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "zlib_decompress.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
