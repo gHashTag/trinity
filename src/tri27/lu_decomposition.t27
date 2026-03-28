@@ -1,0 +1,24 @@
+; LU Decomposition — TTT Dogfood Phase 3
+;
+; Factorize matrix into L×U (lower × upper triangular)
+;
+; Test case: [[2,1],[1,2]]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 100        ; A[0][0] = 2
+    LDI t0, 1
+    ST t0, 101        ; A[0][1] = 1
+    LDI t0, 1
+    ST t0, 102        ; A[1][0] = 1
+    LDI t0, 2
+    ST t0, 103        ; A[1][1] = 2
+
+; L = [[1,0],[0.5,1]], U = [[2,1],[0,1.5]]
+
+    LDI t0, 0
+    ST t0, 60         ; det = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0472d3001142

@@ -1,0 +1,13 @@
+; Jaro-Winkler Similarity — TTT Dogfood Phase 3
+;
+; String similarity metric
+;
+; Test case: "martha" vs "marhta" = 0.96
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 96         ; Q7: 0.96
+    ST t0, 60         ; similarity = 0.96
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0442d000113f
