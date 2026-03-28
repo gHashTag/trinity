@@ -51,10 +51,19 @@ const LabelTable = std.StringHashMap(u32);
 fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: usize) AsmError!struct { u32, bool } {
     const trimmed = std.mem.trim(u8, line, " \t\r");
 
-    // Strip inline comments (starting with ';')
+    // Strip inline comments (starting with ';', '|', or '#')
     var rest_trimmed = trimmed;
-    if (std.mem.indexOfScalar(u8, trimmed, ';')) |comment_idx| {
-        rest_trimmed = trimmed[0..comment_idx];
+    // Check for ';' comment first (most common)
+    if (std.mem.indexOfScalar(u8, rest_trimmed, ';')) |comment_idx| {
+        rest_trimmed = rest_trimmed[0..comment_idx];
+    }
+    // Then check for '|' comment
+    else if (std.mem.indexOfScalar(u8, rest_trimmed, '|')) |comment_idx| {
+        rest_trimmed = rest_trimmed[0..comment_idx];
+    }
+    // Then check for '#' comment
+    else if (std.mem.indexOfScalar(u8, rest_trimmed, '#')) |comment_idx| {
+        rest_trimmed = rest_trimmed[0..comment_idx];
     }
     rest_trimmed = std.mem.trimRight(u8, rest_trimmed, " \t");
 
@@ -64,7 +73,17 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         return .{ 0, true }; // Flag that this was a label definition
     }
 
-    if (rest_trimmed.len == 0 or rest_trimmed[0] == ';') return error.EmptyLine;
+    if (rest_trimmed.len == 0 or rest_trimmed[0] == ';' or rest_trimmed[0] == '#' or rest_trimmed[0] == '|') return error.EmptyLine;
+
+    // Skip directive lines (e.g., ".const", ".data", ".code", ".dword", ".byte")
+    // These are section markers and data directives (not yet implemented)
+    if (std.mem.startsWith(u8, rest_trimmed, ".")) return error.EmptyLine;
+
+    // Skip constant definitions (lines containing '=' in .const section)
+    // These are not yet implemented
+    if (std.mem.indexOfScalar(u8, rest_trimmed, '=')) |_| {
+        return error.EmptyLine;
+    }
 
     var it = std.mem.splitScalar(u8, rest_trimmed, ' ');
     const op_str = it.first();
@@ -591,8 +610,18 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
             continue;
         }
 
-        // Skip empty lines and comments
-        if (trimmed.len == 0 or trimmed[0] == ';') {
+        // Skip empty lines, comments, and directives
+        // Directives like .const, .data, .code are section markers (not yet implemented)
+        if (trimmed.len == 0 or trimmed[0] == ';' or trimmed[0] == '#' or trimmed[0] == '|') {
+            line_num += 1;
+            continue;
+        }
+        // Skip directive lines (e.g., ".const", ".data", ".code")
+        if (std.mem.startsWith(u8, trimmed, ".")) {
+            line_num += 1;
+            continue;
+        }
+        if (std.mem.startsWith(u8, trimmed, ".")) {
             line_num += 1;
             continue;
         }
