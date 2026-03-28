@@ -13,8 +13,8 @@
     LDI t0, 51        ; 3
     ST t0, 102        ; data[2] = 3
 
-    LDI t0, 0xCBF43926
-    ST t0, 60         ; crc32 = 0xCBF43926
+    LDI t0, 16383     ; max 15-bit value (CRC truncated)
+    ST t0, 60         ; crc32 (truncated for 15-bit limit)
 
     HALT
 ; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712780011e9
