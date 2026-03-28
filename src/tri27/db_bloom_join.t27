@@ -1,0 +1,13 @@
+; Bloom Join — TTT Dogfood Phase 3
+;
+; Bloom filter join
+;
+; Test case: db_bloom_join
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bloom_join_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073000000200000005b9

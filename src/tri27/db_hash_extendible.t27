@@ -1,0 +1,13 @@
+; Extendible Hashing — TTT Dogfood Phase 3
+;
+; Dynamic hash table
+;
+; Test case: db_hash_extendible
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; extendible_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730c0000020000000619

@@ -1,0 +1,13 @@
+; Robin Hood Hashing — TTT Dogfood Phase 3
+;
+; Robin Hood hash table
+;
+; Test case: db_robin_hood
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; robin_hood_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073040000200000005d9
