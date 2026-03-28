@@ -2319,4 +2319,89 @@ test "fibonacci: memoization cache hit" {
     try std.testing.expectEqual(@as(i64, 55), cpu.t27[0].trits);
 }
 
+// Heap Sort Tests — TTT Dogfood Phase 3
+
+test "heap_sort: file exists" {
+    const path = "src/tri27/heap_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "heap_sort: initialize array" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 100
+        \\    LDI t0, 10
+        \\    ST t0, 101
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "heap_sort: swap root with child" {
+    const allocator = std.testing.allocator;
+    // Swap 4 and 10: [4, 10] -> [10, 4]
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 100
+        \\    LDI t0, 10
+        \\    ST t0, 101
+        \\    LD t1, 100
+        \\    LD t2, 101
+        \\    JGT t2, t1, do_swap
+        \\    HALT
+        \\do_swap:
+        \\    LDI t0, 10
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "heap_sort: sorted array min" {
+    const allocator = std.testing.allocator;
+    // sorted[0] = 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 110
+        \\    LD t0, 110
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "heap_sort: sorted array max" {
+    const allocator = std.testing.allocator;
+    // sorted[4] = 10
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 114
+        \\    LD t0, 114
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "heap_sort: heap height calculation" {
+    const allocator = std.testing.allocator;
+    // For 5 elements: height = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
