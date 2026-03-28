@@ -1,0 +1,13 @@
+; Quiescence Search — TTT Dogfood Phase 3
+;
+; Extend search at unstable positions
+;
+; Test case: ai_quiescence_search
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; quiescence_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730400001000001269

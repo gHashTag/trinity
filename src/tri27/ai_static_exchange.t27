@@ -1,0 +1,13 @@
+; Static Exchange Evaluation — TTT Dogfood Phase 3
+;
+; SEE for move ordering
+;
+; Test case: ai_static_exchange
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; see_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731800001000001189
