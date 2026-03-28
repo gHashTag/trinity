@@ -52,9 +52,9 @@ fn findTrinityService(allocator: std.mem.Allocator, token: []const u8, project_i
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl", "-s",        "-X",                             "POST",
-            "-H",   auth_header, "-H",                             "Content-Type: application/json",
-            "-d",   body_str,    "https://railway.com/graphql/v2",
+            "curl", "-s",        "-X",                                    "POST",
+            "-H",   auth_header, "-H",                                    "Content-Type: application/json",
+            "-d",   body_str,    "https://backboard.railway.com/graphql",
         },
     });
     defer {
@@ -94,9 +94,9 @@ fn deleteService(allocator: std.mem.Allocator, token: []const u8, service_id: []
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl", "-s",        "-X",                             "POST",
-            "-H",   auth_header, "-H",                             "Content-Type: application/json",
-            "-d",   mutation,    "https://railway.com/graphql/v2",
+            "curl", "-s",        "-X",                                    "POST",
+            "-H",   auth_header, "-H",                                    "Content-Type: application/json",
+            "-d",   mutation,    "https://backboard.railway.com/graphql",
         },
     });
     defer {

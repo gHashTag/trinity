@@ -39,9 +39,9 @@ pub fn main() !void {
 
     // Use simpler approach with curl
     const result = execCurl(allocator, &.{
-        "curl", "-s",                                                                                                "-X",                             "POST",
-        "-H",   std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token}) catch return error.OutOfMemory, "-H",                             "Content-Type: application/json",
-        "-d",   query,                                                                                               "https://railway.com/graphql/v2",
+        "curl", "-s",                                                                                                "-X",                                    "POST",
+        "-H",   std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token}) catch return error.OutOfMemory, "-H",                                    "Content-Type: application/json",
+        "-d",   query,                                                                                               "https://backboard.railway.com/graphql",
     }) catch |err| {
         std.debug.print("❌ Failed to execute curl: {}\n", .{err});
         return err;
