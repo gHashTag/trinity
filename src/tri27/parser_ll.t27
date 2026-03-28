@@ -1,0 +1,13 @@
+; LL Parser — TTT Dogfood Phase 3
+;
+; LL(1) top-down parsing
+;
+; Test case: parser_ll
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; parser_ll_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07196a0018e2

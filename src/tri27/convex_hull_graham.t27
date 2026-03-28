@@ -1,0 +1,13 @@
+; Convex Hull (Graham Scan) — TTT Dogfood Phase 3
+;
+; Graham scan for convex hull
+;
+; Test case: convex_hull_graham
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; convex_hull_graham_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719360018ae

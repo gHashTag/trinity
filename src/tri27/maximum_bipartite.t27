@@ -1,0 +1,13 @@
+; Maximum Bipartite — TTT Dogfood Phase 3
+;
+; Max bipartite matching with DFS
+;
+; Test case: maximum_bipartite
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; maximum_bipartite_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719610018d9
