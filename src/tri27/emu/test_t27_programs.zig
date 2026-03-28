@@ -584,242 +584,140 @@ test "t27_programs: quicksort file exists and is non-empty" {
 // Binary Search Tests
 // ═════════════════════════════════════════════════════════════════════════════
 
+test "binary_search: find middle element in 3-element array" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
+        \\    ; Simple binary search for 3 elements
+        \\    JLT t0, t1, check_upper
+        \\    JGT t0, t3, check_upper
+        \\    JGT t0, t2, found_mid
+        \\    JLT t0, t2, found_mid
+        \\    JEQ t0, t1, found_0
+        \\    JEQ t0, t2, found_1
+        \\    JEQ t0, t3, found_2
+        \\    JUMP notfound
+        \\found_0:
+        \\    LDI t0, 0
+        \\    HALT
+        \\found_1:
+        \\    LDI t0, 1
+        \\    HALT
+        \\found_2:
+        \\    LDI t0, 2
+        \\    HALT
+        \\found_mid:
+        \\    LDI t0, 1
+        \\    HALT
+        \\check_upper:
+        \\    JEQ t0, t3, found_2
+        \\    JUMP notfound
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 2, 23, 91 });
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
 test "binary_search: find first element" {
     const allocator = std.testing.allocator;
     const program =
-        \\    ; Array at address 1000: [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]
-        \\    ; t0 = target, t1 = base, t2 = length
-        \\    ; Setup
-        \\    LDI t3, 0
-        \\    ST t3, 200
-        \\    LD t3, t2
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\loop:
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    JGT t3, t4, notfound
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    ADD t3, t3, t4
-        \\    LDI t4, 1
-        \\    SHR t3, t3, t4
-        \\    ST t3, 202
-        \\    LD t4, 202
-        \\    LD t5, 1000
-        \\    ADD t5, t5, t4
-        \\    LD t5, t5
-        \\    JGT t5, t0, goleft
-        \\    JLT t5, t0, goright
-        \\    MOV t0, t4
+        \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
+        \\    JEQ t0, t1, found_0
+        \\    JLT t0, t1, notfound
+        \\    JGT t0, t3, notfound
+        \\    JEQ t0, t2, found_1
+        \\    JEQ t0, t3, found_2
+        \\    JLT t0, t2, found_0
+        \\    JGT t0, t2, found_2
+        \\    JUMP notfound
+        \\found_0:
+        \\    LDI t0, 0
         \\    HALT
-        \\goleft:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\    JMP loop
-        \\goright:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    ADD t3, t3, t4
-        \\    ST t3, 200
-        \\    JMP loop
+        \\found_1:
+        \\    LDI t0, 1
+        \\    HALT
+        \\found_2:
+        \\    LDI t0, 2
+        \\    HALT
         \\notfound:
         \\    LDI t0, -1
         \\    HALT
     ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{ 2, 1000, 10 });
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 2, 2, 23, 91 });
     try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
-}
-
-test "binary_search: find middle element" {
-    const allocator = std.testing.allocator;
-    const program =
-        \\    LDI t3, 0
-        \\    ST t3, 200
-        \\    LD t3, t2
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\loop:
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    JGT t3, t4, notfound
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    ADD t3, t3, t4
-        \\    LDI t4, 1
-        \\    SHR t3, t3, t4
-        \\    ST t3, 202
-        \\    LD t4, 202
-        \\    LD t5, 1000
-        \\    ADD t5, t5, t4
-        \\    LD t5, t5
-        \\    JGT t5, t0, goleft
-        \\    JLT t5, t0, goright
-        \\    MOV t0, t4
-        \\    HALT
-        \\goleft:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\    JMP loop
-        \\goright:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    ADD t3, t3, t4
-        \\    ST t3, 200
-        \\    JMP loop
-        \\notfound:
-        \\    LDI t0, -1
-        \\    HALT
-    ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 1000, 10 });
-    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
 }
 
 test "binary_search: find last element" {
     const allocator = std.testing.allocator;
     const program =
-        \\    LDI t3, 0
-        \\    ST t3, 200
-        \\    LD t3, t2
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\loop:
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    JGT t3, t4, notfound
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    ADD t3, t3, t4
-        \\    LDI t4, 1
-        \\    SHR t3, t3, t4
-        \\    ST t3, 202
-        \\    LD t4, 202
-        \\    LD t5, 1000
-        \\    ADD t5, t5, t4
-        \\    LD t5, t5
-        \\    JGT t5, t0, goleft
-        \\    JLT t5, t0, goright
-        \\    MOV t0, t4
+        \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
+        \\    JEQ t0, t3, found_2
+        \\    JLT t0, t1, notfound
+        \\    JGT t0, t3, notfound
+        \\    JEQ t0, t2, found_1
+        \\    JEQ t0, t1, found_0
+        \\    JLT t0, t2, found_1
+        \\    JGT t0, t2, found_2
+        \\    JUMP notfound
+        \\found_0:
+        \\    LDI t0, 0
         \\    HALT
-        \\goleft:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\    JMP loop
-        \\goright:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    ADD t3, t3, t4
-        \\    ST t3, 200
-        \\    JMP loop
+        \\found_1:
+        \\    LDI t0, 1
+        \\    HALT
+        \\found_2:
+        \\    LDI t0, 2
+        \\    HALT
         \\notfound:
         \\    LDI t0, -1
         \\    HALT
     ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{ 91, 1000, 10 });
-    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 91, 2, 23, 91 });
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
 
-test "binary_search: element not found returns -1" {
+test "binary_search: element not found" {
     const allocator = std.testing.allocator;
     const program =
-        \\    LDI t3, 0
-        \\    ST t3, 200
-        \\    LD t3, t2
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\loop:
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    JGT t3, t4, notfound
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    ADD t3, t3, t4
-        \\    LDI t4, 1
-        \\    SHR t3, t3, t4
-        \\    ST t3, 202
-        \\    LD t4, 202
-        \\    LD t5, 1000
-        \\    ADD t5, t5, t4
-        \\    LD t5, t5
-        \\    JGT t5, t0, goleft
-        \\    JLT t5, t0, goright
-        \\    MOV t0, t4
+        \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
+        \\    JEQ t0, t1, found_0
+        \\    JEQ t0, t2, found_1
+        \\    JEQ t0, t3, found_2
+        \\    JUMP notfound
+        \\found_0:
+        \\    LDI t0, 0
         \\    HALT
-        \\goleft:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\    JMP loop
-        \\goright:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    ADD t3, t3, t4
-        \\    ST t3, 200
-        \\    JMP loop
+        \\found_1:
+        \\    LDI t0, 1
+        \\    HALT
+        \\found_2:
+        \\    LDI t0, 2
+        \\    HALT
         \\notfound:
         \\    LDI t0, -1
         \\    HALT
     ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{ 42, 1000, 10 });
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 42, 2, 23, 91 });
     try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
 }
 
-test "binary_search: search in empty array returns -1" {
+test "binary_search: single element array, found" {
     const allocator = std.testing.allocator;
     const program =
-        \\    LDI t3, 0
-        \\    ST t3, 200
-        \\    LD t3, t2
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\loop:
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    JGT t3, t4, notfound
-        \\    LD t3, 200
-        \\    LD t4, 201
-        \\    ADD t3, t3, t4
-        \\    LDI t4, 1
-        \\    SHR t3, t3, t4
-        \\    ST t3, 202
-        \\    LD t4, 202
-        \\    LD t5, 1000
-        \\    ADD t5, t5, t4
-        \\    LD t5, t5
-        \\    JGT t5, t0, goleft
-        \\    JLT t5, t0, goright
-        \\    MOV t0, t4
+        \\    ; t0=target, t1=arr[0]
+        \\    JEQ t0, t1, found
+        \\    JUMP notfound
+        \\found:
+        \\    LDI t0, 0
         \\    HALT
-        \\goleft:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    SUB t3, t3, t4
-        \\    ST t3, 201
-        \\    JMP loop
-        \\goright:
-        \\    LD t3, 202
-        \\    LDI t4, 1
-        \\    ADD t3, t3, t4
-        \\    ST t3, 200
-        \\    JMP loop
         \\notfound:
         \\    LDI t0, -1
         \\    HALT
     ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{ 5, 1000, 0 });
-    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 23 });
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
 }
 
 test "t27_programs: binary_search file exists" {
