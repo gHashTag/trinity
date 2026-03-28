@@ -15813,3 +15813,157 @@ test "timsort_more: verify run detection" {
     defer allocator.free(source);
     try std.testing.expect(std.mem.indexOf(u8, source, "runs") != null);
 }
+
+// ============================================================================
+// TTT Dogfood Phase 3: String Algorithm Files (V121)
+// ============================================================================
+
+test "str_compare: string comparison" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_compare.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "String Compare") != null);
+}
+
+test "str_compare: verify return values" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_compare.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "lexicographically") != null);
+}
+
+test "str_concat: string concatenation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_concat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Concatenation") != null);
+}
+
+test "str_concat: verify result length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_concat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "helloworld") != null);
+}
+
+test "str_find_char: character search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_find_char.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Find Character") != null);
+}
+
+test "str_find_char: verify position" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_find_char.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Found at") != null);
+}
+
+test "str_find_last: reverse character search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_find_last.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "last") != null);
+}
+
+test "str_find_last: verify reverse search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_find_last.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "from end") != null);
+}
+
+test "str_ncompare: bounded comparison" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_ncompare.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bounded Compare") != null);
+}
+
+test "str_ncompare: verify count parameter" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_ncompare.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "n=5") != null);
+}
+
+test "str_reverse: string reversal" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_reverse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "String Reverse") != null);
+}
+
+test "str_reverse: verify reversed output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_reverse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "olleh") != null);
+}
+
+test "str_search: substring search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "String Search") != null);
+}
+
+test "str_search: verify pattern matching" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "hello world") != null);
+}
+
+test "str_tokenize: string splitting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_tokenize.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "token") != null);
+}
+
+test "str_tokenize: verify delimiter handling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_tokenize.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "delimiter") != null);
+}
+
+test "strlwr: lowercase conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strlwr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "lower") != null);
+}
+
+test "strlwr: verify case conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strlwr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HELLO") != null);
+}
+
+test "strupr: uppercase conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strupr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "upper") != null);
+}
+
+test "strupr: verify uppercase output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strupr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HELLO WORLD") != null);
+}
