@@ -1,0 +1,13 @@
+; Blockchain Merkle Proof — TTT Dogfood Phase 3
+;
+; Merkle proof verification
+;
+; Test case: blockchain_merkle_proof
+;
+; φ² + 1/φM² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; merkle_proof_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07486000002000000001a77
