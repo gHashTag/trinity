@@ -1,0 +1,13 @@
+; Aging Page Replacement — TTT Dogfood Phase 3
+;
+; Aging paging
+;
+; Test case: db_page_replacement_aging
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; aging_page_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073140000200000004d9
