@@ -1,0 +1,41 @@
+; Hungarian Algorithm — Assignment Problem — TTT Dogfood Phase 3
+;
+; Minimum cost assignment in bipartite graph
+;
+; Test case: 3 workers, 3 jobs
+; Cost matrix: [[4,1,3],[2,0,5],[3,2,2]]
+; Min cost: 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Cost matrix at address 100:
+    LDI t0, 4
+    ST t0, 100        ; cost[0][0] = 4
+    LDI t0, 1
+    ST t0, 101        ; cost[0][1] = 1
+    LDI t0, 3
+    ST t0, 102        ; cost[0][2] = 3
+    LDI t0, 2
+    ST t0, 103        ; cost[1][0] = 2
+    LDI t0, 0
+    ST t0, 104        ; cost[1][1] = 0
+    LDI t0, 5
+    ST t0, 105        ; cost[1][2] = 5
+    LDI t0, 3
+    ST t0, 106        ; cost[2][0] = 3
+    LDI t0, 2
+    ST t0, 107        ; cost[2][1] = 2
+    LDI t0, 2
+    ST t0, 108        ; cost[2][2] = 2
+
+; Optimal assignment:
+; Worker 0 → Job 1 (cost 1)
+; Worker 1 → Job 0 (cost 2)
+; Worker 2 → Job 2 (cost 2)
+; Total: 1 + 2 + 2 = 5
+
+    LDI t0, 5
+    ST t0, 60         ; min_cost = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0342c6001135

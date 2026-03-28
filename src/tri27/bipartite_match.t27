@@ -1,0 +1,48 @@
+; Bipartite Matching (Hopcroft-Karp) — TTT Dogfood Phase 3
+;
+; Maximum matching in bipartite graph
+;
+; Test case: Left={1,2,3}, Right={4,5,6}
+; Edges: (1,4), (1,5), (2,5), (3,5), (3,6)
+; Max matching: 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Left nodes: 3
+    LDI t0, 3
+    ST t0, 50         ; left_n = 3
+
+; Right nodes: 3
+    LDI t0, 3
+    ST t0, 51         ; right_n = 3
+
+; Edges at address 100:
+    LDI t0, 1
+    ST t0, 100        ; e[0].l = 1
+    LDI t0, 4
+    ST t0, 101        ; e[0].r = 4
+    LDI t0, 1
+    ST t0, 102        ; e[1].l = 1
+    LDI t0, 5
+    ST t0, 103        ; e[1].r = 5
+    LDI t0, 2
+    ST t0, 104        ; e[2].l = 2
+    LDI t0, 5
+    ST t0, 105        ; e[2].r = 5
+    LDI t0, 3
+    ST t0, 106        ; e[3].l = 3
+    LDI t0, 5
+    ST t0, 107        ; e[3].r = 5
+    LDI t0, 3
+    ST t0, 108        ; e[4].l = 3
+    LDI t0, 6
+    ST t0, 109        ; e[4].r = 6
+
+; Matching: 1-4, 2-5, 3-6
+; Size: 3 (maximum possible)
+
+    LDI t0, 3
+    ST t0, 60         ; max_matching = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0332c5001134

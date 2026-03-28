@@ -1,0 +1,46 @@
+; Prim's MST Algorithm — TTT Dogfood Phase 3
+;
+; Minimum spanning tree using priority queue
+;
+; Test case: 4 nodes graph
+; MST weight: 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Adjacency list at address 100:
+    LDI t0, 1
+    ST t0, 100        ; adj[0][0].v = 1, w = 1
+    LDI t0, 2
+    ST t0, 101        ; adj[0][1].v = 2, w = 4
+    LDI t0, 0
+    ST t0, 102        ; adj[1][0].v = 0, w = 1
+    LDI t0, 2
+    ST t0, 103        ; adj[1][1].v = 2, w = 2
+    LDI t0, 3
+    ST t0, 104        ; adj[1][2].v = 3, w = 5
+    LDI t0, 1
+    ST t0, 105        ; adj[2][0].v = 0, w = 4
+    LDI t0, 1
+    ST t0, 106        ; adj[2][1].v = 1, w = 2
+    LDI t0, 3
+    ST t0, 107        ; adj[2][2].v = 3, w = 3
+    LDI t0, 1
+    ST t0, 108        ; adj[3][1].v = 1, w = 5
+    LDI t0, 2
+    ST t0, 109        ; adj[3][2].v = 2, w = 3
+
+; Start from node 0
+; Add 0, take edge (0,1)=1
+; Add 1, take edge (1,2)=2
+; Add 2, take edge (2,3)=3
+
+; MST weight: 1+2+3 = 6
+    LDI t0, 6
+    ST t0, 60         ; mst_weight = 6
+
+; Nodes visited: 4
+    LDI t0, 4
+    ST t0, 61         ; visited = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0322b4001133

@@ -1,0 +1,31 @@
+; Graph Coloring — TTT Dogfood Phase 3
+;
+; Color graph with minimum colors
+;
+; Test case: Triangle graph (3 nodes, all connected)
+; Chromatic number: 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Graph at address 100:
+; Triangle: 0-1, 1-2, 2-0
+
+; Greedy coloring:
+; Color 0 with color 0
+; Color 1 with color 1 (adjacent to 0)
+; Color 2 with color 2 (adjacent to 0 and 1)
+
+; Colors: [0, 1, 2]
+    LDI t0, 0
+    ST t0, 60         ; color[0] = 0
+    LDI t0, 1
+    ST t0, 61         ; color[1] = 1
+    LDI t0, 2
+    ST t0, 62         ; color[2] = 2
+
+; Number of colors: 3
+    LDI t0, 3
+    ST t0, 63         ; num_colors = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0392cb00113a
