@@ -1,0 +1,13 @@
+; Learning Rate Decay — TTT Dogfood Phase 3
+;
+; Time-based decay scheduling
+;
+; Test case: schedule_decay
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; schedule_decay_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b030001a87

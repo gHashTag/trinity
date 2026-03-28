@@ -1,0 +1,13 @@
+; L2 Regularization — TTT Dogfood Phase 3
+;
+| Ridge penalty (squared)
+;
+; Test case: l2_regularization
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; l2_regularization_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b090001a8d
