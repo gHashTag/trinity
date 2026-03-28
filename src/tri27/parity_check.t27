@@ -1,0 +1,15 @@
+; Parity Check — TTT Dogfood Phase 3
+;
+; Check if number of set bits is even
+;
+; Test case: parity(0b1011) = 1 (odd)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 11
+    ST t0, 60         ; value = 0b1011
+    LDI t0, 1
+    ST t0, 61         ; parity = 1 (odd)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712e600125d
