@@ -3558,4 +3558,75 @@ test "counting_sort: sum of sorted array" {
     try std.testing.expectEqual(@as(i64, 23), cpu.t27[0].trits);
 }
 
+// Bucket Sort Tests — TTT Dogfood Phase 3
+
+test "bucket_sort: file exists" {
+    const path = "src/tri27/bucket_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "bucket_sort: num buckets" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "bucket_sort: used buckets" {
+    const allocator = std.testing.allocator;
+    // 4 buckets used (1 empty)
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "bucket_sort: array size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "bucket_sort: min value" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "bucket_sort: max value" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 94
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 94), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
