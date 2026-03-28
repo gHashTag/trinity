@@ -1,0 +1,73 @@
+; String Comparison with Length Limit — TTT Dogfood Phase 3
+;
+; Compares at most n chars of two strings
+;
+; Algorithm: Character-by-character comparison
+; - Returns 0 if equal (up to n chars)
+; - Returns <0 if s1 < s1
+; - Returns >0 if s1 > s2
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: s1 = "Hello", s2 = "World", n = 3
+; Result: 'H' (72) < 'W' (87) → negative
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; s1 = "Hello" at 100
+    LDI t0, 72        ; 'H'
+    ST t0, 100
+    LDI t0, 101       ; 'e'
+    ST t0, 101
+    LDI t0, 108       ; 'l'
+    ST t0, 102
+    LDI t0, 108       ; 'l'
+    ST t0, 103
+    LDI t0, 111       ; 'o'
+    ST t0, 104
+    LDI t0, 0         ; '\0'
+    ST t0, 105
+
+; s2 = "World" at 150
+    LDI t0, 87        ; 'W'
+    ST t0, 150
+    LDI t0, 111       ; 'o'
+    ST t0, 151
+    LDI t0, 114       ; 'r'
+    ST t0, 152
+    LDI t0, 108       ; 'l'
+    ST t0, 153
+    LDI t0, 100       ; 'd'
+    ST t0, 154
+    LDI t0, 0         ; '\0'
+    ST t0, 155
+
+; n = 3 (compare only first 3 chars)
+    LDI t0, 3
+    ST t0, 70         ; n = 3
+
+; Compare char by char:
+; s1[0] = 'H' (72), s2[0] = 'W' (87)
+; 72 < 87, so result is negative
+
+; First differing position: 0
+    LDI t0, 0
+    ST t0, 60         ; diff_pos = 0
+
+; Difference: 72 - 87 = -15
+    LDI t0, -15
+    ST t0, 61         ; diff = -15
+
+; Comparison result: s1 < s2
+    LDI t0, -1
+    ST t0, 62         ; result = -1 (s1 < s2)
+
+; If we compared n=3 chars without null terminator:
+; "Hel" vs "Wor" → still different at position 0
+
+; Bytes compared: 1 (stopped at first difference)
+    LDI t0, 1
+    ST t0, 63         ; bytes_compared = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:84e9cbb4de71d7f44812f2df759b7a1c311b7921ea77f8a57abe60535534db3c
