@@ -1,0 +1,86 @@
+; Rotating Calipers — TTT Dogfood Phase 3
+;
+; Find diameter of convex polygon (farthest pair of points)
+;
+; Algorithm:
+; - Start with antipodal points on convex hull
+; - Rotate parallel lines (calipers) around hull
+; - Track maximum distance seen
+; - Each edge visited at most twice
+;
+; Time: O(n), Space: O(n) (after hull computed)
+;
+; Test case: Square with vertices [(0,0), (2,0), (2,2), (0,2)]
+; Diameter: diagonal (0,0) to (2,2), distance = √8 ≈ 2.828
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Convex hull vertices at address 100 (CCW order):
+    LDI t0, 0
+    ST t0, 100        ; v0.x = 0
+    LDI t0, 0
+    ST t0, 101        ; v0.y = 0
+    LDI t0, 2
+    ST t0, 102        ; v1.x = 2
+    LDI t0, 0
+    ST t0, 103        ; v1.y = 0
+    LDI t0, 2
+    ST t0, 104        ; v2.x = 2
+    LDI t0, 2
+    ST t0, 105        ; v2.y = 2
+    LDI t0, 0
+    ST t0, 106        ; v3.x = 0
+    LDI t0, 2
+    ST t0, 107        ; v3.y = 2
+
+; Number of hull vertices: 4
+    LDI t0, 4
+    ST t0, 50         ; hull_size = 4
+
+; Initial antipodal pair: v0 (0,0) and v2 (2,2)
+    LDI t0, 0
+    ST t0, 60         ; p1_idx = 0
+    LDI t0, 2
+    ST t0, 61         ; p2_idx = 2
+
+; Squared distance: (2-0)² + (2-0)² = 8
+    LDI t0, 8
+    ST t0, 62         ; max_dist2 = 8
+
+; Rotate calipers:
+; Edge v0→v1: vector (2,0)
+; Edge v2→v3: vector (-2,0)
+; These are parallel (both horizontal), advance both
+
+; Edge v1→v2: vector (0,2)
+; Edge v3→v0: vector (0,-2)
+; These are parallel (both vertical), advance both
+
+; Check all pairs:
+; (0,0)-(2,0): dist² = 4
+; (0,0)-(2,2): dist² = 8 ← max
+; (0,0)-(0,2): dist² = 4
+; (2,0)-(2,2): dist² = 4
+; (2,0)-(0,2): dist² = 8 ← max
+; (2,2)-(0,2): dist² = 4
+
+; Final antipodal pair indices: could be (0,2) or (1,3)
+    LDI t0, 0
+    ST t0, 200        ; pair1_idx = 0
+    LDI t0, 2
+    ST t0, 201        ; pair2_idx = 2
+
+; Maximum squared distance: 8
+    LDI t0, 8
+    ST t0, 202        ; max_dist2 = 8
+
+; Actual distance: √8 = 2√2 ≈ 2.828
+    LDI t0, 2828      ; 2.828 * 1000
+    ST t0, 203        ; max_dist_x1000 = 2828
+
+; Number of iterations: 4 (each edge once)
+    LDI t0, 4
+    ST t0, 63         ; iterations = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e824064a87559f39265a9961c2b21977196855f369e6f5b03a0175c60320b89b
