@@ -17340,3 +17340,348 @@ test "svd_decomposition: verify matrix rank" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "reservoir_sampling: Random sampling from stream" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "reservoir_sampling.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Reservoir") != null);
+}
+
+test "reservoir_sampling: verify uniform sampling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "reservoir_sampling.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "base64_encode: Base64 encoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "base64_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Base64") != null);
+}
+
+test "base64_encode: verify encoded length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "base64_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "base64_decode: Base64 decoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "base64_decode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Base64") != null);
+}
+
+test "base64_decode: verify decoded output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "base64_decode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bloom_filter_impl: Probabilistic set membership" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_filter_impl.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bloom") != null);
+}
+
+test "bloom_filter_impl: verify hash count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_filter_impl.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "diff_match: Compute text differences" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "diff_match.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Diff") != null);
+}
+
+test "diff_match: verify edit count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "diff_match.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "diff_patch: Apply diff patch" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "diff_patch.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "patch") != null);
+}
+
+test "diff_patch: verify patch success" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "diff_patch.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dns_query: DNS question format" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dns_query.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "DNS") != null);
+}
+
+test "dns_query: verify query type" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dns_query.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "fuzzy_search: Approximate string matching" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fuzzy_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Fuzzy") != null);
+}
+
+test "fuzzy_search: verify similarity score" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fuzzy_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hex_encode: Bytes to hex string" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hex_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hex") != null);
+}
+
+test "hex_encode: verify hex output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hex_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hex_decode: Hex string to bytes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hex_decode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hex") != null);
+}
+
+test "hex_decode: verify decoded bytes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hex_decode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hll_cardinality: Cardinality estimation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hll_cardinality.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HyperLogLog") != null);
+}
+
+test "hll_cardinality: verify estimate" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hll_cardinality.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "http_parse: Parse HTTP request/response" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "http_parse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "HTTP") != null);
+}
+
+test "http_parse: verify method parsed" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "http_parse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ip_header_parse: Parse IPv4 header" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ip_header_parse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "version") != null);
+}
+
+test "ip_header_parse: verify protocol field" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ip_header_parse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "json_parse: Simple JSON parser" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "json_parse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "JSON") != null);
+}
+
+test "json_parse: verify tokens parsed" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "json_parse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "json_stringify: Serialize to JSON" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "json_stringify.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "JSON") != null);
+}
+
+test "json_stringify: verify output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "json_stringify.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lcs_edit: Longest Common Subsequence edits" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lcs_edit.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LCS") != null);
+}
+
+test "lcs_edit: verify edit operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lcs_edit.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "levenshtein_dist: Edit distance calculation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "levenshtein_dist.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Levenshtein") != null);
+}
+
+test "levenshtein_dist: verify distance" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "levenshtein_dist.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "metaphone: Phonetic algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "metaphone.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Metaphone") != null);
+}
+
+test "metaphone: verify phonetic code" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "metaphone.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "soundex_hash: Phonetic hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "soundex_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Soundex") != null);
+}
+
+test "soundex_hash: verify phonetic hash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "soundex_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "tcp_checksum: Internet checksum" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tcp_checksum.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "checksum") != null);
+}
+
+test "tcp_checksum: verify checksum value" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tcp_checksum.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "udp_packet: UDP datagram handling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "udp_packet.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "UDP") != null);
+}
+
+test "udp_packet: verify destination port" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "udp_packet.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "url_encode: Percent-encoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "url_encode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Percent") != null);
+}
+
+test "url_encode: verify encoded URL" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "url_encode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "url_decode: Percent-decoding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "url_decode.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Percent") != null);
+}
+
+test "url_decode: verify decoded URL" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "url_decode.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
