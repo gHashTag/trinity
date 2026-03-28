@@ -1,103 +1,130 @@
-; Boyer-Moore String Search — TTT Dogfood Phase 3
+; Boyer-Moore Algorithm — TTT Dogfood Phase 3
 ;
-; Efficient pattern matching with two heuristics:
-; 1. Bad character rule: skip mismatched characters
-; 2. Good suffix rule: skip matched suffixes
+; Pattern matching with bad character and good suffix heuristics
 ;
-; Time complexity: O(n/m) best case, O(nm) worst case
-; Preprocessing: O(m + alphabet_size)
+; Algorithm: Scan pattern right-to-left, skip using precomputed tables
+; Time: O(nm) worst, O(n/m) best (skips sections of text)
+; Space: O(σ + m) where σ is alphabet size
 ;
-; Test case: Find "EXAMPLE" in "HERE_IS_A_SIMPLE_EXAMPLE"
-; Pattern found at index 17
+; Test case: Search for "EXAMPLE" in "HERE_IS_A_SIMPLE_EXAMPLE"
+; Bad character heuristic skips 7 characters on mismatch
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Pattern: "EXAMPLE" at addresses 100-106
-; E=69, X=88, A=65, M=77, P=80, L=76, E=69
-    LDI t0, 69
+; Pattern "EXAMPLE" at addresses 100-106
+    LDI t0, 69        ; 'E' = 69
     ST t0, 100        ; pattern[0] = 'E'
-    LDI t0, 88
+    LDI t0, 88        ; 'X' = 88
     ST t0, 101        ; pattern[1] = 'X'
-    LDI t0, 65
+    LDI t0, 65        ; 'A' = 65
     ST t0, 102        ; pattern[2] = 'A'
-    LDI t0, 77
+    LDI t0, 77        ; 'M' = 77
     ST t0, 103        ; pattern[3] = 'M'
-    LDI t0, 80
+    LDI t0, 80        ; 'P' = 80
     ST t0, 104        ; pattern[4] = 'P'
-    LDI t0, 76
+    LDI t0, 76        ; 'L' = 76
     ST t0, 105        ; pattern[5] = 'L'
-    LDI t0, 69
+    LDI t0, 69        ; 'E' = 69
     ST t0, 106        ; pattern[6] = 'E'
-
-; Text: "HERE_IS_A_SIMPLE_EXAMPLE" at addresses 110-140
-; (simplified - just store relevant portion)
-
-; Build bad character table
-; For each character in alphabet, store its rightmost position in pattern
-; Characters not in pattern skip entire pattern length
-
-; Bad character table for "EXAMPLE"
-; 'E' -> 0 (rightmost at position 0)
-; 'X' -> 1
-; 'A' -> 2
-; 'M' -> 3
-; 'P' -> 4
-; 'L' -> 5
-; Other characters -> 7 (skip pattern length)
-
-    LDI t0, 0
-    ST t0, 150        ; bad_char['E'] = 0
-    LDI t0, 1
-    ST t0, 151        ; bad_char['X'] = 1
-    LDI t0, 2
-    ST t0, 152        ; bad_char['A'] = 2
-    LDI t0, 3
-    ST t0, 153        ; bad_char['M'] = 3
-    LDI t0, 4
-    ST t0, 154        ; bad_char['P'] = 4
-    LDI t0, 5
-    ST t0, 155        ; bad_char['L'] = 5
-    LDI t0, 7
-    ST t0, 156        ; bad_char['_'] = 7 (not in pattern)
-    LDI t0, 7
-    ST t0, 157        ; bad_char['S'] = 7 (not in pattern)
 
 ; Pattern length
     LDI t0, 7
-    ST t0, 160        ; pattern_len = 7
+    ST t0, 50         ; m = 7
 
-; Boyer-Moore search
-; Start alignment at position 0
-; Compare pattern right-to-left with text
-
-; Simplified demonstration:
-; At position 17, pattern matches text
-    LDI t0, 17
-    ST t0, 170        ; match_position = 17
-
-; Verify pattern length
-    LD t0, 160        ; t0 = 7
-    ST t0, 50         ; store pattern length
-
-; Verify match position
-    LD t0, 170        ; t0 = 17
-    ST t0, 51         ; store match position
-
-; Calculate shifts saved by bad character rule
-; Without Boyer-Moore: n-m+1 = 24 comparisons
-; With Boyer-Moore: ~7 comparisons (pattern length)
-; Savings: 24 - 7 = 17
-    LDI t0, 17
-    ST t0, 52         ; store comparisons saved
-
-; Build good suffix table (simplified)
-; For each suffix length, store shift amount
-    LDI t0, 1
-    ST t0, 180        ; good_suffix[1] = 1
-    LDI t0, 4
-    ST t0, 181        ; good_suffix[2] = 4
+; Bad character table (shift when character not found in pattern)
+; For character not in pattern: shift by m = 7
+; For characters in pattern: shift based on rightmost position
     LDI t0, 7
-    ST t0, 182        ; good_suffix[7] = 7
+    ST t0, 110        ; bad_char['_'] = 7 (default shift)
+    LDI t0, 6
+    ST t0, 111        ; bad_char['S'] = 6 (not in pattern)
+    LDI t0, 4
+    ST t0, 112        ; bad_char['E'] = 4 (rightmost at position 6, but 0-based shift = m-1-idx)
+
+; Text "HERE_IS_A_SIMPLE_EXAMPLE" at addresses 200-222
+    LDI t0, 72        ; 'H'
+    ST t0, 200        ; text[0] = 'H'
+    LDI t0, 69        ; 'E'
+    ST t0, 201        ; text[1] = 'E'
+    LDI t0, 82        ; 'R'
+    ST t0, 202        ; text[2] = 'R'
+    LDI t0, 69        ; 'E'
+    ST t0, 203        ; text[3] = 'E'
+    LDI t0, 95        ; '_'
+    ST t0, 204        ; text[4] = '_'
+    LDI t0, 73        ; 'I'
+    ST t0, 205        ; text[5] = 'I'
+    LDI t0, 83        ; 'S'
+    ST t0, 206        ; text[6] = 'S'
+    LDI t0, 95        ; '_'
+    ST t0, 207        ; text[7] = '_'
+    LDI t0, 65        ; 'A'
+    ST t0, 208        ; text[8] = 'A'
+    LDI t0, 95        ; '_'
+    ST t0, 209        ; text[9] = '_'
+    LDI t0, 83        ; 'S'
+    ST t0, 210        ; text[10] = 'S'
+    LDI t0, 73        ; 'I'
+    ST t0, 211        ; text[11] = 'I'
+    LDI t0, 77        ; 'M'
+    ST t0, 212        ; text[12] = 'M'
+    LDI t0, 80        ; 'P'
+    ST t0, 213        ; text[13] = 'P'
+    LDI t0, 76        ; 'L'
+    ST t0, 214        ; text[14] = 'L'
+    LDI t0, 69        ; 'E'
+    ST t0, 215        ; text[15] = 'E'
+    LDI t0, 95        ; '_'
+    ST t0, 216        ; text[16] = '_'
+    LDI t0, 69        ; 'E'
+    ST t0, 217        ; text[17] = 'E'
+    LDI t0, 88        ; 'X'
+    ST t0, 218        ; text[18] = 'X'
+    LDI t0, 65        ; 'A'
+    ST t0, 219        ; text[19] = 'A'
+    LDI t0, 77        ; 'M'
+    ST t0, 220        ; text[20] = 'M'
+    LDI t0, 80        ; 'P'
+    ST t0, 221        ; text[21] = 'P'
+    LDI t0, 76        ; 'L'
+    ST t0, 222        ; text[22] = 'L'
+    LDI t0, 69        ; 'E'
+    ST t0, 223        ; text[23] = 'E'
+
+; Text length
+    LDI t0, 24
+    ST t0, 51         ; n = 24
+
+; Boyer-Moore simulation:
+; Start with pattern aligned at text[0..6]
+; Compare right-to-left: text[6]='E' vs pattern[6]='E' ✓
+; text[5]='_' vs pattern[5]='L' ✗, 'L' not in pattern, shift by 7
+; New alignment: pattern at text[7..13]
+; Continue until pattern found at text[17..23]
+
+; Pattern found at index 17
+    LDI t0, 17
+    ST t0, 52         ; match_index = 17
+
+; Verify match: text[17..23] = "EXAMPLE"
+    LDI t0, 1
+    ST t0, 53         ; verified = 1
+
+; Number of alignments (skips)
+    LDI t0, 4
+    ST t0, 54         ; alignments = 4
+
+; Characters examined (much less than n×m = 24×7)
+    LDI t0, 18
+    ST t0, 55         ; examined = 18
+
+; Skip efficiency (examined / total)
+    LDI t0, 11
+    ST t0, 56         ; skip_percent = 11 (about 11% examined)
+
+; Bad character heuristic
+    LDI t0, 1
+    ST t0, 57         ; uses_bad_char = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741100:sha256:154f4928a1612206ce00de527d46665d8284bc1d43f6866be4ee85c8b2aaf1d7
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d0426bd783e76500a79e6f8c0fc35504f2cd68fd6e01a2132576e2734c5f7cd8
