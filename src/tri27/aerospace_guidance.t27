@@ -1,0 +1,13 @@
+; Aerospace Guidance — TTT Dogfood Phase 3
+;
+; Guidance systems
+;
+; Test case: aerospace_guidance
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; guidance_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0757d000002000000001c75

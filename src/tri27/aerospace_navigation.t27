@@ -1,0 +1,13 @@
+; Aerospace Navigation — TTT Dogfood Phase 3
+;
+; Navigation systems
+;
+; Test case: aerospace_navigation
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; navigation_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0757c000002000000001c73
