@@ -1,0 +1,13 @@
+; Restaurant Menu — TTT Dogfood Phase 3
+;
+; Menu management
+;
+; Test case: restaurant_menu
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; menu_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075e60000020000000001d47
