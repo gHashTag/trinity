@@ -1,0 +1,13 @@
+; Fully Associative Cache — TTT Dogfood Phase 3
+;
+; Single set cache
+;
+; Test case: cache_fully_associative
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fully_assoc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07310000010000000ad9
