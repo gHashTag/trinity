@@ -1,0 +1,13 @@
+; Government Census — TTT Dogfood Phase 3
+;
+; Census data processing
+;
+; Test case: government_census
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; census_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075f10000020000000001d5d

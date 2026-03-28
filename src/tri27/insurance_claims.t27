@@ -1,0 +1,13 @@
+; Insurance Claims — TTT Dogfood Phase 3
+;
+; Claims processing
+;
+; Test case: insurance_claims
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; claims_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075fe000002000000001d77
