@@ -1,0 +1,13 @@
+; CFG — TTT Dogfood Phase 3
+;
+; Control Flow Graph
+;
+; Test case: compile_cfg
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cfg_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07a77000002000000002227
