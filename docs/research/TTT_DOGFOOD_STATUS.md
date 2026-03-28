@@ -28,18 +28,18 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Metric | Count |
 |--------|-------|
-| Total .t27 files | 112 |
-| Files with tests | 112 |
+| Total .t27 files | 113 |
+| Files with tests | 113 |
 | Test coverage | 100% |
-| Total tests | 916 |
-| Tests passing | 913 (99.7%) |
+| Total tests | 922 |
+| Tests passing | 919 (99.7%) |
 | Tests failing | 3 (pre-existing, unrelated to new code) |
 
 ### Algorithm Categories Implemented in .t27
 
 | Category | Files |
 |----------|-------|
-| Sorting | bubble_sort, heap_sort, insertion_sort, merge_sort, quick_sort, quicksort, radix_sort, selection_sort, shell_sort, stack_sort, tim_sort |
+| Sorting | bubble_sort, cycle_sort, heap_sort, insertion_sort, merge_sort, quick_sort, quicksort, radix_sort, selection_sort, shell_sort, stack_sort, tim_sort |
 | Search | binary_search, bfs, breadth_first_search, depth_first_search, dfs, string_search, substring_search |
 | Graph | bellman_ford, best_time_stock, bfs, dfs, dijkstra, floyd_warshall, topological_sort |
 | Trees | avl_tree, binary_tree, binary_tree_traversal, segment_tree, trie, trie_prefix_tree |
