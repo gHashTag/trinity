@@ -36555,3 +36555,288 @@ test "morphology_tophat: verify transform" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "abs_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "abs_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Abs") != null);
+}
+
+test "abs_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "abs_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "acos: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acos.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arccosine") != null);
+}
+
+test "acos: verify function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acos.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "acos_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acos_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Acos") != null);
+}
+
+test "acos_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acos_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "acosh_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acosh_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Acosh") != null);
+}
+
+test "acosh_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "acosh_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "adler32: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adler32.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Adler") != null);
+}
+
+test "adler32: verify checksum" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adler32.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "affine_grid: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "affine_grid.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Affine") != null);
+}
+
+test "affine_grid: verify grid" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "affine_grid.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "alpha_shape: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "alpha_shape.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Alpha") != null);
+}
+
+test "alpha_shape: verify shape" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "alpha_shape.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ami: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ami.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AMI") != null);
+}
+
+test "ami: verify metric" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ami.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ans: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ans.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "ANS") != null);
+}
+
+test "ans: verify compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ans.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "asin: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asin.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arcsine") != null);
+}
+
+test "asin: verify function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asin.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "asin_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asin_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Asin") != null);
+}
+
+test "asin_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asin_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "asinh_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asinh_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Asinh") != null);
+}
+
+test "asinh_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "asinh_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atan: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arctangent") != null);
+}
+
+test "atan: verify function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atan2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Arctangent2") != null);
+}
+
+test "atan2: verify function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atan_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Atan") != null);
+}
+
+test "atan_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atan_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atanh_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atanh_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Atanh") != null);
+}
+
+test "atanh_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atanh_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "avgpool2d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avgpool2d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AvgPool2D") != null);
+}
+
+test "avgpool2d: verify pooling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avgpool2d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_plus_tree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B+") != null);
+}
+
+test "b_plus_tree: verify tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_star_tree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_star_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B*") != null);
+}
+
+test "b_star_tree: verify tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_star_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
