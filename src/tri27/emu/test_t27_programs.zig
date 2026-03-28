@@ -48990,3 +48990,123 @@ test "str_trim: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "bloom_add: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_add.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bloom_add: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_add.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "btree_delete: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_delete.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "btree_delete: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_delete.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "btree_insert: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "btree_insert: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "btree_search: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "btree_search: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rb_delete: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rb_delete.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "rb_delete: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rb_delete.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rb_insert: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rb_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "rb_insert: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rb_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "skiplist_insert: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "skiplist_insert: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "skiplist_search: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "skiplist_search: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skiplist_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

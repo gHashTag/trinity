@@ -1,6 +1,6 @@
 ; B-Tree Delete — TTT Dogfood Phase 3
 ;
-| Balanced tree remove
+; Balanced tree remove
 ;
 ; Test case: btree_delete
 ;

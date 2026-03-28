@@ -1,6 +1,6 @@
 ; Bloom Filter Add — TTT Dogfood Phase 3
 ;
-| Probabilistic set
+; Probabilistic set
 ;
 ; Test case: bloom_add
 ;

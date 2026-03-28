@@ -1,6 +1,6 @@
 ; B-Tree Search — TTT Dogfood Phase 3
 ;
-| Balanced tree lookup
+; Balanced tree lookup
 ;
 ; Test case: btree_search
 ;
