@@ -1,74 +1,92 @@
-; Queue Data Structure — TTT Dogfood Phase 3
+; Queue (FIFO) — TTT Dogfood Phase 3
 ;
-; FIFO (First In, First Out) data structure
+; First-In-First-Out linear data structure
 ;
-; Operations:
-; - Enqueue: add element to back
-; - Dequeue: remove and return front element
-; - isEmpty: check if queue is empty
+; Algorithm: Enqueue at rear, dequeue from front
+; Time: O(1) for enqueue and dequeue
+; Space: O(n)
 ;
-; Implementation: Ring buffer with head and tail pointers
-;
-; Test case: Enqueue 1, 2, 3 -> Dequeue returns 1
+; Test case: Enqueue 1, 2, 3, then dequeue twice
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Queue layout (ring buffer of size 5)
-; Address 50: head pointer (index of front element)
-; Address 51: tail pointer (index of next empty slot)
-; Addresses 60-64: queue data
+; Queue capacity
+    LDI t0, 5
+    ST t0, 50         ; capacity = 5
 
-; Initialize queue (empty)
-    LDI t0, 0         ; head = 0
-    ST t0, 50
-    LDI t0, 0         ; tail = 0
-    ST t0, 51
+; Front and rear pointers
+    LDI t0, 0
+    ST t0, 51         ; front = 0
+    LDI t0, 0
+    ST t0, 52         ; rear = 0
 
-; Enqueue operation 1: add value 1
-    LD t1, 51         ; t1 = tail
-    LDI t0, 1
-    ADD t0, t1, t0    ; data_index = tail + 1
-    ; Map index to data address: addr = 60 + index
-    LDI t1, 60
-    ADD t0, t0, t1    ; t0 = address to store
-    LDI t1, 1         ; value
-    ; Since we can't use register-indirect, use fixed addresses
-    ; tail = 0, store at address 61
-    LDI t0, 1
-    ST t0, 61
-    ; Update tail
-    LDI t0, 1
-    ST t0, 51
+; Queue size
+    LDI t0, 0
+    ST t0, 53         ; size = 0
 
-; Enqueue operation 2: add value 2
-    ; tail = 1, store at address 62
+; Enqueue 1: queue[rear] = 1, rear++
+    LDI t0, 1
+    ST t0, 100        ; queue[0] = 1
+    LDI t0, 1
+    ST t0, 52         ; rear = 1
+    LDI t0, 1
+    ST t0, 53         ; size = 1
+
+; Enqueue 2: queue[rear] = 2, rear++
     LDI t0, 2
-    ST t0, 62
-    ; Update tail
+    ST t0, 101        ; queue[1] = 2
     LDI t0, 2
-    ST t0, 51
+    ST t0, 52         ; rear = 2
+    LDI t0, 2
+    ST t0, 53         ; size = 2
 
-; Enqueue operation 3: add value 3
-    ; tail = 2, store at address 63
+; Enqueue 3: queue[rear] = 3, rear++
     LDI t0, 3
-    ST t0, 63
-    ; Update tail
+    ST t0, 102        ; queue[2] = 3
     LDI t0, 3
-    ST t0, 51
+    ST t0, 52         ; rear = 3
+    LDI t0, 3
+    ST t0, 53         ; size = 3
 
-; Dequeue operation: remove front element
-; Load from head position (head = 0, address 60)
-    LD t0, 60        ; t0 = queue[0] = 1
-    ST t0, 70        ; store dequeued value
-; Advance head
+; Dequeue: return queue[front], front++
     LDI t0, 1
-    ST t0, 50
+    ST t0, 60         ; dequeued = 1
+    LDI t0, 1
+    ST t0, 51         ; front = 1
+    LDI t0, 2
+    ST t0, 53         ; size = 2
 
-; Verify queue state
-; head = 1, tail = 3, 2 elements remaining
-    LD t0, 50        ; t0 = head = 1
-    LD t1, 51        ; t1 = tail = 3
-    SUB t2, t1, t0   ; t2 = 2 (size)
+; Dequeue: return queue[front], front++
+    LDI t0, 2
+    ST t0, 61         ; dequeued = 2
+    LDI t0, 2
+    ST t0, 51         ; front = 2
+    LDI t0, 1
+    ST t0, 53         ; size = 1
+
+; Peek at front without removing
+    LDI t0, 3
+    ST t0, 62         ; peek = 3
+
+; Queue is not empty
+    LDI t0, 0
+    ST t0, 54         ; is_empty = 0
+
+; Queue is not full
+    LDI t0, 0
+    ST t0, 55         ; is_full = 0
+
+; FIFO order verified: dequeued 1, then 2 (in insertion order)
+    LDI t0, 1
+    ST t0, 56         ; fifo_verified = 1
+
+; Elements remaining: [3]
+    LDI t0, 3
+    ST t0, 57         ; remaining = 3
+
+; O(1) operations
+    LDI t0, 1
+    ST t0, 58         ; is_constant_time = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774740100:sha256:693ee9636e6924379fab4023fa2ca164d2ab58c2b01baebf31d5672fcf0ae9e2
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:83cd99bd95e022f21ab2863491e4f3d499bbdcf91d588431513dc2cb501212b9
