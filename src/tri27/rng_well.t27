@@ -1,6 +1,6 @@
 ; Well RNG — TTT Dogfood Phase 3
 ;
-| Well-equidistributed
+; Well-equidistributed
 ;
 ; Test case: rng_well
 ;

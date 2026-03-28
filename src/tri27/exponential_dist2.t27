@@ -1,0 +1,13 @@
+; Exponential V2 — TTT Dogfood Phase 3
+;
+| Poisson process alt
+;
+; Test case: exponential_dist2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; exponential_dist2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b020001b0d

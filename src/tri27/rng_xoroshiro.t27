@@ -1,6 +1,6 @@
 ; Xoroshiro — TTT Dogfood Phase 3
 ;
-| XOR-shift RNG
+; XOR-shift RNG
 ;
 ; Test case: rng_xoroshiro
 ;

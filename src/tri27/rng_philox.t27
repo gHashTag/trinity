@@ -1,6 +1,6 @@
 ; Philox RNG — TTT Dogfood Phase 3
 ;
-| Parallel counter-based
+; Parallel counter-based
 ;
 ; Test case: rng_philox
 ;

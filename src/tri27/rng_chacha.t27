@@ -1,6 +1,6 @@
 ; ChaCha RNG — TTT Dogfood Phase 3
 ;
-| Cryptographic PRNG
+; Cryptographic PRNG
 ;
 ; Test case: rng_chacha
 ;

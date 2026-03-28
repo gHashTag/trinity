@@ -1,6 +1,6 @@
 ; Threefish RNG — TTT Dogfood Phase 3
 ;
-| Skein-based RNG
+; Skein-based RNG
 ;
 ; Test case: rng_threefish
 ;

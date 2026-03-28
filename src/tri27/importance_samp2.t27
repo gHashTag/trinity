@@ -1,6 +1,6 @@
 ; Importance Sampling V2 — TTT Dogfood Phase 3
 ;
-| Weighted MC alt
+; Weighted MC alt
 ;
 ; Test case: importance_samp2
 ;
