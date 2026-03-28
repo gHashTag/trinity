@@ -1067,3 +1067,11 @@ test "t27_programs: crypto_ops file exists" {
 }
 
 // φ² + 1/φ² = 3 | TRINITY
+
+test "t27_programs: sha256_schedule file exists" {
+    const path = "src/tri27/sha256_schedule.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
