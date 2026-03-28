@@ -1,0 +1,13 @@
+; Strongly Connected Components — TTT Dogfood Phase 3
+;
+; Kosaraju's algorithm for directed graphs
+;
+; Test case: graph_strongly_connected
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; scc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730000100001b99

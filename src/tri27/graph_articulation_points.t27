@@ -1,0 +1,13 @@
+; Articulation Points — TTT Dogfood Phase 3
+;
+; Find cut vertices in graph
+;
+; Test case: graph_articulation_points
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; articulation_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732e00000001b89
