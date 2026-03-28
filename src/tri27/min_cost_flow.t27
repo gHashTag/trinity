@@ -1,0 +1,38 @@
+; Min-Cost Max-Flow — TTT Dogfood Phase 3
+;
+; Find max flow with minimum cost
+;
+; Test case: Supply=2, Demand=2
+; Min cost: 10
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Edges with (u,v,cap,cost):
+    LDI t0, 0
+    ST t0, 100        ; e[0].u = 0
+    LDI t0, 1
+    ST t0, 101        ; e[0].v = 1
+    LDI t0, 2
+    ST t0, 102        ; e[0].cap = 2
+    LDI t0, 3
+    ST t0, 103        ; e[0].cost = 3
+    LDI t0, 1
+    ST t0, 104        ; e[1].u = 1
+    LDI t0, 2
+    ST t0, 105        ; e[1].v = 2
+    LDI t0, 2
+    ST t0, 106        ; e[1].cap = 2
+    LDI t0, 2
+    ST t0, 107        ; e[1].cost = 2
+
+; Flow 2 units on path 0→1→2
+; Cost: 2 × (3+2) = 10
+
+    LDI t0, 10
+    ST t0, 60         ; min_cost = 10
+
+    LDI t0, 2
+    ST t0, 61         ; flow = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0372c9001138

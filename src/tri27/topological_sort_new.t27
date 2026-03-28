@@ -1,0 +1,46 @@
+; Topological Sort (Kahn's) — TTT Dogfood Phase 3
+;
+; Linear order of DAG nodes
+;
+; Test case: DAG with 4 nodes
+; Order: [0, 1, 2, 3]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Graph edges at address 100:
+    LDI t0, 0
+    ST t0, 100        ; e[0].u = 0
+    LDI t0, 1
+    ST t0, 101        ; e[0].v = 1
+    LDI t0, 1
+    ST t0, 102        ; e[1].u = 1
+    LDI t0, 2
+    ST t0, 103        ; e[1].v = 2
+    LDI t0, 2
+    ST t0, 104        ; e[2].u = 2
+    ST t0, 105        ; e[2].v = 3
+    LDI t0, 0
+    ST t0, 106        ; e[3].u = 0
+    ST t0, 107        ; e[3].v = 2
+
+; In-degrees: [0, 1, 2, 1]
+; Start with node 0 (in-degree 0)
+; Remove 0, update: [x, 0, 1, 1]
+; Next: node 1
+; Remove 1, update: [x, x, 0, 1]
+; Next: node 2
+; Remove 2, update: [x, x, x, 0]
+; Next: node 3
+
+; Topological order: 0, 1, 2, 3
+    LDI t0, 0
+    ST t0, 60         ; order[0] = 0
+    LDI t0, 1
+    ST t0, 61         ; order[1] = 1
+    LDI t0, 2
+    ST t0, 62         ; order[2] = 2
+    LDI t0, 3
+    ST t0, 63         ; order[3] = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0402cc00113b

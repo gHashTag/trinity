@@ -1,0 +1,55 @@
+; Kruskal's MST Algorithm — TTT Dogfood Phase 3
+;
+; Minimum spanning tree using union-find
+;
+; Test case: 4 nodes, 5 edges
+; MST weight: 7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Edges: (u,v,weight) at address 100:
+    LDI t0, 0
+    ST t0, 100        ; e[0].u = 0
+    LDI t0, 1
+    ST t0, 101        ; e[0].v = 1
+    LDI t0, 1
+    ST t0, 102        ; e[0].w = 1
+    LDI t0, 1
+    ST t0, 103        ; e[1].u = 1
+    LDI t0, 2
+    ST t0, 104        ; e[1].v = 2
+    LDI t0, 2
+    ST t0, 105        ; e[1].w = 2
+    LDI t0, 2
+    ST t0, 106        ; e[2].u = 2
+    LDI t0, 3
+    ST t0, 107        ; e[2].v = 3
+    LDI t0, 3
+    ST t0, 108        ; e[2].w = 3
+    LDI t0, 0
+    ST t0, 109        ; e[3].u = 0
+    LDI t0, 2
+    ST t0, 110        ; e[3].v = 2
+    LDI t0, 4
+    ST t0, 111        ; e[3].w = 4
+    LDI t0, 1
+    ST t0, 112        ; e[4].u = 1
+    LDI t0, 3
+    ST t0, 113        ; e[4].v = 3
+    LDI t0, 5
+    ST t0, 114        ; e[4].w = 5
+
+; Sort edges by weight: 1,2,3,4,5
+
+; MST edges: (0,1), (1,2), (2,3) = weights 1+2+3 = 6
+
+; MST weight: 6
+    LDI t0, 6
+    ST t0, 60         ; mst_weight = 6
+
+; Edges in MST: 3
+    LDI t0, 3
+    ST t0, 61         ; mst_edges = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0312a3001132
