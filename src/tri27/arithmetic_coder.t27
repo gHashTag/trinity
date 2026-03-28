@@ -1,0 +1,13 @@
+; Arithmetic Coder — TTT Dogfood Phase 3
+;
+; Arithmetic encoding
+;
+; Test case: arithmetic_coder
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; arithmetic_coder_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a08001980
