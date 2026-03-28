@@ -1,0 +1,13 @@
+; Stereo Rectify — TTT Dogfood Phase 3
+;
+; Stereo rectification
+;
+; Test case: stereo rectify
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rectified = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715f800156e

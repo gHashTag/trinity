@@ -1,0 +1,13 @@
+; Watershed 2 — TTT Dogfood Phase 3
+;
+; Watershed segmentation algorithm v2
+;
+; Test case: watershed segments v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; segments = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715bb001531

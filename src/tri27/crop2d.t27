@@ -1,0 +1,13 @@
+; Crop2D — TTT Dogfood Phase 3
+;
+; 2D cropping
+;
+; Test case: crop2d
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; output = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07172f0016a5

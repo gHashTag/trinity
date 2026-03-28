@@ -45,7 +45,7 @@
 ;   2(pri=4)  6(pri=1)
 ;   /    \       \
 ; 3(p=5)  nil    7(pri=2)
-/                 \
+;                 (branch continuation)
 ; nil              8(pri=7)
 
 ; Root node: value=4, priority=6

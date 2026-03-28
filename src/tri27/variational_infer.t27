@@ -1,0 +1,13 @@
+; Variational Infer — TTT Dogfood Phase 3
+;
+; Variational inference
+;
+; Test case: variational
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; approximation = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0716d600164c

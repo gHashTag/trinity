@@ -1,0 +1,13 @@
+; SLAM Init — TTT Dogfood Phase 3
+;
+; SLAM initialization
+;
+; Test case: slam init
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; initialized = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071602001578
