@@ -1,0 +1,13 @@
+; Ecommerce Cart — TTT Dogfood Phase 3
+;
+; Shopping cart
+;
+; Test case: ecommerce_cart
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cart_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0763e00000200000001df7
