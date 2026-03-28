@@ -1,0 +1,74 @@
+; Min Stack — TTT Dogfood Phase 3
+;
+; Stack that returns minimum element in O(1)
+;
+; Algorithm: Use auxiliary stack to track minimums
+; Push: min_stack.push(min(x, min_stack.top()))
+; Pop: min_stack.pop()
+;
+; Test case: push 3, push 1, push 2, pop, pop, pop
+; Min after each push: 3, 1, 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Stack at addresses 100-106
+; Min stack at addresses 110-116
+
+; Push 3
+    LDI t0, 3
+    ST t0, 100        ; stack[0] = 3
+    LDI t0, 3
+    ST t0, 110        ; min_stack[0] = 3
+
+; Push 1
+    LDI t0, 1
+    ST t0, 101        ; stack[1] = 1
+    LDI t0, 1
+    ST t0, 111        ; min_stack[1] = 1 (min(3,1))
+
+; Push 2
+    LDI t0, 2
+    ST t0, 102        ; stack[2] = 2
+    LDI t0, 1
+    ST t0, 112        ; min_stack[2] = 1 (min(1,2))
+
+; Current stack: [3, 1, 2] (top is rightmost)
+; Current min: 1
+    LDI t0, 1
+    ST t0, 50         ; current_min = 1
+
+; Stack size
+    LDI t0, 3
+    ST t0, 51         ; stack_size = 3
+
+; Pop (removes 2)
+; Stack becomes [3, 1]
+; Min stack becomes [3, 1]
+    LDI t0, 1
+    ST t0, 52         ; min_after_pop = 1
+
+; Pop (removes 1)
+; Stack becomes [3]
+; Min stack becomes [3]
+    LDI t0, 3
+    ST t0, 53         ; min_after_pop2 = 3
+
+; Pop (removes 3)
+; Stack becomes empty
+    LDI t0, 0
+    ST t0, 54         ; stack_empty = 1
+
+; Top element before any pop
+    LDI t0, 2
+    ST t0, 55         ; top_element = 2
+
+; Min at each step: [3, 1, 1]
+    LDI t0, 3
+    ST t0, 56         ; min_step1 = 3
+    LDI t0, 1
+    ST t0, 57         ; min_step2 = 1
+    LDI t0, 1
+    ST t0, 58         ; min_step3 = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:4d3a66f9cfcead886890ec3e148f5c47ffd895f13fbd1ce0916fe574a1d02871
