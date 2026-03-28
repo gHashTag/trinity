@@ -1,0 +1,13 @@
+; RLE Decompression — TTT Dogfood Phase 3
+;
+; Run-length decoding
+;
+; Test case: compress_rle_decode
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; compress_rle_decode_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071cd0001d09

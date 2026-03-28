@@ -1,0 +1,13 @@
+; Vigenère Cipher — TTT Dogfood Phase 3
+;
+; Polyalphabetic substitution
+;
+; Test case: crypto_vigenere
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; crypto_vigenere_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071d20001d59

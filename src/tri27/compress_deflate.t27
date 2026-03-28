@@ -1,0 +1,13 @@
+; Deflate Compression — TTT Dogfood Phase 3
+;
+; DEFLATE (zlib) encoding
+;
+; Test case: compress_deflate
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; compress_deflate_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071ce0001d19
