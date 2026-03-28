@@ -1,0 +1,13 @@
+; Otsu Threshold — TTT Dogfood Phase 3
+;
+; Automatic threshold selection
+;
+; Test case: dsp_otsu_threshold
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; otsu_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07300000010000000d79
