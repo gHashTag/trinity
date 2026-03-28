@@ -681,6 +681,7 @@ test "5-node simulation with disk persistence" {
     const allocator = std.testing.allocator;
 
     // Create 5 temp directories for 5 nodes
+    const base_dir = "/tmp/trinity_test_5node";
     const dirs = [_][]const u8{
         "/tmp/trinity_test_5node/node0",
         "/tmp/trinity_test_5node/node1",
@@ -690,13 +691,30 @@ test "5-node simulation with disk persistence" {
     };
 
     // Clean up from previous run
-    std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+    std.fs.cwd().deleteTree(base_dir) catch |err| {
         std.log.debug("shard_manager: pre-test cleanup failed: {}", .{err});
     };
+
+    // Create base directory first
+    std.fs.cwd().makePath(base_dir) catch |err| {
+        std.log.debug("shard_manager: failed to create base dir: {}", .{err});
+        return error.SetupFailed;
+    };
+
     for (dirs) |dir| {
-        try std.fs.cwd().makePath(dir);
+        // Use the base directory handle for creating subdirectories
+        const basename = std.fs.path.basename(dir);
+        var base_dir_handle = std.fs.cwd().openDir(base_dir, .{}) catch {
+            std.log.debug("shard_manager: failed to open base dir", .{});
+            return error.SetupFailed;
+        };
+        defer base_dir_handle.close();
+        base_dir_handle.makePath(basename) catch |err| {
+            std.log.debug("shard_manager: failed to create node dir {s}: {}", .{ basename, err });
+            return error.SetupFailed;
+        };
     }
-    defer std.fs.cwd().deleteTree("/tmp/trinity_test_5node") catch |err| {
+    defer std.fs.cwd().deleteTree(base_dir) catch |err| {
         std.log.debug("shard_manager: post-test cleanup failed: {}", .{err});
     };
 
