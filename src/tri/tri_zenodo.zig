@@ -48,6 +48,7 @@ const YELLOW = "\x1b[33m";
 const RED = "\x1b[31m";
 const CYAN = "\x1b[36m";
 const GOLDEN = "\x1b[38;5;220m";
+const GRAY = "\x1b[90m";
 
 const RECORD_ID = "18947017";
 const API = "https://zenodo.org/api";
@@ -120,6 +121,9 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     } else if (std.mem.eql(u8, subcmd, "clara")) {
         // CLARA shortcut commands
         try runClaraCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "community")) {
+        // Community curation
+        try runCommunityCommand(allocator, sub_args);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -877,7 +881,7 @@ fn runV21Command(allocator: std.mem.Allocator, args: []const []const u8) !void {
         //     if (risk.mitigations.len > 0) {
         //         print("{s}\n", .{risk.mitigations[0]});
         //     } else {
-        //         print("\n");
+        //         print("\n", .{});
         //     }
         // }
         // print("\n{s}✅ Risk assessment displayed!{s}\n\n", .{ GREEN, RESET });
@@ -1085,6 +1089,299 @@ fn printClaraHelp() void {
     print("  tri clara verify                 Run CLARA verification test suite\n", .{});
     print("  tri clara bench [--poly-time]    Run complexity benchmarks\n\n", .{});
     print("  Shortcut: tri zenodo clara-metadata <bundle>\n\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMMUNITY — Link deposits to Zenodo communities
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runCommunityCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printCommunityHelp();
+        return;
+    }
+
+    const cmd = args[0];
+    const cmd_args = args[1..];
+
+    if (std.mem.eql(u8, cmd, "list")) {
+        try listCommunities(allocator);
+    } else if (std.mem.eql(u8, cmd, "link")) {
+        try linkToCommunity(allocator, cmd_args);
+    } else if (std.mem.eql(u8, cmd, "status")) {
+        try showCommunityStatus(allocator, cmd_args);
+    } else if (std.mem.eql(u8, cmd, "search")) {
+        try searchCommunities(allocator, cmd_args);
+    } else {
+        print("{s}Unknown community command: {s}{s}\n", .{ RED, cmd, RESET });
+        printCommunityHelp();
+    }
+}
+
+fn printCommunityHelp() void {
+    print("\n{s}{s}Zenodo Community Curation{s}\n\n", .{ GOLDEN, BOLD, RESET });
+    print("{s}Link your deposits to Zenodo communities for increased visibility.{s}\n\n", .{ CYAN, RESET });
+    print("  Commands:\n", .{});
+    print("    tri zenodo community list                 List all communities\n", .{});
+    print("    tri zenodo community search <query>       Search communities by keyword\n", .{});
+    print("    tri zenodo community link <id> <comm>     Request record inclusion in community\n", .{});
+    print("    tri zenodo community status <id>          Show community request status\n\n", .{});
+    print("  Examples:\n", .{});
+    print("    tri zenodo community list\n", .{});
+    print("    tri zenodo community search machine-learning\n", .{});
+    print("    tri zenodo community link 18947017 zenodo\n", .{});
+    print("    tri zenodo community status 18947017\n\n", .{});
+    print("  Popular communities: zenodo, ecf-sponsored, asn-dw, cern-open-database\n\n", .{});
+}
+
+fn listCommunities(allocator: std.mem.Allocator) !void {
+    print("\n{s}{s}Zenodo Communities{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    // List communities (paginated, start at page 1, size 20 for manageable output)
+    const url = "https://zenodo.org/api/communities?page=1&size=20";
+    const response = try curlGet(allocator, url, token);
+    defer allocator.free(response);
+
+    // Parse JSON response - extract community info
+    // Format: {"hits":{"hits":[{"id":"...","title":"...","description":"..."}]}}
+    if (std.mem.indexOf(u8, response, "\"hits\":")) |_| {
+        print("{s}Found communities:{s}\n\n", .{ GREEN, RESET });
+
+        // Simple parsing - extract community IDs and titles
+        var i: usize = 0;
+        var count: usize = 0;
+        while (i < response.len) : (i += 1) {
+            // Find "id": "community-id"
+            if (response[i] == '"' and i + 4 < response.len and
+                std.mem.eql(u8, response[i..i+4], "\"id\""))
+            {
+                const id_start = std.mem.indexOfPos(u8, response, i + 5, "\"") orelse break;
+                const id_end = std.mem.indexOfPos(u8, response, id_start + 1, "\"") orelse break;
+                const comm_id = response[id_start + 1 .. id_end];
+
+                // Find title after this id
+                const title_search = std.mem.indexOfPos(u8, response, id_end, "\"title\"") orelse continue;
+                const title_start = std.mem.indexOfPos(u8, response, title_search + 8, "\"") orelse continue;
+                const title_end = std.mem.indexOfPos(u8, response, title_start + 1, "\"") orelse continue;
+                const comm_title = response[title_start + 1 .. title_end];
+
+                print("  {s}{s}{s} — {s}\n", .{ YELLOW, comm_id, RESET, comm_title });
+
+                i = title_end;
+                count += 1;
+                if (count >= 50) break; // Limit output
+            }
+        }
+        print("\n  Total: {d}+ communities listed\n", .{count});
+    } else {
+        print("{s}Error: Could not parse community list{s}\n", .{ RED, RESET });
+    }
+}
+
+fn searchCommunities(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        print("{s}Usage: tri zenodo community search <query>{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const query = args[0];
+    print("\n{s}{s}Searching communities: '{s}'{s}\n", .{ CYAN, BOLD, query, RESET });
+    print("{s}════════════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    // Search using q parameter
+    const url = try std.fmt.allocPrint(allocator, "https://zenodo.org/api/communities?q={s}&page=1&size=20", .{query});
+    defer allocator.free(url);
+
+    const response = try curlGet(allocator, url, token);
+    defer allocator.free(response);
+
+    if (std.mem.indexOf(u8, response, "\"hits\":")) |_| {
+        print("{s}Matching communities:{s}\n\n", .{ GREEN, RESET });
+
+        var i: usize = 0;
+        var count: usize = 0;
+        while (i < response.len) : (i += 1) {
+            if (response[i] == '"' and i + 4 < response.len and
+                std.mem.eql(u8, response[i..i+4], "\"id\""))
+            {
+                const id_start = std.mem.indexOfPos(u8, response, i + 5, "\"") orelse break;
+                const id_end = std.mem.indexOfPos(u8, response, id_start + 1, "\"") orelse break;
+                const comm_id = response[id_start + 1 .. id_end];
+
+                const title_search = std.mem.indexOfPos(u8, response, id_end, "\"title\"") orelse continue;
+                const title_start = std.mem.indexOfPos(u8, response, title_search + 8, "\"") orelse continue;
+                const title_end = std.mem.indexOfPos(u8, response, title_start + 1, "\"") orelse continue;
+                const comm_title = response[title_start + 1 .. title_end];
+
+                print("  {s}{s}{s} — {s}\n", .{ YELLOW, comm_id, RESET, comm_title });
+
+                // Try to find description
+                const desc_search = std.mem.indexOfPos(u8, response, title_end, "\"description\"");
+                if (desc_search != null) {
+                    const desc_start = std.mem.indexOfPos(u8, response, desc_search.? + 14, "\"") orelse title_end;
+                    if (desc_start > title_end) {
+                        const desc_end = std.mem.indexOfPos(u8, response, desc_start + 1, "\"") orelse desc_start + 100;
+                        const desc = response[desc_start + 1 .. @min(desc_end, desc_start + 101)];
+                        if (desc.len > 0) {
+                            print("    {s}...{s}\n", .{ GRAY, RESET });
+                        }
+                    }
+                }
+
+                print("\n", .{});
+                i = title_end;
+                count += 1;
+            }
+        }
+
+        if (count == 0) {
+            print("  No communities found matching '{s}'\n", .{query});
+        } else {
+            const plural = if (count == 1) "y" else "ies";
+            print("  Found {d} communit{s}\n", .{ count, plural });
+        }
+    } else {
+        print("{s}Error: Could not parse search results{s}\n", .{ RED, RESET });
+    }
+}
+
+fn linkToCommunity(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 2) {
+        print("{s}Usage: tri zenodo community link <record_id> <community_id>{s}\n", .{ RED, RESET });
+        print("  Example: tri zenodo community link 18947017 zenodo\n\n", .{});
+        return;
+    }
+
+    const record_id = args[0];
+    const community_id = args[1];
+
+    print("\n{s}{s}Requesting community inclusion{s}\n", .{ CYAN, BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+    print("  Record: {s}{s}{s}\n", .{ YELLOW, record_id, RESET });
+    print("  Community: {s}{s}{s}\n\n", .{ YELLOW, community_id, RESET });
+
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    // POST to request inclusion in community
+    const url = try std.fmt.allocPrint(allocator, "https://zenodo.org/api/records/{s}/communities/{s}", .{ record_id, community_id });
+    defer allocator.free(url);
+
+    // POST with empty body to create inclusion request
+    const response = try curlPost(allocator, url, token, null);
+    defer allocator.free(response);
+
+    // Check for success (201 Created) or error
+    if (std.mem.indexOf(u8, response, "\"201\"") != null or
+        std.mem.indexOf(u8, response, "\"state\": \"accepted\"") != null or
+        std.mem.indexOf(u8, response, "\"state\": \"pending\"") != null)
+    {
+        print("{s}✓ Community inclusion request sent!{s}\n\n", .{ GREEN, RESET });
+        print("  The community curators will review your request.\n", .{});
+        print("  Check status with: {s}tri zenodo community status {s}{s}\n\n", .{ YELLOW, record_id, RESET });
+    } else if (std.mem.indexOf(u8, response, "\"400\"") != null or
+               std.mem.indexOf(u8, response, "\"message\"") != null)
+    {
+        print("{s}Error: Could not submit request{s}\n\n", .{ RED, RESET });
+        // Try to extract error message
+        if (std.mem.indexOf(u8, response, "\"message\"")) |_| {
+            const msg_start = std.mem.indexOf(u8, response, "\"message\"") orelse response.len;
+            const msg_value = std.mem.indexOfPos(u8, response, msg_start + 11, "\"") orelse response.len;
+            const msg_end = std.mem.indexOfPos(u8, response, msg_value + 1, "\"") orelse response.len;
+            if (msg_value < msg_end and msg_end < response.len) {
+                print("  Message: {s}\n", .{response[msg_value + 1 .. msg_end]});
+            }
+        }
+    } else {
+        print("{s}Response:{s}\n", .{ GRAY, RESET });
+        print("  {s}\n", .{response});
+    }
+}
+
+fn showCommunityStatus(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const record_id = if (args.len > 0) args[0] else RECORD_ID;
+
+    print("\n{s}{s}Community Request Status: {s}{s}\n", .{ CYAN, BOLD, record_id, RESET });
+    print("{s}════════════════════════════════════════════════════════{s}\n\n", .{ CYAN, RESET });
+
+    const token = try loadToken(allocator);
+    defer allocator.free(token);
+
+    // GET record's community requests
+    const url = try std.fmt.allocPrint(allocator, "https://zenodo.org/api/records/{s}", .{record_id});
+    defer allocator.free(url);
+
+    const response = try curlGet(allocator, url, token);
+    defer allocator.free(response);
+
+    // Parse communities field from record metadata
+    if (std.mem.indexOf(u8, response, "\"communities\"")) |comm_pos| {
+        // Find the communities array
+        const array_start = std.mem.indexOfPos(u8, response, comm_pos, "[") orelse comm_pos + 14;
+        const array_end = std.mem.indexOfPos(u8, response, array_start, "]") orelse array_start + 100;
+
+        if (array_end > array_start + 2) {
+            print("{s}Linked communities:{s}\n\n", .{ GREEN, RESET });
+
+            // Parse community entries
+            var i: usize = array_start + 1;
+            while (i < array_end) : (i += 1) {
+                if (response[i] == '{') {
+                    // Find id and title
+                    const id_search = std.mem.indexOfPos(u8, response, i, "\"id\"") orelse break;
+                    const id_start = std.mem.indexOfPos(u8, response, id_search + 5, "\"") orelse break;
+                    const id_end = std.mem.indexOfPos(u8, response, id_start + 1, "\"") orelse break;
+                    const comm_id = response[id_start + 1 .. id_end];
+
+                    const title_search = std.mem.indexOfPos(u8, response, id_end, "\"title\"") orelse break;
+                    const title_start = std.mem.indexOfPos(u8, response, title_search + 8, "\"") orelse break;
+                    const title_end = std.mem.indexOfPos(u8, response, title_start + 1, "\"") orelse break;
+                    const comm_title = response[title_start + 1 .. title_end];
+
+                    // Check for state (accepted/pending/rejected)
+                    var state: []const u8 = "unknown";
+                    const state_search = std.mem.indexOfPos(u8, response, title_end, "\"state\"");
+                    if (state_search != null and state_search.? < array_end) {
+                        const state_start = std.mem.indexOfPos(u8, response, state_search.? + 8, "\"") orelse title_end;
+                        if (state_start < array_end) {
+                            const state_end = std.mem.indexOfPos(u8, response, state_start + 1, "\"") orelse state_start + 20;
+                            if (state_end < array_end) {
+                                state = response[state_start + 1 .. state_end];
+                            }
+                        }
+                    }
+
+                    // Color code by state
+                    const state_color = if (std.mem.eql(u8, state, "accepted"))
+                        GREEN
+                    else if (std.mem.eql(u8, state, "pending"))
+                        YELLOW
+                    else if (std.mem.eql(u8, state, "rejected"))
+                        RED
+                    else
+                        GRAY;
+
+                    print("  {s}{s}{s} — {s} [{s}{s}{s}]\n", .{ YELLOW, comm_id, RESET, comm_title, state_color, state, RESET });
+
+                    i = title_end;
+                }
+            }
+        } else {
+            print("  No communities linked yet.\n", .{});
+            print("  Use {s}tri zenodo community link {s} <community_id>{s} to request inclusion.\n\n", .{ YELLOW, record_id, RESET });
+        }
+    } else {
+        print("  Could not retrieve community status.\n", .{});
+    }
+
+    print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1476,6 +1773,7 @@ fn printHelp() void {
     print("  tri zenodo v21                   Broader impact statement (NeurIPS/ICLR)\n", .{});
     print("  tri zenodo v22                   Reproducibility checklist (NeurIPS/ICLR)\n", .{});
     print("  tri zenodo v18                   CLARA-specific metadata (TA1)\n", .{});
+    print("  tri zenodo community            Community curation (link deposits)\n", .{});
     print("  tri clara <cmd>                 CLARA verification shortcuts\n\n", .{});
     print("    tri zenodo v16 model-card <name>      Generate ICLR/NeurIPS model card\n", .{});
     print("    tri zenodo v16 dataset-card <name>    Generate NeurIPS dataset card\n", .{});
@@ -1509,6 +1807,10 @@ fn printHelp() void {
     print("    tri zenodo v18 validate <file>        Validate CLARA metadata\n", .{});
     print("    tri zenodo v18 list                   List all CLARA bundles (A-H, PARENT)\n", .{});
     print("    tri zenodo v18 discovery              Generate discovery record\n\n", .{});
+    print("  Community Commands:\n", .{});
+    print("    tri zenodo community list             List available communities\n", .{});
+    print("    tri zenodo community link <id> <comm>  Link record to community\n", .{});
+    print("    tri zenodo community status <id>       Show community links for record\n\n", .{});
     print("  CLARA Shortcuts:\n", .{});
     print("    tri clara metadata <bundle>           Same as zenodo v18 metadata\n", .{});
     print("    tri clara demo                        Run full verification demo\n", .{});
@@ -1740,12 +2042,28 @@ fn curlGet(allocator: std.mem.Allocator, url: []const u8, token: []const u8) ![]
     const auth = try std.fmt.allocPrint(allocator, "Authorization: Bearer {s}", .{token});
     defer allocator.free(auth);
 
-    const result = try std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "curl", "-s", url, "-H", auth },
-    });
-    defer allocator.free(result.stderr);
-    return result.stdout;
+    // Use temporary file to avoid max_output_bytes limit
+    const tmp_path = "/tmp/zenodo_curl_get.json";
+    const tmp_file = try std.fs.cwd().createFile(tmp_path, .{ .truncate = true });
+    defer tmp_file.close();
+
+    {
+        const result = try std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "curl", "-s", url, "-H", auth, "-o", tmp_path },
+            .max_output_bytes = 1024 * 1024, // 1MB for stderr only
+        });
+        defer allocator.free(result.stdout);
+        defer allocator.free(result.stderr);
+
+        // Check exit code
+        if (result.term != .Exited or result.term.Exited != 0) {
+            return error.CurlFailed;
+        }
+    }
+
+    const data = try std.fs.cwd().readFileAlloc(allocator, tmp_path, 50 * 1024 * 1024);
+    return data;
 }
 
 fn curlPost(allocator: std.mem.Allocator, url: []const u8, token: []const u8, body: ?[]const u8) ![]u8 {
@@ -1756,6 +2074,7 @@ fn curlPost(allocator: std.mem.Allocator, url: []const u8, token: []const u8, bo
         const result = try std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{ "curl", "-s", "-X", "POST", url, "-H", auth, "-H", "Content-Type: application/json", "-d", b },
+            .max_output_bytes = 50 * 1024 * 1024,
         });
         defer allocator.free(result.stderr);
         return result.stdout;
@@ -1763,6 +2082,7 @@ fn curlPost(allocator: std.mem.Allocator, url: []const u8, token: []const u8, bo
         const result = try std.process.Child.run(.{
             .allocator = allocator,
             .argv = &.{ "curl", "-s", "-X", "POST", url, "-H", auth, "-H", "Content-Type: application/json" },
+            .max_output_bytes = 50 * 1024 * 1024,
         });
         defer allocator.free(result.stderr);
         return result.stdout;
@@ -1776,6 +2096,7 @@ fn curlPut(allocator: std.mem.Allocator, url: []const u8, token: []const u8, bod
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{ "curl", "-s", "-X", "PUT", url, "-H", auth, "-H", "Content-Type: application/json", "-d", body },
+        .max_output_bytes = 50 * 1024 * 1024,
     });
     defer allocator.free(result.stderr);
     return result.stdout;
