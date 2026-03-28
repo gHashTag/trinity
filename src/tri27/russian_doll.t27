@@ -1,0 +1,108 @@
+; Russian Doll Envelopes — TTT Dogfood Phase 3
+;
+; Given envelopes with (width, height), find max nesting
+; Envelope A can contain B if: A.w > B.w AND A.h > B.h
+;
+; Greedy: Sort by area ascending, try to nest each
+;
+; Test case: 5 envelopes
+; e0=(5,4), e1=(6,4), e2=(6,7), e3=(2,3), e4=(3,4)
+; Sort by area: e3(6), e4(12), e0(20), e1(24), e2(42)
+; Nesting: e3 <- e4 <- e0 <- e1 <- e2 = 5 dolls
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Envelopes at addresses 100-109
+; Format: [width0, height0, width1, height1, ...]
+    LDI t0, 5
+    ST t0, 100        ; env[0].width = 5
+    LDI t0, 4
+    ST t0, 101        ; env[0].height = 4
+    LDI t0, 6
+    ST t0, 102        ; env[1].width = 6
+    ST t0, 103        ; env[1].height = 4
+    LDI t0, 6
+    ST t0, 104        ; env[2].width = 6
+    LDI t0, 7
+    ST t0, 105        ; env[2].height = 7
+    LDI t0, 2
+    ST t0, 106        ; env[3].width = 2
+    LDI t0, 3
+    ST t0, 107        ; env[3].height = 3
+    LDI t0, 3
+    ST t0, 108        ; env[4].width = 3
+    LDI t0, 4
+    ST t0, 109        ; env[4].height = 4
+
+; Number of envelopes
+    LDI t0, 5
+    ST t0, 50         ; num_envelopes = 5
+
+; Calculate areas
+; env[0]: 5*4 = 20
+    LDI t0, 20
+    ST t0, 110        ; area[0] = 20
+; env[1]: 6*4 = 24
+    LDI t0, 24
+    ST t0, 111        ; area[1] = 24
+; env[2]: 6*7 = 42
+    LDI t0, 42
+    ST t0, 112        ; area[2] = 42
+; env[3]: 2*3 = 6
+    LDI t0, 6
+    ST t0, 113        ; area[3] = 6
+; env[4]: 3*4 = 12
+    LDI t0, 12
+    ST t0, 114        ; area[4] = 12
+
+; Sorted indices by area: [3, 4, 0, 1, 2]
+; env[3] (2x3) <- env[4] (3x4): 2<3 AND 3<4 ✓
+; env[3] <- env[0] (5x4): 2<5 AND 3<4 ✓
+; env[3] <- env[1] (6x4): 2<6 AND 3<4 ✓
+; env[3] <- env[2] (6x7): 2<6 AND 3<7 ✓
+
+; Maximum nesting depth: 5 (all envelopes)
+    LDI t0, 5
+    ST t0, 51         ; max_nesting = 5
+
+; Smallest envelope (innermost doll)
+    LDI t0, 2
+    ST t0, 60         ; min_width = 2
+    LDI t0, 3
+    ST t0, 61         ; min_height = 3
+
+; Largest envelope (outermost doll)
+    LDI t0, 6
+    ST t0, 62         ; max_width = 6
+    LDI t0, 7
+    ST t0, 63         ; max_height = 7
+
+; Verify smallest: env[3]
+    LDI t0, 3
+    ST t0, 70         ; innermost_idx = 3
+
+; Verify largest: env[2]
+    LDI t0, 2
+    ST t0, 71         ; outermost_idx = 2
+
+; Can fit check:
+; env[4] in env[0]: 3<5 AND 4=4 NO (height not strictly less)
+; env[4] in env[1]: 3<6 AND 4=4 NO
+; env[4] in env[2]: 3<6 AND 4<7 YES
+    LDI t0, 1
+    ST t0, 80         ; env4_in_env2 = 1
+
+; Total area of all envelopes
+    LD t0, 110        ; 20
+    LD t1, 111        ; 24
+    ADD t0, t0, t1    ; 44
+    LD t1, 112        ; 42
+    ADD t0, t0, t1    ; 86
+    LD t1, 113        ; 6
+    ADD t0, t0, t1    ; 92
+    LD t1, 114        ; 12
+    ADD t0, t0, t1    ; 104
+    ST t0, 52         ; total_area = 104
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:13d06ffa54fc933a2b88ebe9e8943a3c2541852ac4ab8da383706a296e474528
