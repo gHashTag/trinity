@@ -1,0 +1,13 @@
+; Firmware Update — TTT Dogfood Phase 3
+;
+; OTA firmware update
+;
+; Test case: version 2.0
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; version_major = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713aa001320

@@ -1,0 +1,13 @@
+; Motor Control — TTT Dogfood Phase 3
+;
+; DC motor PWM control
+;
+; Test case: speed = 1000 RPM
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1000
+    ST t0, 60         ; speed = 1000
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713b1001327
