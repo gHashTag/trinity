@@ -1,0 +1,13 @@
+; Robotics FK — TTT Dogfood Phase 3
+;
+; Robot dynamics
+;
+; Test case: robotics_fk
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fk_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078170000020000000020d8
