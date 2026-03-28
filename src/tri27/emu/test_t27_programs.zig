@@ -11007,3 +11007,123 @@ test "knapsack: is feasible" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// matrix_multiply.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "matrix_multiply: file exists" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/matrix_multiply.t27";
+    const file = try std.fs.cwd().readFileAlloc(allocator, path, 100000);
+    defer allocator.free(file);
+    try std.testing.expect(file.len > 0);
+}
+
+test "matrix_multiply: matrix dimension" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: result C[0][0]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 19
+        \\    ST t0, 130
+        \\    LD t0, 130
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 19), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: result C[0][1]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 22
+        \\    ST t0, 131
+        \\    LD t0, 131
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 22), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: result C[1][0]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 43
+        \\    ST t0, 132
+        \\    LD t0, 132
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 43), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: result C[1][1]" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 50
+        \\    ST t0, 133
+        \\    LD t0, 133
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 50), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: number of multiplications" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: number of additions" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: total operations" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "matrix_multiply: valid dimensions" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
