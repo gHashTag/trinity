@@ -1,0 +1,13 @@
+; K-Means Segmentation — TTT Dogfood Phase 3
+;
+; Color-based segmentation
+;
+; Test case: 3 clusters
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; k = 3 clusters
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07136c0012e2

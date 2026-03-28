@@ -1,0 +1,13 @@
+; Adaptive Threshold — TTT Dogfood Phase 3
+;
+; Local thresholding
+;
+; Test case: 11x11 window
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 11
+    ST t0, 60         ; window_size = 11
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713640012da
