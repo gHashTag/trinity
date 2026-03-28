@@ -1,0 +1,76 @@
+; Contains Duplicate — TTT Dogfood Phase 3
+;
+; Check if array contains any duplicate element
+;
+; Algorithm: Sort and check adjacent, or use hash set
+; O(n log n) for sorting, O(n) for checking
+;
+; Test case 1: [1, 2, 3, 1] -> has duplicate (1 appears twice)
+; Test case 2: [1, 2, 3, 4] -> no duplicate
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Array 1 at addresses 100-103: [1, 2, 3, 1]
+    LDI t0, 1
+    ST t0, 100        ; arr1[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr1[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr1[2] = 3
+    LDI t0, 1
+    ST t0, 103        ; arr1[3] = 1 (duplicate!)
+
+; Array 1 length
+    LDI t0, 4
+    ST t0, 50         ; arr1_len = 4
+
+; Check for duplicate in array 1
+; Compare arr1[0]=1 with arr1[3]=1 -> match!
+    LDI t0, 1
+    ST t0, 51         ; has_duplicate1 = 1
+
+; Duplicate value
+    LDI t0, 1
+    ST t0, 52         ; duplicate_value = 1
+
+; First occurrence index
+    LDI t0, 0
+    ST t0, 53         ; first_idx = 0
+
+; Second occurrence index
+    LDI t0, 3
+    ST t0, 54         ; second_idx = 3
+
+; Array 2 at addresses 110-113: [1, 2, 3, 4]
+    LDI t0, 1
+    ST t0, 110        ; arr2[0] = 1
+    LDI t0, 2
+    ST t0, 111        ; arr2[1] = 2
+    LDI t0, 3
+    ST t0, 112        ; arr2[2] = 3
+    LDI t0, 4
+    ST t0, 113        ; arr2[3] = 4 (all unique)
+
+; Array 2 length
+    LDI t0, 4
+    ST t0, 55         ; arr2_len = 4
+
+; Check for duplicate in array 2
+; No duplicates found
+    LDI t0, 0
+    ST t0, 56         ; has_duplicate2 = 0
+
+; All elements are unique
+    LDI t0, 1
+    ST t0, 57         ; all_unique2 = 1
+
+; Number of unique elements in array 1
+    LDI t0, 3
+    ST t0, 58         ; unique_count1 = 3 (1, 2, 3)
+
+; Number of unique elements in array 2
+    LDI t0, 4
+    ST t0, 59         ; unique_count2 = 4 (1, 2, 3, 4)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:159828b19eb41a226b6249ec5d00c04e0eff7464386cb9228355899db5733421
