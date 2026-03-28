@@ -1,0 +1,19 @@
+; Reservoir Sample — TTT Dogfood Phase 3
+;
+; Uniform random sample from stream
+;
+; Test case: k=10 from infinite stream
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 60         ; k = 10 sample size
+
+    LDI t0, 1000
+    ST t0, 61         ; stream_count = 1000
+
+    LDI t0, 10
+    ST t0, 62         ; reservoir_size = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07722e00119f

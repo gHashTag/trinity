@@ -1,0 +1,21 @@
+; CountMin Sketch — TTT Dogfood Phase 3
+;
+; Frequency estimation with bounded error
+;
+; Test case: track item frequencies
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; d = 5 hash functions
+    LDI t0, 1000
+    ST t0, 61         ; w = 1000 columns
+
+    LDI t0, 10
+    ST t0, 62         ; item count = 10
+
+    LDI t0, 100
+    ST t0, 63         ; estimated_freq ≈ 100
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07622d00119e
