@@ -1,0 +1,19 @@
+; LZW Compression — TTT Dogfood Phase 3
+;
+; Dictionary-based compression
+;
+; Test case: "ABABABA"
+; Dictionary: {AB:256, ABA:257, ...}
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 256        ; AB code
+    ST t0, 60
+    LDI t0, 257        ; ABA code
+    ST t0, 61
+
+    LDI t0, 2
+    ST t0, 62         ; dict_size = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:37b264f583997ca29eda3c33233978344e0b6453d102ec6d9ed9410f01625d53

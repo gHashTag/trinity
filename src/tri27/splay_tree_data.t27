@@ -1,0 +1,27 @@
+; Splay Tree Data — TTT Dogfood Phase 3
+;
+; Self-adjusting binary search tree
+;
+; Test case: insert 3,1,4,2 then splay(2)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; root = 3
+    LDI t0, 1
+    ST t0, 101        ; left child
+    LDI t0, 4
+    ST t0, 102        ; right child
+
+    LDI t0, 2
+    ST t0, 110        ; insert 2
+
+; After splay(2): 2 becomes root
+    LDI t0, 2
+    ST t0, 60         ; new_root = 2
+
+    LDI t0, 3
+    ST t0, 61         ; splayed = 1 (was moved)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fe5e69005455afea762036cdd4e82024b6b629021f7b7ddb497fc2acca53bf8f

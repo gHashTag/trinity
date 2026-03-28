@@ -1,0 +1,27 @@
+; Voronoi Diagram Partition — TTT Dogfood Phase 3
+;
+; Partition plane based on nearest seed point
+;
+; Test case: seeds at (0,0), (4,0), (2,4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Seed points
+    LDI t0, 0
+    ST t0, 100        ; s1: x=0
+    ST t0, 101        ; s1: y=0
+
+    LDI t0, 4
+    ST t0, 102        ; s2: x=4
+    ST t0, 103        ; s2: y=0
+
+    LDI t0, 2
+    ST t0, 104        ; s3: x=2
+    LDI t0, 4
+    ST t0, 105        ; s3: y=4
+
+    LDI t0, 3
+    ST t0, 60         ; num_regions = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07320a00117b

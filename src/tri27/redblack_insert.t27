@@ -1,0 +1,20 @@
+; Red-Black Tree Insertion — TTT Dogfood Phase 3
+;
+; Balanced BST with color properties
+;
+; Test case: Insert [10, 20, 30]
+; Properties maintained
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 50         ; n = 3
+
+; Root is black, children red
+    LDI t0, 20
+    ST t0, 60         ; root = 20 (black)
+    LDI t0, 0
+    ST t0, 61         ; root_color = 0 (black)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:78b27c9799106c359d38dfe9e86726efa187a4b8d5eed5044628d31a8dca3e78

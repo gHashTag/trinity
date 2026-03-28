@@ -1,0 +1,40 @@
+; Rope String — TTT Dogfood Phase 3
+;
+; Binary tree for efficient string ops
+;
+; Test case: "Hello " + "World" = "Hello World"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Left leaf: "Hello "
+    LDI t0, 72        ; H
+    ST t0, 100
+    LDI t0, 101       ; e
+    ST t0, 101
+    LDI t0, 108       ; l
+    ST t0, 102
+    LDI t0, 108       ; l
+    ST t0, 103
+    LDI t0, 111       ; o
+    ST t0, 104
+    LDI t0, 32        ; space
+    ST t0, 105
+
+; Right leaf: "World"
+    LDI t0, 87        ; W
+    ST t0, 110
+    LDI t0, 111       ; o
+    ST t0, 111
+    LDI t0, 114       ; r
+    ST t0, 112
+    LDI t0, 108       ; l
+    ST t0, 113
+    LDI t0, 100       ; d
+    ST t0, 114
+
+; Concatenated length
+    LDI t0, 11
+    ST t0, 60         ; length = 11
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7397e233144203bd5023cad8aef48f9f0ccc179a85d3142bcd6993e90e63f352

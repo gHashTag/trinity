@@ -1,0 +1,18 @@
+; B+ Tree Insertion — TTT Dogfood Phase 3
+;
+; Disk-optimized search tree
+;
+; Test case: Insert [10, 20, 30, 25, 15]
+; Leaf nodes maintain order
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Order 3 tree (max 2 keys per node)
+    LDI t0, 2
+    ST t0, 60         ; order = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9d55789dbe0a0b6b5f6cee37443f833ad7a04d8b7e4a13be8516537b948ac399

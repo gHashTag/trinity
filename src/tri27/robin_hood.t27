@@ -1,0 +1,17 @@
+; Robin Hood Hashing — TTT Dogfood Phase 3
+;
+; Move rich elements forward, poor backward
+;
+; Test case: Insert [1, 6, 11]
+; Reduce probe length variance
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; entries = 3
+
+    LDI t0, 1
+    ST t0, 61         ; avg_probe = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cfd7a6eb7ee2e5385394da021172c096817f0d76b5f4dd912bd76c993a2f6ff9

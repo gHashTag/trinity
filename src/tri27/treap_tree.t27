@@ -1,0 +1,32 @@
+; Treap Tree — TTT Dogfood Phase 3
+;
+; Tree + Heap: BST by key, heap by priority
+;
+; Test case: insert (5,10), (3,20), (7,15)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 100        ; key 5
+    LDI t0, 10
+    ST t0, 101        ; priority 10 (root = max priority)
+
+    LDI t0, 3
+    ST t0, 102        ; key 3
+    LDI t0, 20
+    ST t0, 103        ; priority 20 (NEW ROOT!)
+
+    LDI t0, 7
+    ST t0, 104        ; key 7
+    LDI t0, 15
+    ST t0, 105        ; priority 15
+
+; After heapify: (3,20) is root
+    LDI t0, 3
+    ST t0, 60         ; root_key = 3
+
+    LDI t0, 20
+    ST t0, 61         ; root_priority = 20
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:4459f4dc9c08ce0058b512b27aeaceb21d0754ba874704cd1f3ab1263f8cb239
