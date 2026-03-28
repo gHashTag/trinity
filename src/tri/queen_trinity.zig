@@ -179,7 +179,8 @@ pub const ImpureQueue = struct {
             var fname_buf: [128]u8 = undefined;
             const fname = std.fmt.bufPrint(&fname_buf, "{s}.json", .{event.id[0..32]}) catch continue;
 
-            const content = serializeImpureEvent(&event) catch continue;
+            const content = try serializeImpureEvent(&event, self.allocator);
+            defer self.allocator.free(content);
 
             const file = try std.fs.cwd().createFile(fname, .{});
             defer file.close();
@@ -228,16 +229,76 @@ pub const ImpureQueue = struct {
 // SERIALIZATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn parseImpureEvent(event: *ImpureEvent, json: []const u8) bool {
-    _ = event;
-    _ = json;
-    // TODO: Implement JSON parsing
-    return false;
+fn parseImpureEvent(event: *ImpureEvent, json_str: []const u8) bool {
+    const Parse = struct {
+        id: []const u8,
+        strand: []const u8,
+        event_type: []const u8,
+        source_file: []const u8,
+        error_msg: []const u8,
+        timestamp: i64,
+        attempts: u8,
+        state: []const u8,
+    };
+
+    const parsed = std.json.parse(Parse, json_str, .{ .ignore_unknown_fields = true }) catch {
+        return false;
+    };
+
+    // Copy id (truncate if needed)
+    const id_len = @min(parsed.id.len, event.id.len);
+    @memcpy(event.id[0..id_len], parsed.id[0..id_len]);
+
+    // Parse strand
+    event.strand = std.meta.stringToEnum(Strand, parsed.strand) orelse .Math;
+
+    // Parse event_type
+    event.event_type = std.meta.stringToEnum(ImpureEventType, parsed.event_type) orelse .BUILD_FAIL;
+
+    // Copy source_file
+    const sf_len = @min(parsed.source_file.len, event.source_file.len);
+    @memcpy(event.source_file[0..sf_len], parsed.source_file[0..sf_len]);
+    event.source_file_len = @intCast(sf_len);
+
+    // Copy error_msg
+    const em_len = @min(parsed.error_msg.len, event.error_msg.len);
+    @memcpy(event.error_msg[0..em_len], parsed.error_msg[0..em_len]);
+    event.error_msg_len = @intCast(em_len);
+
+    event.timestamp = parsed.timestamp;
+    event.attempts = parsed.attempts;
+
+    // Parse state
+    event.state = std.meta.stringToEnum(LotusState, parsed.state) orelse .Queued;
+
+    return true;
 }
 
-fn serializeImpureEvent(event: *const ImpureEvent) ![]u8 {
-    _ = event;
-    return error.NotImplemented;
+fn serializeImpureEvent(event: *const ImpureEvent, allocator: std.mem.Allocator) ![]u8 {
+    const strand_str = strandName(event.strand);
+    const type_str = eventName(event.event_type);
+
+    const state_str = switch (event.state) {
+        .Queued => "Queued",
+        .Diagnosing => "Diagnosing",
+        .Refining => "Refining",
+        .Verifying => "Verifying",
+        .Purified => "Purified",
+        .Blocked => "Blocked",
+    };
+
+    return std.fmt.allocPrint(allocator,
+        \\{{"id":"{s}","strand":"{s}","event_type":"{s}","source_file":"{s}","error_msg":"{s}","timestamp":{d},"attempts":{d},"state":"{s}"}}
+    , .{
+        event.id[0..64],
+        strand_str,
+        type_str,
+        std.zig.fmtEscapes(event.sourceFileStr()),
+        std.zig.fmtEscapes(event.errorMsgStr()),
+        event.timestamp,
+        event.attempts,
+        state_str,
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
