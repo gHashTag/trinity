@@ -4655,4 +4655,166 @@ test "edit_distance: string lengths" {
     try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
 }
 
+// Sliding Window Technique Tests — TTT Dogfood Phase 3
+
+test "sliding_window: file exists" {
+    const path = "src/tri27/sliding_window.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "sliding_window: window size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "sliding_window: initial sum" {
+    const allocator = std.testing.allocator;
+    // 2 + 1 + 5 = 8
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "sliding_window: first slide sum" {
+    const allocator = std.testing.allocator;
+    // 8 - 2 + 1 = 7
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "sliding_window: second slide sum" {
+    const allocator = std.testing.allocator;
+    // 7 - 1 + 3 = 9 (new max)
+    const program =
+        \\    LDI t0, 9
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+}
+
+test "sliding_window: third slide sum" {
+    const allocator = std.testing.allocator;
+    // 9 - 5 + 2 = 6
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "sliding_window: max sum" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 9
+        \\    ST t0, 58
+        \\    LD t0, 58
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+}
+
+test "sliding_window: num slides" {
+    const allocator = std.testing.allocator;
+    // n - k = 6 - 3 = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 59
+        \\    LD t0, 59
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "sliding_window: max start index" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "sliding_window: max end index" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "sliding_window: max subarray first element" {
+    const allocator = std.testing.allocator;
+    // arr[2] = 5
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "sliding_window: max subarray second element" {
+    const allocator = std.testing.allocator;
+    // arr[3] = 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "sliding_window: max subarray third element" {
+    const allocator = std.testing.allocator;
+    // arr[4] = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 64
+        \\    LD t0, 64
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
