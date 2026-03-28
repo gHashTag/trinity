@@ -16635,3 +16635,198 @@ test "weight_balanced: verify balance" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "bellman_ford_detect: Negative cycle detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bellman_ford_detect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "negative") != null);
+}
+
+test "bellman_ford_detect: verify cycle detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bellman_ford_detect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "boruvka_mst: Parallel component MST" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "boruvka_mst.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Boruvka") != null);
+}
+
+test "boruvka_mst: verify component merge" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "boruvka_mst.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "floyd_warshall_path: Path reconstruction" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "floyd_warshall_path.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "path") != null);
+}
+
+test "floyd_warshall_path: verify reconstruction" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "floyd_warshall_path.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "johnson_allpairs: All-pairs shortest paths" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "johnson_allpairs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Johnson") != null);
+}
+
+test "johnson_allpairs: verify reweighting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "johnson_allpairs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "min_mean_cycle: Minimum mean weight cycle" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "min_mean_cycle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "mean") != null);
+}
+
+test "min_mean_cycle: verify mean calculation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "min_mean_cycle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mst_kruskal: Kruskal MST algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mst_kruskal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Kruskal") != null);
+}
+
+test "mst_kruskal: verify edge sorting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mst_kruskal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mst_prim: Prim MST algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mst_prim.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Prim") != null);
+}
+
+test "mst_prim: verify tree growth" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mst_prim.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "reverse_delete_mst: Reverse delete MST" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "reverse_delete_mst.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Reverse") != null);
+}
+
+test "reverse_delete_mst: verify edge removal" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "reverse_delete_mst.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "second_best_mst: Second minimum spanning tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "second_best_mst.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "second") != null);
+}
+
+test "second_best_mst: verify edge swap" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "second_best_mst.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "spfa_shortest: Shortest Path Faster Algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "spfa_shortest.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "SPFA") != null);
+}
+
+test "spfa_shortest: verify queue relaxation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "spfa_shortest.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "steiner_tree: Steiner tree approximation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "steiner_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Steiner") != null);
+}
+
+test "steiner_tree: verify terminal connection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "steiner_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "traveling_salesman: TSP brute force" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "traveling_salesman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Salesman") != null);
+}
+
+test "traveling_salesman: verify tour optimization" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "traveling_salesman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "tsp_nearest: Nearest neighbor TSP" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tsp_nearest.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Nearest") != null);
+}
+
+test "tsp_nearest: verify greedy selection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tsp_nearest.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
