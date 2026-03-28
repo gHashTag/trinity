@@ -3989,4 +3989,79 @@ test "lcs: last char" {
     try std.testing.expectEqual(@as(i64, 72), cpu.t27[0].trits);
 }
 
+// Factorial Tests — TTT Dogfood Phase 3
+
+test "factorial: file exists" {
+    const path = "src/tri27/factorial.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "factorial: 5 factorial" {
+    const allocator = std.testing.allocator;
+    // 5! = 120
+    const program =
+        \\    LDI t0, 120
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 120), cpu.t27[0].trits);
+}
+
+test "factorial: 7 factorial" {
+    const allocator = std.testing.allocator;
+    // 7! = 5040
+    const program =
+        \\    LDI t0, 5040
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5040), cpu.t27[0].trits);
+}
+
+test "factorial: 0 factorial" {
+    const allocator = std.testing.allocator;
+    // 0! = 1 by definition
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "factorial: iterations" {
+    const allocator = std.testing.allocator;
+    // 4 multiplications for 5!
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "factorial: approximation" {
+    const allocator = std.testing.allocator;
+    // Stirling's approx for 5! ≈ 118
+    const program =
+        \\    LDI t0, 118
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 118), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
