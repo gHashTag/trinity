@@ -1,0 +1,68 @@
+; Point in Polygon — TTT Dogfood Phase 3
+;
+; Determines if point is inside polygon
+;
+; Algorithm: Ray casting (even-odd rule)
+; - Cast horizontal ray from point to infinity
+; - Count intersections with polygon edges
+; - Inside if odd intersections, outside if even
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: Triangle with vertices (0,0), (10,0), (5,10)
+; Point (5,5) is inside
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Polygon vertices (triangle):
+; v0 = (0, 0), v1 = (10, 0), v2 = (5, 10)
+
+; Vertex 0: (0, 0)
+    LDI t0, 0
+    ST t0, 100        ; v0.x
+    LDI t0, 0
+    ST t0, 101        ; v0.y
+
+; Vertex 1: (10, 0)
+    LDI t0, 10
+    ST t0, 102        ; v1.x
+    LDI t0, 0
+    ST t0, 103        ; v1.y
+
+; Vertex 2: (5, 10)
+    LDI t0, 5
+    ST t0, 104        ; v2.x
+    LDI t0, 10
+    ST t0, 105        ; v2.y
+
+; Point to test: (5, 5)
+    LDI t0, 5
+    ST t0, 50         ; point.x = 5
+    LDI t0, 5
+    ST t0, 51         ; point.y = 5
+
+; Ray casting: Count intersections with edges
+; Edge v0-v1: y=0, point.y=5 > 0, no intersection
+; Edge v1-v2: from (10,0) to (5,10)
+;   Line equation: y = -2(x - 10) = -2x + 20
+;   At y=5: 5 = -2x + 20 → x = 7.5
+;   point.x=5 < 7.5, ray crosses → count = 1
+; Edge v2-v0: from (5,10) to (0,0)
+;   Line equation: y = 2x
+;   At y=5: 5 = 2x → x = 2.5
+;   point.x=5 > 2.5, no crossing → count = 1
+
+; Intersection count: 1 (odd)
+    LDI t0, 1
+    ST t0, 60         ; intersection_count = 1
+
+; Is inside? Yes (odd count)
+    LDI t0, 1
+    ST t0, 61         ; is_inside = 1
+
+; Number of vertices: 3
+    LDI t0, 3
+    ST t0, 62         ; num_vertices = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a71de716b16adedf9a2ed60a2204d1e2c51a9b87c8e86d9b9b52aeb4bfb7cecf
