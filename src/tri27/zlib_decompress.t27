@@ -1,6 +1,6 @@
 ; ZLIB Decompress — TTT Dogfood Phase 3
 ;
-| RFC 1950 inverse
+; RFC 1950 inverse
 ;
 ; Test case: zlib_decompress
 ;

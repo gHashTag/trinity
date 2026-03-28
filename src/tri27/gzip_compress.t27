@@ -1,6 +1,6 @@
 ; GZIP Compress — TTT Dogfood Phase 3
 ;
-| RFC 1952
+; RFC 1952
 ;
 ; Test case: gzip_compress
 ;
