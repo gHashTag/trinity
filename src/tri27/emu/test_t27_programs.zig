@@ -11397,3 +11397,219 @@ test "trie_prefix_tree: alphabet size" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 26), cpu.t27[0].trits);
 }
+
+// ============================================================================
+// Shell Sort Tests
+// ============================================================================
+
+test "shell_sort: assembles" {
+    const path = "src/tri27/shell_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "shell_sort: array initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "shell_sort: gap sequence" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "shell_sort: sorted result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "shell_sort: is_sorted flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "shell_sort: gap passes" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Tim Sort Tests
+// ============================================================================
+
+test "tim_sort: assembles" {
+    const path = "src/tri27/tim_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "tim_sort: array initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "tim_sort: min run size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "tim_sort: sorted result first" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "tim_sort: num runs" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "tim_sort: galloping enabled" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Stack Sort Tests
+// ============================================================================
+
+test "stack_sort: assembles" {
+    const path = "src/tri27/stack_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "stack_sort: array initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 34
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 34), cpu.t27[0].trits);
+}
+
+test "stack_sort: input stack size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "stack_sort: sorted result first" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "stack_sort: is_sorted flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "stack_sort: push count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 18
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 18), cpu.t27[0].trits);
+}
