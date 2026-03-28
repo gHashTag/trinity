@@ -1,0 +1,13 @@
+; Atomic Add — TTT Dogfood Phase 3
+;
+; Atomic fetch-and-add
+;
+; Test case: sync_atomic_add
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_atomic_add_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072020001d59

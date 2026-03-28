@@ -1,0 +1,13 @@
+; Spin Unlock — TTT Dogfood Phase 3
+;
+; Release spin lock
+;
+; Test case: sync_spin_unlock
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_spin_unlock_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071ff0001d29

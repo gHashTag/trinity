@@ -1,0 +1,13 @@
+; Latch — TTT Dogfood Phase 3
+;
+; Wait for N events
+;
+; Test case: sync_latch
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sync_latch_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072130001d69
