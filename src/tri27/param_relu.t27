@@ -1,6 +1,6 @@
 ; PReLU Activation — TTT Dogfood Phase 3
 ;
-| Parametric ReLU
+; Parametric ReLU
 ;
 ; Test case: param_relu
 ;
