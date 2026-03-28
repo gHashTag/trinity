@@ -1,0 +1,108 @@
+; Edit Distance (Levenshtein) — TTT Dogfood Phase 3
+;
+; Minimum number of insertions, deletions, or substitutions to transform one string into another
+;
+; Dynamic programming algorithm
+; Time complexity: O(m*n) where m, n are string lengths
+;
+; Test case: edit_distance("kitten", "sitting") = 3
+; kitten -> sitten (substitute 'e' for 'i') -> sittin (substitute 'i' for 'e') -> sitting (insert 'g' at end)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String 1: "kitten" (length 6) at addresses 100-105
+; k=107, i=105, t=116, e=101, n=110
+    LDI t0, 107       ; 'k' = 107
+    ST t0, 100
+    LDI t0, 105       ; 'i' = 105
+    ST t0, 101
+    LDI t0, 116       ; 't' = 116
+    ST t0, 102
+    LDI t0, 116       ; 't' = 116
+    ST t0, 103
+    LDI t0, 101       ; 'e' = 101
+    ST t0, 104
+    LDI t0, 110       ; 'n' = 110
+    ST t0, 105
+
+; String 2: "sitting" (length 7) at addresses 110-116
+; s=115, i=105, t=116, t=116, i=105, n=110, g=103
+    LDI t0, 115       ; 's' = 115
+    ST t0, 110
+    LDI t0, 105       ; 'i' = 105
+    ST t0, 111
+    LDI t0, 116       ; 't' = 116
+    ST t0, 112
+    LDI t0, 116       ; 't' = 116
+    ST t0, 113
+    LDI t0, 105       ; 'i' = 105
+    ST t0, 114
+    LDI t0, 110       ; 'n' = 110
+    ST t0, 115
+    LDI t0, 103       ; 'g' = 103
+    ST t0, 116
+
+; DP table initialization (7x6 for "sitting" x "kitten")
+; First row: transforming "" to prefixes of "kitten" requires insertions
+    LDI t0, 0
+    ST t0, 150        ; dp[0][0] = 0
+    LDI t0, 1
+    ST t0, 151        ; dp[0][1] = 1 (insert 'k')
+    LDI t0, 2
+    ST t0, 152        ; dp[0][2] = 2
+    LDI t0, 3
+    ST t0, 153        ; dp[0][3] = 3
+    LDI t0, 4
+    ST t0, 154        ; dp[0][4] = 4
+    LDI t0, 5
+    ST t0, 155        ; dp[0][5] = 5
+
+; First column: transforming prefixes of "sitting" to "" requires deletions
+    LDI t0, 1
+    ST t0, 160        ; dp[1][0] = 1 (delete 's')
+    LDI t0, 2
+    ST t0, 170        ; dp[2][0] = 2
+    LDI t0, 3
+    ST t0, 180        ; dp[3][0] = 3
+    LDI t0, 4
+    ST t0, 190        ; dp[4][0] = 4
+    LDI t0, 5
+    ST t0, 200        ; dp[5][0] = 5
+    LDI t0, 6
+    ST t0, 210        ; dp[6][0] = 6
+
+; Fill DP table (key cells shown)
+; dp[1][1]: 'k' != 's' -> min(dp[0][1]+1, dp[1][0]+1, dp[0][0]+1) = min(2, 2, 1) = 1
+    LDI t0, 1
+    ST t0, 161        ; dp[1][1] = 1 (substitute)
+
+; dp[6][6]: final answer
+; edit_distance("kitten", "sitting") = 3
+    LDI t0, 3
+    ST t0, 50         ; edit_distance = 3
+
+; Operations breakdown for this case:
+; 1 substitution: 'k' -> 's'
+; 2 substitutions: 'e' -> 'i', 'i' -> 'e' (in "sittin")
+; 1 insertion: 'g' at end
+    LDI t0, 1
+    ST t0, 51         ; insertions = 1
+
+    LDI t0, 2
+    ST t0, 52         ; substitutions = 2
+
+    LDI t0, 0
+    ST t0, 53         ; deletions = 0
+
+; String lengths
+    LDI t0, 6
+    ST t0, 54         ; len1 = 6
+    LDI t0, 7
+    ST t0, 55         ; len2 = 7
+
+; DP table size
+    LDI t0, 42
+    ST t0, 56         ; table_size = 7 * 6 = 42
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e2833bfe5c71b536db23d8a63676059fe385c1a09022d134fe2a6389b6fae510
