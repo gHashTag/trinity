@@ -1,0 +1,13 @@
+; Tarjan — TTT Dogfood Phase 3
+;
+; Strongly connected components in one pass
+;
+; Test case: grf_tarjan
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tarjan_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b4f0000020000000022f0

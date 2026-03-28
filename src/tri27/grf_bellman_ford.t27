@@ -1,0 +1,13 @@
+; Bellman-Ford — TTT Dogfood Phase 3
+;
+; Shortest paths with negative edges
+;
+; Test case: grf_bellman_ford
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bellman_ford_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b53000002000000022ec

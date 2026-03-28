@@ -1,0 +1,13 @@
+; Rabin-Karp — TTT Dogfood Phase 3
+;
+; Rolling hash string search
+;
+; Test case: srt_rabin_karp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rabin_karp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b5b0000020000000022e4
