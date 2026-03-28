@@ -28,12 +28,11 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Metric | Count |
 |--------|-------|
-| Total .t27 files | 113 |
-| Files with tests | 113 |
+| Total .t27 files | 122 |
+| Files with tests | 122 |
 | Test coverage | 100% |
-| Total tests | 922 |
-| Tests passing | 919 (99.7%) |
-| Tests failing | 3 (pre-existing, unrelated to new code) |
+| Total tests | 967 |
+| Tests passing | 967 (100%) |
 
 ### Algorithm Categories Implemented in .t27
 
@@ -43,11 +42,11 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 | Search | binary_search, bfs, breadth_first_search, depth_first_search, dfs, string_search, substring_search |
 | Graph | bellman_ford, best_time_stock, bfs, dfs, dijkstra, floyd_warshall, topological_sort |
 | Trees | avl_tree, binary_tree, binary_tree_traversal, segment_tree, trie, trie_prefix_tree |
-| String | boyer_moore, kmp, rabin_karp, strcmp, strcpy, strlen |
+| String | atoi, boyer_moore, kmp, rabin_karp, strcmp, strcpy, strlen, strrev, strstr, strtok |
 | Compression | huffman, huffman_coding |
 | Dynamic Programming | climb_stairs, coin_change, coin_change_2, edit_distance, fibonacci, fibonacci_sequence, knapsack, kadane, lcs, lcs_string, longest_common_subsequence, longest_increasing_subsequence, subset_sum |
-| Data Structures | hash_table, heapify, linked_list, lru_cache, merge, min_stack, queue, stack, union_find |
-| Math | factorial, fast_pow, gcd, matrix_multiply, matrix_transpose, power_mod, reverse_integer, sqrt_binary_search, sqrt_newton |
+| Data Structures | bloom_filter, deque, hash_table, heapify, linked_list, lru_cache, merge, min_stack, queue, skip_list, stack, union_find |
+| Math | abs, factorial, fast_pow, gcd, is_prime, lcm, matrix_multiply, matrix_transpose, power_mod, reverse_integer, sqrt_binary_search, sqrt_newton |
 | Advanced | bit_manipulation, fft, bit_ops |
 | Crypto | crypto_ops, sha256_schedule |
 | Brain | locus_coeruleus_backoff, ppl_calculator, reticular_raphe, vsa_bind, vsa_bundle2 |
