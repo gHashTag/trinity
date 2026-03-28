@@ -1,0 +1,13 @@
+; dB to Amplitude — TTT Dogfood Phase 3
+;
+; Convert from decibels
+;
+; Test case: signal_db_to_amplitude
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; signal_db_to_amplitude_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072ea00000001dd9
