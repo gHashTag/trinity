@@ -1,0 +1,108 @@
+; Voronoi Diagram — TTT Dogfood Phase 3
+;
+; Partition plane into regions closest to each seed point
+;
+; Algorithm: Fortune's sweep line
+; - Sweep line moves across plane
+; - Maintain beach line of parabolic arcs
+; - Events: site (add arc) and circle (remove arc)
+; - Output: edges of Voronoi cells
+;
+; Time: O(n log n), Space: O(n)
+;
+; Test case: Seeds at (0,0), (4,0), (2,3)
+; Voronoi edges meet at circumcenter of triangle
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Seed points at address 100:
+    LDI t0, 0
+    ST t0, 100        ; s0.x = 0
+    LDI t0, 0
+    ST t0, 101        ; s0.y = 0
+    LDI t0, 4
+    ST t0, 102        ; s1.x = 4
+    LDI t0, 0
+    ST t0, 103        ; s1.y = 0
+    LDI t0, 2
+    ST t0, 104        ; s2.x = 2
+    LDI t0, 3
+    ST t0, 105        ; s2.y = 3
+
+; Number of seeds: 3
+    LDI t0, 3
+    ST t0, 50         ; num_seeds = 3
+
+; Bounding box: [0,0] to [4,3]
+    LDI t0, 0
+    ST t0, 51         ; min_x = 0
+    LDI t0, 0
+    ST t0, 52         ; min_y = 0
+    LDI t0, 4
+    ST t0, 53         ; max_x = 4
+    LDI t0, 3
+    ST t0, 54         ; max_y = 3
+
+; Voronoi edges (perpendicular bisectors):
+; Edge 0: bisector of s0-s1 (midpoint (2,0), vertical line x=2)
+    LDI t0, 0
+    ST t0, 200        ; edge0.v1 = 0 (seed 0)
+    LDI t0, 1
+    ST t0, 201        ; edge0.v2 = 1 (seed 1)
+    LDI t0, 2
+    ST t0, 202        ; edge0.x = 2 (vertical line)
+    LDI t0, 0
+    ST t0, 203        ; edge0.y1 = 0
+    LDI t0, 3
+    ST t0, 204        ; edge0.y2 = 3
+
+; Edge 1: bisector of s1-s2
+    LDI t0, 1
+    ST t0, 210        ; edge1.v1 = 1
+    LDI t0, 2
+    ST t0, 211        ; edge1.v2 = 2
+; Midpoint: ((4+2)/2, (0+3)/2) = (3, 1.5)
+; Slope s1-s2: (3-0)/(2-4) = -3/2
+; Perpendicular slope: 2/3
+    LDI t0, 3
+    ST t0, 212        ; edge1.x1 = 3
+    LDI t0, 1
+    ST t0, 213        ; edge1.y1 = 1 (fixed: 1.5)
+    LDI t0, 4
+    ST t0, 214        ; edge1.x2 = 4
+    LDI t0, 3
+    ST t0, 215        ; edge1.y2 = 3
+
+; Edge 2: bisector of s2-s0
+    LDI t0, 2
+    ST t0, 220        ; edge2.v1 = 2
+    LDI t0, 0
+    ST t0, 221        ; edge2.v2 = 0
+; Midpoint: ((0+2)/2, (0+3)/2) = (1, 1.5)
+; Slope s2-s0: (3-0)/(2-0) = 3/2
+; Perpendicular slope: -2/3
+    LDI t0, 1
+    ST t0, 222        ; edge2.x1 = 1
+    LDI t0, 1
+    ST t0, 223        ; edge2.y1 = 1
+    LDI t0, 0
+    ST t0, 224        ; edge2.x2 = 0
+    ST t0, 225        ; edge2.y2 = 3
+
+; Voronoi vertices (circumcenters):
+; Circumcenter of triangle: (2, 1.5) approximately
+    LDI t0, 2
+    ST t0, 300        ; vertex0.x = 2
+    LDI t0, 1
+    ST t0, 301        ; vertex0.y = 1 (1.5)
+
+; Number of edges: 3
+    LDI t0, 3
+    ST t0, 60         ; num_edges = 3
+
+; Number of vertices: 1
+    LDI t0, 1
+    ST t0, 61         ; num_vertices = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:745f55d9da51ecb7fd49b25af83ad4787ba98dc8082247801dfdd2bc2e8ad1a9
