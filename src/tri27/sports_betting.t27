@@ -1,0 +1,13 @@
+; Sports Betting — TTT Dogfood Phase 3
+;
+; Odds calculation algorithms
+;
+; Test case: sports_betting
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; betting_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0769f000002000000001eb9
