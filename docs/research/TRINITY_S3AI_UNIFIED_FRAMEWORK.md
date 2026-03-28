@@ -525,7 +525,35 @@ python3 scripts/report_resources.py sacred_alu_synth.json
 
 ---
 
-## 8. Next Steps
+## 8. Scientific Integrity: Rejected Hypotheses
+
+### DELTA-001: γ = φ⁻³ (REJECTED)
+
+**Date:** 2026-03-28
+**Status:** ❌ FALSIFIED
+**Documentation:** [docs/DELTA-001.md](https://github.com/gHashTag/trinity/blob/main/docs/DELTA-001.md)
+
+The Barbero-Immirzi parameter (γ) in Loop Quantum Gravity was hypothesized to equal φ⁻³:
+
+```
+γ ?= φ⁻³ = (1.618...)⁻³ ≈ 0.236068
+γ_canonical = 0.237533
+Error: +0.617%
+```
+
+**Why this matters:** Documenting failures builds scientific credibility. The "FAILURES FIRST" approach (inspired by Sabine Hossenfelder's "Lost in Math") demonstrates that we reject our own hypotheses when evidence requires it.
+
+**What survives from the same framework:**
+- ✅ G = π³γ²/φ → 6.68×10⁻¹¹ (CODATA: 6.674×10⁻¹¹, **0.09%**)
+- ✅ α = 4φ²/(9π²) → **0.0002%** error
+- ✅ mₚ/mₑ = 6π⁵ → **0.002%** error
+- ✅ Ω_Λ = γ⁸π⁴/φ² → 0.688 (Planck confirmed)
+
+**Strategy:** When reaching out to physicists, lead with REJECTED hypotheses. This filters out confirmation bias and demonstrates rigorous methodology.
+
+---
+
+## 9. Next Steps
 
 1. ✅ Create `docs/research/` structure with 5 component docs
 2. ⏳ Complete Paper 2 (TRI-27 + Queen) — target: FPL/Arxiv
