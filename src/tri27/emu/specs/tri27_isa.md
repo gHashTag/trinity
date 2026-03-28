@@ -45,27 +45,66 @@ Bit 0: Z - Zero result flag
 
 ## Instruction Encoding
 
-All TRI-27 instructions are **32 bits** with unified format:
+All TRI-27 instructions are **32 bits** with **hybrid encoding** that separates immediate instructions from 3-operand instructions.
+
+### Hybrid Encoding Scheme
+
+The instruction word uses different bit layouts depending on instruction type to avoid bit overlap:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│ opcode (8) │ dst (5) │ src1 (5) │ src2 (5) │
-├──────────────┼───────────┼─────────────┼─────────────┤
-│ bits 31-24 │ bits 23-19 │ bits 18-14 │ bits 13-9  │
+│ opcode (8) │ dst (5) │ [variant encoding] │
+├──────────────┼───────────┼──────────────────────────┤
+│ bits 7-0   │ bits 12-8 │ bits 13-31 (variant)     │
 └─────────────────────────────────────────────────────┘
 ```
 
-**Field Descriptions:**
-- **opcode (8 bits)**: Operation type
-- **dst (5 bits)**: Destination register index (0-26)
-- **src1 (5 bits)**: First source register (0-26)
-- **src2 (5 bits)**: Second source register (0-26) OR upper bits of immediate
-- **cond (5 bits)**: Condition code OR third source (used by BUNDLE3)
+**For Immediate Instructions (LDI, STI, JMP, JZ, JNZ, JGT, JLT, CALL, SHL, SHR, etc.):**
+```
+┌──────────┬───────┬─────────────┬──────────────────┐
+│ opcode(8)│ dst(5)│ src1(4)     │ immediate(15)    │
+│ bits 7-0 │ 12-8  │ bits 16-13  │ bits 31-17       │
+└──────────┴───────┴─────────────┴──────────────────┘
+```
+- **src1**: 4 bits (registers 0-15 only for immediate instructions)
+- **immediate**: 15-bit signed value (-16384 to +16383)
 
-### Immediate Encoding
-Instructions with immediate values use extended encoding:
-- 9-bit `imm` field split across: src2 (5 bits) + imm (4 bits)
-- Full immediate range: -256 to +255 (signed)
+**For 3-Operand Instructions (ADD, SUB, MUL, DIV, AND, OR, XOR):**
+```
+┌──────────┬───────┬─────────────┬──────────────────┐
+│ opcode(8)│ dst(5)│ src1(5)     │ src2(5)          │
+│ bits 7-0 │ 12-8  │ bits 17-13  │ bits 22-18       │
+└──────────┴───────┴─────────────┴──────────────────┘
+```
+- **src1**: 5 bits (full register range 0-26)
+- **src2**: 5 bits (full register range 0-26)
+
+**For 2-Operand Instructions (MOV, NOT, INC, DEC):**
+```
+┌──────────┬───────┬─────────────┬──────────────────┐
+│ opcode(8)│ dst(5)│ src1(5)     │ [reserved]       │
+│ bits 7-0 │ 12-8  │ bits 17-13  │ bits 18-31       │
+└──────────┴───────┴─────────────┴──────────────────┘
+```
+- **src1**: 5 bits (full register range 0-26)
+
+### Why Hybrid Encoding?
+
+The original encoding had src1 at bits 13-17 and immediate at bits 17-31, causing **bit 17 overlap**. This meant:
+- When encoding an immediate instruction, src1 values ≥ 16 would corrupt the immediate sign bit
+- The SHR instruction `SHR t0, t0, 16` would encode src1=16, setting bit 17 and corrupting the immediate value
+
+The hybrid encoding fixes this by:
+1. **Immediate instructions**: Use only 4 bits for src1 (bits 13-16), immediate at bits 17-31
+2. **3-operand instructions**: Use full 5 bits for src1 (bits 13-17), src2 at bits 18-22
+
+This eliminates the overlap while maintaining full register range for 3-operand instructions.
+
+### Immediate Value Range
+
+- **15-bit signed immediate**: -16384 to +16383
+- **Sign extension**: Bit 31 of the instruction word is the sign bit
+- **Clamping**: Values outside range are clamped during encoding
 
 ## Opcode Groups
 
