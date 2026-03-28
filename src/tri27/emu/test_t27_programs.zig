@@ -2154,4 +2154,92 @@ test "bfs: all nodes visited" {
     try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
 }
 
+// Depth-First Search Tests — TTT Dogfood Phase 3
+
+test "dfs: file exists" {
+    const path = "src/tri27/dfs.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "dfs: visit root" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    LDI t0, 0
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "dfs: traverse left subtree" {
+    const allocator = std.testing.allocator;
+    // Root -> Left (0 -> 1)
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 80
+        \\    LDI t0, 1
+        \\    ST t0, 81
+        \\    LD t0, 81
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "dfs: preorder sum" {
+    const allocator = std.testing.allocator;
+    // DFS preorder: 0, 1, 3, 2 -> sum = 6
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 80
+        \\    LDI t0, 1
+        \\    ST t0, 81
+        \\    LDI t0, 3
+        \\    ST t0, 82
+        \\    LDI t0, 2
+        \\    ST t0, 83
+        \\    LD t0, 80
+        \\    LD t1, 81
+        \\    ADD t0, t0, t1
+        \\    LD t1, 82
+        \\    ADD t0, t0, t1
+        \\    LD t1, 83
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "dfs: tree depth" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "dfs: node count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
