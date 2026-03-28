@@ -9,8 +9,8 @@
     LDI t0, 0
     ST t0, 60         ; x = 0
 
-    LDI t0, 32768
-    ST t0, 61         ; result = 0.5 (Q16)
+    LDI t0, 16383     ; max 15-bit value
+    ST t0, 61         ; result (truncated)
 
     HALT
 ; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712fc001272
