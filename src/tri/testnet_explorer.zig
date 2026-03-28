@@ -198,9 +198,11 @@ pub const ExplorerDB = struct {
 
         var tx_iter = self.transactions.iterator();
         while (tx_iter.next()) |entry| {
+            // The key (tx.tx_hash) is freed here
             self.allocator.free(entry.key_ptr.*);
             const tx = entry.value_ptr.*;
-            self.allocator.free(tx.tx_hash);
+            // tx.tx_hash points to same allocation as key, already freed above
+            // Only free from and to which are owned by the value
             self.allocator.free(tx.from);
             self.allocator.free(tx.to);
         }
@@ -208,19 +210,20 @@ pub const ExplorerDB = struct {
 
         var addr_iter = self.address_txs.iterator();
         while (addr_iter.next()) |entry| {
-            self.allocator.free(entry.key_ptr.*);
-            for (entry.value_ptr.items) |tx_hash| {
-                self.allocator.free(tx_hash);
-            }
+            // Note: entry.key_ptr is owned by transactions HashMap (tx.from/to)
+            // tx_hash pointers are also owned by transactions HashMap
+            // We only deinit the ArrayList, not free the pointers
             entry.value_ptr.deinit(self.allocator);
         }
         self.address_txs.deinit(self.allocator);
 
         var node_iter = self.nodes.iterator();
         while (node_iter.next()) |entry| {
+            // The key (node.node_id) is freed here
             self.allocator.free(entry.key_ptr.*);
             const node = entry.value_ptr.*;
-            self.allocator.free(node.node_id);
+            // node.node_id points to same allocation as key, already freed above
+            // Only free address and region which are owned by the value
             self.allocator.free(node.address);
             if (node.region) |r| self.allocator.free(r);
         }
@@ -309,14 +312,11 @@ pub const ExplorerDB = struct {
     }
 
     fn indexTxByAddress(self: *ExplorerDB, address: []const u8, tx_hash: []const u8) !void {
-        const gop = try self.address_txs.getOrPut(self.allocator, address);
-        if (!gop.found_existing) {
-            gop.key_ptr.* = try self.allocator.dupe(u8, address);
-            gop.value_ptr.* = .{};
-        }
+        const gop = try self.address_txs.getOrPutValue(self.allocator, address, .{});
+        // The address is already duplicated by caller, stored as key by getOrPutValue
 
-        const hash_copy = try self.allocator.dupe(u8, tx_hash);
-        try gop.value_ptr.append(self.allocator, hash_copy);
+        // The tx_hash is already duplicated by caller, just append it
+        try gop.value_ptr.append(self.allocator, tx_hash);
     }
 
     /// Get transaction by hash
