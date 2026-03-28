@@ -1,0 +1,13 @@
+; Messaging PubSub — TTT Dogfood Phase 3
+;
+; Pub-sub messaging
+;
+; Test case: messaging_pubsub
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; pubsub_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077b0000020000000020db

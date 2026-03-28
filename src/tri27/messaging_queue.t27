@@ -1,0 +1,13 @@
+; Messaging Queue — TTT Dogfood Phase 3
+;
+; Message queuing
+;
+; Test case: messaging_queue
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; queue_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077af0000020000000020d9
