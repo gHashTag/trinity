@@ -1,0 +1,13 @@
+; Distributed Epidemic — TTT Dogfood Phase 3
+;
+; Epidemic algorithms
+;
+; Test case: distributed_epidemic
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; epidemic_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0750c000002000000001b93

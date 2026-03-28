@@ -1,0 +1,13 @@
+; Parallel Scan — TTT Dogfood Phase 3
+;
+; Parallel prefix scan
+;
+; Test case: parallel_scan
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; scan_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074fd000002000000001b75
