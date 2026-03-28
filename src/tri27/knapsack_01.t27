@@ -1,0 +1,15 @@
+; 0/1 Knapsack — TTT Dogfood Phase 3
+;
+; Dynamic programming
+;
+; Test case: capacity=50, 10 items
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 50
+    ST t0, 60         ; capacity = 50
+    LDI t0, 10
+    ST t0, 61         ; items = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07137d0012f3

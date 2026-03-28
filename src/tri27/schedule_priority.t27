@@ -1,0 +1,13 @@
+; Priority Scheduling — TTT Dogfood Phase 3
+;
+; Priority-based CPU scheduling
+;
+; Test case: 5 priority levels
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; levels = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713800012f6

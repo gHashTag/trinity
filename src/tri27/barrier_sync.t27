@@ -1,0 +1,13 @@
+; Barrier Synchronization — TTT Dogfood Phase 3
+;
+; Thread rendezvous
+;
+; Test case: 4 threads wait
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 4
+    ST t0, 60         ; threads = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713870012fd

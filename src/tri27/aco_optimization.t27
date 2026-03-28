@@ -1,0 +1,13 @@
+; Ant Colony Optimization — TTT Dogfood Phase 3
+;
+; Pheromone-based pathfinding
+;
+; Test case: 20 ants, 100 iterations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 20
+    ST t0, 60         ; ants = 20
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713730022e9

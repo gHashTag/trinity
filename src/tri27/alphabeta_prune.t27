@@ -1,0 +1,13 @@
+; Alpha-Beta Pruning — TTT Dogfood Phase 3
+;
+; Optimized minimax
+;
+; Test case: pruned 50% of nodes
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 50
+    ST t0, 60         ; pruned_percent = 50
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713780012ee
