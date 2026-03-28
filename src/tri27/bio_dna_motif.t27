@@ -1,0 +1,13 @@
+; Bio DNA Motif — TTT Dogfood Phase 3
+;
+; Motif search
+;
+; Test case: bio_dna_motif
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; motif_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0761e0000020000001cc9

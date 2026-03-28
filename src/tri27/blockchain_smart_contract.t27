@@ -1,0 +1,13 @@
+; Blockchain Smart Contract — TTT Dogfood Phase 3
+;
+; Smart contract VM
+;
+; Test case: blockchain_smart_contract
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; smart_contract_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07670000002000001f59

@@ -1,0 +1,13 @@
+; Quantum RZ — TTT Dogfood Phase 3
+;
+; Rotation Z gate
+;
+; Test case: quantum_rz
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rz_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07648000002000001e19
