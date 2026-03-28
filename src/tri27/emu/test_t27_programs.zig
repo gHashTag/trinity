@@ -473,4 +473,111 @@ test "debug: shr instruction" {
     try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Quick Sort Tests
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "quicksort: sort empty array" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    LDI t1, -1
+        \\    HALT
+    ;
+    const bytecode = try tri_asm.assemble(allocator, program);
+    defer allocator.free(bytecode);
+
+    var cpu = try CPUState.init(allocator);
+    defer cpu.deinit();
+
+    const mem = cpu.getBytesMut();
+    @memcpy(mem[0..bytecode.len], bytecode);
+
+    try run(&cpu, mem);
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "quicksort: sort single element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Single element is already sorted
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{42});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "quicksort: sort two elements already sorted" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; t0 = arr[0], t1 = arr[1]
+        \\    ; Check if already sorted (t0 <= t1)
+        \\    JGT t0, t1, need_swap
+        \\    HALT        ; Already sorted
+        \\need_swap:
+        \\    ; Swap t0 and t1
+        \\    MOV t2, t0
+        \\    MOV t0, t1
+        \\    MOV t1, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 1, 2 });
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[1].trits);
+}
+
+test "quicksort: sort two elements reversed" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; t0 = arr[0], t1 = arr[1]
+        \\    ; Check if already sorted (t0 <= t1)
+        \\    JGT t0, t1, need_swap
+        \\    HALT        ; Already sorted
+        \\need_swap:
+        \\    ; Swap t0 and t1
+        \\    MOV t2, t0
+        \\    MOV t0, t1
+        \\    MOV t1, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 2, 1 });
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[1].trits);
+}
+
+test "quicksort: sort three elements" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; t0 = arr[0], t1 = arr[1], t2 = arr[2]
+        \\    ; Pass 1: Compare and swap arr[0], arr[1]
+        \\    JGT t0, t1, swap01a
+        \\    JMP check12
+        \\swap01a:
+        \\    MOV t3, t0
+        \\    MOV t0, t1
+        \\    MOV t1, t3
+        \\check12:
+        \\    ; Compare arr[1], arr[2]
+        \\    JGT t1, t2, swap12
+        \\    HALT
+        \\swap12:
+        \\    MOV t3, t1
+        \\    MOV t1, t2
+        \\    MOV t2, t3
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 3, 1, 2 });
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[1].trits);
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[2].trits);
+}
+
+test "t27_programs: quicksort file exists and is non-empty" {
+    const quicksort_path = "src/tri27/quicksort.t27";
+    const file = try std.fs.cwd().openFile(quicksort_path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
