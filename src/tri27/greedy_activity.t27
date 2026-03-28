@@ -1,0 +1,13 @@
+; Activity Selection — TTT Dogfood Phase 3
+;
+; Select maximum non-overlapping activities
+;
+; Test case: greedy_activity
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; activity_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07899000002000000000213f

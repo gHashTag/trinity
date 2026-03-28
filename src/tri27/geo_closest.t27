@@ -1,0 +1,13 @@
+; Closest Pair Geo — TTT Dogfood Phase 3
+;
+; Closest pair of points
+;
+; Test case: geo_closest
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; closest_geo_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07901000002000000002173

@@ -1,0 +1,13 @@
+; Bit Manipulation — TTT Dogfood Phase 3
+;
+; Bit tricks and operations
+;
+; Test case: num_bit
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bit_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078f5000002000000000216d

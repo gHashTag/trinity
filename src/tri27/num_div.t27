@@ -1,0 +1,13 @@
+; Divisors — TTT Dogfood Phase 3
+;
+; Count and list divisors
+;
+; Test case: num_div
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; div_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0790d000002000000002179

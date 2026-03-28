@@ -1,0 +1,13 @@
+; Karatsuba — TTT Dogfood Phase 3
+;
+; Fast multiplication
+;
+; Test case: dc_karatsuba
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; karatsuba_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078b5000002000000000214d

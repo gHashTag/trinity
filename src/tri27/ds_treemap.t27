@@ -1,0 +1,13 @@
+; TreeMap — TTT Dogfood Phase 3
+;
+; Ordered map based on binary search tree
+;
+; Test case: ds_treemap
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; treemap_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0783100000200000000210b

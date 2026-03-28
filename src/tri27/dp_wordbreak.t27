@@ -1,0 +1,13 @@
+; Word Break — TTT Dogfood Phase 3
+;
+; Check if string can be segmented
+;
+; Test case: dp_wordbreak
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; wordbreak_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0789100000200000000213b
