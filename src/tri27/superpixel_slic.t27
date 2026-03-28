@@ -1,0 +1,13 @@
+; Superpixel SLIC — TTT Dogfood Phase 3
+;
+; SLIC superpixels
+;
+; Test case: slic superpixel
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; superpixels = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0717b400172a

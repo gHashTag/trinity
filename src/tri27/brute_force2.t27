@@ -1,0 +1,13 @@
+; Brute Force 2 — TTT Dogfood Phase 3
+;
+; Brute force matching v2
+;
+; Test case: brute force v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; matched = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07179900170f

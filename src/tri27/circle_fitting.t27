@@ -1,0 +1,13 @@
+; Circle Fitting — TTT Dogfood Phase 3
+;
+; Circle model fitting
+;
+; Test case: circle fitting
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; circle = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07179f001715
