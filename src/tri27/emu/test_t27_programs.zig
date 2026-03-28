@@ -2055,4 +2055,103 @@ test "linked_list: count nodes" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// Breadth-First Search Tests — TTT Dogfood Phase 3
+
+test "bfs: file exists" {
+    const path = "src/tri27/bfs.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "bfs: initialize start node" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 60
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "bfs: mark visited" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    LD t0, 70
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "bfs: add neighbors to queue" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LDI t0, 2
+        \\    ST t0, 62
+        \\    LD t0, 61
+        \\    LD t1, 62
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "bfs: traversal order sum" {
+    const allocator = std.testing.allocator;
+    // BFS order: 0, 1, 2, 3 -> sum = 6
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 80
+        \\    LDI t0, 1
+        \\    ST t0, 81
+        \\    LDI t0, 2
+        \\    ST t0, 82
+        \\    LDI t0, 3
+        \\    ST t0, 83
+        \\    LD t0, 80
+        \\    LD t1, 81
+        \\    ADD t0, t0, t1
+        \\    LD t1, 82
+        \\    ADD t0, t0, t1
+        \\    LD t1, 83
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "bfs: all nodes visited" {
+    const allocator = std.testing.allocator;
+    // Check visited array: [1, 1, 1, 1]
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    ST t0, 71
+        \\    ST t0, 72
+        \\    ST t0, 73
+        \\    LD t0, 70
+        \\    LD t1, 71
+        \\    LD t2, 72
+        \\    LD t3, 73
+        \\    ADD t0, t0, t1
+        \\    ADD t0, t0, t2
+        \\    ADD t0, t0, t3
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
