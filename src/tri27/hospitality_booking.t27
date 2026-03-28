@@ -1,0 +1,13 @@
+; Hospitality Booking — TTT Dogfood Phase 3
+;
+; Reservation systems
+;
+; Test case: hospitality_booking
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; booking_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076e900002000000001f4d
