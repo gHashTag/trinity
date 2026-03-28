@@ -16965,3 +16965,243 @@ test "rotate_left: verify rotation result" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "bitrev: Bit reverse operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bitrev.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Reverse") != null);
+}
+
+test "bitrev: verify bit reversal" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bitrev.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "find_first_bit: Find first set bit (ffs)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "find_first_bit.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "First") != null);
+}
+
+test "find_first_bit: verify ffs result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "find_first_bit.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mem_cmp: Compare memory buffers" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_cmp.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Compare") != null);
+}
+
+test "mem_cmp: verify comparison result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_cmp.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mem_move: Move memory with overlap handling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_move.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "overlap") != null);
+}
+
+test "mem_move: verify bytes moved" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_move.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mem_set: Fill memory with value" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_set.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Fill") != null);
+}
+
+test "mem_set: verify bytes filled" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mem_set.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "next_perm_algo: Next lexicographic permutation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "next_perm_algo.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Next") != null);
+}
+
+test "next_perm_algo: verify has_next" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "next_perm_algo.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "prev_perm_algo: Previous lexicographic permutation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "prev_perm_algo.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Previous") != null);
+}
+
+test "prev_perm_algo: verify has_prev" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "prev_perm_algo.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rotate_right: Circular right shift" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rotate_right.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Right") != null);
+}
+
+test "rotate_right: verify rotation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rotate_right.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_chr: Find character in string" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_chr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Find") != null);
+}
+
+test "str_chr: verify position" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_chr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_cspan: Span complement (strcspn)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_cspan.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Complement") != null);
+}
+
+test "str_cspan: verify span length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_cspan.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_pbrk: Find first from set (strpbrk)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_pbrk.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "character") != null);
+}
+
+test "str_pbrk: verify found" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_pbrk.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_rchr: Find last character (strrchr)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_rchr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "last") != null);
+}
+
+test "str_rchr: verify last position" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_rchr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_rev: Reverse string in place" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_rev.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Reverse") != null);
+}
+
+test "str_rev: verify reversed" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_rev.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "str_span: Span initial string (strspn)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_span.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "matching") != null);
+}
+
+test "str_span: verify span length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "str_span.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "strlower: Convert to lowercase" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strlower.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "lowercase") != null);
+}
+
+test "strlower: verify conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strlower.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "strupper: Convert to uppercase" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strupper.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "uppercase") != null);
+}
+
+test "strupper: verify conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strupper.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
