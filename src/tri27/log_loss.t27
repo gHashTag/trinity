@@ -1,6 +1,6 @@
 ; Log Loss — TTT Dogfood Phase 3
 ;
-| Cross entropy loss
+; Cross entropy loss
 ;
 ; Test case: log_loss
 ;
