@@ -403,7 +403,7 @@ fn getTodayQueue(allocator: std.mem.Allocator, week: u32) std.ArrayList(QueueIte
         },
         2 => [_]QueueItem{
             .{ .name = "Denis Kleyko", .email = "denis.kleyko@oru.se", .status = "queued" },
-            .{ .name = "Pentti Kanerva", .email = "kanerva@berkeley.edu", .status = "queued" },
+            .{ .name = "Pentti Kanerva", .email = "pkanerva@csli.stanford.edu", .status = "queued" },
             .{ .name = "Abbas Rahimi", .email = "abr@zurich.ibm.com", .status = "queued" },
         },
         else => return result, // Empty for other weeks in this stub

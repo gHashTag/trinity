@@ -1,0 +1,176 @@
+; Quick Sort — TTT Dogfood Phase 3
+; In-place sorting using Lomuto partition scheme
+; Input: Array at memory address 0, length at address 1000
+; Output: Sorted array at same location
+;
+; Algorithm:
+;   quicksort(arr, low, high):
+;     if low < high:
+;       pi = partition(arr, low, high)
+;       quicksort(arr, low, pi - 1)
+;       quicksort(arr, pi + 1, high)
+;
+;   partition(arr, low, high):
+;     pivot = arr[high]
+;     i = low - 1
+;     for j from low to high - 1:
+;       if arr[j] <= pivot:
+;         i++
+;         swap(arr[i], arr[j])
+;     swap(arr[i+1], arr[high])
+;     return i + 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+.const
+    ZERO = 0
+    ONE = 1
+    TWO = 2
+    TEMP_ADDR = 2000    ; Temporary storage for swaps
+    LOW_ADDR = 2001    ; Store low parameter
+    HIGH_ADDR = 2002   ; Store high parameter
+    I_ADDR = 2003      ; Loop index i
+    J_ADDR = 2004      ; Loop index j
+    PIVOT_ADDR = 2005  ; Pivot value
+    RETURN_ADDR = 2006 ; Return address for recursion
+
+.data
+    ; Test array (10 elements)
+    .dword 34 7 23 32 5 62 31 1 16 8
+    ARRAY_LEN = 10
+
+.code
+; Entry point
+main:
+    ; Initialize: t0 = 0 (low), t1 = ARRAY_LEN - 1 (high)
+    LDI t0, ZERO
+    LDI t1, 9
+    JUMP quicksort
+
+; Quick sort entry
+; t0 = low, t1 = high
+quicksort:
+    ; Check: if low >= high, return
+    JGT t0, t1, done_qs
+
+    ; Save low/high to memory
+    ST t0, LOW_ADDR
+    ST t1, HIGH_ADDR
+
+    ; Call partition
+    JUMP partition
+
+; After partition, t0 = pivot index
+partition_return:
+    ; t0 = pi, restore low/high
+    LD t1, LOW_ADDR     ; t1 = low
+    LD t2, HIGH_ADDR    ; t2 = high
+
+    ; Recurse: quicksort(low, pi - 1)
+    ; t0 already has pi
+    SUB t0, t0, ONE     ; t0 = pi - 1
+    MOV t3, t1          ; t3 = low (save for second recurse)
+    JUMP quicksort
+
+qs_second_recurse:
+    ; quicksort(pi + 1, high)
+    ; t0 = pi + 1, t1 = high
+    LD t2, HIGH_ADDR    ; t2 = high
+    JUMP quicksort
+
+done_qs:
+    HALT
+
+; Partition function
+; t0 = low, t1 = high
+; Returns: t0 = partition index
+partition:
+    ; Save parameters
+    ST t0, LOW_ADDR
+    ST t1, HIGH_ADDR
+
+    ; pivot = arr[high]
+    LD t2, HIGH_ADDR    ; t2 = high
+    LD t3, t2           ; t3 = arr[high] (pivot)
+    ST t3, PIVOT_ADDR
+
+    ; i = low - 1
+    LD t2, LOW_ADDR     ; t2 = low
+    SUB t2, t2, ONE     ; t2 = low - 1
+    ST t2, I_ADDR
+
+    ; j = low
+    LD t2, LOW_ADDR
+    ST t2, J_ADDR
+
+; Loop: for j from low to high - 1
+partition_loop:
+    LD t2, J_ADDR
+    LD t3, HIGH_ADDR
+    JGT t2, t3, partition_done
+
+    ; if arr[j] <= pivot
+    LD t2, J_ADDR
+    LD t4, t2           ; t4 = arr[j]
+    LD t5, PIVOT_ADDR   ; t5 = pivot
+    JGT t4, t5, continue_loop
+
+    ; i++
+    LD t2, I_ADDR
+    ADD t2, t2, ONE
+    ST t2, I_ADDR
+
+    ; swap(arr[i], arr[j])
+    LD t2, I_ADDR
+    LD t3, J_ADDR
+    JUMP swap
+
+continue_loop:
+    ; j++
+    LD t2, J_ADDR
+    ADD t2, t2, ONE
+    ST t2, J_ADDR
+    JUMP partition_loop
+
+partition_done:
+    ; swap(arr[i+1], arr[high])
+    LD t2, I_ADDR
+    ADD t2, t2, ONE     ; t2 = i + 1
+    LD t3, HIGH_ADDR    ; t3 = high
+    JUMP swap_final
+
+; Swap arr[a] and arr[b]
+; t2 = index a, t3 = index b
+swap:
+    ; temp = arr[a]
+    LD t4, t2           ; t4 = arr[a]
+    ST t4, TEMP_ADDR
+
+    ; arr[a] = arr[b]
+    LD t5, t3           ; t5 = arr[b]
+    ST t5, t2
+
+    ; arr[b] = temp
+    LD t5, TEMP_ADDR
+    ST t5, t3
+
+    ; Return to caller-specific location
+    JUMP continue_loop
+
+; Final swap for partition
+swap_final:
+    ; temp = arr[i+1]
+    LD t4, t2           ; t4 = arr[i+1]
+    ST t4, TEMP_ADDR
+
+    ; arr[i+1] = arr[high]
+    LD t5, t3           ; t5 = arr[high]
+    ST t5, t2
+
+    ; arr[high] = temp
+    LD t5, TEMP_ADDR
+    ST t5, t3
+
+    ; Return partition index (i + 1)
+    MOV t0, t2
+    JUMP partition_return
