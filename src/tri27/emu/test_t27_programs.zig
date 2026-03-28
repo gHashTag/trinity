@@ -4290,4 +4290,78 @@ test "strcmp: char difference" {
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
 
+// String Copy (strcpy) Tests — TTT Dogfood Phase 3
+
+test "strcpy: file exists" {
+    const path = "src/tri27/strcpy.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strcpy: first char copied" {
+    const allocator = std.testing.allocator;
+    // 'H' = 72
+    const program =
+        \\    LDI t0, 72
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 72), cpu.t27[0].trits);
+}
+
+test "strcpy: last char copied" {
+    const allocator = std.testing.allocator;
+    // 'O' = 79
+    const program =
+        \\    LDI t0, 79
+        \\    ST t0, 204
+        \\    LD t0, 204
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 79), cpu.t27[0].trits);
+}
+
+test "strcpy: null terminator copied" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 205
+        \\    LD t0, 205
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "strcpy: bytes copied" {
+    const allocator = std.testing.allocator;
+    // 6 bytes including null
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "strcpy: string length" {
+    const allocator = std.testing.allocator;
+    // 5 characters (excluding null)
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

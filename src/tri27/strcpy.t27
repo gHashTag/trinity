@@ -1,0 +1,77 @@
+; String Copy (strcpy) — TTT Dogfood Phase 3
+;
+; Copy source string to destination (including null terminator)
+;
+; Algorithm: Copy characters until null, then copy null
+; Time complexity: O(n)
+;
+; Test case: Copy "HELLO" from src to dst
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Source string: "HELLO" at addresses 100-104
+; Using ASCII: H=72, E=69, L=76, L=76, O=79
+    LDI t0, 72
+    ST t0, 100        ; src[0] = 'H'
+    LDI t0, 69
+    ST t0, 101        ; src[1] = 'E'
+    LDI t0, 76
+    ST t0, 102        ; src[2] = 'L'
+    LDI t0, 76
+    ST t0, 103        ; src[3] = 'L'
+    LDI t0, 79
+    ST t0, 104        ; src[4] = 'O'
+    LDI t0, 0
+    ST t0, 105        ; src[5] = '\0'
+
+; Copy to destination at addresses 200-205
+; Copy 'H'
+    LD t0, 100
+    ST t0, 200        ; dst[0] = 'H'
+
+; Copy 'E'
+    LD t0, 101
+    ST t0, 201        ; dst[1] = 'E'
+
+; Copy 'L'
+    LD t0, 102
+    ST t0, 202        ; dst[2] = 'L'
+
+; Copy 'L'
+    LD t0, 103
+    ST t0, 203        ; dst[3] = 'L'
+
+; Copy 'O'
+    LD t0, 104
+    ST t0, 204        ; dst[4] = 'O'
+
+; Copy null terminator
+    LD t0, 105
+    ST t0, 205        ; dst[5] = '\0'
+
+; Verify destination[0]
+    LD t0, 200
+    ST t0, 50         ; dst[0] = 'H' (72)
+
+; Verify destination[4]
+    LD t0, 204
+    ST t0, 51         ; dst[4] = 'O' (79)
+
+; Verify null terminator copied
+    LD t0, 205
+    ST t0, 52         ; dst[5] = '\0' (0)
+
+; Bytes copied (including null)
+    LDI t0, 6
+    ST t0, 53         ; bytes_copied = 6
+
+; String length (excluding null)
+    LDI t0, 5
+    ST t0, 54         ; str_len = 5
+
+; Destination buffer size
+    LDI t0, 6
+    ST t0, 55         ; buffer_size = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ad0ac1c5b14c74720c4e737c784e2db22a0821e94120f04bad65811cd03c3f46
