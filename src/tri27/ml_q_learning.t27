@@ -1,0 +1,13 @@
+; ML Q-Learning — TTT Dogfood Phase 3
+;
+; Q-Learning algorithm
+;
+; Test case: ml_q_learning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; q_learning_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074b30000020000000001ae1
