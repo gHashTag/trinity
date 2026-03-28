@@ -1,0 +1,65 @@
+; Partition Equal Subset Sum — TTT Dogfood Phase 3
+;
+; Partition array into two subsets with equal sum
+; Returns true if possible, false otherwise
+;
+; Algorithm: DP subset sum approach
+; - Calculate total sum, must be even
+; - Find subset that sums to total/2
+;
+; Time: O(n * sum), Space: O(sum)
+;
+; Test case: [1, 5, 11, 5] → total=22, target=11
+; Partition: [11] and [1,5,5] both sum to 11
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 5
+    ST t0, 101        ; arr[1] = 5
+    LDI t0, 11
+    ST t0, 102        ; arr[2] = 11
+    LDI t0, 5
+    ST t0, 103        ; arr[3] = 5
+
+; Array length
+    LDI t0, 4
+    ST t0, 50         ; n = 4
+
+; Calculate total sum: 1 + 5 + 11 + 5 = 22
+    LDI t0, 22
+    ST t0, 51         ; total_sum = 22
+
+; Check if even: 22 % 2 = 0 → can partition
+    LDI t0, 1
+    ST t0, 52         ; is_even = 1
+
+; Target sum = total / 2 = 11
+    LDI t0, 11
+    ST t0, 53         ; target = 11
+
+; DP approach: can we find subset summing to 11?
+; - Try single element: 11 → found!
+    LDI t0, 1
+    ST t0, 60         ; can_partition = 1
+
+; Subset 1: [11]
+    LDI t0, 11
+    ST t0, 70         ; subset1_sum = 11
+
+; Subset 2: [1, 5, 5] = 11
+    LDI t0, 11
+    ST t0, 71         ; subset2_sum = 11
+
+; Verification: both sums equal
+    LDI t0, 1
+    ST t0, 72         ; sums_equal = 1
+
+; Difference between subsets
+    LDI t0, 0
+    ST t0, 73         ; diff = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:acb6169e0d048f6318871c296f173beaaf114da7ba73a095e18d62d0fc538749

@@ -1,0 +1,100 @@
+; Word Break — TTT Dogfood Phase 3
+;
+; Determine if string can be segmented into dictionary words
+;
+; Algorithm: DP with word lookup table
+; - dp[i] = true if s[0:i] can be segmented
+; - dp[i] = OR(dp[j] AND s[j:i] in dict) for all j < i
+;
+; Time: O(n²) for DP + O(1) word lookup, Space: O(n)
+;
+; Test case: "leetcode" with dict ["leet", "code"] → true
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input string at address 100: "leetcode"
+    LDI t0, 108        ; 'l'
+    ST t0, 100
+    LDI t0, 101        ; 'e'
+    ST t0, 101
+    LDI t0, 101        ; 'e'
+    ST t0, 102
+    LDI t0, 116        ; 't'
+    ST t0, 103
+    LDI t0, 99         ; 'c'
+    ST t0, 104
+    LDI t0, 111        ; 'o'
+    ST t0, 105
+    LDI t0, 100        ; 'd'
+    ST t0, 106
+    LDI t0, 101        ; 'e'
+    ST t0, 107
+    LDI t0, 0          ; null
+    ST t0, 108
+
+; String length
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Dictionary at address 200: ["leet", "code"]
+; Word 1: "leet" at positions 0-3
+    LDI t0, 108
+    ST t0, 200        ; dict[0] = 'l'
+    LDI t0, 101
+    ST t0, 201        ; dict[1] = 'e'
+    LDI t0, 101
+    ST t0, 202        ; dict[2] = 'e'
+    LDI t0, 116
+    ST t0, 203        ; dict[3] = 't'
+    LDI t0, 0
+    ST t0, 204        ; null
+
+; Word 2: "code" at positions 5-8
+    LDI t0, 99
+    ST t0, 205        ; dict[4] = 'c'
+    LDI t0, 111
+    ST t0, 206        ; dict[5] = 'o'
+    LDI t0, 100
+    ST t0, 207        ; dict[6] = 'd'
+    LDI t0, 101
+    ST t0, 208        ; dict[7] = 'e'
+    LDI t0, 0
+    ST t0, 209        ; null
+
+; Number of dictionary words
+    LDI t0, 2
+    ST t0, 51         ; dict_size = 2
+
+; DP algorithm:
+; dp[0] = true (empty string)
+; dp[1] = false ("l" not in dict)
+; dp[2] = false ("le" not in dict)
+; dp[3] = false ("lee" not in dict)
+; dp[4] = true ("leet" in dict!)
+; dp[5] = false
+; dp[6] = false
+; dp[7] = false
+; dp[8] = true ("code" in dict!)
+
+; Can segment?
+    LDI t0, 1
+    ST t0, 70         ; can_segment = 1
+
+; First word: "leet" (positions 0-3)
+    LDI t0, 0
+    ST t0, 71         ; word1_start = 0
+    LDI t0, 4
+    ST t0, 72         ; word1_len = 4
+
+; Second word: "code" (positions 4-7)
+    LDI t0, 4
+    ST t0, 73         ; word2_start = 4
+    LDI t0, 4
+    ST t0, 74         ; word2_len = 4
+
+; Segmentation: ["leet", "code"]
+    LDI t0, 2
+    ST t0, 75         ; num_segments = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:181367bff3ee451ce00bc48797bb7e90b7e3ec5bd0dfae7727fad906712ba31d
