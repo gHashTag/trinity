@@ -39,6 +39,7 @@ pub const FaucetResponse = struct {
             try std.fmt.allocPrint(allocator, "\"next_available_at\":{d},", .{t})
         else
             "";
+        defer if (self.next_available_at != null) allocator.free(next_str);
 
         return if (next_str.len > 0)
             try std.fmt.allocPrint(allocator,

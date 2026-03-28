@@ -20,6 +20,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ZODD DATALOG — CLARA Rules Engine (DARPA CLARA proposal)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const zodd_dep = b.dependency("zodd", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const zodd_mod = zodd_dep.module("zodd");
+
     // VIBEEC compiler module — single source of truth from .tri specs
     // Note: trinity-nexus compiler replaced with inline .tri spec parsing
     // const trinity_lang_mod = b.createModule(.{
@@ -1584,6 +1594,101 @@ pub fn build(b: *std.Build) void {
     const scholar_step = b.step("scholar-agent", "Run Scholar research agent daemon");
     scholar_step.dependOn(&run_scholar.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TESTNET FAUCET — HTTP Faucet for Test $TRI
+    // ═══════════════════════════════════════════════════════════════════════════
+    const testnet_faucet = b.addExecutable(.{
+        .name = "testnet-faucet",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_faucet.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(testnet_faucet);
+
+    const run_faucet = b.addRunArtifact(testnet_faucet);
+    if (b.args) |args| run_faucet.addArgs(args);
+    const faucet_step = b.step("testnet-faucet", "Run testnet faucet server");
+    faucet_step.dependOn(&run_faucet.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TESTNET EXPLORER — Block Explorer Backend
+    // ═══════════════════════════════════════════════════════════════════════════
+    const testnet_explorer = b.addExecutable(.{
+        .name = "testnet-explorer",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_explorer.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(testnet_explorer);
+
+    const run_explorer = b.addRunArtifact(testnet_explorer);
+    if (b.args) |args| run_explorer.addArgs(args);
+    const explorer_step = b.step("testnet-explorer", "Run testnet explorer server");
+    explorer_step.dependOn(&run_explorer.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TESTNET REWARDS CLI — Leaderboard & Reward Tracking
+    // ═══════════════════════════════════════════════════════════════════════════
+    const testnet_rewards = b.addExecutable(.{
+        .name = "testnet-rewards",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_rewards.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(testnet_rewards);
+
+    const run_rewards = b.addRunArtifact(testnet_rewards);
+    if (b.args) |args| run_rewards.addArgs(args);
+    const rewards_step = b.step("testnet-rewards", "Run testnet rewards CLI");
+    rewards_step.dependOn(&run_rewards.step);
+
+    // Testnet tests
+    const testnet_config_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_config.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_testnet_config_tests = b.addRunArtifact(testnet_config_tests);
+    test_step.dependOn(&run_testnet_config_tests.step);
+
+    const testnet_faucet_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_faucet.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_testnet_faucet_tests = b.addRunArtifact(testnet_faucet_tests);
+    test_step.dependOn(&run_testnet_faucet_tests.step);
+
+    const testnet_rewards_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_rewards.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_testnet_rewards_tests = b.addRunArtifact(testnet_rewards_tests);
+    test_step.dependOn(&run_testnet_rewards_tests.step);
+
+    const testnet_explorer_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/testnet_explorer.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_testnet_explorer_tests = b.addRunArtifact(testnet_explorer_tests);
+    test_step.dependOn(&run_testnet_explorer_tests.step);
+
     // AGENT ENTRYPOINT — Zig replacement for agent-entrypoint.sh (942 LOC bash → ~250 LOC Zig)
     // Single binary: clone → read issue → Claude Code → self-review → PR
     // Telegram UX: 1 card per agent (edit-in-place), zero spam
@@ -2869,6 +2974,40 @@ pub fn build(b: *std.Build) void {
     const tri27_comprehensive_tests_step = b.step("test-tri27-comprehensive", "Run TRI‑27 Comprehensive Tests");
     tri27_comprehensive_tests_step.dependOn(&run_tri27_comprehensive_tests.step);
 
+    // TTT Dogfood Phase 2 — .t27 Program Tests
+    const tri27_cpu_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/cpu_state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_decoder_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/decoder.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const tri27_executor_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/executor.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    tri27_executor_mod.addImport("cpu_state", tri27_cpu_mod);
+    tri27_executor_mod.addImport("decoder", tri27_decoder_mod);
+
+    const tri27_t27_programs_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/test_t27_programs.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    tri27_t27_programs_mod.addImport("cpu_state", tri27_cpu_mod);
+    tri27_t27_programs_mod.addImport("executor", tri27_executor_mod);
+
+    const tri27_t27_programs_tests = b.addTest(.{
+        .root_module = tri27_t27_programs_mod,
+    });
+    const run_tri27_t27_programs_tests = b.addRunArtifact(tri27_t27_programs_tests);
+    const tri27_t27_programs_tests_step = b.step("test-tri27-t27", "Run TTT Dogfood .t27 Program Tests");
+    tri27_t27_programs_tests_step.dependOn(&run_tri27_t27_programs_tests.step);
+
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -3789,6 +3928,90 @@ pub fn build(b: *std.Build) void {
     sacred_trinity_step.dependOn(sacred_verify_step);
     sacred_trinity_step.dependOn(caps_step);
     // Note: fpga-synth is optional (requires Docker) - not auto-included
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CLARA MODULES — DARPA CLARA Proposal: Datalog + VSA + Explainability
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // CLARA rules module (VSA ↔ Datalog conversion)
+    const clara_rules_mod = b.createModule(.{
+        .root_source_file = b.path("src/clara/rules.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "zodd", .module = zodd_mod },
+        },
+    });
+
+    // CLARA kill web threat classification
+    const clara_kill_web_mod = b.createModule(.{
+        .root_source_file = b.path("src/clara/kill_web.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "zodd", .module = zodd_mod },
+        },
+    });
+
+    // CLARA explainability (proof traces)
+    const clara_explain_mod = b.createModule(.{
+        .root_source_file = b.path("src/clara/explain.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "zodd", .module = zodd_mod },
+        },
+    });
+
+    // CLARA bounded rationality (Restraint)
+    const clara_bounded_mod = b.createModule(.{
+        .root_source_file = b.path("src/clara/bounded.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "zodd", .module = zodd_mod },
+        },
+    });
+
+    // CLARA test executables
+    const clara_rules_test = b.addTest(.{
+        .root_module = clara_rules_mod,
+    });
+    const run_clara_rules_test = b.addRunArtifact(clara_rules_test);
+    const clara_rules_test_step = b.step("test-clara-rules", "Run CLARA rules tests");
+    clara_rules_test_step.dependOn(&run_clara_rules_test.step);
+
+    const clara_kill_web_test = b.addTest(.{
+        .root_module = clara_kill_web_mod,
+    });
+    const run_clara_kill_web_test = b.addRunArtifact(clara_kill_web_test);
+    const clara_kill_web_test_step = b.step("test-clara-kill-web", "Run CLARA kill web tests");
+    clara_kill_web_test_step.dependOn(&run_clara_kill_web_test.step);
+
+    const clara_explain_test = b.addTest(.{
+        .root_module = clara_explain_mod,
+    });
+    const run_clara_explain_test = b.addRunArtifact(clara_explain_test);
+    const clara_explain_test_step = b.step("test-clara-explain", "Run CLARA explainability tests");
+    clara_explain_test_step.dependOn(&run_clara_explain_test.step);
+
+    const clara_bounded_test = b.addTest(.{
+        .root_module = clara_bounded_mod,
+    });
+    const run_clara_bounded_test = b.addRunArtifact(clara_bounded_test);
+    const clara_bounded_test_step = b.step("test-clara-bounded", "Run CLARA bounded rationality tests");
+    clara_bounded_test_step.dependOn(&run_clara_bounded_test.step);
+
+    // CLARA comprehensive test step
+    const clara_test_step = b.step("test-clara", "Run all CLARA tests");
+    clara_test_step.dependOn(clara_rules_test_step);
+    clara_test_step.dependOn(clara_kill_web_test_step);
+    clara_test_step.dependOn(clara_explain_test_step);
+    clara_test_step.dependOn(clara_bounded_test_step);
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // CYRILLIC GUARD — DISABLED (causes build errors)
