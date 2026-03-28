@@ -1,6 +1,6 @@
 ; RSA Verify — TTT Dogfood Phase 3
 ;
-| Signature check
+; Signature check
 ;
 ; Test case: rsa_verify
 ;

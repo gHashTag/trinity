@@ -1,6 +1,6 @@
 ; X25519 Key Exchange — TTT Dogfood Phase 3
 ;
-| Diffie-Hellman curve
+; Diffie-Hellman curve
 ;
 ; Test case: x25519_key
 ;

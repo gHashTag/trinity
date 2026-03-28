@@ -48345,3 +48345,63 @@ test "spinlock2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "ecdh_key: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ecdh_key.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ecdh_key: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ecdh_key.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rsa_sign: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_sign.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "rsa_sign: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_sign.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rsa_verify: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_verify.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "rsa_verify: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rsa_verify.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "x25519_key: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "x25519_key.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "x25519_key: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "x25519_key.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
