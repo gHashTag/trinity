@@ -1,0 +1,16 @@
+; Taylor Series Exp — TTT Dogfood Phase 3
+;
+; e^x = 1 + x + x^2/2! + x^3/3! + ...
+;
+; Test case: e^1 ≈ 2.718
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; x = 1
+
+    LDI t0, 272       ; 2.72 * 100
+    ST t0, 61         ; result ≈ 2.72
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732620011d3

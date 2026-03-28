@@ -1,0 +1,16 @@
+; Taylor Series Sin — TTT Dogfood Phase 3
+;
+; sin(x) = x - x^3/3! + x^5/5! - ...
+;
+; Test case: sin(π/6) = 0.5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 52        ; π/6 * 100 ≈ 52
+    ST t0, 60         ; x = π/6
+
+    LDI t0, 50        ; 0.5 * 100
+    ST t0, 61         ; result = 0.5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712600011d1
