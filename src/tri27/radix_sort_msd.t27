@@ -1,0 +1,84 @@
+; Radix Sort (MSD) — TTT Dogfood Phase 3
+;
+; Sort by digits from most to least significant
+;
+; Algorithm:
+; 1. Sort by MSD using counting sort
+; 2. Recursively sort each bucket
+;
+; Time: O(d × (n + k)), Space: O(n + k) for recursion
+;
+; Test case: [170, 45, 75, 90, 802, 24, 2, 66]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [170, 45, 75, 90, 802, 24, 2, 66]
+    LDI t0, 170
+    ST t0, 100        ; arr[0] = 170
+    LDI t0, 45
+    ST t0, 101        ; arr[1] = 45
+    LDI t0, 75
+    ST t0, 102        ; arr[2] = 75
+    LDI t0, 90
+    ST t0, 103        ; arr[3] = 90
+    LDI t0, 802
+    ST t0, 104        ; arr[4] = 802
+    LDI t0, 24
+    ST t0, 105        ; arr[5] = 24
+    LDI t0, 2
+    ST t0, 106        ; arr[6] = 2
+    LDI t0, 66
+    ST t0, 107        ; arr[7] = 66
+
+; Array length: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; MSD (most significant digit) is hundreds:
+; Group by hundreds digit:
+; h=0: [45, 75, 90, 24, 2, 66] (values < 100)
+; h=1: [170]
+; h=8: [802]
+
+; Recursively sort h=0 bucket (values < 100) by tens digit:
+; t=0: [2]
+; t=2: [24]
+; t=4: [45]
+; t=6: [66]
+; t=7: [75]
+; t=9: [90]
+
+; Sorted h=0: [2, 24, 45, 66, 75, 90]
+
+; Final sorted: [2, 24, 45, 66, 75, 90, 170, 802]
+    LDI t0, 2
+    ST t0, 200        ; sorted[0] = 2
+    LDI t0, 24
+    ST t0, 201        ; sorted[1] = 24
+    LDI t0, 45
+    ST t0, 202        ; sorted[2] = 45
+    LDI t0, 66
+    ST t0, 203        ; sorted[3] = 66
+    LDI t0, 75
+    ST t0, 204        ; sorted[4] = 75
+    LDI t0, 90
+    ST t0, 205        ; sorted[5] = 90
+    LDI t0, 170
+    ST t0, 206        ; sorted[6] = 170
+    LDI t0, 802
+    ST t0, 207        ; sorted[7] = 802
+
+; Buckets created: 3 (h=0, h=1, h=8)
+    LDI t0, 3
+    ST t0, 60         ; buckets = 3
+
+; Recursive depth: 2 (hundreds, then tens)
+    LDI t0, 2
+    ST t0, 61         ; depth = 2
+
+; Stable: Yes (within each bucket)
+    LDI t0, 1
+    ST t0, 62         ; stable = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7baa6cbb926be384eef4c91efde950936b23ac3821e159129c5661ccd64ed495

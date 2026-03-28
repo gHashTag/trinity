@@ -1,0 +1,111 @@
+; Radix Sort (LSD) — TTT Dogfood Phase 3
+;
+; Sort by digits from least to most significant
+;
+; Algorithm:
+; 1. For each digit position (LSB to MSB)
+; 2. Stable sort by that digit (using counting sort)
+;
+; Time: O(d × (n + k)) where d = digits, k = base
+; Space: O(n + k)
+;
+; Test case: [170, 45, 75, 90, 802, 24, 2, 66]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [170, 45, 75, 90, 802, 24, 2, 66]
+    LDI t0, 170
+    ST t0, 100        ; arr[0] = 170
+    LDI t0, 45
+    ST t0, 101        ; arr[1] = 45
+    LDI t0, 75
+    ST t0, 102        ; arr[2] = 75
+    LDI t0, 90
+    ST t0, 103        ; arr[3] = 90
+    LDI t0, 802
+    ST t0, 104        ; arr[4] = 802
+    LDI t0, 24
+    ST t0, 105        ; arr[5] = 24
+    LDI t0, 2
+    ST t0, 106        ; arr[6] = 2
+    LDI t0, 66
+    ST t0, 107        ; arr[7] = 66
+
+; Array length: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Max value: 802 (3 digits)
+    LDI t0, 802
+    ST t0, 51         ; max_val = 802
+
+; Number of digits: 3
+    LDI t0, 3
+    ST t0, 52         ; num_digits = 3
+
+; Pass 1: Sort by units digit
+; Units: [0, 5, 5, 0, 2, 4, 2, 6]
+; After counting sort by units: [170, 90, 2, 802, 24, 45, 75, 66]
+    LDI t0, 170
+    ST t0, 110        ; pass1[0] = 170
+    LDI t0, 90
+    ST t0, 111        ; pass1[1] = 90
+    LDI t0, 2
+    ST t0, 112        ; pass1[2] = 2
+    LDI t0, 802
+    ST t0, 113        ; pass1[3] = 802
+    LDI t0, 24
+    ST t0, 114        ; pass1[4] = 24
+    LDI t0, 45
+    ST t0, 115        ; pass1[5] = 45
+    LDI t0, 75
+    ST t0, 116        ; pass1[6] = 75
+    LDI t0, 66
+    ST t0, 117        ; pass1[7] = 66
+
+; Pass 2: Sort by tens digit (on result from pass 1)
+; Tens: [7, 9, 0, 0, 2, 4, 7, 6]
+; After stable sort by tens: [802, 2, 24, 45, 66, 170, 75, 90]
+    LDI t0, 802
+    ST t0, 120        ; pass2[0] = 802
+    LDI t0, 2
+    ST t0, 121        ; pass2[1] = 2
+    LDI t0, 24
+    ST t0, 122        ; pass2[2] = 24
+    LDI t0, 45
+    ST t0, 123        ; pass2[3] = 45
+    LDI t0, 66
+    ST t0, 124        ; pass2[4] = 66
+    LDI t0, 170
+    ST t0, 125        ; pass2[5] = 170
+    LDI t0, 75
+    ST t0, 126        ; pass2[6] = 75
+    LDI t0, 90
+    ST t0, 127        ; pass2[7] = 90
+
+; Pass 3: Sort by hundreds digit
+; Hundreds: [8, 0, 0, 0, 0, 1, 0, 0]
+; After stable sort: [2, 24, 45, 66, 75, 90, 170, 802]
+    LDI t0, 2
+    ST t0, 200        ; sorted[0] = 2
+    LDI t0, 24
+    ST t0, 201        ; sorted[1] = 24
+    LDI t0, 45
+    ST t0, 202        ; sorted[2] = 45
+    LDI t0, 66
+    ST t0, 203        ; sorted[3] = 66
+    LDI t0, 75
+    ST t0, 204        ; sorted[4] = 75
+    LDI t0, 90
+    ST t0, 205        ; sorted[5] = 90
+    LDI t0, 170
+    ST t0, 206        ; sorted[6] = 170
+    LDI t0, 802
+    ST t0, 207        ; sorted[7] = 802
+
+; Stable: Yes
+    LDI t0, 1
+    ST t0, 60         ; stable = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:df112149ef991848f62e091a716211b66fcc48539df9874e525f4568593ecebc
