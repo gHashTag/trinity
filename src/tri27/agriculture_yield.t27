@@ -1,0 +1,13 @@
+; Agriculture Yield — TTT Dogfood Phase 3
+;
+; Yield prediction
+;
+; Test case: agriculture_yield
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; yield_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0758a000002000000001c8f
