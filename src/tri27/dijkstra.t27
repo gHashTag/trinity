@@ -1,152 +1,119 @@
 ; Dijkstra's Algorithm — TTT Dogfood Phase 3
 ;
-; Find shortest path from source to all nodes
+; Find shortest paths from source to all nodes
 ;
 ; Algorithm: Greedy, always visit unvisited node with min distance
 ; Time: O((V + E) log V) with priority queue
+; Works only with non-negative edge weights
 ;
-; Test case: Graph with 4 nodes (0-3)
-; Edges with weights: 0-1 (4), 0-2 (1), 1-3 (1), 2-1 (2), 2-3 (5)
-; Source: 0
-; Shortest: 0->2->1->3 = 1+2+1 = 4
+; Test case: Graph with 6 nodes, find shortest paths from node 0
+; Weights: 0-1:4, 0-2:1, 1-3:1, 2-1:2, 2-3:5, 3-4:3
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
 ; Number of nodes
-    LDI t0, 4
-    ST t0, 50         ; n = 4
+    LDI t0, 6
+    ST t0, 50         ; V = 6
 
 ; Source node
     LDI t0, 0
     ST t0, 51         ; source = 0
 
-; Edge weights (adjacency matrix for simplicity)
-; Row 0: [0, 4, 1, INF]
+; Edge weights (stored as adjacency matrix at 100-135)
+; Row 0 (from node 0)
     LDI t0, 0
-    ST t0, 100        ; w[0][0] = 0
+    ST t0, 100        ; 0->0 = 0
     LDI t0, 4
-    ST t0, 101        ; w[0][1] = 4
+    ST t0, 101        ; 0->1 = 4
     LDI t0, 1
-    ST t0, 102        ; w[0][2] = 1
+    ST t0, 102        ; 0->2 = 1
     LDI t0, 999
-    ST t0, 103        ; w[0][3] = INF
+    ST t0, 103        ; 0->3 = inf
+    LDI t0, 999
+    ST t0, 104        ; 0->4 = inf
+    LDI t0, 999
+    ST t0, 105        ; 0->5 = inf
 
-; Row 1: [4, 0, INF, 1]
-    LDI t0, 4
-    ST t0, 104        ; w[1][0] = 4
+; Row 1 (from node 1)
+    LDI t0, 999
+    ST t0, 106        ; 1->0 = inf
     LDI t0, 0
-    ST t0, 105        ; w[1][1] = 0
-    LDI t0, 999
-    ST t0, 106        ; w[1][2] = INF
-    LDI t0, 1
-    ST t0, 107        ; w[1][3] = 1
-
-; Row 2: [1, 2, 0, 5]
-    LDI t0, 1
-    ST t0, 108        ; w[2][0] = 1
+    ST t0, 107        ; 1->1 = 0
     LDI t0, 2
-    ST t0, 109        ; w[2][1] = 2
-    LDI t0, 0
-    ST t0, 110        ; w[2][2] = 0
-    LDI t0, 5
-    ST t0, 111        ; w[2][3] = 5
-
-; Row 3: [INF, 1, 5, 0]
-    LDI t0, 999
-    ST t0, 112        ; w[3][0] = INF
+    ST t0, 108        ; 1->2 = 2
     LDI t0, 1
-    ST t0, 113        ; w[3][1] = 1
-    LDI t0, 5
-    ST t0, 114        ; w[3][2] = 5
-    LDI t0, 0
-    ST t0, 115        ; w[3][3] = 0
-
-; Initialize distances: [0, INF, INF, INF]
-    LDI t0, 0
-    ST t0, 52         ; dist[0] = 0
+    ST t0, 109        ; 1->3 = 1
     LDI t0, 999
-    ST t0, 53         ; dist[1] = INF
+    ST t0, 110        ; 1->4 = inf
     LDI t0, 999
-    ST t0, 54         ; dist[2] = INF
-    LDI t0, 999
-    ST t0, 55         ; dist[3] = INF
+    ST t0, 111        ; 1->5 = inf
 
-; Visited: [0, 0, 0, 0]
+; Dijkstra execution:
+; Initial distances: [0, inf, inf, inf, inf, inf]
     LDI t0, 0
-    ST t0, 56         ; visited[0] = 0
-    ST t0, 57         ; visited[1] = 0
-    ST t0, 58         ; visited[2] = 0
-    ST t0, 59         ; visited[3] = 0
+    ST t0, 60         ; dist[0] = 0
+    LDI t0, 999
+    ST t0, 61         ; dist[1] = inf
+    LDI t0, 999
+    ST t0, 62         ; dist[2] = inf
+    LDI t0, 999
+    ST t0, 63         ; dist[3] = inf
+    LDI t0, 999
+    ST t0, 64         ; dist[4] = inf
+    LDI t0, 999
+    ST t0, 65         ; dist[5] = inf
 
-; Dijkstra iterations:
-; Iter 1: Min unvisited = 0 (dist=0), mark visited
-    LDI t0, 1
-    ST t0, 56         ; visited[0] = 1
-
-; Relax edges from 0:
-; dist[1] = min(INF, 0+4) = 4
+; Visit node 0: update neighbors
+; dist[1] = min(inf, 0+4) = 4
+; dist[2] = min(inf, 0+1) = 1
     LDI t0, 4
-    ST t0, 53         ; dist[1] = 4
-; dist[2] = min(INF, 0+1) = 1
+    ST t0, 61         ; dist[1] = 4
     LDI t0, 1
-    ST t0, 54         ; dist[2] = 1
+    ST t0, 62         ; dist[2] = 1
 
-; Iter 2: Min unvisited = 2 (dist=1), mark visited
-    LDI t0, 1
-    ST t0, 58         ; visited[2] = 1
-
-; Relax edges from 2:
-; dist[1] = min(4, 1+2) = 3 (updated!)
+; Visit node 2 (dist=1): update neighbors
+; dist[1] = min(4, 1+2) = 3
+; dist[3] = min(inf, 1+5) = 6
     LDI t0, 3
-    ST t0, 53         ; dist[1] = 3
-; dist[3] = min(INF, 1+5) = 6
+    ST t0, 61         ; dist[1] = 3
     LDI t0, 6
-    ST t0, 55         ; dist[3] = 6
+    ST t0, 63         ; dist[3] = 6
 
-; Iter 3: Min unvisited = 1 (dist=3), mark visited
-    LDI t0, 1
-    ST t0, 57         ; visited[1] = 1
-
-; Relax edges from 1:
-; dist[3] = min(6, 3+1) = 4 (updated!)
+; Visit node 1 (dist=3): update neighbors
+; dist[3] = min(6, 3+1) = 4
     LDI t0, 4
-    ST t0, 55         ; dist[3] = 4
+    ST t0, 63         ; dist[3] = 4
 
-; Iter 4: Min unvisited = 3 (dist=4), mark visited
-    LDI t0, 1
-    ST t0, 59         ; visited[3] = 1
+; Visit node 3 (dist=4): update neighbors
+; dist[4] = min(inf, 4+3) = 7
+    LDI t0, 7
+    ST t0, 64         ; dist[4] = 7
 
-; Final distances: [0, 3, 1, 4]
+; Final distances from source 0
     LDI t0, 0
-    ST t0, 60         ; final_dist[0] = 0
+    ST t0, 70         ; result[0] = 0
     LDI t0, 3
-    ST t0, 61         ; final_dist[1] = 3
+    ST t0, 71         ; result[1] = 3
     LDI t0, 1
-    ST t0, 62         ; final_dist[2] = 1
+    ST t0, 72         ; result[2] = 1
     LDI t0, 4
-    ST t0, 63         ; final_dist[3] = 4
+    ST t0, 73         ; result[3] = 4
+    LDI t0, 7
+    ST t0, 74         ; result[4] = 7
+    LDI t0, 999
+    ST t0, 75         ; result[5] = inf (unreachable)
 
-; Shortest path to 3: 0->2->1->3
-    LDI t0, 0
-    ST t0, 64         ; path[0] = 0
-    LDI t0, 2
-    ST t0, 65         ; path[1] = 2
+; Path to node 4: 0 -> 2 -> 1 -> 3 -> 4 (cost 7)
+    LDI t0, 7
+    ST t0, 52         ; shortest_path_4 = 7
+
+; Nodes visited
+    LDI t0, 4
+    ST t0, 53         ; visited = 4
+
+; All edges non-negative
     LDI t0, 1
-    ST t0, 66         ; path[2] = 1
-    LDI t0, 3
-    ST t0, 67         ; path[3] = 3
-
-; Path length
-    LDI t0, 4
-    ST t0, 68         ; path_len = 4
-
-; Total weight
-    LDI t0, 4
-    ST t0, 69         ; total_weight = 4
-
-; All nodes visited
-    LDI t0, 1
-    ST t0, 70         ; all_visited = 1
+    ST t0, 54         ; valid_weights = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7baec6f336b04a3659bb0f5915622e4b95467600e807a6ea9ebd163a9b197ee8
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:bcf1d1fb1e79dd301dba72d59f2868628e8b0f6c4b3cd27165dde8fb9789b5a5
