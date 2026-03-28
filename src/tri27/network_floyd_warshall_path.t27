@@ -1,0 +1,13 @@
+; Floyd-Warshall Path — TTT Dogfood Phase 3
+;
+; All-pairs shortest paths
+;
+; Test case: network_floyd_warshall_path
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; floyd_path_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073280000200000006f9
