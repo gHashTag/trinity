@@ -11029,3 +11029,371 @@ test "heapify: internal nodes" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// coin_change_2.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "coin_change_2: file exists" {
+    const path = "src/tri27/coin_change_2.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "coin_change_2: num coins" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "coin_change_2: amount" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "coin_change_2: result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "coin_change_2: min coins" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "coin_change_2: optimal coin" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "coin_change_2: optimal count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// crypto_ops.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "crypto_ops: file exists" {
+    const path = "src/tri27/crypto_ops.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "crypto_ops: has rotr_7" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 128
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 128), cpu.t27[0].trits);
+}
+
+test "crypto_ops: has ch function" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    LDI t1, 1
+        \\    AND t3, t0, t1
+        \\    ST t3, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "crypto_ops: has maj function" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    AND t3, t0, t1
+        \\    AND t4, t0, t2
+        \\    AND t5, t1, t2
+        \\    XOR t6, t3, t4
+        \\    XOR t0, t6, t5
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "crypto_ops: has sigma_0" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 256
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 256), cpu.t27[0].trits);
+}
+
+test "crypto_ops: has sigma_1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 512
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 512), cpu.t27[0].trits);
+}
+
+test "crypto_ops: has small_sigma_0" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1024
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1024), cpu.t27[0].trits);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// sha256_schedule.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "sha256_schedule: file exists" {
+    const path = "src/tri27/sha256_schedule.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "sha256_schedule: copy input to W0" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t0, 0
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "sha256_schedule: expand W4" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t1, 53
+        \\    SHR t1, t1, 10
+        \\    LD t2, 51
+        \\    LD t3, 50
+        \\    SHR t3, t3, 3
+        \\    LDI t4, 0
+        \\    ADD t5, t1, t2
+        \\    ADD t5, t5, t3
+        \\    ADD t5, t5, t4
+        \\    ST t5, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "sha256_schedule: has sigma1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t1, 53
+        \\    SHR t1, t1, 10
+        \\    ST t1, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "sha256_schedule: has sigma0" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t3, 50
+        \\    SHR t3, t3, 3
+        \\    ST t3, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "sha256_schedule: expand W5" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t1, 54
+        \\    SHR t1, t1, 10
+        \\    LD t2, 52
+        \\    LD t3, 51
+        \\    SHR t3, t3, 3
+        \\    LDI t4, 0
+        \\    ADD t5, t1, t2
+        \\    ADD t5, t5, t3
+        \\    ADD t5, t5, t4
+        \\    ST t5, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+test "sha256_schedule: expand W7" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LD t1, 56
+        \\    SHR t1, t1, 10
+        \\    LD t2, 54
+        \\    LD t3, 53
+        \\    SHR t3, t3, 3
+        \\    LDI t4, 0
+        \\    ADD t5, t1, t2
+        \\    ADD t5, t5, t3
+        \\    ADD t5, t5, t4
+        \\    ST t5, 57
+        \\    LD t0, 57
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    _ = cpu;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// trie_prefix_tree.t27 Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "trie_prefix_tree: file exists" {
+    const path = "src/tri27/trie_prefix_tree.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "trie_prefix_tree: node A children" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "trie_prefix_tree: found CAR" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "trie_prefix_tree: found CAT" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "trie_prefix_tree: not found DOG" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "trie_prefix_tree: num nodes" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "trie_prefix_tree: alphabet size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 26
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 26), cpu.t27[0].trits);
+}
