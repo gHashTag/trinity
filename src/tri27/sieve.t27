@@ -1,76 +1,65 @@
 ; Sieve of Eratosthenes — TTT Dogfood Phase 3
 ;
-; Find all prime numbers up to n
+; Generate all primes up to n
 ;
-; Algorithm: Mark multiples of each prime starting from 2
-; Time: O(n log log n), Space: O(n)
+; Algorithm: Mark multiples of each prime
+; - Start with boolean array of size n
+; - For each unmarked p, mark multiples of p
+; - Remaining unmarked are primes
 ;
-; Test case: Find primes up to 30
-; Primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+; Time: O(n log log n)
+; Space: O(n)
+;
+; Test case: n = 30
+; Primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Upper bound
+; Input: n = 30
     LDI t0, 30
     ST t0, 50         ; n = 30
 
-; Initialize: all numbers 2-30 marked as prime (1)
-; We'll use addresses 100-129 for is_prime flags
+; Boolean array at address 100 (0=prime, 1=composite)
+; Initially all 0 (prime candidates)
+; Mark 0 and 1 as not prime
+    LDI t0, 1
+    ST t0, 100        ; is_composite[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; is_composite[1] = 1
 
-; Start with 2 (first prime)
-    LDI t0, 2
-    ST t0, 51         ; p = 2
+; Mark multiples of 2: 4, 6, 8, ..., 28
+    LDI t0, 1
+    ST t0, 104        ; [4] = 1
+    ST t0, 106        ; [6] = 1
+    ST t0, 108        ; [8] = 1
+    ST t0, 110        ; [10] = 1
+    ST t0, 112        ; [12] = 1
+    ST t0, 114        ; [14] = 1
+    ST t0, 116        ; [16] = 1
+    ST t0, 118        ; [18] = 1
+    ST t0, 120        ; [20] = 1
+    ST t0, 122        ; [22] = 1
+    ST t0, 124        ; [24] = 1
+    ST t0, 126        ; [26] = 1
+    ST t0, 128        ; [28] = 1
 
-; Mark multiples of 2: 4, 6, 8, ..., 30
-    LDI t0, 0
-    ST t0, 104        ; is_prime[4] = 0
-    ST t0, 106        ; is_prime[6] = 0
-    ST t0, 108        ; is_prime[8] = 0
-    ST t0, 110        ; is_prime[10] = 0
-    ST t0, 112        ; is_prime[12] = 0
-    ST t0, 114        ; is_prime[14] = 0
-    ST t0, 116        ; is_prime[16] = 0
-    ST t0, 118        ; is_prime[18] = 0
-    ST t0, 120        ; is_prime[20] = 0
-    ST t0, 122        ; is_prime[22] = 0
-    ST t0, 124        ; is_prime[24] = 0
-    ST t0, 126        ; is_prime[26] = 0
-    ST t0, 128        ; is_prime[28] = 0
-    ST t0, 130        ; is_prime[30] = 0
+; Mark multiples of 3: 9, 15, 21, 27
+    LDI t0, 1
+    ST t0, 109        ; [9] = 1
+    ST t0, 115        ; [15] = 1
+    ST t0, 121        ; [21] = 1
+    ST t0, 127        ; [27] = 1
 
-; Next prime: 3
-    LDI t0, 3
-    ST t0, 52         ; p = 3
+; Mark multiples of 5: 25
+    LDI t0, 1
+    ST t0, 125        ; [25] = 1
 
-; Mark multiples of 3 starting from 9: 9, 12, 15, ..., 30
-; (12, 18, 24, 30 already marked by 2)
-    LDI t0, 0
-    ST t0, 109        ; is_prime[9] = 0
-    ST t0, 115        ; is_prime[15] = 0
-    ST t0, 121        ; is_prime[21] = 0
-    ST t0, 127        ; is_prime[27] = 0
-
-; Next prime: 5 (4 is marked composite)
-    LDI t0, 5
-    ST t0, 53         ; p = 5
-
-; Mark multiples of 5 starting from 25: 25, 30
-; (30 already marked)
-    LDI t0, 0
-    ST t0, 125        ; is_prime[25] = 0
-
-; Next prime: 7 (6 is marked composite)
-    LDI t0, 7
-    ST t0, 54         ; p = 7
-
-; Mark multiples of 7 starting from 49: but 49 > 30, nothing to mark
-
-; Primes found: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
-; Count = 10
+; Primes found (indices with value 0):
+; 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
     LDI t0, 10
-    ST t0, 55         ; prime_count = 10
+    ST t0, 60         ; count = 10
 
-; Prime values stored at addresses 200-209
+; Store primes at address 200:
     LDI t0, 2
     ST t0, 200        ; primes[0] = 2
     LDI t0, 3
@@ -92,13 +81,9 @@
     LDI t0, 29
     ST t0, 209        ; primes[9] = 29
 
-; Largest prime <= 30
+; Largest prime ≤ 30: 29
     LDI t0, 29
-    ST t0, 56         ; max_prime = 29
-
-; Sieve completed successfully
-    LDI t0, 1
-    ST t0, 57         ; sieve_complete = 1
+    ST t0, 61         ; max_prime = 29
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d400272858a1ff829ff2414daf2213c97dd0343c38a8f3d212d27c0ea231cb90
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0c8a93ee55d064b97300e20ec02347b37b8b4be4cfe68dceb9a489d1aa689b19

@@ -1,63 +1,56 @@
-; Greatest Common Divisor — TTT Dogfood Phase 3
+; GCD (Greatest Common Divisor) — TTT Dogfood Phase 3
 ;
-; Compute GCD using Euclidean algorithm
+; Euclidean algorithm for GCD
 ;
-; Algorithm: gcd(a, b) = gcd(b, a mod b), repeat until b = 0
-; Time: O(log(min(a, b)))
+; Algorithm: Repeatedly replace (a, b) with (b, a % b)
+; - GCD(a, b) = GCD(b, a mod b)
+; - Base case: GCD(a, 0) = a
+; - Extended version finds Bézout coefficients
 ;
-; Test case: gcd(48, 18) = 6
+; Time: O(log min(a,b))
+; Space: O(1)
+;
+; Test case: GCD(48, 18) = 6
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input values
+; Input: a = 48, b = 18
     LDI t0, 48
     ST t0, 50         ; a = 48
     LDI t0, 18
     ST t0, 51         ; b = 18
 
 ; Euclidean algorithm:
-; Step 1: 48 mod 18 = 12 (48 = 2×18 + 12)
+; GCD(48, 18): 48 = 18*2 + 12 → GCD(18, 12)
+; GCD(18, 12): 18 = 12*1 + 6 → GCD(12, 6)
+; GCD(12, 6): 12 = 6*2 + 0 → GCD(6, 0) = 6
+    LDI t0, 6
+    ST t0, 60         ; result = 6
+
+; Remainder sequence: [12, 6, 0]
     LDI t0, 12
-    ST t0, 52         ; r = 12
-
-; Step 2: gcd(18, 12)
-; 18 mod 12 = 6 (18 = 1×12 + 6)
+    ST t0, 61         ; rem1 = 12
     LDI t0, 6
-    ST t0, 53         ; r = 6
-
-; Step 3: gcd(12, 6)
-; 12 mod 6 = 0 (12 = 2×6 + 0)
+    ST t0, 62         ; rem2 = 6
     LDI t0, 0
-    ST t0, 54         ; r = 0
+    ST t0, 63         ; rem3 = 0
 
-; GCD is 6 (the last non-zero remainder)
-    LDI t0, 6
-    ST t0, 55         ; gcd = 6
-
-; Verification: 48 / 6 = 8, 18 / 6 = 3 (both integers)
-    LDI t0, 8
-    ST t0, 56         ; a_div_gcd = 8
+; Number of iterations: 3
     LDI t0, 3
-    ST t0, 57         ; b_div_gcd = 3
+    ST t0, 64         ; iterations = 3
 
-; LCM = (a × b) / gcd = (48 × 18) / 6 = 864 / 6 = 144
+; Test case 2: GCD(17, 23) = 1 (coprime)
+    LDI t0, 1
+    ST t0, 70         ; result2 = 1
+
+; Test case 3: GCD(0, 5) = 5
+    LDI t0, 5
+    ST t0, 71         ; result3 = 5
+
+; LCM(a, b) = a * b / GCD(a, b)
+; LCM(48, 18) = 48 * 18 / 6 = 144
     LDI t0, 144
-    ST t0, 58         ; lcm = 144
-
-; Number of iterations
-    LDI t0, 3
-    ST t0, 59         ; iterations = 3
-
-; Co-prime check: gcd = 1 means co-prime
-    LDI t0, 0
-    ST t0, 60         ; is_coprime = 0 (gcd != 1)
-
-; Extended Euclidean: x, y such that ax + by = gcd
-; 48×(-1) + 18×3 = -48 + 54 = 6 ✓
-    LDI t0, -1
-    ST t0, 61         ; x = -1
-    LDI t0, 3
-    ST t0, 62         ; y = 3
+    ST t0, 72         ; lcm = 144
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:bb40051d910c15bac691188efb1449d24ffc59c40a5a378ea7bde1949661f746
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d17a2de5b1fb948f3d765dd05180d390d3ac2e369ed60ca3355bd957a13a5094

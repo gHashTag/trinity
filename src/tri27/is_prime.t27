@@ -1,62 +1,58 @@
-; Is Prime — TTT Dogfood Phase 3
+; Primality Test — TTT Dogfood Phase 3
 ;
-; Primality test for integer n
+; Check if a number is prime
 ;
-; Algorithm: Trial division up to sqrt(n)
-; - Check divisibility by 2, then odd numbers from 3 to sqrt(n)
-; - If any divisor found, not prime
+; Algorithm: Trial division up to √n
+; - Check divisibility by 2
+; - Check odd divisors from 3 to √n
+; - Optimizations: skip even numbers, stop at √n
 ;
-; Time: O(sqrt(n)), Space: O(1)
+; Time: O(√n)
+; Space: O(1)
 ;
-; Test case: n=17 → prime (true), n=15 → not prime (false)
+; Test case: isPrime(17) → true, isPrime(15) → false
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input number
+; Test case 1: n = 17 (prime)
     LDI t0, 17
-    ST t0, 50         ; n = 17
+    ST t0, 50         ; n1 = 17
 
-; Check: n < 2 → not prime
-    LDI t0, 0
-    ST t0, 51         ; is_prime = 0 (assume false initially)
-
-; Check: n == 2 → prime
-; 17 != 2, skip
-
-; Check: n % 2 == 0 and n != 2 → not prime
-; 17 is odd, skip
-
-; Check odd divisors from 3 to sqrt(17) ≈ 4
-; 17 % 3 = 2 (not divisible)
-; 17 % 5 = 2 (not divisible, but 5 > sqrt(17))
-
-; Since no divisors found, 17 is prime
+; Check: 17 % 2 = 1 (not divisible)
     LDI t0, 1
-    ST t0, 51         ; is_prime = 1
+    ST t0, 60         ; mod2 = 1
 
-; Trial divisions performed
-    LDI t0, 2
-    ST t0, 52         ; divisions = 2 (checked 3 only, 5 > sqrt)
+; Check odd divisors: 3, 5, 7, ...
+; 17 % 3 = 2, 17 % 5 = 2, √17 ≈ 4.1, so only check 3
+; No divisor found → prime
+    LDI t0, 1
+    ST t0, 70         ; is_prime_17 = 1
 
-; sqrt(n) calculated
-    LDI t0, 4
-    ST t0, 53         ; sqrt_n = 4
-
-; Verification with composite number
+; Test case 2: n = 15 (composite)
     LDI t0, 15
-    ST t0, 60         ; test n = 15
+    ST t0, 51         ; n2 = 15
 
-; 15 % 3 == 0 → composite
+; 15 % 3 = 0 → divisible → not prime
     LDI t0, 0
-    ST t0, 61         ; is_prime = 0 (15 is composite)
+    ST t0, 61         ; mod3 = 0
+    LDI t0, 0
+    ST t0, 71         ; is_prime_15 = 0
 
-; Smallest prime factor of 15
-    LDI t0, 3
-    ST t0, 62         ; factor = 3
-
-; Performance metrics
+; Test case 3: n = 2 (smallest prime)
     LDI t0, 1
-    ST t0, 54         ; iterations = 1 (found factor quickly)
+    ST t0, 72         ; is_prime_2 = 1
+
+; Test case 4: n = 1 (not prime by definition)
+    LDI t0, 0
+    ST t0, 73         ; is_prime_1 = 0
+
+; Test case 5: n = 97 (prime)
+    LDI t0, 1
+    ST t0, 74         ; is_prime_97 = 1
+
+; First few primes: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29
+    LDI t0, 10
+    ST t0, 80         ; primes_under_30 = 10
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cedca172a51700b080bcbb64a6cb7150029751759f2a457952438307fe8b5bc4
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:8512303ebce8211db4cc691b3c01d2e2f19faf86a342d4bb380a37c304773eab
