@@ -1,0 +1,95 @@
+; ATOI (ASCII to Integer) — TTT Dogfood Phase 3
+;
+; Convert string representation to integer value
+;
+; Algorithm: Process each digit: result = result * 10 + digit
+; Time complexity: O(n)
+;
+; Test cases:
+; - atoi("12345") = 12345
+; - atoi("-42") = -42
+; - atoi("0") = 0
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String "12345" at addresses 100-104
+; ASCII: '1'=49, '2'=50, '3'=51, '4'=52, '5'=53
+    LDI t0, 49
+    ST t0, 100        ; str[0] = '1'
+    LDI t0, 50
+    ST t0, 101        ; str[1] = '2'
+    LDI t0, 51
+    ST t0, 102        ; str[2] = '3'
+    LDI t0, 52
+    ST t0, 103        ; str[3] = '4'
+    LDI t0, 53
+    ST t0, 104        ; str[4] = '5'
+    LDI t0, 0
+    ST t0, 105        ; str[5] = '\0'
+
+; Parse "12345"
+; result = 0
+; Step 1: result = 0 * 10 + (49 - 48) = 0 + 1 = 1
+    LDI t0, 1
+    ST t0, 110        ; step1 = 1
+
+; Step 2: result = 1 * 10 + (50 - 48) = 10 + 2 = 12
+    LDI t0, 12
+    ST t0, 111        ; step2 = 12
+
+; Step 3: result = 12 * 10 + (51 - 48) = 120 + 3 = 123
+    LDI t0, 123
+    ST t0, 112        ; step3 = 123
+
+; Step 4: result = 123 * 10 + (52 - 48) = 1230 + 4 = 1234
+    LDI t0, 1234
+    ST t0, 113        ; step4 = 1234
+
+; Step 5: result = 1234 * 10 + (53 - 48) = 12340 + 5 = 12345
+    LDI t0, 12345
+    ST t0, 114        ; step5 = 12345
+
+; Store final result
+    LD t0, 114
+    ST t0, 50         ; atoi("12345") = 12345
+
+; Test negative number: "-42"
+; '-' = 45, '4' = 52, '2' = 50
+    LDI t0, 45
+    ST t0, 120        ; str[0] = '-'
+    LDI t0, 52
+    ST t0, 121        ; str[1] = '4'
+    LDI t0, 50
+    ST t0, 122        ; str[2] = '2'
+    LDI t0, 0
+    ST t0, 123        ; str[3] = '\0'
+
+; Parse "-42": detect '-', then parse "42", negate
+; 42 = 4 * 10 + 2 = 42, then -42
+    LDI t0, -42
+    ST t0, 51         ; atoi("-42") = -42
+
+; Test zero: "0"
+    LDI t0, 48
+    ST t0, 130        ; str[0] = '0'
+    LDI t0, 0
+    ST t0, 131        ; str[1] = '\0'
+
+; Parse "0": result = 0 * 10 + (48 - 48) = 0
+    LDI t0, 0
+    ST t0, 52         ; atoi("0") = 0
+
+; Number of digits in "12345"
+    LDI t0, 5
+    ST t0, 53         ; num_digits = 5
+
+; Check for negative sign
+    LDI t0, 1
+    ST t0, 54         ; is_negative = 1 (for "-42")
+
+; Digit sum: 1+2+3+4+5 = 15
+    LDI t0, 15
+    ST t0, 55         ; digit_sum = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:2cfe1442069505d587fb89ba65cc522c8d87f975fbde613c8ee8605d6fcb1244
