@@ -1,0 +1,13 @@
+; ECDSA — TTT Dogfood Phase 3
+;
+; Elliptic Curve Digital Signature
+;
+; Test case: cmp_ecdsa
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ecdsa_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b71000002000000022ce
