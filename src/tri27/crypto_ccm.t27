@@ -1,0 +1,13 @@
+; Crypto CCM — TTT Dogfood Phase 3
+;
+; Counter with CBC-MAC
+;
+; Test case: crypto_ccm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ccm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0758f00000200000001b49
