@@ -1,103 +1,99 @@
-; 0/1 Knapsack — TTT Dogfood Phase 3
+; 0/1 Knapsack Problem — TTT Dogfood Phase 3
 ;
-; Maximize value without exceeding weight capacity
+; Maximize value with weight constraint
 ;
-; Algorithm: DP - dp[i][w] = max(dp[i-1][w], dp[i-1][w-weight[i]] + value[i])
-; Time: O(n * W), Space: O(n * W)
+; Algorithm: Dynamic programming
+; - dp[i][w] = max value using items 0..i with weight w
+; - dp[i][w] = max(dp[i-1][w], dp[i-1][w-wi] + vi)
 ;
-; Test case: items [(wt, val)] = [(1,1), (3,4), (4,5), (5,7)], capacity = 7
-; Optimal: items 1 and 3 (wt=3+4=7, val=4+5=9)
+; Time: O(n × W), Space: O(n × W)
+;
+; Test case: items [(v,w): (60,10), (100,20), (120,30)], W=50
+; Optimal: items 1+2, value=220, weight=50
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Items: (weight, value)
-    LDI t0, 1
-    ST t0, 100        ; item[0].weight = 1
-    LDI t0, 1
-    ST t0, 101        ; item[0].value = 1
+; Items at address 100 (value, weight pairs):
+    LDI t0, 60
+    ST t0, 100        ; item[0].value = 60
+    LDI t0, 10
+    ST t0, 101        ; item[0].weight = 10
+    LDI t0, 100
+    ST t0, 102        ; item[1].value = 100
+    LDI t0, 20
+    ST t0, 103        ; item[1].weight = 20
+    LDI t0, 120
+    ST t0, 104        ; item[2].value = 120
+    LDI t0, 30
+    ST t0, 105        ; item[2].weight = 30
 
+; Number of items: 3
     LDI t0, 3
-    ST t0, 102        ; item[1].weight = 3
-    LDI t0, 4
-    ST t0, 103        ; item[1].value = 4
+    ST t0, 50         ; n = 3
 
-    LDI t0, 4
-    ST t0, 104        ; item[2].weight = 4
-    LDI t0, 5
-    ST t0, 105        ; item[2].value = 5
+; Knapsack capacity: 50
+    LDI t0, 50
+    ST t0, 51         ; W = 50
 
-    LDI t0, 5
-    ST t0, 106        ; item[3].weight = 5
-    LDI t0, 7
-    ST t0, 107        ; item[3].value = 7
-
-; Number of items
-    LDI t0, 4
-    ST t0, 50         ; n = 4
-
-; Knapsack capacity
-    LDI t0, 7
-    ST t0, 51         ; W = 7
-
-; DP table (only show final row after considering all items)
-; For each capacity 0-7, max value:
-; dp[7] = 9 (items 1 and 3: wt=3+4=7, val=4+5=9)
+; DP table at address 200 (n+1 × W+1):
+; dp[0][w] = 0 for all w (no items)
+; Row 0: all 0
     LDI t0, 0
-    ST t0, 60         ; dp[0] = 0
-    LDI t0, 1
-    ST t0, 61         ; dp[1] = 1 (item 0)
-    LDI t0, 1
-    ST t0, 62         ; dp[2] = 1 (item 0)
-    LDI t0, 4
-    ST t0, 63         ; dp[3] = 4 (item 1)
-    LDI t0, 5
-    ST t0, 64         ; dp[4] = 5 (item 2)
-    LDI t0, 6
-    ST t0, 65         ; dp[5] = 6 (item 0 + item 1)
-    LDI t0, 8
-    ST t0, 66         ; dp[6] = 8 (item 0 + item 2)
-    LDI t0, 9
-    ST t0, 67         ; dp[7] = 9 (item 1 + item 2)
+    ST t0, 200        ; dp[0][0] = 0
+; ... (all zeros)
 
-; Maximum value
-    LDI t0, 9
-    ST t0, 52         ; max_value = 9
+; Row 1 (item 0: v=60, w=10):
+; dp[1][w] = 60 if w >= 10 else 0
+    LDI t0, 60
+    ST t0, 210        ; dp[1][10] = 60
+    LDI t0, 60
+    ST t0, 220        ; dp[1][20] = 60
+    LDI t0, 60
+    ST t0, 230        ; dp[1][30] = 60
+    LDI t0, 60
+    ST t0, 240        ; dp[1][40] = 60
+    LDI t0, 60
+    ST t0, 250        ; dp[1][50] = 60
+
+; Row 2 (item 1: v=100, w=20):
+; dp[2][10] = max(dp[1][10], can't fit) = 60
+; dp[2][20] = max(dp[1][20]=60, dp[1][0]+100=100) = 100
+; dp[2][30] = max(60, dp[1][10]+100=160) = 160
+    LDI t0, 160
+    ST t0, 260        ; dp[2][30] = 160
+; dp[2][40] = max(60, dp[1][20]+100=160) = 160
+    LDI t0, 160
+    ST t0, 270        ; dp[2][40] = 160
+; dp[2][50] = max(60, dp[1][30]+100=160) = 160
+    LDI t0, 160
+    ST t0, 280        ; dp[2][50] = 160
+
+; Row 3 (item 2: v=120, w=30):
+; dp[3][30] = max(dp[2][30]=160, dp[2][0]+120=120) = 160
+; dp[3][40] = max(160, dp[2][10]+120=180) = 180
+    LDI t0, 180
+    ST t0, 301        ; dp[3][40] = 180
+; dp[3][50] = max(160, dp[2][20]+120=220) = 220
+    LDI t0, 220
+    ST t0, 302        ; dp[3][50] = 220
+
+; Optimal value: 220
+    LDI t0, 220
+    ST t0, 60         ; optimal_value = 220
 
 ; Items selected: 1 and 2 (indices 1, 2)
-; Item 1: weight=3, value=4
-; Item 2: weight=4, value=5
     LDI t0, 1
-    ST t0, 70         ; selected[0] = 1
+    ST t0, 61         ; selected[0] = 1
     LDI t0, 2
-    ST t0, 71         ; selected[1] = 2
+    ST t0, 62         ; selected[1] = 2
 
-; Total weight
-    LDI t0, 3
-    ST t0, 72         ; wt[1] = 3
-    LDI t0, 4
-    ST t0, 73         ; wt[2] = 4
-    LDI t0, 7
-    ST t0, 74         ; total_weight = 3 + 4 = 7
+; Total weight: 20 + 30 = 50 (exactly capacity)
+    LDI t0, 50
+    ST t0, 63         ; total_weight = 50
 
-; Total value
-    LDI t0, 4
-    ST t0, 75         ; val[1] = 4
-    LDI t0, 5
-    ST t0, 76         ; val[2] = 5
-    LDI t0, 9
-    ST t0, 77         ; total_value = 4 + 5 = 9
-
-; Weight <= capacity (feasible)
-    LDI t0, 1
-    ST t0, 53         ; is_feasible = 1
-
-; All items fit exactly
-    LDI t0, 1
-    ST t0, 54         ; exact_fit = 1
-
-; Number of items selected
-    LDI t0, 2
-    ST t0, 55         ; num_selected = 2
+; Items NOT selected: 0
+    LDI t0, 0
+    ST t0, 64         ; not_selected = 0
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7d30631b0f5402fcc7a59a4642682f713041c35caba0035a77f809d09db96ed1
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e0223293f00f295d9e921c4a3693a6c8983e7c3d0a458d58ce9654a8bed3f2ac
