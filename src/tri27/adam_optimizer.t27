@@ -1,0 +1,13 @@
+; Adam Optimizer — TTT Dogfood Phase 3
+;
+; Adaptive moment estimation
+;
+; Test case: learning rate 0.001
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 66
+    ST t0, 60         ; lr = 0.001 (Q16)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071302001278

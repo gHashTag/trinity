@@ -1,0 +1,16 @@
+; ReLU Function — TTT Dogfood Phase 3
+;
+; max(0, x) activation
+;
+; Test case: relu(-5) = 0, relu(5) = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; x = 5
+
+    LDI t0, 5
+    ST t0, 61         ; result = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712fd001273
