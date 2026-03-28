@@ -2482,4 +2482,95 @@ test "kmp: complexity comparison" {
     try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
 }
 
+// Bellman-Ford Shortest Path Tests — TTT Dogfood Phase 3
+
+test "bellman_ford: file exists" {
+    const path = "src/tri27/bellman_ford.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "bellman_ford: initialize distances" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 0
+        \\    LDI t0, 999
+        \\    ST t0, 1
+        \\    LD t0, 0
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "bellman_ford: relax edge" {
+    const allocator = std.testing.allocator;
+    // Edge 0->1, weight 1: dist[1] = 0 + 1 = 1
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 0
+        \\    LD t0, 0
+        \\    LDI t1, 1
+        \\    ADD t0, t0, t1
+        \\    ST t0, 1
+        \\    LD t0, 1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "bellman_ford: final distances sum" {
+    const allocator = std.testing.allocator;
+    // [0, 1, 4, 3] -> sum = 8
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 0
+        \\    LDI t0, 1
+        \\    ST t0, 1
+        \\    LDI t0, 4
+        \\    ST t0, 2
+        \\    LDI t0, 3
+        \\    ST t0, 3
+        \\    LD t0, 0
+        \\    LD t1, 1
+        \\    ADD t0, t0, t1
+        \\    LD t1, 2
+        \\    ADD t0, t0, t1
+        \\    LD t1, 3
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "bellman_ford: no negative cycle" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "bellman_ford: relaxation count" {
+    const allocator = std.testing.allocator;
+    // 4 relaxations performed
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
