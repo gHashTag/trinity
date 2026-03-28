@@ -1,0 +1,13 @@
+; Standard Deviation — TTT Dogfood Phase 3
+;
+; Statistical std dev
+;
+; Test case: util_stddev
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; util_stddev_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0727800001db9

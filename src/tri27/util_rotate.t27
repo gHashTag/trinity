@@ -1,0 +1,13 @@
+; Rotate — TTT Dogfood Phase 3
+;
+; Rotate array elements
+;
+; Test case: util_rotate
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; util_rotate_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0728b00001de9

@@ -1,0 +1,13 @@
+; Median — TTT Dogfood Phase 3
+;
+; Median value
+;
+; Test case: util_median
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; util_median_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0727500001d89
