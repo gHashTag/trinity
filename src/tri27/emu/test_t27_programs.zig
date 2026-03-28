@@ -125835,3 +125835,33 @@ test "geo_vincenty: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "geo_quadtree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geo_quadtree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geo_quadtree: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geo_quadtree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geo_rtree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geo_rtree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geo_rtree: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geo_rtree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

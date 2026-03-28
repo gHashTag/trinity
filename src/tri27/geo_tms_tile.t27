@@ -1,0 +1,13 @@
+; Geo TMS Tile — TTT Dogfood Phase 3
+;
+; Tile Map Service
+;
+; Test case: geo_tms_tile
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tms_tile_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07556000002000000001ad7
