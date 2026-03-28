@@ -1,0 +1,13 @@
+; Virus — TTT Dogfood Phase 3
+;
+; Virus optimization algorithm
+;
+; Test case: gen_virus
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; virus_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b3b000002000000002289

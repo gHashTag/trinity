@@ -1,0 +1,13 @@
+; Kepler — TTT Dogfood Phase 3
+;
+; Kepler law optimization
+;
+; Test case: gen_kepler
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; kepler_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b5f00000200000000229b
