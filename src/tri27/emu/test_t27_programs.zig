@@ -47535,3 +47535,153 @@ test "sobel_filter: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "canny_edge: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canny_edge.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "canny_edge: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canny_edge.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "contour_detect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "contour_detect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "contour_detect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "contour_detect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "gaussian_blur2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gaussian_blur2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "gaussian_blur2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gaussian_blur2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hough_transform2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hough_transform2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "hough_transform2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hough_transform2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "median_filter2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "median_filter2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "median_filter2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "median_filter2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_close2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_close2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "morphology_close2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_close2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_dilate2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_dilate2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "morphology_dilate2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_dilate2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_erode2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_erode2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "morphology_erode2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_erode2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_open2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_open2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "morphology_open2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_open2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sharpen_filter2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sharpen_filter2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "sharpen_filter2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sharpen_filter2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

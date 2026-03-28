@@ -1,6 +1,6 @@
 ; Morphology Dilate V2 — TTT Dogfood Phase 3
 ;
-| Expand regions alt
+; Expand regions alt
 ;
 ; Test case: morphology_dilate2
 ;
