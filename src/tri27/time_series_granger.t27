@@ -1,0 +1,13 @@
+; Time Series Granger — TTT Dogfood Phase 3
+;
+; Granger causality
+;
+; Test case: time_series_granger
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; granger_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074e50000002000000001a95

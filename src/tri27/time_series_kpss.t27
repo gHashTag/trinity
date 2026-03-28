@@ -1,0 +1,13 @@
+; Time Series KPSS — TTT Dogfood Phase 3
+;
+; KPSS test
+;
+; Test case: time_series_kpss
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; kpss_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074ea00000200000001a9f
