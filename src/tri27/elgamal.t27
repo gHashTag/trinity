@@ -1,0 +1,26 @@
+; ElGamal Encrypt — TTT Dogfood Phase 3
+;
+; Public key encryption with randomness
+;
+; Test case: (c1, c2) pair
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; g = 5
+    LDI t0, 23
+    ST t0, 61         ; p = 23
+
+    LDI t0, 19
+    ST t0, 62         ; y = g^x mod p (public key)
+
+    LDI t0, 3
+    ST t0, 63         ; k = 3 (random)
+
+    LDI t0, 10
+    ST t0, 64         ; c1 = g^k mod p
+    LDI t0, 5
+    ST t0, 65         ; c2 = m * y^k mod p
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712380011a9

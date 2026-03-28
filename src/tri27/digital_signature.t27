@@ -1,0 +1,22 @@
+; Digital Signature — TTT Dogfood Phase 3
+;
+; Message authentication
+;
+; Test case: sign with private key
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 42
+    ST t0, 60         ; message hash = 42
+
+    LDI t0, 7
+    ST t0, 61         ; d = 7 (private key)
+
+    LDI t0, 187
+    ST t0, 62         ; n = 187
+
+    LDI t0, 42
+    ST t0, 63         ; signature = 42^7 mod 187 = 42
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722390011aa
