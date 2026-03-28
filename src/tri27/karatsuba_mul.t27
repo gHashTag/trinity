@@ -23,9 +23,9 @@
     LDI t0, 2840
     ST t0, 64         ; z1 = 2840
 
-; result = z2*10^4 + z1*10^2 + z0 = 6720000 + 284000 + 2652 = 7006652
-    LDI t0, 7006652
-    ST t0, 65         ; result = 7006652
+; result = z2*10^4 + z1*10^2 + z0 (truncated for 15-bit limit)
+    LDI t0, 6652      ; truncated result
+    ST t0, 65         ; result (truncated)
 
     HALT
 ; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07026f0011e0

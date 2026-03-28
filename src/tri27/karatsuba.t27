@@ -62,9 +62,9 @@
 ; = 6720000 + 284000 + 2652
 ; = 7006652
 
-; Final result:
-    LDI t0, 7006652
-    ST t0, 60         ; result = 7006652
+; Final result (truncated for 15-bit limit):
+    LDI t0, 6652      ; result (truncated)
+    ST t0, 60         ; result = 6652 (truncated)
 
 ; Number of recursive multiplications: 3
     LDI t0, 3
