@@ -591,12 +591,12 @@ test "binary_search: find middle element in 3-element array" {
         \\    ; Check if equals t1
         \\    SUB t0, t1
         \\    JZ found_0
-        \\    ; Check if equals t2
-        \\    MOV t0, t1
+        \\    ; Restore target, check t2
+        \\    ADD t0, t1
         \\    SUB t0, t2
         \\    JZ found_1
-        \\    ; Check if equals t3
-        \\    MOV t0, t1
+        \\    ; Restore target, check t3
+        \\    ADD t0, t2
         \\    SUB t0, t3
         \\    JZ found_2
         \\    ; Not found
@@ -620,13 +620,15 @@ test "binary_search: find first element" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    SUB t0, t1
+        \\    ; Use t4 as temp to preserve target in t0
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t1
         \\    JZ found_0
-        \\    MOV t0, t1
-        \\    SUB t0, t2
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t2
         \\    JZ found_1
-        \\    MOV t0, t1
-        \\    SUB t0, t3
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t3
         \\    JZ found_2
         \\    LDI t0, -1
         \\    HALT
@@ -648,7 +650,9 @@ test "binary_search: find last element" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    SUB t0, t3
+        \\    ; Use t4 as temp to preserve target in t0
+        \\    MOV t4, t0
+        \\    SUB t4, t4, t3
         \\    JZ found_2
         \\    LDI t0, -1
         \\    HALT
