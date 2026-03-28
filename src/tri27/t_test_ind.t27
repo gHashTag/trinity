@@ -1,6 +1,6 @@
 ; T-Test Independent — TTT Dogfood Phase 3
 ;
-| Two-sample t-test
+; Two-sample t-test
 ;
 ; Test case: t_test_ind
 ;

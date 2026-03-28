@@ -1,6 +1,6 @@
 ; L2 Regularization — TTT Dogfood Phase 3
 ;
-| Ridge penalty (squared)
+; Ridge penalty (squared)
 ;
 ; Test case: l2_regularization
 ;

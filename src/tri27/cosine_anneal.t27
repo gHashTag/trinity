@@ -1,6 +1,6 @@
 ; Cosine Annealing — TTT Dogfood Phase 3
 ;
-| Cosine LR schedule
+; Cosine LR schedule
 ;
 ; Test case: cosine_anneal
 ;

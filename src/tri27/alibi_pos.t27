@@ -1,6 +1,6 @@
 ; ALIBI Positional — TTT Dogfood Phase 3
 ;
-| Attention bias linear
+; Attention bias linear
 ;
 ; Test case: alibi_pos
 ;

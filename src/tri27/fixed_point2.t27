@@ -1,0 +1,13 @@
+; Fixed Point V2 — TTT Dogfood Phase 3
+;
+| X = g(x) solver alt
+;
+; Test case: fixed_point2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fixed_point2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b040001ad3

@@ -1,6 +1,6 @@
 ; Spectral Normalization — TTT Dogfood Phase 3
 ;
-| Normalizes weight matrix
+; Normalizes weight matrix
 ;
 ; Test case: spectral_norm
 ;
