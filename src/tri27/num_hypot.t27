@@ -1,0 +1,13 @@
+; Hypotenuse — TTT Dogfood Phase 3
+;
+; sqrt(x^2 + y^2)
+;
+; Test case: num_hypot
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; num_hypot_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b67001c7b

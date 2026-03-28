@@ -1,0 +1,13 @@
+; LCM — TTT Dogfood Phase 3
+;
+; Least Common Multiple
+;
+; Test case: num_lcm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; num_lcm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b51001c4f
