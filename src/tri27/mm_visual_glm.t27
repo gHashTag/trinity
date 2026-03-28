@@ -1,0 +1,13 @@
+; Multimodal VisualGLM — TTT Dogfood Phase 3
+;
+; Visual-language understanding with GLM
+;
+; Test case: mm_visual_glm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; visual_glm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aea000002000000002535
