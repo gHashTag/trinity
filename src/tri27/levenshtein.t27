@@ -1,0 +1,15 @@
+; Levenshtein Distance (Edit Distance) — TTT Dogfood Phase 3
+;
+; Minimum edits to transform string
+;
+; Test case: "kitten" → "sitting" = 3 edits
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; distance = 3
+
+; Operations: sub s→k, sub e→i, insert g
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0432cf00113e

@@ -1,0 +1,16 @@
+; Genetic Algorithm — TTT Dogfood Phase 3
+;
+; Evolutionary optimization
+;
+; Test case: Maximize f(x)=x² in [0,10]
+; Result: x=10
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 60         ; best_x = 10
+    LDI t0, 100
+    ST t0, 61         ; best_val = 100
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0522d8001147

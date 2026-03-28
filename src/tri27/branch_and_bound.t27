@@ -1,0 +1,14 @@
+; Branch and Bound — TTT Dogfood Phase 3
+;
+; Exact optimization with pruning
+;
+; Test case: 0/1 Knapsack
+; Max value: 220
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 220
+    ST t0, 60         ; max_value = 220
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0552db00114a

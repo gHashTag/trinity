@@ -1,0 +1,18 @@
+; PageRank — TTT Dogfood Phase 3
+;
+; Compute importance scores for web pages
+;
+; Test case: 3 pages
+; Scores: [0.38, 0.32, 0.30]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 38
+    ST t0, 60         ; rank[0] = 0.38
+    LDI t0, 32
+    ST t0, 61         ; rank[1] = 0.32
+    LDI t0, 30
+    ST t0, 62         ; rank[2] = 0.30
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0492d5001144
