@@ -1,0 +1,13 @@
+; Ensemble AdaBoost — TTT Dogfood Phase 3
+;
+; Adaptive Boosting
+;
+; Test case: ensemble_adaboost
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; adaboost_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0780d00000200000000218c

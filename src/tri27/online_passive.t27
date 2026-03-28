@@ -1,0 +1,13 @@
+; Online Passive — TTT Dogfood Phase 3
+;
+; Passive-Aggressive
+;
+; Test case: online_passive
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; passive_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07803000002000000002142

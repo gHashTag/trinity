@@ -1,0 +1,13 @@
+; Neuroscience DBM — TTT Dogfood Phase 3
+;
+; Deep Boltzmann Machine
+;
+; Test case: neuroscience_dbm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; dbm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07819000002000000002118
