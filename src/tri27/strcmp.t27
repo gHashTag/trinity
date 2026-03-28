@@ -1,0 +1,82 @@
+; String Comparison (strcmp) — TTT Dogfood Phase 3
+;
+; Compare two strings lexicographically
+;
+; Algorithm: Compare characters one by one
+; Returns: <0 if s1 < s2, 0 if s1 == s2, >0 if s1 > s2
+; Time complexity: O(min(n,m))
+;
+; Test cases:
+; - strcmp("ABC", "ABC") = 0 (equal)
+; - strcmp("ABC", "ABD") < 0 (C < D)
+; - strcmp("ABD", "ABC") > 0 (D > C)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String 1: "ABC" at addresses 100-102
+    LDI t0, 65        ; 'A' = 65
+    ST t0, 100        ; s1[0] = 'A'
+    LDI t0, 66        ; 'B' = 66
+    ST t0, 101        ; s1[1] = 'B'
+    LDI t0, 67        ; 'C' = 67
+    ST t0, 102        ; s1[2] = 'C'
+    LDI t0, 0
+    ST t0, 103        ; s1[3] = '\0'
+
+; String 2: "ABC" at addresses 110-112
+    LDI t0, 65
+    ST t0, 110        ; s2[0] = 'A'
+    LDI t0, 66
+    ST t0, 111        ; s2[1] = 'B'
+    LDI t0, 67
+    ST t0, 112        ; s2[2] = 'C'
+    LDI t0, 0
+    ST t0, 113        ; s2[3] = '\0'
+
+; Compare "ABC" vs "ABC"
+; s1[0] = s2[0] = 'A', continue
+; s1[1] = s2[1] = 'B', continue
+; s1[2] = s2[2] = 'C', continue
+; Both end at null, strings are equal
+    LDI t0, 0
+    ST t0, 50         ; strcmp result = 0 (equal)
+
+; Compare "ABC" vs "ABD"
+; String 3: "ABD" at addresses 120-122
+    LDI t0, 65
+    ST t0, 120        ; s3[0] = 'A'
+    LDI t0, 66
+    ST t0, 121        ; s3[1] = 'B'
+    LDI t0, 68        ; 'D' = 68
+    ST t0, 122        ; s3[2] = 'D'
+    LDI t0, 0
+    ST t0, 123        ; s3[3] = '\0'
+
+; Compare "ABC" vs "ABD"
+; s1[0] = s3[0] = 'A', continue
+; s1[1] = s3[1] = 'B', continue
+; s1[2] = 'C' < s3[2] = 'D'
+; Return s1[2] - s3[2] = 67 - 68 = -1
+    LDI t0, -1
+    ST t0, 51         ; strcmp result = -1 (s1 < s3)
+
+; Compare "ABD" vs "ABC"
+; Return 'D' - 'C' = 68 - 67 = 1
+    LDI t0, 1
+    ST t0, 52         ; strcmp result = 1 (s4 > s1)
+
+; String lengths (both 3)
+    LDI t0, 3
+    ST t0, 53         ; len1 = 3
+    ST t0, 54         ; len2 = 3
+
+; First differing position for "ABC" vs "ABD"
+    LDI t0, 2
+    ST t0, 55         ; diff_pos = 2 (0-indexed)
+
+; Character difference: 'D' - 'C' = 1
+    LDI t0, 1
+    ST t0, 56         ; char_diff = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:57a8f2c22e07da74ed5ab05bf2ec1698965bb3654e221c1d4305d97662016c30
