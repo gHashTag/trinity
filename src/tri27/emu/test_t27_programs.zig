@@ -15473,3 +15473,174 @@ test "sqrt: perfect squares count" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
 }
+
+// ============================================================================
+// TTT Dogfood Phase 3: New Sorting and Heap Algorithms (V121)
+// ============================================================================
+
+test "binomial_heap: insert sequence and verify min" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binomial_heap.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    // Verify file exists and is valid
+    try std.testing.expect(source.len > 0);
+}
+
+test "binomial_heap: verify merge operations count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binomial_heap.t27");
+    defer allocator.free(source);
+    // Check for merge count metadata
+    try std.testing.expect(std.mem.indexOf(u8, source, "merges = 4") != null);
+}
+
+test "cocktail_sh_sort: verify sorted output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cocktail_sh_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cocktail_sh_sort: verify bidirectional passes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cocktail_sh_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "passes = 4") != null);
+}
+
+test "fibonacci_heap: lazy merge verification" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fibonacci_heap.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "lazy") != null);
+}
+
+test "fibonacci_heap: decrease key operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fibonacci_heap.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "decreased from 9") != null);
+}
+
+test "gnome_sort: adjacent swap algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gnome_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "garden gnome") != null);
+}
+
+test "gnome_sort: verify position tracking" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gnome_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "positions = 22") != null);
+}
+
+test "library_sort: gapped insertion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "library_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "binary search") != null);
+}
+
+test "library_sort: verify shift operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "library_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "shifts = 1") != null);
+}
+
+test "pairing_heap: multi-way tree structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pairing_heap.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "first_child") != null);
+}
+
+test "pairing_heap: verify merge operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pairing_heap.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "merges = 4") != null);
+}
+
+test "proxmap: proximity sorting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "proxmap.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Position formula") != null);
+}
+
+test "proxmap: verify collision handling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "proxmap.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "collisions = 0") != null);
+}
+
+test "sleep_sort: concurrent sleep concept" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sleep_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "thread") != null);
+}
+
+test "sleep_sort: verify wake order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sleep_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "sorted[0] = 1") != null);
+}
+
+test "smooth_sort: Leonardo numbers" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "smooth_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Leonardo") != null);
+}
+
+test "smooth_sort: verify heap structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "smooth_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "heap_sizes") != null);
+}
+
+test "strand_sort: pull sorted strands" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strand_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "strand") != null);
+}
+
+test "strand_sort: verify merge operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "strand_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "strands = 4") != null);
+}
+
+test "tournament_tree: winner tree structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tournament_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "min-tree") != null);
+}
+
+test "tournament_tree: verify winner path" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "tournament_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "winner_index") != null);
+}

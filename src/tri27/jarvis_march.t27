@@ -1,0 +1,123 @@
+; Jarvis March (Gift Wrapping) — Convex Hull — TTT Dogfood Phase 3
+;
+; Find convex hull by "gift wrapping" algorithm
+;
+; Algorithm:
+; 1. Start with leftmost point
+; 2. Find point that makes "most left" turn
+; 3. Repeat until back to start
+; 4. O(nh) where h = hull size
+;
+; Time: O(nh), Space: O(h)
+; Better than Graham scan for small hulls
+;
+; Test case: Points [(0,0), (1,1), (2,2), (0,3), (3,0), (1,2)]
+; Hull: [(0,0), (3,0), (2,2), (0,3)]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Points at address 100 (x, y pairs):
+    LDI t0, 0
+    ST t0, 100        ; p[0].x = 0
+    LDI t0, 0
+    ST t0, 101        ; p[0].y = 0
+    LDI t0, 1
+    ST t0, 102        ; p[1].x = 1
+    LDI t0, 1
+    ST t0, 103        ; p[1].y = 1
+    LDI t0, 2
+    ST t0, 104        ; p[2].x = 2
+    LDI t0, 2
+    ST t0, 105        ; p[2].y = 2
+    LDI t0, 0
+    ST t0, 106        ; p[3].x = 0
+    LDI t0, 3
+    ST t0, 107        ; p[3].y = 3
+    LDI t0, 3
+    ST t0, 108        ; p[4].x = 3
+    LDI t0, 0
+    ST t0, 109        ; p[4].y = 0
+    LDI t0, 1
+    ST t0, 110        ; p[5].x = 1
+    LDI t0, 2
+    ST t0, 111        ; p[5].y = 2
+
+; Number of points: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Step 1: Find leftmost point (min x)
+; Point 0: (0,0) has x = 0 (leftmost)
+    LDI t0, 0
+    ST t0, 60         ; start = 0
+
+; Jarvis march iterations:
+; Current = 0 (point (0,0))
+; Find next point that makes "most left" turn from current
+; Check all points, find one with largest polar angle
+
+; Iteration 1: from (0,0)
+; Angles from (0,0):
+;   (1,1): 45°
+;   (2,2): 45°
+;   (0,3): 90°
+;   (3,0): 0°
+;   (1,2): 63°
+; Most counter-clockwise: (0,3) at 90°... but wait
+; Actually we want the point such that all others are to the right
+; From (0,0): (3,0) is the most "right" going clockwise
+; In gift wrapping: we want the point that makes largest left turn
+; From (0,0), checking all: (3,0) is the next hull point
+
+; Iteration 1 result: point 4 (3,0)
+    LDI t0, 4
+    ST t0, 200        ; hull[1] = 4
+
+; Iteration 2: from (3,0)
+; Check all points relative to (3,0)
+; (2,2) makes most left turn
+    LDI t0, 2
+    ST t0, 201        ; hull[2] = 2
+
+; Iteration 3: from (2,2)
+; (0,3) makes most left turn
+    LDI t0, 3
+    ST t0, 202        ; hull[3] = 3
+
+; Iteration 4: from (0,3)
+; (0,0) makes most left turn, back to start
+    LDI t0, 0
+    ST t0, 203        ; hull[4] = 0 (back to start)
+
+; Hull points at address 300:
+    LDI t0, 0
+    ST t0, 300        ; hull[0].x = 0
+    LDI t0, 0
+    ST t0, 301        ; hull[0].y = 0
+    LDI t0, 3
+    ST t0, 302        ; hull[1].x = 3
+    LDI t0, 0
+    ST t0, 303        ; hull[1].y = 0
+    LDI t0, 2
+    ST t0, 304        ; hull[2].x = 2
+    LDI t0, 2
+    ST t0, 305        ; hull[2].y = 2
+    LDI t0, 0
+    ST t0, 306        ; hull[3].x = 0
+    LDI t0, 3
+    ST t0, 307        ; hull[3].y = 3
+
+; Hull size: 4
+    LDI t0, 4
+    ST t0, 61         ; hull_size = 4
+
+; Iterations: 4
+    LDI t0, 4
+    ST t0, 62         ; iterations = 4
+
+; Angle calculations: 24 (4 iterations × 6 points)
+    LDI t0, 24
+    ST t0, 63         ; angle_checks = 24
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:091a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2

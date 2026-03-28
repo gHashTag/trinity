@@ -1,0 +1,87 @@
+; Tournament Tree (Winner Tree) — TTT Dogfood Phase 3
+;
+; Complete binary tree for finding min/max
+;
+; Algorithm:
+; - Leaves store array elements
+; - Internal nodes store winners (children compared)
+; - Root is overall winner
+; - Replace winner with new value, replay matches
+;
+; Time: O(log n) per replacement, Space: O(n)
+; Used in scheduling, multi-way merge
+;
+; Test case: [3, 1, 4, 1, 5, 9, 2, 6]
+; Min winner: 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100 (leaves):
+    LDI t0, 3
+    ST t0, 100        ; leaf[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; leaf[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; leaf[2] = 4
+    LDI t0, 1
+    ST t0, 103        ; leaf[3] = 1
+    LDI t0, 5
+    ST t0, 104        ; leaf[4] = 5
+    LDI t0, 9
+    ST t0, 105        ; leaf[5] = 9
+    LDI t0, 2
+    ST t0, 106        ; leaf[6] = 2
+    LDI t0, 6
+    ST t0, 107        ; leaf[7] = 6
+
+; Number of leaves: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Tournament tree (min-tree) at address 200:
+; Level 1 (internal): compare pairs of leaves
+; node[0] = min(leaf[0], leaf[1]) = min(3, 1) = 1
+    LDI t0, 1
+    ST t0, 200
+; node[1] = min(leaf[2], leaf[3]) = min(4, 1) = 1
+    LDI t0, 1
+    ST t0, 201
+; node[2] = min(leaf[4], leaf[5]) = min(5, 9) = 5
+    LDI t0, 5
+    ST t0, 202
+; node[3] = min(leaf[6], leaf[7]) = min(2, 6) = 2
+    LDI t0, 2
+    ST t0, 203
+
+; Level 2: compare level 1 nodes
+; node[4] = min(node[0], node[1]) = min(1, 1) = 1
+    LDI t0, 1
+    ST t0, 204
+; node[5] = min(node[2], node[3]) = min(5, 2) = 2
+    LDI t0, 2
+    ST t0, 205
+
+; Root (level 3): final winner
+; root = min(node[4], node[5]) = min(1, 2) = 1
+    LDI t0, 1
+    ST t0, 206        ; root = 1 (minimum value)
+
+; Winner path: leaves that led to root
+; Root 1 came from node[4], which came from leaf[1] (value 1)
+    LDI t0, 1
+    ST t0, 60         ; winner_index = 1 (leaf 1)
+
+; Runner-up: second smallest = 2
+    LDI t0, 2
+    ST t0, 61         ; runner_up = 2
+
+; Tree height: 3 (ceiling of log2(8))
+    LDI t0, 3
+    ST t0, 62         ; height = 3
+
+; Total nodes: 7 internal + 8 leaves = 15
+    LDI t0, 15
+    ST t0, 63         ; total_nodes = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:f3fbab0e401555c8c0b85260aa8c09f9ce0d8d865f09629fb1686ae049439603

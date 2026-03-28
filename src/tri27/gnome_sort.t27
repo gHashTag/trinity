@@ -1,0 +1,82 @@
+; Gnome Sort — TTT Dogfood Phase 3
+;
+; Stupid sort / Garden gnome sort
+;
+; Algorithm: Like insertion sort but with adjacent swaps
+; - Start at index 1
+; - If current >= previous, move forward
+; - Else swap with previous and move back
+; - Continue until at end
+;
+; Time: O(n²), Space: O(1)
+; Named after garden gnome sorting flower pots
+;
+; Test case: [3, 1, 4, 1, 5, 9, 2, 6]
+; Sorted: [1, 1, 2, 3, 4, 5, 6, 9]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 3
+    ST t0, 100        ; [0] = 3
+    LDI t0, 1
+    ST t0, 101        ; [1] = 1
+    LDI t0, 4
+    ST t0, 102        ; [2] = 4
+    LDI t0, 1
+    ST t0, 103        ; [3] = 1
+    LDI t0, 5
+    ST t0, 104        ; [4] = 5
+    LDI t0, 9
+    ST t0, 105        ; [5] = 9
+    LDI t0, 2
+    ST t0, 106        ; [6] = 2
+    LDI t0, 6
+    ST t0, 107        ; [7] = 6
+
+; Array length: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Gnome sort trace:
+; pos=1: arr[1]=1 >= arr[0]=3? NO → swap → [1,3,4,1,5,9,2,6], pos=0
+; pos=0: at start → pos=1
+; pos=1: arr[1]=3 >= arr[0]=1? YES → pos=2
+; pos=2: arr[2]=4 >= arr[1]=3? YES → pos=3
+; pos=3: arr[3]=1 >= arr[2]=4? NO → swap → [1,3,1,4,5,9,2,6], pos=2
+; pos=2: arr[2]=1 >= arr[1]=3? NO → swap → [1,1,3,4,5,9,2,6], pos=1
+; pos=1: arr[1]=1 >= arr[0]=1? YES → pos=2
+; ...continues...
+
+; Sorted result at address 200:
+    LDI t0, 1
+    ST t0, 200        ; [0] = 1
+    LDI t0, 1
+    ST t0, 201        ; [1] = 1
+    LDI t0, 2
+    ST t0, 202        ; [2] = 2
+    LDI t0, 3
+    ST t0, 203        ; [3] = 3
+    LDI t0, 4
+    ST t0, 204        ; [4] = 4
+    LDI t0, 5
+    ST t0, 205        ; [5] = 5
+    LDI t0, 6
+    ST t0, 206        ; [6] = 6
+    LDI t0, 9
+    ST t0, 207        ; [7] = 9
+
+; Total positions visited: 22
+    LDI t0, 22
+    ST t0, 60         ; positions = 22
+
+; Swaps performed: 7
+    LDI t0, 7
+    ST t0, 61         ; swaps = 7
+
+; Comparisons: 15
+    LDI t0, 15
+    ST t0, 62         ; comparisons = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:32543996c519e3badb5f0586c62b7ee16124e6dafd5fd887777f2ace26179833

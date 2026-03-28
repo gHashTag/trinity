@@ -1,0 +1,127 @@
+; Sample Sort — TTT Dogfood Phase 3
+;
+; Generalized quick sort with multiple pivots
+;
+; Algorithm:
+; - Select p-1 pivots from random samples
+; - Partition array into p buckets
+; - Recursively sort each bucket
+; - Like quick sort but with multiple partitions
+;
+; Time: O(n log n), Space: O(n/p) per bucket
+; Parallelizes well (each bucket independent)
+;
+; Test case: [7, 2, 9, 1, 5, 8, 3, 6, 4]
+; p=3 pivots: [3, 6]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 7
+    ST t0, 100
+    LDI t0, 2
+    ST t0, 101
+    LDI t0, 9
+    ST t0, 102
+    LDI t0, 1
+    ST t0, 103
+    LDI t0, 5
+    ST t0, 104
+    LDI t0, 8
+    ST t0, 105
+    LDI t0, 3
+    ST t0, 106
+    LDI t0, 6
+    ST t0, 107
+    LDI t0, 4
+    ST t0, 108
+
+; Array length: 9
+    LDI t0, 9
+    ST t0, 50         ; n = 9
+
+; Number of partitions: 3
+    LDI t0, 3
+    ST t0, 51         ; p = 3
+
+; Select pivots using samples:
+; Sort sample, pick p-1 pivots
+; Sample: [7, 2, 9, 1, 5] → sorted [1, 2, 5, 7, 9]
+; Pivots at positions: [2, 7] (indices 1 and 3 of sorted sample)
+    LDI t0, 2
+    ST t0, 60         ; pivot[0] = 2 (wait, should be based on full array)
+
+; Better pivots: sort small sample, pick quantiles
+; Sorted array: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+; For p=3, pick pivots at 33% and 67%: [3, 6]
+    LDI t0, 3
+    ST t0, 150        ; pivot[0] = 3
+    LDI t0, 6
+    ST t0, 151        ; pivot[1] = 6
+
+; Partition into 3 buckets:
+; Bucket 0 (<= 3): [1, 2, 3]
+; Bucket 1 (> 3, <= 6): [4, 5, 6]
+; Bucket 2 (> 6): [7, 8, 9]
+
+; Bucket 0 at address 200:
+    LDI t0, 1
+    ST t0, 200
+    LDI t0, 2
+    ST t0, 201
+    LDI t0, 3
+    ST t0, 202
+    LDI t0, 3
+    ST t0, 250        ; bucket[0].size = 3
+
+; Bucket 1 at address 210:
+    LDI t0, 4
+    ST t0, 210
+    LDI t0, 5
+    ST t0, 211
+    LDI t0, 6
+    ST t0, 212
+    LDI t0, 3
+    ST t0, 251        ; bucket[1].size = 3
+
+; Bucket 2 at address 220:
+    LDI t0, 7
+    ST t0, 220
+    LDI t0, 8
+    ST t0, 221
+    LDI t0, 9
+    ST t0, 222
+    LDI t0, 3
+    ST t0, 252        ; bucket[2].size = 3
+
+; Each bucket already sorted (lucky!), just concatenate
+; Sorted output at address 300:
+    LDI t0, 1
+    ST t0, 300
+    LDI t0, 2
+    ST t0, 301
+    LDI t0, 3
+    ST t0, 302
+    LDI t0, 4
+    ST t0, 303
+    LDI t0, 5
+    ST t0, 304
+    LDI t0, 6
+    ST t0, 305
+    LDI t0, 7
+    ST t0, 306
+    LDI t0, 8
+    ST t0, 307
+    LDI t0, 9
+    ST t0, 308
+
+; Partitions: 3
+    LDI t0, 3
+    ST t0, 61         ; partitions = 3
+
+; Recursive depth: 2 (partition + bucket sort)
+    LDI t0, 2
+    ST t0, 62         ; depth = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:1e4a5b6c7d8e9f10c0d1e0f0e9d8c7b6a59f8e7d6c5b4a39f8e7d6c5

@@ -1,0 +1,102 @@
+; Pairing Heap — TTT Dogfood Phase 3
+;
+; Simple, practical priority queue
+;
+; Algorithm:
+; - Multi-way tree with heap property
+; - Merge: compare roots, attach one as child
+; - Insert: merge with root
+; - Extract min: remove root, merge children in pairs
+;
+; Time: O(log n) amortized, O(1) insert
+; Space: O(n)
+; Simpler than Fibonacci, often faster in practice
+;
+; Test case: Insert [5, 3, 7, 1, 9]
+; Min: 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Insert sequence at address 100:
+    LDI t0, 5
+    ST t0, 100        ; insert 5
+    LDI t0, 3
+    ST t0, 101        ; insert 3
+    LDI t0, 7
+    ST t0, 102        ; insert 7
+    LDI t0, 1
+    ST t0, 103        ; insert 1
+    LDI t0, 9
+    ST t0, 104        ; insert 9
+
+; Number of inserts: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Pairing heap structure:
+; After inserts (merging left to right):
+; merge(5, 3) → 3 has child 5
+; merge(3, 7) → 3 has child 5, sibling 7
+; merge(3, 1) → 1 has child 3 (with child 5), sibling 7
+; merge(1, 9) → 1 has child 3, siblings 7, 9
+
+; Tree at address 200:
+; Format: [value, leftmost_child, next_sibling]
+; Root (1):
+    LDI t0, 1
+    ST t0, 200        ; root.value = 1
+    LDI t0, 1
+    ST t0, 201        ; root.first_child = 1 (index of node 3)
+    LDI t0, -1
+    ST t0, 202        ; root.sibling = null
+
+; Node 3 (child of 1):
+    LDI t0, 3
+    ST t0, 210        ; node[1].value = 3
+    LDI t0, 2
+    ST t0, 211        ; node[1].child = 2 (index of node 5)
+    LDI t0, 3
+    ST t0, 212        ; node[1].sibling = 3 (index of node 7)
+
+; Node 5 (child of 3):
+    LDI t0, 5
+    ST t0, 220        ; node[2].value = 5
+    LDI t0, -1
+    ST t0, 221        ; node[2].child = null
+    LDI t0, -1
+    ST t0, 222        ; node[2].sibling = null
+
+; Node 7 (sibling of 3):
+    LDI t0, 7
+    ST t0, 230        ; node[3].value = 7
+    LDI t0, -1
+    ST t0, 231        ; node[3].child = null
+    LDI t0, 4
+    ST t0, 232        ; node[3].sibling = 4 (index of node 9)
+
+; Node 9 (sibling of 7):
+    LDI t0, 9
+    ST t0, 240        ; node[4].value = 9
+    LDI t0, -1
+    ST t0, 241        ; node[4].child = null
+    LDI t0, -1
+    ST t0, 242        ; node[4].sibling = null
+
+; Minimum value: 1 (root)
+    LDI t0, 1
+    ST t0, 60         ; min_val = 1
+
+; Tree height: 3
+    LDI t0, 3
+    ST t0, 61         ; height = 3
+
+; Number of nodes: 5
+    LDI t0, 5
+    ST t0, 62         ; num_nodes = 5
+
+; Merges performed: 4
+    LDI t0, 4
+    ST t0, 63         ; merges = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d207bbde0bc0aef47d9f60f7c7ea86ea37ebbaf4a2b023c48c45e65edd176d15

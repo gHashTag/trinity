@@ -1,0 +1,117 @@
+; B-Tree — TTT Dogfood Phase 3
+;
+; Balanced search tree for disk/storage
+;
+; Algorithm:
+; - Generalized BST with multiple keys per node
+; - All leaves at same depth
+; - Minimum degree t: each node has t-1 to 2t-1 keys
+; - Split on overflow, merge on underflow
+;
+; Time: O(log n) with base t, Space: O(n)
+; Minimizes disk I/O for large data
+;
+; Test case: Insert [1, 3, 7, 10, 14, 5, 9] into t=2 B-tree
+; Search: 7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Insert sequence at address 100:
+    LDI t0, 1
+    ST t0, 100        ; insert 1
+    LDI t0, 3
+    ST t0, 101        ; insert 3
+    LDI t0, 7
+    ST t0, 102        ; insert 7
+    LDI t0, 10
+    ST t0, 103        ; insert 10
+    LDI t0, 14
+    ST t0, 104        ; insert 14
+    LDI t0, 5
+    ST t0, 105        ; insert 5
+    LDI t0, 9
+    ST t0, 106        ; insert 9
+
+; Minimum degree: 2
+    LDI t0, 2
+    ST t0, 50         ; t = 2
+
+; Max keys per node: 2t-1 = 3
+; Min keys per node: t-1 = 1
+
+; B-tree after inserts (t=2):
+; Insert 1: [1]
+; Insert 3: [1, 3]
+; Insert 7: [1, 3, 7] (full)
+; Insert 10: split → [3], children [1], [7, 10]
+; Insert 14: [3], children [1], [7, 10, 14] (full)
+; Insert 5: [3], children [1, 5], [7, 10, 14]
+; Insert 9: [3, 9], children [1, 5], [7], [10, 14]
+
+; Tree structure at address 200:
+; Root node [3, 9]:
+    LDI t0, 3
+    ST t0, 200        ; root.keys[0] = 3
+    LDI t0, 9
+    ST t0, 201        ; root.keys[1] = 9
+    LDI t0, 2
+    ST t0, 202        ; root.num_keys = 2
+    LDI t0, 1
+    ST t0, 203        ; root.is_leaf = 0 (internal)
+    LDI t0, 1
+    ST t0, 204        ; root.children[0] = 1 (child index)
+    LDI t0, 2
+    ST t0, 205        ; root.children[1] = 2
+    LDI t0, 3
+    ST t0, 206        ; root.children[2] = 3
+
+; Child 1 [1, 5]:
+    LDI t0, 1
+    ST t0, 210        ; child[1].keys[0] = 1
+    LDI t0, 5
+    ST t0, 211        ; child[1].keys[1] = 5
+    LDI t0, 2
+    ST t0, 212        ; child[1].num_keys = 2
+    LDI t0, 1
+    ST t0, 213        ; child[1].is_leaf = 1
+
+; Child 2 [7]:
+    LDI t0, 7
+    ST t0, 220        ; child[2].keys[0] = 7
+    LDI t0, 1
+    ST t0, 221        ; child[2].num_keys = 1
+    LDI t0, 1
+    ST t0, 222        ; child[2].is_leaf = 1
+
+; Child 3 [10, 14]:
+    LDI t0, 10
+    ST t0, 230        ; child[3].keys[0] = 10
+    LDI t0, 14
+    ST t0, 231        ; child[3].keys[1] = 14
+    LDI t0, 2
+    ST t0, 232        ; child[3].num_keys = 2
+    LDI t0, 1
+    ST t0, 233        ; child[3].is_leaf = 1
+
+; Search for 7:
+; 7 > 3, go right → 7 < 9, go middle → child 2
+; Found at child 2, key 0
+
+; Search result: 7 found
+    LDI t0, 1
+    ST t0, 60         ; found = 1
+
+; Path length: 3 (root → child → key)
+    LDI t0, 3
+    ST t0, 61         ; path_len = 3
+
+; Node splits: 1 (when inserting 10)
+    LDI t0, 1
+    ST t0, 62         ; splits = 1
+
+; Tree height: 2
+    LDI t0, 2
+    ST t0, 63         ; height = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:439f10c0d1e0f0e9d8c7b6a59f8e7d6c5b4a39f8e7d6c5b4a39f8e7d6

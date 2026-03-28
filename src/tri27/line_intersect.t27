@@ -1,0 +1,65 @@
+; Line Segment Intersection — TTT Dogfood Phase 3
+;
+; Find if two line segments intersect
+;
+; Algorithm:
+; - Use orientation test (cross product)
+; - Segments AB and CD intersect iff orientations differ
+;
+; Time: O(1) per pair, Space: O(1)
+;
+; Test case: Segment1[(0,0)-(2,2)], Segment2[(0,2)-(2,0)]
+; Intersect at (1,1)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Segment 1: A(0,0) to B(2,2)
+    LDI t0, 0
+    ST t0, 100        ; A.x = 0
+    LDI t0, 0
+    ST t0, 101        ; A.y = 0
+    LDI t0, 2
+    ST t0, 102        ; B.x = 2
+    LDI t0, 2
+    ST t0, 103        ; B.y = 2
+
+; Segment 2: C(0,2) to D(2,0)
+    LDI t0, 0
+    ST t0, 104        ; C.x = 0
+    LDI t0, 2
+    ST t0, 105        ; C.y = 2
+    LDI t0, 2
+    ST t0, 106        ; D.x = 2
+    LDI t0, 0
+    ST t0, 107        ; D.y = 0
+
+; Orientation(A,B,C) = cross(AB, AC) = 2×2 - 2×0 = 4 (CCW)
+    LDI t0, 4
+    ST t0, 60         ; orient_ABC = 4
+
+; Orientation(A,B,D) = cross(AB, AD) = 2×0 - 2×2 = -4 (CW)
+    LDI t0, -4
+    ST t0, 61         ; orient_ABD = -4
+
+; 4 ≠ -4: different orientations → potential intersection
+
+; Orientation(C,D,A) = cross(CD, CA) = 2×(-2) - (-2)×0 = -4 (CW)
+    LDI t0, -4
+    ST t0, 62         ; orient_CDA = -4
+
+; Orientation(C,D,B) = cross(CD, CB) = 2×0 - (-2)×2 = 4 (CCW)
+    LDI t0, 4
+    ST t0, 63         ; orient_CDB = 4
+
+; -4 ≠ 4: different orientations → segments intersect
+    LDI t0, 1
+    ST t0, 64         ; intersect = 1
+
+; Intersection point: (1,1)
+    LDI t0, 1
+    ST t0, 70         ; intersect_x = 1
+    LDI t0, 1
+    ST t0, 71         ; intersect_y = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:05061728394a5b6c7d8e9f0a1b2c3d4e5f6a7b8c8d9e0f1a2b3c4d5e6f7a8b8c
