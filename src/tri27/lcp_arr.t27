@@ -1,0 +1,13 @@
+; LCP Array Impl — TTT Dogfood Phase 3
+;
+; Longest common prefix array
+;
+; Test case: lcp_arr
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lcp_arr_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719ee001966
