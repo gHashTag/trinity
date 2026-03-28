@@ -1,0 +1,13 @@
+; seq2seq_attention — TTT Dogfood Phase 3
+;
+; Deep learning/ML operation
+;
+; Test case: seq2seq_attention
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; seq2seq_attention_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424451504

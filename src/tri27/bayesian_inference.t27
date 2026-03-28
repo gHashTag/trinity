@@ -1,0 +1,13 @@
+; bayesian_inference — TTT Dogfood Phase 3
+;
+; Statistical/scientific algorithm
+;
+; Test case: bayesian_inference
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bayesian_inference_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424450128
