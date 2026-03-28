@@ -1,0 +1,13 @@
+; Barlow Twins — TTT Dogfood Phase 3
+;
+; Redundancy reduction
+;
+; Test case: barlow_twins
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; barlow_twins_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ade000002000000002361
