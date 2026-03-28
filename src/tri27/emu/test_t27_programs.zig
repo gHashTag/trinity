@@ -1967,4 +1967,92 @@ test "queue: size calculation" {
     try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
 
+// Linked List Tests — TTT Dogfood Phase 3
+
+test "linked_list: file exists" {
+    const path = "src/tri27/linked_list.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "linked_list: create single node" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 100
+        \\    LDI t0, 0
+        \\    ST t0, 101
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "linked_list: traverse two nodes sum" {
+    const allocator = std.testing.allocator;
+    // Node 1: value=3 at addr 100
+    // Node 2: value=4 at addr 102
+    // Sum = 7
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 100
+        \\    LDI t0, 4
+        \\    ST t0, 102
+        \\    LD t0, 100
+        \\    LD t1, 102
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "linked_list: null pointer check" {
+    const allocator = std.testing.allocator;
+    // Store 0 at next pointer, verify it's 0
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 101
+        \\    LD t0, 101
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "linked_list: find middle node value" {
+    const allocator = std.testing.allocator;
+    // 3 nodes: [5, 10, 15], middle is 10
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 100
+        \\    LDI t0, 102
+        \\    ST t0, 101
+        \\    LDI t0, 10
+        \\    ST t0, 102
+        \\    LDI t0, 104
+        \\    ST t0, 103
+        \\    LD t0, 102
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "linked_list: count nodes" {
+    const allocator = std.testing.allocator;
+    // Count: 3 nodes
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
