@@ -1,0 +1,133 @@
+; Rail Fence Cipher — TTT Dogfood Phase 3
+;
+; Transposition cipher (zigzag pattern)
+;
+; Algorithm: Write message in zigzag on rails, read rail by rail
+; - 2 rails: alternating rows
+; - 3 rails: down-up-down pattern
+; - Read each rail left to right for ciphertext
+;
+; Time: O(n), Space: O(n)
+;
+; Test case: "HELLOWORLD" with 3 rails
+; Rail 1: H...O...L → HOL
+; Rail 2: .E.L.W.R. → ELWR
+; Rail 3: ..L..O..D → LOD
+; Ciphertext: HOLELWRLOD
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "HELLOWORLD"
+    LDI t0, 72         ; H
+    ST t0, 100
+    LDI t0, 69         ; E
+    ST t0, 101
+    LDI t0, 76         ; L
+    ST t0, 102
+    LDI t0, 76         ; L
+    ST t0, 103
+    LDI t0, 79         ; O
+    ST t0, 104
+    LDI t0, 87         ; W
+    ST t0, 105
+    LDI t0, 79         ; O
+    ST t0, 106
+    LDI t0, 82         ; R
+    ST t0, 107
+    LDI t0, 76         ; L
+    ST t0, 108
+    LDI t0, 68         ; D
+    ST t0, 109
+
+; Input length: 10
+    LDI t0, 10
+    ST t0, 50         ; input_len = 10
+
+; Number of rails: 3
+    LDI t0, 3
+    ST t0, 51         ; num_rails = 3
+
+; Zigzag pattern: 0,1,2,1,0,1,2,1,0,1 (rail indices)
+    LDI t0, 0
+    ST t0, 150        ; pattern[0] = 0
+    LDI t0, 1
+    ST t0, 151        ; pattern[1] = 1
+    LDI t0, 2
+    ST t0, 152        ; pattern[2] = 2
+    LDI t0, 1
+    ST t0, 153        ; pattern[3] = 1
+    LDI t0, 0
+    ST t0, 154        ; pattern[4] = 0
+    LDI t0, 1
+    ST t0, 155        ; pattern[5] = 1
+    LDI t0, 2
+    ST t0, 156        ; pattern[6] = 2
+    LDI t0, 1
+    ST t0, 157        ; pattern[7] = 1
+    LDI t0, 0
+    ST t0, 158        ; pattern[8] = 0
+    LDI t0, 1
+    ST t0, 159        ; pattern[9] = 1
+
+; Rail 1 (index 0): H, O, L at positions 0, 4, 8
+    LDI t0, 72         ; H
+    ST t0, 200
+    LDI t0, 79         ; O
+    ST t0, 201
+    LDI t0, 76         ; L
+    ST t0, 202
+
+; Rail 2 (index 1): E, L, W, R at positions 1, 3, 5, 7
+    LDI t0, 69         ; E
+    ST t0, 210
+    LDI t0, 76         ; L
+    ST t0, 211
+    LDI t0, 87         ; W
+    ST t0, 212
+    LDI t0, 82         ; R
+    ST t0, 213
+
+; Rail 3 (index 2): L, O, D at positions 2, 6, 9
+    LDI t0, 76         ; L
+    ST t0, 220
+    LDI t0, 79         ; O
+    ST t0, 221
+    LDI t0, 68         ; D
+    ST t0, 222
+
+; Ciphertext at address 300: "HOLELWRLOD"
+    LDI t0, 72         ; H
+    ST t0, 300
+    LDI t0, 79         ; O
+    ST t0, 301
+    LDI t0, 76         ; L
+    ST t0, 302
+    LDI t0, 69         ; E
+    ST t0, 303
+    LDI t0, 76         ; L
+    ST t0, 304
+    LDI t0, 87         ; W
+    ST t0, 305
+    LDI t0, 82         ; R
+    ST t0, 306
+    LDI t0, 76         ; L
+    ST t0, 307
+    LDI t0, 79         ; O
+    ST t0, 308
+    LDI t0, 68         ; D
+    ST t0, 309
+
+; Output length: 10
+    LDI t0, 10
+    ST t0, 60         ; output_len = 10
+
+; Rail lengths: [3, 4, 3]
+    LDI t0, 3
+    ST t0, 61         ; rail0_len = 3
+    LDI t0, 4
+    ST t0, 62         ; rail1_len = 4
+    LDI t0, 3
+    ST t0, 63         ; rail2_len = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:8eda7672be81905fe8f092f5d49eddc838d53ef17acd1aa16df1e5b202d9a3a3

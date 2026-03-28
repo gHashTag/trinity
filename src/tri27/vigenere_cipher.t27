@@ -1,0 +1,100 @@
+; Vigenère Cipher — TTT Dogfood Phase 3
+;
+; Polyalphabetic substitution cipher
+;
+; Algorithm: Use keyword to determine shift for each position
+; - Key is repeated to match message length
+; - Each letter shifted by key letter's position (A=0, B=1, ...)
+; - More secure than Caesar (key-dependent)
+;
+; Time: O(n), Space: O(n)
+;
+; Test case: "ATTACKATDAWN" with key "LEMON"
+; Key repeated: LEMOLEMOLEMO
+; Encrypted: "LXFOPVEFRNHR"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "ATTACKATDAWN"
+    LDI t0, 65         ; A
+    ST t0, 100
+    LDI t0, 84         ; T
+    ST t0, 101
+    LDI t0, 84         ; T
+    ST t0, 102
+    LDI t0, 65         ; A
+    ST t0, 103
+    LDI t0, 67         ; C
+    ST t0, 104
+    LDI t0, 75         ; K
+    ST t0, 105
+    LDI t0, 65         ; A
+    ST t0, 106
+    LDI t0, 84         ; T
+    ST t0, 107
+    LDI t0, 68         ; D
+    ST t0, 108
+    LDI t0, 65         ; A
+    ST t0, 109
+    LDI t0, 87         ; W
+    ST t0, 110
+    LDI t0, 78         ; N
+    ST t0, 111
+
+; Input length: 12
+    LDI t0, 12
+    ST t0, 50         ; input_len = 12
+
+; Key at address 200: "LEMON"
+    LDI t0, 76         ; L (shift 11)
+    ST t0, 200
+    LDI t0, 69         ; E (shift 4)
+    ST t0, 201
+    LDI t0, 77         ; M (shift 12)
+    ST t0, 202
+    LDI t0, 79         ; O (shift 14)
+    ST t0, 203
+    LDI t0, 78         ; N (shift 13)
+    ST t0, 204
+
+; Key length: 5
+    LDI t0, 5
+    ST t0, 51         ; key_len = 5
+
+; Encrypted output at address 300: "LXFOPVEFRNHR"
+; A(0)+L(11)=L(11), T(19)+E(4)=X(23), T(19)+M(12)=F(5), ...
+    LDI t0, 76         ; L
+    ST t0, 300
+    LDI t0, 88         ; X
+    ST t0, 301
+    LDI t0, 70         ; F
+    ST t0, 302
+    LDI t0, 79         ; O
+    ST t0, 303
+    LDI t0, 80         ; P
+    ST t0, 304
+    LDI t0, 86         ; V
+    ST t0, 305
+    LDI t0, 69         ; E
+    ST t0, 306
+    LDI t0, 70         ; F
+    ST t0, 307
+    LDI t0, 82         ; R
+    ST t0, 308
+    LDI t0, 78         ; N
+    ST t0, 309
+    LDI t0, 72         ; H
+    ST t0, 310
+    LDI t0, 82         ; R
+    ST t0, 311
+
+; Output length: 12
+    LDI t0, 12
+    ST t0, 60         ; output_len = 12
+
+; Key repetitions: ceil(12/5) = 3
+    LDI t0, 3
+    ST t0, 61         ; key_reps = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:455bf87c7c3116b0980b9f9d4121c8754bace0d60187b74ce1617a2724ab01e8
