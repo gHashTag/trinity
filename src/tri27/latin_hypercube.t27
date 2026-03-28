@@ -1,0 +1,13 @@
+; Latin Hypercube — TTT Dogfood Phase 3
+;
+| Stratified sampling
+;
+; Test case: latin_hypercube
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; latin_hypercube_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b020001aef

@@ -1,6 +1,6 @@
 ; Legendre Quadrature — TTT Dogfood Phase 3
 ;
-| Standard Gaussian
+; Standard Gaussian
 ;
 ; Test case: legendre_quad
 ;

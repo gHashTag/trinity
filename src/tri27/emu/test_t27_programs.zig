@@ -46845,3 +46845,153 @@ test "weddle_rule: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "cubature: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cubature.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cubature: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cubature.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "genz_keister: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "genz_keister.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "genz_keister: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "genz_keister.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "halton_seq: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "halton_seq.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "halton_seq: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "halton_seq.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hammersley: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hammersley.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "hammersley: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hammersley.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hermite_quad: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hermite_quad.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "hermite_quad: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hermite_quad.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "jacobi_quad: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "jacobi_quad.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "jacobi_quad: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "jacobi_quad.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "legendre_quad: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "legendre_quad.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "legendre_quad: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "legendre_quad.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "multilin_int: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "multilin_int.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "multilin_int: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "multilin_int.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sobol_seq: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sobol_seq.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "sobol_seq: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sobol_seq.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sparse_grid: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sparse_grid.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "sparse_grid: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sparse_grid.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

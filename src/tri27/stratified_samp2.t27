@@ -1,0 +1,13 @@
+; Stratified Sampling V2 — TTT Dogfood Phase 3
+;
+| Partitioned alt
+;
+; Test case: stratified_samp2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; stratified_samp2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b0d001afa

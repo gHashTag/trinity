@@ -1,6 +1,6 @@
 ; Sobol Sequence — TTT Dogfood Phase 3
 ;
-| Quasi-random
+; Quasi-random
 ;
 ; Test case: sobol_seq
 ;
