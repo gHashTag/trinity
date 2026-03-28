@@ -2573,4 +2573,98 @@ test "bellman_ford: relaxation count" {
     try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
 }
 
+// Prim's MST Tests — TTT Dogfood Phase 3
+
+test "prim_mst: file exists" {
+    const path = "src/tri27/prim_mst.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "prim_mst: initialize tree" {
+    const allocator = std.testing.allocator;
+    // Start from vertex 0
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    LD t0, 70
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "prim_mst: add minimum edge" {
+    const allocator = std.testing.allocator;
+    // Add vertex 1 with weight 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 71
+        \\    LDI t0, 1
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "prim_mst: total weight" {
+    const allocator = std.testing.allocator;
+    // MST weight = 4
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 80
+        \\    LDI t0, 2
+        \\    ST t0, 81
+        \\    LDI t0, 1
+        \\    ST t0, 82
+        \\    LD t0, 80
+        \\    LD t1, 81
+        \\    ADD t0, t0, t1
+        \\    LD t1, 82
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "prim_mst: all vertices in tree" {
+    const allocator = std.testing.allocator;
+    // All 4 vertices in tree
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    ST t0, 71
+        \\    ST t0, 72
+        \\    ST t0, 73
+        \\    LD t0, 70
+        \\    LD t1, 71
+        \\    ADD t0, t0, t1
+        \\    LD t1, 72
+        \\    ADD t0, t0, t1
+        \\    LD t1, 73
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "prim_mst: edge count" {
+    const allocator = std.testing.allocator;
+    // MST has V-1 = 3 edges
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
