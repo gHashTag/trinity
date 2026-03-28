@@ -10,4 +10,4 @@
     ST t0, 60         ; misc_euler_totient_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500sha256:0730c0000001df9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730c0001df9
