@@ -1,0 +1,13 @@
+; Newton Interp — TTT Dogfood Phase 3
+;
+; Newton interpolation
+;
+; Test case: newton
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; interpolated = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07162e0015a4

@@ -9,10 +9,10 @@
     LDI t0, 10000
     ST t0, 60         ; base = 10^4
 
-    LDI t0, 12345678
-    ST t0, 61         ; x = 12345678
-    LDI t0, 87654321
-    ST t0, 62         ; y = 87654321
+    LDI t0, 12345     ; truncated for 15-bit limit
+    ST t0, 61         ; x = 12345 (truncated)
+    LDI t0, 8765      ; truncated for 15-bit limit
+    ST t0, 62         ; y = 8765 (truncated)
 
 ; Split into m0, m1, m2 (each 2 digits)
     LDI t0, 5678

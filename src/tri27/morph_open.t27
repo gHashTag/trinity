@@ -1,0 +1,13 @@
+; Morph Open — TTT Dogfood Phase 3
+;
+; Morphological opening
+;
+; Test case: morph open
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; opened = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715c2001538

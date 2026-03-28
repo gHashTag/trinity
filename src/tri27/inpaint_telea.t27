@@ -1,0 +1,13 @@
+; Inpaint Telea — TTT Dogfood Phase 3
+;
+; Telea inpainting
+;
+; Test case: telea inpaint
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; inpainted = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715a1001517

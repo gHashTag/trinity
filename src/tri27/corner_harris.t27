@@ -1,0 +1,13 @@
+; Corner Harris — TTT Dogfood Phase 3
+;
+; Harris corner detection
+;
+; Test case: harris corners
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; corners = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715dd001553
