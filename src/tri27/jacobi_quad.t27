@@ -1,6 +1,6 @@
 ; Jacobi Quadrature — TTT Dogfood Phase 3
 ;
-| Weighted endpoints
+; Weighted endpoints
 ;
 ; Test case: jacobi_quad
 ;

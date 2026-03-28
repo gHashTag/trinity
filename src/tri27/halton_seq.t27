@@ -1,6 +1,6 @@
 ; Halton Sequence — TTT Dogfood Phase 3
 ;
-| Low discrepancy
+; Low discrepancy
 ;
 ; Test case: halton_seq
 ;
