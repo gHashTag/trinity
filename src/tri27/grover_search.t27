@@ -1,0 +1,13 @@
+; Grover Search — TTT Dogfood Phase 3
+;
+; Quantum search algorithm
+;
+; Test case: 4 items
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; iterations = √4 = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713c900133f

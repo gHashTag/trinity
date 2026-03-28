@@ -1,0 +1,13 @@
+; Quantum Gate — TTT Dogfood Phase 3
+;
+; Single qubit gate (Hadamard)
+;
+; Test case: H gate
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; applied = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713c600133c

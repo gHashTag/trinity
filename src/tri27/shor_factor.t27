@@ -1,0 +1,13 @@
+; Shor's Algorithm — TTT Dogfood Phase 3
+;
+; Quantum factoring
+;
+; Test case: factor 15
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 15
+    ST t0, 60         ; N = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713cb001341

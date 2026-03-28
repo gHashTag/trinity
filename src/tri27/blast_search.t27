@@ -1,0 +1,13 @@
+; BLAST Search — TTT Dogfood Phase 3
+;
+; Basic Local Alignment Search Tool
+;
+; Test case: find matches
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; hits = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713c2001338

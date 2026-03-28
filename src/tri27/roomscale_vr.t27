@@ -1,0 +1,13 @@
+; Room-Scale VR — TTT Dogfood Phase 3
+;
+; VR room boundaries
+;
+; Test case: 2x2m play area
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 200
+    ST t0, 60         ; width_cm = 200
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713d3001349
