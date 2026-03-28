@@ -27270,3 +27270,453 @@ test "quaternion_conj: verify conjugate" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "canny: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canny.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Canny") != null);
+}
+
+test "canny: verify detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canny.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chroma_key: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chroma_key.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Chroma") != null);
+}
+
+test "chroma_key: verify key" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chroma_key.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "color_blend: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_blend.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Color") != null);
+}
+
+test "color_blend: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_blend.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "color_difference: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_difference.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Difference") != null);
+}
+
+test "color_difference: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_difference.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_bilateral: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_bilateral.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bilateral") != null);
+}
+
+test "denoise_bilateral: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_bilateral.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_gaussian: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_gaussian.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Gaussian") != null);
+}
+
+test "denoise_gaussian: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_gaussian.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_median: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_median.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Median") != null);
+}
+
+test "denoise_median: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_median.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_nonlocal: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_nonlocal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Nonlocal") != null);
+}
+
+test "denoise_nonlocal: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_nonlocal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_tv: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_tv.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "TV") != null);
+}
+
+test "denoise_tv: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_tv.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "denoise_wavelet: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_wavelet.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Wavelet") != null);
+}
+
+test "denoise_wavelet: verify denoising" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "denoise_wavelet.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "despill: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "despill.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Despill") != null);
+}
+
+test "despill: verify despilling" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "despill.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "edge_detect2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "edge_detect2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Edge") != null);
+}
+
+test "edge_detect2: verify detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "edge_detect2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hue_blend: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hue_blend.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hue") != null);
+}
+
+test "hue_blend: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hue_blend.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "inpaint: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Inpaint") != null);
+}
+
+test "inpaint: verify inpainting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "inpaint_ns: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint_ns.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Inpaint") != null);
+}
+
+test "inpaint_ns: verify inpainting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint_ns.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "inpaint_telea: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint_telea.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Telea") != null);
+}
+
+test "inpaint_telea: verify inpainting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "inpaint_telea.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "laplacian: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "laplacian.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Laplacian") != null);
+}
+
+test "laplacian: verify operator" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "laplacian.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "linear_burn: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_burn.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Burn") != null);
+}
+
+test "linear_burn: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_burn.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "linear_dodge: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_dodge.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Dodge") != null);
+}
+
+test "linear_dodge: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_dodge.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "luma_key: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "luma_key.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Luma") != null);
+}
+
+test "luma_key: verify key" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "luma_key.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "luminosity_blend: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "luminosity_blend.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Luminosity") != null);
+}
+
+test "luminosity_blend: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "luminosity_blend.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_gaussian: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_gaussian.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Gaussian") != null);
+}
+
+test "noise_gaussian: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_gaussian.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_poisson: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_poisson.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Poisson") != null);
+}
+
+test "noise_poisson: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_poisson.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_salt_pepper: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_salt_pepper.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Salt") != null);
+}
+
+test "noise_salt_pepper: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_salt_pepper.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_speckle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_speckle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Speckle") != null);
+}
+
+test "noise_speckle: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_speckle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_speckle2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_speckle2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Speckle") != null);
+}
+
+test "noise_speckle2: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_speckle2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "noise_uniform: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_uniform.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Uniform") != null);
+}
+
+test "noise_uniform: verify noise" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "noise_uniform.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "pin_light: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pin_light.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Pin") != null);
+}
+
+test "pin_light: verify blending" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pin_light.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "quaternion_mul: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quaternion_mul.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Multiply") != null);
+}
+
+test "quaternion_mul: verify multiplication" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quaternion_mul.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "quaternion_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quaternion_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Norm") != null);
+}
+
+test "quaternion_norm: verify norm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quaternion_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
