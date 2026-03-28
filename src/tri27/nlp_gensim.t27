@@ -1,0 +1,3 @@
+; Gensim NLP library
+LDI t0, 0
+HALT

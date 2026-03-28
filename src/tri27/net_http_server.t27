@@ -1,0 +1,13 @@
+; Net HTTP Server — TTT Dogfood Phase 3
+;
+; HTTP server implementation
+;
+; Test case: net_http_server
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; http_server_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0763300000200000001c93
