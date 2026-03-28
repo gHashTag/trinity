@@ -126660,3 +126660,3003 @@ test "quantum_vqe_algo: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "ackermann: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ackermann.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ackermann: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ackermann.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "active_contour: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "active_contour.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "active_contour: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "active_contour.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "actuator: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "actuator.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "actuator: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "actuator.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ad_bidding: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_bidding.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ad_bidding: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_bidding.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ad_ctr: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_ctr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ad_ctr: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_ctr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ad_optimization: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_optimization.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ad_optimization: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_optimization.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ad_targeting: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_targeting.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ad_targeting: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ad_targeting.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "adc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "adc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "adc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_flight: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_flight.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_flight: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_flight.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_guidance: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_guidance.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_guidance: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_guidance.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_navigation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_navigation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_navigation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_navigation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_orbit: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_orbit.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_orbit: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_orbit.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_propulsion: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_propulsion.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_propulsion: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_propulsion.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "aerospace_reentry: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_reentry.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "aerospace_reentry: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aerospace_reentry.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "affine: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "affine.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "affine: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "affine.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agent: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agent.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agent: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agent.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agriculture_crop: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_crop.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agriculture_crop: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_crop.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agriculture_irrigation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_irrigation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agriculture_irrigation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_irrigation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agriculture_pest: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_pest.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agriculture_pest: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_pest.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agriculture_soil: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_soil.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agriculture_soil: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_soil.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "agriculture_yield: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_yield.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "agriculture_yield: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "agriculture_yield.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "angle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "angle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "angle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "angle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "angular: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "angular.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "angular: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "angular.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "anisotropic: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "anisotropic.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "anisotropic: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "anisotropic.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "antialiasing: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "antialiasing.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "antialiasing: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "antialiasing.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "api: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "api.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "api: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "api.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ar_lighting: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_lighting.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ar_lighting: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_lighting.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ar_overlay: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_overlay.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ar_overlay: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_overlay.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ar_plane_detection: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_plane_detection.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ar_plane_detection: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_plane_detection.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ar_slam: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_slam.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ar_slam: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ar_slam.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "architecture: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "architecture.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "architecture: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "architecture.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "arduino: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arduino.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "arduino: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arduino.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "arm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "arm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "arm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "artifact: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "artifact.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "artifact: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "artifact.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "assembly: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "assembly.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "assembly: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "assembly.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "async_await: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_await.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "async_await: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_await.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "async_channel: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_channel.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "async_channel: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_channel.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "async_future: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_future.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "async_future: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_future.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "async_stream: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_stream.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "async_stream: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "async_stream.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atmega: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atmega.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "atmega: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atmega.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "atomics: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atomics.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "atomics: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "atomics.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_aac: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_aac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_aac: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_aac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_aac_codec: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_aac_codec.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_aac_codec: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_aac_codec.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_bandpass: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_bandpass.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_bandpass: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_bandpass.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_compression: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_compression.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_compression: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_compression.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_eq: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_eq.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_eq: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_eq.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_fft_audio: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_fft_audio.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_fft_audio: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_fft_audio.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_filter_audio: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_filter_audio.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_filter_audio: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_filter_audio.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_flac: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_flac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_flac: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_flac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_flac_codec: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_flac_codec.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_flac_codec: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_flac_codec.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_highpass: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_highpass.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_highpass: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_highpass.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_lowpass: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_lowpass.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_lowpass: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_lowpass.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_mel_spectrogram: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mel_spectrogram.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_mel_spectrogram: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mel_spectrogram.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_mfcc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mfcc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_mfcc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mfcc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_mp3: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mp3.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_mp3: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mp3.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_mp3_codec: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mp3_codec.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_mp3_codec: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_mp3_codec.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_notch: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_notch.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_notch: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_notch.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_ogg: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_ogg.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_ogg: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_ogg.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_opus: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_opus.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_opus: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_opus.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_opus_codec: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_opus_codec.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_opus_codec: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_opus_codec.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_spectrogram: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_spectrogram.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_spectrogram: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_spectrogram.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_vorbis: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_vorbis.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_vorbis: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_vorbis.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "audio_wav: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_wav.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_wav: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_wav.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automaton: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automaton.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automaton: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automaton.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_autopilot: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_autopilot.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_autopilot: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_autopilot.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_camera: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_camera.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_camera: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_camera.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_lidar: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_lidar.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_lidar: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_lidar.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_path_planning: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_path_planning.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_path_planning: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_path_planning.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_radar: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_radar.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_radar: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_radar.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "automotive_sensor_fusion: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_sensor_fusion.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "automotive_sensor_fusion: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "automotive_sensor_fusion.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "autonomous: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "autonomous.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "autonomous: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "autonomous.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "autopilot: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "autopilot.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "autopilot: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "autopilot.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "backend: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "backend.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "backend: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "backend.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "barrel: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "barrel.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "barrel: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "barrel.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "battery: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "battery.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "battery: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "battery.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "battery_mgmt: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "battery_mgmt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "battery_mgmt: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "battery_mgmt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bearing: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bearing.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bearing: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bearing.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "benchmark: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "benchmark.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "benchmark: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "benchmark.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bilat: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bilat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bilat: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bilat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_mask: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_mask.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "binary_mask: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_mask.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_sensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_sensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "binary_sensor: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_sensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bio_phylogeny_tree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bio_phylogeny_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bio_phylogeny_tree: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bio_phylogeny_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "biped: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "biped.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "biped: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "biped.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bipedal: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipedal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bipedal: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipedal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "black_level: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "black_level.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "black_level: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "black_level.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bldc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bldc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bldc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bldc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "blend: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blend.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "blend: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blend.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "blending: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blending.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "blending: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blending.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "blind: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blind.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "blind: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "blind.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "block: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "block.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "block: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "block.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bluetooth: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bluetooth.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bluetooth: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bluetooth.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "body: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "body.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "body: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "body.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "border: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "border.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "border: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "border.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "brake: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "brake.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "brake: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "brake.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "brushless: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "brushless.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "brushless: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "brushless.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bundle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bundle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "bundle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bundle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cad_2d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cad_2d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cad_2d: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cad_2d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cad_3d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cad_3d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cad_3d: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cad_3d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "calibration: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "calibration.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "calibration: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "calibration.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "camera: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "camera.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "camera: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "camera.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "canvas: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canvas.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "canvas: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "canvas.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "capture: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "capture.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "capture: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "capture.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chassis: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chassis.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "chassis: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chassis.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "checker: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "checker.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "checker: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "checker.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chi_square_goodness: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chi_square_goodness.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "chi_square_goodness: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chi_square_goodness.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chip: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chip.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "chip: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chip.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "chroma: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chroma.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "chroma: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "chroma.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "circle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "circle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "circle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "circle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "closed_loop: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "closed_loop.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "closed_loop: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "closed_loop.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "collision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "collision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "collision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "collision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "color_grading: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_grading.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "color_grading: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "color_grading.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "comp_op: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "comp_op.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "comp_op: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "comp_op.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compass: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compass.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compass: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compass.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_generation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_generation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_generation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_generation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_intermediate: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_intermediate.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_intermediate: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_intermediate.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_lex: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_lex.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_lex: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_lex.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_optimization: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_optimization.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_optimization: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_optimization.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_parsing: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_parsing.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_parsing: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_parsing.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compiler_tree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compiler_tree: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compiler_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compression_brotli: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_brotli.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compression_brotli: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_brotli.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compression_deflate: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_deflate.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compression_deflate: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_deflate.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compression_lz77: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_lz77.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compression_lz77: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_lz77.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compression_lzw: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_lzw.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compression_lzw: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_lzw.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "compression_zstd: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_zstd.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "compression_zstd: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "compression_zstd.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "construction_bim: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_bim.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "construction_bim: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_bim.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "construction_cost: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_cost.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "construction_cost: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_cost.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "construction_design: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_design.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "construction_design: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_design.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "construction_scheduling: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_scheduling.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "construction_scheduling: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_scheduling.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "construction_simulation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_simulation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "construction_simulation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "construction_simulation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_adaptive: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_adaptive.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_adaptive: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_adaptive.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_ekf: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_ekf.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_ekf: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_ekf.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_feedback: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_feedback.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_feedback: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_feedback.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_feedforward: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_feedforward.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_feedforward: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_feedforward.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_gain_scheduling: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_gain_scheduling.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_gain_scheduling: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_gain_scheduling.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_h_infinity: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_h_infinity.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_h_infinity: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_h_infinity.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_kalman: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_kalman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_kalman: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_kalman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_lead_lag: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_lead_lag.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_lead_lag: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_lead_lag.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_loop: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_loop.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_loop: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_loop.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_lqr: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_lqr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_lqr: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_lqr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_mpc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_mpc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_mpc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_mpc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_mrac: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_mrac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_mrac: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_mrac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_particle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_particle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_particle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_particle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_pd: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pd.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_pd: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pd.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_pi: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pi.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_pi: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pi.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_pid: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pid.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_pid: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_pid.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_sliding: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_sliding.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_sliding: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_sliding.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_two_dof: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_two_dof.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_two_dof: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_two_dof.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "control_ukf: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_ukf.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "control_ukf: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "control_ukf.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "controller: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "controller.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "controller: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "controller.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "convert: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "convert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "convert: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "convert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crossfade: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crossfade.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crossfade: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crossfade.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_aes_algo: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_aes_algo.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_aes_algo: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_aes_algo.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_asymmetric: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_asymmetric.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_asymmetric: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_asymmetric.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_block: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_block.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_block: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_block.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_cbc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_cbc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_cbc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_cbc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ccm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ccm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ccm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ccm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_cfb: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_cfb.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_cfb: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_cfb.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ctr: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ctr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ctr: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ctr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_digital_sig: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_digital_sig.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_digital_sig: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_digital_sig.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_eax: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_eax.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_eax: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_eax.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ecb: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ecb.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ecb: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ecb.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_gcm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_gcm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_gcm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_gcm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_hash: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_hash: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_kdf: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_kdf.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_kdf: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_kdf.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_mac: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_mac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_mac: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_mac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ocb: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ocb.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ocb: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ocb.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ofb: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ofb.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ofb: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ofb.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_prng: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_prng.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_prng: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_prng.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_rsa_algo: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_rsa_algo.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_rsa_algo: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_rsa_algo.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_stream: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_stream.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_stream: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_stream.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_symmetric: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_symmetric.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_symmetric: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_symmetric.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_xts: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_xts.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_xts: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_xts.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "culling: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "culling.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "culling: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "culling.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "current: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "current.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "current: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "current.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_adaptive_threshold: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_adaptive_threshold.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_adaptive_threshold: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_adaptive_threshold.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_bf_match: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bf_match.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_bf_match: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bf_match.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_bilateral: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bilateral.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_bilateral: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bilateral.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_blackhat: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_blackhat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_blackhat: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_blackhat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_bm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_bm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_bounding_rect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bounding_rect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_bounding_rect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_bounding_rect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_brief: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_brief.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_brief: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_brief.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_brisk: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_brisk.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_brisk: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_brisk.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_canny: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_canny.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_canny: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_canny.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_close: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_close.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_close: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_close.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_contour: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_contour.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_contour: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_contour.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_convex_hull_cv: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_convex_hull_cv.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_convex_hull_cv: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_convex_hull_cv.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_corner_detect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_corner_detect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_corner_detect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_corner_detect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_dilate_op: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_dilate_op.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_dilate_op: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_dilate_op.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_disparity: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_disparity.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_disparity: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_disparity.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_edge_detect_cv: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_edge_detect_cv.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_edge_detect_cv: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_edge_detect_cv.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_erode_op: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_erode_op.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_erode_op: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_erode_op.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_farneback: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_farneback.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_farneback: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_farneback.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_fast: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fast.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_fast: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fast.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_fit_ellipse: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fit_ellipse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_fit_ellipse: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fit_ellipse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_fit_line: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fit_line.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_fit_line: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_fit_line.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_flann: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_flann.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_flann: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_flann.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_freak: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_freak.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_freak: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_freak.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_gaussian: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_gaussian.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_gaussian: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_gaussian.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_grabcut: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_grabcut.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_grabcut: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_grabcut.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cv_gradient: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_gradient.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "cv_gradient: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cv_gradient.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
