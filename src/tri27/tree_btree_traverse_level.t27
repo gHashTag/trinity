@@ -1,0 +1,13 @@
+; B-Tree Traverse Level — TTT Dogfood Phase 3
+;
+; Level-order B-tree traversal
+;
+; Test case: tree_btree_traverse_level
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; btree_level_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731600002000000389

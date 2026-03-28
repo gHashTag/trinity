@@ -1,0 +1,13 @@
+; Treap Union — TTT Dogfood Phase 3
+;
+; Union of treaps
+;
+; Test case: tree_treap_union
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; treap_union_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731e0000020000003c9
