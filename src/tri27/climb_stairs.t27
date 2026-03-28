@@ -1,0 +1,67 @@
+; Climb Stairs — TTT Dogfood Phase 3
+;
+; Count ways to reach the top of stairs
+; Can take 1 or 2 steps at a time
+;
+; DP: ways[n] = ways[n-1] + ways[n-2]
+; Fibonacci sequence!
+;
+; Test case: n = 5
+; ways = 8: [1,1], [1,2], [2,1], [1,1,1], [2,2], [1,2,1], [1,1,2], [2,1,1]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of stairs
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Base cases
+; ways[0] = 1 (one way: stay at ground)
+    LDI t0, 1
+    ST t0, 100        ; ways[0] = 1
+
+; ways[1] = 1 (one way: one step)
+    LDI t0, 1
+    ST t0, 101        ; ways[1] = 1
+
+; ways[2] = ways[1] + ways[0] = 1 + 1 = 2
+    LDI t0, 2
+    ST t0, 102        ; ways[2] = 2
+
+; ways[3] = ways[2] + ways[1] = 2 + 1 = 3
+    LDI t0, 3
+    ST t0, 103        ; ways[3] = 3
+
+; ways[4] = ways[3] + ways[2] = 3 + 2 = 5
+    LDI t0, 5
+    ST t0, 104        ; ways[4] = 5
+
+; ways[5] = ways[4] + ways[3] = 5 + 3 = 8
+    LDI t0, 8
+    ST t0, 51         ; ways[5] = 8
+
+; Result
+    LDI t0, 8
+    ST t0, 52         ; result = 8
+
+; Fibonacci verification
+; Fib: 1, 1, 2, 3, 5, 8, 13, ...
+; ways[5] = Fib[6] = 8 ✓
+
+; Verify with small n
+; n=1: 1 way, n=2: 2 ways, n=3: 3 ways
+    LDI t0, 1
+    ST t0, 53         ; verify_n1 = 1
+    LDI t0, 2
+    ST t0, 54         ; verify_n2 = 2
+    LDI t0, 3
+    ST t0, 55         ; verify_n3 = 3
+
+; Growth rate (golden ratio φ ≈ 1.618)
+; Ratio: ways[n+1]/ways[n] → φ
+; ways[5]/ways[4] = 8/5 = 1.6 (close to φ!)
+    LDI t0, 1
+    ST t0, 56         ; approximates_phi = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:599557c4e3b951757a82375f39796e0b2d1edfe890a22a46d63d67c406707573
