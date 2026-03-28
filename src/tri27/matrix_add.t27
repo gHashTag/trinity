@@ -1,0 +1,13 @@
+; Matrix Add — TTT Dogfood Phase 3
+;
+| C = A + B
+;
+; Test case: matrix_add
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; matrix_add_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b050001b5c

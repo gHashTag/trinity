@@ -1,6 +1,6 @@
 ; Butterworth Filter — TTT Dogfood Phase 3
 ;
-| Flat frequency response
+; Flat frequency response
 ;
 ; Test case: butterworth_filter
 ;

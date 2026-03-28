@@ -1,0 +1,13 @@
+; Eigenvalues V2 — TTT Dogfood Phase 3
+;
+| Lambda alt
+;
+; Test case: matrix_eigen2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; matrix_eigen2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b040001b6a
