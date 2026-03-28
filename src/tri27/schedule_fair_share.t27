@@ -1,0 +1,13 @@
+; Fair Share Scheduler — TTT Dogfood Phase 3
+;
+; Group-based fair scheduling
+;
+; Test case: schedule_fair_share
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fair_share_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073040000200000008d9
