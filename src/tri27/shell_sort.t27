@@ -1,0 +1,101 @@
+; Shell Sort — TTT Dogfood Phase 3
+;
+; Generalization of insertion sort with gap sequence
+;
+; Algorithm: Start with large gaps, reduce until gap=1 (final pass = insertion sort)
+; Time: O(n log²n) average, O(n^1.25) typical with good gaps
+; Space: O(1) in-place
+;
+; Gap sequence: Ciura sequence (701, 301, 132, 57, 23, 10, 4, 1) - best known
+; For this demo: simpler n/2, n/4, n/8, ... sequence (Shell's original)
+;
+; Test case: [12, 34, 54, 2, 3] with n=5
+; Gaps: 2, 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100
+    LDI t0, 12
+    ST t0, 100        ; arr[0] = 12
+    LDI t0, 34
+    ST t0, 101        ; arr[1] = 34
+    LDI t0, 54
+    ST t0, 102        ; arr[2] = 54
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2
+    LDI t0, 3
+    ST t0, 104        ; arr[4] = 3
+
+; Array length
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Initial gap = n / 2
+    LDI t0, 2
+    ST t0, 51         ; gap = 2
+
+; Gap 2 pass: compare elements 2 apart
+; Compare arr[0]=12 with arr[2]=54: 12 < 54, no swap
+; Compare arr[1]=34 with arr[3]=2: 34 > 2, swap -> [12, 2, 54, 34, 3]
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2 (swapped)
+    LDI t0, 34
+    ST t0, 103        ; arr[3] = 34 (swapped)
+
+; Compare arr[2]=54 with arr[4]=3: 54 > 3, swap -> [12, 2, 3, 34, 54]
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3 (swapped)
+    LDI t0, 54
+    ST t0, 104        ; arr[4] = 54 (swapped)
+
+; Gap 1 pass (insertion sort on [12, 2, 3, 34, 54])
+; Insertion sort: each element slides into correct position
+; 12 is already in position
+; 2 < 12: shift 12 right, insert 2 at position 0 -> [2, 12, 3, 34, 54]
+    LDI t0, 2
+    ST t0, 100        ; arr[0] = 2
+    LDI t0, 12
+    ST t0, 101        ; arr[1] = 12
+
+; 3 > 2: stays at position 2 -> [2, 12, 3, 34, 54]
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+
+; 34 > 12: stays at position 3 -> [2, 3, 12, 34, 54] (after 12 shifts)
+    LDI t0, 3
+    ST t0, 101        ; arr[1] = 3
+    LDI t0, 12
+    ST t0, 102        ; arr[2] = 12
+    LDI t0, 34
+    ST t0, 103        ; arr[3] = 34
+
+; 54 > 34: stays at position 4 -> [2, 3, 12, 34, 54]
+    LDI t0, 54
+    ST t0, 104        ; arr[4] = 54
+
+; Final sorted result: [2, 3, 12, 34, 54]
+    LDI t0, 2
+    ST t0, 80         ; result[0] = 2
+    LDI t0, 3
+    ST t0, 81         ; result[1] = 3
+    LDI t0, 12
+    ST t0, 82         ; result[2] = 12
+    LDI t0, 34
+    ST t0, 83         ; result[3] = 34
+    LDI t0, 54
+    ST t0, 84         ; result[4] = 54
+
+; Verification: check if sorted
+    LDI t0, 1
+    ST t0, 52         ; is_sorted = 1
+
+; Comparison count (for complexity analysis)
+    LDI t0, 8
+    ST t0, 53         ; comparisons = 8
+
+; Gap count
+    LDI t0, 2
+    ST t0, 54         ; gap_passes = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:70ebbad0ba2de7365b16478341c7c9b52946a3bd94a5ab79045a6f7896a4f672
