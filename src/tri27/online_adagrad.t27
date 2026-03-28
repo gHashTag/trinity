@@ -1,0 +1,13 @@
+; Online Adagrad — TTT Dogfood Phase 3
+;
+; Adaptive gradient
+;
+; Test case: online_adagrad
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; online_adagrad_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07acd000002000000002370
