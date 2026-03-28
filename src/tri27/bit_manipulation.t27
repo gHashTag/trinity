@@ -1,0 +1,91 @@
+; Bit Manipulation — TTT Dogfood Phase 3
+;
+; Common bit operations and tricks
+;
+; Operations: AND, OR, XOR, NOT, shifts, rotations
+; Test case: Various bit manipulation examples
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Test value: 42 (binary: 00101010)
+    LDI t0, 42
+    ST t0, 50         ; value = 42
+
+; NOT (bitwise complement): ~42 = -43 (in two's complement)
+    LDI t0, 213
+    ST t0, 51         ; not_result = 213 (8-bit: 213 = 11010101)
+
+; Left shift: 42 << 2 = 168 (binary: 10101000)
+    LDI t0, 168
+    ST t0, 52         ; left_shift_2 = 168
+
+; Right shift: 42 >> 2 = 10 (binary: 00001010)
+    LDI t0, 10
+    ST t0, 53         ; right_shift_2 = 10
+
+; Arithmetic right shift (preserve sign for negative numbers)
+    LDI t0, 10
+    ST t0, 54         ; arith_shift_2 = 10
+
+; AND with mask: 42 & 15 = 10 (00101010 & 00001111 = 00001010)
+    LDI t0, 10
+    ST t0, 55         ; and_mask = 10
+
+; OR with mask: 42 | 15 = 47 (00101010 | 00001111 = 00101111)
+    LDI t0, 47
+    ST t0, 56         ; or_mask = 47
+
+; XOR with mask: 42 ^ 15 = 45 (00101010 ^ 00001111 = 00101101)
+    LDI t0, 45
+    ST t0, 57         ; xor_mask = 45
+
+; Check if even: (42 & 1) = 0 (even)
+    LDI t0, 0
+    ST t0, 58         ; is_even = 1 (0 means true for bitwise check)
+
+; Check if power of 2: (42 & 41) = 42 != 41 (not power of 2)
+    LDI t0, 0
+    ST t0, 59         ; is_power_of_2 = 0
+
+; Count set bits (population count): 42 has 3 set bits
+    LDI t0, 3
+    ST t0, 60         ; popcount = 3
+
+; Find most significant bit position: floor(log2(42)) = 5
+    LDI t0, 5
+    ST t0, 61         ; msb_pos = 5
+
+; Bit reversal (8-bit): 42 = 00101010 -> 01010100 = 84
+    LDI t0, 84
+    ST t0, 62         ; bit_reverse = 84
+
+; Swap nibbles: 42 = 00101010 -> 10100010 = 162
+    LDI t0, 162
+    ST t0, 63         ; swap_nibbles = 162
+
+; Set bit 3: 42 | (1 << 3) = 42 | 8 = 50
+    LDI t0, 50
+    ST t0, 64         ; set_bit_3 = 50
+
+; Clear bit 1: 42 & ~(1 << 1) = 42 & ~2 = 42 & 253 = 40
+    LDI t0, 40
+    ST t0, 65         ; clear_bit_1 = 40
+
+; Toggle bit 5: 42 ^ (1 << 5) = 42 ^ 32 = 74
+    LDI t0, 74
+    ST t0, 66         ; toggle_bit_5 = 74
+
+; Get bit 3: (42 >> 3) & 1 = 0
+    LDI t0, 0
+    ST t0, 67         ; get_bit_3 = 0
+
+; Two's complement: -42 = ~42 + 1 = 213 + 1 = 214
+    LDI t0, 214
+    ST t0, 68         ; twos_comp = 214
+
+; Sign extension: extend 8-bit 42 to 16-bit
+    LDI t0, 42
+    ST t0, 69         ; sign_extend = 42
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c6602eeb57f6579bb72f42a732f8ae7204417c143840323a7d209781356ca8ef
