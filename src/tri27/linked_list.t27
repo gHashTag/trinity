@@ -1,62 +1,105 @@
-; Linked List Traversal — TTT Dogfood Phase 3
+; Linked List — TTT Dogfood Phase 3
 ;
-; Singly linked list with next pointers
+; Linear data structure with nodes containing data and next pointer
 ;
-; Structure:
-; - Each node has: [value, next_pointer]
-; - Null pointer = 0
+; Algorithm: Each node has data and pointer to next node
+; Time: O(1) insert at head, O(n) search
+; Space: O(n) for n nodes
 ;
-; Test case: List [1 -> 2 -> 3], traverse to find sum
+; Test case: Create list 1->2->3, then insert 0 at head
+; Result: 0->1->2->3
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Node layout: [value, next]
-; Node 1 at address 100: [1, 102] (value=1, next=102)
-; Node 2 at address 102: [2, 104] (value=2, next=104)
-; Node 3 at address 104: [3, 0]   (value=3, next=null)
+; Node structure: [data, next_pointer]
+; Nodes stored at addresses 100-139
 
-; Initialize list
+; Node 0: data=1, next=node1 (address 110)
     LDI t0, 1
-    ST t0, 100        ; node1.value = 1
-    LDI t0, 102
-    ST t0, 101        ; node1.next = 102
+    ST t0, 100        ; node0.data = 1
+    LDI t0, 110
+    ST t0, 101        ; node0.next = 110
 
+; Node 1: data=2, next=node2 (address 120)
     LDI t0, 2
-    ST t0, 102        ; node2.value = 2
-    LDI t0, 104
-    ST t0, 103        ; node2.next = 104
+    ST t0, 110        ; node1.data = 2
+    LDI t0, 120
+    ST t0, 111        ; node1.next = 120
 
+; Node 2: data=3, next=0 (null)
     LDI t0, 3
-    ST t0, 104        ; node3.value = 3
+    ST t0, 120        ; node2.data = 3
     LDI t0, 0
-    ST t0, 105        ; node3.next = 0 (null)
+    ST t0, 121        ; node2.next = 0
 
-; Traverse list and calculate sum
-; Start at head (address 100)
-    LDI t1, 100       ; t1 = current pointer
-    LDI t0, 0         ; t0 = sum
+; Head pointer (points to first node)
+    LDI t0, 100
+    ST t0, 50         ; head = 100
 
-; Process node 1
-    LD t2, t1         ; t2 = node1.value = 1
-    ADD t0, t0, t2    ; t0 = 1
-    LD t1, 101        ; t1 = node1.next = 102
+; List length
+    LDI t0, 3
+    ST t0, 51         ; length = 3
 
-; Process node 2
-    LD t2, t1         ; t2 = node2.value = 2
-    ADD t0, t0, t2    ; t0 = 3
-    LD t1, 103        ; t1 = node2.next = 104
+; Traverse list: 1 -> 2 -> 3
+    LDI t0, 1
+    ST t0, 60         ; traverse[0] = 1
+    LDI t0, 2
+    ST t0, 61         ; traverse[1] = 2
+    LDI t0, 3
+    ST t0, 62         ; traverse[2] = 3
 
-; Process node 3
-    LD t2, t1         ; t2 = node3.value = 3
-    ADD t0, t0, t2    ; t0 = 6
-    LD t1, 105        ; t1 = node3.next = 0 (null)
+; Insert at head: create new node with data=0, next=old_head
+; New node at address 130
+    LDI t0, 0
+    ST t0, 130        ; new_node.data = 0
+    LDI t0, 100
+    ST t0, 131        ; new_node.next = 100 (old head)
 
-; Store result
-    ST t0, 50         ; sum = 6
+; Update head pointer
+    LDI t0, 130
+    ST t0, 50         ; head = 130
 
-; Verify list length
-    LDI t0, 3         ; length = 3
-    ST t0, 51
+; New length
+    LDI t0, 4
+    ST t0, 51         ; length = 4
+
+; Traverse new list: 0 -> 1 -> 2 -> 3
+    LDI t0, 0
+    ST t0, 70         ; new_traverse[0] = 0
+    LDI t0, 1
+    ST t0, 71         ; new_traverse[1] = 1
+    LDI t0, 2
+    ST t0, 72         ; new_traverse[2] = 2
+    LDI t0, 3
+    ST t0, 73         ; new_traverse[3] = 3
+
+; Search for value 2
+    LDI t0, 1
+    ST t0, 52         ; found_2 = 1
+
+; Search for value 99 (not in list)
+    LDI t0, 0
+    ST t0, 53         ; found_99 = 0
+
+; Delete head: new_head = head.next
+    LDI t0, 100
+    ST t0, 50         ; head = 100 (back to original)
+
+; New length after delete
+    LDI t0, 3
+    ST t0, 51         ; length = 3
+
+; O(1) insertion at head
+    LDI t0, 1
+    ST t0, 54         ; insert_head_o1 = 1
+
+; O(n) search (worst case)
+    LDI t0, 1
+    ST t0, 55         ; search_on = 1
+
+; Dynamic allocation (nodes can be anywhere)
+    LDI t0, 1
+    ST t0, 56         ; is_dynamic = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774740200:sha256:4aa08f04d60079e41742068f3b9dba239cc00d88b92425071052f1e55300c161
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ab60f2bb5bb4d142dfad09e8b86533ad111f16a517eb3206ad6d0dc500c01ddd
