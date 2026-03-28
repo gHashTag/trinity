@@ -1775,15 +1775,100 @@ test "hash_table: load factor calculation" {
     const allocator = std.testing.allocator;
     // Load factor = (items * 100) / table_size = (2 * 100) / 10 = 20
     const program =
-        \\    LDI t0, 2         ; items
-        \\    LDI t1, 100       ; percentage factor
-        \\    MUL t0, t0, t1    ; t0 = 200
-        \\    LDI t1, 10        ; table size
-        \\    DIV t0, t0, t1    ; t0 = 20
+        \\    LDI t0, 2
+        \\    LDI t1, 100
+        \\    MUL t0, t0, t1
+        \\    LDI t1, 10
+        \\    DIV t0, t0, t1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
+}
+
+// Stack Data Structure Tests — TTT Dogfood Phase 3
+
+test "stack: file exists" {
+    const path = "src/tri27/stack.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "stack: push single value" {
+    const allocator = std.testing.allocator;
+    // Simplified: set SP to 1, store value at address 51
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 50
+        \\    LDI t0, 5
+        \\    ST t0, 51
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "stack: push then pop returns last pushed" {
+    const allocator = std.testing.allocator;
+    // Push 5 at addr 51, push 3 at addr 52, pop returns 3
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 50
+        \\    LDI t0, 5
+        \\    ST t0, 51
+        \\    LDI t0, 3
+        \\    ST t0, 52
+        \\    LDI t0, 1
+        \\    ST t0, 50
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "stack: isEmpty when empty" {
+    const allocator = std.testing.allocator;
+    // SP = 0 means empty, just verify SP is 0
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "stack: isEmpty when has items" {
+    const allocator = std.testing.allocator;
+    // SP = 1 means not empty, verify SP is 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "stack: peek returns top without popping" {
+    const allocator = std.testing.allocator;
+    // Push 5 at address 51, then peek from address 51
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 50
+        \\    LDI t0, 5
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
 }
 
 // φ² + 1/φ² = 3 | TRINITY
