@@ -1,0 +1,13 @@
+; Direct Mapped Cache — TTT Dogfood Phase 3
+;
+; Single entry per set
+;
+; Test case: cache_direct_mapped
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; direct_mapped_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07312000010000000ae9

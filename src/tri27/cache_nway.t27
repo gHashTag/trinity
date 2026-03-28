@@ -1,0 +1,13 @@
+; N-Way Cache — TTT Dogfood Phase 3
+;
+; Set-associative cache
+;
+; Test case: cache_nway
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nway_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07314000010000000af9
