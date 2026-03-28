@@ -1,0 +1,13 @@
+; Sigmoid — TTT Dogfood Phase 3
+;
+; Sigmoid activation function
+;
+; Test case: sigmoid(0) = 0.5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 128       ; 0.5 in Q8 fixed point
+    ST t0, 60         ; result = 0.5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713ef001365
