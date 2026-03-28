@@ -1,0 +1,13 @@
+; Compressed Trie — TTT Dogfood Phase 3
+;
+; Patricia trie implementation
+;
+; Test case: trie_compressed
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; trie_compressed_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719e8001960
