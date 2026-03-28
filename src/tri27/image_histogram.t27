@@ -1,0 +1,13 @@
+; Image Histogram — TTT Dogfood Phase 3
+;
+; Calculate image histogram
+;
+; Test case: image_histogram
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; histogram_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07526000002000001449

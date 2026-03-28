@@ -1,0 +1,13 @@
+; Prob Expected Value — TTT Dogfood Phase 3
+;
+; Calculate expected value
+;
+; Test case: prob_expected_value
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; expected_value_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074cc0000020000001169

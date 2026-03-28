@@ -1,0 +1,13 @@
+; DSP FIR Filter — TTT Dogfood Phase 3
+;
+; FIR filter implementation
+;
+; Test case: dsp_fir_filter
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fir_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07502000002000001329

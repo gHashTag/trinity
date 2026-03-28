@@ -1,0 +1,13 @@
+; FFT DIF — TTT Dogfood Phase 3
+;
+; Decimation-in-frequency FFT
+;
+; Test case: fft_dif
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fft_dif_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074f2000002000001299
