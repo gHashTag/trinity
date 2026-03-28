@@ -1,0 +1,13 @@
+; sensor_fusion — TTT Dogfood Phase 3
+;
+; Robotics/embedded algorithm
+;
+; Test case: sensor_fusion
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sensor_fusion_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424442208

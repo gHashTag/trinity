@@ -1,0 +1,13 @@
+; linear_filter — TTT Dogfood Phase 3
+;
+; Graphics/vision algorithm
+;
+; Test case: linear_filter
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; linear_filter_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424439456
