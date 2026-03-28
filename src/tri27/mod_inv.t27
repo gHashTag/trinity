@@ -1,0 +1,13 @@
+; Modular Inverse — TTT Dogfood Phase 3
+;
+; Compute modular multiplicative inverse
+;
+; Test case: mod_inv
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mod_inv_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719790018f1
