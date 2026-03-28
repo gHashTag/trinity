@@ -1,0 +1,101 @@
+; SHA-256 Message Schedule — TTT Dogfood Phase 3
+;
+; Expands words for SHA-256 compression
+; W[t] = σ1(t-1) + W[t-7] + σ0(t-15) + W[t-16]
+;
+; Simplified version using only immediate addresses (no register-indirect)
+; Demonstrates: copy input to output, then expand using σ0/σ1
+;
+; Input: Message block at addresses 0-3
+; Output: Expanded schedule at addresses 50-7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Step 1: Copy input words (0-3) to output (50-53)
+    LD t0, 0          ; Load input[0]
+    ST t0, 50         ; Store to W[0]
+    LD t0, 1          ; Load input[1]
+    ST t0, 51         ; Store to W[1]
+    LD t0, 2          ; Load input[2]
+    ST t0, 52         ; Store to W[2]
+    LD t0, 3          ; Load input[3]
+    ST t0, 53         ; Store to W[3]
+
+; Step 2: Expand W[4] using simplified formula
+; W[4] = σ1(W[3]) + W[1] + σ0(W[0]) + W[-12]
+; For simplified: W[4] ≈ SHR^10(W[3]) + W[1] + SHR^3(W[0])
+
+    LD t1, 53         ; t1 = W[3]
+    SHR t1, t1, 10    ; t1 = σ1(W[3]) ≈ SHR^10
+
+    LD t2, 51         ; t2 = W[1]
+
+    LD t3, 50         ; t3 = W[0]
+    SHR t3, t3, 3     ; t3 = σ0(W[0]) ≈ SHR^3
+
+    ; For W[-12] we use a constant (simplified)
+    LDI t4, 0         ; t4 = 0 (placeholder for W[-12])
+
+    ; W[4] = t1 + t2 + t3 + t4
+    ADD t5, t1, t2    ; t5 = σ1(W[3]) + W[1]
+    ADD t5, t5, t3    ; t5 = t5 + σ0(W[0])
+    ADD t5, t5, t4    ; t5 = t5 + 0
+    ST t5, 54         ; W[4] = result
+
+; Step 3: Expand W[5]
+; W[5] = σ1(W[4]) + W[2] + σ0(W[1]) + W[-11]
+
+    LD t1, 54         ; t1 = W[4]
+    SHR t1, t1, 10    ; t1 = σ1(W[4])
+
+    LD t2, 52         ; t2 = W[2]
+
+    LD t3, 51         ; t3 = W[1]
+    SHR t3, t3, 3     ; t3 = σ0(W[1])
+
+    LDI t4, 0         ; t4 = 0 (placeholder)
+
+    ADD t5, t1, t2
+    ADD t5, t5, t3
+    ADD t5, t5, t4
+    ST t5, 55         ; W[5] = result
+
+; Step 4: Expand W[6]
+; W[6] = σ1(W[5]) + W[3] + σ0(W[2]) + W[-10]
+
+    LD t1, 55         ; t1 = W[5]
+    SHR t1, t1, 10    ; t1 = σ1(W[5])
+
+    LD t2, 53         ; t2 = W[3]
+
+    LD t3, 52         ; t3 = W[2]
+    SHR t3, t3, 3     ; t3 = σ0(W[2])
+
+    LDI t4, 0         ; t4 = 0 (placeholder)
+
+    ADD t5, t1, t2
+    ADD t5, t5, t3
+    ADD t5, t5, t4
+    ST t5, 56         ; W[6] = result
+
+; Step 5: Expand W[7]
+; W[7] = σ1(W[6]) + W[4] + σ0(W[3]) + W[-9]
+
+    LD t1, 56         ; t1 = W[6]
+    SHR t1, t1, 10    ; t1 = σ1(W[6])
+
+    LD t2, 54         ; t2 = W[4]
+
+    LD t3, 53         ; t3 = W[3]
+    SHR t3, t3, 3     ; t3 = σ0(W[3])
+
+    LDI t4, 0         ; t4 = 0 (placeholder)
+
+    ADD t5, t1, t2
+    ADD t5, t5, t3
+    ADD t5, t5, t4
+    ST t5, 57         ; W[7] = result
+
+    HALT
+
+; TRI27_SIGNATURE:tri-cli:1774693883:sha256:e761de618481d2e6abd1133af13d86e616be361f15dfccad21836771e73c9e6a
