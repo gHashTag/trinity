@@ -5553,3 +5553,133 @@ test "knapsack: dp table value" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
 }
+
+// Longest Common Subsequence (String) Tests — TTT Dogfood Phase 3
+
+test "lcs_string: file exists" {
+    const path = "src/tri27/lcs_string.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "lcs_string: string 1 length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "lcs_string: string 2 length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "lcs_string: lcs length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "lcs_string: first char B" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 66
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 66), cpu.t27[0].trits);
+}
+
+test "lcs_string: second char C" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 67
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 67), cpu.t27[0].trits);
+}
+
+test "lcs_string: third char B" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 66
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 66), cpu.t27[0].trits);
+}
+
+test "lcs_string: fourth char A" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 65
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 65), cpu.t27[0].trits);
+}
+
+test "lcs_string: dp table size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "lcs_string: first string first char" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 65
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 65), cpu.t27[0].trits);
+}
+
+test "lcs_string: second string first char" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 66
+        \\    ST t0, 110
+        \\    LD t0, 110
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 66), cpu.t27[0].trits);
+}

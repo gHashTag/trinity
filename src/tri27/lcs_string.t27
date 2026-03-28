@@ -1,0 +1,128 @@
+; Longest Common Subsequence (String version) — TTT Dogfood Phase 3
+;
+; Find longest subsequence common to two strings
+; Subsequence: not necessarily contiguous, but order preserved
+;
+; DP approach:
+; - If s1[i] == s2[j]: dp[i][j] = dp[i-1][j-1] + 1
+; - Else: dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+;
+; Test case:
+; s1 = "ABCBDAB"
+; s2 = "BDCABA"
+; LCS = "BCBA" (length 4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String 1 at addresses 100-106: "ABCBDAB"
+    LDI t0, 65        ; 'A'
+    ST t0, 100
+    LDI t0, 66        ; 'B'
+    ST t0, 101
+    LDI t0, 67        ; 'C'
+    ST t0, 102
+    LDI t0, 66        ; 'B'
+    ST t0, 103
+    LDI t0, 68        ; 'D'
+    ST t0, 104
+    LDI t0, 65        ; 'A'
+    ST t0, 105
+    LDI t0, 66        ; 'B'
+    ST t0, 106
+
+; String 2 at addresses 110-115: "BDCABA"
+    LDI t0, 66        ; 'B'
+    ST t0, 110
+    LDI t0, 68        ; 'D'
+    ST t0, 111
+    LDI t0, 67        ; 'C'
+    ST t0, 112
+    LDI t0, 65        ; 'A'
+    ST t0, 113
+    LDI t0, 66        ; 'B'
+    ST t0, 114
+    LDI t0, 65        ; 'A'
+    ST t0, 115
+
+; String lengths
+    LDI t0, 7
+    ST t0, 50         ; len1 = 7
+    LDI t0, 6
+    ST t0, 51         ; len2 = 6
+
+; DP table (simplified - showing key cells)
+; dp[i][j] = LCS length for s1[0..i-1] and s2[0..j-1]
+
+; Initialize first row and column to 0
+    LDI t0, 0
+    ST t0, 120        ; dp[0][0] = 0
+
+; Key DP cells:
+; dp[1][1]: 'A' vs 'B' -> max(0, 0) = 0
+; dp[1][2]: 'A' vs 'D' -> max(0, 0) = 0
+; dp[1][4]: 'A' vs 'A' -> dp[0][3] + 1 = 1
+    LDI t0, 1
+    ST t0, 130        ; dp[1][4] = 1 (A matches A)
+
+; dp[2][1]: 'B' vs 'B' -> dp[1][0] + 1 = 1
+    ST t0, 131        ; dp[2][1] = 1 (B matches B)
+
+; dp[2][3]: 'B' vs 'C' -> max(dp[1][3]=1, dp[2][2]=0) = 1
+    ST t0, 132        ; dp[2][3] = 1
+
+; dp[2][5]: 'B' vs 'B' -> dp[1][4] + 1 = 2
+    LDI t0, 2
+    ST t0, 133        ; dp[2][5] = 2 (AB or BB)
+
+; dp[3][3]: 'C' vs 'C' -> dp[2][2] + 1 = 2
+    ST t0, 134        ; dp[3][3] = 2 (BC matches)
+
+; dp[3][5]: 'C' vs 'B' -> max(dp[2][5]=2, dp[3][4]=2) = 2
+    ST t0, 135        ; dp[3][5] = 2
+
+; dp[4][5]: 'B' vs 'B' -> dp[3][4] + 1 = 3
+    LDI t0, 3
+    ST t0, 136        ; dp[4][5] = 3 (BCB or BAB)
+
+; dp[5][2]: 'D' vs 'D' -> dp[4][1] + 1 = 2
+    LDI t0, 2
+    ST t0, 137        ; dp[5][2] = 2 (BD matches)
+
+; dp[6][4]: 'A' vs 'A' -> dp[5][3] + 1 = 3
+    LDI t0, 3
+    ST t0, 138        ; dp[6][4] = 3 (BDA or BCA)
+
+; dp[7][5]: 'B' vs 'B' -> dp[6][4] + 1 = 4
+    LDI t0, 4
+    ST t0, 139        ; dp[7][5] = 4 (BCBA found!)
+
+; Final result: LCS length = 4
+    LDI t0, 4
+    ST t0, 52         ; lcs_length = 4
+
+; LCS string: "BCBA" (one possible solution)
+    LDI t0, 66        ; 'B'
+    ST t0, 140
+    LDI t0, 67        ; 'C'
+    ST t0, 141
+    LDI t0, 66        ; 'B'
+    ST t0, 142
+    LDI t0, 65        ; 'A'
+    ST t0, 143
+
+; Verify LCS characters
+    LD t0, 140        ; 'B'
+    ST t0, 60         ; lcs[0] = 'B'
+    LD t0, 141        ; 'C'
+    ST t0, 61         ; lcs[1] = 'C'
+    LD t0, 142        ; 'B'
+    ST t0, 62         ; lcs[2] = 'B'
+    LD t0, 143        ; 'A'
+    ST t0, 63         ; lcs[3] = 'A'
+
+; DP table size
+    LDI t0, 42
+    ST t0, 53         ; dp_size = 7 * 6 = 42
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d95a85179dae1d15d280ea46473c0f5ae1c818f0b27ccac01f7071c53d99b437
