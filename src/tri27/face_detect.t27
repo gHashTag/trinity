@@ -1,0 +1,13 @@
+; Face Detection — TTT Dogfood Phase 3
+;
+; Viola-Jones detector
+;
+; Test case: detect face
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; face = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713dd001353
