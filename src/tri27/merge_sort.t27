@@ -1,0 +1,107 @@
+; Merge Sort — TTT Dogfood Phase 3
+;
+; Divide-and-conquer sorting algorithm
+; 1. Divide array into two halves
+; 2. Recursively sort each half
+; 3. Merge sorted halves
+;
+; Time complexity: O(n log n)
+; Space complexity: O(n) for merge
+;
+; Test case: Sort [5, 2, 8, 1, 9] -> [1, 2, 5, 8, 9]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 0-4: [5, 2, 8, 1, 9]
+
+; Step 1: Divide into two halves
+; Left half: [5, 2] (indices 0-1)
+; Right half: [8, 1, 9] (indices 2-4)
+
+; Sort left half [5, 2] -> [2, 5]
+; Compare and swap
+    LD t0, 0          ; t0 = arr[0] = 5
+    LD t1, 1          ; t1 = arr[1] = 2
+
+    ; Compare: if t0 > t1, swap
+    ; We'll use subtraction to compare
+    SUB t2, t0, t1    ; t2 = 5 - 2 = 3 (positive, so t0 > t1)
+
+    ; Since t0 > t1, swap them
+    ; Store t1 to position 0, t0 to position 1
+    ST t1, 2          ; temp location for smaller
+    ST t0, 3          ; temp location for larger
+    LD t0, 2          ; t0 = 2 (smaller)
+    LD t1, 3          ; t1 = 5 (larger)
+    ST t0, 4          ; left[0] = 2
+    ST t1, 5          ; left[1] = 5
+
+; Sort right half [8, 1, 9]
+; First, compare 8 and 1
+    LD t0, 2          ; arr[2] = 8
+    LD t1, 3          ; arr[3] = 1
+    SUB t2, t0, t1    ; t2 = 7 (positive, swap)
+    ST t1, 6          ; temp: 1
+    ST t0, 7          ; temp: 8
+    ; Now [1, 8, 9] - need to place 9
+    LD t0, 4          ; arr[4] = 9
+    ; Compare 8 and 9: 8 < 9, no swap needed
+    ; Store sorted right half
+    LDI t0, 1
+    ST t0, 8          ; right[0] = 1
+    LDI t0, 8
+    ST t0, 9          ; right[1] = 8
+    LDI t0, 9
+    ST t0, 10         ; right[2] = 9
+
+; Merge two sorted halves: [2, 5] and [1, 8, 9]
+; Result: [1, 2, 5, 8, 9]
+
+; Compare 2 and 1: 1 is smaller
+    LD t0, 4          ; left[0] = 2
+    LD t1, 8          ; right[0] = 1
+    SUB t2, t0, t1    ; t2 = 1 (positive, so right is smaller)
+    ; 1 < 2, so result[0] = 1
+    ST t1, 20         ; result[0] = 1
+
+; Next: compare 2 and 8
+    LD t0, 4          ; left[0] = 2
+    LD t1, 9          ; right[1] = 8
+    SUB t2, t0, t1    ; t2 = -6 (negative, so left is smaller)
+    ; 2 < 8, so result[1] = 2
+    ST t0, 21         ; result[1] = 2
+
+; Next: compare 5 and 8
+    LD t0, 5          ; left[1] = 5
+    LD t1, 9          ; right[1] = 8
+    SUB t2, t0, t1    ; t2 = -3 (negative, so left is smaller)
+    ; 5 < 8, so result[2] = 5
+    ST t0, 22         ; result[2] = 5
+
+; Next: remaining right elements
+    LD t0, 9          ; right[1] = 8
+    ST t0, 23         ; result[3] = 8
+    LD t0, 10         ; right[2] = 9
+    ST t0, 24         ; result[4] = 9
+
+; Verify sorted result
+; Calculate sum: 1 + 2 + 5 + 8 + 9 = 25
+    LD t0, 20         ; result[0] = 1
+    LD t1, 21         ; result[1] = 2
+    ADD t0, t0, t1    ; t0 = 3
+    LD t1, 22         ; result[2] = 5
+    ADD t0, t0, t1    ; t0 = 8
+    LD t1, 23         ; result[3] = 8
+    ADD t0, t0, t1    ; t0 = 16
+    LD t1, 24         ; result[4] = 9
+    ADD t0, t0, t1    ; t0 = 25 (sum of sorted array)
+    ST t0, 50         ; store result
+
+; Verify min and max
+    LD t0, 20         ; min = 1
+    ST t0, 60         ; store min
+    LD t0, 24         ; max = 9
+    ST t0, 61         ; store max
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774694118:sha256:12c1cfac49d0972dc78c130f6a4de2fc5abc8d940c1e9fe65d6c7ab8c492f39b

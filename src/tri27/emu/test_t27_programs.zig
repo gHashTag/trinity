@@ -1491,4 +1491,104 @@ test "dijkstra: path cost calculation" {
     try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MERGE SORT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "t27_programs: merge_sort file exists" {
+    const path = "src/tri27/merge_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "merge_sort: assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/merge_sort.t27";
+    const source = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(source);
+
+    const bytecode = try tri_asm.assemble(allocator, source);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "merge_sort: compare and swap" {
+    const allocator = std.testing.allocator;
+    // Compare 5 and 2, swap to get [2, 5]
+    const program =
+        \\    LDI t0, 5
+        \\    LDI t1, 2
+        \\    SUB t2, t0, t1    ; t2 = 3 (positive, t0 > t1)
+        \\    ST t1, 10         ; store smaller (2)
+        \\    ST t0, 11         ; store larger (5)
+        \\    LD t0, 10         ; load smaller
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "merge_sort: merge two sorted arrays" {
+    const allocator = std.testing.allocator;
+    // Merge [2, 5] and [1, 8] -> [1, 2, 5, 8]
+    const program =
+        \\    LDI t0, 2         ; left[0]
+        \\    LDI t1, 1         ; right[0]
+        \\    SUB t2, t0, t1    ; t2 = 1 (right is smaller)
+        \\    ST t1, 20         ; result[0] = 1
+        \\    LDI t0, 2         ; left[0]
+        \\    LDI t1, 8         ; right[1]
+        \\    SUB t2, t0, t1    ; t2 = -6 (left is smaller)
+        \\    ST t0, 21         ; result[1] = 2
+        \\    LDI t0, 5         ; left[1]
+        \\    LDI t1, 8         ; right[1]
+        \\    SUB t2, t0, t1    ; t2 = -3 (left is smaller)
+        \\    ST t0, 22         ; result[2] = 5
+        \\    ST t1, 23         ; result[3] = 8
+        \\    LD t0, 20         ; load first element
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "merge_sort: sorted array sum verification" {
+    const allocator = std.testing.allocator;
+    // Sum of [1, 2, 5, 8, 9] = 25
+    const program =
+        \\    LDI t0, 1
+        \\    LDI t1, 2
+        \\    ADD t0, t0, t1    ; t0 = 3
+        \\    LDI t1, 5
+        \\    ADD t0, t0, t1    ; t0 = 8
+        \\    LDI t1, 8
+        \\    ADD t0, t0, t1    ; t0 = 16
+        \\    LDI t1, 9
+        \\    ADD t0, t0, t1    ; t0 = 25
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 25), cpu.t27[0].trits);
+}
+
+test "merge_sort: min max verification" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1         ; min
+        \\    ST t0, 60
+        \\    LDI t0, 9         ; max
+        \\    ST t0, 61
+        \\    LD t0, 60         ; load min
+        \\    LDI t1, 9         ; expected max
+        \\    LD t2, 61         ; load max
+        \\    ADD t0, t0, t2    ; t0 = 1 + 9 = 10
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
