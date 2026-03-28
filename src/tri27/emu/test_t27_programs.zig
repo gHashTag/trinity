@@ -13596,3 +13596,165 @@ test "minimum_spanning_tree: last MST edge weight" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
+
+// strchr tests
+test "strchr: file exists" {
+    const path = "src/tri27/strchr.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strchr: search character" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 111
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
+}
+
+test "strchr: found position" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "strchr: found flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "strchr: result pointer" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 104
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 104), cpu.t27[0].trits);
+}
+
+test "strchr: first character H" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 72
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 72), cpu.t27[0].trits);
+}
+
+test "strchr: null terminator" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 111
+        \\    LD t0, 111
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+// strrchr tests
+test "strrchr: file exists" {
+    const path = "src/tri27/strrchr.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strrchr: search character" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 111
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
+}
+
+test "strrchr: found position (last)" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "strrchr: found flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "strrchr: result pointer" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 107
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 107), cpu.t27[0].trits);
+}
+
+test "strrchr: first o at pos 4" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 111
+        \\    ST t0, 104
+        \\    LD t0, 104
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
+}
+
+test "strrchr: last o at pos 7" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 111
+        \\    ST t0, 107
+        \\    LD t0, 107
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
+}
