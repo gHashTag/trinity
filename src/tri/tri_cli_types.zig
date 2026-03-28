@@ -223,6 +223,7 @@ pub const Command = enum {
     mcp,
     chem,
     garden,
+    kaggle,
     zenodo,
     ourob,
     hslm,

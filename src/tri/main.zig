@@ -18,6 +18,7 @@ const tri_register = @import("tri_register.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
+const tri_kaggle = @import("tri_kaggle.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const dev_workflow = @import("dev_commands.zig");
@@ -189,13 +190,13 @@ pub fn main() !void {
     }
 
     // GitHub Integration: route `tri issue/board/protocol` to github_commands
+    // Note: "github" is routed through execute_map for consistency (see main switch below)
     if (arg_idx < args.len) {
         const first_arg = args[arg_idx];
         if (std.mem.eql(u8, first_arg, "issue") or std.mem.eql(u8, first_arg, "board") or
             std.mem.eql(u8, first_arg, "agent") or std.mem.eql(u8, first_arg, "protocol") or
             std.mem.eql(u8, first_arg, "pr") or std.mem.eql(u8, first_arg, "check") or
-            std.mem.eql(u8, first_arg, "dispatch") or std.mem.eql(u8, first_arg, "graphql") or
-            std.mem.eql(u8, first_arg, "github"))
+            std.mem.eql(u8, first_arg, "dispatch") or std.mem.eql(u8, first_arg, "graphql"))
         {
             // Intercept `tri agent run <N>` → flagship chimera
             if (std.mem.eql(u8, first_arg, "agent") and arg_idx + 1 < args.len and
@@ -842,8 +843,9 @@ pub fn main() !void {
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
-        .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
-        .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
+        .kaggle => try tri_kaggle.runKaggleCommand(allocator, cmd_args),
+        .cloud => try tri_register.runCommand(allocator, "cloud", cmd_args),
+        .farm => try tri_register.runCommand(allocator, "farm", cmd_args),
         .loop => try tri_loop.runLoopCommand(allocator, cmd_args),
         .experience => try tri_experience.runExperienceCommand(allocator, cmd_args),
         .sacred_const => try sacred_fpga.runSacredConstCommand(allocator, cmd_args),
@@ -891,7 +893,7 @@ pub fn main() !void {
             if (exit_code != 0) std.process.exit(exit_code);
         },
         // GitHub Integration (Protocol v2)
-        .github => try github_commands.runGithubCommand(allocator, cmd_args, false),
+        .github => try tri_register.runCommand(allocator, "github", cmd_args),
         // Faculty Board (A2A Dashboard)
         .faculty => try faculty_board.runFacultyCommand(allocator, cmd_args),
         .experiment => try tri_experiment.runExperimentCommand(allocator, cmd_args),
@@ -1636,7 +1638,7 @@ fn dispatchCommand(
             };
         },
         // GitHub Integration (Protocol v2)
-        .github => github_commands.runGithubCommand(allocator, cmd_args, state.dry_run) catch |err| {
+        .github => tri_register.runCommand(allocator, "github", cmd_args) catch |err| {
             std.debug.print("GitHub error: {}\n", .{err});
         },
         .faculty => faculty_board.runFacultyCommand(allocator, cmd_args) catch |err| {

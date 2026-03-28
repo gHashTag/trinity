@@ -625,7 +625,7 @@ test "dmpfc — health returns populated CellHealth" {
 
 test "dmpfc — setDescription with unicode content" {
     var issue = Issue{ .kind = .internal_conflict };
-    const unicode_text = "Ошибка: φ² + 1/φ² = 3";
+    const unicode_text = "Error: φ² + 1/φ² = 3";
     issue.setDescription(unicode_text);
     const result = issue.descriptionStr();
     try std.testing.expectEqualStrings(unicode_text, result);

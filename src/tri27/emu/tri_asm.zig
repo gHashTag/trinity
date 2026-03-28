@@ -122,6 +122,52 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         }), false };
     }
 
+    if (std.mem.eql(u8, op_lower, "jgt")) {
+        // JGT dst, src1, offset/label (jump if dst > src1)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
+        const src1_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
+        const offset_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src1 = try parseRegister(src1_trimmed);
+        const offset = parseOperand(offset_str, labels, line_num) catch |err| return err;
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.JGT,
+            .dst = dst,
+            .src1 = src1,
+            .immediate = offset,
+            .has_imm = true,
+        }), false };
+    }
+
+    if (std.mem.eql(u8, op_lower, "jlt")) {
+        // JLT dst, src1, offset/label (jump if dst < src1)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const comma_idx = std.mem.indexOfScalar(u8, src1_str, ',') orelse return error.InvalidSyntax;
+        const src1_trimmed = std.mem.trim(u8, src1_str[0..comma_idx], " \t");
+        const offset_str = std.mem.trim(u8, src1_str[comma_idx + 1 ..], " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src1 = try parseRegister(src1_trimmed);
+        const offset = parseOperand(offset_str, labels, line_num) catch |err| return err;
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.JLT,
+            .dst = dst,
+            .src1 = src1,
+            .immediate = offset,
+            .has_imm = true,
+        }), false };
+    }
+
     if (std.mem.eql(u8, op_lower, "call")) {
         // CALL offset/label (call subroutine)
         const offset = parseOperand(rest, labels, line_num) catch |err| return err;
@@ -137,7 +183,23 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         return .{ encode(Instruction{ .opcode = Opcode.RET }), false };
     }
 
-    // === ARITHMETIC (ADD, SUB, MUL, DIV, INC, DEC) ===
+    // === ARITHMETIC (MOV, ADD, SUB, MUL, DIV, INC, DEC) ===
+    if (std.mem.eql(u8, op_lower, "mov")) {
+        // MOV dst, src1 (move register to register)
+        var it2 = std.mem.splitScalar(u8, rest, ',');
+        const dst_str = std.mem.trim(u8, it2.first(), " \t");
+        const src1_str = std.mem.trim(u8, it2.rest(), " \t");
+
+        const dst = try parseRegister(dst_str);
+        const src1 = try parseRegister(src1_str);
+
+        return .{ encode(Instruction{
+            .opcode = Opcode.MOV,
+            .dst = dst,
+            .src1 = src1,
+        }), false };
+    }
+
     if (std.mem.eql(u8, op_lower, "add")) {
         const r = try parseThreeOp(rest);
         return .{ encode(Instruction{
@@ -284,34 +346,36 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
 
     // === MEMORY (LD, ST, LDI, STI) ===
     if (std.mem.eql(u8, op_lower, "ld")) {
-        // LD dst, src
+        // LD dst, addr (load from memory address)
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const dst_str = std.mem.trim(u8, it2.first(), " \t");
-        const src_str = std.mem.trim(u8, it2.rest(), " \t");
+        const addr_str = std.mem.trim(u8, it2.rest(), " \t");
 
         const dst = try parseRegister(dst_str);
-        const src = try parseRegister(src_str);
+        const addr = std.fmt.parseInt(i16, addr_str, 10) catch return error.InvalidImmediate;
 
         return .{ encode(Instruction{
             .opcode = Opcode.LD,
             .dst = dst,
-            .src1 = src,
+            .immediate = addr,
+            .has_imm = true,
         }), false };
     }
 
     if (std.mem.eql(u8, op_lower, "st")) {
-        // ST src, dst
+        // ST src, addr (store register to memory address)
         var it2 = std.mem.splitScalar(u8, rest, ',');
         const src_str = std.mem.trim(u8, it2.first(), " \t");
-        const dst_str = std.mem.trim(u8, it2.rest(), " \t");
+        const addr_str = std.mem.trim(u8, it2.rest(), " \t");
 
         const src = try parseRegister(src_str);
-        const dst = try parseRegister(dst_str);
+        const addr = std.fmt.parseInt(i16, addr_str, 10) catch return error.InvalidImmediate;
 
         return .{ encode(Instruction{
             .opcode = Opcode.ST,
-            .src1 = src,
-            .dst = dst,
+            .dst = src,
+            .immediate = addr,
+            .has_imm = true,
         }), false };
     }
 
@@ -514,7 +578,7 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
 
     var lines_iter = std.mem.splitScalar(u8, source, '\n');
     var line_num: usize = 1;
-    var instr_idx: u32 = 2; // Instructions start at PC=2 (magic + header)
+    var instr_idx: u32 = 3; // Instructions start at PC=3 (12-byte header)
 
     while (lines_iter.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
@@ -537,10 +601,10 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
         line_num += 1;
     }
 
-    // === PASS 2: Parse and encode instructions ===
     // Header: Magic (4) + Version (1) + Section Count (1) = 6 bytes
     // Section header: type (1) + padding (1) + size (2) = 4 bytes
-    // Total header: 10 bytes (matches loader.zig format)
+    // Padding (2) to align to 12 bytes total (PC=3 points to first instruction)
+    // Total header: 12 bytes, instructions start at byte 12 (PC=3)
     bytecode.appendSliceAssumeCapacity(&.{ 0x32, 0x49, 0x52, 0x54 }); // Magic: "2IRT" little-endian
     // Version: 1 byte (v1)
     try bytecode.appendSlice(allocator, &.{0x01});
@@ -548,6 +612,8 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
     try bytecode.appendSlice(allocator, &.{0x01});
     // Code section header: type (1) + padding (1) + size placeholder (2)
     try bytecode.appendSlice(allocator, &.{ 0x01, 0x00, 0x00, 0x00 }); // Section ID=CODE(1), pad=0, size=0
+    // Padding (2 bytes) to align instructions to 12-byte total (PC=3)
+    try bytecode.appendSlice(allocator, &.{ 0x00, 0x00 });
 
     lines_iter = std.mem.splitScalar(u8, source, '\n');
     line_num = 1;

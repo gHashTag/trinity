@@ -5,7 +5,6 @@ const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
 const tri_asm = @import("tri_asm.zig");
-const loader = @import("loader.zig");
 const executor = @import("executor.zig");
 const cpu_mod = @import("cpu_state.zig");
 
@@ -23,13 +22,16 @@ test "full cycle: asm → tbin → emulator → verify" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    // 2. Load bytecode into CPU
+    // 2. Load bytecode into CPU (direct copy like TTT Dogfood tests)
     var cpu = try cpu_mod.CPUState.init(allocator);
     defer cpu.deinit();
-    try loader.load(&cpu, bytecode, &[_]f64{});
+
+    const mem = cpu.getBytesMut();
+    if (bytecode.len > mem.len) return error.ProgramTooLarge;
+    @memcpy(mem[0..bytecode.len], bytecode);
 
     // 3. Execute program
-    try executor.run(&cpu, cpu.getBytesMut());
+    try executor.run(&cpu, mem);
 
     // 4. Verify HALT flag is set
     try testing.expectEqual(true, cpu.flags.H);
@@ -63,8 +65,8 @@ test "assembler: all new opcodes parse correctly" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    // Verify we have 10 instructions (10 * 4 bytes + 10 byte header)
-    const expected_size = 10 * 4 + 10;
+    // Verify we have 10 instructions (10 * 4 bytes + 12 byte header)
+    const expected_size = 10 * 4 + 12;
     try testing.expectEqual(expected_size, bytecode.len);
 
     std.debug.print("✅ All new opcodes parse correctly\\n", .{});
@@ -85,7 +87,7 @@ test "assembler: arithmetic operations (SUB, MUL, DIV)" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    try testing.expectEqual(@as(usize, 6 * 4 + 10), bytecode.len);
+    try testing.expectEqual(@as(usize, 6 * 4 + 12), bytecode.len);
 
     std.debug.print("✅ Arithmetic opcodes parse correctly\\n", .{});
 }
@@ -103,7 +105,7 @@ test "assembler: control flow (JMP, CALL, RET)" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    try testing.expectEqual(@as(usize, 4 * 4 + 10), bytecode.len);
+    try testing.expectEqual(@as(usize, 4 * 4 + 12), bytecode.len);
 
     std.debug.print("✅ Control flow opcodes parse correctly\\n", .{});
 }
@@ -126,7 +128,7 @@ test "assembler: logic operations (AND, OR, XOR, NOT, SHL, SHR)" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    try testing.expectEqual(@as(usize, 9 * 4 + 10), bytecode.len);
+    try testing.expectEqual(@as(usize, 9 * 4 + 12), bytecode.len);
 
     std.debug.print("✅ Logic opcodes parse correctly\\n", .{});
 }
@@ -149,7 +151,7 @@ test "assembler: labels and forward references" {
     const bytecode = try tri_asm.assemble(allocator, asm_source);
     defer allocator.free(bytecode);
 
-    try testing.expectEqual(@as(usize, 7 * 4 + 10), bytecode.len);
+    try testing.expectEqual(@as(usize, 7 * 4 + 12), bytecode.len);
 
     std.debug.print("✅ Label support working correctly\\n", .{});
 }

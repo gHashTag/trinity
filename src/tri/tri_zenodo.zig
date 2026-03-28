@@ -1157,7 +1157,7 @@ fn listCommunities(allocator: std.mem.Allocator) !void {
         while (i < response.len) : (i += 1) {
             // Find "id": "community-id"
             if (response[i] == '"' and i + 4 < response.len and
-                std.mem.eql(u8, response[i..i+4], "\"id\""))
+                std.mem.eql(u8, response[i .. i + 4], "\"id\""))
             {
                 const id_start = std.mem.indexOfPos(u8, response, i + 5, "\"") orelse break;
                 const id_end = std.mem.indexOfPos(u8, response, id_start + 1, "\"") orelse break;
@@ -1209,7 +1209,7 @@ fn searchCommunities(allocator: std.mem.Allocator, args: []const []const u8) !vo
         var count: usize = 0;
         while (i < response.len) : (i += 1) {
             if (response[i] == '"' and i + 4 < response.len and
-                std.mem.eql(u8, response[i..i+4], "\"id\""))
+                std.mem.eql(u8, response[i .. i + 4], "\"id\""))
             {
                 const id_start = std.mem.indexOfPos(u8, response, i + 5, "\"") orelse break;
                 const id_end = std.mem.indexOfPos(u8, response, id_start + 1, "\"") orelse break;
@@ -1287,7 +1287,7 @@ fn linkToCommunity(allocator: std.mem.Allocator, args: []const []const u8) !void
         print("  The community curators will review your request.\n", .{});
         print("  Check status with: {s}tri zenodo community status {s}{s}\n\n", .{ YELLOW, record_id, RESET });
     } else if (std.mem.indexOf(u8, response, "\"400\"") != null or
-               std.mem.indexOf(u8, response, "\"message\"") != null)
+        std.mem.indexOf(u8, response, "\"message\"") != null)
     {
         print("{s}Error: Could not submit request{s}\n\n", .{ RED, RESET });
         // Try to extract error message

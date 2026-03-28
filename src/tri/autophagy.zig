@@ -573,7 +573,7 @@ fn parseStrategy(content: []const u8) Strategy {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn printHeader(state: OuroborosState, config: OuroborosConfig) void {
-    print("\n{s}╭─────── УРОБОРОС ───────╮{s}\n", .{ GOLDEN, RESET });
+    print("\n{s}╭─────── OUROBOROS ───────╮{s}\n", .{ GOLDEN, RESET });
     print("{s}│{s} Target: {d:.0}  Cycles: {d}/{d}\n", .{
         GOLDEN, RESET, config.target_score, state.cycle, config.max_cycles,
     });
@@ -598,7 +598,7 @@ fn printSummary(state: OuroborosState, config: OuroborosConfig) void {
     const level_before = verdict.classifyLevel(state.initial_score);
     const level_after = verdict.classifyLevel(state.current_score);
 
-    print("\n{s}╭─────── ИТОГО ───────╮{s}\n", .{ GOLDEN, RESET });
+    print("\n{s}╭─────── TOTAL ───────╮{s}\n", .{ GOLDEN, RESET });
     const sign: []const u8 = if (delta >= 0) "+" else "";
     print("{s}│{s} {d:.1} → {d:.1} ({s}{s}{d:.1}{s}) in {d} cycles\n", .{
         GOLDEN,                        RESET,
@@ -610,7 +610,7 @@ fn printSummary(state: OuroborosState, config: OuroborosConfig) void {
     print("{s}│{s} Level: {s} → {s}\n", .{
         GOLDEN, RESET, level_before.label(), level_after.label(),
     });
-    print("{s}│{s} 🐍 Уроборос завершён\n", .{ GOLDEN, RESET });
+    print("{s}│{s} 🐍 OUROBOROS completed\n", .{ GOLDEN, RESET });
     print("{s}╰─────────────────────╯{s}\n\n", .{ GOLDEN, RESET });
 }
 

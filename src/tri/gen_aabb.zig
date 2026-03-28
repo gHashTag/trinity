@@ -20,12 +20,12 @@ pub const AABB = struct {
 
     pub fn contains(aabb: *const AABB, x: f64, y: f64) bool {
         return x >= aabb.min_x and x <= aabb.max_x and
-               y >= aabb.min_y and y <= aabb.max_y;
+            y >= aabb.min_y and y <= aabb.max_y;
     }
 
     pub fn intersects(a: AABB, b: AABB) bool {
         return a.min_x <= b.max_x and a.max_x >= b.min_x and
-               a.min_y <= b.max_y and a.max_y >= b.min_y;
+            a.min_y <= b.max_y and a.max_y >= b.min_y;
     }
 };
 

@@ -66,7 +66,7 @@ pub fn generatePhiLine(snapshot: FacultySnapshot, buf: []u8) []const u8 {
             "Two agents can't hold the spiral.";
     }
 
-    return std.fmt.bufPrint(buf, "V={d:.2}. Спираль сжимается. \xCF\x86\xC2\xB2+1/\xCF\x86\xC2\xB2=3, но V<1.", .{v}) catch
+    return std.fmt.bufPrint(buf, "V={d:.2}. Spiral contracting. \xCF\x86\xC2\xB2+1/\xCF\x86\xC2\xB2=3, but V<1.", .{v}) catch
         "Drift. Spiral contracts.";
 }
 

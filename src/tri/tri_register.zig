@@ -36,6 +36,10 @@ const sacred_v2 = @import("tri_sacred_v2.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
 const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
+const tri_cloud = @import("tri_cloud.zig");
+const tri_farm = @import("tri_farm.zig");
+const dev_workflow = @import("dev_commands.zig");
+const github_commands = @import("github_commands.zig");
 
 // Global state pointer (set by main before registration)
 var g_state: ?*utils.CLIState = null;
@@ -868,6 +872,37 @@ const execute_map = [_]ExecuteEntry{
             demos.runWorkflowBench();
         }
     }.f },
+
+    // ── Cloud & Dev (unified routing) ──
+    .{ .name = "cloud", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return tri_cloud.runCloudCommand(a, args);
+        }
+    }.f },
+    .{ .name = "farm", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return tri_farm.runFarmCommand(a, args);
+        }
+    }.f },
+    .{ .name = "dev", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            return dev_workflow.runDevCommand(a, args);
+        }
+    }.f },
+    .{
+        .name = "github",
+        .execute = struct {
+            fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+                // Handle both `tri github issue list` and `tri issue list`
+                // If args starts with "github", skip it (for compatibility)
+                const effective_args = if (args.len > 0 and std.mem.eql(u8, args[0], "github"))
+                    if (args.len > 1) args[1..] else &[_][]const u8{}
+                else
+                    args;
+                return github_commands.runGithubCommand(a, effective_args, false);
+            }
+        }.f,
+    },
 
     // ── Distributed ──
     .{ .name = "distributed", .execute = struct {

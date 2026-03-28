@@ -27,7 +27,9 @@ pub const PropertyTest = struct {
 test "property" {
     var pt = PropertyTest.init("always_positive", 10);
     const result = pt.check(struct {
-        fn isPositive(x: i32) bool { return x >= 0; }
+        fn isPositive(x: i32) bool {
+            return x >= 0;
+        }
     }.isPositive);
     try std.testing.expect(result);
 }

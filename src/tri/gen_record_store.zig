@@ -47,6 +47,6 @@ pub const RecordStore = struct {
 test "record store" {
     var store = try RecordStore.init(std.testing.allocator, 2);
     defer store.deinit();
-    try store.insert(&[_]i32{1, 2});
+    try store.insert(&[_]i32{ 1, 2 });
     try std.testing.expectEqual(@as(i32, 1), store.get(0, 0).?);
 }

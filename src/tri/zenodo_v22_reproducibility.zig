@@ -299,7 +299,7 @@ pub fn defaultTrinityChecklist(allocator: Allocator) !ReproducibilityChecklist {
     try builder.addItem("doc.4", "Are limitations discussed?", .yes, "See Zenodo V9.0 descriptions for limitations section", .documentation);
     try builder.addItem("doc.5", "Is there a contact for questions?", .yes, "GitHub Issues: https://github.com/gHashTag/trinity/issues", .documentation);
 
-    const summary = 
+    const summary =
         \\Trinity is fully reproducible with all materials publicly available:
         \\- Source code: MIT license on GitHub
         \\- Training data: Public domain datasets with DOIs

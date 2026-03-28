@@ -37,6 +37,6 @@ test "neuron" {
     var n = try Neuron.init(std.testing.allocator, 3);
     defer n.deinit();
     n.bias = 0.5;
-    const result = n.forward(&[_]f64{1, 1, 1});
+    const result = n.forward(&[_]f64{ 1, 1, 1 });
     try std.testing.expectApproxEqAbs(@as(f64, 0.5), result, 0.001);
 }

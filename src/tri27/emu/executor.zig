@@ -45,6 +45,17 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         // ═════════════════════════════════════════════════════════════════
         // LOAD/STORE INSTRUCTIONS
         // ═══════════════════════════════════════════════════════════════════════════════
+        .LDI => {
+            // LDI dst, imm - Load full i16 immediate value into register
+            const value = inst.immediate;
+            const trit_value = Trit27{ .trits = value };
+            cpu.t27[inst.dst] = trit_value;
+            // Update flags based on result
+            cpu.flags.Z = value == 0;
+            cpu.flags.N = value < 0;
+            cpu.pc += 1;
+        },
+
         .LD_IMM => {
             const value = inst.immediate;
             // Pack immediate into Trit27 (sign-extended)
@@ -107,22 +118,32 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         // ═════════════════════════════════════════════════════════
+        // MOVE INSTRUCTION
+        // ═══════════════════════════════════════════════════════════════════════
+        .MOV => {
+            // Move: dst = src1 (copy register value)
+            const value = cpu.t27[inst.src1];
+            cpu.t27[inst.dst] = value;
+            // Update flags
+            cpu.flags.Z = value.trits == 0;
+            cpu.flags.N = value.trits < 0;
+            cpu.pc += 1;
+        },
+
         // ARITHMETIC INSTRUCTIONS — Ternary
         // ═══════════════════════════════════════════════════════════════════════
         .ADD => {
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary addition
+            // Regular integer addition
             const sum = a.trits + b.trits;
-            // Simple modulo 3^27 for now
-            const result = @mod(sum, 19683);
-            const trit_value = Trit27{ .trits = result };
+            const trit_value = Trit27{ .trits = sum };
 
             cpu.t27[inst.dst] = trit_value;
             // Update flags
-            cpu.flags.Z = result == 0;
-            cpu.flags.N = result < 0;
+            cpu.flags.Z = sum == 0;
+            cpu.flags.N = sum < 0;
             cpu.pc += 1;
         },
 
@@ -130,9 +151,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary subtraction (add negative)
-            const sum = a.trits + @as(i64, -b.trits);
-            const result = @mod(sum, 19683);
+            // Regular integer subtraction
+            const result = a.trits - b.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -162,8 +182,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         .INC => {
             const dst_value = cpu.t27[inst.dst];
 
-            // Ternary increment
-            const result = @mod(dst_value.trits + 1, 19683);
+            // Regular integer increment
+            const result = dst_value.trits + 1;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -176,8 +196,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         .DEC => {
             const dst_value = cpu.t27[inst.dst];
 
-            // Ternary decrement
-            const result = @mod(dst_value.trits - 1, 19683);
+            // Regular integer decrement
+            const result = dst_value.trits - 1;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -248,9 +268,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         .SHL => {
             const a = cpu.t27[inst.src1];
 
-            // Shift left by immediate amount
-            const shift = @abs(inst.immediate) % 27;
-            const result = @mod(a.trits << @intCast(shift), 19683);
+            // Shift left by immediate amount (regular integer shift)
+            const shift = @abs(inst.immediate);
+            const result = a.trits << @intCast(shift);
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -262,9 +282,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         .SHR => {
             const a = cpu.t27[inst.src1];
 
-            // Shift right by immediate amount
-            const shift = @abs(inst.immediate) % 27;
-            const result = @mod(a.trits >> @intCast(shift), 19683);
+            // Shift right by immediate amount (regular integer shift)
+            const shift = @abs(inst.immediate);
+            const result = a.trits >> @intCast(shift);
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -277,11 +297,12 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary multiplication
-            const result = @mod(a.trits * b.trits, 19683);
+            // Regular integer multiplication
+            const result = a.trits * b.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
+            // Update flags
             cpu.flags.Z = result == 0;
             cpu.flags.N = result < 0;
             cpu.pc += 1;
@@ -400,9 +421,10 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         .JZ => {
-            // Jump if zero flag is set
+            // Jump if dst register is zero (JZ dst, offset)
+            const reg = cpu.t27[inst.dst];
             const target = @as(u32, @abs(inst.immediate));
-            if (cpu.flags.Z) {
+            if (reg.trits == 0) {
                 cpu.pc = target;
             } else {
                 cpu.pc += 1;
@@ -410,9 +432,34 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         .JNZ => {
-            // Jump if not zero
+            // Jump if dst register is not zero (JNZ dst, offset)
+            const reg = cpu.t27[inst.dst];
             const target = @as(u32, @abs(inst.immediate));
-            if (!cpu.flags.Z) {
+            if (reg.trits != 0) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
+        .JGT => {
+            // Jump if Greater Than (dst > src1)
+            const a = cpu.t27[inst.dst];
+            const b = cpu.t27[inst.src1];
+            const target = @as(u32, @abs(inst.immediate));
+            if (a.trits > b.trits) {
+                cpu.pc = target;
+            } else {
+                cpu.pc += 1;
+            }
+        },
+
+        .JLT => {
+            // Jump if Less Than (dst < src1)
+            const a = cpu.t27[inst.dst];
+            const b = cpu.t27[inst.src1];
+            const target = @as(u32, @abs(inst.immediate));
+            if (a.trits < b.trits) {
                 cpu.pc = target;
             } else {
                 cpu.pc += 1;
@@ -473,17 +520,6 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         // ═══════════════════════════════════════════════════════════════════
         // ALIAS OPCODES (executor compatibility)
         // ═════════════════════════════════════════════════════════════════════════════════
-        .LDI => {
-            // Load immediate to register (same as LD_IMM but kept for compatibility)
-            const value = inst.immediate;
-            const clamped = std.math.clamp(value, @as(i16, -1), @as(i16, 1));
-            const trit_value = Trit27.fromI8(@intCast(clamped));
-            cpu.t27[inst.dst] = trit_value;
-            cpu.flags.Z = trit_value.trits == 0;
-            cpu.flags.N = trit_value.trits < 0;
-            cpu.pc += 1;
-        },
-
         .STI => {
             // Store immediate to memory
             const value = inst.immediate;
@@ -519,7 +555,7 @@ pub fn estimateCycles(opcode: Opcode) u64 {
         .LD_IMM, .LDI, .LD => 1,
         .ST, .STI => 2, // Memory write
         .ADD, .SUB => 2, // Ternary arithmetic
-        .JMP, .JZ, .JNZ => 1, // Control flow
+        .JMP, .JZ, .JNZ, .JGT, .JLT => 1, // Control flow
         .CALL => 3, // Stack push + jump
         .RET => 3, // Stack pop + jump
         .HALT => 1,
@@ -560,7 +596,7 @@ test "CPUState init zeros all registers" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
-    try std.testing.expectEqual(@as(u32, 0), cpu.pc);
+    try std.testing.expectEqual(@as(u32, 3), cpu.pc); // PC starts at 3 (skip 12-byte header)
     try std.testing.expectEqual(@as(u32, 0), cpu.sp);
     try std.testing.expectEqual(@as(u32, 0), cpu.fp);
     try std.testing.expectEqual(@as(usize, 0), cpu.instructions_executed);
@@ -576,6 +612,7 @@ test "execute NOP" {
     const allocator = std.testing.allocator;
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
+    cpu.pc = 0; // Reset PC for test
 
     const inst = Instruction{
         .opcode = .NOP,
@@ -596,6 +633,7 @@ test "execute LD_IMM" {
     const allocator = std.testing.allocator;
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
+    cpu.pc = 0; // Reset PC for test
 
     const inst = Instruction{
         .opcode = .LD_IMM,
@@ -615,6 +653,7 @@ test "execute ADD" {
     const allocator = std.testing.allocator;
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
+    cpu.pc = 0; // Reset PC for test
 
     // Set up registers: t0 = 1, t1 = 0
     cpu.t27[0] = Trit27.fromI8(1);
@@ -639,6 +678,8 @@ test "execute SUB" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
+    cpu.pc = 0; // Reset PC for test
+
     // Set up registers: t0 = 1, t1 = 1
     cpu.t27[0] = Trit27.fromI8(1);
     cpu.t27[1] = Trit27.fromI8(1);
@@ -661,6 +702,7 @@ test "execute JMP" {
     const allocator = std.testing.allocator;
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
+    cpu.pc = 0; // Reset PC for test
 
     const inst = Instruction{
         .opcode = .JMP,
@@ -677,6 +719,7 @@ test "execute HALT" {
     const allocator = std.testing.allocator;
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
+    cpu.pc = 0; // Reset PC for test
 
     const inst = Instruction{
         .opcode = .HALT,

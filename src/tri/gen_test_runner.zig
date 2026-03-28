@@ -46,7 +46,9 @@ test "test runner" {
     var runner = TestRunner.init(std.testing.allocator);
     defer runner.deinit();
     try runner.add("dummy", struct {
-        fn dummy() !void { return; }
+        fn dummy() !void {
+            return;
+        }
     }.dummy);
     const passed = try runner.run();
     try std.testing.expectEqual(@as(usize, 1), passed);
