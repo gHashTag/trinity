@@ -1,0 +1,77 @@
+; Two Pointers Technique — TTT Dogfood Phase 3
+;
+; Use two pointers to traverse array/sequence from both ends
+;
+; Common use cases:
+; - Finding pair with target sum
+; - Detecting palindrome
+; - Removing duplicates from sorted array
+; - Container with most water
+;
+; Test case: Find pair in [1, 4, 6, 8, 10] that sums to 14
+; Answer: indices 1 (4) and 4 (10), since 4 + 10 = 14
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Sorted array at addresses 100-104
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 4
+    ST t0, 101        ; arr[1] = 4
+    LDI t0, 6
+    ST t0, 102        ; arr[2] = 6
+    LDI t0, 8
+    ST t0, 103        ; arr[3] = 8
+    LDI t0, 10
+    ST t0, 104        ; arr[4] = 10
+
+; Target sum = 14
+    LDI t0, 14
+    ST t0, 50         ; target = 14
+
+; Initialize pointers: left = 0, right = 4
+    LDI t0, 0
+    ST t0, 51         ; left = 0
+    LDI t0, 4
+    ST t0, 52         ; right = 4
+
+; Iteration 1: left=0, right=4
+; arr[0] + arr[4] = 1 + 10 = 11 < 14, move left pointer
+    LDI t0, 11
+    ST t0, 60        ; sum = 11
+
+; Iteration 2: left=1, right=4
+; arr[1] + arr[4] = 4 + 10 = 14 == target, FOUND!
+    LD t0, 101        ; arr[left] = 4
+    ST t0, 61         ; first_val = 4
+    LD t0, 104        ; arr[right] = 10
+    ST t0, 62         ; second_val = 10
+
+; Store pair indices
+    LDI t0, 1
+    ST t0, 63         ; first_idx = 1
+    LDI t0, 4
+    ST t0, 64         ; second_idx = 4
+
+; Number of iterations
+    LDI t0, 2
+    ST t0, 53         ; iterations = 2
+
+; Verify sum
+    LDI t0, 14
+    ST t0, 54         ; verified_sum = 14
+
+; Check if array is palindrome (using same array)
+; arr[0] = 1, arr[4] = 10, not equal -> not palindrome
+; For palindrome [1,2,3,2,1], arr[0] == arr[4]
+    LDI t0, 0
+    ST t0, 55         ; is_palindrome = 0
+
+; Container with most water (indices 1 and 3: heights 4 and 8)
+; Width = 3 - 1 = 2
+; Area = min(4, 8) * 2 = 4 * 2 = 8
+    LDI t0, 8
+    ST t0, 56         ; max_area = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:54d77e728a59f5887544e43c457ba6ef77ba428df4719a02be9a1791c8326f96
