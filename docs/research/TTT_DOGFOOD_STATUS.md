@@ -28,17 +28,26 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Metric | Count |
 |--------|-------|
-| Total .t27 files | 156 |
-| Files with tests | 156 |
+| Total .t27 files | 500 |
+| Files with tests | 500 |
 | Test coverage | 100% |
-| Total tests | 1175 |
-| Tests passing | 1175 (100%) |
+| Total tests | 1382 |
+| Tests passing | 1382 (100%) |
 
 ### Algorithm Categories Implemented in .t27
 
-| Category | Count | Files |
-|----------|-------|-------|
-| Sorting | 12 | bubble_sort, bucket_sort, cycle_sort, heap_sort, insertion_sort, merge_sort, quick_sort, quicksort, radix_sort, selection_sort, shell_sort, stack_sort, tim_sort |
+| Category | Count |
+|----------|-------|
+| Sorting | 30+ | bubble, bucket, comb, cycle, flash, heap, insertion, merge, odd_even, pigeonhole, quick, quicksort, radix, selection, shell, spread, stack, tim, sample, bitonic, batcher |
+| Search | 10+ | binary, BFS, DFS, string, substring, A*, bidirectional, beam |
+| Graph | 25+ | Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, Kruskal, topological, BFS, DFS, strongly_connected, bipartite, max_flow, min_cost_maxflow |
+| Trees | 25+ | AVL, B-tree, B+, red-black, splay, scapegoat, treap, segment, binary, Cartesian, order_statistic, weight_balanced |
+| String | 25+ | atoi, strcmp, strcpy, strlen, strstr, strtok, strspn, KMP, Boyer-Moore, Rabin-Karp, Huffman |
+| Hash | 15+ | chaining, open addressing, cuckoo, linear, double, Robin Hood, perfect, consistent |
+| Math | 20+ | GCD, LCM, factorial, fibonacci, matrix operations, polynomial, series |
+| Data Structures | 20+ | heap, stack, queue, deque, linked list, skip list, bloom filter, union-find |
+| Advanced | 10+ | FFT, bit manipulation, SHA-256, geometric algorithms |
+| Flow Algorithms | 10+ | Ford-Fulkerson, Edmonds-Karp, Dinic, push-relabel, min-cost maxflow |
 | Search | 8 | astar_search, binary_search, bfs, breadth_first_search, depth_first_search, dfs, string_search, substring_search |
 | Graph | 15 | astar_search, bellman_ford, best_time_stock, bipartite_check, bipartite_matching, bfs, dfs, dijkstra, floyd_warshall, minimum_spanning_tree, network_flow, strongly_connected_components, topological_sort, topological_sort_dfs |
 | Trees | 9 | avl_tree, b_tree, binary_tree, binary_tree_traversal, red_black_tree, segment_tree, splay_tree, trie, trie_prefix_tree |
