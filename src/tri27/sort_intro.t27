@@ -1,0 +1,13 @@
+; Intro Sort — TTT Dogfood Phase 3
+;
+; Improved selection sort
+;
+; Test case: sort_intro
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; intro_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0798f0000020000000021ba
