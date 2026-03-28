@@ -1,6 +1,6 @@
 ; Priority Scheduler — TTT Dogfood Phase 3
 ;
-| Priority queue
+; Priority queue
 ;
 ; Test case: sched_priority
 ;

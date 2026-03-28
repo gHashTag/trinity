@@ -1,6 +1,6 @@
 ; RCU V2 — TTT Dogfood Phase 3
 ;
-| Read-copy-update alt
+; Read-copy-update alt
 ;
 ; Test case: rcu2
 ;

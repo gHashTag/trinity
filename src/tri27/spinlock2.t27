@@ -1,6 +1,6 @@
 ; Spinlock V2 — TTT Dogfood Phase 3
 ;
-| Busy wait alt
+; Busy wait alt
 ;
 ; Test case: spinlock2
 ;

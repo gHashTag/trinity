@@ -1,6 +1,6 @@
 ; Condition Variable V2 — TTT Dogfood Phase 3
 ;
-| Wait/signal alt
+; Wait/signal alt
 ;
 ; Test case: condition_var2
 ;

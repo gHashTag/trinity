@@ -1,6 +1,6 @@
 ; Atomic Fetch-Add — TTT Dogfood Phase 3
 ;
-| Atomic increment
+; Atomic increment
 ;
 ; Test case: atomic_fetch_add
 ;

@@ -1,6 +1,6 @@
 ; MLFQ — TTT Dogfood Phase 3
 ;
-| Multi-level feedback
+; Multi-level feedback
 ;
 ; Test case: sched_mlfq
 ;
