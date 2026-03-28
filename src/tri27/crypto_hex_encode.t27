@@ -1,6 +1,6 @@
-; Hex Encode — TTT Dogfood Phase 3
+; crypto_hex_encode — TTT Dogfood Phase 3
 ;
-; Hexadecimal encoding
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_hex_encode
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_hex_encode_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c20001d59
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507424

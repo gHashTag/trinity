@@ -1,6 +1,6 @@
-; URL Encode — TTT Dogfood Phase 3
+; crypto_url_encode — TTT Dogfood Phase 3
 ;
-; Percent-encoding for URLs
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_url_encode
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_url_encode_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c40001d79
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507120

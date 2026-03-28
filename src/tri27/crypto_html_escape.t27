@@ -1,6 +1,6 @@
-; HTML Escape — TTT Dogfood Phase 3
+; crypto_html_escape — TTT Dogfood Phase 3
 ;
-; Escape HTML special characters
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_html_escape
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_html_escape_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c60001d99
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507392

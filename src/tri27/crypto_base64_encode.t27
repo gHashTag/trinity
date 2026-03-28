@@ -1,6 +1,6 @@
-; Base64 Encode — TTT Dogfood Phase 3
+; crypto_base64_encode — TTT Dogfood Phase 3
 ;
-; Base64 encoding
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_base64_encode
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_base64_encode_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c00001d39
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507648

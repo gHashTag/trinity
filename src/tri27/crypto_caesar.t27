@@ -1,6 +1,6 @@
-; Caesar Cipher — TTT Dogfood Phase 3
+; crypto_caesar — TTT Dogfood Phase 3
 ;
-; Shift cipher
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_caesar
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_caesar_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071d10001d49
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507584

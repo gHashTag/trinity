@@ -1,8 +1,8 @@
-; Diffie-Hellman — TTT Dogfood Phase 3
+; Security Diffie-Hellman — TTT Dogfood Phase 3
 ;
-; Key exchange protocol
+; Diffie-Hellman key exchange
 ;
-; Test case: crypto_diffie_hellman
+; Test case: security_diffie_hellman
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
@@ -10,4 +10,4 @@
     ST t0, 60         ; diffie_hellman_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732e0000100001539
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07612000002000000001d89

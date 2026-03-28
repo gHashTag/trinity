@@ -1,8 +1,8 @@
-; RSA Encryption — TTT Dogfood Phase 3
+; Security RSA — TTT Dogfood Phase 3
 ;
-; RSA public-key cryptosystem
+; RSA encryption
 ;
-; Test case: crypto_rsa
+; Test case: security_rsa
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
@@ -10,4 +10,4 @@
     ST t0, 60         ; rsa_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730000001000001549
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07618000002000000001db9

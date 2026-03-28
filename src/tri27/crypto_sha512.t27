@@ -1,6 +1,6 @@
-; SHA-512 Hash — TTT Dogfood Phase 3
+; crypto_sha512 — TTT Dogfood Phase 3
 ;
-; SHA-512 message digest
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_sha512
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_sha512_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071bd0001d09
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507152

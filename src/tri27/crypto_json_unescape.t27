@@ -1,6 +1,6 @@
-; JSON Unescape — TTT Dogfood Phase 3
+; crypto_json_unescape — TTT Dogfood Phase 3
 ;
-; Unescape JSON strings
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_json_unescape
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_json_unescape_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c90001dc9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507328
