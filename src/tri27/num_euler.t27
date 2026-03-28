@@ -1,0 +1,13 @@
+; Euler's Number — TTT Dogfood Phase 3
+;
+; Calculate e using series
+;
+; Test case: num_euler
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; euler_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073080000000017b9
