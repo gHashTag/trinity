@@ -2743,4 +2743,81 @@ test "radix_sort: number of passes" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// Boyer-Moore String Search Tests — TTT Dogfood Phase 3
+
+test "boyer_moore: file exists" {
+    const path = "src/tri27/boyer_moore.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "boyer_moore: initialize pattern" {
+    const allocator = std.testing.allocator;
+    // Pattern "AB" at addresses 100-101
+    const program =
+        \\    LDI t0, 65
+        \\    ST t0, 100
+        \\    LDI t0, 66
+        \\    ST t0, 101
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 65), cpu.t27[0].trits);
+}
+
+test "boyer_moore: bad character table" {
+    const allocator = std.testing.allocator;
+    // 'E' at position 0 in pattern
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 150
+        \\    LD t0, 150
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "boyer_moore: pattern length" {
+    const allocator = std.testing.allocator;
+    // Pattern length = 7
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 160
+        \\    LD t0, 160
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "boyer_moore: match position" {
+    const allocator = std.testing.allocator;
+    // Match found at position 17
+    const program =
+        \\    LDI t0, 17
+        \\    ST t0, 170
+        \\    LD t0, 170
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 17), cpu.t27[0].trits);
+}
+
+test "boyer_moore: comparisons saved" {
+    const allocator = std.testing.allocator;
+    // Bad character rule saves 17 comparisons
+    const program =
+        \\    LDI t0, 17
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 17), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
