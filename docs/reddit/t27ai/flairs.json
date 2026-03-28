@@ -1,0 +1,87 @@
+{
+  "subreddit": "t27ai",
+  "flairs": [
+    {
+      "name": "Question",
+      "text": "[Question]",
+      "emoji": "📝",
+      "color": "#0079D3",
+      "type": "text"
+    },
+    {
+      "name": "Discussion",
+      "text": "[Discussion]",
+      "emoji": "💬",
+      "color": "#24A0ED",
+      "type": "text"
+    },
+    {
+      "name": "Code",
+      "text": "[Code]",
+      "emoji": "💻",
+      "color": "#FF4500",
+      "type": "text"
+    },
+    {
+      "name": "Research",
+      "text": "[Research]",
+      "emoji": "🔬",
+      "color": "#9B59B6",
+      "type": "text"
+    },
+    {
+      "name": "News",
+      "text": "[News]",
+      "emoji": "📢",
+      "color": "#DC4437",
+      "type": "text"
+    },
+    {
+      "name": "Bug",
+      "text": "[Bug]",
+      "emoji": "🐛",
+      "color": "#8B0000",
+      "type": "text"
+    },
+    {
+      "name": "Feature",
+      "text": "[Feature]",
+      "emoji": "✨",
+      "color": "#F5A623",
+      "type": "text"
+    },
+    {
+      "name": "Results",
+      "text": "[Results]",
+      "emoji": "📊",
+      "color": "#00CED1",
+      "type": "text"
+    }
+  ],
+  "user_flairs": [
+    {
+      "name": "Core",
+      "text": "Core Dev",
+      "emoji": "🔧",
+      "color": "#FF4500"
+    },
+    {
+      "name": "Contributor",
+      "text": "Contributor",
+      "emoji": "⭐",
+      "color": "#FFD700"
+    },
+    {
+      "name": "Researcher",
+      "text": "Researcher",
+      "emoji": "🔬",
+      "color": "#9B59B6"
+    },
+    {
+      "name": "Verified",
+      "text": "Verified",
+      "emoji": "✓",
+      "color": "#27AE60"
+    }
+  ]
+}
