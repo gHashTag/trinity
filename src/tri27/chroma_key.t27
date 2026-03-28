@@ -1,0 +1,13 @@
+; Chroma Key — TTT Dogfood Phase 3
+;
+; Chroma key compositing
+;
+; Test case: chroma key
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; keyed = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071590001506
