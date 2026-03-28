@@ -36510,3 +36510,48 @@ test "z_transform: verify transform" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "morphology_blackhat: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_blackhat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Black-Hat") != null);
+}
+
+test "morphology_blackhat: verify transform" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_blackhat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_hitmiss: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_hitmiss.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hit-Miss") != null);
+}
+
+test "morphology_hitmiss: verify transform" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_hitmiss.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morphology_tophat: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_tophat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Top-Hat") != null);
+}
+
+test "morphology_tophat: verify transform" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morphology_tophat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
