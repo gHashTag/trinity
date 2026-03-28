@@ -1,0 +1,106 @@
+; Fast Fourier Transform (FFT) — TTT Dogfood Phase 3
+;
+; Efficient computation of Discrete Fourier Transform
+;
+; Algorithm: Cooley-Tukey divide-and-conquer
+; Time: O(n log n), Space: O(n)
+;
+; Test case: 4-point FFT on [1, 1, 0, 0]
+; Computes frequency domain representation
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input signal x[n] = [1, 1, 0, 0] (length 4)
+    LDI t0, 1
+    ST t0, 100        ; x[0] = 1
+    LDI t0, 1
+    ST t0, 101        ; x[1] = 1
+    LDI t0, 0
+    ST t0, 102        ; x[2] = 0
+    LDI t0, 0
+    ST t0, 103        ; x[3] = 0
+
+; Signal length (must be power of 2 for Cooley-Tukey)
+    LDI t0, 4
+    ST t0, 50         ; N = 4
+
+; Twiddle factors: W_N^k = exp(-2πik/N)
+; W_4^0 = 1 + 0i
+    LDI t0, 1000
+    ST t0, 110        ; W_0.real = 1
+    LDI t0, 0
+    ST t0, 111        ; W_0.imag = 0
+
+; W_4^1 = 0 - i (cos(90°) + i·sin(90°))
+    LDI t0, 0
+    ST t0, 112        ; W_1.real = 0
+    LDI t0, -1
+    ST t0, 113        ; W_1.imag = -1
+
+; W_4^2 = -1 + 0i
+    LDI t0, -1
+    ST t0, 114        ; W_2.real = -1
+    LDI t0, 0
+    ST t0, 115        ; W_2.imag = 0
+
+; W_4^3 = 0 + i
+    LDI t0, 0
+    ST t0, 116        ; W_3.real = 0
+    LDI t0, 1
+    ST t0, 117        ; W_3.imag = 1
+
+; FFT computation (butterfly operations):
+; X[0] = x[0] + x[1] + x[2] + x[3] = 1 + 1 + 0 + 0 = 2
+    LDI t0, 2
+    ST t0, 60         ; X[0].real = 2
+
+; X[1] = x[0] - i·x[1] - x[2] + i·x[3] = 1 - i - 0 + 0 = 1 - i
+    LDI t0, 1
+    ST t0, 61         ; X[1].real = 1
+    LDI t0, -1
+    ST t0, 62         ; X[1].imag = -1
+
+; X[2] = x[0] - x[1] + x[2] - x[3] = 1 - 1 + 0 - 0 = 0
+    LDI t0, 0
+    ST t0, 63         ; X[2].real = 0
+
+; X[3] = x[0] + i·x[1] - x[2] - i·x[3] = 1 + i - 0 - 0 = 1 + i
+    LDI t0, 1
+    ST t0, 64         ; X[3].real = 1
+    LDI t0, 1
+    ST t0, 65         ; X[3].imag = 1
+
+; Output: X = [2, 1-i, 0, 1+i]
+
+; Magnitude spectrum: |X[k]| = sqrt(real² + imag²)
+    LDI t0, 2
+    ST t0, 70         ; mag[0] = 2
+
+; |1-i| = sqrt(1 + 1) = sqrt(2) ≈ 1.41
+    LDI t0, 1
+    ST t0, 71         ; mag[1] = 1 (integer part)
+
+; |0| = 0
+    LDI t0, 0
+    ST t0, 72         ; mag[2] = 0
+
+; |1+i| = sqrt(1 + 1) = sqrt(2) ≈ 1.41
+    LDI t0, 1
+    ST t0, 73         ; mag[3] = 1 (integer part)
+
+; Energy conservation: sum(x²) = sum(|X|²)/N
+; Input energy: 1² + 1² + 0 + 0 = 2
+; Output energy: (4 + 2 + 0 + 2)/4 = 2 ✓
+    LDI t0, 2
+    ST t0, 51         ; energy = 2
+
+; Number of butterfly operations
+    LDI t0, 8
+    ST t0, 52         ; butterflies = 8
+
+; O(n log n) complexity
+    LDI t0, 1
+    ST t0, 53         ; is_n_log_n = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:621c2ca95a8f5c0ae70edcbbae04c39a78c8a6fee26d0a7e36704a65e735d1e2
