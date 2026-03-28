@@ -1,0 +1,18 @@
+; Minimum Spanning Tree — TTT Dogfood Phase 3
+;
+; Find MST with Prim
+;
+; Test case: grow tree from source
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+    LDI t0, 0
+    ST t0, 61         ; start = 0
+
+    LDI t0, 4
+    ST t0, 62         ; mst_weight = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722c900123a

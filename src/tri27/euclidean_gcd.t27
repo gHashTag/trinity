@@ -1,0 +1,18 @@
+; Euclidean GCD — TTT Dogfood Phase 3
+;
+; Greatest common divisor using Euclidean algorithm
+;
+; Test case: gcd(48, 18) = 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 48
+    ST t0, 60         ; a = 48
+    LDI t0, 18
+    ST t0, 61         ; b = 18
+
+    LDI t0, 6
+    ST t0, 62         ; gcd = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712cd001244

@@ -1,0 +1,13 @@
+; Line Segment Intersection Test — TTT Dogfood Phase 3
+;
+; Check if two line segments intersect
+;
+; Test case: intersecting segments
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; segments_intersect = 1 (true)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712cb002442

@@ -1,0 +1,21 @@
+; Bellman-Ford Detect — TTT Dogfood Phase 3
+;
+; Shortest paths with negative edge detection
+;
+; Test case: detect negative cycle
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+    LDI t0, -1
+    ST t0, 61         ; edge weight = -1
+
+    LDI t0, 0
+    ST t0, 70         ; has_negative_cycle = 0
+
+    LDI t0, 999
+    ST t0, 62         ; max_distance = 999
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752c4001235

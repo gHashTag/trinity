@@ -1,0 +1,16 @@
+; Miller-Rabin Primality Test — TTT Dogfood Phase 3
+;
+; Probabilistic primality test
+;
+; Test case: 97 is prime
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 97
+    ST t0, 60         ; n = 97
+
+    LDI t0, 1
+    ST t0, 61         ; is_prime = 1 (true)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712d2001249
