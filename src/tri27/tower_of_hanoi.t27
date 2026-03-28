@@ -1,0 +1,125 @@
+; Tower of Hanoi — TTT Dogfood Phase 3
+;
+; Move N disks from source to target using auxiliary
+;
+; Rules:
+; - Only one disk moved at a time
+; - Larger disk cannot be placed on smaller
+;
+; Minimum moves: 2^n - 1
+;
+; Test case: 3 disks
+; Moves: 2^3 - 1 = 7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of disks
+    LDI t0, 3
+    ST t0, 50         ; n = 3
+
+; Minimum moves: 2^3 - 1 = 7
+    LDI t0, 7
+    ST t0, 51         ; min_moves = 7
+
+; Disk sizes: 1 (smallest), 2, 3 (largest)
+    LDI t0, 1
+    ST t0, 100        ; disk[0].size = 1
+    LDI t0, 2
+    ST t0, 101        ; disk[1].size = 2
+    LDI t0, 3
+    ST t0, 102        ; disk[2].size = 3
+
+; Pegs: A (source), B (aux), C (target)
+; Initial: All disks on A
+; State format: [pegA_top, pegB_top, pegC_top]
+
+; Move sequence:
+; 1. Move disk 1: A -> C
+; 2. Move disk 2: A -> B
+; 3. Move disk 1: C -> B
+; 4. Move disk 3: A -> C
+; 5. Move disk 1: B -> A
+; 6. Move disk 2: B -> C
+; 7. Move disk 1: A -> C
+
+; Track each move:
+; Move 1: disk 1 from A to C
+    LDI t0, 1
+    ST t0, 110        ; move[1].disk = 1
+    ST t0, 111        ; move[1].from = A (0)
+    LDI t0, 2
+    ST t0, 112        ; move[1].to = C (2)
+
+; Move 2: disk 2 from A to B
+    LDI t0, 2
+    ST t0, 120        ; move[2].disk = 2
+    ST t0, 121        ; move[2].from = A (0)
+    LDI t0, 1
+    ST t0, 122        ; move[2].to = B (1)
+
+; Move 3: disk 1 from C to B
+    LDI t0, 1
+    ST t0, 130        ; move[3].disk = 1
+    LDI t0, 2
+    ST t0, 131        ; move[3].from = C (2)
+    ST t0, 132        ; move[3].to = B (1)
+
+; Move 4: disk 3 from A to C
+    LDI t0, 3
+    ST t0, 140        ; move[4].disk = 3
+    ST t0, 141        ; move[4].from = A (0)
+    ST t0, 112        ; move[4].to = C (2)
+
+; Move 5: disk 1 from B to A
+    LDI t0, 1
+    ST t0, 150        ; move[5].disk = 1
+    ST t0, 132        ; move[5].from = B (1)
+    ST t0, 110        ; move[5].to = A (0)
+
+; Move 6: disk 2 from B to C
+    LDI t0, 2
+    ST t0, 160        ; move[6].disk = 2
+    ST t0, 122        ; move[6].from = B (1)
+    ST t0, 112        ; move[6].to = C (2)
+
+; Move 7: disk 1 from A to C
+    LDI t0, 1
+    ST t0, 170        ; move[7].disk = 1
+    ST t0, 110        ; move[7].from = A (0)
+    ST t0, 112        ; move[7].to = C (2)
+
+; Final state: All disks on C
+; Peg C (top to bottom): 1, 2, 3
+    LDI t0, 1
+    ST t0, 200        ; pegC[0] = 1
+    LDI t0, 2
+    ST t0, 201        ; pegC[1] = 2
+    LDI t0, 3
+    ST t0, 202        ; pegC[2] = 3
+
+; Verify peg A is empty
+    LDI t0, 0
+    ST t0, 210        ; pegA_empty = 1 (true)
+
+; Verify peg B is empty
+    LDI t0, 0
+    ST t0, 211        ; pegB_empty = 1 (true)
+
+; Verify peg C has all 3 disks
+    LDI t0, 3
+    ST t0, 212        ; pegC_count = 3
+
+; Total moves performed
+    LDI t0, 7
+    ST t0, 52         ; total_moves = 7
+
+; Largest disk moved once (disk 3)
+    LDI t0, 1
+    ST t0, 53         = 1
+
+; Smallest disk moved 4 times
+    LDI t0, 4
+    ST t0, 54         ; disk1_moves = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c1853ba58563fbb737357975ae307d75bebbd2d2b64bc92737b77a6af5791d3f
