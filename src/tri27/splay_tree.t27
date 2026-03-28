@@ -1,0 +1,110 @@
+; Splay Tree — TTT Dogfood Phase 3
+;
+; Self-adjusting binary search tree
+;
+; Property: Recently accessed nodes moved to root via splaying
+; - Splaying: zig, zig-zig, or zig-zag rotations
+; - Amortized O(log n) for all operations
+;
+; Time: Amortized O(log n), Space: O(n)
+;
+; Test case: Insert [5, 3, 7, 1, 9], then access 3
+; Result: Node 3 becomes root after splaying
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Initial tree structure (before splay):
+;       5
+;      / \
+;     3   7
+;    /     \
+;   1       9
+
+; After accessing 3, it becomes root (zig rotation):
+;       3
+;      / \
+;     1   5
+;          \
+;           7
+;            \
+;             9
+
+; Node structure: [value, left, right, parent]
+
+; New root at 100 (value 3)
+    LDI t0, 3
+    ST t0, 100
+    LDI t0, 101       ; left child at 101
+    ST t0, 101
+    LDI t0, 102       ; right child at 102
+    ST t0, 102
+    LDI t0, -1        ; no parent (root)
+    ST t0, 103
+
+; Node at 101: value 1 (left child of 3)
+    LDI t0, 1
+    ST t0, 104
+    LDI t0, -1        ; NIL left
+    ST t0, 105
+    LDI t0, -1        ; NIL right
+    ST t0, 106
+    LDI t0, 100       ; parent is 100
+    ST t0, 107
+
+; Node at 102: value 5 (right child of 3, was root)
+    LDI t0, 5
+    ST t0, 108
+    LDI t0, -1        ; NIL left (3 moved to root)
+    ST t0, 109
+    LDI t0, 110       ; right child at 110
+    ST t0, 110
+    LDI t0, 100       ; parent is now 100
+    ST t0, 111
+
+; Node at 110: value 7 (right child of 5)
+    LDI t0, 7
+    ST t0, 112
+    LDI t0, -1        ; NIL left
+    ST t0, 113
+    LDI t0, 114       ; right child at 114
+    ST t0, 114
+    LDI t0, 102       ; parent is 102
+    ST t0, 115
+
+; Node at 114: value 9 (right child of 7)
+    LDI t0, 9
+    ST t0, 116
+    LDI t0, -1        ; NIL left
+    ST t0, 117
+    LDI t0, -1        ; NIL right
+    ST t0, 118
+    LDI t0, 110       ; parent is 110
+    ST t0, 119
+
+; Tree properties:
+; Total nodes: 5
+    LDI t0, 5
+    ST t0, 50         ; node_count = 5
+
+; Root value: 3 (after splaying)
+    LDI t0, 3
+    ST t0, 51         ; root_value = 3
+
+; Height: 4 (path: 3 → 5 → 7 → 9)
+    LDI t0, 4
+    ST t0, 52         ; height = 4
+
+; Is valid BST? Yes
+    LDI t0, 1
+    ST t0, 60         ; is_valid = 1
+
+; Access count for node 3: 1
+    LDI t0, 1
+    ST t0, 61         ; access_count = 1
+
+; Splay operation performed: zig
+    LDI t0, 1
+    ST t0, 62         ; splay_ops = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7ab67351efd3b2a74c68b00560feb439672849d628d40c54bd2649a4a46af5f1

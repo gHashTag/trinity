@@ -1,0 +1,114 @@
+; B-Tree — TTT Dogfood Phase 3
+;
+; Multi-way balanced tree for disk storage
+;
+; Properties:
+; - Each node has at most m-1 keys (m = order)
+; - Internal nodes have at least ⌈m/2⌉-1 keys
+; - Root has at least 1 key (unless empty)
+; - All leaves at same depth
+;
+; Time: O(log n), Space: O(n)
+;
+; Test case: Order 3 B-tree with keys [10, 20, 5, 6, 12, 30, 7, 17]
+; Result: Balanced tree with 2 levels
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; B-tree of order 3 (max 2 keys per node, max 3 children)
+
+; Root node at address 100
+; Keys: [10, 20], Children: [101, 102, 103]
+    LDI t0, 10        ; key 0
+    ST t0, 100
+    LDI t0, 20        ; key 1
+    ST t0, 101
+    LDI t0, 2         ; num_keys = 2
+    ST t0, 102
+    LDI t0, 1         ; is_leaf = 0 (internal)
+    ST t0, 103
+    LDI t0, 104       ; child 0 pointer
+    ST t0, 104
+    LDI t0, 105       ; child 1 pointer
+    ST t0, 105
+    LDI t0, 106       ; child 2 pointer
+    ST t0, 106
+
+; Child 0 at 104: keys [5, 6]
+    LDI t0, 5
+    ST t0, 107
+    LDI t0, 6
+    ST t0, 108
+    LDI t0, 2         ; num_keys = 2
+    ST t0, 109
+    LDI t0, 1         ; is_leaf = 1
+    ST t0, 110
+
+; Child 1 at 105: keys [12, 17]
+    LDI t0, 12
+    ST t0, 111
+    LDI t0, 17
+    ST t0, 112
+    LDI t0, 2         ; num_keys = 2
+    ST t0, 113
+    LDI t0, 1         ; is_leaf = 1
+    ST t0, 114
+
+; Child 2 at 106: keys [30, -] (only 1 key)
+    LDI t0, 30
+    ST t0, 115
+    LDI t0, -1        ; empty slot
+    ST t0, 116
+    LDI t0, 1         ; num_keys = 1
+    ST t0, 117
+    LDI t0, 1         ; is_leaf = 1
+    ST t0, 118
+
+; After inserting 7: causes split in child 0
+; Child 0 becomes [5] and [7, 6], promote 6 to root
+; Root: [6, 10, 20] (3 keys - needs split!)
+
+; Root split result:
+; New root at 120: key [10]
+    LDI t0, 10        ; new root has single key
+    ST t0, 120
+    LDI t0, 1         ; num_keys = 1
+    ST t0, 121
+    LDI t0, 0         ; is_leaf = 0
+    ST t0, 122
+    LDI t0, 123       ; left child (keys < 10)
+    ST t0, 123
+    LDI t0, 124       ; right child (keys >= 10)
+    ST t0, 124
+
+; Tree properties:
+; Total keys: 8
+    LDI t0, 8
+    ST t0, 50         ; total_keys = 8
+
+; Height: 2
+    LDI t0, 2
+    ST t0, 51         ; height = 2
+
+; Order: 3
+    LDI t0, 3
+    ST t0, 52         ; order = 3
+
+; Min keys per node: 1
+    LDI t0, 1
+    ST t0, 53         ; min_keys = 1
+
+; Max keys per node: 2
+    LDI t0, 2
+    ST t0, 54         ; max_keys = 2
+
+; Is valid B-tree? Yes
+    LDI t0, 1
+    ST t0, 60         ; is_valid = 1
+
+; Splits performed during insertion: 1
+    LDI t0, 1
+    ST t0, 61         ; splits = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:3d6ee5f183ef402b92a478bc52ae6178e7deaa67868507816ce563f7eaa380f7

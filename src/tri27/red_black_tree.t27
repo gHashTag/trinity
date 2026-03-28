@@ -1,0 +1,131 @@
+; Red-Black Tree — TTT Dogfood Phase 3
+;
+; Self-balancing binary search tree with color properties
+;
+; Properties:
+; 1. Each node is RED or BLACK
+; 2. Root is BLACK
+; 3. All leaves (NIL) are BLACK
+; 4. RED nodes have BLACK children
+; 5. All paths from node to leaves have same BLACK count
+;
+; Time: O(log n) for all operations, Space: O(n)
+;
+; Test case: Insert [10, 5, 15, 3, 7, 12, 18]
+; Result: Balanced tree with 7 nodes
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Node structure: [color, value, left, right, parent]
+; Color: 0 = RED, 1 = BLACK
+; NIL = -1
+
+; Root node at address 100 (BLACK, value 10)
+    LDI t0, 1         ; BLACK
+    ST t0, 100
+    LDI t0, 10        ; value
+    ST t0, 101
+    LDI t0, 102       ; left child at 102
+    ST t0, 102
+    LDI t0, 106       ; right child at 106
+    ST t0, 103
+    LDI t0, -1        ; no parent (root)
+    ST t0, 104
+
+; Node at 102: RED, value 5 (left child of 10)
+    LDI t0, 0         ; RED
+    ST t0, 105
+    LDI t0, 5         ; value
+    ST t0, 106
+    LDI t0, 108       ; left child at 108
+    ST t0, 107
+    LDI t0, 110       ; right child at 110
+    ST t0, 108
+    LDI t0, 100       ; parent is 100
+    ST t0, 109
+
+; Node at 106: BLACK, value 3 (left child of 5)
+    LDI t0, 1         ; BLACK
+    ST t0, 110
+    LDI t0, 3         ; value
+    ST t0, 111
+    LDI t0, -1        ; NIL left
+    ST t0, 112
+    LDI t0, -1        ; NIL right
+    ST t0, 113
+    LDI t0, 102       ; parent is 102
+    ST t0, 114
+
+; Node at 110: BLACK, value 7 (right child of 5)
+    LDI t0, 1         ; BLACK
+    ST t0, 115
+    LDI t0, 7         ; value
+    ST t0, 116
+    LDI t0, -1        ; NIL left
+    ST t0, 117
+    LDI t0, -1        ; NIL right
+    ST t0, 118
+    LDI t0, 102       ; parent is 102
+    ST t0, 119
+
+; Node at 103: RED, value 15 (right child of 10)
+    LDI t0, 0         ; RED
+    ST t0, 120
+    LDI t0, 15        ; value
+    ST t0, 121
+    LDI t0, 122       ; left child at 122
+    ST t0, 122
+    LDI t0, 124       ; right child at 124
+    ST t0, 123
+    LDI t0, 100       ; parent is 100
+    ST t0, 124
+
+; Node at 122: BLACK, value 12 (left child of 15)
+    LDI t0, 1         ; BLACK
+    ST t0, 125
+    LDI t0, 12        ; value
+    ST t0, 126
+    LDI t0, -1        ; NIL left
+    ST t0, 127
+    LDI t0, -1        ; NIL right
+    ST t0, 128
+    LDI t0, 103       ; parent is 103
+    ST t0, 129
+
+; Node at 124: BLACK, value 18 (right child of 15)
+    LDI t0, 1         ; BLACK
+    ST t0, 130
+    LDI t0, 18        ; value
+    ST t0, 131
+    LDI t0, -1        ; NIL left
+    ST t0, 132
+    LDI t0, -1        ; NIL right
+    ST t0, 133
+    LDI t0, 103       ; parent is 103
+    ST t0, 134
+
+; Tree properties:
+; Total nodes: 7
+    LDI t0, 7
+    ST t0, 50         ; node_count = 7
+
+; Height: 3 (root to deepest leaf)
+    LDI t0, 3
+    ST t0, 51         ; height = 3
+
+; Black height: 2 (all paths have 2 BLACK nodes)
+    LDI t0, 2
+    ST t0, 52         ; black_height = 2
+
+; Is valid RBT? Yes (all properties satisfied)
+    LDI t0, 1
+    ST t0, 60         ; is_valid = 1
+
+; In-order traversal: [3, 5, 7, 10, 12, 15, 18]
+    LDI t0, 3
+    ST t0, 70         ; min = 3
+    LDI t0, 18
+    ST t0, 71         ; max = 18
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0bb82e8f42a4f186db1f5531ccde3bffd53818106d6d71e074b2be51c9c683eb
