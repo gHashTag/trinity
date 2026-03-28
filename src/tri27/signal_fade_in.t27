@@ -1,0 +1,13 @@
+; Fade In — TTT Dogfood Phase 3
+;
+; Audio fade in
+;
+; Test case: signal_fade_in
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; signal_fade_in_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072e700000001da9

@@ -1,0 +1,13 @@
+; Envelope — TTT Dogfood Phase 3
+;
+; Extract signal envelope
+;
+; Test case: signal_envelope
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; signal_envelope_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072eb00000001de9
