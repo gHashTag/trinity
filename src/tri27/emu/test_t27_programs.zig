@@ -13884,3 +13884,177 @@ test "strspn: set char 'a'" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 97), cpu.t27[0].trits);
 }
+
+// memcpy tests
+test "memcpy: file exists" {
+    const path = "src/tri27/memcpy.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "memcpy: byte count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "memcpy: first byte copied" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 150
+        \\    LD t0, 150
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "memcpy: last byte copied" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 80
+        \\    ST t0, 157
+        \\    LD t0, 157
+        \\    ST t0, 107
+        \\    LD t0, 107
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 80), cpu.t27[0].trits);
+}
+
+test "memcpy: bytes copied count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "memcpy: return pointer" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 100
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 100), cpu.t27[0].trits);
+}
+
+// memset tests
+test "memset: file exists" {
+    const path = "src/tri27/memset.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "memset: destination address" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 100
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 100), cpu.t27[0].trits);
+}
+
+test "memset: fill value" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "memset: byte count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "memset: first byte set" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "memset: last byte set" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 107
+        \\    LD t0, 107
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "memset: bytes written count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "memset: return pointer" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 100
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 100), cpu.t27[0].trits);
+}

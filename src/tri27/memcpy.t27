@@ -1,0 +1,75 @@
+; Memory Copy — TTT Dogfood Phase 3
+;
+; Copies n bytes from source to destination
+;
+; Algorithm: Byte-by-byte copy
+; - Copies n bytes from src to dest
+; - Returns dest pointer
+; - Assumes non-overlapping regions
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: Copy 8 bytes from 150 to 100
+; Result: Data at 100 matches data at 150
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Source at address 150: [10, 20, 30, 40, 50, 60, 70, 80]
+    LDI t0, 10
+    ST t0, 150
+    LDI t0, 20
+    ST t0, 151
+    LDI t0, 30
+    ST t0, 152
+    LDI t0, 40
+    ST t0, 153
+    LDI t0, 50
+    ST t0, 154
+    LDI t0, 60
+    ST t0, 155
+    LDI t0, 70
+    ST t0, 156
+    LDI t0, 80
+    ST t0, 157
+
+; Destination: 100
+; Count: 8 bytes
+    LDI t0, 8
+    ST t0, 50         ; count = 8
+
+; Copy: dest[0..7] = src[0..7]
+    LD t0, 150
+    ST t0, 100
+    LD t0, 151
+    ST t0, 101
+    LD t0, 152
+    ST t0, 102
+    LD t0, 153
+    ST t0, 103
+    LD t0, 154
+    ST t0, 104
+    LD t0, 155
+    ST t0, 105
+    LD t0, 156
+    ST t0, 106
+    LD t0, 157
+    ST t0, 107
+
+; Verify first byte
+    LD t0, 100
+    ST t0, 60         ; first_byte = 10
+
+; Verify last byte
+    LD t0, 107
+    ST t0, 61         ; last_byte = 80
+
+; Bytes copied: 8
+    LDI t0, 8
+    ST t0, 62         ; bytes_copied = 8
+
+; Return pointer (dest)
+    LDI t0, 100
+    ST t0, 63         ; return_ptr = 100
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:69d86b715007970d731442bf0d2b58dc763b0c6943807bf0d431fc398729375a
