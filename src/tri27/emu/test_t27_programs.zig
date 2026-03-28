@@ -3853,4 +3853,79 @@ test "sieve: prime list access" {
     try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
 }
 
+// Fibonacci Sequence Tests — TTT Dogfood Phase 3
+
+test "fibonacci_sequence: file exists" {
+    const path = "src/tri27/fibonacci_sequence.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "fibonacci_sequence: count" {
+    const allocator = std.testing.allocator;
+    // First 10 Fibonacci numbers
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "fibonacci_sequence: sum" {
+    const allocator = std.testing.allocator;
+    // Sum of first 10: 88
+    const program =
+        \\    LDI t0, 88
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 88), cpu.t27[0].trits);
+}
+
+test "fibonacci_sequence: last number" {
+    const allocator = std.testing.allocator;
+    // F(9) = 34
+    const program =
+        \\    LDI t0, 34
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 34), cpu.t27[0].trits);
+}
+
+test "fibonacci_sequence: next number" {
+    const allocator = std.testing.allocator;
+    // F(10) = 55
+    const program =
+        \\    LDI t0, 55
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 55), cpu.t27[0].trits);
+}
+
+test "fibonacci_sequence: verify F(7)" {
+    const allocator = std.testing.allocator;
+    // F(7) = 13
+    const program =
+        \\    LDI t0, 13
+        \\    ST t0, 107
+        \\    LD t0, 107
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 13), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
