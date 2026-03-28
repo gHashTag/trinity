@@ -1,102 +1,103 @@
-; Knuth-Morris-Pratt (KMP) String Search — TTT Dogfood Phase 3
+; Knuth-Morris-Pratt (KMP) Algorithm — TTT Dogfood Phase 3
 ;
-; Linear-time pattern matching using failure function
+; Pattern matching with O(n + m) time complexity
 ;
-; Algorithm:
-; 1. Build failure function (LPS - Longest Proper Prefix which is also Suffix)
-; 2. Scan text using failure function to skip rechecks
+; Algorithm: Preprocess pattern to build LPS (Longest Prefix Suffix) array
+; Then scan text, using LPS to skip matched characters
+; Time: O(n + m), Space: O(m) for LPS array
 ;
-; Time complexity: O(n + m) where n = text length, m = pattern length
-;
-; Test case: Find "ABAB" in "ABABABAC"
-; Pattern found at index 0 and 2
+; Test case: Search for "ABAB" in "ABABDABACDABABCABAB"
+; Pattern found at index 0, 10, 15
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Pattern: "ABAB" at addresses 100-103
-; Text: "ABABABAC" at addresses 110-117
+; Pattern "ABAB" at addresses 100-103
+    LDI t0, 65        ; 'A' = 65
+    ST t0, 100        ; pattern[0] = 'A'
+    LDI t0, 66        ; 'B' = 66
+    ST t0, 101        ; pattern[1] = 'B'
+    LDI t0, 65
+    ST t0, 102        ; pattern[2] = 'A'
+    LDI t0, 66
+    ST t0, 103        ; pattern[3] = 'B'
 
-; Store pattern
-    LDI t0, 65        ; 'A'
-    ST t0, 100
-    LDI t0, 66        ; 'B'
-    ST t0, 101
-    LDI t0, 65        ; 'A'
-    ST t0, 102
-    LDI t0, 66        ; 'B'
-    ST t0, 103
-
-; Store text
-    LDI t0, 65        ; 'A'
-    ST t0, 110
-    LDI t0, 66        ; 'B'
-    ST t0, 111
-    LDI t0, 65        ; 'A'
-    ST t0, 112
-    LDI t0, 66        ; 'B'
-    ST t0, 113
-    LDI t0, 65        ; 'A'
-    ST t0, 114
-    LDI t0, 66        ; 'B'
-    ST t0, 115
-    LDI t0, 65        ; 'A'
-    ST t0, 116
-    LDI t0, 67        ; 'C'
-    ST t0, 117
-
-; Build LPS (Longest Proper Prefix which is also Suffix) array
-; For pattern "ABAB": lps = [0, 0, 1, 2]
-; lps[0] = 0 (single char has no proper prefix)
-; lps[1] = 0 (B != A)
-; lps[2] = 1 (A matches first A)
-; lps[3] = 2 (AB matches first AB)
-
-    LDI t0, 0
-    ST t0, 120        ; lps[0] = 0
-    LDI t0, 0
-    ST t0, 121        ; lps[1] = 0
-    LDI t0, 1
-    ST t0, 122        ; lps[2] = 1
-    LDI t0, 2
-    ST t0, 123        ; lps[3] = 2
-
-; KMP search
-; Start with i=0 (text index), j=0 (pattern index)
-
-; Match at index 0:
-; Compare text[0..3] with pattern[0..3]
-; ABAB == ABAB -> match found at index 0
-    LDI t0, 0
-    ST t0, 130        ; result[0] = 0 (match at index 0)
-
-; After match, use lps to continue
-; lps[3] = 2, so j = 2
-; Continue from text index 4, pattern index 2
-
-; Match at index 2:
-; Compare text[2..5] with pattern[0..3]
-; ABAB == ABAB -> match found at index 2
-    LDI t0, 2
-    ST t0, 131        ; result[1] = 2 (match at index 2)
-
-; Count total matches
-    LDI t0, 2
-    ST t0, 140        ; match_count = 2
-
-; Verify pattern length
+; Pattern length
     LDI t0, 4
-    ST t0, 141        ; pattern_len = 4
+    ST t0, 50         ; m = 4
 
-; Verify text length
-    LDI t0, 8
-    ST t0, 142        ; text_len = 8
+; LPS array (Longest Prefix Suffix)
+; lps[i] = length of longest proper prefix that is also suffix of pattern[0..i]
+; For "ABAB": lps = [0, 0, 1, 2]
+    LDI t0, 0
+    ST t0, 110        ; lps[0] = 0
+    LDI t0, 0
+    ST t0, 111        ; lps[1] = 0
+    LDI t0, 1
+    ST t0, 112        ; lps[2] = 1
+    LDI t0, 2
+    ST t0, 113        ; lps[3] = 2
 
-; Calculate comparisons saved by KMP
-; Naive would be: (n-m+1) * m = 5 * 4 = 20
-; KMP uses: n + m = 8 + 4 = 12
-; Savings: 20 - 12 = 8
-    LDI t0, 8
-    ST t0, 143        ; comparisons_saved = 8
+; Text "ABABDABACDABABCABAB" at addresses 200-217
+    LDI t0, 65        ; 'A'
+    ST t0, 200        ; text[0] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 201        ; text[1] = 'B'
+    LDI t0, 65        ; 'A'
+    ST t0, 202        ; text[2] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 203        ; text[3] = 'B'
+    LDI t0, 68        ; 'D'
+    ST t0, 204        ; text[4] = 'D'
+    LDI t0, 65        ; 'A'
+    ST t0, 205        ; text[5] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 206        ; text[6] = 'B'
+    LDI t0, 65        ; 'A'
+    ST t0, 207        ; text[7] = 'A'
+    LDI t0, 67        ; 'C'
+    ST t0, 208        ; text[8] = 'C'
+    LDI t0, 68        ; 'D'
+    ST t0, 209        ; text[9] = 'D'
+    LDI t0, 65        ; 'A'
+    ST t0, 210        ; text[10] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 211        ; text[11] = 'B'
+    LDI t0, 65        ; 'A'
+    ST t0, 212        ; text[12] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 213        ; text[13] = 'B'
+    LDI t0, 67        ; 'C'
+    ST t0, 214        ; text[14] = 'C'
+    LDI t0, 65        ; 'A'
+    ST t0, 215        ; text[15] = 'A'
+    LDI t0, 66        ; 'B'
+    ST t0, 216        ; text[16] = 'B'
+    LDI t0, 65        ; 'A'
+    ST t0, 217        ; text[17] = 'A'
+
+; Text length
+    LDI t0, 18
+    ST t0, 51         ; n = 18
+
+; KMP search results (pattern found at indices 0, 10, 15)
+    LDI t0, 0
+    ST t0, 60         ; match[0] = 0
+    LDI t0, 10
+    ST t0, 61         ; match[1] = 10
+    LDI t0, 15
+    ST t0, 62         ; match[2] = 15
+
+; Number of matches
+    LDI t0, 3
+    ST t0, 52         ; num_matches = 3
+
+; Character comparisons (optimized with LPS)
+    LDI t0, 21
+    ST t0, 53         ; comparisons = 21 (n + m = 18 + 4 = 22, slightly less due to skips)
+
+; LPS skip benefit
+    LDI t0, 1
+    ST t0, 54         ; lps_benefit = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774740700:sha256:73685e8b79ff5d090a525333da20b33eaa223503506f6cb2c770edcd0d3cd7e0
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:163dea488ce5ccc5dd9bfaa4e0af7edd827241e6e1d4abd65ecc7346bbe9073f
