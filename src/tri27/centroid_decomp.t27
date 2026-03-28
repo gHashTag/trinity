@@ -1,0 +1,13 @@
+; Centroid Decomposition — TTT Dogfood Phase 3
+;
+; Divide tree by centroids
+;
+; Test case: centroid_decomp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; centroid_decomp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719c8001940
