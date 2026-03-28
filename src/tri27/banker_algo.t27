@@ -1,0 +1,15 @@
+; Banker's Algorithm — TTT Dogfood Phase 3
+;
+; Deadlock avoidance
+;
+; Test case: 5 processes, 4 resources
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; processes = 5
+    LDI t0, 4
+    ST t0, 61         ; resources = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713830012f9

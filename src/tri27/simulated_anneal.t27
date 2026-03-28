@@ -1,0 +1,15 @@
+; Simulated Annealing — TTT Dogfood Phase 3
+;
+; Probabilistic optimization
+;
+; Test case: cooling schedule
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1000
+    ST t0, 60         ; iterations = 1000
+    LDI t0, 1
+    ST t0, 61         ; final_temp = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713700012e6

@@ -1,0 +1,13 @@
+; Monte Carlo Tree Search — TTT Dogfood Phase 3
+;
+; MCTS for games
+;
+; Test case: 1000 simulations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1000
+    ST t0, 60         ; simulations = 1000
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713790012ef

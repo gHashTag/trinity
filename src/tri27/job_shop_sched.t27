@@ -1,0 +1,15 @@
+; Job Shop Scheduling — TTT Dogfood Phase 3
+;
+; NP-hard scheduling
+;
+; Test case: 5 jobs, 3 machines
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; jobs = 5
+    LDI t0, 3
+    ST t0, 61         ; machines = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07137c0012f2

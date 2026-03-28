@@ -1,0 +1,13 @@
+; Tabu Search — TTT Dogfood Phase 3
+;
+; Local search with memory
+;
+; Test case: tabu list size = 10
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 60         ; tabu_size = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713740012ea

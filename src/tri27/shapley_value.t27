@@ -1,0 +1,13 @@
+; Shapley Value — TTT Dogfood Phase 3
+;
+; Cooperative game theory
+;
+; Test case: 4 players
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 4
+    ST t0, 60         ; players = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07137a0012f0

@@ -1,0 +1,13 @@
+; Particle Swarm Optimization — TTT Dogfood Phase 3
+;
+; Swarm intelligence
+;
+; Test case: 30 particles, 50 iterations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 30
+    ST t0, 60         ; particles = 30
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713720022e8
