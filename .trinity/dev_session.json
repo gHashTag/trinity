@@ -1,6 +1,6 @@
 {
-  "state": "COMMITTED",
-  "issue_number": 435,
-  "branch": "feat/docs-tri27-kernel",
+  "state": "ACTIVE",
+  "issue_number": 474,
+  "branch": "main",
   "tests_passed": true
 }
