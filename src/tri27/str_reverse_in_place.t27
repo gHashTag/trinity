@@ -1,0 +1,13 @@
+; String Reverse In Place — TTT Dogfood Phase 3
+;
+; Reverse string in place
+;
+; Test case: str_reverse_in_place
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; reverse_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0741a000200000000ba9

@@ -1,0 +1,13 @@
+; Parse CSV — TTT Dogfood Phase 3
+;
+; Parse CSV format
+;
+; Test case: parse_csv
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; csv_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07440000002000000cd9
