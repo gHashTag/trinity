@@ -1,6 +1,6 @@
 ; Matrix Add — TTT Dogfood Phase 3
 ;
-| C = A + B
+; C = A + B
 ;
 ; Test case: matrix_add
 ;

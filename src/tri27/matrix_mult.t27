@@ -1,6 +1,6 @@
 ; Matrix Multiply — TTT Dogfood Phase 3
 ;
-| C = A x B
+; C = A x B
 ;
 ; Test case: matrix_mult
 ;

@@ -1,6 +1,6 @@
 ; Matrix Transpose V2 — TTT Dogfood Phase 3
 ;
-| B = A^T alt
+; B = A^T alt
 ;
 ; Test case: matrix_transpose2
 ;
