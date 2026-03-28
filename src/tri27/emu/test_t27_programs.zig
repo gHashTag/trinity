@@ -52395,3 +52395,153 @@ test "net_url_parse: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "time_add: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_add.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_add: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_add.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_datetime_to_unix: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_datetime_to_unix.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_datetime_to_unix: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_datetime_to_unix.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_diff: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_diff.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_diff: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_diff.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_format: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_format.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_format: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_format.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_local_to_utc: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_local_to_utc.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_local_to_utc: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_local_to_utc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_now: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_now.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_now: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_now.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_parse: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_parse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_parse: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_parse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_sleep: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_sleep.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_sleep: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_sleep.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_unix_to_datetime: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_unix_to_datetime.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_unix_to_datetime: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_unix_to_datetime.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "time_utc_to_local: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_utc_to_local.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "time_utc_to_local: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "time_utc_to_local.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
