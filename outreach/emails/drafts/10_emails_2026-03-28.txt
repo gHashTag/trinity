@@ -151,7 +151,7 @@ Dr. Hossenfelder,
 
 We tested γ = φ⁻³ for Barbero-Immirzi parameter. It failed (0.617% error).
 
-Documented: github.com/gHashTag/trinity/blob/main/.trinity/experience/DELTA-001.md
+Documented: github.com/gHashTag/trinity/blob/main/docs/DELTA-001.md
 
 Still open: does φ²+φ⁻²=3 connect to anything real?
 
@@ -169,7 +169,7 @@ admin@t27.ai
 
 ────────────────────────────────────────────────────────────────────────────
 
-## Email 7: Pentti Kanerva (kanerva@berkeley.edu)
+## Email 7: Pentti Kanerva (pkanerva@csli.stanford.edu)
 
 Subject: Ternary VSA: Extension of binary spatter codes
 
