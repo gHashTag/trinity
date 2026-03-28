@@ -1,6 +1,6 @@
 ; Scaled Dot-Product — TTT Dogfood Phase 3
 ;
-| Core attention operation
+; Core attention operation
 ;
 ; Test case: scaled_dot_prod
 ;

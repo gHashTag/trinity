@@ -1,6 +1,6 @@
 ; Hierarchical Clustering — TTT Dogfood Phase 3
 ;
-| Agglomerative clustering
+; Agglomerative clustering
 ;
 ; Test case: hierarch_clust
 ;

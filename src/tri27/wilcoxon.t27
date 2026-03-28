@@ -1,6 +1,6 @@
 ; Wilcoxon Signed-Rank — TTT Dogfood Phase 3
 ;
-| Paired sample test
+; Paired sample test
 ;
 ; Test case: wilcoxon
 ;

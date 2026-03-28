@@ -1,6 +1,6 @@
 ; Exponential Decay — TTT Dogfood Phase 3
 ;
-| Exponential LR schedule
+; Exponential LR schedule
 ;
 ; Test case: exponential_decay
 ;

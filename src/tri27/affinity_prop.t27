@@ -1,6 +1,6 @@
 ; Affinity Propagation — TTT Dogfood Phase 3
 ;
-| Message passing clustering
+; Message passing clustering
 ;
 ; Test case: affinity_prop
 ;

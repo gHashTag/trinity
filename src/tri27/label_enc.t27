@@ -1,6 +1,6 @@
 ; Label Encoding — TTT Dogfood Phase 3
 ;
-| Categorical to numeric
+; Categorical to numeric
 ;
 ; Test case: label_enc
 ;

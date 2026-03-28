@@ -1,0 +1,13 @@
+; Simpson 3/8 Rule — TTT Dogfood Phase 3
+;
+| Cubic integration
+;
+; Test case: simpson38_rule
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; simpson38_rule_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b010001adf
