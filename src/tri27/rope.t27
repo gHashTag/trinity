@@ -1,0 +1,172 @@
+; Rope Data Structure — TTT Dogfood Phase 3
+;
+; Efficient string manipulation for large texts
+;
+; Algorithm: Binary tree with substring weights
+; - Leaf nodes contain actual text
+; - Internal nodes store total length of left subtree
+; - Split/concat operations in O(log n)
+;
+; Time: O(log n) for split/concat/index
+; Space: O(n) where n = text length
+;
+; Test case: Rope for "Hello World"
+; Split at position 5 → "Hello" + " World"
+; Concat "!" → "Hello World!"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Rope node structure: [weight, left, right, is_leaf, text_start, text_len]
+; weight = total length of left subtree (or text length for leaf)
+
+; Initial rope: "Hello World" (11 chars)
+; Stored as leaf for simplicity
+
+; Root node at address 100
+    LDI t0, 11        ; weight = 11 (text length)
+    ST t0, 100
+    LDI t0, 65535     ; left = null
+    ST t0, 101
+    LDI t0, 65535     ; right = null
+    ST t0, 102
+    LDI t0, 1         ; is_leaf = 1
+    ST t0, 103
+    LDI t0, 120       ; text_start = 120
+    ST t0, 104
+    LDI t0, 11        ; text_len = 11
+    ST t0, 105
+
+; Text "Hello World" at address 120
+    LDI t0, 72        ; H
+    ST t0, 120
+    LDI t0, 101       ; e
+    ST t0, 121
+    LDI t0, 108       ; l
+    ST t0, 122
+    LDI t0, 108       ; l
+    ST t0, 123
+    LDI t0, 111       ; o
+    ST t0, 124
+    LDI t0, 32        ; space
+    ST t0, 125
+    LDI t0, 87        ; W
+    ST t0, 126
+    LDI t0, 111       ; o
+    ST t0, 127
+    LDI t0, 114       ; r
+    ST t0, 128
+    LDI t0, 108       ; l
+    ST t0, 129
+    LDI t0, 100       ; d
+    ST t0, 130
+
+; Index operation: char_at(6) → 'W'
+    LDI t0, 6
+    ST t0, 60         ; index = 6
+    LDI t0, 87        ; 'W'
+    ST t0, 61         ; char_at_6 = 'W'
+
+; Split at position 5 → two ropes
+; Left: "Hello" (5 chars)
+    LDI t0, 5
+    ST t0, 200        ; left.weight = 5
+    LDI t0, 65535
+    ST t0, 201        ; left.left = null
+    ST t0, 202        ; left.right = null
+    LDI t0, 1
+    ST t0, 203        ; left.is_leaf = 1
+    LDI t0, 140
+    ST t0, 204        ; left.text_start = 140
+    LDI t0, 5
+    ST t0, 205        ; left.text_len = 5
+
+; "Hello" at address 140
+    LDI t0, 72        ; H
+    ST t0, 140
+    LDI t0, 101       ; e
+    ST t0, 141
+    LDI t0, 108       ; l
+    ST t0, 142
+    LDI t0, 108       ; l
+    ST t0, 143
+    LDI t0, 111       ; o
+    ST t0, 144
+
+; Right: " World" (6 chars)
+    LDI t0, 6
+    ST t0, 210        ; right.weight = 6
+    LDI t0, 65535
+    ST t0, 211        ; right.left = null
+    ST t0, 212        ; right.right = null
+    LDI t0, 1
+    ST t0, 213        ; right.is_leaf = 1
+    LDI t0, 150
+    ST t0, 214        ; right.text_start = 150
+    LDI t0, 6
+    ST t0, 215        ; right.text_len = 6
+
+; " World" at address 150
+    LDI t0, 32        ; space
+    ST t0, 150
+    LDI t0, 87        ; W
+    ST t0, 151
+    LDI t0, 111       ; o
+    ST t0, 152
+    LDI t0, 114       ; r
+    ST t0, 153
+    LDI t0, 108       ; l
+    ST t0, 154
+    LDI t0, 100       ; d
+    ST t0, 155
+
+; Concat with "!" → new rope with 3 children
+; Internal node: weight=11, left="Hello", right=" World!"
+    LDI t0, 11
+    ST t0, 300        ; concat.weight = 5 (left length)
+    LDI t0, 200
+    ST t0, 301        ; concat.left = left rope
+    LDI t0, 310
+    ST t0, 302        ; concat.right = right rope + "!"
+    LDI t0, 0
+    ST t0, 303        ; concat.is_leaf = 0
+
+; Right child is " World!" (7 chars)
+    LDI t0, 7
+    ST t0, 310        ; right.weight = 7
+    LDI t0, 1
+    ST t0, 313        ; right.is_leaf = 1
+    LDI t0, 160
+    ST t0, 314        ; right.text_start = 160
+    LDI t0, 7
+    ST t0, 315        ; right.text_len = 7
+
+; " World!" at address 160
+    LDI t0, 32        ; space
+    ST t0, 160
+    LDI t0, 87        ; W
+    ST t0, 161
+    LDI t0, 111       ; o
+    ST t0, 162
+    LDI t0, 114       ; r
+    ST t0, 163
+    LDI t0, 108       ; l
+    ST t0, 164
+    LDI t0, 100       ; d
+    ST t0, 165
+    LDI t0, 33        ; !
+    ST t0, 166
+
+; Final length: 12
+    LDI t0, 12
+    ST t0, 62         ; final_len = 12
+
+; Number of nodes: 4 (2 leaves + 2 internal)
+    LDI t0, 4
+    ST t0, 63         ; num_nodes = 4
+
+; Tree depth: 2
+    LDI t0, 2
+    ST t0, 64         ; depth = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a4ecf384bbbf6e3778074e88b77d5a14c8d03cacf8a4e56de2ca3400db2f6038

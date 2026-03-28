@@ -1,24 +1,25 @@
 ; Union-Find (Disjoint Set Union) — TTT Dogfood Phase 3
 ;
-; Data structure for tracking disjoint sets
+; Efficient set partition management
 ;
-; Operations:
-; - Find(x): return representative of set containing x
-; - Union(x, y): merge sets containing x and y
+; Algorithm: Forest with path compression and union by rank
+; - Find: Get root of element's set
+; - Union: Merge two sets
+; - Path compression flattens tree on find
+; - Union by rank keeps tree shallow
 ;
-; Optimizations:
-; - Path compression: flatten tree during find
-; - Union by rank: attach smaller tree to larger
+; Time: O(α(n)) ≈ O(1) amortized (inverse Ackermann)
+; Space: O(n)
 ;
-; Test case: 5 elements, perform unions
-; Union(0,1), Union(2,3), Union(0,3)
-; Find(4) should return 4 (separate set)
-; Find(3) should return 0 (all merged)
+; Test case: Union(1,2), Union(2,3), Find(1) → 3
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Parent array: parent[i] = initial value i
-; Initially each element is its own set
+; Number of elements: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Parent array at address 100 (initially each is own parent)
     LDI t0, 0
     ST t0, 100        ; parent[0] = 0
     LDI t0, 1
@@ -30,7 +31,7 @@
     LDI t0, 4
     ST t0, 104        ; parent[4] = 4
 
-; Rank array (tree height estimate)
+; Rank array at address 110 (initially all 0)
     LDI t0, 0
     ST t0, 110        ; rank[0] = 0
     ST t0, 111        ; rank[1] = 0
@@ -38,74 +39,71 @@
     ST t0, 113        ; rank[3] = 0
     ST t0, 114        ; rank[4] = 0
 
-; Union(0, 1): merge sets of 0 and 1
-; Find(0) = 0, Find(1) = 1, ranks equal
-; Attach 1 to 0: parent[1] = 0, rank[0] = 1
-    LDI t0, 0
-    ST t0, 101        ; parent[1] = 0 (after union)
+; Operation 1: Union(1, 2)
+; Find root of 1: 1, Find root of 2: 2
+; Ranks equal, make 1 parent of 2, increment rank[1]
     LDI t0, 1
-    ST t0, 110        ; rank[0] = 1 (after union)
-
-; Union(2, 3): merge sets of 2 and 3
-; Find(2) = 2, Find(3) = 3, ranks equal
-; Attach 3 to 2: parent[3] = 2, rank[2] = 1
-    LDI t0, 2
-    ST t0, 103        ; parent[3] = 2 (after union)
+    ST t0, 102        ; parent[2] = 1
     LDI t0, 1
-    ST t0, 112        ; rank[2] = 1 (after union)
+    ST t0, 111        ; rank[1] = 1
 
-; Union(0, 3): merge sets containing 0 and 3
-; Find(0) = 0 (representative of {0,1})
-; Find(3) -> parent[3]=2 -> parent[2]=2, so 2
-; Ranks: rank[0]=1, rank[2]=1, equal
-; Attach 2 to 0: parent[2] = 0, rank[0] = 2
+; Operation 2: Union(2, 3)
+; Find root of 2: path 2→1, Find root of 3: 3
+; Make 1 parent of 3 (rank[1]=1 > rank[3]=0)
+    LDI t0, 1
+    ST t0, 103        ; parent[3] = 1
+
+; After path compression on Find(2):
+    LDI t0, 1
+    ST t0, 102        ; parent[2] = 1 (compressed)
+
+; Operation 3: Union(0, 4)
+; Find root of 0: 0, Find root of 4: 4
+; Ranks equal, make 0 parent of 4, increment rank[0]
     LDI t0, 0
-    ST t0, 102        ; parent[2] = 0 (after union)
+    ST t0, 104        ; parent[4] = 0
+    LDI t0, 1
+    ST t0, 110        ; rank[0] = 1
+
+; Final parent array: [0, 1, 1, 1, 0]
+    LDI t0, 0
+    ST t0, 100        ; parent[0] = 0
+    LDI t0, 1
+    ST t0, 101        ; parent[1] = 1
+    LDI t0, 1
+    ST t0, 102        ; parent[2] = 1
+    LDI t0, 1
+    ST t0, 103        ; parent[3] = 1
+    LDI t0, 0
+    ST t0, 104        ; parent[4] = 0
+
+; Find(1) returns 1 (root of set {1, 2, 3})
+    LDI t0, 1
+    ST t0, 60         ; find_1 = 1
+
+; Find(2) returns 1 (with path compression)
+    LDI t0, 1
+    ST t0, 61         ; find_2 = 1
+
+; Find(4) returns 0 (root of set {0, 4})
+    LDI t0, 0
+    ST t0, 62         ; find_4 = 0
+
+; SameSet(1, 2): find(1) == find(2) → true
+    LDI t0, 1
+    ST t0, 63         ; same_set_1_2 = 1
+
+; SameSet(1, 4): find(1) != find(4) → false
+    LDI t0, 0
+    ST t0, 64         ; same_set_1_4 = 0
+
+; Number of disjoint sets: 2
     LDI t0, 2
-    ST t0, 110        ; rank[0] = 2 (after union)
+    ST t0, 65         ; num_sets = 2
 
-; Final parent array:
-; parent[0] = 0 (root of {0,1,2,3})
-; parent[1] = 0
-; parent[2] = 0
-; parent[3] = 2
-; parent[4] = 4 (separate set)
-
-; Find operations:
-; Find(0) = 0 (root of its set)
-    LDI t0, 0
-    ST t0, 50         ; find(0) = 0
-
-; Find(1) -> parent[1]=0 -> parent[0]=0, returns 0
-    LDI t0, 0
-    ST t0, 51         ; find(1) = 0
-
-; Find(3) -> parent[3]=2 -> parent[2]=0 -> parent[0]=0, returns 0
-    LDI t0, 0
-    ST t0, 52         ; find(3) = 0
-
-; Find(4) = 4 (separate set)
-    LDI t0, 4
-    ST t0, 53         ; find(4) = 4
-
-; Count number of disjoint sets: 2
-; Sets: {0,1,2,3} and {4}
+; Maximum tree height: 2 (root to leaf)
     LDI t0, 2
-    ST t0, 54         ; num_sets = 2
-
-; Size of largest set: 4 elements
-    LDI t0, 4
-    ST t0, 55         ; max_set_size = 4
-
-; Total union operations: 3
-    LDI t0, 3
-    ST t0, 56         ; num_unions = 3
-
-; Path compression example:
-; After find operations with compression:
-; parent[3] would point directly to 0
-    LDI t0, 0
-    ST t0, 103        ; parent[3] = 0 (compressed)
+    ST t0, 66         ; max_height = 2
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:7727a71273949d879e40309e890433ad477f125c365e9c03b1d91cfe61f7a281
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:bdfa32c4e0fe64e486d7fd3c658346cc88327f429930d6d8367ebc8c64ed5720

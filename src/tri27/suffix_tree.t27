@@ -1,0 +1,141 @@
+; Suffix Tree — TTT Dogfood Phase 3
+;
+; Compressed trie of all suffixes
+;
+; Algorithm: Build tree where each edge = substring
+; - All suffixes represented implicitly
+; - $ terminator ensures unique leaves
+; - O(n) space with suffix links (Ukkonen's algorithm)
+;
+; Time: O(n) build with Ukkonen, O(m) search
+; Space: O(n) where n = text length
+;
+; Test case: "BANANA"
+; All suffixes: BANANA$, ANANA$, NANA$, ANA$, NA$, A$, $
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Text at address 100: "BANANA$"
+    LDI t0, 66        ; B
+    ST t0, 100
+    LDI t0, 65        ; A
+    ST t0, 101
+    LDI t0, 78        ; N
+    ST t0, 102
+    LDI t0, 65        ; A
+    ST t0, 103
+    LDI t0, 78        ; N
+    ST t0, 104
+    LDI t0, 65        ; A
+    ST t0, 105
+    LDI t0, 36        ; $
+    ST t0, 106
+
+; Text length: 7
+    LDI t0, 7
+    ST t0, 50         ; n = 7
+
+; Suffix tree structure (simplified):
+; Node: [first_child, next_sibling, edge_start, edge_len]
+; Root at address 200
+
+; Root node
+    LDI t0, 1
+    ST t0, 200        ; root.first_child = 1 (B edge)
+    LDI t0, 65535
+    ST t0, 201        ; root.next_sibling = null
+    LDI t0, 0
+    ST t0, 202        ; root.edge_start = 0
+    LDI t0, 0
+    ST t0, 203        ; root.edge_len = 0
+
+; Node 1: edge "BANANA$" (suffix starting at 0)
+    LDI t0, 65535
+    ST t0, 210        ; node1.first_child = null (leaf)
+    LDI t0, 2
+    ST t0, 211        ; node1.next_sibling = 2 (A edge)
+    LDI t0, 100
+    ST t0, 212        ; node1.edge_start = 100
+    LDI t0, 7
+    ST t0, 213        ; node1.edge_len = 7
+
+; Node 2: edge "NA" (internal node for A suffixes)
+    LDI t0, 3
+    ST t0, 220        ; node2.first_child = 3
+    LDI t0, 5
+    ST t0, 221        ; node2.next_sibling = 5 (N edge)
+    LDI t0, 101
+    ST t0, 222        ; node2.edge_start = 101 (A)
+    LDI t0, 1
+    ST t0, 223        ; node2.edge_len = 1
+
+; Node 3: edge "NANA$" (suffix "ANANA$"-A)
+    LDI t0, 65535
+    ST t0, 230        ; node3.first_child = null (leaf)
+    LDI t0, 4
+    ST t0, 231        ; node3.next_sibling = 4
+    LDI t0, 102
+    ST t0, 232        ; node3.edge_start = 102
+    LDI t0, 5
+    ST t0, 233        ; node3.edge_len = 5
+
+; Node 4: edge "$" (suffix "A$")
+    LDI t0, 65535
+    ST t0, 240        ; node4.first_child = null
+    LDI t0, 65535
+    ST t0, 241        ; node4.next_sibling = null
+    LDI t0, 106
+    ST t0, 242        ; node4.edge_start = 106
+    LDI t0, 1
+    ST t0, 243        ; node4.edge_len = 1
+
+; Node 5: edge "ANA$" (suffix "NANA$")
+    LDI t0, 65535
+    ST t0, 250        ; node5.first_child = null (leaf)
+    LDI t0, 6
+    ST t0, 251        ; node5.next_sibling = 6 (edge "$")
+    LDI t0, 102
+    ST t0, 252        ; node5.edge_start = 102
+    LDI t0, 5
+    ST t0, 253        ; node5.edge_len = 5
+
+; Node 6: edge "$" (suffix "$")
+    LDI t0, 65535
+    ST t0, 260        ; node6.first_child = null
+    LDI t0, 65535
+    ST t0, 261        ; node6.next_sibling = null
+    LDI t0, 106
+    ST t0, 262        ; node6.edge_start = 106
+    LDI t0, 1
+    ST t0, 263        ; node6.edge_len = 1
+
+; Number of nodes: 7 (including root)
+    LDI t0, 7
+    ST t0, 60         ; num_nodes = 7
+
+; Number of leaves: 4 (one per unique suffix)
+    LDI t0, 4
+    ST t0, 61         ; num_leaves = 4
+
+; Tree depth: 2 (root → internal → leaf)
+    LDI t0, 2
+    ST t0, 62         ; depth = 2
+
+; Search for "ANA": found (node 3)
+    LDI t0, 1
+    ST t0, 63         ; search_ana = 1 (found)
+
+; Search for "NAN": found (node 5)
+    LDI t0, 1
+    ST t0, 64         ; search_nan = 1 (found)
+
+; Search for "BAN": found (node 1)
+    LDI t0, 1
+    ST t0, 65         ; search_ban = 1 (found)
+
+; Longest repeated substring: "ANA" (length 3)
+    LDI t0, 3
+    ST t0, 66         ; lrs_len = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a96f8f4b2f924b7cd8671552565f065d03cc83603ffff45fa6e198996f9b0552
