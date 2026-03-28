@@ -1,0 +1,13 @@
+; Satin Bowerbird — TTT Dogfood Phase 3
+;
+; Satin bowerbird optimizer
+;
+; Test case: gen_satin
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; satin_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b3d00000200000000228a

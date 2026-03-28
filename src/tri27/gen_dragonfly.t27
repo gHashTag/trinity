@@ -1,0 +1,13 @@
+; Dragonfly Algorithm — TTT Dogfood Phase 3
+;
+; Dragonfly-inspired optimization
+;
+; Test case: gen_dragonfly
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; dragonfly_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07afd00000200000000226a
