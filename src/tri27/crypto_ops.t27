@@ -1,0 +1,252 @@
+; Cryptographic Operations for SHA-256 — TTT Dogfood Phase 3
+;
+; Implements bitwise operations used in SHA-256:
+; - ROTR (rotate right)
+; - Ch (choose): (x & y) ^ (~x & z)
+; - Maj (majority): (x & y) ^ (x & z) ^ (y & z)
+; - Σ (sigma) functions
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+.code
+; ROTR^n(x) - rotate right by n bits
+; For 32-bit values, simulate with division/modulo
+; Input: t0 = x, t1 = n
+; Output: t0 = ROTR^n(x)
+;
+; Simplified for small n using division:
+; ROTR^n(x) = (x >> n) | ((x & ((1 << n) - 1)) << (32 - n))
+rotr_7:
+    ; ROTR^7 for 32-bit value
+    ; t0 = input value
+    ; Output: t0 = ROTR^7(t0)
+    ;
+    ; Simplified: use division for rotation simulation
+    ; For demonstration: (t0 >> 7) | ((t0 & 0x7F) << 25)
+    ; We'll implement a simplified version
+
+    ; t0 = value to rotate
+    ; Compute upper part: t0 >> 7
+    LDI t1, 7
+    SHR t2, t0, t1     ; t2 = t0 >> 7
+
+    ; Compute lower part: (t0 & 0x7F) << 25
+    LDI t3, 127        ; 0x7F
+    AND t4, t0, t3     ; t4 = t0 & 0x7F
+    LDI t5, 25
+    SHL t6, t4, t5     ; t6 = (t0 & 0x7F) << 25
+
+    ; Combine: t2 | t6
+    OR t0, t2, t6
+    HALT
+
+; ROTR^17 - rotate right by 17 bits
+rotr_17:
+    ; t0 = input value
+    LDI t1, 17
+    SHR t2, t0, t1     ; t2 = t0 >> 17
+
+    LDI t3, 131071     ; 0x1FFFF (17 bits set)
+    AND t4, t0, t3     ; t4 = t0 & 0x1FFFF
+    LDI t5, 15
+    SHL t6, t4, t5     ; t6 = (t0 & 0x1FFFF) << 15
+
+    OR t0, t2, t6
+    HALT
+
+; Ch(x, y, z) = (x & y) ^ (~x & z)
+; Choose function for SHA-256
+; Input: t0 = x, t1 = y, t2 = z
+; Output: t0 = Ch(t0, t1, t2)
+ch_function:
+    ; t0 = x, t1 = y, t2 = z
+
+    ; Compute x & y
+    AND t3, t0, t1     ; t3 = x & y
+
+    ; Compute ~x
+    NOT t4, t0         ; t4 = ~x
+
+    ; Compute ~x & z
+    AND t5, t4, t2     ; t5 = ~x & z
+
+    ; XOR results
+    XOR t0, t3, t5     ; t0 = (x & y) ^ (~x & z)
+    HALT
+
+; Maj(x, y, z) = (x & y) ^ (x & z) ^ (y & z)
+; Majority function for SHA-256
+; Input: t0 = x, t1 = y, t2 = z
+; Output: t0 = Maj(t0, t1, t2)
+maj_function:
+    ; t0 = x, t1 = y, t2 = z
+
+    ; Compute x & y
+    AND t3, t0, t1     ; t3 = x & y
+
+    ; Compute x & z
+    AND t4, t0, t2     ; t4 = x & z
+
+    ; Compute y & z
+    AND t5, t1, t2     ; t5 = y & z
+
+    ; XOR all three: (x & y) ^ (x & z)
+    XOR t6, t3, t4     ; t6 = (x & y) ^ (x & z)
+
+    ; XOR with (y & z)
+    XOR t0, t6, t5     ; t0 = Maj(x, y, z)
+    HALT
+
+; Σ0(x) = ROTR^2(x) ^ ROTR^13(x) ^ ROTR^22(x)
+; Big sigma 0 function for SHA-256
+; Input: t0 = x
+; Output: t0 = Σ0(t0)
+sigma_0:
+    ; t0 = x
+
+    ; ROTR^2(x)
+    LDI t1, 2
+    LDI t2, 3         ; mask for 2 bits
+    SHR t3, t0, t1
+    AND t4, t0, t2
+    LDI t5, 30
+    SHL t6, t4, t5
+    OR t1, t3, t6      ; t1 = ROTR^2(x)
+
+    ; ROTR^13(x) - simplified
+    LDI t2, 13
+    SHR t3, t0, t2
+    LDI t4, 8191       ; 13 bits
+    AND t5, t0, t4
+    LDI t6, 19
+    SHL t7, t5, t6
+    OR t2, t3, t7      ; t2 = ROTR^13(x)
+
+    ; XOR first two
+    XOR t3, t1, t2
+
+    ; ROTR^22(x) - simplified
+    LDI t4, 22
+    SHR t5, t0, t4
+    LDI t6, 4194303    ; 22 bits
+    AND t7, t0, t6
+    LDI t8, 10
+    SHL t9, t7, t8
+    OR t4, t5, t9      ; t4 = ROTR^22(x)
+
+    ; Final XOR
+    XOR t0, t3, t4     ; t0 = Σ0(x)
+    HALT
+
+; Σ1(x) = ROTR^6(x) ^ ROTR^11(x) ^ ROTR^25(x)
+; Big sigma 1 function for SHA-256
+; Input: t0 = x
+; Output: t0 = Σ1(t0)
+sigma_1:
+    ; t0 = x
+
+    ; ROTR^6(x)
+    LDI t1, 6
+    LDI t2, 63         ; mask for 6 bits
+    SHR t3, t0, t1
+    AND t4, t0, t2
+    LDI t5, 26
+    SHL t6, t4, t5
+    OR t1, t3, t6      ; t1 = ROTR^6(x)
+
+    ; ROTR^11(x)
+    LDI t2, 11
+    SHR t3, t0, t2
+    LDI t4, 2047       ; 11 bits
+    AND t5, t0, t4
+    LDI t6, 21
+    SHL t7, t5, t6
+    OR t2, t3, t7      ; t2 = ROTR^11(x)
+
+    ; XOR first two
+    XOR t3, t1, t2
+
+    ; ROTR^25(x)
+    LDI t4, 25
+    SHR t5, t0, t4
+    LDI t6, 33554431   ; 25 bits
+    AND t7, t0, t6
+    LDI t8, 7
+    SHL t9, t7, t8
+    OR t4, t5, t9      ; t4 = ROTR^25(x)
+
+    ; Final XOR
+    XOR t0, t3, t4     ; t0 = Σ1(x)
+    HALT
+
+; σ0(x) = ROTR^7(x) ^ ROTR^18(x) ^ SHR^3(x)
+; Small sigma 0 function for SHA-256
+; Input: t0 = x
+; Output: t0 = σ0(t0)
+small_sigma_0:
+    ; t0 = x
+
+    ; ROTR^7(x)
+    LDI t1, 7
+    LDI t2, 127        ; mask for 7 bits
+    SHR t3, t0, t1
+    AND t4, t0, t2
+    LDI t5, 25
+    SHL t6, t4, t5
+    OR t1, t3, t6      ; t1 = ROTR^7(x)
+
+    ; ROTR^18(x)
+    LDI t2, 18
+    SHR t3, t0, t2
+    LDI t4, 262143     ; 18 bits
+    AND t5, t0, t4
+    LDI t6, 14
+    SHL t7, t5, t6
+    OR t2, t3, t7      ; t2 = ROTR^18(x)
+
+    ; SHR^3(x)
+    LDI t5, 3
+    SHR t6, t0, t5     ; t6 = SHR^3(x)
+
+    ; XOR first two
+    XOR t7, t1, t2
+
+    ; Final XOR
+    XOR t0, t7, t6     ; t0 = σ0(x)
+    HALT
+
+; σ1(x) = ROTR^17(x) ^ ROTR^19(x) ^ SHR^10(x)
+; Small sigma 1 function for SHA-256
+; Input: t0 = x
+; Output: t0 = σ1(t0)
+small_sigma_1:
+    ; t0 = x
+
+    ; ROTR^17(x)
+    LDI t1, 17
+    LDI t2, 131071     ; mask for 17 bits
+    SHR t3, t0, t1
+    AND t4, t0, t2
+    LDI t5, 15
+    SHL t6, t4, t5
+    OR t1, t3, t6      ; t1 = ROTR^17(x)
+
+    ; ROTR^19(x)
+    LDI t2, 19
+    SHR t3, t0, t2
+    LDI t4, 524287     ; 19 bits
+    AND t5, t0, t4
+    LDI t6, 13
+    SHL t7, t5, t6
+    OR t2, t3, t7      ; t2 = ROTR^19(x)
+
+    ; SHR^10(x)
+    LDI t5, 10
+    SHR t6, t0, t5     ; t6 = SHR^10(x)
+
+    ; XOR first two
+    XOR t7, t1, t2
+
+    ; Final XOR
+    XOR t0, t7, t6     ; t0 = σ1(x)
+    HALT
