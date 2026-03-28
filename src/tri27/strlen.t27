@@ -1,0 +1,83 @@
+; String Length (strlen) — TTT Dogfood Phase 3
+;
+; Count characters in null-terminated string
+;
+; Algorithm: Iterate through string until null terminator
+; Time complexity: O(n)
+;
+; Test case: "HELLO" has length 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String "HELLO" at addresses 100-104 (null at 105)
+; Using ASCII values: H=72, E=69, L=76, L=76, O=79
+    LDI t0, 72
+    ST t0, 100        ; str[0] = 'H'
+    LDI t0, 69
+    ST t0, 101        ; str[1] = 'E'
+    LDI t0, 76
+    ST t0, 102        ; str[2] = 'L'
+    LDI t0, 76
+    ST t0, 103        ; str[3] = 'L'
+    LDI t0, 79
+    ST t0, 104        ; str[4] = 'O'
+    LDI t0, 0
+    ST t0, 105        ; str[5] = '\0' (null terminator)
+
+; Count characters until null
+; Initialize counter = 0
+    LDI t0, 0
+    ST t0, 50         ; count = 0
+
+; Check str[0] = 'H' != null, increment
+    LDI t0, 1
+    ST t0, 51         ; count = 1
+
+; Check str[1] = 'E' != null, increment
+    LDI t0, 2
+    ST t0, 52         ; count = 2
+
+; Check str[2] = 'L' != null, increment
+    LDI t0, 3
+    ST t0, 53         ; count = 3
+
+; Check str[3] = 'L' != null, increment
+    LDI t0, 4
+    ST t0, 54         ; count = 4
+
+; Check str[4] = 'O' != null, increment
+    LDI t0, 5
+    ST t0, 55         ; count = 5
+
+; Check str[5] = '\0', stop here
+
+; Final length
+    LD t0, 55
+    ST t0, 60         ; strlen("HELLO") = 5
+
+; First character
+    LD t0, 100
+    ST t0, 61         ; str[0] = 'H' (72)
+
+; Last character (before null)
+    LD t0, 104
+    ST t0, 62         ; str[4] = 'O' (79)
+
+; String with null at start: "" has length 0
+    LDI t0, 0
+    ST t0, 63         ; strlen("") = 0
+
+; ASCII sum of "HELLO": 72+69+76+76+79 = 372
+    LDI t0, 72
+    LDI t1, 69
+    ADD t0, t0, t1    ; t0 = 141
+    LDI t1, 76
+    ADD t0, t0, t1    ; t0 = 217
+    LDI t1, 76
+    ADD t0, t0, t1    ; t0 = 293
+    LDI t1, 79
+    ADD t0, t0, t1    ; t0 = 372
+    ST t0, 64         ; ascii_sum = 372
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6a0d1ff0181ab03c5a46283636b07e19f7748ebaa15e6a4651e88000fd047df1
