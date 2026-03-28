@@ -228,8 +228,13 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Standard binary bitwise OR
-            const result = a.trits | b.trits;
+            // Ternary OR: if (a > 0 or b > 0) return a else if (a < 0 and b < 0) return b else return a
+            const result: i64 = if (a.trits > 0 or b.trits > 0)
+                a.trits
+            else if (a.trits < 0 and b.trits < 0)
+                b.trits
+            else
+                a.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -242,8 +247,13 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Standard binary bitwise XOR
-            const result = a.trits ^ b.trits;
+            // Ternary XOR: if (a != 0 and b != 0) return a else if (a == 0 or b == 0) return b else return a
+            const result: i64 = if (a.trits != 0 and b.trits != 0)
+                a.trits
+            else if (a.trits == 0 or b.trits == 0)
+                b.trits
+            else
+                a.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
