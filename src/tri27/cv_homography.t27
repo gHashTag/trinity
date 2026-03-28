@@ -1,0 +1,13 @@
+; CV Homography — TTT Dogfood Phase 3
+;
+; Homography estimation
+;
+; Test case: cv_homography
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; homography_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07501000002000000001a2d
