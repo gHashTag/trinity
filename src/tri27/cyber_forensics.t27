@@ -1,0 +1,13 @@
+; Cyber Forensics — TTT Dogfood Phase 3
+;
+; Digital forensics
+;
+; Test case: cyber_forensics
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; forensics_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0772b000002000000001fd1

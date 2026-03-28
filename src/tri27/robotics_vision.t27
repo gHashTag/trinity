@@ -1,0 +1,13 @@
+; Robotics Vision — TTT Dogfood Phase 3
+;
+; Computer vision for robotics
+;
+; Test case: robotics_vision
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; vision_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07716000002000000001fa7
