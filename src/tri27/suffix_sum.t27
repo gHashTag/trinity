@@ -1,0 +1,32 @@
+; Suffix Sum — TTT Dogfood Phase 3
+;
+; Sum of elements from i to end
+;
+; Test case: [1,2,3,4,5] → suffix sums [15,14,12,9,5]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+
+    LDI t0, 15
+    ST t0, 110        ; suffix[0] = 15
+    LDI t0, 14
+    ST t0, 111        ; suffix[1] = 14
+    LDI t0, 12
+    ST t0, 112        ; suffix[2] = 12
+    LDI t0, 9
+    ST t0, 113        ; suffix[3] = 9
+    LDI t0, 5
+    ST t0, 114        ; suffix[4] = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0762650011d6

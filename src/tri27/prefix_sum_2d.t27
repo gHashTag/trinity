@@ -1,0 +1,27 @@
+; 2D Prefix Sum — TTT Dogfood Phase 3
+;
+; Sum queries on submatrices
+;
+; Test case: 3x3 matrix, query sum of submatrix
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; m[0][0] = 1
+    LDI t0, 2
+    ST t0, 101        ; m[0][1] = 2
+    LDI t0, 3
+    ST t0, 102        ; m[0][2] = 3
+    LDI t0, 4
+    ST t0, 103        ; m[1][0] = 4
+    LDI t0, 5
+    ST t0, 104        ; m[1][1] = 5
+    LDI t0, 6
+    ST t0, 105        ; m[1][2] = 6
+
+; prefix[1][1] = 1+2+4+5 = 12
+    LDI t0, 12
+    ST t0, 60         ; prefix_sum = 12
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752640011d5

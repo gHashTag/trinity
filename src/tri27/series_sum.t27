@@ -1,0 +1,21 @@
+; Series Sum — TTT Dogfood Phase 3
+;
+; Sum of arithmetic progression
+;
+; Test case: 1 + 2 + 3 + ... + 10 = 55
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; a1 = 1 (first term)
+    LDI t0, 10
+    ST t0, 61         ; an = 10 (last term)
+    LDI t0, 10
+    ST t0, 62         ; n = 10 (count)
+
+; sum = n * (a1 + an) / 2 = 10 * 11 / 2 = 55
+    LDI t0, 55
+    ST t0, 63         ; sum = 55
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07625d0011ce

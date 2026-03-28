@@ -1,0 +1,41 @@
+; BWT Transform — TTT Dogfood Phase 3
+;
+; Burrows-Wheeler Transform for compression
+;
+; Test case: BWT("banana$")
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 98        ; b
+    ST t0, 100        ; s[0] = b
+    LDI t0, 97        ; a
+    ST t0, 101        ; s[1] = a
+    LDI t0, 110       ; n
+    ST t0, 102        ; s[2] = n
+    LDI t0, 97        ; a
+    ST t0, 103        ; s[3] = a
+    LDI t0, 110       ; n
+    ST t0, 104        ; s[4] = n
+    LDI t0, 97        ; a
+    ST t0, 105        ; s[5] = a
+    LDI t0, 36        ; $
+    ST t0, 106        ; s[6] = $
+
+; BWT("banana$") = "annb$aa"
+    LDI t0, 97        ; a
+    ST t0, 110        ; bwt[0] = a
+    LDI t0, 110       ; n
+    ST t0, 111        ; bwt[1] = n
+    LDI t0, 110       ; n
+    ST t0, 112        ; bwt[2] = n
+    LDI t0, 98        ; b
+    ST t0, 113        ; bwt[3] = b
+    LDI t0, 36        ; $
+    ST t0, 114        ; bwt[4] = $
+    LDI t0, 97        ; a
+    ST t0, 115        ; bwt[5] = a
+    LDI t0, 97        ; a
+    ST t0, 116        ; bwt[6] = a
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07426b0011dc

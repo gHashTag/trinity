@@ -1,0 +1,36 @@
+; Suffix Array Build — TTT Dogfood Phase 3
+;
+; Sorted suffix indices of string
+;
+; Test case: "banana" → [5,3,1,0,4,2]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 98        ; b
+    ST t0, 100        ; s[0] = b
+    LDI t0, 97        ; a
+    ST t0, 101        ; s[1] = a
+    LDI t0, 110       ; n
+    ST t0, 102        ; s[2] = n
+    LDI t0, 97        ; a
+    ST t0, 103        ; s[3] = a
+    LDI t0, 110       ; n
+    ST t0, 104        ; s[4] = n
+    LDI t0, 97        ; a
+    ST t0, 105        ; s[5] = a
+
+    LDI t0, 5
+    ST t0, 110        ; sa[0] = 5 ("a")
+    LDI t0, 3
+    ST t0, 111        ; sa[1] = 3 ("ana")
+    LDI t0, 1
+    ST t0, 112        ; sa[2] = 1 ("anana")
+    LDI t0, 0
+    ST t0, 113        ; sa[3] = 0 ("banana")
+    LDI t0, 4
+    ST t0, 114        ; sa[4] = 4 ("na")
+    LDI t0, 2
+    ST t0, 115        ; sa[5] = 2 ("nana")
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07326a0011db

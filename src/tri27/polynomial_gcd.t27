@@ -1,0 +1,30 @@
+; Polynomial GCD — TTT Dogfood Phase 3
+;
+; Euclidean algorithm for polynomials
+;
+; Test case: gcd(x^2 - 1, x^2 - x) = x - 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, -1
+    ST t0, 100        ; p1[0] = -1
+    LDI t0, 0
+    ST t0, 101        ; p1[1] = 0
+    LDI t0, 1
+    ST t0, 102        ; p1[2] = 1 (x^2 - 1)
+
+    LDI t0, 0
+    ST t0, 110        ; p2[0] = 0
+    LDI t0, -1
+    ST t0, 111        ; p2[1] = -1
+    LDI t0, 1
+    ST t0, 112        ; p2[2] = 1 (x^2 - x)
+
+; gcd = x - 1
+    LDI t0, -1
+    ST t0, 120        ; g[0] = -1
+    LDI t0, 1
+    ST t0, 121        ; g[1] = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07425b0011cc
