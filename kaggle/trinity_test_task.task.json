@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "trinity_test_task",
+  "definition": "@kb.task(name=\"trinity_test_task\")\ndef test_task(llm, question: str) -> dict:\n    response = llm.prompt(question)\n    return {\"response\": response}\n"
+}

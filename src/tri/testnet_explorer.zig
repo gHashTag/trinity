@@ -106,6 +106,7 @@ pub const NodeInfo = struct {
             try std.fmt.allocPrint(allocator, ",\"region\":\"{s}\"", .{r})
         else
             "";
+        defer if (self.region != null) allocator.free(region_str);
 
         return std.fmt.allocPrint(allocator,
             \\{{"node_id":"{s}","address":"{s}","tier":"{s}","uptime":{d:.2},"jobs":{d},"earned":{d},"quality":{d:.2},"status":"{s}"{s}}}

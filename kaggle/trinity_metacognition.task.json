@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "trinity_metacognition",
+  "definition": "@kb.task(name=\"trinity_metacognition\")\ndef metacognition_task(llm, question: str, answer: str) -> dict:\n    response = llm.prompt(question)\n    is_correct = answer.lower() in response.lower()\n    kb.assertions.assert_true(is_correct, f\"Should contain: {answer}\")\n    return {\"is_correct\": is_correct, \"response\": response}\n"
+}
