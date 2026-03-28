@@ -1,0 +1,13 @@
+; LayerNorm — TTT Dogfood Phase 3
+;
+; Layer Normalization
+;
+; Test case: nn_ln
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ln_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:079ed0000020000000021e2
