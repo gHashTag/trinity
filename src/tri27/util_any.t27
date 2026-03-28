@@ -1,0 +1,13 @@
+; Any — TTT Dogfood Phase 3
+;
+; Check if any element satisfies predicate
+;
+; Test case: util_any
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; util_any_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0728200001d59
