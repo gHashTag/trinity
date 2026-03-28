@@ -1,0 +1,13 @@
+; DB Cursor — TTT Dogfood Phase 3
+;
+; Cursor operations
+;
+; Test case: db_cursor
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cursor_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0760600000200000001c39

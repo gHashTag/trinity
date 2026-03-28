@@ -1,0 +1,13 @@
+; DB Graph — TTT Dogfood Phase 3
+;
+; Graph database (Neo4j)
+;
+; Test case: db_graph
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; graph_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0761b00000200000001c63

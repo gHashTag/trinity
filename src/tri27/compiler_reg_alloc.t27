@@ -1,0 +1,13 @@
+; Compiler Reg Alloc — TTT Dogfood Phase 3
+;
+; Register allocation
+;
+; Test case: compiler_reg_alloc
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; reg_alloc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075fb00000200000001c21

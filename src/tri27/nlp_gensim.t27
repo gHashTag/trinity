@@ -1,3 +1,10 @@
-; Gensim NLP library
-LDI t0, 0
-HALT
+; nlp_gensim
+; Test case: nlp_gensim
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 0
+    ST t0, 60         ; result = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774732618:sha256:87e10e72c12a2521e068381d81fe9cfb487b55a3ff631f5b10cc5550baa4acff

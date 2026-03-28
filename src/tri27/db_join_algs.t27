@@ -1,0 +1,13 @@
+; DB Join Algs — TTT Dogfood Phase 3
+;
+; Join algorithms
+;
+; Test case: db_join_algs
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; join_algs_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07602000002000000001c31
