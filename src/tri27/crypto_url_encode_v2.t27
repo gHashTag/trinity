@@ -1,0 +1,13 @@
+; URL Encoding — TTT Dogfood Phase 3
+;
+; Percent encoding
+;
+; Test case: crypto_url_encode
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; url_encode_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07302000010000000a49

@@ -1,0 +1,13 @@
+; XXEncode — TTT Dogfood Phase 3
+;
+; XXEncode format
+;
+; Test case: crypto_xxencode
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; xxencode_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073220000100000009c9

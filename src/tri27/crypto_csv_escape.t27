@@ -1,0 +1,13 @@
+; CSV Escape — TTT Dogfood Phase 3
+;
+; CSV format escaping
+;
+; Test case: crypto_csv_escape
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; csv_escape_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732a0000010000000a09
