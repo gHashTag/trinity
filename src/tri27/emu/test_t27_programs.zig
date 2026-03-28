@@ -14996,3 +14996,189 @@ test "closest_pair: strip comparisons" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
 }
+
+// rotating_calipers tests
+test "rotating_calipers: file exists" {
+    const path = "src/tri27/rotating_calipers.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "rotating_calipers: hull size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: p1 idx" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: max dist2" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: pair1 idx" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: pair2 idx" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 201
+        \\    LD t0, 201
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: max dist x1000" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2828
+        \\    ST t0, 203
+        \\    LD t0, 203
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2828), cpu.t27[0].trits);
+}
+
+test "rotating_calipers: iterations" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+// voronoi_diagram tests
+test "voronoi_diagram: file exists" {
+    const path = "src/tri27/voronoi_diagram.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "voronoi_diagram: num seeds" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: num edges" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: num vertices" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: seed 0 x" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: seed 2 y" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 105
+        \\    LD t0, 105
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: vertex 0 x" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 300
+        \\    LD t0, 300
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "voronoi_diagram: edge0 x" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 202
+        \\    LD t0, 202
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
