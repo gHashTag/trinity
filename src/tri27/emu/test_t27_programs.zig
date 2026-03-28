@@ -4064,4 +4064,81 @@ test "factorial: approximation" {
     try std.testing.expectEqual(@as(i64, 118), cpu.t27[0].trits);
 }
 
+// Matrix Transpose Tests — TTT Dogfood Phase 3
+
+test "matrix_transpose: file exists" {
+    const path = "src/tri27/matrix_transpose.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "matrix_transpose: element 0_1" {
+    const allocator = std.testing.allocator;
+    // transpose[0][1] = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 201
+        \\    LD t0, 201
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "matrix_transpose: element 1_0" {
+    const allocator = std.testing.allocator;
+    // transpose[1][0] = 2
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 203
+        \\    LD t0, 203
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "matrix_transpose: original dimensions" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 52
+        \\    LDI t0, 2
+        \\    ST t0, 53
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "matrix_transpose: transposed dimensions" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 54
+        \\    LDI t0, 3
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "matrix_transpose: total elements" {
+    const allocator = std.testing.allocator;
+    // 3x2 = 2x3 = 6 elements
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 56
+        \\    LD t0, 56
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

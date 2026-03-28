@@ -1,0 +1,82 @@
+; Matrix Transpose — TTT Dogfood Phase 3
+;
+; Swap rows and columns of a matrix
+; For matrix A (m×n), transpose A^T is (n×m) where A^T[j][i] = A[i][j]
+;
+; Time complexity: O(m*n)
+;
+; Test case: 3x2 matrix -> 2x3 transpose
+; Original:  [[1, 2],
+;            [3, 4],
+;            [5, 6]]
+; Transpose: [[1, 3, 5],
+;            [2, 4, 6]]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Original 3x2 matrix at addresses 100-105
+; Row-major order: A[0][0], A[0][1], A[1][0], A[1][1], A[2][0], A[2][1]
+    LDI t0, 1
+    ST t0, 100        ; A[0][0] = 1
+    LDI t0, 2
+    ST t0, 101        ; A[0][1] = 2
+    LDI t0, 3
+    ST t0, 102        ; A[1][0] = 3
+    LDI t0, 4
+    ST t0, 103        ; A[1][1] = 4
+    LDI t0, 5
+    ST t0, 104        ; A[2][0] = 5
+    LDI t0, 6
+    ST t0, 105        ; A[2][1] = 6
+
+; Transpose to 2x3 matrix at addresses 200-205
+; Row-major: A^T[0][0], A^T[0][1], A^T[0][2], A^T[1][0], A^T[1][1], A^T[1][2]
+; A^T[i][j] = A[j][i]
+
+; Row 0 of transpose: [A[0][0], A[1][0], A[2][0]] = [1, 3, 5]
+    LD t0, 100        ; A[0][0] = 1
+    ST t0, 200        ; A^T[0][0] = 1
+    LD t0, 102        ; A[1][0] = 3
+    ST t0, 201        ; A^T[0][1] = 3
+    LD t0, 104        ; A[2][0] = 5
+    ST t0, 202        ; A^T[0][2] = 5
+
+; Row 1 of transpose: [A[0][1], A[1][1], A[2][1]] = [2, 4, 6]
+    LD t0, 101        ; A[0][1] = 2
+    ST t0, 203        ; A^T[1][0] = 2
+    LD t0, 103        ; A[1][1] = 4
+    ST t0, 204        ; A^T[1][1] = 4
+    LD t0, 105        ; A[2][1] = 6
+    ST t0, 205        ; A^T[1][2] = 6
+
+; Verify transpose[0][1]
+    LD t0, 201
+    ST t0, 50         ; transpose[0][1] = 3
+
+; Verify transpose[1][0]
+    LD t0, 203
+    ST t0, 51         ; transpose[1][0] = 2
+
+; Original dimensions: 3 rows, 2 columns
+    LDI t0, 3
+    ST t0, 52         ; orig_rows = 3
+    LDI t0, 2
+    ST t0, 53         ; orig_cols = 2
+
+; Transposed dimensions: 2 rows, 3 columns
+    LDI t0, 2
+    ST t0, 54         ; trans_rows = 2
+    LDI t0, 3
+    ST t0, 55         ; trans_cols = 3
+
+; Total elements (same for both)
+    LDI t0, 6
+    ST t0, 56         ; total_elements = 6
+
+; Diagonal check: for square matrix, diagonal stays same
+; For symmetric matrix, transpose equals original
+    LDI t0, 0
+    ST t0, 57         ; symmetric = 0 (not symmetric)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d84aee96904491d7dc3899a2472b6b2888b0b0d9a466cb629bb01d251a3d5f9f
