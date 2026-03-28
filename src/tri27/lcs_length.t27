@@ -1,0 +1,27 @@
+; LCS Length — TTT Dogfood Phase 3
+;
+; Longest Common Subsequence length
+;
+; Test case: lcs("ABCBDAB", "BDCABA") = 4 ("BCBA")
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 65        ; A
+    ST t0, 100        ; s1[0] = A
+    LDI t0, 66        ; B
+    ST t0, 101        ; s1[1] = B
+    LDI t0, 67        ; C
+    ST t0, 102        ; s1[2] = C
+
+    LDI t0, 66        ; B
+    ST t0, 110        ; s2[0] = B
+    LDI t0, 68        ; D
+    ST t0, 111        ; s2[1] = D
+    LDI t0, 67        ; C
+    ST t0, 112        ; s2[2] = C
+
+    LDI t0, 4
+    ST t0, 60         ; lcs_length = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742830011f4

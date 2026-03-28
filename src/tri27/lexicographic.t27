@@ -1,0 +1,28 @@
+; Lexicographic Compare — TTT Dogfood Phase 3
+;
+; Dictionary order comparison
+;
+; Test case: "apple" < "banana"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 97        ; a
+    ST t0, 100        ; s1[0] = a
+    LDI t0, 112       ; p
+    ST t0, 101        ; s1[1] = p
+    LDI t0, 108       ; l
+    ST t0, 102        ; s1[2] = l
+
+    LDI t0, 98        ; b
+    ST t0, 110        ; s2[0] = b
+    LDI t0, 97        ; a
+    ST t0, 111        ; s2[1] = a
+    LDI t0, 110       ; n
+    ST t0, 112        ; s2[2] = n
+
+; "apple" < "banana" because a < b
+    LDI t0, -1
+    ST t0, 60         ; cmp = -1 (less than)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722810011f2

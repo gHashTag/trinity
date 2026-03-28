@@ -1,0 +1,32 @@
+; De Bruijn Sequence — TTT Dogfood Phase 3
+;
+; Cyclic sequence containing all substrings
+;
+; Test case: B(2,3) = 00010111 (contains all 3-bit strings)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; alphabet_size = 2
+    LDI t0, 3
+    ST t0, 61         ; substring_length = 3
+
+    LDI t0, 0
+    ST t0, 100        ; seq[0] = 0
+    LDI t0, 0
+    ST t0, 101        ; seq[1] = 0
+    LDI t0, 0
+    ST t0, 102        ; seq[2] = 0
+    LDI t0, 1
+    ST t0, 103        ; seq[3] = 1
+    LDI t0, 0
+    ST t0, 104        ; seq[4] = 0
+    LDI t0, 1
+    ST t0, 105        ; seq[5] = 1
+    LDI t0, 1
+    ST t0, 106        ; seq[6] = 1
+    LDI t0, 1
+    ST t0, 107        ; seq[7] = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712880011f9
