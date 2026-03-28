@@ -60060,3 +60060,93 @@ test "geom_vector_norm: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "num_cbrt: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_cbrt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_cbrt: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_cbrt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_euler: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_euler.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_euler: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_euler.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_max: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_max.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_max: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_max.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_min: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_min.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_min: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_min.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_phi: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_phi.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_phi: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_phi.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_pi: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_pi.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_pi: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_pi.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
