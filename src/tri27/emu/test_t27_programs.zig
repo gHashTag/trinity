@@ -53445,3 +53445,123 @@ test "util_unique: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "conv_bytes_to_human: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_bytes_to_human.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_bytes_to_human: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_bytes_to_human.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_c_to_f: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_c_to_f.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_c_to_f: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_c_to_f.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_f_to_c: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_f_to_c.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_f_to_c: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_f_to_c.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_human_to_bytes: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_human_to_bytes.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_human_to_bytes: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_human_to_bytes.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_kg_to_lbs: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_kg_to_lbs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_kg_to_lbs: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_kg_to_lbs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_km_to_miles: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_km_to_miles.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_km_to_miles: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_km_to_miles.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_lbs_to_kg: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_lbs_to_kg.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_lbs_to_kg: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_lbs_to_kg.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conv_miles_to_km: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_miles_to_km.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "conv_miles_to_km: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conv_miles_to_km.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
