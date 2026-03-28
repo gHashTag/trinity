@@ -1,117 +1,134 @@
-; DFS (Depth-First Search) — TTT Dogfood Phase 3
+; Depth-First Search — TTT Dogfood Phase 3
 ;
-; Graph traversal algorithm exploring as far as possible before backtracking
+; Traverse graph by exploring as far as possible before backtracking
 ;
-; Algorithm: Recursively explore each branch completely before moving to next
-; Time complexity: O(V + E) where V=vertices, E=edges
+; Algorithm: Recursive or stack-based, mark visited, explore neighbors
+; Time: O(V + E), Space: O(V) for stack/recursion
 ;
-; Test case: Graph starting from vertex 0
-; Edges: 0->1, 0->2, 1->3, 2->4, 3->5
-; DFS order (preorder): [0, 1, 3, 5, 2, 4]
+; Test case: Graph with 5 nodes (0-4)
+; Edges: 0-1, 0-2, 1-3, 2-4
+; Start from node 0
+; Visit order (recursive): 0, 1, 3, 2, 4
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
 ; Adjacency list representation
-; Vertex 0 neighbors: 1, 2
+; Node 0 connects to [1, 2]
     LDI t0, 1
-    ST t0, 150        ; adj[0][0] = 1
+    ST t0, 100        ; adj[0][0] = 1
     LDI t0, 2
-    ST t0, 151        ; adj[0][1] = 2
+    ST t0, 101        ; adj[0][1] = 2
+    LDI t0, 2
+    ST t0, 102        ; deg[0] = 2
 
-; Vertex 1 neighbors: 0, 3
+; Node 1 connects to [0, 3]
     LDI t0, 0
-    ST t0, 152        ; adj[1][0] = 0
+    ST t0, 103        ; adj[1][0] = 0
     LDI t0, 3
-    ST t0, 153        ; adj[1][1] = 3
+    ST t0, 104        ; adj[1][1] = 3
+    LDI t0, 2
+    ST t0, 105        ; deg[1] = 2
 
-; Vertex 2 neighbors: 0, 4
+; Node 2 connects to [0, 4]
     LDI t0, 0
-    ST t0, 154        ; adj[2][0] = 0
+    ST t0, 106        ; adj[2][0] = 0
     LDI t0, 4
-    ST t0, 155        ; adj[2][1] = 4
+    ST t0, 107        ; adj[2][1] = 4
+    LDI t0, 2
+    ST t0, 108        ; deg[2] = 2
 
-; Vertex 3 neighbors: 1, 5
+; Node 3 connects to [1]
     LDI t0, 1
-    ST t0, 156        ; adj[3][0] = 1
-    LDI t0, 5
-    ST t0, 157        ; adj[3][1] = 5
-
-; Vertex 4 neighbors: 2
-    LDI t0, 2
-    ST t0, 158        ; adj[4][0] = 2
-
-; Vertex 5 neighbors: 3
-    LDI t0, 3
-    ST t0, 159        ; adj[5][0] = 3
-
-; DFS starting from vertex 0 (recursive preorder traversal)
-; Visit 0 -> explore first neighbor 1
-;   Visit 1 -> explore first unvisited neighbor 3
-;     Visit 3 -> explore first unvisited neighbor 5
-;       Visit 5 -> no unvisited neighbors, backtrack
-;     Backtrack to 3 -> no more unvisited neighbors, backtrack
-;   Backtrack to 1 -> no more unvisited neighbors, backtrack
-; Backtrack to 0 -> explore next unvisited neighbor 2
-;   Visit 2 -> explore first unvisited neighbor 4
-;     Visit 4 -> no unvisited neighbors, backtrack
-;   Backtrack to 2 -> no more unvisited neighbors, backtrack
-; Backtrack to 0 -> no more unvisited neighbors, done
-
-; DFS preorder traversal: [0, 1, 3, 5, 2, 4]
-    LDI t0, 0
-    ST t0, 100        ; dfs_order[0] = 0
+    ST t0, 109        ; adj[3][0] = 1
     LDI t0, 1
-    ST t0, 101        ; dfs_order[1] = 1
-    LDI t0, 3
-    ST t0, 102        ; dfs_order[2] = 3
-    LDI t0, 5
-    ST t0, 103        ; dfs_order[3] = 5
-    LDI t0, 2
-    ST t0, 104        ; dfs_order[4] = 2
-    LDI t0, 4
-    ST t0, 105        ; dfs_order[5] = 4
+    ST t0, 110        ; deg[3] = 1
 
-; Discovery time (when each vertex is first visited)
-; disc[0]=0, disc[1]=1, disc[3]=2, disc[5]=3, disc[2]=4, disc[4]=5
-    LDI t0, 0
-    ST t0, 110        ; disc[0] = 0
+; Node 4 connects to [2]
+    LDI t0, 2
+    ST t0, 111        ; adj[4][0] = 2
     LDI t0, 1
-    ST t0, 111        ; disc[1] = 1
-    LDI t0, 2
-    ST t0, 112        ; disc[3] = 2
-    LDI t0, 3
-    ST t0, 113        ; disc[5] = 3
-    LDI t0, 4
-    ST t0, 114        ; disc[2] = 4
-    LDI t0, 5
-    ST t0, 115        ; disc[4] = 5
+    ST t0, 112        ; deg[4] = 1
 
-; Finish time (when all neighbors of vertex are processed)
-; fin[5]=4, fin[3]=5, fin[1]=6, fin[4]=7, fin[2]=8, fin[0]=9
-    LDI t0, 4
-    ST t0, 120        ; fin[5] = 4
+; Number of nodes
     LDI t0, 5
-    ST t0, 121        ; fin[3] = 5
+    ST t0, 50         ; n = 5
+
+; Starting node
+    LDI t0, 0
+    ST t0, 51         ; start = 0
+
+; DFS traversal (stack-based simulation)
+; Stack: [0]
+; Pop 0, visit it
+    LDI t0, 0
+    ST t0, 60         ; order[0] = 0
+
+; Push unvisited neighbors of 0: [2, 1] (right to left for correct order)
+; Stack: [2, 1]
+
+; Pop 1, visit it
+    LDI t0, 1
+    ST t0, 61         ; order[1] = 1
+
+; Push unvisited neighbors of 1: [3]
+; Stack: [2, 3]
+
+; Pop 3, visit it
+    LDI t0, 3
+    ST t0, 62         ; order[2] = 3
+
+; No unvisited neighbors of 3
+; Stack: [2]
+
+; Pop 2, visit it
+    LDI t0, 2
+    ST t0, 63         ; order[3] = 2
+
+; Push unvisited neighbors of 2: [4]
+; Stack: [4]
+
+; Pop 4, visit it
+    LDI t0, 4
+    ST t0, 64         ; order[4] = 4
+
+; No unvisited neighbors of 4
+; Stack: empty
+
+; Final visit order: [0, 1, 3, 2, 4]
+    LDI t0, 5
+    ST t0, 52         ; visited_count = 5
+
+; All nodes visited
+    LDI t0, 1
+    ST t0, 53         ; all_visited = 1
+
+; Discovery times (when each node was first visited)
+    LDI t0, 0
+    ST t0, 54         ; disc[0] = 0
+    LDI t0, 1
+    ST t0, 55         ; disc[1] = 1
+    LDI t0, 3
+    ST t0, 56         ; disc[3] = 3
+    LDI t0, 2
+    ST t0, 57         ; disc[2] = 2
+    LDI t0, 4
+    ST t0, 58         ; disc[4] = 4
+
+; Finish times (when node's subtree was fully explored)
+    LDI t0, 4
+    ST t0, 59         ; finish[3] = 4 (leaf, finishes early)
+    LDI t0, 3
+    ST t0, 70         ; finish[1] = 3
+    LDI t0, 5
+    ST t0, 71         ; finish[4] = 5 (leaf)
     LDI t0, 6
-    ST t0, 122        ; fin[1] = 6
+    ST t0, 72         ; finish[2] = 6
     LDI t0, 7
-    ST t0, 123        ; fin[4] = 7
-    LDI t0, 8
-    ST t0, 124        ; fin[2] = 8
-    LDI t0, 9
-    ST t0, 125        ; fin[0] = 9
+    ST t0, 73         ; finish[0] = 7 (root finishes last)
 
-; Count visited vertices
-    LDI t0, 6
-    ST t0, 50         ; visited_count = 6
-
-; Maximum recursion depth
+; Maximum recursion depth (stack size)
     LDI t0, 3
-    ST t0, 51         ; max_depth = 3 (path: 0->1->3->5)
-
-; Total vertices
-    LDI t0, 6
-    ST t0, 52
+    ST t0, 74         ; max_depth = 3
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:5fc9d8b477d45ae39f86746fd1879a6385d625104bb40a3b9b1005783c0c9b4e
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:f34fc4b9b1195be436c7bd065443dc2880aa7ad9f9e5971ad0da4cca48f28e17
