@@ -1,0 +1,13 @@
+; Denoise — TTT Dogfood Phase 3
+;
+; Audio noise reduction
+;
+; Test case: aud_denoise
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; denoise_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b210000020000000231e

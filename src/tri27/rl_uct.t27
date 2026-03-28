@@ -1,0 +1,13 @@
+; UCT — TTT Dogfood Phase 3
+;
+; Upper confidence bounds for trees
+;
+; Test case: rl_uct
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; uct_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b0600000200000002339

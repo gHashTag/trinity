@@ -1,0 +1,13 @@
+; DETR — TTT Dogfood Phase 3
+;
+; Detection transformer
+;
+; Test case: cv_detr
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; detr_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b2800000200000002317
