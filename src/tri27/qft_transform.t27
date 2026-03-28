@@ -1,0 +1,13 @@
+; QFT — TTT Dogfood Phase 3
+;
+; Quantum Fourier Transform
+;
+; Test case: 4 qubits
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 4
+    ST t0, 60         ; qubits = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713ca001340
