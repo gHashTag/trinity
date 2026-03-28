@@ -262,7 +262,7 @@ test "verify: no bit field overlap for all opcodes" {
 
     for (opcodes) |opcode| {
         const has_imm = switch (opcode) {
-            .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .BUNDLE3 => true,
+            .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
             else => false,
         };
 
