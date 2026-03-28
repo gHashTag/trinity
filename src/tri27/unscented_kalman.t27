@@ -1,6 +1,6 @@
 ; Unscented Kalman — TTT Dogfood Phase 3
 ;
-| Sigma-point filter
+; Sigma-point filter
 ;
 ; Test case: unscented_kalman
 ;

@@ -1,6 +1,6 @@
 ; Wigner-Ville — TTT Dogfood Phase 3
 ;
-| Time-frequency dist
+; Time-frequency dist
 ;
 ; Test case: wigner_ville
 ;

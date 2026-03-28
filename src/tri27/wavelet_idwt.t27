@@ -1,6 +1,6 @@
 ; IDWT — TTT Dogfood Phase 3
 ;
-| Inverse wavelet
+; Inverse wavelet
 ;
 ; Test case: wavelet_idwt
 ;
