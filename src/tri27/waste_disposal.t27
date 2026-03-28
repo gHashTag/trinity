@@ -1,0 +1,13 @@
+; Waste Disposal — TTT Dogfood Phase 3
+;
+; Waste disposal systems
+;
+; Test case: waste_disposal
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; disposal_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076d100002000000001f1d

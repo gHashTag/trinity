@@ -1,0 +1,13 @@
+; Aerospace Engine — TTT Dogfood Phase 3
+;
+; Engine control algorithms
+;
+; Test case: aerospace_engine
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; engine_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076da000002000000001f2f

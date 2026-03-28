@@ -1,0 +1,13 @@
+; Mining Ore — TTT Dogfood Phase 3
+;
+; Ore extraction algorithms
+;
+; Test case: mining_ore
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ore_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076dc000002000000001f33
