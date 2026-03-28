@@ -13758,3 +13758,129 @@ test "strrchr: last o at pos 7" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
 }
+
+// strcspn tests
+test "strcspn: file exists" {
+    const path = "src/tri27/strcspn.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strcspn: span length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "strcspn: chars checked" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "strcspn: first match position" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "strcspn: first char in set" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 49
+        \\    ST t0, 150
+        \\    LD t0, 150
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 49), cpu.t27[0].trits);
+}
+
+// strspn tests
+test "strspn: file exists" {
+    const path = "src/tri27/strspn.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strspn: span length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "strspn: chars checked" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "strspn: first mismatch position" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "strspn: first char 'a'" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 97
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 97), cpu.t27[0].trits);
+}
+
+test "strspn: set char 'a'" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 97
+        \\    ST t0, 150
+        \\    LD t0, 150
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 97), cpu.t27[0].trits);
+}
