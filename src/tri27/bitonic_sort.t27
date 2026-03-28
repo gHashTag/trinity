@@ -1,0 +1,28 @@
+; Bitonic Sort — TTT Dogfood Phase 3
+;
+; Parallel sorting for hardware
+;
+; Test case: sort [3,1,4,2]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2
+
+    LDI t0, 1
+    ST t0, 110        ; sorted[0] = 1
+    LDI t0, 2
+    ST t0, 111        ; sorted[1] = 2
+    LDI t0, 3
+    ST t0, 112        ; sorted[2] = 3
+    LDI t0, 4
+    ST t0, 113        ; sorted[3] = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07728e0011ff

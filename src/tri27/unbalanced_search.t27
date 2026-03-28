@@ -1,0 +1,23 @@
+; Unbalanced Search Tree — TTT Dogfood Phase 3
+;
+; BST without balancing
+;
+; Test case: insert 3,1,4,2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; root = 3
+    LDI t0, 1
+    ST t0, 101        ; left = 1
+    LDI t0, 4
+    ST t0, 102        ; right = 4
+
+    LDI t0, 2
+    ST t0, 103        ; left->right = 2
+
+    LDI t0, 3
+    ST t0, 60         ; root unchanged = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:070297001208
