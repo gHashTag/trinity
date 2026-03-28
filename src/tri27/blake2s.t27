@@ -1,6 +1,6 @@
 ; BLAKE2s — TTT Dogfood Phase 3
 ;
-| Fast hash (32-bit)
+; Fast hash (32-bit)
 ;
 ; Test case: blake2s
 ;

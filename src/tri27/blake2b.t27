@@ -1,6 +1,6 @@
 ; BLAKE2b — TTT Dogfood Phase 3
 ;
-| Fast hash
+; Fast hash
 ;
 ; Test case: blake2b
 ;

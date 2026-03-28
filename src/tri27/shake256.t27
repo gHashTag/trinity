@@ -1,6 +1,6 @@
 ; SHAKE256 — TTT Dogfood Phase 3
 ;
-| XOF hash longer
+; XOF hash longer
 ;
 ; Test case: shake256
 ;

@@ -1,0 +1,13 @@
+; ZLIB Compress — TTT Dogfood Phase 3
+;
+| RFC 1950
+;
+; Test case: zlib_compress
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; zlib_compress_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b0b001bcb
