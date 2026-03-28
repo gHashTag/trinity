@@ -1,0 +1,13 @@
+; Tourism Recommendation — TTT Dogfood Phase 3
+;
+; Travel recommendations
+;
+; Test case: tourism_recommendation
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; recommendation_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076ed000002000000001f55

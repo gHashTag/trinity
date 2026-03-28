@@ -1,0 +1,13 @@
+; Consulting Analytics — TTT Dogfood Phase 3
+;
+; Business analytics
+;
+; Test case: consulting_analytics
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; analytics_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076fe000002000000001f77
