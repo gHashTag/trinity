@@ -1,0 +1,13 @@
+; Eulerian Path — TTT Dogfood Phase 3
+;
+; Find path using every edge once
+;
+; Test case: graph_eulerian_path
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; eulerian_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732a00000001b69

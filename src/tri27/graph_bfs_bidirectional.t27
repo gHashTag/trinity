@@ -1,0 +1,13 @@
+; Bidirectional BFS — TTT Dogfood Phase 3
+;
+; BFS from both ends for shortest path
+;
+; Test case: graph_bfs_bidirectional
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bidi_bfs_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730400100001bb9

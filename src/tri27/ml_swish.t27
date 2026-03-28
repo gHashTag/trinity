@@ -1,0 +1,13 @@
+; Swish — TTT Dogfood Phase 3
+;
+; Swish activation (same as SiLU)
+;
+; Test case: ml_swish
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; swish_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730600100001a49

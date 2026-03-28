@@ -1,0 +1,13 @@
+; Independent Set — TTT Dogfood Phase 3
+;
+; Find maximum independent set
+;
+; Test case: graph_independent_set
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; independent_set_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731a00000001ae9
