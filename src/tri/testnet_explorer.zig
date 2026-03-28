@@ -343,9 +343,6 @@ pub const ExplorerDB = struct {
 
     /// Add or update a node
     pub fn updateNode(self: *ExplorerDB, node: NodeInfo) !void {
-        const id_copy = try self.allocator.dupe(u8, node.node_id);
-        errdefer self.allocator.free(id_copy);
-
         const addr_copy = try self.allocator.dupe(u8, node.address);
         errdefer self.allocator.free(addr_copy);
 
@@ -353,30 +350,47 @@ pub const ExplorerDB = struct {
             try self.allocator.dupe(u8, r)
         else
             null;
+        errdefer if (region_copy != null) self.allocator.free(region_copy.?);
 
-        const node_copy = NodeInfo{
-            .node_id = id_copy,
-            .address = addr_copy,
-            .tier = node.tier,
-            .uptime_hours = node.uptime_hours,
-            .jobs_completed = node.jobs_completed,
-            .earned_tri = node.earned_tri,
-            .quality_score = node.quality_score,
-            .status = node.status,
-            .first_seen = node.first_seen,
-            .last_active = node.last_active,
-            .region = region_copy,
-        };
-
-        const gop = try self.nodes.getOrPut(self.allocator, id_copy);
+        const gop = try self.nodes.getOrPut(self.allocator, node.node_id);
         if (gop.found_existing) {
-            // Cleanup old values
-            self.allocator.free(gop.value_ptr.node_id);
+            // Cleanup old value fields (but NOT node_id - it's the key which HashMap owns)
             self.allocator.free(gop.value_ptr.address);
             if (gop.value_ptr.region) |r| self.allocator.free(r);
-        }
 
-        gop.value_ptr.* = node_copy;
+            // Update with new values, using the existing key for node_id
+            gop.value_ptr.* = NodeInfo{
+                .node_id = gop.key_ptr.*, // Use the existing key from HashMap
+                .address = addr_copy,
+                .tier = node.tier,
+                .uptime_hours = node.uptime_hours,
+                .jobs_completed = node.jobs_completed,
+                .earned_tri = node.earned_tri,
+                .quality_score = node.quality_score,
+                .status = node.status,
+                .first_seen = node.first_seen,
+                .last_active = node.last_active,
+                .region = region_copy,
+            };
+        } else {
+            // New entry - need to dup the key and create full copy
+            const id_copy = try self.allocator.dupe(u8, node.node_id);
+            gop.key_ptr.* = id_copy;
+
+            gop.value_ptr.* = NodeInfo{
+                .node_id = id_copy,
+                .address = addr_copy,
+                .tier = node.tier,
+                .uptime_hours = node.uptime_hours,
+                .jobs_completed = node.jobs_completed,
+                .earned_tri = node.earned_tri,
+                .quality_score = node.quality_score,
+                .status = node.status,
+                .first_seen = node.first_seen,
+                .last_active = node.last_active,
+                .region = region_copy,
+            };
+        }
     }
 
     /// Get node by ID
