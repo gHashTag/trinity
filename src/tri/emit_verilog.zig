@@ -18,5 +18,5 @@ pub fn emitVerilog(allocator: Allocator, node: *const Node, module_name: []const
     _ = allocator;
     _ = node;
     _ = module_name;
-    unreachable; // TODO: implement
+    return error.NotImplemented; // TODO: implement Verilog code emission
 }

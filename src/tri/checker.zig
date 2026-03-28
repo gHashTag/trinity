@@ -11,5 +11,5 @@ pub const TypeChecker = struct {
 
 pub fn typecheck(node: *const Node) !void {
     _ = node;
-    unreachable; // TODO: implement
+    return error.NotImplemented; // TODO: implement type checking
 }
