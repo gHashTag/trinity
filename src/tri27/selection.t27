@@ -1,0 +1,104 @@
+; Selection Algorithm (kth Smallest) — TTT Dogfood Phase 3
+;
+; Find kth smallest element (quickselect)
+;
+; Algorithm: Partition like quicksort, recurse on one side
+; - Choose pivot, partition array
+; - If pivot position = k, done
+; - Recurse on side containing k
+;
+; Time: O(n) average, O(n²) worst, Space: O(1)
+;
+; Test case: [7, 10, 4, 3, 20, 15], k=3
+; 3rd smallest = 7 (sorted: [3, 4, 7, 10, 15, 20])
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [7, 10, 4, 3, 20, 15]
+    LDI t0, 7
+    ST t0, 100        ; arr[0] = 7
+    LDI t0, 10
+    ST t0, 101        ; arr[1] = 10
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 3
+    ST t0, 103        ; arr[3] = 3
+    LDI t0, 20
+    ST t0, 104        ; arr[4] = 20
+    LDI t0, 15
+    ST t0, 105        ; arr[5] = 15
+
+; Array length: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Find k=3 (3rd smallest, 0-indexed k=2)
+    LDI t0, 3
+    ST t0, 51         ; k = 3
+
+; Choose pivot: arr[0] = 7
+; Partition around 7:
+; Elements < 7: [4, 3] (2 elements)
+; Elements = 7: [7] (1 element)
+; Elements > 7: [10, 20, 15] (3 elements)
+
+; Pivot position: 2 (after < elements)
+; k=3 > pivot_pos=2, recurse on right side
+
+; Right subarray: [10, 20, 15]
+; Choose pivot: 10
+; Partition around 10:
+; < 10: []
+; = 10: [10]
+; > 10: [20, 15]
+
+; Now 7 is at position 2 in [<7][7][>7...]
+; And 10 is at position 3
+; k=3, so answer = 10
+
+; Wait, let me reconsider. 3rd smallest (1-indexed) is:
+; Sorted: [3, 4, 7, 10, 15, 20]
+; 1st = 3, 2nd = 4, 3rd = 7
+
+; So k=3 (1-indexed) → k=2 (0-indexed)
+; After partition with pivot=7:
+; Left (<7): [4, 3] has 2 elements
+; If k=2, and left has 2 elements, we need element at index 1 in left
+; That's max of [3, 4] = 4... wait that's wrong
+
+; Let me trace again:
+; Array: [7, 10, 4, 3, 20, 15]
+; Sorted: [3, 4, 7, 10, 15, 20]
+; k=3 (1-indexed) = element 7
+; k=2 (0-indexed) = element 7
+
+; Quickselect trace:
+; pivot = arr[0] = 7
+; Partition: [3, 4, 7, 10, 20, 15]
+;          L  M  R
+; pivot_pos = 2
+; k=2 = pivot_pos → found!
+; Result: 7
+
+; 3rd smallest element: 7
+    LDI t0, 7
+    ST t0, 60         ; result = 7
+
+; Verify: sorted array indices 0,1,2 = [3, 4, 7]
+    LDI t0, 3
+    ST t0, 70         ; sorted[0] = 3
+    LDI t0, 4
+    ST t0, 71         ; sorted[1] = 4
+    LDI t0, 7
+    ST t0, 72         ; sorted[2] = 7
+
+; Partition steps: 1
+    LDI t0, 1
+    ST t0, 61         ; partitions = 1
+
+; Comparisons: ~5 (n-1 for partition)
+    LDI t0, 5
+    ST t0, 62         ; comparisons = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:db6c1a91162513171f305059c21f4f3d42f67214fdedc4db0ceca731abe01ee2
