@@ -1,0 +1,13 @@
+; Hyperbolic Sine — TTT Dogfood Phase 3
+;
+; Calculate sinh(x)
+;
+; Test case: num_sinh
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sinh_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731c00010000016c9

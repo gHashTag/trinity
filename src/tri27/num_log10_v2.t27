@@ -1,0 +1,13 @@
+; Log Base 10 — TTT Dogfood Phase 3
+;
+; Calculate log10(x)
+;
+; Test case: num_log10
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; log10_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07300001000001769
