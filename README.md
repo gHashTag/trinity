@@ -74,6 +74,66 @@
 
 ---
 
+## Honest Science: What We Got Wrong
+
+**Before showing what works, here's what didn't:**
+
+### DELTA-001: Rejected Hypotheses
+
+| Hypothesis | Expected | Actual | Status |
+|-----------|----------|--------|--------|
+| γ = φ⁻³ (Barbero-Immirzi) | 0.237533 | 0.236068 | ❌ 0.617% error — **REJECTED** |
+| α family fit | <0.01% | 5-15% | ❌ **REJECTED** |
+| √(8/3) ≈ φ | Exact | 1.632 vs 1.618 | ❌ **REJECTED** |
+
+**Why this matters:** Science advances through falsification. Documenting failures builds trust.
+
+```
+Evidence Level:
+  🔴 Smoking Gun (4): G, N_gen=3, t_present, T_cycles
+  🟡 Consistent (3): C, Ω_Λ, Ω_DM
+  ⚫ Rejected (3): γ=φ⁻³, α family, √(8/3)
+```
+
+[DELTA-001 Full Report](docs/docs/research/delta_001_final_report.md) |
+[Experience Log](.trinity/experience/)
+
+---
+
+## Getting Started (5 Minutes)
+
+**Clone, install, run your first command:**
+
+```bash
+# 1. Install (one command)
+npm install -g @playra/tri
+
+# 2. Verify
+tri --version
+# Output: TRI CLI v5.1.0
+
+# 3. See sacred constants
+tri constants
+# Shows 30+ constants derived from φ²+φ⁻²=3
+
+# 4. Verify Trinity Identity
+tri phi 2
+# Output: φ² = 2.618033988749895
+tri formula 2.618033988749895
+# Shows φ² + φ⁻² = 3 (exact)
+
+# 5. Run CLARA demo (4 theorems verified)
+tri clara demo
+```
+
+**What you just saw:**
+- 30+ fundamental constants from one identity
+- Polynomial-time guarantees (VSA O(n), FPGA O(1))
+- 3000+ tests passing
+- All open source, reproducible
+
+---
+
 ## For Scientific Collaborators
 
 **TRINITY is a unified research framework** connecting fundamental physics through a single mathematical identity: `φ² + φ⁻² = 3`. From this root, candidate formulas for gravitational constant **G**, consciousness threshold **C**, temporal perception **t_present**, and fermion generations **N_gen** are derived.
@@ -941,9 +1001,56 @@ Attribution for listed docs and packages is checked by [`src/tri/author_attribut
 ## Community
 
 <p align="center">
+  <a href="https://www.reddit.com/r/t27ai/"><img src="https://img.shields.io/badge/Reddit-r-t27ai-FF4500?style=for-the-badge&logo=reddit" alt="Reddit"></a>
   <a href="https://t.me/t27_lang"><img src="https://img.shields.io/badge/Telegram-t27__lang-229ED9?style=for-the-badge&logo=telegram" alt="Telegram"></a>
   <a href="https://x.com/t27_lang"><img src="https://img.shields.io/badge/X-t27__lang-000000?style=for-the-badge&logo=x" alt="X"></a>
 </p>
+
+---
+
+## GitHub Topics
+
+**Help others discover Trinity — we're tagged with:**
+
+### Computing
+- `ternary-computing` — {-1, 0, +1} alphabet
+- `balanced-ternary` — Symmetric ternary representation
+- `ternary-logic` — Three-valued logic
+
+### AI/ML
+- `vsa` — Vector Symbolic Architecture
+- `vector-symbolic-architecture` — Full VSA name
+- `hypervector` — High-dimensional computing
+- `hd-computing` — Hyperdimensional computing
+- `hyperdimensional-computing` — HDC full name
+- `neurosymbolic-ai` — Neural + symbolic AI
+- `llm-inference` — Language model inference
+- `tinyml` — Efficient ML on edge devices
+
+### Math/Physics
+- `golden-ratio` — φ = (1+√5)/2
+- `fundamental-constants` — G, α, etc.
+- `mathematical-physics` — Physics from math
+- `sacred-geometry` — Geometric patterns in nature
+
+### Hardware
+- `fpga-inference` — LLM on FPGA
+- `fpga` — Field-programmable gate arrays
+- `verilog` — Hardware description language
+- `yosys` — Open source synthesis suite
+- `openfpga` — Open source FPGA tools
+
+### Language
+- `zig` — Zig programming language
+- `zig-language` — Zig (alt tag)
+- `systems-programming` — Low-level coding
+
+### Performance
+- `energy-efficient-ai` — Green AI
+- `edge-ai` — AI on edge devices
+- `low-power` — Power-optimized computing
+
+**To add topics manually:** Visit https://github.com/gHashTag/trinity and click "Add topics" in the About section.
 
 ---
 
