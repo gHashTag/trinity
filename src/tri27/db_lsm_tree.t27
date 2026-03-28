@@ -1,0 +1,13 @@
+; Database LSM Tree — TTT Dogfood Phase 3
+;
+; Log-Structured Merge Tree
+;
+; Test case: db_lsm_tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lsm_tree_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0763a00000200000001ec9

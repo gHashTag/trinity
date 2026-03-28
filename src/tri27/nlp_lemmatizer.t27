@@ -1,6 +1,6 @@
-; Lemmatizer — TTT Dogfood Phase 3
+; NLP Lemmatizer — TTT Dogfood Phase 3
 ;
-; Dictionary-based lemmatization
+; Word lemmatization
 ;
 ; Test case: nlp_lemmatizer
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; lemmatizer_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07302000010000000d49
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07604000002000000001d19

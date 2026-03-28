@@ -1,6 +1,6 @@
 ; Game AI Minimax — TTT Dogfood Phase 3
 ;
-; Minimax for games
+; Minimax algorithm for games
 ;
 ; Test case: game_ai_minimax
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; minimax_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075a00000200000018d9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0762a00000200000001e49

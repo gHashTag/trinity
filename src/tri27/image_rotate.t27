@@ -2,12 +2,12 @@
 ;
 ; Image rotation
 ;
-; Test case: rotate image
+; Test case: image_rotate
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
     LDI t0, 1
-    ST t0, 60         ; rotated = 1
+    ST t0, 60         ; rotate_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715b600152c
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07624000002000000001e19

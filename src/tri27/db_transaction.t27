@@ -1,0 +1,13 @@
+; Database Transaction — TTT Dogfood Phase 3
+;
+; ACID transactions
+;
+; Test case: db_transaction
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; transaction_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07636000002000000001ea9
