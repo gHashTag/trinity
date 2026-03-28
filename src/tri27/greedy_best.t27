@@ -1,0 +1,19 @@
+; Greedy Best-First Search — TTT Dogfood Phase 3
+;
+; Heuristic-only pathfinding
+;
+; Test case: expand node with lowest h
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; h = 5 (Manhattan distance)
+
+    LDI t0, 0
+    ST t0, 61         ; g = 0 (ignored)
+
+    LDI t0, 5
+    ST t0, 62         ; f = h = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07020f001180

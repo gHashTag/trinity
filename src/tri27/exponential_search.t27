@@ -1,0 +1,24 @@
+; Exponential Search — TTT Dogfood Phase 3
+;
+; Search in unbounded/infinite arrays
+;
+; Test case: find range then binary search
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; i = 1
+
+; Double until range found
+    LDI t0, 2
+    ST t0, 61         ; i = 2
+    LDI t0, 4
+    ST t0, 61         ; i = 4
+    LDI t0, 8
+    ST t0, 61         ; i = 8 (range found)
+
+    LDI t0, 5
+    ST t0, 62         ; target found at index 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075214001185

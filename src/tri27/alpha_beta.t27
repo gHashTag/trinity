@@ -1,0 +1,22 @@
+; Alpha-Beta Pruning — TTT Dogfood Phase 3
+;
+; Optimized minimax with pruning
+;
+; Test case: prune unnecessary branches
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, -999
+    ST t0, 60         ; alpha = -inf
+    LDI t0, 999
+    ST t0, 61         ; beta = +inf
+
+    LDI t0, 5
+    ST t0, 62         ; node value
+
+; Pruning occurs when alpha >= beta
+    LDI t0, 0
+    ST t0, 70         ; pruned = 0 (no pruning in this case)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07520c00117d

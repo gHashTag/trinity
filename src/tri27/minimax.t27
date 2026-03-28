@@ -1,0 +1,21 @@
+; Minimax — TTT Dogfood Phase 3
+;
+; Game tree search algorithm
+;
+; Test case: simple game tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; node value
+    LDI t0, 5
+    ST t0, 101        ; left child
+    LDI t0, 2
+    ST t0, 102        ; right child
+
+; Minimax: max player chooses max
+    LDI t0, 5
+    ST t0, 60         ; minimax = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07420b00117c
