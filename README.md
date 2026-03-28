@@ -938,6 +938,15 @@ Attribution for listed docs and packages is checked by [`src/tri/author_attribut
 
 ---
 
+## Community
+
+<p align="center">
+  <a href="https://t.me/t27_lang"><img src="https://img.shields.io/badge/Telegram-t27__lang-229ED9?style=for-the-badge&logo=telegram" alt="Telegram"></a>
+  <a href="https://x.com/t27_lang"><img src="https://img.shields.io/badge/X-t27__lang-000000?style=for-the-badge&logo=x" alt="X"></a>
+</p>
+
+---
+
 ## License
 
 MIT -- see [LICENSE](LICENSE)

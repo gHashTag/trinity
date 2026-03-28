@@ -138,8 +138,18 @@ export default function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://t.me/t27_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram group (opens in new tab)">
-                    Telegram
+                  <a href="https://t.me/t27_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram dev group (opens in new tab)">
+                    Telegram (Dev)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://t.me/t27_lang" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram language channel (opens in new tab)">
+                    Telegram (Language)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://x.com/t27_lang" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Follow on X (opens in new tab)">
+                    X (Twitter)
                   </a>
                 </li>
                 <li>
