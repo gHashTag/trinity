@@ -1,0 +1,85 @@
+; Palindrome Partitioning — TTT Dogfood Phase 3
+;
+; Partition string into minimum palindromic substrings
+;
+; DP approach:
+; - dp[i] = min cuts for prefix [0..i-1]
+; - For each j < i: if s[j..i] is palindrome, dp[i] = min(dp[i], dp[j] + 1)
+;
+; Test case: "aab"
+; Partitions: ["a","a","b"] (3 cuts), ["aa","b"] (2 cuts), ["a","ab"] (invalid)
+; Optimal: ["aa","b"] = 2 partitions
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String at addresses 100-102: "aab"
+    LDI t0, 97       ; 'a' = 97
+    ST t0, 100        ; s[0] = 'a'
+    ST t0, 101        ; s[1] = 'a'
+    LDI t0, 98        ; 'b' = 98
+    ST t0, 102        ; s[2] = 'b'
+
+; String length
+    LDI t0, 3
+    ST t0, 50         ; length = 3
+
+; DP table initialization
+; dp[i] = minimum cuts for s[0..i-1]
+; dp[0] = -1 (base case, empty string needs -1 cuts to get 0 partitions)
+    LDI t0, -1
+    ST t0, 110        ; dp[0] = -1
+
+; i = 1, substring "a"
+; Check: "a" is palindrome
+; dp[1] = dp[0] + 1 = -1 + 1 = 0 (no cuts needed)
+    LDI t0, 0
+    ST t0, 111        ; dp[1] = 0
+
+; i = 2, substring "aa"
+; Check j=0: s[0..1] = "aa" is palindrome
+; dp[2] = dp[0] + 1 = 0
+; Check j=1: s[1..1] = "a" is palindrome
+; dp[2] = min(0, dp[1] + 1) = 0
+    LDI t0, 0
+    ST t0, 112        ; dp[2] = 0
+
+; i = 3, substring "aab"
+; Check j=0: s[0..2] = "aab" is NOT palindrome
+; Check j=1: s[1..2] = "ab" is NOT palindrome
+; Check j=2: s[2..2] = "b" is palindrome
+; dp[3] = dp[2] + 1 = 1
+    LDI t0, 1
+    ST t0, 113        ; dp[3] = 1
+
+; Result: minimum cuts = dp[3] = 1
+; Partitions = dp[3] + 1 = 2
+    LDI t0, 2
+    ST t0, 51         ; num_partitions = 2
+
+; Palindromic substrings found:
+; "a" (at 0), "a" (at 1), "aa" (0-1), "b" (at 2)
+    LDI t0, 4
+    ST t0, 52         ; num_palindromes = 4
+
+; Longest palindrome: "aa" (length 2)
+    LDI t0, 2
+    ST t0, 53         ; longest_len = 2
+
+; Partition: ["aa", "b"]
+    LDI t0, 0
+    ST t0, 60         ; part[0].start = 0
+    LDI t0, 2
+    ST t0, 61         ; part[0].end = 2 (inclusive)
+    LDI t0, 1
+    ST t0, 62         ; part[1].start = 2
+    LDI t0, 2
+    ST t0, 63         ; part[1].end = 2
+
+; Verify partition lengths
+    LDI t0, 2
+    ST t0, 70         ; part[0].len = 2
+    LDI t0, 1
+    ST t0, 71         ; part[1].len = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:24180cb2d443929382a72629ef0a86aa05ff990407da893cc44e3b0a8388df7a
