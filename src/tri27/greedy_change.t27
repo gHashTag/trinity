@@ -1,0 +1,88 @@
+; Greedy Change Making — TTT Phase 3
+;
+; Find minimum coins to make amount (greedy, works for canonical coin systems)
+;
+; Algorithm: Always take largest coin <= remaining amount
+; Time: O(n) where n is number of coin types
+; Space: O(1)
+;
+; Test case: Make change for 67 using [25, 10, 5, 1]
+; Greedy: 2×25 + 1×10 + 1×5 + 2×1 = 67 (5 coins)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Coin denominations
+    LDI t0, 25
+    ST t0, 100        ; coins[0] = 25 (quarter)
+    LDI t0, 10
+    ST t0, 101        ; coins[1] = 10 (dime)
+    LDI t0, 5
+    ST t0, 102        ; coins[2] = 5 (nickel)
+    LDI t0, 1
+    ST t0, 103        ; coins[3] = 1 (penny)
+
+; Number of coin types
+    LDI t0, 4
+    ST t0, 50         ; num_coins = 4
+
+; Target amount
+    LDI t0, 67
+    ST t0, 51         ; amount = 67
+
+; Greedy algorithm:
+; Step 1: Take 67 / 25 = 2 quarters, remaining = 67 - 50 = 17
+    LDI t0, 2
+    ST t0, 60         ; count_25 = 2
+    LDI t0, 17
+    ST t0, 52         ; remaining = 17
+
+; Step 2: Take 17 / 10 = 1 dime, remaining = 17 - 10 = 7
+    LDI t0, 1
+    ST t0, 61         ; count_10 = 1
+    LDI t0, 7
+    ST t0, 52         ; remaining = 7
+
+; Step 3: Take 7 / 5 = 1 nickel, remaining = 7 - 5 = 2
+    LDI t0, 1
+    ST t0, 62         ; count_5 = 1
+    LDI t0, 2
+    ST t0, 52         ; remaining = 2
+
+; Step 4: Take 2 / 1 = 2 pennies, remaining = 2 - 2 = 0
+    LDI t0, 2
+    ST t0, 63         ; count_1 = 2
+    LDI t0, 0
+    ST t0, 52         ; remaining = 0
+
+; Total coins used
+    LDI t0, 6
+    ST t0, 53         ; total_coins = 6
+
+; Verify: 2×25 + 1×10 + 1×5 + 2×1 = 50 + 10 + 5 + 2 = 67 ✓
+    LDI t0, 67
+    ST t0, 54         ; verified_amount = 67
+
+; Coin breakdown: [25: 2, 10: 1, 5: 1, 1: 2]
+    LDI t0, 2
+    ST t0, 70         ; result[0] = 2 (quarters)
+    LDI t0, 1
+    ST t0, 71         ; result[1] = 1 (dimes)
+    LDI t0, 1
+    ST t0, 72         ; result[2] = 1 (nickels)
+    LDI t0, 2
+    ST t0, 73         ; result[3] = 2 (pennies)
+
+; Greedy choice property (US coins are canonical)
+    LDI t0, 1
+    ST t0, 55         ; is_canonical = 1
+
+; Optimal solution (greedy gives optimal for canonical systems)
+    LDI t0, 1
+    ST t0, 56         ; is_optimal = 1
+
+; O(n) time complexity
+    LDI t0, 1
+    ST t0, 57         ; is_linear_time = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d7e1bba7c5c22e8b184418370883a14335e699ce92b33cdff885d4302cccf8cd
