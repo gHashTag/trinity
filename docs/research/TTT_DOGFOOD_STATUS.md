@@ -28,11 +28,11 @@ Trinity's goal: **100% self-hosted** where Tri specs are the source of truth and
 
 | Metric | Count |
 |--------|-------|
-| Total .t27 files | 625 |
-| Files with tests | 169 |
-| Test coverage | 27% |
-| Total tests | 1584 |
-| Tests passing | 1584 (100%) |
+| Total .t27 files | 650 |
+| Files with tests | 194 |
+| Test coverage | 30% |
+| Total tests | 1634 |
+| Tests passing | 1634 (100%) |
 
 ### Algorithm Categories Implemented in .t27
 
