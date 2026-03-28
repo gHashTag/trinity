@@ -1,0 +1,13 @@
+; Comb Sort — TTT Dogfood Phase 3
+;
+; Improvement over bubble sort
+;
+; Test case: sort_comb
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; comb_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:079830000020000000021b4

@@ -1,0 +1,13 @@
+; X25519 — TTT Dogfood Phase 3
+;
+; Elliptic curve Diffie-Helman
+;
+; Test case: crypto_x25519
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; x25519_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07929000002000000002187

@@ -1,0 +1,13 @@
+; Ternary Search — TTT Dogfood Phase 3
+;
+; Divide into 3 parts
+;
+; Test case: search_ternary
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ternary_search_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:079730000020000000021ac

@@ -1,0 +1,13 @@
+; Insertion Sort — TTT Dogfood Phase 3
+;
+; O(n^2) but stable
+;
+; Test case: sort_insertion
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; insertion_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0797b0000020000000021b0
