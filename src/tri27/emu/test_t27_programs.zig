@@ -3147,4 +3147,79 @@ test "avl_tree: rotation count" {
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
 
+// Binary Search Tests — TTT Dogfood Phase 3
+
+test "binary_search: file exists" {
+    const path = "src/tri27/binary_search.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "binary_search: found at index" {
+    const allocator = std.testing.allocator;
+    // Search for 7 in [1,3,5,7,9,11,13,15] -> index 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "binary_search: found flag" {
+    const allocator = std.testing.allocator;
+    // Found flag = 1 when target exists
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "binary_search: not found" {
+    const allocator = std.testing.allocator;
+    // Search for 8 returns -1 (not found)
+    const program =
+        \\    LDI t0, -1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+}
+
+test "binary_search: comparisons" {
+    const allocator = std.testing.allocator;
+    // 3 comparisons for n=8 array
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "binary_search: max depth" {
+    const allocator = std.testing.allocator;
+    // log2(8) = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
