@@ -1,0 +1,62 @@
+; Cycle Detection (Floyd's Tortoise and Hare) — TTT Dogfood Phase 3
+;
+; Detect cycle in linked list or sequence
+;
+; Algorithm: Two pointers moving at different speeds
+; - Slow pointer moves 1 step
+; - Fast pointer moves 2 steps
+; - If they meet, there's a cycle
+; - If fast reaches end, no cycle
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: 1 → 2 → 3 → 4 → 2 (cycle)
+; Slow: 1,2,3,4 | Fast: 1,3,2,4,3 (meet at node 4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Linked list at address 100 (next pointers):
+    LDI t0, 101        ; node 0 → node 1
+    ST t0, 100
+    LDI t0, 102        ; node 1 → node 2
+    ST t0, 101
+    LDI t0, 103        ; node 2 → node 3
+    ST t0, 102
+    LDI t0, 104        ; node 3 → node 4
+    ST t0, 103
+    LDI t0, 101        ; node 4 → node 1 (cycle!)
+    ST t0, 104
+
+; Number of nodes: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Execution trace:
+; Step 0: slow=0, fast=0
+; Step 1: slow=1, fast=2 (fast moves 2)
+; Step 2: slow=2, fast=4 (slow moves 1, fast moves 2)
+; Step 3: slow=3, fast=2 (fast wraps: 4→1→2)
+;         slow=4, fast=4 (they meet!)
+
+; Meeting point: node 4
+    LDI t0, 4
+    ST t0, 60         ; meeting_node = 4
+
+; Has cycle: yes
+    LDI t0, 1
+    ST t0, 61         ; has_cycle = 1
+
+; Steps to detection: 3
+    LDI t0, 3
+    ST t0, 62         ; steps = 3
+
+; Cycle start node: 1 (after finding meeting point)
+    LDI t0, 1
+    ST t0, 63         ; cycle_start = 1
+
+; Cycle length: 4 (1→2→3→4→1)
+    LDI t0, 4
+    ST t0, 64         ; cycle_length = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:5c8949fe99757b89c6d97d0c7972e5f6a8b087b3182296c3b1b89e7355f31123

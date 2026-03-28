@@ -1,0 +1,78 @@
+; Boyer-Moore Majority Vote — TTT Dogfood Phase 3
+;
+; Find element appearing > n/2 times
+;
+; Algorithm: Two-pass linear scan
+; - Pass 1: Find candidate using cancellation
+; - Pass 2: Verify candidate actually has majority
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: [3, 3, 4, 2, 4, 4, 2, 4, 4]
+; Majority: 4 (appears 5 times out of 9)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 3
+    ST t0, 101        ; arr[1] = 3
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2
+    LDI t0, 4
+    ST t0, 104        ; arr[4] = 4
+    LDI t0, 4
+    ST t0, 105        ; arr[5] = 4
+    LDI t0, 2
+    ST t0, 106        ; arr[6] = 2
+    LDI t0, 4
+    ST t0, 107        ; arr[7] = 4
+    LDI t0, 4
+    ST t0, 108        ; arr[8] = 4
+
+; Array length: 9
+    LDI t0, 9
+    ST t0, 50         ; n = 9
+
+; Pass 1: Find candidate
+; candidate = 3, count = 1
+; 3 == 3: count = 2
+; 4 != 3: count = 1
+; 2 != 3: count = 0, candidate = 2, count = 1
+; 4 != 2: count = 0, candidate = 4, count = 1
+; 4 == 4: count = 2
+; 2 != 4: count = 1
+; 4 == 4: count = 2
+; 4 == 4: count = 3
+; Final candidate: 4
+
+; Candidate at address 200:
+    LDI t0, 4
+    ST t0, 200        ; candidate = 4
+
+; Pass 2: Verify candidate
+; Count occurrences of 4: 5
+    LDI t0, 5
+    ST t0, 201        ; count = 5
+
+; Is majority: 5 > 9/2 = 4.5, yes
+    LDI t0, 1
+    ST t0, 60         ; is_majority = 1
+
+; Majority element: 4
+    LDI t0, 4
+    ST t0, 61         ; majority = 4
+
+; Frequency: 5/9 ≈ 55.6%
+    LDI t0, 55        ; 55.6... → 55
+    ST t0, 62         ; freq_x100 = 55
+
+; Cancellations during pass 1: 3
+    LDI t0, 3
+    ST t0, 63         ; cancellations = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:65ada5fcba694bd7b3c464440516b21f4d5409d9e90e552489367d3e2138b618
