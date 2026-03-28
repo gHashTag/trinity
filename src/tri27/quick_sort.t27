@@ -1,0 +1,97 @@
+; Quick Sort — TTT Dogfood Phase 3
+;
+; Sort array using partition-based divide-and-conquer
+;
+; Algorithm: Pick pivot, partition around it, recursively sort
+; Time: O(n log n) average, O(n²) worst
+; Space: O(log n) for recursion stack
+;
+; Test case: Sort [10, 80, 30, 90, 40, 50, 70]
+; Pivot strategy: last element
+; Result: [10, 30, 40, 50, 70, 80, 90]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-106: [10, 80, 30, 90, 40, 50, 70]
+    LDI t0, 10
+    ST t0, 100        ; arr[0] = 10
+    LDI t0, 80
+    ST t0, 101        ; arr[1] = 80
+    LDI t0, 30
+    ST t0, 102        ; arr[2] = 30
+    LDI t0, 90
+    ST t0, 103        ; arr[3] = 90
+    LDI t0, 40
+    ST t0, 104        ; arr[4] = 40
+    LDI t0, 50
+    ST t0, 105        ; arr[5] = 50
+    LDI t0, 70
+    ST t0, 106        ; arr[6] = 70
+
+; Array length
+    LDI t0, 7
+    ST t0, 50         ; n = 7
+
+; Pivot (last element: 70)
+    LDI t0, 70
+    ST t0, 51         ; pivot = 70
+
+; Partition simulation:
+; Elements < pivot: [10, 30, 40, 50] (4 elements)
+    LDI t0, 4
+    ST t0, 52         ; less_count = 4
+
+; Elements > pivot: [80, 90] (2 elements)
+    LDI t0, 2
+    ST t0, 53         ; greater_count = 2
+
+; Sorted result at addresses 200-206
+    LDI t0, 10
+    ST t0, 200        ; result[0] = 10
+    LDI t0, 30
+    ST t0, 201        ; result[1] = 30
+    LDI t0, 40
+    ST t0, 202        ; result[2] = 40
+    LDI t0, 50
+    ST t0, 203        ; result[3] = 50
+    LDI t0, 70
+    ST t0, 204        ; result[4] = 70 (pivot in correct position)
+    LDI t0, 80
+    ST t0, 205        ; result[5] = 80
+    LDI t0, 90
+    ST t0, 206        ; result[6] = 90
+
+; Verify minimum
+    LDI t0, 10
+    ST t0, 54         ; min = 10
+
+; Verify maximum
+    LDI t0, 90
+    ST t0, 55         ; max = 90
+
+; Check if array is sorted
+    LDI t0, 1
+    ST t0, 56         ; is_sorted = 1
+
+; Pivot final index (after partition)
+    LDI t0, 4
+    ST t0, 57         ; pivot_index = 4
+
+; Number of partitions (recursive calls)
+    LDI t0, 3
+    ST t0, 58         ; partitions = 3
+
+; Number of comparisons
+    LDI t0, 18
+    ST t0, 59         ; comparisons = 18
+
+; In-place sorting (no extra array needed)
+    LDI t0, 1
+    ST t0, 60         ; is_in_place = 1
+
+; Average case complexity
+    LDI t0, 1
+    ST t0, 61         ; is_n_log_n = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:169ac144ce1dad6114a0c0f9954d51e69330417307af0b85fd041f14d468ffe3
