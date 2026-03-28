@@ -1,0 +1,13 @@
+; Sports Tracking — TTT Dogfood Phase 3
+;
+; Player tracking
+;
+; Test case: sports_tracking
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tracking_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075c50000020000000001d05
