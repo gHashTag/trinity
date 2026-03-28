@@ -1,6 +1,6 @@
 ; Vector Projection — TTT Dogfood Phase 3
 ;
-| proj_b(a)
+; proj_b(a)
 ;
 ; Test case: vector_project
 ;
