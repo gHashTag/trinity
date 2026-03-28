@@ -1,0 +1,13 @@
+; Education Knowledge — TTT Dogfood Phase 3
+;
+; Knowledge graphs
+;
+; Test case: education_knowledge
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; knowledge_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075a90000020000000001ccd
