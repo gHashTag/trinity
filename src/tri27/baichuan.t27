@@ -1,0 +1,13 @@
+; Baichuan — TTT Dogfood Phase 3
+;
+| BAA large model
+;
+; Test case: baichuan
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; baichuan_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aa70000020000000023ae
