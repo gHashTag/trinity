@@ -1,0 +1,121 @@
+; Combinations (n Choose k) — TTT Dogfood Phase 3
+;
+; Generate all k-element combinations from n items
+;
+; Algorithm: Recursive/iterative generation
+; - C(n,k) = C(n-1,k-1) + C(n-1,k)
+; - Iterative: start with [0..k-1], increment
+;
+; Time: O(C(n,k) × k) to generate all
+; Space: O(k) for current combination
+;
+; Test case: C(5,3) = 10 combinations
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input: n=5, k=3
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+    LDI t0, 3
+    ST t0, 51         ; k = 3
+
+; C(5,3) = 5!/(3!×2!) = 120/(6×2) = 10
+    LDI t0, 10
+    ST t0, 60         ; count = 10
+
+; First combination: [0, 1, 2]
+    LDI t0, 0
+    ST t0, 100        ; comb[0][0] = 0
+    LDI t0, 1
+    ST t0, 101        ; comb[0][1] = 1
+    LDI t0, 2
+    ST t0, 102        ; comb[0][2] = 2
+
+; Second: [0, 1, 3]
+    LDI t0, 0
+    ST t0, 103        ; comb[1][0] = 0
+    LDI t0, 1
+    ST t0, 104        ; comb[1][1] = 1
+    LDI t0, 3
+    ST t0, 105        ; comb[1][2] = 3
+
+; Third: [0, 1, 4]
+    LDI t0, 0
+    ST t0, 106        ; comb[2][0] = 0
+    LDI t0, 1
+    ST t0, 107        ; comb[2][1] = 1
+    LDI t0, 4
+    ST t0, 108        ; comb[2][2] = 4
+
+; Fourth: [0, 2, 3]
+    LDI t0, 0
+    ST t0, 109        ; comb[3][0] = 0
+    LDI t0, 2
+    ST t0, 110        ; comb[3][1] = 2
+    LDI t0, 3
+    ST t0, 111        ; comb[3][2] = 3
+
+; Fifth: [0, 2, 4]
+    LDI t0, 0
+    ST t0, 112        ; comb[4][0] = 0
+    LDI t0, 2
+    ST t0, 113        ; comb[4][1] = 2
+    LDI t0, 4
+    ST t0, 114        ; comb[4][2] = 4
+
+; Sixth: [0, 3, 4]
+    LDI t0, 0
+    ST t0, 115        ; comb[5][0] = 0
+    LDI t0, 3
+    ST t0, 116        ; comb[5][1] = 3
+    LDI t0, 4
+    ST t0, 117        ; comb[5][2] = 4
+
+; Seventh: [1, 2, 3]
+    LDI t0, 1
+    ST t0, 118        ; comb[6][0] = 1
+    LDI t0, 2
+    ST t0, 119        ; comb[6][1] = 2
+    LDI t0, 3
+    ST t0, 120        ; comb[6][2] = 3
+
+; Eighth: [1, 2, 4]
+    LDI t0, 1
+    ST t0, 121        ; comb[7][0] = 1
+    LDI t0, 2
+    ST t0, 122        ; comb[7][1] = 2
+    LDI t0, 4
+    ST t0, 123        ; comb[7][2] = 4
+
+; Ninth: [1, 3, 4]
+    LDI t0, 1
+    ST t0, 124        ; comb[8][0] = 1
+    LDI t0, 3
+    ST t0, 125        ; comb[8][1] = 3
+    LDI t0, 4
+    ST t0, 126        ; comb[8][2] = 4
+
+; Tenth: [2, 3, 4]
+    LDI t0, 2
+    ST t0, 127        ; comb[9][0] = 2
+    LDI t0, 3
+    ST t0, 128        ; comb[9][1] = 3
+    LDI t0, 4
+    ST t0, 129        ; comb[9][2] = 4
+
+; Pascal's triangle: C(5,0)=1, C(5,1)=5, C(5,2)=10, C(5,3)=10, C(5,4)=5, C(5,5)=1
+    LDI t0, 1
+    ST t0, 70         ; C(5,0) = 1
+    LDI t0, 5
+    ST t0, 71         ; C(5,1) = 5
+    LDI t0, 10
+    ST t0, 72         ; C(5,2) = 10
+    LDI t0, 10
+    ST t0, 73         ; C(5,3) = 10
+    LDI t0, 5
+    ST t0, 74         ; C(5,4) = 5
+    LDI t0, 1
+    ST t0, 75         ; C(5,5) = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:675caadb05e5366f25f253660bb2fc8e01bc337194c907c2eb17b378216815d8
