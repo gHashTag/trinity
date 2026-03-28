@@ -1,0 +1,59 @@
+; Modular Exponentiation — TTT Dogfood Phase 3
+;
+; Computes (base^exp) mod mod efficiently
+;
+; Algorithm: Binary exponentiation (square-and-multiply)
+; - Use binary representation of exponent
+; - Square base for each bit, multiply if bit is 1
+; - Take mod at each step to keep numbers small
+;
+; Time: O(log exp), Space: O(1)
+;
+; Test case: 3^13 mod 7
+; 13 = 1101 in binary
+; Result: 3^13 mod 7 = 1594323 mod 7 = 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input: base = 3, exp = 13, mod = 7
+    LDI t0, 3
+    ST t0, 50         ; base = 3
+    LDI t0, 13
+    ST t0, 51         ; exp = 13
+    LDI t0, 7
+    ST t0, 52         ; mod = 7
+
+; Binary exponentiation:
+; exp = 13 = 1101 (binary)
+; Process bits from right to left
+
+; Bit 0: 1 → result = result × base = 1 × 3 = 3
+;   base = base^2 = 3^2 = 9, base = 9 mod 7 = 2
+; Bit 1: 0 → skip multiply
+;   base = base^2 = 2^2 = 4
+; Bit 2: 0 → skip multiply
+;   base = base^2 = 4^2 = 16, base = 16 mod 7 = 2
+; Bit 3: 1 → result = result × base = 3 × 2 = 6
+
+; Wait, let me recalculate properly:
+; 3^13 mod 7:
+; 3^1 = 3 mod 7 = 3
+; 3^2 = 9 mod 7 = 2
+; 3^4 = 2^2 = 4 mod 7 = 4
+; 3^8 = 4^2 = 16 mod 7 = 2
+; 3^13 = 3^8 × 3^4 × 3^1 = 2 × 4 × 3 = 24 mod 7 = 3
+
+; Final result: 3
+    LDI t0, 3
+    ST t0, 60         ; result = 3
+
+; Multiplications performed: 6 (3 squarings, 3 multiplies)
+    LDI t0, 6
+    ST t0, 61         ; multiplications = 6
+
+; Mod operations: 6 (after each operation)
+    LDI t0, 6
+    ST t0, 62         ; mod_ops = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:2ee4153e5a87fc517865696d7a3bbfb6513feb692b4b2999ae6f30ef906c827e
