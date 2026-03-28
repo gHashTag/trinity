@@ -5056,3 +5056,133 @@ test "union_find: rank after union" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
+
+// Fenwick Tree (Binary Indexed Tree) Tests — TTT Dogfood Phase 3
+
+test "fenwick_tree: file exists" {
+    const path = "src/tri27/fenwick_tree.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "fenwick_tree: total sum" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 31
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 31), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: first element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: range sum 1 to 7" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 28
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 28), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: range sum 2 to 5" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 19
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 19), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: tree node 4" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 9
+        \\    ST t0, 203
+        \\    LD t0, 203
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: tree node 8" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 31
+        \\    ST t0, 207
+        \\    LD t0, 207
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 31), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: update tree node 4" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 11
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 11), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: update tree node 8" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 33
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 33), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: tree height" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "fenwick_tree: number of nodes" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
