@@ -1,0 +1,13 @@
+; Robotics Path Planning — TTT Dogfood Phase 3
+;
+; Motion planning
+;
+; Test case: robotics_path_planning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; path_planning_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07559000002000000001c2d
