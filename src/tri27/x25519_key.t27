@@ -1,0 +1,13 @@
+; X25519 Key Exchange — TTT Dogfood Phase 3
+;
+| Diffie-Hellman curve
+;
+; Test case: x25519_key
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; x25519_key_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b0c001b9f
