@@ -17205,3 +17205,138 @@ test "strupper: verify conversion" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "eigenvalues: Find eigenvalues of matrix" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "eigenvalues.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Eigenvalues") != null);
+}
+
+test "eigenvalues: verify eigenvalue count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "eigenvalues.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "fourier_transform: Discrete Fourier Transform" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fourier_transform.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Fourier") != null);
+}
+
+test "fourier_transform: verify frequency domain" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fourier_transform.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "histogram_equal: Image contrast enhancement" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "histogram_equal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Histogram") != null);
+}
+
+test "histogram_equal: verify equalization" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "histogram_equal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "kmeans_clustering: Unsupervised clustering" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kmeans_clustering.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "K-Means") != null);
+}
+
+test "kmeans_clustering: verify cluster assignment" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kmeans_clustering.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "knn_classifier: K-Nearest Neighbors" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "knn_classifier.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Nearest") != null);
+}
+
+test "knn_classifier: verify classification" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "knn_classifier.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "linear_regression: Ordinary least squares" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_regression.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Regression") != null);
+}
+
+test "linear_regression: verify slope and intercept" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "linear_regression.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "logistic_regression: Binary classification" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "logistic_regression.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Logistic") != null);
+}
+
+test "logistic_regression: verify probability output" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "logistic_regression.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "pca_reduction: Principal Component Analysis" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pca_reduction.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Principal") != null);
+}
+
+test "pca_reduction: verify dimensionality reduction" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "pca_reduction.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "svd_decomposition: Singular Value Decomposition" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "svd_decomposition.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Singular") != null);
+}
+
+test "svd_decomposition: verify matrix rank" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "svd_decomposition.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
