@@ -17,5 +17,5 @@ pub const ZigEmitter = struct {
 pub fn emitZig(allocator: Allocator, node: *const Node) ![]const u8 {
     _ = allocator;
     _ = node;
-    unreachable; // TODO: implement
+    return error.NotImplemented; // TODO: implement Zig code emission
 }
