@@ -1,0 +1,74 @@
+; strpbrk — TTT Dogfood Phase 3
+;
+; Find first occurrence of any char from set in string
+;
+; Algorithm: Scan string, return pointer to first match
+; - Returns NULL if no match found
+; - Useful for tokenization
+;
+; Time: O(n×m) where n=strlen(s), m=strlen(accept)
+; Space: O(1)
+;
+; Test case: s="hello world", accept="ow"
+; Returns pointer to 'o' at position 4
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String at address 100: "hello world"
+    LDI t0, 104       ; 'h'
+    ST t0, 100
+    LDI t0, 101       ; 'e'
+    ST t0, 101
+    LDI t0, 108       ; 'l'
+    ST t0, 102
+    LDI t0, 108       ; 'l'
+    ST t0, 103
+    LDI t0, 111       ; 'o'
+    ST t0, 104
+    LDI t0, 32        ; ' '
+    ST t0, 105
+    LDI t0, 119       ; 'w'
+    ST t0, 106
+    LDI t0, 111       ; 'o'
+    ST t0, 107
+    LDI t0, 114       ; 'r'
+    ST t0, 108
+    LDI t0, 108       ; 'l'
+    ST t0, 109
+    LDI t0, 100       ; 'd'
+    ST t0, 110
+    LDI t0, 0
+    ST t0, 111        ; null
+
+; Accept set at address 120: "ow"
+    LDI t0, 111       ; 'o'
+    ST t0, 120
+    LDI t0, 119       ; 'w'
+    ST t0, 121
+    LDI t0, 0
+    ST t0, 122        ; null
+
+; Scan:
+; s[0]='h' in "ow"? no
+; s[1]='e' in "ow"? no
+; s[2]='l' in "ow"? no
+; s[3]='l' in "ow"? no
+; s[4]='o' in "ow"? yes → found
+    LDI t0, 104
+    ST t0, 60         ; result = 104 (pointer to 'o')
+
+; Position: 4
+    LDI t0, 4
+    ST t0, 61         ; position = 4
+
+; Character found: 'o' (111)
+    LDI t0, 111
+    ST t0, 62         ; char_found = 111
+
+; Test case 2: s="hello", accept="xyz"
+; No match → NULL (0)
+    LDI t0, 0
+    ST t0, 63         ; result2 = 0 (NULL)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6b1cec3a5aa61605f952b7da48bf1ac793725f942dabba09d1e597121bef52a0

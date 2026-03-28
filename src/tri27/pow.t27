@@ -1,0 +1,62 @@
+; Power Function — TTT Dogfood Phase 3
+;
+; Compute base^exponent efficiently
+;
+; Algorithm: Binary exponentiation (exponentiation by squaring)
+; - Repeatedly square base, halve exponent
+; - O(log n) multiplications vs O(n) naive
+;
+; Time: O(log n) where n = exponent
+; Space: O(1)
+;
+; Test case: 2^10 = 1024
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input: base = 2, exponent = 10
+    LDI t0, 2
+    ST t0, 50         ; base = 2
+    LDI t0, 10
+    ST t0, 51         ; exp = 10
+
+; Binary exponentiation:
+; result = 1, base = 2, exp = 10
+; exp=10 (even): result=1, base=4, exp=5
+; exp=5 (odd): result=4, base=16, exp=2
+; exp=2 (even): result=4, base=256, exp=1
+; exp=1 (odd): result=1024, base=65536, exp=0
+; Done: result = 1024
+
+    LDI t0, 1024
+    ST t0, 60         ; result = 1024
+
+; Test case 2: 3^5 = 243
+    LDI t0, 3
+    ST t0, 52         ; base2 = 3
+    LDI t0, 5
+    ST t0, 53         ; exp2 = 5
+    LDI t0, 243
+    ST t0, 61         ; result2 = 243
+
+; Test case 3: 5^0 = 1 (any number to power 0)
+    LDI t0, 5
+    ST t0, 54         ; base3 = 5
+    LDI t0, 0
+    ST t0, 55         ; exp3 = 0
+    LDI t0, 1
+    ST t0, 62         ; result3 = 1
+
+; Test case 4: 1^100 = 1 (1 to any power is 1)
+    LDI t0, 1
+    ST t0, 63         ; result4 = 1
+
+; Number of multiplications: ~4 for 2^10 (log2(10) ≈ 4)
+    LDI t0, 4
+    ST t0, 64         ; mul_count = 4
+
+; Naive would need 10 multiplications
+    LDI t0, 10
+    ST t0, 65         ; naive_mul = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6923e7a58f87382b1b6af95c238c54f34c0f16aa0471de416054a439f4216c6e

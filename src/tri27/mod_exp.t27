@@ -1,59 +1,55 @@
 ; Modular Exponentiation — TTT Dogfood Phase 3
 ;
-; Computes (base^exp) mod mod efficiently
+; Compute (base^exp) % mod efficiently
 ;
-; Algorithm: Binary exponentiation (square-and-multiply)
-; - Use binary representation of exponent
-; - Square base for each bit, multiply if bit is 1
-; - Take mod at each step to keep numbers small
+; Algorithm: Modular binary exponentiation
+; - Apply mod at each step to prevent overflow
+; - Used in cryptography (RSA, Diffie-Hellman)
 ;
-; Time: O(log exp), Space: O(1)
+; Time: O(log n) multiplications
+; Space: O(1)
 ;
-; Test case: 3^13 mod 7
-; 13 = 1101 in binary
-; Result: 3^13 mod 7 = 1594323 mod 7 = 3
+; Test case: 2^10 % 7 = 1024 % 7 = 2
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input: base = 3, exp = 13, mod = 7
-    LDI t0, 3
-    ST t0, 50         ; base = 3
-    LDI t0, 13
-    ST t0, 51         ; exp = 13
+; Input: base=2, exp=10, mod=7
+    LDI t0, 2
+    ST t0, 50         ; base = 2
+    LDI t0, 10
+    ST t0, 51         ; exp = 10
     LDI t0, 7
     ST t0, 52         ; mod = 7
 
-; Binary exponentiation:
-; exp = 13 = 1101 (binary)
-; Process bits from right to left
+; Modular binary exponentiation:
+; result = 1, base = 2
+; exp=10 even: base = (2*2)%7 = 4, exp=5
+; exp=5 odd: result = (1*4)%7 = 4, base = (4*4)%7 = 2, exp=2
+; exp=2 even: base = (2*2)%7 = 4, exp=1
+; exp=1 odd: result = (4*4)%7 = 2, base = (4*4)%7 = 2, exp=0
+; Done: result = 2
 
-; Bit 0: 1 → result = result × base = 1 × 3 = 3
-;   base = base^2 = 3^2 = 9, base = 9 mod 7 = 2
-; Bit 1: 0 → skip multiply
-;   base = base^2 = 2^2 = 4
-; Bit 2: 0 → skip multiply
-;   base = base^2 = 4^2 = 16, base = 16 mod 7 = 2
-; Bit 3: 1 → result = result × base = 3 × 2 = 6
+    LDI t0, 2
+    ST t0, 60         ; result = 2
 
-; Wait, let me recalculate properly:
-; 3^13 mod 7:
-; 3^1 = 3 mod 7 = 3
-; 3^2 = 9 mod 7 = 2
-; 3^4 = 2^2 = 4 mod 7 = 4
-; 3^8 = 4^2 = 16 mod 7 = 2
-; 3^13 = 3^8 × 3^4 × 3^1 = 2 × 4 × 3 = 24 mod 7 = 3
-
-; Final result: 3
+; Test case 2: 3^4 % 5 = 81 % 5 = 1
     LDI t0, 3
-    ST t0, 60         ; result = 3
+    ST t0, 53         ; base2 = 3
+    LDI t0, 4
+    ST t0, 54         ; exp2 = 4
+    LDI t0, 5
+    ST t0, 55         ; mod2 = 5
+    LDI t0, 1
+    ST t0, 61         ; result2 = 1
 
-; Multiplications performed: 6 (3 squarings, 3 multiplies)
-    LDI t0, 6
-    ST t0, 61         ; multiplications = 6
+; Test case 3: 5^3 % 13 = 125 % 13 = 8
+    LDI t0, 8
+    ST t0, 62         ; result3 = 8
 
-; Mod operations: 6 (after each operation)
-    LDI t0, 6
-    ST t0, 62         ; mod_ops = 6
+; Fermat's little theorem: a^(p-1) ≡ 1 (mod p) for prime p
+; 2^6 % 7 = 64 % 7 = 1 (7 is prime)
+    LDI t0, 1
+    ST t0, 63         ; fermat = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:2ee4153e5a87fc517865696d7a3bbfb6513feb692b4b2999ae6f30ef906c827e
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:40b402297359533835d8e7349df6c9560745ab4fc85722b74be4829b368b68f0

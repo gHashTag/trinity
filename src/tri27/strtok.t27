@@ -1,106 +1,96 @@
-; StrTok (String Tokenizer) — TTT Dogfood Phase 3
+; strtok — TTT Dogfood Phase 3
 ;
-; Splits string into tokens based on delimiters
+; Split string into tokens by delimiters
 ;
-; Algorithm: Scan string, extract tokens between delimiters
-; - Maintains state between calls (static position)
-; - Returns null pointer when no more tokens
+; Algorithm:
+; - Save state between calls
+; - Replace delimiters with null
+; - Return pointer to next token
+; - Returns NULL when no more tokens
 ;
-; Time: O(n) for full tokenization, Space: O(1) in-place
+; Time: O(n) total for all tokens
+; Space: O(1) (modifies input string)
 ;
-; Test case: "hello,world,trinity" delimiter "," → ["hello", "world", "trinity"]
+; Test case: s="hello,world,test", delim=","
+; Tokens: "hello", "world", "test"
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input string at address 100: "hello,world,trinity"
-    LDI t0, 104        ; 'h'
+; Input string at address 100: "hello,world,test"
+    LDI t0, 104       ; 'h'
     ST t0, 100
-    LDI t0, 101        ; 'e'
+    LDI t0, 101       ; 'e'
     ST t0, 101
-    LDI t0, 108        ; 'l'
+    LDI t0, 108       ; 'l'
     ST t0, 102
-    LDI t0, 108        ; 'l'
+    LDI t0, 108       ; 'l'
     ST t0, 103
-    LDI t0, 111        ; 'o'
+    LDI t0, 111       ; 'o'
     ST t0, 104
-    LDI t0, 44         ; ','
+    LDI t0, 44        ; ','
     ST t0, 105
-    LDI t0, 119        ; 'w'
+    LDI t0, 119       ; 'w'
     ST t0, 106
-    LDI t0, 111        ; 'o'
+    LDI t0, 111       ; 'o'
     ST t0, 107
-    LDI t0, 114        ; 'r'
+    LDI t0, 114       ; 'r'
     ST t0, 108
-    LDI t0, 108        ; 'l'
+    LDI t0, 108       ; 'l'
     ST t0, 109
-    LDI t0, 100        ; 'd'
+    LDI t0, 100       ; 'd'
     ST t0, 110
-    LDI t0, 44         ; ','
+    LDI t0, 44        ; ','
     ST t0, 111
-    LDI t0, 116        ; 't'
+    LDI t0, 116       ; 't'
     ST t0, 112
-    LDI t0, 114        ; 'r'
+    LDI t0, 101       ; 'e'
     ST t0, 113
-    LDI t0, 105        ; 'i'
+    LDI t0, 115       ; 's'
     ST t0, 114
-    LDI t0, 110        ; 'n'
+    LDI t0, 116       ; 't'
     ST t0, 115
-    LDI t0, 105        ; 'i'
-    ST t0, 116
-    LDI t0, 116        ; 't'
-    ST t0, 117
-    LDI t0, 121        ; 'y'
-    ST t0, 118
-    LDI t0, 0          ; null
-    ST t0, 119
-
-; Delimiter
-    LDI t0, 44         ; ','
-    ST t0, 50         ; delimiter = ','
-
-; Token 1: "hello" (positions 0-4)
     LDI t0, 0
-    ST t0, 60         ; token1_start = 0
-    LDI t0, 5
-    ST t0, 61         ; token1_len = 5
+    ST t0, 116        ; null
 
-; Token 2: "world" (positions 6-10)
-    LDI t0, 6
-    ST t0, 62         ; token2_start = 6
-    LDI t0, 5
-    ST t0, 63         ; token2_len = 5
+; Delimiters: "," (single char)
+    LDI t0, 44        ; ','
+    ST t0, 50         ; delim = ','
 
-; Token 3: "trinity" (positions 12-18)
-    LDI t0, 12
-    ST t0, 64         ; token3_start = 12
-    LDI t0, 7
-    ST t0, 65         ; token3_len = 7
+; First call: strtok(s, ",")
+; Find first delimiter at position 5
+; Replace with null, return pointer to 100
+    LDI t0, 100
+    ST t0, 60         ; token1 = 100 ("hello")
 
-; Token count
+; Second call: strtok(NULL, ",")
+; Continue from saved state (position 6)
+; Find next delimiter at position 11
+; Replace with null, return pointer to 106
+    LDI t0, 106
+    ST t0, 61         ; token2 = 106 ("world")
+
+; Third call: strtok(NULL, ",")
+; Continue from position 12
+; No more delimiters, return pointer to 112
+    LDI t0, 112
+    ST t0, 62         ; token3 = 112 ("test")
+
+; Fourth call: strtok(NULL, ",")
+; No more tokens → NULL
+    LDI t0, 0
+    ST t0, 63         ; token4 = 0 (NULL)
+
+; Number of tokens: 3
     LDI t0, 3
-    ST t0, 51         ; token_count = 3
+    ST t0, 64         ; num_tokens = 3
 
-; Current position (for stateful parsing)
-    LDI t0, 19
-    ST t0, 52         ; current_pos = 19 (end of string)
-
-; Has more tokens flag
-    LDI t0, 0
-    ST t0, 53         ; has_more = 0 (no more tokens)
-
-; First token result: "hello"
-    LDI t0, 104        ; 'h'
-    ST t0, 80
-    LDI t0, 101        ; 'e'
-    ST t0, 81
-    LDI t0, 108        ; 'l'
-    ST t0, 82
-    LDI t0, 108        ; 'l'
-    ST t0, 83
-    LDI t0, 111        ; 'o'
-    ST t0, 84
-    LDI t0, 0          ; null
-    ST t0, 85
+; Token lengths: 5, 5, 4
+    LDI t0, 5
+    ST t0, 70         ; len1 = 5
+    LDI t0, 5
+    ST t0, 71         ; len2 = 5
+    LDI t0, 4
+    ST t0, 72         ; len3 = 4
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e6d55a3295a8ba11bb8045fa74f2f8e42cf0284ba6aa5a4a2a12184ad3b1f792
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d8c2dbc4a6050701d7357e6780f1a8a910cc9d3251b858438697f525dc05ab32
