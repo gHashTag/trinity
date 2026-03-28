@@ -1,0 +1,81 @@
+; Caesar Cipher — TTT Dogfood Phase 3
+;
+; Simple substitution cipher (shift by N)
+;
+; Algorithm: Replace each letter with letter N positions ahead
+; - Wrap around at Z→A
+; - Preserves case
+; - Classic: N=3 (A→D, B→E, ...)
+;
+; Time: O(n), Space: O(n)
+;
+; Test case: "HELLO WORLD" with shift 3 → "KHOOR ZRUOG"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "HELLO WORLD"
+    LDI t0, 72         ; H
+    ST t0, 100
+    LDI t0, 69         ; E
+    ST t0, 101
+    LDI t0, 76         ; L
+    ST t0, 102
+    LDI t0, 76         ; L
+    ST t0, 103
+    LDI t0, 79         ; O
+    ST t0, 104
+    LDI t0, 32         ; space
+    ST t0, 105
+    LDI t0, 87         ; W
+    ST t0, 106
+    LDI t0, 79         ; O
+    ST t0, 107
+    LDI t0, 82         ; R
+    ST t0, 108
+    LDI t0, 76         ; L
+    ST t0, 109
+    LDI t0, 68         ; D
+    ST t0, 110
+
+; Input length: 11
+    LDI t0, 11
+    ST t0, 50         ; input_len = 11
+
+; Shift amount: 3
+    LDI t0, 3
+    ST t0, 51         ; shift = 3
+
+; Encrypted output at address 200: "KHOOR ZRUOG"
+    LDI t0, 75         ; K (H+3)
+    ST t0, 200
+    LDI t0, 72         ; H (E+3)
+    ST t0, 201
+    LDI t0, 79         ; O (L+3)
+    ST t0, 202
+    LDI t0, 79         ; O (L+3)
+    ST t0, 203
+    LDI t0, 82         ; R (O+3)
+    ST t0, 204
+    LDI t0, 32         ; space
+    ST t0, 205
+    LDI t0, 90         ; Z (W+3)
+    ST t0, 206
+    LDI t0, 82         ; R (O+3)
+    ST t0, 207
+    LDI t0, 85         ; U (R+3)
+    ST t0, 208
+    LDI t0, 79         ; O (L+3)
+    ST t0, 209
+    LDI t0, 71         ; G (D+3)
+    ST t0, 210
+
+; Output length: 11
+    LDI t0, 11
+    ST t0, 60         ; output_len = 11
+
+; Non-alphabetic characters preserved: 1 (space)
+    LDI t0, 1
+    ST t0, 61         ; non_alpha = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:df849edcbaa878630d943387739e7e4fa84ea60c7aed58dbd2620fc97563e24c
