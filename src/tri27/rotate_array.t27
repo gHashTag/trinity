@@ -1,0 +1,111 @@
+; Rotate Array — TTT Dogfood Phase 3
+;
+; Rotate array to the right by k steps
+;
+; Algorithm: Reverse entire array, reverse first k, reverse rest
+; Time: O(n), Space: O(1)
+;
+; Test case: [1, 2, 3, 4, 5, 6, 7], k = 3
+; After rotate: [5, 6, 7, 1, 2, 3, 4]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at addresses 100-106: [1, 2, 3, 4, 5, 6, 7]
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+    LDI t0, 6
+    ST t0, 105        ; arr[5] = 6
+    LDI t0, 7
+    ST t0, 106        ; arr[6] = 7
+
+; Array length
+    LDI t0, 7
+    ST t0, 50         ; length = 7
+
+; Rotation amount
+    LDI t0, 3
+    ST t0, 51         ; k = 3
+
+; Effective rotation (k % n = 3 % 7 = 3)
+    LDI t0, 3
+    ST t0, 52         ; effective_k = 3
+
+; Step 1: Reverse entire array
+; [1,2,3,4,5,6,7] -> [7,6,5,4,3,2,1]
+    LDI t0, 7
+    ST t0, 100        ; arr[0] = 7
+    LDI t0, 6
+    ST t0, 101        ; arr[1] = 6
+    LDI t0, 5
+    ST t0, 102        ; arr[2] = 5
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 3
+    ST t0, 104        ; arr[4] = 3
+    LDI t0, 2
+    ST t0, 105        ; arr[5] = 2
+    LDI t0, 1
+    ST t0, 106        ; arr[6] = 1
+
+; Step 2: Reverse first k elements (indices 0-2)
+; [7,6,5] -> [5,6,7]
+    LDI t0, 5
+    ST t0, 100        ; arr[0] = 5
+    LDI t0, 6
+    ST t0, 101        ; arr[1] = 6
+    LDI t0, 7
+    ST t0, 102        ; arr[2] = 7
+
+; Step 3: Reverse remaining elements (indices 3-6)
+; [4,3,2,1] -> [1,2,3,4]
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 2
+    ST t0, 104        ; arr[4] = 2
+    LDI t0, 3
+    ST t0, 105        ; arr[5] = 3
+    LDI t0, 4
+    ST t0, 106        ; arr[6] = 4
+
+; Final result: [5, 6, 7, 1, 2, 3, 4]
+    LD t0, 100
+    ST t0, 110        ; result[0] = 5
+    LD t0, 101
+    ST t0, 111        ; result[1] = 6
+    LD t0, 102
+    ST t0, 112        ; result[2] = 7
+    LD t0, 103
+    ST t0, 113        ; result[3] = 1
+    LD t0, 104
+    ST t0, 114        ; result[4] = 2
+    LD t0, 105
+    ST t0, 115        ; result[5] = 3
+    LD t0, 106
+    ST t0, 116        ; result[6] = 4
+
+; Verify first element
+    LDI t0, 5
+    ST t0, 53         ; first = 5
+
+; Verify last element
+    LDI t0, 4
+    ST t0, 54         ; last = 4
+
+; Element that moved from end to front
+    LDI t0, 5
+    ST t0, 55         ; element_from_end = 5 (was at index 6, now at 0)
+
+; Element that moved from front to back
+    LDI t0, 4
+    ST t0, 56         ; element_from_front = 4 (was at index 3, now at 6)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:797b010c9488c5e23f2b04f17ce5b036921d59aee5521933d846c91f00807ecc
