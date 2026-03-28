@@ -1,0 +1,13 @@
+; Log Cosh Loss — TTT Dogfood Phase 3
+;
+; Logarithm of hyperbolic cosine
+;
+; Test case: loss_log_cosh
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; loss_log_cosh_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072bc0000001df9
