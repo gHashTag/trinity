@@ -580,4 +580,254 @@ test "t27_programs: quicksort file exists and is non-empty" {
     try std.testing.expect(stat.size > 0);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Binary Search Tests
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "binary_search: find first element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Array at address 1000: [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]
+        \\    ; t0 = target, t1 = base, t2 = length
+        \\    ; Setup
+        \\    LDI t3, 0
+        \\    ST t3, 200
+        \\    LD t3, t2
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\loop:
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    JGT t3, t4, notfound
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    ADD t3, t3, t4
+        \\    LDI t4, 1
+        \\    SHR t3, t3, t4
+        \\    ST t3, 202
+        \\    LD t4, 202
+        \\    LD t5, 1000
+        \\    ADD t5, t5, t4
+        \\    LD t5, t5
+        \\    JGT t5, t0, goleft
+        \\    JLT t5, t0, goright
+        \\    MOV t0, t4
+        \\    HALT
+        \\goleft:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\    JMP loop
+        \\goright:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    ADD t3, t3, t4
+        \\    ST t3, 200
+        \\    JMP loop
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 2, 1000, 10 });
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "binary_search: find middle element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t3, 0
+        \\    ST t3, 200
+        \\    LD t3, t2
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\loop:
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    JGT t3, t4, notfound
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    ADD t3, t3, t4
+        \\    LDI t4, 1
+        \\    SHR t3, t3, t4
+        \\    ST t3, 202
+        \\    LD t4, 202
+        \\    LD t5, 1000
+        \\    ADD t5, t5, t4
+        \\    LD t5, t5
+        \\    JGT t5, t0, goleft
+        \\    JLT t5, t0, goright
+        \\    MOV t0, t4
+        \\    HALT
+        \\goleft:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\    JMP loop
+        \\goright:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    ADD t3, t3, t4
+        \\    ST t3, 200
+        \\    JMP loop
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 1000, 10 });
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "binary_search: find last element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t3, 0
+        \\    ST t3, 200
+        \\    LD t3, t2
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\loop:
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    JGT t3, t4, notfound
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    ADD t3, t3, t4
+        \\    LDI t4, 1
+        \\    SHR t3, t3, t4
+        \\    ST t3, 202
+        \\    LD t4, 202
+        \\    LD t5, 1000
+        \\    ADD t5, t5, t4
+        \\    LD t5, t5
+        \\    JGT t5, t0, goleft
+        \\    JLT t5, t0, goright
+        \\    MOV t0, t4
+        \\    HALT
+        \\goleft:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\    JMP loop
+        \\goright:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    ADD t3, t3, t4
+        \\    ST t3, 200
+        \\    JMP loop
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 91, 1000, 10 });
+    try std.testing.expectEqual(@as(i64, 9), cpu.t27[0].trits);
+}
+
+test "binary_search: element not found returns -1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t3, 0
+        \\    ST t3, 200
+        \\    LD t3, t2
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\loop:
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    JGT t3, t4, notfound
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    ADD t3, t3, t4
+        \\    LDI t4, 1
+        \\    SHR t3, t3, t4
+        \\    ST t3, 202
+        \\    LD t4, 202
+        \\    LD t5, 1000
+        \\    ADD t5, t5, t4
+        \\    LD t5, t5
+        \\    JGT t5, t0, goleft
+        \\    JLT t5, t0, goright
+        \\    MOV t0, t4
+        \\    HALT
+        \\goleft:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\    JMP loop
+        \\goright:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    ADD t3, t3, t4
+        \\    ST t3, 200
+        \\    JMP loop
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 42, 1000, 10 });
+    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+}
+
+test "binary_search: search in empty array returns -1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t3, 0
+        \\    ST t3, 200
+        \\    LD t3, t2
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\loop:
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    JGT t3, t4, notfound
+        \\    LD t3, 200
+        \\    LD t4, 201
+        \\    ADD t3, t3, t4
+        \\    LDI t4, 1
+        \\    SHR t3, t3, t4
+        \\    ST t3, 202
+        \\    LD t4, 202
+        \\    LD t5, 1000
+        \\    ADD t5, t5, t4
+        \\    LD t5, t5
+        \\    JGT t5, t0, goleft
+        \\    JLT t5, t0, goright
+        \\    MOV t0, t4
+        \\    HALT
+        \\goleft:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    SUB t3, t3, t4
+        \\    ST t3, 201
+        \\    JMP loop
+        \\goright:
+        \\    LD t3, 202
+        \\    LDI t4, 1
+        \\    ADD t3, t3, t4
+        \\    ST t3, 200
+        \\    JMP loop
+        \\notfound:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{ 5, 1000, 0 });
+    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+}
+
+test "t27_programs: binary_search file exists" {
+    const path = "src/tri27/binary_search.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
