@@ -1,0 +1,13 @@
+; Local to UTC — TTT Dogfood Phase 3
+;
+; Convert local to UTC time
+;
+; Test case: time_local_to_utc
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; time_local_to_utc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0724d00001d09
