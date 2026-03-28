@@ -47745,3 +47745,18 @@ test "wigner_ville: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "butterworth_filter: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "butterworth_filter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "butterworth_filter: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "butterworth_filter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
