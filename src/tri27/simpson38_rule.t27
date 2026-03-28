@@ -1,6 +1,6 @@
 ; Simpson 3/8 Rule — TTT Dogfood Phase 3
 ;
-| Cubic integration
+; Cubic integration
 ;
 ; Test case: simpson38_rule
 ;

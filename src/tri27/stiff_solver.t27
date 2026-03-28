@@ -1,6 +1,6 @@
 ; Stiff ODE Solver — TTT Dogfood Phase 3
 ;
-| BDF method
+; BDF method
 ;
 ; Test case: stiff_solver
 ;

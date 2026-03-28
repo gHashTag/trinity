@@ -1,6 +1,6 @@
 ; Laguerre Quadrature — TTT Dogfood Phase 3
 ;
-| Infinite interval
+; Infinite interval
 ;
 ; Test case: laguerre_quad
 ;

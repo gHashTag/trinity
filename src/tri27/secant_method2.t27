@@ -1,6 +1,6 @@
 ; Secant V2 — TTT Dogfood Phase 3
 ;
-| Derivative-free root alt
+; Derivative-free root alt
 ;
 ; Test case: secant_method2
 ;

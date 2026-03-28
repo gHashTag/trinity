@@ -1,6 +1,6 @@
 ; Fixed Point V2 — TTT Dogfood Phase 3
 ;
-| X = g(x) solver alt
+; X = g(x) solver alt
 ;
 ; Test case: fixed_point2
 ;

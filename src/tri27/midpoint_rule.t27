@@ -1,6 +1,6 @@
 ; Midpoint Rule — TTT Dogfood Phase 3
 ;
-| Rectangle integration
+; Rectangle integration
 ;
 ; Test case: midpoint_rule
 ;

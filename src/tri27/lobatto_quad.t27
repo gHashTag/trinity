@@ -1,6 +1,6 @@
 ; Lobatto Quadrature — TTT Dogfood Phase 3
 ;
-| Endpoint inclusion
+; Endpoint inclusion
 ;
 ; Test case: lobatto_quad
 ;
