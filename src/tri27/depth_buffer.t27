@@ -1,0 +1,15 @@
+; Depth Buffer — TTT Dogfood Phase 3
+;
+; Z-buffer algorithm
+;
+; Test case: 640x480 buffer
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 640
+    ST t0, 60         ; width = 640
+    LDI t0, 480
+    ST t0, 61         ; height = 480
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713a3001319

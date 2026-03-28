@@ -1,0 +1,15 @@
+; Hamming Code — TTT Dogfood Phase 3
+;
+; Error correction
+;
+; Test case: Hamming(7,4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 7
+    ST t0, 60         ; n = 7
+    LDI t0, 4
+    ST t0, 61         ; k = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07138e002304
