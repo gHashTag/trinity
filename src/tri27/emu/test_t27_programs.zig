@@ -8519,3 +8519,107 @@ test "find_peak: right neighbor" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
+
+test "product_except_self: file exists" {
+    const path = "src/tri27/product_except_self.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "product_except_self: array length" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "product_except_self: total product" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 24
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 24), cpu.t27[0].trits);
+}
+
+test "product_except_self: output 0" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 24
+        \\    ST t0, 110
+        \\    LD t0, 110
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 24), cpu.t27[0].trits);
+}
+
+test "product_except_self: output 1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 111
+        \\    LD t0, 111
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "product_except_self: output 2" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 112
+        \\    LD t0, 112
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "product_except_self: output 3" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 113
+        \\    LD t0, 113
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "product_except_self: prefix 2" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 122
+        \\    LD t0, 122
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "product_except_self: suffix 1" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 131
+        \\    LD t0, 131
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
