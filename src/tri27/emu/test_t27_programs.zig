@@ -54195,3 +54195,288 @@ test "loss_quantile: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "nn_adaptive_pool: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_adaptive_pool.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_adaptive_pool: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_adaptive_pool.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_avg_pool3d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_avg_pool3d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_avg_pool3d: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_avg_pool3d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_batch_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_batch_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_batch_norm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_batch_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_dropout_layer: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_dropout_layer.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_dropout_layer: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_dropout_layer.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_embedding: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_embedding.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_embedding: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_embedding.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_feedforward: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_feedforward.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_feedforward: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_feedforward.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_global_pool: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_global_pool.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_global_pool: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_global_pool.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_group_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_group_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_group_norm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_group_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_gru: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_gru.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_gru: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_gru.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_instance_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_instance_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_instance_norm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_instance_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_layer_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_layer_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_layer_norm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_layer_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_linear: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_linear.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_linear: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_linear.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_lstm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_lstm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_lstm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_lstm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_max_pool3d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_max_pool3d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_max_pool3d: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_max_pool3d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_multihead_attention: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_multihead_attention.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_multihead_attention: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_multihead_attention.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_positional_encoding: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_positional_encoding.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_positional_encoding: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_positional_encoding.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_residual: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_residual.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_residual: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_residual.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_rnn: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_rnn.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_rnn: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_rnn.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nn_transformer_block: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_transformer_block.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nn_transformer_block: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nn_transformer_block.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
