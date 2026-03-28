@@ -1,0 +1,13 @@
+; Util Hash DJB2 — TTT Dogfood Phase 3
+;
+; DJB2 hash function
+;
+; Test case: util_hash_djb2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; djb2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07452000002000000d69

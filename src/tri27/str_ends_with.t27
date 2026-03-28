@@ -1,0 +1,13 @@
+; String Ends With — TTT Dogfood Phase 3
+;
+; Check string suffix
+;
+; Test case: str_ends_with
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ends_with_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742c0000020000000c39

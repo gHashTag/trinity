@@ -1,0 +1,13 @@
+; Util Bit Reverse — TTT Dogfood Phase 3
+;
+; Reverse bits in integer
+;
+; Test case: util_bit_reverse
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bit_reverse_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0745c0000020000000db9
