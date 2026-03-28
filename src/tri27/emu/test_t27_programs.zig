@@ -168912,3 +168912,326 @@ test "xai_shap: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "aug_label_smoothing: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "aug_label_smoothing.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+    // Note: file contains pipe-based comments not yet supported by assembler
+}
+
+test "baichuan: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "baichuan.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "boltzmann: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "boltzmann.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cal_beta: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cal_beta.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "claude_opus: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "claude_opus.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cluster_affinity: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cluster_affinity.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cluster_meanshift: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cluster_meanshift.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cluster_optics: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cluster_optics.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dbm: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dbm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "deepseek: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "deepseek.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_factor: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_factor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_ica: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_ica.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_lda: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_lda.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_mds: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_mds.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_tsne: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_tsne.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "dim_umap: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "dim_umap.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "falcon: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "falcon.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "fitz_nagumo: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fitz_nagumo.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_checkers: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_checkers.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_chess: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_chess.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_dota: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_dota.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_fortnite: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_fortnite.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_go: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_go.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_lol: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_lol.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_othello: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_othello.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "game_starcraft: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "game_starcraft.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "gpt_sonnet: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "gpt_sonnet.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "grok: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "grok.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "izhikevich: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "izhikevich.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "llama: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "llama.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "minilm: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "minilm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mistral: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mistral.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "morris_lecar: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "morris_lecar.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_layer_freeze: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_layer_freeze.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "phi3: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "phi3.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "qwen: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "qwen.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rbm: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rbm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "reticular_raphe: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "reticular_raphe.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rinzel: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rinzel.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "robotics_mpc: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "robotics_mpc.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "snn_htm: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "snn_htm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "snn_leaky: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "snn_leaky.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "snn_lsm: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "snn_lsm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "snn_stdp: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "snn_stdp.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wilson_cowan: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wilson_cowan.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "yi: verify file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "yi.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
