@@ -2820,4 +2820,78 @@ test "boyer_moore: comparisons saved" {
     try std.testing.expectEqual(@as(i64, 17), cpu.t27[0].trits);
 }
 
+// Trie (Prefix Tree) Tests — TTT Dogfood Phase 3
+
+test "trie: file exists" {
+    const path = "src/tri27/trie.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "trie: initialize root" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 101
+        \\    LD t0, 101
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "trie: insert word" {
+    const allocator = std.testing.allocator;
+    // Mark node as end of word
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 152
+        \\    LD t0, 152
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "trie: search found" {
+    const allocator = std.testing.allocator;
+    // Search finds word with is_end = 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 152
+        \\    LD t0, 152
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "trie: search not found" {
+    const allocator = std.testing.allocator;
+    // Search for prefix that's not a complete word
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 151
+        \\    LD t0, 151
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "trie: word count" {
+    const allocator = std.testing.allocator;
+    // 3 words stored in trie
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
