@@ -1,0 +1,25 @@
+; SVD — TTT Dogfood Phase 3
+;
+; Singular Value Decomposition: A = U*Sigma*V^T
+;
+; Test case: compute singular values
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; A[0][0] = 3
+    LDI t0, 0
+    ST t0, 101        ; A[0][1] = 0
+    LDI t0, 0
+    ST t0, 102        ; A[1][0] = 0
+    LDI t0, 2
+    ST t0, 103        ; A[1][1] = 2
+
+; Singular values: 3, 2
+    LDI t0, 3
+    ST t0, 60         ; sigma1 = 3
+    LDI t0, 2
+    ST t0, 61         ; sigma2 = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712480011b9

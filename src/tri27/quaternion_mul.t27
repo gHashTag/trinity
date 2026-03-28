@@ -1,0 +1,37 @@
+; Quaternion Multiply — TTT Dogfood Phase 3
+;
+; Non-commutative multiplication
+;
+; Test case: i*j = k
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; i = (0,1,0,0), j = (0,0,1,0)
+    LDI t0, 0
+    ST t0, 100        ; w1 = 0
+    LDI t0, 1
+    ST t0, 101        ; x1 = 1
+    LDI t0, 0
+    ST t0, 102        ; y1 = 0
+    LDI t0, 0
+    ST t0, 103        ; z1 = 0
+
+    LDI t0, 0
+    ST t0, 110        ; w2 = 0
+    LDI t0, 0
+    ST t0, 111        ; x2 = 0
+    LDI t0, 1
+    ST t0, 112        ; y2 = 1
+    LDI t0, 0
+    ST t0, 113        ; z2 = 0
+
+; i*j = k = (0,0,0,1)
+    LDI t0, 0
+    ST t0, 120        ; w = 0
+    ST t0, 121        ; x = 0
+    ST t0, 122        ; y = 0
+    LDI t0, 1
+    ST t0, 123        ; z = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0742530011c4

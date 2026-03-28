@@ -37,7 +37,7 @@
     ST t0, 200        ; base = 100
     LDI t0, 2
     ST t0, 201        ; delta = +2
-    LDI t0, 65535     ; -1 in two's complement
+    LDI t0, -1     ; -1 in two's complement
     ST t0, 202        ; delta = -1
     LDI t0, 4
     ST t0, 203        ; delta = +4
@@ -49,7 +49,7 @@
     ST t0, 60         ; output_len = 5
 
 ; Min delta: -1
-    LDI t0, 65535     ; -1
+    LDI t0, -1     ; -1
     ST t0, 61         ; min_delta = -1
 
 ; Max delta: 4

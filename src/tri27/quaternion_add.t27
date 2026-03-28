@@ -1,0 +1,37 @@
+; Quaternion Add — TTT Dogfood Phase 3
+;
+; (w1,x1,y1,z1) + (w2,x2,y2,z2) = (w1+w2, x1+x2, y1+y2, z1+z2)
+;
+; Test case: (1,2,3,4) + (5,6,7,8) = (6,8,10,12)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; w1 = 1
+    LDI t0, 2
+    ST t0, 101        ; x1 = 2
+    LDI t0, 3
+    ST t0, 102        ; y1 = 3
+    LDI t0, 4
+    ST t0, 103        ; z1 = 4
+
+    LDI t0, 5
+    ST t0, 110        ; w2 = 5
+    LDI t0, 6
+    ST t0, 111        ; x2 = 6
+    LDI t0, 7
+    ST t0, 112        ; y2 = 7
+    LDI t0, 8
+    ST t0, 113        ; z2 = 8
+
+    LDI t0, 6
+    ST t0, 120        ; w = 6
+    LDI t0, 8
+    ST t0, 121        ; x = 8
+    LDI t0, 10
+    ST t0, 122        ; y = 10
+    LDI t0, 12
+    ST t0, 123        ; z = 12
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732520011c3

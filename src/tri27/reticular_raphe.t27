@@ -98,7 +98,7 @@ read_next:
 
     # -----------------------------------------------
     # Check: is evaluation valid (not 0xFFFF)?
-    LDI t6, 65535            # t6 = 0xFFFF (reserved for invalid)
+    LDI t6, -1            # t6 = 0xFFFF (reserved for invalid)
     JZ t1, skip_invalid      # if PPL == 0xFFFF, skip
 
     # -----------------------------------------------
@@ -213,3 +213,4 @@ compute_final:
     MOV t0, t4               # return value
 
     HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0762550011c6

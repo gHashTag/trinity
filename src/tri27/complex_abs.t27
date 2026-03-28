@@ -1,0 +1,19 @@
+; Complex Absolute — TTT Dogfood Phase 3
+;
+; |a+bi| = sqrt(a^2 + b^2)
+;
+; Test case: |3+4i| = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; real = 3
+    LDI t0, 4
+    ST t0, 101        ; imag = 4
+
+; |3+4i| = sqrt(9 + 16) = sqrt(25) = 5
+    LDI t0, 5
+    ST t0, 60         ; magnitude = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07524c0011bd

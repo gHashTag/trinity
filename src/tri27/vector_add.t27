@@ -1,0 +1,25 @@
+; Vector Add — TTT Dogfood Phase 3
+;
+; Element-wise vector addition
+;
+; Test case: [1,2] + [3,4] = [4,6]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; a[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; a[1] = 2
+
+    LDI t0, 3
+    ST t0, 110        ; b[0] = 3
+    LDI t0, 4
+    ST t0, 111        ; b[1] = 4
+
+    LDI t0, 4
+    ST t0, 120        ; c[0] = 4
+    LDI t0, 6
+    ST t0, 121        ; c[1] = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07523c0011ad

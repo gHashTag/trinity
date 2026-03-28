@@ -25,9 +25,9 @@
 ; Root node at address 100
     LDI t0, 11        ; weight = 11 (text length)
     ST t0, 100
-    LDI t0, 65535     ; left = null
+    LDI t0, -1     ; left = null
     ST t0, 101
-    LDI t0, 65535     ; right = null
+    LDI t0, -1     ; right = null
     ST t0, 102
     LDI t0, 1         ; is_leaf = 1
     ST t0, 103
@@ -70,7 +70,7 @@
 ; Left: "Hello" (5 chars)
     LDI t0, 5
     ST t0, 200        ; left.weight = 5
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 201        ; left.left = null
     ST t0, 202        ; left.right = null
     LDI t0, 1
@@ -95,7 +95,7 @@
 ; Right: " World" (6 chars)
     LDI t0, 6
     ST t0, 210        ; right.weight = 6
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 211        ; right.left = null
     ST t0, 212        ; right.right = null
     LDI t0, 1
