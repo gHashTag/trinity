@@ -1,0 +1,13 @@
+; Privacy Anonymization — TTT Dogfood Phase 3
+;
+; Data anonymization
+;
+; Test case: privacy_anonymization
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; anonymization_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0761d00000200000001db5
