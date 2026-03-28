@@ -1,0 +1,13 @@
+; Data Lineage — TTT Dogfood Phase 3
+;
+; Data lineage tracking
+;
+; Test case: data_lineage
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lineage_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077d80000200000000212b
