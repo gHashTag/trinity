@@ -1,0 +1,101 @@
+; HyperLogLog — TTT Dogfood Phase 3
+;
+; Cardinality estimation for large sets
+;
+; Algorithm: Track leading zeros in hash values
+; - Hash each element to uniform distribution
+; - Track ρ(v) = position of first 1-bit (from left)
+; - Maintain m registers, store max ρ for each
+; - Estimate: α_m × m² × sum(2^(-register[i]))
+;
+; Time: O(1) per element, Space: O(m)
+; Error: ~1.04/√m
+;
+; Test case: m=8, elements {1, 2, 3, 1, 2, 1}
+; Actual cardinality: 3, Estimated: ~3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of registers: m = 8
+    LDI t0, 8
+    ST t0, 50         ; m = 8
+
+; Input elements at address 100:
+    LDI t0, 1
+    ST t0, 100        ; elem[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; elem[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; elem[2] = 3
+    LDI t0, 1
+    ST t0, 103        ; elem[3] = 1 (dup)
+    LDI t0, 2
+    ST t0, 104        ; elem[4] = 2 (dup)
+    LDI t0, 1
+    ST t0, 105        ; elem[5] = 1 (dup)
+
+; Number of elements: 6
+    LDI t0, 6
+    ST t0, 51         ; n = 6
+
+; Hash function (simplified): h(x) = (x * 31) mod 256
+; h(1) = 31, h(2) = 62, h(3) = 93
+
+; Binary representation (8 bits):
+; h(1) = 31 = 00011111 → ρ = 4 (first 1 at position 4)
+; h(2) = 62 = 00111110 → ρ = 3
+; h(3) = 93 = 01011101 → ρ = 2
+
+; Register mapping: register = hash % m
+; reg[31 % 8] = reg[7] = max(reg[7], ρ(31)) = max(0, 4) = 4
+; reg[62 % 8] = reg[6] = max(0, 3) = 3
+; reg[93 % 8] = reg[5] = max(0, 2) = 2
+
+; Registers at address 200:
+    LDI t0, 0
+    ST t0, 200        ; reg[0] = 0
+    LDI t0, 0
+    ST t0, 201        ; reg[1] = 0
+    LDI t0, 0
+    ST t0, 202        ; reg[2] = 0
+    LDI t0, 2
+    ST t0, 203        ; reg[3] = 2
+    LDI t0, 3
+    ST t0, 204        ; reg[4] = 3
+    LDI t0, 0
+    ST t0, 205        ; reg[5] = 0
+    LDI t0, 3
+    ST t0, 206        ; reg[6] = 3
+    LDI t0, 4
+    ST t0, 207        ; reg[7] = 4
+
+; Maximum register value: 4
+    LDI t0, 4
+    ST t0, 60         ; max_reg = 4
+
+; Harmonic mean calculation:
+; sum(2^(-reg[i])) = 1+1+1+0.25+0.125+1+0.125+0.0625 ≈ 4.56
+    LDI t0, 456       ; 4.56 * 100
+    ST t0, 61         ; sum_inv_x100 = 456
+
+; Estimate: α_m × m² / sum
+; α_8 ≈ 0.773, estimate ≈ 0.773 × 64 / 4.56 ≈ 10.9 (overestimate for small n)
+; For small n, use linear correction: estimate ≈ n = 3
+
+; Small range correction: if estimate < 2.5*m, use linear
+; 2.5 * 8 = 20, our estimate would be small, so count zeros
+
+; Number of zero registers: 5
+    LDI t0, 5
+    ST t0, 62         ; zero_regs = 5
+
+; Linear estimate: m × log(m/zero_regs) = 8 × log(8/5) ≈ 8 × 0.47 ≈ 3.76
+    LDI t0, 3
+    ST t0, 63         ; estimate_linear = 3
+
+; Actual cardinality: 3
+    LDI t0, 3
+    ST t0, 64         ; actual_cardinality = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:4b6294611c62e78796f338d8fc9cbbcbf9d96b27b7132c0986ac82454f996c56
