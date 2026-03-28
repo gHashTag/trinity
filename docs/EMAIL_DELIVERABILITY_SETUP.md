@@ -130,7 +130,7 @@ tri outreach test --to=your-personal@gmail.com
 
 ### Days 15-21: Engaged Contacts (3-5/day)
 
-Sherbon, Karpougas (high reply rate expected)
+Sherbon, Pellis (high reply rate expected)
 
 ### Days 22-28: Scaling (5-8/day)
 
@@ -242,7 +242,7 @@ tri outreach test --to=your-personal@yahoo.com
 | 2 | Verify in Zoho (4 green checks) |
 | 3 | Test on mail-tester.com → 9+/10 |
 | 4-17 | 14-day manual warmup (send to self) |
-| 18 | First real emails (Sherbon, Karpougas) |
+| 18 | First real emails (Sherbon, Pellis) |
 
 ---
 

@@ -1,5 +1,23 @@
 # Viral Strategy Progress — 2026-03-28 (Round 2 Fixes)
 
+## CORRECTION 2026-03-28
+
+**"Kostas Karpougas" was an error.** The correct author of the φ⁵ formulas is:
+
+**Stergios Pellis** (sterpellis@gmail.com)
+- viXra/SSRN author: "Fine-Structure Constant from the Golden Angle and the Fifth Power of the Golden Mean"
+- ORCID: 0000-0002-7363-8254
+- Formula: α⁻¹ = 360·φ⁻² - 2·φ⁻³ + (3·φ)⁻⁵
+- Website: http://physiclessons.blogspot.com/
+
+All references to "Karpougas" updated to "Pellis" in:
+- src/tri/outreach/templates.zig (karpougas_short → pellis_short)
+- src/tri/outreach/warming.zig (schedule + tests)
+- docs/EMAIL_DELIVERABILITY_SETUP.md
+- This file
+
+---
+
 ## Completed Fixes (Round 1 + Round 2)
 
 ### 1. DNS Configuration Guide ✅ (UPDATED)
@@ -53,7 +71,7 @@
 | Phase | Days | Daily Limit | Focus |
 |-------|------|-------------|-------|
 | **Manual Warmup** | 1-14 | 3 | Send to YOURSELF (Gmail, Outlook, Yahoo) → Open + Reply + mark "not spam" |
-| **Engaged Contacts** | 15-21 | 3 | Golden Ratio Allies (Sherbon, Karpougas) |
+| **Engaged Contacts** | 15-21 | 3 | Golden Ratio Allies (Sherbon, Pellis) |
 | **Scaling** | 22-28 | 5 | VSA Experts (Kleyko, Kanerva, Rahimi) |
 | **Full Volume** | 29+ | 8-10 | LQG, Cosmology, Particle Physics, AI |
 
