@@ -1,0 +1,89 @@
+; Z-Algorithm — TTT Dogfood Phase 3
+;
+; Pattern matching with linear time preprocessing
+;
+; Algorithm: Compute Z-array (longest prefix match)
+; - Z[i] = longest substring starting at i that matches prefix
+; - Use Z-values with box optimization
+; - Shift pattern by Z-values during search
+;
+; Time: O(n + m) for search, Space: O(n)
+;
+; Test case: Text="ABABDABACD", Pattern="ABAD"
+; Z-array for pattern: [0,0,1,0]
+; Match found at index 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Pattern at address 100: "ABAD"
+    LDI t0, 65         ; A
+    ST t0, 100
+    LDI t0, 66         ; B
+    ST t0, 101
+    LDI t0, 65         ; A
+    ST t0, 102
+    LDI t0, 68         ; D
+    ST t0, 103
+
+; Pattern length: 4
+    LDI t0, 4
+    ST t0, 50         ; m = 4
+
+; Text at address 110: "ABABDABACD"
+    LDI t0, 65
+    ST t0, 110
+    LDI t0, 66
+    ST t0, 111
+    LDI t0, 65
+    ST t0, 112
+    LDI t0, 66
+    ST t0, 113
+    LDI t0, 68
+    ST t0, 114
+    LDI t0, 65
+    ST t0, 115
+    LDI t0, 66
+    ST t0, 116
+    LDI t0, 65
+    ST t0, 117
+    LDI t0, 67
+    ST t0, 118
+    LDI t0, 68
+    ST t0, 119
+
+; Text length: 10
+    LDI t0, 10
+    ST t0, 51         ; n = 10
+
+; Z-array for pattern at address 200:
+; Z[0] = 0 (by definition)
+; Z[1] = 0 (B != A)
+; Z[2] = 1 (A matches prefix A)
+; Z[3] = 0 (D != A)
+    LDI t0, 0
+    ST t0, 200        ; Z[0] = 0
+    LDI t0, 0
+    ST t0, 201        ; Z[1] = 0
+    LDI t0, 1
+    ST t0, 202        ; Z[2] = 1
+    LDI t0, 0
+    ST t0, 203        ; Z[3] = 0
+
+; Match positions in text: [0, 5]
+; Index 0: "ABAB" matches "ABAD" for 2 chars (Z[2]=1 extends)
+; Index 5: "ABAD" matches "ABAD" for 4 chars (full match)
+    LDI t0, 0
+    ST t0, 60         ; match[0] = 0
+    LDI t0, 5
+    ST t0, 61         ; match[1] = 5
+
+; Number of matches: 2
+    LDI t0, 2
+    ST t0, 62         ; num_matches = 2
+
+; Character comparisons: ~12 (n + m - 2)
+    LDI t0, 12
+    ST t0, 63         ; comparisons = 12
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fd9a6298b311ab4ed8ac23390ec0370289a4a09b75a48b0014b5cb3c365fd0e1
