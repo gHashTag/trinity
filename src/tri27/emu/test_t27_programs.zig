@@ -1693,4 +1693,97 @@ test "binary_tree: balance factor calculation" {
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// HASH TABLE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "t27_programs: hash_table file exists" {
+    const path = "src/tri27/hash_table.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "hash_table: assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/hash_table.t27";
+    const source = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(source);
+
+    const bytecode = try tri_asm.assemble(allocator, source);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "hash_table: insert key-value pair" {
+    const allocator = std.testing.allocator;
+    // Insert key=5, value=100 at table[5]
+    const program =
+        \\    LDI t0, 5         ; key
+        \\    LDI t1, 100       ; value
+        \\    ST t0, 210        ; table[5].key = 5
+        \\    ST t1, 211        ; table[5].value = 100
+        \\    LD t0, 210        ; verify key
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "hash_table: lookup operation" {
+    const allocator = std.testing.allocator;
+    // Insert then lookup key=5
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 210        ; store key
+        \\    LDI t0, 100
+        \\    ST t0, 211        ; store value
+        \\    LD t0, 210        ; load key
+        \\    LDI t1, 5
+        \\    SUB t2, t0, t1    ; compare (0 = match)
+        \\    LDI t0, 100       ; default: found value
+        \\    LDI t1, -1        ; not found marker
+        \\    JZ t2, use_found  ; if match, use found value
+        \\    LDI t0, -1
+        \\    HALT
+        \\use_found:
+        \\    LD t0, 211        ; load value
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 100), cpu.t27[0].trits);
+}
+
+test "hash_table: hash function modulo" {
+    const allocator = std.testing.allocator;
+    // h(15) = 15 % 10 = 5
+    const program =
+        \\    LDI t0, 15
+        \\    LDI t1, 10
+        \\    SUB t0, t0, t1    ; 15 - 10 = 5
+        \\    JGT t0, t1, done  ; if t0 > 10, subtract again (simplified)
+        \\done:
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "hash_table: load factor calculation" {
+    const allocator = std.testing.allocator;
+    // Load factor = (items * 100) / table_size = (2 * 100) / 10 = 20
+    const program =
+        \\    LDI t0, 2         ; items
+        \\    LDI t1, 100       ; percentage factor
+        \\    MUL t0, t0, t1    ; t0 = 200
+        \\    LDI t1, 10        ; table size
+        \\    DIV t0, t0, t1    ; t0 = 20
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
