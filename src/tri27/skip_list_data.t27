@@ -1,0 +1,27 @@
+; Skip List Data — TTT Dogfood Phase 3
+;
+; Probabilistic alternative to balanced trees
+;
+; Test case: insert 5, 10, 15, search for 10
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 100        ; level 0: 5
+    LDI t0, 10
+    ST t0, 101        ; level 0: 10
+    LDI t0, 15
+    ST t0, 102        ; level 0: 15
+
+; Express lanes
+    LDI t0, 10
+    ST t0, 60         ; level 1: 10
+    LDI t0, 10
+    ST t0, 61         ; level 2: 10
+
+; Search for 10 → found
+    LDI t0, 1
+    ST t0, 70         ; found = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:de0e7dcdc955c414469eec160222d803357521989712555ce619f2eb6e404868

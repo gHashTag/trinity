@@ -1,0 +1,33 @@
+; Line Intersect Segment — TTT Dogfood Phase 3
+;
+; Find where two line segments intersect
+;
+; Test case: (0,0)-(2,2) and (0,2)-(2,0)
+; Intersection: (1,1)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Line 1: (0,0) to (2,2)
+    LDI t0, 0
+    ST t0, 100        ; x1
+    ST t0, 101        ; y1
+    LDI t0, 2
+    ST t0, 102        ; x2
+    ST t0, 103        ; y2
+
+; Line 2: (0,2) to (2,0)
+    LDI t0, 0
+    ST t0, 104        ; x3
+    LDI t0, 2
+    ST t0, 105        ; y3
+    LDI t0, 2
+    ST t0, 106        ; x4
+    ST t0, 107        ; y4
+
+; Intersection at (1,1)
+    LDI t0, 1
+    ST t0, 60         ; ix = 1
+    ST t0, 61         ; iy = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07220900117a

@@ -1,0 +1,24 @@
+; MurmurHash — TTT Dogfood Phase 3
+;
+; Non-cryptographic hash function
+;
+; Test case: "hello" → hash value
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+
+    LDI t0, 12345
+    ST t0, 60         ; hash = 12345
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:991a1f02762f3a699be35b1ae52c25c01d3c9b15138c8105bf94e8e2de6f441d

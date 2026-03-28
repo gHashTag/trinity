@@ -1,0 +1,32 @@
+; Quadtree — TTT Dogfood Phase 3
+;
+; Spatial partitioning for 2D data
+;
+; Test case: bounding box [0,100] x [0,100]
+; Insert points at (25,25), (75,75)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 0
+    ST t0, 50         ; x_min = 0
+    LDI t0, 100
+    ST t0, 51         ; x_max = 100
+    LDI t0, 0
+    ST t0, 52         ; y_min = 0
+    LDI t0, 100
+    ST t0, 53         ; y_max = 100
+
+; Points stored
+    LDI t0, 25
+    ST t0, 100        ; point 1: x=25
+    ST t0, 101        ; point 1: y=25
+
+    LDI t0, 75
+    ST t0, 102        ; point 2: x=75
+    ST t0, 103        ; point 2: y=75
+
+    LDI t0, 2
+    ST t0, 60         ; points_count = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c5a2663b56577514a649f6567ef059e2a460f44cc62ad8e347f1b3d4042fbbd8

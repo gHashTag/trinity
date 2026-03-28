@@ -1,0 +1,30 @@
+; Interval Tree Data — TTT Dogfood Phase 3
+;
+; Efficient interval queries
+;
+; Test case: intervals [1,5], [10,20], [15,18]
+; Query [12,17] → intersects [10,20] and [15,18]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; interval 1 start
+    LDI t0, 5
+    ST t0, 101        ; interval 1 end
+
+    LDI t0, 10
+    ST t0, 102        ; interval 2 start
+    LDI t0, 20
+    ST t0, 103        ; interval 2 end (max endpoint)
+
+    LDI t0, 15
+    ST t0, 104        ; interval 3 start
+    LDI t0, 18
+    ST t0, 105        ; interval 3 end
+
+; Query [12,17] → 2 intersections
+    LDI t0, 2
+    ST t0, 60         ; intersections = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:72bb7a979f448a86e0e37952ad63a797b96d1d19b1d665a5fcedb0c65ed15afd

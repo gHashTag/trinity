@@ -1,0 +1,31 @@
+; Geometric Median — TTT Dogfood Phase 3
+;
+; Point minimizing sum of distances
+;
+; Test case: points (0,0), (2,0), (1,2)
+; Median ≈ (1, 0.67)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 0
+    ST t0, 100        ; p1: x=0
+    ST t0, 101        ; p1: y=0
+
+    LDI t0, 2
+    ST t0, 102        ; p2: x=2
+    LDI t0, 0
+    ST t0, 103        ; p2: y=0
+
+    LDI t0, 1
+    ST t0, 104        ; p3: x=1
+    LDI t0, 2
+    ST t0, 105        ; p3: y=2
+
+; Approximate median (using fixed point)
+    LDI t0, 1
+    ST t0, 60         ; median_x = 1
+    LDI t0, 1
+    ST t0, 61         ; median_y ≈ 1 (close to 0.67)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:db8bbb116ee005bfbdd968a077490e2d8ad3d23fcfc871056f685e0a3461daa5

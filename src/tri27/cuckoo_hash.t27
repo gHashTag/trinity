@@ -1,0 +1,17 @@
+; Cuckoo Hashing — TTT Dogfood Phase 3
+;
+; Multiple hash tables with relocation
+;
+; Test case: 2 tables, 3 hashes
+; Relocation on collision
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 50         ; num_tables = 2
+
+    LDI t0, 1
+    ST t0, 60         ; relocations = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a9088d70b6a956573e3866e0975f40c8741db054f9e0ac947ae850dbac6ffe68

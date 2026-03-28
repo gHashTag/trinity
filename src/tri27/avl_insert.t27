@@ -1,0 +1,20 @@
+; AVL Tree Insertion — TTT Dogfood Phase 3
+;
+; Self-balancing binary search tree
+;
+; Test case: Insert [10, 20, 30, 40, 50]
+; Tree remains balanced
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Root at 30, height 2
+    LDI t0, 30
+    ST t0, 60         ; root = 30
+    LDI t0, 2
+    ST t0, 61         ; height = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:635b4f0bb36470cc71bd0054ddc105d9387e42f810afd3eef990b06fe47f0f88

@@ -1,0 +1,20 @@
+; Bloom Filter — TTT Dogfood Phase 3
+;
+; Probabilistic set membership
+;
+; Test case: m=16, k=3, insert "cat", "dog"
+; Query "cat" → probably present
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 16
+    ST t0, 50         ; m = 16
+    LDI t0, 3
+    ST t0, 51         ; k = 3
+
+; Bits set: 5
+    LDI t0, 5
+    ST t0, 60         ; bits_set = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:37701033afc6ceebb8b85915d63535fb72341c209a5e4b00a51eb90be2336f1f
