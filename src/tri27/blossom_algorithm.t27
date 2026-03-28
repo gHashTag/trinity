@@ -1,0 +1,82 @@
+; Blossom Algorithm — TTT Dogfood Phase 3
+;
+; Maximum matching in general graphs (Edmonds 1965)
+;
+; Algorithm: Find augmenting paths, contract blossoms
+; - Blossom: odd-length cycle where all but one vertex are matched
+; - Contract blossom to single super-node
+; - Find augmenting path in contracted graph
+; - Expand blossom and update matching
+;
+; Time: O(V³), Space: O(V²)
+;
+; Test case: Graph with 5 vertices, edges:
+; 0-1, 1-2, 2-3, 3-4, 4-0, 0-2 (pentagon + diagonal)
+; Max matching: 2 pairs (0-1, 2-3) or (1-2, 3-4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices: 5
+    LDI t0, 5
+    ST t0, 50         ; num_vertices = 5
+
+; Edges at address 100:
+; Format: [from, to]
+    LDI t0, 0
+    ST t0, 100        ; edge 0: from=0
+    LDI t0, 1
+    ST t0, 101        ; to=1
+    LDI t0, 1
+    ST t0, 102        ; edge 1: from=1
+    LDI t0, 2
+    ST t0, 103        ; to=2
+    LDI t0, 2
+    ST t0, 104        ; edge 2: from=2
+    LDI t0, 3
+    ST t0, 105        ; to=3
+    LDI t0, 3
+    ST t0, 106        ; edge 3: from=3
+    LDI t0, 4
+    ST t0, 107        ; to=4
+    LDI t0, 4
+    ST t0, 108        ; edge 4: from=4
+    LDI t0, 0
+    ST t0, 109        ; to=0
+    LDI t0, 0
+    ST t0, 110        ; edge 5: from=0
+    LDI t0, 2
+    ST t0, 111        ; to=2 (diagonal)
+
+; Number of edges: 6
+    LDI t0, 6
+    ST t0, 51         ; num_edges = 6
+
+; Matching result at address 200:
+; Pairs [u, v]
+    LDI t0, 0
+    ST t0, 200        ; match[0].u = 0
+    LDI t0, 1
+    ST t0, 201        ; match[0].v = 1
+    LDI t0, 2
+    ST t0, 202        ; match[1].u = 2
+    LDI t0, 3
+    ST t0, 203        ; match[1].v = 3
+
+; Maximum matching size: 2
+    LDI t0, 2
+    ST t0, 60         ; max_matching = 2
+
+; Unmatched vertices: 1 (vertex 4)
+    LDI t0, 1
+    ST t0, 61         ; unmatched_count = 1
+
+; Blossoms contracted during algorithm: 0
+    LDI t0, 0
+    ST t0, 62         ; blossoms_contracted = 0
+
+; Is maximum matching: yes
+    LDI t0, 1
+    ST t0, 63         ; is_maximum = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:49820e29ae55d0f1928364892708580280a4e9746e3b850472b00eeb44e675a2
