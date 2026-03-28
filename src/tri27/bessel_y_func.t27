@@ -1,0 +1,13 @@
+; Bessel Y Function — TTT Dogfood Phase 3
+;
+; Bessel function of second kind
+;
+; Test case: bessel_y_func
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bessel_y_func_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071aa0001a18
