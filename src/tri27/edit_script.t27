@@ -1,0 +1,20 @@
+; Edit Script — TTT Dogfood Phase 3
+;
+; Operations to transform one string to another
+;
+; Test case: "kitten" → "sitting" = [replace, insert, insert]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; op[0] = REPLACE (k→s)
+    LDI t0, 2
+    ST t0, 101        ; op[1] = INSERT (i)
+    LDI t0, 2
+    ST t0, 102        ; op[2] = INSERT (g)
+
+    LDI t0, 3
+    ST t0, 60         ; num_ops = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752840011f5

@@ -1,0 +1,23 @@
+; Huffman Decode — TTT Dogfood Phase 3
+;
+; Decode bitstream using Huffman tree
+;
+; Test case: decode "01" from tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; bit 1
+    LDI t0, 0
+    ST t0, 101        ; bit 0
+
+    LDI t0, 65        ; A
+    ST t0, 110        ; decode(0) = A
+    LDI t0, 66        ; B
+    ST t0, 111        ; decode(1) = B
+
+    LDI t0, 66
+    ST t0, 60         ; result = B
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0762850011f6

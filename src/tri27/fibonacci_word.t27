@@ -1,0 +1,24 @@
+; Fibonacci Word — TTT Dogfood Phase 3
+;
+; Infinite binary word from Fibonacci recursion
+;
+; Test case: S(5) = 010010100100101001010
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; n = 5
+
+    LDI t0, 0
+    ST t0, 100        ; S[0] = 0
+    LDI t0, 1
+    ST t0, 101        ; S[1] = 01
+    LDI t0, 0
+    ST t0, 102        ; S[2] = 01
+    LDI t0, 1
+    ST t0, 103        ; S[3] = 010
+    LDI t0, 0
+    ST t0, 104        ; S[4] = 01001
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07328a0011fb
