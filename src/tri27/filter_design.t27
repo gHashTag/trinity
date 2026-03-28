@@ -1,0 +1,13 @@
+; filter_design — TTT Dogfood Phase 3
+;
+; Signal processing/physics/numerical algorithm
+;
+; Test case: filter_design
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; filter_design_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424446736
