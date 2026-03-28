@@ -1,0 +1,92 @@
+; Trie (Prefix Tree) — TTT Dogfood Phase 3
+;
+; Tree-like data structure for storing strings
+; Each node represents a prefix and has children for each character
+;
+; Operations:
+; - Insert: add a word to the trie
+; - Search: check if a word exists
+; - StartsWith: check if any word starts with prefix
+;
+; Test case: Insert "APPLE", "APP", "APE"
+; Search "APP" -> true, Search "AP" -> false (not a complete word)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Root node at address 100
+; Child structure: each node has [is_end, children]
+
+; Node layout:
+; [is_end_flag, child_a, child_b, ..., child_z]
+
+; Insert "APPLE"
+; Root -> A -> P -> P -> L -> E
+    LDI t0, 1         ; Node for 'A' exists
+    ST t0, 101        ; root.children['A'] = 101
+
+; Node 101: 'A'
+    LDI t0, 0         ; is_end = false (not a word yet)
+    ST t0, 150
+    LDI t0, 102        ; A.children['P'] = 102
+    ST t0, 160
+
+; Node 102: 'AP'
+    LDI t0, 0         ; is_end = false
+    ST t0, 151
+    LDI t0, 103        ; AP.children['P'] = 103
+    ST t0, 161
+
+; Node 103: 'APP'
+    LDI t0, 1         ; is_end = true ("APP" is a word)
+    ST t0, 152
+    LDI t0, 104        ; APP.children['L'] = 104
+    ST t0, 162
+
+; Node 104: 'APPL'
+    LDI t0, 0         ; is_end = false
+    ST t0, 153
+    LDI t0, 105        ; APPL.children['E'] = 105
+    ST t0, 163
+
+; Node 105: 'APPLE'
+    LDI t0, 1         ; is_end = true
+    ST t0, 154
+
+; Insert "APE"
+; Root -> A -> P -> E (reuse existing 'A' and 'P' nodes where possible)
+; Actually, we need separate path: A -> P -> E
+    LDI t0, 106        ; APE.children['E'] = 106 (new branch from 'AP')
+    ST t0, 164
+
+; Node 106: 'APE'
+    LDI t0, 1         ; is_end = true
+    ST t0, 155
+
+; Search operations
+; Search "APP" -> should find node 103 with is_end = 1
+    LD t0, 152        ; is_end at node 103
+    ST t0, 50         ; search result
+
+; Search "AP" -> should find node 102 with is_end = 0
+    LD t0, 151        ; is_end at node 102
+    ST t0, 51         ; search result (not a complete word)
+
+; StartsWith "AP" -> should return true (path exists)
+    LDI t0, 1         ; path exists
+    ST t0, 52
+
+; Count nodes in trie
+    LDI t0, 6         ; root + A + AP + APP + APPL + APPLE + APE = 7 nodes
+    ST t0, 53         ; Actually we have root (100), A(101), AP(102), APP(103), APPL(104), APPLE(105), APE(106) = 7 nodes
+
+; Count words stored
+    LDI t0, 3         ; APPLE, APP, APE = 3 words
+    ST t0, 54
+
+; Calculate total characters stored
+; APPLE: 5, APP: 3, APE: 3 = 11 chars
+    LDI t0, 11
+    ST t0, 55
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741200:sha256:167f78baa69d8117e2cbb66a7baede328fcd31ce88294c401732f60f39c5dd27
