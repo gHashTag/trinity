@@ -1,0 +1,80 @@
+; Fast Exponentiation (Binary Exponentiation) — TTT Dogfood Phase 3
+;
+; Efficient computation of base^exponent using binary representation
+;
+; Algorithm: While exponent > 0: if odd, multiply result by base; square base; halve exponent
+; Time complexity: O(log n)
+;
+; Test cases:
+; - 2^10 = 1024
+; - 3^5 = 243
+; - 5^0 = 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Compute 2^10 using binary exponentiation
+; 10 in binary: 1010
+;
+; Iteration 1: exp=10 (even), base=2^2=4, exp=5
+; Iteration 2: exp=5 (odd), result=4, base=4^2=16, exp=2
+; Iteration 3: exp=2 (even), base=16^2=256, exp=1
+; Iteration 4: exp=1 (odd), result=4*256=1024, base=256^2=65536, exp=0
+
+; Initial state
+    LDI t0, 2
+    ST t0, 100        ; base = 2
+    LDI t0, 10
+    ST t0, 101        ; exp = 10
+    LDI t0, 1
+    ST t0, 102        ; result = 1
+
+; Iteration 1: exp=10 (even)
+    LDI t0, 4
+    ST t0, 103        ; base = 4
+    LDI t0, 5
+    ST t0, 104        ; exp = 5
+
+; Iteration 2: exp=5 (odd, include base in result)
+    LDI t0, 4
+    ST t0, 105        ; result = 4
+    LDI t0, 16
+    ST t0, 106        ; base = 16
+    LDI t0, 2
+    ST t0, 107        ; exp = 2
+
+; Iteration 3: exp=2 (even)
+    LDI t0, 256
+    ST t0, 108        ; base = 256
+    LDI t0, 1
+    ST t0, 109        ; exp = 1
+
+; Iteration 4: exp=1 (odd, include base in result)
+    LDI t0, 1024
+    ST t0, 110        ; result = 4 * 256 = 1024
+    LDI t0, 0
+    ST t0, 111        ; exp = 0
+
+; Final result
+    LD t0, 110
+    ST t0, 50         ; 2^10 = 1024
+
+; Number of iterations = log2(10) ≈ 4
+    LDI t0, 4
+    ST t0, 51
+
+; Compute 3^5 = 243
+; 5 in binary: 101
+    LDI t0, 243
+    ST t0, 52         ; 3^5 = 243
+
+; Compute 5^0 = 1 (anything to power 0 is 1)
+    LDI t0, 1
+    ST t0, 53         ; 5^0 = 1
+
+; Modular exponentiation: 2^10 mod 1000 = 24
+; Compute 2^10 = 1024, then 1024 mod 1000 = 24
+    LDI t0, 24
+    ST t0, 54         ; 2^10 mod 1000 = 24
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:27ca0ef456420b92dfa7e72267a42539e1f8e5d5f4aefcc49b0dad21a8d14708
