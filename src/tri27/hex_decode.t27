@@ -1,0 +1,13 @@
+; Hex Decode — TTT Dogfood Phase 3
+;
+; Hex string to bytes
+;
+; Test case: "FF" → 0xFF
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; output_len = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07131500128b

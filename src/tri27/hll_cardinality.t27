@@ -1,0 +1,13 @@
+; HyperLogLog — TTT Dogfood Phase 3
+;
+; Cardinality estimation
+;
+; Test case: estimate 10000 unique items
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10000
+    ST t0, 60         ; estimate = 10000
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071321002297

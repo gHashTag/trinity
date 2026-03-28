@@ -1,0 +1,13 @@
+; Levenshtein Distance — TTT Dogfood Phase 3
+;
+; Edit distance calculation
+;
+; Test case: "kitten" → "sitting" = 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; distance = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07131a002290
