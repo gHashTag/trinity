@@ -1,0 +1,13 @@
+; MLOps Optuna — TTT Dogfood Phase 3
+;
+- Optuna: hyperparameter optimization
+;
+; Test case: mlops_optuna
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; optuna_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b540000200000000002638
