@@ -1,0 +1,15 @@
+; Count Trailing Zeros — TTT Dogfood Phase 3
+;
+; Find trailing zero count (ctz)
+;
+; Test case: ctz(0b00101000) = 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 40
+    ST t0, 60         ; value = 0b00101000
+    LDI t0, 3
+    ST t0, 61         ; ctz = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712ea001261

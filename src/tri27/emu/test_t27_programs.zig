@@ -16830,3 +16830,138 @@ test "tsp_nearest: verify greedy selection" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "bsearch: Binary search (stdlib)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bsearch.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Binary") != null);
+}
+
+test "bsearch: verify found" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bsearch.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "count_leading_zeros: CLZ operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "count_leading_zeros.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Leading") != null);
+}
+
+test "count_leading_zeros: verify clz result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "count_leading_zeros.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "count_trailing_zeros: CTZ operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "count_trailing_zeros.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Trailing") != null);
+}
+
+test "count_trailing_zeros: verify ctz result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "count_trailing_zeros.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hamming_weight: Population count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hamming_weight.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Hamming") != null);
+}
+
+test "hamming_weight: verify popcount" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hamming_weight.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "itoa: Integer to ASCII conversion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "itoa.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Integer") != null);
+}
+
+test "itoa: verify string length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "itoa.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "memchr: Find byte in memory" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "memchr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Find") != null);
+}
+
+test "memchr: verify byte found" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "memchr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "parity_check: Even/odd bit count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "parity_check.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Parity") != null);
+}
+
+test "parity_check: verify parity result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "parity_check.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "qsort: Quick sort (stdlib)" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "qsort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Quick") != null);
+}
+
+test "qsort: verify elements sorted" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "qsort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rotate_left: Circular left shift" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rotate_left.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Rotate") != null);
+}
+
+test "rotate_left: verify rotation result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rotate_left.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}

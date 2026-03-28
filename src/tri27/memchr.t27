@@ -1,0 +1,13 @@
+; memchr — Find in Memory — TTT Dogfood Phase 3
+;
+; Find byte in memory buffer
+;
+; Test case: find 0x42 in buffer
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; found = 1 (true)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712df001256

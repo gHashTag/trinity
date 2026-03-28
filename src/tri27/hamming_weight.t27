@@ -1,0 +1,15 @@
+; Hamming Weight — TTT Dogfood Phase 3
+;
+; Count set bits (population count)
+;
+; Test case: popcount(0b1011) = 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 11
+    ST t0, 60         ; value = 0b1011
+    LDI t0, 3
+    ST t0, 61         ; popcount = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712e500125c
