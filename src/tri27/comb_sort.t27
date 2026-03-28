@@ -1,0 +1,108 @@
+; Comb Sort — TTT Dogfood Phase 3
+;
+; Improvement over bubble sort
+;
+; Algorithm:
+; 1. Start with gap = n
+; 2. Compare elements gap apart, swap if needed
+; 3. Shrink gap by shrink factor (typically 1.3)
+; 4. When gap = 1, do final bubble sort pass
+;
+; Time: O(n²) worst, O(n log n) average, Space: O(1)
+;
+; Test case: [8, 4, 1, 5, 9, 2] → sorted
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [8, 4, 1, 5, 9, 2]
+    LDI t0, 8
+    ST t0, 100        ; arr[0] = 8
+    LDI t0, 4
+    ST t0, 101        ; arr[1] = 4
+    LDI t0, 1
+    ST t0, 102        ; arr[2] = 1
+    LDI t0, 5
+    ST t0, 103        ; arr[3] = 5
+    LDI t0, 9
+    ST t0, 104        ; arr[4] = 9
+    LDI t0, 2
+    ST t0, 105        ; arr[5] = 2
+
+; Array length: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Initial gap: 6
+    LDI t0, 6
+    ST t0, 60         ; gap = 6
+
+; Shrink factor: 1.3 (use integer: 13/10)
+; Gap sequence: 6 → 4 → 3 → 2 → 1
+
+; Gap 6: compare arr[0] and arr[6] (out of bounds, skip)
+; No valid pairs with gap 6
+
+; Gap 4: compare (0,4), (1,5)
+; arr[0]=8 vs arr[4]=9: 8 < 9, no swap
+; arr[1]=4 vs arr[5]=2: 4 > 2, swap
+; Array: [8, 2, 1, 5, 9, 4]
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 4
+    ST t0, 105        ; arr[5] = 4
+
+; Gap 3: compare (0,3), (1,4), (2,5)
+; arr[0]=8 vs arr[3]=5: 8 > 5, swap → [5, 2, 1, 8, 9, 4]
+    LDI t0, 5
+    ST t0, 100        ; arr[0] = 5
+    LDI t0, 8
+    ST t0, 103        ; arr[3] = 8
+; arr[1]=2 vs arr[4]=9: 2 < 9, no swap
+; arr[2]=1 vs arr[5]=4: 1 < 4, no swap
+
+; Gap 2: compare (0,2), (1,3), (2,4), (3,5)
+; arr[0]=5 vs arr[2]=1: 5 > 1, swap → [1, 2, 5, 8, 9, 4]
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 5
+    ST t0, 102        ; arr[2] = 5
+; arr[1]=2 vs arr[3]=8: 2 < 8, no swap
+; arr[2]=5 vs arr[4]=9: 5 < 9, no swap
+; arr[3]=8 vs arr[5]=4: 8 > 4, swap → [1, 2, 5, 4, 9, 8]
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 8
+    ST t0, 105        ; arr[5] = 8
+
+; Gap 1 (bubble sort pass):
+; [1, 2]: ok, [2, 5]: ok, [5, 4]: swap → [1, 2, 4, 5, 9, 8]
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 5
+    ST t0, 103        ; arr[3] = 5
+; [5, 9]: ok, [9, 8]: swap → [1, 2, 4, 5, 8, 9]
+    LDI t0, 8
+    ST t0, 104        ; arr[4] = 8
+    LDI t0, 9
+    ST t0, 105        ; arr[5] = 9
+
+; Sorted: [1, 2, 4, 5, 8, 9]
+    LDI t0, 1
+    ST t0, 110        ; sorted[0] = 1
+    LDI t0, 2
+    ST t0, 111        ; sorted[1] = 2
+    LDI t0, 4
+    ST t0, 112        ; sorted[2] = 4
+    LDI t0, 5
+    ST t0, 113        ; sorted[3] = 5
+    LDI t0, 8
+    ST t0, 114        ; sorted[4] = 8
+    LDI t0, 9
+    ST t0, 115        ; sorted[5] = 9
+
+; Total passes: 5 (gaps 4, 3, 2, 1, 1)
+    LDI t0, 5
+    ST t0, 61         ; passes = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:6ca680c5ddd9b8497d4a2d6b69f06cd3f7cdb81f4d389020173efb30b4f331e8

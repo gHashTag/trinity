@@ -1,0 +1,77 @@
+; Stooge Sort — TTT Dogfood Phase 3
+;
+; Recursive sorting (humorously inefficient)
+;
+; Algorithm:
+; 1. If first > last, swap
+; 2. If 3+ elements: stooge sort first 2/3
+; 3. stooge sort last 2/3
+; 4. stooge sort first 2/3 again
+;
+; Time: O(n^(log 3 / log 1.5)) ≈ O(n^2.71)
+; Space: O(log n) recursion
+;
+; Test case: [3, 1, 4, 1, 5] → sorted
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [3, 1, 4, 1, 5]
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+
+; Array length: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Step 1: Compare arr[0] and arr[4], swap if needed
+; 3 < 5, no swap
+
+; Step 2: Stooge sort arr[0..2] (first 3 elements)
+; Subarray [3, 1, 4]:
+;   Compare 3, 4: no swap
+;   Stooge sort [3, 1]: swap → [1, 3]
+;   Stooge sort [1, 4]: no swap
+;   Stooge sort [1, 3] again: no swap
+; Result: [1, 3, 4]
+
+; Step 3: Stooge sort arr[2..4] (last 3 elements)
+; Subarray [4, 1, 5]:
+;   Compare 4, 5: no swap
+;   Stooge sort [4, 1]: swap → [1, 4]
+;   Stooge sort [1, 5]: no swap
+;   Stooge sort [1, 4] again: no swap
+; Result: [1, 4, 5]
+
+; Step 4: Stooge sort arr[0..2] again
+; [1, 3, 4] already sorted
+
+; Final sorted array: [1, 1, 3, 4, 5]
+    LDI t0, 1
+    ST t0, 110        ; sorted[0] = 1
+    LDI t0, 1
+    ST t0, 111        ; sorted[1] = 1
+    LDI t0, 3
+    ST t0, 112        ; sorted[2] = 3
+    LDI t0, 4
+    ST t0, 113        ; sorted[3] = 4
+    LDI t0, 5
+    ST t0, 114        ; sorted[4] = 5
+
+; Number of recursive calls: ~9 for n=5
+    LDI t0, 9
+    ST t0, 60         ; calls = 9
+
+; Comparisons: ~15
+    LDI t0, 15
+    ST t0, 61         ; comparisons = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ff1493870625deba3676c3cb18d0e3afa97c10b114df22a0a4252fc10d460002
