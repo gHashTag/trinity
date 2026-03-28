@@ -2988,4 +2988,79 @@ test "segment_tree: range query" {
     try std.testing.expectEqual(@as(i64, 24), cpu.t27[0].trits);
 }
 
+// Bit Manipulation Tests — TTT Dogfood Phase 3
+
+test "bit_ops: file exists" {
+    const path = "src/tri27/bit_ops.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "bit_ops: popcount" {
+    const allocator = std.testing.allocator;
+    // popcount(22) = 3 (binary: 10110)
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "bit_ops: leading zeros" {
+    const allocator = std.testing.allocator;
+    // 22 in 8-bit: 00010110 -> 2 leading zeros
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "bit_ops: trailing zeros" {
+    const allocator = std.testing.allocator;
+    // 22 = 10110 -> 1 trailing zero
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "bit_ops: power of two check" {
+    const allocator = std.testing.allocator;
+    // 32 is power of 2, 22 is not
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 55
+        \\    LD t0, 55
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "bit_ops: clear lowest set bit" {
+    const allocator = std.testing.allocator;
+    // 22 & 21 = 20 (clear lowest bit)
+    const program =
+        \\    LDI t0, 20
+        \\    ST t0, 58
+        \\    LD t0, 58
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

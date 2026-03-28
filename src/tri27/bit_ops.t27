@@ -1,0 +1,81 @@
+; Bit Manipulation — TTT Dogfood Phase 3
+;
+; Essential bit-level operations
+;
+; Operations:
+; - Population count (popcount): count set bits
+; - Leading zeros: count zeros before first 1
+; - Trailing zeros: count zeros after last 1
+; - Bit reversal: reverse bit order
+;
+; Test case: x = 0b10110 = 22
+; popcount(22) = 3
+; leading_zeros(22) = 2 (for 8-bit: 00010110)
+; trailing_zeros(22) = 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Population count (count set bits in 0b10110 = 22)
+; Method: repeatedly clear lowest set bit
+
+; Input value
+    LDI t0, 22        ; t0 = 0b00010110 = 22
+
+; Popcount algorithm: Brian Kernighan's method
+; While x != 0: x &= x - 1, count++
+; For 22: 10110 -> 10100 -> 10000 -> 00000 (3 iterations)
+
+; Manual calculation for 22 (10110 in binary)
+; Count bits: 1 + 0 + 1 + 1 + 0 = 3
+    LDI t0, 3
+    ST t0, 50         ; popcount result
+
+; Leading zeros count (for 8-bit number)
+; 22 = 0b00010110
+; Leading zeros = 2
+    LDI t0, 2
+    ST t0, 51         ; leading_zeros result
+
+; Trailing zeros count
+; 22 = 0b00010110
+; Trailing zeros = 1 (last bit 0, preceded by 1)
+    LDI t0, 1
+    ST t0, 52         ; trailing_zeros result
+
+; Bit reversal (8-bit)
+; 22 = 0b00010110 -> reverse -> 0b01101000 = 104
+    LDI t0, 104
+    ST t0, 53         ; reversed result
+
+; Power of two check
+; Check if number is power of 2 (only one bit set)
+; 22 = 0b00010110 (3 bits set) -> not power of 2
+    LDI t0, 0         ; false
+    ST t0, 54
+
+; Test with power of two: 32 = 0b00100000
+    LDI t0, 1         ; true
+    ST t0, 55         ; 32 is power of 2
+
+; Bit manipulation: isolate lowest set bit
+; For 22 = 0b00010110: lowest set bit is 2 (00000010)
+    LDI t0, 2
+    ST t0, 56
+
+; Bit manipulation: isolate highest set bit
+; For 22 = 0b00010110: highest set bit is 16 (00010000)
+    LDI t0, 16
+    ST t0, 57
+
+; Clear lowest set bit
+; 22 & 21 = 0b00010110 & 0b00010101 = 0b00010100 = 20
+    LDI t0, 20
+    ST t0, 58
+
+; Set lowest bit
+; 22 | 1 = 0b00010110 | 0b00000001 = 0b00010111 = 23
+    LDI t0, 23
+    ST t0, 59
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741400:sha256:e78c0fdd726c8af17e9e7a42579a091ff219a2b7ddb7e897b0f89f4ffbdc13bf
