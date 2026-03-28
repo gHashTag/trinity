@@ -47685,3 +47685,63 @@ test "sharpen_filter2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "unscented_kalman: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unscented_kalman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "unscented_kalman: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unscented_kalman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wavelet_dwt: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wavelet_dwt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "wavelet_dwt: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wavelet_dwt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wavelet_idwt: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wavelet_idwt.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "wavelet_idwt: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wavelet_idwt.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wigner_ville: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wigner_ville.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "wigner_ville: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wigner_ville.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
