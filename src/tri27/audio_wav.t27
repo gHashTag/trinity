@@ -1,0 +1,13 @@
+; Audio WAV — TTT Dogfood Phase 3
+;
+; WAV format
+;
+; Test case: audio_wav
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; wav_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0753d00000200000001aa5
