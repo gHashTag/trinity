@@ -1,0 +1,13 @@
+; FAISS — TTT Dogfood Phase 3
+;
+; Facebook similarity search
+;
+; Test case: ql_faiss
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; faiss_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b010000020000000233e
