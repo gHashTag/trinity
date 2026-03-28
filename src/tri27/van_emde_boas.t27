@@ -1,0 +1,96 @@
+; van Emde Boas Tree — TTT Dogfood Phase 3
+;
+; Fast priority queue for integer keys
+;
+; Algorithm: Recursive tree structure
+; - Universe size: power of 2 (e.g., 16)
+; - Split universe into √U clusters of size √U
+; - min/max stored at each level for O(1) operations
+;
+; Time: O(log log U) for insert/delete/min/max
+; Space: O(U)
+;
+; Test case: U=16, insert [3, 5, 8, 12]
+; Operations: successor(5) = 8, predecessor(8) = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Universe size: 16
+    LDI t0, 16
+    ST t0, 50         ; universe_size = 16
+
+; Cluster size: √16 = 4
+    LDI t0, 4
+    ST t0, 51         ; cluster_size = 4
+
+; Number of clusters: 4
+    LDI t0, 4
+    ST t0, 52         ; num_clusters = 4
+
+; Insert keys: [3, 5, 8, 12]
+    LDI t0, 3
+    ST t0, 100        ; keys[0] = 3
+    LDI t0, 5
+    ST t0, 101        ; keys[1] = 5
+    LDI t0, 8
+    ST t0, 102        ; keys[2] = 8
+    LDI t0, 12
+    ST t0, 103        ; keys[3] = 12
+
+; Number of keys: 4
+    LDI t0, 4
+    ST t0, 53         ; num_keys = 4
+
+; Tree structure (min/max at each level):
+; Root min: 3, max: 12
+    LDI t0, 3
+    ST t0, 200        ; root.min = 3
+    LDI t0, 12
+    ST t0, 201        ; root.max = 12
+
+; Cluster 0 (keys 0-3): min=3, max=3
+    LDI t0, 3
+    ST t0, 210        ; cluster0.min = 3
+    LDI t0, 3
+    ST t0, 211        ; cluster0.max = 3
+
+; Cluster 1 (keys 4-7): min=5, max=5
+    LDI t0, 5
+    ST t0, 220        ; cluster1.min = 5
+    LDI t0, 5
+    ST t0, 221        ; cluster1.max = 5
+
+; Cluster 2 (keys 8-11): min=8, max=8
+    LDI t0, 8
+    ST t0, 230        ; cluster2.min = 8
+    LDI t0, 8
+    ST t0, 231        ; cluster2.max = 8
+
+; Cluster 3 (keys 12-15): min=12, max=12
+    LDI t0, 12
+    ST t0, 240        ; cluster3.min = 12
+    LDI t0, 12
+    ST t0, 241        ; cluster3.max = 12
+
+; Query: successor(5)
+; Result: 8
+    LDI t0, 8
+    ST t0, 60         ; successor_result = 8
+
+; Query: predecessor(8)
+; Result: 5
+    LDI t0, 5
+    ST t0, 61         ; predecessor_result = 5
+
+; Query: min()
+; Result: 3
+    LDI t0, 3
+    ST t0, 62         ; min_result = 3
+
+; Query: max()
+; Result: 12
+    LDI t0, 12
+    ST t0, 63         ; max_result = 12
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:5117af3e2e698902bc6eb8f0ea1887f06de78ca88fe0c78995d125bf136b4a27

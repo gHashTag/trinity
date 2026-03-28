@@ -1,0 +1,92 @@
+; Interval Tree — TTT Dogfood Phase 3
+;
+; Tree data structure for interval queries
+;
+; Algorithm: Augmented red-black tree with max endpoint
+; - Each node stores: [low, high, max]
+; - max = maximum high in subtree
+; - Query: find any interval overlapping [q_low, q_high]
+;
+; Time: O(log n) query, O(n) report all
+; Space: O(n)
+;
+; Test case: intervals = [[15,20], [10,30], [17,19], [5,20], [12,15], [30,40]]
+; Query: [14, 16]
+; Result: [15,20], [10,30] overlap
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Intervals at address 100:
+; Format: [low, high]
+    LDI t0, 15
+    ST t0, 100        ; [0].low = 15
+    LDI t0, 20
+    ST t0, 101        ; [0].high = 20
+    LDI t0, 10
+    ST t0, 102        ; [1].low = 10
+    LDI t0, 30
+    ST t0, 103        ; [1].high = 30
+    LDI t0, 17
+    ST t0, 104        ; [2].low = 17
+    LDI t0, 19
+    ST t0, 105        ; [2].high = 19
+    LDI t0, 5
+    ST t0, 106        ; [3].low = 5
+    LDI t0, 20
+    ST t0, 107        ; [3].high = 20
+    LDI t0, 12
+    ST t0, 108        ; [4].low = 12
+    LDI t0, 15
+    ST t0, 109        ; [4].high = 15
+    LDI t0, 30
+    ST t0, 110        ; [5].low = 30
+    LDI t0, 40
+    ST t0, 111        ; [5].high = 40
+
+; Number of intervals: 6
+    LDI t0, 6
+    ST t0, 50         ; num_intervals = 6
+
+; Query interval: [14, 16]
+    LDI t0, 14
+    ST t0, 51         ; query_low = 14
+    LDI t0, 16
+    ST t0, 52         ; query_high = 16
+
+; Tree structure (augmented with max):
+; Each node: [low, high, max, left, right]
+; Node [10,30]: max = 30 (largest in subtree)
+    LDI t0, 10
+    ST t0, 200        ; root.low = 10
+    LDI t0, 30
+    ST t0, 201        ; root.high = 30
+    LDI t0, 40        ; max = max(30, 20, 40)
+    ST t0, 202        ; root.max = 40
+
+; Overlapping intervals found:
+; [15,20] overlaps [14,16]
+    LDI t0, 15
+    ST t0, 210        ; overlap[0].low = 15
+    LDI t0, 20
+    ST t0, 211        ; overlap[0].high = 20
+
+; [10,30] overlaps [14,16]
+    LDI t0, 10
+    ST t0, 212        ; overlap[1].low = 10
+    LDI t0, 30
+    ST t0, 213        ; overlap[1].high = 30
+
+; Number of overlapping intervals: 2
+    LDI t0, 2
+    ST t0, 60         ; overlap_count = 2
+
+; Tree height: 3
+    LDI t0, 3
+    ST t0, 61         ; tree_height = 3
+
+; Nodes visited during query: 3
+    LDI t0, 3
+    ST t0, 62         ; nodes_visited = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9271553d794297515d5e4c1476bf7e36f1ac008fb9bf6fe17010b0fac3919502

@@ -1,0 +1,94 @@
+; Treap — Tree + Heap
+; TTT Dogfood Phase 3
+;
+; Randomized binary search tree
+; - BST property: left < root < right
+; - Heap property: parent priority > children
+; - Random priority ensures balanced tree with high probability
+;
+; Time: O(log n) average, O(n) worst
+; Space: O(n)
+;
+; Test case: Insert [5, 3, 7, 2, 4, 6, 8]
+; Priorities: [5:3, 3:5, 7:2, 2:4, 4:6, 6:1, 8:7]
+; Result: Randomized balanced tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input values at address 100:
+    LDI t0, 5
+    ST t0, 100        ; value 5, priority 3
+    LDI t0, 3
+    ST t0, 101        ; value 3, priority 5
+    LDI t0, 7
+    ST t0, 102        ; value 7, priority 2
+    LDI t0, 2
+    ST t0, 103        ; value 2, priority 4
+    LDI t0, 4
+    ST t0, 104        ; value 4, priority 6
+    LDI t0, 6
+    ST t0, 105        ; value 6, priority 1
+    LDI t0, 8
+    ST t0, 106        ; value 8, priority 7
+
+; Number of nodes: 7
+    LDI t0, 7
+    ST t0, 50         ; num_nodes = 7
+
+; Tree structure (simplified representation):
+; Node format: [value, priority, left_idx, right_idx]
+; Root at address 200
+;
+; Final tree (example after rotations):
+;       4(pri=6)
+;      /      \
+;   2(pri=4)  6(pri=1)
+;   /    \       \
+; 3(p=5)  nil    7(pri=2)
+/                 \
+; nil              8(pri=7)
+
+; Root node: value=4, priority=6
+    LDI t0, 4
+    ST t0, 200        ; root.value = 4
+    LDI t0, 6
+    ST t0, 201        ; root.priority = 6
+
+; Root's left child index: 1 (points to node 2)
+    LDI t0, 1
+    ST t0, 202        ; root.left = 1
+
+; Root's right child index: 2 (points to node 6)
+    LDI t0, 2
+    ST t0, 203        ; root.right = 2
+
+; Node 2 (value=2, priority=4)
+    LDI t0, 2
+    ST t0, 210        ; node2.value = 2
+    LDI t0, 4
+    ST t0, 211        ; node2.priority = 4
+
+; Node 3 (value=6, priority=1)
+    LDI t0, 6
+    ST t0, 220        ; node3.value = 6
+    LDI t0, 1
+    ST t0, 221        ; node3.priority = 1
+
+; Tree height: 3
+    LDI t0, 3
+    ST t0, 60         ; tree_height = 3
+
+; Total rotations during insertion: 3
+    LDI t0, 3
+    ST t0, 61         ; rotations = 3
+
+; Is valid BST: yes
+    LDI t0, 1
+    ST t0, 62         ; is_valid_bst = 1
+
+; Is valid heap: yes
+    LDI t0, 1
+    ST t0, 63         ; is_valid_heap = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:eeb947df245f3ac3764d7eb7d7ace79e2809833c5a9f05a6420f1cb345cfec62

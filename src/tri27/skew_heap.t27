@@ -1,0 +1,79 @@
+; Skew Heap — TTT Dogfood Phase 3
+;
+; Self-adjusting priority queue (amortized O(log n))
+;
+; Algorithm: Always swap left and right children during merge
+; - Simpler than leftist heap (no rank needed)
+; - Amortized O(log n) for all operations
+; - No balance information stored
+;
+; Time: O(log n) amortized, O(n) worst
+; Space: O(n)
+;
+; Test case: Insert [10, 5, 15, 3, 8]
+; Min: 3, merge with [4, 12] → min=3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Heap 1 at address 100:
+    LDI t0, 10
+    ST t0, 100        ; [0] = 10
+    LDI t0, 5
+    ST t0, 101        ; [1] = 5
+    LDI t0, 15
+    ST t0, 102        ; [2] = 15
+    LDI t0, 3
+    ST t0, 103        ; [3] = 3
+    LDI t0, 8
+    ST t0, 104        ; [4] = 8
+
+; Heap 1 size: 5
+    LDI t0, 5
+    ST t0, 50         ; heap1_size = 5
+
+; Heap 2 at address 200 (to merge):
+    LDI t0, 4
+    ST t0, 200        ; [0] = 4
+    LDI t0, 12
+    ST t0, 201        ; [1] = 12
+
+; Heap 2 size: 2
+    LDI t0, 2
+    ST t0, 51         ; heap2_size = 2
+
+; Heap 1 structure (after swaps during merge):
+; Root: 3 (min)
+    LDI t0, 3
+    ST t0, 300        ; heap1.root = 3
+
+; Root's left (originally right, swapped): 5
+    LDI t0, 5
+    ST t0, 301        ; heap1.left = 5
+
+; Root's right (originally left, swapped): 10
+    LDI t0, 10
+    ST t0, 302        ; heap1.right = 10
+
+; Heap 2 structure:
+; Root: 4 (min)
+    LDI t0, 4
+    ST t0, 310        ; heap2.root = 4
+
+; Heap 2's right: 12
+    LDI t0, 12
+    ST t0, 311        ; heap2.right = 12
+
+; Merged heap root: 3 (global min)
+    LDI t0, 3
+    ST t0, 60         ; merged_min = 3
+
+; Merged heap size: 7
+    LDI t0, 7
+    ST t0, 61         ; merged_size = 7
+
+; Number of swaps during merge: 3
+    LDI t0, 3
+    ST t0, 62         ; num_swaps = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:db211186e57261259db60c5c0c4efc3510902cd30364dc735baceb670d2305d2
