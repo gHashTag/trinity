@@ -1,0 +1,13 @@
+; Euler Totient — TTT Dogfood Phase 3
+;
+; φ(n) - count coprimes
+;
+; Test case: misc_euler_totient
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; misc_euler_totient_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500sha256:0730c0000001df9

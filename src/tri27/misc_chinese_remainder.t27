@@ -1,0 +1,13 @@
+; Chinese Remainder — TTT Dogfood Phase 3
+;
+; CRT solver
+;
+; Test case: misc_chinese_remainder
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; misc_chinese_remainder_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073060000001d99

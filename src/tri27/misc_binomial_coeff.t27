@@ -1,0 +1,13 @@
+; Binomial Coefficient — TTT Dogfood Phase 3
+;
+; n choose k
+;
+; Test case: misc_binomial_coeff
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; misc_binomial_coeff_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073070000001da9

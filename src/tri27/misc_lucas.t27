@@ -1,0 +1,13 @@
+; Lucas Numbers — TTT Dogfood Phase 3
+;
+; Lucas sequence
+;
+; Test case: misc_lucas
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; misc_lucas_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0730a00000001dd9

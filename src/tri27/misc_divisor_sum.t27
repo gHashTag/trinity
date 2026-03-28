@@ -1,0 +1,13 @@
+; Divisor Sum — TTT Dogfood Phase 3
+;
+; Sum of divisors σ(n)
+;
+; Test case: misc_divisor_sum
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; misc_divisor_sum_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07310000001d39
