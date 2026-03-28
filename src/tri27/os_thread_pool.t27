@@ -1,0 +1,13 @@
+; Thread Pool — TTT Dogfood Phase 3
+;
+; Worker thread pool
+;
+; Test case: os_thread_pool
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; thread_pool_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731600001000001479

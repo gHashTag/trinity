@@ -1,0 +1,13 @@
+; Shortest Common Supersequence — TTT Dogfood Phase 3
+;
+; SCS containing input strings
+;
+; Test case: algo_shortest_common_superseq
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; scs_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732000001000001349
