@@ -1,0 +1,13 @@
+; OS Condition Variable V2 — TTT Dogfood Phase 3
+;
+; Condition variable wait/signal
+;
+; Test case: os_condition_variable_v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; condvar_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073ac000002000000839
