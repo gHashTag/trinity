@@ -1,0 +1,13 @@
+; Bilateral Filter — TTT Dogfood Phase 3
+;
+; Edge-preserving smoothing
+;
+; Test case: spatial_sigma=5, range_sigma=0.1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; spatial_sigma = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713620012d8

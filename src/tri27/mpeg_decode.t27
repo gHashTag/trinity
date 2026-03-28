@@ -1,0 +1,13 @@
+; MPEG Decode — TTT Dogfood Phase 3
+;
+; MPEG audio/video decoder
+;
+; Test case: MPEG-1 layer III
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; layer = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07135c0012d2

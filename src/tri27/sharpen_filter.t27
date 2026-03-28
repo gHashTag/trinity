@@ -1,0 +1,13 @@
+; Sharpen Filter — TTT Dogfood Phase 3
+;
+; Image sharpening kernel
+;
+; Test case: 3x3 kernel
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; kernel_size = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713610012d7

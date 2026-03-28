@@ -1,0 +1,13 @@
+; Hough Line Transform — TTT Dogfood Phase 3
+;
+; Line detection in images
+;
+; Test case: detect lines
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; lines_found = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713650012db

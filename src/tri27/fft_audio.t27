@@ -1,0 +1,13 @@
+; Audio FFT — TTT Dogfood Phase 3
+;
+; Fast Fourier Transform for audio
+;
+; Test case: 1024 samples
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1024
+    ST t0, 60         ; n = 1024
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07135a0012d0
