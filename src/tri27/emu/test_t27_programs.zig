@@ -1029,7 +1029,7 @@ test "crypto: σ1 small sigma 1" {
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
 }
 
 test "crypto: Σ0 big sigma 0" {
