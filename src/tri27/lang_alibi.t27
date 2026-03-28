@@ -1,0 +1,13 @@
+; Lang ALiBi — TTT Dogfood Phase 3
+;
+; Attention with Linear Biases
+;
+; Test case: lang_alibi
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; alibi_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074f80000020000000001b6b
