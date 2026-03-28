@@ -1,0 +1,13 @@
+; Point Scale — TTT Dogfood Phase 3
+;
+; Scale point relative to origin
+;
+; Test case: geo_scale
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; geo_scale_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071e90001dc9

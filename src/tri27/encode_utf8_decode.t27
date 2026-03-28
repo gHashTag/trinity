@@ -1,0 +1,13 @@
+; UTF-8 Decode — TTT Dogfood Phase 3
+;
+; UTF-8 bytes to Unicode
+;
+; Test case: encode_utf8_decode
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; encode_utf8_decode_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071d70001da9

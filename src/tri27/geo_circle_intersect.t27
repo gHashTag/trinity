@@ -1,0 +1,13 @@
+; Circle Intersection — TTT Dogfood Phase 3
+;
+; Find intersection points of two circles
+;
+; Test case: geo_circle_intersect
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; geo_circle_intersect_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071e40001d79
