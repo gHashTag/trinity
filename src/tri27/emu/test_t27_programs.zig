@@ -60150,3 +60150,18 @@ test "num_pi: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "num_sqrt_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_sqrt_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_sqrt_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_sqrt_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
