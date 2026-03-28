@@ -250,7 +250,8 @@ Dmitrii Vasilev
 
 ────────────────────────────────────────────────────────────────────────────
 
-## Email 10: François Chollet (fchollet@google.com)
+## Email 10: François Chollet — USE TWITTER DM @fchollet instead
+## (fchollet@google.com BOUNCED — left Google Nov 2024)
 
 Subject: ARC tasks via HDC binding/bundling
 
