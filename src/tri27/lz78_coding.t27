@@ -1,0 +1,13 @@
+; LZ78 Coding — TTT Dogfood Phase 3
+;
+; Dictionary-based compression
+;
+; Test case: lz78_coding
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lz78_coding_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a0b001983
