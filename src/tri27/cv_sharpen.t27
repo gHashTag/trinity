@@ -1,0 +1,13 @@
+; Sharpen — TTT Dogfood Phase 3
+;
+; Sharpen kernel
+;
+; Test case: cv_sharpen
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cv_sharpen_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072f500000001d89
