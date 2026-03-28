@@ -1,11 +1,11 @@
-//! SIMD-примитивы для тернарного VSA.
-//! Везде использовать только TritVector; скалярный код — только fallback.
+//! SIMD primitives for ternary VSA.
+//! Use only TritVector everywhere; scalar code is fallback only.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
 const std = @import("std");
 
-/// Оптимальная ширина SIMD вектора для i8
+/// Optimal SIMD vector width for i8
 pub const SIMD_WIDTH = std.simd.suggestVectorLength(i8) orelse 32;
 
 /// SIMD-тип для тернарных векторов
@@ -193,7 +193,7 @@ pub fn tritBundleSlice(dst: []i8, vecs: []const []const i8) void {
 // TERNARY PERMUTE — cyclic permutation
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Циклический сдвиг влево на k позиций (SIMD)
+/// Cyclic shift left by k positions (SIMD)
 pub fn tritPermuteLeft(v: TritVector, comptime k: comptime_int) TritVector {
     comptime {
         if (k >= SIMD_WIDTH) @compileError("k must be < SIMD_WIDTH");
@@ -208,7 +208,7 @@ pub fn tritPermuteLeft(v: TritVector, comptime k: comptime_int) TritVector {
     return result;
 }
 
-/// Циклический сдвиг вправо на k позиций (SIMD)
+/// Cyclic shift right by k positions (SIMD)
 pub fn tritPermuteRight(v: TritVector, comptime k: comptime_int) TritVector {
     return tritPermuteLeft(v, SIMD_WIDTH - k);
 }
@@ -275,10 +275,10 @@ pub fn tritCountNegative(v: TritVector) usize {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY RANDOM — генерация случайных тернарных векторов
+// TERNARY RANDOM — random ternary vector generation
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Случайный тернарный вектор (детерминированный от seed)
+/// Random ternary vector (deterministic from seed)
 pub fn tritRandom(comptime seed: u64) TritVector {
     var rng = std.Random.DefaultPrng.init(seed);
     const random = rng.random();
@@ -323,7 +323,7 @@ pub inline fn tritMinusOnes() TritVector {
     return @splat(@as(i8, -1));
 }
 
-/// Проверить что все триты в {-1, 0, +1}
+/// Verify all trits are in {-1, 0, +1}
 pub fn tritIsValid(v: TritVector) bool {
     inline for (0..SIMD_WIDTH) |i| {
         const t = v[i];

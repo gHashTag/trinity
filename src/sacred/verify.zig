@@ -20,7 +20,7 @@ comptime {
 // TERNARY RESONANCE CHECKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить что размерность соответствует тернарному резонансу (3^k)
+/// Verify dimension corresponds to ternary resonance (3^k)
 pub fn assertTritResonance(comptime dims: usize) void {
     comptime {
         if (dims == 0) @compileError("dims cannot be zero");
@@ -57,7 +57,7 @@ pub fn tritPower(comptime n: usize) comptime_int {
 // PHI-DISTANCE CHECKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Проверить phi-distance формата
+/// Verify phi-distance of format
 pub fn assertPhiDistance(comptime distance: comptime_float, max: comptime_float) void {
     comptime {
         if (distance > max)
@@ -160,7 +160,7 @@ pub const SacredVerifier = struct {
         self.errors.deinit(allocator);
     }
 
-    /// Проверить Trinity identity
+    /// Verify Trinity identity
     pub fn verifyTrinity(self: *SacredVerifier, allocator: std.mem.Allocator) bool {
         const computed = phi_sq + 1.0 / phi_sq;
         const ok = @abs(computed - 3.0) < 1e-10;
@@ -176,7 +176,7 @@ pub const SacredVerifier = struct {
         return ok;
     }
 
-    /// Проверить что размерность 3^k
+    /// Verify dimension is 3^k
     pub fn verifyTritResonance(self: *SacredVerifier, allocator: std.mem.Allocator, dims: usize, ctx: []const u8) bool {
         var n = dims;
         while (n % 3 == 0 and n > 1) n /= 3;
@@ -193,7 +193,7 @@ pub const SacredVerifier = struct {
         return ok;
     }
 
-    /// Получить отчёт
+    /// Get report
     pub fn report(self: *const SacredVerifier, allocator: std.mem.Allocator) []const u8 {
         const total = self.passed + self.failed;
         const pass_rate = if (total > 0)
