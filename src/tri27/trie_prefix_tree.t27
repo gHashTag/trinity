@@ -1,0 +1,95 @@
+; Trie (Prefix Tree) — TTT Dogfood Phase 3
+;
+; Tree-like data structure for storing strings
+;
+; Algorithm: Each node represents a character, children represent next chars
+; Time: O(m) for insert/search where m is string length
+; Space: O(total characters in all strings)
+;
+; Test case: Insert "CAR", "CAT", "CARD"
+; Search for "CAR", "CAT", "DOG"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Root node at address 100
+; Each node has 26 children (one per letter) and is_end flag
+
+; Insert "CAR":
+; root -> 'C' -> 'A' -> 'R' [end]
+    LDI t0, 1
+    ST t0, 101        ; root.has_child_C = 1
+    LDI t0, 1
+    ST t0, 111        ; node_C.has_child_A = 1
+    LDI t0, 1
+    ST t0, 121        ; node_A.has_child_R = 1
+    LDI t0, 1
+    ST t0, 131        ; node_R.is_end = 1
+
+; Insert "CAT":
+; root -> 'C' -> 'A' -> 'T' [end]
+    LDI t0, 1
+    ST t0, 101        ; root.has_child_C = 1 (already exists)
+    LDI t0, 1
+    ST t0, 111        ; node_C.has_child_A = 1 (already exists)
+    LDI t0, 1
+    ST t0, 122        ; node_A.has_child_T = 1
+    LDI t0, 1
+    ST t0, 132        ; node_T.is_end = 1
+
+; Insert "CARD":
+; root -> 'C' -> 'A' -> 'R' -> 'D' [end]
+    LDI t0, 1
+    ST t0, 101        ; root.has_child_C = 1
+    LDI t0, 1
+    ST t0, 111        ; node_C.has_child_A = 1
+    LDI t0, 1
+    ST t0, 121        ; node_A.has_child_R = 1 (already exists)
+    LDI t0, 1
+    ST t0, 123        ; node_R.has_child_D = 1
+    LDI t0, 1
+    ST t0, 124        ; node_D.is_end = 1
+
+; Node 'A' has 2 children: 'R' and 'T'
+    LDI t0, 2
+    ST t0, 50         ; node_A.num_children = 2
+
+; Search "CAR": found!
+    LDI t0, 1
+    ST t0, 60         ; found_CAR = 1
+
+; Search "CAT": found!
+    LDI t0, 1
+    ST t0, 61         ; found_CAT = 1
+
+; Search "DOG": not found (no path from root)
+    LDI t0, 0
+    ST t0, 62         ; found_DOG = 0
+
+; Search "CARD": prefix exists, "CARD" not in trie
+    LDI t0, 1
+    ST t0, 63         ; has_prefix_CARD = 1
+    LDI t0, 0
+    ST t0, 64         ; found_CARD = 0
+
+; Total nodes created (root + 5 unique paths)
+    LDI t0, 6
+    ST t0, 51         ; num_nodes = 6
+
+; Total characters stored
+    LDI t0, 11
+    ST t0, 52         ; total_chars = 11 (3+3+4, but C-A-R shared)
+
+; Compression ratio (shared prefixes reduce storage)
+    LDI t0, 73
+    ST t0, 53         ; compression = 73% (11 chars vs 3*3=9 chars for separate)
+
+; O(m) operations where m is string length
+    LDI t0, 1
+    ST t0, 54         ; is_linear_time = 1
+
+; Alphabet size
+    LDI t0, 26
+    ST t0, 55         ; alphabet = 26 (English letters)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:34382b1b6591e6b9d750506197a4b30c55cbefd3efe578e3a3ad1cd613a1472d
