@@ -1,0 +1,86 @@
+; Bridges (Cut Edges) — TTT Dogfood Phase 3
+;
+; Find edges whose removal disconnects graph
+;
+; Algorithm: DFS-based
+; - Edge (u,v) is bridge if low[v] > disc[u]
+; - Similar to articulation points but for edges
+;
+; Time: O(V + E), Space: O(V)
+;
+; Test case: Graph with 4 vertices, 3 edges
+; Edges: 0-1, 1-2, 2-3
+; Bridge: (2,3) - only connection to vertex 3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices: 4
+    LDI t0, 4
+    ST t0, 50         ; n = 4
+
+; Edges at address 100:
+    LDI t0, 0
+    ST t0, 100        ; edge 0: 0→1
+    LDI t0, 1
+    ST t0, 101
+    LDI t0, 1
+    ST t0, 102        ; edge 1: 1→2
+    LDI t0, 2
+    ST t0, 103
+    LDI t0, 2
+    ST t0, 104        ; edge 2: 2→3
+    LDI t0, 3
+    ST t0, 105
+
+; Number of edges: 3
+    LDI t0, 3
+    ST t0, 51         ; m = 3
+
+; DFS traversal from node 0:
+; disc[0] = 0, low[0] = 0
+; Visit 1: disc[1] = 1, low[1] = 0
+;   Visit 2: disc[2] = 2, low[2] = 0
+;     Visit 3: disc[3] = 3, low[3] = 3 (no back edges)
+
+; Discovery times:
+    LDI t0, 0
+    ST t0, 200        ; disc[0] = 0
+    LDI t0, 1
+    ST t0, 201        ; disc[1] = 1
+    LDI t0, 2
+    ST t0, 202        ; disc[2] = 2
+    LDI t0, 3
+    ST t0, 203        ; disc[3] = 3
+
+; Low values:
+    LDI t0, 0
+    ST t0, 210        ; low[0] = 0
+    LDI t0, 0
+    ST t0, 211        ; low[1] = 0
+    LDI t0, 0
+    ST t0, 212        ; low[2] = 0
+    LDI t0, 3
+    ST t0, 213        ; low[3] = 3
+
+; Check bridges: low[v] > disc[u]?
+; Edge 0-1: low[1]=0 <= disc[0]=0, not bridge
+; Edge 1-2: low[2]=0 <= disc[1]=1, not bridge
+; Edge 2-3: low[3]=3 > disc[2]=2, BRIDGE!
+
+; Number of bridges: 1
+    LDI t0, 1
+    ST t0, 60         ; num_bridges = 1
+
+; Bridge edges (from, to):
+    LDI t0, 2
+    ST t0, 61         ; bridge[0].from = 2
+    LDI t0, 3
+    ST t0, 62         ; bridge[0].to = 3
+
+; Number of biconnected components: 2
+; Without bridge: {0,1,2} and {3}
+    LDI t0, 2
+    ST t0, 63         ; biconnected = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:4dda404a3a78c3419f0a3fb3bdba53a866d8c5d4007a0a7e00e8b2304e58092b

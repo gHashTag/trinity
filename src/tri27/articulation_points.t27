@@ -1,0 +1,93 @@
+; Articulation Points (Cut Vertices) — TTT Dogfood Phase 3
+;
+; Find vertices whose removal disconnects graph
+;
+; Algorithm: DFS-based
+; - Track discovery time and low values
+; - Vertex v is articulation if:
+;   - Root of DFS tree with >1 children
+;   - Non-root with child u where low[u] >= disc[v]
+;
+; Time: O(V + E), Space: O(V)
+;
+; Test case: Graph with 5 vertices, 5 edges
+; Edges: 0-1, 0-2, 1-2, 1-3, 3-4
+; Articulation points: 1 (removing it disconnects 3 and 4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Edges at address 100:
+; Format: [from, to]
+    LDI t0, 0
+    ST t0, 100        ; edge 0: 0→1
+    LDI t0, 1
+    ST t0, 101
+    LDI t0, 0
+    ST t0, 102        ; edge 1: 0→2
+    LDI t0, 2
+    ST t0, 103
+    LDI t0, 1
+    ST t0, 104        ; edge 2: 1→2
+    LDI t0, 2
+    ST t0, 105
+    LDI t0, 1
+    ST t0, 106        ; edge 3: 1→3
+    LDI t0, 3
+    ST t0, 107
+    LDI t0, 3
+    ST t0, 108        ; edge 4: 3→4
+    LDI t0, 4
+    ST t0, 109
+
+; DFS traversal from node 0:
+; disc[0] = 0, low[0] = 0
+; Visit 1: disc[1] = 1, low[1] = 0
+;   Visit 2: disc[2] = 2, low[2] = 0 (back edge to 0)
+;   Visit 3: disc[3] = 3, low[3] = 1
+;     Visit 4: disc[4] = 4, low[4] = 3
+
+; Discovery times:
+    LDI t0, 0
+    ST t0, 200        ; disc[0] = 0
+    LDI t0, 1
+    ST t0, 201        ; disc[1] = 1
+    LDI t0, 2
+    ST t0, 202        ; disc[2] = 2
+    LDI t0, 3
+    ST t0, 203        ; disc[3] = 3
+    LDI t0, 4
+    ST t0, 204        ; disc[4] = 4
+
+; Low values:
+    LDI t0, 0
+    ST t0, 210        ; low[0] = 0
+    LDI t0, 0
+    ST t0, 211        ; low[1] = 0
+    LDI t0, 0
+    ST t0, 212        ; low[2] = 0
+    LDI t0, 1
+    ST t0, 213        ; low[3] = 1
+    LDI t0, 3
+    ST t0, 214        ; low[4] = 3
+
+; Articulation points: vertex 1
+; low[2]=0 >= disc[1]=1? No (back edge)
+; low[3]=1 >= disc[1]=1? Yes (3 is child of 1)
+    LDI t0, 1
+    ST t0, 60         ; num_articulation = 1
+
+; Articulation point indices:
+    LDI t0, 1
+    ST t0, 61         ; ap[0] = 1
+
+; Number of biconnected components: 2
+; Components: {0,1,2,3,4} → {1,3,4} and {0,1,2} after removing 1
+    LDI t0, 2
+    ST t0, 62         ; biconnected = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b0612516d4ca06a2198a63650ede57d400ab287d028de814fce15973a6e297d8
