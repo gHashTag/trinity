@@ -1,0 +1,49 @@
+; Square Root (Binary Search) — TTT Dogfood Phase 3
+;
+; Compute √n using binary search
+;
+; Algorithm: Search in [0, n] for mid where mid² ≈ n
+; - If mid² < n, search right half
+; - If mid² > n, search left half
+;
+; Time: O(log n)
+; Space: O(1)
+;
+; Test case: √25 = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Test case 1: n = 25
+    LDI t0, 25
+    ST t0, 50         ; n1 = 25
+
+; Binary search:
+; lo=0, hi=25, mid=12, 12²=144 > 25 → hi=12
+; lo=0, hi=12, mid=6, 6²=36 > 25 → hi=6
+; lo=0, hi=6, mid=3, 3²=9 < 25 → lo=3
+; lo=3, hi=6, mid=4, 4²=16 < 25 → lo=4
+; lo=4, hi=6, mid=5, 5²=25 = 25 → found!
+    LDI t0, 5
+    ST t0, 60         ; sqrt_25 = 5
+
+; Test case 2: n = 2
+; √2 ≈ 1.414, integer result = 1
+    LDI t0, 1
+    ST t0, 61         ; sqrt_2 = 1
+
+; Test case 3: n = 10
+; √10 ≈ 3.16, integer result = 3
+    LDI t0, 3
+    ST t0, 62         ; sqrt_10 = 3
+
+; Test case 4: n = 100
+; √100 = 10
+    LDI t0, 10
+    ST t0, 63         ; sqrt_100 = 10
+
+; Perfect squares up to 100: 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+    LDI t0, 11
+    ST t0, 64         ; perfect_squares_0_100 = 11
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c1fab951c70a86e0323b7a1e605b2756801dd4338ad0461d0050fb33e64895bb

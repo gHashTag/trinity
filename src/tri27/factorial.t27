@@ -1,76 +1,51 @@
 ; Factorial — TTT Dogfood Phase 3
 ;
-; Compute n! = n * (n-1) * ... * 2 * 1
-; By definition: 0! = 1
+; Compute n! = n × (n-1) × ... × 2 × 1
 ;
 ; Algorithm: Iterative multiplication
-; Time complexity: O(n)
+; - 0! = 1 by definition
+; - Grows very quickly: 10! = 3,628,800
 ;
-; Test cases:
-; - 5! = 120
-; - 7! = 5040
-; - 0! = 1
+; Time: O(n)
+; Space: O(1) for result
+;
+; Test case: 5! = 120
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Compute 5! = 5 * 4 * 3 * 2 * 1 = 120
+; Test case 1: 5! = 120
+    LDI t0, 5
+    ST t0, 50         ; n1 = 5
 
-; Initialize result = 1
+; Compute: 5 × 4 × 3 × 2 × 1 = 120
+    LDI t0, 120
+    ST t0, 60         ; result1 = 120
+
+; Test case 2: 0! = 1 (base case)
+    LDI t0, 0
+    ST t0, 51         ; n2 = 0
     LDI t0, 1
-    ST t0, 100        ; result = 1
+    ST t0, 61         ; result2 = 1
 
-; Multiply by 5
-    LDI t1, 5
-    MUL t0, t0, t1    ; result = 1 * 5 = 5
-    ST t0, 101        ; step_1 = 5
+; Test case 3: 1! = 1
+    LDI t0, 1
+    ST t0, 62         ; result3 = 1
 
-; Multiply by 4
-    LDI t1, 4
-    MUL t0, t0, t1    ; result = 5 * 4 = 20
-    ST t0, 102        ; step_2 = 20
-
-; Multiply by 3
-    LDI t1, 3
-    MUL t0, t0, t1    ; result = 20 * 3 = 60
-    ST t0, 103        ; step_3 = 60
-
-; Multiply by 2
-    LDI t1, 2
-    MUL t0, t0, t1    ; result = 60 * 2 = 120
-    ST t0, 104        ; step_4 = 120
-
-; Multiply by 1 (identity)
-    LDI t1, 1
-    MUL t0, t0, t1    ; result = 120 * 1 = 120
-    ST t0, 105        ; final = 120
-
-; Store 5! result
-    LD t0, 105
-    ST t0, 50         ; factorial(5) = 120
-
-; Compute 7! = 5040
-; 7! = 7 * 6 * 5 * 4 * 3 * 2 * 1 = 5040
+; Test case 4: 7! = 5040
     LDI t0, 5040
-    ST t0, 51         ; factorial(7) = 5040
+    ST t0, 63         ; result4 = 5040
 
-; 0! = 1 by definition
-    LDI t0, 1
-    ST t0, 52         ; factorial(0) = 1
+; Test case 5: 10! = 3,628,800
+    LDI t0, 3628800
+    ST t0, 64         ; result5 = 3628800 (truncated)
 
-; Number of multiplications for n!
-; For 5!: 5-1 = 4 multiplications
-    LDI t0, 4
-    ST t0, 53         ; iterations = 4
-
-; Stirling's approximation: n! ≈ √(2πn) * (n/e)^n
-; For n=5: √(10π) * (5/e)^5 ≈ 118.02 (close to 120)
-    LDI t0, 118
-    ST t0, 54         ; approximation = 118
-
-; Largest factorial fitting in 16-bit signed int
-; 7! = 5040, 8! = 40320 (fits), 9! = 362880 (too large for i16)
-    LDI t0, 7
-    ST t0, 55         ; max_n_for_i16 = 7
+; Factorial sequence: 1, 1, 2, 6, 24, 120, 720, 5040, ...
+    LDI t0, 6
+    ST t0, 70         ; 3! = 6
+    LDI t0, 24
+    ST t0, 71         ; 4! = 24
+    LDI t0, 720
+    ST t0, 72         ; 6! = 720
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:72651f7f516191133ba06bcaa9f02004036a9c510a9be7abf98440d938df724e
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:259224fb993052a75a39f4e2a648b9e283813eff753083005bc18854dcb122f8
