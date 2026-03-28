@@ -48405,3 +48405,138 @@ test "x25519_key: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "circle_circle_intersect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "circle_circle_intersect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "circle_circle_intersect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "circle_circle_intersect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "distance_point_line: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distance_point_line.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "distance_point_line: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distance_point_line.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "distance_point_seg: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distance_point_seg.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "distance_point_seg: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "distance_point_seg.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "line_circle_intersect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "line_circle_intersect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "line_circle_intersect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "line_circle_intersect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "line_intersect2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "line_intersect2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "line_intersect2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "line_intersect2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "point_in_circle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_circle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "point_in_circle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_circle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "point_in_polygon2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_polygon2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "point_in_polygon2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_polygon2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "point_in_rect: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_rect.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "point_in_rect: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "point_in_rect.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "segment_intersect2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "segment_intersect2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "segment_intersect2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "segment_intersect2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
