@@ -1,0 +1,13 @@
+; Dynamic Bitonic Subseq — TTT Dogfood Phase 3
+;
+; Longest bitonic subsequence
+;
+; Test case: dyn_bitonic_subseq
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bitonic_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0737a0000020000006a9

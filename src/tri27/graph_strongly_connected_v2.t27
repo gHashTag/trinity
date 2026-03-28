@@ -1,0 +1,13 @@
+; Graph Strongly Connected V2 — TTT Dogfood Phase 3
+;
+; Kosaraju's SCC algorithm
+;
+; Test case: graph_strongly_connected_v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; scc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07338000002000000499

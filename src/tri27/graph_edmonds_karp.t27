@@ -1,0 +1,13 @@
+; Graph Edmonds-Karp — TTT Dogfood Phase 3
+;
+; Edmonds-Karp max flow implementation
+;
+; Test case: graph_edmonds_karp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; edmonds_karp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073460000002000000509

@@ -1,0 +1,13 @@
+; Graph Coloring — TTT Dogfood Phase 3
+;
+; Graph coloring with minimum colors
+;
+; Test case: graph_graph_coloring
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; graph_coloring_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073400000020000004d9

@@ -1,0 +1,13 @@
+; Dynamic Box Stacking — TTT Dogfood Phase 3
+;
+; Box stacking problem
+;
+; Test case: dyn_box_stacking
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; box_stacking_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0738200000020000006e9

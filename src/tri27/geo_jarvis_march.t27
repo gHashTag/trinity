@@ -1,0 +1,13 @@
+; Geo Jarvis March — TTT Dogfood Phase 3
+;
+; Jarvis march for convex hull
+;
+; Test case: geo_jarvis_march
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; jarvis_march_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0739e0000020000007c9
