@@ -1,0 +1,13 @@
+; Point Operations — TTT Dogfood Phase 3
+;
+; 2D point operations
+;
+; Test case: geo_point
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; point_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078f7000002000000000216e

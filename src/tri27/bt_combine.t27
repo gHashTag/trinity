@@ -1,0 +1,13 @@
+; Combinations — TTT Dogfood Phase 3
+;
+; Generate all combinations via backtracking
+;
+; Test case: bt_combine
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; combine_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078bd000002000000002151

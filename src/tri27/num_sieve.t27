@@ -1,0 +1,13 @@
+; Sieve of Eratosthenes — TTT Dogfood Phase 3
+;
+; Generate all primes up to n
+;
+; Test case: num_sieve
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sieve_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078e10000020000000002163

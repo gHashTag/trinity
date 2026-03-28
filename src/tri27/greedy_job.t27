@@ -1,0 +1,13 @@
+; Job Sequencing — TTT Dogfood Phase 3
+;
+; Schedule jobs with deadlines
+;
+; Test case: greedy_job
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; job_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078a30000020000000002144

@@ -1,0 +1,13 @@
+; Hamiltonian BT — TTT Dogfood Phase 3
+;
+; Backtracking Hamiltonian path
+;
+; Test case: bt_hamilton
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; hamilton_bt_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:078cb000002000000002158

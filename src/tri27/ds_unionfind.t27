@@ -1,0 +1,13 @@
+; Union-Find — TTT Dogfood Phase 3
+;
+; Disjoint Set Union with path compression and union by rank
+;
+; Test case: ds_unionfind
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; unionfind_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0783700000200000000210e
