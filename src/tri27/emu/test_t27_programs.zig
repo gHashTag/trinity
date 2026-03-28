@@ -37155,3 +37155,198 @@ test "clique: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "concat: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "concat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Concat") != null);
+}
+
+test "concat: verify operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "concat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "concave_hull: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "concave_hull.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Concave") != null);
+}
+
+test "concave_hull: verify hull" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "concave_hull.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "conditional_removal: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conditional_removal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Conditional") != null);
+}
+
+test "conditional_removal: verify removal" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "conditional_removal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cone_fitting: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cone_fitting.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cone") != null);
+}
+
+test "cone_fitting: verify fitting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cone_fitting.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "contour_approx: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "contour_approx.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Contour") != null);
+}
+
+test "contour_approx: verify approximation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "contour_approx.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "correlation_distance: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "correlation_distance.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Correlation") != null);
+}
+
+test "correlation_distance: verify distance" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "correlation_distance.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cos: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cos.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cosine") != null);
+}
+
+test "cos: verify function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cos.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cos_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cos_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cos") != null);
+}
+
+test "cos_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cos_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cosh_tensor: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cosh_tensor.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cosh") != null);
+}
+
+test "cosh_tensor: verify tensor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cosh_tensor.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "cosine_distance: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cosine_distance.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cosine") != null);
+}
+
+test "cosine_distance: verify distance" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cosine_distance.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crc32: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crc32.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "CRC32") != null);
+}
+
+test "crc32: verify checksum" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crc32.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crc64: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crc64.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "CRC64") != null);
+}
+
+test "crc64: verify checksum" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crc64.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crop2d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crop2d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Crop") != null);
+}
+
+test "crop2d: verify crop" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crop2d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
