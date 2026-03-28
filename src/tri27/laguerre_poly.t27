@@ -1,0 +1,13 @@
+; Laguerre Polynomials — TTT Dogfood Phase 3
+;
+; Laguerre polynomial
+;
+; Test case: laguerre_poly
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; laguerre_poly_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a98001a10

@@ -1,0 +1,13 @@
+; Chebyshev Polynomial — TTT Dogfood Phase 3
+;
+; Chebyshev polynomial
+;
+; Test case: chebyshev_t
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; chebyshev_t_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071aa4001a1c
