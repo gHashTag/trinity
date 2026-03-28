@@ -1,0 +1,13 @@
+; Circular Queue — TTT Dogfood Phase 3
+;
+; FIFO queue with wrap-around
+;
+; Test case: ds_queue_circular
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; circular_queue_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732c000000001579

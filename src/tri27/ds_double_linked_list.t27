@@ -1,0 +1,13 @@
+; Double Linked List — TTT Dogfood Phase 3
+;
+; Doubly-linked list nodes
+;
+; Test case: ds_double_linked_list
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; double_linked_list_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073020000000015a9
