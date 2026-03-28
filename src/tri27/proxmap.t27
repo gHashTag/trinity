@@ -62,4 +62,4 @@
     ST t0, 61         ; adjustments = 2
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b777da577cf1383f992f8f9a2de4942747037a2bef523dbdd65ee4935280be08
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b74d56e3a157c6dcdae4f0445dae2f9634fad29580eab9efbadd9e7c1b40ca99

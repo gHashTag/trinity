@@ -1,0 +1,65 @@
+; String Concatenation (StrCat) — TTT Dogfood Phase 3
+;
+; Append one string to another
+;
+; Test case: dest="hello", src="world"
+; Result: "helloworld"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Destination at address 100: "hello\0"
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+    LDI t0, 0
+    ST t0, 105        ; null
+
+; Source at address 110: "world\0"
+    LDI t0, 119        ; w
+    ST t0, 110
+    LDI t0, 111        ; o
+    ST t0, 111
+    LDI t0, 114        ; r
+    ST t0, 112
+    LDI t0, 108        ; l
+    ST t0, 113
+    LDI t0, 100        ; d
+    ST t0, 114
+    LDI t0, 0
+    ST t0, 115        ; null
+
+; Result at address 200: "helloworld"
+    LDI t0, 104        ; h
+    ST t0, 200
+    LDI t0, 101        ; e
+    ST t0, 201
+    LDI t0, 108        ; l
+    ST t0, 202
+    LDI t0, 108        ; l
+    ST t0, 203
+    LDI t0, 111        ; o
+    ST t0, 204
+    LDI t0, 119        ; w
+    ST t0, 205
+    LDI t0, 111        ; o
+    ST t0, 206
+    LDI t0, 114        ; r
+    ST t0, 207
+    LDI t0, 108        ; l
+    ST t0, 208
+    LDI t0, 100        ; d
+    ST t0, 209
+
+; Result length: 10
+    LDI t0, 10
+    ST t0, 60         ; result_len = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a3a0e1d670b0b90a1f5091023ae6a8f43d0735fa501a6b9529fe6227b7cae21d

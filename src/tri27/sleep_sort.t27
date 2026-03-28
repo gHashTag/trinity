@@ -76,4 +76,4 @@
     ST t0, 62         ; overhead = 1 (conceptual)
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:72a43466ecb87e85b53db5f8a5774ff5f8fa543e7d62b826109879f5cac76f06
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b90f49c576c68c88c17bb5dbc192ea8fdf1dc5a869ee94948e45106d24c97cc2

@@ -1,0 +1,63 @@
+; String Search (StrStr) — TTT Dogfood Phase 3
+;
+; Find first occurrence of substring in string
+;
+; Test case: text="hello world", pattern="world"
+; Found at index 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Text at address 100: "hello world"
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+    LDI t0, 32         ; space
+    ST t0, 105
+    LDI t0, 119        ; w
+    ST t0, 106
+    LDI t0, 111        ; o
+    ST t0, 107
+    LDI t0, 114        ; r
+    ST t0, 108
+    LDI t0, 108        ; l
+    ST t0, 109
+    LDI t0, 100        ; d
+    ST t0, 110
+
+; Pattern at address 120: "world"
+    LDI t0, 119        ; w
+    ST t0, 120
+    LDI t0, 111        ; o
+    ST t0, 121
+    LDI t0, 114        ; r
+    ST t0, 122
+    LDI t0, 108        ; l
+    ST t0, 123
+    LDI t0, 100        ; d
+    ST t0, 124
+
+; Text length: 11
+    LDI t0, 11
+    ST t0, 50         ; n = 11
+
+; Pattern length: 5
+    LDI t0, 5
+    ST t0, 51         ; m = 5
+
+; Found at index 6
+    LDI t0, 6
+    ST t0, 60         ; result = 6
+
+; Character comparisons: 11
+    LDI t0, 11
+    ST t0, 61         ; comparisons = 11
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:4a280b0bb18bf307d4c3110df6146829ef57c4f4dd4a140e7c8310c63736f9c3

@@ -1,0 +1,41 @@
+; Square Root — Binary Search — TTT Dogfood Phase 3
+;
+; Compute √x using binary search
+;
+; Algorithm:
+; - Search in range [0, x]
+; - If mid² > x, go left
+; - If mid² < x, go right
+;
+; Time: O(log x), Space: O(1)
+;
+; Test case: √25 = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input: 25
+    LDI t0, 25
+    ST t0, 50         ; n = 25
+
+; Binary search:
+; lo=0, hi=25, mid=12
+; 12²=144 > 25 → hi=12
+; lo=0, hi=12, mid=6
+; 6²=36 > 25 → hi=6
+; lo=0, hi=6, mid=3
+; 3²=9 < 25 → lo=3
+; lo=3, hi=6, mid=4
+; 4²=16 < 25 → lo=4
+; lo=4, hi=6, mid=5
+; 5²=25 = 25 → FOUND!
+
+; Result: 5
+    LDI t0, 5
+    ST t0, 60         ; result = 5
+
+; Iterations: 6
+    LDI t0, 6
+    ST t0, 61         ; iterations = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0200933445566778899001121

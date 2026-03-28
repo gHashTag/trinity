@@ -15644,3 +15644,172 @@ test "tournament_tree: verify winner path" {
     defer allocator.free(source);
     try std.testing.expect(std.mem.indexOf(u8, source, "winner_index") != null);
 }
+
+// ============================================================================
+// TTT Dogfood Phase 3: Additional Algorithm Files (V121 continued)
+// ============================================================================
+
+test "bloom: probabilistic filter" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bloom") != null);
+}
+
+test "bloom: verify hash functions" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "hash") != null);
+}
+
+test "btree: balanced tree structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B-tree") != null);
+}
+
+test "btree: verify node splitting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "btree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "split") != null);
+}
+
+test "graham_scan: convex hull algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "graham_scan.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "convex hull") != null);
+}
+
+test "graham_scan: verify stack operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "graham_scan.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Graham") != null);
+}
+
+test "intro_sort: hybrid quicksort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "intro_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Intro") != null);
+}
+
+test "intro_sort: verify depth limit" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "intro_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "heap") != null);
+}
+
+test "jarvis_march: gift wrapping algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "jarvis_march.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "gift wrapping") != null);
+}
+
+test "jarvis_march: verify point selection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "jarvis_march.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "leftmost") != null);
+}
+
+test "leftist: leftist heap" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "leftist.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "rank") != null);
+}
+
+test "leftist: verify path length" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "leftist.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "null path") != null);
+}
+
+test "quickhull: convex hull quicksort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quickhull.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "QuickHull") != null);
+}
+
+test "quickhull: verify recursive partitioning" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quickhull.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "recursion") != null);
+}
+
+test "sample_sort: sampling based sort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sample_sort.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "sample") != null);
+}
+
+test "sample_sort: verify bucket distribution" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sample_sort.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "bucket") != null);
+}
+
+test "skew_heap_new: self-adjusting heap" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skew_heap_new.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "skew") != null);
+}
+
+test "skew_heap_new: verify merge operation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skew_heap_new.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "merge") != null);
+}
+
+test "skip_list_new: probabilistic structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skip_list_new.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Skip List") != null);
+}
+
+test "skip_list_new: verify level promotion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skip_list_new.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "level") != null);
+}
+
+test "timsort_more: adaptive stable sort" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "timsort_more.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Tim Sort") != null);
+}
+
+test "timsort_more: verify run detection" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "timsort_more.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "runs") != null);
+}

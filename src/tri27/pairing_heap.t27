@@ -99,4 +99,4 @@
     ST t0, 63         ; merges = 4
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d207bbde0bc0aef47d9f60f7c7ea86ea37ebbaf4a2b023c48c45e65edd176d15
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:db2f5b14a347831853d366c3bc81ba9ab0b6c1d8b9a2af7b98fe3cc4c5b8bece

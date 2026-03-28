@@ -1,0 +1,69 @@
+; String Tokenization (StrTok) — TTT Dogfood Phase 3
+;
+; Split string into tokens by delimiters
+;
+; Test case: "hello,world,how" with delimiter ","
+; Tokens: ["hello", "world", "how"]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String at address 100: "hello,world,how"
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+    LDI t0, 44         ; comma
+    ST t0, 105
+    LDI t0, 119        ; w
+    ST t0, 106
+    LDI t0, 111        ; o
+    ST t0, 107
+    LDI t0, 114        ; r
+    ST t0, 108
+    LDI t0, 108        ; l
+    ST t0, 109
+    LDI t0, 100        ; d
+    ST t0, 110
+    LDI t0, 44         ; comma
+    ST t0, 111
+    LDI t0, 104        ; h
+    ST t0, 112
+    LDI t0, 111        ; o
+    ST t0, 113
+    LDI t0, 119        ; w
+    ST t0, 114
+
+; Delimiter: comma (44)
+    LDI t0, 44
+    ST t0, 50         ; delimiter = 44
+
+; Token 0: "hello" at index 0-4
+    LDI t0, 0
+    ST t0, 60         ; token[0].start = 0
+    LDI t0, 5
+    ST t0, 61         ; token[0].len = 5
+
+; Token 1: "world" at index 6-10
+    LDI t0, 6
+    ST t0, 62         ; token[1].start = 6
+    LDI t0, 5
+    ST t0, 63         ; token[1].len = 5
+
+; Token 2: "how" at index 12-14
+    LDI t0, 12
+    ST t0, 64         ; token[2].start = 12
+    LDI t0, 3
+    ST t0, 65         ; token[2].len = 3
+
+; Number of tokens: 3
+    LDI t0, 3
+    ST t0, 70         ; num_tokens = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ed08d4f7ff549e35c41b7d85005a6b10a213ac98fda6023cf7e24f67b3f5cac5

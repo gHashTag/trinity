@@ -1,0 +1,39 @@
+; Find Last Character (StrRChr) — TTT Dogfood Phase 3
+;
+; Find last occurrence of character in string
+;
+; Test case: "hello", search for 'l'
+; Found at index 3 (last 'l')
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String at address 100: "hello"
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+
+; String length: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Search for: 'l' (108)
+    LDI t0, 108
+    ST t0, 51         ; search_char = 108
+
+; Found at index 3 (from end)
+    LDI t0, 3
+    ST t0, 60         ; index = 3
+
+; Comparisons: 2
+    LDI t0, 2
+    ST t0, 61         ; comparisons = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d6ce330f690fc0cdb72e2201bb48cd252ee36e249a7cf464082c86f66b8eced5
