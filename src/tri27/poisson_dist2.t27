@@ -1,6 +1,6 @@
 ; Poisson V2 — TTT Dogfood Phase 3
 ;
-| Count events alt
+; Count events alt
 ;
 ; Test case: poisson_dist2
 ;

@@ -1,6 +1,6 @@
 ; Negative Binomial — TTT Dogfood Phase 3
 ;
-| k-th success
+; k-th success
 ;
 ; Test case: negative_binom
 ;

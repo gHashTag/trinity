@@ -1,6 +1,6 @@
 ; Gamma Distribution V2 — TTT Dogfood Phase 3
 ;
-| Shape+scale alt
+; Shape+scale alt
 ;
 ; Test case: gamma_dist2
 ;
