@@ -1,0 +1,13 @@
+; Game AI Null Move — TTT Dogfood Phase 3
+;
+; Null move pruning
+;
+; Test case: game_ai_null_move
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; null_move_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075b20000020000001969

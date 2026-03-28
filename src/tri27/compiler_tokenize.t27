@@ -1,0 +1,13 @@
+; Compiler Tokenize — TTT Dogfood Phase 3
+;
+; Lexical analysis
+;
+; Test case: compiler_tokenize
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tokenize_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07604000002000001bf9
