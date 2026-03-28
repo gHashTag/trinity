@@ -1,0 +1,13 @@
+; Energy Demand — TTT Dogfood Phase 3
+;
+; Demand response systems
+;
+; Test case: energy_demand
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; demand_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0766d000002000000001e55

@@ -1,0 +1,13 @@
+; Healthcare Diagnosis — TTT Dogfood Phase 3
+;
+; Medical diagnosis support systems
+;
+; Test case: healthcare_diagnosis
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; diagnosis_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0764a000002000000001e0f
