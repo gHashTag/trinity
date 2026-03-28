@@ -11865,3 +11865,183 @@ test "strtok: has_more flag" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
 }
+
+// ============================================================================
+// Is Prime Tests
+// ============================================================================
+
+test "is_prime: assembles" {
+    const path = "src/tri27/is_prime.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "is_prime: input number" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 17
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 17), cpu.t27[0].trits);
+}
+
+test "is_prime: result for 17" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "is_prime: composite check" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "is_prime: factor of 15" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// LCM Tests
+// ============================================================================
+
+test "lcm: assembles" {
+    const path = "src/tri27/lcm.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "lcm: input a" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 12
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "lcm: input b" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 18
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 18), cpu.t27[0].trits);
+}
+
+test "lcm: gcd value" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "lcm: result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 36
+        \\    ST t0, 70
+        \\    LD t0, 70
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 36), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Absolute Value Tests
+// ============================================================================
+
+test "abs: assembles" {
+    const path = "src/tri27/abs.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "abs: negative input" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, -42
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, -42), cpu.t27[0].trits);
+}
+
+test "abs: result of abs(-42)" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "abs: result of abs(42)" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 42
+        \\    ST t0, 61
+        \\    LD t0, 61
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "abs: zero case" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
