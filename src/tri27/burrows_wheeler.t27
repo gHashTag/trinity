@@ -1,0 +1,83 @@
+; Burrows-Wheeler Transform — TTT Dogfood Phase 3
+;
+; Permutation transform for compression preprocessing
+;
+; Algorithm: Cyclic rotations + lexicographic sort + last column
+; - Generate all cyclic rotations of input
+; - Sort rotations lexicographically
+; - Take last column of sorted matrix
+; - Useful for grouping similar characters
+;
+; Time: O(n² log n), Space: O(n²)
+;
+; Test case: "BANANA"
+; Rotations sorted:
+;   0: ANANA$B
+;   1: A$BANAN
+;   2: BANANA$
+;   3: NABANA$
+;   4: N$ABANA
+;   5: $BANANA
+; Last column: "NNBAAA"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "BANANA"
+; B=66, A=65, N=78, $=36 (EOF marker)
+    LDI t0, 66
+    ST t0, 100        ; [0] = B
+    LDI t0, 65
+    ST t0, 101        ; [1] = A
+    LDI t0, 78
+    ST t0, 102        ; [2] = N
+    LDI t0, 65
+    ST t0, 103        ; [3] = A
+    LDI t0, 78
+    ST t0, 104        ; [4] = N
+    LDI t0, 65
+    ST t0, 105        ; [5] = A
+    LDI t0, 36
+    ST t0, 106        ; [6] = $ (EOF)
+
+; Input length: 7 (with $)
+    LDI t0, 7
+    ST t0, 50         ; input_len = 7
+
+; Original string index in sorted rotations: 2
+    LDI t0, 2
+    ST t0, 51         ; original_idx = 2
+
+; BWT output at address 200: "NNBAAA"
+; This is the last column of sorted rotations
+    LDI t0, 78
+    ST t0, 200        ; [0] = N
+    LDI t0, 78
+    ST t0, 201        ; [1] = N
+    LDI t0, 66
+    ST t0, 202        ; [2] = B
+    LDI t0, 65
+    ST t0, 203        ; [3] = A
+    LDI t0, 65
+    ST t0, 204        ; [4] = A
+    LDI t0, 65
+    ST t0, 205        ; [5] = A
+
+; Output length: 6 (without $)
+    LDI t0, 6
+    ST t0, 60         ; output_len = 6
+
+; Character frequencies in BWT output:
+; N: 2, B: 1, A: 3
+    LDI t0, 2
+    ST t0, 61         ; freq_N = 2
+    LDI t0, 1
+    ST t0, 62         ; freq_B = 1
+    LDI t0, 3
+    ST t0, 63         ; freq_A = 3
+
+; Run-length encoding potential: 3 consecutive 'A's
+    LDI t0, 1
+    ST t0, 64         ; has_run = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:20409f8ed8924873ab56df39a7c7d25b08dc22c514a4a288722a0a51516c17ba

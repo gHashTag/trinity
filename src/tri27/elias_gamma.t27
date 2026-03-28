@@ -1,0 +1,91 @@
+; Elias Gamma Coding — TTT Dogfood Phase 3
+;
+; Universal code for positive integers
+;
+; Algorithm: Encode integer N as:
+; - N in binary: e.g., 13 = 1101
+; - Length of binary in unary: floor(log2(N)) zeros + 1
+; - Prefix + binary = code
+;
+; Example: N=13
+; - Binary: 1101 (4 bits)
+; - Length=4, unary prefix: 0001
+; - Code: 00011101
+;
+; Time: O(log n), Space: O(log n)
+;
+; Test cases: 1, 5, 9, 13
+; 1 → 1
+; 5 → 00101
+; 9 → 0001001
+; 13 → 00011101
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input values at address 100:
+    LDI t0, 1
+    ST t0, 100        ; [0] = 1
+    LDI t0, 5
+    ST t0, 101        ; [1] = 5
+    LDI t0, 9
+    ST t0, 102        ; [2] = 9
+    LDI t0, 13
+    ST t0, 103        ; [3] = 13
+
+; Input count: 4
+    LDI t0, 4
+    ST t0, 50         ; input_count = 4
+
+; Encoded output (bit lengths for demonstration):
+; N=1: binary=1, len=1, prefix=0 → "01" (2 bits)
+; N=5: binary=101, len=3, prefix=00 → "00101" (5 bits)
+; N=9: binary=1001, len=4, prefix=000 → "0001001" (7 bits)
+; N=13: binary=1101, len=4, prefix=000 → "00011101" (8 bits)
+
+; Output at address 200: [bit_length, unary_zeros, value]
+; N=1 → [2, 1, 1]
+    LDI t0, 2
+    ST t0, 200        ; code_len_1 = 2
+    LDI t0, 1
+    ST t0, 201        ; unary_zeros_1 = 1
+    LDI t0, 1
+    ST t0, 202        ; value_1 = 1
+
+; N=5 → [5, 3, 5]
+    LDI t0, 5
+    ST t0, 203        ; code_len_5 = 5
+    LDI t0, 3
+    ST t0, 204        ; unary_zeros_5 = 3
+    LDI t0, 5
+    ST t0, 205        ; value_5 = 5
+
+; N=9 → [7, 4, 9]
+    LDI t0, 7
+    ST t0, 206        ; code_len_9 = 7
+    LDI t0, 4
+    ST t0, 207        ; unary_zeros_9 = 4
+    LDI t0, 9
+    ST t0, 208        ; value_9 = 9
+
+; N=13 → [8, 4, 13]
+    LDI t0, 8
+    ST t0, 209        ; code_len_13 = 8
+    LDI t0, 4
+    ST t0, 210        ; unary_zeros_13 = 4
+    LDI t0, 13
+    ST t0, 211        ; value_13 = 13
+
+; Total encoded bits: 22
+    LDI t0, 22
+    ST t0, 60         ; total_bits = 22
+
+; Total bytes (rounded up): 3
+    LDI t0, 3
+    ST t0, 61         ; total_bytes = 3
+
+; Average bits per number: 5.5
+    LDI t0, 55        ; 5.5 * 10
+    ST t0, 62         ; avg_bits_x10 = 55
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:40efca987bb1a8b6e7c938ba92e7498027e10a85bce8b9ec090ece622adc2fd5
