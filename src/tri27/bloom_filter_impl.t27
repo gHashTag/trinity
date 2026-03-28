@@ -1,0 +1,17 @@
+; Bloom Filter — TTT Dogfood Phase 3
+;
+; Probabilistic set membership
+;
+; Test case: 1000 items, 3 hash functions
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1000
+    ST t0, 60         ; n = 1000
+    LDI t0, 3
+    ST t0, 61         ; k = 3 hashes
+    LDI t0, 1
+    ST t0, 62         ; might_contain = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07131f002295

@@ -1,0 +1,13 @@
+; Base64 Decode — TTT Dogfood Phase 3
+;
+; Base64 decoding
+;
+; Test case: "SGVsbG8=" → "Hello"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; output_len = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071313001289

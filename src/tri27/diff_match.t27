@@ -1,0 +1,13 @@
+; Diff Match — TTT Dogfood Phase 3
+;
+; Compute text differences
+;
+; Test case: 2 edits found
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; edits = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07131800128e

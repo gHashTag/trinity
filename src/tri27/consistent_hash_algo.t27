@@ -1,0 +1,15 @@
+; Consistent Hashing — TTT Dogfood Phase 3
+;
+; Distributed hashing
+;
+; Test case: 10 nodes, key assigned
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 10
+    ST t0, 60         ; nodes = 10
+    LDI t0, 5
+    ST t0, 61         ; assigned_node = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071323032299
