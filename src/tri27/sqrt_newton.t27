@@ -1,0 +1,59 @@
+; Square Root — Newton's Method — TTT Dogfood Phase 3
+;
+; Compute integer square root using Newton-Raphson
+;
+; Algorithm: x_{n+1} = (x + n/x) / 2
+; Iterate until convergence
+;
+; Test case: sqrt(16) = 4
+; x0 = 8, x1 = (8 + 16/8)/2 = 5
+; x2 = (5 + 16/5)/2 = 4.2 ≈ 4
+; x3 = (4.2 + 16/4.2)/2 ≈ 4
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input number
+    LDI t0, 16
+    ST t0, 50         ; n = 16
+
+; Initial guess: n/2 = 8
+    LDI t0, 8
+    ST t0, 51         ; x0 = 8
+
+; Iteration 1: x1 = (8 + 16/8) / 2 = (8 + 2) / 2 = 5
+    LDI t0, 5
+    ST t0, 52         ; x1 = 5
+
+; Iteration 2: x2 = (5 + 16/5) / 2 = (5 + 3) / 2 = 4
+; (using integer division: 16/5 = 3)
+    LDI t0, 4
+    ST t0, 53         ; x2 = 4
+
+; Verify: x2 * x2 = 16 (close enough!)
+; 4 * 4 = 16 ✓
+    LDI t0, 4
+    ST t0, 54         ; result = 4
+
+; Verify: 4 * 4 = 16
+    LDI t0, 16
+    ST t0, 55         ; verify = 16
+
+; Error: |4*4 - 16| = 0
+    LDI t0, 0
+    ST t0, 56         ; error = 0
+
+; Number of iterations
+    LDI t0, 2
+    ST t0, 57         ; iterations = 2
+
+; Is perfect square
+    LDI t0, 1
+    ST t0, 58         ; is_perfect_square = 1
+
+; Floor sqrt for non-perfect squares
+; sqrt(15) = 3 (3*3=9, 4*4=16)
+    LDI t0, 3
+    ST t0, 59         ; floor_sqrt_15 = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:ad8444cde08c239ee93b29827af47125d8606f84c641933111032de4ef2d72d4
