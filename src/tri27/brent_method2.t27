@@ -1,6 +1,6 @@
 ; Brent V2 — TTT Dogfood Phase 3
 ;
-| Hybrid bisection/secant alt
+; Hybrid bisection/secant alt
 ;
 ; Test case: brent_method2
 ;

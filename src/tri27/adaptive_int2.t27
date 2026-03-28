@@ -1,6 +1,6 @@
 ; Adaptive Integration V2 — TTT Dogfood Phase 3
 ;
-| Error-controlled quad alt
+; Error-controlled quad alt
 ;
 ; Test case: adaptive_int2
 ;

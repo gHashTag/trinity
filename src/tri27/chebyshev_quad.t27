@@ -1,6 +1,6 @@
 ; Chebyshev Quadrature — TTT Dogfood Phase 3
 ;
-| Weighted nodes
+; Weighted nodes
 ;
 ; Test case: chebyshev_quad
 ;

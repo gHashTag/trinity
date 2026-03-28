@@ -1,6 +1,6 @@
 ; Gauss-Kronrod — TTT Dogfood Phase 3
 ;
-| Nested quadrature
+; Nested quadrature
 ;
 ; Test case: gauss_kronrod
 ;

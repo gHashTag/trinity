@@ -1,6 +1,6 @@
 ; Adaptive Step Size — TTT Dogfood Phase 3
 ;
-| Error-controlled ODE
+; Error-controlled ODE
 ;
 ; Test case: adaptive_step
 ;
