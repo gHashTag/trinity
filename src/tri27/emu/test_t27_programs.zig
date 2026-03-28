@@ -1785,7 +1785,6 @@ test "hash_table: load factor calculation" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
 }
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // STACK TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1810,52 +1809,51 @@ test "stack: assembles" {
     try std.testing.expect(bytecode.len > 0);
 }
 
-test "stack: push operation" {
+test "stack: push and pop" {
     const allocator = std.testing.allocator;
-    // Push value 5 to stack at SP=0
+    // Push 5, then 3, pop should return 3
     const program =
         \\    LDI t0, 0         ; SP = 0
         \\    ST t0, 50
-        \\    LD t1, 50         ; load SP
-        \\    LDI t0, 200        ; base address
-        \\    ADD t1, t1, t0     ; t1 = 200
-        \\    LDI t0, 5         ; value
-        \\    ST t0, t1         ; stack[0] = 5
-        \\    LD t0, t1         ; verify
-        \\    HALT
-    ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
-}
-
-test "stack: pop operation" {
-    const allocator = std.testing.allocator;
-    // Push 5, then pop it
-    const program =
-        \\    LDI t0, 0         ; SP = 1 (simulate one element)
-        \\    ST t0, 50
-        \\    LDI t0, 5
-        \\    ST t0, 200        ; stack[0] = 5
-        \\    ; Pop: decrement SP
+        ; Push 5
         \\    LD t1, 50
         \\    LDI t0, 1
-        \\    SUB t1, t1, t0     ; SP = 0
-        \\    ; Load element
-        \\    LDI t0, 200
-        \\    ADD t1, t1, t0     ; addr = 200
-        \\    LD t0, t1
+        \\    ADD t1, t1, t0
+        \\    LDI t0, 5
+        \\    ST t0, t1
+        \\    ; Update SP
+        \\    LD t1, 50
+        \\    LDI t0, 1
+        \\    ADD t1, t1, t0
+        \\    ST t1, 50
+        ; Push 3
+        \\    LD t1, 50
+        \\    LDI t0, 1
+        \\    ADD t1, t1, t0
+        \\    LDI t0, 3
+        \\    ST t0, t1
+        \\    ; Update SP
+        \\    LD t1, 50
+        \\    LDI t0, 1
+        \\    ADD t1, t1, t0
+        \\    ST t1, 50
+        ; Pop: decrement SP and load
+        \\    LD t1, 50
+        \\    LDI t0, 1
+        \\    SUB t1, t1, t0
+        \\    LD t0, t1         ; t0 = 3 (LIFO!)
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
-test "stack: isEmpty check" {
+test "stack: isEmpty when empty" {
     const allocator = std.testing.allocator;
     const program =
-        \\    LDI t0, 0         ; SP = 0
-        \\    ST t0, 50
-        \\    LD t0, 50         ; load SP
+        \\    LDI t0, 0
+        \\    ST t0, 50         ; SP = 0
+        \\    LD t0, 50
         \\    JZ t0, is_empty
         \\    LDI t0, 0         ; not empty
         \\    HALT
@@ -1865,21 +1863,6 @@ test "stack: isEmpty check" {
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
-}
-
-test "stack: LIFO property verification" {
-    const allocator = std.testing.allocator;
-    // Push 5, 3 then pop: should get 3, then 5
-    const program =
-        \\    LDI t0, 5
-        \\    ST t0, 200        ; push 5
-        \\    LDI t0, 3
-        \\    ST t0, 201        ; push 3
-        \\    LD t0, 201        ; pop from top (gets 3)
-        \\    HALT
-    ;
-    const cpu = try runWithInput(allocator, program, &[_]i64{});
-    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
 // φ² + 1/φ² = 3 | TRINITY
