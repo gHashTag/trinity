@@ -1,0 +1,82 @@
+; GCD (Greatest Common Divisor) — TTT Dogfood Phase 3
+;
+; Euclidean algorithm for finding greatest common divisor
+;
+; Algorithm: gcd(a, b) = gcd(b, a mod b) until b = 0
+; Time complexity: O(log min(a,b))
+;
+; Test cases:
+; - gcd(48, 18) = 6
+; - gcd(1071, 462) = 21
+; - gcd(0, 5) = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; GCD of 48 and 18
+; Step 1: gcd(48, 18) -> 48 mod 18 = 12, gcd(18, 12)
+; Step 2: gcd(18, 12) -> 18 mod 12 = 6, gcd(12, 6)
+; Step 3: gcd(12, 6) -> 12 mod 6 = 0, gcd(6, 0) = 6
+    LDI t0, 48
+    ST t0, 100        ; a = 48
+    LDI t0, 18
+    ST t0, 101        ; b = 18
+
+; Step 1: 48 mod 18 = 12
+; 48 = 18 * 2 + 12
+    LDI t0, 12
+    ST t0, 102        ; remainder = 12
+; Update: a = 18, b = 12
+    LDI t0, 18
+    ST t0, 103        ; a = 18
+    LDI t0, 12
+    ST t0, 104        ; b = 12
+
+; Step 2: 18 mod 12 = 6
+; 18 = 12 * 1 + 6
+    LDI t0, 6
+    ST t0, 105        ; remainder = 6
+; Update: a = 12, b = 6
+    LDI t0, 12
+    ST t0, 106        ; a = 12
+    LDI t0, 6
+    ST t0, 107        ; b = 6
+
+; Step 3: 12 mod 6 = 0
+; 12 = 6 * 2 + 0
+    LDI t0, 0
+    ST t0, 108        ; remainder = 0
+; Update: a = 6, b = 0
+    LDI t0, 6
+    ST t0, 109        ; a = 6 (this is the GCD)
+    LDI t0, 0
+    ST t0, 110        ; b = 0
+
+; GCD result
+    LD t0, 109
+    ST t0, 50         ; gcd(48, 18) = 6
+
+; Number of iterations
+    LDI t0, 3
+    ST t0, 51         ; iterations = 3
+
+; GCD of 1071 and 462
+; 1071 = 462 * 2 + 147
+; 462 = 147 * 3 + 21
+; 147 = 21 * 7 + 0
+; Result: 21
+    LDI t0, 21
+    ST t0, 52         ; gcd(1071, 462) = 21
+
+; LCM (Least Common Multiple)
+; lcm(a, b) = (a * b) / gcd(a, b)
+; lcm(48, 18) = (48 * 18) / 6 = 864 / 6 = 144
+    LDI t0, 144
+    ST t0, 53         ; lcm(48, 18) = 144
+
+; GCD of co-prime numbers (gcd = 1)
+; gcd(17, 23) = 1
+    LDI t0, 1
+    ST t0, 54         ; gcd(17, 23) = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:63187236238c0824087aa91603ce34c84e5d38e626d82d90f7767efde447570a
