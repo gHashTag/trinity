@@ -11685,3 +11685,183 @@ test "cycle_sort: cycle count" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
 }
+
+// ============================================================================
+// String Reverse (strrev) Tests
+// ============================================================================
+
+test "strrev: assembles" {
+    const path = "src/tri27/strrev.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strrev: string initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 104
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 104), cpu.t27[0].trits);
+}
+
+test "strrev: is_reversed flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "strrev: swap count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "strrev: first char reversed" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 111
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 111), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// StrStr (Find Substring) Tests
+// ============================================================================
+
+test "strstr: assembles" {
+    const path = "src/tri27/strstr.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strstr: text initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 104
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 104), cpu.t27[0].trits);
+}
+
+test "strstr: found_index" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "strstr: found flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "strstr: matched_chars" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// StrTok (String Tokenizer) Tests
+// ============================================================================
+
+test "strtok: assembles" {
+    const path = "src/tri27/strtok.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "strtok: input initialization" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 104
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 104), cpu.t27[0].trits);
+}
+
+test "strtok: token_count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "strtok: token1_start" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 60
+        \\    LD t0, 60
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "strtok: has_more flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}

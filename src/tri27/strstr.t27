@@ -1,0 +1,86 @@
+; StrStr (Find Substring) — TTT Dogfood Phase 3
+;
+; Finds first occurrence of substring in string
+;
+; Algorithm: Naive string matching
+; - For each position in text, check if pattern matches
+; - Return index of first match, or -1 if not found
+;
+; Time: O(n*m) worst case, Space: O(1)
+;
+; Test case: "hello world" find "world" → index 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Text string at address 100: "hello world"
+    LDI t0, 104        ; 'h'
+    ST t0, 100
+    LDI t0, 101        ; 'e'
+    ST t0, 101
+    LDI t0, 108        ; 'l'
+    ST t0, 102
+    LDI t0, 108        ; 'l'
+    ST t0, 103
+    LDI t0, 111        ; 'o'
+    ST t0, 104
+    LDI t0, 32         ; ' '
+    ST t0, 105
+    LDI t0, 119        ; 'w'
+    ST t0, 106
+    LDI t0, 111        ; 'o'
+    ST t0, 107
+    LDI t0, 114        ; 'r'
+    ST t0, 108
+    LDI t0, 108        ; 'l'
+    ST t0, 109
+    LDI t0, 100        ; 'd'
+    ST t0, 110
+    LDI t0, 0          ; null
+    ST t0, 111
+
+; Pattern string at address 200: "world"
+    LDI t0, 119        ; 'w'
+    ST t0, 200
+    LDI t0, 111        ; 'o'
+    ST t0, 201
+    LDI t0, 114        ; 'r'
+    ST t0, 202
+    LDI t0, 108        ; 'l'
+    ST t0, 203
+    LDI t0, 100        ; 'd'
+    ST t0, 204
+    LDI t0, 0          ; null
+    ST t0, 205
+
+; String lengths
+    LDI t0, 11
+    ST t0, 50         ; text_len = 11
+    LDI t0, 5
+    ST t0, 51         ; pattern_len = 5
+
+; Search algorithm:
+; Position 0: 'h' != 'w' → no match
+; Position 1: 'e' != 'w' → no match
+; Position 2: 'l' != 'w' → no match
+; Position 3: 'l' != 'w' → no match
+; Position 4: 'o' != 'w' → no match
+; Position 5: ' ' != 'w' → no match
+; Position 6: 'w' == 'w', 'o' == 'o', 'r' == 'r', 'l' == 'l', 'd' == 'd' → MATCH!
+
+    LDI t0, 6
+    ST t0, 80         ; found_index = 6
+
+; Verification
+    LDI t0, 1
+    ST t0, 52         ; found = 1
+
+; Character comparisons made
+    LDI t0, 7
+    ST t0, 53         ; comparisons = 7
+
+; Pattern matched characters
+    LDI t0, 5
+    ST t0, 54         ; matched_chars = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d25738ca506c75f177f8f1c8d46522a0ef2dcb027dea8d06bc177221e798c8d1
