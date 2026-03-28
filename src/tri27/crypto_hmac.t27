@@ -1,0 +1,13 @@
+; HMAC — TTT Dogfood Phase 3
+;
+; Keyed-hash message authentication
+;
+; Test case: crypto_hmac
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; hmac_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732800001000001509

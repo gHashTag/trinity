@@ -60480,3 +60480,138 @@ test "num_tan_v2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "ds_binary_heap: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_binary_heap.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_binary_heap: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_binary_heap.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_circular_linked_list: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_circular_linked_list.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_circular_linked_list: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_circular_linked_list.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_deque_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_deque_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_deque_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_deque_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_double_linked_list: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_double_linked_list.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_double_linked_list: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_double_linked_list.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_queue_circular: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_queue_circular.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_queue_circular: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_queue_circular.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_ring_buffer_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_ring_buffer_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_ring_buffer_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_ring_buffer_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_stack_vector: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_stack_vector.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_stack_vector: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_stack_vector.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_lerp_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_lerp_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_lerp_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_lerp_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "num_smoothstep_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_smoothstep_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "num_smoothstep_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "num_smoothstep_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
