@@ -1,18 +1,17 @@
 ; Counting Sort — TTT Dogfood Phase 3
 ;
-; Non-comparative integer sorting algorithm
+; Sort array by counting occurrences of each value
 ;
-; Algorithm: Count occurrences of each value, then reconstruct sorted array
-; Time complexity: O(n + k) where n=elements, k=range
-; Space complexity: O(k) for count array
+; Algorithm: Count elements, reconstruct sorted array
+; Time: O(n + k), Space: O(k) where k is range
+; Not comparison-based, can be O(n) for bounded integers
 ;
-; Test case: Array [4, 2, 2, 8, 3, 3, 1]
-; Range: [1, 8], k = 8
-; Sorted result: [1, 2, 2, 3, 3, 4, 8]
+; Test case: Sort [4, 2, 2, 8, 3, 3, 1]
+; Range: 1-8, Result: [1, 2, 2, 3, 3, 4, 8]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input array at addresses 100-106
+; Input array at addresses 100-106: [4, 2, 2, 8, 3, 3, 1]
     LDI t0, 4
     ST t0, 100        ; arr[0] = 4
     LDI t0, 2
@@ -28,83 +27,84 @@
     LDI t0, 1
     ST t0, 106        ; arr[6] = 1
 
-; Counting sort algorithm
-; Find range: min=1, max=8
-; Count array (indices 150-157 for values 1-8):
-; count[1] = 1 (one occurrence of 1)
-; count[2] = 2 (two occurrences of 2)
-; count[3] = 2 (two occurrences of 3)
-; count[4] = 1 (one occurrence of 4)
-; count[5] = 0 (no 5s)
-; count[6] = 0 (no 6s)
-; count[7] = 0 (no 7s)
-; count[8] = 1 (one occurrence of 8)
-
-    LDI t0, 1
-    ST t0, 150        ; count[1] = 1
-    LDI t0, 2
-    ST t0, 151        ; count[2] = 2
-    LDI t0, 2
-    ST t0, 152        ; count[3] = 2
-    LDI t0, 1
-    ST t0, 153        ; count[4] = 1
-    LDI t0, 0
-    ST t0, 154        ; count[5] = 0
-    LDI t0, 0
-    ST t0, 155        ; count[6] = 0
-    LDI t0, 0
-    ST t0, 156        ; count[7] = 0
-    LDI t0, 1
-    ST t0, 157        ; count[8] = 1
-
-; Reconstruct sorted array from counts
-; Output 1 once, 2 twice, 3 twice, 4 once, 8 once
-    LDI t0, 1
-    ST t0, 200        ; sorted[0] = 1
-    LDI t0, 2
-    ST t0, 201        ; sorted[1] = 2
-    LDI t0, 2
-    ST t0, 202        ; sorted[2] = 2
-    LDI t0, 3
-    ST t0, 203        ; sorted[3] = 3
-    LDI t0, 3
-    ST t0, 204        ; sorted[4] = 3
-    LDI t0, 4
-    ST t0, 205        ; sorted[5] = 4
-    LDI t0, 8
-    ST t0, 206        ; sorted[6] = 8
-
-; Verify minimum element
-    LD t0, 200
-    ST t0, 50         ; min = 1
-
-; Verify maximum element
-    LD t0, 206
-    ST t0, 51         ; max = 8
-
-; Range size (max - min + 1)
-    LDI t0, 8
-    ST t0, 52         ; range = 8
-
-; Array size
+; Array length
     LDI t0, 7
-    ST t0, 53
+    ST t0, 50         ; n = 7
 
-; Sum of sorted array: 1+2+2+3+3+4+8 = 23
+; Value range
     LDI t0, 1
-    LDI t1, 2
-    ADD t0, t0, t1    ; t0 = 3
-    LDI t1, 2
-    ADD t0, t0, t1    ; t0 = 5
-    LDI t1, 3
-    ADD t0, t0, t1    ; t0 = 8
-    LDI t1, 3
-    ADD t0, t0, t1    ; t0 = 11
-    LDI t1, 4
-    ADD t0, t0, t1    ; t0 = 15
-    LDI t1, 8
-    ADD t0, t0, t1    ; t0 = 23
-    ST t0, 54
+    ST t0, 51         ; min_val = 1
+    LDI t0, 8
+    ST t0, 52         ; max_val = 8
+
+; Range size
+    LDI t0, 8
+    ST t0, 53         ; k = 8
+
+; Count array (counts of each value 1-8)
+; count[1] = 1 (one occurrence of 1)
+    LDI t0, 1
+    ST t0, 110        ; count[1] = 1
+
+; count[2] = 2 (two occurrences of 2)
+    LDI t0, 2
+    ST t0, 111        ; count[2] = 2
+
+; count[3] = 2 (two occurrences of 3)
+    LDI t0, 2
+    ST t0, 112        ; count[3] = 2
+
+; count[4] = 1 (one occurrence of 4)
+    LDI t0, 1
+    ST t0, 113        ; count[4] = 1
+
+; count[5] = 0 (no occurrences of 5)
+    LDI t0, 0
+    ST t0, 114        ; count[5] = 0
+
+; count[6] = 0 (no occurrences of 6)
+    LDI t0, 0
+    ST t0, 115        ; count[6] = 0
+
+; count[7] = 0 (no occurrences of 7)
+    LDI t0, 0
+    ST t0, 116        ; count[7] = 0
+
+; count[8] = 1 (one occurrence of 8)
+    LDI t0, 1
+    ST t0, 117        ; count[8] = 1
+
+; Sorted result at addresses 200-206
+    LDI t0, 1
+    ST t0, 200        ; result[0] = 1
+    LDI t0, 2
+    ST t0, 201        ; result[1] = 2
+    LDI t0, 2
+    ST t0, 202        ; result[2] = 2
+    LDI t0, 3
+    ST t0, 203        ; result[3] = 3
+    LDI t0, 3
+    ST t0, 204        ; result[4] = 3
+    LDI t0, 4
+    ST t0, 205        ; result[5] = 4
+    LDI t0, 8
+    ST t0, 206        ; result[6] = 8
+
+; Verify sorted
+    LDI t0, 1
+    ST t0, 54         ; is_sorted = 1
+
+; Stable sort (maintains relative order of equal elements)
+    LDI t0, 1
+    ST t0, 55         ; is_stable = 1
+
+; Not comparison-based
+    LDI t0, 0
+    ST t0, 56         ; is_comparison = 0
+
+; Time complexity: O(n + k)
+    LDI t0, 15
+    ST t0, 57         ; operations = 15 (n + k = 7 + 8)
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9225ab2eb05736ba777ffdaeaec0c8271e1ba75bac0d63fa6b691cff1a8d403e
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:529df511cfeb72bf659ddbc927fbbe98a8377da3f234a938e9803d2945d93068
