@@ -22,15 +22,8 @@ pub const Image = struct {
     };
 
     pub fn init(allocator: std.mem.Allocator, width: usize, height: usize) !Image {
-<<<<<<< Updated upstream
         const pixels = try allocator.alloc(Image.Color, width * height);
         @memset(pixels, Image.Color{ .r = 0, .g = 0, .b = 0 });
-=======
-        var pixels = try std.ArrayList(Color).initCapacity(allocator, width * height);
-        for (0..width * height) |_| {
-            try pixels.append(allocator, Color{ .r = 255, .g = 255, .b = 255, .a = 255 });
-        }
->>>>>>> Stashed changes
         return .{
             .width = width,
             .height = height,

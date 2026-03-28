@@ -125,64 +125,50 @@ fn walkDirectory(allocator: std.mem.Allocator, path: []const u8) !struct {
     };
     defer dir.close();
 
-        var walker = dir.walk(allocator) catch |err| {
-            std.debug.print("Error walking {s}: {}\n", .{ path, err });
-            return .{ .files_with_cyrillic = 0, .total_files = 0 };
-        };
-        defer walker.deinit();
-
-        while (true) {
-            const entry_opt = walker.next() catch |err| {
-                std.debug.print("Error during walk: {}\n", .{err});
-                break;
-            };
-            const entry = entry_opt orelse break;
-            if (entry.kind != .file) continue;
-
-            // Skip common non-code files
-            const ext = std.fs.path.extension(entry.basename);
-            if (std.mem.eql(u8, ext, ".png") or
-                std.mem.eql(u8, ext, ".jpg") or
-                std.mem.eql(u8, ext, ".jpeg") or
-                std.mem.eql(u8, ext, ".gif") or
-                std.mem.eql(u8, ext, ".ico") or
-                std.mem.eql(u8, ext, ".woff") or
-                std.mem.eql(u8, ext, ".woff2") or
-                std.mem.eql(u8, ext, ".ttf") or
-                std.mem.eql(u8, ext, ".eot") or
-                std.mem.eql(u8, ext, ".zip") or
-                std.mem.eql(u8, ext, ".tar") or
-                std.mem.eql(u8, ext, ".gz") or
-                std.mem.eql(u8, ext, ".o") or
-                std.mem.eql(u8, ext, ".a") or
-                std.mem.eql(u8, ext, ".so") or
-                std.mem.eql(u8, ext, ".dylib") or
-                std.mem.eql(u8, ext, ".dll"))
-            {
-                continue;
-            }
-
-            total_files += 1;
-            const result = checkFile(allocator, entry.path) catch continue;
-
-            if (result.has_cyrillic) {
-                files_with_cyrillic += 1;
-                std.debug.print("  ❌ {s}:{d}\n", .{ entry.path, result.first_line });
-            }
-        }
-
-        return .{ .files_with_cyrillic = files_with_cyrillic, .total_files = total_files };
-    };
-
-    // Single file
-    total_files = 1;
-    const result = checkFile(allocator, path) catch {
+    var walker = dir.walk(allocator) catch |err| {
+        std.debug.print("Error walking {s}: {}\n", .{ path, err });
         return .{ .files_with_cyrillic = 0, .total_files = 0 };
     };
+    defer walker.deinit();
 
-    if (result.has_cyrillic) {
-        files_with_cyrillic = 1;
-        std.debug.print("  ❌ {s}:{d}\n", .{ path, result.first_line });
+    while (true) {
+        const entry_opt = walker.next() catch |err| {
+            std.debug.print("Error during walk: {}\n", .{err});
+            break;
+        };
+        const entry = entry_opt orelse break;
+        if (entry.kind != .file) continue;
+
+        // Skip common non-code files
+        const ext = std.fs.path.extension(entry.basename);
+        if (std.mem.eql(u8, ext, ".png") or
+            std.mem.eql(u8, ext, ".jpg") or
+            std.mem.eql(u8, ext, ".jpeg") or
+            std.mem.eql(u8, ext, ".gif") or
+            std.mem.eql(u8, ext, ".ico") or
+            std.mem.eql(u8, ext, ".woff") or
+            std.mem.eql(u8, ext, ".woff2") or
+            std.mem.eql(u8, ext, ".ttf") or
+            std.mem.eql(u8, ext, ".eot") or
+            std.mem.eql(u8, ext, ".zip") or
+            std.mem.eql(u8, ext, ".tar") or
+            std.mem.eql(u8, ext, ".gz") or
+            std.mem.eql(u8, ext, ".o") or
+            std.mem.eql(u8, ext, ".a") or
+            std.mem.eql(u8, ext, ".so") or
+            std.mem.eql(u8, ext, ".dylib") or
+            std.mem.eql(u8, ext, ".dll"))
+        {
+            continue;
+        }
+
+        total_files += 1;
+        const result = checkFile(allocator, entry.path) catch continue;
+
+        if (result.has_cyrillic) {
+            files_with_cyrillic += 1;
+            std.debug.print("  ❌ {s}:{d}\n", .{ entry.path, result.first_line });
+        }
     }
 
     return .{ .files_with_cyrillic = files_with_cyrillic, .total_files = total_files };
