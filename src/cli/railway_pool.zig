@@ -290,9 +290,9 @@ fn execCurl(allocator: std.mem.Allocator, token: []const u8, body: []const u8) !
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &[_][]const u8{
-            "curl", "-s",        "-X",                             "POST",
-            "-H",   auth_header, "-H",                             "Content-Type: application/json",
-            "-d",   body,        "https://railway.com/graphql/v2",
+            "curl", "-s",        "-X",                                    "POST",
+            "-H",   auth_header, "-H",                                    "Content-Type: application/json",
+            "-d",   body,        "https://backboard.railway.com/graphql",
         },
     });
     defer {
