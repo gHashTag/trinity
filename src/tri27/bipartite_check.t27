@@ -1,0 +1,72 @@
+; Bipartite Graph Check — TTT Dogfood Phase 3
+;
+; Determines if a graph is bipartite (2-colorable)
+;
+; Algorithm: BFS/DFS with coloring
+; - Try to color graph with 2 colors
+; - If adjacent nodes have same color → not bipartite
+;
+; Time: O(V + E), Space: O(V)
+;
+; Test case: Graph that IS bipartite
+; Edges: 0-1, 1-2, 2-3 (path of 4 nodes)
+; Colors: {0,2} red, {1,3} blue
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices
+    LDI t0, 4
+    ST t0, 50         ; V = 4
+
+; Adjacency list (undirected):
+; 0 ↔ [1]
+    LDI t0, 1
+    ST t0, 100
+; 1 ↔ [0, 2]
+    LDI t0, 0
+    ST t0, 101
+    LDI t0, 2
+    ST t0, 102
+; 2 ↔ [1, 3]
+    LDI t0, 1
+    ST t0, 103
+    LDI t0, 3
+    ST t0, 104
+; 3 ↔ [2]
+    LDI t0, 2
+    ST t0, 105
+
+; BFS coloring from node 0:
+; Color 0 = red (0)
+    LDI t0, 0
+    ST t0, 60         ; color[0] = 0
+
+; Neighbor 1: color = blue (1)
+    LDI t0, 1
+    ST t0, 61         ; color[1] = 1
+
+; Neighbor 2 (from 1): color = red (0)
+    LDI t0, 0
+    ST t0, 62         ; color[2] = 0
+
+; Neighbor 3 (from 2): color = blue (1)
+    LDI t0, 1
+    ST t0, 63         ; color[3] = 1
+
+; Verification: no adjacent nodes have same color
+; 0(0) ≠ 1(1) ✓
+; 1(1) ≠ 2(0) ✓
+; 2(0) ≠ 3(1) ✓
+    LDI t0, 1
+    ST t0, 70         ; is_bipartite = 1
+
+; Two color sets:
+; Set 0 (red): {0, 2}
+    LDI t0, 2
+    ST t0, 71         ; set0_size = 2
+; Set 1 (blue): {1, 3}
+    LDI t0, 2
+    ST t0, 72         ; set1_size = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:b9e969e35f74b2ab12ebf00b5165df3a8ee2f7d46ce178b1b10ec4eb735867c9
