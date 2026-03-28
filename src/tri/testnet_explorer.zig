@@ -228,6 +228,7 @@ pub const ExplorerDB = struct {
 
     /// Add a block
     pub fn addBlock(self: *ExplorerDB, block: BlockInfo) !void {
+        // Make copies for the block (these will be owned by the block)
         const hash_copy = try self.allocator.dupe(u8, block.hash);
         errdefer self.allocator.free(hash_copy);
 
@@ -250,7 +251,9 @@ pub const ExplorerDB = struct {
         };
 
         try self.blocks.append(self.allocator, block_copy);
-        try self.block_index.put(self.allocator, hash_copy, block.height);
+        // For the HashMap key, use a separate allocation to avoid double-free
+        const index_key = try self.allocator.dupe(u8, hash_copy);
+        try self.block_index.put(self.allocator, index_key, block.height);
 
         if (block.height > self.latest_height) {
             self.latest_height = block.height;

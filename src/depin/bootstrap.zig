@@ -17,6 +17,19 @@ const Allocator = std.mem.Allocator;
 
 pub const DEFAULT_DISCOVERY_PORT = 9333;
 
+/// Network mode (mainnet or testnet)
+pub const NetworkMode = enum(u8) {
+    mainnet,
+    testnet,
+
+    pub fn toString(self: NetworkMode) []const u8 {
+        return switch (self) {
+            .mainnet => "mainnet",
+            .testnet => "testnet",
+        };
+    }
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // BOOTSTRAP PEER — Known entry point to DePIN network
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -63,6 +76,30 @@ pub const BootstrapSource = enum {
     /// Local cache (.tri-cluster.json)
     local_cache,
 };
+
+/// Mainnet bootstrap addresses (production)
+pub const MAINNET_BOOTSTRAPS = [_][]const u8{
+    "bootstrap-us.trinity.network:9333",
+    "bootstrap-eu.trinity.network:9333",
+    "bootstrap-asia.trinity.network:9333",
+};
+
+/// Testnet bootstrap addresses (for testing)
+pub const TESTNET_BOOTSTRAPS = [_][]const u8{
+    "bootstrap-us.test.trinity.network:9333",
+    "bootstrap-eu.test.trinity.network:9333",
+    "bootstrap-asia.test.trinity.network:9333",
+    "bootstrap-sa.test.trinity.network:9333",
+    "bootstrap-za.test.trinity.network:9333",
+};
+
+/// Get default bootstrap addresses for network mode
+pub fn getDefaultBootstraps(mode: NetworkMode) []const []const u8 {
+    return switch (mode) {
+        .mainnet => &MAINNET_BOOTSTRAPS,
+        .testnet => &TESTNET_BOOTSTRAPS,
+    };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BOOTSTRAP MANAGER — Manages bootstrap peer list
@@ -364,4 +401,22 @@ test "BootstrapPeer format address" {
     defer allocator.free(addr);
 
     try std.testing.expectEqualStrings("1.2.3.4:9333", addr);
+}
+
+test "NetworkMode toString" {
+    try std.testing.expectEqualStrings("mainnet", NetworkMode.mainnet.toString());
+    try std.testing.expectEqualStrings("testnet", NetworkMode.testnet.toString());
+}
+
+test "getDefaultBootstraps mainnet" {
+    const bootstraps = getDefaultBootstraps(.mainnet);
+    try std.testing.expectEqual(@as(usize, 3), bootstraps.len);
+    try std.testing.expectEqualStrings("bootstrap-us.trinity.network:9333", bootstraps[0]);
+}
+
+test "getDefaultBootstraps testnet" {
+    const bootstraps = getDefaultBootstraps(.testnet);
+    try std.testing.expectEqual(@as(usize, 5), bootstraps.len);
+    try std.testing.expectEqualStrings("bootstrap-us.test.trinity.network:9333", bootstraps[0]);
+    try std.testing.expectEqualStrings("bootstrap-sa.test.trinity.network:9333", bootstraps[3]);
 }

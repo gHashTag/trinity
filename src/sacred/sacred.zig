@@ -19,7 +19,7 @@ pub const INV_PHI = sacred_types_mod.INV_PHI;
 pub const TRINITY = sacred_types_mod.TRINITY;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED VERIFY — Compile-time проверки Sacred математики
+// SACRED VERIFY — Compile-time Sacred mathematics
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_verify = @import("verify.zig");
@@ -45,7 +45,7 @@ pub const RailwayConfigGuard = sacred_guards.RailwayConfigGuard;
 pub const HSLMConfigGuard = sacred_guards.HSLMConfigGuard;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED LUT — Compile-time таблицы для Sacred типов
+// SACRED LUT — Compile-time tables for Sacred types
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const sacred_lut = @import("lut.zig");
@@ -61,7 +61,7 @@ pub const pow3 = sacred_lut.pow3;
 pub const phi_pow = sacred_lut.phi_pow;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SIMD TERNARY — SIMD-примитивы для тернарного VSA
+// SIMD TERNARY — SIMD primitives for ternary VSA
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const simd_ternary = @import("simd_ternary.zig");
