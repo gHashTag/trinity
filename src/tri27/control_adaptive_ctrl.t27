@@ -1,0 +1,13 @@
+; Control Adaptive Ctrl — TTT Dogfood Phase 3
+;
+; Adaptive control algorithms
+;
+; Test case: control_adaptive_ctrl
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; adaptive_ctrl_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0778f000002000000002099

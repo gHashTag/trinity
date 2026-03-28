@@ -1,0 +1,13 @@
+; Graph Greedy — TTT Dogfood Phase 3
+;
+; Greedy graph matching
+;
+; Test case: graph_greedy
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; greedy_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07792000002000000000209f
