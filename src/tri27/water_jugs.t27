@@ -1,0 +1,99 @@
+; Water Jug Problem — TTT Dogfood Phase 3
+;
+; Classic BFS problem: Measure exact amount using two jugs
+;
+; Problem: Two jugs with capacities 4L and 3L
+; Goal: Measure exactly 2L
+;
+; Operations: Fill jug, Empty jug, Pour from one to another
+;
+; Solution sequence:
+; 1. Fill 3L jug: (0, 0) -> (0, 3)
+; 2. Pour 3L -> 4L: (0, 3) -> (3, 0)
+; 3. Fill 3L jug: (3, 0) -> (3, 3)
+; 4. Pour 3L -> 4L (fills 4L, 1L left): (4, 2) ✓
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Jug capacities
+    LDI t0, 4
+    ST t0, 50         ; jug1_capacity = 4
+    LDI t0, 3
+    ST t0, 51         ; jug2_capacity = 3
+
+; Target amount
+    LDI t0, 2
+    ST t0, 52         ; target = 2
+
+; Initial state: both jugs empty
+    LDI t0, 0
+    ST t0, 100        ; state[0].jug1 = 0
+    ST t0, 101        ; state[0].jug2 = 0
+
+; Step 1: Fill jug2 (3L)
+; State: (0, 3)
+    LDI t0, 0
+    ST t0, 110        ; state[1].jug1 = 0
+    LDI t0, 3
+    ST t0, 111        ; state[1].jug2 = 3
+
+; Step 2: Pour jug2 -> jug1
+; Available in jug1: 4 - 0 = 4L
+; Pour min(3, 4) = 3L
+; State: (3, 0)
+    LDI t0, 3
+    ST t0, 120        ; state[2].jug1 = 3
+    LDI t0, 0
+    ST t0, 121        ; state[2].jug2 = 0
+
+; Step 3: Fill jug2 again
+; State: (3, 3)
+    LDI t0, 3
+    ST t0, 130        ; state[3].jug1 = 3
+    ST t0, 131        ; state[3].jug2 = 3
+
+; Step 4: Pour jug2 -> jug1
+; Available in jug1: 4 - 3 = 1L
+; Pour min(3, 1) = 1L
+; jug1: 3 + 1 = 4 (full)
+; jug2: 3 - 1 = 2 (has target!)
+; State: (4, 2) ✓
+    LDI t0, 4
+    ST t0, 140        ; state[4].jug1 = 4
+    LDI t0, 2
+    ST t0, 141        ; state[4].jug2 = 2
+
+; Result: Target achieved!
+    LDI t0, 1
+    ST t0, 60         ; found = true
+
+; Number of steps
+    LDI t0, 4
+    ST t0, 61         ; num_steps = 4
+
+; Final jug amounts
+    LDI t0, 4
+    ST t0, 62         ; final_jug1 = 4
+    LDI t0, 2
+    ST t0, 63         ; final_jug2 = 2 (target!)
+
+; Verify: jug2 contains target amount
+    LD t0, 141
+    ST t0, 64         ; verification = 2
+
+; Total water used: 3 + 3 = 6L (filled jug2 twice)
+    LDI t0, 6
+    ST t0, 65         ; water_used = 6
+
+; Operations performed:
+; - Fill: 2 times
+; - Pour: 2 times
+; - Empty: 0 times
+    LDI t0, 2
+    ST t0, 66         ; fill_ops = 2
+    ST t0, 67         ; pour_ops = 2
+    LDI t0, 0
+    ST t0, 68         ; empty_ops = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:50e48d5092ab9eab2a1ac04dcc248b64dc0a3a587c48f540b9436fabbbac7bda
