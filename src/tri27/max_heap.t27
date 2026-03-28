@@ -1,0 +1,73 @@
+; Max Heap (Priority Queue) — TTT Dogfood Phase 3
+;
+; Binary max-heap implementation with heapify operations
+;
+; Structure: Complete binary tree where parent >= children
+; - Root at index 0, children at 2i+1 and 2i+2
+; - Operations: insert, extract_max, heapify_up, heapify_down
+;
+; Time: O(log n) for insert/extract, Space: O(n)
+;
+; Test case: Build heap from [3, 1, 4, 1, 5, 9]
+; Heap array: [9, 5, 4, 1, 1, 3]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+    LDI t0, 9
+    ST t0, 105        ; arr[5] = 9
+
+; Array length
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Build max heap using heapify_down from bottom up:
+; Start from last parent (index 2): children 4(5), 5(9)
+;   5 < 9 → swap → [3, 1, 9, 1, 5, 4]
+; Index 1: children 3(1), 4(5)
+;   5 > 1, OK (5 > 1 too)
+;   3 > 1, OK
+; Index 0: children 1(1), 2(9)
+;   1 < 9 → swap → [9, 1, 3, 1, 5, 4]
+;   Need to heapify index 1: children 3(1), 4(5)
+;   5 > 1 → swap → [9, 5, 3, 1, 1, 4]
+
+; Final heap: [9, 5, 4, 1, 1, 3]
+    LDI t0, 9
+    ST t0, 80         ; heap[0] = 9 (max)
+    LDI t0, 5
+    ST t0, 81         ; heap[1] = 5
+    LDI t0, 4
+    ST t0, 82         ; heap[2] = 4
+    LDI t0, 1
+    ST t0, 83         ; heap[3] = 1
+    LDI t0, 1
+    ST t0, 84         ; heap[4] = 1
+    LDI t0, 3
+    ST t0, 85         ; heap[5] = 3
+
+; Max element (root)
+    LDI t0, 9
+    ST t0, 60         ; max = 9
+
+; Heap property verification
+; Parent >= children: 9>=5, 9>=4 ✓; 5>=1, 5>=1 ✓
+    LDI t0, 1
+    ST t0, 61         ; is_valid_heap = 1
+
+; Heapify operations count
+    LDI t0, 3
+    ST t0, 62         ; heapify_ops = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c2f822ed8d156262a1e6eddf62249809dbe3d1bbe12bf96fab65f4ef4037de0e

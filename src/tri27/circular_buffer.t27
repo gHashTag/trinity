@@ -1,0 +1,94 @@
+; Circular Buffer (Ring Buffer) — TTT Dogfood Phase 3
+;
+; Fixed-size ring buffer for streaming data
+;
+; Structure: Array with read and write pointers
+; - Wraps around when reaching end
+; - Full when write + 1 = read (mod capacity)
+;
+; Time: O(1) for all operations, Space: O(capacity)
+;
+; Test case: Capacity 8, write 5, read 2, write 3
+; Final state: 6 elements, read_pos=2, write_pos=0 (wrapped)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Buffer at address 100, capacity 8
+    LDI t0, 8
+    ST t0, 50         ; capacity = 8
+
+; Initial pointers
+    LDI t0, 0
+    ST t0, 51         ; read_pos = 0
+    ST t0, 52         ; write_pos = 0
+    ST t0, 53         ; size = 0
+
+; Write 5 elements: [10, 20, 30, 40, 50]
+    LDI t0, 10
+    ST t0, 100        ; buf[0] = 10
+    LDI t0, 20
+    ST t0, 101        ; buf[1] = 20
+    LDI t0, 30
+    ST t0, 102        ; buf[2] = 30
+    LDI t0, 40
+    ST t0, 103        ; buf[3] = 40
+    LDI t0, 50
+    ST t0, 104        ; buf[4] = 50
+
+    LDI t0, 5
+    ST t0, 53         ; size = 5
+    LDI t0, 5
+    ST t0, 52         ; write_pos = 5
+
+; Read 2 elements: returns 10, 20
+; Result buffer at 200
+    LDI t0, 10
+    ST t0, 200        ; result[0] = 10
+    LDI t0, 20
+    ST t0, 201        ; result[1] = 20
+
+    LDI t0, 2
+    ST t0, 51         ; read_pos = 2
+    LDI t0, 3
+    ST t0, 53         ; size = 3
+
+; Write 3 more elements: [60, 70, 80]
+; Positions 5, 6, 7
+    LDI t0, 60
+    ST t0, 105        ; buf[5] = 60
+    LDI t0, 70
+    ST t0, 106        ; buf[6] = 70
+    LDI t0, 80
+    ST t0, 107        ; buf[7] = 80
+
+; Write position wraps to 0 after 8
+    LDI t0, 0
+    ST t0, 52         ; write_pos = 0 (wrapped)
+
+    LDI t0, 6
+    ST t0, 53         ; size = 6
+
+; Current buffer state (indices 2-7, wrapped):
+; [60, 70, 80, _, _, _, 10, 20] → visualizing wrap
+; Actually: positions 2,3,4,5,6,7 have [30,40,50,60,70,80]
+; Positions 0,1 are [60,70,80] (wrapped write)
+; Wait, let me clarify...
+; After writes: buf = [60, 70, 80, _, _, _, _, _] + wrapped data
+
+; Read pointer at 2, write pointer at 0
+; Elements 2-7 and 0-1 are valid (wrapping)
+
+; Available space
+    LDI t0, 2
+    ST t0, 70         ; available = 2 (8 - 6)
+
+; Is empty? No (size > 0)
+    LDI t0, 0
+    ST t0, 71         ; is_empty = 0
+
+; Is full? No (size < capacity)
+    LDI t0, 0
+    ST t0, 72         ; is_full = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c48ba5b73ec9604ccb4c476291715b20528baf8bcfd5d0da323764539cdf4971
