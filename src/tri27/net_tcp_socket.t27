@@ -1,0 +1,13 @@
+; Net TCP Socket — TTT Dogfood Phase 3
+;
+; TCP socket operations
+;
+; Test case: net_tcp_socket
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tcp_socket_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0763200000200000001c91

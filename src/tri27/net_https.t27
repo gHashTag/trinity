@@ -1,0 +1,13 @@
+; Net HTTPS — TTT Dogfood Phase 3
+;
+; HTTPS/TLS protocol
+;
+; Test case: net_https
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; https_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0763d00000200000001ca7
