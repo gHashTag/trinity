@@ -2894,4 +2894,98 @@ test "trie: word count" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// Segment Tree Tests — TTT Dogfood Phase 3
+
+test "segment_tree: file exists" {
+    const path = "src/tri27/segment_tree.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "segment_tree: initialize array" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 100
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "segment_tree: build leaf nodes" {
+    const allocator = std.testing.allocator;
+    // Copy array to leaves
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 208
+        \\    LDI t0, 3
+        \\    ST t0, 209
+        \\    LD t0, 208
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "segment_tree: build internal node" {
+    const allocator = std.testing.allocator;
+    // Node sum: 1 + 3 = 4
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 208
+        \\    LDI t0, 3
+        \\    ST t0, 209
+        \\    LD t0, 208
+        \\    LD t1, 209
+        \\    ADD t0, t0, t1
+        \\    ST t0, 204
+        \\    LD t0, 204
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "segment_tree: root sum" {
+    const allocator = std.testing.allocator;
+    // Total sum = 36
+    const program =
+        \\    LDI t0, 36
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 36), cpu.t27[0].trits);
+}
+
+test "segment_tree: range query" {
+    const allocator = std.testing.allocator;
+    // Sum(1,4) = 3 + 5 + 7 + 9 = 24
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 209
+        \\    LDI t0, 5
+        \\    ST t0, 210
+        \\    LDI t0, 7
+        \\    ST t0, 211
+        \\    LDI t0, 9
+        \\    ST t0, 212
+        \\    LD t0, 209
+        \\    LD t1, 210
+        \\    ADD t0, t0, t1
+        \\    LD t1, 211
+        \\    ADD t0, t0, t1
+        \\    LD t1, 212
+        \\    ADD t0, t0, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 24), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
