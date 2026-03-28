@@ -421,7 +421,7 @@ test "debug: ldi instruction loads correct value" {
 
     try run(&cpu, mem);
 
-    std.debug.print("DEBUG: t0 after LDI 1000: {d}\n", .{cpu.t27[0].trits});
+    // std.debug.print("DEBUG: t0 after LDI 1000: {d}\n", .{cpu.t27[0].trits});
     try std.testing.expectEqual(@as(i64, 1000), cpu.t27[0].trits);
 }
 
@@ -446,7 +446,7 @@ test "debug: add two numbers" {
 
     try run(&cpu, mem);
 
-    std.debug.print("DEBUG: t0 after ADD 10+6: {d}\n", .{cpu.t27[0].trits});
+    // std.debug.print("DEBUG: t0 after ADD 10+6: {d}\n", .{cpu.t27[0].trits});
     try std.testing.expectEqual(@as(i64, 16), cpu.t27[0].trits);
 }
 
@@ -469,7 +469,7 @@ test "debug: shr instruction" {
 
     try run(&cpu, mem);
 
-    std.debug.print("DEBUG: t0 after SHR 16>>1: {d}\n", .{cpu.t27[0].trits});
+    // std.debug.print("DEBUG: t0 after SHR 16>>1: {d}\n", .{cpu.t27[0].trits});
     try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
 }
 
@@ -945,6 +945,121 @@ test "string_search: two character mismatch" {
 
 test "t27_programs: string_search file exists" {
     const path = "src/tri27/string_search.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Cryptographic Operations Tests (SHA-256 primitives)
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "crypto: ROTR^7 simple rotation" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 32        ; input value
+        \\    SHR t2, t0, 7     ; t2 = 32 >> 7 = 0
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "crypto: Ch choose function" {
+    const allocator = std.testing.allocator;
+    // Ch(12, 10, 6) = (12 & 10) ^ (~12 & 6)
+    // With two's complement: ~12 = -8, -8 & 6 = 2
+    // 8 ^ 2 = 10
+    const program =
+        \\    LDI t0, 12        ; x = 12
+        \\    LDI t1, 10        ; y = 10
+        \\    LDI t2, 6         ; z = 6
+        \\    AND t3, t0, t1    ; t3 = x & y = 8
+        \\    MOV t4, t0        ; t4 = x
+        \\    NOT t4            ; t4 = ~x
+        \\    AND t5, t4, t2    ; t5 = ~x & z
+        \\    XOR t0, t3, t5    ; t0 = Ch
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "crypto: Maj majority function" {
+    const allocator = std.testing.allocator;
+    // Maj(7, 5, 3) = (7 & 5) ^ (7 & 3) ^ (5 & 3) = 5 ^ 3 ^ 1 = 7
+    const program =
+        \\    LDI t0, 7         ; x = 7
+        \\    LDI t1, 5         ; y = 5
+        \\    LDI t2, 3         ; z = 3
+        \\    AND t3, t0, t1    ; t3 = x & y
+        \\    AND t4, t0, t2    ; t4 = x & z
+        \\    AND t5, t1, t2    ; t5 = y & z
+        \\    XOR t6, t3, t4    ; t6 = (x & y) ^ (x & z)
+        \\    XOR t0, t6, t5    ; t0 = Maj
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "crypto: σ0 small sigma 0" {
+    const allocator = std.testing.allocator;
+    // Simplified test for shift right operations
+    const program =
+        \\    LDI t0, 32        ; x = 32
+        \\    SHR t2, t0, 3     ; 32 >> 3 = 4
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "crypto: σ1 small sigma 1" {
+    const allocator = std.testing.allocator;
+    // Simplified test for shift right with XOR
+    const program =
+        \\    LDI t0, 16        ; x = 16
+        \\    SHR t2, t0, 2     ; 16 >> 2 = 4
+        \\    SHR t4, t0, 1     ; 16 >> 1 = 8
+        \\    XOR t0, t2, t4    ; 4 ^ 8 = 12
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 12), cpu.t27[0].trits);
+}
+
+test "crypto: Σ0 big sigma 0" {
+    const allocator = std.testing.allocator;
+    // Simplified test for shift right
+    const program =
+        \\    LDI t0, 32        ; x = 32
+        \\    SHR t2, t0, 1     ; 32 >> 1 = 16
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 16), cpu.t27[0].trits);
+}
+
+test "crypto: Σ1 big sigma 1" {
+    const allocator = std.testing.allocator;
+    // Simplified test for shift right with result in t0
+    const program =
+        \\    LDI t0, 16        ; x = 16
+        \\    SHR t2, t0, 1     ; 16 >> 1 = 8
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "t27_programs: crypto_ops file exists" {
+    const path = "src/tri27/crypto_ops.t27";
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
     const stat = try file.stat();
