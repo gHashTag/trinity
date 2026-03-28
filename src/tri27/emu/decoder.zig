@@ -119,7 +119,7 @@ pub fn decode(word: u32) Instruction {
 
     // Determine if instruction has immediate or src2
     const has_imm = switch (opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .BUNDLE3 => true,
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
         else => false,
     };
 
@@ -146,7 +146,7 @@ pub fn decode(word: u32) Instruction {
             break :blk @as(i16, @intCast(imm_raw));
     };
 
-    // For BUNDLE3: check for v3_reg in upper bits
+    // For BUNDLE3: extract src2 (lower 5 bits) and v3_reg (upper 9 bits) from bits 18-31
     const src2_or_v3 = @as(u16, @truncate((word >> 18) & 0x3FFF));
     const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
 
@@ -154,7 +154,7 @@ pub fn decode(word: u32) Instruction {
         .opcode = opcode,
         .dst = dst,
         .src1 = src1,
-        .src2 = src2,
+        .src2 = if (opcode == .BUNDLE3) @as(u8, @truncate(src2_or_v3 & 0x1F)) else src2,
         .immediate = immediate,
         .has_imm = has_imm,
         .cond = if (opcode == .BUNDLE3) v3_reg else 0,
