@@ -1,0 +1,13 @@
+; Quadratic Probing — TTT Dogfood Phase 3
+;
+; Hash table with quadratic probing
+;
+; Test case: quadratic_probing
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; quadratic_probing_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0719a600191e

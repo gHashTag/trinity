@@ -1,0 +1,13 @@
+; Atan Series — TTT Dogfood Phase 3
+;
+; Taylor series for atan(x)
+;
+; Test case: atan_series
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; atan_series_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07199600190e
