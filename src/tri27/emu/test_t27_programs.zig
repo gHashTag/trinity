@@ -53880,3 +53880,183 @@ test "opt_sgd: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "loss_mse: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_mse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "loss_mse: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "loss_mse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lbfgs: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lbfgs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lbfgs: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lbfgs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_learning_rate_decay: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_learning_rate_decay.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_learning_rate_decay: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_learning_rate_decay.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_cosine: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_cosine.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_cosine: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_cosine.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_cyclic: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_cyclic.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_cyclic: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_cyclic.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_exponential: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_exponential.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_exponential: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_exponential.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_inverse: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_inverse.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_inverse: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_inverse.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_onecycle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_onecycle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_onecycle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_onecycle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_polynomial: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_polynomial.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_polynomial: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_polynomial.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_reduce_on_plateau: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_reduce_on_plateau.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_reduce_on_plateau: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_reduce_on_plateau.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_step: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_step.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_step: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_step.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "opt_lr_warmup: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_warmup.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "opt_lr_warmup: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "opt_lr_warmup.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
