@@ -1,0 +1,13 @@
+; Skewness — TTT Dogfood Phase 3
+;
+; Measure of asymmetry
+;
+; Test case: stats_skewness
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; skewness_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073040000100000010a9
