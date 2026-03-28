@@ -1,0 +1,86 @@
+{
+  "episode_id": "tri27-hybrid-encoding",
+  "timestamp": "2026-03-28T10:00:00Z",
+  "title": "TRI-27 Bit Field Overlap Bug — Hybrid Encoding Fix",
+  "category": "isa",
+  "severity": "critical",
+  "status": "resolved",
+
+  "problem": {
+    "summary": "Bit 17 overlap between src1 and immediate fields caused instruction encoding corruption",
+    "discovery": "SHR instruction `SHR t0, t0, 16` returned 0 instead of 8",
+    "root_cause": "Original encoding placed src1 at bits 13-17 and immediate at bits 17-31, sharing bit 17"
+  },
+
+  "investigation": {
+    "steps": [
+      "Created test_shr_parse2.zig to isolate encoding issue",
+      "Found encoded word for SHR had src1=16 instead of 0",
+      "Traced bit 17 overlap in encoder.zig",
+      "Confirmed all immediate instructions affected"
+    ],
+    "affected_opcodes": [
+      "LDI", "STI", "LD_IMM", "PHI_CONST", "PI_CONST", "E_CONST",
+      "JMP", "JZ", "JNZ", "JGT", "JLT", "CALL", "RET",
+      "SHL", "SHR", "BUNDLE3"
+    ]
+  },
+
+  "solution": {
+    "name": "Hybrid Encoding Scheme",
+    "description": "Split encoding based on instruction type",
+    "encoding_table": {
+      "immediate_instructions": {
+        "src1_bits": "13-16 (4 bits)",
+        "immediate_bits": "17-31 (15 bits)",
+        "src1_range": "0-15",
+        "immediate_range": "-16384 to 16383"
+      },
+      "three_operand_instructions": {
+        "src1_bits": "13-17 (5 bits)",
+        "src2_bits": "18-22 (5 bits)",
+        "src1_range": "0-26",
+        "src2_range": "0-26"
+      },
+      "two_operand_instructions": {
+        "src1_bits": "13-17 (5 bits)",
+        "src1_range": "0-26"
+      }
+    },
+    "implementation": {
+      "file": "src/tri27/emu/decoder.zig",
+      "functions": ["encode()", "decode()"],
+      "key_change": "Check has_imm vs has_src2 to determine bit layout"
+    }
+  },
+
+  "verification": {
+    "test_results": "110/110 tests passing",
+    "test_files": [
+      "test_golden.zig",
+      "test_comprehensive.zig",
+      "test_t27_programs.zig"
+    ],
+    "regression_tests": "Added SHR edge case tests"
+  },
+
+  "lessons_learned": [
+    "Bit field overlap is subtle — exhaustive testing needed",
+    "ISA documentation must match implementation exactly",
+    "Hybrid encoding preserves functionality for both instruction types",
+    "15-bit immediate range sufficient for most use cases"
+  ],
+
+  "metadata": {
+    "github_issue": 469,
+    "commit_hash": "post-fix",
+    "author": "ralph-agent",
+    "review_status": "pending"
+  },
+
+  "references": {
+    "isa_spec": "src/tri27/emu/specs/tri27_isa.md",
+    "decoder": "src/tri27/emu/decoder.zig",
+    "encoder": "src/tri27/emu/decoder.zig:encode()"
+  }
+}
