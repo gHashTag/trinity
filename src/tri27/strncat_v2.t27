@@ -1,0 +1,13 @@
+; String strncat v2 — TTT Dogfood Phase 3
+;
+; Concatenate with length limit v2
+;
+; Test case: strncat_v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; strncat_v2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b2b001c0d

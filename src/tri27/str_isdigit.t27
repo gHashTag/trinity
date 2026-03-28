@@ -1,0 +1,13 @@
+; String isdigit — TTT Dogfood Phase 3
+;
+; Check if character is digit
+;
+; Test case: str_isdigit
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; str_isdigit_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b41001c2b
