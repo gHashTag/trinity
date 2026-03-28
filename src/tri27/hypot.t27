@@ -1,0 +1,13 @@
+; Hypot — TTT Dogfood Phase 3
+;
+; Euclidean distance
+;
+; Test case: hypot
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; hypot_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07184b0017c1

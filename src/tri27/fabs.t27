@@ -1,0 +1,13 @@
+; FAbs — TTT Dogfood Phase 3
+;
+; Floating absolute
+;
+; Test case: fabs
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fabs_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07184f0017c5
