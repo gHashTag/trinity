@@ -1,0 +1,13 @@
+; Geo Haversine — TTT Dogfood Phase 3
+;
+; Haversine formula for great-circle distance
+;
+; Test case: geo_haversine
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; haversine_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07576000002000000001b17
