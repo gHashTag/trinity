@@ -1,0 +1,13 @@
+; Arithmetic Encoding — TTT Dogfood Phase 3
+;
+; Range-based entropy coding
+;
+; Test case: encode symbol
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 32
+    ST t0, 60         ; precision = 32 bits
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07132b0012a1

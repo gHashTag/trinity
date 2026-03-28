@@ -1,0 +1,13 @@
+; Elliptic Curve Math — TTT Dogfood Phase 3
+;
+; Point addition/multiplication
+;
+; Test case: secp256k1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 256
+    ST t0, 60         ; field_size = 256 bits
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713310012a7

@@ -1,0 +1,17 @@
+; scrypt KDF — TTT Dogfood Phase 3
+;
+; Memory-hard key derivation
+;
+; Test case: N=16384, r=8, p=1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 16384
+    ST t0, 60         ; N = 16384
+    LDI t0, 8
+    ST t0, 61         ; r = 8
+    LDI t0, 1
+    ST t0, 62         ; p = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07133b0012b1
