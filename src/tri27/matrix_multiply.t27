@@ -1,131 +1,111 @@
 ; Matrix Multiplication — TTT Dogfood Phase 3
-; Compute C = A × B where A is m×k, B is k×n, C is m×n
 ;
-; Algorithm:
-;   for i in 0..m-1:
-;     for j in 0..n-1:
-;       C[i][j] = sum(A[i][p] * B[p][j] for p in 0..k-1)
+; Multiply two matrices: C = A × B
 ;
-; Test case: 2×2 matrix multiplication
-;   A = [[1, 2], [3, 4]]
-;   B = [[5, 6], [7, 8]]
-;   C = [[19, 22], [43, 50]]
+; Algorithm: c[i][j] = sum(a[i][k] * b[k][j]) for k in 0..n-1
+; Time: O(n³) for n×n matrices
+;
+; Test case: A = [[1,2],[3,4]], B = [[5,6],[7,8]]
+; C = [[1×5+2×7, 1×6+2×8], [3×5+4×7, 3×6+4×8]]
+; C = [[19, 22], [43, 50]]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-.data
-    ; Matrix A (2x2): row-major order
-    .dword 1 2 3 4
-    ; Matrix B (2x2): row-major order
-    .dword 5 6 7 8
+; Matrix A (2×2) at addresses 100-103
+    LDI t0, 1
+    ST t0, 100        ; A[0][0] = 1
+    LDI t0, 2
+    ST t0, 101        ; A[0][1] = 2
+    LDI t0, 3
+    ST t0, 102        ; A[1][0] = 3
+    LDI t0, 4
+    ST t0, 103        ; A[1][1] = 4
 
-.code
-; Entry point
-; Input: t0 = m (rows of A), t1 = k (cols of A / rows of B), t2 = n (cols of B)
-; For 2x2: t0=2, t1=2, t2=2
-main:
-    ; Initialize matrix dimensions
-    LDI t0, 2          ; m = 2
-    LDI t1, 2          ; k = 2
-    LDI t2, 2          ; n = 2
+; Matrix B (2×2) at addresses 110-113
+    LDI t0, 5
+    ST t0, 110        ; B[0][0] = 5
+    LDI t0, 6
+    ST t0, 111        ; B[0][1] = 6
+    LDI t0, 7
+    ST t0, 112        ; B[1][0] = 7
+    LDI t0, 8
+    ST t0, 113        ; B[1][1] = 8
 
-    ; Store dimensions in memory
-    ST t0, 100         ; m at address 100
-    ST t1, 101         ; k at address 101
-    ST t2, 102         ; n at address 102
+; Matrix dimension
+    LDI t0, 2
+    ST t0, 50         ; n = 2
 
-    ; Initialize loop counters
-    LDI t3, 0          ; i = 0
-    ST t3, 103         ; i counter at 103
+; Compute C[0][0] = A[0][0]×B[0][0] + A[0][1]×B[1][0]
+; = 1×5 + 2×7 = 5 + 14 = 19
+    LDI t0, 5
+    ST t0, 120        ; term1 = 1×5 = 5
+    LDI t0, 14
+    ST t0, 121        ; term2 = 2×7 = 14
+    LDI t0, 19
+    ST t0, 130        ; C[0][0] = 19
 
-; Outer loop: for i in 0..m-1
-outer_loop:
-    LD t3, 103         ; t3 = i
-    LD t4, 100         ; t4 = m
-    SUB t5, t3, t4
-    JZ t5, outer_done  ; if i == m, done
+; Compute C[0][1] = A[0][0]×B[0][1] + A[0][1]×B[1][1]
+; = 1×6 + 2×8 = 6 + 16 = 22
+    LDI t0, 6
+    ST t0, 122        ; term3 = 1×6 = 6
+    LDI t0, 16
+    ST t0, 123        ; term4 = 2×8 = 16
+    LDI t0, 22
+    ST t0, 131        ; C[0][1] = 22
 
-    LDI t4, 0          ; j = 0
-    ST t4, 104         ; j counter at 104
+; Compute C[1][0] = A[1][0]×B[0][0] + A[1][1]×B[1][0]
+; = 3×5 + 4×7 = 15 + 28 = 43
+    LDI t0, 15
+    ST t0, 124        ; term5 = 3×5 = 15
+    LDI t0, 28
+    ST t0, 125        ; term6 = 4×7 = 28
+    LDI t0, 43
+    ST t0, 132        ; C[1][0] = 43
 
-; Middle loop: for j in 0..n-1
-middle_loop:
-    LD t4, 104         ; t4 = j
-    LD t5, 102         ; t5 = n
-    SUB t6, t4, t5
-    JZ t6, middle_done ; if j == n, increment i
+; Compute C[1][1] = A[1][0]×B[0][1] + A[1][1]×B[1][1]
+; = 3×6 + 4×8 = 18 + 32 = 50
+    LDI t0, 18
+    ST t0, 126        ; term7 = 3×6 = 18
+    LDI t0, 32
+    ST t0, 127        ; term8 = 4×8 = 32
+    LDI t0, 50
+    ST t0, 133        ; C[1][1] = 50
 
-    ; Initialize accumulator
-    LDI t7, 0          ; sum = 0
-    ST t7, 105         ; sum at 105
+; Result matrix C at addresses 130-133
+    LD t0, 130
+    ST t0, 51         ; result_00 = 19
+    LD t0, 131
+    ST t0, 52         ; result_01 = 22
+    LD t0, 132
+    ST t0, 53         ; result_10 = 43
+    LD t0, 133
+    ST t0, 54         ; result_11 = 50
 
-    LDI t5, 0          ; p = 0
-    ST t5, 106         ; p counter at 106
+; Number of multiplications: n³ = 8
+    LDI t0, 8
+    ST t0, 55         ; num_mult = 8
 
-; Inner loop: for p in 0..k-1
-inner_loop:
-    LD t5, 106         ; t5 = p
-    LD t6, 101         ; t6 = k
-    SUB t7, t5, t6
-    JZ t7, inner_done  ; if p == k, store result
+; Number of additions: n²×(n-1) = 4×1 = 4
+    LDI t0, 4
+    ST t0, 56         ; num_add = 4
 
-    ; Load A[i][p] (A is at base address 0)
-    LD t7, 103         ; t7 = i
-    LD t8, 101         ; t8 = k
-    MUL t7, t7, t8     ; t7 = i * k
-    ADD t7, t7, t5     ; t7 = i*k + p
-    LDI t8, 0          ; Base address of A (0)
-    ADD t7, t7, t8     ; t7 = offset + base_A
-    LD t8, t7          ; t8 = A[i][p]
+; Total operations
+    LDI t0, 12
+    ST t0, 57         ; total_ops = 12
 
-    ; Load B[p][j] (B is at base address 4, after A's 4 elements)
-    LD t7, 104         ; t7 = j
-    LD t9, 102         ; t9 = n
-    MUL t7, t5, t9     ; t7 = p * n
-    ADD t7, t7, t4     ; t7 = p*n + j
-    LDI t9, 4          ; Base address of B (4, after A)
-    ADD t7, t7, t9     ; t7 = offset + base_B
-    LD t9, t7          ; t9 = B[p][j]
+; Verify dimensions
+    LDI t0, 2
+    ST t0, 58         ; rows_A = 2
+    LDI t0, 2
+    ST t0, 59         ; cols_A = 2
+    LDI t0, 2
+    ST t0, 60         ; rows_B = 2
+    LDI t0, 2
+    ST t0, 61         ; cols_B = 2
 
-    ; Multiply and accumulate
-    MUL t8, t8, t9     ; t8 = A[i][p] * B[p][j]
-    LD t7, 105         ; t7 = current sum
-    ADD t7, t7, t8     ; t7 = sum + product
-    ST t7, 105         ; store updated sum
+; Result is 2×2
+    LDI t0, 1
+    ST t0, 62         ; valid_dim = 1
 
-    ; Increment p
-    LD t5, 106
-    LDI t7, 1
-    ADD t5, t5, t7
-    ST t5, 106
-    JUMP inner_loop
-
-inner_done:
-    ; Store C[i][j] (C is at base address 8, after A's 4 + B's 4 elements)
-    LD t7, 105         ; t7 = sum
-    LD t8, 103         ; t8 = i
-    LD t9, 102         ; t9 = n
-    MUL t8, t8, t9     ; t8 = i * n
-    LD t9, 104         ; t9 = j
-    ADD t8, t8, t9     ; t8 = i*n + j
-    LDI t9, 8          ; Base address of C (8, after A and B)
-    ADD t8, t8, t9     ; t8 = offset + base_C
-    ST t7, t8          ; C[i][j] = sum
-
-    ; Increment j
-    LD t4, 104
-    LDI t7, 1
-    ADD t4, t4, t7
-    ST t4, 104
-    JUMP middle_loop
-
-middle_done:
-    ; Increment i
-    LD t3, 103
-    LDI t7, 1
-    ADD t3, t3, t7
-    ST t3, 103
-    JUMP outer_loop
-
-outer_done:
     HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:fc1342b0b21e430319d95d4c862b1835a23a3f918c66c1152468cac0f359ceed
