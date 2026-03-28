@@ -1,6 +1,6 @@
-; ROT13 — TTT Dogfood Phase 3
+; crypto_rot13 — TTT Dogfood Phase 3
 ;
-; Letter rotation cipher
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_rot13
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_rot13_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071d30001d69
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507216

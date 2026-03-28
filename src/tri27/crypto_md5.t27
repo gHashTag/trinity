@@ -1,6 +1,6 @@
-; MD5 Hash — TTT Dogfood Phase 3
+; crypto_md5 — TTT Dogfood Phase 3
 ;
-; MD5 message digest
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_md5
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_md5_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071ba0001cd9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507312

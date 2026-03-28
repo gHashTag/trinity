@@ -1,6 +1,6 @@
-; Adler-32 — TTT Dogfood Phase 3
+; crypto_adler32 — TTT Dogfood Phase 3
 ;
-; Fast checksum algorithm
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_adler32
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_adler32_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071bf0001d29
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507824

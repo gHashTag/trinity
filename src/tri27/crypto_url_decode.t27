@@ -1,6 +1,6 @@
-; URL Decode — TTT Dogfood Phase 3
+; crypto_url_decode — TTT Dogfood Phase 3
 ;
-; Percent-decoding for URLs
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_url_decode
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_url_decode_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071c50001d89
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507136

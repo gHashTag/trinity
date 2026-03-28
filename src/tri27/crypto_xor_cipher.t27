@@ -1,6 +1,6 @@
-; XOR Cipher — TTT Dogfood Phase 3
+; crypto_xor_cipher — TTT Dogfood Phase 3
 ;
-; Simple XOR encryption
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_xor_cipher
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_xor_cipher_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071d00001d39
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507024

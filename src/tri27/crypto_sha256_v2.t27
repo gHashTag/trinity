@@ -1,6 +1,6 @@
-; SHA-256 v2 — TTT Dogfood Phase 3
+; crypto_sha256_v2 — TTT Dogfood Phase 3
 ;
-; SHA-256 message digest v2
+; Crypto algorithm implementation
 ;
 ; Test case: crypto_sha256_v2
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; crypto_sha256_v2_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071bc0001cf9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424507168
