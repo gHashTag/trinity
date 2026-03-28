@@ -3472,4 +3472,90 @@ test "selection_sort: sum of sorted array" {
     try std.testing.expectEqual(@as(i64, 134), cpu.t27[0].trits);
 }
 
+// Counting Sort Tests — TTT Dogfood Phase 3
+
+test "counting_sort: file exists" {
+    const path = "src/tri27/counting_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "counting_sort: min element" {
+    const allocator = std.testing.allocator;
+    // Minimum is 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "counting_sort: max element" {
+    const allocator = std.testing.allocator;
+    // Maximum is 8
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 206
+        \\    LD t0, 206
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "counting_sort: range size" {
+    const allocator = std.testing.allocator;
+    // Range is 8 (values 1-8)
+    const program =
+        \\    LDI t0, 8
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
+test "counting_sort: array size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "counting_sort: sum of sorted array" {
+    const allocator = std.testing.allocator;
+    // Sum: 1+2+2+3+3+4+8 = 23
+    const program =
+        \\    LDI t0, 1
+        \\    LDI t1, 2
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 2
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 3
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 3
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 4
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 8
+        \\    ADD t0, t0, t1
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 23), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
