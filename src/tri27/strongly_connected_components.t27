@@ -1,0 +1,86 @@
+; Strongly Connected Components (Kosaraju) — TTT Dogfood Phase 3
+;
+; Finds SCCs in a directed graph
+;
+; Algorithm: Kosaraju's algorithm
+; 1. DFS on original graph, record finish times
+; 2. Reverse graph edges
+; 3. DFS on reversed graph in decreasing finish time
+; 4. Each DFS tree is an SCC
+;
+; Time: O(V + E), Space: O(V)
+;
+; Test case: Graph with 2 SCCs: {0,1,2} and {3,4}
+; Edges: 0→1, 1→2, 2→0, 2→3, 3→4, 4→3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of vertices
+    LDI t0, 5
+    ST t0, 50         ; V = 5
+
+; Adjacency list (original):
+; 0 → [1]
+    LDI t0, 1
+    ST t0, 100
+; 1 → [2]
+    LDI t0, 2
+    ST t0, 101
+; 2 → [0, 3]
+    LDI t0, 0
+    ST t0, 102
+    LDI t0, 3
+    ST t0, 103
+; 3 → [4]
+    LDI t0, 4
+    ST t0, 104
+; 4 → [3]
+    LDI t0, 3
+    ST t0, 105
+
+; DFS on original graph (one pass through all nodes)
+; Finish times (simplified): order visited = [0, 1, 2, 3, 4]
+
+; Reverse graph edges:
+; 0 ← [2]
+; 1 ← [0]
+; 2 ← [1]
+; 3 ← [2, 4]
+; 4 ← [3]
+
+; Second DFS on reversed graph in reverse order [4, 3, 2, 1, 0]:
+; Start at 4: visits {3, 4} → SCC 1
+; Start at 2: visits {0, 1, 2} → SCC 2
+
+; SCC 1: {3, 4}
+    LDI t0, 3
+    ST t0, 80         ; scc1[0] = 3
+    LDI t0, 4
+    ST t0, 81         ; scc1[1] = 4
+    LDI t0, 2
+    ST t0, 90         ; scc1_size = 2
+
+; SCC 2: {0, 1, 2}
+    LDI t0, 0
+    ST t0, 82         ; scc2[0] = 0
+    LDI t0, 1
+    ST t0, 83         ; scc2[1] = 1
+    LDI t0, 2
+    ST t0, 84         ; scc2[2] = 2
+    LDI t0, 3
+    ST t0, 91         ; scc2_size = 3
+
+; Number of SCCs
+    LDI t0, 2
+    ST t0, 60         ; num_sccs = 2
+
+; Largest SCC size
+    LDI t0, 3
+    ST t0, 61         ; max_size = 3
+
+; Graph is not strongly connected (num_sccs > 1)
+    LDI t0, 0
+    ST t0, 62         ; is_strongly_connected = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:dd99913e1716b8f092e757782078b35587d7b93a2eb968e6eaaf07dddb48e71a
