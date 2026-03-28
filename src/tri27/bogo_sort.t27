@@ -47,9 +47,9 @@
     LDI t0, 6
     ST t0, 64         ; avg_shuffles = 6
 
-; For n=10: 10! = 3,628,800 expected shuffles!
-    LDI t0, 3628800
-    ST t0, 65         ; n10_expected = 3628800
+; For n=10: 10! = large value
+    LDI t0, 100
+    ST t0, 65         ; n10_expected = 100 (truncated)
 
 ; Not recommended for: n > 5
     LDI t0, 5
