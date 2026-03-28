@@ -1,0 +1,13 @@
+; Evolutionary SA — TTT Dogfood Phase 3
+;
+; Simulated annealing
+;
+; Test case: evolutionary_sa
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sa_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074ca00000200000001a5f

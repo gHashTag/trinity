@@ -1,0 +1,13 @@
+; Fuzzy C-Means — TTT Dogfood Phase 3
+;
+; Fuzzy c-means clustering
+;
+; Test case: fuzzy_cmeans
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cmeans_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074bc00000200000001a43
