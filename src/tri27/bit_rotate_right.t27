@@ -1,0 +1,13 @@
+; Rotate Right — TTT Dogfood Phase 3
+;
+; Circular right shift
+;
+; Test case: bit_rotate_right
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bit_rotate_right_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b78001ca9

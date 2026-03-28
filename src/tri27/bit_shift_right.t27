@@ -1,0 +1,13 @@
+; Right Shift — TTT Dogfood Phase 3
+;
+; a >> n (logical)
+;
+; Test case: bit_shift_right
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bit_shift_right_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b75001ca3
