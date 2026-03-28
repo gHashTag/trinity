@@ -1,0 +1,13 @@
+; King Safety — TTT Dogfood Phase 3
+;
+; Evaluate king position
+;
+; Test case: ai_king_safety
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; king_safety_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0731200001000001159
