@@ -1,6 +1,6 @@
 ; Mutex Lock — TTT Dogfood Phase 3
 ;
-| Binary semaphore
+; Binary semaphore
 ;
 ; Test case: mutex_lock
 ;

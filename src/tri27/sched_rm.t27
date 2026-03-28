@@ -1,6 +1,6 @@
 ; Rate Monotonic — TTT Dogfood Phase 3
 ;
-| Fixed priority RT
+; Fixed priority RT
 ;
 ; Test case: sched_rm
 ;

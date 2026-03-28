@@ -1,6 +1,6 @@
 ; Atomic Swap V2 — TTT Dogfood Phase 3
 ;
-| Exchange values alt
+; Exchange values alt
 ;
 ; Test case: atomic_swap2
 ;

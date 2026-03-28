@@ -1,6 +1,6 @@
 ; PI Lock — TTT Dogfood Phase 3
 ;
-| Priority inheritance
+; Priority inheritance
 ;
 ; Test case: pi_lock
 ;

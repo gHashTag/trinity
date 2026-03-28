@@ -1,6 +1,6 @@
 ; SJF Scheduler — TTT Dogfood Phase 3
 ;
-| Shortest job first
+; Shortest job first
 ;
 ; Test case: sched_sjf
 ;

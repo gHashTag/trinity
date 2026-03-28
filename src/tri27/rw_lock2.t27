@@ -1,6 +1,6 @@
 ; Read-Write Lock V2 — TTT Dogfood Phase 3
 ;
-| Reader-writer alt
+; Reader-writer alt
 ;
 ; Test case: rw_lock2
 ;

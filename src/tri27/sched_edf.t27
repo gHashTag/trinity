@@ -1,6 +1,6 @@
 ; EDF Scheduler — TTT Dogfood Phase 3
 ;
-| Earliest deadline first
+; Earliest deadline first
 ;
 ; Test case: sched_edf
 ;

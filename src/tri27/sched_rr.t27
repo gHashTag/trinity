@@ -1,6 +1,6 @@
 ; Round Robin — TTT Dogfood Phase 3
 ;
-| Time slicing
+; Time slicing
 ;
 ; Test case: sched_rr
 ;

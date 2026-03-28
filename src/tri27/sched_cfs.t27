@@ -1,6 +1,6 @@
 ; CFS Scheduler — TTT Dogfood Phase 3
 ;
-| Completely fair
+; Completely fair
 ;
 ; Test case: sched_cfs
 ;

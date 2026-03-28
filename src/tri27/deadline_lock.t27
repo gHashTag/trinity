@@ -1,6 +1,6 @@
 ; Deadline Lock — TTT Dogfood Phase 3
 ;
-| Priority inheritance
+; Priority inheritance
 ;
 ; Test case: deadline_lock
 ;

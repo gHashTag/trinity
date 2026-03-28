@@ -1,6 +1,6 @@
 ; Atomic CAS V2 — TTT Dogfood Phase 3
 ;
-| Compare-and-swap alt
+; Compare-and-swap alt
 ;
 ; Test case: atomic_cas2
 ;
