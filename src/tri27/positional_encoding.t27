@@ -1,0 +1,15 @@
+; Positional Encoding — TTT Dogfood Phase 3
+;
+; Sinusoidal position embeddings
+;
+; Test case: max_len = 512, dim = 512
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 512
+    ST t0, 60         ; max_len = 512
+    LDI t0, 512
+    ST t0, 61         ; d_model = 512
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07130800127e

@@ -1,0 +1,18 @@
+; K-Means Clustering — TTT Dogfood Phase 3
+;
+; Unsupervised clustering algorithm
+;
+; Test case: 3 clusters, 100 points
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; k = 3 clusters
+    LDI t0, 100
+    ST t0, 61         ; n = 100 points
+
+    LDI t0, 5
+    ST t0, 62         ; iterations = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712f2001268

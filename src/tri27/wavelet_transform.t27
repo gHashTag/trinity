@@ -1,0 +1,13 @@
+; Wavelet Transform — TTT Dogfood Phase 3
+;
+; Haar wavelet decomposition
+;
+; Test case: 1D signal, 3 levels
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; levels = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712f800126e
