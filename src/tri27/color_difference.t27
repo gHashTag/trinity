@@ -1,0 +1,13 @@
+; Color Difference — TTT Dogfood Phase 3
+;
+; Color difference key
+;
+; Test case: color diff key
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; keyed = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071592001508
