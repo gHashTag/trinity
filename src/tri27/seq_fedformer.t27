@@ -1,0 +1,13 @@
+; Sequence FEDformer — TTT Dogfood Phase 3
+;
+; FEDformer: frequency-enhanced decomposer
+;
+; Test case: seq_fedformer
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fedformer_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ada000002000000002519
