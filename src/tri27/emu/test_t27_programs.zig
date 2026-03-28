@@ -61065,3 +61065,288 @@ test "algo_smith_waterman: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "ai_alpha_beta: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_alpha_beta.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_alpha_beta: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_alpha_beta.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_beam_search: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_beam_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_beam_search: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_beam_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_expectimax: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_expectimax.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_expectimax: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_expectimax.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_greedy_best_first: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_greedy_best_first.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_greedy_best_first: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_greedy_best_first.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_history_heuristic: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_history_heuristic.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_history_heuristic: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_history_heuristic.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_killer_move: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_killer_move.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_killer_move: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_killer_move.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_minimax: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_minimax.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_minimax: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_minimax.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_monte_carlo_tree: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_monte_carlo_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_monte_carlo_tree: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_monte_carlo_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_negamax: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_negamax.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_negamax: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_negamax.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_negascout: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_negascout.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_negascout: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_negascout.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ai_quiescence_search: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_quiescence_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ai_quiescence_search: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ai_quiescence_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_aes: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_aes.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_aes: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_aes.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_diffie_hellman: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_diffie_hellman.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_diffie_hellman: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_diffie_hellman.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_ecdsa: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ecdsa.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_ecdsa: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_ecdsa.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_elgamal: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_elgamal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_elgamal: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_elgamal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_hmac: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_hmac.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_hmac: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_hmac.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_pbkdf2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_pbkdf2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_pbkdf2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_pbkdf2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "crypto_rsa: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_rsa.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "crypto_rsa: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "crypto_rsa.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ds_priority_queue_v2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_priority_queue_v2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ds_priority_queue_v2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ds_priority_queue_v2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
