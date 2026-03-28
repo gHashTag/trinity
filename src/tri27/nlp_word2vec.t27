@@ -1,4 +1,4 @@
-; Word2Vec — TTT Dogfood Phase 3
+; NLP Word2Vec — TTT Dogfood Phase 3
 ;
 ; Word embeddings
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; word2vec_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07324000010000000cd9
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07600000002000000001cf9

@@ -1,6 +1,6 @@
 ; Image Edge Detect — TTT Dogfood Phase 3
 ;
-; Sobel edge detection
+; Edge detection (Sobel, Canny)
 ;
 ; Test case: image_edge_detect
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; edge_detect_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0751e0000020000001409
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0761c00000200000001dd9

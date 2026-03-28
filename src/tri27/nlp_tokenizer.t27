@@ -1,6 +1,6 @@
-; Tokenizer — TTT Dogfood Phase 3
+; NLP Tokenizer — TTT Dogfood Phase 3
 ;
-; Split text into tokens
+; Text tokenization
 ;
 ; Test case: nlp_tokenizer
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; tokenizer_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07306000010000000d69
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07608000002000000001d39

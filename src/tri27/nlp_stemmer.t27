@@ -1,6 +1,6 @@
-; Porter Stemmer — TTT Dogfood Phase 3
+; NLP Stemmer — TTT Dogfood Phase 3
 ;
-; Reduce words to root form
+; Porter stemmer
 ;
 ; Test case: nlp_stemmer
 ;
@@ -10,4 +10,4 @@
     ST t0, 60         ; stemmer_result = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07304000010000000d59
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07606000002000000001d29

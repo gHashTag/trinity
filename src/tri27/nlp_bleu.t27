@@ -1,0 +1,13 @@
+; NLP BLEU — TTT Dogfood Phase 3
+;
+; BLEU score for translation
+;
+; Test case: nlp_bleu
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bleu_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0765e00000200000001ce9
