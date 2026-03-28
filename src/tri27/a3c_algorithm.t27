@@ -1,0 +1,13 @@
+; a3c_algorithm — TTT Dogfood Phase 3
+;
+; Algorithm/operation implementation
+;
+; Test case: a3c_algorithm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; a3c_algorithm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424498016

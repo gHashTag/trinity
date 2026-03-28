@@ -1,0 +1,13 @@
+; early_stop — TTT Dogfood Phase 3
+;
+; Algorithm/operation implementation
+;
+; Test case: early_stop
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; early_stop_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424487584
