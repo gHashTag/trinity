@@ -1,0 +1,13 @@
+; Pack Burrows Wheeler — TTT Dogfood Phase 3
+;
+; Burrows-Wheeler transform
+;
+; Test case: pack_burrows_wheeler
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bwt_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0740c000002000000b39

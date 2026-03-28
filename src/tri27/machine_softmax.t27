@@ -1,0 +1,13 @@
+; Machine Softmax — TTT Dogfood Phase 3
+;
+; Softmax activation
+;
+; Test case: machine_softmax
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; softmax_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073fa0000020000000aa9

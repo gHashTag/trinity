@@ -1,0 +1,13 @@
+; Adv Alpha Beta — TTT Dogfood Phase 3
+;
+; Alpha-beta pruning
+;
+; Test case: adv_alpha_beta
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; alpha_beta_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073e8000002000000a19

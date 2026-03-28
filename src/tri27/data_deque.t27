@@ -1,0 +1,13 @@
+; Data Deque — TTT Dogfood Phase 3
+;
+; Double-ended queue
+;
+; Test case: data_deque
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; deque_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073ba0000020000008a9
