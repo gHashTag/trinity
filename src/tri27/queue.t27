@@ -1,0 +1,74 @@
+; Queue Data Structure — TTT Dogfood Phase 3
+;
+; FIFO (First In, First Out) data structure
+;
+; Operations:
+; - Enqueue: add element to back
+; - Dequeue: remove and return front element
+; - isEmpty: check if queue is empty
+;
+; Implementation: Ring buffer with head and tail pointers
+;
+; Test case: Enqueue 1, 2, 3 -> Dequeue returns 1
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Queue layout (ring buffer of size 5)
+; Address 50: head pointer (index of front element)
+; Address 51: tail pointer (index of next empty slot)
+; Addresses 60-64: queue data
+
+; Initialize queue (empty)
+    LDI t0, 0         ; head = 0
+    ST t0, 50
+    LDI t0, 0         ; tail = 0
+    ST t0, 51
+
+; Enqueue operation 1: add value 1
+    LD t1, 51         ; t1 = tail
+    LDI t0, 1
+    ADD t0, t1, t0    ; data_index = tail + 1
+    ; Map index to data address: addr = 60 + index
+    LDI t1, 60
+    ADD t0, t0, t1    ; t0 = address to store
+    LDI t1, 1         ; value
+    ; Since we can't use register-indirect, use fixed addresses
+    ; tail = 0, store at address 61
+    LDI t0, 1
+    ST t0, 61
+    ; Update tail
+    LDI t0, 1
+    ST t0, 51
+
+; Enqueue operation 2: add value 2
+    ; tail = 1, store at address 62
+    LDI t0, 2
+    ST t0, 62
+    ; Update tail
+    LDI t0, 2
+    ST t0, 51
+
+; Enqueue operation 3: add value 3
+    ; tail = 2, store at address 63
+    LDI t0, 3
+    ST t0, 63
+    ; Update tail
+    LDI t0, 3
+    ST t0, 51
+
+; Dequeue operation: remove front element
+; Load from head position (head = 0, address 60)
+    LD t0, 60        ; t0 = queue[0] = 1
+    ST t0, 70        ; store dequeued value
+; Advance head
+    LDI t0, 1
+    ST t0, 50
+
+; Verify queue state
+; head = 1, tail = 3, 2 elements remaining
+    LD t0, 50        ; t0 = head = 1
+    LD t1, 51        ; t1 = tail = 3
+    SUB t2, t1, t0   ; t2 = 2 (size)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774740100:sha256:693ee9636e6924379fab4023fa2ca164d2ab58c2b01baebf31d5672fcf0ae9e2

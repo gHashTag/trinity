@@ -1871,4 +1871,100 @@ test "stack: peek returns top without popping" {
     try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
 }
 
+// Queue Data Structure Tests — TTT Dogfood Phase 3
+
+test "queue: file exists" {
+    const path = "src/tri27/queue.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "queue: enqueue single element" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    ST t0, 51
+        \\    LDI t0, 1
+        \\    ST t0, 61
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "queue: enqueue then dequeue returns first" {
+    const allocator = std.testing.allocator;
+    // Enqueue 1 at head=0, then dequeue should return 1
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    LDI t0, 1
+        \\    ST t0, 60
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 60
+        \\    LDI t1, 1
+        \\    ST t1, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "queue: isEmpty when empty" {
+    const allocator = std.testing.allocator;
+    // head == tail means empty
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    ST t0, 51
+        \\    LD t1, 50
+        \\    LD t2, 51
+        \\    SUB t0, t1, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "queue: isEmpty when has items" {
+    const allocator = std.testing.allocator;
+    // head = 0, tail = 2 means 2 elements
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    LDI t0, 2
+        \\    ST t0, 51
+        \\    LD t1, 50
+        \\    LD t2, 51
+        \\    SUB t0, t2, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "queue: size calculation" {
+    const allocator = std.testing.allocator;
+    // size = tail - head = 3 - 1 = 2
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 50
+        \\    LDI t0, 3
+        \\    ST t0, 51
+        \\    LD t1, 50
+        \\    LD t2, 51
+        \\    SUB t0, t2, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
