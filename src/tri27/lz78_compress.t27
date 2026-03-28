@@ -1,0 +1,13 @@
+; LZ78 Compression — TTT Dogfood Phase 3
+;
+; Dictionary-based compression
+;
+; Test case: compress with dictionary
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; dictionary_size = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07132500129b

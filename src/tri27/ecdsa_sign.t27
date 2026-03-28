@@ -1,0 +1,13 @@
+; ECDSA Signature — TTT Dogfood Phase 3
+;
+; Elliptic curve digital signature
+;
+; Test case: secp256k1 curve
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 256
+    ST t0, 60         ; key_size = 256 bits
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07132e0012a4

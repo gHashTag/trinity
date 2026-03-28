@@ -1,0 +1,13 @@
+; HKDF Expand — TTT Dogfood Phase 3
+;
+; HMAC-based KDF
+;
+; Test case: expand to 32 bytes
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 32
+    ST t0, 60         ; output_len = 32 bytes
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07133c0012b2

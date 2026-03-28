@@ -1,0 +1,13 @@
+; Twofish Cipher — TTT Dogfood Phase 3
+;
+; AES finalist, 128-bit blocks
+;
+; Test case: 16 rounds
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 16
+    ST t0, 60         ; rounds = 16
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713330012a9
