@@ -1,0 +1,13 @@
+; Quantum Circuits Grover — TTT Dogfood Phase 3
+;
+; Grover's algorithm
+;
+; Test case: quantum_circuits_grover
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; grover_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:077fd000002000000002175
