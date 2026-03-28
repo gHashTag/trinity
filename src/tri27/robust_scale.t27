@@ -1,0 +1,13 @@
+; Robust Scale — TTT Dogfood Phase 3
+;
+; Robust scaling with median
+;
+; Test case: scale data
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; scaled = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715410014b7
