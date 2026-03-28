@@ -6,13 +6,13 @@
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-    LDI t0, 0x23
-    ST t0, 60         ; a = 0x23 (23 in BCD)
-    LDI t0, 0x45
-    ST t0, 61         ; b = 0x45 (45 in BCD)
+    LDI t0, 35        ; 0x23 = 35 decimal
+    ST t0, 60         ; a = 35 (23 in BCD)
+    LDI t0, 69        ; 0x45 = 69 decimal
+    ST t0, 61         ; b = 69 (45 in BCD)
 
-    LDI t0, 0x68
-    ST t0, 62         ; result = 0x68 (68 in BCD)
+    LDI t0, 104       ; 0x68 = 104 decimal
+    ST t0, 62         ; result = 104 (68 in BCD)
 
     HALT
 ; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752740011e5

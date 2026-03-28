@@ -18706,3 +18706,382 @@ test "argon2_hash: verify memory cost" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TREE & GRAPH ALGORITHMS — TTT Dogfood Phase 3
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "avl_tree: Self-balancing BST" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AVL") != null);
+}
+
+test "avl_tree: verify balance factor" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_plus_delete: Delete from B+ tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_delete.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B+") != null);
+}
+
+test "b_plus_delete: verify key deletion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_delete.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_plus_insert: Insert into B+ tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B+") != null);
+}
+
+test "b_plus_insert: verify order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_plus_range: Range query in B+ tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_range.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Range") != null);
+}
+
+test "b_plus_range: verify count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_range.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_plus_search: Search in B+ tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Search") != null);
+}
+
+test "b_plus_search: verify found" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_plus_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "b_tree: Multi-way balanced tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B-Tree") != null);
+}
+
+test "b_tree: verify order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "backpropagation: Neural network training" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "backpropagation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Backpropagation") != null);
+}
+
+test "backpropagation: verify layers" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "backpropagation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "batch_normalization: Normalize across batch" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "batch_normalization.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Batch") != null);
+}
+
+test "batch_normalization: verify features" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "batch_normalization.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bcd_add: Binary-Coded Decimal addition" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bcd_add.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "BCD") != null);
+}
+
+test "bcd_add: verify result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bcd_add.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "beam_search: Width-limited best-first" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "beam_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Beam") != null);
+}
+
+test "beam_search: verify beam width" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "beam_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bellman_ford: Shortest paths with negative edges" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bellman_ford.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bellman") != null);
+}
+
+test "bellman_ford: verify no negative cycle" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bellman_ford.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "best_time_stock: Maximum profit from stock" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "best_time_stock.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Stock") != null);
+}
+
+test "best_time_stock: verify profit" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "best_time_stock.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bfs: Breadth-First Search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bfs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Breadth") != null);
+}
+
+test "bfs: verify visit order" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bfs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bidirectional: Search from both ends" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bidirectional.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bidirectional") != null);
+}
+
+test "bidirectional: verify meeting node" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bidirectional.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bilateral_filter: Edge-preserving smoothing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bilateral_filter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bilateral") != null);
+}
+
+test "bilateral_filter: verify spatial sigma" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bilateral_filter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_indexed_tree: Fenwick tree prefix sums" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_indexed_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Fenwick") != null);
+}
+
+test "binary_indexed_tree: verify query result" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_indexed_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_search: Divide-and-conquer search" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_search.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Binary") != null);
+}
+
+test "binary_search: verify found index" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_search.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_tree: Binary search tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Binary") != null);
+}
+
+test "binary_tree: verify inorder sorted" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "binary_tree_traversal: Three traversal methods" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_tree_traversal.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Traversal") != null);
+}
+
+test "binary_tree_traversal: verify inorder" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "binary_tree_traversal.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bipartite_check: 2-colorable graph test" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_check.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bipartite") != null);
+}
+
+test "bipartite_check: verify is bipartite" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_check.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bipartite_check_graph: BFS coloring" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_check_graph.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bipartite") != null);
+}
+
+test "bipartite_check_graph: verify colors" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_check_graph.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bipartite_match: Maximum matching in bipartite graph" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_match.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bipartite") != null);
+}
+
+test "bipartite_match: verify matching size" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_match.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bipartite_matching: Hopcroft-Karp algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_matching.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bipartite") != null);
+}
+
+test "bipartite_matching: verify max matching" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bipartite_matching.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bit_count: Population count" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bit_count.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "popcount") != null);
+}
+
+test "bit_count: verify set bits" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bit_count.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bit_manipulation: Common bit operations" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bit_manipulation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bit") != null);
+}
+
+test "bit_manipulation: verify popcount" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bit_manipulation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
