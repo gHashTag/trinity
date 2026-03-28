@@ -12,8 +12,8 @@
     LDI t0, 5
     ST t0, 61         ; max_rank = 5
 
-    LDI t0, 100000
-    ST t0, 62         ; estimated_cardinality ≈ 100K
+    LDI t0, 10000     ; truncated cardinality (15-bit limit)
+    ST t0, 62         ; estimated_cardinality (truncated)
 
     LDI t0, 2
     ST t0, 63         ; error_rate ≈ 2%
