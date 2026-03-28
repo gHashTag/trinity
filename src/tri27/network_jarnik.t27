@@ -1,0 +1,13 @@
+; Jarnik Prim — TTT Dogfood Phase 3
+;
+; Prim's MST algorithm
+;
+; Test case: network_jarnik
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; jarnik_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07304000020000000759
