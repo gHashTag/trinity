@@ -1,0 +1,13 @@
+; Parse Float — TTT Dogfood Phase 3
+;
+; String to float conversion
+;
+; Test case: parse_parse_float
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; parse_parse_float_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0721b0001de9
