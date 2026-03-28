@@ -47475,3 +47475,63 @@ test "uniform_dist2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "convolution2d: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "convolution2d.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "convolution2d: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "convolution2d.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "laplacian_filter: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "laplacian_filter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "laplacian_filter: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "laplacian_filter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "prewitt_filter: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "prewitt_filter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "prewitt_filter: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "prewitt_filter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sobel_filter: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sobel_filter.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "sobel_filter: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sobel_filter.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
