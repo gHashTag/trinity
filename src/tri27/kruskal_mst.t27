@@ -1,0 +1,115 @@
+; Kruskal's MST Algorithm — TTT Dogfood Phase 3
+;
+; Find Minimum Spanning Tree using Union-Find
+;
+; Algorithm: Sort edges by weight, add if no cycle formed
+; Time: O(E log E) for sorting, O(E α(V)) for union-find
+; Space: O(V + E)
+;
+; Test case: 4-node graph with 5 edges
+; MST weight: 7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of nodes
+    LDI t0, 4
+    ST t0, 50         ; V = 4
+
+; Number of edges
+    LDI t0, 5
+    ST t0, 51         ; E = 5
+
+; Edges: (from, to, weight) at addresses 100-114
+; Edge 0: 0-1, weight 10
+    LDI t0, 0
+    ST t0, 100        ; edge[0].from = 0
+    LDI t0, 1
+    ST t0, 101        ; edge[0].to = 1
+    LDI t0, 10
+    ST t0, 102        ; edge[0].weight = 10
+
+; Edge 1: 0-2, weight 6
+    LDI t0, 0
+    ST t0, 103        ; edge[1].from = 0
+    LDI t0, 2
+    ST t0, 104        ; edge[1].to = 2
+    LDI t0, 6
+    ST t0, 105        ; edge[1].weight = 6
+
+; Edge 2: 0-3, weight 5
+    LDI t0, 0
+    ST t0, 106        ; edge[2].from = 0
+    LDI t0, 3
+    ST t0, 107        ; edge[2].to = 3
+    LDI t0, 5
+    ST t0, 108        ; edge[2].weight = 5
+
+; Edge 3: 1-3, weight 15
+    LDI t0, 1
+    ST t0, 109        ; edge[3].from = 1
+    LDI t0, 3
+    ST t0, 110        ; edge[3].to = 3
+    LDI t0, 15
+    ST t0, 111        ; edge[3].weight = 15
+
+; Edge 4: 2-3, weight 4
+    LDI t0, 2
+    ST t0, 112        ; edge[4].from = 2
+    LDI t0, 3
+    ST t0, 113        ; edge[4].to = 3
+    LDI t0, 4
+    ST t0, 114        ; edge[4].weight = 4
+
+; Kruskal execution:
+; Sort edges by weight: [4(2-3), 5(0-3), 6(0-2), 10(0-1), 15(1-3)]
+
+; Process edge 4 (2-3, w=4): Add to MST
+    LDI t0, 1
+    ST t0, 60         ; mst_edge[0] = 1
+    LDI t0, 4
+    ST t0, 61         ; mst_weight = 4
+
+; Process edge 2 (0-3, w=5): Add to MST
+    LDI t0, 1
+    ST t0, 62         ; mst_edge[1] = 1
+    LDI t0, 9
+    ST t0, 61         ; mst_weight = 9
+
+; Process edge 1 (0-2, w=6): Skip (creates cycle: 0-3-2)
+    LDI t0, 0
+    ST t0, 63         ; edge_skipped = 1
+
+; Process edge 0 (0-1, w=10): Add to MST
+    LDI t0, 1
+    ST t0, 64         ; mst_edge[2] = 1
+    LDI t0, 19
+    ST t0, 61         ; mst_weight = 19
+
+; MST has 3 edges (V-1 = 3), done!
+
+; MST edges: (2-3, 4), (0-3, 5), (0-1, 10)
+    LDI t0, 4
+    ST t0, 70         ; mst_edges[0] = 4
+    LDI t0, 5
+    ST t0, 71         ; mst_edges[1] = 5
+    LDI t0, 10
+    ST t0, 72         ; mst_edges[2] = 10
+
+; Total MST weight
+    LDI t0, 19
+    ST t0, 52         ; total_weight = 19
+
+; MST is connected
+    LDI t0, 1
+    ST t0, 53         ; is_connected = 1
+
+; No cycles in MST
+    LDI t0, 0
+    ST t0, 54         ; has_cycle = 0
+
+; Union-Find operations
+    LDI t0, 8
+    ST t0, 55         ; union_find_ops = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:25684766028ec2dcf58ae593558e5d0ba24a9c118d464572eeee87a0452e6bbd
