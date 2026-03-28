@@ -1,6 +1,6 @@
 ; Distance Point-Segment — TTT Dogfood Phase 3
 ;
-| Nearest on segment
+; Nearest on segment
 ;
 ; Test case: distance_point_seg
 ;

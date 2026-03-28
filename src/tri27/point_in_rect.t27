@@ -1,6 +1,6 @@
 ; Point in Rectangle — TTT Dogfood Phase 3
 ;
-| Bounding box
+; Bounding box
 ;
 ; Test case: point_in_rect
 ;

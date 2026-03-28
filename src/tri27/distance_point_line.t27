@@ -1,6 +1,6 @@
 ; Distance Point-Line — TTT Dogfood Phase 3
 ;
-| Perpendicular dist
+; Perpendicular dist
 ;
 ; Test case: distance_point_line
 ;
