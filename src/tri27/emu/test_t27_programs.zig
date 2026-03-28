@@ -3928,4 +3928,65 @@ test "fibonacci_sequence: verify F(7)" {
     try std.testing.expectEqual(@as(i64, 13), cpu.t27[0].trits);
 }
 
+// LCS Tests — TTT Dogfood Phase 3
+
+test "lcs: file exists" {
+    const path = "src/tri27/lcs.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "lcs: length" {
+    const allocator = std.testing.allocator;
+    // LCS("ABCDGH", "AEDFHR") = "ADH", length = 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "lcs: string lengths" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "lcs: first char" {
+    const allocator = std.testing.allocator;
+    // 'A' = 65
+    const program =
+        \\    LDI t0, 65
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 65), cpu.t27[0].trits);
+}
+
+test "lcs: last char" {
+    const allocator = std.testing.allocator;
+    // 'H' = 72
+    const program =
+        \\    LDI t0, 72
+        \\    ST t0, 202
+        \\    LD t0, 202
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 72), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
