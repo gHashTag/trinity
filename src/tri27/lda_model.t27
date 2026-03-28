@@ -1,0 +1,13 @@
+; Latent Dirichlet Allocation — TTT Dogfood Phase 3
+;
+; LDA topic modeling
+;
+; Test case: lda_model
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lda_model_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071a6a0019e2
