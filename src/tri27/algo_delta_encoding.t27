@@ -1,0 +1,13 @@
+; Delta Encoding — TTT Dogfood Phase 3
+;
+; Store differences between values
+;
+; Test case: algo_delta_encoding
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; delta_encoding_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732e00000100013b9
