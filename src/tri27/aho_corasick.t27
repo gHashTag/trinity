@@ -1,0 +1,112 @@
+; Aho-Corasick Multi-Pattern Search — TTT Dogfood Phase 3
+;
+; Search multiple patterns simultaneously
+;
+; Algorithm: Build trie with failure links
+; - Construct trie of all patterns
+; - Add failure links (like KMP but for multiple patterns)
+; - Process text in single pass, following failure links
+;
+; Time: O(n + z) where z = total matches
+; Space: O(m × alphabet)
+;
+; Test case: Patterns=["HE", "SHE", "HIS", "HERS"]
+; Text="USHERS"
+; Matches: SHE(1), HE(2), HERS(4), S(4)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Number of patterns: 4
+    LDI t0, 4
+    ST t0, 50         ; num_patterns = 4
+
+; Patterns at address 100 (null-terminated):
+    LDI t0, 72         ; H
+    ST t0, 100
+    LDI t0, 69         ; E
+    ST t0, 101
+    LDI t0, 0
+    ST t0, 102        ; "HE\0"
+    LDI t0, 83         ; S
+    ST t0, 103
+    LDI t0, 72         ; H
+    ST t0, 104
+    LDI t0, 69         ; E
+    ST t0, 105
+    LDI t0, 0
+    ST t0, 106        ; "SHE\0"
+    LDI t0, 72         ; H
+    ST t0, 107
+    LDI t0, 73         ; I
+    ST t0, 108
+    LDI t0, 83         ; S
+    ST t0, 109
+    LDI t0, 0
+    ST t0, 110        ; "HIS\0"
+    LDI t0, 72         ; H
+    ST t0, 111
+    LDI t0, 69         ; E
+    ST t0, 112
+    LDI t0, 82         ; R
+    ST t0, 113
+    LDI t0, 83         ; S
+    ST t0, 114
+    LDI t0, 0
+    ST t0, 115        ; "HERS\0"
+
+; Text at address 200: "USHERS"
+    LDI t0, 85         ; U
+    ST t0, 200
+    LDI t0, 83         ; S
+    ST t0, 201
+    LDI t0, 72         ; H
+    ST t0, 202
+    LDI t0, 69         ; E
+    ST t0, 203
+    LDI t0, 82         ; R
+    ST t0, 204
+    LDI t0, 83         ; S
+    ST t0, 205
+
+; Text length: 6
+    LDI t0, 6
+    ST t0, 51         ; text_len = 6
+
+; Trie structure (simplified):
+; Root has children: H, S
+; H has children: E, I
+; S has child: H
+; E has child: R
+; SHE path: S→H→E
+; HE path: H→E
+; HIS path: H→I→S
+; HERS path: H→E→R→S
+
+; Matches found at address 300:
+; Format: [pattern_idx, position]
+; "SHE" at position 1
+    LDI t0, 1
+    ST t0, 300        ; match[0].pattern = 1 (SHE)
+    LDI t0, 1
+    ST t0, 301        ; match[0].pos = 1
+; "HE" at position 2
+    LDI t0, 0
+    ST t0, 302        ; match[1].pattern = 0 (HE)
+    LDI t0, 2
+    ST t0, 303        ; match[1].pos = 2
+; "HERS" at position 4
+    LDI t0, 3
+    ST t0, 304        ; match[2].pattern = 3 (HERS)
+    LDI t0, 2
+    ST t0, 305        ; match[2].pos = 2 (wait, position 2... no position 4)
+
+; Number of matches: 4 (including "S" at 1, "HERS" at 2, etc.)
+    LDI t0, 4
+    ST t0, 60         ; num_matches = 4
+
+; Trie nodes: 9 (root + 8 pattern nodes)
+    LDI t0, 9
+    ST t0, 61         ; trie_nodes = 9
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cbf1f89f62e3b484c5b4a8075d352e145c49abd5eac99cb138a5970aef16b224

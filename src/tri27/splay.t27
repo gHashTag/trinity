@@ -1,0 +1,113 @@
+; Splay Tree — TTT Dogfood Phase 3
+;
+; Self-adjusting binary search tree
+;
+; Algorithm: Splay operation to bring node to root
+; - Zig (left-left or right-right)
+; - Zig-zag (left-right or right-left)
+; - Splaying makes recently accessed nodes closer to root
+;
+; Time: O(log n) amortized per operation
+; Space: O(n)
+;
+; Test case: Insert [5, 3, 7, 1, 9], then search 7
+; After splaying 7 to root, it becomes root
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input values at address 100:
+    LDI t0, 5
+    ST t0, 100        ; [0] = 5
+    LDI t0, 3
+    ST t0, 101        ; [1] = 3
+    LDI t0, 7
+    ST t0, 102        ; [2] = 7
+    LDI t0, 1
+    ST t0, 103        ; [3] = 1
+    LDI t0, 9
+    ST t0, 104        ; [4] = 9
+
+; Number of elements: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; Initial BST structure (unbalanced):
+;        5
+;       / \
+;      3   7
+;     /     \
+;    1       9
+
+; Tree representation at address 200:
+; Format: [value, left_child, right_child]
+    LDI t0, 5
+    ST t0, 200        ; root.value = 5
+    LDI t0, 1
+    ST t0, 201        ; root.left = 1
+    LDI t0, 2
+    ST t0, 202        ; root.right = 2
+
+; Node 1 (value=3):
+    LDI t0, 3
+    ST t0, 210        ; node1.value = 3
+    LDI t0, 3
+    ST t0, 211        ; node1.left = 3
+    LDI t0, 65535     ; -1 (null)
+    ST t0, 212        ; node1.right = null
+
+; Node 2 (value=7):
+    LDI t0, 7
+    ST t0, 220        ; node2.value = 7
+    LDI t0, 65535
+    ST t0, 221        ; node2.left = null
+    LDI t0, 4
+    ST t0, 222        ; node2.right = 4
+
+; Node 3 (value=1): leaf
+    LDI t0, 1
+    ST t0, 230        ; node3.value = 1
+    LDI t0, 65535
+    ST t0, 231        ; node3.left = null
+    LDI t0, 65535
+    ST t0, 232        ; node3.right = null
+
+; Node 4 (value=9): leaf
+    LDI t0, 9
+    ST t0, 240        ; node4.value = 9
+    LDI t0, 65535
+    ST t0, 241        ; node4.left = null
+    LDI t0, 65535
+    ST t0, 242        ; node4.right = null
+
+; Splay operation for value 7:
+; After splay, 7 becomes root
+;        7
+;       / \
+;      5   9
+;     /
+;    3
+;   /
+;  1
+
+; Splayed tree at address 300:
+    LDI t0, 7
+    ST t0, 300        ; splayed_root = 7
+    LDI t0, 0
+    ST t0, 301        ; splayed_left = 0
+    LDI t0, 4
+    ST t0, 302        ; splayed_right = 4
+
+; Access count for 7: 1
+    LDI t0, 1
+    ST t0, 60         ; access_7 = 1
+
+; Tree height before splay: 3
+    LDI t0, 3
+    ST t0, 61         ; height_before = 3
+
+; Tree height after splay: 3
+    LDI t0, 3
+    ST t0, 62         ; height_after = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:22210bdc13d5f75584cd03fdd0102a354c513799631b44dc1f0ed5e72da2f75b

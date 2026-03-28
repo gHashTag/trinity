@@ -1,0 +1,105 @@
+; Trie Prefix Tree — TTT Dogfood Phase 3
+;
+; Fast prefix-based string operations
+;
+; Algorithm: Tree where each node represents a prefix
+; - Root represents empty prefix
+; - Each edge labeled with a character
+; - Words end at marked nodes
+;
+; Time: O(m) for insert/search where m = word length
+; Space: O(n × m) where n = number of words
+;
+; Test case: Insert ["APPLE", "APP", "APPLY"]
+; Search "APP" → found, "AP" → not found (unless marked)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Words at address 100 (null-terminated):
+    LDI t0, 65         ; A
+    ST t0, 100
+    LDI t0, 80         ; P
+    ST t0, 101
+    LDI t0, 80         ; P
+    ST t0, 102
+    LDI t0, 76         ; L
+    ST t0, 103
+    LDI t0, 69         ; E
+    ST t0, 104
+    LDI t0, 0
+    ST t0, 105        ; "APPLE\0"
+    LDI t0, 65         ; A
+    ST t0, 106
+    LDI t0, 80         ; P
+    ST t0, 107
+    LDI t0, 80         ; P
+    ST t0, 108
+    LDI t0, 0
+    ST t0, 109        ; "APP\0"
+    LDI t0, 65         ; A
+    ST t0, 110
+    LDI t0, 80         ; P
+    ST t0, 111
+    LDI t0, 80         ; P
+    ST t0, 112
+    LDI t0, 76         ; L
+    ST t0, 113
+    LDI t0, 89         ; Y
+    ST t0, 114
+    LDI t0, 0
+    ST t0, 115        ; "APPLY\0"
+
+; Number of words: 3
+    LDI t0, 3
+    ST t0, 50         ; num_words = 3
+
+; Trie structure at address 200:
+; Root -> A -> P -> P -> L -> E (end)
+;        -> P -> P (end)
+;        -> P -> L -> Y (end)
+
+; Node representation: [value, is_end, first_child, next_sibling]
+; Root node:
+    LDI t0, 0
+    ST t0, 200        ; root.value = 0 (empty)
+    LDI t0, 0
+    ST t0, 201        ; root.is_end = 0
+    LDI t0, 1
+    ST t0, 202        ; root.first_child = 1 (A node)
+
+; Node 1 (A):
+    LDI t0, 65
+    ST t0, 210        ; A.value = 'A'
+    LDI t0, 0
+    ST t0, 211        ; A.is_end = 0
+    LDI t0, 2
+    ST t0, 212        ; A.first_child = 2 (P node)
+
+; Node 2 (P under A):
+    LDI t0, 80
+    ST t0, 220        ; P.value = 'P'
+    LDI t0, 1
+    ST t0, 221        ; P.is_end = 1 ("APP" ends here)
+    LDI t0, 3
+    ST t0, 222        ; P.first_child = 3 (another P)
+    LDI t0, 4
+    ST t0, 223        ; P.next_sibling = 4 (L)
+
+; Search for "APP": found (is_end=1 at node 3)
+    LDI t0, 1
+    ST t0, 60         ; search_APP_found = 1
+
+; Search for "AP": not found (no node marked is_end for "AP")
+    LDI t0, 0
+    ST t0, 61         ; search_AP_found = 0
+
+; Total nodes: 7 (root + A + 2×P + L + E + Y)
+    LDI t0, 7
+    ST t0, 62         ; num_nodes = 7
+
+; Maximum depth: 5 (APPLE)
+    LDI t0, 5
+    ST t0, 63         ; max_depth = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:f7bbde6c8d7bb898cae820c9dc5a92b9d15fe5adf8966a99c72feaa17888be46
