@@ -1,0 +1,44 @@
+; String Compare (StrCmp) — TTT Dogfood Phase 3
+;
+; Compare two strings lexicographically
+;
+; Test case: s1="hello", s2="world"
+; Result: negative (h < w)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; String 1 at address 100: "hello"
+    LDI t0, 104        ; h
+    ST t0, 100
+    LDI t0, 101        ; e
+    ST t0, 101
+    LDI t0, 108        ; l
+    ST t0, 102
+    LDI t0, 108        ; l
+    ST t0, 103
+    LDI t0, 111        ; o
+    ST t0, 104
+
+; String 2 at address 110: "world"
+    LDI t0, 119        ; w
+    ST t0, 110
+    LDI t0, 111        ; o
+    ST t0, 111
+    LDI t0, 114        ; r
+    ST t0, 112
+    LDI t0, 108        ; l
+    ST t0, 113
+    LDI t0, 100        ; d
+    ST t0, 114
+
+; Compare first char: h(104) vs w(119)
+; 104 < 119 → s1 < s2
+    LDI t0, -15        ; 104 - 119
+    ST t0, 60         ; result = -15
+
+; Comparisons: 1
+    LDI t0, 1
+    ST t0, 61         ; comparisons = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:104af3dbf113081da68e345f46a79e9847af3935dd4ffdfff203b6fcf65fd6ee

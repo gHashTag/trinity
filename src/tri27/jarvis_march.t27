@@ -120,4 +120,4 @@
     ST t0, 63         ; angle_checks = 24
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:091a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a48a27ccae902b75086539608d9ca78833ebbe3fc50cb99844d79ac4b078937b

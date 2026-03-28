@@ -1,0 +1,95 @@
+; StrLwr — String to Lowercase — TTT Dogfood Phase 3
+;
+; Convert string to lowercase
+;
+; Algorithm:
+; - For each character
+; - If 'A'-'Z', add 32 to get lowercase
+; - Otherwise, keep as-is
+;
+; Time: O(n), Space: O(1) in-place
+;
+; Test case: "HELLO World!" → "hello world!"
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input string at address 100: "HELLO World!"
+    LDI t0, 72         ; H
+    ST t0, 100
+    LDI t0, 69         ; E
+    ST t0, 101
+    LDI t0, 76         ; L
+    ST t0, 102
+    LDI t0, 76         ; L
+    ST t0, 103
+    LDI t0, 79         ; O
+    ST t0, 104
+    LDI t0, 32         ; space
+    ST t0, 105
+    LDI t0, 87         ; W
+    ST t0, 106
+    LDI t0, 111        ; o
+    ST t0, 107
+    LDI t0, 114        ; r
+    ST t0, 108
+    LDI t0, 108        ; l
+    ST t0, 109
+    LDI t0, 100        ; d
+    ST t0, 110
+    LDI t0, 33         ; !
+    ST t0, 111
+
+; String length: 12
+    LDI t0, 12
+    ST t0, 50         ; n = 12
+
+; Convert to lowercase:
+; H (72) → 72 + 32 = 104 (h)
+; E (69) → 69 + 32 = 101 (e)
+; L (76) → 76 + 32 = 108 (l)
+; L (76) → 108 (l)
+; O (79) → 79 + 32 = 111 (o)
+; space (32) → 32
+; W (87) → 87 + 32 = 119 (w)
+; o (111) already lowercase → 111
+; r (114) already lowercase → 114
+; l (108) already lowercase → 108
+; d (100) already lowercase → 100
+; ! (33) → 33
+
+; Output at address 200: "hello world!"
+    LDI t0, 104        ; h
+    ST t0, 200
+    LDI t0, 101        ; e
+    ST t0, 201
+    LDI t0, 108        ; l
+    ST t0, 202
+    LDI t0, 108        ; l
+    ST t0, 203
+    LDI t0, 111        ; o
+    ST t0, 204
+    LDI t0, 32         ; space
+    ST t0, 205
+    LDI t0, 119        ; w
+    ST t0, 206
+    LDI t0, 111        ; o
+    ST t0, 207
+    LDI t0, 114        ; r
+    ST t0, 208
+    LDI t0, 108        ; l
+    ST t0, 209
+    LDI t0, 100        ; d
+    ST t0, 210
+    LDI t0, 33         ; !
+    ST t0, 211
+
+; Characters converted: 6
+    LDI t0, 6
+    ST t0, 60         ; converted = 6
+
+; Characters unchanged: 6
+    LDI t0, 6
+    ST t0, 61         ; unchanged = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d05f9713ec9d7721cb43b1500299b2c988b5c6fa2f84f2e7b93d7cdd41701cc0

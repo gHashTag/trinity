@@ -114,4 +114,4 @@
     ST t0, 63         ; height = 2
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:439f10c0d1e0f0e9d8c7b6a59f8e7d6c5b4a39f8e7d6c5b4a39f8e7d6
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:cb81db02fa0e31e59b62abeaa89743b9a141622fb9edde8b37da16d61c8427ed
