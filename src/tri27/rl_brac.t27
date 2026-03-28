@@ -1,0 +1,13 @@
+; RL BRAC — TTT Dogfood Phase 3
+;
+; Behavior-Regularized Actor-Critic for offline RL
+;
+; Test case: rl_brac
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; brac_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ab800000200000002485

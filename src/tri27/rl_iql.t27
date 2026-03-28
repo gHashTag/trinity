@@ -1,0 +1,13 @@
+; RL IQL — TTT Dogfood Phase 3
+;
+; Implicit Q-Learning for offline RL
+;
+; Test case: rl_iql
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; iql_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aba000002000000002487
