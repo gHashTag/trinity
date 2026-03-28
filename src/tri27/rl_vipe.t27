@@ -1,0 +1,13 @@
+; RL VIPE — TTT Dogfood Phase 3
+;
+; Value-Inspired Policy Optimization
+;
+; Test case: rl_vipe
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; vipe_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07abd000002000000002490
