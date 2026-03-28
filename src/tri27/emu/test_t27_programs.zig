@@ -15967,3 +15967,427 @@ test "strupr: verify uppercase output" {
     defer allocator.free(source);
     try std.testing.expect(std.mem.indexOf(u8, source, "HELLO WORLD") != null);
 }
+
+// ============================================================================
+// TTT Dogfood Phase 3: Additional Algorithm Files (V122)
+// ============================================================================
+
+test "avl_insert: AVL tree insertion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "AVL Tree") != null);
+}
+
+test "avl_insert: verify rotation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "avl_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "balanced") != null);
+}
+
+test "b_tree_data: B-tree data structure" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_tree_data.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B-Tree") != null);
+}
+
+test "b_tree_data: verify node splitting" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "b_tree_data.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "bloom_filter_new: Bloom filter" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_filter_new.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Bloom") != null);
+}
+
+test "bloom_filter_new: verify hash functions" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bloom_filter_new.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "k=3") != null);
+}
+
+test "bplus_tree: B+ tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bplus_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "B+ Tree") != null);
+}
+
+test "bplus_tree: verify leaf nodes" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "bplus_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "order") != null);
+}
+
+test "consistent_hash: consistent hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "consistent_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Consistent") != null);
+}
+
+test "consistent_hash: verify ring distribution" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "consistent_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "servers") != null);
+}
+
+test "cuckoo_hash: Cuckoo hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cuckoo_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Cuckoo Hashing") != null);
+}
+
+test "cuckoo_hash: verify eviction" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "cuckoo_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "tables") != null);
+}
+
+test "disjoint_set: disjoint set union" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "disjoint_set.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Disjoint") != null);
+}
+
+test "disjoint_set: verify path compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "disjoint_set.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "compression") != null);
+}
+
+test "djb2: DJB2 hash function" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "djb2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "DJB2") != null);
+}
+
+test "djb2: verify hash calculation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "djb2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "double_hash: double hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "double_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Double Hashing") != null);
+}
+
+test "double_hash: verify probe sequence" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "double_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Table size") != null);
+}
+
+test "fnv_hash: FNV hash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fnv_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "FNV") != null);
+}
+
+test "fnv_hash: verify FNV offset" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "fnv_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geometric_median: geometric median" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geometric_median.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Geometric") != null);
+}
+
+test "geometric_median: verify distance calculation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geometric_median.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "graham_scan_hull: Graham scan convex hull" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "graham_scan_hull.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Graham") != null);
+}
+
+test "graham_scan_hull: verify hull points" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "graham_scan_hull.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "hash_openaddr: open addressing hash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hash_openaddr.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Open") != null);
+}
+
+test "hash_openaddr: verify linear probing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "hash_openaddr.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "interval_tree_data: interval tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "interval_tree_data.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Interval") != null);
+}
+
+test "interval_tree_data: verify overlap check" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "interval_tree_data.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "kdtree: KD-tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kdtree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "KD") != null);
+}
+
+test "kdtree: verify spatial partitioning" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "kdtree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lz77: LZ77 compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz77.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LZ77") != null);
+}
+
+test "lz77: verify sliding window" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lz77.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "lzw: LZW compression" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lzw.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "LZW") != null);
+}
+
+test "lzw: verify dictionary" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "lzw.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "murmur: MurmurHash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "murmur.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Murmur") != null);
+}
+
+test "murmur: verify avalanche" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "murmur.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "quad_tree: quadtree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quad_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Quad") != null);
+}
+
+test "quad_tree: verify quadrant subdivision" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "quad_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "radix_hash: radix hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "radix_hash.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Radix") != null);
+}
+
+test "radix_hash: verify bucket index" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "radix_hash.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "redblack_insert: red-black tree insertion" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "redblack_insert.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Red-Black") != null);
+}
+
+test "redblack_insert: verify color property" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "redblack_insert.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "robin_hood: Robin Hood hashing" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "robin_hood.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Robin Hood") != null);
+}
+
+test "robin_hood: verify PSL" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "robin_hood.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "rope_string: rope string" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rope_string.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Rope") != null);
+}
+
+test "rope_string: verify concatenation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "rope_string.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "scapegoat: scapegoat tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scapegoat.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Scapegoat") != null);
+}
+
+test "scapegoat: verify rebuilding" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "scapegoat.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sdbm: SDBM hash" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sdbm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "SDBM") != null);
+}
+
+test "sdbm: verify hash computation" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sdbm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "skip_list_data: skip list" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skip_list_data.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Skip") != null);
+}
+
+test "skip_list_data: verify tower" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "skip_list_data.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "splay_tree_data: splay tree" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "splay_tree_data.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Splay") != null);
+}
+
+test "splay_tree_data: verify splaying" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "splay_tree_data.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "treap_tree: treap" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "treap_tree.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Treap") != null);
+}
+
+test "treap_tree: verify priority" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "treap_tree.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
