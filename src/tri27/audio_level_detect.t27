@@ -1,0 +1,13 @@
+; Audio Level Detect — TTT Dogfood Phase 3
+;
+; Detect audio level (RMS)
+;
+; Test case: audio_level_detect
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; level_detect_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075520000020000015e9

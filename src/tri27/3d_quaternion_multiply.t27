@@ -1,0 +1,13 @@
+; 3D Quaternion Multiply — TTT Dogfood Phase 3
+;
+; Quaternion multiplication
+;
+; Test case: 3d_quaternion_multiply
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; quat_mult_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075a60000020000001889

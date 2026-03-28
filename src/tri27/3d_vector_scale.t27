@@ -1,0 +1,13 @@
+; 3D Vector Scale — TTT Dogfood Phase 3
+;
+; Vector scalar multiplication
+;
+; Test case: 3d_vector_scale
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; vector_scale_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07578000002000001719

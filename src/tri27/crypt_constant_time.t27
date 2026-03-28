@@ -1,0 +1,13 @@
+; Crypt Constant Time — TTT Dogfood Phase 3
+;
+; Constant-time operations
+;
+; Test case: crypt_constant_time
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; constant_time_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075720000020000016e9

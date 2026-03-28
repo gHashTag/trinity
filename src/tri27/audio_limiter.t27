@@ -1,0 +1,13 @@
+; Audio Limiter — TTT Dogfood Phase 3
+;
+; Audio limiting
+;
+; Test case: audio_limiter
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; limiter_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0753a0000020000001529

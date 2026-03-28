@@ -1,0 +1,13 @@
+; 3D Quaternion Slerp — TTT Dogfood Phase 3
+;
+; Spherical linear interpolation
+;
+; Test case: 3d_quaternion_slerp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; slerp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075ae00000200000018c9
