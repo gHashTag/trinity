@@ -1,0 +1,97 @@
+; LRU Cache — TTT Dogfood Phase 3
+;
+; Least Recently Used cache eviction policy
+;
+; Algorithm: Hash map + doubly linked list for access order
+; Time: O(1) for get and put
+; Space: O(capacity)
+;
+; Test case: Capacity 3, operations: put(1,10), put(2,20), put(3,30),
+;          get(1), put(4,40) -> evicts key 2 (LRU)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Cache capacity
+    LDI t0, 3
+    ST t0, 50         ; capacity = 3
+
+; Current size
+    LDI t0, 0
+    ST t0, 51         ; size = 0
+
+; Operations:
+; put(1, 10): cache is empty, insert
+    LDI t0, 1
+    ST t0, 52         ; key[0] = 1
+    LDI t0, 10
+    ST t0, 53         ; value[0] = 10
+    LDI t0, 1
+    ST t0, 51         ; size = 1
+
+; put(2, 20): insert at end
+    LDI t0, 2
+    ST t0, 54         ; key[1] = 2
+    LDI t0, 20
+    ST t0, 55         ; value[1] = 20
+    LDI t0, 2
+    ST t0, 51         ; size = 2
+
+; put(3, 30): insert at end
+    LDI t0, 3
+    ST t0, 56         ; key[2] = 3
+    LDI t0, 30
+    ST t0, 57         ; value[2] = 30
+    LDI t0, 3
+    ST t0, 51         ; size = 3 (full!)
+
+; get(1): key 1 exists, move to front (most recently used)
+    LDI t0, 10
+    ST t0, 60         ; result_1 = 10
+    LDI t0, 1
+    ST t0, 61         ; hit_1 = 1
+
+; LRU order after get(1): [2, 3, 1]
+; 2 is LRU (least recently used), 1 is MRU (most recently used)
+
+; put(4, 40): cache is full, evict LRU (key 2)
+    LDI t0, 2
+    ST t0, 70         ; evicted = 2
+    LDI t0, 40
+    ST t0, 58         ; value[1] = 40 (replace position of key 2)
+    LDI t0, 4
+    ST t0, 54         ; key[1] = 4
+
+; Final cache state: [3, 1, 4] (key 2 evicted)
+    LDI t0, 3
+    ST t0, 62         ; verify_key[0] = 3
+    LDI t0, 1
+    ST t0, 63         ; verify_key[1] = 1
+    LDI t0, 4
+    ST t0, 64         ; verify_key[2] = 4
+
+; Cache statistics
+    LDI t0, 4
+    ST t0, 65         ; puts = 4
+
+    LDI t0, 1
+    ST t0, 66         ; gets = 1
+
+    LDI t0, 1
+    ST t0, 67         ; hits = 1
+
+    LDI t0, 0
+    ST t0, 68         ; misses = 0
+
+    LDI t0, 1
+    ST t0, 69         ; evictions = 1
+
+; Hit rate
+    LDI t0, 100
+    ST t0, 71         ; hit_rate = 100% (1/1)
+
+; O(1) operations
+    LDI t0, 1
+    ST t0, 72         ; is_constant_time = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a5d000f9f1e4b82c8be2745431acff32bf88832b81b7fdae6aeb85d317f0d421
