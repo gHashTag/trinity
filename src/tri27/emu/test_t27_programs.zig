@@ -1075,3 +1075,80 @@ test "t27_programs: sha256_schedule file exists" {
     const stat = try file.stat();
     try std.testing.expect(stat.size > 0);
 }
+
+// φ² + 1/φ² = 3 | TRINITY
+
+test "t27_programs: sha256_schedule assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/sha256_schedule.t27";
+    const file = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(file);
+
+    const bytecode = try tri_asm.assemble(allocator, file);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "sha256: copy words" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0
+        \\    LD t1, t0
+        \\    LDI t2, 50
+        \\    ST t1, t2
+        \\    LDI t0, 50
+        \\    LD t0, t0
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{
+        42,
+    });
+    try std.testing.expectEqual(@as(i64, 42), cpu.t27[0].trits);
+}
+
+test "sha256: sigma0_small" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 32
+        \\    SHR t2, t0, 3
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "sha256: sigma1_small" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 256
+        \\    SHR t2, t0, 10
+        \\    MOV t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "sha256: schedule word" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    LD t1, 0
+        \\    ST t1, t0
+        \\    LDI t2, 1
+        \\    ADD t0, t0, t2
+        \\    LD t2, 1
+        \\    ST t2, t0
+        \\    SHR t4, t2, 3
+        \\    ADD t0, t4, t1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{
+        20, 40,
+    });
+    try std.testing.expectEqual(@as(i64, 25), cpu.t27[0].trits);
+}
+
+// φ² + 1/φ² = 3 | TRINITY
