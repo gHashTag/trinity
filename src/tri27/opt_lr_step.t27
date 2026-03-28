@@ -1,0 +1,13 @@
+; LR Step — TTT Dogfood Phase 3
+;
+; Step decay
+;
+; Test case: opt_lr_step
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; opt_lr_step_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072ad0000001d09

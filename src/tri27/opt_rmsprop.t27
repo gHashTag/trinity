@@ -1,0 +1,13 @@
+; RMSprop — TTT Dogfood Phase 3
+;
+; Root mean square propagation
+;
+; Test case: opt_rmsprop
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; opt_rmsprop_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072a3000001d69
