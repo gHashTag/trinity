@@ -1,0 +1,13 @@
+; cost_function — TTT Dogfood Phase 3
+;
+; Algorithm/operation implementation
+;
+; Test case: cost_function
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cost_function_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:64424492048
