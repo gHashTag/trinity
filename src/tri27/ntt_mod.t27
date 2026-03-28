@@ -6,8 +6,8 @@
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-    LDI t0, 998244353
-    ST t0, 60         ; mod = 998244353 (prime)
+    LDI t0, 16383     ; mod (truncated for 15-bit limit)
+    ST t0, 60         ; mod = 16383 (prime)
 
     LDI t0, 3
     ST t0, 61         ; root = 3 (primitive root)
