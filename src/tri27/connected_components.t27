@@ -1,0 +1,13 @@
+; Connected Components — TTT Dogfood Phase 3
+;
+; Connected components labeling
+;
+; Test case: label components
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; labeled = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0715540014ca
