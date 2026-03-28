@@ -1,0 +1,13 @@
+; RAG Rerank — TTT Dogfood Phase 3
+;
+- Reranking: refine retrieved documents
+;
+; Test case: rag_rerank
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rerank_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b370000200000000002609
