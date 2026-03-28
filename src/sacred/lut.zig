@@ -22,7 +22,7 @@ pub const GF16LUT = struct {
         return sacred_types.GF16.fromF32(v);
     }
 
-    /// Быстрый lookup через прямое вычисление (не таблица)
+    /// Fast lookup via direct computation (not a table)
     pub inline fn lookup(gf: sacred_types.GF16) f32 {
         return gf.toF32();
     }
@@ -45,7 +45,7 @@ pub const TF3LUT = struct {
         return sacred_types.TF3.fromF32(v);
     }
 
-    /// Быстрый lookup через прямое вычисление (не таблица)
+    /// Fast lookup via direct computation (not a table)
     pub inline fn lookup(tf: sacred_types.TF3) f32 {
         return tf.toF32();
     }
@@ -179,22 +179,22 @@ pub const SacredDimensionsLUT = struct {
 // FAST LOOKUP HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Быстрый GF16 → f32 lookup
+/// Fast GF16 → f32 lookup
 pub inline fn gf16_to_f32(gf: sacred_types.GF16) f32 {
     return GF16LUT.toF32(gf);
 }
 
-/// Быстрый TF3 → f32 lookup
+/// Fast TF3 → f32 lookup
 pub inline fn tf3_to_f32(tf: sacred_types.TF3) f32 {
     return TF3LUT.toF32(tf);
 }
 
-/// Быстрый 3^k lookup
+/// Fast 3^k lookup
 pub inline fn pow3(comptime k: u5) comptime_int {
     return PowersOf3LUT.pow3(k);
 }
 
-/// Быстрый φ^k lookup
+/// Fast φ^k lookup
 pub inline fn phi_pow(comptime k: u5) comptime_float {
     return PowersOfPhiLUT.phi_pow(k);
 }

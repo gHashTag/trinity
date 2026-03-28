@@ -1,69 +1,12 @@
 # Trinity FPGA Technology Tree — TOXIC VERDICT
 
 **Date:** 2026-03-08
-**Format:** Russian + English
+**Format:** English
 **Style:** Brutally honest self-assessment
 
 ---
 
-## РУССКИЙ — Честный Вердикт
-
-### Что Работает ✅
-
-1. **Spec-first pipeline ПОЛНОСТЬЮ работает**
-   - `.tri` → VIBEE → Verilog → Yosys → nextpnr → bitstream
-   - 3 из 3 designs synthesized успешно
-   - Bitstreams готовы для заливки
-
-2. **SSOT (Single Source of Truth) достигнут**
-   - Протокол только в `src/common/protocol.zig`
-   - Дубликат `uart_protocol.zig` удалён
-   - Все импорты исправлены
-
-3. **VIBEE генерирует синтезируемый код**
-   - blink.v: идеальное совпадение
-   - fsm_simple.v: one-hot encoding правильный
-   - Весь код проходит Yosys без ошибок
-
-### Что Сломано ❌
-
-1. **VIBEE parser limitations**
-   - Не парсит поле `values` в types
-   - Не реализует SSOT import
-   - Генерирует Verilog-2005 синтаксические ошибки
-
-2. **Code generation не полностью автоматический**
-   - counter.v: пришлось руками добавить 2 LED порта
-   - uart_top.v: есть syntax errors
-   - Константы захардкожены вместо импорта из SSOT
-
-3. **Hardware validation не сделана**
-   - Bitstreams есть, но на FPGA не залиты
-   - Нет фото/видео подтверждения
-   - Процедура задокументирована, но не выполнена
-
-### Компетентность Оценка
-
-| Область | Оценка | Комментарий |
-|---------|--------|-------------|
-| FPGA synthesis | 8/10 | openXC7 работает, есть прогресс |
-| VIBEE codegen | 6/10 | Базовые случаи работают, есть баги |
-| Spec-first | 9/10 | Концепция доказана |
-| SSOT adherence | 10/10 | Полное достижение |
-| Hardware testing | 0/10 | Не выполнено |
-
-### Вердикт: УСЛОВНЫЙ ПРОХОД ⚠️
-
-**Проект готов к:** Продолжению разработки VIBEE
-**НЕ готов к:** Production use (нужно Hardware validation)
-
-**Причина:** Spec-first pipeline работает, но codegen нужно улучшать.
-
----
-
-## ENGLISH — Brutal Verdict
-
-### What Works ✅
+## What Works ✅
 
 1. **Spec-first pipeline FULLY FUNCTIONAL**
    - `.tri` → VIBEE → Verilog → Yosys → nextpnr → bitstream
