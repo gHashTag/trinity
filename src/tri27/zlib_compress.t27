@@ -1,6 +1,6 @@
 ; ZLIB Compress — TTT Dogfood Phase 3
 ;
-| RFC 1950
+; RFC 1950
 ;
 ; Test case: zlib_compress
 ;

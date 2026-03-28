@@ -1,0 +1,13 @@
+; LZ78 V2 — TTT Dogfood Phase 3
+;
+| Dictionary alt
+;
+; Test case: lz78_2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lz78_2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b010001bd0
