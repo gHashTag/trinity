@@ -1,6 +1,6 @@
 ; Cholesky V2 — TTT Dogfood Phase 3
 ;
-| SPD factorization alt
+; SPD factorization alt
 ;
 ; Test case: matrix_cholesky2
 ;

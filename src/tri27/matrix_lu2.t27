@@ -1,6 +1,6 @@
 ; LU Decomposition V2 — TTT Dogfood Phase 3
 ;
-| Lower-upper alt
+; Lower-upper alt
 ;
 ; Test case: matrix_lu2
 ;

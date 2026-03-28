@@ -1,6 +1,6 @@
 ; Vector LERP — TTT Dogfood Phase 3
 ;
-| Linear interpolation
+; Linear interpolation
 ;
 ; Test case: vector_lerp
 ;

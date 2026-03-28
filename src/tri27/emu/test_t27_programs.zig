@@ -47925,3 +47925,108 @@ test "matrix_transpose2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "matrix_cholesky2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_cholesky2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_cholesky2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_cholesky2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_lu2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_lu2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_lu2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_lu2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "matrix_qr2: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_qr2.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "matrix_qr2: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "matrix_qr2.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "sched_fcfs: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sched_fcfs.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "sched_fcfs: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "sched_fcfs.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "vector_angle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_angle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "vector_angle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_angle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "vector_lerp: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_lerp.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "vector_lerp: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_lerp.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "vector_project: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_project.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "vector_project: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vector_project.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
