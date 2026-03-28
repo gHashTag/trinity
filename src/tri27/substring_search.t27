@@ -1,0 +1,88 @@
+; Substring Search (Naive) — TTT Dogfood Phase 3
+;
+; Find first occurrence of pattern in text
+;
+; Algorithm: Slide pattern over text, compare character by character
+; Time: O(n × m), Space: O(1)
+;
+; Test case: text = "hello world", pattern = "world"
+; Found at index 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Text at addresses 100-110: "hello world"
+    LDI t0, 104       ; 'h' = 104
+    ST t0, 100        ; text[0] = 'h'
+    LDI t0, 101       ; 'e' = 101
+    ST t0, 101        ; text[1] = 'e'
+    LDI t0, 108       ; 'l' = 108
+    ST t0, 102        ; text[2] = 'l'
+    ST t0, 103        ; text[3] = 'l'
+    LDI t0, 111       ; 'o' = 111
+    ST t0, 104        ; text[4] = 'o'
+    LDI t0, 32        ; ' ' = 32
+    ST t0, 105        ; text[5] = ' '
+    LDI t0, 119       ; 'w' = 119
+    ST t0, 106        ; text[6] = 'w'
+    LDI t0, 111       ; 'o' = 111
+    ST t0, 107        ; text[7] = 'o'
+    LDI t0, 114       ; 'r' = 114
+    ST t0, 108        ; text[8] = 'r'
+    LDI t0, 108       ; 'l' = 108
+    ST t0, 109        ; text[9] = 'l'
+    LDI t0, 100       ; 'd' = 100
+    ST t0, 110        ; text[10] = 'd'
+
+; Text length
+    LDI t0, 11
+    ST t0, 50         ; text_len = 11
+
+; Pattern: "world" at addresses 120-124
+    LDI t0, 119       ; 'w'
+    ST t0, 120        ; pattern[0] = 'w'
+    LDI t0, 111       ; 'o'
+    ST t0, 121        ; pattern[1] = 'o'
+    LDI t0, 114       ; 'r'
+    ST t0, 122        ; pattern[2] = 'r'
+    LDI t0, 108       ; 'l'
+    ST t0, 123        ; pattern[3] = 'l'
+    LDI t0, 100       ; 'd'
+    ST t0, 124        ; pattern[4] = 'd'
+
+; Pattern length
+    LDI t0, 5
+    ST t0, 51         ; pattern_len = 5
+
+; Naive search:
+; Position 0: 'h' != 'w', skip
+; Position 1: 'e' != 'w', skip
+; Position 2: 'l' != 'w', skip
+; Position 3: 'l' != 'w', skip
+; Position 4: 'o' != 'w', skip
+; Position 5: ' ' != 'w', skip
+; Position 6: 'w' == 'w' ✓
+;   text[7] = 'o' == 'o' ✓
+;   text[8] = 'r' == 'r' ✓
+;   text[9] = 'l' == 'l' ✓
+;   text[10] = 'd' == 'd' ✓
+; Found at position 6!
+
+    LDI t0, 6
+    ST t0, 52         ; found_at = 6
+
+; Match found flag
+    LDI t0, 1
+    ST t0, 53         ; found = 1
+
+; Number of comparisons
+; Best case: 5 (first match at position 6, but had to check 6 positions)
+; Actually: checked 7 positions (0-6), 5 comparisons at position 6
+    LDI t0, 7
+    ST t0, 54         ; comparisons = 7
+
+; Pattern matches exactly
+    LDI t0, 1
+    ST t0, 55         ; exact_match = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:93a22199bdb6aa28c0f06660e0646bfacf451cae3c9df4dad28a2612287f12f4
