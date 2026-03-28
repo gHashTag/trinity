@@ -45,15 +45,14 @@ In Unstoppable Domains → DNS Records → Add new record:
 
 ### Step 3: DKIM Record (NOT Optional!)
 
-**Zoho Admin Console → Email Authentication → DKIM tab → Add**
-1. Selector name: `zoho` (or any name)
-2. Key length: **1024 bits**
-3. Zoho generates TXT record → copy it
+**✅ VERIFIED: Actual selector is `zmail._domainkey`**
 
-In Unstoppable Domains → DNS Records → Add new record:
-- **Type:** TXT
-- **Name:** `zoho._domainkey` (or whatever Zoho shows)
-- **Value:** (paste long key from Zoho)
+Current DNS shows:
+```
+zmail._domainkey.t27.ai.  TXT  "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCVllj/..."
+```
+
+**Already configured in Unstoppable Domains!**
 
 Save → Return to Zoho → **Verify**
 
@@ -173,16 +172,63 @@ headers: &.{
 
 ---
 
-## Checklist Before First Email
+## ✅ DNS Verification Status (2026-03-28)
 
-- [ ] MX records (10/20/50 priorities)
-- [ ] SPF with `zohomail.com` (NOT `zoho.com`)
-- [ ] DKIM from Zoho Admin Console (1024-bit key)
-- [ ] DMARC with `rua` and `ruf`
-- [ ] Verified in Zoho (4 green checkmarks)
-- [ ] mail-tester.com score 9+/10
+All records successfully propagated:
+
+| Record | Status | Details |
+|--------|--------|---------|
+| **MX** | ✅ Propagated | mx.zoho.com (10), mx2.zoho.com (20), mx3.zoho.com (50) |
+| **SPF** | ✅ Propagated | `v=spf1 include:zohomail.com ~all` |
+| **DKIM** | ✅ Propagated | `zmail._domainkey.t27.ai` (1024-bit RSA) |
+| **DMARC** | ✅ Propagated | `v=DMARC1; p=none; rua=mailto:admin@t27.ai; pct=100` |
+
+---
+
+## Next Steps: Zoho Verification + Testing
+
+### Step 1: Verify in Zoho Admin Console (2 min)
+1. Open: **Zoho Admin Console → Domains → t27.ai**
+2. Click **Verify** on each tab:
+   - **Email Configuration → MX** → Should show green checkmark
+   - **Email Authentication → SPF** → Should show green checkmark
+   - **Email Authentication → DKIM** → Should show green checkmark
+   - **DMARC** → Should show green checkmark
+
+**Expected:** All 4 tabs show ✅ green checkmarks
+
+### Step 2: Test on mail-tester.com (10 min)
+1. Get unique address from: https://www.mail-tester.com/
+2. Send test email from admin@t27.ai
+3. Check score — **Goal: 9+/10**
+
+### Step 3: 14-Day Manual Warmup (Days 1-14)
+**REQUIRED** — Even with 10/10 score, new domains get greylisted
+
+```bash
+# Send 2-3 emails per day to YOUR personal accounts
+tri outreach test --to=your-personal@gmail.com
+tri outreach test --to=your-personal@outlook.com
+tri outreach test --to=your-personal@yahoo.com
+
+# For each email:
+# 1. Open it immediately
+# 2. Reply to it
+# 3. Mark "not spam" if in spam folder
+```
+
+---
+
+## Checklist Before First Real Email
+
+- [x] MX records (10/20/50 priorities)
+- [x] SPF with `zohomail.com` (NOT `zoho.com`)
+- [x] DKIM with `zmail._domainkey` selector (1024-bit key)
+- [x] DMARC with `rua` and `ruf` and `pct=100`
+- [ ] Verified in Zoho (4 green checkmarks) ← **NEXT**
+- [ ] mail-tester.com score 9+/10 ← **AFTER ZOHO VERIFY**
 - [ ] 14-day manual warmup completed
-- [ ] List-Unsubscribe header implemented
+- [x] List-Unsubscribe header implemented
 - [ ] Consider secondary domain for outreach
 
 ---
