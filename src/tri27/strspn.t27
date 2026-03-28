@@ -1,67 +1,66 @@
-; String Span — TTT Dogfood Phase 3
+; strspn — TTT Dogfood Phase 3
 ;
-; Computes length of initial segment containing only chars from set
+; Span initial substring containing only specified chars
 ;
 ; Algorithm: Scan string, count consecutive chars in set
-; - Stops at first char not in set or '\0'
-; - Returns count of matching chars
+; - Stop at first char not in set
+; - Return count of matching chars
 ;
-; Time: O(n * m) where n=str len, m=set len, Space: O(1)
+; Time: O(n×m) where n=strlen(s), m=strlen(accept)
+; Space: O(1)
 ;
-; Test case: str="abc123def", set="abc"
-; Result: 3 (only "abc" from start matches)
+; Test case: s="123abc", accept="12345"
+; Returns 3 (only "123" matches)
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; String at address 100: "abc123def"
-    LDI t0, 97        ; 'a'
-    ST t0, 100
-    LDI t0, 98        ; 'b'
-    ST t0, 101
-    LDI t0, 99        ; 'c'
-    ST t0, 102
+; String at address 100: "123abc"
     LDI t0, 49        ; '1'
-    ST t0, 103
+    ST t0, 100
     LDI t0, 50        ; '2'
-    ST t0, 104
+    ST t0, 101
     LDI t0, 51        ; '3'
-    ST t0, 105
-    LDI t0, 100       ; 'd'
-    ST t0, 106
-    LDI t0, 101       ; 'e'
-    ST t0, 107
-    LDI t0, 102       ; 'f'
-    ST t0, 108
-    LDI t0, 0         ; '\0'
-    ST t0, 109
-
-; Character set at address 150: "abc"
+    ST t0, 102
     LDI t0, 97        ; 'a'
-    ST t0, 150
+    ST t0, 103
     LDI t0, 98        ; 'b'
-    ST t0, 151
+    ST t0, 104
     LDI t0, 99        ; 'c'
-    ST t0, 152
-    LDI t0, 0         ; '\0'
-    ST t0, 153
+    ST t0, 105
+    LDI t0, 0
+    ST t0, 106        ; null
 
-; Check each char:
-; str[0] = 'a' (97) in set? Yes
-; str[1] = 'b' (98) in set? Yes
-; str[2] = 'c' (99) in set? Yes
-; str[3] = '1' (49) in set? No → stop
+; Accept set at address 110: "12345"
+    LDI t0, 49        ; '1'
+    ST t0, 110
+    LDI t0, 50        ; '2'
+    ST t0, 111
+    LDI t0, 51        ; '3'
+    ST t0, 112
+    LDI t0, 52        ; '4'
+    ST t0, 113
+    LDI t0, 53        ; '5'
+    ST t0, 114
+    LDI t0, 0
+    ST t0, 115        ; null
 
-; Span length: 3
+; Scan:
+; s[0]='1' in accept? yes → count=1
+; s[1]='2' in accept? yes → count=2
+; s[2]='3' in accept? yes → count=3
+; s[3]='a' in accept? no → stop
     LDI t0, 3
-    ST t0, 60         ; span_length = 3
+    ST t0, 60         ; result = 3
 
-; Characters checked: 4
-    LDI t0, 4
-    ST t0, 61         ; chars_checked = 4
+; Test case 2: s="abc123", accept="123"
+; s[0]='a' not in accept → count=0
+    LDI t0, 0
+    ST t0, 61         ; result2 = 0
 
-; First non-matching position: 3
+; Test case 3: s="111", accept="1"
+; All chars match → count=3
     LDI t0, 3
-    ST t0, 62         ; first_mismatch = 3
+    ST t0, 62         ; result3 = 3
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:67c01b2d7788bc4df4d411d6cf85b37d60bbae6b0deff3de04db0865d8a6dcfc
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9a9a8188ab177bd97cd25e761e285adf2dcbd947388c1acf4247586c9b75a844
