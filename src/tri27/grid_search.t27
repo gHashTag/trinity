@@ -1,6 +1,6 @@
 ; Grid Search — TTT Dogfood Phase 3
 ;
-| Hyperparameter grid search
+; Hyperparameter grid search
 ;
 ; Test case: grid_search
 ;
