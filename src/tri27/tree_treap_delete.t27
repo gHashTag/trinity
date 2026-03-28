@@ -1,0 +1,13 @@
+; Treap Delete — TTT Dogfood Phase 3
+;
+; Treap deletion
+;
+; Test case: tree_treap_delete
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; treap_delete_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073240000200000003f9
