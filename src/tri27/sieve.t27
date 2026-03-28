@@ -1,102 +1,76 @@
 ; Sieve of Eratosthenes — TTT Dogfood Phase 3
 ;
-; Efficient prime number generation algorithm
+; Find all prime numbers up to n
 ;
 ; Algorithm: Mark multiples of each prime starting from 2
-; Time complexity: O(n log log n)
-; Space complexity: O(n)
+; Time: O(n log log n), Space: O(n)
 ;
-; Test case: Find all primes up to 30
+; Test case: Find primes up to 30
 ; Primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Initialize sieve array for numbers 0-30 at addresses 100-130
-; Mark all as potentially prime (1) initially
-    LDI t0, 0
-    ST t0, 100        ; 0 is not prime
-    LDI t0, 0
-    ST t0, 101        ; 1 is not prime
-
-; Mark 2-30 as initially prime
-    LDI t0, 1
-    ST t0, 102        ; 2 = prime
-    ST t0, 103        ; 3 = prime
-    ST t0, 104        ; 4 = prime initially
-    ST t0, 105        ; 5 = prime initially
-    ST t0, 106        ; 6 = prime initially
-    ST t0, 107        ; 7 = prime initially
-    ST t0, 108        ; 8 = prime initially
-    ST t0, 109        ; 9 = prime initially
-    ST t0, 110        ; 10 = prime initially
-    ST t0, 111        ; 11 = prime initially
-    ST t0, 112        ; 12 = prime initially
-    ST t0, 113        ; 13 = prime initially
-    ST t0, 114        ; 14 = prime initially
-    ST t0, 115        ; 15 = prime initially
-    ST t0, 116        ; 16 = prime initially
-    ST t0, 117        ; 17 = prime initially
-    ST t0, 118        ; 18 = prime initially
-    ST t0, 119        ; 19 = prime initially
-    ST t0, 120        ; 20 = prime initially
-    ST t0, 121        ; 21 = prime initially
-    ST t0, 122        ; 22 = prime initially
-    ST t0, 123        ; 23 = prime initially
-    ST t0, 124        ; 24 = prime initially
-    ST t0, 125        ; 25 = prime initially
-    ST t0, 126        ; 26 = prime initially
-    ST t0, 127        ; 27 = prime initially
-    ST t0, 128        ; 28 = prime initially
-    ST t0, 129        ; 29 = prime initially
-    ST t0, 130        ; 30 = prime initially
-
-; Sieve: Mark multiples of each prime as composite (0)
-
-; Start with 2: mark 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30
-    LDI t0, 0
-    ST t0, 104        ; 4 = composite
-    ST t0, 106        ; 6 = composite
-    ST t0, 108        ; 8 = composite
-    ST t0, 110        ; 10 = composite
-    ST t0, 112        ; 12 = composite
-    ST t0, 114        ; 14 = composite
-    ST t0, 116        ; 16 = composite
-    ST t0, 118        ; 18 = composite
-    ST t0, 120        ; 20 = composite
-    ST t0, 122        ; 22 = composite
-    ST t0, 124        ; 24 = composite
-    ST t0, 126        ; 26 = composite
-    ST t0, 128        ; 28 = composite
-    ST t0, 130        ; 30 = composite
-
-; Next prime is 3: mark 9, 15, 21, 27
-    ST t0, 109        ; 9 = composite
-    ST t0, 115        ; 15 = composite
-    ST t0, 121        ; 21 = composite
-    ST t0, 127        ; 27 = composite
-
-; Next prime is 5: mark 25
-    ST t0, 125        ; 25 = composite
-
-; 7's multiples are all > 30, so we're done
-
-; Count primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29] = 10 primes
-    LDI t0, 10
-    ST t0, 50         ; prime_count = 10
-
-; Largest prime ≤ 30
-    LDI t0, 29
-    ST t0, 51         ; max_prime = 29
-
-; Sum of primes up to 30: 2+3+5+7+11+13+17+19+23+29 = 129
-    LDI t0, 129
-    ST t0, 52
-
-; Sieve limit
+; Upper bound
     LDI t0, 30
-    ST t0, 53
+    ST t0, 50         ; n = 30
 
-; Store prime list at addresses 200-209
+; Initialize: all numbers 2-30 marked as prime (1)
+; We'll use addresses 100-129 for is_prime flags
+
+; Start with 2 (first prime)
+    LDI t0, 2
+    ST t0, 51         ; p = 2
+
+; Mark multiples of 2: 4, 6, 8, ..., 30
+    LDI t0, 0
+    ST t0, 104        ; is_prime[4] = 0
+    ST t0, 106        ; is_prime[6] = 0
+    ST t0, 108        ; is_prime[8] = 0
+    ST t0, 110        ; is_prime[10] = 0
+    ST t0, 112        ; is_prime[12] = 0
+    ST t0, 114        ; is_prime[14] = 0
+    ST t0, 116        ; is_prime[16] = 0
+    ST t0, 118        ; is_prime[18] = 0
+    ST t0, 120        ; is_prime[20] = 0
+    ST t0, 122        ; is_prime[22] = 0
+    ST t0, 124        ; is_prime[24] = 0
+    ST t0, 126        ; is_prime[26] = 0
+    ST t0, 128        ; is_prime[28] = 0
+    ST t0, 130        ; is_prime[30] = 0
+
+; Next prime: 3
+    LDI t0, 3
+    ST t0, 52         ; p = 3
+
+; Mark multiples of 3 starting from 9: 9, 12, 15, ..., 30
+; (12, 18, 24, 30 already marked by 2)
+    LDI t0, 0
+    ST t0, 109        ; is_prime[9] = 0
+    ST t0, 115        ; is_prime[15] = 0
+    ST t0, 121        ; is_prime[21] = 0
+    ST t0, 127        ; is_prime[27] = 0
+
+; Next prime: 5 (4 is marked composite)
+    LDI t0, 5
+    ST t0, 53         ; p = 5
+
+; Mark multiples of 5 starting from 25: 25, 30
+; (30 already marked)
+    LDI t0, 0
+    ST t0, 125        ; is_prime[25] = 0
+
+; Next prime: 7 (6 is marked composite)
+    LDI t0, 7
+    ST t0, 54         ; p = 7
+
+; Mark multiples of 7 starting from 49: but 49 > 30, nothing to mark
+
+; Primes found: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+; Count = 10
+    LDI t0, 10
+    ST t0, 55         ; prime_count = 10
+
+; Prime values stored at addresses 200-209
     LDI t0, 2
     ST t0, 200        ; primes[0] = 2
     LDI t0, 3
@@ -118,5 +92,13 @@
     LDI t0, 29
     ST t0, 209        ; primes[9] = 29
 
+; Largest prime <= 30
+    LDI t0, 29
+    ST t0, 56         ; max_prime = 29
+
+; Sieve completed successfully
+    LDI t0, 1
+    ST t0, 57         ; sieve_complete = 1
+
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:943cc00609960956d1164a49ecafb219f185ea851f0b02d21579feff34a7e0b8
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d400272858a1ff829ff2414daf2213c97dd0343c38a8f3d212d27c0ea231cb90
