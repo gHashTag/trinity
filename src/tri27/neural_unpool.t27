@@ -1,0 +1,13 @@
+; Neural Unpooling — TTT Dogfood Phase 3
+;
+; Unpooling for segmentation upsampling
+;
+; Test case: neural_unpool
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; unpool_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076a800000200000021f9

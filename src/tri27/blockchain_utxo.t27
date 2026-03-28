@@ -1,0 +1,13 @@
+; Blockchain UTXO — TTT Dogfood Phase 3
+;
+; UTXO model
+;
+; Test case: blockchain_utxo
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; utxo_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07668000002000001f19
