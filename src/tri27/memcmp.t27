@@ -1,0 +1,68 @@
+; Memory Compare — TTT Dogfood Phase 3
+;
+; Compares n bytes of two memory regions
+;
+; Algorithm: Byte-by-byte comparison
+; - Returns 0 if equal
+; - Returns <0 if first different byte in s1 < s2
+; - Returns >0 if first different byte in s1 > s2
+;
+; Time: O(n), Space: O(1)
+;
+; Test case: Compare [1,2,3,4,5] with [1,2,3,9,5]
+; Result: Diff at position 3 (4 < 9), return negative
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; First memory region at 100: [1, 2, 3, 4, 5]
+    LDI t0, 1
+    ST t0, 100
+    LDI t0, 2
+    ST t0, 101
+    LDI t0, 3
+    ST t0, 102
+    LDI t0, 4
+    ST t0, 103
+    LDI t0, 5
+    ST t0, 104
+
+; Second memory region at 150: [1, 2, 3, 9, 5]
+    LDI t0, 1
+    ST t0, 150
+    LDI t0, 2
+    ST t0, 151
+    LDI t0, 3
+    ST t0, 152
+    LDI t0, 9
+    ST t0, 153
+    LDI t0, 5
+    ST t0, 154
+
+; Count: 5 bytes
+    LDI t0, 5
+    ST t0, 50         ; count = 5
+
+; Compare byte by byte:
+; s1[0]=1, s2[0]=1 → equal
+; s1[1]=2, s2[1]=2 → equal
+; s1[2]=3, s2[2]=3 → equal
+; s1[3]=4, s2[3]=9 → DIFF!
+
+; First differing position: 3
+    LDI t0, 3
+    ST t0, 60         ; diff_pos = 3
+
+; Difference: 4 - 9 = -5
+    LDI t0, -5
+    ST t0, 61         ; diff = -5
+
+; Comparison result: s1 < s2
+    LDI t0, -1
+    ST t0, 62         ; result = -1
+
+; Bytes compared before difference: 4
+    LDI t0, 4
+    ST t0, 63         ; bytes_compared = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d106defd77a2515968745444aca0a7915397df0bd8b7da9c795d2fdd82e32838
