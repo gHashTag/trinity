@@ -1,0 +1,21 @@
+; Ant Colony Opt — TTT Dogfood Phase 3
+;
+; Probabilistic path finding with pheromones
+;
+; Test case: find shortest path
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 20
+    ST t0, 60         ; num_ants = 20
+
+    LDI t0, 10
+    ST t0, 61         ; alpha = 1.0 (pheromone importance)
+    LDI t0, 5
+    ST t0, 62         ; beta = 0.5 (heuristic importance)
+
+    LDI t0, 5
+    ST t0, 63         ; rho = 0.05 (evaporation rate)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:072221001192
