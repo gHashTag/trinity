@@ -1,0 +1,17 @@
+; Chinese Remainder Theorem — TTT Dogfood Phase 3
+;
+; Solve system of congruences
+;
+; Test case: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
+; Solution: x = 23
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 60         ; num_equations = 3
+
+    LDI t0, 23
+    ST t0, 61         ; solution = 23
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712cf002447

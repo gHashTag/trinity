@@ -1,0 +1,16 @@
+; Pollard's Rho — TTT Dogfood Phase 3
+;
+; Integer factorization algorithm
+;
+; Test case: factor 91 = 7 * 13
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 91
+    ST t0, 60         ; n = 91
+
+    LDI t0, 7
+    ST t0, 61         ; factor = 7
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712d300124a

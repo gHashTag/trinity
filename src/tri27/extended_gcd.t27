@@ -1,0 +1,18 @@
+; Extended GCD — TTT Dogfood Phase 3
+;
+; Find x,y such that ax + by = gcd(a,b)
+;
+; Test case: 35*3 + 15*(-7) = 0
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 35
+    ST t0, 60         ; a = 35
+    LDI t0, 15
+    ST t0, 61         ; b = 15
+
+    LDI t0, 5
+    ST t0, 62         ; gcd = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0712ce001245

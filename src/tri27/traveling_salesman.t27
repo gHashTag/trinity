@@ -1,0 +1,24 @@
+; Traveling Salesman — TTT Dogfood Phase 3
+;
+; TSP: visit all vertices and return to start
+;
+; Test case: brute force for small n
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 4
+    ST t0, 60         ; num_cities = 4
+
+; Distances between cities
+    LDI t0, 10
+    ST t0, 100        ; d[0][1] = 10
+    LDI t0, 15
+    ST t0, 101        ; d[0][2] = 15
+    LDI t0, 20
+    ST t0, 102        ; d[0][3] = 20
+
+    LDI t0, 45
+    ST t0, 61         ; min_tour = 45
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0702cf001240

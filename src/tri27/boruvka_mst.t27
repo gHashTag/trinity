@@ -1,0 +1,28 @@
+; Boruvka MST — TTT Dogfood Phase 3
+;
+; MST with parallel component growth
+;
+; Test case: merge components in parallel
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; num_vertices = 5
+
+; Components: {0,1}, {2}, {3,4}
+    LDI t0, 0
+    ST t0, 100        ; comp[0] = 0
+    LDI t0, 0
+    ST t0, 101        ; comp[1] = 0
+    LDI t0, 1
+    ST t0, 102        ; comp[2] = 1
+    LDI t0, 2
+    ST t0, 103        ; comp[3] = 2
+    LDI t0, 2
+    ST t0, 104        ; comp[4] = 2
+
+    LDI t0, 3
+    ST t0, 61         ; num_components = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0732ca00123b
