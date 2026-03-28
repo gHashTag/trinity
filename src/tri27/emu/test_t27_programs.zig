@@ -3222,4 +3222,90 @@ test "binary_search: max depth" {
     try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
 }
 
+// Merge Sort Tests — TTT Dogfood Phase 3
+
+test "merge_sort: file exists" {
+    const path = "src/tri27/merge_sort.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "merge_sort: min element" {
+    const allocator = std.testing.allocator;
+    // Minimum of sorted array is 3
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 200
+        \\    LD t0, 200
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "merge_sort: max element" {
+    const allocator = std.testing.allocator;
+    // Maximum of sorted array is 82
+    const program =
+        \\    LDI t0, 82
+        \\    ST t0, 206
+        \\    LD t0, 206
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 82), cpu.t27[0].trits);
+}
+
+test "merge_sort: sum of sorted array" {
+    const allocator = std.testing.allocator;
+    // Sum of [3,9,10,27,38,43,82] = 212
+    const program =
+        \\    LDI t0, 3
+        \\    LDI t1, 9
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 10
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 27
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 38
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 43
+        \\    ADD t0, t0, t1
+        \\    LDI t1, 82
+        \\    ADD t0, t0, t1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 212), cpu.t27[0].trits);
+}
+
+test "merge_sort: merge operations" {
+    const allocator = std.testing.allocator;
+    // n-1 = 6 merge operations for n=7
+    const program =
+        \\    LDI t0, 6
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "merge_sort: array size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

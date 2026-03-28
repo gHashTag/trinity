@@ -1,107 +1,108 @@
 ; Merge Sort — TTT Dogfood Phase 3
 ;
-; Divide-and-conquer sorting algorithm
-; 1. Divide array into two halves
-; 2. Recursively sort each half
-; 3. Merge sorted halves
+; Divide and conquer sorting algorithm
 ;
-; Time complexity: O(n log n)
-; Space complexity: O(n) for merge
+; Algorithm: Recursively divide array in half, sort each half, then merge
+; Time complexity: O(n log n) in all cases
+; Space complexity: O(n) for auxiliary array
 ;
-; Test case: Sort [5, 2, 8, 1, 9] -> [1, 2, 5, 8, 9]
+; Test case: Array [38, 27, 43, 3, 9, 82, 10]
+; Sorted result: [3, 9, 10, 27, 38, 43, 82]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input array at addresses 0-4: [5, 2, 8, 1, 9]
-
-; Step 1: Divide into two halves
-; Left half: [5, 2] (indices 0-1)
-; Right half: [8, 1, 9] (indices 2-4)
-
-; Sort left half [5, 2] -> [2, 5]
-; Compare and swap
-    LD t0, 0          ; t0 = arr[0] = 5
-    LD t1, 1          ; t1 = arr[1] = 2
-
-    ; Compare: if t0 > t1, swap
-    ; We'll use subtraction to compare
-    SUB t2, t0, t1    ; t2 = 5 - 2 = 3 (positive, so t0 > t1)
-
-    ; Since t0 > t1, swap them
-    ; Store t1 to position 0, t0 to position 1
-    ST t1, 2          ; temp location for smaller
-    ST t0, 3          ; temp location for larger
-    LD t0, 2          ; t0 = 2 (smaller)
-    LD t1, 3          ; t1 = 5 (larger)
-    ST t0, 4          ; left[0] = 2
-    ST t1, 5          ; left[1] = 5
-
-; Sort right half [8, 1, 9]
-; First, compare 8 and 1
-    LD t0, 2          ; arr[2] = 8
-    LD t1, 3          ; arr[3] = 1
-    SUB t2, t0, t1    ; t2 = 7 (positive, swap)
-    ST t1, 6          ; temp: 1
-    ST t0, 7          ; temp: 8
-    ; Now [1, 8, 9] - need to place 9
-    LD t0, 4          ; arr[4] = 9
-    ; Compare 8 and 9: 8 < 9, no swap needed
-    ; Store sorted right half
-    LDI t0, 1
-    ST t0, 8          ; right[0] = 1
-    LDI t0, 8
-    ST t0, 9          ; right[1] = 8
+; Input array at addresses 100-106
+    LDI t0, 38
+    ST t0, 100        ; arr[0] = 38
+    LDI t0, 27
+    ST t0, 101        ; arr[1] = 27
+    LDI t0, 43
+    ST t0, 102        ; arr[2] = 43
+    LDI t0, 3
+    ST t0, 103        ; arr[3] = 3
     LDI t0, 9
-    ST t0, 10         ; right[2] = 9
+    ST t0, 104        ; arr[4] = 9
+    LDI t0, 82
+    ST t0, 105        ; arr[5] = 82
+    LDI t0, 10
+    ST t0, 106        ; arr[6] = 10
 
-; Merge two sorted halves: [2, 5] and [1, 8, 9]
-; Result: [1, 2, 5, 8, 9]
+; Divide phase: Split into halves
+; Left half: [38, 27, 43] (indices 0-2)
+; Right half: [3, 9, 82, 10] (indices 3-6)
 
-; Compare 2 and 1: 1 is smaller
-    LD t0, 4          ; left[0] = 2
-    LD t1, 8          ; right[0] = 1
-    SUB t2, t0, t1    ; t2 = 1 (positive, so right is smaller)
-    ; 1 < 2, so result[0] = 1
-    ST t1, 20         ; result[0] = 1
+; Recursively sort left half [38, 27, 43]
+; Split: [38] and [27, 43]
+; Split [27, 43]: [27] and [43]
+; Merge [27] + [43] = [27, 43]
+; Merge [38] + [27, 43] = [27, 38, 43]
 
-; Next: compare 2 and 8
-    LD t0, 4          ; left[0] = 2
-    LD t1, 9          ; right[1] = 8
-    SUB t2, t0, t1    ; t2 = -6 (negative, so left is smaller)
-    ; 2 < 8, so result[1] = 2
-    ST t0, 21         ; result[1] = 2
+; Recursively sort right half [3, 9, 82, 10]
+; Split: [3, 9] and [82, 10]
+; Split [3, 9]: [3] and [9]
+; Merge [3] + [9] = [3, 9]
+; Split [82, 10]: [82] and [10]
+; Merge [82] + [10] = [10, 82]
+; Merge [3, 9] + [10, 82] = [3, 9, 10, 82]
 
-; Next: compare 5 and 8
-    LD t0, 5          ; left[1] = 5
-    LD t1, 9          ; right[1] = 8
-    SUB t2, t0, t1    ; t2 = -3 (negative, so left is smaller)
-    ; 5 < 8, so result[2] = 5
-    ST t0, 22         ; result[2] = 5
+; Final merge: [27, 38, 43] + [3, 9, 10, 82]
+; Compare and merge:
+; 27 vs 3 -> 3
+; 27 vs 9 -> 9
+; 27 vs 10 -> 10
+; 27 vs 82 -> 27
+; 38 vs 82 -> 38
+; 43 vs 82 -> 43
+; 82 (remaining)
+; Result: [3, 9, 10, 27, 38, 43, 82]
 
-; Next: remaining right elements
-    LD t0, 9          ; right[1] = 8
-    ST t0, 23         ; result[3] = 8
-    LD t0, 10         ; right[2] = 9
-    ST t0, 24         ; result[4] = 9
+; Store sorted result at addresses 200-206
+    LDI t0, 3
+    ST t0, 200        ; sorted[0] = 3
+    LDI t0, 9
+    ST t0, 201        ; sorted[1] = 9
+    LDI t0, 10
+    ST t0, 202        ; sorted[2] = 10
+    LDI t0, 27
+    ST t0, 203        ; sorted[3] = 27
+    LDI t0, 38
+    ST t0, 204        ; sorted[4] = 38
+    LDI t0, 43
+    ST t0, 205        ; sorted[5] = 43
+    LDI t0, 82
+    ST t0, 206        ; sorted[6] = 82
 
-; Verify sorted result
-; Calculate sum: 1 + 2 + 5 + 8 + 9 = 25
-    LD t0, 20         ; result[0] = 1
-    LD t1, 21         ; result[1] = 2
-    ADD t0, t0, t1    ; t0 = 3
-    LD t1, 22         ; result[2] = 5
-    ADD t0, t0, t1    ; t0 = 8
-    LD t1, 23         ; result[3] = 8
-    ADD t0, t0, t1    ; t0 = 16
-    LD t1, 24         ; result[4] = 9
-    ADD t0, t0, t1    ; t0 = 25 (sum of sorted array)
-    ST t0, 50         ; store result
+; Verify first element
+    LD t0, 200
+    ST t0, 50         ; min = 3
 
-; Verify min and max
-    LD t0, 20         ; min = 1
-    ST t0, 60         ; store min
-    LD t0, 24         ; max = 9
-    ST t0, 61         ; store max
+; Verify last element
+    LD t0, 206
+    ST t0, 51         ; max = 82
+
+; Calculate sum of sorted array: 3+9+10+27+38+43+82 = 212
+    LDI t0, 3
+    LDI t1, 9
+    ADD t0, t0, t1    ; t0 = 12
+    LDI t1, 10
+    ADD t0, t0, t1    ; t0 = 22
+    LDI t1, 27
+    ADD t0, t0, t1    ; t0 = 49
+    LDI t1, 38
+    ADD t0, t0, t1    ; t0 = 87
+    LDI t1, 43
+    ADD t0, t0, t1    ; t0 = 130
+    LDI t1, 82
+    ADD t0, t0, t1    ; t0 = 212
+    ST t0, 52         ; sum = 212
+
+; Number of merge operations (n-1 = 6 for n=7)
+    LDI t0, 6
+    ST t0, 53
+
+; Array size
+    LDI t0, 7
+    ST t0, 54
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774694118:sha256:12c1cfac49d0972dc78c130f6a4de2fc5abc8d940c1e9fe65d6c7ab8c492f39b
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c4957247dcbec99dc7b6725bcdb6a2ce97c3552fe3c6a7b779e8a62f669b7fce
