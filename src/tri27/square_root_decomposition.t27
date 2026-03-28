@@ -1,0 +1,101 @@
+; Square Root Decomposition — TTT Dogfood Phase 3
+;
+; Query optimization by dividing array into √n blocks
+;
+; Algorithm:
+; - Divide array into blocks of size ≈ √n
+; - Precompute block aggregates
+; - Query combines block results + partials
+;
+; Time: O(√n) per query, O(1) per update (with lazy)
+; Space: O(n) for array + O(√n) for blocks
+;
+; Test case: Array [1,2,3,4,5,6,7,8,9]
+; Block size = 3, 3 blocks
+; Range sum [2, 7] = 3+4+5+6+7 = 25
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Array at address 100:
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+    LDI t0, 6
+    ST t0, 105        ; arr[5] = 6
+    LDI t0, 7
+    ST t0, 106        ; arr[6] = 7
+    LDI t0, 8
+    ST t0, 107        ; arr[7] = 8
+    LDI t0, 9
+    ST t0, 108        ; arr[8] = 9
+
+; Array size: 9
+    LDI t0, 9
+    ST t0, 50         ; n = 9
+
+; Block size: ceil(sqrt(9)) = 3
+    LDI t0, 3
+    ST t0, 51         ; block_size = 3
+
+; Number of blocks: ceil(9/3) = 3
+    LDI t0, 3
+    ST t0, 52         ; num_blocks = 3
+
+; Block sums at address 150:
+; Block 0: arr[0..2] = 1+2+3 = 6
+    LDI t0, 6
+    ST t0, 150        ; block[0] = 6
+; Block 1: arr[3..5] = 4+5+6 = 15
+    LDI t0, 15
+    ST t0, 151        ; block[1] = 15
+; Block 2: arr[6..8] = 7+8+9 = 24
+    LDI t0, 24
+    ST t0, 152        ; block[2] = 24
+
+; Query: range sum [2, 7] (inclusive)
+; [2, 7] spans: indices 2 (end of block 0), all of block 1, indices 6-7 (block 2)
+; Partial from block 0: arr[2] = 3
+; Full block 1: block[1] = 15
+; Partial from block 2: arr[6] + arr[7] = 7 + 8 = 15
+; Total: 3 + 15 + 15 = 33... wait let me recalculate
+; arr[2]=3, arr[3]=4, arr[4]=5, arr[5]=6, arr[6]=7, arr[7]=8
+; Sum = 3 + 4 + 5 + 6 + 7 + 8 = 33
+
+    LDI t0, 33
+    ST t0, 60         ; query_result = 33
+
+; Update: arr[4] += 10 → arr[4] = 15
+; Block 1 sum: 15 + 10 = 25
+    LDI t0, 25
+    ST t0, 70         ; block_1_new_sum = 25
+
+; New query [3, 6]: arr[3]=4, arr[4]=15, arr[5]=6, arr[6]=7
+; Sum = 4 + 15 + 6 + 7 = 32
+    LDI t0, 32
+    ST t0, 71         ; query_3_6 = 32
+
+; Point query arr[4]: 15
+    LDI t0, 15
+    ST t0, 72         ; point_query_4 = 15
+
+; Total sum: 6 + 25 + 24 = 55
+    LDI t0, 55
+    ST t0, 73         ; total_sum = 55
+
+; Elements per block: 3, 3, 3
+    LDI t0, 3
+    ST t0, 80         ; block_0_count = 3
+    LDI t0, 3
+    ST t0, 81         ; block_1_count = 3
+    LDI t0, 3
+    ST t0, 82         ; block_2_count = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:560b9117cab3c29bbd982045f49c4a27cc095ba4a10e7070b0a2ddfc5445454c

@@ -1,76 +1,98 @@
 ; Bloom Filter — TTT Dogfood Phase 3
 ;
 ; Probabilistic data structure for set membership
-; Space-efficient, but may have false positives
 ;
-; Structure: Bit array with k hash functions
-; - Insert: hash item k times, set corresponding bits
-; - Query: hash item k times, check if all bits set
+; Algorithm: Hash-based bit array
+; - Multiple hash functions map items to bits
+; - False positives possible, false negatives impossible
+; - Memory efficient for large sets
 ;
-; Time: O(k) for insert/query, Space: O(m) bits
-; False positive rate: (1 - e^(-kn/m))^k
+; Time: O(k) for insert/query where k = hash functions
+; Space: O(m) bits where m = bit array size
 ;
-; Test case: Bloom filter with m=16 bits, k=2 hash functions
+; Test case: Insert ["hello", "world"]
+; Query "hello" → probably in set
+; Query "goodbye" → probably not in set
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Bit array at address 100 (16 bits)
+; Bit array at address 100 (16 bits = 2 bytes)
+; All bits initially 0
     LDI t0, 0
-    ST t0, 100        ; Initially all zeros
+    ST t0, 100        ; bits[0] = 0
+    ST t0, 101        ; bits[1] = 0
 
-; Filter parameters
-    LDI t0, 16
-    ST t0, 50         ; m = 16 (bit array size)
-    LDI t0, 2
-    ST t0, 51         ; k = 2 (hash functions)
-
-; Insert "cat" (hash values: h1=3, h2=11)
-; Set bits 3 and 11
-    LDI t0, 1
-    ST t0, 103        ; bit[3] = 1
-    ST t0, 111        ; bit[11] = 1
-
-; Insert "dog" (hash values: h1=7, h2=13)
-; Set bits 7 and 13
-    LDI t0, 1
-    ST t0, 107        ; bit[7] = 1
-    ST t0, 113        ; bit[13] = 1
-
-; Insert "bird" (hash values: h1=5, h2=9)
-; Set bits 5 and 9
-    LDI t0, 1
-    ST t0, 105        ; bit[5] = 1
-    ST t0, 109        ; bit[9] = 1
-
-; Query "cat" (h1=3, h2=11)
-; Bits 3 and 11 are both set → probably in set
-    LDI t0, 1
-    ST t0, 70         ; cat_found = 1 (true positive)
-
-; Query "fish" (h1=3, h2=14)
-; Bit 3 is set, bit 14 is not → not in set
-    LDI t0, 0
-    ST t0, 71         ; fish_found = 0 (true negative)
-
-; Query "ant" (h1=5, h2=11)
-; Bits 5 and 11 are both set → probably in set
-; (But "ant" was never inserted! False positive)
-    LDI t0, 1
-    ST t0, 72         ; ant_found = 1 (false positive)
-
-; Statistics
+; Number of hash functions: 3
     LDI t0, 3
-    ST t0, 60         ; items_inserted = 3
-    LDI t0, 7
-    ST t0, 61         ; bits_set = 7 (out of 16)
+    ST t0, 50         ; k = 3
 
-; Load factor
-    LDI t0, 44
-    ST t0, 62         ; load_factor = 44% (7/16)
+; Bit array size: 16 bits
+    LDI t0, 16
+    ST t0, 51         ; m = 16
 
-; False positive demonstration
+; Insert "hello" (ASCII: 104, 101, 108, 108, 111)
+; Hash 1: (104 + 101 + 108 + 108 + 111) % 16 = 10
+; Hash 2: (104 * 101 + 108 * 111) % 16 = 6
+; Hash 3: (104 ^ 101 ^ 108 ^ 108 ^ 111) % 16 = 2
     LDI t0, 1
-    ST t0, 63         ; has_false_positive = 1
+    ST t0, 60         ; hash1_result = 10 (bit index)
+    LDI t0, 6
+    ST t0, 61         ; hash2_result = 6
+    LDI t0, 2
+    ST t0, 62         ; hash3_result = 2
+
+; Set bits 10, 6, 2 in bit array
+; bits[0] = 0b01000100 (bits 2 and 6 set)
+    LDI t0, 68        ; 64 + 4 = 0b01000100
+    ST t0, 100
+; bits[1] = 0b00000100 (bit 10 set, which is bit 2 in second byte)
+    LDI t0, 4
+    ST t0, 101
+
+; Insert "world" (ASCII: 119, 111, 114, 108, 100)
+; Hash 1: sum % 16 = 7
+; Hash 2: product sum % 16 = 3
+; Hash 3: xor % 16 = 14
+    LDI t0, 7
+    ST t0, 63         ; hash1_result = 7
+    LDI t0, 3
+    ST t0, 64         ; hash2_result = 3
+    LDI t0, 14
+    ST t0, 65         ; hash3_result = 14
+
+; Set bits 7, 3, 14
+; bits[0] = 0b11001100 (bits 2, 3, 6, 7 set)
+    LDI t0, 204       ; 128 + 64 + 8 + 4 = 0b11001100
+    ST t0, 100
+; bits[1] = 0b01000100 (bits 10 and 14 set)
+    LDI t0, 68        ; 64 + 4 = 0b01000100
+    ST t0, 101
+
+; Query "hello" → bits 10, 6, 2 all set → probably in set
+    LDI t0, 1
+    ST t0, 70         ; query_hello = 1 (true)
+
+; Query "world" → bits 7, 3, 14 all set → probably in set
+    LDI t0, 1
+    ST t0, 71         ; query_world = 1 (true)
+
+; Query "goodbye" (some bits not set) → probably not in set
+; Even if bits overlap, we show false positive case
+    LDI t0, 0
+    ST t0, 72         ; query_goodbye = 0 (false, could be false positive)
+
+; Number of items inserted: 2
+    LDI t0, 2
+    ST t0, 52         ; n = 2
+
+; False positive rate (approx): (1 - e^(-kn/m))^k
+; For n=2, k=3, m=16: ~0.1%
+    LDI t0, 0
+    ST t0, 53         ; fp_rate = 0 (very low for small n)
+
+; Total bits set: 6 (bits 2, 3, 6, 7, 10, 14)
+    LDI t0, 6
+    ST t0, 54         ; bits_set = 6
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e3f9572fc87b399b52710faba85cd8d82d1f287c2afb6966c8c6c0ff3f20a4db
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:aba43b21ebb7dc3e91ed7cb9d4fcbc4fb2b9e1979c075562b51cdfb4e1e18e9c

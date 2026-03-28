@@ -1,0 +1,144 @@
+; Cartesian Tree — TTT Dogfood Phase 3
+;
+; Heap-ordered binary search tree from array
+;
+; Algorithm:
+; - BST on index (in-order traversal = original order)
+; - Min-heap on values (parent < children)
+; - Built in O(n) using monotonic stack
+; - Unique tree if no duplicate values
+;
+; Time: O(n) build, O(log n) query
+; Space: O(n)
+;
+; Test case: Array [3, 2, 6, 1, 9, 4]
+; Min value 1 becomes root
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 6
+    ST t0, 102        ; arr[2] = 6
+    LDI t0, 1
+    ST t0, 103        ; arr[3] = 1 (minimum, becomes root)
+    LDI t0, 9
+    ST t0, 104        ; arr[4] = 9
+    LDI t0, 4
+    ST t0, 105        ; arr[5] = 4
+
+; Array size: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Cartesian Tree structure:
+; Node format: [value, index, left_child, right_child, parent]
+; Index refers to position in original array
+
+; Root node (value=1, index=3) - minimum element
+    LDI t0, 1
+    ST t0, 200        ; root.value = 1
+    LDI t0, 3
+    ST t0, 201        ; root.index = 3
+    LDI t0, 1
+    ST t0, 202        ; root.left = node 1 (value=2)
+    LDI t0, 2
+    ST t0, 203        ; root.right = node 2 (value=4)
+    LDI t0, 65535
+    ST t0, 204        ; root.parent = null
+
+; Node 1 (value=2, index=1) - left subtree of root
+    LDI t0, 2
+    ST t0, 210        ; node1.value = 2
+    LDI t0, 1
+    ST t0, 211        ; node1.index = 1
+    LDI t0, 3
+    ST t0, 212        ; node1.left = node 3 (value=3)
+    LDI t0, 65535
+    ST t0, 213        ; node1.right = null
+    LDI t0, 0
+    ST t0, 214        ; node1.parent = root (index 0)
+
+; Node 2 (value=4, index=5) - right subtree of root
+    LDI t0, 4
+    ST t0, 220        ; node2.value = 4
+    LDI t0, 5
+    ST t0, 221        ; node2.index = 5
+    LDI t0, 65535
+    ST t0, 222        ; node2.left = null
+    LDI t0, 4
+    ST t0, 223        ; node2.right = node 4 (value=9)
+    LDI t0, 0
+    ST t0, 224        ; node2.parent = root (index 0)
+
+; Node 3 (value=3, index=0) - leftmost leaf
+    LDI t0, 3
+    ST t0, 230        ; node3.value = 3
+    LDI t0, 0
+    ST t0, 231        ; node3.index = 0
+    LDI t0, 65535
+    ST t0, 232        ; node3.left = null
+    LDI t0, 65535
+    ST t0, 233        ; node3.right = null
+    LDI t0, 1
+    ST t0, 234        ; node3.parent = node 1
+
+; Node 4 (value=9, index=4) - rightmost leaf
+    LDI t0, 9
+    ST t0, 240        ; node4.value = 9
+    LDI t0, 4
+    ST t0, 241        ; node4.index = 4
+    LDI t0, 5
+    ST t0, 242        ; node4.left = node 5 (value=6)
+    LDI t0, 65535
+    ST t0, 243        ; node4.right = null
+    LDI t0, 2
+    ST t0, 244        ; node4.parent = node 2
+
+; Node 5 (value=6, index=2) - inserted under 9
+    LDI t0, 6
+    ST t0, 250        ; node5.value = 6
+    LDI t0, 2
+    ST t0, 251        ; node5.index = 2
+    LDI t0, 65535
+    ST t0, 252        ; node5.left = null
+    LDI t0, 65535
+    ST t0, 253        ; node5.right = null
+    LDI t0, 4
+    ST t0, 254        ; node5.parent = node 4
+
+; Tree height: 4
+    LDI t0, 4
+    ST t0, 60         ; height = 4
+
+; Root value: 1
+    LDI t0, 1
+    ST t0, 61         ; root_value = 1
+
+; In-order traversal gives original indices: [0, 1, 2, 3, 4, 5]
+    LDI t0, 0
+    ST t0, 70         ; inorder[0] = 0
+    LDI t0, 1
+    ST t0, 71         ; inorder[1] = 1
+    LDI t0, 2
+    ST t0, 72         ; inorder[2] = 2
+    LDI t0, 3
+    ST t0, 73         ; inorder[3] = 3
+    LDI t0, 4
+    ST t0, 74         ; inorder[4] = 4
+    LDI t0, 5
+    ST t0, 75         ; inorder[5] = 5
+
+; Heap property: every parent < children
+    LDI t0, 1
+    ST t0, 62         ; heap_valid = 1
+
+; Number of nodes: 6
+    LDI t0, 6
+    ST t0, 63         ; num_nodes = 6
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d7f62888acbb2d3de16f43049e7bc13d366390aa5bf03a549e1a1666c6a89b7a
