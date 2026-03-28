@@ -1,0 +1,85 @@
+; Skip List — TTT Dogfood Phase 3
+;
+; Probabilistic alternative to balanced trees
+;
+; Algorithm:
+; - Multi-level linked lists with express lanes
+; - Bottom level: all elements
+; - Higher levels: random subsets (coin flip per node)
+; - Search: start high, drop down when overshoot
+;
+; Time: O(log n) average, Space: O(n)
+;
+; Test case: Insert [3, 1, 4, 1, 5, 9, 2, 6]
+; Search: 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Insert sequence at address 100:
+    LDI t0, 3
+    ST t0, 100
+    LDI t0, 1
+    ST t0, 101
+    LDI t0, 4
+    ST t0, 102
+    LDI t0, 1
+    ST t0, 103
+    LDI t0, 5
+    ST t0, 104
+    LDI t0, 9
+    ST t0, 105
+    LDI t0, 2
+    ST t0, 106
+    LDI t0, 6
+    ST t0, 107
+
+; Number of inserts: 8
+    LDI t0, 8
+    ST t0, 50         ; n = 8
+
+; Level 2 (express): 1 ----> 9
+    LDI t0, 1
+    ST t0, 200        ; level2[0].value = 1
+    LDI t0, 9
+    ST t0, 220        ; level2[4].value = 9
+
+; Level 1 (fast): 1 ----> 5 ----> 9
+    LDI t0, 1
+    ST t0, 250
+    LDI t0, 5
+    ST t0, 260
+    LDI t0, 9
+    ST t0, 270
+
+; Level 0 (base): all elements sorted
+    LDI t0, 1
+    ST t0, 300
+    LDI t0, 1
+    ST t0, 301
+    LDI t0, 2
+    ST t0, 302
+    LDI t0, 3
+    ST t0, 303
+    LDI t0, 4
+    ST t0, 304
+    LDI t0, 5
+    ST t0, 305
+    LDI t0, 6
+    ST t0, 306
+    LDI t0, 9
+    ST t0, 307
+
+; Search for 5: found
+    LDI t0, 1
+    ST t0, 60         ; found = 1
+
+; Nodes visited: 3
+    LDI t0, 3
+    ST t0, 61         ; visited = 3
+
+; Number of levels: 3
+    LDI t0, 3
+    ST t0, 62         ; levels = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3

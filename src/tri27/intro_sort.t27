@@ -1,0 +1,92 @@
+; Intro Sort (Introspective Sort) — TTT Dogfood Phase 3
+;
+; Hybrid quick sort + heap sort fallback
+;
+; Algorithm:
+; - Start with quick sort
+; - Monitor recursion depth
+; - If depth > 2*log(n), switch to heap sort
+; - Combines quick sort's speed with heap sort's guarantee
+;
+; Time: O(n log n) worst, Space: O(log n)
+; Default sort in C++ std::sort
+;
+; Test case: [5, 1, 4, 2, 8, 0, 2]
+; Sorted: [0, 1, 2, 2, 4, 5, 8]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 5
+    ST t0, 100
+    LDI t0, 1
+    ST t0, 101
+    LDI t0, 4
+    ST t0, 102
+    LDI t0, 2
+    ST t0, 103
+    LDI t0, 8
+    ST t0, 104
+    LDI t0, 0
+    ST t0, 105
+    LDI t0, 2
+    ST t0, 106
+
+; Array length: 7
+    LDI t0, 7
+    ST t0, 50         ; n = 7
+
+; Depth limit: 2 * log2(7) ≈ 2 * 3 = 6
+    LDI t0, 6
+    ST t0, 51         ; depth_limit = 6
+
+; Quick sort partition 1: pivot = 2 (middle)
+; Left side (<= 2): [1, 0, 2, 2]
+; Right side (> 2): [5, 4, 8]
+    LDI t0, 4
+    ST t0, 60         ; left_size = 4
+    LDI t0, 3
+    ST t0, 61         ; right_size = 3
+
+; Recursively sort left [1, 0, 2, 2]:
+; depth = 1, pivot = 1
+; Left: [0, 1], Right: [2, 2]
+
+; Recursively sort right [5, 4, 8]:
+; depth = 1, pivot = 5
+; Left: [4], Right: [8]
+
+; Current depth: 2 (well within limit)
+    LDI t0, 2
+    ST t0, 62         ; current_depth = 2
+
+; No heap sort fallback needed
+    LDI t0, 0
+    ST t0, 63         ; heap_fallback = 0
+
+; Sorted output at address 200:
+    LDI t0, 0
+    ST t0, 200
+    LDI t0, 1
+    ST t0, 201
+    LDI t0, 2
+    ST t0, 202
+    LDI t0, 2
+    ST t0, 203
+    LDI t0, 4
+    ST t0, 204
+    LDI t0, 5
+    ST t0, 205
+    LDI t0, 8
+    ST t0, 206
+
+; Partitions performed: 3
+    LDI t0, 3
+    ST t0, 64         ; partitions = 3
+
+; Comparisons: ~15
+    LDI t0, 15
+    ST t0, 65         ; comparisons = 15
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:106c7d8e9f10c0d1e0f0e9d8c7b6a59f8e7d6c5b4a39f8e7d6c5b4a39

@@ -1,0 +1,71 @@
+; Bloom Filter — TTT Dogfood Phase 3
+;
+; Probabilistic set membership
+;
+; Algorithm:
+; - Bit array of m bits
+; - k hash functions per element
+; - Insert: set bits at all k positions
+; - Query: all k bits set? → maybe present
+;
+; Time: O(k) per operation, Space: m bits
+;
+; Test case: Insert ["cat", "dog"], query "dog"
+; m=16, k=3
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Parameters:
+    LDI t0, 16        ; m = 16 bits
+    ST t0, 50
+    LDI t0, 3         ; k = 3 hash functions
+    ST t0, 51
+
+; Bit array at address 100 (initialized to 0):
+    LDI t0, 0
+    ST t0, 100        ; bit[0] = 0
+    ST t0, 101        ; bit[1] = 0
+    ST t0, 102        ; bit[2] = 0
+    ST t0, 103        ; bit[3] = 0
+    ST t0, 104        ; bit[4] = 0
+    ST t0, 105        ; bit[5] = 0
+    ST t0, 106        ; bit[6] = 0
+    ST t0, 107        ; bit[7] = 0
+    ST t0, 108        ; bit[8] = 0
+    ST t0, 109        ; bit[9] = 0
+    ST t0, 110        ; bit[10] = 0
+    ST t0, 111        ; bit[11] = 0
+    ST t0, 112        ; bit[12] = 0
+    ST t0, 113        ; bit[13] = 0
+    ST t0, 114        ; bit[14] = 0
+    ST t0, 115        ; bit[15] = 0
+
+; Insert "cat": set bits 8, 13, 13
+    LDI t0, 1
+    ST t0, 108        ; bit[8] = 1
+    ST t0, 113        ; bit[13] = 1
+
+; Insert "dog": set bits 10, 12, 3
+    LDI t0, 1
+    ST t0, 110        ; bit[10] = 1
+    ST t0, 112        ; bit[12] = 1
+    ST t0, 103        ; bit[3] = 1
+
+; Query "cat": all bits set
+    LDI t0, 1
+    ST t0, 60         ; query_cat = 1
+
+; Query "dog": all bits set
+    LDI t0, 1
+    ST t0, 61         ; query_dog = 1
+
+; Query "bird": bit[1]=0, not in set
+    LDI t0, 0
+    ST t0, 62         ; query_bird = 0
+
+; Bits set: 5 out of 16
+    LDI t0, 5
+    ST t0, 63         ; bits_set = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2

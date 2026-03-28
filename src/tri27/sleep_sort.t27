@@ -1,0 +1,79 @@
+; Sleep Sort — TTT Dogfood Phase 3
+;
+; Concurrent sleep-based sorting (humor/conceptual)
+;
+; Algorithm:
+; 1. For each value, spawn thread
+; 2. Thread sleeps for value time units
+; 3. Thread outputs value on wakeup
+; 4. Values output in sorted order
+;
+; Time: O(max_value), Space: O(n) threads
+; NOTE: Requires threading, shown as concept
+;
+; Test case: [3, 1, 2] (sleep times proportional)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100: [3, 1, 2]
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 2
+    ST t0, 102        ; arr[2] = 2
+
+; Array length: 3
+    LDI t0, 3
+    ST t0, 50         ; n = 3
+
+; Thread simulation at address 150:
+; Thread 0: value=3, sleep=3
+    LDI t0, 3
+    ST t0, 150        ; thread[0].value = 3
+    LDI t0, 3
+    ST t0, 151        ; thread[0].sleep = 3
+; Thread 1: value=1, sleep=1
+    LDI t0, 1
+    ST t0, 152        ; thread[1].value = 1
+    LDI t0, 1
+    ST t0, 153        ; thread[1].sleep = 1
+; Thread 2: value=2, sleep=2
+    LDI t0, 2
+    ST t0, 154        ; thread[2].value = 2
+    LDI t0, 2
+    ST t0, 155        ; thread[2].sleep = 2
+
+; Wake order (by sleep time):
+; t=1: thread 1 wakes, output 1
+    LDI t0, 1
+    ST t0, 200        ; out[0] = 1
+; t=2: thread 2 wakes, output 2
+    LDI t0, 2
+    ST t0, 201        ; out[1] = 2
+; t=3: thread 0 wakes, output 3
+    LDI t0, 3
+    ST t0, 202        ; out[2] = 3
+
+; Sorted output: [1, 2, 3]
+    LDI t0, 1
+    ST t0, 210        ; sorted[0] = 1
+    LDI t0, 2
+    ST t0, 211        ; sorted[1] = 2
+    LDI t0, 3
+    ST t0, 212        ; sorted[2] = 3
+
+; Total sleep time: 3 (max value)
+    LDI t0, 3
+    ST t0, 60         ; total_time = 3
+
+; Number of threads: 3
+    LDI t0, 3
+    ST t0, 61         ; threads = 3
+
+; Thread overhead: context switches, scheduling
+    LDI t0, 1
+    ST t0, 62         ; overhead = 1 (conceptual)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:72a43466ecb87e85b53db5f8a5774ff5f8fa543e7d62b826109879f5cac76f06

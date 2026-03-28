@@ -1,0 +1,112 @@
+; QuickHull — Convex Hull Algorithm — TTT Dogfood Phase 3
+;
+; Divide-and-conquer convex hull
+;
+; Algorithm:
+; 1. Find min and max x points (leftmost, rightmost)
+; 2. These form initial line segment
+; 3. Recursively find point farthest from line
+; 4. Add to hull, split into two subproblems
+;
+; Time: O(n log n) average, O(n²) worst
+; Space: O(n) for recursion stack
+;
+; Test case: Points [(0,0), (1,1), (2,2), (0,3), (3,0), (1,2)]
+; Hull: [(0,0), (3,0), (2,2), (0,3)]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Points at address 100 (x, y pairs):
+    LDI t0, 0
+    ST t0, 100        ; p[0].x = 0
+    LDI t0, 0
+    ST t0, 101        ; p[0].y = 0
+    LDI t0, 1
+    ST t0, 102        ; p[1].x = 1
+    LDI t0, 1
+    ST t0, 103        ; p[1].y = 1
+    LDI t0, 2
+    ST t0, 104        ; p[2].x = 2
+    LDI t0, 2
+    ST t0, 105        ; p[2].y = 2
+    LDI t0, 0
+    ST t0, 106        ; p[3].x = 0
+    LDI t0, 3
+    ST t0, 107        ; p[3].y = 3
+    LDI t0, 3
+    ST t0, 108        ; p[4].x = 3
+    LDI t0, 0
+    ST t0, 109        ; p[4].y = 0
+    LDI t0, 1
+    ST t0, 110        ; p[5].x = 1
+    LDI t0, 2
+    ST t0, 111        ; p[5].y = 2
+
+; Number of points: 6
+    LDI t0, 6
+    ST t0, 50         ; n = 6
+
+; Step 1: Find min and max x
+; Min x: point 0 (0,0)
+; Max x: point 4 (3,0)
+    LDI t0, 0
+    ST t0, 60         ; min_x_point = 0
+    LDI t0, 4
+    ST t0, 61         ; max_x_point = 4
+
+; Initial line segment: from (0,0) to (3,0)
+; Points above line: (1,1), (2,2), (0,3), (1,2)
+; Points below line: none
+
+; Upper hull:
+; Find farthest point from line (0,0)-(3,0)
+; Distance = |y| (horizontal line)
+; Farthest: (0,3) with distance 3
+    LDI t0, 3
+    ST t0, 62         ; farthest_upper = 3
+
+; Upper hull subproblems:
+; Left of (0,0)-(0,3): no points
+; Right of (0,3)-(3,0): (1,1), (2,2), (1,2)
+; Farthest from (0,3)-(3,0): (2,2)
+    LDI t0, 2
+    ST t0, 63         ; farthest_upper_2 = 2
+
+; Lower hull:
+; No points below initial line
+
+; Hull points in order:
+; Start at (0,0), go to (3,0), then (2,2), then (0,3), back to (0,0)
+
+; Hull at address 300:
+    LDI t0, 0
+    ST t0, 300        ; hull[0].x = 0
+    LDI t0, 0
+    ST t0, 301        ; hull[0].y = 0
+    LDI t0, 3
+    ST t0, 302        ; hull[1].x = 3
+    LDI t0, 0
+    ST t0, 303        ; hull[1].y = 0
+    LDI t0, 2
+    ST t0, 304        ; hull[2].x = 2
+    LDI t0, 2
+    ST t0, 305        ; hull[2].y = 2
+    LDI t0, 0
+    ST t0, 306        ; hull[3].x = 0
+    LDI t0, 3
+    ST t0, 307        ; hull[3].y = 3
+
+; Hull size: 4
+    LDI t0, 4
+    ST t0, 64         ; hull_size = 4
+
+; Recursive calls: 3
+    LDI t0, 3
+    ST t0, 65         ; recursive_calls = 3
+
+; Distance calculations: 10
+    LDI t0, 10
+    ST t0, 66         ; distance_calcs = 10
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08091a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f

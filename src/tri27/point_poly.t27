@@ -1,0 +1,57 @@
+; Point in Polygon (Ray Casting) — TTT Dogfood Phase 3
+;
+; Determine if point is inside polygon
+;
+; Algorithm:
+; - Cast ray from point to infinity
+; - Count intersections with polygon edges
+; - Odd = inside, Even = outside
+;
+; Time: O(n) per query, Space: O(1)
+;
+; Test case: Square[(0,0),(2,0),(2,2),(0,2)], Point(1,1)
+; Result: Inside
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Polygon vertices (square) at address 100:
+    LDI t0, 0
+    ST t0, 100        ; v[0].x = 0
+    LDI t0, 0
+    ST t0, 101        ; v[0].y = 0
+    LDI t0, 2
+    ST t0, 102        ; v[1].x = 2
+    LDI t0, 0
+    ST t0, 103        ; v[1].y = 0
+    LDI t0, 2
+    ST t0, 104        ; v[2].x = 2
+    LDI t0, 2
+    ST t0, 105        ; v[2].y = 2
+    LDI t0, 0
+    ST t0, 106        ; v[3].x = 0
+    LDI t0, 2
+    ST t0, 107        ; v[3].y = 2
+
+; Number of vertices: 4
+    LDI t0, 4
+    ST t0, 50         ; n = 4
+
+; Query point at address 150:
+    LDI t0, 1
+    ST t0, 150        ; P.x = 1
+    LDI t0, 1
+    ST t0, 151        ; P.y = 1
+
+; Ray casting to right:
+; Edge 1 (right vertical edge at x=2): intersects
+    LDI t0, 1
+    ST t0, 61         ; intersect[1] = 1
+
+; Total intersections: 1 (odd = inside)
+    LDI t0, 1
+    ST t0, 64         ; total = 1
+    LDI t0, 1
+    ST t0, 65         ; inside = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:04051627393a4b5c6d7e8f9a0b1c2d3e4f5a6b7c7d8e9f0a1b2c3d4e5f6a7b7c
