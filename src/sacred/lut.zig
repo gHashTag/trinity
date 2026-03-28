@@ -1,5 +1,5 @@
-//! Compile-time LUT таблицы для Sacred типов.
-//! Таблицы создаются при компиляции → ноль runtime cost.
+//! Compile-time LUT tables for Sacred types.
+//! Tables created at compile time → zero runtime cost.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -11,7 +11,7 @@ const sacred_types = @import("sacred_types.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const GF16LUT = struct {
-    /// GF16 → f32 таблица (65536 записей)
+    /// GF16 → f32 table (65536 entries)
     /// NOTE: Large LUT disabled due to comptime quota limits
     /// Use fromF32/toF32 directly instead
     pub fn toF32(gf: sacred_types.GF16) f32 {
@@ -52,12 +52,12 @@ pub const TF3LUT = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// POWERS OF 3 LUT — Быстрый доступ к 3^k (k = 0..20)
+// POWERS OF 3 LUT — Fast access to 3^k (k = 0..20)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PowersOf3LUT = struct {
-    /// Таблица 3^k для k = 0..20
-    /// 3^20 = 3,486,784,401 (помещается в u64)
+    /// Table of 3^k for k = 0..20
+    /// 3^20 = 3,486,784,401 (fits in u64)
     pub const table: [21]u64 = blk: {
         var result: [21]u64 = undefined;
         var acc: u64 = 1;
@@ -68,7 +68,7 @@ pub const PowersOf3LUT = struct {
         break :blk result;
     };
 
-    /// Получить 3^k (comptime-safe)
+    /// Get 3^k (comptime-safe)
     pub inline fn pow3(comptime k: u5) comptime_int {
         comptime {
             if (k >= 21) @compileError("pow3: k must be < 21");
@@ -76,7 +76,7 @@ pub const PowersOf3LUT = struct {
         }
     }
 
-    /// Найти наименьшее k такое что 3^k >= n
+    /// Find smallest k such that 3^k >= n
     pub fn ceilLog3(n: u64) u5 {
         for (0..21) |k| {
             if (table[k] >= n) return @intCast(k);
@@ -84,7 +84,7 @@ pub const PowersOf3LUT = struct {
         return 20; // max
     }
 
-    /// Проверить что n является степенью 3
+    /// Check if n is power of 3
     pub fn isPowerOf3(n: u64) bool {
         for (0..21) |k| {
             if (table[k] == n) return true;
@@ -94,11 +94,11 @@ pub const PowersOf3LUT = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// POWERS OF PHI LUT — Быстрый доступ к φ^k (k = 0..20)
+// POWERS OF PHI LUT — Fast access to φ^k (k = 0..20)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const PowersOfPhiLUT = struct {
-    /// Таблица φ^k для k = 0..20
+    /// Table of φ^k for k = 0..20
     pub const table: [21]f64 = blk: {
         var result: [21]f64 = undefined;
         var acc: f64 = 1.0;
@@ -109,7 +109,7 @@ pub const PowersOfPhiLUT = struct {
         break :blk result;
     };
 
-    /// Получить φ^k (comptime-safe)
+    /// Get φ^k (comptime-safe)
     pub inline fn phi_pow(comptime k: u5) comptime_float {
         comptime {
             if (k >= 21) @compileError("phi_pow: k must be < 21");
@@ -119,17 +119,17 @@ pub const PowersOfPhiLUT = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRITARY ENCODING LUT — Кодирование/декодирование тритов в 2 бита
+// TRITARY ENCODING LUT — Ternary encoding/decoding in 2 bits
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TritEncodingLUT = struct {
-    /// Трит → 2 бита: {-1: 0b01, 0: 0b00, +1: 0b10}
+    /// Trit → 2 bits: {-1: 0b01, 0: 0b00, +1: 0b10}
     pub const encode: [3]u2 = [_]u2{ 0b00, 0b01, 0b10 };
 
-    /// 2 бита → трит: {0b00: 0, 0b01: -1, 0b10: 1}
+    /// 2 bits → trit: {0b00: 0, 0b01: -1, 0b10: 1}
     pub const decode: [4]i8 = [_]i8{ 0, -1, 1, 0 }; // 0b11 -> 0 (invalid)
 
-    /// Кодировать трит
+    /// Encode trit
     pub inline fn encodeTrit(t: i8) u2 {
         return switch (t) {
             -1 => encode[1],
@@ -139,21 +139,21 @@ pub const TritEncodingLUT = struct {
         };
     }
 
-    /// Декодировать 2 бита в трит
+    /// Decode 2 bits to trit
     pub inline fn decodeTrit(bits: u2) i8 {
         return decode[bits];
     }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SACRED DIMENSIONS LUT — Предопределённые Sacred размерности
+// SACRED DIMENSIONS LUT — Predefined Sacred dimensions
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const SacredDimensionsLUT = struct {
-    /// Размерности Sacred: 3^0 до 3^10
+    /// Sacred dimensions: 3^0 to 3^10
     pub const dims: [11]usize = [11]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
 
-    /// Индексы по имени
+    /// Indices by name
     pub const idx_unit: u5 = 0; // 1 = 3^0
     pub const idx_trit: u5 = 1; // 3 = 3^1
     pub const idx_nine: u5 = 2; // 9 = 3^2

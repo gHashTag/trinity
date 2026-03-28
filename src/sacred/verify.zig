@@ -1,5 +1,5 @@
-//! Compile-time проверки Sacred математики.
-//! Если проверки не проходят — ошибка компиляции.
+//! Compile-time Sacred mathematics checks.
+//! If checks don't pass — compile error.
 //!
 //! φ² + 1/φ² = 3 | TRINITY
 
@@ -10,7 +10,7 @@ pub const phi_sq = phi * phi;
 pub const inv_phi = 1.0 / phi;
 pub const trinity = phi_sq + 1.0 / phi_sq; // = 3.0
 
-// Compile-time верификация Sacred констант
+// Compile-time verification of Sacred constants
 comptime {
     if (@abs(trinity - 3.0) > 1e-15)
         @compileError("φ² + 1/φ² ≠ 3 — Trinity math broken!");
@@ -31,7 +31,7 @@ pub fn assertTritResonance(comptime dims: usize) void {
     }
 }
 
-/// Проверить что значение является степенью 3 (comptime)
+/// Check if value is power of 3 (comptime)
 pub fn isPowerOf3(comptime n: usize) bool {
     comptime {
         if (n == 0) return false;
@@ -41,7 +41,7 @@ pub fn isPowerOf3(comptime n: usize) bool {
     }
 }
 
-/// Получить k для 3^k = n (comptime)
+/// Get k for 3^k = n (comptime)
 pub fn tritPower(comptime n: usize) comptime_int {
     comptime {
         if (!isPowerOf3(n))
@@ -75,19 +75,19 @@ pub fn computePhiDistance(comptime n_total: comptime_int, comptime n_exp: compti
 // SACRED DIMENSIONS CHECKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Рекомендуемые размерности для Sacred слоёв
+/// Recommended dimensions for Sacred layers
 pub const SacredDimensions = struct {
-    /// Контекстная длина для HSLM (3^4 = 81)
+    /// Context length for HSLM (3^4 = 81)
     pub const context_len: usize = 81;
-    /// Размер embedding (3^5 = 243)
+    /// Embedding size (3^5 = 243)
     pub const embed_dim: usize = 243;
-    /// Размер VSA вектора (3^6 = 729)
+    /// VSA vector size (3^6 = 729)
     pub const vsa_dim: usize = 729;
-    /// Максимальная длина последовательности (3^7 = 2187)
+    /// Maximum sequence length (3^7 = 2187)
     pub const seq_max: usize = 2187;
 };
 
-/// Проверить что размерность — Sacred Dimensions
+/// Verify dimension is Sacred Dimensions
 pub fn assertSacredDim(comptime dim: usize, comptime ctx: []const u8) void {
     comptime {
         const valid_dims = [_]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
@@ -141,7 +141,7 @@ pub const PowersOfPhi = [11]f64{
 // RUNTIME VERIFICATION (для тестов)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Структура для runtime проверки Sacred инвариантов
+/// Structure for runtime verification of Sacred invariants
 pub const SacredVerifier = struct {
     passed: usize = 0,
     failed: usize = 0,
