@@ -588,15 +588,20 @@ test "binary_search: find middle element in 3-element array" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    ; Simple binary search for 3 elements
-        \\    JLT t0, t1, check_upper
-        \\    JGT t0, t3, check_upper
-        \\    JGT t0, t2, found_mid
-        \\    JLT t0, t2, found_mid
-        \\    JEQ t0, t1, found_0
-        \\    JEQ t0, t2, found_1
-        \\    JEQ t0, t3, found_2
-        \\    JUMP notfound
+        \\    ; Check if equals t1
+        \\    SUB t0, t1
+        \\    JZ found_0
+        \\    ; Check if equals t2
+        \\    MOV t0, t1
+        \\    SUB t0, t2
+        \\    JZ found_1
+        \\    ; Check if equals t3
+        \\    MOV t0, t1
+        \\    SUB t0, t3
+        \\    JZ found_2
+        \\    ; Not found
+        \\    LDI t0, -1
+        \\    HALT
         \\found_0:
         \\    LDI t0, 0
         \\    HALT
@@ -605,15 +610,6 @@ test "binary_search: find middle element in 3-element array" {
         \\    HALT
         \\found_2:
         \\    LDI t0, 2
-        \\    HALT
-        \\found_mid:
-        \\    LDI t0, 1
-        \\    HALT
-        \\check_upper:
-        \\    JEQ t0, t3, found_2
-        \\    JUMP notfound
-        \\notfound:
-        \\    LDI t0, -1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 2, 23, 91 });
@@ -624,14 +620,16 @@ test "binary_search: find first element" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    JEQ t0, t1, found_0
-        \\    JLT t0, t1, notfound
-        \\    JGT t0, t3, notfound
-        \\    JEQ t0, t2, found_1
-        \\    JEQ t0, t3, found_2
-        \\    JLT t0, t2, found_0
-        \\    JGT t0, t2, found_2
-        \\    JUMP notfound
+        \\    SUB t0, t1
+        \\    JZ found_0
+        \\    MOV t0, t1
+        \\    SUB t0, t2
+        \\    JZ found_1
+        \\    MOV t0, t1
+        \\    SUB t0, t3
+        \\    JZ found_2
+        \\    LDI t0, -1
+        \\    HALT
         \\found_0:
         \\    LDI t0, 0
         \\    HALT
@@ -640,9 +638,6 @@ test "binary_search: find first element" {
         \\    HALT
         \\found_2:
         \\    LDI t0, 2
-        \\    HALT
-        \\notfound:
-        \\    LDI t0, -1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{ 2, 2, 23, 91 });
@@ -653,25 +648,12 @@ test "binary_search: find last element" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    JEQ t0, t3, found_2
-        \\    JLT t0, t1, notfound
-        \\    JGT t0, t3, notfound
-        \\    JEQ t0, t2, found_1
-        \\    JEQ t0, t1, found_0
-        \\    JLT t0, t2, found_1
-        \\    JGT t0, t2, found_2
-        \\    JUMP notfound
-        \\found_0:
-        \\    LDI t0, 0
-        \\    HALT
-        \\found_1:
-        \\    LDI t0, 1
+        \\    SUB t0, t3
+        \\    JZ found_2
+        \\    LDI t0, -1
         \\    HALT
         \\found_2:
         \\    LDI t0, 2
-        \\    HALT
-        \\notfound:
-        \\    LDI t0, -1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{ 91, 2, 23, 91 });
@@ -682,10 +664,16 @@ test "binary_search: element not found" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0], t2=arr[1], t3=arr[2]
-        \\    JEQ t0, t1, found_0
-        \\    JEQ t0, t2, found_1
-        \\    JEQ t0, t3, found_2
-        \\    JUMP notfound
+        \\    SUB t0, t1
+        \\    JZ found_0
+        \\    MOV t0, t1
+        \\    SUB t0, t2
+        \\    JZ found_1
+        \\    MOV t0, t1
+        \\    SUB t0, t3
+        \\    JZ found_2
+        \\    LDI t0, -1
+        \\    HALT
         \\found_0:
         \\    LDI t0, 0
         \\    HALT
@@ -694,9 +682,6 @@ test "binary_search: element not found" {
         \\    HALT
         \\found_2:
         \\    LDI t0, 2
-        \\    HALT
-        \\notfound:
-        \\    LDI t0, -1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{ 42, 2, 23, 91 });
@@ -707,13 +692,12 @@ test "binary_search: single element array, found" {
     const allocator = std.testing.allocator;
     const program =
         \\    ; t0=target, t1=arr[0]
-        \\    JEQ t0, t1, found
-        \\    JUMP notfound
+        \\    SUB t0, t1
+        \\    JZ found
+        \\    LDI t0, -1
+        \\    HALT
         \\found:
         \\    LDI t0, 0
-        \\    HALT
-        \\notfound:
-        \\    LDI t0, -1
         \\    HALT
     ;
     const cpu = try runWithInput(allocator, program, &[_]i64{ 23, 23 });
