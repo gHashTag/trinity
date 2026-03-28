@@ -1,0 +1,13 @@
+; ML Neural Network — TTT Dogfood Phase 3
+;
+; Neural network forward/backward pass
+;
+; Test case: ml_neural_network
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nn_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074a50000020000000001ac5

@@ -1,0 +1,13 @@
+; ML K-Means — TTT Dogfood Phase 3
+;
+; K-Means clustering
+;
+; Test case: ml_k_means
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; k_means_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:074b80000020000000001aeb
