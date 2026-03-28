@@ -127,8 +127,8 @@ test "fuzz: immediate always in 15-bit signed range" {
     // All immediate instructions
     const imm_opcodes = [_]Opcode{
         .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST,
-        .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET,
-        .SHL, .SHR, .BUNDLE3,
+        .JMP, .JZ,  .JNZ,    .JGT,       .JLT,      .CALL,
+        .RET, .SHL, .SHR,    .BUNDLE3,
     };
 
     for (imm_opcodes) |opcode| {
@@ -159,8 +159,9 @@ test "fuzz: immediate instructions use 4-bit src1 (no bit 17 overlap)" {
     // This test specifically checks the fix for Issue #469
     const imm_opcodes = [_]Opcode{
         .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST,
-        .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET,
-        .SHL, .SHR,
+        .JMP, .JZ,  .JNZ,    .JGT,       .JLT,      .CALL,
+        .RET, .SHL,
+        .SHR,
         // Note: BUNDLE3 is excluded - it's a 3-operand instruction, not immediate
     };
 
@@ -253,18 +254,15 @@ test "verify: no bit field overlap for all opcodes" {
     // This is a static verification, not fuzzing
 
     const opcodes = [_]Opcode{
-        .ADD, .SUB, .MUL, .DIV, .AND, .OR, .XOR,
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST,
-        .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET,
-        .SHL, .SHR,
-        .MOV, .NOT, .INC, .DEC,
+        .ADD, .SUB, .MUL,    .DIV,       .AND,      .OR,      .XOR,
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP,
+        .JZ,  .JNZ, .JGT,    .JLT,       .CALL,     .RET,     .SHL,
+        .SHR, .MOV, .NOT,    .INC,       .DEC,
     };
 
     for (opcodes) |opcode| {
         const has_imm = switch (opcode) {
-            .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST,
-            .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET,
-            .SHL, .SHR, .BUNDLE3 => true,
+            .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .BUNDLE3 => true,
             else => false,
         };
 
@@ -297,12 +295,11 @@ test "verify: no bit field overlap for all opcodes" {
 
 fn randomInstruction(random: std.Random) Instruction {
     const opcodes = [_]Opcode{
-        .NOP, .MOV, .ADD, .SUB, .MUL, .DIV, .INC, .DEC,
-        .AND, .OR, .XOR, .NOT, .SHL, .SHR,
-        .LD, .ST, .LDI, .STI,
-        .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .HALT,
-        .DOT, .BIND, .BUNDLE2, .BUNDLE3,
-        .PHI_CONST, .PI_CONST, .E_CONST, .SACR,
+        .NOP,     .MOV,  .ADD, .SUB,  .MUL,     .DIV,     .INC,       .DEC,
+        .AND,     .OR,   .XOR, .NOT,  .SHL,     .SHR,     .LD,        .ST,
+        .LDI,     .STI,  .JMP, .JZ,   .JNZ,     .JGT,     .JLT,       .CALL,
+        .RET,     .HALT, .DOT, .BIND, .BUNDLE2, .BUNDLE3, .PHI_CONST, .PI_CONST,
+        .E_CONST, .SACR,
     };
 
     const opcode = opcodes[random.intRangeAtMost(usize, 0, opcodes.len - 1)];
@@ -313,9 +310,7 @@ fn randomInstruction(random: std.Random) Instruction {
     // has_imm must match the encoder's logic
     // Note: BUNDLE3 is NOT an immediate instruction, it's a 3-operand with special encoding
     const has_imm = switch (opcode) {
-        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST,
-        .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET,
-        .SHL, .SHR => true,
+        .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR => true,
         else => false,
     };
 
