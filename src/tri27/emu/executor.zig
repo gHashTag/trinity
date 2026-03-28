@@ -214,8 +214,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary bitwise AND (min of two values)
-            const result = if (a.trits < 0 and b.trits < 0) a.trits else if (a.trits > 0 and b.trits > 0) a.trits else 0;
+            // Standard binary bitwise AND
+            const result = a.trits & b.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -228,8 +228,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary bitwise OR (max of two values)
-            const result = if (a.trits > 0 or b.trits > 0) a.trits else if (a.trits < 0 and b.trits < 0) b.trits else a.trits;
+            // Standard binary bitwise OR
+            const result = a.trits | b.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -242,8 +242,8 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const a = cpu.t27[inst.src1];
             const b = cpu.t27[inst.src2];
 
-            // Ternary bitwise XOR
-            const result = if (a.trits != 0 and b.trits != 0) a.trits else if (a.trits == 0 or b.trits == 0) b.trits else if (a.trits < 0 and b.trits < 0) a.trits else b.trits;
+            // Standard binary bitwise XOR
+            const result = a.trits ^ b.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
@@ -253,10 +253,11 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         },
 
         .NOT => {
-            const a = cpu.t27[inst.src1];
+            // Unary NOT: bitwise NOT (complement) destination register in place
+            const a = cpu.t27[inst.dst];
 
-            // Ternary bitwise NOT (negate)
-            const result = -a.trits;
+            // Bitwise NOT (one's complement)
+            const result = ~a.trits;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;
