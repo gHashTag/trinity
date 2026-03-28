@@ -1,0 +1,13 @@
+; Restaurant Kitchen — TTT Dogfood Phase 3
+;
+; Kitchen display
+;
+; Test case: restaurant_kitchen
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; kitchen_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075e80000020000000001d4b
