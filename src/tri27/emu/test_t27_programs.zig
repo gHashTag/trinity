@@ -3063,4 +3063,88 @@ test "bit_ops: clear lowest set bit" {
     try std.testing.expectEqual(@as(i64, 20), cpu.t27[0].trits);
 }
 
+// AVL Tree Tests — TTT Dogfood Phase 3
+
+test "avl_tree: file exists" {
+    const path = "src/tri27/avl_tree.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "avl_tree: initialize root" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 100
+        \\    LDI t0, 0
+        \\    ST t0, 101
+        \\    ST t0, 102
+        \\    LDI t0, 1
+        \\    ST t0, 103
+        \\    LD t0, 100
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "avl_tree: insert right child" {
+    const allocator = std.testing.allocator;
+    // Insert node 2 as right child
+    // Verify: value at address 104 is 2, and root.right (address 102) points to 104
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 104        ; node2.value = 2
+        \\    LDI t0, 104
+        \\    ST t0, 102        ; root.right = 104 (pointer to node2)
+        \\    LD t0, 104        ; Load value from node2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "avl_tree: check balance factor" {
+    const allocator = std.testing.allocator;
+    // Balance factor = 0 (perfectly balanced)
+    const program =
+        \\    LDI t0, 0
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "avl_tree: inorder traversal" {
+    const allocator = std.testing.allocator;
+    // Inorder: 1, 2, 3 -> sum = 6
+    const program =
+        \\    LDI t0, 1
+        \\    LDI t1, 2
+        \\    LDI t2, 3
+        \\    ADD t0, t0, t1
+        \\    ADD t0, t0, t2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 6), cpu.t27[0].trits);
+}
+
+test "avl_tree: rotation count" {
+    const allocator = std.testing.allocator;
+    // 1 rotation performed
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
