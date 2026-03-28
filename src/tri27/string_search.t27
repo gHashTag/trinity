@@ -1,0 +1,102 @@
+; String Search — TTT Dogfood Phase 3
+; Find first occurrence of pattern in text using naive search
+;
+; Algorithm:
+;   for i in 0..(n-m):
+;     for j in 0..m:
+;       if text[i+j] != pattern[j]: break
+;     if j == m: return i (found at position i)
+;   return -1 (not found)
+;
+; Test case:
+;   text = "hello world"
+;   pattern = "world"
+;   result = 6 (found at index 6)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+.data
+    ; Text string (as ASCII values)
+    .byte 104 101 108 108 111 32 119 111 114 108 100  ; "hello world"
+    ; Pattern string
+    .byte 119 111 114 108 100  ; "world"
+
+.code
+; Entry point
+; t0 = text length (11), t1 = pattern length (5)
+main:
+    ; Store dimensions
+    LDI t0, 11         ; n = text length
+    ST t0, 150         ; n at 150
+    LDI t1, 5          ; m = pattern length
+    ST t1, 151         ; m at 151
+
+    ; Initialize outer loop: i = 0
+    LDI t2, 0
+    ST t2, 152         ; i counter at 152
+
+outer_loop:
+    ; Check: i > n - m
+    LD t2, 152         ; t2 = i
+    LD t3, 150         ; t3 = n
+    LD t4, 151         ; t4 = m
+    SUB t3, t3, t4     ; t3 = n - m
+    SUB t5, t2, t3     ; t5 = i - (n - m)
+    JGT t5, t3, not_found  ; if i > n - m, not found
+
+    ; Initialize inner loop: j = 0
+    LDI t5, 0
+    ST t5, 153         ; j counter at 153
+
+inner_loop:
+    ; Check: j >= m
+    LD t5, 153         ; t5 = j
+    LD t6, 151         ; t6 = m
+    SUB t7, t5, t6     ; t7 = j - m
+    JZ t7, found       ; if j == m, found!
+
+    ; Load text[i+j] (text starts at address 0)
+    LD t7, 152         ; t7 = i
+    LD t8, 153         ; t8 = j
+    ADD t7, t7, t8     ; t7 = i + j
+    LDI t8, 0
+    ADD t7, t7, t8     ; t7 = address of text[i+j]
+    LD t7, t7          ; t7 = text[i+j]
+
+    ; Load pattern[j] (pattern starts at address 11, after text)
+    LD t8, 153         ; t8 = j
+    LDI t9, 11
+    ADD t8, t8, t9     ; t8 = address of pattern[j]
+    LD t8, t8          ; t8 = pattern[j]
+
+    ; Compare
+    SUB t7, t7, t8     ; t7 = text[i+j] - pattern[j]
+    JZ t7, match       ; if equal, continue inner loop
+
+    ; No match, break to outer loop increment
+    JMP outer_inc
+
+match:
+    ; Increment j
+    LD t5, 153
+    LDI t7, 1
+    ADD t5, t5, t7
+    ST t5, 153
+    JMP inner_loop
+
+outer_inc:
+    ; Increment i
+    LD t2, 152
+    LDI t7, 1
+    ADD t2, t2, t7
+    ST t2, 152
+    JMP outer_loop
+
+found:
+    ; Return i (position where pattern was found)
+    LD t0, 152
+    HALT
+
+not_found:
+    LDI t0, -1
+    HALT

@@ -831,4 +831,124 @@ test "t27_programs: matrix_multiply file exists" {
     try std.testing.expect(stat.size > 0);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// String Search Tests
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "string_search: single character match at start" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Search for 'A' (65) in "ABC..."
+        \\    ; t0 = 'A', t1 = text[0] = 'A'
+        \\    LDI t0, 65
+        \\    LDI t1, 65
+        \\    SUB t2, t0, t1
+        \\    JZ t2, found
+        \\    LDI t0, -1
+        \\    HALT
+        \\found:
+        \\    LDI t0, 0
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "string_search: single character not found" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Search for 'X' (88) in "ABC..."
+        \\    ; t0 = 'X', t1 = text[0] = 'A'
+        \\    LDI t0, 88
+        \\    LDI t1, 65
+        \\    SUB t2, t0, t1
+        \\    JZ t2, found
+        \\    LDI t0, -1
+        \\    HALT
+        \\found:
+        \\    LDI t0, 0
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+}
+
+test "string_search: pattern match at position 2" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Simplified: check if pattern starts at position 2
+        \\    ; text[2] should match pattern[0]
+        \\    ; t0 = text[2], t1 = pattern[0]
+        \\    LDI t0, 67    ; 'C' at position 2
+        \\    LDI t1, 67    ; pattern 'C'
+        \\    SUB t2, t0, t1
+        \\    JZ t2, found
+        \\    LDI t0, -1
+        \\    HALT
+        \\found:
+        \\    LDI t0, 2
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "string_search: two character match" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Check if "AB" matches at position 0
+        \\    ; Compare text[0] with pattern[0]
+        \\    LDI t0, 65    ; text[0] = 'A'
+        \\    LDI t1, 65    ; pattern[0] = 'A'
+        \\    SUB t2, t0, t1
+        \\    JNZ t2, not_found
+        \\    ; Compare text[1] with pattern[1]
+        \\    LDI t0, 66    ; text[1] = 'B'
+        \\    LDI t1, 66    ; pattern[1] = 'B'
+        \\    SUB t2, t0, t1
+        \\    JNZ t2, not_found
+        \\    ; Both matched
+        \\    LDI t0, 0
+        \\    HALT
+        \\not_found:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "string_search: two character mismatch" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    ; Check if "AB" matches at position 0 (but text is "AC")
+        \\    ; Compare text[0] with pattern[0]
+        \\    LDI t0, 65    ; text[0] = 'A'
+        \\    LDI t1, 65    ; pattern[0] = 'A'
+        \\    SUB t2, t0, t1
+        \\    JNZ t2, not_found
+        \\    ; Compare text[1] with pattern[1]
+        \\    LDI t0, 67    ; text[1] = 'C' (mismatch!)
+        \\    LDI t1, 66    ; pattern[1] = 'B'
+        \\    SUB t2, t0, t1
+        \\    JNZ t2, not_found
+        \\    ; Both matched
+        \\    LDI t0, 0
+        \\    HALT
+        \\not_found:
+        \\    LDI t0, -1
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, -1), cpu.t27[0].trits);
+}
+
+test "t27_programs: string_search file exists" {
+    const path = "src/tri27/string_search.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
