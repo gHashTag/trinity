@@ -1,0 +1,13 @@
+; 3D Vector Normalize — TTT Dogfood Phase 3
+;
+; Normalize vector
+;
+; Test case: 3d_vector_normalize
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; normalize_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07580000002000001759

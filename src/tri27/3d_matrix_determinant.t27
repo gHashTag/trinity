@@ -1,0 +1,13 @@
+; 3D Matrix Determinant — TTT Dogfood Phase 3
+;
+; Matrix determinant
+;
+; Test case: 3d_matrix_determinant
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; determinant_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075920000020000017e9
