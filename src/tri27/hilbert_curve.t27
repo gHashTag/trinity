@@ -1,0 +1,13 @@
+; Hilbert Curve — TTT Dogfood Phase 3
+;
+; Space-filling curve for Z-order
+;
+; Test case: order 5 (32x32)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; order = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713500012c6

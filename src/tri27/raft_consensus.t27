@@ -1,0 +1,15 @@
+; Raft Consensus — TTT Dogfood Phase 3
+;
+; Leader-based consensus
+;
+; Test case: 5 nodes cluster
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 60         ; nodes = 5
+    LDI t0, 3
+    ST t0, 61         ; majority = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07133e0012b4

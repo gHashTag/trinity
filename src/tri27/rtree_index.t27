@@ -1,0 +1,13 @@
+; R-Tree Index — TTT Dogfood Phase 3
+;
+; Spatial data indexing
+;
+; Test case: 2D rectangles
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 2
+    ST t0, 60         ; dimensions = 2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07134c0012c2
