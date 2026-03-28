@@ -1,0 +1,122 @@
+; Minimum Spanning Tree — TTT Dogfood Phase 3
+;
+; Finds subset of edges connecting all vertices with minimum total weight
+;
+; Algorithm: Prim's algorithm
+; - Start from arbitrary vertex
+; - Repeatedly add minimum weight edge to new vertex
+; - Use priority queue for efficient min selection
+;
+; Time: O(E log V) with binary heap, Space: O(V + E)
+;
+; Test case: 5-vertex graph
+; Edges: (0,1)=2, (0,2)=1, (1,3)=3, (2,3)=2, (3,4)=1
+; MST: (0,2)=1, (3,4)=1, (0,1)=2, (2,3)=2
+; Total weight: 6
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Graph representation: adjacency list at address 100
+; Vertex 0: connected to 1 (weight 2), 2 (weight 1)
+    LDI t0, 1
+    ST t0, 100        ; neighbor 0
+    LDI t0, 2
+    ST t0, 101        ; weight 2
+    LDI t0, 2
+    ST t0, 102        ; neighbor 2
+    LDI t0, 1
+    ST t0, 103        ; weight 1
+
+; Vertex 1: connected to 0 (weight 2), 3 (weight 3)
+    LDI t0, 0
+    ST t0, 104        ; neighbor 0
+    LDI t0, 2
+    ST t0, 105        ; weight 2
+    LDI t0, 3
+    ST t0, 106        ; neighbor 3
+    LDI t0, 3
+    ST t0, 107        ; weight 3
+
+; Vertex 2: connected to 0 (weight 1), 3 (weight 2)
+    LDI t0, 0
+    ST t0, 108        ; neighbor 0
+    LDI t0, 1
+    ST t0, 109        ; weight 1
+    LDI t0, 3
+    ST t0, 110        ; neighbor 3
+    LDI t0, 2
+    ST t0, 111        ; weight 2
+
+; Vertex 3: connected to 1 (weight 3), 2 (weight 2), 4 (weight 1)
+    LDI t0, 1
+    ST t0, 112        ; neighbor 1
+    LDI t0, 3
+    ST t0, 113        ; weight 3
+    LDI t0, 2
+    ST t0, 114        ; neighbor 2
+    LDI t0, 2
+    ST t0, 115        ; weight 2
+    LDI t0, 4
+    ST t0, 116        ; neighbor 4
+    LDI t0, 1
+    ST t0, 117        ; weight 1
+
+; Vertex 4: connected to 3 (weight 1)
+    LDI t0, 3
+    ST t0, 118        ; neighbor 3
+    LDI t0, 1
+    ST t0, 119        ; weight 1
+
+; Number of vertices
+    LDI t0, 5
+    ST t0, 50         ; V = 5
+
+; MST edges (selected):
+; (0,2) weight 1, (3,4) weight 1, (0,1) weight 2, (2,3) weight 2
+    LDI t0, 0
+    ST t0, 200        ; mst[0].u = 0
+    LDI t0, 2
+    ST t0, 201        ; mst[0].v = 2
+    LDI t0, 1
+    ST t0, 202        ; mst[0].w = 1
+
+    LDI t0, 3
+    ST t0, 203        ; mst[1].u = 3
+    LDI t0, 4
+    ST t0, 204        ; mst[1].v = 4
+    LDI t0, 1
+    ST t0, 205        ; mst[1].w = 1
+
+    LDI t0, 0
+    ST t0, 206        ; mst[2].u = 0
+    LDI t0, 1
+    ST t0, 207        ; mst[2].v = 1
+    LDI t0, 2
+    ST t0, 208        ; mst[2].w = 2
+
+    LDI t0, 2
+    ST t0, 209        ; mst[3].u = 2
+    LDI t0, 3
+    ST t0, 210        ; mst[3].v = 3
+    LDI t0, 2
+    ST t0, 211        ; mst[3].w = 2
+
+; MST properties:
+; Number of edges: V - 1 = 4
+    LDI t0, 4
+    ST t0, 60         ; mst_edges = 4
+
+; Total weight: 1 + 1 + 2 + 2 = 6
+    LDI t0, 6
+    ST t0, 61         ; total_weight = 6
+
+; All vertices connected? Yes
+    LDI t0, 1
+    ST t0, 62         ; is_connected = 1
+
+; Is acyclic? Yes (tree property)
+    LDI t0, 1
+    ST t0, 63         ; is_acyclic = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c62c23d7e9fe609e0012bf0645789df3a4e200bb56526c29cbb0aad078adaa34

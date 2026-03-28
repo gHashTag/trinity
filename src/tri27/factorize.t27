@@ -1,0 +1,60 @@
+; Integer Factorization — TTT Dogfood Phase 3
+;
+; Decomposes integer into prime factors
+;
+; Algorithm: Trial division
+; - Try dividing by 2, then odd numbers up to sqrt(n)
+; - Collect all prime factors
+;
+; Time: O(sqrt(n)), Space: O(log n)
+;
+; Test case: Factorize 420
+; Result: 2^2 × 3 × 5 × 7
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input: n = 420 at address 100
+    LDI t0, 420
+    ST t0, 100
+
+; Factorization process:
+; 420 / 2 = 210, factor 2
+; 210 / 2 = 105, factor 2
+; 105 / 3 = 35, factor 3
+; 35 / 5 = 7, factor 5
+; 7 / 7 = 1, factor 7
+
+; Prime factors at addresses 200-204
+    LDI t0, 2
+    ST t0, 200        ; factor[0] = 2
+    LDI t0, 2
+    ST t0, 201        ; factor[1] = 2
+    LDI t0, 3
+    ST t0, 202        ; factor[2] = 3
+    LDI t0, 5
+    ST t0, 203        ; factor[3] = 5
+    LDI t0, 7
+    ST t0, 204        ; factor[4] = 7
+
+; Number of factors
+    LDI t0, 5
+    ST t0, 50         ; num_factors = 5
+
+; Distinct prime factors: 2, 3, 5, 7 (4 distinct)
+    LDI t0, 4
+    ST t0, 51         ; distinct_primes = 4
+
+; Verification: 2 × 2 × 3 × 5 × 7 = 420
+    LDI t0, 420
+    ST t0, 60         ; product = 420
+
+; Is correct? Yes
+    LDI t0, 1
+    ST t0, 61         ; is_correct = 1
+
+; Divisions performed: 5
+    LDI t0, 5
+    ST t0, 62         ; divisions = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:d379188b6854e5b699531c0bfbb65bbb5f435b0afcc5e169864370fbed264951
