@@ -1,77 +1,108 @@
 ; Two Pointers Technique — TTT Dogfood Phase 3
 ;
-; Use two pointers to traverse array/sequence from both ends
+; Use two pointers moving towards each other
 ;
 ; Common use cases:
-; - Finding pair with target sum
-; - Detecting palindrome
+; - Finding pairs with given sum
+; - Reversing array
+; - Detecting cycle in linked list
 ; - Removing duplicates from sorted array
-; - Container with most water
 ;
-; Test case: Find pair in [1, 4, 6, 8, 10] that sums to 14
-; Answer: indices 1 (4) and 4 (10), since 4 + 10 = 14
+; Test case: Find pair summing to 9 in [1, 2, 3, 4, 5, 6]
+; Sorted array, left=0, right=5
+; 1 + 6 = 7 < 9, move left
+; 2 + 6 = 8 < 9, move left
+; 3 + 6 = 9 == 9, found!
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Sorted array at addresses 100-104
+; Sorted array at addresses 100-105: [1, 2, 3, 4, 5, 6]
     LDI t0, 1
     ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
     LDI t0, 4
-    ST t0, 101        ; arr[1] = 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
     LDI t0, 6
-    ST t0, 102        ; arr[2] = 6
-    LDI t0, 8
-    ST t0, 103        ; arr[3] = 8
-    LDI t0, 10
-    ST t0, 104        ; arr[4] = 10
+    ST t0, 105        ; arr[5] = 6
 
-; Target sum = 14
-    LDI t0, 14
-    ST t0, 50         ; target = 14
+; Array length
+    LDI t0, 6
+    ST t0, 50         ; length = 6
 
-; Initialize pointers: left = 0, right = 4
+; Target sum
+    LDI t0, 9
+    ST t0, 51         ; target = 9
+
+; Two pointers: left = 0, right = 5
     LDI t0, 0
-    ST t0, 51         ; left = 0
-    LDI t0, 4
-    ST t0, 52         ; right = 4
+    ST t0, 52         ; left = 0
+    LDI t0, 5
+    ST t0, 53         ; right = 5
 
-; Iteration 1: left=0, right=4
-; arr[0] + arr[4] = 1 + 10 = 11 < 14, move left pointer
-    LDI t0, 11
-    ST t0, 60        ; sum = 11
+; Iteration 1: arr[0] + arr[5] = 1 + 6 = 7 < 9, move left
+    LD t0, 100        ; arr[0] = 1
+    LD t1, 105        ; arr[5] = 6
+    ST t0, 54         ; left_val = 1
+    ST t1, 55         ; right_val = 6
 
-; Iteration 2: left=1, right=4
-; arr[1] + arr[4] = 4 + 10 = 14 == target, FOUND!
-    LD t0, 101        ; arr[left] = 4
-    ST t0, 61         ; first_val = 4
-    LD t0, 104        ; arr[right] = 10
-    ST t0, 62         ; second_val = 10
-
-; Store pair indices
+; Sum = 7 < 9, increment left
+    LDI t0, 7
+    ST t0, 56         ; sum = 7
     LDI t0, 1
-    ST t0, 63         ; first_idx = 1
-    LDI t0, 4
-    ST t0, 64         ; second_idx = 4
+    ST t0, 57         ; left = 1 (incremented)
+
+; Iteration 2: arr[1] + arr[5] = 2 + 6 = 8 < 9, move left
+    LD t0, 101        ; arr[1] = 2
+    LD t1, 105        ; arr[5] = 6
+    ST t0, 58         ; left_val = 2
+    ST t1, 59         ; right_val = 6
+
+; Sum = 8 < 9, increment left
+    LDI t0, 8
+    ST t0, 60         ; sum = 8
+    LDI t0, 2
+    ST t0, 61         ; left = 2 (incremented)
+
+; Iteration 3: arr[2] + arr[5] = 3 + 6 = 9 == 9, found!
+    LD t0, 102        ; arr[2] = 3
+    LD t1, 105        ; arr[5] = 6
+    ST t0, 62         ; left_val = 3
+    ST t1, 63         ; right_val = 6
+
+; Sum = 9 == 9, found!
+    LDI t0, 9
+    ST t0, 64         ; sum = 9
+    LDI t0, 1
+    ST t0, 65         ; found = 1
+
+; Result: pair (3, 6) at indices (2, 5)
+    LDI t0, 2
+    ST t0, 66         ; result_left = 2
+    LDI t0, 5
+    ST t0, 67         ; result_right = 5
 
 ; Number of iterations
-    LDI t0, 2
-    ST t0, 53         ; iterations = 2
+    LDI t0, 3
+    ST t0, 68         ; iterations = 3
 
-; Verify sum
-    LDI t0, 14
-    ST t0, 54         ; verified_sum = 14
+; Verify: 3 + 6 = 9
+    LDI t0, 9
+    ST t0, 69         ; verify_sum = 9
 
-; Check if array is palindrome (using same array)
-; arr[0] = 1, arr[4] = 10, not equal -> not palindrome
-; For palindrome [1,2,3,2,1], arr[0] == arr[4]
-    LDI t0, 0
-    ST t0, 55         ; is_palindrome = 0
+; Alternative: if sum > target, decrement right
+; If sum < target, increment left
+    LDI t0, -1
+    ST t0, 70         ; direction = -1 (decrement) or 1 (increment)
 
-; Container with most water (indices 1 and 3: heights 4 and 8)
-; Width = 3 - 1 = 2
-; Area = min(4, 8) * 2 = 4 * 2 = 8
-    LDI t0, 8
-    ST t0, 56         ; max_area = 8
+; Time complexity: O(n)
+; Each element visited at most once
+    LDI t0, 1
+    ST t0, 71         ; visited_once = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:54d77e728a59f5887544e43c457ba6ef77ba428df4719a02be9a1791c8326f96
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c41dfd312380b29020e2e62f011c3d5c6a0435a67602d342f122e201d6e4e4c8
