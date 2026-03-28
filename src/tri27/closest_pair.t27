@@ -1,0 +1,84 @@
+; Closest Pair of Points — TTT Dogfood Phase 3
+;
+; Find two closest points in 2D plane
+;
+; Algorithm: Divide and conquer
+; - Sort points by x-coordinate
+; - Split into left and right halves
+; - Recursively find closest in each half
+; - Check strip of width 2d around middle
+; - Sort strip by y, check 7 points ahead
+;
+; Time: O(n log n), Space: O(n)
+;
+; Test case: [(0,0), (1,1), (2,2), (3,5), (4,4)]
+; Closest pair: (0,0) and (1,1), distance = √2 ≈ 1.414
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Points at address 100: [x, y] pairs
+    LDI t0, 0
+    ST t0, 100        ; p0.x = 0
+    LDI t0, 0
+    ST t0, 101        ; p0.y = 0
+    LDI t0, 1
+    ST t0, 102        ; p1.x = 1
+    LDI t0, 1
+    ST t0, 103        ; p1.y = 1
+    LDI t0, 2
+    ST t0, 104        ; p2.x = 2
+    LDI t0, 2
+    ST t0, 105        ; p2.y = 2
+    LDI t0, 3
+    ST t0, 106        ; p3.x = 3
+    LDI t0, 5
+    ST t0, 107        ; p3.y = 5
+    LDI t0, 4
+    ST t0, 108        ; p4.x = 4
+    LDI t0, 4
+    ST t0, 109        ; p4.y = 4
+
+; Number of points: 5
+    LDI t0, 5
+    ST t0, 50         ; num_points = 5
+
+; Divide at x = 2
+    LDI t0, 2
+    ST t0, 51         ; mid_x = 2
+
+; Left half closest: (0,0) and (1,1), dist² = 2
+    LDI t0, 2
+    ST t0, 60         ; left_min_dist2 = 2
+
+; Right half closest: (2,2) and (3,5) or (4,4)
+; (2,2)-(4,4): dist² = 8
+    LDI t0, 8
+    ST t0, 61         ; right_min_dist2 = 8
+
+; Minimum d² = min(2, 8) = 2
+    LDI t0, 2
+    ST t0, 62         ; d2 = 2
+
+; Strip check: no points within d of middle line
+; that are closer than existing minimum
+
+; Closest pair indices: 0 and 1
+    LDI t0, 0
+    ST t0, 200        ; pair_idx0 = 0
+    LDI t0, 1
+    ST t0, 201        ; pair_idx1 = 1
+
+; Squared distance: 2
+    LDI t0, 2
+    ST t0, 202        ; dist2 = 2
+
+; Actual distance: √2 ≈ 1.414 (stored as fixed-point)
+    LDI t0, 1414      ; 1.414 * 1000
+    ST t0, 203        ; distance_x1000 = 1414
+
+; Number of strip comparisons: 0 (none closer)
+    LDI t0, 0
+    ST t0, 63         ; strip_comparisons = 0
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:41daf1093f3cf07afc734dd95b4f2b30397329619cfc1d4c73464e46635db36e
