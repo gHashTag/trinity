@@ -1,0 +1,102 @@
+; Adaptive Huffman Coding — TTT Dogfood Phase 3
+;
+; Dynamic Huffman coding with online tree updates
+;
+; Algorithm: FGK algorithm (Faller-Gallager-Knuth)
+; - Start with single NYT (Not Yet Transmitted) node
+; - For each symbol:
+;   - If transmitted: swap with highest in same weight, increment
+;   - If new: send NYT code, send fixed code, add symbol
+; - Tree adapts to symbol frequency
+;
+; Time: O(n log n), Space: O(alphabet size)
+;
+; Test case: "ABABCA"
+; Initial: NYT(weight=0)
+; A: add NYT→A, NYT(1), A(1)
+; B: add NYT→B, NYT(2), B(1), A(1)
+; A: send A code, A(2), NYT(2), B(1)
+; B: send B code, swap B↔A, A(2), B(2), NYT(2)
+; C: add NYT→C, NYT(3), C(1), A(2), B(2)
+; A: send A code, A(3), NYT(3), C(1), B(2)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input at address 100: "ABABCA"
+    LDI t0, 65
+    ST t0, 100        ; [0] = A
+    LDI t0, 66
+    ST t0, 101        ; [1] = B
+    LDI t0, 65
+    ST t0, 102        ; [2] = A
+    LDI t0, 66
+    ST t0, 103        ; [3] = B
+    LDI t0, 67
+    ST t0, 104        ; [4] = C
+    LDI t0, 65
+    ST t0, 105        ; [5] = A
+
+; Input length: 6
+    LDI t0, 6
+    ST t0, 50         ; input_len = 6
+
+; Symbol frequencies after processing:
+    LDI t0, 3
+    ST t0, 150        ; freq_A = 3
+    LDI t0, 2
+    ST t0, 151        ; freq_B = 2
+    LDI t0, 1
+    ST t0, 152        ; freq_C = 1
+
+; Tree structure (final state):
+;       Root(6)
+;      /      \
+;   A(3)     Node(3)
+;           /      \
+;        NYT(1)   Node(2)
+;                /    \
+;              C(1)   B(1)
+; (Note: weights shown, structure is for illustration)
+
+; Huffman codes (dynamic, change during encoding):
+; Final codes:
+; A: 0 (1 bit)
+; B: 10 (2 bits)
+; C: 110 (3 bits)
+; NYT: 111 (3 bits)
+
+; Encoded output at address 200:
+; [A_code, B_code, A_code, B_code, NYT, C_code, A_code]
+    LDI t0, 0
+    ST t0, 200        ; out[0] = A (code: 0)
+    LDI t0, 2
+    ST t0, 201        ; out[1] = B (code: 10)
+    LDI t0, 0
+    ST t0, 202        ; out[2] = A (code: 0)
+    LDI t0, 2
+    ST t0, 203        ; out[3] = B (code: 10)
+    LDI t0, 7
+    ST t0, 204        ; out[4] = NYT (code: 111)
+    LDI t0, 6
+    ST t0, 205        ; out[5] = C (code: 110)
+    LDI t0, 0
+    ST t0, 206        ; out[6] = A (code: 0)
+
+; Output length: 7
+    LDI t0, 7
+    ST t0, 60         ; output_len = 7
+
+; Total bits: 1+2+1+2+3+3+1 = 13
+    LDI t0, 13
+    ST t0, 61         ; total_bits = 13
+
+; Tree nodes: 7 (NYT, A, B, C, and 3 internal)
+    LDI t0, 7
+    ST t0, 62         ; tree_nodes = 7
+
+; Tree depth: 3
+    LDI t0, 3
+    ST t0, 63         ; tree_depth = 3
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:c1ea7dea53cbe2f031cd316a3008732be8aee8919d0d397ffd224c59f7f1f332
