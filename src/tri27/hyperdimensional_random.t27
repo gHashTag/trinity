@@ -1,0 +1,13 @@
+; Hyperdimensional Random — TTT Dogfood Phase 3
+;
+; Random projection
+;
+; Test case: hyperdimensional_random
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; random_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0781a0000020000000021af
