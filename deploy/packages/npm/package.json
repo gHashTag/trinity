@@ -1,6 +1,6 @@
 {
   "name": "@trinity-cli/tri",
-  "version": "1.0.0",
+  "version": "5.1.0",
   "description": "Unified Trinity CLI — Chat, Code, Vision, Voice, Tools, Autonomous Agents",
   "author": "Dmitrii Vasilev (@gHashTag)",
   "license": "MIT",

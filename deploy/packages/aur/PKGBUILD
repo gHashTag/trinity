@@ -5,7 +5,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 
 pkgname=tri-cli
-pkgver=1.0.0
+pkgver=5.1.0
 pkgrel=1
 pkgdesc="Unified Trinity CLI — Chat, Code, Vision, Voice, Tools, Autonomous Agents"
 arch=('x86_64' 'aarch64')
