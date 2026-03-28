@@ -1,0 +1,102 @@
+[
+  {
+    "item_id": "tmp_confidence_calibration_0000",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "Tashkent",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 411
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0001",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "A quantum system exists in multiple states simultaneously until measured.",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 314
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0002",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "1048576",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 539
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0003",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "Tashkent",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 795
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0004",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "A quantum system exists in multiple states simultaneously until measured.",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 549
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0005",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "1048576",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 452
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0006",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "Tashkent",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 767
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0007",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "A quantum system exists in multiple states simultaneously until measured.",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 734
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0008",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "1048576",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 369
+  },
+  {
+    "item_id": "tmp_confidence_calibration_0009",
+    "track": "tmp",
+    "model": "claude-sonnet-4-20250514",
+    "response": "",
+    "ground_truth": "Tashkent",
+    "confidence": 0.5,
+    "correct": false,
+    "latency_ms": 287
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "versionNumber": 1,
+  "name": "trinity_metacognition_calibration",
+  "description": "Returns accuracy (0-1) for metacognition calibration.",
+  "definition": "@kb.task(name=\"trinity_metacognition_calibration\")\ndef metacognition_calibration(llm, question: str, answer: str) -> float:\n    \"\"\"Returns accuracy (0-1) for metacognition calibration.\"\"\"\n    response = llm.prompt(question)\n    is_correct = answer.lower() in response.lower()\n    kb.assertions.assert_true(is_correct, f\"Should contain: {answer}\")\n    return 1.0 if is_correct else 0.0\n"
+}

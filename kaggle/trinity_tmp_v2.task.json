@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "trinity_tmp_v2",
+  "definition": "@kb.task(name=\"trinity_tmp_v2\")\ndef tmp_task(llm, question: str, answer: str) -> float:\n    response = llm.prompt(question)\n    return 1.0 if answer.lower() in response.lower() else 0.0\n"
+}

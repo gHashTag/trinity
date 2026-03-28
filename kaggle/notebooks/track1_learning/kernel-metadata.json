@@ -1,0 +1,18 @@
+{
+  "id": "playra/trinity-thlp-learning-task05-long-context",
+  "title": "Trinity THLP Learning Benchmark: Task05 Long Context",
+  "code_file": "task05_long_context.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "false",
+  "enable_gpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "playra/trinity-cognitive-probes-thlp"
+  ],
+  "competition_sources": [
+    "kaggle-measuring-agi"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}
