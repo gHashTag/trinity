@@ -49,11 +49,11 @@
 ; h[0]=0, h[1]=-1, h[2]=-2, h[3]=-4 (assuming)
     LDI t0, 0
     ST t0, 200        ; h[0] = 0
-    LDI t0, 65535     ; -1
+    LDI t0, -1     ; -1
     ST t0, 201        ; h[1] = -1
-    LDI t0, 65534     ; -2
+    LDI t0, -2     ; -2
     ST t0, 202        ; h[2] = -2
-    LDI t0, 65532     ; -4
+    LDI t0, -4     ; -4
     ST t0, 203        ; h[3] = -4
 
 ; Reweighted edges (all non-negative):
@@ -74,7 +74,7 @@
     ST t0, 303        ; dist[0][3] = 10
 
 ; Row 1: [INF, 0, 3, 8]
-    LDI t0, 65535     ; INF
+    LDI t0, -1     ; INF
     ST t0, 310        ; dist[1][0] = INF
     LDI t0, 0
     ST t0, 311        ; dist[1][1] = 0
@@ -84,21 +84,21 @@
     ST t0, 313        ; dist[1][3] = 8
 
 ; Row 2: [INF, INF, 0, INF]
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 320        ; dist[2][0] = INF
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 321        ; dist[2][1] = INF
     LDI t0, 0
     ST t0, 322        ; dist[2][2] = 0
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 323        ; dist[2][3] = INF
 
 ; Row 3: [INF, INF, INF, 0]
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 330        ; dist[3][0] = INF
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 331        ; dist[3][1] = INF
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 332        ; dist[3][2] = INF
     LDI t0, 0
     ST t0, 333        ; dist[3][3] = 0

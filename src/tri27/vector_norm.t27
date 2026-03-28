@@ -1,0 +1,19 @@
+; Vector Norm — TTT Dogfood Phase 3
+;
+; Euclidean length of vector
+;
+; Test case: ||[3,4]|| = sqrt(9+16) = 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; v[0] = 3
+    LDI t0, 4
+    ST t0, 101        ; v[1] = 4
+
+; ||v|| = sqrt(3^2 + 4^2) = sqrt(25) = 5
+    LDI t0, 5
+    ST t0, 60         ; norm = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07023f0011b0

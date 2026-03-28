@@ -52,13 +52,13 @@
     ST t0, 210        ; node1.value = 3
     LDI t0, 3
     ST t0, 211        ; node1.left = 3
-    LDI t0, 65535     ; -1 (null)
+    LDI t0, -1     ; -1 (null)
     ST t0, 212        ; node1.right = null
 
 ; Node 2 (value=7):
     LDI t0, 7
     ST t0, 220        ; node2.value = 7
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 221        ; node2.left = null
     LDI t0, 4
     ST t0, 222        ; node2.right = 4
@@ -66,17 +66,17 @@
 ; Node 3 (value=1): leaf
     LDI t0, 1
     ST t0, 230        ; node3.value = 1
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 231        ; node3.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 232        ; node3.right = null
 
 ; Node 4 (value=9): leaf
     LDI t0, 9
     ST t0, 240        ; node4.value = 9
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 241        ; node4.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 242        ; node4.right = null
 
 ; Splay operation for value 7:

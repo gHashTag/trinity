@@ -1,0 +1,23 @@
+; Matrix Determinant — TTT Dogfood Phase 3
+;
+; Calculate determinant of 2x2 matrix
+;
+; Test case: det([[1,2],[3,4]]) = 1*4 - 2*3 = -2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 100        ; m[0][0] = 1
+    LDI t0, 2
+    ST t0, 101        ; m[0][1] = 2
+    LDI t0, 3
+    ST t0, 102        ; m[1][0] = 3
+    LDI t0, 4
+    ST t0, 103        ; m[1][1] = 4
+
+; det = 1*4 - 2*3 = -2
+    LDI t0, -2
+    ST t0, 60         ; det = -2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0722410011b2

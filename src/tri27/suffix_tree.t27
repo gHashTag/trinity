@@ -42,7 +42,7 @@
 ; Root node
     LDI t0, 1
     ST t0, 200        ; root.first_child = 1 (B edge)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 201        ; root.next_sibling = null
     LDI t0, 0
     ST t0, 202        ; root.edge_start = 0
@@ -50,7 +50,7 @@
     ST t0, 203        ; root.edge_len = 0
 
 ; Node 1: edge "BANANA$" (suffix starting at 0)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 210        ; node1.first_child = null (leaf)
     LDI t0, 2
     ST t0, 211        ; node1.next_sibling = 2 (A edge)
@@ -70,7 +70,7 @@
     ST t0, 223        ; node2.edge_len = 1
 
 ; Node 3: edge "NANA$" (suffix "ANANA$"-A)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 230        ; node3.first_child = null (leaf)
     LDI t0, 4
     ST t0, 231        ; node3.next_sibling = 4
@@ -80,9 +80,9 @@
     ST t0, 233        ; node3.edge_len = 5
 
 ; Node 4: edge "$" (suffix "A$")
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 240        ; node4.first_child = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 241        ; node4.next_sibling = null
     LDI t0, 106
     ST t0, 242        ; node4.edge_start = 106
@@ -90,7 +90,7 @@
     ST t0, 243        ; node4.edge_len = 1
 
 ; Node 5: edge "ANA$" (suffix "NANA$")
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 250        ; node5.first_child = null (leaf)
     LDI t0, 6
     ST t0, 251        ; node5.next_sibling = 6 (edge "$")
@@ -100,9 +100,9 @@
     ST t0, 253        ; node5.edge_len = 5
 
 ; Node 6: edge "$" (suffix "$")
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 260        ; node6.first_child = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 261        ; node6.next_sibling = null
     LDI t0, 106
     ST t0, 262        ; node6.edge_start = 106

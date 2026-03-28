@@ -80,9 +80,9 @@
 ; Node 4 v0 (index 2, value = 3)
     LDI t0, 3
     ST t0, 240        ; node4.value = 3
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 241        ; node4.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 242        ; node4.right = null
     LDI t0, 0
     ST t0, 243        ; node4.version = 0
@@ -90,9 +90,9 @@
 ; Node 5 v0 (index 3, value = 4)
     LDI t0, 4
     ST t0, 250        ; node5.value = 4
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 251        ; node5.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 252        ; node5.right = null
     LDI t0, 0
     ST t0, 253        ; node5.version = 0
@@ -100,9 +100,9 @@
 ; Node 6 v0 (index 4, value = 5)
     LDI t0, 5
     ST t0, 260        ; node6.value = 5
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 261        ; node6.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 262        ; node6.right = null
     LDI t0, 0
     ST t0, 263        ; node6.version = 0
@@ -110,9 +110,9 @@
 ; Node 7 v0 (index 0, value = 1)
     LDI t0, 1
     ST t0, 270        ; node7.value = 1
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 271        ; node7.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 272        ; node7.right = null
     LDI t0, 0
     ST t0, 273        ; node7.version = 0
@@ -120,9 +120,9 @@
 ; Node 8 v0 (index 1, value = 2)
     LDI t0, 2
     ST t0, 280        ; node8.value = 2
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 281        ; node8.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 282        ; node8.right = null
     LDI t0, 0
     ST t0, 283        ; node8.version = 0
@@ -154,9 +154,9 @@
 ; Node 10 v1 (index 2, value = 10)
     LDI t0, 10
     ST t0, 320        ; node10.value = 10
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 321        ; node10.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 322        ; node10.right = null
     LDI t0, 1
     ST t0, 323        ; node10.version = 1

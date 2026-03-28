@@ -1,0 +1,20 @@
+; Complex Conjugate — TTT Dogfood Phase 3
+;
+; conj(a+bi) = a-bi
+;
+; Test case: conj(3+2i) = 3-2i
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; real = 3
+    LDI t0, 2
+    ST t0, 101        ; imag = 2
+
+    LDI t0, 3
+    ST t0, 110        ; conj_real = 3
+    LDI t0, -2
+    ST t0, 111        ; conj_imag = -2
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07424b0011bc

@@ -47,7 +47,7 @@
     ST t0, 202        ; root.left = node 1 (value=2)
     LDI t0, 2
     ST t0, 203        ; root.right = node 2 (value=4)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 204        ; root.parent = null
 
 ; Node 1 (value=2, index=1) - left subtree of root
@@ -57,7 +57,7 @@
     ST t0, 211        ; node1.index = 1
     LDI t0, 3
     ST t0, 212        ; node1.left = node 3 (value=3)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 213        ; node1.right = null
     LDI t0, 0
     ST t0, 214        ; node1.parent = root (index 0)
@@ -67,7 +67,7 @@
     ST t0, 220        ; node2.value = 4
     LDI t0, 5
     ST t0, 221        ; node2.index = 5
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 222        ; node2.left = null
     LDI t0, 4
     ST t0, 223        ; node2.right = node 4 (value=9)
@@ -79,9 +79,9 @@
     ST t0, 230        ; node3.value = 3
     LDI t0, 0
     ST t0, 231        ; node3.index = 0
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 232        ; node3.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 233        ; node3.right = null
     LDI t0, 1
     ST t0, 234        ; node3.parent = node 1
@@ -93,7 +93,7 @@
     ST t0, 241        ; node4.index = 4
     LDI t0, 5
     ST t0, 242        ; node4.left = node 5 (value=6)
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 243        ; node4.right = null
     LDI t0, 2
     ST t0, 244        ; node4.parent = node 2
@@ -103,9 +103,9 @@
     ST t0, 250        ; node5.value = 6
     LDI t0, 2
     ST t0, 251        ; node5.index = 2
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 252        ; node5.left = null
-    LDI t0, 65535
+    LDI t0, -1
     ST t0, 253        ; node5.right = null
     LDI t0, 4
     ST t0, 254        ; node5.parent = node 4
