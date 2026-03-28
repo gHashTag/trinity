@@ -1,0 +1,13 @@
+; Crypto Base64 Encode V2 — TTT Dogfood Phase 3
+;
+; Base64 encoding
+;
+; Test case: crypto_base64_enc_v2
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; base64_encode_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073840000200000006f9

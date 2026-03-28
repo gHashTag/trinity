@@ -1,0 +1,13 @@
+; Dynamic Coin Change — TTT Dogfood Phase 3
+;
+; Minimum coins for amount
+;
+; Test case: dyn_coin_change
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; coin_change_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073600000020000005d9

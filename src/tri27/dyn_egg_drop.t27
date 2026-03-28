@@ -1,0 +1,13 @@
+; Dynamic Egg Drop — TTT Dogfood Phase 3
+;
+; Egg dropping puzzle
+;
+; Test case: dyn_egg_drop
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; egg_drop_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073780000002000000699

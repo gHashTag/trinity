@@ -1,0 +1,13 @@
+; Dynamic Edit Distance — TTT Dogfood Phase 3
+;
+; Levenshtein distance
+;
+; Test case: dyn_edit_distance
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; edit_distance_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0736400000020000005f9

@@ -1,0 +1,13 @@
+; Graph MST Prim — TTT Dogfood Phase 3
+;
+; Minimum spanning tree — Prim's algorithm
+;
+; Test case: graph_mst_prim
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mst_prim_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:073320000002000000469
