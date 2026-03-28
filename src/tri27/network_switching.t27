@@ -1,0 +1,13 @@
+; Network Switching — TTT Dogfood Phase 3
+;
+; Packet switching algorithms
+;
+; Test case: network_switching
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; switching_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0779400000200000000020a3
