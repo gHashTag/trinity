@@ -1,6 +1,6 @@
 ; Deflate V2 — TTT Dogfood Phase 3
 ;
-| LZ77 + Huffman alt
+; LZ77 + Huffman alt
 ;
 ; Test case: deflate_2
 ;

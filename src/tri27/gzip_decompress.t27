@@ -1,6 +1,6 @@
 ; GZIP Decompress — TTT Dogfood Phase 3
 ;
-| RFC 1952 inverse
+; RFC 1952 inverse
 ;
 ; Test case: gzip_decompress
 ;

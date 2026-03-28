@@ -1,6 +1,6 @@
 ; String Substring — TTT Dogfood Phase 3
 ;
-| Extract slice
+; Extract slice
 ;
 ; Test case: str_substring
 ;

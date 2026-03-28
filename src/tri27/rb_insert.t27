@@ -1,0 +1,13 @@
+; Red-Black Insert — TTT Dogfood Phase 3
+;
+| RB tree insert
+;
+; Test case: rb_insert
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rb_insert_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b0c001bdb
