@@ -1,6 +1,6 @@
 ; RSA Sign — TTT Dogfood Phase 3
 ;
-| Digital signature
+; Digital signature
 ;
 ; Test case: rsa_sign
 ;

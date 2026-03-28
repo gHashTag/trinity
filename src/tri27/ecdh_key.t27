@@ -1,6 +1,6 @@
 ; ECDH Key Exchange — TTT Dogfood Phase 3
 ;
-| Elliptic curve DH
+; Elliptic curve DH
 ;
 ; Test case: ecdh_key
 ;
