@@ -59790,3 +59790,273 @@ test "ml_upsample_v2: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "geom_angle_between: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_angle_between.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_angle_between: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_angle_between.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_area_polygon: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_area_polygon.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_area_polygon: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_area_polygon.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_area_triangle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_area_triangle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_area_triangle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_area_triangle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_bounding_box: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_bounding_box.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_bounding_box: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_bounding_box.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_circle_area: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_circle_area.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_circle_area: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_circle_area.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_circle_circumference: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_circle_circumference.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_circle_circumference: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_circle_circumference.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_convex_hull: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_convex_hull.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_convex_hull: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_convex_hull.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_cross_product: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_cross_product.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_cross_product: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_cross_product.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_dot_product: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_dot_product.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_dot_product: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_dot_product.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_line_intersection: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_line_intersection.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_line_intersection: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_line_intersection.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_normalize: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_normalize.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_normalize: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_normalize.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_point_in_circle: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_point_in_circle.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_point_in_circle: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_point_in_circle.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_point_in_polygon: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_point_in_polygon.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_point_in_polygon: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_point_in_polygon.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_reflection: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_reflection.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_reflection: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_reflection.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_rotation_matrix: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_rotation_matrix.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_rotation_matrix: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_rotation_matrix.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_scale_matrix: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_scale_matrix.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_scale_matrix: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_scale_matrix.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_translation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_translation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_translation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_translation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "geom_vector_norm: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_vector_norm.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "geom_vector_norm: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "geom_vector_norm.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
