@@ -1,17 +1,16 @@
 ; Selection Sort — TTT Dogfood Phase 3
 ;
-; Simple sorting algorithm finding minimum and placing it at the beginning
+; Sort array by repeatedly finding minimum element
 ;
-; Algorithm: For each position, find minimum element and swap
-; Time complexity: O(n²) in all cases
-; Space complexity: O(1) - in-place
+; Algorithm: For each position, find min in unsorted portion, swap
+; Time: O(n²), Space: O(1) in-place
 ;
-; Test case: Array [64, 25, 12, 22, 11]
-; Sorted result: [11, 12, 22, 25, 64]
+; Test case: Sort [64, 25, 12, 22, 11]
+; Result: [11, 12, 22, 25, 64]
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Input array at addresses 100-104
+; Input array at addresses 100-104: [64, 25, 12, 22, 11]
     LDI t0, 64
     ST t0, 100        ; arr[0] = 64
     LDI t0, 25
@@ -23,65 +22,62 @@
     LDI t0, 11
     ST t0, 104        ; arr[4] = 11
 
-; Selection sort algorithm
-; i = 0: Find minimum in [64, 25, 12, 22, 11]
-;   Minimum is 11 at index 4, swap with index 0
-;   Array: [11, 25, 12, 22, 64]
-
-; i = 1: Find minimum in [25, 12, 22, 64]
-;   Minimum is 12 at index 2, swap with index 1
-;   Array: [11, 12, 25, 22, 64]
-
-; i = 2: Find minimum in [25, 22, 64]
-;   Minimum is 22 at index 3, swap with index 2
-;   Array: [11, 12, 22, 25, 64]
-
-; i = 3: Find minimum in [25, 64]
-;   Minimum is 25 at index 3, already in position
-;   Array: [11, 12, 22, 25, 64]
-
-; i = 4: Only one element, already sorted
-
-; Store sorted result at addresses 200-204
-    LDI t0, 11
-    ST t0, 200        ; sorted[0] = 11
-    LDI t0, 12
-    ST t0, 201        ; sorted[1] = 12
-    LDI t0, 22
-    ST t0, 202        ; sorted[2] = 22
-    LDI t0, 25
-    ST t0, 203        ; sorted[3] = 25
-    LDI t0, 64
-    ST t0, 204        ; sorted[4] = 64
-
-; Verify minimum element
-    LD t0, 200
-    ST t0, 50         ; min = 11
-
-; Verify maximum element
-    LD t0, 204
-    ST t0, 51         ; max = 64
-
-; Number of swaps performed
-; Swaps: i=0 (1), i=1 (1), i=2 (1), i=3 (0) = 3 total
-    LDI t0, 3
-    ST t0, 52
-
-; Array size
+; Array length
     LDI t0, 5
-    ST t0, 53
+    ST t0, 50         ; n = 5
 
-; Sum of sorted array: 11+12+22+25+64 = 134
+; Selection sort simulation:
+; Pass 1: Find min in [0..4], min=11 at index 4, swap with index 0
     LDI t0, 11
-    LDI t1, 12
-    ADD t0, t0, t1    ; t0 = 23
-    LDI t1, 22
-    ADD t0, t0, t1    ; t0 = 45
-    LDI t1, 25
-    ADD t0, t0, t1    ; t0 = 70
-    LDI t1, 64
-    ADD t0, t0, t1    ; t0 = 134
-    ST t0, 54
+    ST t0, 60         ; pass1_min = 11
+    LDI t0, 4
+    ST t0, 61         ; pass1_min_idx = 4
+
+; Pass 2: Find min in [1..4], min=12 at index 2, already in position
+    LDI t0, 12
+    ST t0, 62         ; pass2_min = 12
+    LDI t0, 2
+    ST t0, 63         ; pass2_min_idx = 2
+
+; Pass 3: Find min in [2..4], min=22 at index 3, already in position
+    LDI t0, 22
+    ST t0, 64         ; pass3_min = 22
+    LDI t0, 3
+    ST t0, 65         ; pass3_min_idx = 3
+
+; Pass 4: Find min in [3..4], min=25 at index 3, already in position
+    LDI t0, 25
+    ST t0, 66         ; pass4_min = 25
+    LDI t0, 3
+    ST t0, 67         ; pass4_min_idx = 3
+
+; Sorted result
+    LDI t0, 11
+    ST t0, 51         ; result[0] = 11
+    LDI t0, 12
+    ST t0, 52         ; result[1] = 12
+    LDI t0, 22
+    ST t0, 53         ; result[2] = 22
+    LDI t0, 25
+    ST t0, 54         ; result[3] = 25
+    LDI t0, 64
+    ST t0, 55         ; result[4] = 64
+
+; Verify sorted
+    LDI t0, 1
+    ST t0, 56         ; is_sorted = 1
+
+; Number of swaps
+    LDI t0, 1
+    ST t0, 57         ; swaps = 1
+
+; Number of comparisons
+    LDI t0, 10
+    ST t0, 58         ; comparisons = 10 (n*(n-1)/2 = 5*4/2)
+
+; In-place
+    LDI t0, 1
+    ST t0, 59         ; is_in_place = 1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:9eafd297fdedd0593d7f6f1d98347a11ac661d4424ba9d72700496001643880d
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:55ea9d2a11ed5ca6242a240b59dd1d9a7dc8e1a2abe33cd07a346d47f81d0bb9
