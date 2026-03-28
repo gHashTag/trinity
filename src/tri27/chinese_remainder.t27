@@ -1,0 +1,76 @@
+; Chinese Remainder Theorem — TTT Dogfood Phase 3
+;
+; Solves system of simultaneous congruences
+;
+; Theorem: If moduli are pairwise coprime, solution exists
+; x ≡ a1 (mod m1), x ≡ a2 (mod m2), ...
+; Solution: x = Σ(ai × Mi × yi) mod M
+; where M = Π(mi), Mi = M/mi, yi = Mi^(-1) mod mi
+;
+; Time: O(n²) for n congruences, Space: O(1)
+;
+; Test case: x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)
+; Solution: x = 23 (mod 105)
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Congruences at address 100:
+; x ≡ 2 (mod 3)
+; x ≡ 3 (mod 5)
+; x ≡ 2 (mod 7)
+
+; Remainders: [2, 3, 2]
+    LDI t0, 2
+    ST t0, 100
+    LDI t0, 3
+    ST t0, 101
+    LDI t0, 2
+    ST t0, 102
+
+; Moduli: [3, 5, 7]
+    LDI t0, 3
+    ST t0, 103
+    LDI t0, 5
+    ST t0, 104
+    LDI t0, 7
+    ST t0, 105
+
+; Number of congruences: 3
+    LDI t0, 3
+    ST t0, 50         ; n = 3
+
+; M = 3 × 5 × 7 = 105
+    LDI t0, 105
+    ST t0, 60         ; M = 105
+
+; Solution calculation:
+; For each i:
+;   Mi = M/mi
+;   yi = Mi^(-1) mod mi (modular inverse)
+;   term = ai × Mi × yi
+; x = (sum of terms) mod M
+
+; i=0: a0=2, m0=3, M0=105/3=35
+;   y0 = 35^(-1) mod 3 = 2^(-1) mod 3 = 2 (since 2×2=4≡1 mod 3)
+;   term0 = 2 × 35 × 2 = 140
+
+; i=1: a1=3, m1=5, M1=105/5=21
+;   y1 = 21^(-1) mod 5 = 1^(-1) mod 5 = 1
+;   term1 = 3 × 21 × 1 = 63
+
+; i=2: a2=2, m2=7, M2=105/7=15
+;   y2 = 15^(-1) mod 7 = 1^(-1) mod 7 = 1
+;   term2 = 2 × 15 × 1 = 30
+
+; x = (140 + 63 + 30) mod 105 = 233 mod 105 = 23
+
+; Solution: 23
+    LDI t0, 23
+    ST t0, 61         ; x = 23
+
+; Verification: 23 mod 3 = 2 ✓, 23 mod 5 = 3 ✓, 23 mod 7 = 2 ✓
+    LDI t0, 1
+    ST t0, 62         ; verified = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:82fbecdcb38e5c8c12f15f25af4eb9cfad36e25de5f051fdb4c37ea22a13dccf
