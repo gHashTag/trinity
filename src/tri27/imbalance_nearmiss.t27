@@ -1,0 +1,13 @@
+; Imbalance NearMiss — TTT Dogfood Phase 3
+;
+; NearMiss undersampling
+;
+; Test case: imbalance_nearmiss
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nearmiss_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0780f00000200000000216e

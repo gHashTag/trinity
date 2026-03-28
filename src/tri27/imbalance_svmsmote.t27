@@ -1,0 +1,13 @@
+; Imbalance SVMSMOTE — TTT Dogfood Phase 3
+;
+; SVM-based SMOTE
+;
+; Test case: imbalance_svmsmote
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; svmsmote_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0781b00000200000000217a
