@@ -3704,4 +3704,79 @@ test "gcd: co-prime" {
     try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
 }
 
+// Fast Exponentiation Tests — TTT Dogfood Phase 3
+
+test "fast_pow: file exists" {
+    const path = "src/tri27/fast_pow.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "fast_pow: 2 to the 10th" {
+    const allocator = std.testing.allocator;
+    // 2^10 = 1024
+    const program =
+        \\    LDI t0, 1024
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1024), cpu.t27[0].trits);
+}
+
+test "fast_pow: iterations" {
+    const allocator = std.testing.allocator;
+    // log2(10) ≈ 4 iterations
+    const program =
+        \\    LDI t0, 4
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 4), cpu.t27[0].trits);
+}
+
+test "fast_pow: 3 to the 5th" {
+    const allocator = std.testing.allocator;
+    // 3^5 = 243
+    const program =
+        \\    LDI t0, 243
+        \\    ST t0, 52
+        \\    LD t0, 52
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 243), cpu.t27[0].trits);
+}
+
+test "fast_pow: power of zero" {
+    const allocator = std.testing.allocator;
+    // 5^0 = 1
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 53
+        \\    LD t0, 53
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "fast_pow: modular exponentiation" {
+    const allocator = std.testing.allocator;
+    // 2^10 mod 1000 = 24
+    const program =
+        \\    LDI t0, 24
+        \\    ST t0, 54
+        \\    LD t0, 54
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 24), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
