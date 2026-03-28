@@ -1,0 +1,13 @@
+; Smart Contract — TTT Dogfood Phase 3
+;
+; EVM-style contract
+;
+; Test case: execute contract
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; executed = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713bc001332

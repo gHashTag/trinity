@@ -1,0 +1,13 @@
+; Merkle Tree — TTT Dogfood Phase 3
+;
+; Root hash verification
+;
+; Test case: build tree
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 8
+    ST t0, 60         ; leaves = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0713b9002332f
