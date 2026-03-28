@@ -1,6 +1,6 @@
 ; Canny Edge — TTT Dogfood Phase 3
 ;
-| Optimal edge detection
+; Optimal edge detection
 ;
 ; Test case: canny_edge
 ;

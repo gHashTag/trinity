@@ -1,6 +1,6 @@
 ; Contour Detection — TTT Dogfood Phase 3
 ;
-| Boundary finding
+; Boundary finding
 ;
 ; Test case: contour_detect
 ;

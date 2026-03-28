@@ -1,6 +1,6 @@
 ; Morphology Close V2 — TTT Dogfood Phase 3
 ;
-| Dilate then erode alt
+; Dilate then erode alt
 ;
 ; Test case: morphology_close2
 ;

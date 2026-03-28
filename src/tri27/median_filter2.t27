@@ -1,6 +1,6 @@
 ; Median Filter V2 — TTT Dogfood Phase 3
 ;
-| Noise reduction alt
+; Noise reduction alt
 ;
 ; Test case: median_filter2
 ;

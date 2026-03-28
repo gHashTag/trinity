@@ -1,6 +1,6 @@
 ; Morphology Erode V2 — TTT Dogfood Phase 3
 ;
-| Shrink regions alt
+; Shrink regions alt
 ;
 ; Test case: morphology_erode2
 ;

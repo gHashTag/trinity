@@ -1,6 +1,6 @@
 ; Morphology Open V2 — TTT Dogfood Phase 3
 ;
-| Erode then dilate alt
+; Erode then dilate alt
 ;
 ; Test case: morphology_open2
 ;

@@ -1,6 +1,6 @@
 ; Hough Transform V2 — TTT Dogfood Phase 3
 ;
-| Line detection alt
+; Line detection alt
 ;
 ; Test case: hough_transform2
 ;
