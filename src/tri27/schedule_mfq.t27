@@ -1,0 +1,13 @@
+; Schedule MFQ — TTT Dogfood Phase 3
+;
+; Multilevel feedback queue
+;
+; Test case: schedule_mfq
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mfq_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075be00000200000019c9

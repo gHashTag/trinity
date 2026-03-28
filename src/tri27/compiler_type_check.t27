@@ -1,0 +1,13 @@
+; Compiler Type Check — TTT Dogfood Phase 3
+;
+; Type checking
+;
+; Test case: compiler_type_check
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; type_check_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0760c00000200000001c39

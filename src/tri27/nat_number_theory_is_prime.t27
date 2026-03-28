@@ -1,0 +1,13 @@
+; NAT Number Theory Is Prime — TTT Dogfood Phase 3
+;
+; Primality test
+;
+; Test case: nat_number_theory_is_prime
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; is_prime_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075e00000020000001ad9

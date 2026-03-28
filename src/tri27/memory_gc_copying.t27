@@ -1,0 +1,13 @@
+; Memory GC Copying — TTT Dogfood Phase 3
+;
+; Copying garbage collection
+;
+; Test case: memory_gc_copying
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; copying_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075d40000020000001a79

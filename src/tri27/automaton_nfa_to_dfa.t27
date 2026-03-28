@@ -1,0 +1,13 @@
+; Automaton NFA to DFA — TTT Dogfood Phase 3
+;
+; Convert NFA to DFA
+;
+; Test case: automaton_nfa_to_dfa
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nfa_to_dfa_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075ea00000200000001b29

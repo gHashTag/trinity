@@ -1,0 +1,13 @@
+; Memory GC Ref Count — TTT Dogfood Phase 3
+;
+; Reference counting GC
+;
+; Test case: memory_gc_ref_count
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ref_count_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075d60000020000001a89

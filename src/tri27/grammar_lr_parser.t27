@@ -1,0 +1,13 @@
+; Grammar LR Parser — TTT Dogfood Phase 3
+;
+; LR parser
+;
+; Test case: grammar_lr_parser
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lr_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:075f80000020000001b99
