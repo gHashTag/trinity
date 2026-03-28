@@ -202,7 +202,7 @@ pub const CLARA_BUNDLES = &[_]BundleAlias{
     .{ .alias = "E", .bundle_id = "B005", .doi = "10.5281/zenodo.19227873" }, // Tri Language
     .{ .alias = "F", .bundle_id = "B006", .doi = "10.5281/zenodo.19227875" }, // GF16
     .{ .alias = "G", .bundle_id = "B007", .doi = "10.5281/zenodo.19227877" }, // VSA
-    .{ .alias = "H", .bundle_id = "B008", .doi = "pending" },               // CLARA (this)
+    .{ .alias = "H", .bundle_id = "B008", .doi = "pending" }, // CLARA (this)
     .{ .alias = "PARENT", .bundle_id = "PARENT", .doi = "10.5281/zenodo.19227879" },
 };
 

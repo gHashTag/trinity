@@ -194,24 +194,24 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
                 if (hb.fixes > 0) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\x92\xd1\x8b\xd0\xbb\xd0\xb5\xd1\x87\xd0\xb8\xd0\xbb {d}. Build{s} Test{s}", .{
                         hb.wake, hb.fixes, build_s, test_s,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI heals.";
                 } else if (hb.errors > 0) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba. \xd0\x9f\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbc\xd0\xb0\xd1\x82\xd1\x87\xd0\xb0\xd1\x82.", .{
                         hb.wake, hb.errors,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI heals.";
                 } else if (!hb.test_ok) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. Build{s}", .{
                         hb.wake, build_s,
-                    }) catch "TRI: тесты падают.";
+                    }) catch "TRI: tests failing.";
                 } else if (hb.age_s > 3600) {
                     const hours = @divTrunc(hb.age_s, 3600);
                     break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\xa1\xd0\xbf\xd0\xb0\xd0\xbb {d}\xd1\x87. Build{s} Test{s}", .{
                         snapshot.mu_patterns, hours, build_s, test_s,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI heals.";
                 } else {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. Build{s} Test{s}", .{
                         hb.wake, build_s, test_s,
-                    }) catch "TRI: чисто.";
+                    }) catch "TRI: clean.";
                 }
             }
             break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\x9b\xd0\xb5\xd1\x87\xd1\x83 \xd0\xbf\xd0\xb0\xd0\xb9\xd0\xbf\xd0\xbb\xd0\xb0\xd0\xb9\xd0\xbd.", .{

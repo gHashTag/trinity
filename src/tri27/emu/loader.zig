@@ -90,10 +90,10 @@ pub fn load(cpu: *cpu_state.CPUState, code: []const u8, constants: []const f64) 
                 if (offset + size > code.len) return LoadError.Truncated;
                 if (offset + size > cpu.memory_len) return LoadError.DataTooLarge;
 
-                // Copy code to CPU memory
+                // Copy code to CPU memory starting at word 3 (skip 12-byte header)
                 const code_data = code[offset .. offset + size];
                 // Pack 4 bytes per word (little-endian)
-                var word_idx: usize = 0; // Start at beginning of memory
+                var word_idx: usize = 3; // Start at word 3 (PC=3)
                 var i: usize = 0;
                 while (i + 4 <= size) : (i += 4) {
                     const b0 = code_data[i];

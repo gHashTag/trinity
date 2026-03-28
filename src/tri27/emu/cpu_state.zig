@@ -132,7 +132,7 @@ pub const CPUState = struct {
             .t27 = undefined,
             .f = [_]u16{0} ** 8,
             .v = undefined, // Zero initialize array
-            .pc = 0,
+            .pc = 3, // Skip 10-byte header (aligns to byte 12, first instruction)
             .sp = 0,
             .fp = 0,
             .flags = Flags{},
@@ -153,7 +153,7 @@ pub const CPUState = struct {
 
     /// Reset execution state (keeps memory, resets pc/sp/fp/flags)
     pub fn resetExecution(self: *Self) void {
-        self.pc = 0;
+        self.pc = 3; // Skip 10-byte header (aligns to byte 12, first instruction)
         self.sp = 0;
         self.fp = 0;
         self.flags = Flags{};

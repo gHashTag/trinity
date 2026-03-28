@@ -567,8 +567,8 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
     // Startup notification
     if (!config.dry_run) {
         var buf: [512]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Queen v4 \xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x89\xd0\xb5\xd0\xbd\xd0\xb0\n\n" ++ // запущена
-            qt.E_TIMER ++ " \xd0\x98\xd0\xbd\xd1\x82\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb0\xd0\xbb: {d} \xd0\xbc\xd0\xb8\xd0\xbd\n" ++ // Интервал: N мин
+        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Queen v4 launched\n\n" ++
+            qt.E_TIMER ++ " Interval: {d} min\n" ++
             qt.E_BOLT ++ " Auto: {s} | L{d}\n" ++
             qt.E_GEAR ++ " 12 hard bans | 29 actions\n" ++
             qt.E_CYCLE ++ " 18 senses | 12 rules | /queen", .{
@@ -988,7 +988,7 @@ pub fn runSupervisorMode(allocator: Allocator) !void {
     // Initial notification
     if (tg.enabled) {
         var buf: [256]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Supervisor \xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x89\xd0\xb5\xd0\xbd\n\n" ++ // запущен
+        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Supervisor started\n\n" ++
             qt.E_BRAIN ++ " 5 PFC cells\n" ++
             qt.E_DNA ++ " Cerebellum coordinator\n" ++
             qt.E_CYCLE ++ " PMC + M1 motor hierarchy\n" ++
@@ -1349,7 +1349,7 @@ fn saveSupervisorState(cycle: u32, pfc_health: anytype, analysis: HealthAnalysis
 }
 
 fn runOneCycle(allocator: Allocator, config: QueenConfig) !void {
-    print("\n{s}" ++ qt.E_CROWN ++ " QUEEN v2 — \xd0\x9e\xd0\xb4\xd0\xb8\xd0\xbd \xd1\x86\xd0\xb8\xd0\xba\xd0\xbb{s}\n\n", .{ GOLDEN, RESET }); // Один цикл
+    print("\n{s}" ++ qt.E_CROWN ++ " QUEEN v2 — Single cycle{s}\n\n", .{ GOLDEN, RESET }); // One cycle
 
     const snapshot = try faculty_board.collectSnapshot(allocator);
     const senses = queen_senses.collectAllSenses(allocator, snapshot);
@@ -1402,7 +1402,7 @@ fn detectAlerts(state: *QueenState, snap: FacultySnapshot, evo: EvolutionInfo, a
 
     // Build broken (was OK, now broken)
     if (state.prev_build_ok and !snap.build_ok) {
-        addAlert(alerts, count, .build_broken, "zig build \xd1\x83\xd0\xbf\xd0\xb0\xd0\xbb"); // zig build упал
+        addAlert(alerts, count, .build_broken, "zig build failed"); // zig build упал
     }
 
     // New PPL record
@@ -1517,10 +1517,10 @@ fn fmtDaily(buf: []u8, snap: FacultySnapshot, evo: EvolutionInfo, arena: ArenaIn
     return std.fmt.bufPrint(buf, qt.E_CROWN ++ " Queen v2 Daily\n" ++
         "\n" ++
         qt.E_DNA ++ " SEVO\n" ++
-        "   \xd0\x9b\xd0\xb8\xd0\xb4\xd0\xb5\xd1\x80: {s} \xe2\x80\x94 PPL {d:.1} (\xd1\x88\xd0\xb0\xd0\xb3 {d}K)\n" ++ // Лидер: ... — PPL ... (шаг ...K)
-        "   {d} \xd0\xba\xd0\xbe\xd0\xbd\xd1\x84\xd0\xb8\xd0\xb3\xd0\xbe\xd0\xb2 | {d} \xd1\x81\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb8\xd1\x81\xd0\xbe\xd0\xb2\n" ++ // конфигов | сервисов
+        "   Leader: {s} \xe2\x80\x94 PPL {d:.1} (step {d}K)\n" ++
+        "   {d} configs | {d} services\n" ++
         "\n" ++
-        qt.E_SWORDS ++ " Arena: {d} \xd0\xb1\xd0\xbe\xd1\x91\xd0\xb2\n" ++ // боёв
+        qt.E_SWORDS ++ " Arena: {d} battles\n" ++
         "\n" ++
         qt.E_CLIP ++ " Issues: {d} open\n" ++
         qt.E_WRENCH ++ " Build: {s} | Dirty: {d} | V={d:.2}\n" ++

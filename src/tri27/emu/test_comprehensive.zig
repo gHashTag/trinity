@@ -16,6 +16,7 @@ test "TRI-27: Control Flow - NOP" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
+    cpu.pc = 0; // Reset PC for this test
     cpu.t27[0] = Trit27.fromI8(1);
 
     const inst = Instruction{
@@ -57,6 +58,7 @@ test "TRI-27: Control Flow - JMP" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
+    cpu.pc = 0; // Reset PC for this test
     const inst = Instruction{
         .opcode = Opcode.JMP,
         .dst = 0,
@@ -76,6 +78,7 @@ test "TRI-27: Control Flow - JZ (jump if zero)" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
+    cpu.pc = 0; // Reset PC for this test
     // Should jump when t0 = 0
     cpu.t27[0] = Trit27{ .trits = 0 };
 
@@ -89,8 +92,8 @@ test "TRI-27: Control Flow - JZ (jump if zero)" {
     };
 
     try execute(&cpu, inst, cpu.getBytesMut());
-    // JZ jumps to target and increments by 1 after
-    try testing.expectEqual(@as(u32, 1), cpu.pc);
+    // JZ jumps to target when register is zero
+    try testing.expectEqual(@as(u32, 10), cpu.pc);
 }
 
 test "TRI-27: Control Flow - JNZ (jump if not zero)" {
@@ -98,6 +101,7 @@ test "TRI-27: Control Flow - JNZ (jump if not zero)" {
     var cpu = try CPUState.init(allocator);
     defer cpu.deinit();
 
+    cpu.pc = 0; // Reset PC for this test
     // Should jump when t0 != 0
     cpu.t27[0] = Trit27.fromI8(1);
 

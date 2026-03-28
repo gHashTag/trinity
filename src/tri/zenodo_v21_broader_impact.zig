@@ -204,7 +204,8 @@ pub fn defaultTrinityImpact(allocator: Allocator) !BroaderImpactStatement {
         },
     });
 
-    const long_term = \\Trinity represents a step toward more sustainable AI infrastructure. As AI adoption grows, energy efficiency becomes increasingly critical.
+    const long_term = 
+        \\Trinity represents a step toward more sustainable AI infrastructure. As AI adoption grows, energy efficiency becomes increasingly critical.
         \\Our ternary computing approach demonstrates that alternative numerical representations can significantly reduce computational cost.
         \\Long-term, we hope this work inspires further research into energy-efficient AI hardware and software co-design.
         \\
@@ -212,7 +213,8 @@ pub fn defaultTrinityImpact(allocator: Allocator) !BroaderImpactStatement {
         \\potentially inspiring new approaches to neuromorphic and bio-inspired computing.
     ;
 
-    const stakeholders = \\**Researchers:** Access to efficient AI models and methodologies for energy-conscious ML research.
+    const stakeholders = 
+        \\**Researchers:** Access to efficient AI models and methodologies for energy-conscious ML research.
         \\**Industry:** Reference implementation for ternary AI deployment, potentially reducing cloud computing costs.
         \\**Educators:** Comprehensive teaching materials for FPGA-based AI systems.
         \\**Developing Regions:** Edge AI capabilities enable deployment without reliable internet connectivity.
@@ -248,7 +250,7 @@ pub const ImpactBuilder = struct {
     }
 
     pub fn addPositive(self: *ImpactBuilder, title: []const u8, description: []const u8) !void {
-        try self.positive.append( .{
+        try self.positive.append(.{
             .category = .positive,
             .title = title,
             .description = description,
@@ -257,7 +259,7 @@ pub const ImpactBuilder = struct {
     }
 
     pub fn addNegative(self: *ImpactBuilder, title: []const u8, description: []const u8, mitigation: ?[]const u8) !void {
-        try self.negative.append( .{
+        try self.negative.append(.{
             .category = .negative,
             .title = title,
             .description = description,
@@ -266,7 +268,7 @@ pub const ImpactBuilder = struct {
     }
 
     pub fn addUncertain(self: *ImpactBuilder, title: []const u8, description: []const u8) !void {
-        try self.uncertain.append( .{
+        try self.uncertain.append(.{
             .category = .uncertain,
             .title = title,
             .description = description,

@@ -270,6 +270,8 @@ pub const Command = enum {
     github,
     // Zenodo DOI Publishing
     zenodo,
+    // Kaggle Competition
+    kaggle,
     // Autonomous Loop (Ralph Pattern)
     loop,
     // Experience (episode storage & recall)
@@ -991,6 +993,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "protocol")) return .github;
     if (std.mem.eql(u8, arg, "github")) return .github;
     if (std.mem.eql(u8, arg, "zenodo")) return .zenodo;
+    if (std.mem.eql(u8, arg, "kaggle")) return .kaggle;
     // Autonomous Loop (Ralph Pattern)
     if (std.mem.eql(u8, arg, "loop")) return .loop;
     // Experience (episode storage & recall)
