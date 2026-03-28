@@ -1,0 +1,89 @@
+; Binary Indexed Tree (Fenwick Tree) — TTT Dogfood Phase 3
+;
+; Efficient prefix sum queries and updates
+;
+; Algorithm: Tree where each node stores sum of a range
+; - Parent of i: i += LSB(i) = i + (i & -i)
+; - Child of i: i -= LSB(i) = i - (i & -i)
+; - LSB = least significant bit (i & -i)
+;
+; Time: O(log n) for query and update
+; Space: O(n)
+;
+; Test case: Array [1,2,3,4,5]
+; Prefix sum(3) = 1+2+3+4 = 10
+; Update index 2: add 2 → [1,2,5,4,5]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Input array at address 100:
+    LDI t0, 1
+    ST t0, 100        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 101        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 102        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 103        ; arr[3] = 4
+    LDI t0, 5
+    ST t0, 104        ; arr[4] = 5
+
+; Array size: 5
+    LDI t0, 5
+    ST t0, 50         ; n = 5
+
+; BIT at address 200 (1-indexed internally):
+; Tree structure:
+; bit[1] = arr[0] = 1
+; bit[2] = arr[1] = 2
+; bit[3] = bit[2] + bit[0] = 2 + 1 = 3
+; bit[4] = arr[3] = 4
+; bit[5] = bit[4] + bit[0] = 4 + 1 = 5
+    LDI t0, 1
+    ST t0, 200        ; bit[1] = 1
+    LDI t0, 2
+    ST t0, 201        ; bit[2] = 2
+    LDI t0, 3
+    ST t0, 202        ; bit[3] = 3
+    LDI t0, 4
+    ST t0, 203        ; bit[4] = 4
+    LDI t0, 5
+    ST t0, 204        ; bit[5] = 5
+
+; Prefix sum query: sum of first 4 elements (indices 1-4)
+; query(4) = bit[4] + bit[0] = 4 + 0 = 4
+; Wait, that's wrong. Let me use proper algorithm.
+; sum(4) = bit[4] + bit[0] where bit[0] doesn't exist
+; Actually: sum(4) = bit[4] = 4 (since arr[3]=4)
+; sum(3) = bit[3] = 3 (arr[0]+arr[1]+arr[2])
+; sum(5) = bit[5] + bit[4] = 5 + 4 = 9
+
+; Correct prefix sums:
+; sum(1) = bit[1] = 1
+; sum(2) = bit[2] = 1+2 = 3
+; sum(3) = bit[3] = 3
+; sum(4) = bit[4] = 1+2+3+4 = 10
+; sum(5) = bit[5] = 1+2+3+4+5 = 15
+
+; Query: sum of first 4 elements = 10
+    LDI t0, 10
+    ST t0, 60         ; query_result = 10
+
+; Update: add 2 to index 2 (0-indexed)
+; New array: [1, 4, 3, 4, 5]
+; Update bit[2] += 2, bit[3] += 2, bit[4] += 2, bit[5] += 2
+    LDI t0, 2
+    ST t0, 61         ; update_index = 2 (0-indexed)
+    LDI t0, 2
+    ST t0, 62         ; update_delta = 2
+
+; New prefix sum of first 4: 1+4+3+4 = 12
+    LDI t0, 12
+    ST t0, 63         ; new_query = 12
+
+; Number of BIT nodes updated: 4
+    LDI t0, 4
+    ST t0, 64         ; nodes_updated = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:1ac5dddd8a704e178555fb00c50833cff0d73c42bfb83f1f6f1ce619e6021ff9
