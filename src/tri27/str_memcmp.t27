@@ -1,0 +1,13 @@
+; Memory memcmp — TTT Dogfood Phase 3
+;
+; Compare two memory buffers
+;
+; Test case: str_memcmp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; str_memcmp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b15001be3

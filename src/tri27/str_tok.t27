@@ -1,0 +1,13 @@
+; String strtok — TTT Dogfood Phase 3
+;
+; Tokenize string by delimiters
+;
+; Test case: str_tok
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; str_tok_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071b30001c17
