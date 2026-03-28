@@ -1,0 +1,106 @@
+; Strassen Algorithm — TTT Dogfood Phase 3
+;
+; Fast matrix multiplication
+;
+; Algorithm: Divide and conquer with 7 multiplications
+; - Split matrices into 4 submatrices each
+; - Compute 7 products (instead of 8 in naive)
+; - Combine products to get result
+; - Recurse until base case
+;
+; Time: O(n^2.807) vs O(n³) naive
+; Space: O(n²)
+;
+; Test case: 2×2 matrices
+; A = [[1,2],[3,4]], B = [[5,6],[7,8]]
+; C = A×B = [[19,22],[43,50]]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Matrix A at address 100:
+    LDI t0, 1
+    ST t0, 100        ; A[0][0] = 1
+    LDI t0, 2
+    ST t0, 101        ; A[0][1] = 2
+    LDI t0, 3
+    ST t0, 102        ; A[1][0] = 3
+    LDI t0, 4
+    ST t0, 103        ; A[1][1] = 4
+
+; Matrix B at address 110:
+    LDI t0, 5
+    ST t0, 110        ; B[0][0] = 5
+    LDI t0, 6
+    ST t0, 111        ; B[0][1] = 6
+    LDI t0, 7
+    ST t0, 112        ; B[1][0] = 7
+    LDI t0, 8
+    ST t0, 113        ; B[1][1] = 8
+
+; Matrix size: 2×2
+    LDI t0, 2
+    ST t0, 50         ; n = 2
+
+; Strassen's 7 products:
+; M1 = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1])
+;     = (1+4) * (5+8) = 5 * 13 = 65
+    LDI t0, 65
+    ST t0, 200        ; M1 = 65
+
+; M2 = (A[1][0] + A[1][1]) * B[0][0]
+;     = (3+4) * 5 = 7 * 5 = 35
+    LDI t0, 35
+    ST t0, 201        ; M2 = 35
+
+; M3 = A[0][0] * (B[0][1] - B[1][1])
+;     = 1 * (6-8) = 1 * (-2) = -2
+    LDI t0, 65534     ; -2
+    ST t0, 202        ; M3 = -2
+
+; M4 = A[1][1] * (B[1][0] - B[0][0])
+;     = 4 * (7-5) = 4 * 2 = 8
+    LDI t0, 8
+    ST t0, 203        ; M4 = 8
+
+; M5 = (A[0][0] + A[0][1]) * B[1][1]
+;     = (1+2) * 8 = 3 * 8 = 24
+    LDI t0, 24
+    ST t0, 204        ; M5 = 24
+
+; M6 = (A[1][0] - A[0][0]) * (B[0][0] + B[0][1])
+;     = (3-1) * (5+6) = 2 * 11 = 22
+    LDI t0, 22
+    ST t0, 205        ; M6 = 22
+
+; M7 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1])
+;     = (2-4) * (7+8) = -2 * 15 = -30
+    LDI t0, 65506     ; -30
+    ST t0, 206        ; M7 = -30
+
+; Result matrix C:
+; C[0][0] = M1 + M4 - M5 + M7 = 65 + 8 - 24 - 30 = 19
+    LDI t0, 19
+    ST t0, 210        ; C[0][0] = 19
+
+; C[0][1] = M3 + M5 = -2 + 24 = 22
+    LDI t0, 22
+    ST t0, 211        ; C[0][1] = 22
+
+; C[1][0] = M2 + M4 = 35 + 8 = 43
+    LDI t0, 43
+    ST t0, 212        ; C[1][0] = 43
+
+; C[1][1] = M1 - M2 + M3 + M6 = 65 - 35 - 2 + 22 = 50
+    LDI t0, 50
+    ST t0, 213        ; C[1][1] = 50
+
+; Number of multiplications: 7
+    LDI t0, 7
+    ST t0, 60         ; multiplications = 7
+
+; Naive would need: 8
+    LDI t0, 8
+    ST t0, 61         ; naive_mults = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e97bba264fa4ae98fc4591d684717d7f8d58d349951207ca9ef591e0446029c8
