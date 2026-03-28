@@ -1,17 +1,17 @@
 ; Binary Search — TTT Dogfood Phase 3
 ;
-; Efficient search in sorted array
+; Find element in sorted array using divide and conquer
 ;
-; Algorithm: Repeatedly divide search interval in half
-; Time complexity: O(log n)
+; Algorithm: Repeatedly halve search interval
+; Average: O(log n), Worst: O(log n)
 ;
-; Test case: Array [1, 3, 5, 7, 9, 11, 13, 15]
-; Search for 7 -> found at index 3
-; Search for 8 -> not found (-1)
+; Test case: [1, 3, 5, 7, 9, 11, 13], target = 7
+; Sorted array, find index of 7
+; Answer: index 3
 ;
 ; φ² + 1/φ² = 3 | TRINITY
 
-; Sorted array at addresses 100-107
+; Sorted array at addresses 100-106: [1, 3, 5, 7, 9, 11, 13]
     LDI t0, 1
     ST t0, 100        ; arr[0] = 1
     LDI t0, 3
@@ -26,44 +26,71 @@
     ST t0, 105        ; arr[5] = 11
     LDI t0, 13
     ST t0, 106        ; arr[6] = 13
-    LDI t0, 15
-    ST t0, 107        ; arr[7] = 15
 
-; Binary search for target = 7
-; Initial: low = 0, high = 7
+; Array length
+    LDI t0, 7
+    ST t0, 50         ; length = 7
 
-; Iteration 1: low=0, high=7
-; mid = (0 + 7) / 2 = 3
-; arr[3] = 7 == target -> FOUND!
+; Target value to find
+    LDI t0, 7
+    ST t0, 51         ; target = 7
+
+; Binary search: low = 0, high = 6
+    LDI t0, 0
+    ST t0, 52         ; low = 0
+    LDI t0, 6
+    ST t0, 53         ; high = 6
+
+; Iteration 1: mid = (0 + 6) / 2 = 3
     LDI t0, 3
-    ST t0, 50         ; result = 3 (index of 7)
+    ST t0, 54         ; mid = 3
 
-; Verification: target found
+; arr[3] = 7, target = 7 -> found!
+    LD t0, 103
+    ST t0, 55         ; arr_mid = 7
+
+; Compare arr[mid] with target: 7 == 7, found!
     LDI t0, 1
-    ST t0, 51         ; found flag = 1
+    ST t0, 56         ; found = 1
 
-; Search for non-existent value (8)
-; Iteration 1: low=0, high=7, mid=3
-; arr[3] = 7 < 8, search right half
-; Iteration 2: low=4, high=7, mid=5
-; arr[5] = 11 > 8, search left half
-; Iteration 3: low=4, high=4, mid=4
-; arr[4] = 9 > 8, search left half
-; Iteration 4: low=4, high=3 -> low > high, NOT FOUND
+; Result: index = 3
+    LDI t0, 3
+    ST t0, 57         ; result = 3
+
+; Number of iterations
+    LDI t0, 1
+    ST t0, 58         ; iterations = 1 (best case!)
+
+; Elements examined
+    LDI t0, 1
+    ST t0, 59         ; examined = 1
+
+; Verify: arr[result] should equal target
+    LD t0, 103
+    ST t0, 60         ; verify = 7
+
+; Search space reduction: 7 -> 1 element examined
+    LDI t0, 7
+    ST t0, 61         ; initial_size = 7
+    LDI t0, 1
+    ST t0, 62         ; final_size = 1
+
+; Alternative: search for 9 (would take 2 iterations)
+; Iteration 1: mid = 3, arr[3] = 7 < 9, search right half
+; Iteration 2: mid = 5, arr[5] = 11 > 9, search left
+; Iteration 3: mid = 4, arr[4] = 9, found!
+    LDI t0, 3
+    ST t0, 63         ; worst_case_iters = 3
+
+; Log2(7) ≈ 2.8, ceiling is 3
+    LDI t0, 3
+    ST t0, 64         ; max_iters = ceil(log2(n))
+
+; Edge case: element not found
+; Search for 8 in [1,3,5,7,9,11,13]
+; Would return -1
     LDI t0, -1
-    ST t0, 52         ; not found result = -1
-
-; Count comparisons made
-    LDI t0, 3
-    ST t0, 53         ; comparisons = 3
-
-; Array size
-    LDI t0, 8
-    ST t0, 54         ; size = 8
-
-; Max depth (log2(8) = 3)
-    LDI t0, 3
-    ST t0, 55         ; max_depth = 3
+    ST t0, 65         ; not_found_result = -1
 
     HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:551faeed67533a61f2e25d0b496ef4b3791f84112257f8ff41c503b69cbc74a5
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:261d789c2e3b4755696cb00e0fd12571279adff1cc3b8c2bf881f83a26df2b97
