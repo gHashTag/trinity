@@ -1387,4 +1387,108 @@ test "huffman: compressed size calculation" {
     try std.testing.expectEqual(@as(i64, 23), cpu.t27[0].trits);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// DIJKSTRA SHORTEST PATH TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "t27_programs: dijkstra file exists" {
+    const path = "src/tri27/dijkstra.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "dijkstra: assembles" {
+    const allocator = std.testing.allocator;
+    const path = "src/tri27/dijkstra.t27";
+    const source = try std.fs.cwd().readFileAlloc(allocator, path, 10000);
+    defer allocator.free(source);
+
+    const bytecode = try tri_asm.assemble(allocator, source);
+    defer allocator.free(bytecode);
+
+    try std.testing.expect(bytecode.len > 0);
+}
+
+test "dijkstra: distance initialization" {
+    const allocator = std.testing.allocator;
+    // Source node (0) gets distance 0, others get 999
+    const program =
+        \\    LDI t0, 0         ; dist[0] = 0
+        \\    ST t0, 0
+        \\    LDI t0, 999       ; dist[1] = ∞
+        \\    ST t0, 1
+        \\    LD t0, 0          ; load dist[0]
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "dijkstra: neighbor distance update" {
+    const allocator = std.testing.allocator;
+    // dist[1] = dist[0] + adj[0][1] = 0 + 1 = 1
+    const program =
+        \\    LDI t0, 0         ; dist[0] = 0
+        \\    ST t0, 0
+        \\    LDI t0, 1         ; adj[0][1] = 1
+        \\    ST t0, 100
+        \\    LD t0, 0          ; dist[0]
+        \\    LD t1, 100        ; adj[0][1]
+        \\    ADD t0, t0, t1    ; t0 = 1
+        \\    ST t0, 1          ; dist[1] = 1
+        \\    LD t0, 1          ; load dist[1]
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "dijkstra: visited array initialization" {
+    const allocator = std.testing.allocator;
+    // All nodes start unvisited (0)
+    const program =
+        \\    LDI t0, 0         ; visited[0] = false
+        \\    ST t0, 20
+        \\    LDI t0, 0         ; visited[1] = false
+        \\    ST t0, 21
+        \\    LD t0, 20         ; load visited[0]
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
+}
+
+test "dijkstra: mark node visited" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 0         ; visited[0] = false
+        \\    ST t0, 20
+        \\    LDI t0, 1         ; mark visited
+        \\    ST t0, 20
+        \\    LD t0, 20         ; load visited[0]
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "dijkstra: path cost calculation" {
+    const allocator = std.testing.allocator;
+    // Sum of distances: 0 + 1 + 4 + 3 = 8
+    const program =
+        \\    LDI t0, 0         ; dist[0]
+        \\    LDI t1, 1         ; dist[1]
+        \\    LDI t2, 4         ; dist[2]
+        \\    LDI t3, 3         ; dist[3]
+        \\    ADD t0, t0, t1    ; t0 = 1
+        \\    ADD t0, t0, t2    ; t0 = 5
+        \\    ADD t0, t0, t3    ; t0 = 8
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 8), cpu.t27[0].trits);
+}
+
 // φ² + 1/φ² = 3 | TRINITY
