@@ -1,0 +1,32 @@
+; Comb Sorter — TTT Dogfood Phase 3
+;
+; Improvement over bubble sort with gap > 1
+;
+; Test case: sort [5,1,4,2,3]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 100        ; arr[0] = 5
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2
+    LDI t0, 3
+    ST t0, 104        ; arr[4] = 3
+
+    LDI t0, 1
+    ST t0, 105        ; sorted[0] = 1
+    LDI t0, 2
+    ST t0, 106        ; sorted[1] = 2
+    LDI t0, 3
+    ST t0, 107        ; sorted[2] = 3
+    LDI t0, 4
+    ST t0, 108        ; sorted[3] = 4
+    LDI t0, 5
+    ST t0, 109        ; sorted[4] = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07329a00120b

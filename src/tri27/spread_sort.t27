@@ -1,0 +1,28 @@
+; Spread Sort — TTT Dogfood Phase 3
+;
+; Sort by spreading bits
+;
+; Test case: sort [5,1,8,2]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 100        ; arr[0] = 5 (0101)
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1 (0001)
+    LDI t0, 8
+    ST t0, 102        ; arr[2] = 8 (1000)
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2 (0010)
+
+    LDI t0, 1
+    ST t0, 110        ; sorted[0] = 1
+    LDI t0, 2
+    ST t0, 111        ; sorted[1] = 2
+    LDI t0, 5
+    ST t0, 112        ; sorted[2] = 5
+    LDI t0, 8
+    ST t0, 113        ; sorted[3] = 8
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:076295001206

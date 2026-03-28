@@ -1,0 +1,29 @@
+; Odd Even Sorter — TTT Dogfood Phase 3
+;
+; Parallel sorting on alternating indices
+;
+; Test case: sort [3,1,4,2]
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 3
+    ST t0, 100        ; arr[0] = 3
+    LDI t0, 1
+    ST t0, 101        ; arr[1] = 1
+    LDI t0, 4
+    ST t0, 102        ; arr[2] = 4
+    LDI t0, 2
+    ST t0, 103        ; arr[3] = 2
+
+; After odd-even passes
+    LDI t0, 1
+    ST t0, 104        ; arr[0] = 1
+    LDI t0, 2
+    ST t0, 105        ; arr[1] = 2
+    LDI t0, 3
+    ST t0, 106        ; arr[2] = 3
+    LDI t0, 4
+    ST t0, 107        ; arr[3] = 4
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:071298001209

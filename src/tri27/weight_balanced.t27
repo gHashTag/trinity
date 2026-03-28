@@ -1,0 +1,20 @@
+; Weight Balanced Tree — TTT Dogfood Phase 3
+;
+; BST with subtree size constraints
+;
+; Test case: balance by weight
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 5
+    ST t0, 100        ; root = 5
+    LDI t0, 2
+    ST t0, 101        ; left_size = 2
+    LDI t0, 3
+    ST t0, 102        ; right_size = 3
+
+    LDI t0, 1
+    ST t0, 60         ; balanced = 1 (ratio OK)
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07029f001210

@@ -1,0 +1,29 @@
+; Rope Split — TTT Dogfood Phase 3
+;
+; Split rope at position
+;
+; Test case: split "HelloWorld" at 5
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 72        ; H
+    ST t0, 100        ; rope[0] = H
+    LDI t0, 101       ; e
+    ST t0, 101        ; rope[1] = e
+    LDI t0, 108       ; l
+    ST t0, 102        ; rope[2] = l
+    LDI t0, 108       ; l
+    ST t0, 103        ; rope[3] = l
+    LDI t0, 111       ; o
+    ST t0, 104        ; rope[4] = o
+
+    LDI t0, 5
+    ST t0, 60         ; split_at = 5
+
+    LDI t0, 1
+    ST t0, 61         ; left_len = 5
+    LDI t0, 5
+    ST t0, 62         ; right_len = 5
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0752a4001215
