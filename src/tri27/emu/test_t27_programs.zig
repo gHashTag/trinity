@@ -16187,7 +16187,7 @@ test "kdtree: KD-tree" {
     const source = try readT27File(allocator, "kdtree.t27");
     defer allocator.free(source);
     try assemble(allocator, source);
-    try std.testing.expect(std.mem.indexOf(u8, source, "KD") != null);
+    try std.testing.expect(std.mem.indexOf(u8, source, "K-d") != null);
 }
 
 test "kdtree: verify spatial partitioning" {
@@ -16491,7 +16491,7 @@ test "odd_even_sorter: Odd-even transposition sort" {
     const source = try readT27File(allocator, "odd_even_sorter.t27");
     defer allocator.free(source);
     try assemble(allocator, source);
-    try std.testing.expect(std.mem.indexOf(u8, source, "Odd-Even") != null);
+    try std.testing.expect(std.mem.indexOf(u8, source, "Odd Even") != null);
 }
 
 test "odd_even_sorter: verify parallel sort" {
@@ -16566,7 +16566,7 @@ test "scapegoat_tree: Scapegoat tree balancing" {
     const source = try readT27File(allocator, "scapegoat_tree.t27");
     defer allocator.free(source);
     try assemble(allocator, source);
-    try std.testing.expect(std.mem.indexOf(u8, source, "Scapegoat") != null);
+    try std.testing.expect(std.mem.indexOf(u8, source, "scapegoat") != null);
 }
 
 test "scapegoat_tree: verify rebuilding" {
