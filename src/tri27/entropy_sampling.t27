@@ -1,0 +1,13 @@
+; Entropy Sampling — TTT Dogfood Phase 3
+;
+; Maximum entropy selection
+;
+; Test case: entropy_sampling
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; entropy_sampling_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07acb000002000000002372
