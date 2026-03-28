@@ -4,7 +4,7 @@
 // RAILWAY API — GraphQL Client for Railway.app
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Native GraphQL client for railway.com/graphql/v2
+// Native GraphQL client for backboard.railway.com/graphql/v2
 // Zero dependency on `railway` CLI binary.
 //
 // Auth: RAILWAY_API_TOKEN env var (Personal Token)
@@ -17,7 +17,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const crypto = std.crypto.random;
 
-const RAILWAY_GQL_HOST = "railway.com";
+const RAILWAY_GQL_HOST = "backboard.railway.com";
 const RAILWAY_GQL_PATH = "/graphql/v2";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -544,6 +544,13 @@ pub const RailwayApi = struct {
             };
             self.allocator.free(raw_body);
             return decompressed;
+        }
+
+        // Check if response is HTML instead of JSON (wrong endpoint or config)
+        if (raw_body.len >= 10 and std.mem.eql(u8, raw_body[0..9], "<!DOCTYPE html")) {
+            std.debug.print("{s}Railway API: received HTML instead of JSON - endpoint may be wrong or token invalid{s}\n", .{ RED, RESET });
+            self.allocator.free(raw_body);
+            return error.NotAuthorized;
         }
 
         return raw_body;
