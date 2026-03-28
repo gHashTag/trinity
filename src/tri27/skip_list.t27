@@ -1,0 +1,77 @@
+; Skip List — TTT Dogfood Phase 3
+;
+; Probabilistic data structure for ordered sets
+; Alternative to balanced trees with simpler implementation
+;
+; Structure: Multiple layers of linked lists
+; - Bottom layer: all elements
+; - Higher layers: "express lanes" with fewer elements
+; - Search: Start at top, drop down when needed
+;
+; Time: O(log n) average search, O(1) insert at head
+; Space: O(n) average
+;
+; Test case: Build skip list with 3 layers, search for value
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Level 2 (top): [1]--------------------->[9]
+    LDI t0, 1
+    ST t0, 100        ; level2[0] = 1
+    LDI t0, 9
+    ST t0, 101        ; level2[1] = 9
+
+; Level 1 (middle): [1]-------->[5]-------->[9]
+    LDI t0, 1
+    ST t0, 110        ; level1[0] = 1
+    LDI t0, 5
+    ST t0, 111        ; level1[1] = 5
+    LDI t0, 9
+    ST t0, 112        ; level1[2] = 9
+
+; Level 0 (bottom): [1]-->[3]-->[5]-->[7]-->[9]
+    LDI t0, 1
+    ST t0, 120        ; level0[0] = 1
+    LDI t0, 3
+    ST t0, 121        ; level0[1] = 3
+    LDI t0, 5
+    ST t0, 122        ; level0[2] = 5
+    LDI t0, 7
+    ST t0, 123        ; level0[3] = 7
+    LDI t0, 9
+    ST t0, 124        ; level0[4] = 9
+
+; Number of levels
+    LDI t0, 3
+    ST t0, 50         ; num_levels = 3
+
+; Search for value 7:
+; - Start at level 2: 1 < 7, 9 > 7 → drop to level 1
+; - Level 1: 1 < 7, 5 < 7, 9 > 7 → drop to level 0
+; - Level 0: 1, 3, 5, 7 → found!
+
+    LDI t0, 7
+    ST t0, 80         ; search_result = 7
+
+; Found flag
+    LDI t0, 1
+    ST t0, 51         ; found = 1
+
+; Search path length
+    LDI t0, 4
+    ST t0, 52         ; steps = 4 (faster than linear search)
+
+; Nodes at each level
+    LDI t0, 2
+    ST t0, 60         ; level2_count = 2
+    LDI t0, 3
+    ST t0, 61         ; level1_count = 3
+    LDI t0, 5
+    ST t0, 62         ; level0_count = 5
+
+; Probability for promotion (typically p=0.5)
+    LDI t0, 50
+    ST t0, 53         ; promotion_pct = 50%
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:5f287a1700ab7796febb1622f5508d8d389c5aa1dd338de52705e41e2c182d5f

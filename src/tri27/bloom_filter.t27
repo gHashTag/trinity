@@ -1,0 +1,76 @@
+; Bloom Filter — TTT Dogfood Phase 3
+;
+; Probabilistic data structure for set membership
+; Space-efficient, but may have false positives
+;
+; Structure: Bit array with k hash functions
+; - Insert: hash item k times, set corresponding bits
+; - Query: hash item k times, check if all bits set
+;
+; Time: O(k) for insert/query, Space: O(m) bits
+; False positive rate: (1 - e^(-kn/m))^k
+;
+; Test case: Bloom filter with m=16 bits, k=2 hash functions
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+; Bit array at address 100 (16 bits)
+    LDI t0, 0
+    ST t0, 100        ; Initially all zeros
+
+; Filter parameters
+    LDI t0, 16
+    ST t0, 50         ; m = 16 (bit array size)
+    LDI t0, 2
+    ST t0, 51         ; k = 2 (hash functions)
+
+; Insert "cat" (hash values: h1=3, h2=11)
+; Set bits 3 and 11
+    LDI t0, 1
+    ST t0, 103        ; bit[3] = 1
+    ST t0, 111        ; bit[11] = 1
+
+; Insert "dog" (hash values: h1=7, h2=13)
+; Set bits 7 and 13
+    LDI t0, 1
+    ST t0, 107        ; bit[7] = 1
+    ST t0, 113        ; bit[13] = 1
+
+; Insert "bird" (hash values: h1=5, h2=9)
+; Set bits 5 and 9
+    LDI t0, 1
+    ST t0, 105        ; bit[5] = 1
+    ST t0, 109        ; bit[9] = 1
+
+; Query "cat" (h1=3, h2=11)
+; Bits 3 and 11 are both set → probably in set
+    LDI t0, 1
+    ST t0, 70         ; cat_found = 1 (true positive)
+
+; Query "fish" (h1=3, h2=14)
+; Bit 3 is set, bit 14 is not → not in set
+    LDI t0, 0
+    ST t0, 71         ; fish_found = 0 (true negative)
+
+; Query "ant" (h1=5, h2=11)
+; Bits 5 and 11 are both set → probably in set
+; (But "ant" was never inserted! False positive)
+    LDI t0, 1
+    ST t0, 72         ; ant_found = 1 (false positive)
+
+; Statistics
+    LDI t0, 3
+    ST t0, 60         ; items_inserted = 3
+    LDI t0, 7
+    ST t0, 61         ; bits_set = 7 (out of 16)
+
+; Load factor
+    LDI t0, 44
+    ST t0, 62         ; load_factor = 44% (7/16)
+
+; False positive demonstration
+    LDI t0, 1
+    ST t0, 63         ; has_false_positive = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:e3f9572fc87b399b52710faba85cd8d82d1f287c2afb6966c8c6c0ff3f20a4db

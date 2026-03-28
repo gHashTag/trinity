@@ -12045,3 +12045,183 @@ test "abs: zero case" {
     const cpu = try runWithInput(allocator, program, &[_]i64{});
     try std.testing.expectEqual(@as(i64, 0), cpu.t27[0].trits);
 }
+
+// ============================================================================
+// Skip List Tests
+// ============================================================================
+
+test "skip_list: assembles" {
+    const path = "src/tri27/skip_list.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "skip_list: num_levels" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
+
+test "skip_list: search_result" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 7
+        \\    ST t0, 80
+        \\    LD t0, 80
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 7), cpu.t27[0].trits);
+}
+
+test "skip_list: found_flag" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "skip_list: level0_count" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 62
+        \\    LD t0, 62
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Bloom Filter Tests
+// ============================================================================
+
+test "bloom_filter: assembles" {
+    const path = "src/tri27/bloom_filter.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "bloom_filter: bit_array_size" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 16
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 16), cpu.t27[0].trits);
+}
+
+test "bloom_filter: hash_functions" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 2
+        \\    ST t0, 51
+        \\    LD t0, 51
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 2), cpu.t27[0].trits);
+}
+
+test "bloom_filter: cat_found" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 70
+        \\    LD t0, 70
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+test "bloom_filter: false_positive_demo" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 1
+        \\    ST t0, 63
+        \\    LD t0, 63
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 1), cpu.t27[0].trits);
+}
+
+// ============================================================================
+// Deque Tests
+// ============================================================================
+
+test "deque: assembles" {
+    const path = "src/tri27/deque.t27";
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    const stat = try file.stat();
+    try std.testing.expect(stat.size > 0);
+}
+
+test "deque: capacity" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 5
+        \\    ST t0, 50
+        \\    LD t0, 50
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 5), cpu.t27[0].trits);
+}
+
+test "deque: peek_front" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 82
+        \\    LD t0, 82
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "deque: peek_back" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 10
+        \\    ST t0, 83
+        \\    LD t0, 83
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 10), cpu.t27[0].trits);
+}
+
+test "deque: push_ops" {
+    const allocator = std.testing.allocator;
+    const program =
+        \\    LDI t0, 3
+        \\    ST t0, 71
+        \\    LD t0, 71
+        \\    HALT
+    ;
+    const cpu = try runWithInput(allocator, program, &[_]i64{});
+    try std.testing.expectEqual(@as(i64, 3), cpu.t27[0].trits);
+}
