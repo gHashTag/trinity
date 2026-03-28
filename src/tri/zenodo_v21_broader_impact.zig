@@ -204,7 +204,7 @@ pub fn defaultTrinityImpact(allocator: Allocator) !BroaderImpactStatement {
         },
     });
 
-    const long_term = 
+    const long_term =
         \\Trinity represents a step toward more sustainable AI infrastructure. As AI adoption grows, energy efficiency becomes increasingly critical.
         \\Our ternary computing approach demonstrates that alternative numerical representations can significantly reduce computational cost.
         \\Long-term, we hope this work inspires further research into energy-efficient AI hardware and software co-design.
@@ -213,7 +213,7 @@ pub fn defaultTrinityImpact(allocator: Allocator) !BroaderImpactStatement {
         \\potentially inspiring new approaches to neuromorphic and bio-inspired computing.
     ;
 
-    const stakeholders = 
+    const stakeholders =
         \\**Researchers:** Access to efficient AI models and methodologies for energy-conscious ML research.
         \\**Industry:** Reference implementation for ternary AI deployment, potentially reducing cloud computing costs.
         \\**Educators:** Comprehensive teaching materials for FPGA-based AI systems.
