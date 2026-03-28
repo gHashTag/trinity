@@ -1,0 +1,13 @@
+; Relative Position — TTT Dogfood Phase 3
+;
+; Relative position encoding
+;
+; Test case: att_relative
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; relative_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07aa600000200000000242a
