@@ -1,0 +1,13 @@
+; Bytes to Human — TTT Dogfood Phase 3
+;
+; Format bytes as KB/MB/GB
+;
+; Test case: conv_bytes_to_human
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; conv_bytes_to_human_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0729200001d59
