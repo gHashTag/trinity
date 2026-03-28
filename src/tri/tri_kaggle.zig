@@ -148,22 +148,22 @@ fn runMetaCommand(allocator: Allocator, args: []const []const u8) !void {
 
     var total_generated: usize = 0;
 
-    print("DEBUG: track_filter='{s}' (len={d})\n", .{ track_filter, track_filter.len });
-
     for (TRACKS) |track| {
-        const filter_prefix = if (track_filter.len >= 5) track_filter[0..5] else track_filter;
-        print("DEBUG: track.id='{s}', filter_prefix='{s}'\n", .{ track.id, filter_prefix });
-
         // Support shorthand: track1/track2/track3/track4/track5
-        const matches_shorthand = track_filter.len < 7 and std.mem.eql(u8, filter_prefix, track.id[0..5]);
+        // track2 matches track2_metacognition (first 6 chars), etc.
+        const filter_prefix_len = @min(track_filter.len, 6);
+        const filter_prefix = track_filter[0..filter_prefix_len];
+        const matches_shorthand = track_filter.len < 7 and std.mem.eql(u8, filter_prefix, track.id[0..filter_prefix_len]);
 
-        // Check filter match
+        // Debug output
+        print("[DEBUG] filter='{s}', track.id='{s}', filter_prefix='{s}', prefix_len={d}, matches_shorthand={}\n",
+              .{track_filter, track.id, filter_prefix, filter_prefix_len, matches_shorthand});
+
+        // Check filter match (exact match only, no substrings)
         const filter_matches = std.mem.eql(u8, track_filter, "all") or
             matches_shorthand or
-            std.mem.indexOf(u8, track.id, track_filter) != null or
-            std.mem.indexOf(u8, track.name, track_filter) != null;
-
-        print("DEBUG: filter_matches={}\n", .{filter_matches});
+            std.mem.eql(u8, track_filter, track.id) or
+            std.mem.eql(u8, track_filter, track.name);
 
         if (!filter_matches) {
             continue;
@@ -309,14 +309,16 @@ fn runPushCommand(allocator: Allocator, args: []const []const u8) !void {
 
     for (TRACKS) |track| {
         // Support shorthand: track1/track2/track3/track4/track5
-        const filter_prefix = if (track_filter.len >= 5) track_filter[0..5] else track_filter;
-        const matches_shorthand = track_filter.len < 7 and std.mem.eql(u8, filter_prefix, track.id[0..5]);
+        // track2 matches track2_metacognition (first 6 chars), etc.
+        const filter_prefix_len = @min(track_filter.len, 6);
+        const filter_prefix = track_filter[0..filter_prefix_len];
+        const matches_shorthand = track_filter.len < 7 and std.mem.eql(u8, filter_prefix, track.id[0..filter_prefix_len]);
 
-        // Check filter match
+        // Check filter match (exact match only, no substrings)
         const filter_matches = std.mem.eql(u8, track_filter, "all") or
             matches_shorthand or
-            std.mem.indexOf(u8, track.id, track_filter) != null or
-            std.mem.indexOf(u8, track.name, track_filter) != null;
+            std.mem.eql(u8, track_filter, track.id) or
+            std.mem.eql(u8, track_filter, track.name);
 
         if (!filter_matches) {
             continue;
