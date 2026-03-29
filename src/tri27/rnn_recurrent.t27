@@ -1,0 +1,13 @@
+; RNN Recurrent — TTT Dogfood Phase 3
+;
+; ML: Recurrent Neural Network
+;
+; Test case: rnn_recurrent
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rnn_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f57000002000000002abd

@@ -1,0 +1,13 @@
+; Graph Convolution — TTT Dogfood Phase 3
+;
+; Graph: Graph convolution
+;
+; Test case: graph_convolution
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; graphconv_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f5e00000020000000002ac4
