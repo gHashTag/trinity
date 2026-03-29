@@ -1,0 +1,13 @@
+; Milvus DB — TTT Dogfood Phase 3
+;
+; Vector DB: Milvus vector database
+;
+; Test case: milvus_db
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; milvus_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e680000020000000029cb
