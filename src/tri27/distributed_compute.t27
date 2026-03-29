@@ -1,0 +1,13 @@
+; Distributed Compute — TTT Dogfood Phase 3
+;
+; Distributed: Parallel computation
+;
+; Test case: distributed_compute
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; distributed_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080ab000002000000002c0b

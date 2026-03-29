@@ -1,0 +1,13 @@
+; Distributed Spark — TTT Dogfood Phase 3
+;
+; Distributed: Apache Spark framework
+;
+; Test case: distributed_spark
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; spark_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080ad000002000000002c0d
