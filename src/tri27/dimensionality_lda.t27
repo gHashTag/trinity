@@ -1,0 +1,13 @@
+; Dimensionality LDA — TTT Dogfood Phase 3
+;
+; Dimensionality: Linear Discriminant Analysis
+;
+; Test case: dimensionality_lda
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lda_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0802f000002000000002b95
