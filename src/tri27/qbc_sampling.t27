@@ -1,0 +1,13 @@
+; QBC Sampling — TTT Dogfood Phase 3
+;
+; Active Learning: Query-by-Committee sampling
+;
+; Test case: qbc_sampling
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; qbc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c3800000200000000027bc

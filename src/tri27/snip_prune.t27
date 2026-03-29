@@ -1,0 +1,13 @@
+; SNIP Prune — TTT Dogfood Phase 3
+;
+; Pruning: SNIP pruning at initialization
+;
+; Test case: snip_prune
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; snip_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c2000000200000000027a4

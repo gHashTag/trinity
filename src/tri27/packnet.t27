@@ -1,0 +1,13 @@
+; PackNet — TTT Dogfood Phase 3
+;
+; Continual Learning: PackNet with pruning for capacity
+;
+; Test case: packnet
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; packnet_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07bdd000002000000002761

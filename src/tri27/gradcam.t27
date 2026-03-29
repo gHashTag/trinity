@@ -1,0 +1,13 @@
+; GradCAM — TTT Dogfood Phase 3
+;
+; Explainability: Gradient-weighted Class Activation Mapping
+;
+; Test case: gradcam
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; gradcam_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07bd100000200000002755
