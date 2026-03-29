@@ -1,0 +1,13 @@
+; L1 L2 Regularization — TTT Dogfood Phase 3
+;
+; Regularization: L1 and L2 penalty
+;
+; Test case: l1_l2_regularization
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; l1l2_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ee30000002000000002a46

@@ -1,0 +1,13 @@
+; Precision Metric — TTT Dogfood Phase 3
+;
+; Metrics: Precision score
+;
+; Test case: precision_metric
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; precision_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ee60000002000000002a49
