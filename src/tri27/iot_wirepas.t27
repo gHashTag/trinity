@@ -1,0 +1,13 @@
+; IoT Wirepas — TTT Dogfood Phase 3
+;
+; IoT: Wireless sensor network
+;
+; Test case: iot_wirepas
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; wirepas_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080d500002000000002c5b

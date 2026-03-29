@@ -1,0 +1,13 @@
+; IoT NFC — TTT Dogfood Phase 3
+;
+; IoT: Near Field Communication
+;
+; Test case: iot_nfc
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nfc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080d600002000000002c5c
