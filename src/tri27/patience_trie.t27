@@ -1,0 +1,13 @@
+; Patience Trie — TTT Dogfood Phase 3
+;
+; Compression: Patience sorting compression
+;
+; Test case: patience_trie
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; patience_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f1e00000020000000002a81

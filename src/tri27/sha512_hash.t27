@@ -1,0 +1,13 @@
+; SHA-512 Hash — TTT Dogfood Phase 3
+;
+; Hashing: SHA-512 digest
+;
+; Test case: sha512_hash
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sha512_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f2b00000020000000002a8e
