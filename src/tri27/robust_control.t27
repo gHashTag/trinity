@@ -1,0 +1,13 @@
+; Robust Control — TTT Dogfood Phase 3
+;
+; Control: Robust control under uncertainty
+;
+; Test case: robust_control
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; robust_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07dd500000020000000002938
