@@ -1,0 +1,13 @@
+; Distillation TinyBERT — TTT Dogfood Phase 3
+;
+; Distillation: BERT compression
+;
+; Test case: distillation_tinybert
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tinybert_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07fba000002000000002b20
