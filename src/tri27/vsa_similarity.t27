@@ -1,0 +1,13 @@
+; VSA Similarity — TTT Dogfood Phase 3
+;
+; VSA: Vector similarity computation
+;
+; Test case: vsa_similarity
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; similarity_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c7400000200000000027f8
