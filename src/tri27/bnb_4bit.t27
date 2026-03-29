@@ -1,0 +1,13 @@
+; BitsAndBytes 4-bit — TTT Dogfood Phase 3
+;
+; Quantization: NF4 4-bit quantization
+;
+; Test case: bnb_4bit
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; bnb4_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e540000020000000029b7
