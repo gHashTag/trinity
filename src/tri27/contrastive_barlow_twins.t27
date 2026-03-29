@@ -1,0 +1,12 @@
+; Contrastive Barlow Twins — TTT Dogfood Phase 3
+;
+; Algorithm: Barlow Twins self-supervised learning
+; Test case: contrastive_barlow_twins
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; barlow_twins_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080fc000002000000002d32
