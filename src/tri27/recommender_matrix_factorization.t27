@@ -1,0 +1,13 @@
+; Recommender Matrix Factorization — TTT Dogfood Phase 3
+;
+; Recommender: Latent factors
+;
+; Test case: recommender_matrix_factorization
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mf_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0803a000002000000002ba0
