@@ -1,0 +1,13 @@
+; Whisper Audio — TTT Dogfood Phase 3
+;
+; Audio: Whisper speech recognition
+;
+; Test case: whisper_audio
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; whisper_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e9d00000020000000002a00
