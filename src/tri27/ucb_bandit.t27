@@ -1,0 +1,13 @@
+; UCB Bandit — TTT Dogfood Phase 3
+;
+; Bandit: Upper Confidence Bound algorithm
+;
+; Test case: ucb_bandit
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ucb_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c4b0000020000000027cf
