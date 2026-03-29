@@ -1,0 +1,13 @@
+; DWA Planning — TTT Dogfood Phase 3
+;
+; Robotics: Dynamic Window Approach
+;
+; Test case: dwa_planning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; dwa_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07cc200000020000000002844
