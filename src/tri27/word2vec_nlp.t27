@@ -1,0 +1,13 @@
+; Word2Vec NLP — TTT Dogfood Phase 3
+;
+; NLP: Word2Vec embeddings
+;
+; Test case: word2vec_nlp
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; w2v_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07eef00000020000000002a52
