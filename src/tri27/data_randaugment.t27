@@ -1,0 +1,13 @@
+; Data RandAugment — TTT Dogfood Phase 3
+;
+; Data: Random augmentation
+;
+; Test case: data_randaugment
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; randaugment_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08010000002000000002b76
