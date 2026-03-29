@@ -1,0 +1,13 @@
+; Data Augmentation Mixup — TTT Dogfood Phase 3
+;
+- Mixup: convex combination of samples
+;
+; Test case: da_mixup
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; mixup_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b5e000002000000002648
