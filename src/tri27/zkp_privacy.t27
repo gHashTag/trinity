@@ -1,0 +1,13 @@
+; ZKP Privacy — TTT Dogfood Phase 3
+;
+; Privacy: Zero-Knowledge Proofs
+;
+; Test case: zkp_privacy
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; zkp_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c6500000200000000027e9

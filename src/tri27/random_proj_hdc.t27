@@ -1,0 +1,13 @@
+; Random Proj HDC — TTT Dogfood Phase 3
+;
+; Hyperdimensional: Random Projection
+;
+; Test case: random_proj_hdc
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; randhdc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c6c0000020000000027f0

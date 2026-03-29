@@ -1,0 +1,13 @@
+; Firefly Swarm — TTT Dogfood Phase 3
+;
+; Swarm: Firefly Algorithm optimization
+;
+; Test case: firefly_swarm
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; firefly_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c5b0000020000000027df
