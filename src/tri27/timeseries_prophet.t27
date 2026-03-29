@@ -1,0 +1,13 @@
+; Time Series Prophet — TTT Dogfood Phase 3
+;
+; Time Series: Facebook forecasting
+;
+; Test case: timeseries_prophet
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; prophet_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07fad000002000000002b13

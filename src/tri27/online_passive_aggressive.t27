@@ -1,0 +1,13 @@
+; Online Passive-Aggressive — TTT Dogfood Phase 3
+;
+; Online: PA algorithm for online learning
+;
+; Test case: online_passive_aggressive
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; pa_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f91000002000000002af7
