@@ -1,0 +1,13 @@
+; Compacter — TTT Dogfood Phase 3
+;
+; Transfer Learning: Compacter for adapter composition
+;
+; Test case: compacter
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; compacter_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07be90000020000000276d

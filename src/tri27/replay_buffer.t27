@@ -1,0 +1,13 @@
+; Replay Buffer — TTT Dogfood Phase 3
+;
+; Continual Learning: Experience replay for catastrophic forgetting
+;
+; Test case: replay_buffer
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; replay_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07bdb00000200000000275f

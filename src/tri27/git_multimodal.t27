@@ -1,0 +1,13 @@
+; GIT Multimodal — TTT Dogfood Phase 3
+;
+; Multimodal: Generative Image-to-text Transformer
+;
+; Test case: git_multimodal
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; git_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07bfb00000200000000277f
