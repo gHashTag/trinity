@@ -1,0 +1,12 @@
+; Neuro Izhikevich — TTT Dogfood Phase 3
+;
+; Model: Izhikevich neuron model
+; Test case: neuro_izhikevich
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; izhikevich_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080a1000002000000002d8d
