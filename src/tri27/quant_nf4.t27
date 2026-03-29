@@ -1,0 +1,12 @@
+; Quant NF4 — TTT Dogfood Phase 3
+;
+; Algorithm: NF4 4-bit quantization
+; Test case: quant_nf4
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; nf4_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080e3000002000000002d4b

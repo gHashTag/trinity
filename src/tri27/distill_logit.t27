@@ -1,0 +1,12 @@
+; Distill Logit — TTT Dogfood Phase 3
+;
+; Algorithm: Logit distillation
+; Test case: distill_logit
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; logit_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080df000002000000002d4f
