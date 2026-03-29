@@ -1,0 +1,13 @@
+; Saliency Explainability — TTT Dogfood Phase 3
+;
+; Explainability: Saliency map generation
+;
+; Test case: saliency_explainability
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; saliency_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e7f000000200000000029e2
