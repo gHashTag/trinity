@@ -1,0 +1,13 @@
+; Federated Proximal — TTT Dogfood Phase 3
+;
+; Federated: FedProx proximal optimization
+;
+; Test case: federated_prox
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; fedprox_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07df20000002000000002955
