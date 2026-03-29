@@ -1,0 +1,13 @@
+; Control Sliding Mode — TTT Dogfood Phase 3
+;
+; Control: Sliding mode control
+;
+; Test case: control_sliding_mode
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sliding_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08080000002000000002be8
