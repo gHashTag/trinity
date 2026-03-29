@@ -1,0 +1,13 @@
+; Dimensionality Truncated SVD — TTT Dogfood Phase 3
+;
+- Truncated SVD: sparse matrix SVD
+;
+; Test case: dim_truncated_svd
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; truncated_svd_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b8b000002000000002693

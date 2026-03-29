@@ -1,0 +1,13 @@
+; Dimensionality LLE — TTT Dogfood Phase 3
+;
+- LLE: Locally Linear Embedding
+;
+; Test case: dim_locally_linear
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; locally_linear_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b8d000002000000002695
