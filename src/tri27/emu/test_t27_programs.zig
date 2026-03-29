@@ -169446,3 +169446,48 @@ test "wav2vec_audio: verify algorithm" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "htc_learning: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "htc_learning.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "htc_learning: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "htc_learning.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "som_neocortex: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "som_neocortex.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "som_neocortex: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "som_neocortex.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "ssom_neocortex: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ssom_neocortex.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "ssom_neocortex: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "ssom_neocortex.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
