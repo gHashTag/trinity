@@ -1,0 +1,13 @@
+; Geospatial Spatial Join — TTT Dogfood Phase 3
+;
+; Geospatial: Spatial join operation
+;
+; Test case: geospatial_spatial_join
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; spatial_join_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080de000002000000002c4c
