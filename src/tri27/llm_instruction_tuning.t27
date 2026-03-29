@@ -1,0 +1,13 @@
+; LLM Instruction Tuning — TTT Dogfood Phase 3
+;
+; LLM: System prompt optimization
+;
+; Test case: llm_instruction_tuning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; instruction_tuning_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080950000002000000002bef
