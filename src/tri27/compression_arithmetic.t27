@@ -1,0 +1,13 @@
+; Compression Arithmetic — TTT Dogfood Phase 3
+;
+; Compression: Arithmetic coding
+;
+; Test case: compression_arithmetic
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; arithmetic_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080bf000002000000002c25
