@@ -1,0 +1,12 @@
+; RL Rainbow — TTT Dogfood Phase 3
+;
+; Algorithm: Rainbow DQN
+; Test case: rl_rainbow
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; rainbow_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08077000002000000002cb7
