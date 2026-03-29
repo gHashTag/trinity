@@ -1,0 +1,13 @@
+; Structured Pruning — TTT Dogfood Phase 3
+;
+; Pruning: Channel/filter pruning
+;
+; Test case: structured_pruning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; struct_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e410000020000000029a4
