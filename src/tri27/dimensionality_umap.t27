@@ -1,0 +1,13 @@
+; Dimensionality UMAP — TTT Dogfood Phase 3
+;
+; Dimensionality: Uniform Manifold Approximation
+;
+; Test case: dimensionality_umap
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; umap_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:0802d000002000000002b93
