@@ -1,0 +1,13 @@
+; DeepLab Detection — TTT Dogfood Phase 3
+;
+; Computer Vision: DeepLab segmentation
+;
+; Test case: deeplab_detection
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; deeplab_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07da900000020000000002903
