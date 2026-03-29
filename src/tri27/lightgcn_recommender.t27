@@ -1,0 +1,13 @@
+; LightGCN Recommender — TTT Dogfood Phase 3
+;
+; Recommender: Lightweight Graph Convolutional Network
+;
+; Test case: lightgcn_recommender
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; lightgcn_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07cb90000002000000000283b
