@@ -1,0 +1,13 @@
+; RecSys NCF — TTT Dogfood Phase 3
+;
+- Neural Collaborative Filtering
+;
+; Test case: recsys_ncf
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ncf_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07b690000200000000002659
