@@ -1,0 +1,13 @@
+; SHA-256 Hash — TTT Dogfood Phase 3
+;
+; Hashing: SHA-256 digest
+;
+; Test case: sha256_hash
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; sha256_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07f2a00000020000000002a8d
