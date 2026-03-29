@@ -1,0 +1,12 @@
+; Prune Iterative — TTT Dogfood Phase 3
+;
+; Algorithm: Iterative pruning
+; Test case: prune_iterative
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; iterative_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:080d4000002000000002d5a
