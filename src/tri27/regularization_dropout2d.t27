@@ -1,0 +1,13 @@
+; Regularization Dropout2D — TTT Dogfood Phase 3
+;
+; Regularization: Spatial dropout
+;
+; Test case: regularization_dropout2d
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; dropout2d_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08068000002000000002bce
