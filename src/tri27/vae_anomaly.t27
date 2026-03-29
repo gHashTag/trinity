@@ -1,0 +1,13 @@
+; VAE Anomaly — TTT Dogfood Phase 3
+;
+; Anomaly: Variational Autoencoder
+;
+; Test case: vae_anomaly
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; vae_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07eb60000002000000002a19

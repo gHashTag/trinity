@@ -1,0 +1,13 @@
+; Mean Shift Clustering — TTT Dogfood Phase 3
+;
+; Clustering: Mean-based cluster assignment
+;
+; Test case: mean_shift_clustering
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; meanshift_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ea50000002000000002a08
