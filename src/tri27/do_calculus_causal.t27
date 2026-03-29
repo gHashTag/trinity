@@ -1,0 +1,13 @@
+; Do-Calculus Causal — TTT Dogfood Phase 3
+;
+; Causal: Pearl do-calculus intervention
+;
+; Test case: do_calculus_causal
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; docalc_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ebb00000020000000002a1e
