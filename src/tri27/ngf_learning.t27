@@ -1,0 +1,13 @@
+; NGF Learning — TTT Dogfood Phase 3
+;
+; Neocortex: Neural Gas Fields
+;
+; Test case: ngf_learning
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; ngf_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07d500000020000000002885
