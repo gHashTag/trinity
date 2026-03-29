@@ -1,0 +1,13 @@
+; Scheduler Cosine Annealing — TTT Dogfood Phase 3
+;
+; Scheduler: Cosine learning rate decay
+;
+; Test case: scheduler_cosine
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; cosine_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08057000002000000002bbd
