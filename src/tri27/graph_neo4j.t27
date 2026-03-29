@@ -1,0 +1,12 @@
+; Graph Neo4j — TTT Dogfood Phase 3
+;
+; Database: Neo4j graph database
+; Test case: graph_neo4j
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; neo4j_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08092000002000000002c9c

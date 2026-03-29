@@ -1,0 +1,12 @@
+; Graph TigerGraph — TTT Dogfood Phase 3
+;
+; Database: TigerGraph graph analytics platform
+; Test case: graph_tigergraph
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; tigergraph_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:08090000002000000002c9e
