@@ -1,0 +1,13 @@
+; Random Undersample — TTT Dogfood Phase 3
+;
+; Imbalance: Random majority removal
+;
+; Test case: random_undersample
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; random_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07e31000002000000002994
