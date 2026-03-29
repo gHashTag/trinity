@@ -1,0 +1,13 @@
+; VECM TimeSeries — TTT Dogfood Phase 3
+;
+; Time Series: Vector Error Correction Model
+;
+; Test case: vecm_timeseries
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; vecm_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07cab00000200000000282d

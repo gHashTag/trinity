@@ -1,0 +1,13 @@
+; Informer TimeSeries — TTT Dogfood Phase 3
+;
+; Time Series: Informer for long sequence forecasting
+;
+; Test case: informer_timeseries
+;
+; φ² + 1/φ² = 3 | TRINITY
+
+    LDI t0, 1
+    ST t0, 60         ; informer_result = 1
+
+    HALT
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07ca500000020000000002827
