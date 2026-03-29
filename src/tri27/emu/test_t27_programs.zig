@@ -169236,3 +169236,213 @@ test "yi: verify file exists" {
     defer allocator.free(source);
     try std.testing.expect(source.len > 0);
 }
+
+test "audio_spectrograms: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_spectrograms.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "audio_spectrograms: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "audio_spectrograms.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "clip_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "clip_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "clip_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "clip_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "efficientnet_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "efficientnet_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "efficientnet_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "efficientnet_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mae_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mae_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "mae_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mae_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "mobilenet_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mobilenet_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "mobilenet_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "mobilenet_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nlp_embeddings: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_embeddings.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nlp_embeddings: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_embeddings.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nlp_pos_tagging: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_pos_tagging.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nlp_pos_tagging: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_pos_tagging.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "nlp_tokenization: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_tokenization.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "nlp_tokenization: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "nlp_tokenization.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "resnet_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "resnet_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "resnet_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "resnet_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "swin_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "swin_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "swin_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "swin_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "unet_segmentation: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unet_segmentation.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "unet_segmentation: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "unet_segmentation.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "vit_vision: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vit_vision.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "vit_vision: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "vit_vision.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "yolo_detection: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "yolo_detection.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "yolo_detection: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "yolo_detection.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
+
+test "wav2vec_audio: file exists" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wav2vec_audio.t27");
+    defer allocator.free(source);
+    try assemble(allocator, source);
+    try std.testing.expect(std.mem.indexOf(u8, source, "") != null);
+}
+
+test "wav2vec_audio: verify algorithm" {
+    const allocator = std.testing.allocator;
+    const source = try readT27File(allocator, "wav2vec_audio.t27");
+    defer allocator.free(source);
+    try std.testing.expect(source.len > 0);
+}
