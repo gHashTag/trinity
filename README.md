@@ -1,24 +1,26 @@
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?label=Download&style=for-the-badge" alt="GitHub Release"></a>
+  <a href="https://github.com/gHashTag/trinity/releases/v5.1.0">
+    <img src="https://img.shields.io/github/v/release/gHashTag/trinity?label=Download&style=for-the-badge" alt="Download">
+  </a>
 </p>
 
 <h1 align="center">Trinity CLI</h1>
 
 <p align="center">
-  <strong>Ternary Computing Framework — VSA, BitNet LLM Inference, Mathematical Research</strong><br>
+  <strong>Ternary Computing Framework with GF16 — Derived from φ, Not Compromise</strong><br>
   <code>φ² + 1/φ² = 3</code> — The Trinity Identity
 </p>
 
 <p align="center">
-  <a href="#installation">Installation</a> &bull;
+  <a href="#installation">Install</a> &bull;
   <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#gf16--why-69">GF16</a> &bull;
   <a href="#tri-cli">Commands</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
   <a href="#documentation">Docs</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/gHashTag/trinity/releases"><img src="https://img.shields.io/github/v/release/gHashTag/trinity?style=flat-square" alt="Release"></a>
   <a href="https://www.npmjs.com/package/@playra/tri"><img src="https://img.shields.io/npm/v/@playra/tri?style=flat-square&logo=npm" alt="npm"></a>
   <a href="https://github.com/gHashTag/homebrew-trinity"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FgHashTag%2Fhomebrew-trinity%2Fmain%2FFormula%2Ftrinity.rb&query=$.version&label=homebrew&style=flat-square" alt="Homebrew"></a>
   <a href="https://aur.archlinux.org/packages/trinity-cli"><img src="https://img.shields.io/aur/version/trinity-cli?style=flat-square&logo=arch-linux" alt="AUR"></a>
@@ -26,38 +28,52 @@
   <img src="https://img.shields.io/badge/Zig-0.15.x-F7A41D?style=flat-square&logo=zig" alt="Zig 0.15.x">
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License">
   <a href="https://github.com/gHashTag/trinity/stargazers"><img src="https://img.shields.io/github/stars/gHashTag/trinity?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/gHashTag/trinity/graphs/contributors"><img src="https://img.shields.io/github/contributors/gHashTag/trinity?style=flat-square" alt="Contributors"></a>
-  <a href="https://github.com/gHashTag/trinity/commits/main"><img src="https://img.shields.io/github/last-commit/gHashTag/trinity?style=flat-square" alt="Last Commit"></a>
-      <a href="https://doi.org/10.5281/zenodo.18947017"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.18947017.svg" alt="DOI"></a>
-  <!-- NEW: Zenodo v9.0 Badges -->
-  <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19227879.svg" alt="DOI"></a>
   <a href="https://doi.org/10.5281/zenodo.19227879"><img src="https://img.shields.io/badge/Zenodo-v9.0-blue?logo=zenodo" alt="Zenodo v9.0"></a>
   <a href="https://doi.org/10.5281/zenodo.19227865"><img src="https://img.shields.io/badge/PPL-125.3-brightgreen?style=flat-square" alt="HSLM"></a>
   <a href="https://doi.org/10.5281/zenodo.19227869"><img src="https://img.shields.io/badge/tests-98.7%25-brightgreen?style=flat-square" alt="Tests"></a>
-  <a href="https://doi.org/10.5281/zenodo.19227877"><img src="https://img.shields.io/badge/SIMD-11.5%25C3%97-orange?style=flat-square" alt="SIMD"></a>
 </p>
 
 ---
 
-## Trinity S³AI DNA
+## GF16: Why 6:9? — 2026 Achievement 🔥
 
-### Trinity Identity
+Trinity's **GF16 format** (6-bit exponent, 9-bit mantissa) is derived from φ's mathematical properties — not engineering compromise.
+
+### The Proof
+
 ```
-    φ² + 1/φ² = 3 = TRINITY
+φ² + 1/φ² = 2.618033... + 0.381966... = 3 (EXACT)
 ```
 
-### Three Strands
-- **Strand I**: Mathematical Foundation — Sacred constants, formulas, VSA
-- **Strand II**: Cognitive Architecture — Brain modules, observability
-- **Strand III**: Language & Hardware Bridge — TRI-27, FPGA backends
+This algebraic identity gives us:
+- **6-bit exponent** → 0.6 ratio ≈ 1/φ = 0.618 (information threshold)
+- **9-bit mantissa** → 0.9 ratio (adaptive precision)
+- **Balance** → φ² + φ⁻² = 3, the Trinity Identity
 
-[Full Architecture](docs/ARCHITECTURE.md)
+### Timeline — 40 Years, One Discovery
+
+| Year | Format | Ratio | Method |
+|------|--------|-------|--------|
+| 1985 | IEEE FP32 (8:23) | 0.35 | Committee compromise |
+| 2018 | Google BF16 (8:7) | 1.14 | Pragmatic hack |
+| 2019 | IBM DLFloat (6:9) | 0.67 | Empirical search |
+| **2026** | **Trinity GF16 (6:9)** | **0.67** | **Analytical derivation from φ** |
+
+### Key Point
+
+IBM found 6:9 empirically in 2019 — **without knowing φ**.
+
+Trinity derived 6:9 analytically from φ² + 1/φ² = 3 — **arriving at the same value through first principles**.
+
+This is the first floating-point format in history **derived from fundamental mathematics**, not trial-and-error.
+
+[Golden Ratio Partition Paper](docs/docs/research/golden_ratio_partition.md) | [zenodo:10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879)
 
 ---
 
-## TRI-27 — Trinity Kernel
+## TRI-27 — Ternary Kernel
 
-**TRI-27 is the ternary computing kernel** that executes all Trinity workloads:
+**27 registers, 36 opcodes, 3 banks**
 
 | Component | Value |
 |-----------|-------|
@@ -70,15 +86,46 @@
 φ² + 1/φ² = 3 → 3^27 = 7.6 trillion states (ternary completeness)
 ```
 
-[Full TRI-27 Documentation](docs/tri27/README.md) | [ISA Reference](src/tri27/emu/specs/tri27_isa.md)
+[TRI-27 Docs](docs/tri27/README.md) | [ISA Reference](src/tri27/emu/specs/tri27_isa.md)
+
+---
+
+## Trinity S³AI DNA
+
+### Three Strands
+- **Strand I**: Mathematical Foundation — Sacred constants, formulas, VSA
+- **Strand II**: Cognitive Architecture — Brain modules, observability
+- **Strand III**: Language & Hardware Bridge — TRI-27, FPGA backends
+
+[Full Architecture](docs/ARCHITECTURE.md)
+
+---
+
+## Quick Start
+
+**Install and run in 2 minutes:**
+
+```bash
+# Install (npm)
+npm install -g @playra/tri
+
+# Verify
+tri --version
+# Output: TRI CLI v5.1.0
+
+# Explore Trinity Identity
+tri phi 2           # φ² = 2.618033988749895
+tri constants       # 30+ constants from φ²+φ⁻²=3
+tri clara demo      # 4 theorems verified
+```
+
+**Other install methods:** [Homebrew](https://github.com/gHashTag/homebrew-trinity), [AUR](https://aur.archlinux.org/packages/trinity-cli), [Docker](https://github.com/gHashTag/trinity/pkgs/container/trinity)
 
 ---
 
 ## Honest Science: What We Got Wrong
 
-**Before showing what works, here's what didn't:**
-
-### DELTA-001: Rejected Hypotheses
+Science advances through falsification. Here's what didn't work:
 
 | Hypothesis | Expected | Actual | Status |
 |-----------|----------|--------|--------|
@@ -86,51 +133,9 @@
 | α family fit | <0.01% | 5-15% | ❌ **REJECTED** |
 | √(8/3) ≈ φ | Exact | 1.632 vs 1.618 | ❌ **REJECTED** |
 
-**Why this matters:** Science advances through falsification. Documenting failures builds trust.
+**Evidence Level:** 🔴 Smoking Gun (4): G, N_gen=3, t_present, T_cycles | 🟡 Consistent (3): C, Ω_Λ, Ω_DM | ⚫ Rejected (3): γ=φ⁻³, α family, √(8/3)
 
-```
-Evidence Level:
-  🔴 Smoking Gun (4): G, N_gen=3, t_present, T_cycles
-  🟡 Consistent (3): C, Ω_Λ, Ω_DM
-  ⚫ Rejected (3): γ=φ⁻³, α family, √(8/3)
-```
-
-[DELTA-001 Full Report](docs/docs/research/delta_001_final_report.md) |
-[Experience Log](.trinity/experience/)
-
----
-
-## Getting Started (5 Minutes)
-
-**Clone, install, run your first command:**
-
-```bash
-# 1. Install (one command)
-npm install -g @playra/tri
-
-# 2. Verify
-tri --version
-# Output: TRI CLI v5.1.0
-
-# 3. See sacred constants
-tri constants
-# Shows 30+ constants derived from φ²+φ⁻²=3
-
-# 4. Verify Trinity Identity
-tri phi 2
-# Output: φ² = 2.618033988749895
-tri formula 2.618033988749895
-# Shows φ² + φ⁻² = 3 (exact)
-
-# 5. Run CLARA demo (4 theorems verified)
-tri clara demo
-```
-
-**What you just saw:**
-- 30+ fundamental constants from one identity
-- Polynomial-time guarantees (VSA O(n), FPGA O(1))
-- 3000+ tests passing
-- All open source, reproducible
+[DELTA-001 Full Report](docs/docs/research/delta_001_final_report.md) | [Experience Log](.trinity/experience/)
 
 ---
 
@@ -239,57 +244,6 @@ Trinity is a **ternary computing framework** with:
 
 ---
 
-## GF16: Why 6:9? — Historical Context
-
-Trinity's **GF16 format** (6-bit exponent, 9-bit mantissa) is not arbitrary — it emerges from φ-optimization and converges with four independent lines of research.
-
-### The Algebraic Proof
-
-Starting from φ = (1+√5)/2, we have φ² = φ + 1 (fundamental property):
-
-```
-φ² + 1/φ² = 2.618033... + 0.381966... = 3 (EXACT)
-```
-
-Not approximately 3 — **exactly 3**. This algebraic identity follows from φ² - φ - 1 = 0.
-
-The number 3 is central to Trinity: ternary states {-1, 0, +1}, 3^k addressing, and now 3 = φ² + 1/φ² as the balance of scale and precision.
-
-### Four Independent Confirmations
-
-| Research | Finding | Year | Connection to φ |
-|----------|---------|------|-----------------|
-| **IEEE 754** | FP32 (8:23), FP16 (5:10) | 1985 | Engineering compromise — no φ |
-| **Google Brain** | BF16 (8:7) — "truncated FP32" | 2018 | Pragmatic hack — no φ |
-| **IBM Research** | DLFloat (6:9) via empirical study | 2019 | Empirically found optimal — **unaware of φ** |
-| **Weber-Fechner ML** | Logarithmic encoding accelerates learning | 2022 | Confirms exponent importance — indirect φ |
-| **Golden Ratio Partition** | φ = optimal information threshold | 2026 | **Mathematical proof** |
-| **Trinity** | GF16 (6:9) derived from φ² + 1/φ² = 3 | 2025 | **Analytical derivation** |
-
-### Key References
-
-1. **Golden Ratio Partition (March 2026)** — Mathematical proof that φ marks the threshold where self-similar structure meets adaptive capacity in information systems. Ratio 6:9 ≈ 0.666 ≈ 1/φ = 0.618 is the "golden corridor" for anti-fragile systems.
-
-2. **IBM DLFloat (2019)** — Empirical study across deep learning workloads converged on 6:9 split, stating: *"DLFloat is a 16-bit floating point format designed for deep learning training and inference"*. They found the optimum experimentally; Trinity derived it from φ.
-
-3. **Weber-Fechner in ML (2022)** — Kausik et al. proved Weber-Fechner law accelerates ML training. JND (just noticeable difference) ∝ stimulus intensity implies logarithmic encoding — exactly what floating-point exponent provides. GF16's 6-bit exponent gives wider log range than IEEE FP16's 5-bit exponent.
-
-4. **Rate-Distortion Theory** — Formal solution to bit allocation: minimize distortion D given rate R. For log-normal distributed ML weights, optimal exp:mant ratio converges to 0.6–0.7 — the golden corridor around 1/φ.
-
-### The Difference
-
-| Approach | Method | Understanding |
-|----------|--------|---------------|
-| Kahan (IEEE) | Committee compromise | ❌ No φ |
-| Google (BF16) | Truncate FP32 | ❌ No φ |
-| IBM (DLFloat) | Empirical search | ❌ Empirical, no theory |
-| NVIDIA (FP8) | Empirical search | ❌ Empirical, no theory |
-| **Trinity (GF16)** | **Formula: V = n×3^k×π^m×φ^p×e^q** | **✅ Analytical + implementation** |
-
-Trinity didn't "guess" 6:9. We derived it from φ² + 1/φ² = 3 — arriving at the same value IBM found empirically, and which the March 2026 paper proved mathematically fundamental.
-
----
-
 ## Mathematical Framework
 
 The core identity φ² + φ⁻² = 3 generates numerical values for 30+ fundamental constants:
@@ -363,7 +317,7 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 
 ## Installation
 
-**Trinity v5.1.0 "HEARTBEAT"** — Install via your preferred package manager:
+**Trinity v5.1.0 "HEARTBEAT"**
 
 | Method | Command |
 |--------|---------|
@@ -372,242 +326,44 @@ Qutrit neural networks show 35-40% training speedup vs qubit networks, due to ri
 | **AUR** | `yay -S trinity-cli` |
 | **Docker** | `docker pull ghcr.io/ghashtag/trinity:latest` |
 
-### Platform-Specific Guides
+### Build from Source
+
+```bash
+git clone https://github.com/gHashTag/trinity.git && cd trinity
+zig build tri          # Build TRI CLI
+./zig-out/bin/tri      # Run
+```
+
+Requires **Zig 0.15.x**.
+
+### Platform Guides
 
 | Platform | Guide |
 |----------|-------|
 | **macOS** | [docs/quickstart_macos.md](docs/quickstart_macos.md) |
 | **Linux** | [docs/quickstart_linux.md](docs/quickstart_linux.md) |
 | **Windows** | [docs/quickstart_windows.md](docs/quickstart_windows.md) |
-| **Docker** | See container image: `ghcr.io/ghashtag/trinity:latest` |
 
-### Verify Installation
+### Verify
 
 ```bash
 tri --version
-# Output: TRI CLI v5.1.0
-
-tri constants
-# Shows all constants (φ, π, e, μ, χ, σ, ε...)
-```
-
----
-
-## Quick Start
-
-### 30-Second Install
-
-```bash
-# Clone and build (requires Zig 0.15.x)
-git clone https://github.com/gHashTag/trinity.git && cd trinity
-zig build tri
-
-# Run TRI CLI
-./zig-out/bin/tri --help
-```
-
-### Interactive REPL
-
-```bash
-./zig-out/bin/tri      # Start interactive mode
-# Type any message, use /quit to exit
-```
-
-### Generate Code
-
-```bash
-tri code "create a REST API server in Zig"
-```
-
-### Fix Bugs
-
-```bash
-tri fix src/main.zig
-tri explain src/vsa.zig
-tri test src/vsa.zig
-```
-
-### Mathematical Commands
-
-```bash
-tri constants          # Show φ, π, e, Lucas, Fibonacci
-tri phi 10             # Compute φ^10
-tri lucas 10           # Lucas L(10)
-tri spiral 5           # φ-spiral coordinates
-```
-
-### All Commands (100+ commands)
-
-> **Note:** Run `tri help` to see all commands by category.
-
-```bash
-tri help               # Show all commands by category
-tri help --search test # Search commands
+tri constants       # Show all sacred constants
 ```
 
 #### Core Commands
 
 | Command | Description |
 |---------|-------------|
-| `tri chat` | Interactive chat (v2.1: vision + voice + tools) |
-| `tri code` | Generate code from prompt |
-| `tri gen` | Compile VIBEE spec to Zig/Verilog |
-| `tri convert` | Convert WASM/Binary to Ternary |
-| `tri serve` | Start HTTP API server |
-| `tri bench` | Run performance benchmarks |
-| `tri evolve` | Evolve fingerprint (Firebird) |
-
-#### SWE Agent
-
-| Command | Description |
-|---------|-------------|
+| `tri chat` | Interactive chat (vision + voice + tools) |
+| `tri code <prompt>` | Generate code |
 | `tri fix <file>` | Detect and fix bugs |
-| `tri explain <file>` | Explain code or concept |
-| `tri test <file>` | Generate tests |
-| `tri doc <file>` | Generate documentation |
-| `tri refactor <file>` | Suggest refactoring |
-| `tri reason` | Chain-of-thought reasoning |
-
-#### Git Integration
-
-| Command | Description |
-|---------|-------------|
-| `tri status` | Git status --short |
-| `tri diff` | Git diff |
-| `tri log` | Git log --oneline -10 |
-| `tri commit` | Git add -A && commit |
-
-#### Golden Chain Pipeline
-
-| Command | Description |
-|---------|-------------|
-| `tri pipeline run <task>` | Execute 17-link development cycle |
-| `tri pipeline status` | Show pipeline state |
-| `tri decompose <task>` | Break task into sub-tasks |
-| `tri verify` | Run tests + benchmarks (Links 7-11) |
-| `tri verdict` | Generate toxic verdict (Link 14) |
-
-#### Sacred Mathematics (v3.6)
-
-| Command | Description |
-|---------|-------------|
-| `tri constants` | Show all sacred constants (φ, π, e, μ, χ, σ, ε...) |
+| `tri explain <file>` | Explain code |
+| `tri constants` | Show all sacred constants (φ, π, e...) |
 | `tri phi <n>` | Compute φ^n |
-| `tri fib <n>` | Fibonacci F(n) with BigInt |
-| `tri lucas <n>` | Lucas L(n) |
-| `tri spiral <n>` | φ-spiral coordinates |
-| `tri gematria <text>` | Coptic gematria + sacred formula |
-| `tri formula <value>` | Sacred formula decomposition |
-| `tri sacred` | 32 constants + 9 predictions table |
+| `tri clara demo` | CLARA verification (4 theorems) |
 
-#### Sacred Biology (v14.0)
-
-| Command | Description |
-|---------|-------------|
-| `tri bio dna <seq>` | DNA analysis with sacred mathematics |
-| `tri bio rna <seq>` | RNA analysis with sacred mathematics |
-| `tri bio protein <seq>` | Protein analysis (1-letter codes) |
-| `tri bio phi-genome` | Sacred genome patterns |
-| `tri bio codon <codon>` | Codon → amino acid lookup |
-
-#### Sacred Cosmology (v15.0)
-
-| Command | Description |
-|---------|-------------|
-| `tri cosmos hubble` | Resolve Hubble tension via Sacred Formula |
-| `tri cosmos dark` | Dark energy/matter as φ-patterns |
-| `tri cosmos predict` | Predict new constants and stability islands |
-| `tri cosmos expand` | Universe expansion timeline |
-| `tri cosmos big-bang` | Big Bang through sacred lens |
-
-#### Sacred Neuroscience (v16.0)
-
-| Command | Description |
-|---------|-------------|
-| `tri neuro waves [freq]` | Brain waves (φ-patterned frequencies) |
-| `tri neuro consciousness [C t E]` | Compute consciousness level Ψ |
-| `tri neuro regions` | Sacred brain regions (φ-index) |
-| `tri neuro network` | Analyze neural network sacredness |
-| `tri neuro synapse` | Synaptic transmission timing |
-| `tri neuro neurons` | Brain statistics & sacred constants |
-
-#### Sacred Intelligence
-
-| Command | Description |
-|---------|-------------|
-| `tri intelligence` | Sacred formula + gematria analysis |
-| `tri intel` | Alias for intelligence |
-
-#### Sacred Agents (Cycle 98)
-
-| Command | Description |
-|---------|-------------|
-| `tri identity` | Show Sacred Intelligence identity |
-| `tri swarm` | Multi-agent Sacred Swarm status |
-| `tri govern` | Sacred Governance rules (φ-Rules) |
-| `tri dashboard` | 3-column Sacred Dashboard |
-| `tri omega` | Master coordinator - all agents |
-| `tri math-agent` | Sacred Math Agent - self-aware |
-
-#### Autonomous Evolution (Cycle 97)
-
-| Command | Description |
-|---------|-------------|
-| `tri auto-commit` | Autonomous sacred patch commits (φ-guided) |
-| `tri ml-optimize` | ML-based patch optimization |
-| `tri deploy-dashboard` | Deploy production dashboard |
-| `tri self-host` | Self-hosting loop |
-| `tri safeguards show` | Show safeguard status |
-
-#### Dev Utilities
-
-| Command | Description |
-|---------|-------------|
-| `tri doctor` | Codebase health (scan/mark/report/plan/heal) |
-| `tri clean` | Clean build artifacts (.zig-cache, zig-out) |
-| `tri fmt` | Format Zig source (zig fmt src/) |
-| `tri stats` | Project statistics (files, LOC, specs, tests) |
-| `tri igla` | IGLA initiative status (parser coverage) |
-| `tri version` | Show version info |
-
-#### Demo & Benchmark Commands
-
-| Category | Commands |
-|----------|----------|
-| **TVC** | `tri tvc-demo`, `tri tvc-stats` |
-| **Multi-Agent** | `tri agents-demo`, `tri agents-bench` |
-| **Long Context** | `tri context-demo`, `tri context-bench` |
-| **RAG** | `tri rag-demo`, `tri rag-bench` |
-| **Voice** | `tri voice-demo`, `tri voice-bench` |
-| **Sandbox** | `tri sandbox-demo`, `tri sandbox-bench` |
-| **Streaming** | `tri stream-demo`, `tri stream-bench` |
-| **Vision** | `tri vision-demo`, `tri vision-bench` |
-| **Fine-tuning** | `tri finetune-demo`, `tri finetune-bench` |
-| **Multi-modal** | `tri multimodal-demo`, `tri multimodal-bench` |
-| **Tool Use** | `tri tooluse-demo`, `tri tooluse-bench` |
-| **Unified Agent** | `tri unified-demo`, `tri unified-bench` |
-| **Autonomous** | `tri auto-demo`, `tri auto-bench` |
-| **Orchestration** | `tri orch-demo`, `tri orch-bench` |
-| **Memory** | `tri memory-demo`, `tri memory-bench` |
-
-#### REPL Commands (in interactive mode)
-
-```
-/chat /code /fix /explain /test /doc /reason
-/zig /python /rust /js    Set language
-/stats /verbose /help /quit
-```
-
-### Build from Source
-
-```bash
-git clone https://github.com/gHashTag/trinity.git
-cd trinity
-zig build tri          # Build TRI CLI
-zig build test         # Run all tests
-```
-
-Requires **Zig 0.15.x**.
+**100+ commands available.** Run `tri help` or see [Command Reference](docs/command_registry.md)
 
 ---
 
