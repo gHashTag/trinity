@@ -18,15 +18,14 @@ pub fn main() !void {
     std.debug.print("Generating trinity_identity.gif...\n", .{});
 
     // GIF header bytes
-    var header_data = [_]u8{
+    try file.writeAll(&[_]u8{
         'G', 'I', 'F', '8', '9', 'a',
         @as(u8, width & 0xFF), @as(u8, (width >> 8) & 0xFF),
         @as(u8, height & 0xFF), @as(u8, (height >> 8) & 0xFF),
         0xF0, 0x00, 0x00,
-    };
-    try file.writeAll(&header_data);
+    });
 
-    // Global color table (16 colors)
+    // Global color table (16 colors: grayscale)
     for (0..16) |i| {
         const c = @as(u8, @intCast(i * 17));
         const rgb = [_]u8{ c, c, c };
@@ -34,14 +33,17 @@ pub fn main() !void {
     }
     // Fill rest with black
     const remaining = 256 * 3 - 16 * 3;
-    const zeros = try std.heap.page_allocator.alloc(u8, remaining);
-    defer std.heap.page_allocator.free(zeros);
-    @memset(zeros, 0);
-    try file.writeAll(zeros);
+    for (0..remaining) |_| {
+        const zeros = [_]u8{0};
+        try file.writeAll(&zeros);
+    }
 
     // Netscape loop extension
-    const netscape = "\x21\xFF\x11NETSCAPE2.0\x03\x01\x00\x00";
-    try file.writeAll(netscape);
+    const netscape_header = [_]u8{ 0x21, 0xFF, 0x11 };
+    try file.writeAll(&netscape_header);
+    try file.writeAll("NETSCAPE2.0");
+    const netscape_footer = [_]u8{ 0x03, 0x01, 0x00, 0x00 };
+    try file.writeAll(&netscape_footer);
 
     // Generate frames
     var frame: u32 = 0;
@@ -54,13 +56,14 @@ pub fn main() !void {
         const cx = width / 2;
         const cy: u16 = height / 2;
 
-        // Draw phi^2 bar (gold)
+        // Draw phi^2 bar (gold - color 1)
         const phi_h = @as(u32, @intFromFloat((PHI_SQUARED / 3.0) * 60 * ease));
         const phi_x = cx - 30;
-        for (0..@min(phi_h, 60)) |y| {
-            const py = cy - 30 - @as(u16, y);
+        var y: usize = 0;
+        while (y < @min(phi_h, 60)) : (y += 1) {
+            const py = cy - 30 - @as(u16, @intCast(y));
             for (0..25) |px| {
-                const px_actual = phi_x + @as(u16, px);
+                const px_actual = phi_x + @as(u16, @intCast(px));
                 if (px_actual < width and py > 0) {
                     const idx = @as(usize, py) * width + @as(usize, px_actual);
                     if (idx < pixels.len) pixels[idx] = 1;
@@ -68,13 +71,14 @@ pub fn main() !void {
             }
         }
 
-        // Draw 1/phi^2 bar (cyan)
+        // Draw 1/phi^2 bar (cyan - color 2)
         const inv_h = @as(u32, @intFromFloat((INVERSE_PHI_SQUARED / 3.0) * 60 * ease));
         const inv_x = cx + 5;
-        for (0..@min(inv_h, 60)) |y| {
-            const py = cy - 30 - @as(u16, y);
+        y = 0;
+        while (y < @min(inv_h, 60)) : (y += 1) {
+            const py = cy - 30 - @as(u16, @intCast(y));
             for (0..25) |px| {
-                const px_actual = inv_x + @as(u16, px);
+                const px_actual = inv_x + @as(u16, @intCast(px));
                 if (px_actual < width and py > 0) {
                     const idx = @as(usize, py) * width + @as(usize, px_actual);
                     if (idx < pixels.len) pixels[idx] = 2;
@@ -82,12 +86,13 @@ pub fn main() !void {
             }
         }
 
-        // Draw sum bar (magenta) - shows equals 3
+        // Draw sum bar (magenta - color 3) - shows equals 3
         const sum_x = cx + 35;
-        for (0..60) |y| {
-            const py = cy - 30 - @as(u16, y);
+        y = 0;
+        while (y < 60) : (y += 1) {
+            const py = cy - 30 - @as(u16, @intCast(y));
             for (0..25) |px| {
-                const px_actual = sum_x + @as(u16, px);
+                const px_actual = sum_x + @as(u16, @intCast(px));
                 if (px_actual < width and py > 0) {
                     const idx = @as(usize, py) * width + @as(usize, px_actual);
                     if (idx < pixels.len) pixels[idx] = 3;
@@ -95,32 +100,39 @@ pub fn main() !void {
             }
         }
 
-        // Graphics control (10/100 sec delay)
-        try file.writeAll("\x21\xF9\x04\x00\x0A\x00");
+        // Graphics control extension (10/100 sec delay)
+        const gce = [_]u8{ 0x21, 0xF9, 0x04, 0x00, 0x0A, 0x00 };
+        try file.writeAll(&gce);
 
         // Image descriptor
-        const img_desc = [_]u8{ 0x2C, 0x00, 0x00, 0x00, 0x00, @as(u8, width & 0xFF), @as(u8, (width >> 8) & 0xFF), @as(u8, height & 0xFF), @as(u8, (height >> 8) & 0xFF), 0x00 };
-        try file.writeAll(&img_desc);
+        try file.writeAll(&[_]u8{
+            0x2C, 0x00, 0x00, 0x00, 0x00,
+            @as(u8, width & 0xFF), @as(u8, (width >> 8) & 0xFF),
+            @as(u8, height & 0xFF), @as(u8, (height >> 8) & 0xFF), 0x00,
+        });
 
-        try file.writeByte(2); // LZW min code size
+        const min_code = [_]u8{ 2 }; // LZW min code size
+        try file.writeAll(&min_code);
 
-        // Pixel data
+        // Pixel data in chunks
         var pos: usize = 0;
         while (pos < pixels.len) {
             const chunk = @min(254, pixels.len - pos);
-            const chunk_data = try std.heap.page_allocator.alloc(u8, chunk + 1);
-            defer std.heap.page_allocator.free(chunk_data);
-            chunk_data[0] = @intCast(chunk);
-            @memcpy(chunk_data[1..], pixels[pos..pos+chunk]);
-            try file.writeAll(chunk_data);
+            const chunk_buf = try std.heap.page_allocator.alloc(u8, chunk + 1);
+            defer std.heap.page_allocator.free(chunk_buf);
+            chunk_buf[0] = @intCast(chunk);
+            @memcpy(chunk_buf[1..], pixels[pos..pos+chunk]);
+            try file.writeAll(chunk_buf);
             pos += chunk;
         }
-        try file.writeByte(0); // terminator
+        const term = [_]u8{ 0 }; // block terminator
+        try file.writeAll(&term);
 
         if (frame % 10 == 0) std.debug.print("  Frame {d}/{}\n", .{frame, frames});
     }
 
-    try file.writeAll("\x3B"); // trailer
+    const trailer = [_]u8{ 0x3B }; // GIF trailer
+    try file.writeAll(&trailer);
 
     std.debug.print("Done!\n", .{});
     std.debug.print("Created: trinity_identity.gif\n", .{});
