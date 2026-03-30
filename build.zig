@@ -509,6 +509,27 @@ pub fn build(b: *std.Build) void {
     const firebird_step = b.step("firebird", "Run Firebird CLI");
     firebird_step.dependOn(&run_firebird.step);
 
+    // TRI-KAGGLE — Standalone Kaggle CLI (bypasses broken tri modules)
+    const tri_kaggle = b.addExecutable(.{
+        .name = "tri-kaggle",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/kaggle/main_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "kaggle", .module = kaggle_mod },
+            },
+        }),
+    });
+    b.installArtifact(tri_kaggle);
+
+    const run_tri_kaggle = b.addRunArtifact(tri_kaggle);
+    if (b.args) |args| {
+        run_tri_kaggle.addArgs(args);
+    }
+    const tri_kaggle_step = b.step("tri-kaggle", "Run TRI-KAGGLE (cognitive benchmark evaluation CLI)");
+    tri_kaggle_step.dependOn(&run_tri_kaggle.step);
+
     // UART Echo Test — FPGA UART bridge test (disabled from install)
     // const uart_echo_test = b.addExecutable(.{
     //     .name = "uart-echo-test",
@@ -3022,6 +3043,11 @@ pub fn build(b: *std.Build) void {
         .root_module = queen_backend_mod,
     });
     b.installArtifact(queen_backend);
+
+    // Build-only step for queen-backend (CI-friendly, no SIGTERM on port conflict)
+    const queen_compile_step = b.step("queen-compile", "Compile queen-backend without running");
+    queen_compile_step.dependOn(&b.addInstallArtifact(queen_backend, .{}).step);
+
     const run_queen_backend = b.addRunArtifact(queen_backend);
     const queen_backend_step = b.step("queen-backend", "Run Queen Backend Server");
     queen_backend_step.dependOn(&run_queen_backend.step);
