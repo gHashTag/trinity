@@ -1,4 +1,5 @@
-# Kaggle Benchmarks — Trinity Social Cognition Probe (TSCP)
+# Kaggle Benchmarks — Social Cognition Probe
+# Trinity Cognitive AGI Benchmark Suite
 # DeepMind AGI Hackathon 2026
 
 # === CELL 1: Install & Fix ===
@@ -23,7 +24,58 @@ print("✅ Imports successful")
 class CognitiveAnswer:
     answer: str
 
-# === CELL 4: Load Data ===
+# === CELL 4: Flexible Matching Function ===
+def match_answer(response: str, expected: str) -> bool:
+    """Flexible answer matching with multiple strategies.
+
+    Strategy 0: Strip parenthetical annotations (e.g., "5 PM (inherited Bob's false belief)" -> "5 PM")
+    Strategy 1: Exact match
+    Strategy 2: Expected as substring (for short answers)
+    Strategy 3: Word boundary match (for multi-word answers without special chars)
+    Strategy 4: Fuzzy word match (all expected words present in order)
+    """
+    resp = response.lower().strip()
+    exp = expected.lower().strip()
+
+    # Strategy 0: Strip parenthetical annotations from expected
+    # Model answers: "5 PM" vs expected: "5 PM (inherited Bob's false belief)"
+    exp_core = re.sub(r'\s*\(.*?\)\s*', ' ', exp).strip()
+    if exp_core and exp_core != exp:
+        # Try exact match with core
+        if resp == exp_core:
+            return True
+        # Try substring with core
+        if len(exp_core) <= 30 and exp_core in resp:
+            return True
+
+    # Strategy 1: Exact match
+    if resp == exp:
+        return True
+
+    # Strategy 2: Expected as substring (for short expected answers)
+    if len(exp) <= 30 and exp in resp:
+        return True
+
+    # Strategy 3: Word boundary match (for multi-word expected answers)
+    # Only use if expected doesn't contain special chars that confuse \b
+    if not any(c in exp for c in ['(', ')', '[', ']', '*', '+', '?', '_', '-']):
+        pattern = rf"\b{re.escape(exp)}\b"
+        if re.search(pattern, resp):
+            return True
+
+    # Strategy 4: Fuzzy word match (all expected words present in order)
+    exp_words = exp.split()
+    if len(exp_words) >= 2:
+        resp_words = resp.split()
+        for i in range(len(resp_words) - len(exp_words) + 1):
+            if resp_words[i:i+len(exp_words)] == exp_words:
+                return True
+
+    return False
+
+print("✅ Matching function defined")
+
+# === CELL 5: Load Data ===
 print("📥 Downloading dataset...")
 !mkdir -p /kaggle/working/datasets
 
@@ -33,10 +85,11 @@ kaggle.api.dataset_download_files(
     unzip=True
 )
 
+# FIXED: Use endswith() instead of fuzzy matching to avoid wrong dataset detection
 csv_files = glob.glob('/kaggle/working/datasets/**/*.csv', recursive=True)
 csv_path = None
 for f in csv_files:
-    if 'tscp_social.csv' in f or 'tscp' in f.lower():
+    if f.endswith('tscp_social.csv'):
         csv_path = f
         break
 
@@ -46,33 +99,47 @@ if csv_path is None:
 print(f"📂 Using: {csv_path}")
 
 df = pd.read_csv(csv_path)
-# TSCP uses different columns: scenario, expected_inference
+
+# Fixed column mapping for this track
 eval_df = pd.DataFrame({
     "question": df["scenario"],
-    "expected_answer": df["expected_inference"],
+    "expected_answer": df["expected_inference"]
 })
+
 print(f"📊 Loaded {len(eval_df)} items")
 
-# === CELL 5: Inner Task ===
-@kbench.task(name="TSCP Single", store_task=False)
+# === CELL 6: Inner Task with Debug Logging ===
+@kbench.task(name="trinity_tscp_social Single", store_task=False)
 def tscp_single(llm, question, expected_answer) -> bool:
-    prompt = f"""Consider the social context and provide the most likely inference.
+    """Single item evaluation with debug logging for first 10 failures."""
+    prompt = f"""Based on the information provided, give a precise answer.
 
-Scenario: {question}
+Question: {question}
 
 Answer:"""
     response = llm.prompt(prompt, schema=CognitiveAnswer)
-    response_clean = response.answer.lower().strip()
-    expected_clean = expected_answer.lower().strip()
-    pattern = rf"\b{re.escape(expected_clean)}\b"
-    return bool(re.search(pattern, response_clean))
+
+    matched = match_answer(response.answer, expected_answer)
+
+    # Debug logging (first 10 failures only, stored in global)
+    if not matched and len(tscp_single.debug_log) < 10:
+        tscp_single.debug_log.append({
+            "question": question[:80],
+            "expected": expected_answer,
+            "got": response.answer[:150]
+        })
+
+    return matched
+
+# Initialize debug log
+tscp_single.debug_log = []
 
 print("✅ Inner task registered")
 
-# === CELL 6: Outer Task ===
+# === CELL 7: Outer Task ===
 @kbench.task(
     name="Trinity Social Cognition Probe",
-    description="Evaluates social cognitive capabilities: Theory of Mind (false belief reasoning), pragmatic inference, audience adaptation, social norms understanding, contextual communication. Based on Trinity's Temporal Pole and Social Brain Network."
+    description="Evaluates theory of mind, pragmatic inference, audience adaptation, social norms. Based on Trinity's cognitive architecture."
 )
 def tscp_benchmark(llm) -> float:
     with kbench.client.enable_cache():
@@ -86,14 +153,22 @@ def tscp_benchmark(llm) -> float:
         kbench.assertions.assert_true(False, expectation="No valid results")
         return 0.0
     accuracy = float(valid["result"].mean())
-    kbench.assertions.assert_true(True, expectation=f"TSCP accuracy: {accuracy:.2%} ({len(valid)}/{len(eval_df)})")
+    kbench.assertions.assert_true(True, expectation=f"Social Cognition Probe accuracy: {accuracy:.2%} ({len(valid)}/{len(eval_df)})")
     return accuracy
 
 print("✅ Outer benchmark task registered")
 
-# === CELL 7: Run ===
+# === CELL 8: Run ===
 run = tscp_benchmark.run(llm=kbench.llm)
 print(f"\n🏆 Result: {run.result:.2%}")
 
-# === CELL 8: Choose ===
+# === CELL 9: Debug Output ===
+if tscp_single.debug_log:
+    print(f"\n🐛 First {len(tscp_single.debug_log)} failures:")
+    for i, entry in enumerate(tscp_single.debug_log, 1):
+        print(f"\n{i}. Q: {entry['question']}")
+        print(f"   Expected: {entry['expected']}")
+        print(f"   Got: {entry['got']}")
+
+# === CELL 10: Choose ===
 %choose tscp_benchmark
