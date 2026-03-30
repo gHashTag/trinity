@@ -173,10 +173,15 @@ pub fn main() !void {
     }
 
     // Queen Trinity namespace: route `tri queen <subcommand>` to queen_trinity
+    // TODO: Re-enable when Zig 0.15 issues fixed
+    // if (std.mem.eql(u8, args[arg_idx], "queen")) {
+    //     const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+    //     logAgentCommand(args[arg_idx..]);
+    //     try queen_trinity.runQueenCommand(allocator, queen_args);
+    //     return;
+    // }
     if (std.mem.eql(u8, args[arg_idx], "queen")) {
-        const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-        logAgentCommand(args[arg_idx..]);
-        try queen_trinity.runQueenCommand(allocator, queen_args);
+        std.debug.print("❌ 'tri queen' command temporarily disabled due to Zig 0.15 migration issues\n", .{});
         return;
     }
 
@@ -315,10 +320,9 @@ pub fn main() !void {
             return;
         }
         // CLARA namespace: route `tri clara <command>` to CLARA proposal commands
+        // TODO: Re-enable when Zig 0.15 issues fixed
         if (std.mem.eql(u8, first_arg, "clara")) {
-            const clara_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            try tri_clara.main(allocator, clara_args);
+            std.debug.print("❌ 'tri clara' command temporarily disabled due to Zig 0.15 migration issues\n", .{});
             return;
         }
         // Bench namespace: route `tri bench compare/record/history` to perf_benchmark
