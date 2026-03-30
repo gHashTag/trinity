@@ -12,7 +12,7 @@ The TRI-27 is a ternary RISC processor with 27 trit registers and a full develop
 
 ### In Trinity S³AI
 
-**TRI-27 is the Central Execution Engine** of Trinity S³AI:
+**TRI-27 is Central Execution Engine** of Trinity S³AI:
 
 | Aspect | Role in Trinity |
 |--------|-----------------|
@@ -55,22 +55,18 @@ Queen Episodes    FPGA Bitstream
 
 | Bits | Field | Description |
 |------|-------|-------------|
-| [31:26] | opcode | 6-bit operation code (36 opcodes) |
-| [25:20] | dst | Destination register (t0-t26) |
-| [19:14] | src1 | Source register 1 |
-| [13:8]  | src2 | Source register 2 (or shift amount) |
-| [7:0]   | imm8 | 8-bit immediate (or unused) |
+| [31:17] | hybrid | 15-bit hybrid encoding (opcode + mode) |
+| [16:13] | src1 | Source register 1 (t0-t26) |
+| [12:9] | dst | Destination register (t0-t26) |
+| [8:5] | opcode | 6-bit operation code (36 opcodes) |
+
+**Hybrid Encoding**: The opcode is split between the high bits (hybrid field) and low bits (opcode field) for efficient instruction packing.
 
 ### Registers
 
 | Register | Size | Purpose |
-<<<<<<< Updated upstream
-|---------|---------|-----------|
-| t0-t26 | 27×32-bit | Trit registers (t0 = accumulator) |
-=======
 |----------|------|---------|
 | t0-t26 | 27×32-bit | Ternary registers (t0 = accumulator) |
->>>>>>> Stashed changes
 | pc | 32-bit | Program Counter (in instructions) |
 | flags | {Z, N, C, H, ...} | Status flags |
 
@@ -152,11 +148,7 @@ Queen Episodes    FPGA Bitstream
 - `src/tri27/tri27_cli.zig` — CLI entrypoint
 
 **Features**:
-<<<<<<< Updated upstream
-- 36 opcodes, full ISA
-=======
 - 36 opcodes, complete ISA
->>>>>>> Stashed changes
 - 27×32-bit registers t0-t26
 - 64KB memory (align(8) u8)
 - Flags: Z, N, C, H, O
@@ -181,11 +173,7 @@ Queen Episodes    FPGA Bitstream
 ### Phase 1: Observe
 **File**: `src/tri/queen/observe.zig`
 
-<<<<<<< Updated upstream
-Read:
-=======
 Reads:
->>>>>>> Stashed changes
 - `policy.json` — kill_threshold, crash_rate_limit, byzantine_rate_limit
 - `senses.json` — farm_best_ppl, test_rate, dirty_files, etc.
 
@@ -201,11 +189,7 @@ Generates `PolicyDelta`:
 ### Phase 3: Evaluate
 **File**: `src/tri/queen/evaluate.zig`
 
-<<<<<<< Updated upstream
-Evaluates the episodes window:
-=======
 Evaluates episode window:
->>>>>>> Stashed changes
 - `good` — success_rate ≥ 95%
 - `unstable` — 70% < success_rate < 95%
 - `bad` — success_rate ≤ 70%
@@ -214,19 +198,11 @@ Evaluates episode window:
 ### Phase 4: Act
 **File**: `src/tri/queen/act.zig`
 
-<<<<<<< Updated upstream
-Executes a Plan:
-- `scale_up` — multiply a parameter
-- `scale_down` — divide a parameter
-- `trigger` — execute a command
-- `wait` — watch
-=======
 Executes Plan:
 - `scale_up` — multiply parameter
 - `scale_down` — divide parameter
 - `trigger` — execute command
 - `wait` — observe
->>>>>>> Stashed changes
 
 ### Phase 5: Self-Learning
 **File**: `src/tri/queen/self_learning.zig`
@@ -234,15 +210,6 @@ Executes Plan:
 **Closed loop**:
 ```
 tri tri27 run test.tbin
-<<<<<<< Updated upstream
-→ Episode → episodes.jsonl
-→ loadRecentEpisodes(20)
-→ evaluateWindow() → WindowEvaluation
-→ generatePlan() → PolicyDelta[]
-→ applyPolicyDelta() → Tri27Config
-→ saveConfig() → tri27_config.json
-    → Episode about self-learning_cycle
-=======
     → Episode → episodes.jsonl
     → loadRecentEpisodes(20)
     → evaluateWindow() → WindowEvaluation
@@ -250,7 +217,6 @@ tri tri27 run test.tbin
     → applyPolicyDelta() → Tri27Config
     → saveConfig() → tri27_config.json
     → Episode → self_learning_cycle
->>>>>>> Stashed changes
 ```
 
 **Tri27Config**:
@@ -297,13 +263,8 @@ tri tri27 isa
 ## Tests
 
 | Test | File | Description |
-<<<<<<< Updated upstream
-|------|------|----------|
-| Golden | `test_golden.zig` | 15/15 — full asm→tbin→emu cycle |
-=======
 |------|------|-------------|
 | Golden | `test_golden.zig` | 15/15 — full cycle asm→tbin→emu |
->>>>>>> Stashed changes
 | Comprehensive | `test_comprehensive.zig` | 36/36 — all opcodes |
 | Experience | `tri27_experience.zig` | Jaccard similarity, recall |
 | Queen Self-Learning | `self_learning.zig` | 4/4 — feedback loop |
