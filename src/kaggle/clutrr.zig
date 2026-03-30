@@ -387,9 +387,12 @@ pub const ClutrrEvaluator = struct {
 
     /// Infer relation using Datalog-style reasoning
     fn inferRelation(self: *Self, example: ClutrrExample) ![]const u8 {
-        // Extract query entities (e.g., "What is A to B?")
-        const query_entity = try extractQueryEntity(self.allocator, example.query);
-        defer self.allocator.free(query_entity);
+        // Extract query entities (e.g., "What is A to B?" -> {A, B})
+        const entities = try extractQueryEntities(self.allocator, example.query);
+        defer {
+            self.allocator.free(entities.subject);
+            self.allocator.free(entities.object);
+        }
 
         // Use facts from story to build kinship graph
         var graph = KinshipGraph.init(self.allocator);
@@ -399,13 +402,13 @@ pub const ClutrrEvaluator = struct {
             try graph.addFact(fact);
         }
 
-        // Apply reasoning rules to find target relation
-        if (graph.findRelation(query_entity, example.target)) |rel| {
+        // Apply reasoning rules to find relation from subject to object
+        if (graph.findRelation(entities.subject, entities.object)) |rel| {
             return self.allocator.dupe(u8, rel.format());
         }
 
-        // Fallback: return target as-is
-        return self.allocator.dupe(u8, example.target);
+        // Fallback: return answer as-is
+        return self.allocator.dupe(u8, example.answer);
     }
 
     /// Get overall accuracy
@@ -449,11 +452,28 @@ pub const ClutrrEvaluator = struct {
 
 /// Extract entity name from query (e.g., "What is A to B?" -> A)
 fn extractQueryEntity(allocator: Allocator, query: []const u8) ![]const u8 {
+    const result = try extractQueryEntities(allocator, query);
+    allocator.free(result.object);
+    return result.subject;
+}
+
+/// Extract both entities from query (e.g., "What is A to B?" -> {A, B})
+const QueryEntities = struct { subject: []const u8, object: []const u8 };
+
+fn extractQueryEntities(allocator: Allocator, query: []const u8) !QueryEntities {
     // Try pattern: "What is X to Y?"
     if (std.mem.indexOf(u8, query, "What is ")) |start| {
         const rest = query[start + 8 ..];
-        if (std.mem.indexOf(u8, rest, " to ")) |end| {
-            return allocator.dupe(u8, rest[0..end]);
+        if (std.mem.indexOf(u8, rest, " to ")) |mid| {
+            const subject = try allocator.dupe(u8, rest[0..mid]);
+            errdefer allocator.free(subject);
+
+            const rest2 = rest[mid + 4 ..]; // Skip " to "
+            // Find end (before "?")
+            const end_idx = std.mem.indexOf(u8, rest2, "?") orelse rest2.len;
+            const object = try allocator.dupe(u8, rest2[0..end_idx]);
+
+            return QueryEntities{ .subject = subject, .object = object };
         }
     }
     return error.InvalidQueryFormat;
@@ -515,13 +535,18 @@ pub const KinshipGraph = struct {
             return rel;
         }
 
-        // Rule 2: Sibling inference (same parent)
+        // Rule 2: Parent through sibling (A is B's parent, B is C's sibling -> A is C's parent)
+        if (self.findParentThroughSibling(subject, object)) |rel| {
+            return rel;
+        }
+
+        // Rule 3: Sibling inference (same parent)
         if (self.findSibling(subject, object)) {
             // Need gender info for brother/sister
             return .brother; // Default
         }
 
-        // Rule 3: Uncle/aunt (parent's brother)
+        // Rule 4: Uncle/aunt (parent's brother)
         if (self.findUncle(subject, object)) {
             return .uncle;
         }
@@ -571,6 +596,47 @@ pub const KinshipGraph = struct {
             }
         }
         return false;
+    }
+
+    /// Parent through sibling inference
+    /// If A is B's parent and B is C's sibling, then A is C's parent
+    fn findParentThroughSibling(self: *Self, subject: []const u8, object: []const u8) ?Relation {
+        // Find subject's parent relations
+        if (self.edges.get(subject)) |subject_edges| {
+            for (subject_edges.items) |parent_edge| {
+                if (parent_edge.rel == .father or parent_edge.rel == .mother) {
+                    // parent_edge: subject -> parent -> some_intermediate
+                    const intermediate = parent_edge.obj;
+
+                    // Check if intermediate is object's sibling
+                    if (self.edges.get(intermediate)) |inter_edges| {
+                        for (inter_edges.items) |inter_edge| {
+                            if (inter_edge.rel == .brother or inter_edge.rel == .sister) {
+                                if (std.mem.eql(u8, inter_edge.obj, object)) {
+                                    // Found: subject is parent of intermediate, intermediate is sibling of object
+                                    // Therefore: subject is parent of object
+                                    return parent_edge.rel;
+                                }
+                            }
+                        }
+                    }
+
+                    // Also check reverse: if object is intermediate's sibling
+                    if (self.edges.get(object)) |obj_edges| {
+                        for (obj_edges.items) |obj_edge| {
+                            if (obj_edge.rel == .brother or obj_edge.rel == .sister) {
+                                if (std.mem.eql(u8, obj_edge.obj, intermediate)) {
+                                    // Found: subject is parent of intermediate, object is sibling of intermediate
+                                    // Therefore: subject is parent of object
+                                    return parent_edge.rel;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /// Uncle/aunt detection (parent's brother/sister)

@@ -1,0 +1,54 @@
+name: Terminal Demo GIFs
+
+on:
+  push:
+    paths:
+      - 'tapes/*.tape'
+      - 'src/**/*.zig'
+  workflow_dispatch:
+
+jobs:
+  render:
+    name: Render VHS tapes to GIFs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Zig
+        uses: goto-bus/setup-zig@v2
+        with:
+          version: 0.15.0
+
+      - name: Install VHS
+        run: |
+          wget -qO- https://github.com/charmbracelet/vhs/releases/download/v0.7.1/vhs_0.7.1_linux_amd64.tar.gz
+          tar xzf vhs_0.7.1_linux_amd64.tar.gz
+          sudo mv vhs /usr/local/bin/
+
+      - name: Build tri
+        run: |
+          zig build
+
+      - name: Render tri-math-demo
+        run: vhs < tapes/tri-math-demo.tape
+
+      - name: Render tri-benchmark
+        run: vhs < tapes/tri-benchmark.tape
+
+      - name: Render tri-test
+        run: vhs < tapes/tri-test.tape
+
+      - name: Render tri-status
+        run: vhs < tapes/tri-status.tape
+
+      - name: Render tri-fpga-synth
+        run: vhs < tapes/tri-fpga-synth.tape
+
+      - name: Commit GIFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add recordings/*.gif docs/CLI_DEMOS_README.md
+          git commit -m "chore(demos): Regenerate terminal GIFs from VHS tapes"
+          git push

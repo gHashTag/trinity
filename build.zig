@@ -1940,6 +1940,25 @@ pub fn build(b: *std.Build) void {
     train_deploy_step.dependOn(&hslm_entrypoint.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // CLUTRR Benchmark — Compositional Language Understanding & Textual Relational Reasoning
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const clutrr_bench = b.addExecutable(.{
+        .name = "clutrr_bench",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/kaggle/clutrr_cli.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(clutrr_bench);
+
+    const run_clutrr_bench = b.addRunArtifact(clutrr_bench);
+    if (b.args) |args| run_clutrr_bench.addArgs(args);
+    const clutrr_bench_step = b.step("clutrr_bench", "Run CLUTRR benchmark on dataset");
+    clutrr_bench_step.dependOn(&run_clutrr_bench.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // Railway Redeploy Tool — Bypasses PreToolUse hook for Railway API
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2095,6 +2114,23 @@ pub fn build(b: *std.Build) void {
     // swe-deploy: build SWE agent binary (for Dockerfile.swe-agent)
     const swe_deploy_step = b.step("swe-deploy", "Build swe-entrypoint for Railway dev agent deploy");
     swe_deploy_step.dependOn(&swe_entrypoint.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // tri-record — Terminal recording wrapper for `tri` commands
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const tri_record = b.addExecutable(.{
+        .name = "tri-record",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/tri_record.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(tri_record);
+
+    const tri_record_step = b.step("tri-record", "Build tri-record terminal recording wrapper");
+    tri_record_step.dependOn(&tri_record.step);
 
     // HSLM tests
     const hslm_tests = b.addTest(.{

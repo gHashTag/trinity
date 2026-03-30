@@ -12,6 +12,7 @@ const std = @import("std");
 // Import existing queen modules
 const episodes = @import("episodes.zig");
 const self_learning = @import("self_learning.zig");
+const auto_improve = @import("auto_improve.zig");
 
 // ============================================================================
 // CONSTANTS
@@ -69,6 +70,8 @@ pub const ImproveResponse = struct {
     message: []const u8,
     applied_deltas: u32 = 0,
     quality_score: f64 = 0.0,
+    patterns_found: usize = 0,
+    cycles_analyzed: usize = 0,
     new_config: ?self_learning.Tri27Config = null,
 };
 
@@ -93,7 +96,7 @@ pub const QueenBackend = struct {
             .config = BackendConfig{},
             .server = null,
             .health = .{
-                .started_at = std.time.nanoTimestamp(),
+                .started_at = @intCast(std.time.nanoTimestamp()),
                 .improve_cycles = 0,
                 .last_improve_time = 0,
             },
@@ -131,6 +134,7 @@ pub const QueenBackend = struct {
         std.debug.print("\x1b[38;2;255;215;0m║  Status:    GET /api/status                        ║\x1b[0m\n", .{});
         std.debug.print("\x1b[38;2;255;215;0m║  Episodes: GET /api/episodes                      ║\x1b[0m\n", .{});
         std.debug.print("\x1b[38;2;255;215;0m║  Improve:  POST /api/improve                      ║\x1b[0m\n", .{});
+        std.debug.print("\x1b[38;2;255;215;0m║  TRI-Spec:  GET /api/tri-spec                     ║\x1b[0m\n", .{});
         std.debug.print("\x1b[38;2;255;215;0m║  Pipeline:  GET /api/pipeline                      ║\x1b[0m\n", .{});
         std.debug.print("\x1b[38;2;255;215;0m╠════════════════════════════════════════════════════╣\x1b[0m\n", .{});
         std.debug.print("\x1b[38;2;255;215;0m║  Auto-improve: {d:4}s interval                  ║\x1b[0m\n", .{self.config.improve_interval});
@@ -209,6 +213,8 @@ pub const QueenBackend = struct {
                 } else {
                     return try self.errorResponse("Method not allowed", 405);
                 }
+            } else if (std.mem.eql(u8, endpoint, "tri-spec")) {
+                return try self.handleTriSpec();
             } else if (std.mem.eql(u8, endpoint, "pipeline")) {
                 return try self.handlePipeline();
             } else {
@@ -318,34 +324,56 @@ pub const QueenBackend = struct {
 
         std.debug.print("🔄 Self-improvement cycle triggered\n", .{});
 
-        const result = self_learning.runSelfLearningCycle(self.allocator, self.config.episode_window) catch |err| {
-            std.debug.print("Self-learning failed: {}\n", .{err});
+        // Use AutoImprove instead of self_learning directly
+        var engine = auto_improve.AutoImprove.init(self.allocator);
+        const result = try engine.runCycle();
 
-            const response = ImproveResponse{
-                .success = false,
-                .message = try self.allocator.dupe(u8, @errorName(err)),
-            };
-
-            const body_json = try std.json.Stringify.valueAlloc(self.allocator, response, .{});
-            return try self.httpResponse("application/json", body_json);
-        };
-
-        std.debug.print("✅ Self-improvement cycle complete: {d} deltas applied\n", .{result.applied_deltas});
+        std.debug.print("✅ Applied {d} deltas, {d} patterns found\n", .{
+            result.applied_deltas, result.patterns_found
+        });
 
         // Update health stats
         self.health.improve_cycles += 1;
         self.health.last_improve_time = @truncate(std.time.nanoTimestamp());
 
         const response = ImproveResponse{
-            .success = true,
-            .message = try self.allocator.dupe(u8, "Self-improvement cycle completed"),
+            .success = result.success,
+            .message = result.message,
             .applied_deltas = result.applied_deltas,
-            .quality_score = result.evaluation.success_rate,
+            .quality_score = result.quality_score,
+            .patterns_found = result.patterns_found,
+            .cycles_analyzed = result.cycles_analyzed,
             .new_config = result.config,
         };
 
         const body_json = try std.json.Stringify.valueAlloc(self.allocator, response, .{});
         return try self.httpResponse("application/json", body_json);
+    }
+
+    /// Handle GET /api/tri-spec - Episode to .tri spec conversion
+    fn handleTriSpec(self: *const QueenBackend) ![]const u8 {
+        std.debug.print("📋 Generating .tri spec from episodes\n", .{});
+
+        const recent = episodes.loadRecentEpisodes(self.allocator, self.config.episode_window) catch |err| {
+            std.debug.print("Failed to load episodes: {}\n", .{err});
+            return try self.errorResponse("Failed to load episodes", 500);
+        };
+        defer {
+            for (recent) |ep| {
+                if (ep.context.active_issues.len > 0)
+                    self.allocator.free(ep.context.active_issues);
+            }
+            self.allocator.free(recent);
+        }
+
+        // Generate .tri spec using EpisodeToTri converter
+        var buffer = try std.ArrayList(u8).initCapacity(self.allocator, 0);
+        defer buffer.deinit(self.allocator);
+        const converter = auto_improve.EpisodeToTri.init(self.allocator);
+        try converter.generateSpec(recent, buffer.writer(self.allocator));
+
+        const body = try buffer.toOwnedSlice(self.allocator);
+        return try self.httpResponse("text/x-yaml", body);
     }
 
     /// Handle GET /api/pipeline - Pipeline status
@@ -473,10 +501,10 @@ test "backend: httpResponse creates valid HTTP" {
 
     const response = try backend.httpResponse("application/json", "{\"test\":true}");
 
-    try std.testing.expectStringPresent("HTTP/1.1 200 OK", response);
-    try std.testing.expectStringPresent("Content-Type: application/json", response);
-    try std.testing.expectStringPresent("X-Trinity-Signature: 3.000000", response);
-    try std.testing.expectStringPresent("{\"test\":true}", response);
+    try std.testing.expect(std.mem.indexOf(u8, response, "HTTP/1.1 200 OK") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "Content-Type: application/json") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "X-Trinity-Signature: 3.000000") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "{\"test\":true}") != null);
 
     allocator.free(response);
 }
@@ -487,9 +515,9 @@ test "backend: errorResponse creates valid error" {
 
     const response = try backend.errorResponse("Test error", 404);
 
-    try std.testing.expectStringPresent("404 Not Found", response);
-    try std.testing.expectStringPresent("\"error\":\"Test error\"", response);
-    try std.testing.expectStringPresent("X-Trinity-Signature: 3.000000", response);
+    try std.testing.expect(std.mem.indexOf(u8, response, "404 Not Found") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "\"error\":\"Test error\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "X-Trinity-Signature: 3.000000") != null);
 
     allocator.free(response);
 }
@@ -500,8 +528,8 @@ test "backend: routeRequest /health" {
 
     const response = try backend.routeRequest("GET", "/health", "");
 
-    try std.testing.expectStringPresent("HTTP/1.1 200 OK", response);
-    try std.testing.expectStringPresent("\"status\":\"ok\"", response);
+    try std.testing.expect(std.mem.indexOf(u8, response, "HTTP/1.1 200 OK") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "\"status\":\"ok\"") != null);
 
     allocator.free(response);
 }
@@ -512,8 +540,8 @@ test "backend: routeRequest /api/status" {
 
     const response = try backend.routeRequest("GET", "/api/status", "");
 
-    try std.testing.expectStringPresent("HTTP/1.1 200 OK", response);
-    try std.testing.expectStringPresent("trinity_identity", response);
+    try std.testing.expect(std.mem.indexOf(u8, response, "HTTP/1.1 200 OK") != null);
+    try std.testing.expect(std.mem.indexOf(u8, response, "trinity_identity") != null);
 
     allocator.free(response);
 }
@@ -524,7 +552,7 @@ test "backend: routeRequest unknown path returns 404" {
 
     const response = try backend.routeRequest("GET", "/unknown", "");
 
-    try std.testing.expectStringPresent("404 Not Found", response);
+    try std.testing.expect(std.mem.indexOf(u8, response, "404 Not Found") != null);
 
     allocator.free(response);
 }
