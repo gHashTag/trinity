@@ -52,9 +52,9 @@ Trinity is an AR-based ML system that fuses neural networks, automated reasoning
 
 | Contribution | CLARA Alignment | Verification |
 |--------------|-----------------|--------------|
-| **Polynomial-time inference** | O(n) VSA operations, O(1) ternary MAC | Theorems 1-4 |
+| **Polynomial-time inference** | O(n) VSA operations, O(1) ternary MAC | Theorems 1-3 |
 | **Verifiability** | 8 Zenodo bundles, 3000+ tests, Zig type system | DOI-backed |
-| **Multi-family composition** | NN + VSA + Bayesian (GF16) + RL (Queen) | All published |
+| **Multi-family composition** | NN + VSA + Datalog + Bayesian (GF16) + RL (Queen) | All published |
 | **Energy efficiency** | 3000× vs GPU, 1.2W FPGA | FPGA synthesis |
 | **Open source** | MIT/Apache 2.0, full reproducibility | GitHub |
 
@@ -63,11 +63,11 @@ Trinity is an AR-based ML system that fuses neural networks, automated reasoning
 | CLARA Requirement | Trinity Component | Evidence |
 |-------------------|-------------------|----------|
 | **Neural Networks** | HSLM (B001) | DOI: 10.5281/zenodo.19227865 |
-| **Logic Programs** | VSA (B007) | DOI: 10.5281/zenodo.19227877 |
+| **Logic Programs** | Datalog (CLARA) + VSA (B007) | src/clara/rules.zig (280 LOC) |
 | **Classical Logic** | TRI-27 (B003) | DOI: 10.5281/zenodo.19227869 |
 | **Bayesian** | GF16 (B006) | DOI: 10.5281/zenodo.19227875 |
 | **Reinforcement Learning** | Queen Lotus (B004) | DOI: 10.5281/zenodo.19227871 |
-| **Polynomial-time** | 4 theorems | See Section 2 |
+| **Polynomial-time** | 3 theorems | See Section 2 |
 
 ---
 
