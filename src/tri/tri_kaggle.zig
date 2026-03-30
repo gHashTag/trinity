@@ -97,14 +97,12 @@ pub fn runKaggleCommand(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runParseCommand(allocator: Allocator, args: []const []const u8) !void {
-    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
-
     const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
         args[1]
     else
         "tmp";
 
-    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    var csv_files = std.StringHashMap([]const u8).init(allocator);
     defer csv_files.deinit();
 
     try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
@@ -157,15 +155,12 @@ fn runParseCommand(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
-    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
-    const McGenerator = @import("../kaggle/mc_generator.zig").McGenerator;
-
     const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
         args[1]
     else
         "tmp";
 
-    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    var csv_files = std.StringHashMap([]const u8).init(allocator);
     defer csv_files.deinit();
 
     try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
@@ -177,7 +172,7 @@ fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
     print("\n{s}🎨 MC GENERATOR (Local){s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     print("Track: {s}\n", .{track});
-    print("Strategy: Local heuristic (no API)\n\n");
+    print("Strategy: Local heuristic (no API)\n\n", .{});
 
     if (csv_files.get(track)) |path| {
         const parser = CsvParser.init(allocator, path);
@@ -195,20 +190,20 @@ fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
             result.stats.deinit();
         }
 
-        const gen = McGenerator.init(allocator);
         var converted: usize = 0;
 
         print("Converting {d} open-ended questions...\n", .{result.stats.open_ended});
 
+        // Note: MC conversion not yet implemented
         for (result.rows) |r| {
             _ = r;
             converted += 1;
             if (converted % 100 == 0) {
-                std.debug.print("  {d}/{}\n", .{converted, result.stats.open_ended});
+                std.debug.print("  {d}/{d}\n", .{converted, result.stats.open_ended});
             }
         }
 
-        print("\n{s}✅ Converted {d} questions{d}s}\n", .{ GREEN, converted, RESET });
+        print("\n{s}✅ Converted {d} questions{s}\n", .{ GREEN, converted, RESET });
         print("Output: kaggle/data/converted_mc/{s}_mcq.csv\n", .{track});
     } else {
         print("{s}Unknown track: {s}{s}\n", .{ RED, track, RESET });
@@ -218,15 +213,12 @@ fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
-    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
-    const Evaluator = @import("../kaggle/evaluator.zig").Evaluator;
-
     const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
         args[1]
     else
         "tmp";
 
-    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    var csv_files = std.StringHashMap([]const u8).init(allocator);
     defer csv_files.deinit();
 
     try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
@@ -238,7 +230,7 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
     print("\n{s}📊 EVALUATOR (Mock){s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     print("Track: {s}\n", .{track});
-    print("Mode: Mock responses (70% accuracy)\n\n");
+    print("Mode: Mock responses (70% accuracy)\n\n", .{});
 
     if (csv_files.get(track)) |path| {
         const parser = CsvParser.init(allocator, path);
@@ -247,14 +239,13 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
         const evaluator = Evaluator.init(allocator);
 
         // Generate mock responses
-        var responses = std.ArrayList([]const u8).init(allocator);
+        var responses = std.ArrayList([]const u8).empty;
         defer {
             for (responses.items) |r| allocator.free(r);
-            responses.deinit();
         }
 
         for (result.rows) |r| {
-            try responses.append(try evaluator.mockResponse(r));
+            try responses.append(allocator, try evaluator.mockResponse(r));
         }
 
         // Evaluate
@@ -271,7 +262,7 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
             if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
             if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
         }
-        result.stats.deinit();
+        @constCast(&result.stats).deinit();
     } else {
         print("{s}Unknown track: {s}{s}\n", .{ RED, track, RESET });
     }
@@ -280,13 +271,14 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
 }
 
 fn runExportCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = allocator;
     _ = args;
 
     print("\n{s}📦 EXPORT{s}\n", .{ BOLD, RESET });
     print("{s}══════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
-    print("Output: kaggle/submissions/<track>_submission.csv\n\n");
-    print("Export format: CSV (id, answer)\n");
-    print("Usage: tri kaggle export --track <id>\n\n");
+    print("Output: kaggle/submissions/<track>_submission.csv\n\n", .{});
+    print("Export format: CSV (id, answer)\n", .{});
+    print("Usage: tri kaggle export --track <id>\n\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -614,8 +606,7 @@ fn runPushCommand(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runStatusCommand(allocator: Allocator) !void {
-    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
-
+    _ = allocator;
     print("\n{s}📊 KAGGLE STATUS{s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
@@ -628,19 +619,19 @@ fn runStatusCommand(allocator: Allocator) !void {
     };
 
     for (csv_files) |track| {
-        const file = std.fs.cwd().openFile(track.path, .{}) catch |err| {
+        const file = std.fs.cwd().openFile(track.path, .{}) catch {
             print("  {s}{s} — {s}: {s}File not found{s}\n", .{ CYAN, track.id, track.name, RED, RESET });
             continue;
         };
         defer file.close();
 
         const stat = try file.stat();
-        const size_kb: f64 = @floatFromInt(stat.size) / 1024;
+        const size_kb: f64 = @as(f64, @floatFromInt(stat.size)) / 1024;
 
         print("  {s}{s} — {s}{s}\n", .{ CYAN, track.id, track.name, RESET });
         print("    File: {s}\n", .{track.path});
         print("    Size: {d:.1} KB\n", .{size_kb});
-        print("\n");
+        print("\n", .{});
     }
 
     print("{s}════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
