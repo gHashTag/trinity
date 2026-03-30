@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pre-built binary (build on host first with: zig build queen-backend)
-COPY zig-out/bin/queen-backend /usr/local/bin/
+# Copy tri binary (contains queen-backend subcommand)
+COPY zig-out/bin/tri /usr/local/bin/
 
 # Create directories for Trinity state
 RUN mkdir -p /trinity/.trinity/queen /trinity/.trinity/experience/episodes
@@ -27,4 +27,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 EXPOSE 8080
 
 # Run Queen backend
-CMD ["/usr/local/bin/queen-backend"]
+CMD ["/usr/local/bin/tri", "queen-backend"]

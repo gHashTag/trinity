@@ -1,67 +1,60 @@
-# TRINITY 27-AGENT GRID — Pure Zig Agent Container
-# Each of the 27 agents runs in this container with AGENT_DOMAIN environment variable
-# NO bash, NO Python — 100% Zig
+# ============================================================================
+# Trinity Agent — Pure Zig, All 27 Agents in One Image
+# ============================================================================
+#
+# Single image for all 27 domain agents (alpha through sho).
+# Configure via environment:
+#   AGENT_DOMAIN=alpha|beta|gamma|...|omega|sampi|sho
+#   AGENT_PORT=9001|9002|...|9026
+#   QUEEN_URL=http://queen.railway.internal:8080
+#
+# Health check: Built-in Zig --health flag (no curl dependency)
 
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install runtime dependencies only (minimal)
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Minimal runtime — ca-certificates for HTTPS, nothing else
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Install Zig 0.15 (pinned version for reproducibility)
+# Install Zig 0.15.2 (pinned, reproducible)
 ENV ZIG_VERSION=0.15.2
-RUN curl -fsSL https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz | tar xJ \
-    && mv /zig-linux-x86_64-${ZIG_VERSION} /zig \
-    && /zig/zig version
+RUN set -eux; \
+    curl -fsSL "https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" | tar xJ -C /opt; \
+    mv "/opt/zig-linux-x86_64-${ZIG_VERSION}" /opt/zig; \
+    /opt/zig/zig version
 
-ENV PATH="/zig:${PATH}"
+ENV PATH="/opt/zig:${PATH}"
 
-# Create Trinity directory structure
-WORKDIR /trinity
-RUN mkdir -p /trinity/.trinity/experience/episodes \
-         /trinity/.trinity/logs \
-         /trinity/.trinity/state
+# Runtime directories (read-only root, tmpfs for state)
+VOLUME ["/trinity/.trinity"]
+RUN mkdir -p /trinity/.trinity/{experience/episodes,logs,state} /tmp
 
-# Copy Trinity source (build happens at container start for dev, or pre-built in prod)
-# For prod, pre-built binaries are copied instead
-COPY . /trinity/
+# Copy pre-built tri binary (built separately, or build in separate stage)
+# For production: COPY --from=builder /trinity/zig-out/bin/tri /usr/local/bin/
+# For this setup: we assume tri is already built
+COPY zig-out/bin/tri /usr/local/bin/tri
 
-# Build tri CLI and all agent commands
-# This builds ALL 50+ binaries including the unified tri CLI
-RUN zig build -Doptimize=ReleaseFast tri
+# Verify binary
+RUN /usr/local/bin/tri version || true
 
-# Verify build
-RUN /trinity/zig-out/bin/tri version || echo "Version check skipped"
-
-# Create non-root user for security
-RUN adduser --disabled-password --gecos "" trinity \
-    && chown -R trinity:trinity /trinity
-
+# Non-root user
+RUN useradd -m -u 1000 trinity && chown -R trinity:trinity /trinity /tmp
 USER trinity
+WORKDIR /trinity
 
-# Environment variables (set at runtime by docker-compose)
-# AGENT_DOMAIN — One of 27 Coptic letter domains (alpha, beta, gamma, ..., omega, sampi, sho)
-# AGENT_PORT — Port for this agent's HTTP API (9001-9026 for agents, 8080 for Queen/Omega)
-# QUEEN_URL — URL of Queen orchestration service (default: http://queen:8080)
-# GITHUB_TOKEN — GitHub auth for agent-gamma
-# TELEGRAM_BOT_TOKEN — Telegram bot token for agent-nu
-# RAILWAY_TOKEN — Railway token for agent-rho
+# Default environment (override at deploy time)
+ENV AGENT_DOMAIN=alpha
+ENV AGENT_PORT=9001
+ENV QUEEN_URL=http://queen:8080
+ENV TMPDIR=/tmp
 
-ENV AGENT_DOMAIN=""
-ENV AGENT_PORT=9000
-ENV QUEEN_URL="http://queen:8080"
-
-# Health check — HTTP endpoint on agent port
+# Health check — uses built-in --health flag from agent_entrypoint.zig
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:${AGENT_PORT}/health || exit 1
+    CMD /usr/local/bin/tri agent run --health --port=${AGENT_PORT}
 
-# Expose agent port (configured at runtime)
-EXPOSE ${AGENT_PORT}
+# Expose agent port
+EXPOSE 9001
 
-# Run agent — domain-specific entrypoint via tri CLI
-# The tri agent run command reads AGENT_DOMAIN and starts the appropriate agent
-ENTRYPOINT ["/trinity/zig-out/bin/tri", "agent", "run"]
+# Run agent
+ENTRYPOINT ["/usr/local/bin/tri", "agent", "run"]
