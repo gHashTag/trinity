@@ -1,0 +1,72 @@
+name: Queen Self-Improving Container
+
+on:
+  push:
+    branches: [main]
+    paths: [apps/queen-web/**, src/tri/queen/**, deploy/Dockerfile.queen]
+  workflow_dispatch:
+
+env:
+  RAILWAY_PROJECT_ID: 90c3f0c8-c26e-4c77-9e45-5e123abc4567
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Railway
+        run: |
+          echo "RAILWAY_API_TOKEN=${{ secrets.RAILWAY_TOKEN }}" >> $GITHUB_ENV
+          echo "RAILWAY_PROJECT_ID=${{ env.RAILWAY_PROJECT_ID }}" >> $GITHUB_ENV
+
+      - name: Build and Push to Railway
+        run: |
+          # Build Queen container image
+          docker build -f deploy/Dockerfile.queen -t registry.${{ env.RAILWAY_PROJECT_ID }}.railway.app/queen:latest .
+
+          # Push to Railway registry
+          docker push registry.${{ env.RAILWAY_PROJECT_ID }}.railway.app/queen:latest
+
+      - name: Deploy to Railway
+        run: |
+          # Trigger Railway deployment via API
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://backboard.railway.app/graphql/v2 \
+            -d '{
+              "query": "mutation { deployService(input: { projectId: \"'"$RAILWAY_PROJECT_ID"'\", serviceName: \"queen\" }) { id } }"
+            }'
+
+      - name: Get Deployment URL
+        run: |
+          # Get service URL from Railway
+          SERVICE_URL=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://backboard.railway.app/graphql/v2 \
+            -d '{
+              "query": "query { project(id: \"'"$RAILWAY_PROJECT_ID"'\") { services { name url } } }"
+            }' | jq -r '.data.project.services[] | select(.name == "queen") | .url')
+
+          echo "Queen deployed to: $SERVICE_URL"
+          echo "queen_url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Comment on Issue
+        if: github.event_name == 'push'
+        run: |
+          gh issue comment 476 --body "✅ Queen deployed to ${{ steps.deploy.outputs.queen_url }}"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Test Health Endpoint
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+
+          # Test health endpoint
+          curl -f ${{ steps.deploy.outputs.queen_url }}/health || exit 1
