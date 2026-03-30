@@ -1,6 +1,6 @@
-# Kaggle Benchmarks — Trinity Metacognition Probe (TMP)
+# Kaggle Benchmarks — Metacognition Probe
+# Trinity Cognitive AGI Benchmark Suite
 # DeepMind AGI Hackathon 2026
-# Based on MuSR pattern by Paul Mooney (Kaggle Staff)
 
 # === CELL 1: Install & Fix ===
 !pip install protobuf==5.29.6 --quiet
@@ -22,27 +22,74 @@ print("✅ Imports successful")
 # === CELL 3: Structured Output Schema ===
 @dataclass
 class CognitiveAnswer:
-    """Structured answer for cognitive tasks."""
     answer: str
 
-# === CELL 4: Load Data via Kaggle API ===
-print("📥 Downloading dataset...")
+# === CELL 4: Flexible Matching Function ===
+def match_answer(response: str, expected: str) -> bool:
+    """Flexible answer matching with multiple strategies.
 
-# Use writable working directory
+    Strategy 0: Strip parenthetical annotations (e.g., "5 PM (inherited Bob's false belief)" -> "5 PM")
+    Strategy 1: Exact match
+    Strategy 2: Expected as substring (for short answers)
+    Strategy 3: Word boundary match (for multi-word answers without special chars)
+    Strategy 4: Fuzzy word match (all expected words present in order)
+    """
+    resp = response.lower().strip()
+    exp = expected.lower().strip()
+
+    # Strategy 0: Strip parenthetical annotations from expected
+    # Model answers: "5 PM" vs expected: "5 PM (inherited Bob's false belief)"
+    exp_core = re.sub(r'\s*\(.*?\)\s*', ' ', exp).strip()
+    if exp_core and exp_core != exp:
+        # Try exact match with core
+        if resp == exp_core:
+            return True
+        # Try substring with core
+        if len(exp_core) <= 30 and exp_core in resp:
+            return True
+
+    # Strategy 1: Exact match
+    if resp == exp:
+        return True
+
+    # Strategy 2: Expected as substring (for short expected answers)
+    if len(exp) <= 30 and exp in resp:
+        return True
+
+    # Strategy 3: Word boundary match (for multi-word expected answers)
+    # Only use if expected doesn't contain special chars that confuse \b
+    if not any(c in exp for c in ['(', ')', '[', ']', '*', '+', '?', '_', '-']):
+        pattern = rf"\b{re.escape(exp)}\b"
+        if re.search(pattern, resp):
+            return True
+
+    # Strategy 4: Fuzzy word match (all expected words present in order)
+    exp_words = exp.split()
+    if len(exp_words) >= 2:
+        resp_words = resp.split()
+        for i in range(len(resp_words) - len(exp_words) + 1):
+            if resp_words[i:i+len(exp_words)] == exp_words:
+                return True
+
+    return False
+
+print("✅ Matching function defined")
+
+# === CELL 5: Load Data ===
+print("📥 Downloading dataset...")
 !mkdir -p /kaggle/working/datasets
 
-# Download dataset to working directory
 kaggle.api.dataset_download_files(
     'playra/trinity-cognitive-probes-tmp',
     path='/kaggle/working/datasets/',
     unzip=True
 )
 
-# Find the CSV file
+# FIXED: Use endswith() instead of fuzzy matching to avoid wrong dataset detection
 csv_files = glob.glob('/kaggle/working/datasets/**/*.csv', recursive=True)
 csv_path = None
 for f in csv_files:
-    if 'tmp_metacognition.csv' in f or 'tmp' in f.lower():
+    if f.endswith('tmp_metacognition.csv'):
         csv_path = f
         break
 
@@ -53,75 +100,75 @@ print(f"📂 Using: {csv_path}")
 
 df = pd.read_csv(csv_path)
 
+# Fixed column mapping for this track
 eval_df = pd.DataFrame({
     "question": df["question"],
-    "expected_answer": df["answer"],
+    "expected_answer": df["answer"]
 })
 
 print(f"📊 Loaded {len(eval_df)} items")
 
-# === CELL 5: Inner Task ===
-@kbench.task(name="TMP Single", store_task=False)
+# === CELL 6: Inner Task with Debug Logging ===
+@kbench.task(name="trinity_tmp_metacognition Single", store_task=False)
 def tmp_single(llm, question, expected_answer) -> bool:
-    """
-    Inner task: Evaluate metacognition on a single item.
-    Tests confidence calibration, error detection, knowledge boundaries.
-    """
-    prompt = f"""Provide a direct, concise answer to this question.
+    """Single item evaluation with debug logging for first 10 failures."""
+    prompt = f"""Based on the information provided, give a precise answer.
 
 Question: {question}
 
 Answer:"""
-
     response = llm.prompt(prompt, schema=CognitiveAnswer)
 
-    # Word boundary match
-    response_clean = response.answer.lower().strip()
-    expected_clean = expected_answer.lower().strip()
+    matched = match_answer(response.answer, expected_answer)
 
-    pattern = rf"\b{re.escape(expected_clean)}\b"
-    return bool(re.search(pattern, response_clean))
+    # Debug logging (first 10 failures only, stored in global)
+    if not matched and len(tmp_single.debug_log) < 10:
+        tmp_single.debug_log.append({
+            "question": question[:80],
+            "expected": expected_answer,
+            "got": response.answer[:150]
+        })
+
+    return matched
+
+# Initialize debug log
+tmp_single.debug_log = []
 
 print("✅ Inner task registered")
 
-# === CELL 6: Outer Task ===
+# === CELL 7: Outer Task ===
 @kbench.task(
     name="Trinity Metacognition Probe",
-    description="Evaluates metacognitive abilities: confidence calibration, error self-detection, knowledge boundary recognition, strategic adaptation. Based on Trinity's OFC (Orbitofrontal Cortex) architecture."
+    description="Evaluates confidence calibration, error detection, strategic adaptation. Based on Trinity's cognitive architecture."
 )
 def tmp_benchmark(llm) -> float:
-    """Evaluates model on full TMP dataset."""
     with kbench.client.enable_cache():
         runs = tmp_single.evaluate(
-            llm=[llm],
-            evaluation_data=eval_df,
-            n_jobs=2,
-            timeout=180,
-            max_attempts=1,
-            remove_run_files=True,
+            llm=[llm], evaluation_data=eval_df, n_jobs=2,
+            timeout=180, max_attempts=1, remove_run_files=True,
         )
-
     results_df = runs.as_dataframe()
     valid = results_df[results_df["result"].notna()]
-
     if len(valid) == 0:
         kbench.assertions.assert_true(False, expectation="No valid results")
         return 0.0
-
     accuracy = float(valid["result"].mean())
-
-    kbench.assertions.assert_true(
-        True,
-        expectation=f"TMP accuracy: {accuracy:.2%} ({len(valid)}/{len(eval_df)} items)"
-    )
-
+    kbench.assertions.assert_true(True, expectation=f"Metacognition Probe accuracy: {accuracy:.2%} ({len(valid)}/{len(eval_df)})")
     return accuracy
 
 print("✅ Outer benchmark task registered")
 
-# === CELL 7: Run ===
+# === CELL 8: Run ===
 run = tmp_benchmark.run(llm=kbench.llm)
 print(f"\n🏆 Result: {run.result:.2%}")
 
-# === CELL 8: Choose ===
+# === CELL 9: Debug Output ===
+if tmp_single.debug_log:
+    print(f"\n🐛 First {len(tmp_single.debug_log)} failures:")
+    for i, entry in enumerate(tmp_single.debug_log, 1):
+        print(f"\n{i}. Q: {entry['question']}")
+        print(f"   Expected: {entry['expected']}")
+        print(f"   Got: {entry['got']}")
+
+# === CELL 10: Choose ===
 %choose tmp_benchmark
