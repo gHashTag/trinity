@@ -203,6 +203,17 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'TRI-27 Assembly',
+      items: [
+        'tri27/index',
+        'tri27/getting-started',
+        'tri27/projects',
+        'tri27/language-reference',
+        'tri27/cheatsheet',
+      ],
+    },
+    {
+      type: 'category',
       label: 'DePIN Network',
       items: [
         'depin/index',

@@ -20,6 +20,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Kaggle benchmark module
+    const kaggle_mod = b.createModule(.{
+        .root_source_file = b.path("src/kaggle/kaggle.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // ═══════════════════════════════════════════════════════════════════════════
     // ZODD DATALOG — CLARA Rules Engine (DARPA CLARA proposal)
     // ═══════════════════════════════════════════════════════════════════════════
@@ -2731,6 +2738,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "golden_chain", .module = golden_chain_mod },
                 // TRI-27 CLI module
                 .{ .name = "tri27_cli", .module = tri27_cli_mod },
+                // Kaggle benchmark module
+                .{ .name = "kaggle", .module = kaggle_mod },
             },
         }),
     });
