@@ -2,6 +2,10 @@
 
 Animated terminal GIFs demonstrating `tri` command functionality.
 
+## 🎬 Демо-страница
+
+**Интерактивная демо-страница с терминальными записями:** https://gHashTag.github.io/trinity/demos/
+
 ## Installation
 
 ### Prerequisites
@@ -10,8 +14,8 @@ Animated terminal GIFs demonstrating `tri` command functionality.
 # asciinema 3.0+ (for live recording)
 brew install asciinema
 
-# VHS (declarative tape format)
-brew install vhs
+# VHS (declarative tape format) - уже установлен
+# brew install vhs
 
 # agg (GIF generator, uses gifski)
 cargo install --git https://github.com/asciinema/agg
@@ -48,7 +52,7 @@ done
 
 ## Demo 1: VSA Math Operations
 
-![tri-math-demo](../recordings/tri-math-demo.gif)
+![tri-math-demo](https://gHashTag.github.io/trinity/recordings/tri-math-demo.gif)
 
 Demonstrates Trinity's Vector Symbolic Architecture math operations:
 - `tri math bind` — Vector binding operations
@@ -62,7 +66,7 @@ using hyperdimensional computing mathematics.
 
 ## Demo 2: Performance Benchmark
 
-![tri-benchmark](../recordings/tri-benchmark.gif)
+![tri-benchmark](https://gHashTag.github.io/trinity/recordings/tri-benchmark.gif)
 
 **63 tok/s** — Addresses performance objections about Trinity's speed.
 
@@ -77,7 +81,7 @@ Results:
 
 ## Demo 3: Test Coverage
 
-![tri-test](../recordings/tri-test.gif)
+![tri-test](https://gHashTag.github.io/trinity/recordings/tri-test.gif)
 
 **74/74 tests passing** — Addresses reproducibility concerns.
 
@@ -99,7 +103,7 @@ tri test firebird      # LLM engine tests
 
 ## Demo 4: System Status
 
-![tri-status](../recordings/tri-status.gif)
+![tri-status](https://gHashTag.github.io/trinity/recordings/tri-status.gif)
 
 Live dashboard showing:
 - Git working tree status
@@ -116,7 +120,7 @@ Live dashboard showing:
 
 ## Demo 5: FPGA Synthesis
 
-![tri-fpga-synth](../recordings/tri-fpga-synth.gif)
+![tri-fpga-synth](https://gHashTag.github.io/trinity/recordings/tri-fpga-synth.gif)
 
 **Zero DSP usage** — Addresses hardware efficiency objections.
 
@@ -174,10 +178,10 @@ trinity/
 
 | Objection | Response | GIF Demo |
 |-----------|-----------|-----------|
-| "Where's the benchmark?" | `tri benchmark` → 63 tok/s | ![tri-benchmark](../recordings/tri-benchmark.gif) |
-| "Where are tests?" | `tri test` → 74/74 passing | ![tri-test](../recordings/tri-test.gif) |
-| "Where's reproducibility?" | `git clone → zig build → tri benchmark` | All GIFs reproducible |
-| "FPGA uses too many DSPs?" | Zero DSP in bitstream | ![tri-fpga-synth](../recordings/tri-fpga-synth.gif) |
-| "What's the math foundation?" | Trinity Identity φ² + φ⁻² = 3 | ![tri-math-demo](../recordings/tri-math-demo.gif) |
+| "Где benchmark?" | `tri benchmark` → 63 tok/s | ![tri-benchmark](https://gHashTag.github.io/trinity/recordings/tri-benchmark.gif) |
+| "Где тесты?" | `tri test` → 74/74 проходят | ![tri-test](https://gHashTag.github.io/trinity/recordings/tri-test.gif) |
+| "Где воспроизводимость?" | `git clone → zig build → tri benchmark` | Все GIF воспроизводимы |
+| "FPGA использует DSP?" | 0% DSP в битстриме | ![tri-fpga-synth](https://gHashTag.github.io/trinity/recordings/tri-fpga-synth.gif) |
+| "Что математическая основа?" | Trinity Identity φ² + φ⁻² = 3 | ![tri-math-demo](https://gHashTag.github.io/trinity/recordings/tri-math-demo.gif) |
 
 Animated terminal is the most convincing format because it cannot be faked as easily as a screenshot.
