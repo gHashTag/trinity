@@ -1,0 +1,167 @@
+# Trinity 27-Agent Grid — Railway Deployment
+# Deploys Queen + 27 agents via Railway CLI with matrix strategy
+#
+# Prerequisites:
+# 1. Railway Project Token (NOT Account Token!)
+#    - Railway Dashboard → Project → Settings → Tokens → Generate
+# 2. Add as GitHub Secret: RAILWAY_TOKEN
+# 3. Add Environment ID as: RAILWAY_ENVIRONMENT_ID (optional)
+#
+# Usage: GitHub Actions tab → Deploy Trinity Grid → Run workflow
+
+name: Deploy Trinity Grid
+
+on:
+  workflow_dispatch:
+    inputs:
+      destroy:
+        description: 'Destroy all services instead of deploying'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  RAILWAY_PROJECT: trinity-grid
+
+jobs:
+  # ============================================================================
+  # DEPLOY: Parallel deployment via matrix strategy
+  # ============================================================================
+  deploy:
+    if: github.event.inputs.destroy != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent:
+          - queen    # Port 8080
+          - alpha    # Port 9001
+          - beta     # Port 9002
+          - gamma    # Port 9003
+          - delta    # Port 9004
+          - epsilon  # Port 9005
+          - zeta     # Port 9006
+          - eta      # Port 9007
+          - theta    # Port 9008
+          - iota     # Port 9009
+          - kappa    # Port 9010
+          - lambda   # Port 9011
+          - mu       # Port 9012
+          - nu       # Port 9013
+          - xi       # Port 9014
+          - omicron  # Port 9015
+          - pi       # Port 9016
+          - koppa    # Port 9017
+          - rho      # Port 9018
+          - sigma    # Port 9019
+          - tau      # Port 9020
+          - upsilon  # Port 9021
+          - phi      # Port 9022
+          - khi      # Port 9023
+          - psi      # Port 9024
+          - omega    # Port 9025
+          - sampi    # Port 9026
+          - sho      # Port 9027
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Link Railway Project
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+        run: |
+          railway link --project ${{ env.RAILWAY_PROJECT }} || railway init --name ${{ env.RAILWAY_PROJECT }}
+
+      - name: Deploy ${{ matrix.agent }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          # Set port based on agent
+          if [ "${{ matrix.agent }}" = "queen" ]; then
+            PORT=8080
+            DOMAIN=omega
+            DOCKERFILE=deploy/Dockerfile.queen
+          else
+            AGENTS=(alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi koppa rho sigma tau upsilon phi khi psi omega sampi sho)
+            for i in "${!AGENTS[@]}"; do
+              if [ "${AGENTS[$i]}" = "${{ matrix.agent }}" ]; then
+                PORT=$((9001 + i))
+                DOMAIN=${{ matrix.agent }}
+                DOCKERFILE=deploy/Dockerfile.tri-agent
+                break
+              fi
+            done
+          fi
+
+          # Create service
+          railway service create ${{ matrix.agent }} 2>/dev/null || true
+
+          # Set environment variables
+          railway variables set --service ${{ matrix.agent }} PORT=$PORT
+          railway variables set --service ${{ matrix.agent }} AGENT_DOMAIN=$DOMAIN
+          railway variables set --service ${{ matrix.agent }} AGENT_PORT=$PORT
+          railway variables set --service ${{ matrix.agent }} TMPDIR=/tmp
+
+          # Queen-specific
+          if [ "${{ matrix.agent }}" = "queen" ]; then
+            railway variables set --service queen SELF_IMPROVE_INTERVAL=3600
+            railway variables set --service queen EPISODE_WINDOW=100
+          else
+            # Agents connect to Queen via private network
+            railway variables set --service ${{ matrix.agent }} QUEEN_URL=queen.railway.internal:8080
+          fi
+
+          # Deploy
+          railway up --service ${{ matrix.agent }} -d $DOCKERFILE
+
+  # ============================================================================
+  # STATUS: Show all deployed services
+  # ============================================================================
+  status:
+    if: github.event.inputs.destroy != 'true'
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Link Railway Project
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+        run: railway link --project ${{ env.RAILWAY_PROJECT }}
+
+      - name: Show All Services Status
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "=== Trinity 27-Agent Grid Status ==="
+          railway status
+
+  # ============================================================================
+  # DESTROY: Remove all services
+  # ============================================================================
+  destroy:
+    if: github.event.inputs.destroy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Link Railway Project
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
+        run: railway link --project ${{ env.RAILWAY_PROJECT }}
+
+      - name: Destroy All Services
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Destroying all Trinity grid services..."
+          railway service list --json 2>/dev/null | jq -r '.[].serviceId' | xargs -I {} railway service rm {} -y || echo "No services to destroy"
+          echo "✅ All services destroyed"
