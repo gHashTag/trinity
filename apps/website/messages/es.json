@@ -2,7 +2,25 @@
   "lang": "es",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Teoremas", "Publicaciones", "Solucion", "Benchmarks", "Calculadora", "DePIN", "Equipo", "Invertir"],
+  "nav": ["TRINITY", "Confianza", "Características", "Testimonios", "Comparación", "FAQ", "Invertir"],
+  "trustBlock": {
+    "title": "Confianza de desarrolladores"
+  },
+  "features": {
+    "problemTitle": "El problema del olvido",
+    "problem": "Los agentes de IA olvidan todo después de cada sesión. Repiten errores. No pueden aprender unos de otros.",
+    "solution": "Los 27 agentes especializados de Trinity (uno por letra copta) comparten memoria persistente a través de .trinity/experience/. Cada error guardado. Cada lección aprendida."
+  },
+  "testimonials": {
+    "title": "Lo que dicen los desarrolladores"
+  },
+  "comparison": {
+    "title": "Cómo se compara <span class=\"grad\">Trinity</span>",
+    "subtitle": "Plataformas de agentes de IA comparadas. Trinity es la única con aprendizaje persistente."
+  },
+  "faq": {
+    "title": "Preguntas frecuentes"
+  },
   "hero": {
     "badge_publications": "7 PUBLICACIONES",
     "badge_doi": "DOI-VERIFICADO",

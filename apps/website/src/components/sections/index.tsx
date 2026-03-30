@@ -1,10 +1,15 @@
 // Только критичные секции above-the-fold
 // Остальные загружаются через React.lazy() в App.tsx
 export { default as HeroSection } from './HeroSection'
+export { default as TrustBlock } from './TrustBlock'
 export { default as TheoremsSection } from './TheoremsSection'
 export { default as PublicationsSection } from './PublicationsSection'
 export { default as ProblemSection } from './ProblemSection'
 export { default as SolutionSection } from './SolutionSection'
+export { default as FeaturesSection } from './FeaturesSection'
+export { default as ComparisonSection } from './ComparisonSection'
+export { default as TestimonialsSection } from './TestimonialsSection'
+export { default as FaqSection } from './FaqSection'
 
 // Cycle 98 Sacred Intelligence Widgets
 export { default as SacredIdentityWidget } from './SacredIdentityWidget'

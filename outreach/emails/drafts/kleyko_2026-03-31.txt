@@ -1,0 +1,42 @@
+# Outreach: Denis Kleyko (2026-03-31)
+# denis.kleyko@oru.se | Örebro University
+
+## Email (87 words)
+
+Subject: Ternary VSA in Zig — seeking your review
+
+Dear Dr. Kleyko,
+
+I've implemented Vector Symbolic Architectures in pure Zig with FPGA synthesis.
+
+Your arXiv:2106.05268 survey has been foundational.
+
+Key results:
+• Ternary alphabet {-1,0,+1} — math grounded in φ²+φ⁻²=3
+• O(n) bind/unbind/bundle with 17× SIMD speedup
+• FPGA: 63 tok/s @ 1W, zero DSP (XC7A100T)
+• 3000+ tests passing
+
+Question: Would you be interested in reviewing the VSA implementation?
+Potential for joint paper on ternary VSA hardware evaluation.
+
+Code: src/vsa.zig, src/sacred/vsa_benchmark.zig
+DOI: 10.5281/zenodo.19227877
+
+Best regards,
+Dmitrii Vasilev
+admin@t27.ai
+
+## SMTP Headers
+From: admin@t27.ai
+Reply-To: admin@t27.ai
+List-Unsubscribe: <https://t27.ai/unsubscribe?scientist=kleyko>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+## Notes
+- Kleyko is THE VSA authority — his response = social proof for entire HDC community
+- Email confirmed on Örebro University website
+- If he replies, forward to all other VSA/HDC targets as social proof
+- Track response in: .trinity/experience/outreach-2026-03-31.jsonl

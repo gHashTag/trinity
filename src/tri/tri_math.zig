@@ -346,10 +346,54 @@ pub fn runMathCommand(args: []const []const u8) void {
         runStringTheoryCommand(sub_args);
     } else if (std.mem.eql(u8, sub, "defi") or std.mem.eql(u8, sub, "yield") or std.mem.eql(u8, sub, "pools")) {
         runDefiCommand(sub_args);
+    } else if (std.mem.eql(u8, sub, "gif") or std.mem.eql(u8, sub, "anim")) {
+        runGifCommand(sub_args);
     } else {
         std.debug.print("{s}Unknown math subcommand: {s}{s}\n", .{ RED, sub, RESET });
         printMathHelp();
     }
+}
+
+// =============================================================================
+// COMMAND: tri math gif [trinity|spiral|fibonacci] [output.gif]
+// =============================================================================
+
+pub fn runGifCommand(args: []const []const u8) void {
+    if (args.len == 0) {
+        printGifHelp();
+        return;
+    }
+
+    const sub = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    const math = @import("math/mod.zig");
+    const gif = math.gif_generator;
+
+    if (std.mem.eql(u8, sub, "trinity") or std.mem.eql(u8, sub, "identity")) {
+        gif.cmdTrinityGif(sub_args);
+    } else if (std.mem.eql(u8, sub, "spiral") or std.mem.eql(u8, sub, "golden")) {
+        gif.cmdSpiralGif(sub_args);
+    } else if (std.mem.eql(u8, sub, "fib") or std.mem.eql(u8, sub, "fibonacci")) {
+        gif.cmdFibonacciGif(sub_args);
+    } else {
+        std.debug.print("{s}Unknown GIF type: {s}{s}\n", .{ RED, sub, RESET });
+        printGifHelp();
+    }
+}
+
+fn printGifHelp() void {
+    std.debug.print("\n{s}TRINITY MATH GIF GENERATOR{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}===================================={s}\n\n", .{ GRAY, RESET });
+    std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri math gif <type> [output.gif]\n\n", .{});
+    std.debug.print("{s}TYPES:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}trinity{s}     Trinity Identity: φ² + 1/φ² = 3 (animated bars + circles)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}spiral{s}      Golden logarithmic spiral animation\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fibonacci{s}   Fibonacci sequence growth visualization\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}OUTPUT:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Generated .gif file with golden ratio themed colors\n", .{});
+    std.debug.print("  Use any image viewer to play the animation\n\n", .{});
 }
 
 fn printMathHelp() void {
@@ -364,7 +408,8 @@ fn printMathHelp() void {
     std.debug.print("  {s}fib{s} <n>                    Fibonacci number F(n)\n", .{ GREEN, RESET });
     std.debug.print("  {s}lucas{s} <n>                  Lucas number L(n)\n", .{ GREEN, RESET });
     std.debug.print("  {s}spiral{s} <n>                 Phi-spiral coordinates + ASCII plot\n", .{ GREEN, RESET });
-    std.debug.print("  {s}compare{s} [n]                Side-by-side phi/fib/lucas table\n", .{ GREEN, RESET });
+    std.debug.print("\n{s}ANIMATION (GIF):{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}gif{s} <type> [output.gif]   Generate animated GIF (trinity/spiral/fibonacci)\n", .{ GREEN, RESET });
     std.debug.print("\n{s}EXTENDED (Cycle 83):{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}exotic{s}                     Exotic constants (Apery, Catalan, Feigenbaum...)\n", .{ GREEN, RESET });
     std.debug.print("  {s}physical{s}                   Physics constants (alpha, Planck, Boltzmann...)\n", .{ GREEN, RESET });
