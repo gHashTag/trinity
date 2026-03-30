@@ -269,7 +269,7 @@ const defaultMetaRules = [_]MetaRule{
 | **Reinforcement Learning** | Queen Lotus (B004) | Self-learning 0-5 cycle | ✅ |
 | **GAM + LP** | (Planned) | VSA extension | ⏳ Phase 2 |
 | **ASP** | (Planned) | Tri Language extension | ⏳ Phase 2 |
-| **Polynomial-time** | Theorems 1-4 | O(n), O(1) bounds proven | ✅ |
+| **Polynomial-time** | Theorems 1-3 | O(n), O(1) bounds proven | ✅ |
 | **Verifiability** | All bundles | 8 DOIs, 3000+ tests | ✅ |
 | **Open source** | GitHub | MIT/Apache 2.0 | ✅ |
 | **HiLog** | (Planned) | Higher-order VSA | ⏳ Phase 2 |
