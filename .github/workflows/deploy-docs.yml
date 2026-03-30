@@ -7,6 +7,7 @@ on:
     paths:
       - 'apps/website/**'
       - 'docs/**'
+      - 'demos/**'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
   repository_dispatch:
@@ -50,7 +51,7 @@ jobs:
         run: npm run build
 
       # Combine builds
-      - name: Combine apps/website + docs
+      - name: Combine apps/website + docs + demos + recordings
         run: |
           mkdir -p combined
           cp -r apps/website/dist/* combined/
@@ -58,6 +59,11 @@ jobs:
           cp apps/website/public/CNAME combined/ 2>/dev/null || true
           mkdir -p combined/docs
           cp -r docs/build/* combined/docs/
+          # Copy demos folder
+          cp -r demos/* combined/
+          # Copy recordings folder (GIFs)
+          mkdir -p combined/recordings
+          cp -r recordings/*.gif combined/recordings/ 2>/dev/null || true
           touch combined/.nojekyll
 
       # Deploy to gh-pages branch directly
