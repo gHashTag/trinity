@@ -1,0 +1,78 @@
+# Queen Self-Improving Container
+# Multi-stage build: Zig backend + React frontend
+
+# ============================================================================
+# Stage 1: Frontend Build (React + Vite)
+# ============================================================================
+
+FROM node:20-alpine AS frontend-build
+
+WORKDIR /app
+
+# Install dependencies
+COPY apps/queen-web/package*.json ./
+RUN npm ci
+
+# Build frontend
+COPY apps/queen-web/ ./
+RUN npm run build
+
+# ============================================================================
+# Stage 2: Zig Backend Build
+# ============================================================================
+
+FROM ubuntu:22.04 AS backend-build
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15
+ENV ZIG_VERSION=0.15.2
+RUN curl -fsSL https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz | tar xJ
+ENV PATH="/zig-linux-x86_64-${ZIG_VERSION}:${PATH}"
+
+# Copy Trinity source
+COPY . /trinity
+WORKDIR /trinity
+
+# Build Queen backend
+RUN zig build -Doptimize=ReleaseFast queen-backend
+
+# ============================================================================
+# Stage 3: Runtime Image
+# ============================================================================
+
+FROM ubuntu:22.04 AS runtime
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Zig toolchain
+COPY --from=backend-build /zig-linux-x86_64-${ZIG_VERSION} /zig/
+ENV PATH="/zig-linux-x86_64-${ZIG_VERSION}:${PATH}"
+
+# Copy compiled binaries
+COPY --from=backend-build /trinity/zig-out/bin/queen-backend /usr/local/bin/
+COPY --from=frontend-build /app/dist /var/www/html
+
+# Create directories for Trinity state
+RUN mkdir -p /trinity/.trinity/queen /trinity/.trinity/experience/episodes
+
+# Environment variables
+ENV PORT=8080
+ENV SELF_IMPROVE_INTERVAL=3600
+ENV EPISODE_WINDOW=100
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Expose ports
+EXPOSE 8080
+
+# Run Queen backend (also serves static files)
+CMD ["sh", "-c", "cd /trinity && exec /usr/local/bin/queen-backend"]
