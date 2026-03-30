@@ -138,6 +138,10 @@ Trinity achieves AR-based ML through **four-layer composition**:
 
 **Proof Sketch**: Direct algebraic verification. φ² = (3 + √5)/2, φ⁻² = (3 - √5)/2, sum = 3.
 
+### Mathematical Foundation: Trinity Identity
+
+The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden ratio) provides the mathematical foundation for balanced ternary computing with {-1, 0, +1} values. This identity demonstrates that three-state systems achieve optimal information density per symbol (1.58 bits/trit) and underpins the VSA binding operations.
+
 ### 1.3 Multi-Family Integration Plan
 
 #### Phase 1 (TA1 Months 1-15): NN + VSA + Classical Logic
@@ -167,6 +171,90 @@ Trinity achieves AR-based ML through **four-layer composition**:
 - Sample complexity analysis
 - Multi-condition medical guidance demo
 - Kill web planning demo
+
+### 1.4 Explainability Architecture
+
+CLARA Layer 4 (Explainability) provides human-readable proof traces for all derivations. This addresses CLARA's core requirement for transparent, inspectable reasoning.
+
+#### Natural Deduction Proof Traces
+
+The Datalog engine (`src/clara/rules.zig`) records each derivation step:
+
+```
+Step 1: hslm_forward(threat_1) → [1,-1,0] (confidence: 0.92)
+Step 2: vsa_bind([1,-1,0], hostile_pattern) → 0.87
+Step 3: rule: threat_class(X, hostile) ← vsa_sim(X, hostile_pattern) > 0.85
+Step 4: CONCLUSION: threat(threat_1, hostile) = 0.89
+```
+
+**Key Features**:
+- **max_depth=10**: CLARA requirement for ≤10 unfolding steps
+- **3 output formats**: natural deduction (human-readable), Fitch-style (formal logic), compact (one-line)
+- **DerivationStep records**: `{ step, fact, rule, confidence }` for audit trail
+- **CLI integration**: `tri clara explain --query "threat(t1,hostile)" --format natural`
+
+#### Implementation
+
+The proof trace system (`src/clara/explain.zig`) provides:
+- `ProofTrace` struct with fixed-size step array (10 steps max)
+- `Explanation` tree with hierarchical node structure
+- `ExplainNode` with parent-child relationships for nested derivations
+
+**Example Output**:
+```
+╔══════════════════════════════════════════════════════════╗
+║  CLARA Explanation: Natural Deduction Style            ║
+╠══════════════════════════════════════════════════════════╣
+║ Query: threat_class(threat_1, hostile)                 ║
+╠══════════════════════════════════════════════════════════╣
+║ Step 1: hslm_forward(threat_1) → [1,-1,0]               ║
+║   Rule: hslm_forward_pass                                ║
+║   Confidence: 0.92                                       ║
+║   Step 2: vsa_bind([1,-1,0], hostile_pattern)          ║
+║   Rule: vsa_similarity_rule                             ║
+║   Confidence: 0.87                                       ║
+║   Step 3: threat_class(threat_1, hostile)                ║
+║   Rule: threat_classification_rule                        ║
+║   Confidence: 0.89                                       ║
+╚══════════════════════════════════════════════════════════╝
+```
+
+### 1.5 Bounded Rationality via Restraint
+
+CLARA's "Restraint & HiLog" requirement (Grosof) ensures tractable inference with guaranteed termination. Trinity implements this through quality-based depth mapping (`src/clara/bounded.zig`).
+
+#### Queen Lotus Quality → Depth Mapping
+
+| Quality Level | max_depth | max_rules | confidence_threshold | timeout_ms |
+|---------------|-----------|-----------|---------------------|------------|
+| **unknown** | 5 | 50 | 0.85 | 2000 |
+| **unstable** | 8 | 75 | 0.75 | 3500 |
+| **good** | 10 | 100 | 0.70 | 5000 |
+
+**Rationale**: Conservative settings for uncertain scenarios (depth=5), full CLARA limits for high-confidence scenarios (depth=10). This matches Queen Lotus's quality assessment from the amygdala module.
+
+#### Restraint Parameters
+
+- **max_depth**: Maximum derivation depth (CLARA limit: 10)
+- **max_rules**: Maximum rule executions before termination
+- **confidence_threshold**: Minimum confidence to continue derivation
+- **timeout_ms**: Maximum wall-clock time for inference
+
+#### HiLog Meta-Rules
+
+Meta-rules enforce complexity control at each derivation step:
+
+```zig
+const defaultMetaRules = [_]MetaRule{
+    .{ .name = "confidence_prune", .apply_fn = confidencePrune },
+    .{ .name = "depth_limit", .apply_fn = depthLimit },
+    .{ .name = "rule_limit", .apply_fn = ruleLimit },
+};
+```
+
+**Behavior**: Each meta-rule returns `bool` → `false` terminates derivation.
+
+**Direct Quote (Grosof)**: *"Tractable Higher-Order Logic via Restraint & HiLog achieves polynomial-time inference by bounding search depth and pruning low-confidence paths."*
 
 ---
 
