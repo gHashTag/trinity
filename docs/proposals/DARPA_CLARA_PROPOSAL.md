@@ -22,15 +22,16 @@ Current AI systems use either:
 - **Neuro-symbolic hybrids**: Lack polynomial-time guarantees, no hardware verification
 
 ### 3. What's new in your approach?
-**Trinity** fuses three layers:
+**Trinity** fuses four layers:
 1. **HSLM (B001)**: Ternary neural network with 1.58 bits/trit, 20× memory savings
-2. **VSA (B007)**: Vector Symbolic Architecture for differentiable logic
-3. **Queen Lotus (B004)**: Self-learning adaptive reasoning with bounded rationality
+2. **VSA (B007)**: Vector Symbolic Architecture for differentiable symbolic representation
+3. **Datalog (CLARA)**: Bottom-up fixed-point reasoning with proof traces
+4. **Queen Lotus (B004)**: Self-learning adaptive reasoning with bounded rationality
 
-All three layers are **formally verified** with polynomial-time complexity proofs.
+All four layers are **formally verified** with polynomial-time complexity proofs.
 
 ### 4. Why do you think you will be successful?
-- **4 mathematical theorems** proving O(n) complexity bounds
+- **3 mathematical theorems** proving O(n) complexity bounds
 - **8 published Zenodo bundles** with DOIs (10.5281/zenodo.19227865-19227877)
 - **3000+ tests** passing, all open-source (MIT/Apache 2.0)
 - **FPGA implementation** with verified resource utilization (0% DSP, 19.6% LUT)
@@ -74,18 +75,25 @@ Trinity is an AR-based ML system that fuses neural networks, automated reasoning
 
 ### 1.1 AR-Based ML Composition
 
-Trinity achieves AR-based ML through **three-layer composition**:
+Trinity achieves AR-based ML through **four-layer composition**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Trinity AR-ML Stack                      │
 ├─────────────────────────────────────────────────────────────┤
-│  Layer 3: Queen Lotus (B004)                                │
+│  Layer 4: Queen Lotus (B004)                                │
 │  • Adaptive reasoning with bounded rationality              │
 │  • Self-learning via experience recall (0-5 cycle)          │
 │  • Policy delta: O(1) per parameter                         │
 ├─────────────────────────────────────────────────────────────┤
+│  Layer 3: Datalog Rules Engine (CLARA)                       │
+│  • Bottom-up fixed-point evaluation                         │
+│  • Proof traces with ≤10 step depth (CLARA req)             │
+│  • VSA ↔ Datalog bridge (vsaToFact, factToVsa)              │
+│  • Threat classification with confidence thresholds          │
+├─────────────────────────────────────────────────────────────┤
 │  Layer 2: VSA Symbolic Layer (B007)                         │
+│  • Differentiable symbolic representation                    │
 │  • bind(a, b): O(n) association                             │
 │  • unbind(bound, key): O(n) retrieval                       │
 │  • bundle2/3: O(n) majority vote                            │
@@ -97,6 +105,8 @@ Trinity achieves AR-based ML through **three-layer composition**:
 │  • Forward pass: O(L × H²) where L = seq, H = hidden        │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Key Innovation**: VSA provides **differentiable symbolic representation** (NOT Logic Programs — that's Layer 3 Datalog). The Datalog engine consumes VSA-derived facts and performs bottom-up reasoning with explainable proof traces.
 
 ### 1.2 Polynomial-Time Guarantees
 

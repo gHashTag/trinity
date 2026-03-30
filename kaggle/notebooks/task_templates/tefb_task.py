@@ -108,7 +108,10 @@ eval_df = pd.DataFrame({
 
 print(f"📊 Loaded {len(eval_df)} items")
 
-# === CELL 6: Inner Task with Debug Logging ===
+# === CELL 6: Debug Log Container ===
+tefb_debug_log = []
+
+# === CELL 7: Inner Task with Debug Logging ===
 @kbench.task(name="trinity_tefb_executive Single", store_task=False)
 def tefb_single(llm, question, expected_answer) -> bool:
     """Single item evaluation with debug logging for first 10 failures."""
@@ -121,9 +124,10 @@ Answer:"""
 
     matched = match_answer(response.answer, expected_answer)
 
-    # Debug logging (first 10 failures only, stored in global)
-    if not matched and len(tefb_single.debug_log) < 10:
-        tefb_single.debug_log.append({
+    # Debug logging (first 10 failures only)
+    global tefb_debug_log
+    if not matched and len(tefb_debug_log) < 10:
+        tefb_debug_log.append({
             "question": question[:80],
             "expected": expected_answer,
             "got": response.answer[:150]
@@ -131,12 +135,9 @@ Answer:"""
 
     return matched
 
-# Initialize debug log
-tefb_single.debug_log = []
-
 print("✅ Inner task registered")
 
-# === CELL 7: Outer Task ===
+# === CELL 8: Outer Task ===
 @kbench.task(
     name="Trinity Executive Function Battery",
     description="Evaluates multi-step reasoning, stroop interference, wisconsin card sorting, working memory. Based on Trinity's cognitive architecture."
@@ -158,17 +159,17 @@ def tefb_benchmark(llm) -> float:
 
 print("✅ Outer benchmark task registered")
 
-# === CELL 8: Run ===
+# === CELL 9: Run ===
 run = tefb_benchmark.run(llm=kbench.llm)
 print(f"\n🏆 Result: {run.result:.2%}")
 
-# === CELL 9: Debug Output ===
-if tefb_single.debug_log:
-    print(f"\n🐛 First {len(tefb_single.debug_log)} failures:")
-    for i, entry in enumerate(tefb_single.debug_log, 1):
+# === CELL 10: Debug Output ===
+if tefb_debug_log:
+    print(f"\n🐛 First {len(tefb_debug_log)} failures:")
+    for i, entry in enumerate(tefb_debug_log, 1):
         print(f"\n{i}. Q: {entry['question']}")
         print(f"   Expected: {entry['expected']}")
         print(f"   Got: {entry['got']}")
 
-# === CELL 10: Choose ===
+# === CELL 11: Choose ===
 %choose tefb_benchmark

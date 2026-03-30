@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Kaggle Benchmarks Task Generator v2
-Generates ready-to-copy notebook code for each track
-FIXED: CSV detection bug + flexible matching + debug logging
+Kaggle Benchmarks Task Generator v3
+FIXED: FrozenInstanceError - use global debug_log instead of function attribute
 """
 import os
 from pathlib import Path
@@ -169,7 +168,10 @@ eval_df = pd.DataFrame({{
 
 print(f"📊 Loaded {{len(eval_df)}} items")
 
-# === CELL 6: Inner Task with Debug Logging ===
+# === CELL 6: Debug Log Container ===
+{track_key}_debug_log = []
+
+# === CELL 7: Inner Task with Debug Logging ===
 @kbench.task(name="{config['task_id']} Single", store_task=False)
 def {track_key}_single(llm, question, expected_answer) -> bool:
     """Single item evaluation with debug logging for first 10 failures."""
@@ -182,9 +184,10 @@ Answer:"""
 
     matched = match_answer(response.answer, expected_answer)
 
-    # Debug logging (first 10 failures only, stored in global)
-    if not matched and len({track_key}_single.debug_log) < 10:
-        {track_key}_single.debug_log.append({{
+    # Debug logging (first 10 failures only)
+    global {track_key}_debug_log
+    if not matched and len({track_key}_debug_log) < 10:
+        {track_key}_debug_log.append({{
             "question": question[:80],
             "expected": expected_answer,
             "got": response.answer[:150]
@@ -192,12 +195,9 @@ Answer:"""
 
     return matched
 
-# Initialize debug log
-{track_key}_single.debug_log = []
-
 print("✅ Inner task registered")
 
-# === CELL 7: Outer Task ===
+# === CELL 8: Outer Task ===
 @kbench.task(
     name="Trinity {config['name']}",
     description="{config['description']}. Based on Trinity's cognitive architecture."
@@ -219,19 +219,19 @@ def {track_key}_benchmark(llm) -> float:
 
 print("✅ Outer benchmark task registered")
 
-# === CELL 8: Run ===
+# === CELL 9: Run ===
 run = {track_key}_benchmark.run(llm=kbench.llm)
 print(f"\\n🏆 Result: {{run.result:.2%}}")
 
-# === CELL 9: Debug Output ===
-if {track_key}_single.debug_log:
-    print(f"\\n🐛 First {{len({track_key}_single.debug_log)}} failures:")
-    for i, entry in enumerate({track_key}_single.debug_log, 1):
+# === CELL 10: Debug Output ===
+if {track_key}_debug_log:
+    print(f"\\n🐛 First {{len({track_key}_debug_log)}} failures:")
+    for i, entry in enumerate({track_key}_debug_log, 1):
         print(f"\\n{{i}}. Q: {{entry['question']}}")
         print(f"   Expected: {{entry['expected']}}")
         print(f"   Got: {{entry['got']}}")
 
-# === CELL 10: Choose ===
+# === CELL 11: Choose ===
 %choose {track_key}_benchmark
 '''
 
@@ -250,11 +250,11 @@ def main():
     print(f"\n📊 Generated {len(TRACKS)} task templates")
     print(f"📁 Output directory: {output_dir}")
     print("\n📝 Changes:")
+    print("  • FIXED: FrozenInstanceError - use global debug_log variable")
     print("  • FIXED: CSV detection using endswith() instead of fuzzy match")
     print("  • ADDED: Strategy 0 matching (strip parenthetical annotations)")
     print("  • ADDED: Flexible matching with 5 strategies")
     print("  • ADDED: Debug logging for first 10 failures")
-    print("  • FIXED: Hardcoded column mappings per track (no undefined variables)")
 
 if __name__ == "__main__":
     main()

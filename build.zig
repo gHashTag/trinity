@@ -3024,6 +3024,22 @@ pub fn build(b: *std.Build) void {
     const tri27_fuzzer_tests_step = b.step("test-tri27-fuzz", "Run TRI-27 Encoder Fuzzer (Property-based Tests)");
     tri27_fuzzer_tests_step.dependOn(&run_tri27_fuzzer_tests.step);
 
+    // TTT Dogfood Verification Sweep — Tier 1 Smoke Tests
+    const tri27_smoke_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri27/emu/smoke_tests.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    tri27_smoke_mod.addImport("cpu_state", tri27_cpu_mod);
+    tri27_smoke_mod.addImport("executor", tri27_executor_mod);
+
+    const tri27_smoke_tests = b.addTest(.{
+        .root_module = tri27_smoke_mod,
+    });
+    const run_tri27_smoke_tests = b.addRunArtifact(tri27_smoke_tests);
+    const tri27_smoke_tests_step = b.step("test-tri27-smoke", "Run TTT Dogfood Tier 1 Smoke Tests (Neural/Transformer/Conv)");
+    tri27_smoke_tests_step.dependOn(&run_tri27_smoke_tests.step);
+
     // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
     const basal_ganglia_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -3993,6 +4009,17 @@ pub fn build(b: *std.Build) void {
         },
     });
 
+    // CLARA baselines (SOA comparison)
+    const clara_baselines_mod = b.createModule(.{
+        .root_source_file = b.path("src/clara/baselines.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "vsa", .module = trinity_mod },
+            .{ .name = "zodd", .module = zodd_mod },
+        },
+    });
+
     // CLARA test executables
     const clara_rules_test = b.addTest(.{
         .root_module = clara_rules_mod,
@@ -4022,12 +4049,20 @@ pub fn build(b: *std.Build) void {
     const clara_bounded_test_step = b.step("test-clara-bounded", "Run CLARA bounded rationality tests");
     clara_bounded_test_step.dependOn(&run_clara_bounded_test.step);
 
+    const clara_baselines_test = b.addTest(.{
+        .root_module = clara_baselines_mod,
+    });
+    const run_clara_baselines_test = b.addRunArtifact(clara_baselines_test);
+    const clara_baselines_test_step = b.step("test-clara-baselines", "Run CLARA baselines tests");
+    clara_baselines_test_step.dependOn(&run_clara_baselines_test.step);
+
     // CLARA comprehensive test step
     const clara_test_step = b.step("test-clara", "Run all CLARA tests");
     clara_test_step.dependOn(clara_rules_test_step);
     clara_test_step.dependOn(clara_kill_web_test_step);
     clara_test_step.dependOn(clara_explain_test_step);
     clara_test_step.dependOn(clara_bounded_test_step);
+    clara_test_step.dependOn(clara_baselines_test_step);
 
     // ═══════════════════════════════════════════════════════════════════════════════
     // CYRILLIC GUARD — DISABLED (causes build errors)
