@@ -2,7 +2,25 @@
   "lang": "de",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Theoreme", "Publikationen", "Lösung", "Benchmarks", "Rechner", "DePIN", "Team", "Investieren"],
+  "nav": ["TRINITY", "Vertrauen", "Funktionen", "Bewertungen", "Vergleich", "FAQ", "Investieren"],
+  "trustBlock": {
+    "title": "Vertraut von Entwicklern"
+  },
+  "features": {
+    "problemTitle": "Das Vergessensproblem",
+    "problem": "KI-Agenten vergessen nach jeder Sitzung alles. Sie wiederholen Fehler. Sie können nicht voneinander lernen.",
+    "solution": "Trinitys 27 spezialisierte Agenten (einer pro koptischem Buchstaben) teilen sich dauerhaften Speicher über .trinity/experience/. Jeder Fehler gespeichert. Jede Lektion gelernt."
+  },
+  "testimonials": {
+    "title": "Was Entwickler sagen"
+  },
+  "comparison": {
+    "title": "Wie <span class=\"grad\">Trinity</span> sich vergleicht",
+    "subtitle": "Vergleich der KI-Agenten-Plattformen. Trinity ist die einzige mit dauerhaftem Lernen."
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen"
+  },
   "hero": {
     "badge_publications": "7 PUBLIKATIONEN",
     "badge_doi": "DOI-VERIFIZIERT",

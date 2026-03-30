@@ -108,11 +108,9 @@ pub const Matcher = struct {
     }
 
     fn tryStripParenthetical(self: *const Matcher, response: []const u8, expected: []const u8) ?MatchResult {
-        _ = self;
-
         // Strip parenthetical content from response
-        var stripped = std.ArrayList(u8).init(self.allocator);
-        defer stripped.deinit();
+        var stripped = std.ArrayList(u8).initCapacity(self.allocator, 0) catch return null;
+        defer stripped.deinit(self.allocator);
 
         var in_parens: usize = 0;
         for (response) |c| {
@@ -121,7 +119,7 @@ pub const Matcher = struct {
             } else if (c == ')' or c == ']') {
                 if (in_parens > 0) in_parens -= 1;
             } else if (in_parens == 0) {
-                stripped.append(c) catch {};
+                stripped.append(self.allocator, c) catch {};
             }
         }
 
@@ -179,6 +177,7 @@ pub const Matcher = struct {
     }
 
     fn trySubstring(self: *const Matcher, response: []const u8, expected: []const u8) ?MatchResult {
+        _ = self;
         // Only use for short expected values (< 30 chars)
         if (expected.len > 30) return null;
 
@@ -205,6 +204,7 @@ pub const Matcher = struct {
     }
 
     fn tryWordBoundary(self: *const Matcher, response: []const u8, expected: []const u8) ?MatchResult {
+        _ = self;
         // Check if expected appears as a complete word in response
         var iter = std.mem.tokenizeScalar(u8, response, ' ');
         while (iter.next()) |word| {
@@ -223,16 +223,16 @@ pub const Matcher = struct {
 
     fn trySequentialWord(self: *const Matcher, response: []const u8, expected: []const u8) ?MatchResult {
         // Extract words from expected
-        var exp_words = std.ArrayList([]const u8).init(self.allocator);
+        var exp_words = std.ArrayList([]const u8).initCapacity(self.allocator, 0) catch return null;
         defer {
             for (exp_words.items) |w| self.allocator.free(w);
-            exp_words.deinit();
+            exp_words.deinit(self.allocator);
         }
 
         var iter = std.mem.tokenizeScalar(u8, expected, ' ');
         while (iter.next()) |word| {
             const w = std.mem.trim(u8, word, ".,!?;:");
-            try exp_words.append(try self.allocator.dupe(u8, w));
+            try exp_words.append(self.allocator, try self.allocator.dupe(u8, w));
         }
 
         if (exp_words.items.len < 2) return null;
@@ -275,15 +275,15 @@ pub const Matcher = struct {
 
         var i: usize = 0;
         while (i <= haystack.len - needle.len) : (i += 1) {
-            var match = true;
+            var is_match = true;
             for (needle, 0..) |n, j| {
                 if (i + j >= haystack.len or
                     std.ascii.toLower(haystack[i + j]) != std.ascii.toLower(n)) {
-                    match = false;
+                    is_match = false;
                     break;
                 }
             }
-            if (match) return i;
+            if (is_match) return i;
         }
 
         return null;

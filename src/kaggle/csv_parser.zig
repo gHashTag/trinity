@@ -56,7 +56,7 @@ pub const CsvParser = struct {
         const data = try file.readToEndAlloc(self.allocator, 10 * 1024 * 1024);
         defer self.allocator.free(data);
 
-        var rows = std.ArrayList(CsvRow).init(self.allocator);
+        var rows = try std.ArrayList(CsvRow).initCapacity(self.allocator, 0);
         var stats = CsvStats.init(self.allocator);
 
         // Parse CSV line by line
@@ -73,10 +73,10 @@ pub const CsvParser = struct {
             }
 
             // Parse CSV fields (handle quoted fields)
-            var fields = std.ArrayList([]const u8).init(self.allocator);
+            var fields = try std.ArrayList([]const u8).initCapacity(self.allocator, 0);
             defer {
                 for (fields.items) |f| self.allocator.free(f);
-                fields.deinit();
+                fields.deinit(self.allocator);
             }
 
             var field_start: usize = 0;
@@ -91,7 +91,7 @@ pub const CsvParser = struct {
                 } else if (c == ',' and !in_quotes) {
                     const field = line[field_start..i];
                     const trimmed = try trimField(self.allocator, field);
-                    try fields.append(trimmed);
+                    try fields.append(self.allocator, trimmed);
                     field_start = i + 1;
                 }
             }
@@ -99,7 +99,7 @@ pub const CsvParser = struct {
             // Last field
             const field = line[field_start..];
             const trimmed = try trimField(self.allocator, field);
-            try fields.append(trimmed);
+            try fields.append(self.allocator, trimmed);
 
             // Need at least id, task, question, answer
             if (fields.items.len < 4) continue;
@@ -123,7 +123,7 @@ pub const CsvParser = struct {
                     "",
             };
 
-            try rows.append(row);
+            try rows.append(self.allocator, row);
             stats.total_rows += 1;
 
             // Track task types
@@ -158,7 +158,7 @@ pub const CsvParser = struct {
         }
 
         return .{
-            .rows = try rows.toOwnedSlice(),
+            .rows = try rows.toOwnedSlice(self.allocator),
             .stats = stats,
         };
     }
@@ -258,11 +258,11 @@ test "parse CSV row" {
         const file = try std.fs.cwd().createFile(tmp_path, .{});
         defer file.close();
         try file.writeAll(csv_data);
-    };
+    }
     defer std.fs.cwd().deleteFile(tmp_path) catch {};
 
     const parser = CsvParser.init(allocator, tmp_path);
-    const result = try parser.parse();
+    var result = try parser.parse();
     defer {
         allocator.free(result.rows);
         for (result.rows) |r| {
@@ -282,8 +282,6 @@ test "parse CSV row" {
 }
 
 test "detect open-ended vs factual" {
-    const allocator = std.testing.allocator;
-
     try std.testing.expectEqual(@as(usize, 1), countWords("Tashkent"));
     try std.testing.expectEqual(@as(usize, 5), countWords("A quantum system exists in multiple states"));
 }

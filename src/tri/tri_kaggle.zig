@@ -119,7 +119,7 @@ fn runParseCommand(allocator: Allocator, args: []const []const u8) !void {
         print("File: {s}\n\n", .{path});
 
         const parser = CsvParser.init(allocator, path);
-        const result = try parser.parse();
+        var result = try parser.parse();
         defer {
             allocator.free(result.rows);
             for (result.rows) |r| {
@@ -130,7 +130,7 @@ fn runParseCommand(allocator: Allocator, args: []const []const u8) !void {
                 if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
                 if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
             }
-            result.stats.deinit();
+            @constCast(&result.stats).deinit();
         }
 
         print("{s}═══ PARSER RESULTS ═══{s}\n", .{ DIM, RESET });
@@ -176,7 +176,7 @@ fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
 
     if (csv_files.get(track)) |path| {
         const parser = CsvParser.init(allocator, path);
-        const result = try parser.parse();
+        var result = try parser.parse();
         defer {
             allocator.free(result.rows);
             for (result.rows) |r| {
@@ -187,7 +187,7 @@ fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
                 if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
                 if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
             }
-            result.stats.deinit();
+            @constCast(&result.stats).deinit();
         }
 
         var converted: usize = 0;
@@ -234,14 +234,15 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
 
     if (csv_files.get(track)) |path| {
         const parser = CsvParser.init(allocator, path);
-        const result = try parser.parse();
+        var result = try parser.parse();
 
         const evaluator = Evaluator.init(allocator);
 
         // Generate mock responses
-        var responses = std.ArrayList([]const u8).empty;
+        var responses = std.ArrayList([]const u8).init(allocator);
         defer {
             for (responses.items) |r| allocator.free(r);
+            responses.deinit(allocator);
         }
 
         for (result.rows) |r| {

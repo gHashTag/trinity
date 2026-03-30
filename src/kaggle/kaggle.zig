@@ -21,6 +21,10 @@ pub const CsvParser = @import("csv_parser.zig").CsvParser;
 pub const McGenerator = @import("mc_generator.zig").McGenerator;
 pub const Evaluator = @import("evaluator.zig").Evaluator;
 pub const Exporter = @import("export.zig").BatchExporter;
+pub const Clutrr = @import("clutrr.zig").Clutrr;
+pub const ClutrrParser = @import("clutrr.zig").ClutrrParser;
+pub const ClutrrEvaluator = @import("clutrr.zig").ClutrrEvaluator;
+pub const Relation = @import("clutrr.zig").Relation;
 
 pub const Kaggle = struct {
     allocator: std.mem.Allocator,
@@ -33,19 +37,17 @@ pub const Kaggle = struct {
 
     /// Export kaggle submodules for use by tri kaggle
     pub fn exportModules(self: *Kaggle, output_dir: []const u8) !void {
-        const kaggle_dir = try std.fs.cwd().makePath(output_dir) catch "";
-        defer {
-            self.allocator.free(kaggle_dir);
-        };
+        // Create output directory
+        try std.fs.cwd().makePath(output_dir);
 
-        const exports_dir = try std.fmt.allocPrint(self.allocator, "{s}/kaggle", .{kaggle_dir});
+        const exports_dir = try std.fmt.allocPrint(self.allocator, "{s}/kaggle", .{output_dir});
         defer self.allocator.free(exports_dir);
 
         // Create src/kaggle subdirectory if needed
-        const src_path = try std.fmt.allocPrint(self.allocator, "{s}/src", .{kaggle_dir});
+        const src_path = try std.fmt.allocPrint(self.allocator, "{s}/src", .{output_dir});
         defer self.allocator.free(src_path);
 
-        try std.fs.cwd().makeDir(src_path) catch {};
+        std.fs.cwd().makeDir(src_path) catch {};
 
         const module_path = try std.fmt.allocPrint(self.allocator, "{s}/kaggle/zig", .{src_path});
         defer self.allocator.free(module_path);
@@ -65,20 +67,17 @@ pub const Kaggle = struct {
             const src = try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ "src/kaggle", file });
             defer self.allocator.free(src);
 
-            const dst = try std.fmt.allocPrint(self.allocator, "{s}/kaggle/zig", .{file });
-            defer self.allocator.free(dst);
+            // Open destination directory
+            var dest_dir = std.fs.cwd().openDir(src_path, .{}) catch |err| {
+                std.debug.print("❌ Failed to open dest dir {s}: {}\n", .{src_path, err});
+                continue;
+            };
+            defer dest_dir.close();
 
-            const src_file = try std.fs.cwd().openFile(src, .{}) catch |err| {
+            std.fs.cwd().copyFile(src, dest_dir, file, .{}) catch |err| {
                 std.debug.print("❌ Failed to copy {s}: {}\n", .{file, err});
                 continue;
             };
-            defer src_file.close();
-
-            const result = try std.fs.cwd().copyFile(src, dst, .{}) catch |err| {
-                std.debug.print("❌ Failed to copy {s}: {}\n", .{file, err});
-                continue;
-            };
-            defer result.close();
             std.debug.print("✅ Copied {s}\n", .{file});
         }
 
@@ -93,6 +92,6 @@ pub const Kaggle = struct {
 test "export kaggle modules" {
     const allocator = std.testing.allocator;
 
-    const kaggle = Kaggle.init(allocator);
-    try kaggle.exportModules(allocator, "/tmp/test_kaggle_export");
+    var kaggle = Kaggle.init(allocator);
+    try kaggle.exportModules("/tmp/test_kaggle_export");
 }

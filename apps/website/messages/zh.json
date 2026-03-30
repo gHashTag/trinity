@@ -2,7 +2,25 @@
   "lang": "zh",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "定理", "出版物", "解决方案", "基准测试", "计算器", "DePIN", "团队", "投资"],
+  "nav": ["TRINITY", "信任", "功能", "评价", "比较", "FAQ", "投资"],
+  "trustBlock": {
+    "title": "开发者的信任"
+  },
+  "features": {
+    "problemTitle": "遗忘问题",
+    "problem": "AI 代理在每次会话后都会忘记一切。它们重复错误。无法相互学习。",
+    "solution": "Trinity 的 27 个专用代理（每个科普特字母一个）通过 .trinity/experience/ 共享永久记忆。保存每个错误。学习每课教训。"
+  },
+  "testimonials": {
+    "title": "开发者评价"
+  },
+  "comparison": {
+    "title": "<span class=\"grad\">Trinity</span> 如何比较",
+    "subtitle": "AI 代理平台比较。Trinity 是唯一具有持久学习功能的平台。"
+  },
+  "faq": {
+    "title": "常见问题"
+  },
   "hero": {
     "badge_publications": "7篇出版物",
     "badge_doi": "DOI已验证",

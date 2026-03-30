@@ -32,7 +32,8 @@ pub const Exporter = struct {
     }
 
     /// Export submission to CSV format (Kaggle standard)
-    pub fn exportCsv(self: *Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+    pub fn exportCsv(self: *const Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+        _ = self;
         const file = try std.fs.cwd().createFile(output_path, .{});
         defer file.close();
 
@@ -52,7 +53,7 @@ pub const Exporter = struct {
                     if (c == '"') {
                         try file.writeAll("\"\"");
                     } else {
-                        try file.writeByte(c);
+                        try file.writer().writeByte(c);
                     }
                 }
                 try file.writeAll("\"\n");
@@ -65,7 +66,8 @@ pub const Exporter = struct {
     }
 
     /// Export to JSON for Python integration
-    pub fn exportJson(self: *Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+    pub fn exportJson(self: *const Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+        _ = self;
         const file = try std.fs.cwd().createFile(output_path, .{});
         defer file.close();
 
@@ -86,7 +88,8 @@ pub const Exporter = struct {
     }
 
     /// Export to Python dict literal (for paste into notebook)
-    pub fn exportPython(self: *Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+    pub fn exportPython(self: *const Exporter, rows: []const SubmissionRow, output_path: []const u8) !void {
+        _ = self;
         const file = try std.fs.cwd().createFile(output_path, .{});
         defer file.close();
 
@@ -111,6 +114,7 @@ pub const Exporter = struct {
 
     /// Create Kaggle submission template
     pub fn createSubmissionTemplate(self: *Exporter, track: []const u8, output_path: []const u8) !void {
+        _ = self;
         const file = try std.fs.cwd().createFile(output_path, .{});
         defer file.close();
 
@@ -166,7 +170,7 @@ pub const BatchExporter = struct {
         };
     }
 
-    pub fn exportAll(self: *BatchExporter, results: std.StringHashMap([]const SubmissionRow)) !void {
+    pub fn exportAll(self: *const BatchExporter, results: std.StringHashMap([]const SubmissionRow)) !void {
         // Create output directory
         std.fs.cwd().makePath(self.output_dir) catch {};
 
@@ -200,7 +204,7 @@ test "export CSV" {
     const tmp_path = "test_export_temp.csv";
     {
         try exporter.exportCsv(&rows, tmp_path);
-    };
+    }
     defer std.fs.cwd().deleteFile(tmp_path) catch {};
 
     // Verify output
@@ -222,7 +226,7 @@ test "export Python" {
     const tmp_path = "test_python_export.py";
     {
         try exporter.exportPython(&rows, tmp_path);
-    };
+    }
     defer std.fs.cwd().deleteFile(tmp_path) catch {};
 
     // Verify output

@@ -2,7 +2,25 @@
   "lang": "en",
   "langSwitch": "RU",
   "langHref": "?lang=ru",
-  "nav": ["TRINITY", "Theorems", "Publications", "Solution", "Benchmarks", "Calculator", "DePIN", "Team", "Invest"],
+  "nav": ["TRINITY", "Trust", "Features", "Testimonials", "Comparison", "FAQ", "Invest"],
+  "trustBlock": {
+    "title": "Trusted by Developers"
+  },
+  "features": {
+    "problemTitle": "The Forgetting Problem",
+    "problem": "AI agents forget everything after each session. They repeat mistakes. They can't learn from each other.",
+    "solution": "Trinity's 27 specialized agents (one per Coptic letter) share permanent memory via .trinity/experience/. Every mistake saved. Every lesson learned."
+  },
+  "testimonials": {
+    "title": "What Developers Say"
+  },
+  "comparison": {
+    "title": "How <span class=\"grad\">Trinity</span> Compares",
+    "subtitle": "AI agent platforms compared. Trinity is the only one with persistent learning."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions"
+  },
   "hero": {
     "tag": "GPU-Verified Green AI Economy",
     "badge_publications": "7 PUBLICATIONS",

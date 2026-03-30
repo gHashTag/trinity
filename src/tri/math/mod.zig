@@ -111,6 +111,7 @@ pub const identities = @import("identities.zig");
 pub const sacred_formula = @import("formula.zig");
 pub const gematria_math = @import("gematria.zig");
 pub const blind_spots = @import("blind_spots.zig");
+pub const gif_generator = @import("gif_generator.zig");
 
 // Version
 pub const version = "4.0.0";

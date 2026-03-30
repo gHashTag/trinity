@@ -183,7 +183,7 @@ pub const Dataset = struct {
             .seq_len = seq_len,
             .cursor = 0,
             .allocator = allocator,
-            .items = std.ArrayList(DataItem).init(allocator),
+            .items = std.ArrayList(DataItem).empty,
         };
     }
 
@@ -194,7 +194,7 @@ pub const Dataset = struct {
         for (self.items.items) |*item| {
             self.allocator.free(item.tokens);
         }
-        self.items.deinit();
+        self.items.deinit(self.allocator);
     }
 
     /// Enable curriculum learning with config

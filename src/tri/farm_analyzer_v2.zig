@@ -394,8 +394,8 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
     var total_unmonitored: usize = 0;
 
     // Collect all results for summary
-    var results = std.ArrayList(WorkerAnalysis).init(allocator);
-    defer results.deinit();
+    var results = try std.ArrayList(WorkerAnalysis).initCapacity(allocator, 0);
+    defer results.deinit(allocator);
 
     for (acct_buf[0..acct_count]) |acct| {
         // Account filter
@@ -463,7 +463,7 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
             const svc_id = getStringRailway(node, "id");
 
             // Fetch deployment logs
-            const logs_resp = api.getDeploymentLogs(svc_id, acct.env_id, 100) catch |err| {
+            const logs_resp = api.getDeploymentLogs(svc_id, 100) catch |err| {
                 if (!json_output) {
                     print("  {s}⚠️  {s}: logs fetch failed ({s}){s}\n", .{ YELLOW, svc_name, @errorName(err), RESET });
                 }
@@ -473,7 +473,7 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
 
             // Analyze logs
             const analysis = try analyzeWorkerLogs(allocator, logs_resp, svc_name, acct.name);
-            try results.append(analysis);
+            try results.append(allocator, analysis);
 
             // Update totals
             if (analysis.is_training) total_training += 1;
@@ -535,17 +535,17 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
         }
     } else if (json_output) {
         // JSON output for programmatic use
-        var json_buf = std.ArrayList(u8).init(allocator);
-        defer json_buf.deinit();
+        var json_buf = try std.ArrayList(u8).initCapacity(allocator, 0);
+        defer json_buf.deinit(allocator);
 
-        try json_buf.append('{');
-        try json_buf.writer().print(
+        try json_buf.append(allocator, '{');
+        try json_buf.writer(allocator).print(
             \\"total_workers":{d},"training":{d},"stalled":{d},"error":{d},"unmonitored":{d},"workers":[
         , .{ total_workers, total_training, total_stalled, total_error, total_unmonitored });
 
         for (results.items, 0..) |analysis, idx| {
-            if (idx > 0) try json_buf.append(',');
-            try json_buf.writer().print(
+            if (idx > 0) try json_buf.append(allocator, ',');
+            try json_buf.writer(allocator).print(
                 \\"name":"{s}","account":"{s}","step":{d},"ppl":{d:.1},"training":{},"stalled":{},"error":"{s}","can_restart":{}}
             , .{
                 analysis.name,
@@ -559,8 +559,8 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
             });
         }
 
-        try json_buf.append(']');
-        try json_buf.append('}');
+        try json_buf.append(allocator, ']');
+        try json_buf.append(allocator, '}');
 
         print("{s}\n", .{json_buf.items});
     }

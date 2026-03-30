@@ -34,7 +34,8 @@ pub const McGenerator = struct {
     rng: std.Random.DefaultPrng,
 
     pub fn init(allocator: Allocator) McGenerator {
-        const seed = @intCast(u64, @intFromFloat(std.time.nanoTimestamp()));
+        const timestamp = std.time.nanoTimestamp();
+        const seed = @as(u64, @intCast(@abs(timestamp)));
         return .{
             .allocator = allocator,
             .rng = std.Random.DefaultPrng.init(seed),
@@ -62,22 +63,22 @@ pub const McGenerator = struct {
         }
 
         // Build choices string
-        var choices_buffer = std.ArrayList(u8).init(self.allocator);
+        var choices_buffer = try std.ArrayList(u8).initCapacity(self.allocator, 0);
         const labels = [4]u8{ 'A', 'B', 'C', 'D' };
 
         for (options, 0..) |opt, i| {
-            try choices_buffer.append(labels[i]);
-            try choices_buffer.append(')');
-            try choices_buffer.append(' ');
-            try choices_buffer.appendSlice(opt);
-            if (i < 3) try choices_buffer.append('\n');
+            try choices_buffer.append(self.allocator, labels[i]);
+            try choices_buffer.append(self.allocator, ')');
+            try choices_buffer.append(self.allocator, ' ');
+            try choices_buffer.appendSlice(self.allocator, opt);
+            if (i < 3) try choices_buffer.append(self.allocator, '\n');
         }
 
         return .{
             .id = try self.allocator.dupe(u8, row.id),
             .task = try self.allocator.dupe(u8, row.task),
             .question = try self.allocator.dupe(u8, row.question),
-            .choices = try choices_buffer.toOwnedSlice(),
+            .choices = try choices_buffer.toOwnedSlice(self.allocator),
             .answer = labels[correct_pos],
             .difficulty = row.difficulty,
             .brain_zone = try self.allocator.dupe(u8, row.brain_zone),
@@ -87,7 +88,6 @@ pub const McGenerator = struct {
 
     pub fn generateDistractors(self: *McGenerator, question: []const u8, correct: []const u8) ![3][]const u8 {
         const q_lower = toLower(question);
-        const c_lower = toLower(correct);
 
         // Domain-specific distractor generation
         if (std.mem.indexOf(u8, q_lower, "quantum") != null) {
@@ -160,12 +160,12 @@ pub const McGenerator = struct {
             };
 
             var result: [3][]const u8 = undefined;
-            var selected = std.ArrayList(usize).init(self.allocator);
-            defer selected.deinit();
+            var selected = try std.ArrayList(usize).initCapacity(self.allocator, 0);
+            defer selected.deinit(self.allocator);
 
             while (selected.items.len < 3) {
                 const idx_rand = self.rng.random().uintLessThan(usize, wrong_capitals.len);
-                const already = false;
+                var already = false;
                 for (selected.items) |s| {
                     if (s == idx_rand) {
                         already = true;
@@ -173,7 +173,7 @@ pub const McGenerator = struct {
                     }
                 }
                 if (!already) {
-                    try selected.append(idx_rand);
+                try selected.append(self.allocator, idx_rand);
                 }
             }
 

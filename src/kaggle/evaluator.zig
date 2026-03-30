@@ -64,11 +64,11 @@ pub const Evaluator = struct {
 
     /// Evaluate rows with given model responses
     pub fn evaluate(
-        self: *Evaluator,
+        self: *const Evaluator,
         rows: []const CsvRow,
         responses: []const []const u8,
     ) !EvalResult {
-        std.debug.assert(rows.len == responses.len, "Rows and responses must have same length");
+        std.debug.assert(rows.len == responses.len);
 
         var result = EvalResult{
             .confusion = std.AutoHashMap(EvalResult.ConfusionKey, usize).init(self.allocator),
@@ -152,10 +152,10 @@ pub const Evaluator = struct {
 
     /// Generate mock responses for testing (use actual model in production)
     pub fn mockResponse(self: *Evaluator, row: CsvRow) ![]const u8 {
-        _ = self;
-
         // For testing: return correct answer 70% of time
-        const rng = std.Random.DefaultPrng.init(@intCast(u64, @intFromFloat(std.time.nanoTimestamp())));
+        const timestamp = std.time.nanoTimestamp();
+        const seed = @as(u64, @intCast(@abs(timestamp)));
+        const rng = std.Random.DefaultPrng.init(seed);
         if (rng.random().float(f64) < 0.7) {
             return self.allocator.dupe(u8, row.answer);
         } else {
@@ -253,7 +253,7 @@ pub const BatchEvaluator = struct {
             const parse_result = try parser.parse();
 
             // Generate mock responses and evaluate
-            var responses = std.ArrayList([]const u8).init(self.allocator);
+            var responses = std.ArrayList([]const u8).initCapacity(self.allocator, 0);
             defer {
                 for (responses.items) |r| self.allocator.free(r);
                 responses.deinit();

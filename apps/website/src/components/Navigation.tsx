@@ -2,7 +2,7 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
+const sectionIds = ['hero', 'trust', 'features', 'testimonials', 'comparison', 'faq', 'invest']
 const BASE = import.meta.env.BASE_URL
 // Docs points to t27.ai/docs/ (custom domain)
 const DOCS_URL = 'https://t27.ai/docs/'

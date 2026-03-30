@@ -9,6 +9,9 @@
 //
 
 const std = @import("std");
+const kaggle_mod = @import("kaggle");
+const ClutrrParser = kaggle_mod.ClutrrParser;
+const ClutrrEvaluator = kaggle_mod.ClutrrEvaluator;
 
 // ANSI color constants (file-level to avoid duplication)
 const BOLD = "\x1b[1m";
@@ -262,8 +265,10 @@ pub fn runClaraStatus(allocator: std.mem.Allocator, args: []const []const u8) !v
 // ==================== BENCHMARK COMMAND ====================
 //
 pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
-    _ = allocator;
+    if (args.len > 0 and std.mem.eql(u8, args[0], "--clutrr")) {
+        try runClutrrBenchmark(allocator, args[1..]);
+        return;
+    }
 
     std.debug.print("⚡ CLARA Benchmark: Polynomial-Time Analysis\n", .{});
     std.debug.print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
@@ -318,6 +323,126 @@ pub fn runClaraBenchmark(allocator: std.mem.Allocator, args: []const []const u8)
     std.debug.print("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", .{});
     std.debug.print("✅ All components: O(n) or O(k) complexity verified\n", .{});
     std.debug.print("   Polyn-time: PASS (degree <4.0 for all)\n", .{});
+}
+
+/// Run CLUTRR benchmark on kinship reasoning dataset
+pub fn runClutrrBenchmark(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const data_path = if (args.len > 0) args[0] else "kaggle/data/clutrr.csv";
+
+    std.debug.print("\n{s}╔════════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}║{s}  {s}CLUTRR: Compositional Language Understanding{s}            {s}║{s}\n", .{ CYAN, RESET, BOLD, RESET, CYAN, RESET });
+    std.debug.print("{s}║{s}  {s}& Textual Relational Reasoning Benchmark{s}                {s}║{s}\n", .{ CYAN, RESET, BOLD, RESET, CYAN, RESET });
+    std.debug.print("{s}╚════════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    std.debug.print("{s}Dataset:{s} {s}\n", .{ YELLOW, RESET, data_path });
+    std.debug.print("{s}Reference:{s} Sinha et al., EMNLP 2019\n\n", .{ YELLOW, RESET });
+
+    // Check if file exists
+    const file_exists = std.fs.cwd().openFile(data_path, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            std.debug.print("{s}❌ Error: Dataset file not found: {s}{s}\n\n", .{ "\x1b[31m", data_path, RESET });
+            std.debug.print("{s}To generate CLUTRR data:{s}\n", .{ YELLOW, RESET });
+            std.debug.print("  1. git clone https://github.com/facebookresearch/CLUTRR\n", .{});
+            std.debug.print("  2. cd CLUTRR && python generate_data.py\n", .{});
+            std.debug.print("  3. Copy generated CSV to {s}\n\n", .{data_path});
+            std.debug.print("{s}Using sample data for demonstration...{s}\n\n", .{ YELLOW, RESET });
+
+            // Generate sample data for demonstration
+            try runClutrrSample(allocator);
+            return;
+        }
+        return err;
+    };
+    file_exists.close();
+
+    // Parse CSV file
+    std.debug.print("{s}📊 Parsing CSV file...{s}\n", .{ YELLOW, RESET });
+    const start = std.time.nanoTimestamp();
+
+    var parser = ClutrrParser.init(allocator, data_path);
+    const examples = try parser.parse();
+
+    const elapsed_ns = std.time.nanoTimestamp() - start;
+    const elapsed_ms: f64 = @floatFromInt(@divTrunc(elapsed_ns, 1_000_000));
+
+    std.debug.print("   ✅ Parsed {d} examples in {d:.1} ms\n\n", .{ examples.len, elapsed_ms });
+
+    // Run evaluation
+    std.debug.print("{s}🧮 Running Datalog reasoning...{s}\n", .{ YELLOW, RESET });
+
+    var evaluator = ClutrrEvaluator.init(allocator, examples);
+    try evaluator.evaluate();
+
+    // Print results - use --verbose flag for detailed output
+
+    // Cleanup
+    for (examples) |ex| {
+        allocator.free(ex.id);
+        allocator.free(ex.story);
+        allocator.free(ex.query);
+        allocator.free(ex.target);
+        allocator.free(ex.proof_state);
+        allocator.free(ex.proof_line);
+        allocator.free(ex.proof_type);
+        allocator.free(ex.answer);
+        allocator.free(ex.proof_type_short);
+        allocator.free(ex.proof_type_long);
+        for (ex.facts) |f| {
+            allocator.free(f.subject);
+            allocator.free(f.object);
+        }
+        allocator.free(ex.facts);
+    }
+    allocator.free(examples);
+
+    std.debug.print("\n{s}φ² + 1/φ² = 3 | TRINITY{s}\n\n", .{ CYAN, RESET });
+}
+
+/// Run CLUTRR benchmark with sample data
+fn runClutrrSample(allocator: std.mem.Allocator) !void {
+    // Sample CLUTRR examples for demonstration
+    const sample_csv =
+        \\id,story,query,target,proof_state,proof_line,proof_type,father,answer,1.0,2,short,long,meta1,meta2,meta3,meta4,meta5,meta6
+        \\1,"John is Mary's father. Mary is Bob's mother.","What is John to Bob?","grandfather","state","line","type","father","grandfather",1.0,2,"short","long","","","","",""
+        \\2,"Alice is Tom's mother. Tom is Sue's father.","What is Alice to Sue?","grandmother","state","line","type","mother","grandmother",1.0,2,"short","long","","","","",""
+        \\3,"Bob is Alice's brother. Alice is Carol's mother.","What is Bob to Carol?","uncle","state","line","type","brother","uncle",1.0,2,"short","long","","","","",""
+    ;
+
+    // Write to temp file
+    const tmp_path = "/tmp/clutrr_sample.csv";
+    {
+        const file = try std.fs.cwd().createFile(tmp_path, .{});
+        defer file.close();
+        try file.writeAll(sample_csv);
+    }
+    defer std.fs.cwd().deleteFile(tmp_path) catch {};
+
+    // Parse and evaluate
+    var parser = ClutrrParser.init(allocator, tmp_path);
+    const examples = try parser.parse();
+    defer {
+        for (examples) |ex| {
+            allocator.free(ex.id);
+            allocator.free(ex.story);
+            allocator.free(ex.query);
+            allocator.free(ex.target);
+            allocator.free(ex.answer);
+            for (ex.facts) |f| {
+                allocator.free(f.subject);
+                allocator.free(f.object);
+            }
+            allocator.free(ex.facts);
+        }
+        allocator.free(examples);
+    }
+
+    var evaluator = ClutrrEvaluator.init(allocator, examples);
+    try evaluator.evaluate();
+
+    // Results summary:
+    std.debug.print("  Total Examples: {d}\n", .{evaluator.total});
+    std.debug.print("  Correct: {d}\n", .{evaluator.correct});
+    std.debug.print("  Accuracy: {d:.2}%\n", .{evaluator.accuracy() * 100});
 }
 
 // ==================== DEMO COMMAND ====================
@@ -536,6 +661,7 @@ fn usage(args: []const []const u8) !void {
     std.debug.print("  test       Run CLARA integration tests\n", .{});
     std.debug.print("  status     Show proposal progress\n", .{});
     std.debug.print("  benchmark  Run polynomial-time benchmarks\n", .{});
+    std.debug.print("             {s}--clutrr{s}  Run CLUTRR kinship reasoning benchmark\n", .{ "\x1b[33m", "\x1b[0m" });
     std.debug.print("\n", .{});
 }
 
