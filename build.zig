@@ -2970,6 +2970,26 @@ pub fn build(b: *std.Build) void {
     const queen_self_learning_tests_step = b.step("test-queen-self-learning", "Run Queen Self-Learning Tests");
     queen_self_learning_tests_step.dependOn(&run_queen_self_learning_tests.step);
 
+    // Queen Backend — HTTP/JSON API Server for Container Deployment
+    const queen_backend_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/backend_server.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "episodes", .module = queen_episodes_mod },
+            .{ .name = "self_learning", .module = queen_self_learning_mod },
+        },
+    });
+
+    const queen_backend = b.addExecutable(.{
+        .name = "queen-backend",
+        .root_module = queen_backend_mod,
+    });
+    b.installArtifact(queen_backend);
+    const run_queen_backend = b.addRunArtifact(queen_backend);
+    const queen_backend_step = b.step("queen-backend", "Run Queen Backend Server");
+    queen_backend_step.dependOn(&run_queen_backend.step);
+
     // TRI-27 Comprehensive Tests (all 36 opcodes)
     const tri27_comprehensive_mod = b.createModule(.{
         .root_source_file = b.path("src/tri27/emu/test_comprehensive.zig"),

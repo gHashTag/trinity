@@ -316,6 +316,8 @@ pub fn runQueenCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         return runQueenPurify(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "blocked")) {
         return runQueenBlocked(allocator);
+    } else if (std.mem.eql(u8, subcmd, "backend")) {
+        return runQueenBackend(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printQueenHelp();
     } else {
@@ -579,4 +581,9 @@ test "queen: shouldBlock" {
 
     event.attempts = 3;
     try std.testing.expect(event.shouldBlock());
+}
+
+pub fn runQueenBackend(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const backend = @import("queen/backend_server.zig");
+    try backend.runBackendCommand(allocator, args);
 }
