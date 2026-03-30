@@ -79,8 +79,11 @@ pub const Curriculum = struct {
             .none => 1.0,
             .linear => @min(1.0, progress),
             .exponential => 1.0 - @exp(-self.config.growth_rate * progress),
-            .step => @floor(progress * @as(f32, @floatFromInt(self.config.num_milestones))) /
-                @as(f32, @floatFromInt(self.config.num_milestones)),
+            .step => blk: {
+                const milestone = @floor(progress * @as(f32, @floatFromInt(self.config.num_milestones)));
+                const denom = @as(f32, @floatFromInt(@max(1, self.config.num_milestones - 1)));
+                break :blk milestone / denom;
+            },
             .cosine => (1.0 - @cos(progress * std.math.pi)) / 2.0,
         };
 
