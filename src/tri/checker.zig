@@ -190,7 +190,7 @@ pub const TypeChecker = struct {
                 _ = try self.checkExpression(expr);
             },
             .return_stmt => |*ret_stmt| {
-                if (self.current_function) |*fn| {
+                if (self.current_function) |*func_decl| {
                     if (ret_stmt.value) |*value_expr| {
                         const ret_type = try self.checkExpression(value_expr);
                         try self.checkTypeCompat(fn.return_type, ret_type);
