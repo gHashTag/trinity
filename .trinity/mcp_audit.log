@@ -1,0 +1,4 @@
+{"timestamp": "2026-03-07T16:00:22.648087Z", "tool_name": "tri_gen", "decision": "deny", "reason": "Tool 'tri_gen' requires explicit confirmation. Reason: True", "user": "mcp_client", "request_id": ""}
+{"timestamp": "2026-03-07T16:00:22.649055Z", "tool_name": "tri_fpga", "decision": "deny", "reason": "Tool 'tri_fpga' requires explicit confirmation. Reason: True", "user": "mcp_client", "request_id": ""}
+{"timestamp": "2026-03-07T16:00:22.649196Z", "tool_name": "tri_constants", "decision": "allow", "reason": "All security checks passed", "user": "mcp_client", "request_id": ""}
+{"timestamp": "2026-03-07T16:00:22.649303Z", "tool_name": "tri_gen", "decision": "deny", "reason": "Tool 'tri_gen' requires explicit confirmation. Reason: True", "user": "mcp_client", "request_id": ""}

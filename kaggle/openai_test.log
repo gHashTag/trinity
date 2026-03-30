@@ -1,0 +1,109 @@
+🚀 Running model: gpt-4o
+Tracks: tmp
+Max items: 10
+
+============================================================
+Track: Metacognition (tmp)
+============================================================
+[1/10] tmp_confidence_calibration_0000... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 685ms
+[2/10] tmp_confidence_calibration_0001... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 316ms
+[3/10] tmp_confidence_calibration_0002... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 322ms
+[4/10] tmp_confidence_calibration_0003... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 321ms
+[5/10] tmp_confidence_calibration_0004... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 1396ms
+[6/10] tmp_confidence_calibration_0005... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 405ms
+[7/10] tmp_confidence_calibration_0006... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 364ms
+[8/10] tmp_confidence_calibration_0007... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 354ms
+[9/10] tmp_confidence_calibration_0008... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 338ms
+[10/10] tmp_confidence_calibration_0009... ⚠️  API Error 401: {
+    "error": {
+        "message": "Incorrect API key provided: ce8a4b21*************************************9Duq. You can find your API key at https://platform.openai.com/account/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+    }
+}
+
+✗ 380ms
+✅ Saved 10 results to /Users/playra/trinity-w1/kaggle/results/tmp_gpt-4o_results.json
+📊 Accuracy: 0.0%, Avg latency: 488ms

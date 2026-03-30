@@ -1,0 +1,4 @@
+module trinityPackageTests {
+    header "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinityPackageTests.build/trinityPackageTests-Swift.h"
+    requires objc
+}

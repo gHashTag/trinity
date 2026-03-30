@@ -1,0 +1,18 @@
+**Agent Swarm Status Summary:**
+
+| Agent | Issue | Status | Time | Result |
+|--------|---------|--------|---------|
+| #124 | JSONL event persistence | DONE ✅ | 2 commits, git push ❌, PR ❌ |
+| #125 | Git worktree isolation | DONE ✅ | 2 commits, git push ❌, PR ❌ |
+| #126 | Structured ACI protocol | CODING 🔄 | Running ~12min |
+
+**Root Issue**: All agents failing `git push` with "Bad credentials". The PAT (`AGENT_GH_TOKEN`) lacks `repo` scope or wrong format.
+
+The agents work end-to-end through Claude Code (z.ai proxy), create commits locally, but can't push to create PRs.
+
+**To fix**: Generate a new PAT with `repo` scope and update `AGENT_GH_TOKEN` secret.
+
+Would you like me to:
+1. Wait for agent #126 to complete (if it succeeds, might reveal more info)
+2. Generate instructions for fixing PAT permissions
+3. Check local PAT from .env to verify scopes

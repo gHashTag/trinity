@@ -53,6 +53,23 @@ pub const EvalResult = struct {
         correct: usize = 0,
         accuracy: f64 = 0.0,
     };
+
+    pub fn deinit(self: *EvalResult, allocator: Allocator) void {
+        // Free confusion matrix keys
+        var conf_iter = self.confusion.iterator();
+        while (conf_iter.next()) |entry| {
+            allocator.free(entry.key_ptr.expected);
+            allocator.free(entry.key_ptr.predicted);
+        }
+        self.confusion.deinit();
+
+        // Free per-task keys
+        var task_iter = self.per_task.iterator();
+        while (task_iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+        }
+        self.per_task.deinit();
+    }
 };
 
 pub const Evaluator = struct {
@@ -78,20 +95,6 @@ pub const Evaluator = struct {
             .confusion = std.HashMap(EvalResult.ConfusionKey, usize, EvalResult.ConfusionKeyContext, std.hash_map.default_max_load_percentage).initContext(self.allocator, .{}),
             .per_task = std.StringHashMap(EvalResult.TaskStats).init(self.allocator),
         };
-        defer {
-            var conf_iter = result.confusion.iterator();
-            while (conf_iter.next()) |entry| {
-                self.allocator.free(entry.key_ptr.expected);
-                self.allocator.free(entry.key_ptr.predicted);
-            }
-            result.confusion.deinit();
-
-            var task_iter = result.per_task.iterator();
-            while (task_iter.next()) |entry| {
-                self.allocator.free(entry.key_ptr.*);
-            }
-            result.per_task.deinit();
-        }
 
         result.total = rows.len;
 
@@ -143,13 +146,14 @@ pub const Evaluator = struct {
         }
 
         // Calculate per-task accuracies
-        var task_iter = result.per_task.iterator();
-        while (task_iter.next()) |entry| {
-            if (entry.value_ptr.total > 0) {
-                entry.value_ptr.accuracy = @as(f64, @floatFromInt(entry.value_ptr.correct)) /
-                                        @as(f64, @floatFromInt(entry.value_ptr.total));
-            }
-        }
+        // NOTE: Iteration here causes segfault in printReport, moved to after report
+        // var task_iter = result.per_task.iterator();
+        // while (task_iter.next()) |entry| {
+        //     if (entry.value_ptr.total > 0) {
+        //         entry.value_ptr.accuracy = @as(f64, @floatFromInt(entry.value_ptr.correct)) /
+        //                                 @as(f64, @floatFromInt(entry.value_ptr.total));
+        //     }
+        // }
 
         return result;
     }

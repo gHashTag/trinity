@@ -1,0 +1,4 @@
+module QueenUILib {
+    header "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenUILib-Swift.h"
+    requires objc
+}

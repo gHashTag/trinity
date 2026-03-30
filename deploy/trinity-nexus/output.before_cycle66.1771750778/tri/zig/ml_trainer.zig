@@ -1,0 +1,267 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// ml_trainer v1.0.0 - Generated from .vibee specification
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
+//
+// Author: 
+// DO NOT EDIT - This file is auto-generated
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const math = std.math;
+const Allocator = std.mem.Allocator;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// in φ-towith (Sacred Formula)
+pub const PHI: f64 = 1.618033988749895;
+pub const PHI_INV: f64 = 0.618033988749895;
+pub const PHI_SQ: f64 = 2.618033988749895;
+pub const TRINITY: f64 = 3.0;
+pub const SQRT5: f64 = 2.2360679774997896;
+pub const TAU: f64 = 6.283185307179586;
+pub const PI: f64 = 3.141592653589793;
+pub const E: f64 = 2.718281828459045;
+pub const PHOENIX: i64 = 999;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// 
+pub const TrainingConfig = struct {
+    epochs: usize,
+    batch_size: usize,
+    learning_rate: f64,
+    save_every: usize,
+    eval_every: usize,
+};
+
+/// 
+pub const TrainingState = struct {
+    epoch: usize,
+    step: usize,
+    best_loss: f64,
+    losses: []f64,
+};
+
+/// 
+pub const Trainer = struct {
+    model: Transformer,
+    optimizer: Optimizer,
+    config: TrainingConfig,
+    state: TrainingState,
+};
+
+/// 
+pub const Checkpoint = struct {
+    model_weights: []const u8,
+    optimizer_state: OptimizerState,
+    epoch: usize,
+    loss: f64,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//   WASM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var global_buffer: [65536]u8 align(16) = undefined;
+var f64_buffer: [8192]f64 align(16) = undefined;
+
+export fn get_global_buffer_ptr() [*]u8 {
+    return &global_buffer;
+}
+
+export fn get_f64_buffer_ptr() [*]f64 {
+    return &f64_buffer;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATION PATTERNS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Trit - ternary digit (-1, 0, +1)
+pub const Trit = enum(i8) {
+    negative = -1, // FALSE
+    zero = 0,      // UNKNOWN
+    positive = 1,  // TRUE
+
+    pub fn trit_and(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
+    }
+
+    pub fn trit_or(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@max(@intFromEnum(a), @intFromEnum(b)));
+    }
+
+    pub fn trit_not(a: Trit) Trit {
+        return @enumFromInt(-@intFromEnum(a));
+    }
+
+    pub fn trit_xor(a: Trit, b: Trit) Trit {
+        const av = @intFromEnum(a);
+        const bv = @intFromEnum(b);
+        if (av == 0 or bv == 0) return .zero;
+        if (av == bv) return .negative;
+        return .positive;
+    }
+};
+
+/// Check TRINITY identity: φ² + 1/φ² = 3
+fn verify_trinity() f64 {
+    return PHI * PHI + 1.0 / (PHI * PHI);
+}
+
+/// φ-andfieldsand
+fn phi_lerp(a: f64, b: f64, t: f64) f64 {
+    const phi_t = math.pow(f64, t, PHI_INV);
+    return a + (b - a) * phi_t;
+}
+
+/// notand φ-withand
+fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
+    const max_points = f64_buffer.len / 2;
+    const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
+    var i: u32 = 0;
+    while (i < count) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const angle = fi * TAU * PHI_INV;
+        const radius = scale * math.pow(f64, PHI, fi * 0.1);
+        f64_buffer[i * 2] = cx + radius * @cos(angle);
+        f64_buffer[i * 2 + 1] = cy + radius * @sin(angle);
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEHAVIOR FUNCTIONS - Generated from behaviors
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Batch of data
+/// When: Forward pass, loss computation, backward pass, optimizer step
+/// Then: Returns loss for this step
+pub fn trainStep(items: anytype) f32 {
+// DEFERRED (v12): implement — Returns loss for this step
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = items;
+}
+
+
+/// Dataset, epoch number
+/// When: Runs training loop over all batches
+/// Then: Returns average loss for epoch
+pub fn trainEpoch(data: []const u8) f32 {
+// DEFERRED (v12): implement — Returns average loss for epoch
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = data;
+}
+
+
+/// Validation dataset
+/// When: Computes loss on validation data without gradients
+/// Then: Returns validation loss
+pub fn evaluate(data: []const u8) f32 {
+// DEFERRED (v12): implement — Returns validation loss
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = data;
+}
+
+
+pub fn saveCheckpoint(data: []const u8, path: []const u8) !void {
+    // Save data to file
+    const file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    try file.writeAll(data);
+}
+
+pub fn loadCheckpoint(path: []const u8, allocator: std.mem.Allocator) ![]u8 {
+    // Load entire file into memory
+    const file = try std.fs.cwd().openFile(path, .{});
+    defer file.close();
+    return file.readToEndAlloc(allocator, 1024 * 1024);
+}
+
+/// Validation losses history, patience
+/// When: Checks if validation loss hasn't improved
+/// Then: Returns true if training should stop
+pub fn earlyStop() !void {
+// DEFERRED (v12): implement — Returns true if training should stop
+    // Add 'implementation:' field in .vibee spec to provide real code.
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS - Generated from behaviors and test_cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "trainStep_behavior" {
+// Given: Batch of data
+// When: Forward pass, loss computation, backward pass, optimizer step
+// Then: Returns loss for this step
+// Test trainStep: verify behavior is callable (compile-time check)
+_ = trainStep;
+}
+
+test "trainEpoch_behavior" {
+// Given: Dataset, epoch number
+// When: Runs training loop over all batches
+// Then: Returns average loss for epoch
+// Test trainEpoch: verify behavior is callable (compile-time check)
+_ = trainEpoch;
+}
+
+test "evaluate_behavior" {
+// Given: Validation dataset
+// When: Computes loss on validation data without gradients
+// Then: Returns validation loss
+// Test evaluate: verify returns boolean
+// DEFERRED (v12): Add specific test for evaluate
+_ = evaluate;
+}
+
+test "saveCheckpoint_behavior" {
+// Given: File path
+// When: Saves model weights and optimizer state
+// Then: Checkpoint written to disk
+// Test saveCheckpoint: verify behavior is callable (compile-time check)
+_ = saveCheckpoint;
+}
+
+test "loadCheckpoint_behavior" {
+// Given: File path
+// When: Loads model weights and optimizer state
+// Then: Training can resume from checkpoint
+// Test loadCheckpoint: verify behavior is callable (compile-time check)
+_ = loadCheckpoint;
+}
+
+test "earlyStop_behavior" {
+// Given: Validation losses history, patience
+// When: Checks if validation loss hasn't improved
+// Then: Returns true if training should stop
+// Test earlyStop: verify returns boolean
+// DEFERRED (v12): Add specific test for earlyStop
+_ = earlyStop;
+}
+
+test "phi_constants" {
+    try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
+    try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
+}
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPEC-LEVEL TESTS - Integration tests from test_cases:
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "overfit_single_batch" {
+// Given: Small batch, 100 steps
+// Expected: Loss approaches zero
+// Test: overfit_single_batch
+    // (Test setup and assertions to be implemented)
+    _ = @as(usize, 0); // Compile-time check
+}
+

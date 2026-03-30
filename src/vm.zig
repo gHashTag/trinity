@@ -3,14 +3,16 @@
 // ⲤⲀⲔⲢⲀ ⲪⲞⲢⲘⲨⲖⲀ: V = n × 3^k × π^m × φ^p × e^q
 
 const std = @import("std");
-const tvc_hybrid = @import("hybrid.zig");
-const tvc_vsa = @import("vsa.zig");
 
-pub const HybridBigInt = tvc_hybrid.HybridBigInt;
-pub const Trit = tvc_hybrid.Trit;
-pub const MAX_TRITS = tvc_hybrid.MAX_TRITS;
+// Import from zig-golden-float package (external kernel)
+const gf = @import("golden-float");
 
-// Sacred opcodes module (v7.0)
+// Re-export types from zig-golden-float
+pub const HybridBigInt = gf.bigint.HybridBigInt;
+pub const Trit = gf.bigint.Trit;
+pub const MAX_TRITS = gf.bigint.MAX_TRITS;
+
+// Sacred opcodes module (now in zig-golden-float)
 const sacred_opcodes = @import("vm/opcodes.zig");
 const SacredOpcode = sacred_opcodes.SacredOpcode;
 const SacredContext = sacred_opcodes.SacredContext;
@@ -260,7 +262,7 @@ pub const VSAVM = struct {
     fn execVRandom(self: *VSAVM, inst: VSAInstruction) void {
         const dst = self.getVReg(inst.dst);
         const seed: u64 = @bitCast(inst.imm);
-        dst.* = tvc_vsa.randomVector(MAX_TRITS, seed);
+        dst.* = gf.vsa.randomVector(MAX_TRITS, seed);
     }
 
     fn execVBind(self: *VSAVM, inst: VSAInstruction) void {
@@ -282,7 +284,7 @@ pub const VSAVM = struct {
         }
 
         // Scalar fallback
-        dst.* = tvc_vsa.bind(&src1, &src2);
+        dst.* = gf.vsa.bind(&src1, &src2);
     }
 
     fn execVUnbind(self: *VSAVM, inst: VSAInstruction) void {
@@ -303,14 +305,14 @@ pub const VSAVM = struct {
         }
 
         // Scalar fallback
-        dst.* = tvc_vsa.unbind(&src1, &src2);
+        dst.* = gf.vsa.unbind(&src1, &src2);
     }
 
     fn execVBundle2(self: *VSAVM, inst: VSAInstruction) void {
         const dst = self.getVReg(inst.dst);
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
-        dst.* = tvc_vsa.bundle2(&src1, &src2);
+        dst.* = gf.vsa.bundle2(&src1, &src2);
     }
 
     fn execVBundle3(self: *VSAVM, inst: VSAInstruction) void {
@@ -318,7 +320,7 @@ pub const VSAVM = struct {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
         var src3 = self.getVReg(inst.dst).*; // Use dst as third source
-        dst.* = tvc_vsa.bundle3(&src1, &src2, &src3);
+        dst.* = gf.vsa.bundle3(&src1, &src2, &src3);
     }
 
     fn execVDot(self: *VSAVM, inst: VSAInstruction) void {
@@ -358,7 +360,7 @@ pub const VSAVM = struct {
         }
 
         // Scalar fallback
-        self.registers.f0 = tvc_vsa.cosineSimilarity(&src1, &src2);
+        self.registers.f0 = gf.vsa.cosineSimilarity(&src1, &src2);
     }
 
     fn execVHamming(self: *VSAVM, inst: VSAInstruction) void {
@@ -378,7 +380,7 @@ pub const VSAVM = struct {
         }
 
         // Scalar fallback
-        self.registers.s0 = @intCast(tvc_vsa.hammingDistance(&src1, &src2));
+        self.registers.s0 = @intCast(gf.vsa.hammingDistance(&src1, &src2));
     }
 
     fn execVAdd(self: *VSAVM, inst: VSAInstruction) void {
@@ -420,7 +422,7 @@ pub const VSAVM = struct {
     fn execVCmp(self: *VSAVM, inst: VSAInstruction) void {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
-        const sim = tvc_vsa.cosineSimilarity(&src1, &src2);
+        const sim = gf.vsa.cosineSimilarity(&src1, &src2);
 
         self.registers.cc_zero = sim > -0.1 and sim < 0.1;
         self.registers.cc_neg = sim < -0.1;
@@ -432,14 +434,14 @@ pub const VSAVM = struct {
         const dst = self.getVReg(inst.dst);
         var src = self.getVReg(inst.src1).*;
         const shift: usize = @intCast(inst.imm);
-        dst.* = tvc_vsa.permute(&src, shift);
+        dst.* = gf.vsa.permute(&src, shift);
     }
 
     fn execVIPermute(self: *VSAVM, inst: VSAInstruction) void {
         const dst = self.getVReg(inst.dst);
         var src = self.getVReg(inst.src1).*;
         const shift: usize = @intCast(inst.imm);
-        dst.* = tvc_vsa.inversePermute(&src, shift);
+        dst.* = gf.vsa.inversePermute(&src, shift);
     }
 
     fn execVSeq(self: *VSAVM, inst: VSAInstruction) void {
@@ -449,7 +451,7 @@ pub const VSAVM = struct {
         var src1 = self.getVReg(inst.src1).*;
         var src2 = self.getVReg(inst.src2).*;
 
-        var permuted = tvc_vsa.permute(&src2, 1);
+        var permuted = gf.vsa.permute(&src2, 1);
         dst.* = src1.add(&permuted);
     }
 

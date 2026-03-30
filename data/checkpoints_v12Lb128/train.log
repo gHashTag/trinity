@@ -1,0 +1,41 @@
+
+================================================================
+  HSLM Training â€” Hybrid Symbolic Language Model
+  ~1.95M ternary parameters, ~390KB
+  Autograd + STE quantization + AdamW
+================================================================
+[1/4] Initializing model...
+       Params: 1952262, Memory: 1872KB
+[2/4] Loading training data...
+       File: data/tinystories/real_tinystories.txt
+       Loaded 100000 stories, 5462458 tokens
+[3/4] Initializing trainer...
+       LR: 0.000300 â†’ 0.0000010 (cosine), Steps: 100000, Batch: 128, Warmup: 5000, Opt: LAMB
+       STE: TWN (Li et al. 2016), threshold: 0.50, warmup: 10000
+       WD: 0.100 (cosine, disable at 50%)
+       Consciousness: adaptive threshold 0.15 -> phi^-1 (warmup 10K steps)
+       Full STE backprop: 1952991 trainable params (100%%)
+       Parallel: 3 workers (SIMD + threading)
+[4/4] Training...
+
+Step     | Loss     | AvgL10   | PPL      | LR       | C-Ratio  | Tok/s
+---------|----------|----------|----------|----------|----------|--------
+     100 |  12.2102 |  11.9215 | 200824.17 | 0.000006 |   0.0000 |   3158
+     200 |  11.2522 |  10.7660 | 77047.20 | 0.000012 |   0.0000 |   3139
+     300 |   9.9285 |   9.7782 | 20506.66 | 0.000018 |   0.0000 |   2821
+     400 |   8.6307 |   8.7641 |  5601.00 | 0.000024 |   0.0000 |   2758
+     500 |   8.2252 |   8.2782 |  3733.70 | 0.000030 |   0.0000 |   2762
+     600 |   7.7524 |   7.7364 |  2327.23 | 0.000036 |   0.0000 |   2807
+     700 |   7.1959 |   7.2459 |  1333.89 | 0.000042 |   0.0000 |   2846
+     800 |   6.9681 |   6.9340 |  1062.17 | 0.000048 |   0.0000 |   2854
+     900 |   6.6578 |   6.6997 |   778.81 | 0.000054 |   0.0000 |   2870
+    1000 |   6.7806 |   6.5946 |   880.56 | 0.000060 |   0.0000 |   2828
+
+[MILESTONE step 1000] Generated text:
+  > Once upon a time˜Îsay¥<ll ”ke gthingre ld you¦The üouted to re ‚«said e very derhappyerwould o, endoftext|>ll sadfriendeses|>ftextwas very ”there ¤ügparko, ce¦Once upon a time, back ed to ¿ld friends bigZwat„zwas re Îtoy opplayted The «Oexttst thing”t was ed lly s$. A. He tstt .t ed the  and om and ing ds! i . AgyTom
+  > The little catlowent Ábamom happyü„thingthingre " ”õ
+Õvre play the õo, der and ¦erüGld  ÷gwas ¤ll uª¤baback toge‚scaringwatce”ved stared to ”friends st wat«fowas re ¦vopõ, a go happy÷thingit lived ll ed to some was sin, lli. st hbigA
+  > She was veryvplüst was l thingOnce upon a time, s momÎ#Õ¾re es”ed to Q”dervery ba¦ll Ž«endoftext|>ughgim ¤play ¦fun›. They their The thingit üwatceÁst Ì<ca!" friends biømMild vOnce upon a time, ved opplaymomld o,  and was ll re ÷fot was . The gsd omt yed . She  . tsAy bigmi
+
+    1100 |   6.8278 |   6.5337 |   923.13 | 0.000066 |   0.2986 |   2748
+    1200 |   6.3210 |   6.2714 |   556.11 | 0.000072 |   0.2986 |   2817

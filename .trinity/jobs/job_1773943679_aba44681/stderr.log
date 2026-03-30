@@ -1,0 +1,10 @@
+
+[38;2;255;255;0mTRINITY BENCHMARK SUITE[0m
+[38;2;0;255;255mRunning benchmarks...[0m
+
+[38;2;0;229;153mVSA Operations:[0m
+  - bind/unbind: 1000 ops/ms
+  - bundle3: 500 ops/ms
+  - cosineSimilarity: 2500 ops/ms
+
+[38;2;255;255;0mTotal time: 0ms[0m

@@ -1,0 +1,31 @@
+**Done.** Here's the full status:
+
+## Completed
+
+| Item | Status |
+|------|--------|
+| PR #51 merged | ralph-agent v2.0.0 with Telegram + hooks + --continue |
+| PR #53 created | https://github.com/gHashTag/trinity/pull/53 — emoji prefixes on all messages |
+| End-to-end test | Wake #5 + #6 ran with real `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID=144022504` |
+| ralph-hook tested | `PostToolUse` → `✅ Bash done` sent to Telegram |
+| MCP Telegram verified | Message #27 delivered via `mcp__telegram__SEND_MESSAGE` |
+
+## Message format now
+
+```
+🤖 ralph WAKE #6
+📋 ralph Issues found, building context...
+🧠 ralph Spawning Claude (6644b, new session)...
+✅ ralph Claude done (565b)
+🏁 ralph Done.
+```
+
+Hook messages:
+```
+✅ Bash done
+❌ Edit FAILED
+🔧 Write...
+😴 Session finished
+```
+
+PR #53 is ready to merge: https://github.com/gHashTag/trinity/pull/53

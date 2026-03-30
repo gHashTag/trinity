@@ -1,0 +1,8 @@
+{
+  "kill_threshold": 5,
+  "crash_rate_limit": 0.1,
+  "byzantine_rate_limit": 0.1,
+  "env_status": "active",
+  "max_retries": 3,
+  "auto_adapt": true
+}

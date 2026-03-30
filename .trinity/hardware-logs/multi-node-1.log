@@ -1,0 +1,19 @@
+
+[38;2;255;215;0m╔══════════════════════════════════════════════════════════════════╗[0m
+[38;2;0;229;153m║     TRINITY UNIFIED API SERVER v1.0 — REST + GraphQL           ║[0m
+[38;2;255;215;0m╚══════════════════════════════════════════════════════════════════╝[0m
+
+  [38;2;0;229;153m✓[0m HTTP server listening on port 9001
+  [38;2;0;255;255m►[0m Server Status:
+
+    [38;2;0;229;153m✓[0m REST       → http://localhost:9001/api/*
+    [38;2;0;229;153m✓[0m GraphQL    → http://localhost:9001/graphql
+    [38;2;255;215;0m○[0m gRPC       → http://localhost:9335 (planned)
+    [38;2;255;215;0m○[0m WebSocket  → http://localhost:9001/ws (planned)
+
+  [38;2;0;255;255m►[0m Endpoints: 130 commands registered
+  [38;2;0;255;255m►[0m OpenAPI:  http://localhost:9001/api/openapi.json
+  [38;2;0;255;255m►[0m GraphQL:  http://localhost:9001/graphql
+
+[38;2;255;215;0mφ² + 1/φ² = 3 = TRINITY | Press Ctrl+C to stop[0m
+

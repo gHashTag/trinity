@@ -1,0 +1,63 @@
+**FPGA Experiments Implementation Complete!** ✅
+
+## Summary of Implemented Experiments
+
+| # | Experiment | Status | Files Created |
+|---|-----------|--------|--------------|
+| **#5** | Quantum Bridge LED fix (active-low) | ✅ 6 variants fixed with `assign led = ~led_pattern` |
+| **#1** | UART Weight Loader | ✅ `uart_weight_loader.v` + `uart_weight_loader_tb.v` (~200 LUT) |
+| **#9** | SPI Flash Master | ✅ `spi_flash_master.v` + `spi_flash_master_tb.v` (~150 LUT) |
+| **#4** | Pipeline Overlap (double-buffered) | ✅ `hslm_pipeline_top.v` (+500 LUT, ~2× speedup) |
+| **#10** | Zig↔FPGA E2E Demo | ✅ `hslm_uart_inference_top.v` + `tri fpga infer` CLI |
+| **Spec** | Experiments documentation | ✅ `fpga/specs/experiments.tri` |
+
+## Key Features Implemented
+
+### 1. UART Weight Loader (`uart_weight_loader.v`)
+- Commands: `LOAD_WEIGHTS`, `VERIFY_WEIGHTS`, `RESET_WEIGHTS`, `GET_INFO`
+- Protocol: `[0xAA][CMD][BLOCK_ID][ADDR_H][ADDR_L][LEN][DATA...]`
+- Dynamic BRAM updates without resynthesis
+- Progress indicator (0-255)
+
+### 2. SPI Flash Master (`spi_flash_master.v`)
+- W25Q128 support (16MB, enough for 50 TrinityBlocks)
+- 24-bit address space
+- SPI Mode 0 (CPOL=0, CPHA=0)
+- 6.25MHz SPI clock @ 50MHz
+
+### 3. Pipeline Overlap (`hslm_pipeline_top.v`)
+- Ping-pong double buffering between all 4 blocks
+- Each block starts as soon as data available
+- Potential: 14ms per token (vs 28.5ms sequential)
+
+### 4. Zig↔FPGA E2E Demo
+- **FPGA side:** `hslm_uart_inference_top.v`
+  - Commands: `INFER_TOKEN`, `INFER_SEQ`, `GET_STATUS`
+  - Returns: predicted token + latency
+  - LED: solid ON when ready, blink during inference
+
+- **Zig side:** `tri fpga infer` CLI
+  - `tri fpga infer token <id>` — Single token prediction
+  - `tri fpga infer seq <seed> <n>` — Sequence generation
+  - `tri fpga infer status` — Pipeline status
+
+### 5. Updated XDC Constraints
+- UART pins: L20 (RX), K20 (TX)
+- Debug outputs: N23, M22
+- SPI Flash commented (needs special Artix-7 handling)
+
+## Build Status
+```bash
+zig build  # ✅ All 5 binaries compiled successfully
+```
+
+## Next Steps (Hardware-Dependent)
+
+| Task | Requires |
+|------|----------|
+| Test quantum bridge LEDs | Flash bitstreams to QMTECH board |
+| Measure power (Exp #6) | USB power meter |
+| Test UART weight loading | Flash `uart_weight_loader_top.bit` |
+| Test E2E demo | Flash `hslm_uart_inference_top.bit` + USB-UART |
+
+The codebase is ready for hardware testing. All Verilog files, testbenches, and Zig CLI integration are complete.

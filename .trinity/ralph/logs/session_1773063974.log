@@ -1,0 +1,14 @@
+All done. Here's the summary:
+
+**PR #51** (merged) — ralph-agent v2.0.0: Telegram hooks + `--continue` + ralph-hook binary
+**PR #52** (open) — Emoji prefixes on all Telegram messages
+
+**Telegram verified** — Message #24 delivered to chat 144022504 with all emojis rendering correctly.
+
+**ralph-agent ran Wake #5 and #6** with real credentials:
+- Found issue #47 (Agent MU)
+- Built 6638b context
+- Spawned Claude CLI
+- All Telegram messages sent
+
+The pipeline is live: `ralph-agent WAKE → GitHub poll → Claude spawn → hooks → ralph-hook → Telegram`.

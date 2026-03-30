@@ -13,19 +13,16 @@ pub fn build(b: *std.Build) void {
     // Cycle 78: Optional tree-sitter integration for VIBEE AST analysis
     const enable_treesitter = b.option(bool, "treesitter", "Enable tree-sitter AST analysis for VIBEE (requires libtree-sitter)") orelse false;
 
-    // Library module for imports
-    const trinity_mod = b.createModule(.{
-        .root_source_file = b.path("src/trinity.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GOLDENFLOAT — φ-Optimized ML Kernel (VSA + Ternary + Formats)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MUST be declared FIRST — needed by trinity_mod and other modules
 
-    // Kaggle benchmark module
-    const kaggle_mod = b.createModule(.{
-        .root_source_file = b.path("src/kaggle/kaggle.zig"),
+    const golden_float_dep = b.dependency("golden_float", .{
         .target = target,
         .optimize = optimize,
     });
+    const golden_float_mod = golden_float_dep.module("golden-float");
 
     // ═══════════════════════════════════════════════════════════════════════════
     // ZODD DATALOG — CLARA Rules Engine (DARPA CLARA proposal)
@@ -36,6 +33,21 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     const zodd_mod = zodd_dep.module("zodd");
+
+    // Library module for imports
+    const trinity_mod = b.createModule(.{
+        .root_source_file = b.path("src/trinity.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    trinity_mod.addImport("golden-float", golden_float_mod);
+
+    // Kaggle benchmark module
+    const kaggle_mod = b.createModule(.{
+        .root_source_file = b.path("src/kaggle/kaggle.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
     // VIBEEC compiler module — single source of truth from .tri specs
     // Note: trinity-nexus compiler replaced with inline .tri spec parsing
@@ -58,6 +70,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    lib.root_module.addImport("golden-float", golden_float_mod);
     b.installArtifact(lib);
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -69,6 +82,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = .ReleaseFast,
     });
+    c_api_mod.addImport("golden-float", golden_float_mod);
 
     // Shared library (.so / .dylib / .dll)
     const libvsa_shared = b.addLibrary(.{
@@ -89,6 +103,7 @@ pub fn build(b: *std.Build) void {
             .optimize = .ReleaseFast,
         }),
     });
+    libvsa_static.root_module.addImport("golden-float", golden_float_mod);
     libvsa_static.linkLibC();
     const install_static = b.addInstallArtifact(libvsa_static, .{});
 
@@ -166,6 +181,7 @@ pub fn build(b: *std.Build) void {
                 .link_libc = true,
             }),
         });
+        release_lib.root_module.addImport("golden-float", golden_float_mod);
 
         const target_output = b.addInstallArtifact(release_lib, .{
             .dest_dir = .{
@@ -189,6 +205,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    main_tests.root_module.addImport("golden-float", golden_float_mod);
 
     const run_main_tests = b.addRunArtifact(main_tests);
     const test_step = b.step("test", "Run library tests");
@@ -216,6 +233,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    vsa_tests.root_module.addImport("golden-float", golden_float_mod);
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
 
@@ -262,6 +280,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vm.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "golden-float", .module = golden_float_mod },
+            },
         }),
     });
     const run_vm_tests = b.addRunArtifact(vm_tests);
@@ -273,6 +294,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/e2e_test.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "golden-float", .module = golden_float_mod },
+            },
         }),
     });
     const run_e2e_tests = b.addRunArtifact(e2e_tests);
@@ -289,6 +313,7 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
         }),
     });
+    c_api_tests.root_module.addImport("golden-float", golden_float_mod);
     const run_c_api_tests = b.addRunArtifact(c_api_tests);
     test_step.dependOn(&run_c_api_tests.step);
 
@@ -1301,15 +1326,15 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    vsa_tri.addImport("golden-float", golden_float_mod);
     // TVC Corpus module for TRI (moved up: needed by fluent CLI and hybrid chat)
     const tvc_corpus_mod = b.createModule(.{
         .root_source_file = b.path("src/tvc/tvc_corpus.zig"),
         .target = target,
         .optimize = optimize,
-        .imports = &.{
-            .{ .name = "vsa", .module = vsa_tri },
-        },
     });
+    tvc_corpus_mod.addImport("golden-float", golden_float_mod);
+    tvc_corpus_mod.addImport("vsa", vsa_tri);
 
     // IGLA Knowledge Graph module (self-contained VSA KG for chat routing)
     const igla_kg_mod = b.createModule(.{
@@ -1332,14 +1357,12 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/vibeec/igla_fluent_cli.zig"),
             .target = target,
             .optimize = optimize,
-            .imports = &.{
-                .{ .name = "igla_chat", .module = vibeec_chat },
-                .{ .name = "tvc_corpus", .module = tvc_corpus_mod },
-                .{ .name = "igla_kg", .module = igla_kg_mod },
-                .{ .name = "triples_parser", .module = triples_parser_mod },
-            },
         }),
     });
+    fluent_cli.root_module.addImport("igla_chat", vibeec_chat);
+    fluent_cli.root_module.addImport("tvc_corpus", tvc_corpus_mod);
+    fluent_cli.root_module.addImport("igla_kg", igla_kg_mod);
+    fluent_cli.root_module.addImport("triples_parser", triples_parser_mod);
     b.installArtifact(fluent_cli);
 
     const run_fluent_cli = b.addRunArtifact(fluent_cli);
@@ -3051,6 +3074,71 @@ pub fn build(b: *std.Build) void {
     const run_queen_backend = b.addRunArtifact(queen_backend);
     const queen_backend_step = b.step("queen-backend", "Run Queen Backend Server");
     queen_backend_step.dependOn(&run_queen_backend.step);
+
+    // ========================================================================
+    // 27-AGENT GRID — Trinity Autonomous Agent Grid
+    // ========================================================================
+
+    // Agent Registry — Track all 27 agents in Queen
+    const agent_registry_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/agent_registry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Log Aggregator — Centralized log collection from all agents
+    const log_aggregator_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/queen/log_aggregator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Agent Gamma — GitHub operations
+    const gamma_agent_mod = b.createModule(.{
+        .root_source_file = b.path("src/agents/gamma.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Agent Entrypoint — Unified runner for all 27 agents
+    const agent_entrypoint_mod = b.createModule(.{
+        .root_source_file = b.path("src/cli/agent_entrypoint.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Agent Grid Tests
+    const agent_grid_tests = b.addTest(.{
+        .root_module = agent_registry_mod,
+    });
+
+    const log_aggregator_tests = b.addTest(.{
+        .root_module = log_aggregator_mod,
+    });
+
+    const gamma_agent_tests = b.addTest(.{
+        .root_module = gamma_agent_mod,
+    });
+
+    const agent_entrypoint_tests = b.addTest(.{
+        .root_module = agent_entrypoint_mod,
+    });
+
+    const run_agent_registry_tests = b.addRunArtifact(agent_grid_tests);
+    const agent_registry_tests_step = b.step("test-agent-registry", "Run Agent Registry Tests");
+    agent_registry_tests_step.dependOn(&run_agent_registry_tests.step);
+
+    const run_log_aggregator_tests = b.addRunArtifact(log_aggregator_tests);
+    const log_aggregator_tests_step = b.step("test-log-aggregator", "Run Log Aggregator Tests");
+    log_aggregator_tests_step.dependOn(&run_log_aggregator_tests.step);
+
+    const run_gamma_agent_tests = b.addRunArtifact(gamma_agent_tests);
+    const gamma_agent_tests_step = b.step("test-gamma-agent", "Run Agent Gamma Tests");
+    gamma_agent_tests_step.dependOn(&run_gamma_agent_tests.step);
+
+    const run_agent_entrypoint_tests = b.addRunArtifact(agent_entrypoint_tests);
+    const agent_entrypoint_tests_step = b.step("test-agent-entrypoint", "Run Agent Entrypoint Tests");
+    agent_entrypoint_tests_step.dependOn(&run_agent_entrypoint_tests.step);
 
     // TRI-27 Comprehensive Tests (all 36 opcodes)
     const tri27_comprehensive_mod = b.createModule(.{

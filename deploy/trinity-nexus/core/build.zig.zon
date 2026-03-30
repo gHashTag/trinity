@@ -1,0 +1,7 @@
+.{
+    .name = .trinity_core,
+    .version = "0.1.0",
+    .dependencies = .{},
+    .paths = .{""},
+    .fingerprint = 0x48a0f3b2aa24d211,
+}

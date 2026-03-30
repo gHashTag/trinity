@@ -81,7 +81,6 @@ pub const Lexer = struct {
                 try self.lexComment();
                 return;
             }
-        }
             try self.lexComment();
             return;
         }

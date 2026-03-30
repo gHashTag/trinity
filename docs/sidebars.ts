@@ -124,6 +124,7 @@ const sidebars: SidebarsConfig = {
         'concepts/index',
         'concepts/balanced-ternary',
         'concepts/trinity-identity',
+        'concepts/golden-float16',
         'concepts/glossary',
         'concepts/phi-distance-formats',
         'concepts/native-f16-comparison',

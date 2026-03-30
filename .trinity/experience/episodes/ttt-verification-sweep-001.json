@@ -1,0 +1,47 @@
+{
+  "id": "ttt-verification-sweep-001",
+  "date": "2026-03-30",
+  "type": "verification",
+  "title": "TTT Dogfood Verification Sweep - Coverage Audit",
+  "action": "Conducted audit of tri27 .t27 algorithm files and created Tier 1 smoke tests",
+  "metrics": {
+    "total_t27_files": 11337,
+    "test_files": 157,
+    "tested_files": 157,
+    "untested_files": 11180,
+    "tier1_critical_files": 781,
+    "tier1_categories": {
+      "convolutional": 141,
+      "transformer": 125,
+      "neural_networks": 50,
+      "loss": 73,
+      "optimizer": 60,
+      "rl": 60,
+      "recurrent": 39,
+      "embedding": 29,
+      "activation": 25,
+      "normalization": 18,
+      "other": 161
+    },
+    "smoke_tests_assembly": "16/16 passed",
+    "smoke_tests_execution": "FAILED - segmentation fault in TRI-27 emulator",
+    "current_coverage": "157/11337 = 1.39%"
+  },
+  "files": {
+    "created": [
+      "src/tri27/emu/smoke_tests.zig"
+    ],
+    "modified": [
+      "build.zig"
+    ]
+  },
+  "lesson": "1.39% coverage is actual test count (.zig tests), not .t27 test files. 781 Tier 1 algorithms identified. Smoke test assembly passes, but execution crashes - indicates TRI-27 emulator or specific .t27 file issues. Need to investigate segmentation fault in execution tests.",
+  "tags": ["ttt", "dogfood", "verification", "coverage", "tri27"],
+  "next_steps": [
+    "Investigate TRI-27 emulator segmentation fault in execution tests",
+    "Fix crashing .t27 files",
+    "Run full execution smoke suite",
+    "Target 781 Tier 1 files for full coverage"
+  ],
+  "outcome": "partial"
+}

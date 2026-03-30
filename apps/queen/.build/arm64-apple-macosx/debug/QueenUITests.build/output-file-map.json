@@ -1,0 +1,41 @@
+{
+  "": {
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/master.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/ActionQueueTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ActionQueueTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ActionQueueTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ActionQueueTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ActionQueueTests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/ChatThreadCodableTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ChatThreadCodableTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ChatThreadCodableTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ChatThreadCodableTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ChatThreadCodableTests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/ModelProviderTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ModelProviderTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ModelProviderTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ModelProviderTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ModelProviderTests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/NetworkLogTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/NetworkLogTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/NetworkLogTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/NetworkLogTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/NetworkLogTests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/ThreadStoreTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ThreadStoreTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ThreadStoreTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ThreadStoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ThreadStoreTests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/Tests/QueenUITests/ToolTagProcessingTests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ToolTagProcessingTests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ToolTagProcessingTests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ToolTagProcessingTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUITests.build/ToolTagProcessingTests.swiftdeps"
+  }
+}

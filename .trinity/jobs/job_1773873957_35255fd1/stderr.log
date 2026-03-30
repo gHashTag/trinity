@@ -1,0 +1,9 @@
+thread 13755422 panic: unrecognized command line argument
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/compiler/test_runner.zig:53:13: 0x1005e7ce7 in main (test)
+            @panic("unrecognized command line argument");
+            ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/start.zig:618:22: 0x1005e77e3 in main (test)
+            root.main();
+                     ^
+???:?:?: 0x18ad47153 in ??? (???)
+???:?:?: 0x3079ffffffffffff in ??? (???)

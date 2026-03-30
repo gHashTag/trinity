@@ -1,0 +1,1121 @@
+{
+  "": {
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/master.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/AutomationOverlay.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AutomationOverlay.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AutomationOverlay.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AutomationOverlay~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AutomationOverlay.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/BehaviorAnalytics.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BehaviorAnalytics.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BehaviorAnalytics.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BehaviorAnalytics~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BehaviorAnalytics.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/ControlServer.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ControlServer.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ControlServer.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ControlServer~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ControlServer.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/HumanBehaviorModel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/HumanBehaviorModel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/HumanBehaviorModel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/HumanBehaviorModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/HumanBehaviorModel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/ScenarioEngine.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScenarioEngine.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScenarioEngine.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScenarioEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScenarioEngine.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/ScreenAnalyzer.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenAnalyzer.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenAnalyzer.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenAnalyzer~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenAnalyzer.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/SessionRecorder.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SessionRecorder.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SessionRecorder.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SessionRecorder~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SessionRecorder.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/UIAutomation.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIAutomation.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIAutomation.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIAutomation~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIAutomation.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Automation/UIExplorer.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIExplorer.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIExplorer.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIExplorer~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UIExplorer.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ActionQueue.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ActionQueue.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ActionQueue.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ActionQueue~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ActionQueue.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ArenaClient.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaClient.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaClient.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaClient.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ChatClient.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatClient.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatClient.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatClient.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ChatThread.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatThread.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatThread.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatThread~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatThread.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/EnvLoader.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/EnvLoader.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/EnvLoader.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/EnvLoader~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/EnvLoader.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ImageGenerator.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ImageGenerator.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ImageGenerator.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ImageGenerator~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ImageGenerator.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/JSONModels.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/JSONModels.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/JSONModels.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/JSONModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/JSONModels.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ModelProvider.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelProvider.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelProvider.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelProvider.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/NetworkLog.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkLog.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkLog.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkLog~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkLog.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/NetworkMonitor.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkMonitor.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkMonitor.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkMonitor~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkMonitor.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/NotificationService.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationService.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationService.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationService~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationService.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/QueenBridge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenBridge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenBridge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenBridge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenBridge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/RepoContext.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RepoContext.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RepoContext.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RepoContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RepoContext.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/StateWatcher.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateWatcher.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateWatcher.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateWatcher~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateWatcher.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ThreadStore.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadStore.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadStore.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadStore.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/TriBridge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriBridge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriBridge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriBridge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriBridge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/TrinityContext.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TrinityContext.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TrinityContext.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TrinityContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TrinityContext.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Calibration/cerebellum_tests.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/cerebellum_tests.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/cerebellum_tests.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/cerebellum_tests~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/cerebellum_tests.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Executive/acc_feedback.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/acc_feedback.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/acc_feedback.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/acc_feedback~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/acc_feedback.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Executive/prefrontal_layout.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/prefrontal_layout.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/prefrontal_layout.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/prefrontal_layout~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/prefrontal_layout.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Language/broca_input.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/broca_input.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/broca_input.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/broca_input~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/broca_input.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Language/wernicke_typography.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/wernicke_typography.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/wernicke_typography.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/wernicke_typography~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/wernicke_typography.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Navigation/entorhinal_navigation.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/entorhinal_navigation.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/entorhinal_navigation.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/entorhinal_navigation~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/entorhinal_navigation.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Navigation/superior_colliculus_focus.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/superior_colliculus_focus.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/superior_colliculus_focus.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/superior_colliculus_focus~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/superior_colliculus_focus.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Navigation/thalamus_button.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/thalamus_button.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/thalamus_button.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/thalamus_button~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/thalamus_button.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Retrieval/parahippocampal_search.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parahippocampal_search.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parahippocampal_search.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parahippocampal_search~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parahippocampal_search.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Visual/mt_motion.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/mt_motion.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/mt_motion.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/mt_motion~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/mt_motion.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Visual/parietal_spacing.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parietal_spacing.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parietal_spacing.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parietal_spacing~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/parietal_spacing.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Visual/v1_theme.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v1_theme.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v1_theme.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v1_theme~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v1_theme.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Visual/v2_depth.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v2_depth.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v2_depth.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v2_depth~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v2_depth.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Cortex/Visual/v4_color.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v4_color.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v4_color.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v4_color~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/v4_color.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Managers/AccessibilityManager.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityManager.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityManager.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityManager.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/ChatSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/KingdomSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KingdomSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KingdomSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KingdomSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KingdomSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/MainView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MainView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MainView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MainView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MainView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/Screen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Screen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Screen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Screen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Screen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/ScreenRouter.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenRouter.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenRouter.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenRouter~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScreenRouter.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/BridgeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BridgeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BridgeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BridgeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BridgeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/BuildScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BuildScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BuildScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BuildScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BuildScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/DeployScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeployScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeployScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeployScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeployScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/FilesScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilesScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilesScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilesScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilesScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/GitScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GitScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GitScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GitScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GitScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/IssuesScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/IssuesScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/IssuesScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/IssuesScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/IssuesScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/KeysScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeysScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeysScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeysScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeysScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/StateScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/TelegramScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TelegramScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TelegramScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TelegramScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TelegramScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ArenaCodeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaCodeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaCodeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaCodeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaCodeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ArenaLLMScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaLLMScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaLLMScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaLLMScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ArenaLLMScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/BrainHealthScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BrainHealthScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BrainHealthScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BrainHealthScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BrainHealthScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ChatScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/CommentSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommentSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommentSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommentSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommentSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/FacultyScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FacultyScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FacultyScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FacultyScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FacultyScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/MUMemoryScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MUMemoryScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MUMemoryScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MUMemoryScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MUMemoryScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/MessageComparisonView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageComparisonView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageComparisonView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageComparisonView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageComparisonView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/OracleScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OracleScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OracleScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OracleScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OracleScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/QueenScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QueenScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/SEVOFarmScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SEVOFarmScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SEVOFarmScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SEVOFarmScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SEVOFarmScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ScholarScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScholarScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScholarScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScholarScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ScholarScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/SwarmScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SwarmScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SwarmScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SwarmScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SwarmScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/BenchmarksScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BenchmarksScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BenchmarksScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BenchmarksScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BenchmarksScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/ExperienceScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ExperienceScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ExperienceScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ExperienceScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ExperienceScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/FPGAScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FPGAScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FPGAScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FPGAScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FPGAScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/PipelineScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PipelineScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PipelineScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PipelineScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PipelineScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/RainbowBridgeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RainbowBridgeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RainbowBridgeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RainbowBridgeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RainbowBridgeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/SacredMathScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SacredMathScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SacredMathScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SacredMathScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SacredMathScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/SettingsScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/TechTreeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TechTreeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TechTreeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TechTreeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TechTreeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/VSAScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/VSAScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/VSAScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/VSAScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/VSAScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Tri/TriToolsPanel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsPanel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsPanel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsPanel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Tri/TriToolsScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Theme.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Theme.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Theme.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Theme~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/Theme.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Utils/LayoutConstants.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LayoutConstants.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LayoutConstants.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LayoutConstants~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LayoutConstants.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Utils/MarkdownExporter.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownExporter.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownExporter.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownExporter~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownExporter.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AccessibilityView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccessibilityView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AccordionView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccordionView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccordionView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccordionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AccordionView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AgentRow.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentRow.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentRow.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentRow.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AgentStreamView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentStreamView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentStreamView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentStreamView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AgentStreamView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AggregateDiffView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AggregateDiffView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AggregateDiffView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AggregateDiffView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AggregateDiffView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AnimationThemeView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationThemeView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationThemeView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationThemeView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationThemeView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AnimationView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AnimationView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AudioPlayerView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AudioPlayerView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AudioPlayerView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AudioPlayerView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AudioPlayerView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AvatarView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AvatarView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AvatarView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AvatarView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/AvatarView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/BadgeSystem.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BadgeSystem.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BadgeSystem.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BadgeSystem~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/BadgeSystem.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CardPatterns.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CardPatterns.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CardPatterns.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CardPatterns~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CardPatterns.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CarouselView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CarouselView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CarouselView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CarouselView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CarouselView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ChartView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChartView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChartView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChartView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChartView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ChatTextField.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatTextField.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatTextField.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatTextField~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ChatTextField.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ColorPicker.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ColorPicker.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ColorPicker.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ColorPicker~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ColorPicker.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CommandPalette.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommandPalette.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommandPalette.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommandPalette~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CommandPalette.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CompactChatInputBar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CompactChatInputBar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CompactChatInputBar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CompactChatInputBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CompactChatInputBar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ContextInspector.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextInspector.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextInspector.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextInspector~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextInspector.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ContextOverflowBanner.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextOverflowBanner.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextOverflowBanner.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextOverflowBanner~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ContextOverflowBanner.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CopyMenuView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CopyMenuView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CopyMenuView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CopyMenuView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CopyMenuView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CreateTimeClusteredMessages.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CreateTimeClusteredMessages.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CreateTimeClusteredMessages.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CreateTimeClusteredMessages~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/CreateTimeClusteredMessages.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DataVisualizationView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DataVisualizationView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DataVisualizationView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DataVisualizationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DataVisualizationView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DatePicker.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DatePicker.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DatePicker.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DatePicker~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DatePicker.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DetailedEmptyStates.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedEmptyStates.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedEmptyStates.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedEmptyStates~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedEmptyStates.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DetailedErrorStates.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedErrorStates.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedErrorStates.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedErrorStates~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedErrorStates.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DetailedLoadingStates.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedLoadingStates.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedLoadingStates.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedLoadingStates~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedLoadingStates.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DetailedSuccessStates.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedSuccessStates.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedSuccessStates.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedSuccessStates~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DetailedSuccessStates.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DeviceFrameView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeviceFrameView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeviceFrameView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeviceFrameView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DeviceFrameView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DiffView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DiffView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DiffView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DiffView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DiffView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DragDropPatternsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DragDropPatternsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DragDropPatternsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DragDropPatternsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/DragDropPatternsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ELOChart.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ELOChart.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ELOChart.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ELOChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ELOChart.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/FilterPanel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilterPanel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilterPanel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilterPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FilterPanel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/FocusModeView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FocusModeView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FocusModeView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FocusModeView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/FocusModeView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/GridView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GridView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GridView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GridView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/GridView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/InputAutocompleteModifier.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputAutocompleteModifier.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputAutocompleteModifier.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputAutocompleteModifier~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputAutocompleteModifier.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/InputComponentsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputComponentsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputComponentsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputComponentsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/InputComponentsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/KeyboardShortcutView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeyboardShortcutView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeyboardShortcutView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeyboardShortcutView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/KeyboardShortcutView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ListComponentsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListComponentsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListComponentsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListComponentsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListComponentsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ListView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ListView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/LoadingIndicator.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LoadingIndicator.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LoadingIndicator.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LoadingIndicator~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/LoadingIndicator.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MCPToolsPanel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MCPToolsPanel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MCPToolsPanel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MCPToolsPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MCPToolsPanel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MapView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MapView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MapView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MapView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MapView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MarkdownTextView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownTextView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownTextView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownTextView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MarkdownTextView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MemoryTodoView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MemoryTodoView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MemoryTodoView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MemoryTodoView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MemoryTodoView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageActionsPanel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageActionsPanel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageActionsPanel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageActionsPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageActionsPanel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageAttachmentPicker.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPicker.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPicker.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPicker~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPicker.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageAttachmentPreview.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPreview.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPreview.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPreview~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageAttachmentPreview.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageBookmarkManager.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageBookmarkManager.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageBookmarkManager.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageBookmarkManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageBookmarkManager.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageDragAndDrop.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageDragAndDrop.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageDragAndDrop.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageDragAndDrop~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageDragAndDrop.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageHighlightModifier.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageHighlightModifier.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageHighlightModifier.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageHighlightModifier~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageHighlightModifier.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageMentionView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageMentionView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageMentionView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageMentionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageMentionView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessagePinManager.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessagePinManager.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessagePinManager.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessagePinManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessagePinManager.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageQuickActions.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuickActions.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuickActions.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuickActions~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuickActions.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageQuoteView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuoteView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuoteView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuoteView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageQuoteView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageReactionPicker.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageReactionPicker.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageReactionPicker.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageReactionPicker~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageReactionPicker.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageSearchView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSearchView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSearchView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSearchView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSearchView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageShareSheet.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageShareSheet.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageShareSheet.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageShareSheet~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageShareSheet.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageStatusIndicators.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageStatusIndicators.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageStatusIndicators.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageStatusIndicators~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageStatusIndicators.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageSwipeActions.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSwipeActions.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSwipeActions.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSwipeActions~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageSwipeActions.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageThreadView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageThreadView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageThreadView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageThreadView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageThreadView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageTranslationView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageTranslationView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageTranslationView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageTranslationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageTranslationView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MessageVoiceRecorder.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageVoiceRecorder.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageVoiceRecorder.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageVoiceRecorder~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MessageVoiceRecorder.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MetricGauge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MetricGauge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MetricGauge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MetricGauge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/MetricGauge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ModalPatternsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModalPatternsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModalPatternsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModalPatternsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModalPatternsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ModelComparisonView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelComparisonView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelComparisonView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelComparisonView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ModelComparisonView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/NetworkStatusView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkStatusView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkStatusView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkStatusView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NetworkStatusView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/NotificationBannerView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationBannerView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationBannerView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationBannerView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/NotificationBannerView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/OverlayComponentsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayComponentsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayComponentsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayComponentsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayComponentsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/OverlayPatternsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayPatternsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayPatternsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayPatternsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/OverlayPatternsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/PPLChart.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PPLChart.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PPLChart.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PPLChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PPLChart.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/PersonaLibrary.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PersonaLibrary.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PersonaLibrary.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PersonaLibrary~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PersonaLibrary.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ProgressIndicators.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ProgressIndicators.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ProgressIndicators.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ProgressIndicators~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ProgressIndicators.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/PulseRingIndicator.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PulseRingIndicator.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PulseRingIndicator.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PulseRingIndicator~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/PulseRingIndicator.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/QuickReplyTemplates.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QuickReplyTemplates.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QuickReplyTemplates.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QuickReplyTemplates~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/QuickReplyTemplates.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/RatingView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RatingView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RatingView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RatingView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RatingView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/RichTextInputView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RichTextInputView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RichTextInputView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RichTextInputView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/RichTextInputView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SearchBar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchBar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchBar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchBar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SearchableMessageHistory.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchableMessageHistory.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchableMessageHistory.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchableMessageHistory~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SearchableMessageHistory.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SettingsPanelsView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsPanelsView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsPanelsView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsPanelsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SettingsPanelsView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ShareSheetView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShareSheetView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShareSheetView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShareSheetView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShareSheetView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ShortcutsOverlay.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShortcutsOverlay.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShortcutsOverlay.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShortcutsOverlay~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ShortcutsOverlay.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SkeletonLoaderView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SkeletonLoaderView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SkeletonLoaderView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SkeletonLoaderView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SkeletonLoaderView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SmartSuggestions.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SmartSuggestions.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SmartSuggestions.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SmartSuggestions~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/SmartSuggestions.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StatCard.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatCard.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatCard.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatCard.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StateViews.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateViews.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateViews.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateViews~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StateViews.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StatusBadge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatusBadge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatusBadge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatusBadge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StatusBadge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StepperView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StepperView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StepperView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StepperView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/StepperView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TableView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TableView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TableView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TableView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TableView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ThemeableView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThemeableView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThemeableView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThemeableView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThemeableView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ThreadArchiveView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadArchiveView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadArchiveView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadArchiveView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadArchiveView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ThreadKeyboardShortcuts.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadKeyboardShortcuts.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadKeyboardShortcuts.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadKeyboardShortcuts~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadKeyboardShortcuts.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ThreadOrganizationView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadOrganizationView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadOrganizationView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadOrganizationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ThreadOrganizationView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TimelineView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TimelineView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TimelineView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TimelineView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TimelineView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ToastNotificationView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToastNotificationView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToastNotificationView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToastNotificationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToastNotificationView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ToolCallRow.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToolCallRow.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToolCallRow.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToolCallRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/ToolCallRow.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TooltipView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TooltipView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TooltipView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TooltipView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TooltipView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TreeView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TreeView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TreeView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TreeView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TreeView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TriToolsChatPanel.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsChatPanel.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsChatPanel.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsChatPanel~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriToolsChatPanel.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TriangleLogo.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriangleLogo.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriangleLogo.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriangleLogo~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TriangleLogo.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TritVisualizer.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TritVisualizer.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TritVisualizer.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TritVisualizer~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TritVisualizer.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TypingIndicatorView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TypingIndicatorView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TypingIndicatorView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TypingIndicatorView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/TypingIndicatorView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/UtilityView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UtilityView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UtilityView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UtilityView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/UtilityView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/WebView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WebView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WebView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WebView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WebView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/WorkflowDAG.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WorkflowDAG.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WorkflowDAG.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WorkflowDAG~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/QueenUILib.build/WorkflowDAG.swiftdeps"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Trinity Cognitive Probes - TEFB Track (MC Format)",
+  "id": "playra/trinity-cognitive-probes-tefb-mc",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "subtitle": "Executive Function Battery for AGI Assessment",
+  "description": "**Part of the DeepMind AGI Hackathon Submission**\n\nThe TEFB (Trinity Executive Function Battery) track in MC format evaluates cognitive control, working memory, task switching, and inhibition through multiple choice questions.\n\n**Contains:**\n- 1,805 MC questions\n- Ground truth answers (A/B/C/D)\n- Difficulty levels (u03c6-scaled)\n- Brain zone metadata (dlPFC, vlPFC, ACC, etc.)\n- Neural analog references\n\n**Evaluation Metrics:**\n- Accuracy: Binary correct/incorrect per item\n- Calibration: How well model probabilities match actual correctness\n- Composite: 60% accuracy + 20% calibration + 20% mean score\n\n**Organization:** gHashTag/trinity\n**License:** MIT\n",
+  "resources": [
+    {
+      "path": "tefb_mc.csv",
+      "description": "TEFB Track MC format - 1,805 items"
+    }
+  ]
+}

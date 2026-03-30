@@ -1,0 +1,53 @@
+# Статус агентов — по факту
+
+| Агент | Код есть? | Запущен? | Что блокирует |
+|-------|-----------|-----------|--------------|
+| **Ralph** | ✅ | ✅ UP | — (готов к задачам) |
+| **Oracle** | ✅ | ✅ UP | — (V-число считается) |
+| **Linter** | ✅ | ✅ UP | — (REGENERATION_REPORT парсится) |
+| **MU** | ✅ | ❌ STUB | Код есть (`mu_agent.zig`), но нет daemon |
+| **Scholar** | ❌ | ⬜ TBD | Кода нет — с нуля |
+| **Swarm** | ❌ | ⬜ TBD | Кода нет — с нуля |
+
+## Причинная цепочка — вы верны
+
+```
+MU (пробудить первым) 
+  ↓ auto-heal → 34 specs фиксится → compile 90%→95%
+  
+Scholar (нужен MU для приёма исследований)
+  ↓ research → неизвестные ошибки → передать MU → паттерны растут
+
+Swarm (нужен MU + Scholar)
+  ↓ orchestration → 3 работающих агента = полный рой
+```
+
+## Конкретный план MU Phase 0
+
+Что уже есть:
+- `src/tri/mu_agent.zig` — ErrorPattern, MuReport, detect()
+- `src/tri/mu_error_protocol.zig` — Severity, categorization  
+- `src/tri/mu_learning_db.zig` — LearningRule, pattern DB
+- `.trinity/mu/learning_db.json` — 12 паттернов
+
+Что нужно добавить (минимальный daemon):
+
+1. **`src/tri/mu_daemon.zig`** — main loop
+   - GitHub Issues polling (как ralph-agent)
+   - Detect errors from compile output
+   - Match against learning_db.json
+   - Apply fixes (auto-fixable patterns)
+   - Log results to `.trinity/mu/`
+
+2. **Faculty Board интеграция** — показать MU как UP
+   - `pgrep -f "mu-daemon"` → MU статус
+   - Voice: "N паттернов. Вылечил X за цикл."
+
+3. **Wire в ralph-agent** — или запускать отдельно
+
+**Команда для запуска после реализации:**
+```bash
+nohup zig-out/bin/mu-daemon &
+```
+
+Стартовать MU daemon?

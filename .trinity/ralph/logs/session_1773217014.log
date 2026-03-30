@@ -1,0 +1,13 @@
+Day 2 complete. Faculty Board delta engine live:
+
+**What changed:**
+- `FacultyDelta` struct tracks changes between runs
+- `.trinity/faculty_prev.dat` persistence
+- Dynamic narratives for: compile frozen/improved/regressed, faculty count, dirty files
+- Smart path 1️⃣: shows "fix broken specs" when specs failing
+
+**Files modified:**
+- `src/tri/faculty_types.zig` — added FacultyDelta
+- `src/tri/analysis_engine.zig` — delta-aware narratives
+- `src/tri/three_paths.zig` — smart spec failure detection
+- `src/tri/faculty_board.zig` — load/save delta functions

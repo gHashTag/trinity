@@ -1,0 +1,61 @@
+## ✅ Golden Rule Day 1 — Готово!
+
+### Добавлено в CLAUDE.md
+```
+## Golden Rule
+
+Every action in Trinity goes through `tri` CLI. No exceptions.
+
+❌ git status        → ✅ tri git status
+❌ gh issue list     → ✅ tri issue list
+❌ curl telegram     → ✅ tri notify "msg"
+❌ zig build test    → ✅ tri test
+❌ pgrep ralph-agent → ✅ tri agent list
+```
+
+### Реализовано (Day 1)
+
+| Категория | Команды | LOC |
+|-----------|----------|-----|
+| **Git ops** | `tri git status/diff/log/branch/add/commit/push` | ~120 |
+| **Issues** | `tri issue list/view/assign` | ~150 |
+| **Agent lifecycle** | `tri agent list/start/done/stop/restart/status` | ~180 |
+| **Deploy** | `tri deploy push/status/logs/domain` | ~60 |
+| **Notify** | `tri notify "<msg>"` | ~70 |
+
+### Файлы модифицированы
+- `CLAUDE.md` — Golden Rule section + updated Commands
+- `src/tri/tri_commands.zig` — `runGitCommand()` (реальные subprocess), `runDeployCommand()`, `runNotifyCommand()`
+- `src/tri/github_commands.zig` — `issueList()`, `issueView()`, `issueAssign()`, `agentList()`, `agentStop()`, `agentRestart()`
+- `src/tri/main.zig` — маршрутизация `tri git/deploy/notify`
+
+### Команды работают
+
+```
+$ ./zig-out/bin/tri agent list
+#  │ Agent    │ PID      │ Status
+───┼──────────┼──────────┼─────────────
+1 │ ralph    │ —      │ stopped
+2 │ mu       │ 90744    │ running
+...
+
+$ ./zig-out/bin/tri deploy status
+Project: trinity
+Environment: production
+Service: hslm-train
+```
+
+### Safety checks
+- `tri git push` — блокирует main/master ✅
+- `tri git commit` — требует `type(scope): msg` ✅
+- `tri git add` — блокирует `-A`/`.`/`--all` ✅
+
+### Verification
+```bash
+zig build          # ✅
+zig build test     # ✅
+tri git status    # ✅
+tri issue list     # ✅
+tri agent list     # ✅
+tri deploy status  # ✅
+```

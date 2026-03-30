@@ -1,0 +1,13 @@
+I see the `/tri` dashboard output. The system shows 22 dirty files and V=1.31 (90% compile rate).
+
+As Ralph, I'm ready to work. Current state:
+- **Wake #22** (incremented from wake_count)
+- **Pending issue**: #49 — Phase 5: Generation & Deploy
+- **Dirty files**: 22 need attention
+
+What would you like me to do?
+
+Options from the dashboard paths:
+1. **Commit current progress** — fix 22 dirty files
+2. **Work on #49** — Phase 5 generation & deploy
+3. **Something else** — your instruction

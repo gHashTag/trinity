@@ -13,7 +13,8 @@
 const std = @import("std");
 const tqnn = @import("tqnn_inference.zig");
 const qutrit = @import("../../quantum/qutrit.zig");
-const vsa10k = @import("../../vsa/10k_vsa.zig");
+const gf = @import("golden-float");
+const vsa10k = gf.vsa_10k;
 
 /// Benchmark configuration
 pub const BenchmarkConfig = struct {

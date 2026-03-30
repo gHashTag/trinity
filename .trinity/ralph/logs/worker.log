@@ -1,0 +1,16 @@
+[0;34m[2026-02-19 21:46:16] [INFO] Configuration loaded from .ralphrc[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Provider status: primary:claude[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Starting autonomous cycle...[0m
+[0;32m[2026-02-19 21:46:16] [SUCCESS] 🚀 Ralph loop starting with Claude Code[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Max calls per hour: 100[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Logs: .ralph/logs/ | Docs: .ralph/docs/generated/ | Status: .ralph/logs/status.json[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Starting main loop...[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Loop #1 - calling init_call_tracking...[0m
+[0;34m[2026-02-19 21:46:16] [INFO] Call counter reset for new hour: 2026021921[0m
+[0;35m[2026-02-19 21:46:16] [LOOP] === Starting Loop #1 ===[0m
+[0;35m[2026-02-19 21:46:17] [LOOP] Executing Claude Code (Call 1/100)[0m
+[0;34m[2026-02-19 21:46:17] [INFO] ⏳ Starting Claude Code execution... (timeout: 30m)[0m
+[0;34m[2026-02-19 21:46:17] [INFO] Resuming Claude session: db7d98d7-0fda-4fd9-a... (0h old)[0m
+[0;34m[2026-02-19 21:46:17] [INFO] Using modern CLI mode (JSON output)[0m
+[0;34m[2026-02-19 21:46:17] [INFO] 📺 Live output mode enabled - showing Claude Code streaming...[0m
+[0;35m━━━━━━━━━━━━━━━━ Claude Code Output ━━━━━━━━━━━━━━━━[0m

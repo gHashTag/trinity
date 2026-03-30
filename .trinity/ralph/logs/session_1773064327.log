@@ -1,0 +1,18 @@
+**Done.** Everything is shipped:
+
+| Item | Status |
+|------|--------|
+| PR #51 merged | Telegram hooks + --continue + ralph-hook |
+| PR #53 pushed | Emoji messages + `ralph` -> `tri` rename |
+| Telegram message sent | Confirmation to chat 144022504 |
+| ralph-agent tested | Wake #5-7 with real Telegram credentials |
+| ralph-hook tested | Emoji messages arrive in Telegram |
+
+PR #53: https://github.com/gHashTag/trinity/pull/53
+
+Messages now look like:
+- `🤖 tri WAKE #7`
+- `📋 tri Issues found, building context...`
+- `🧠 tri Spawning Claude (6644b, new session)...`
+- `✅ Bash done` (from hooks)
+- `🏁 tri Done.`

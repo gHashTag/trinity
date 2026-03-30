@@ -1,0 +1,1904 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.63 (git sha1 70a11c6bf0e8dd669f56c7da3587f78b405138e2, clang++ 16.0.0 -fPIC -O3)
+
+-- Parsing `embedding_lookup.v' using frontend ` -vlog2k' --
+
+1. Executing Verilog-2005 frontend: embedding_lookup.v
+Parsing Verilog input from `embedding_lookup.v' to AST representation.
+Storing AST representation for module `$abstract\embedding_lookup'.
+Successfully finished Verilog frontend.
+
+-- Running command `synth_xilinx -flatten -abc9 -arch xc7 -top embedding_lookup; write_json synth_reports/embedding_lookup.json' --
+
+2. Executing SYNTH_XILINX pass.
+
+2.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_sim.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\VCC'.
+Generating RTLIL representation for module `\GND'.
+Generating RTLIL representation for module `\IBUF'.
+Generating RTLIL representation for module `\IBUFG'.
+Generating RTLIL representation for module `\OBUF'.
+Generating RTLIL representation for module `\IOBUF'.
+Generating RTLIL representation for module `\OBUFT'.
+Generating RTLIL representation for module `\BUFG'.
+Generating RTLIL representation for module `\BUFGCTRL'.
+Generating RTLIL representation for module `\BUFHCE'.
+Generating RTLIL representation for module `\INV'.
+Generating RTLIL representation for module `\LUT1'.
+Generating RTLIL representation for module `\LUT2'.
+Generating RTLIL representation for module `\LUT3'.
+Generating RTLIL representation for module `\LUT4'.
+Generating RTLIL representation for module `\LUT5'.
+Generating RTLIL representation for module `\LUT6'.
+Generating RTLIL representation for module `\LUT6_2'.
+Generating RTLIL representation for module `\$__ABC9_LUT7'.
+Generating RTLIL representation for module `\$__ABC9_LUT8'.
+Generating RTLIL representation for module `\MUXCY'.
+Generating RTLIL representation for module `\MUXF5'.
+Generating RTLIL representation for module `\MUXF6'.
+Generating RTLIL representation for module `\MUXF7'.
+Generating RTLIL representation for module `\MUXF8'.
+Generating RTLIL representation for module `\MUXF9'.
+Generating RTLIL representation for module `\XORCY'.
+Generating RTLIL representation for module `\CARRY4'.
+Generating RTLIL representation for module `\CARRY8'.
+Generating RTLIL representation for module `\ORCY'.
+Generating RTLIL representation for module `\MULT_AND'.
+Generating RTLIL representation for module `\FDRE'.
+Generating RTLIL representation for module `\FDRE_1'.
+Generating RTLIL representation for module `\FDSE'.
+Generating RTLIL representation for module `\FDSE_1'.
+Generating RTLIL representation for module `\FDRSE'.
+Generating RTLIL representation for module `\FDRSE_1'.
+Generating RTLIL representation for module `\FDCE'.
+Generating RTLIL representation for module `\FDCE_1'.
+Generating RTLIL representation for module `\FDPE'.
+Generating RTLIL representation for module `\FDPE_1'.
+Generating RTLIL representation for module `\FDCPE'.
+Generating RTLIL representation for module `\FDCPE_1'.
+Generating RTLIL representation for module `\LDCE'.
+Generating RTLIL representation for module `\LDPE'.
+Generating RTLIL representation for module `\LDCPE'.
+Generating RTLIL representation for module `\AND2B1L'.
+Generating RTLIL representation for module `\OR2L'.
+Generating RTLIL representation for module `\RAM16X1S'.
+Generating RTLIL representation for module `\RAM16X1S_1'.
+Generating RTLIL representation for module `\RAM32X1S'.
+Generating RTLIL representation for module `\RAM32X1S_1'.
+Generating RTLIL representation for module `\RAM64X1S'.
+Generating RTLIL representation for module `\RAM64X1S_1'.
+Generating RTLIL representation for module `\RAM128X1S'.
+Generating RTLIL representation for module `\RAM128X1S_1'.
+Generating RTLIL representation for module `\RAM256X1S'.
+Generating RTLIL representation for module `\RAM512X1S'.
+Generating RTLIL representation for module `\RAM16X2S'.
+Generating RTLIL representation for module `\RAM32X2S'.
+Generating RTLIL representation for module `\RAM64X2S'.
+Generating RTLIL representation for module `\RAM16X4S'.
+Generating RTLIL representation for module `\RAM32X4S'.
+Generating RTLIL representation for module `\RAM16X8S'.
+Generating RTLIL representation for module `\RAM32X8S'.
+Generating RTLIL representation for module `\RAM16X1D'.
+Generating RTLIL representation for module `\RAM16X1D_1'.
+Generating RTLIL representation for module `\RAM32X1D'.
+Generating RTLIL representation for module `\RAM32X1D_1'.
+Generating RTLIL representation for module `\RAM64X1D'.
+Generating RTLIL representation for module `\RAM64X1D_1'.
+Generating RTLIL representation for module `\RAM128X1D'.
+Generating RTLIL representation for module `\RAM256X1D'.
+Generating RTLIL representation for module `\RAM32M'.
+Generating RTLIL representation for module `\RAM32M16'.
+Generating RTLIL representation for module `\RAM64M'.
+Generating RTLIL representation for module `\RAM64M8'.
+Generating RTLIL representation for module `\RAM32X16DR8'.
+Generating RTLIL representation for module `\RAM64X8SW'.
+Generating RTLIL representation for module `\ROM16X1'.
+Generating RTLIL representation for module `\ROM32X1'.
+Generating RTLIL representation for module `\ROM64X1'.
+Generating RTLIL representation for module `\ROM128X1'.
+Generating RTLIL representation for module `\ROM256X1'.
+Generating RTLIL representation for module `\SRL16'.
+Generating RTLIL representation for module `\SRL16E'.
+Generating RTLIL representation for module `\SRLC16'.
+Generating RTLIL representation for module `\SRLC16E'.
+Generating RTLIL representation for module `\SRLC32E'.
+Generating RTLIL representation for module `\CFGLUT5'.
+Generating RTLIL representation for module `\MULT18X18'.
+Generating RTLIL representation for module `\MULT18X18S'.
+Generating RTLIL representation for module `\MULT18X18SIO'.
+Generating RTLIL representation for module `\DSP48A'.
+Generating RTLIL representation for module `\DSP48A1'.
+Generating RTLIL representation for module `\DSP48'.
+Generating RTLIL representation for module `\DSP48E1'.
+Generating RTLIL representation for module `\RAMB18E1'.
+Generating RTLIL representation for module `\RAMB36E1'.
+Successfully finished Verilog frontend.
+
+2.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_xtra.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_xtra.v' to AST representation.
+Generating RTLIL representation for module `\RAMB4_S1'.
+Generating RTLIL representation for module `\RAMB4_S2'.
+Generating RTLIL representation for module `\RAMB4_S4'.
+Generating RTLIL representation for module `\RAMB4_S8'.
+Generating RTLIL representation for module `\RAMB4_S16'.
+Generating RTLIL representation for module `\RAMB4_S1_S1'.
+Generating RTLIL representation for module `\RAMB4_S1_S2'.
+Generating RTLIL representation for module `\RAMB4_S1_S4'.
+Generating RTLIL representation for module `\RAMB4_S1_S8'.
+Generating RTLIL representation for module `\RAMB4_S1_S16'.
+Generating RTLIL representation for module `\RAMB4_S2_S2'.
+Generating RTLIL representation for module `\RAMB4_S2_S4'.
+Generating RTLIL representation for module `\RAMB4_S2_S8'.
+Generating RTLIL representation for module `\RAMB4_S2_S16'.
+Generating RTLIL representation for module `\RAMB4_S4_S4'.
+Generating RTLIL representation for module `\RAMB4_S4_S8'.
+Generating RTLIL representation for module `\RAMB4_S4_S16'.
+Generating RTLIL representation for module `\RAMB4_S8_S8'.
+Generating RTLIL representation for module `\RAMB4_S8_S16'.
+Generating RTLIL representation for module `\RAMB4_S16_S16'.
+Generating RTLIL representation for module `\RAMB16_S1'.
+Generating RTLIL representation for module `\RAMB16_S2'.
+Generating RTLIL representation for module `\RAMB16_S4'.
+Generating RTLIL representation for module `\RAMB16_S9'.
+Generating RTLIL representation for module `\RAMB16_S18'.
+Generating RTLIL representation for module `\RAMB16_S36'.
+Generating RTLIL representation for module `\RAMB16_S1_S1'.
+Generating RTLIL representation for module `\RAMB16_S1_S2'.
+Generating RTLIL representation for module `\RAMB16_S1_S4'.
+Generating RTLIL representation for module `\RAMB16_S1_S9'.
+Generating RTLIL representation for module `\RAMB16_S1_S18'.
+Generating RTLIL representation for module `\RAMB16_S1_S36'.
+Generating RTLIL representation for module `\RAMB16_S2_S2'.
+Generating RTLIL representation for module `\RAMB16_S2_S4'.
+Generating RTLIL representation for module `\RAMB16_S2_S9'.
+Generating RTLIL representation for module `\RAMB16_S2_S18'.
+Generating RTLIL representation for module `\RAMB16_S2_S36'.
+Generating RTLIL representation for module `\RAMB16_S4_S4'.
+Generating RTLIL representation for module `\RAMB16_S4_S9'.
+Generating RTLIL representation for module `\RAMB16_S4_S18'.
+Generating RTLIL representation for module `\RAMB16_S4_S36'.
+Generating RTLIL representation for module `\RAMB16_S9_S9'.
+Generating RTLIL representation for module `\RAMB16_S9_S18'.
+Generating RTLIL representation for module `\RAMB16_S9_S36'.
+Generating RTLIL representation for module `\RAMB16_S18_S18'.
+Generating RTLIL representation for module `\RAMB16_S18_S36'.
+Generating RTLIL representation for module `\RAMB16_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWER'.
+Generating RTLIL representation for module `\RAMB8BWER'.
+Generating RTLIL representation for module `\FIFO16'.
+Generating RTLIL representation for module `\RAMB16'.
+Generating RTLIL representation for module `\RAMB32_S64_ECC'.
+Generating RTLIL representation for module `\FIFO18'.
+Generating RTLIL representation for module `\FIFO18_36'.
+Generating RTLIL representation for module `\FIFO36'.
+Generating RTLIL representation for module `\FIFO36_72'.
+Generating RTLIL representation for module `\RAMB18'.
+Generating RTLIL representation for module `\RAMB36'.
+Generating RTLIL representation for module `\RAMB18SDP'.
+Generating RTLIL representation for module `\RAMB36SDP'.
+Generating RTLIL representation for module `\FIFO18E1'.
+Generating RTLIL representation for module `\FIFO36E1'.
+Generating RTLIL representation for module `\FIFO18E2'.
+Generating RTLIL representation for module `\FIFO36E2'.
+Generating RTLIL representation for module `\RAMB18E2'.
+Generating RTLIL representation for module `\RAMB36E2'.
+Generating RTLIL representation for module `\URAM288'.
+Generating RTLIL representation for module `\URAM288_BASE'.
+Generating RTLIL representation for module `\DSP48E'.
+Generating RTLIL representation for module `\DSP48E2'.
+Generating RTLIL representation for module `\FDDRCPE'.
+Generating RTLIL representation for module `\FDDRRSE'.
+Generating RTLIL representation for module `\IFDDRCPE'.
+Generating RTLIL representation for module `\IFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRCPE'.
+Generating RTLIL representation for module `\OFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRTCPE'.
+Generating RTLIL representation for module `\OFDDRTRSE'.
+Generating RTLIL representation for module `\IDDR2'.
+Generating RTLIL representation for module `\ODDR2'.
+Generating RTLIL representation for module `\IDDR'.
+Generating RTLIL representation for module `\IDDR_2CLK'.
+Generating RTLIL representation for module `\ODDR'.
+Generating RTLIL representation for module `\IDELAYCTRL'.
+Generating RTLIL representation for module `\IDELAY'.
+Generating RTLIL representation for module `\ISERDES'.
+Generating RTLIL representation for module `\OSERDES'.
+Generating RTLIL representation for module `\IODELAY'.
+Generating RTLIL representation for module `\ISERDES_NODELAY'.
+Generating RTLIL representation for module `\IODELAYE1'.
+Generating RTLIL representation for module `\ISERDESE1'.
+Generating RTLIL representation for module `\OSERDESE1'.
+Generating RTLIL representation for module `\IDELAYE2'.
+Generating RTLIL representation for module `\ODELAYE2'.
+Generating RTLIL representation for module `\ISERDESE2'.
+Generating RTLIL representation for module `\OSERDESE2'.
+Generating RTLIL representation for module `\PHASER_IN'.
+Generating RTLIL representation for module `\PHASER_IN_PHY'.
+Generating RTLIL representation for module `\PHASER_OUT'.
+Generating RTLIL representation for module `\PHASER_OUT_PHY'.
+Generating RTLIL representation for module `\PHASER_REF'.
+Generating RTLIL representation for module `\PHY_CONTROL'.
+Generating RTLIL representation for module `\IDDRE1'.
+Generating RTLIL representation for module `\ODDRE1'.
+Generating RTLIL representation for module `\IDELAYE3'.
+Generating RTLIL representation for module `\ODELAYE3'.
+Generating RTLIL representation for module `\ISERDESE3'.
+Generating RTLIL representation for module `\OSERDESE3'.
+Generating RTLIL representation for module `\BITSLICE_CONTROL'.
+Generating RTLIL representation for module `\RIU_OR'.
+Generating RTLIL representation for module `\RX_BITSLICE'.
+Generating RTLIL representation for module `\RXTX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE_TRI'.
+Generating RTLIL representation for module `\IODELAY2'.
+Generating RTLIL representation for module `\IODRP2'.
+Generating RTLIL representation for module `\IODRP2_MCB'.
+Generating RTLIL representation for module `\ISERDES2'.
+Generating RTLIL representation for module `\OSERDES2'.
+Generating RTLIL representation for module `\IBUF_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUF_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUF_ANALOG'.
+Generating RTLIL representation for module `\IBUFE3'.
+Generating RTLIL representation for module `\IBUFDS'.
+Generating RTLIL representation for module `\IBUFDS_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUFDS_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDSE3'.
+Generating RTLIL representation for module `\IBUFDS_DPHY'.
+Generating RTLIL representation for module `\IBUFGDS'.
+Generating RTLIL representation for module `\IBUFGDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUF_DCIEN'.
+Generating RTLIL representation for module `\IOBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFE3'.
+Generating RTLIL representation for module `\IOBUFDS'.
+Generating RTLIL representation for module `\IOBUFDS_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDSE3'.
+Generating RTLIL representation for module `\OBUFDS'.
+Generating RTLIL representation for module `\OBUFDS_DPHY'.
+Generating RTLIL representation for module `\OBUFTDS'.
+Generating RTLIL representation for module `\KEEPER'.
+Generating RTLIL representation for module `\PULLDOWN'.
+Generating RTLIL representation for module `\PULLUP'.
+Generating RTLIL representation for module `\DCIRESET'.
+Generating RTLIL representation for module `\HPIO_VREF'.
+Generating RTLIL representation for module `\BUFGCE'.
+Generating RTLIL representation for module `\BUFGCE_1'.
+Generating RTLIL representation for module `\BUFGMUX'.
+Generating RTLIL representation for module `\BUFGMUX_1'.
+Generating RTLIL representation for module `\BUFGMUX_CTRL'.
+Generating RTLIL representation for module `\BUFGMUX_VIRTEX4'.
+Generating RTLIL representation for module `\BUFG_GT'.
+Generating RTLIL representation for module `\BUFG_GT_SYNC'.
+Generating RTLIL representation for module `\BUFG_PS'.
+Generating RTLIL representation for module `\BUFGCE_DIV'.
+Generating RTLIL representation for module `\BUFH'.
+Generating RTLIL representation for module `\BUFIO2'.
+Generating RTLIL representation for module `\BUFIO2_2CLK'.
+Generating RTLIL representation for module `\BUFIO2FB'.
+Generating RTLIL representation for module `\BUFPLL'.
+Generating RTLIL representation for module `\BUFPLL_MCB'.
+Generating RTLIL representation for module `\BUFIO'.
+Generating RTLIL representation for module `\BUFIODQS'.
+Generating RTLIL representation for module `\BUFR'.
+Generating RTLIL representation for module `\BUFMR'.
+Generating RTLIL representation for module `\BUFMRCE'.
+Generating RTLIL representation for module `\DCM'.
+Generating RTLIL representation for module `\DCM_SP'.
+Generating RTLIL representation for module `\DCM_CLKGEN'.
+Generating RTLIL representation for module `\DCM_ADV'.
+Generating RTLIL representation for module `\DCM_BASE'.
+Generating RTLIL representation for module `\DCM_PS'.
+Generating RTLIL representation for module `\PMCD'.
+Generating RTLIL representation for module `\PLL_ADV'.
+Generating RTLIL representation for module `\PLL_BASE'.
+Generating RTLIL representation for module `\MMCM_ADV'.
+Generating RTLIL representation for module `\MMCM_BASE'.
+Generating RTLIL representation for module `\MMCME2_ADV'.
+Generating RTLIL representation for module `\MMCME2_BASE'.
+Generating RTLIL representation for module `\PLLE2_ADV'.
+Generating RTLIL representation for module `\PLLE2_BASE'.
+Generating RTLIL representation for module `\MMCME3_ADV'.
+Generating RTLIL representation for module `\MMCME3_BASE'.
+Generating RTLIL representation for module `\PLLE3_ADV'.
+Generating RTLIL representation for module `\PLLE3_BASE'.
+Generating RTLIL representation for module `\MMCME4_ADV'.
+Generating RTLIL representation for module `\MMCME4_BASE'.
+Generating RTLIL representation for module `\PLLE4_ADV'.
+Generating RTLIL representation for module `\PLLE4_BASE'.
+Generating RTLIL representation for module `\BUFT'.
+Generating RTLIL representation for module `\IN_FIFO'.
+Generating RTLIL representation for module `\OUT_FIFO'.
+Generating RTLIL representation for module `\HARD_SYNC'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3E'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3A'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN6'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX4'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX5'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX6'.
+Generating RTLIL representation for module `\STARTUPE2'.
+Generating RTLIL representation for module `\STARTUPE3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3A'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX4'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX5'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX6'.
+Generating RTLIL representation for module `\CAPTUREE2'.
+Generating RTLIL representation for module `\ICAP_SPARTAN3A'.
+Generating RTLIL representation for module `\ICAP_SPARTAN6'.
+Generating RTLIL representation for module `\ICAP_VIRTEX4'.
+Generating RTLIL representation for module `\ICAP_VIRTEX5'.
+Generating RTLIL representation for module `\ICAP_VIRTEX6'.
+Generating RTLIL representation for module `\ICAPE2'.
+Generating RTLIL representation for module `\ICAPE3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3A'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN6'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX4'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX5'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX6'.
+Generating RTLIL representation for module `\BSCANE2'.
+Generating RTLIL representation for module `\DNA_PORT'.
+Generating RTLIL representation for module `\DNA_PORTE2'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX4'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX5'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX6'.
+Generating RTLIL representation for module `\FRAME_ECCE2'.
+Generating RTLIL representation for module `\FRAME_ECCE3'.
+Generating RTLIL representation for module `\FRAME_ECCE4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX5'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX6'.
+Generating RTLIL representation for module `\USR_ACCESSE2'.
+Generating RTLIL representation for module `\POST_CRC_INTERNAL'.
+Generating RTLIL representation for module `\SUSPEND_SYNC'.
+Generating RTLIL representation for module `\KEY_CLEAR'.
+Generating RTLIL representation for module `\MASTER_JTAG'.
+Generating RTLIL representation for module `\SPI_ACCESS'.
+Generating RTLIL representation for module `\EFUSE_USR'.
+Generating RTLIL representation for module `\SYSMON'.
+Generating RTLIL representation for module `\XADC'.
+Generating RTLIL representation for module `\SYSMONE1'.
+Generating RTLIL representation for module `\SYSMONE4'.
+Generating RTLIL representation for module `\GTPA1_DUAL'.
+Generating RTLIL representation for module `\GT11_CUSTOM'.
+Generating RTLIL representation for module `\GT11_DUAL'.
+Generating RTLIL representation for module `\GT11CLK'.
+Generating RTLIL representation for module `\GT11CLK_MGT'.
+Generating RTLIL representation for module `\GTP_DUAL'.
+Generating RTLIL representation for module `\GTX_DUAL'.
+Generating RTLIL representation for module `\CRC32'.
+Generating RTLIL representation for module `\CRC64'.
+Generating RTLIL representation for module `\GTHE1_QUAD'.
+Generating RTLIL representation for module `\GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTHE1'.
+Generating RTLIL representation for module `\GTHE2_CHANNEL'.
+Generating RTLIL representation for module `\GTHE2_COMMON'.
+Generating RTLIL representation for module `\GTPE2_CHANNEL'.
+Generating RTLIL representation for module `\GTPE2_COMMON'.
+Generating RTLIL representation for module `\GTXE2_CHANNEL'.
+Generating RTLIL representation for module `\GTXE2_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE2'.
+Generating RTLIL representation for module `\GTHE3_CHANNEL'.
+Generating RTLIL representation for module `\GTHE3_COMMON'.
+Generating RTLIL representation for module `\GTYE3_CHANNEL'.
+Generating RTLIL representation for module `\GTYE3_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3_ADV'.
+Generating RTLIL representation for module `\GTHE4_CHANNEL'.
+Generating RTLIL representation for module `\GTHE4_COMMON'.
+Generating RTLIL representation for module `\GTYE4_CHANNEL'.
+Generating RTLIL representation for module `\GTYE4_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4_ADV'.
+Generating RTLIL representation for module `\GTM_DUAL'.
+Generating RTLIL representation for module `\IBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM_ADV'.
+Generating RTLIL representation for module `\HSDAC'.
+Generating RTLIL representation for module `\HSADC'.
+Generating RTLIL representation for module `\RFDAC'.
+Generating RTLIL representation for module `\RFADC'.
+Generating RTLIL representation for module `\PCIE_A1'.
+Generating RTLIL representation for module `\PCIE_EP'.
+Generating RTLIL representation for module `\PCIE_2_0'.
+Generating RTLIL representation for module `\PCIE_2_1'.
+Generating RTLIL representation for module `\PCIE_3_0'.
+Generating RTLIL representation for module `\PCIE_3_1'.
+Generating RTLIL representation for module `\PCIE40E4'.
+Generating RTLIL representation for module `\PCIE4CE4'.
+Generating RTLIL representation for module `\EMAC'.
+Generating RTLIL representation for module `\TEMAC'.
+Generating RTLIL representation for module `\TEMAC_SINGLE'.
+Generating RTLIL representation for module `\CMAC'.
+Generating RTLIL representation for module `\CMACE4'.
+Generating RTLIL representation for module `\MCB'.
+Generating RTLIL representation for module `\HBM_REF_CLK'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_APB'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_AXI'.
+Generating RTLIL representation for module `\HBM_ONE_STACK_INTF'.
+Generating RTLIL representation for module `\HBM_TWO_STACK_INTF'.
+Generating RTLIL representation for module `\PPC405_ADV'.
+Generating RTLIL representation for module `\PPC440'.
+Generating RTLIL representation for module `\PS7'.
+Generating RTLIL representation for module `\PS8'.
+Generating RTLIL representation for module `\ILKN'.
+Generating RTLIL representation for module `\ILKNE4'.
+Generating RTLIL representation for module `\VCU'.
+Generating RTLIL representation for module `\FE'.
+Successfully finished Verilog frontend.
+
+2.3. Executing HIERARCHY pass (managing design hierarchy).
+
+2.4. Executing AST frontend in derive mode using pre-parsed AST for module `\embedding_lookup'.
+Generating RTLIL representation for module `\embedding_lookup'.
+
+2.4.1. Analyzing design hierarchy..
+Top module:  \embedding_lookup
+
+2.4.2. Analyzing design hierarchy..
+Top module:  \embedding_lookup
+Removing unused module `$abstract\embedding_lookup'.
+Removed 1 unused modules.
+
+2.5. Executing PROC pass (convert processes to netlists).
+
+2.5.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Removing empty process `embedding_lookup.$proc$embedding_lookup.v:52$1116'.
+Cleaned up 0 empty switches.
+
+2.5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 2 switch rules as full_case in process $proc$embedding_lookup.v:97$1109 in module embedding_lookup.
+Removed a total of 0 dead cases.
+
+2.5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 2 redundant assignments.
+Promoted 1 assignment to connection.
+
+2.5.4. Executing PROC_INIT pass (extract init attributes).
+
+2.5.5. Executing PROC_ARST pass (detect async resets in processes).
+
+2.5.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~4 debug messages>
+
+2.5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+     1/10: $0\done[0:0]
+     2/10: $0\out_valid[0:0]
+     3/10: $0\k_out_d1[7:0]
+     4/10: $0\state[2:0]
+     5/10: $0\base_addr[14:0]
+     6/10: $0\k_idx[7:0]
+     7/10: $0\rd_addr[14:0]
+     8/10: $0\busy[0:0]
+     9/10: $0\out_addr[7:0]
+    10/10: $0\out_data[19:0]
+Creating decoders for process `\embedding_lookup.$proc$embedding_lookup.v:58$1097'.
+
+2.5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+2.5.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\embedding_lookup.\out_data' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1212' with positive edge clock.
+Creating register for signal `\embedding_lookup.\out_addr' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1213' with positive edge clock.
+Creating register for signal `\embedding_lookup.\out_valid' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1214' with positive edge clock.
+Creating register for signal `\embedding_lookup.\done' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1215' with positive edge clock.
+Creating register for signal `\embedding_lookup.\busy' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1216' with positive edge clock.
+Creating register for signal `\embedding_lookup.\rd_addr' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1217' with positive edge clock.
+Creating register for signal `\embedding_lookup.\k_idx' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1218' with positive edge clock.
+Creating register for signal `\embedding_lookup.\base_addr' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1219' with positive edge clock.
+Creating register for signal `\embedding_lookup.\state' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1220' with positive edge clock.
+Creating register for signal `\embedding_lookup.\k_out_d1' using process `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+  created $dff cell `$procdff$1221' with positive edge clock.
+Creating register for signal `\embedding_lookup.\code_r' using process `\embedding_lookup.$proc$embedding_lookup.v:58$1097'.
+  created $dff cell `$procdff$1222' with positive edge clock.
+
+2.5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+2.5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 4 empty switches in `\embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+Removing empty process `embedding_lookup.$proc$embedding_lookup.v:97$1109'.
+Removing empty process `embedding_lookup.$proc$embedding_lookup.v:58$1097'.
+Cleaned up 4 empty switches.
+
+2.5.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~7 debug messages>
+
+2.6. Executing FLATTEN pass (flatten design).
+
+2.7. Executing TRIBUF pass.
+
+2.8. Executing DEMINOUT pass (demote inout ports to input or output).
+
+2.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.10. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 33 unused wires.
+<suppressed ~1 debug messages>
+
+2.11. Executing CHECK pass (checking for obvious problems).
+Checking module embedding_lookup...
+Found and reported 0 problems.
+
+2.12. Executing OPT pass (performing simple optimizations).
+
+2.12.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.12.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 76 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 58 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~54 debug messages>
+Removed a total of 18 cells.
+
+2.12.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~41 debug messages>
+
+2.12.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+    New ctrl vector for $pmux cell $procmux$1206: $auto$opt_reduce.cc:137:opt_pmux$1224
+    New ctrl vector for $pmux cell $procmux$1199: $auto$opt_reduce.cc:137:opt_pmux$1226
+    New ctrl vector for $pmux cell $procmux$1123: $auto$opt_reduce.cc:137:opt_pmux$1228
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 3 changes.
+
+2.12.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 61 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 59 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+2.12.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.12.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 20 unused wires.
+<suppressed ~1 debug messages>
+
+2.12.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.12.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.12.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+2.12.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.12.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 59 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.12.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.12.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.12.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.12.16. Finished fast OPT passes. (There is nothing left to do.)
+
+2.13. Executing FSM pass (extract and optimize FSM).
+
+2.13.1. Executing FSM_DETECT pass (finding FSMs in design).
+Found FSM state register embedding_lookup.state.
+Not marking embedding_lookup.out_data as FSM state register:
+    Register is connected to module port.
+    Users of register don't seem to benefit from recoding.
+
+2.13.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\state' from module `\embedding_lookup'.
+  found $dff cell for state register: $procdff$1220
+  root of input selection tree: $0\state[2:0]
+  found reset state: 3'000 (guessed from mux tree)
+  found ctrl input: \rst
+  found ctrl input: $procmux$1118_CMP
+  found ctrl input: $procmux$1124_CMP
+  found ctrl input: $procmux$1125_CMP
+  found ctrl input: $procmux$1133_CMP
+  found ctrl input: $procmux$1145_CMP
+  found ctrl input: $procmux$1148_CMP
+  found state code: 3'000
+  found state code: 3'101
+  found ctrl input: $eq$embedding_lookup.v:141$1111_Y
+  found state code: 3'100
+  found state code: 3'011
+  found state code: 3'010
+  found ctrl input: \start
+  found state code: 3'001
+  found ctrl output: $procmux$1133_CMP
+  found ctrl output: $procmux$1145_CMP
+  found ctrl output: $procmux$1118_CMP
+  found ctrl output: $procmux$1148_CMP
+  found ctrl output: $procmux$1124_CMP
+  found ctrl output: $procmux$1125_CMP
+  ctrl inputs: { $eq$embedding_lookup.v:141$1111_Y \start \rst }
+  ctrl outputs: { $procmux$1148_CMP $procmux$1145_CMP $procmux$1133_CMP $procmux$1125_CMP $procmux$1124_CMP $procmux$1118_CMP $0\state[2:0] }
+  transition:      3'000 3'-00 ->      3'000 9'100000000
+  transition:      3'000 3'-10 ->      3'001 9'100000001
+  transition:      3'000 3'--1 ->      3'000 9'100000000
+  transition:      3'100 3'--0 ->      3'101 9'000010101
+  transition:      3'100 3'--1 ->      3'000 9'000010000
+  transition:      3'010 3'--0 ->      3'011 9'001000011
+  transition:      3'010 3'--1 ->      3'000 9'001000000
+  transition:      3'001 3'--0 ->      3'010 9'010000010
+  transition:      3'001 3'--1 ->      3'000 9'010000000
+  transition:      3'101 3'--0 ->      3'000 9'000001000
+  transition:      3'101 3'--1 ->      3'000 9'000001000
+  transition:      3'011 3'0-0 ->      3'011 9'000100011
+  transition:      3'011 3'1-0 ->      3'100 9'000100100
+  transition:      3'011 3'--1 ->      3'000 9'000100000
+
+2.13.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\state$1229' from module `\embedding_lookup'.
+  Merging pattern 3'--0 and 3'--1 from group (4 0 9'000001000).
+  Merging pattern 3'--1 and 3'--0 from group (4 0 9'000001000).
+
+2.13.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 11 unused cells and 11 unused wires.
+<suppressed ~12 debug messages>
+
+2.13.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\state$1229' from module `\embedding_lookup'.
+  Removing unused output signal $0\state[2:0] [0].
+  Removing unused output signal $0\state[2:0] [1].
+  Removing unused output signal $0\state[2:0] [2].
+
+2.13.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+Recoding FSM `$fsm$\state$1229' from module `\embedding_lookup' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  000 -> -----1
+  100 -> ----1-
+  010 -> ---1--
+  001 -> --1---
+  101 -> -1----
+  011 -> 1-----
+
+2.13.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+FSM `$fsm$\state$1229' from module `embedding_lookup':
+-------------------------------------
+
+  Information on FSM $fsm$\state$1229 (\state):
+
+  Number of input signals:    3
+  Number of output signals:   6
+  Number of state bits:       6
+
+  Input signals:
+    0: \rst
+    1: \start
+    2: $eq$embedding_lookup.v:141$1111_Y
+
+  Output signals:
+    0: $procmux$1118_CMP
+    1: $procmux$1124_CMP
+    2: $procmux$1125_CMP
+    3: $procmux$1133_CMP
+    4: $procmux$1145_CMP
+    5: $procmux$1148_CMP
+
+  State encoding:
+    0:   6'-----1  <RESET STATE>
+    1:   6'----1-
+    2:   6'---1--
+    3:   6'--1---
+    4:   6'-1----
+    5:   6'1-----
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 3'-00   ->     0 6'100000
+      1:     0 3'--1   ->     0 6'100000
+      2:     0 3'-10   ->     3 6'100000
+      3:     1 3'--1   ->     0 6'000010
+      4:     1 3'--0   ->     4 6'000010
+      5:     2 3'--1   ->     0 6'001000
+      6:     2 3'--0   ->     5 6'001000
+      7:     3 3'--1   ->     0 6'010000
+      8:     3 3'--0   ->     2 6'010000
+      9:     4 3'---   ->     0 6'000001
+     10:     5 3'--1   ->     0 6'000100
+     11:     5 3'1-0   ->     1 6'000100
+     12:     5 3'0-0   ->     5 6'000100
+
+-------------------------------------
+
+2.13.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+Mapping FSM `$fsm$\state$1229' from module `\embedding_lookup'.
+
+2.14. Executing OPT pass (performing simple optimizations).
+
+2.14.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~6 debug messages>
+
+2.14.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 65 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 63 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+2.14.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~34 debug messages>
+
+2.14.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.14.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 63 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.14.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$1221 ($dff) from module embedding_lookup (D = $procmux$1131_Y, Q = \k_out_d1, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$1273 ($sdff) from module embedding_lookup (D = $procmux$1131_Y, Q = \k_out_d1).
+Adding SRST signal on $procdff$1218 ($dff) from module embedding_lookup (D = $procmux$1169_Y, Q = \k_idx, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$1277 ($sdff) from module embedding_lookup (D = $procmux$1169_Y, Q = \k_idx).
+Adding SRST signal on $procdff$1219 ($dff) from module embedding_lookup (D = $procmux$1159_Y, Q = \base_addr, rval = 15'000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$1287 ($sdff) from module embedding_lookup (D = \base_addr_calc, Q = \base_addr).
+Adding SRST signal on $procdff$1217 ($dff) from module embedding_lookup (D = $procmux$1183_Y, Q = \rd_addr, rval = 15'000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$1291 ($sdff) from module embedding_lookup (D = $procmux$1183_Y, Q = \rd_addr).
+Adding SRST signal on $procdff$1212 ($dff) from module embedding_lookup (D = $procmux$1206_Y, Q = \out_data, rval = 20'00000000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$1299 ($sdff) from module embedding_lookup (D = \decoded_val, Q = \out_data).
+Adding SRST signal on $procdff$1213 ($dff) from module embedding_lookup (D = $procmux$1199_Y, Q = \out_addr, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$1301 ($sdff) from module embedding_lookup (D = \k_out_d1, Q = \out_addr).
+Adding SRST signal on $procdff$1214 ($dff) from module embedding_lookup (D = $procmux$1123_Y, Q = \out_valid, rval = 1'0).
+Adding SRST signal on $procdff$1215 ($dff) from module embedding_lookup (D = $procmux$1117_Y, Q = \done, rval = 1'0).
+Adding SRST signal on $procdff$1216 ($dff) from module embedding_lookup (D = $procmux$1190_Y, Q = \busy, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$1305 ($sdff) from module embedding_lookup (D = $procmux$1190_Y, Q = \busy).
+
+2.14.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 13 unused cells and 25 unused wires.
+<suppressed ~14 debug messages>
+
+2.14.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~4 debug messages>
+
+2.14.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.14.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~19 debug messages>
+
+2.14.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.14.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 62 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 60 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+2.14.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.14.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+2.14.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.14.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.14.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~19 debug messages>
+
+2.14.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.14.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 60 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.14.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.14.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.14.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.14.23. Finished fast OPT passes. (There is nothing left to do.)
+
+2.15. Executing WREDUCE pass (reducing word size of cells).
+Removed top 17 address bits (of 32) from memory init port embedding_lookup.$meminit$\emb_mem$embedding_lookup.v:52$1115 (emb_mem).
+Removed top 1 bits (of 2) from port B of cell embedding_lookup.$eq$embedding_lookup.v:65$1099 ($eq).
+Removed top 4 bits (of 15) from port B of cell embedding_lookup.$sub$embedding_lookup.v:93$1105 ($sub).
+Removed top 6 bits (of 15) from port B of cell embedding_lookup.$add$embedding_lookup.v:93$1107 ($add).
+Removed top 8 bits (of 15) from port B of cell embedding_lookup.$sub$embedding_lookup.v:93$1108 ($sub).
+Removed top 14 bits (of 15) from port B of cell embedding_lookup.$add$embedding_lookup.v:131$1110 ($add).
+Removed top 7 bits (of 8) from port B of cell embedding_lookup.$add$embedding_lookup.v:144$1112 ($add).
+Removed top 7 bits (of 15) from port B of cell embedding_lookup.$add$embedding_lookup.v:145$1113 ($add).
+Removed top 14 bits (of 15) from port B of cell embedding_lookup.$add$embedding_lookup.v:145$1114 ($add).
+
+2.16. Executing PEEPOPT pass (run peephole optimizers).
+
+2.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.18. Executing PMUX2SHIFTX pass.
+
+2.19. Executing SORT pass.
+
+2.20. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+Checking read port `\emb_mem'[0] in module `\embedding_lookup': merging output FF to cell.
+
+2.21. Executing TECHMAP pass (map to technology primitives).
+
+2.21.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/mul2dsp.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/mul2dsp.v' to AST representation.
+Generating RTLIL representation for module `\_80_mul'.
+Generating RTLIL representation for module `\_90_soft_mul'.
+Successfully finished Verilog frontend.
+
+2.21.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/xc7_dsp_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/xc7_dsp_map.v' to AST representation.
+Generating RTLIL representation for module `$__MUL25X18'.
+Successfully finished Verilog frontend.
+
+2.21.3. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~5 debug messages>
+
+2.22. Executing OPT_EXPR pass (perform const folding).
+
+2.23. Executing WREDUCE pass (reducing word size of cells).
+
+2.24. Executing XILINX_DSP pass (pack resources into DSPs).
+
+2.25. Executing TECHMAP pass (map to technology primitives).
+
+2.25.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/cmp2lut.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/cmp2lut.v' to AST representation.
+Generating RTLIL representation for module `\_90_lut_cmp_'.
+Successfully finished Verilog frontend.
+
+2.25.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/cmp2lcu.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/cmp2lcu.v' to AST representation.
+Generating RTLIL representation for module `\_80_lcu_cmp_'.
+Generating RTLIL representation for module `$__CMP2LCU'.
+Successfully finished Verilog frontend.
+
+2.25.3. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~7 debug messages>
+
+2.26. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module embedding_lookup:
+  creating $macc model for $add$embedding_lookup.v:131$1110 ($add).
+  creating $macc model for $add$embedding_lookup.v:144$1112 ($add).
+  creating $macc model for $add$embedding_lookup.v:145$1113 ($add).
+  creating $macc model for $add$embedding_lookup.v:145$1114 ($add).
+  creating $macc model for $add$embedding_lookup.v:93$1107 ($add).
+  creating $macc model for $sub$embedding_lookup.v:93$1105 ($sub).
+  creating $macc model for $sub$embedding_lookup.v:93$1108 ($sub).
+  merging $macc model for $add$embedding_lookup.v:93$1107 into $sub$embedding_lookup.v:93$1108.
+  merging $macc model for $sub$embedding_lookup.v:93$1105 into $sub$embedding_lookup.v:93$1108.
+  merging $macc model for $add$embedding_lookup.v:145$1113 into $add$embedding_lookup.v:145$1114.
+  creating $alu model for $macc $add$embedding_lookup.v:145$1114.
+  creating $alu model for $macc $add$embedding_lookup.v:144$1112.
+  creating $alu model for $macc $add$embedding_lookup.v:131$1110.
+  creating $macc cell for $sub$embedding_lookup.v:93$1108: $auto$alumacc.cc:382:replace_macc$1318
+  creating $alu cell for $add$embedding_lookup.v:131$1110: $auto$alumacc.cc:512:replace_alu$1319
+  creating $alu cell for $add$embedding_lookup.v:144$1112: $auto$alumacc.cc:512:replace_alu$1322
+  creating $alu cell for $add$embedding_lookup.v:145$1114: $auto$alumacc.cc:512:replace_alu$1325
+  created 3 $alu and 1 $macc cells.
+
+2.27. Executing SHARE pass (SAT-based resource sharing).
+
+2.28. Executing OPT pass (performing simple optimizations).
+
+2.28.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 60 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~19 debug messages>
+
+2.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.28.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 60 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 4 unused cells and 6 unused wires.
+<suppressed ~5 debug messages>
+
+2.28.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~19 debug messages>
+
+2.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.28.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 56 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.28.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.28.16. Finished fast OPT passes. (There is nothing left to do.)
+
+2.29. Executing MEMORY pass.
+
+2.29.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+2.29.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+2.29.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+2.29.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+2.29.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+2.29.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.29.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+2.29.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+2.29.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.29.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+2.30. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.31. Executing MEMORY_LIBMAP pass (mapping memories to cells).
+found attribute 'ram_style = block' on memory embedding_lookup.emb_mem, forced mapping to block RAM
+mapping memory embedding_lookup.emb_mem via $__XILINX_BLOCKRAM_TDP_
+<suppressed ~385 debug messages>
+
+2.32. Executing TECHMAP pass (map to technology primitives).
+
+2.32.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/lutrams_xc5v_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/lutrams_xc5v_map.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_DP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_QP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_OP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SDP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_64X8SW_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_32X16DR8_'.
+Successfully finished Verilog frontend.
+
+2.32.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~9 debug messages>
+
+2.33. Executing TECHMAP pass (map to technology primitives).
+
+2.33.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/brams_xc6v_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/brams_xc6v_map.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_TDP_'.
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_SDP_'.
+Successfully finished Verilog frontend.
+
+2.33.2. Continuing TECHMAP pass.
+Using template $paramod$807e028b39ef2eed9e7cf3cfb1f749689f7adb77$__XILINX_BLOCKRAM_TDP_ for cells of type $__XILINX_BLOCKRAM_TDP_.
+Using template $paramod$490ceabba45028bae68a8c65d416069ab226ba36$__XILINX_BLOCKRAM_TDP_ for cells of type $__XILINX_BLOCKRAM_TDP_.
+No more expansions possible.
+<suppressed ~100 debug messages>
+
+2.34. Executing OPT pass (performing simple optimizations).
+
+2.34.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~10 debug messages>
+
+2.34.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 50 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.34.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.34.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 50 unused wires.
+<suppressed ~1 debug messages>
+
+2.34.5. Finished fast OPT passes.
+
+2.35. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+2.36. Executing OPT pass (performing simple optimizations).
+
+2.36.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~1 debug messages>
+
+2.36.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 50 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.36.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~9 debug messages>
+
+2.36.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+    Consolidated identical input bits for $mux cell $ternary$embedding_lookup.v:66$1101:
+      Old ports: A=20'00000000000000000000, B=20'11111111111111111111, Y=$ternary$embedding_lookup.v:66$1101_Y
+      New ports: A=1'0, B=1'1, Y=$ternary$embedding_lookup.v:66$1101_Y [0]
+      New connections: $ternary$embedding_lookup.v:66$1101_Y [19:1] = { $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] }
+  Optimizing cells in module \embedding_lookup.
+    Consolidated identical input bits for $mux cell $ternary$embedding_lookup.v:65$1102:
+      Old ports: A=$ternary$embedding_lookup.v:66$1101_Y, B=20'00000000000000000001, Y=\decoded_val
+      New ports: A={ $ternary$embedding_lookup.v:66$1101_Y [0] $ternary$embedding_lookup.v:66$1101_Y [0] }, B=2'01, Y=\decoded_val [1:0]
+      New connections: \decoded_val [19:2] = { \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] \decoded_val [1] }
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 2 changes.
+
+2.36.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 50 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.36.6. Executing OPT_SHARE pass.
+
+2.36.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.36.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~1 debug messages>
+
+2.36.10. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.36.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~8 debug messages>
+
+2.36.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.36.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 49 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.36.14. Executing OPT_SHARE pass.
+
+2.36.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+2.36.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.36.18. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.36.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~8 debug messages>
+
+2.36.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.36.21. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 49 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.36.22. Executing OPT_SHARE pass.
+
+2.36.23. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.36.25. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.36.26. Finished fast OPT passes. (There is nothing left to do.)
+
+2.37. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+2.38. Executing TECHMAP pass (map to technology primitives).
+
+2.38.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.38.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/arith_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_xilinx_lcu'.
+Generating RTLIL representation for module `\_80_xilinx_alu'.
+Successfully finished Verilog frontend.
+
+2.38.3. Continuing TECHMAP pass.
+Using template $paramod$b0a0ddf8e55390b792e87472b85fa053fb66763a\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$2e6fa573ec247c71d1c073ac74c0c20475cdfbce\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$55f7211853b0f4c7b9750738897d03ce7dd66454\_80_xilinx_alu for cells of type $alu.
+Using extmapper maccmap for cells of type $macc_v2.
+  add { \token_id 8'00000000 } (15 bits, unsigned)
+  sub \token_id (7 bits, unsigned)
+  add { \token_id 2'00 } (9 bits, unsigned)
+  sub { \token_id 4'0000 } (11 bits, unsigned)
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $ne.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $dff.
+Using extmapper simplemap for cells of type $mux.
+Using template $paramod$fc16b9f758000d363d24f130038bd99b46b4fa1b\_90_pmux for cells of type $pmux.
+Using template $paramod$21a993a8c398891107be36c3a76332f0d1652884\_90_pmux for cells of type $pmux.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000001111 for cells of type $fa.
+Using template $paramod$41381c4d8c890e891d21687fc019c1fec82ac538\_80_xilinx_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $xor.
+Using extmapper simplemap for cells of type $pos.
+Using extmapper simplemap for cells of type $or.
+No more expansions possible.
+<suppressed ~319 debug messages>
+
+2.39. Executing OPT pass (performing simple optimizations).
+
+2.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+<suppressed ~243 debug messages>
+
+2.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 392 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 337 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~165 debug messages>
+Removed a total of 55 cells.
+
+2.39.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.39.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 27 unused cells and 220 unused wires.
+<suppressed ~28 debug messages>
+
+2.39.5. Finished fast OPT passes.
+
+2.40. Executing IOPADMAP pass (mapping inputs/outputs to IO-PAD cells).
+Mapping port embedding_lookup.busy using OBUF.
+Mapping port embedding_lookup.clk using IBUF.
+Mapping port embedding_lookup.done using OBUF.
+Mapping port embedding_lookup.out_addr using OBUF.
+Mapping port embedding_lookup.out_data using OBUF.
+Mapping port embedding_lookup.out_valid using OBUF.
+Mapping port embedding_lookup.rst using IBUF.
+Mapping port embedding_lookup.start using IBUF.
+Mapping port embedding_lookup.token_id using IBUF.
+
+2.41. Executing TECHMAP pass (map to technology primitives).
+
+2.41.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.41.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_map.v' to AST representation.
+Generating RTLIL representation for module `$__SHREG_'.
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.41.3. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~80 debug messages>
+Removed 0 unused cells and 1 unused wires.
+
+2.42. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+2.43. Executing TECHMAP pass (map to technology primitives).
+
+2.43.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/ff_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/ff_map.v' to AST representation.
+Generating RTLIL representation for module `$_DFFE_NP0P_'.
+Generating RTLIL representation for module `$_DFFE_PP0P_'.
+Generating RTLIL representation for module `$_DFFE_NP1P_'.
+Generating RTLIL representation for module `$_DFFE_PP1P_'.
+Generating RTLIL representation for module `$_DFFSRE_NPPP_'.
+Generating RTLIL representation for module `$_DFFSRE_PPPP_'.
+Generating RTLIL representation for module `$_SDFFE_NP0P_'.
+Generating RTLIL representation for module `$_SDFFE_PP0P_'.
+Generating RTLIL representation for module `$_SDFFE_NP1P_'.
+Generating RTLIL representation for module `$_SDFFE_PP1P_'.
+Generating RTLIL representation for module `$_DLATCH_NP0_'.
+Generating RTLIL representation for module `$_DLATCH_PP0_'.
+Generating RTLIL representation for module `$_DLATCH_NP1_'.
+Generating RTLIL representation for module `$_DLATCH_PP1_'.
+Generating RTLIL representation for module `$_DLATCH_NPP_'.
+Generating RTLIL representation for module `$_DLATCH_PPP_'.
+Successfully finished Verilog frontend.
+
+2.43.2. Continuing TECHMAP pass.
+Using template $paramod$_SDFFE_PP0P_\_TECHMAP_WIREINIT_Q_=1'x for cells of type $_SDFFE_PP0P_.
+No more expansions possible.
+<suppressed ~94 debug messages>
+
+2.44. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.45. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/abc9_model.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/abc9_model.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.46. Executing ABC9 pass.
+
+2.46.1. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.2. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.3. Executing SCC pass (detecting logic loops).
+Found 0 SCCs in module embedding_lookup.
+Found 0 SCCs.
+
+2.46.4. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.5. Executing TECHMAP pass (map to technology primitives).
+
+2.46.5.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.46.5.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~508 debug messages>
+
+2.46.6. Executing OPT pass (performing simple optimizations).
+
+2.46.6.1. Executing OPT_EXPR pass (perform const folding).
+
+2.46.6.2. Executing OPT_MERGE pass (detect identical cells).
+Removed a total of 0 cells.
+
+2.46.6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Removed 0 multiplexer ports.
+
+2.46.6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+Performed a total of 0 changes.
+
+2.46.6.5. Executing OPT_MERGE pass (detect identical cells).
+Removed a total of 0 cells.
+
+2.46.6.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+2.46.6.8. Executing OPT_EXPR pass (perform const folding).
+
+2.46.6.9. Finished fast OPT passes. (There is nothing left to do.)
+
+2.46.7. Executing TECHMAP pass (map to technology primitives).
+
+2.46.7.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_map.v' to AST representation.
+Successfully finished Verilog frontend.
+
+2.46.7.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~2 debug messages>
+
+2.46.8. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_model.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_model.v' to AST representation.
+Generating RTLIL representation for module `$__ABC9_DELAY'.
+Generating RTLIL representation for module `$__ABC9_SCC_BREAKER'.
+Generating RTLIL representation for module `$__DFF_N__$abc9_flop'.
+Generating RTLIL representation for module `$__DFF_P__$abc9_flop'.
+Successfully finished Verilog frontend.
+
+2.46.9. Executing ABC9_OPS pass (helper functions for ABC9).
+<suppressed ~234 debug messages>
+
+2.46.10. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.11. Executing ABC9_OPS pass (helper functions for ABC9).
+<suppressed ~2 debug messages>
+
+2.46.12. Executing TECHMAP pass (map to technology primitives).
+
+2.46.12.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.46.12.2. Continuing TECHMAP pass.
+Using template CARRY4 for cells of type CARRY4.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $xor.
+No more expansions possible.
+<suppressed ~525 debug messages>
+
+2.46.13. Executing OPT pass (performing simple optimizations).
+
+2.46.13.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.46.13.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 62 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Computing hashes of 61 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+2.46.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+2.46.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.46.13.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 61 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.46.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+Removed 0 unused cells and 14 unused wires.
+<suppressed ~3 debug messages>
+
+2.46.13.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.46.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.46.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \embedding_lookup..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+2.46.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \embedding_lookup.
+Performed a total of 0 changes.
+
+2.46.13.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\embedding_lookup'.
+Computing hashes of 61 cells of `\embedding_lookup'.
+Finding duplicate cells in `\embedding_lookup'.
+Removed a total of 0 cells.
+
+2.46.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \embedding_lookup..
+
+2.46.13.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module embedding_lookup.
+
+2.46.13.16. Finished fast OPT passes. (There is nothing left to do.)
+
+2.46.14. Executing AIGMAP pass (map logic to AIG).
+Module embedding_lookup: replaced 9 cells with 60 new cells, skipped 52 cells.
+  replaced 3 cell types:
+       4 $_MUX_
+       1 $_OR_
+       4 $_XOR_
+  not replaced 1 cell types:
+      52 $specify2
+
+2.46.15. Executing AIGMAP pass (map logic to AIG).
+Module embedding_lookup: replaced 128 cells with 743 new cells, skipped 455 cells.
+  replaced 3 cell types:
+      33 $_MUX_
+      51 $_OR_
+      44 $_XOR_
+  not replaced 13 cell types:
+      73 $_AND_
+      28 $_NOT_
+      65 FDRE
+      10 IBUF
+      31 OBUF
+      14 CARRY4
+       1 $paramod$eb6ab8f611e9dfd13fc4c4e5d300730f1d86b565\RAMB36E1
+       1 $paramod$2af4dd16f642f954d5d76f50e558143db3920602\RAMB36E1
+     144 $paramod$__ABC9_DELAY\DELAY=32'00000000000000000000001011100001
+       4 $paramod$__ABC9_DELAY\DELAY=32'00000000000000000000000101010110
+       4 $paramod$__ABC9_DELAY\DELAY=32'00000000000000000000000101101000
+      16 $paramod$__ABC9_DELAY\DELAY=32'00000000000000000000001000010100
+      64 $paramod$__ABC9_DELAY\DELAY=32'00000000000000000000001000110110
+
+2.46.15.1. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.15.2. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.15.3. Executing XAIGER backend.
+<suppressed ~220 debug messages>
+Extracted 355 AND gates and 1375 wires from module `embedding_lookup' to a netlist network with 118 inputs and 348 outputs.
+
+2.46.15.4. Executing ABC9_EXE pass (technology mapping using ABC9).
+
+2.46.15.5. Executing ABC9.
+Running ABC command: "<yosys-exe-dir>/yosys-abc" -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ======== ABC command line "source <abc-temp-dir>/abc.script"
+ABC: + read_lut <abc-temp-dir>/input.lut 
+ABC: + read_box <abc-temp-dir>/input.box 
+ABC: + &read <abc-temp-dir>/input.xaig 
+ABC: + &ps 
+ABC: <abc-temp-dir>/input : i/o =    118/    348  and =     287  lev =    8 (0.38)  mem = 0.02 MB  box = 246  bb = 232
+ABC: + &scorr 
+ABC: Warning: The network is combinational.
+ABC: + &sweep 
+ABC: + &dc2 
+ABC: + &dch -f -r 
+ABC: + &ps 
+ABC: <abc-temp-dir>/input : i/o =    118/    348  and =     395  lev =    8 (0.35)  mem = 0.02 MB  ch =   57  box = 246  bb = 232
+ABC: cst =       0  cls =     43  lit =      57  unused =     757  proof =     0
+ABC: + &if -W 300 -v 
+ABC: K = 8. Memory (bytes): Truth =    0. Cut =   68. Obj =  152. Set =  708. CutMin = no
+ABC: Node =     395.  Ch =    43.  Total mem =    0.25 MB. Peak cut mem =    0.01 MB.
+ABC: P:  Del = 2992.00.  Ar =     368.0.  Edge =      351.  Cut =     6236.  T =     0.00 sec
+ABC: P:  Del = 2992.00.  Ar =     299.0.  Edge =      305.  Cut =     6250.  T =     0.00 sec
+ABC: P:  Del = 2992.00.  Ar =     223.0.  Edge =      289.  Cut =     6649.  T =     0.00 sec
+ABC: F:  Del = 2992.00.  Ar =     218.0.  Edge =      281.  Cut =     6664.  T =     0.00 sec
+ABC: A:  Del = 2992.00.  Ar =     217.0.  Edge =      273.  Cut =     6690.  T =     0.00 sec
+ABC: A:  Del = 2992.00.  Ar =     217.0.  Edge =      273.  Cut =     6690.  T =     0.00 sec
+ABC: Total time =     0.00 sec
+ABC: + &write -n <abc-temp-dir>/output.aig 
+ABC: + &mfs 
+ABC: + &ps -l 
+ABC: <abc-temp-dir>/input : i/o =    118/    348  and =     566  lev =   12 (0.36)  mem = 0.03 MB  box = 245  bb = 232
+ABC: Mapping (K=6)  :  lut =     82  edge =     270  lev =    4 (0.14)  levB =    6  mem = 0.01 MB
+ABC: LUT = 82 : 2=40 48.8 %  3=8 9.8 %  4=9 11.0 %  5=20 24.4 %  6=5 6.1 %  Ave = 3.29
+ABC: + &write -n <abc-temp-dir>/output.aig 
+ABC: + &verify 
+ABC: Networks are equivalent.  Time =     0.02 sec
+ABC: + time 
+ABC: elapse: 0.08 seconds, total: 0.08 seconds
+
+2.46.15.6. Executing AIGER frontend.
+<suppressed ~944 debug messages>
+Removed 911 unused cells and 2118 unused wires.
+
+2.46.15.7. Executing ABC9_OPS pass (helper functions for ABC9).
+ABC RESULTS:              $lut cells:       88
+ABC RESULTS:           \CARRY4 cells:       13
+ABC RESULTS:           input signals:       10
+ABC RESULTS:          output signals:      263
+Removing temp directory.
+
+2.46.16. Executing TECHMAP pass (map to technology primitives).
+
+2.46.16.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_unmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_unmap.v' to AST representation.
+Generating RTLIL representation for module `$__DFF_x__$abc9_flop'.
+Generating RTLIL representation for module `$__ABC9_SCC_BREAKER'.
+Successfully finished Verilog frontend.
+
+2.46.16.2. Continuing TECHMAP pass.
+Using template $paramod$2af4dd16f642f954d5d76f50e558143db3920602\RAMB36E1 for cells of type $paramod$2af4dd16f642f954d5d76f50e558143db3920602\RAMB36E1.
+Using template $paramod$eb6ab8f611e9dfd13fc4c4e5d300730f1d86b565\RAMB36E1 for cells of type $paramod$eb6ab8f611e9dfd13fc4c4e5d300730f1d86b565\RAMB36E1.
+No more expansions possible.
+<suppressed ~9 debug messages>
+Removed 48 unused cells and 1939 unused wires.
+
+2.47. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+2.48. Executing TECHMAP pass (map to technology primitives).
+
+2.48.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/lut_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/lut_map.v' to AST representation.
+Generating RTLIL representation for module `$lut'.
+Successfully finished Verilog frontend.
+
+2.48.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_map.v' to AST representation.
+Generating RTLIL representation for module `$__SHREG_'.
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.48.3. Continuing TECHMAP pass.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0110 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10100110 for cells of type $lut.
+Using template $paramod$4f12c68fe152bf82a50c813cc37cc632b89530ed$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1001 for cells of type $lut.
+Using template $paramod$092c0da68b4cde141db35eb3b91e2788576b07fe$lut for cells of type $lut.
+Using template $paramod$dbba40b31907dd19e18d401844df6ae94b505218$lut for cells of type $lut.
+Using template $paramod$909b92a517ddbf173277ea530428d50da20951ef$lut for cells of type $lut.
+Using template $paramod$7b6d6bfbd3a806f5a5d25a610b25924cd766e8a6$lut for cells of type $lut.
+Using template $paramod$31c357c65ea3b4b1b806d23752f7e5a48b43908e$lut for cells of type $lut.
+Using template $paramod$0d48bed2286f6f8e00110e414018c557a58b9c30$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11010010 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00111001 for cells of type $lut.
+Using template $paramod$6474d02fed5cfe855e00923b9c2c6f1294e92add$lut for cells of type $lut.
+Using template $paramod$c293bb4b90048fe73c29701b993c10cfdb7bfc7c$lut for cells of type $lut.
+Using template $paramod$b0a1a60564bf9a70cd83ff82c322d8476b608c8d$lut for cells of type $lut.
+Using template $paramod$e17ca7b5b5baeb7bbe89b75c90e4fdccce9e6c64$lut for cells of type $lut.
+Using template $paramod$f08f1c85da02116c3805238f064e1e4915f47567$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11001110 for cells of type $lut.
+Using template $paramod$106b4d877d926f41bd5171be21de0765aec0f89c$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1110 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10101100 for cells of type $lut.
+Using template $paramod$c65391ed09d3adcf95caea44a7f9bd0ef1cadc03$lut for cells of type $lut.
+Using template $paramod$b15a05d7b13ed693de06f5166f85bfbad58cf5b0$lut for cells of type $lut.
+Using template $paramod$2349469c9d9d0a3245a5c6f030ac99add533eb96$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000001\LUT=2'01 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1000 for cells of type $lut.
+Using template $paramod$571404c0889eaf57f492cb5e37f8acb5df5852f9$lut for cells of type $lut.
+Using template $paramod$07b1b12ce0305f55108770e958fd02caedfebdf8$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00001110 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0100 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11011010 for cells of type $lut.
+Using template $paramod$4976b5f7a7b9f6e596e742c7d9dd919d8c62448f$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0010 for cells of type $lut.
+Using template $paramod$13c79f87e88535c8ae085cb3489a6132f9407c3e$lut for cells of type $lut.
+Using template $paramod$b0c2c5c36b321fa6c4191e8634c4e4f2174346d3$lut for cells of type $lut.
+Using template $paramod$f969aefcb5fdd29444244ce17e4806b1ebc6f568$lut for cells of type $lut.
+No more expansions possible.
+<suppressed ~562 debug messages>
+
+2.49. Executing XILINX_DFFOPT pass (optimize FF control signal usage).
+Optimizing FFs in embedding_lookup.
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2072/$abc$5238$iopadmap$busy (1 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2180/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2179/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2178/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2177/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2176/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2175/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2174/k_out_d1 (2 -> 4)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2101/$abc$5238$iopadmap$out_data (2 -> 5)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$2083/$abc$5238$iopadmap$out_data (2 -> 5)
+
+2.50. Executing OPT_LUT_INS pass (discard unused LUT inputs).
+Optimizing LUTs in embedding_lookup.
+
+2.51. Executing CLKBUFMAP pass (inserting clock buffers).
+Inserting BUFG on embedding_lookup.$techmap5288\emb_mem.0.1.CLKARDCLK[0].
+Removed 11 unused cells and 187 unused wires.
+
+2.52. Executing HIERARCHY pass (managing design hierarchy).
+Attribute `top' found on module `embedding_lookup'. Setting top module to embedding_lookup.
+
+2.52.1. Analyzing design hierarchy..
+Top module:  \embedding_lookup
+
+2.52.2. Analyzing design hierarchy..
+Top module:  \embedding_lookup
+Removed 0 unused modules.
+
+2.53. Printing statistics.
+
+=== embedding_lookup ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      179 wires
+      645 wire bits
+       18 public wires
+      145 public wire bits
+        9 ports
+       41 port bits
+      131 cells
+        1   BUFG
+       10   IBUF
+        5   INV
+       31   LUT2
+        7   LUT3
+       17   LUT4
+       22   LUT5
+        5   LUT6
+       31   OBUF
+        2   RAMB36E1
+       78 submodules
+       13   CARRY4
+       65   FDRE
+
+   Estimated number of LCs:         55
+
+=== design hierarchy ===
+
+        +----------Count including submodules.
+        | 
+      131 embedding_lookup
+
+        +----------Count including submodules.
+        | 
+      179 wires
+      645 wire bits
+       18 public wires
+      145 public wire bits
+        9 ports
+       41 port bits
+        - memories
+        - memory bits
+        - processes
+      131 cells
+        1   BUFG
+       10   IBUF
+        5   INV
+       31   LUT2
+        7   LUT3
+       17   LUT4
+       22   LUT5
+        5   LUT6
+       31   OBUF
+        2   RAMB36E1
+       78 submodules
+       13   CARRY4
+       65   FDRE
+
+   Estimated number of LCs:         55
+
+2.54. Executing CHECK pass (checking for obvious problems).
+Checking module embedding_lookup...
+Found and reported 0 problems.
+
+3. Executing JSON backend.
+
+End of script. Logfile hash: 4501a154bf, CPU: user 5.36s system 0.19s, MEM: 129.77 MB peak
+Yosys 0.63 (git sha1 70a11c6bf0e8dd669f56c7da3587f78b405138e2, clang++ 16.0.0 -fPIC -O3)
+Time spent: 45% 27x read_verilog (2 sec), 36% 12x techmap (2 sec), ...

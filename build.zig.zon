@@ -14,6 +14,10 @@
             .url = "git+https://github.com/CogitatorTech/zodd#main",
             .hash = "zodd-0.1.0-alpha.3-TJEk3Y7uAQDOkBXaPV_lynH1rF-eDwf9PnVc13MpPFym",
         },
+        .golden_float = .{
+            .url = "git+https://github.com/gHashTag/zig-golden-float#main",
+            .hash = "golden_float-0.2.0-h7LKhYhBAwDxk4Qg9gptLXrxl7GG5217N8vqwPa2xSH9",
+        },
     },
     .paths = .{""},
     .fingerprint = 0xa9f69745ba7ed82d,

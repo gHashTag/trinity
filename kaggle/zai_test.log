@@ -1,0 +1,29 @@
+🚀 Running model: claude-sonnet-4-20250514
+Tracks: tmp
+Max items: 10
+
+============================================================
+Track: Metacognition (tmp)
+============================================================
+[1/10] tmp_confidence_calibration_0000... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"20260328152042444b5224e639499d"}
+✗ 411ms
+[2/10] tmp_confidence_calibration_0001... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"20260328152045e6e46f6367c944a2"}
+✗ 314ms
+[3/10] tmp_confidence_calibration_0002... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"20260328152047f6c301bc08534cfe"}
+✗ 539ms
+[4/10] tmp_confidence_calibration_0003... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"2026032815205070ba70c4633f4b4c"}
+✗ 795ms
+[5/10] tmp_confidence_calibration_0004... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"2026032815205257906dedefce42a9"}
+✗ 549ms
+[6/10] tmp_confidence_calibration_0005... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"202603281520556f00462088f6485b"}
+✗ 452ms
+[7/10] tmp_confidence_calibration_0006... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"2026032815205729736bb831cf40ef"}
+✗ 767ms
+[8/10] tmp_confidence_calibration_0007... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"20260328152100c8c2d956ab6c45fd"}
+✗ 734ms
+[9/10] tmp_confidence_calibration_0008... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"20260328152103c8c3e371c77d4f95"}
+✗ 369ms
+[10/10] tmp_confidence_calibration_0009... ⚠️  API Error 429: {"error":{"code":"1310","message":"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-03-29 23:13:17"},"request_id":"202603281521056f0a14033f1b4143"}
+✗ 287ms
+✅ Saved 10 results to /Users/playra/trinity-w1/kaggle/results/tmp_claude_sonnet_4_20250514_results.json
+📊 Accuracy: 0.0%, Avg latency: 522ms

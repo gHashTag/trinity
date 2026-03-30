@@ -1,0 +1,835 @@
+2026-03-06 14:12:28 [INFO] ╔═══════════════════════════════════════════════════════════════╗
+2026-03-06 14:12:28 [INFO] ║     TRINITY SELF-EVOLUTION CYCLE START                          ║
+2026-03-06 14:12:28 [INFO] ╚═══════════════════════════════════════════════════════════════╝
+2026-03-06 14:12:28 [INFO] Step 1: Research ingestion...
+2026-03-06 14:12:28 [WARN] research_ingester not built, skipping research
+2026-03-06 14:12:28 [INFO] Step 2: Analyze code vs research...
+2026-03-06 14:12:28 [WARN] self_improver not built, skipping analysis
+2026-03-06 14:12:28 [INFO] Step 3: Generate VIBEE spec...
+2026-03-06 14:12:28 [INFO] Generating spec: specs/auto/improvement_1772781148.vibee
+2026-03-06 14:12:28 [SUCCESS] Spec generated
+2026-03-06 14:12:29 [INFO] Step 4: Run VIBEE codegen...
+  Input:  specs/auto/improvement_*.vibee
+  Output: trinity-nexus/output/lang/zig/improvement_*.zig
+error: FileNotFound
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/posix.zig:1861:23: 0x104874d37 in openatZ (vibee)
+            .NOENT => return error.FileNotFound,
+                      ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:904:16: 0x104842e4b in openFileZ (vibee)
+    const fd = try posix.openatZ(self.fd, sub_path, os_flags, 0);
+               ^
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/fs/Dir.zig:851:5: 0x1048314cf in openFile (vibee)
+    return self.openFileZ(&path_c, flags);
+    ^
+/Users/playra/trinity-w1/src/vibeec/gen_cmd.zig:368:18: 0x104a3176b in generateCode (vibee)
+    const file = try std.fs.cwd().openFile(input_path, .{});
+                 ^
+/Users/playra/trinity-w1/src/vibeec/gen_cmd.zig:62:9: 0x104a7d543 in main (vibee)
+        try generateCode(allocator, input_path, output_path);
+        ^
+2026-03-06 14:12:49 [SUCCESS] Codegen complete
+2026-03-06 14:12:49 [INFO] Step 5: Run tests...
+test
++- run test
+   +- compile test Debug native 1 errors
+src/tri/math/sacred_expanded.zig:162:2: error: expected type expression, found ';'
+};
+ ^
+error: the following command failed with 1 compilation errors:
+/opt/homebrew/Cellar/zig/0.15.2/bin/zig test -ODebug --dep vsa=tri --dep tri -Mroot=/Users/playra/trinity-w1/src/tri/math/sacred_expanded.zig -ODebug -Mtri=/Users/playra/trinity-w1/src/trinity.zig --cache-dir .zig-cache --global-cache-dir /Users/playra/.cache/zig --name test --zig-lib-dir /opt/homebrew/Cellar/zig/0.15.2/lib/zig/ --listen=-
+test
++- run test stderr
+═══════════════════════════════════════════════════════════════
+        JIT VSA ENGINE BENCHMARK (HybridBigInt)
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024 trits
+  Iterations: 10000
+───────────────────────────────────────────────────────────────
+  Fallback (HybridBigInt.dotProduct): 1276.538 ms
+  JIT (NEON SIMD):                    2.239 ms
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 570.02x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+              JIT VSA ENGINE STATISTICS
+═══════════════════════════════════════════════════════════════
+  Total operations: 10001
+  JIT cache hits:   10000
+  JIT cache misses: 1
+  Cache size:       1 functions
+  Hit rate:         100.0%
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+              TRINITY UNIFIED JIT CAPABILITIES
+═══════════════════════════════════════════════════════════════
+  Architecture: ARM64 (AArch64)
+  JIT Supported: true
+  SIMD Available: true
+───────────────────────────────────────────────────────────────
+  ARM64 Features:
+    • NEON SIMD (128-bit vectors)
+    • SDOT instruction (16 i8 elements/cycle)
+    • Hybrid SIMD+Scalar for any dimension
+    • Expected speedup: 15-70x over scalar
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           UNIFIED JIT BENCHMARK (ARM64 (AArch64))
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024, Iterations: 10000
+  Total time: 1.282 ms
+  Per iteration: 128 ns
+  Throughput: 7.80 M dot products/sec
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           ARM64 NEON SIMD BENCHMARK RESULTS
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024 elements
+  Iterations: 10000
+───────────────────────────────────────────────────────────────
+  Scalar:  27.842 ms (2784 ns/iter)
+  SIMD:    1.525 ms (153 ns/iter)
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 18.26x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+        ARM64 HYBRID SIMD+SCALAR BENCHMARK (dim=1000)
+═══════════════════════════════════════════════════════════════
+  SIMD iters: 62, Scalar remainder: 8
+───────────────────────────────────────────────────────────────
+  Pure Scalar: 185.936 ms (18594 ns/iter)
+  Hybrid:      5.118 ms (512 ns/iter)
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 36.33x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           ARM64 SIMD BIND BENCHMARK (dim=1024)
+═══════════════════════════════════════════════════════════════
+  Scalar: 840.126 ms
+  SIMD:   895.139 ms
+  SPEEDUP: 0.94x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+       ARM64 FUSED COSINE BENCHMARK (dim=1024)
+═══════════════════════════════════════════════════════════════
+  3x Dot:  3.342 ms
+  Fused:   2.004 ms
+  SPEEDUP: 1.67x
+  Results: fused=-0.499634, 3xdot=-0.499634
+═══════════════════════════════════════════════════════════════
+test
++- run test stderr
+Bind: scalar=360009ns, simd=220250ns, speedup=1.63x
+DotProduct: scalar=1225401ns, simd=7488ns, speedup=163.65x
+Hamming: scalar=1760232ns, simd=579640ns, speedup=3.04x
+test
++- run test stderr
+Bind: scalar=327601ns, simd=30300ns, speedup=10.81x
+DotProduct: scalar=1444777ns, simd=12183ns, speedup=118.58x
+Hamming: scalar=2235675ns, simd=332213ns, speedup=6.73x
+test
++- run test
+   +- compile test Debug native 4 errors
+src/vsa/quantum_transition.zig:190:24: error: root source file struct 'math' has no member named 'abs'
+        return std.math.abs(sum - 1.0) < 0.01;
+               ~~~~~~~~^~~~
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/math.zig:1:1: note: struct declared here
+const builtin = @import("builtin");
+^~~~~
+referenced by:
+    test.VSA-Quantum: measurement: src/vsa/quantum_transition.zig:306:46
+src/vsa/quantum_transition.zig:208:68: error: expected type '*Random', found '*Random.Xoshiro256'
+        const state = try QuantumHypervector.initRandom(allocator, &rng);
+                                                                   ^~~~
+src/vsa/quantum_transition.zig:208:68: note: pointer type child 'Random.Xoshiro256' cannot cast into pointer type child 'Random'
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/Random/Xoshiro256.zig:1:1: note: struct declared here
+//! Xoshiro256++ - http://xoroshiro.di.unimi.it/
+^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/Random.zig:1:1: note: struct declared here
+//! The engines provided here should be initialized from an external source.
+^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/vsa/quantum_transition.zig:71:54: note: parameter type declared here
+    pub fn initRandom(allocator: mem.Allocator, rng: *std.Random) !QuantumHypervector {
+                                                     ^~~~~~~~~~~
+src/vsa/quantum_transition.zig:287:19: error: expected type '*quantum_transition.QuantumHypervector', found '*const quantum_transition.QuantumHypervector'
+    defer combined.deinit();
+          ~~~~~~~~^~~~~~~
+src/vsa/quantum_transition.zig:287:19: note: cast discards const qualifier
+src/vsa/quantum_transition.zig:91:25: note: parameter type declared here
+    pub fn deinit(self: *QuantumHypervector) void {
+                        ^~~~~~~~~~~~~~~~~~~
+src/vsa/quantum_transition.zig:313:99: error: expected type 'Random', found 'Random.Xoshiro256'
+    var hv = try QuantumHypervector.initRandom(std.testing.allocator, &std.Random.DefaultPrng.init(42));
+                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/Random/Xoshiro256.zig:1:1: note: struct declared here
+//! Xoshiro256++ - http://xoroshiro.di.unimi.it/
+^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/Random.zig:1:1: note: struct declared here
+//! The engines provided here should be initialized from an external source.
+^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+error: the following command failed with 4 compilation errors:
+/opt/homebrew/Cellar/zig/0.15.2/bin/zig test -ODebug --dep vsa=tri --dep tri -Mroot=/Users/playra/trinity-w1/src/vsa/quantum_transition.zig -ODebug -Mtri=/Users/playra/trinity-w1/src/trinity.zig --cache-dir .zig-cache --global-cache-dir /Users/playra/.cache/zig --name test --zig-lib-dir /opt/homebrew/Cellar/zig/0.15.2/lib/zig/ --listen=-
+test
++- run test 26/27 passed, 1 failed
+DotProduct: scalar=1462527ns, simd=374766ns, speedup=3.90x
+Hamming: scalar=1828987ns, simd=136150ns, speedup=13.43x
+error: 'vsa_simd.test.benchmark bind speedup' failed: Bind: scalar=61435ns, simd=218478ns, speedup=0.28x
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/testing.zig:607:14: 0x102b80c6f in expect (test)
+    if (!ok) return error.TestUnexpectedResult;
+             ^
+/Users/playra/trinity-w1/src/firebird/vsa_simd.zig:430:5: 0x102bca40b in test.benchmark bind speedup (test)
+    try std.testing.expect(result.speedup > 0.3); // Allow variance in benchmark
+    ^
+error: while executing test 'vsa_simd.test.benchmark hamming speedup', the following test command failed:
+./.zig-cache/o/4a274b34a49b2e1bb6e859d30e7d8dd4/test --cache-dir=./.zig-cache --seed=0xb5f48566 --listen=-
+test
++- run test
+   +- compile test Debug native 1 errors
+src/ternary/efficiency_benchmark.zig:254:1: error: documentation comments cannot be attached to tests
+/// Benchmark: Large number representation
+^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+error: the following command failed with 1 compilation errors:
+/opt/homebrew/Cellar/zig/0.15.2/bin/zig test -ODebug --dep vsa=tri --dep tri -Mroot=/Users/playra/trinity-w1/src/ternary/efficiency_benchmark.zig -ODebug -Mtri=/Users/playra/trinity-w1/src/trinity.zig --cache-dir .zig-cache --global-cache-dir /Users/playra/.cache/zig --name test --zig-lib-dir /opt/homebrew/Cellar/zig/0.15.2/lib/zig/ --listen=-
+test
++- run test stderr
+═══════════════════════════════════════════════════════════════
+        JIT VSA ENGINE BENCHMARK (HybridBigInt)
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024 trits
+  Iterations: 10000
+───────────────────────────────────────────────────────────────
+  Fallback (HybridBigInt.dotProduct): 477.023 ms
+  JIT (NEON SIMD):                    2.844 ms
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 167.73x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+              JIT VSA ENGINE STATISTICS
+═══════════════════════════════════════════════════════════════
+  Total operations: 10001
+  JIT cache hits:   10000
+  JIT cache misses: 1
+  Cache size:       1 functions
+  Hit rate:         100.0%
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+              TRINITY UNIFIED JIT CAPABILITIES
+═══════════════════════════════════════════════════════════════
+  Architecture: ARM64 (AArch64)
+  JIT Supported: true
+  SIMD Available: true
+───────────────────────────────────────────────────────────────
+  ARM64 Features:
+    • NEON SIMD (128-bit vectors)
+    • SDOT instruction (16 i8 elements/cycle)
+    • Hybrid SIMD+Scalar for any dimension
+    • Expected speedup: 15-70x over scalar
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           UNIFIED JIT BENCHMARK (ARM64 (AArch64))
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024, Iterations: 10000
+  Total time: 1.524 ms
+  Per iteration: 152 ns
+  Throughput: 6.56 M dot products/sec
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           ARM64 NEON SIMD BENCHMARK RESULTS
+═══════════════════════════════════════════════════════════════
+  Dimension: 1024 elements
+  Iterations: 10000
+───────────────────────────────────────────────────────────────
+  Scalar:  18.309 ms (1831 ns/iter)
+  SIMD:    0.389 ms (39 ns/iter)
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 47.07x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+        ARM64 HYBRID SIMD+SCALAR BENCHMARK (dim=1000)
+═══════════════════════════════════════════════════════════════
+  SIMD iters: 62, Scalar remainder: 8
+───────────────────────────────────────────────────────────────
+  Pure Scalar: 12.291 ms (1229 ns/iter)
+  Hybrid:      1.237 ms (124 ns/iter)
+───────────────────────────────────────────────────────────────
+  SPEEDUP: 9.94x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+           ARM64 SIMD BIND BENCHMARK (dim=1024)
+═══════════════════════════════════════════════════════════════
+  Scalar: 1699.279 ms
+  SIMD:   888.883 ms
+  SPEEDUP: 1.91x
+═══════════════════════════════════════════════════════════════
+
+═══════════════════════════════════════════════════════════════
+       ARM64 FUSED COSINE BENCHMARK (dim=1024)
+═══════════════════════════════════════════════════════════════
+  3x Dot:  5.427 ms
+  Fused:   1.012 ms
+  SPEEDUP: 5.36x
+  Results: fused=-0.499634, 3xdot=-0.499634
+═══════════════════════════════════════════════════════════════
+test
++- run test 7/8 passed, 1 failed
+error: 'riemann_gamma.test.Riemann-γ: zeta of -1' failed: actual 16.6666666666667, not within relative tolerance 0.1 of expected -0.08333333333333333
+/opt/homebrew/Cellar/zig/0.15.2/lib/zig/std/testing.zig:334:13: 0x1026e8807 in expectApproxEqRelInner__anon_458 (test)
+            return error.TestExpectedApproxEqRel;
+            ^
+/Users/playra/trinity-w1/src/math/riemann_gamma.zig:194:5: 0x102775ec7 in test.Riemann-γ: zeta of -1 (test)
+    try std.testing.expectApproxEqRel(expected, z.re, 0.1);
+    ^
+error: while executing test 'riemann_gamma.test.Riemann-γ: gamma critical line', the following test command failed:
+./.zig-cache/o/7e103ffea430802e13f897a462e123bb/test --cache-dir=./.zig-cache --seed=0xb5f48566 --listen=-
+
+Build Summary: 138/147 steps succeeded; 5 failed; 2911/2917 tests passed; 4 skipped; 2 failed
+test transitive failure
++- run test 26/27 passed, 1 failed
++- run test 7/8 passed, 1 failed
++- run test transitive failure
+|  +- compile test Debug native 1 errors
++- run test transitive failure
+|  +- compile test Debug native 4 errors
++- run test transitive failure
+   +- compile test Debug native 1 errors
+
+error: the following build command failed with exit code 1:
+.zig-cache/o/91a409430c5038949d21dfb74f51050e/build /opt/homebrew/Cellar/zig/0.15.2/bin/zig /opt/homebrew/Cellar/zig/0.15.2/lib/zig /Users/playra/trinity-w1 .zig-cache /Users/playra/.cache/zig --seed 0xb5f48566 -Zc932528ae9d5ec04 test
+2026-03-06 14:13:31 [SUCCESS] Tests passed
+2026-03-06 14:13:31 [INFO] Step 6: FPGA synthesis + camera verification...
+
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2020  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.17 (git sha1 UNKNOWN, gcc 9.4.0-1ubuntu1~20.04.2 -fPIC -Os)
+
+
+-- Parsing `trinity_core.v' using frontend ` -vlog2k' --
+
+1. Executing Verilog-2005 frontend: trinity_core.v
+Parsing Verilog input from `trinity_core.v' to AST representation.
+Warning: Literal has a width of 2 bit, but value requires 4 bit. (trinity_core.v:257)
+Storing AST representation for module `$abstract\trinity_core'.
+Storing AST representation for module `$abstract\trinity_top'.
+Successfully finished Verilog frontend.
+
+-- Parsing `trinity_uart.v' using frontend ` -vlog2k' --
+
+2. Executing Verilog-2005 frontend: trinity_uart.v
+Parsing Verilog input from `trinity_uart.v' to AST representation.
+Storing AST representation for module `$abstract\trinity_uart'.
+Successfully finished Verilog frontend.
+
+-- Parsing `lut_mul.v' using frontend ` -vlog2k' --
+
+3. Executing Verilog-2005 frontend: lut_mul.v
+Parsing Verilog input from `lut_mul.v' to AST representation.
+Storing AST representation for module `$abstract\lut_mul'.
+Successfully finished Verilog frontend.
+
+-- Running command `synth_xilinx -flatten -abc9 -nobram -arch xc7 -top trinity_top; write_json trinity_top.json' --
+
+4. Executing SYNTH_XILINX pass.
+
+4.1. Executing Verilog-2005 frontend: /usr/local/bin/../share/yosys/xilinx/cells_sim.v
+Parsing Verilog input from `/usr/local/bin/../share/yosys/xilinx/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\VCC'.
+Generating RTLIL representation for module `\GND'.
+Generating RTLIL representation for module `\IBUF'.
+Generating RTLIL representation for module `\IBUFG'.
+Generating RTLIL representation for module `\OBUF'.
+Generating RTLIL representation for module `\IOBUF'.
+Generating RTLIL representation for module `\OBUFT'.
+Generating RTLIL representation for module `\BUFG'.
+Generating RTLIL representation for module `\BUFGCTRL'.
+Generating RTLIL representation for module `\BUFHCE'.
+Generating RTLIL representation for module `\INV'.
+Generating RTLIL representation for module `\LUT1'.
+Generating RTLIL representation for module `\LUT2'.
+Generating RTLIL representation for module `\LUT3'.
+Generating RTLIL representation for module `\LUT4'.
+Generating RTLIL representation for module `\LUT5'.
+Generating RTLIL representation for module `\LUT6'.
+Generating RTLIL representation for module `\LUT6_2'.
+Generating RTLIL representation for module `\$__ABC9_LUT7'.
+Generating RTLIL representation for module `\$__ABC9_LUT8'.
+Generating RTLIL representation for module `\MUXCY'.
+Generating RTLIL representation for module `\MUXF5'.
+Generating RTLIL representation for module `\MUXF6'.
+Generating RTLIL representation for module `\MUXF7'.
+Generating RTLIL representation for module `\MUXF8'.
+Generating RTLIL representation for module `\MUXF9'.
+Generating RTLIL representation for module `\XORCY'.
+Generating RTLIL representation for module `\CARRY4'.
+Generating RTLIL representation for module `\CARRY8'.
+Generating RTLIL representation for module `\ORCY'.
+Generating RTLIL representation for module `\MULT_AND'.
+Generating RTLIL representation for module `\FDRE'.
+Generating RTLIL representation for module `\FDRE_1'.
+Generating RTLIL representation for module `\FDSE'.
+Generating RTLIL representation for module `\FDSE_1'.
+Generating RTLIL representation for module `\FDRSE'.
+Generating RTLIL representation for module `\FDRSE_1'.
+Generating RTLIL representation for module `\FDCE'.
+Generating RTLIL representation for module `\FDCE_1'.
+Generating RTLIL representation for module `\FDPE'.
+Generating RTLIL representation for module `\FDPE_1'.
+Generating RTLIL representation for module `\FDCPE'.
+Generating RTLIL representation for module `\FDCPE_1'.
+Generating RTLIL representation for module `\LDCE'.
+Generating RTLIL representation for module `\LDPE'.
+Generating RTLIL representation for module `\LDCPE'.
+Generating RTLIL representation for module `\AND2B1L'.
+Generating RTLIL representation for module `\OR2L'.
+Generating RTLIL representation for module `\RAM16X1S'.
+Generating RTLIL representation for module `\RAM16X1S_1'.
+Generating RTLIL representation for module `\RAM32X1S'.
+Generating RTLIL representation for module `\RAM32X1S_1'.
+Generating RTLIL representation for module `\RAM64X1S'.
+Generating RTLIL representation for module `\RAM64X1S_1'.
+Generating RTLIL representation for module `\RAM128X1S'.
+Generating RTLIL representation for module `\RAM128X1S_1'.
+Generating RTLIL representation for module `\RAM256X1S'.
+Generating RTLIL representation for module `\RAM512X1S'.
+Generating RTLIL representation for module `\RAM16X2S'.
+Generating RTLIL representation for module `\RAM32X2S'.
+Generating RTLIL representation for module `\RAM64X2S'.
+Generating RTLIL representation for module `\RAM16X4S'.
+Generating RTLIL representation for module `\RAM32X4S'.
+Generating RTLIL representation for module `\RAM16X8S'.
+Generating RTLIL representation for module `\RAM32X8S'.
+Generating RTLIL representation for module `\RAM16X1D'.
+Generating RTLIL representation for module `\RAM16X1D_1'.
+Generating RTLIL representation for module `\RAM32X1D'.
+Generating RTLIL representation for module `\RAM32X1D_1'.
+Generating RTLIL representation for module `\RAM64X1D'.
+Generating RTLIL representation for module `\RAM64X1D_1'.
+Generating RTLIL representation for module `\RAM128X1D'.
+Generating RTLIL representation for module `\RAM256X1D'.
+Generating RTLIL representation for module `\RAM32M'.
+Generating RTLIL representation for module `\RAM32M16'.
+Generating RTLIL representation for module `\RAM64M'.
+Generating RTLIL representation for module `\RAM64M8'.
+Generating RTLIL representation for module `\RAM32X16DR8'.
+Generating RTLIL representation for module `\RAM64X8SW'.
+Generating RTLIL representation for module `\ROM16X1'.
+Generating RTLIL representation for module `\ROM32X1'.
+Generating RTLIL representation for module `\ROM64X1'.
+Generating RTLIL representation for module `\ROM128X1'.
+Generating RTLIL representation for module `\ROM256X1'.
+Generating RTLIL representation for module `\SRL16'.
+Generating RTLIL representation for module `\SRL16E'.
+Generating RTLIL representation for module `\SRLC16'.
+Generating RTLIL representation for module `\SRLC16E'.
+Generating RTLIL representation for module `\SRLC32E'.
+Generating RTLIL representation for module `\CFGLUT5'.
+Generating RTLIL representation for module `\MULT18X18'.
+Generating RTLIL representation for module `\MULT18X18S'.
+Generating RTLIL representation for module `\MULT18X18SIO'.
+Generating RTLIL representation for module `\DSP48A'.
+Generating RTLIL representation for module `\DSP48A1'.
+Generating RTLIL representation for module `\DSP48'.
+Generating RTLIL representation for module `\DSP48E1'.
+Generating RTLIL representation for module `\RAMB18E1'.
+Generating RTLIL representation for module `\RAMB36E1'.
+Successfully finished Verilog frontend.
+
+4.2. Executing Verilog-2005 frontend: /usr/local/bin/../share/yosys/xilinx/cells_xtra.v
+Parsing Verilog input from `/usr/local/bin/../share/yosys/xilinx/cells_xtra.v' to AST representation.
+Generating RTLIL representation for module `\RAMB4_S1'.
+Generating RTLIL representation for module `\RAMB4_S2'.
+Generating RTLIL representation for module `\RAMB4_S4'.
+Generating RTLIL representation for module `\RAMB4_S8'.
+Generating RTLIL representation for module `\RAMB4_S16'.
+Generating RTLIL representation for module `\RAMB4_S1_S1'.
+Generating RTLIL representation for module `\RAMB4_S1_S2'.
+Generating RTLIL representation for module `\RAMB4_S1_S4'.
+Generating RTLIL representation for module `\RAMB4_S1_S8'.
+Generating RTLIL representation for module `\RAMB4_S1_S16'.
+Generating RTLIL representation for module `\RAMB4_S2_S2'.
+Generating RTLIL representation for module `\RAMB4_S2_S4'.
+Generating RTLIL representation for module `\RAMB4_S2_S8'.
+Generating RTLIL representation for module `\RAMB4_S2_S16'.
+Generating RTLIL representation for module `\RAMB4_S4_S4'.
+Generating RTLIL representation for module `\RAMB4_S4_S8'.
+Generating RTLIL representation for module `\RAMB4_S4_S16'.
+Generating RTLIL representation for module `\RAMB4_S8_S8'.
+Generating RTLIL representation for module `\RAMB4_S8_S16'.
+Generating RTLIL representation for module `\RAMB4_S16_S16'.
+Generating RTLIL representation for module `\RAMB16_S1'.
+Generating RTLIL representation for module `\RAMB16_S2'.
+Generating RTLIL representation for module `\RAMB16_S4'.
+Generating RTLIL representation for module `\RAMB16_S9'.
+Generating RTLIL representation for module `\RAMB16_S18'.
+Generating RTLIL representation for module `\RAMB16_S36'.
+Generating RTLIL representation for module `\RAMB16_S1_S1'.
+Generating RTLIL representation for module `\RAMB16_S1_S2'.
+Generating RTLIL representation for module `\RAMB16_S1_S4'.
+Generating RTLIL representation for module `\RAMB16_S1_S9'.
+Generating RTLIL representation for module `\RAMB16_S1_S18'.
+Generating RTLIL representation for module `\RAMB16_S1_S36'.
+Generating RTLIL representation for module `\RAMB16_S2_S2'.
+Generating RTLIL representation for module `\RAMB16_S2_S4'.
+Generating RTLIL representation for module `\RAMB16_S2_S9'.
+Generating RTLIL representation for module `\RAMB16_S2_S18'.
+Generating RTLIL representation for module `\RAMB16_S2_S36'.
+Generating RTLIL representation for module `\RAMB16_S4_S4'.
+Generating RTLIL representation for module `\RAMB16_S4_S9'.
+Generating RTLIL representation for module `\RAMB16_S4_S18'.
+Generating RTLIL representation for module `\RAMB16_S4_S36'.
+Generating RTLIL representation for module `\RAMB16_S9_S9'.
+Generating RTLIL representation for module `\RAMB16_S9_S18'.
+Generating RTLIL representation for module `\RAMB16_S9_S36'.
+Generating RTLIL representation for module `\RAMB16_S18_S18'.
+Generating RTLIL representation for module `\RAMB16_S18_S36'.
+Generating RTLIL representation for module `\RAMB16_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWER'.
+Generating RTLIL representation for module `\RAMB8BWER'.
+Generating RTLIL representation for module `\FIFO16'.
+Generating RTLIL representation for module `\RAMB16'.
+Generating RTLIL representation for module `\RAMB32_S64_ECC'.
+Generating RTLIL representation for module `\FIFO18'.
+Generating RTLIL representation for module `\FIFO18_36'.
+Generating RTLIL representation for module `\FIFO36'.
+Generating RTLIL representation for module `\FIFO36_72'.
+Generating RTLIL representation for module `\RAMB18'.
+Generating RTLIL representation for module `\RAMB36'.
+Generating RTLIL representation for module `\RAMB18SDP'.
+Generating RTLIL representation for module `\RAMB36SDP'.
+Generating RTLIL representation for module `\FIFO18E1'.
+Generating RTLIL representation for module `\FIFO36E1'.
+Generating RTLIL representation for module `\FIFO18E2'.
+Generating RTLIL representation for module `\FIFO36E2'.
+Generating RTLIL representation for module `\RAMB18E2'.
+Generating RTLIL representation for module `\RAMB36E2'.
+Generating RTLIL representation for module `\URAM288'.
+Generating RTLIL representation for module `\URAM288_BASE'.
+Generating RTLIL representation for module `\DSP48E'.
+Generating RTLIL representation for module `\DSP48E2'.
+Generating RTLIL representation for module `\FDDRCPE'.
+Generating RTLIL representation for module `\FDDRRSE'.
+Generating RTLIL representation for module `\IFDDRCPE'.
+Generating RTLIL representation for module `\IFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRCPE'.
+Generating RTLIL representation for module `\OFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRTCPE'.
+Generating RTLIL representation for module `\OFDDRTRSE'.
+Generating RTLIL representation for module `\IDDR2'.
+Generating RTLIL representation for module `\ODDR2'.
+Generating RTLIL representation for module `\IDDR'.
+Generating RTLIL representation for module `\IDDR_2CLK'.
+Generating RTLIL representation for module `\ODDR'.
+Generating RTLIL representation for module `\IDELAYCTRL'.
+Generating RTLIL representation for module `\IDELAY'.
+Generating RTLIL representation for module `\ISERDES'.
+Generating RTLIL representation for module `\OSERDES'.
+Generating RTLIL representation for module `\IODELAY'.
+Generating RTLIL representation for module `\ISERDES_NODELAY'.
+Generating RTLIL representation for module `\IODELAYE1'.
+Generating RTLIL representation for module `\ISERDESE1'.
+Generating RTLIL representation for module `\OSERDESE1'.
+Generating RTLIL representation for module `\IDELAYE2'.
+Generating RTLIL representation for module `\ODELAYE2'.
+Generating RTLIL representation for module `\ISERDESE2'.
+Generating RTLIL representation for module `\OSERDESE2'.
+Generating RTLIL representation for module `\PHASER_IN'.
+Generating RTLIL representation for module `\PHASER_IN_PHY'.
+Generating RTLIL representation for module `\PHASER_OUT'.
+Generating RTLIL representation for module `\PHASER_OUT_PHY'.
+Generating RTLIL representation for module `\PHASER_REF'.
+Generating RTLIL representation for module `\PHY_CONTROL'.
+Generating RTLIL representation for module `\IDDRE1'.
+Generating RTLIL representation for module `\ODDRE1'.
+Generating RTLIL representation for module `\IDELAYE3'.
+Generating RTLIL representation for module `\ODELAYE3'.
+Generating RTLIL representation for module `\ISERDESE3'.
+Generating RTLIL representation for module `\OSERDESE3'.
+Generating RTLIL representation for module `\BITSLICE_CONTROL'.
+Generating RTLIL representation for module `\RIU_OR'.
+Generating RTLIL representation for module `\RX_BITSLICE'.
+Generating RTLIL representation for module `\RXTX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE_TRI'.
+Generating RTLIL representation for module `\IODELAY2'.
+Generating RTLIL representation for module `\IODRP2'.
+Generating RTLIL representation for module `\IODRP2_MCB'.
+Generating RTLIL representation for module `\ISERDES2'.
+Generating RTLIL representation for module `\OSERDES2'.
+Generating RTLIL representation for module `\IBUF_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUF_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUF_ANALOG'.
+Generating RTLIL representation for module `\IBUFE3'.
+Generating RTLIL representation for module `\IBUFDS'.
+Generating RTLIL representation for module `\IBUFDS_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUFDS_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDSE3'.
+Generating RTLIL representation for module `\IBUFDS_DPHY'.
+Generating RTLIL representation for module `\IBUFGDS'.
+Generating RTLIL representation for module `\IBUFGDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUF_DCIEN'.
+Generating RTLIL representation for module `\IOBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFE3'.
+Generating RTLIL representation for module `\IOBUFDS'.
+Generating RTLIL representation for module `\IOBUFDS_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDSE3'.
+Generating RTLIL representation for module `\OBUFDS'.
+Generating RTLIL representation for module `\OBUFDS_DPHY'.
+Generating RTLIL representation for module `\OBUFTDS'.
+Generating RTLIL representation for module `\KEEPER'.
+Generating RTLIL representation for module `\PULLDOWN'.
+Generating RTLIL representation for module `\PULLUP'.
+Generating RTLIL representation for module `\DCIRESET'.
+Generating RTLIL representation for module `\HPIO_VREF'.
+Generating RTLIL representation for module `\BUFGCE'.
+Generating RTLIL representation for module `\BUFGCE_1'.
+Generating RTLIL representation for module `\BUFGMUX'.
+Generating RTLIL representation for module `\BUFGMUX_1'.
+Generating RTLIL representation for module `\BUFGMUX_CTRL'.
+Generating RTLIL representation for module `\BUFGMUX_VIRTEX4'.
+Generating RTLIL representation for module `\BUFG_GT'.
+Generating RTLIL representation for module `\BUFG_GT_SYNC'.
+Generating RTLIL representation for module `\BUFG_PS'.
+Generating RTLIL representation for module `\BUFGCE_DIV'.
+Generating RTLIL representation for module `\BUFH'.
+Generating RTLIL representation for module `\BUFIO2'.
+Generating RTLIL representation for module `\BUFIO2_2CLK'.
+Generating RTLIL representation for module `\BUFIO2FB'.
+Generating RTLIL representation for module `\BUFPLL'.
+Generating RTLIL representation for module `\BUFPLL_MCB'.
+Generating RTLIL representation for module `\BUFIO'.
+Generating RTLIL representation for module `\BUFIODQS'.
+Generating RTLIL representation for module `\BUFR'.
+Generating RTLIL representation for module `\BUFMR'.
+Generating RTLIL representation for module `\BUFMRCE'.
+Generating RTLIL representation for module `\DCM'.
+Generating RTLIL representation for module `\DCM_SP'.
+Generating RTLIL representation for module `\DCM_CLKGEN'.
+Generating RTLIL representation for module `\DCM_ADV'.
+Generating RTLIL representation for module `\DCM_BASE'.
+Generating RTLIL representation for module `\DCM_PS'.
+Generating RTLIL representation for module `\PMCD'.
+Generating RTLIL representation for module `\PLL_ADV'.
+Generating RTLIL representation for module `\PLL_BASE'.
+Generating RTLIL representation for module `\MMCM_ADV'.
+Generating RTLIL representation for module `\MMCM_BASE'.
+Generating RTLIL representation for module `\MMCME2_ADV'.
+Generating RTLIL representation for module `\MMCME2_BASE'.
+Generating RTLIL representation for module `\PLLE2_ADV'.
+Generating RTLIL representation for module `\PLLE2_BASE'.
+Generating RTLIL representation for module `\MMCME3_ADV'.
+Generating RTLIL representation for module `\MMCME3_BASE'.
+Generating RTLIL representation for module `\PLLE3_ADV'.
+Generating RTLIL representation for module `\PLLE3_BASE'.
+Generating RTLIL representation for module `\MMCME4_ADV'.
+Generating RTLIL representation for module `\MMCME4_BASE'.
+Generating RTLIL representation for module `\PLLE4_ADV'.
+Generating RTLIL representation for module `\PLLE4_BASE'.
+Generating RTLIL representation for module `\BUFT'.
+Generating RTLIL representation for module `\IN_FIFO'.
+Generating RTLIL representation for module `\OUT_FIFO'.
+Generating RTLIL representation for module `\HARD_SYNC'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3E'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3A'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN6'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX4'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX5'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX6'.
+Generating RTLIL representation for module `\STARTUPE2'.
+Generating RTLIL representation for module `\STARTUPE3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3A'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX4'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX5'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX6'.
+Generating RTLIL representation for module `\CAPTUREE2'.
+Generating RTLIL representation for module `\ICAP_SPARTAN3A'.
+Generating RTLIL representation for module `\ICAP_SPARTAN6'.
+Generating RTLIL representation for module `\ICAP_VIRTEX4'.
+Generating RTLIL representation for module `\ICAP_VIRTEX5'.
+Generating RTLIL representation for module `\ICAP_VIRTEX6'.
+Generating RTLIL representation for module `\ICAPE2'.
+Generating RTLIL representation for module `\ICAPE3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3A'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN6'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX4'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX5'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX6'.
+Generating RTLIL representation for module `\BSCANE2'.
+Generating RTLIL representation for module `\DNA_PORT'.
+Generating RTLIL representation for module `\DNA_PORTE2'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX4'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX5'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX6'.
+Generating RTLIL representation for module `\FRAME_ECCE2'.
+Generating RTLIL representation for module `\FRAME_ECCE3'.
+Generating RTLIL representation for module `\FRAME_ECCE4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX5'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX6'.
+Generating RTLIL representation for module `\USR_ACCESSE2'.
+Generating RTLIL representation for module `\POST_CRC_INTERNAL'.
+Generating RTLIL representation for module `\SUSPEND_SYNC'.
+Generating RTLIL representation for module `\KEY_CLEAR'.
+Generating RTLIL representation for module `\MASTER_JTAG'.
+Generating RTLIL representation for module `\SPI_ACCESS'.
+Generating RTLIL representation for module `\EFUSE_USR'.
+Generating RTLIL representation for module `\SYSMON'.
+Generating RTLIL representation for module `\XADC'.
+Generating RTLIL representation for module `\SYSMONE1'.
+Generating RTLIL representation for module `\SYSMONE4'.
+Generating RTLIL representation for module `\GTPA1_DUAL'.
+Generating RTLIL representation for module `\GT11_CUSTOM'.
+Generating RTLIL representation for module `\GT11_DUAL'.
+Generating RTLIL representation for module `\GT11CLK'.
+Generating RTLIL representation for module `\GT11CLK_MGT'.
+Generating RTLIL representation for module `\GTP_DUAL'.
+Generating RTLIL representation for module `\GTX_DUAL'.
+Generating RTLIL representation for module `\CRC32'.
+Generating RTLIL representation for module `\CRC64'.
+Generating RTLIL representation for module `\GTHE1_QUAD'.
+Generating RTLIL representation for module `\GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTHE1'.
+Generating RTLIL representation for module `\GTHE2_CHANNEL'.
+Generating RTLIL representation for module `\GTHE2_COMMON'.
+Generating RTLIL representation for module `\GTPE2_CHANNEL'.
+Generating RTLIL representation for module `\GTPE2_COMMON'.
+Generating RTLIL representation for module `\GTXE2_CHANNEL'.
+Generating RTLIL representation for module `\GTXE2_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE2'.
+Generating RTLIL representation for module `\GTHE3_CHANNEL'.
+Generating RTLIL representation for module `\GTHE3_COMMON'.
+Generating RTLIL representation for module `\GTYE3_CHANNEL'.
+Generating RTLIL representation for module `\GTYE3_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3_ADV'.
+Generating RTLIL representation for module `\GTHE4_CHANNEL'.
+Generating RTLIL representation for module `\GTHE4_COMMON'.
+Generating RTLIL representation for module `\GTYE4_CHANNEL'.
+Generating RTLIL representation for module `\GTYE4_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4_ADV'.
+Generating RTLIL representation for module `\GTM_DUAL'.
+Generating RTLIL representation for module `\IBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM_ADV'.
+Generating RTLIL representation for module `\HSDAC'.
+Generating RTLIL representation for module `\HSADC'.
+Generating RTLIL representation for module `\RFDAC'.
+Generating RTLIL representation for module `\RFADC'.
+Generating RTLIL representation for module `\PCIE_A1'.
+Generating RTLIL representation for module `\PCIE_EP'.
+Generating RTLIL representation for module `\PCIE_2_0'.
+Generating RTLIL representation for module `\PCIE_2_1'.
+Generating RTLIL representation for module `\PCIE_3_0'.
+Generating RTLIL representation for module `\PCIE_3_1'.
+Generating RTLIL representation for module `\PCIE40E4'.
+Generating RTLIL representation for module `\PCIE4CE4'.
+Generating RTLIL representation for module `\EMAC'.
+Generating RTLIL representation for module `\TEMAC'.
+Generating RTLIL representation for module `\TEMAC_SINGLE'.
+Generating RTLIL representation for module `\CMAC'.
+Generating RTLIL representation for module `\CMACE4'.
+Generating RTLIL representation for module `\MCB'.
+Generating RTLIL representation for module `\HBM_REF_CLK'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_APB'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_AXI'.
+Generating RTLIL representation for module `\HBM_ONE_STACK_INTF'.
+Generating RTLIL representation for module `\HBM_TWO_STACK_INTF'.
+Generating RTLIL representation for module `\PPC405_ADV'.
+Generating RTLIL representation for module `\PPC440'.
+Generating RTLIL representation for module `\PS7'.
+Generating RTLIL representation for module `\PS8'.
+Generating RTLIL representation for module `\ILKN'.
+Generating RTLIL representation for module `\ILKNE4'.
+Generating RTLIL representation for module `\VCU'.
+Generating RTLIL representation for module `\FE'.
+Successfully finished Verilog frontend.
+
+4.3. Executing HIERARCHY pass (managing design hierarchy).
+
+4.4. Executing AST frontend in derive mode using pre-parsed AST for module `\trinity_top'.
+Generating RTLIL representation for module `\trinity_top'.
+
+4.4.1. Analyzing design hierarchy..
+Top module:  \trinity_top
+
+4.4.2. Executing AST frontend in derive mode using pre-parsed AST for module `\trinity_core'.
+ERROR: Module `\universal_mul' referenced in module `\trinity_core' in cell `\multiplier' is not part of the design.
+Generating RTLIL representation for module `\trinity_core'.
+
+4.4.3. Analyzing design hierarchy..
+Top module:  \trinity_top
+Used module:     \trinity_core
+
+4.4.4. Executing AST frontend in derive mode using pre-parsed AST for module `\trinity_uart'.
+2026-03-06 14:14:01 [INFO] Camera verification...
+2026-03-06 14:14:14 [SUCCESS] Camera capture: /Users/playra/trinity-w1/.ralph/camera/verify_1772781241.jpg
+2026-03-06 14:14:14 [SUCCESS] Verification complete
+2026-03-06 14:14:14 [INFO] Step 7: Benchmark comparison...
+2026-03-06 14:14:14 [INFO] Improvement: 0%
+2026-03-06 14:14:15 [SUCCESS] Measurement complete
+2026-03-06 14:14:15 [INFO] Step 8: Publish (improvement: 2026-03-06 14:14:14 [INFO] Step 7: Benchmark comparison...
+2026-03-06 14:14:14 [INFO] Improvement: 0%
+2026-03-06 14:14:15 [SUCCESS] Measurement complete
+0%)...
+2026-03-06 14:14:16 [INFO] Improvement 2026-03-06 14:14:14 [INFO] Step 7: Benchmark comparison...
+2026-03-06 14:14:14 [INFO] Improvement: 0%
+2026-03-06 14:14:15 [SUCCESS] Measurement complete
+0% below threshold, skipping publish
+2026-03-06 14:14:17 [INFO] ╔═══════════════════════════════════════════════════════════════╗
+2026-03-06 14:14:18 [INFO] ║     EVOLUTION CYCLE COMPLETE                                  ║
+2026-03-06 14:14:18 [INFO] ║     Improvement: 2026-03-06 14:14:14 [INFO] Step 7: Benchmark comparison...
+2026-03-06 14:14:14 [INFO] Improvement: 0%
+2026-03-06 14:14:15 [SUCCESS] Measurement complete
+0%                                    ║
+2026-03-06 14:14:18 [INFO] ╚═══════════════════════════════════════════════════════════════╝

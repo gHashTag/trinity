@@ -1,0 +1,2762 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.63 (git sha1 70a11c6bf0e8dd669f56c7da3587f78b405138e2, clang++ 16.0.0 -fPIC -O3)
+
+-- Parsing `uart_weight_loader.v' using frontend ` -vlog2k' --
+
+1. Executing Verilog-2005 frontend: uart_weight_loader.v
+Parsing Verilog input from `uart_weight_loader.v' to AST representation.
+Storing AST representation for module `$abstract\uart_weight_loader'.
+Successfully finished Verilog frontend.
+
+-- Running command `synth_xilinx -flatten -abc9 -arch xc7 -top uart_weight_loader; write_json synth_reports/uart_weight_loader.json' --
+
+2. Executing SYNTH_XILINX pass.
+
+2.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_sim.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_sim.v' to AST representation.
+Generating RTLIL representation for module `\VCC'.
+Generating RTLIL representation for module `\GND'.
+Generating RTLIL representation for module `\IBUF'.
+Generating RTLIL representation for module `\IBUFG'.
+Generating RTLIL representation for module `\OBUF'.
+Generating RTLIL representation for module `\IOBUF'.
+Generating RTLIL representation for module `\OBUFT'.
+Generating RTLIL representation for module `\BUFG'.
+Generating RTLIL representation for module `\BUFGCTRL'.
+Generating RTLIL representation for module `\BUFHCE'.
+Generating RTLIL representation for module `\INV'.
+Generating RTLIL representation for module `\LUT1'.
+Generating RTLIL representation for module `\LUT2'.
+Generating RTLIL representation for module `\LUT3'.
+Generating RTLIL representation for module `\LUT4'.
+Generating RTLIL representation for module `\LUT5'.
+Generating RTLIL representation for module `\LUT6'.
+Generating RTLIL representation for module `\LUT6_2'.
+Generating RTLIL representation for module `\$__ABC9_LUT7'.
+Generating RTLIL representation for module `\$__ABC9_LUT8'.
+Generating RTLIL representation for module `\MUXCY'.
+Generating RTLIL representation for module `\MUXF5'.
+Generating RTLIL representation for module `\MUXF6'.
+Generating RTLIL representation for module `\MUXF7'.
+Generating RTLIL representation for module `\MUXF8'.
+Generating RTLIL representation for module `\MUXF9'.
+Generating RTLIL representation for module `\XORCY'.
+Generating RTLIL representation for module `\CARRY4'.
+Generating RTLIL representation for module `\CARRY8'.
+Generating RTLIL representation for module `\ORCY'.
+Generating RTLIL representation for module `\MULT_AND'.
+Generating RTLIL representation for module `\FDRE'.
+Generating RTLIL representation for module `\FDRE_1'.
+Generating RTLIL representation for module `\FDSE'.
+Generating RTLIL representation for module `\FDSE_1'.
+Generating RTLIL representation for module `\FDRSE'.
+Generating RTLIL representation for module `\FDRSE_1'.
+Generating RTLIL representation for module `\FDCE'.
+Generating RTLIL representation for module `\FDCE_1'.
+Generating RTLIL representation for module `\FDPE'.
+Generating RTLIL representation for module `\FDPE_1'.
+Generating RTLIL representation for module `\FDCPE'.
+Generating RTLIL representation for module `\FDCPE_1'.
+Generating RTLIL representation for module `\LDCE'.
+Generating RTLIL representation for module `\LDPE'.
+Generating RTLIL representation for module `\LDCPE'.
+Generating RTLIL representation for module `\AND2B1L'.
+Generating RTLIL representation for module `\OR2L'.
+Generating RTLIL representation for module `\RAM16X1S'.
+Generating RTLIL representation for module `\RAM16X1S_1'.
+Generating RTLIL representation for module `\RAM32X1S'.
+Generating RTLIL representation for module `\RAM32X1S_1'.
+Generating RTLIL representation for module `\RAM64X1S'.
+Generating RTLIL representation for module `\RAM64X1S_1'.
+Generating RTLIL representation for module `\RAM128X1S'.
+Generating RTLIL representation for module `\RAM128X1S_1'.
+Generating RTLIL representation for module `\RAM256X1S'.
+Generating RTLIL representation for module `\RAM512X1S'.
+Generating RTLIL representation for module `\RAM16X2S'.
+Generating RTLIL representation for module `\RAM32X2S'.
+Generating RTLIL representation for module `\RAM64X2S'.
+Generating RTLIL representation for module `\RAM16X4S'.
+Generating RTLIL representation for module `\RAM32X4S'.
+Generating RTLIL representation for module `\RAM16X8S'.
+Generating RTLIL representation for module `\RAM32X8S'.
+Generating RTLIL representation for module `\RAM16X1D'.
+Generating RTLIL representation for module `\RAM16X1D_1'.
+Generating RTLIL representation for module `\RAM32X1D'.
+Generating RTLIL representation for module `\RAM32X1D_1'.
+Generating RTLIL representation for module `\RAM64X1D'.
+Generating RTLIL representation for module `\RAM64X1D_1'.
+Generating RTLIL representation for module `\RAM128X1D'.
+Generating RTLIL representation for module `\RAM256X1D'.
+Generating RTLIL representation for module `\RAM32M'.
+Generating RTLIL representation for module `\RAM32M16'.
+Generating RTLIL representation for module `\RAM64M'.
+Generating RTLIL representation for module `\RAM64M8'.
+Generating RTLIL representation for module `\RAM32X16DR8'.
+Generating RTLIL representation for module `\RAM64X8SW'.
+Generating RTLIL representation for module `\ROM16X1'.
+Generating RTLIL representation for module `\ROM32X1'.
+Generating RTLIL representation for module `\ROM64X1'.
+Generating RTLIL representation for module `\ROM128X1'.
+Generating RTLIL representation for module `\ROM256X1'.
+Generating RTLIL representation for module `\SRL16'.
+Generating RTLIL representation for module `\SRL16E'.
+Generating RTLIL representation for module `\SRLC16'.
+Generating RTLIL representation for module `\SRLC16E'.
+Generating RTLIL representation for module `\SRLC32E'.
+Generating RTLIL representation for module `\CFGLUT5'.
+Generating RTLIL representation for module `\MULT18X18'.
+Generating RTLIL representation for module `\MULT18X18S'.
+Generating RTLIL representation for module `\MULT18X18SIO'.
+Generating RTLIL representation for module `\DSP48A'.
+Generating RTLIL representation for module `\DSP48A1'.
+Generating RTLIL representation for module `\DSP48'.
+Generating RTLIL representation for module `\DSP48E1'.
+Generating RTLIL representation for module `\RAMB18E1'.
+Generating RTLIL representation for module `\RAMB36E1'.
+Successfully finished Verilog frontend.
+
+2.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_xtra.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_xtra.v' to AST representation.
+Generating RTLIL representation for module `\RAMB4_S1'.
+Generating RTLIL representation for module `\RAMB4_S2'.
+Generating RTLIL representation for module `\RAMB4_S4'.
+Generating RTLIL representation for module `\RAMB4_S8'.
+Generating RTLIL representation for module `\RAMB4_S16'.
+Generating RTLIL representation for module `\RAMB4_S1_S1'.
+Generating RTLIL representation for module `\RAMB4_S1_S2'.
+Generating RTLIL representation for module `\RAMB4_S1_S4'.
+Generating RTLIL representation for module `\RAMB4_S1_S8'.
+Generating RTLIL representation for module `\RAMB4_S1_S16'.
+Generating RTLIL representation for module `\RAMB4_S2_S2'.
+Generating RTLIL representation for module `\RAMB4_S2_S4'.
+Generating RTLIL representation for module `\RAMB4_S2_S8'.
+Generating RTLIL representation for module `\RAMB4_S2_S16'.
+Generating RTLIL representation for module `\RAMB4_S4_S4'.
+Generating RTLIL representation for module `\RAMB4_S4_S8'.
+Generating RTLIL representation for module `\RAMB4_S4_S16'.
+Generating RTLIL representation for module `\RAMB4_S8_S8'.
+Generating RTLIL representation for module `\RAMB4_S8_S16'.
+Generating RTLIL representation for module `\RAMB4_S16_S16'.
+Generating RTLIL representation for module `\RAMB16_S1'.
+Generating RTLIL representation for module `\RAMB16_S2'.
+Generating RTLIL representation for module `\RAMB16_S4'.
+Generating RTLIL representation for module `\RAMB16_S9'.
+Generating RTLIL representation for module `\RAMB16_S18'.
+Generating RTLIL representation for module `\RAMB16_S36'.
+Generating RTLIL representation for module `\RAMB16_S1_S1'.
+Generating RTLIL representation for module `\RAMB16_S1_S2'.
+Generating RTLIL representation for module `\RAMB16_S1_S4'.
+Generating RTLIL representation for module `\RAMB16_S1_S9'.
+Generating RTLIL representation for module `\RAMB16_S1_S18'.
+Generating RTLIL representation for module `\RAMB16_S1_S36'.
+Generating RTLIL representation for module `\RAMB16_S2_S2'.
+Generating RTLIL representation for module `\RAMB16_S2_S4'.
+Generating RTLIL representation for module `\RAMB16_S2_S9'.
+Generating RTLIL representation for module `\RAMB16_S2_S18'.
+Generating RTLIL representation for module `\RAMB16_S2_S36'.
+Generating RTLIL representation for module `\RAMB16_S4_S4'.
+Generating RTLIL representation for module `\RAMB16_S4_S9'.
+Generating RTLIL representation for module `\RAMB16_S4_S18'.
+Generating RTLIL representation for module `\RAMB16_S4_S36'.
+Generating RTLIL representation for module `\RAMB16_S9_S9'.
+Generating RTLIL representation for module `\RAMB16_S9_S18'.
+Generating RTLIL representation for module `\RAMB16_S9_S36'.
+Generating RTLIL representation for module `\RAMB16_S18_S18'.
+Generating RTLIL representation for module `\RAMB16_S18_S36'.
+Generating RTLIL representation for module `\RAMB16_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S18_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S9'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S18'.
+Generating RTLIL representation for module `\RAMB16BWE_S36_S36'.
+Generating RTLIL representation for module `\RAMB16BWER'.
+Generating RTLIL representation for module `\RAMB8BWER'.
+Generating RTLIL representation for module `\FIFO16'.
+Generating RTLIL representation for module `\RAMB16'.
+Generating RTLIL representation for module `\RAMB32_S64_ECC'.
+Generating RTLIL representation for module `\FIFO18'.
+Generating RTLIL representation for module `\FIFO18_36'.
+Generating RTLIL representation for module `\FIFO36'.
+Generating RTLIL representation for module `\FIFO36_72'.
+Generating RTLIL representation for module `\RAMB18'.
+Generating RTLIL representation for module `\RAMB36'.
+Generating RTLIL representation for module `\RAMB18SDP'.
+Generating RTLIL representation for module `\RAMB36SDP'.
+Generating RTLIL representation for module `\FIFO18E1'.
+Generating RTLIL representation for module `\FIFO36E1'.
+Generating RTLIL representation for module `\FIFO18E2'.
+Generating RTLIL representation for module `\FIFO36E2'.
+Generating RTLIL representation for module `\RAMB18E2'.
+Generating RTLIL representation for module `\RAMB36E2'.
+Generating RTLIL representation for module `\URAM288'.
+Generating RTLIL representation for module `\URAM288_BASE'.
+Generating RTLIL representation for module `\DSP48E'.
+Generating RTLIL representation for module `\DSP48E2'.
+Generating RTLIL representation for module `\FDDRCPE'.
+Generating RTLIL representation for module `\FDDRRSE'.
+Generating RTLIL representation for module `\IFDDRCPE'.
+Generating RTLIL representation for module `\IFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRCPE'.
+Generating RTLIL representation for module `\OFDDRRSE'.
+Generating RTLIL representation for module `\OFDDRTCPE'.
+Generating RTLIL representation for module `\OFDDRTRSE'.
+Generating RTLIL representation for module `\IDDR2'.
+Generating RTLIL representation for module `\ODDR2'.
+Generating RTLIL representation for module `\IDDR'.
+Generating RTLIL representation for module `\IDDR_2CLK'.
+Generating RTLIL representation for module `\ODDR'.
+Generating RTLIL representation for module `\IDELAYCTRL'.
+Generating RTLIL representation for module `\IDELAY'.
+Generating RTLIL representation for module `\ISERDES'.
+Generating RTLIL representation for module `\OSERDES'.
+Generating RTLIL representation for module `\IODELAY'.
+Generating RTLIL representation for module `\ISERDES_NODELAY'.
+Generating RTLIL representation for module `\IODELAYE1'.
+Generating RTLIL representation for module `\ISERDESE1'.
+Generating RTLIL representation for module `\OSERDESE1'.
+Generating RTLIL representation for module `\IDELAYE2'.
+Generating RTLIL representation for module `\ODELAYE2'.
+Generating RTLIL representation for module `\ISERDESE2'.
+Generating RTLIL representation for module `\OSERDESE2'.
+Generating RTLIL representation for module `\PHASER_IN'.
+Generating RTLIL representation for module `\PHASER_IN_PHY'.
+Generating RTLIL representation for module `\PHASER_OUT'.
+Generating RTLIL representation for module `\PHASER_OUT_PHY'.
+Generating RTLIL representation for module `\PHASER_REF'.
+Generating RTLIL representation for module `\PHY_CONTROL'.
+Generating RTLIL representation for module `\IDDRE1'.
+Generating RTLIL representation for module `\ODDRE1'.
+Generating RTLIL representation for module `\IDELAYE3'.
+Generating RTLIL representation for module `\ODELAYE3'.
+Generating RTLIL representation for module `\ISERDESE3'.
+Generating RTLIL representation for module `\OSERDESE3'.
+Generating RTLIL representation for module `\BITSLICE_CONTROL'.
+Generating RTLIL representation for module `\RIU_OR'.
+Generating RTLIL representation for module `\RX_BITSLICE'.
+Generating RTLIL representation for module `\RXTX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE'.
+Generating RTLIL representation for module `\TX_BITSLICE_TRI'.
+Generating RTLIL representation for module `\IODELAY2'.
+Generating RTLIL representation for module `\IODRP2'.
+Generating RTLIL representation for module `\IODRP2_MCB'.
+Generating RTLIL representation for module `\ISERDES2'.
+Generating RTLIL representation for module `\OSERDES2'.
+Generating RTLIL representation for module `\IBUF_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUF_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUF_ANALOG'.
+Generating RTLIL representation for module `\IBUFE3'.
+Generating RTLIL representation for module `\IBUFDS'.
+Generating RTLIL representation for module `\IBUFDS_DLY_ADJ'.
+Generating RTLIL representation for module `\IBUFDS_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_IBUFDISABLE'.
+Generating RTLIL representation for module `\IBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IBUFDSE3'.
+Generating RTLIL representation for module `\IBUFDS_DPHY'.
+Generating RTLIL representation for module `\IBUFGDS'.
+Generating RTLIL representation for module `\IBUFGDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUF_DCIEN'.
+Generating RTLIL representation for module `\IOBUF_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFE3'.
+Generating RTLIL representation for module `\IOBUFDS'.
+Generating RTLIL representation for module `\IOBUFDS_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_DCIEN'.
+Generating RTLIL representation for module `\IOBUFDS_DIFF_OUT_INTERMDISABLE'.
+Generating RTLIL representation for module `\IOBUFDSE3'.
+Generating RTLIL representation for module `\OBUFDS'.
+Generating RTLIL representation for module `\OBUFDS_DPHY'.
+Generating RTLIL representation for module `\OBUFTDS'.
+Generating RTLIL representation for module `\KEEPER'.
+Generating RTLIL representation for module `\PULLDOWN'.
+Generating RTLIL representation for module `\PULLUP'.
+Generating RTLIL representation for module `\DCIRESET'.
+Generating RTLIL representation for module `\HPIO_VREF'.
+Generating RTLIL representation for module `\BUFGCE'.
+Generating RTLIL representation for module `\BUFGCE_1'.
+Generating RTLIL representation for module `\BUFGMUX'.
+Generating RTLIL representation for module `\BUFGMUX_1'.
+Generating RTLIL representation for module `\BUFGMUX_CTRL'.
+Generating RTLIL representation for module `\BUFGMUX_VIRTEX4'.
+Generating RTLIL representation for module `\BUFG_GT'.
+Generating RTLIL representation for module `\BUFG_GT_SYNC'.
+Generating RTLIL representation for module `\BUFG_PS'.
+Generating RTLIL representation for module `\BUFGCE_DIV'.
+Generating RTLIL representation for module `\BUFH'.
+Generating RTLIL representation for module `\BUFIO2'.
+Generating RTLIL representation for module `\BUFIO2_2CLK'.
+Generating RTLIL representation for module `\BUFIO2FB'.
+Generating RTLIL representation for module `\BUFPLL'.
+Generating RTLIL representation for module `\BUFPLL_MCB'.
+Generating RTLIL representation for module `\BUFIO'.
+Generating RTLIL representation for module `\BUFIODQS'.
+Generating RTLIL representation for module `\BUFR'.
+Generating RTLIL representation for module `\BUFMR'.
+Generating RTLIL representation for module `\BUFMRCE'.
+Generating RTLIL representation for module `\DCM'.
+Generating RTLIL representation for module `\DCM_SP'.
+Generating RTLIL representation for module `\DCM_CLKGEN'.
+Generating RTLIL representation for module `\DCM_ADV'.
+Generating RTLIL representation for module `\DCM_BASE'.
+Generating RTLIL representation for module `\DCM_PS'.
+Generating RTLIL representation for module `\PMCD'.
+Generating RTLIL representation for module `\PLL_ADV'.
+Generating RTLIL representation for module `\PLL_BASE'.
+Generating RTLIL representation for module `\MMCM_ADV'.
+Generating RTLIL representation for module `\MMCM_BASE'.
+Generating RTLIL representation for module `\MMCME2_ADV'.
+Generating RTLIL representation for module `\MMCME2_BASE'.
+Generating RTLIL representation for module `\PLLE2_ADV'.
+Generating RTLIL representation for module `\PLLE2_BASE'.
+Generating RTLIL representation for module `\MMCME3_ADV'.
+Generating RTLIL representation for module `\MMCME3_BASE'.
+Generating RTLIL representation for module `\PLLE3_ADV'.
+Generating RTLIL representation for module `\PLLE3_BASE'.
+Generating RTLIL representation for module `\MMCME4_ADV'.
+Generating RTLIL representation for module `\MMCME4_BASE'.
+Generating RTLIL representation for module `\PLLE4_ADV'.
+Generating RTLIL representation for module `\PLLE4_BASE'.
+Generating RTLIL representation for module `\BUFT'.
+Generating RTLIL representation for module `\IN_FIFO'.
+Generating RTLIL representation for module `\OUT_FIFO'.
+Generating RTLIL representation for module `\HARD_SYNC'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3E'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN3A'.
+Generating RTLIL representation for module `\STARTUP_SPARTAN6'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX4'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX5'.
+Generating RTLIL representation for module `\STARTUP_VIRTEX6'.
+Generating RTLIL representation for module `\STARTUPE2'.
+Generating RTLIL representation for module `\STARTUPE3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3'.
+Generating RTLIL representation for module `\CAPTURE_SPARTAN3A'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX4'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX5'.
+Generating RTLIL representation for module `\CAPTURE_VIRTEX6'.
+Generating RTLIL representation for module `\CAPTUREE2'.
+Generating RTLIL representation for module `\ICAP_SPARTAN3A'.
+Generating RTLIL representation for module `\ICAP_SPARTAN6'.
+Generating RTLIL representation for module `\ICAP_VIRTEX4'.
+Generating RTLIL representation for module `\ICAP_VIRTEX5'.
+Generating RTLIL representation for module `\ICAP_VIRTEX6'.
+Generating RTLIL representation for module `\ICAPE2'.
+Generating RTLIL representation for module `\ICAPE3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN3A'.
+Generating RTLIL representation for module `\BSCAN_SPARTAN6'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX4'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX5'.
+Generating RTLIL representation for module `\BSCAN_VIRTEX6'.
+Generating RTLIL representation for module `\BSCANE2'.
+Generating RTLIL representation for module `\DNA_PORT'.
+Generating RTLIL representation for module `\DNA_PORTE2'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX4'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX5'.
+Generating RTLIL representation for module `\FRAME_ECC_VIRTEX6'.
+Generating RTLIL representation for module `\FRAME_ECCE2'.
+Generating RTLIL representation for module `\FRAME_ECCE3'.
+Generating RTLIL representation for module `\FRAME_ECCE4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX4'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX5'.
+Generating RTLIL representation for module `\USR_ACCESS_VIRTEX6'.
+Generating RTLIL representation for module `\USR_ACCESSE2'.
+Generating RTLIL representation for module `\POST_CRC_INTERNAL'.
+Generating RTLIL representation for module `\SUSPEND_SYNC'.
+Generating RTLIL representation for module `\KEY_CLEAR'.
+Generating RTLIL representation for module `\MASTER_JTAG'.
+Generating RTLIL representation for module `\SPI_ACCESS'.
+Generating RTLIL representation for module `\EFUSE_USR'.
+Generating RTLIL representation for module `\SYSMON'.
+Generating RTLIL representation for module `\XADC'.
+Generating RTLIL representation for module `\SYSMONE1'.
+Generating RTLIL representation for module `\SYSMONE4'.
+Generating RTLIL representation for module `\GTPA1_DUAL'.
+Generating RTLIL representation for module `\GT11_CUSTOM'.
+Generating RTLIL representation for module `\GT11_DUAL'.
+Generating RTLIL representation for module `\GT11CLK'.
+Generating RTLIL representation for module `\GT11CLK_MGT'.
+Generating RTLIL representation for module `\GTP_DUAL'.
+Generating RTLIL representation for module `\GTX_DUAL'.
+Generating RTLIL representation for module `\CRC32'.
+Generating RTLIL representation for module `\CRC64'.
+Generating RTLIL representation for module `\GTHE1_QUAD'.
+Generating RTLIL representation for module `\GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTXE1'.
+Generating RTLIL representation for module `\IBUFDS_GTHE1'.
+Generating RTLIL representation for module `\GTHE2_CHANNEL'.
+Generating RTLIL representation for module `\GTHE2_COMMON'.
+Generating RTLIL representation for module `\GTPE2_CHANNEL'.
+Generating RTLIL representation for module `\GTPE2_COMMON'.
+Generating RTLIL representation for module `\GTXE2_CHANNEL'.
+Generating RTLIL representation for module `\GTXE2_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE2'.
+Generating RTLIL representation for module `\GTHE3_CHANNEL'.
+Generating RTLIL representation for module `\GTHE3_COMMON'.
+Generating RTLIL representation for module `\GTYE3_CHANNEL'.
+Generating RTLIL representation for module `\GTYE3_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3'.
+Generating RTLIL representation for module `\OBUFDS_GTE3_ADV'.
+Generating RTLIL representation for module `\GTHE4_CHANNEL'.
+Generating RTLIL representation for module `\GTHE4_COMMON'.
+Generating RTLIL representation for module `\GTYE4_CHANNEL'.
+Generating RTLIL representation for module `\GTYE4_COMMON'.
+Generating RTLIL representation for module `\IBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4'.
+Generating RTLIL representation for module `\OBUFDS_GTE4_ADV'.
+Generating RTLIL representation for module `\GTM_DUAL'.
+Generating RTLIL representation for module `\IBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM'.
+Generating RTLIL representation for module `\OBUFDS_GTM_ADV'.
+Generating RTLIL representation for module `\HSDAC'.
+Generating RTLIL representation for module `\HSADC'.
+Generating RTLIL representation for module `\RFDAC'.
+Generating RTLIL representation for module `\RFADC'.
+Generating RTLIL representation for module `\PCIE_A1'.
+Generating RTLIL representation for module `\PCIE_EP'.
+Generating RTLIL representation for module `\PCIE_2_0'.
+Generating RTLIL representation for module `\PCIE_2_1'.
+Generating RTLIL representation for module `\PCIE_3_0'.
+Generating RTLIL representation for module `\PCIE_3_1'.
+Generating RTLIL representation for module `\PCIE40E4'.
+Generating RTLIL representation for module `\PCIE4CE4'.
+Generating RTLIL representation for module `\EMAC'.
+Generating RTLIL representation for module `\TEMAC'.
+Generating RTLIL representation for module `\TEMAC_SINGLE'.
+Generating RTLIL representation for module `\CMAC'.
+Generating RTLIL representation for module `\CMACE4'.
+Generating RTLIL representation for module `\MCB'.
+Generating RTLIL representation for module `\HBM_REF_CLK'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_APB'.
+Generating RTLIL representation for module `\HBM_SNGLBLI_INTF_AXI'.
+Generating RTLIL representation for module `\HBM_ONE_STACK_INTF'.
+Generating RTLIL representation for module `\HBM_TWO_STACK_INTF'.
+Generating RTLIL representation for module `\PPC405_ADV'.
+Generating RTLIL representation for module `\PPC440'.
+Generating RTLIL representation for module `\PS7'.
+Generating RTLIL representation for module `\PS8'.
+Generating RTLIL representation for module `\ILKN'.
+Generating RTLIL representation for module `\ILKNE4'.
+Generating RTLIL representation for module `\VCU'.
+Generating RTLIL representation for module `\FE'.
+Successfully finished Verilog frontend.
+
+2.3. Executing HIERARCHY pass (managing design hierarchy).
+
+2.4. Executing AST frontend in derive mode using pre-parsed AST for module `\uart_weight_loader'.
+Generating RTLIL representation for module `\uart_weight_loader'.
+Warning: Replacing memory \resp_buf with list of registers. See uart_weight_loader.v:370
+uart_weight_loader.v:312: Warning: Range [9:0] select out of bounds on signal `\rx_byte': Setting 2 MSB bits to undef.
+
+2.4.1. Analyzing design hierarchy..
+Top module:  \uart_weight_loader
+
+2.4.2. Analyzing design hierarchy..
+Top module:  \uart_weight_loader
+Removing unused module `$abstract\uart_weight_loader'.
+Removed 1 unused modules.
+
+2.5. Executing PROC pass (convert processes to netlists).
+
+2.5.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+2.5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 10 switch rules as full_case in process $proc$uart_weight_loader.v:244$1123 in module uart_weight_loader.
+Marked 6 switch rules as full_case in process $proc$uart_weight_loader.v:145$1114 in module uart_weight_loader.
+Marked 9 switch rules as full_case in process $proc$uart_weight_loader.v:65$1098 in module uart_weight_loader.
+Removed a total of 0 dead cases.
+
+2.5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 5 redundant assignments.
+Promoted 2 assignments to connections.
+
+2.5.4. Executing PROC_INIT pass (extract init attributes).
+
+2.5.5. Executing PROC_ARST pass (detect async resets in processes).
+
+2.5.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~38 debug messages>
+
+2.5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+     1/28: $0\wr_addr[17:0] [17:8]
+     2/28: $3$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_DATA[7:0]$1150
+     3/28: $3$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_ADDR[2:0]$1149
+     4/28: $0\wr_addr[17:0] [7:0]
+     5/28: $4$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_DATA[7:0]$1151
+     6/28: $2$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_ADDR[2:0]$1128
+     7/28: $0\tx_send[0:0]
+     8/28: $0\wr_en[0:0]
+     9/28: $0\ld_done[0:0]
+    10/28: $1$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_DATA[7:0]$1127
+    11/28: $1$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_ADDR[2:0]$1126
+    12/28: $0\resp_buf[1][7:0]
+    13/28: $0\resp_buf[0][7:0]
+    14/28: $0\resp_len[2:0]
+    15/28: $0\resp_idx[2:0]
+    16/28: $0\ld_reset_addr[17:0]
+    17/28: $0\ld_progress[7:0]
+    18/28: $0\ld_error[0:0]
+    19/28: $0\ld_loading[0:0]
+    20/28: $0\ld_checksum_calc[7:0]
+    21/28: $0\ld_count[7:0]
+    22/28: $0\ld_len[7:0]
+    23/28: $0\ld_cmd[7:0]
+    24/28: $0\ld_state[3:0]
+    25/28: $0\tx_byte[7:0]
+    26/28: $0\wr_data[1:0]
+    27/28: $2$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_DATA[7:0]$1129
+    28/28: $0\wr_block_id[1:0]
+Creating decoders for process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+     1/6: $0\uart_tx_reg[0:0]
+     2/6: $0\tx_active[0:0]
+     3/6: $0\tx_shift[7:0]
+     4/6: $0\tx_bit_cnt[3:0]
+     5/6: $0\tx_clk_div[15:0]
+     6/6: $0\tx_state[1:0]
+Creating decoders for process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+     1/7: $0\rx_valid[0:0]
+     2/7: $0\rx_byte[7:0]
+     3/7: $0\rx_sample_cnt[3:0]
+     4/7: $0\rx_shift[7:0]
+     5/7: $0\rx_bit_cnt[3:0]
+     6/7: $0\rx_clk_div[15:0]
+     7/7: $0\rx_state[1:0]
+
+2.5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+2.5.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\uart_weight_loader.\wr_en' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1850' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\wr_block_id' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1851' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\wr_addr' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1852' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\wr_data' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1853' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_send' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1854' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_byte' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1855' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_state' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1856' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_cmd' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1857' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_len' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1858' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_count' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1859' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_checksum_calc' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1860' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_loading' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1861' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_done' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1862' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_error' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1863' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_progress' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1864' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\ld_reset_addr' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1865' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\resp_idx' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1866' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\resp_len' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1867' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\resp_buf[0]' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1868' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\resp_buf[1]' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1869' with positive edge clock.
+Creating register for signal `\uart_weight_loader.$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_ADDR' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1870' with positive edge clock.
+Creating register for signal `\uart_weight_loader.$mem2reg_rd$\resp_buf$uart_weight_loader.v:388$1097_DATA' using process `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+  created $dff cell `$procdff$1871' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_state' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1872' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_clk_div' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1873' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_bit_cnt' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1874' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_shift' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1875' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\tx_active' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1876' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\uart_tx_reg' using process `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+  created $dff cell `$procdff$1877' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_state' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1878' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_clk_div' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1879' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_bit_cnt' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1880' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_shift' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1881' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_sample_cnt' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1882' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_valid' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1883' with positive edge clock.
+Creating register for signal `\uart_weight_loader.\rx_byte' using process `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+  created $dff cell `$procdff$1884' with positive edge clock.
+
+2.5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+2.5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 21 empty switches in `\uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+Removing empty process `uart_weight_loader.$proc$uart_weight_loader.v:244$1123'.
+Found and cleaned up 7 empty switches in `\uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+Removing empty process `uart_weight_loader.$proc$uart_weight_loader.v:145$1114'.
+Found and cleaned up 10 empty switches in `\uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+Removing empty process `uart_weight_loader.$proc$uart_weight_loader.v:65$1098'.
+Cleaned up 38 empty switches.
+
+2.5.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~23 debug messages>
+
+2.6. Executing FLATTEN pass (flatten design).
+
+2.7. Executing TRIBUF pass.
+
+2.8. Executing DEMINOUT pass (demote inout ports to input or output).
+
+2.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.10. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 25 unused cells and 225 unused wires.
+<suppressed ~28 debug messages>
+
+2.11. Executing CHECK pass (checking for obvious problems).
+Checking module uart_weight_loader...
+Warning: Wire uart_weight_loader.\resp_buf[2] [7] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [6] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [5] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [4] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [3] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [2] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [1] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[2] [0] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [7] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [6] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [5] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [4] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [3] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [2] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [1] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[3] [0] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [7] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [6] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [5] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [4] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [3] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [2] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [1] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[4] [0] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [7] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [6] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [5] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [4] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [3] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [2] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [1] is used but has no driver.
+Warning: Wire uart_weight_loader.\resp_buf[5] [0] is used but has no driver.
+Found and reported 32 problems.
+
+2.12. Executing OPT pass (performing simple optimizations).
+
+2.12.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.12.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 397 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 281 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 280 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~351 debug messages>
+Removed a total of 117 cells.
+
+2.12.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $procmux$1224.
+    dead port 2/2 on $mux $procmux$1221.
+    dead port 2/2 on $mux $procmux$1219.
+Removed 3 multiplexer ports.
+<suppressed ~221 debug messages>
+
+2.12.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+    New ctrl vector for $pmux cell $procmux$1567: { $auto$opt_reduce.cc:137:opt_pmux$1886 $procmux$1569_CMP $procmux$1568_CMP }
+    New ctrl vector for $pmux cell $procmux$1520: $auto$opt_reduce.cc:137:opt_pmux$1888
+    New ctrl vector for $pmux cell $procmux$1236: $auto$opt_reduce.cc:137:opt_pmux$1890
+    New ctrl vector for $pmux cell $procmux$1638: { $procmux$1718_CMP $procmux$1714_CMP $auto$opt_reduce.cc:137:opt_pmux$1892 }
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 4 changes.
+
+2.12.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 281 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 275 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~18 debug messages>
+Removed a total of 6 cells.
+
+2.12.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.12.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 126 unused wires.
+<suppressed ~1 debug messages>
+
+2.12.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.12.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.12.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~218 debug messages>
+
+2.12.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+    New ctrl vector for $pmux cell $procmux$1803: { $procmux$1759_CMP $auto$opt_reduce.cc:137:opt_pmux$1894 $procmux$1729_CMP }
+    New ctrl vector for $pmux cell $procmux$1446: { $procmux$1413_CMP $procmux$1410_CMP $auto$opt_reduce.cc:137:opt_pmux$1896 }
+    New ctrl vector for $pmux cell $procmux$1687: { $procmux$1642_CMP $auto$opt_reduce.cc:137:opt_pmux$1898 $procmux$1639_CMP }
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 3 changes.
+
+2.12.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 278 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.12.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.12.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.12.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.12.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.12.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~212 debug messages>
+
+2.12.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.12.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 278 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.12.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.12.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.12.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.12.23. Finished fast OPT passes. (There is nothing left to do.)
+
+2.13. Executing FSM pass (extract and optimize FSM).
+
+2.13.1. Executing FSM_DETECT pass (finding FSMs in design).
+Not marking uart_weight_loader.resp_buf[1] as FSM state register:
+    Users of register don't seem to benefit from recoding.
+Not marking uart_weight_loader.resp_buf[0] as FSM state register:
+    Users of register don't seem to benefit from recoding.
+Found FSM state register uart_weight_loader.resp_len.
+Found FSM state register uart_weight_loader.ld_state.
+Found FSM state register uart_weight_loader.tx_state.
+Found FSM state register uart_weight_loader.rx_state.
+
+2.13.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\resp_len' from module `\uart_weight_loader'.
+  found $dff cell for state register: $procdff$1867
+  root of input selection tree: $0\resp_len[2:0]
+  found ctrl input: \rst
+  found ctrl input: $procmux$1162_CMP
+  found ctrl input: $procmux$1275_CMP
+  found ctrl input: $eq$uart_weight_loader.v:405$1156_Y
+  found state code: 3'010
+  found ctrl input: \rx_valid
+  fsm extraction failed: at least two states are required.
+Extracting FSM `\ld_state' from module `\uart_weight_loader'.
+  found $dff cell for state register: $procdff$1856
+  root of input selection tree: $0\ld_state[3:0]
+  found reset state: 4'0000 (guessed from mux tree)
+  found ctrl input: \rst
+  found ctrl input: $procmux$1246_CMP
+  found ctrl input: $procmux$1162_CMP
+  found ctrl input: $procmux$1222_CMP
+  found ctrl input: $procmux$1275_CMP
+  found ctrl input: $procmux$1165_CMP
+  found ctrl input: $procmux$1428_CMP
+  found ctrl input: $procmux$1203_CMP
+  found ctrl input: $procmux$1168_CMP
+  found ctrl input: $procmux$1410_CMP
+  found ctrl input: $procmux$1359_CMP
+  found ctrl input: $procmux$1413_CMP
+  found state code: 4'0000
+  found ctrl input: $logic_and$uart_weight_loader.v:387$1148_Y
+  found ctrl input: $auto$opt_reduce.cc:137:opt_pmux$1888
+  found ctrl input: $eq$uart_weight_loader.v:405$1156_Y
+  found state code: 4'1000
+  found ctrl input: $eq$uart_weight_loader.v:390$1153_Y
+  found ctrl input: \rx_valid
+  found ctrl input: $eq$uart_weight_loader.v:356$1145_Y
+  found state code: 4'0111
+  found ctrl input: $eq$uart_weight_loader.v:334$1138_Y
+  found state code: 4'0110
+  found state code: 4'0101
+  found state code: 4'0100
+  found ctrl input: $lt$uart_weight_loader.v:298$1133_Y
+  found state code: 4'0011
+  found ctrl input: $procmux$1356_CMP
+  found ctrl input: $procmux$1370_CMP
+  found ctrl input: $auto$opt_reduce.cc:137:opt_pmux$1886
+  found state code: 4'1010
+  found state code: 4'1001
+  found state code: 4'0010
+  found ctrl input: $logic_and$uart_weight_loader.v:265$1131_Y
+  found state code: 4'0001
+  found ctrl output: $procmux$1275_CMP
+  found ctrl output: $procmux$1428_CMP
+  found ctrl output: $procmux$1203_CMP
+  found ctrl output: $procmux$1168_CMP
+  found ctrl output: $procmux$1359_CMP
+  found ctrl output: $procmux$1413_CMP
+  found ctrl output: $procmux$1246_CMP
+  found ctrl output: $procmux$1222_CMP
+  found ctrl output: $procmux$1162_CMP
+  found ctrl output: $procmux$1165_CMP
+  found ctrl output: $procmux$1410_CMP
+  ctrl inputs: { $procmux$1370_CMP $procmux$1356_CMP $eq$uart_weight_loader.v:405$1156_Y $eq$uart_weight_loader.v:390$1153_Y $logic_and$uart_weight_loader.v:387$1148_Y $eq$uart_weight_loader.v:356$1145_Y $eq$uart_weight_loader.v:334$1138_Y $lt$uart_weight_loader.v:298$1133_Y $logic_and$uart_weight_loader.v:265$1131_Y \rx_valid \rst $auto$opt_reduce.cc:137:opt_pmux$1886 $auto$opt_reduce.cc:137:opt_pmux$1888 }
+  ctrl outputs: { $procmux$1428_CMP $procmux$1413_CMP $procmux$1410_CMP $procmux$1359_CMP $procmux$1275_CMP $procmux$1246_CMP $procmux$1222_CMP $procmux$1203_CMP $procmux$1168_CMP $procmux$1165_CMP $procmux$1162_CMP $0\ld_state[3:0] }
+  transition:     4'0000 13'--------0-0-- ->     4'0000 15'010000000000000
+  transition:     4'0000 13'--------1-0-- ->     4'0001 15'010000000000001
+  transition:     4'0000 13'----------1-- ->     4'0000 15'010000000000000
+  transition:     4'1000 13'----0-----0-- ->     4'1000 15'000000100001000
+  transition:     4'1000 13'---01-----0-- ->     4'1000 15'000000100001000
+  transition:     4'1000 13'---11-----0-- ->     4'0000 15'000000100000000
+  transition:     4'1000 13'----------1-- ->     4'0000 15'000000100000000
+  transition:     4'0100 13'---------00-- ->     4'0100 15'000000010000100
+  transition:     4'0100 13'---------10-- ->     4'0101 15'000000010000101
+  transition:     4'0100 13'----------1-- ->     4'0000 15'000000010000000
+  transition:     4'0010 13'---------00-- ->     4'0010 15'001000000000010
+  transition:     4'0010 13'-------0-10-- ->     4'0000 15'001000000000000
+  transition:     4'0010 13'-------1-10-- ->     4'0011 15'001000000000011
+  transition:     4'0010 13'----------1-- ->     4'0000 15'001000000000000
+  transition:     4'1010 13'----0-----0-- ->     4'1010 15'000001000001010
+  transition:     4'1010 13'----1-----0-0 ->     4'0000 15'000001000000000
+  transition:     4'1010 13'----1-----0-1 ->     4'1010 15'000001000001010
+  transition:     4'1010 13'----------1-- ->     4'0000 15'000001000000000
+  transition:     4'0110 13'---------00-- ->     4'0110 15'000000000100110
+  transition:     4'0110 13'-----0---10-- ->     4'0110 15'000000000100110
+  transition:     4'0110 13'-----1---10-- ->     4'0111 15'000000000100111
+  transition:     4'0110 13'----------1-- ->     4'0000 15'000000000100000
+  transition:     4'0001 13'---------00-- ->     4'0001 15'000100000000001
+  transition:     4'0001 13'00-------100- ->     4'0000 15'000100000000000
+  transition:     4'0001 13'---------101- ->     4'0010 15'000100000000010
+  transition:     4'0001 13'1--------10-- ->     4'1001 15'000100000001001
+  transition:     4'0001 13'-1-------10-- ->     4'1010 15'000100000001010
+  transition:     4'0001 13'----------1-- ->     4'0000 15'000100000000000
+  transition:     4'1001 13'--0-------0-- ->     4'1001 15'000000000011001
+  transition:     4'1001 13'--1-------0-- ->     4'1000 15'000000000011000
+  transition:     4'1001 13'----------1-- ->     4'0000 15'000000000010000
+  transition:     4'0101 13'---------00-- ->     4'0101 15'100000000000101
+  transition:     4'0101 13'------0--10-- ->     4'0110 15'100000000000110
+  transition:     4'0101 13'------1--10-- ->     4'0111 15'100000000000111
+  transition:     4'0101 13'----------1-- ->     4'0000 15'100000000000000
+  transition:     4'0011 13'---------00-- ->     4'0011 15'000000001000011
+  transition:     4'0011 13'---------10-- ->     4'0100 15'000000001000100
+  transition:     4'0011 13'----------1-- ->     4'0000 15'000000001000000
+  transition:     4'0111 13'---------00-- ->     4'0111 15'000010000000111
+  transition:     4'0111 13'---------10-- ->     4'1000 15'000010000001000
+  transition:     4'0111 13'----------1-- ->     4'0000 15'000010000000000
+Extracting FSM `\tx_state' from module `\uart_weight_loader'.
+  found $dff cell for state register: $procdff$1872
+  root of input selection tree: $0\tx_state[1:0]
+  found reset state: 2'00 (guessed from mux tree)
+  found ctrl input: \rst
+  found ctrl input: $procmux$1639_CMP
+  found ctrl input: $procmux$1640_CMP
+  found ctrl input: $procmux$1641_CMP
+  found ctrl input: $procmux$1642_CMP
+  found ctrl input: $eq$uart_weight_loader.v:165$1115_Y
+  found state code: 2'00
+  found ctrl input: $eq$uart_weight_loader.v:177$1118_Y
+  found state code: 2'11
+  found state code: 2'10
+  found ctrl input: \tx_send
+  found state code: 2'01
+  found ctrl output: $procmux$1639_CMP
+  found ctrl output: $procmux$1640_CMP
+  found ctrl output: $procmux$1641_CMP
+  found ctrl output: $procmux$1642_CMP
+  ctrl inputs: { $eq$uart_weight_loader.v:177$1118_Y $eq$uart_weight_loader.v:165$1115_Y \tx_send \rst }
+  ctrl outputs: { $procmux$1642_CMP $procmux$1641_CMP $procmux$1640_CMP $procmux$1639_CMP $0\tx_state[1:0] }
+  transition:       2'00 4'--00 ->       2'00 6'100000
+  transition:       2'00 4'--10 ->       2'01 6'100001
+  transition:       2'00 4'---1 ->       2'00 6'100000
+  transition:       2'10 4'-0-0 ->       2'10 6'001010
+  transition:       2'10 4'01-0 ->       2'10 6'001010
+  transition:       2'10 4'11-0 ->       2'11 6'001011
+  transition:       2'10 4'---1 ->       2'00 6'001000
+  transition:       2'01 4'-0-0 ->       2'01 6'010001
+  transition:       2'01 4'-1-0 ->       2'10 6'010010
+  transition:       2'01 4'---1 ->       2'00 6'010000
+  transition:       2'11 4'-0-0 ->       2'11 6'000111
+  transition:       2'11 4'-1-0 ->       2'00 6'000100
+  transition:       2'11 4'---1 ->       2'00 6'000100
+Extracting FSM `\rx_state' from module `\uart_weight_loader'.
+  found $dff cell for state register: $procdff$1878
+  root of input selection tree: $0\rx_state[1:0]
+  found reset state: 2'00 (guessed from mux tree)
+  found ctrl input: \rst
+  found ctrl input: $procmux$1729_CMP
+  found ctrl input: $procmux$1749_CMP
+  found ctrl input: $procmux$1756_CMP
+  found ctrl input: $procmux$1759_CMP
+  found ctrl input: $eq$uart_weight_loader.v:114$1111_Y
+  found state code: 2'00
+  found ctrl input: $eq$uart_weight_loader.v:100$1106_Y
+  found ctrl input: $eq$uart_weight_loader.v:102$1107_Y
+  found state code: 2'11
+  found ctrl input: $eq$uart_weight_loader.v:85$1101_Y
+  found ctrl input: \uart_rx
+  found state code: 2'10
+  found state code: 2'01
+  found ctrl output: $procmux$1729_CMP
+  found ctrl output: $procmux$1749_CMP
+  found ctrl output: $procmux$1756_CMP
+  found ctrl output: $procmux$1759_CMP
+  ctrl inputs: { $eq$uart_weight_loader.v:114$1111_Y $eq$uart_weight_loader.v:102$1107_Y $eq$uart_weight_loader.v:100$1106_Y $eq$uart_weight_loader.v:85$1101_Y \uart_rx \rst }
+  ctrl outputs: { $procmux$1759_CMP $procmux$1756_CMP $procmux$1749_CMP $procmux$1729_CMP $0\rx_state[1:0] }
+  transition:       2'00 6'----00 ->       2'01 6'100001
+  transition:       2'00 6'----10 ->       2'00 6'100000
+  transition:       2'00 6'-----1 ->       2'00 6'100000
+  transition:       2'10 6'0----0 ->       2'10 6'001010
+  transition:       2'10 6'1-0--0 ->       2'10 6'001010
+  transition:       2'10 6'101--0 ->       2'10 6'001010
+  transition:       2'10 6'111--0 ->       2'11 6'001011
+  transition:       2'10 6'-----1 ->       2'00 6'001000
+  transition:       2'01 6'0----0 ->       2'01 6'010001
+  transition:       2'01 6'1--0-0 ->       2'01 6'010001
+  transition:       2'01 6'1--100 ->       2'10 6'010010
+  transition:       2'01 6'1--110 ->       2'00 6'010000
+  transition:       2'01 6'-----1 ->       2'00 6'010000
+  transition:       2'11 6'0----0 ->       2'11 6'000111
+  transition:       2'11 6'1----0 ->       2'00 6'000100
+  transition:       2'11 6'-----1 ->       2'00 6'000100
+
+2.13.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\rx_state$1918' from module `\uart_weight_loader'.
+Optimizing FSM `$fsm$\tx_state$1912' from module `\uart_weight_loader'.
+Optimizing FSM `$fsm$\ld_state$1899' from module `\uart_weight_loader'.
+
+2.13.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 58 unused cells and 58 unused wires.
+<suppressed ~59 debug messages>
+
+2.13.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\rx_state$1918' from module `\uart_weight_loader'.
+  Removing unused output signal $0\rx_state[1:0] [0].
+  Removing unused output signal $0\rx_state[1:0] [1].
+Optimizing FSM `$fsm$\ld_state$1899' from module `\uart_weight_loader'.
+  Removing unused output signal $0\ld_state[3:0] [0].
+  Removing unused output signal $0\ld_state[3:0] [1].
+  Removing unused output signal $0\ld_state[3:0] [2].
+  Removing unused output signal $0\ld_state[3:0] [3].
+Optimizing FSM `$fsm$\tx_state$1912' from module `\uart_weight_loader'.
+  Removing unused output signal $0\tx_state[1:0] [0].
+  Removing unused output signal $0\tx_state[1:0] [1].
+
+2.13.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+Recoding FSM `$fsm$\rx_state$1918' from module `\uart_weight_loader' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  00 -> ---1
+  10 -> --1-
+  01 -> -1--
+  11 -> 1---
+Recoding FSM `$fsm$\ld_state$1899' from module `\uart_weight_loader' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  0000 -> ----------1
+  1000 -> ---------1-
+  0100 -> --------1--
+  0010 -> -------1---
+  1010 -> ------1----
+  0110 -> -----1-----
+  0001 -> ----1------
+  1001 -> ---1-------
+  0101 -> --1--------
+  0011 -> -1---------
+  0111 -> 1----------
+Recoding FSM `$fsm$\tx_state$1912' from module `\uart_weight_loader' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  00 -> ---1
+  10 -> --1-
+  01 -> -1--
+  11 -> 1---
+
+2.13.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+FSM `$fsm$\rx_state$1918' from module `uart_weight_loader':
+-------------------------------------
+
+  Information on FSM $fsm$\rx_state$1918 (\rx_state):
+
+  Number of input signals:    6
+  Number of output signals:   4
+  Number of state bits:       4
+
+  Input signals:
+    0: \rst
+    1: \uart_rx
+    2: $eq$uart_weight_loader.v:85$1101_Y
+    3: $eq$uart_weight_loader.v:100$1106_Y
+    4: $eq$uart_weight_loader.v:102$1107_Y
+    5: $eq$uart_weight_loader.v:114$1111_Y
+
+  Output signals:
+    0: $procmux$1729_CMP
+    1: $procmux$1749_CMP
+    2: $procmux$1756_CMP
+    3: $procmux$1759_CMP
+
+  State encoding:
+    0:     4'---1  <RESET STATE>
+    1:     4'--1-
+    2:     4'-1--
+    3:     4'1---
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 6'----10   ->     0 4'1000
+      1:     0 6'-----1   ->     0 4'1000
+      2:     0 6'----00   ->     2 4'1000
+      3:     1 6'-----1   ->     0 4'0010
+      4:     1 6'1-0--0   ->     1 4'0010
+      5:     1 6'101--0   ->     1 4'0010
+      6:     1 6'0----0   ->     1 4'0010
+      7:     1 6'111--0   ->     3 4'0010
+      8:     2 6'1--110   ->     0 4'0100
+      9:     2 6'-----1   ->     0 4'0100
+     10:     2 6'1--100   ->     1 4'0100
+     11:     2 6'1--0-0   ->     2 4'0100
+     12:     2 6'0----0   ->     2 4'0100
+     13:     3 6'1----0   ->     0 4'0001
+     14:     3 6'-----1   ->     0 4'0001
+     15:     3 6'0----0   ->     3 4'0001
+
+-------------------------------------
+
+FSM `$fsm$\ld_state$1899' from module `uart_weight_loader':
+-------------------------------------
+
+  Information on FSM $fsm$\ld_state$1899 (\ld_state):
+
+  Number of input signals:   13
+  Number of output signals:  11
+  Number of state bits:      11
+
+  Input signals:
+    0: $auto$opt_reduce.cc:137:opt_pmux$1888
+    1: $auto$opt_reduce.cc:137:opt_pmux$1886
+    2: \rst
+    3: \rx_valid
+    4: $logic_and$uart_weight_loader.v:265$1131_Y
+    5: $lt$uart_weight_loader.v:298$1133_Y
+    6: $eq$uart_weight_loader.v:334$1138_Y
+    7: $eq$uart_weight_loader.v:356$1145_Y
+    8: $logic_and$uart_weight_loader.v:387$1148_Y
+    9: $eq$uart_weight_loader.v:390$1153_Y
+   10: $eq$uart_weight_loader.v:405$1156_Y
+   11: $procmux$1356_CMP
+   12: $procmux$1370_CMP
+
+  Output signals:
+    0: $procmux$1162_CMP
+    1: $procmux$1165_CMP
+    2: $procmux$1168_CMP
+    3: $procmux$1203_CMP
+    4: $procmux$1222_CMP
+    5: $procmux$1246_CMP
+    6: $procmux$1275_CMP
+    7: $procmux$1359_CMP
+    8: $procmux$1410_CMP
+    9: $procmux$1413_CMP
+   10: $procmux$1428_CMP
+
+  State encoding:
+    0: 11'----------1  <RESET STATE>
+    1: 11'---------1-
+    2: 11'--------1--
+    3: 11'-------1---
+    4: 11'------1----
+    5: 11'-----1-----
+    6: 11'----1------
+    7: 11'---1-------
+    8: 11'--1--------
+    9: 11'-1---------
+   10: 11'1----------
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 13'--------0-0--   ->     0 11'01000000000
+      1:     0 13'----------1--   ->     0 11'01000000000
+      2:     0 13'--------1-0--   ->     6 11'01000000000
+      3:     1 13'---11-----0--   ->     0 11'00000010000
+      4:     1 13'----------1--   ->     0 11'00000010000
+      5:     1 13'----0-----0--   ->     1 11'00000010000
+      6:     1 13'---01-----0--   ->     1 11'00000010000
+      7:     2 13'----------1--   ->     0 11'00000001000
+      8:     2 13'---------00--   ->     2 11'00000001000
+      9:     2 13'---------10--   ->     8 11'00000001000
+     10:     3 13'-------0-10--   ->     0 11'00100000000
+     11:     3 13'----------1--   ->     0 11'00100000000
+     12:     3 13'---------00--   ->     3 11'00100000000
+     13:     3 13'-------1-10--   ->     9 11'00100000000
+     14:     4 13'----1-----0-0   ->     0 11'00000100000
+     15:     4 13'----------1--   ->     0 11'00000100000
+     16:     4 13'----1-----0-1   ->     4 11'00000100000
+     17:     4 13'----0-----0--   ->     4 11'00000100000
+     18:     5 13'----------1--   ->     0 11'00000000010
+     19:     5 13'---------00--   ->     5 11'00000000010
+     20:     5 13'-----0---10--   ->     5 11'00000000010
+     21:     5 13'-----1---10--   ->    10 11'00000000010
+     22:     6 13'00-------100-   ->     0 11'00010000000
+     23:     6 13'----------1--   ->     0 11'00010000000
+     24:     6 13'---------101-   ->     3 11'00010000000
+     25:     6 13'-1-------10--   ->     4 11'00010000000
+     26:     6 13'---------00--   ->     6 11'00010000000
+     27:     6 13'1--------10--   ->     7 11'00010000000
+     28:     7 13'----------1--   ->     0 11'00000000001
+     29:     7 13'--1-------0--   ->     1 11'00000000001
+     30:     7 13'--0-------0--   ->     7 11'00000000001
+     31:     8 13'----------1--   ->     0 11'10000000000
+     32:     8 13'------0--10--   ->     5 11'10000000000
+     33:     8 13'---------00--   ->     8 11'10000000000
+     34:     8 13'------1--10--   ->    10 11'10000000000
+     35:     9 13'----------1--   ->     0 11'00000000100
+     36:     9 13'---------10--   ->     2 11'00000000100
+     37:     9 13'---------00--   ->     9 11'00000000100
+     38:    10 13'----------1--   ->     0 11'00001000000
+     39:    10 13'---------10--   ->     1 11'00001000000
+     40:    10 13'---------00--   ->    10 11'00001000000
+
+-------------------------------------
+
+FSM `$fsm$\tx_state$1912' from module `uart_weight_loader':
+-------------------------------------
+
+  Information on FSM $fsm$\tx_state$1912 (\tx_state):
+
+  Number of input signals:    4
+  Number of output signals:   4
+  Number of state bits:       4
+
+  Input signals:
+    0: \rst
+    1: \tx_send
+    2: $eq$uart_weight_loader.v:165$1115_Y
+    3: $eq$uart_weight_loader.v:177$1118_Y
+
+  Output signals:
+    0: $procmux$1639_CMP
+    1: $procmux$1640_CMP
+    2: $procmux$1641_CMP
+    3: $procmux$1642_CMP
+
+  State encoding:
+    0:     4'---1  <RESET STATE>
+    1:     4'--1-
+    2:     4'-1--
+    3:     4'1---
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 4'--00   ->     0 4'1000
+      1:     0 4'---1   ->     0 4'1000
+      2:     0 4'--10   ->     2 4'1000
+      3:     1 4'---1   ->     0 4'0010
+      4:     1 4'-0-0   ->     1 4'0010
+      5:     1 4'01-0   ->     1 4'0010
+      6:     1 4'11-0   ->     3 4'0010
+      7:     2 4'---1   ->     0 4'0100
+      8:     2 4'-1-0   ->     1 4'0100
+      9:     2 4'-0-0   ->     2 4'0100
+     10:     3 4'-1-0   ->     0 4'0001
+     11:     3 4'---1   ->     0 4'0001
+     12:     3 4'-0-0   ->     3 4'0001
+
+-------------------------------------
+
+2.13.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+Mapping FSM `$fsm$\rx_state$1918' from module `\uart_weight_loader'.
+Mapping FSM `$fsm$\ld_state$1899' from module `\uart_weight_loader'.
+Mapping FSM `$fsm$\tx_state$1912' from module `\uart_weight_loader'.
+
+2.14. Executing OPT pass (performing simple optimizations).
+
+2.14.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~22 debug messages>
+
+2.14.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 344 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 330 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~42 debug messages>
+Removed a total of 14 cells.
+
+2.14.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~173 debug messages>
+
+2.14.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.14.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 330 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.14.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$1884 ($dff) from module uart_weight_loader (D = $procmux$1736_Y, Q = \rx_byte, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$2165 ($sdff) from module uart_weight_loader (D = \rx_shift, Q = \rx_byte).
+Adding SRST signal on $procdff$1883 ($dff) from module uart_weight_loader (D = $procmux$1726_Y, Q = \rx_valid, rval = 1'0).
+Adding EN signal on $procdff$1859 ($dff) from module uart_weight_loader (D = $procmux$1479_Y, Q = \ld_count).
+Adding EN signal on $procdff$1858 ($dff) from module uart_weight_loader (D = \rx_byte, Q = \ld_len).
+Adding SRST signal on $procdff$1882 ($dff) from module uart_weight_loader (D = $procmux$1748_Y, Q = \rx_sample_cnt, rval = 4'0000).
+Adding EN signal on $auto$ff.cc:337:slice$2190 ($sdff) from module uart_weight_loader (D = $procmux$1748_Y, Q = \rx_sample_cnt).
+Adding EN signal on $procdff$1881 ($dff) from module uart_weight_loader (D = { \uart_rx \rx_shift [7:1] }, Q = \rx_shift).
+Adding EN signal on $procdff$1880 ($dff) from module uart_weight_loader (D = $procmux$1785_Y, Q = \rx_bit_cnt).
+Adding EN signal on $procdff$1879 ($dff) from module uart_weight_loader (D = $procmux$1803_Y, Q = \rx_clk_div).
+Adding SRST signal on $procdff$1877 ($dff) from module uart_weight_loader (D = $procmux$1638_Y, Q = \uart_tx_reg, rval = 1'1).
+Adding SRST signal on $procdff$1876 ($dff) from module uart_weight_loader (D = $procmux$1649_Y, Q = \tx_active, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$2240 ($sdff) from module uart_weight_loader (D = $procmux$1649_Y, Q = \tx_active).
+Adding EN signal on $procdff$1875 ($dff) from module uart_weight_loader (D = $procmux$1661_Y, Q = \tx_shift).
+Adding SRST signal on $procdff$1864 ($dff) from module uart_weight_loader (D = $procmux$1386_Y, Q = \ld_progress, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$2261 ($sdff) from module uart_weight_loader (D = $procmux$1386_Y, Q = \ld_progress).
+Adding SRST signal on $procdff$1863 ($dff) from module uart_weight_loader (D = $procmux$1403_Y, Q = \ld_error, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$2273 ($sdff) from module uart_weight_loader (D = $procmux$1403_Y, Q = \ld_error).
+Adding EN signal on $procdff$1874 ($dff) from module uart_weight_loader (D = $procmux$1676_Y, Q = \tx_bit_cnt).
+Adding EN signal on $procdff$1873 ($dff) from module uart_weight_loader (D = $procmux$1687_Y, Q = \tx_clk_div).
+Adding SRST signal on $procdff$1862 ($dff) from module uart_weight_loader (D = $procmux$1268_Y, Q = \ld_done, rval = 1'0).
+Adding SRST signal on $procdff$1860 ($dff) from module uart_weight_loader (D = $procmux$1446_Y, Q = \ld_checksum_calc, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$2314 ($sdff) from module uart_weight_loader (D = $procmux$1446_Y, Q = \ld_checksum_calc).
+Adding SRST signal on $procdff$1861 ($dff) from module uart_weight_loader (D = $procmux$1421_Y, Q = \ld_loading, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$2328 ($sdff) from module uart_weight_loader (D = $procmux$1421_Y, Q = \ld_loading).
+Adding SRST signal on $procdff$1850 ($dff) from module uart_weight_loader (D = $procmux$1256_Y, Q = \wr_en, rval = 1'0).
+Adding SRST signal on $procdff$1851 ($dff) from module uart_weight_loader (D = $procmux$1633_Y, Q = \wr_block_id, rval = 2'00).
+Adding EN signal on $auto$ff.cc:337:slice$2345 ($sdff) from module uart_weight_loader (D = \rx_byte [1:0], Q = \wr_block_id).
+Adding SRST signal on $procdff$1852 ($dff) from module uart_weight_loader (D = { $procmux$1161_Y $procmux$1196_Y }, Q = \wr_addr, rval = 18'000000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$2349 ($sdff) from module uart_weight_loader (D = $procmux$1196_Y, Q = \wr_addr [7:0]).
+Adding EN signal on $auto$ff.cc:337:slice$2349 ($sdff) from module uart_weight_loader (D = $procmux$1161_Y, Q = \wr_addr [17:8]).
+Adding SRST signal on $procdff$1853 ($dff) from module uart_weight_loader (D = $procmux$1603_Y, Q = \wr_data, rval = 2'00).
+Adding EN signal on $auto$ff.cc:337:slice$2368 ($sdff) from module uart_weight_loader (D = $procmux$1603_Y, Q = \wr_data).
+Adding EN signal on $procdff$1865 ($dff) from module uart_weight_loader (D = $procmux$1365_Y, Q = \ld_reset_addr).
+Adding SRST signal on $procdff$1854 ($dff) from module uart_weight_loader (D = $procmux$1245_Y, Q = \tx_send, rval = 1'0).
+Adding EN signal on $procdff$1869 ($dff) from module uart_weight_loader (D = $procmux$1289_Y, Q = \resp_buf[1]).
+Adding EN signal on $procdff$1868 ($dff) from module uart_weight_loader (D = $procmux$1304_Y, Q = \resp_buf[0]).
+Adding EN signal on $procdff$1867 ($dff) from module uart_weight_loader (D = $procmux$1318_Y, Q = \resp_len).
+Adding EN signal on $procdff$1866 ($dff) from module uart_weight_loader (D = $procmux$1339_Y, Q = \resp_idx).
+Adding EN signal on $procdff$1855 ($dff) from module uart_weight_loader (D = $procmux$1592_Y, Q = \tx_byte).
+
+2.14.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 41 unused cells and 85 unused wires.
+<suppressed ~42 debug messages>
+
+2.14.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~21 debug messages>
+
+2.14.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.14.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~128 debug messages>
+
+2.14.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.14.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 416 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 370 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 368 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~144 debug messages>
+Removed a total of 48 cells.
+
+2.14.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.14.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 48 unused wires.
+<suppressed ~1 debug messages>
+
+2.14.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.14.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.14.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~130 debug messages>
+
+2.14.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.14.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 368 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.14.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.14.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.14.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.14.23. Finished fast OPT passes. (There is nothing left to do.)
+
+2.15. Executing WREDUCE pass (reducing word size of cells).
+Removed top 6 bits (of 7) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2452 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2437 ($ne).
+Removed top 5 bits (of 6) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2435 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2433 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2429 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2341 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2339 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2325 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2323 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2319 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2306 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2295 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2270 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2247 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2223 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2221 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2219 ($ne).
+Removed top 1 bits (of 2) from port B of cell uart_weight_loader.$auto$opt_dff.cc:235:make_patterns_logic$2215 ($ne).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$2139 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$2066 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$2062 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$2018 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$1995 ($eq).
+Removed top 2 bits (of 5) from port B of cell uart_weight_loader.$auto$fsm_map.cc:77:implement_pattern_cache$1991 ($eq).
+Removed top 1 bits (of 4) from port B of cell uart_weight_loader.$eq$uart_weight_loader.v:85$1101 ($eq).
+Removed top 1 bits (of 4) from port B of cell uart_weight_loader.$eq$uart_weight_loader.v:102$1107 ($eq).
+Removed top 11 bits (of 16) from port B of cell uart_weight_loader.$eq$uart_weight_loader.v:114$1111 ($eq).
+Removed top 1 bits (of 4) from port B of cell uart_weight_loader.$eq$uart_weight_loader.v:177$1118 ($eq).
+Removed top 11 bits (of 16) from port B of cell uart_weight_loader.$eq$uart_weight_loader.v:187$1121 ($eq).
+Removed top 5 bits (of 8) from port B of cell uart_weight_loader.$lt$uart_weight_loader.v:298$1133 ($lt).
+Removed top 7 bits (of 8) from port B of cell uart_weight_loader.$add$uart_weight_loader.v:350$1140 ($add).
+Converting cell uart_weight_loader.$mul$uart_weight_loader.v:354$1142 ($mul) from unsigned to signed.
+Removed top 7 bits (of 8) from port B of cell uart_weight_loader.$mul$uart_weight_loader.v:354$1142 ($mul).
+Removed top 7 bits (of 8) from port B of cell uart_weight_loader.$sub$uart_weight_loader.v:356$1144 ($sub).
+Removed top 2 bits (of 3) from port B of cell uart_weight_loader.$sub$uart_weight_loader.v:390$1152 ($sub).
+Removed top 2 bits (of 3) from port B of cell uart_weight_loader.$add$uart_weight_loader.v:393$1154 ($add).
+Removed top 2 bits (of 10) from mux cell uart_weight_loader.$procmux$1166 ($mux).
+Removed top 5 bits (of 8) from port B of cell uart_weight_loader.$procmux$1568_CMP0 ($eq).
+Removed top 6 bits (of 8) from port B of cell uart_weight_loader.$procmux$1569_CMP0 ($eq).
+Removed top 6 bits (of 8) from port B of cell uart_weight_loader.$procmux$1570_CMP0 ($eq).
+Removed top 7 bits (of 8) from port B of cell uart_weight_loader.$procmux$1571_CMP0 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$procmux$1586_CMP0 ($eq).
+Removed top 1 bits (of 3) from port B of cell uart_weight_loader.$procmux$1587_CMP0 ($eq).
+Removed top 2 bits (of 3) from port B of cell uart_weight_loader.$procmux$1588_CMP0 ($eq).
+Removed top 2 bits (of 10) from wire uart_weight_loader.$procmux$1166_Y.
+
+2.16. Executing PEEPOPT pass (run peephole optimizers).
+
+2.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+2.18. Executing PMUX2SHIFTX pass.
+Inspecting $pmux cell uart_weight_loader/$procmux$1331.
+  data width: 3 (next power-of-2 = 4, log2 = 2)
+  checking ctrl signal \resp_idx
+    best permutation: \resp_idx
+    best xor mask: 3'000
+      0: 3'100 -> 3'100 -> 3'100: 3'101
+      1: 3'011 -> 3'011 -> 3'011: 3'100
+      2: 3'010 -> 3'010 -> 3'010: 3'011
+      3: 3'001 -> 3'001 -> 3'001: 3'010
+      4: 3'000 -> 3'000 -> 3'000: 3'001
+    choices: 5
+    min choice: 0
+    max choice: 4
+    range density: 100%
+    absolute density: 100%
+    full density: 62%
+    update to full case.
+    new min choice: 0
+    new max choice: 7
+    full case: true
+    created $shiftx cell $auto$pmux2shiftx.cc:714:execute$2459.
+Inspecting $pmux cell uart_weight_loader/$procmux$1212.
+  data width: 8 (next power-of-2 = 8, log2 = 3)
+  checking ctrl signal \resp_idx
+    best permutation: \resp_idx
+    best xor mask: 3'000
+      0: 3'101 -> 3'101 -> 3'101: \resp_buf[5]
+      1: 3'100 -> 3'100 -> 3'100: \resp_buf[4]
+      2: 3'011 -> 3'011 -> 3'011: \resp_buf[3]
+      3: 3'010 -> 3'010 -> 3'010: \resp_buf[2]
+      4: 3'001 -> 3'001 -> 3'001: \resp_buf[1]
+      5: 3'000 -> 3'000 -> 3'000: \resp_buf[0]
+    choices: 6
+    min choice: 0
+    max choice: 5
+    range density: 100%
+    absolute density: 100%
+    full density: 75%
+    update to full case.
+    new min choice: 0
+    new max choice: 7
+    full case: true
+    created $shiftx cell $auto$pmux2shiftx.cc:714:execute$2461.
+Inspecting $pmux cell uart_weight_loader/$procmux$1583.
+  data width: 8 (next power-of-2 = 8, log2 = 3)
+  checking ctrl signal \resp_idx
+    best permutation: \resp_idx
+    best xor mask: 3'000
+      0: 3'101 -> 3'101 -> 3'101: \ld_progress
+      1: 3'100 -> 3'100 -> 3'100: { 7'0000000 \ld_loading }
+      2: 3'011 -> 3'011 -> 3'011: 8'00010010
+      3: 3'010 -> 3'010 -> 3'010: 8'00000100
+      4: 3'001 -> 3'001 -> 3'001: 8'11111110
+      5: 3'000 -> 3'000 -> 3'000: 8'10101010
+    choices: 6
+    min choice: 0
+    max choice: 5
+    range density: 100%
+    absolute density: 100%
+    full density: 75%
+    update to full case.
+    new min choice: 0
+    new max choice: 7
+    full case: true
+    created $shiftx cell $auto$pmux2shiftx.cc:714:execute$2463.
+
+2.19. Executing SORT pass.
+
+2.20. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+2.21. Executing TECHMAP pass (map to technology primitives).
+
+2.21.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/mul2dsp.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/mul2dsp.v' to AST representation.
+Generating RTLIL representation for module `\_80_mul'.
+Generating RTLIL representation for module `\_90_soft_mul'.
+Successfully finished Verilog frontend.
+
+2.21.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/xc7_dsp_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/xc7_dsp_map.v' to AST representation.
+Generating RTLIL representation for module `$__MUL25X18'.
+Successfully finished Verilog frontend.
+
+2.21.3. Continuing TECHMAP pass.
+Using template $paramod$5c21ec6702968d8b69e96b41421b1cdce393d4f6\_90_soft_mul for cells of type $mul.
+No more expansions possible.
+<suppressed ~43 debug messages>
+
+2.22. Executing OPT_EXPR pass (perform const folding).
+
+2.23. Executing WREDUCE pass (reducing word size of cells).
+
+2.24. Executing XILINX_DSP pass (pack resources into DSPs).
+
+2.25. Executing TECHMAP pass (map to technology primitives).
+
+2.25.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/cmp2lut.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/cmp2lut.v' to AST representation.
+Generating RTLIL representation for module `\_90_lut_cmp_'.
+Successfully finished Verilog frontend.
+
+2.25.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/cmp2lcu.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/cmp2lcu.v' to AST representation.
+Generating RTLIL representation for module `\_80_lcu_cmp_'.
+Generating RTLIL representation for module `$__CMP2LCU'.
+Successfully finished Verilog frontend.
+
+2.25.3. Continuing TECHMAP pass.
+Using template $paramod$4612af8e8613ab769eb57b834436ffd762ad95c9\_80_lcu_cmp_ for cells of type $lt.
+Using template $paramod$ff3539574775ce135eb4e3c01210438e0dab80e3\_80_lcu_cmp_ for cells of type $gt.
+Using template $paramod$d77dc0297f06d6a7135b58ab87b8d64621a87bf3$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$888548294605cadc0bce5ae3c8fe0b045c51f9c6$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$0a7edf7512be250942a2f57d92387a4754b3ab52$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$21291d7b8f48b221e34bcdb073026f9cd77eeb89$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$67536f5ff68be3819b3d62e5e5d77c6f6035105d$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$3e0abc24c66e2ab4ff4b71800b10ecdaf3807fe7$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$d1c63ed44eb65dc22ff89c88e0d27633f13a765d$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$01be8f0e3dae8541dee7dc734afdb4eca045a621$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$07273b2bd8564267537da858ad05179b73d08371$__CMP2LCU for cells of type $__CMP2LCU.
+Using template $paramod$450c268c12fc6efbfb4aeeb63d5fb4806d4fba29$__CMP2LCU for cells of type $__CMP2LCU.
+No more expansions possible.
+<suppressed ~311 debug messages>
+
+2.26. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module uart_weight_loader:
+  creating $macc model for $add$uart_weight_loader.v:108$1109 ($add).
+  creating $macc model for $add$uart_weight_loader.v:119$1112 ($add).
+  creating $macc model for $add$uart_weight_loader.v:180$1119 ($add).
+  creating $macc model for $add$uart_weight_loader.v:191$1122 ($add).
+  creating $macc model for $add$uart_weight_loader.v:350$1140 ($add).
+  creating $macc model for $add$uart_weight_loader.v:351$1141 ($add).
+  creating $macc model for $add$uart_weight_loader.v:393$1154 ($add).
+  creating $macc model for $add$uart_weight_loader.v:403$1155 ($add).
+  creating $macc model for $mul$uart_weight_loader.v:354$1142 ($mul).
+  creating $macc model for $add$uart_weight_loader.v:105$1108 ($add).
+  creating $macc model for $sub$uart_weight_loader.v:356$1144 ($sub).
+  creating $macc model for $sub$uart_weight_loader.v:390$1152 ($sub).
+  creating $alu model for $macc $sub$uart_weight_loader.v:390$1152.
+  creating $alu model for $macc $sub$uart_weight_loader.v:356$1144.
+  creating $alu model for $macc $add$uart_weight_loader.v:105$1108.
+  creating $alu model for $macc $add$uart_weight_loader.v:403$1155.
+  creating $alu model for $macc $add$uart_weight_loader.v:393$1154.
+  creating $alu model for $macc $add$uart_weight_loader.v:351$1141.
+  creating $alu model for $macc $add$uart_weight_loader.v:350$1140.
+  creating $alu model for $macc $add$uart_weight_loader.v:191$1122.
+  creating $alu model for $macc $add$uart_weight_loader.v:180$1119.
+  creating $alu model for $macc $add$uart_weight_loader.v:119$1112.
+  creating $alu model for $macc $add$uart_weight_loader.v:108$1109.
+  creating $macc cell for $mul$uart_weight_loader.v:354$1142: $auto$alumacc.cc:382:replace_macc$2526
+  creating $alu cell for $add$uart_weight_loader.v:108$1109: $auto$alumacc.cc:512:replace_alu$2527
+  creating $alu cell for $add$uart_weight_loader.v:119$1112: $auto$alumacc.cc:512:replace_alu$2530
+  creating $alu cell for $add$uart_weight_loader.v:180$1119: $auto$alumacc.cc:512:replace_alu$2533
+  creating $alu cell for $add$uart_weight_loader.v:191$1122: $auto$alumacc.cc:512:replace_alu$2536
+  creating $alu cell for $add$uart_weight_loader.v:350$1140: $auto$alumacc.cc:512:replace_alu$2539
+  creating $alu cell for $add$uart_weight_loader.v:351$1141: $auto$alumacc.cc:512:replace_alu$2542
+  creating $alu cell for $add$uart_weight_loader.v:393$1154: $auto$alumacc.cc:512:replace_alu$2545
+  creating $alu cell for $add$uart_weight_loader.v:403$1155: $auto$alumacc.cc:512:replace_alu$2548
+  creating $alu cell for $add$uart_weight_loader.v:105$1108: $auto$alumacc.cc:512:replace_alu$2551
+  creating $alu cell for $sub$uart_weight_loader.v:356$1144: $auto$alumacc.cc:512:replace_alu$2554
+  creating $alu cell for $sub$uart_weight_loader.v:390$1152: $auto$alumacc.cc:512:replace_alu$2557
+  created 11 $alu and 1 $macc cells.
+
+2.27. Executing SHARE pass (SAT-based resource sharing).
+
+2.28. Executing OPT pass (performing simple optimizations).
+
+2.28.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~32 debug messages>
+
+2.28.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 393 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 386 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~21 debug messages>
+Removed a total of 7 cells.
+
+2.28.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/8 on $pmux $procmux$1212.
+    dead port 2/8 on $pmux $procmux$1212.
+    dead port 3/8 on $pmux $procmux$1212.
+    dead port 4/8 on $pmux $procmux$1212.
+    dead port 5/8 on $pmux $procmux$1212.
+    dead port 6/8 on $pmux $procmux$1212.
+    dead port 8/8 on $pmux $procmux$1212.
+    dead port 1/7 on $pmux $procmux$1331.
+    dead port 2/7 on $pmux $procmux$1331.
+    dead port 3/7 on $pmux $procmux$1331.
+    dead port 4/7 on $pmux $procmux$1331.
+    dead port 5/7 on $pmux $procmux$1331.
+    dead port 7/7 on $pmux $procmux$1331.
+    dead port 1/8 on $pmux $procmux$1583.
+    dead port 2/8 on $pmux $procmux$1583.
+    dead port 3/8 on $pmux $procmux$1583.
+    dead port 4/8 on $pmux $procmux$1583.
+    dead port 5/8 on $pmux $procmux$1583.
+    dead port 6/8 on $pmux $procmux$1583.
+    dead port 8/8 on $pmux $procmux$1583.
+Removed 20 multiplexer ports.
+<suppressed ~130 debug messages>
+
+2.28.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.28.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 383 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 382 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+2.28.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.28.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 136 unused wires.
+<suppressed ~1 debug messages>
+
+2.28.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.28.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.28.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~129 debug messages>
+
+2.28.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.28.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 382 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.28.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.28.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.28.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.28.16. Finished fast OPT passes. (There is nothing left to do.)
+
+2.29. Executing MEMORY pass.
+
+2.29.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+2.29.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+2.29.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+2.29.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+2.29.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+2.29.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.29.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+2.29.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+2.29.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.29.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+2.30. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.31. Executing MEMORY_LIBMAP pass (mapping memories to cells).
+
+2.32. Executing TECHMAP pass (map to technology primitives).
+
+2.32.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/lutrams_xc5v_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/lutrams_xc5v_map.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_DP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_QP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_OP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_SDP_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_64X8SW_'.
+Generating RTLIL representation for module `$__XILINX_LUTRAM_32X16DR8_'.
+Successfully finished Verilog frontend.
+
+2.32.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~9 debug messages>
+
+2.33. Executing TECHMAP pass (map to technology primitives).
+
+2.33.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/brams_xc6v_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/brams_xc6v_map.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_TDP_'.
+Generating RTLIL representation for module `$__XILINX_BLOCKRAM_SDP_'.
+Successfully finished Verilog frontend.
+
+2.33.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~4 debug messages>
+
+2.34. Executing OPT pass (performing simple optimizations).
+
+2.34.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~122 debug messages>
+
+2.34.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 314 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.34.3. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $auto$ff.cc:337:slice$2388 ($dffe) from module uart_weight_loader (D = $procmux$1294_Y, Q = \resp_buf[1], rval = 8'00000000).
+Adding SRST signal on $auto$ff.cc:337:slice$2376 ($dffe) from module uart_weight_loader (D = $add$uart_weight_loader.v:403$1155_Y, Q = \ld_reset_addr, rval = 18'000000000000000000).
+Adding SRST signal on $auto$ff.cc:337:slice$2289 ($dffe) from module uart_weight_loader (D = $procmux$1674_Y, Q = \tx_bit_cnt, rval = 4'0000).
+Adding SRST signal on $auto$ff.cc:337:slice$2209 ($dffe) from module uart_weight_loader (D = $procmux$1783_Y, Q = \rx_bit_cnt, rval = 4'0000).
+Adding SRST signal on $auto$ff.cc:337:slice$2174 ($dffe) from module uart_weight_loader (D = $procmux$1477_Y, Q = \ld_count, rval = 8'00000000).
+Setting constant 0-bit at position 0 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 1-bit at position 1 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 0-bit at position 2 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 1-bit at position 3 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 0-bit at position 4 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 1-bit at position 5 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 0-bit at position 6 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 1-bit at position 7 on $auto$ff.cc:337:slice$2399 ($dffe) from module uart_weight_loader.
+Setting constant 0-bit at position 0 on $auto$ff.cc:337:slice$2410 ($dffe) from module uart_weight_loader.
+Setting constant 1-bit at position 1 on $auto$ff.cc:337:slice$2410 ($dffe) from module uart_weight_loader.
+Setting constant 0-bit at position 2 on $auto$ff.cc:337:slice$2410 ($dffe) from module uart_weight_loader.
+
+2.34.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 5 unused cells and 73 unused wires.
+<suppressed ~6 debug messages>
+
+2.34.5. Rerunning OPT passes. (Removed registers in this run.)
+
+2.34.6. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~8 debug messages>
+
+2.34.7. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 308 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.34.8. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $auto$ff.cc:337:slice$2250 ($dffe) from module uart_weight_loader (D = \tx_byte [7], Q = \tx_shift [7], rval = 1'0).
+
+2.34.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 3 unused wires.
+<suppressed ~1 debug messages>
+
+2.34.10. Rerunning OPT passes. (Removed registers in this run.)
+
+2.34.11. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.34.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 309 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.34.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.34.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.34.15. Finished fast OPT passes.
+
+2.35. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+2.36. Executing OPT pass (performing simple optimizations).
+
+2.36.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.36.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 309 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.36.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~39 debug messages>
+
+2.36.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+    Consolidated identical input bits for $mux cell $procmux$1292:
+      Old ports: A=8'11111111, B=8'00000000, Y=$procmux$1292_Y
+      New ports: A=1'1, B=1'0, Y=$procmux$1292_Y [0]
+      New connections: $procmux$1292_Y [7:1] = { $procmux$1292_Y [0] $procmux$1292_Y [0] $procmux$1292_Y [0] $procmux$1292_Y [0] $procmux$1292_Y [0] $procmux$1292_Y [0] $procmux$1292_Y [0] }
+    New ctrl vector for $pmux cell $procmux$1339: { \ld_state [1] \ld_state [4] }
+    New ctrl vector for $pmux cell $procmux$1403: $auto$opt_reduce.cc:137:opt_pmux$2926
+    New ctrl vector for $pmux cell $procmux$1421: $auto$opt_reduce.cc:137:opt_pmux$2928
+    New ctrl vector for $pmux cell $procmux$1446: $auto$opt_reduce.cc:137:opt_pmux$2930
+    New input vector for $reduce_or cell $auto$opt_reduce.cc:131:opt_pmux$2929: { \ld_state [9:8] \ld_state [6:5] \ld_state [3:2] }
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 6 changes.
+
+2.36.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 312 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.36.6. Executing OPT_SHARE pass.
+    Found cells that share an operand and can be merged by moving the $mux $procmux$1592 in front of them:
+        $auto$pmux2shiftx.cc:714:execute$2463
+        $auto$pmux2shiftx.cc:714:execute$2461
+
+2.36.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+2.36.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~4 debug messages>
+
+2.36.10. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.36.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~33 debug messages>
+
+2.36.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+    Consolidated identical input bits for $mux cell $auto$opt_share.cc:244:merge_operators$2932:
+      Old ports: A={ 32'00000000000000000000000000000000 \resp_buf[1] 8'10101010 }, B={ \ld_progress 7'0000000 \ld_loading 32'00010010000001001111111010101010 }, Y=$auto$rtlil.cc:3474:Mux$2933
+      New ports: A={ 10'0000000000 \resp_buf[1] }, B={ \ld_progress \ld_loading 9'111111110 }, Y={ $auto$rtlil.cc:3474:Mux$2933 [47:40] $auto$rtlil.cc:3474:Mux$2933 [32] $auto$rtlil.cc:3474:Mux$2933 [18] $auto$rtlil.cc:3474:Mux$2933 [15:8] }
+      New connections: { $auto$rtlil.cc:3474:Mux$2933 [39:33] $auto$rtlil.cc:3474:Mux$2933 [31:19] $auto$rtlil.cc:3474:Mux$2933 [17:16] $auto$rtlil.cc:3474:Mux$2933 [7:0] } = { 10'0000000000 $auto$rtlil.cc:3474:Mux$2933 [18] 2'00 $auto$rtlil.cc:3474:Mux$2933 [18] 16'0000000010101010 }
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 1 changes.
+
+2.36.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 310 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.36.14. Executing OPT_SHARE pass.
+
+2.36.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 2 unused wires.
+<suppressed ~1 debug messages>
+
+2.36.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.36.18. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.36.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~33 debug messages>
+
+2.36.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.36.21. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 310 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.36.22. Executing OPT_SHARE pass.
+
+2.36.23. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.36.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.36.25. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.36.26. Finished fast OPT passes. (There is nothing left to do.)
+
+2.37. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+2.38. Executing TECHMAP pass (map to technology primitives).
+
+2.38.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.38.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/arith_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/arith_map.v' to AST representation.
+Generating RTLIL representation for module `\_80_xilinx_lcu'.
+Generating RTLIL representation for module `\_80_xilinx_alu'.
+Successfully finished Verilog frontend.
+
+2.38.3. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $dffe.
+Using extmapper simplemap for cells of type $sdffce.
+Using template $paramod$fc972a7a46956c1788f3cb5257b53c8f1df2d0cc\_90_alu for cells of type $alu.
+Using template $paramod$4a44808c934bde8afb0b5076010d49e796af99d9\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$674141544fade965cf052b5e9d5b65813fc4e151\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$16fb12dfac30fdd016ff832a214595b9166c278e\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$db8e6ecc9d55e30ac39e4a71c23a85841d46f485\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$2e6fa573ec247c71d1c073ac74c0c20475cdfbce\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$817919053e360e32f1a00d067c5411f16a07f712\_80_xilinx_alu for cells of type $alu.
+Using extmapper maccmap for cells of type $macc_v2.
+  add \ld_count * 1'1 (8x1 bits, signed)
+Using template $paramod$constmap:009ca9aced9bfbb7288274f2877c74fe7be774ee$paramod$d1b257ff565642fba2b000fcec20ff17f8a44d6d\_90_shift_shiftx for cells of type $shiftx.
+Using template $paramod$constmap:f775777d21e72c04fc672e8e05d0b14efa01910c$paramod$60b0849a71261dfc0d41b0c2b4c6a33e19ba1777\_90_shift_shiftx for cells of type $shiftx.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $ne.
+Using extmapper simplemap for cells of type $reduce_bool.
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $dff.
+Using extmapper simplemap for cells of type $logic_and.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=s32'00000000000000000000000000000010 for cells of type $lcu.
+Using extmapper simplemap for cells of type $xor.
+Using template $paramod$a1bc51c02ce12ac21eb18988e83292af48ed7d72\_90_div for cells of type $div.
+Using template $paramod$5fa769bd6f6ca230a24c9bbc0e120f15bcfea838\_90_pmux for cells of type $pmux.
+Using template $paramod$fc16b9f758000d363d24f130038bd99b46b4fa1b\_90_pmux for cells of type $pmux.
+Using template $paramod$c5c783b17ab1d780abfad8cfe6563a0a7b47a3b0\_90_pmux for cells of type $pmux.
+Using template $paramod$32e7c4d6f92ff4337599ece53082d2e88a82a9f2\_90_pmux for cells of type $pmux.
+Using template $paramod$0d149ffe75563ef6fcc1a3dddc59d00af28651a7\_90_pmux for cells of type $pmux.
+Using template $paramod$bf2533632d512eac76dd186c0da49367e29b8e98\_90_pmux for cells of type $pmux.
+Using template $paramod$d51eee4c9fcba52409138601871da9e4f5c9e97c\_80_xilinx_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod$a1bc51c02ce12ac21eb18988e83292af48ed7d72$__div_mod_trunc for cells of type $__div_mod_trunc.
+Using extmapper simplemap for cells of type $or.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000000001 for cells of type $fa.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000000001 for cells of type $lcu.
+Running "alumacc" on wrapper $extern:wrap:$neg:Y_WIDTH=8:A_WIDTH=8:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$neg:Y_WIDTH=8:A_WIDTH=8:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$neg:Y_WIDTH=8:A_WIDTH=8:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod$__div_mod_u\WIDTH=32'00000000000000000000000000001000 for cells of type $__div_mod_u.
+Using template $paramod$b57f8cbc692d4b4ff7a323997a97870cdc4bebce\_80_xilinx_alu for cells of type $alu.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=8:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=8:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=8:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=8:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=9:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=9:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=9:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=9:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=10:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=10:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=10:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=10:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=11:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=11:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=11:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=11:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=12:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=12:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=12:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=12:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=13:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=13:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=13:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=13:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=14:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=14:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=14:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=14:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$sub:Y_WIDTH=15:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$sub:Y_WIDTH=15:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$sub:Y_WIDTH=15:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Running "alumacc" on wrapper $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47 for cells of type $extern:wrap:$ge:Y_WIDTH=1:B_WIDTH=15:A_WIDTH=8:B_SIGNED=0:A_SIGNED=0:394426c56d1a028ba8fdd5469b163e04011def47.
+Using template $paramod$44af32510f2baa8271ed750fc0dad40df1774ed1\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$0a233d32adf8909b3f06c5ddf25c943bdf7bf10b\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$aa7143ce406f0c868a1cd60387d31b26a624121b\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$a40da978c97d6eab37920c48aef32ca1b33bada0\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$d970b8ebf2817392680f90358e8a0ce0427bad32\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$a7448f2bb2676573c7e0dd5ab280e66ee1a8cb3b\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$81054a4f282238345d901366ffc97694ee9698ab\_80_xilinx_alu for cells of type $alu.
+Using template $paramod$b0a0ddf8e55390b792e87472b85fa053fb66763a\_80_xilinx_alu for cells of type $alu.
+No more expansions possible.
+<suppressed ~2285 debug messages>
+
+2.39. Executing OPT pass (performing simple optimizations).
+
+2.39.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~1170 debug messages>
+
+2.39.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 2064 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 1725 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 1658 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 1645 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 1638 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~1278 debug messages>
+Removed a total of 426 cells.
+
+2.39.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.39.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 217 unused cells and 1554 unused wires.
+<suppressed ~218 debug messages>
+
+2.39.5. Finished fast OPT passes.
+
+2.40. Executing IOPADMAP pass (mapping inputs/outputs to IO-PAD cells).
+Mapping port uart_weight_loader.clk using IBUF.
+Mapping port uart_weight_loader.load_done using OBUF.
+Mapping port uart_weight_loader.load_error using OBUF.
+Mapping port uart_weight_loader.load_progress using OBUF.
+Mapping port uart_weight_loader.loading using OBUF.
+Mapping port uart_weight_loader.rst using IBUF.
+Mapping port uart_weight_loader.uart_rx using IBUF.
+Mapping port uart_weight_loader.uart_tx using OBUF.
+Mapping port uart_weight_loader.wr_addr using OBUF.
+Mapping port uart_weight_loader.wr_block_id using OBUF.
+Mapping port uart_weight_loader.wr_data using OBUF.
+Mapping port uart_weight_loader.wr_en using OBUF.
+
+2.41. Executing TECHMAP pass (map to technology primitives).
+
+2.41.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.41.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_map.v' to AST representation.
+Generating RTLIL representation for module `$__SHREG_'.
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.41.3. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~80 debug messages>
+Removed 0 unused cells and 6 unused wires.
+
+2.42. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+
+2.43. Executing TECHMAP pass (map to technology primitives).
+
+2.43.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/ff_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/ff_map.v' to AST representation.
+Generating RTLIL representation for module `$_DFFE_NP0P_'.
+Generating RTLIL representation for module `$_DFFE_PP0P_'.
+Generating RTLIL representation for module `$_DFFE_NP1P_'.
+Generating RTLIL representation for module `$_DFFE_PP1P_'.
+Generating RTLIL representation for module `$_DFFSRE_NPPP_'.
+Generating RTLIL representation for module `$_DFFSRE_PPPP_'.
+Generating RTLIL representation for module `$_SDFFE_NP0P_'.
+Generating RTLIL representation for module `$_SDFFE_PP0P_'.
+Generating RTLIL representation for module `$_SDFFE_NP1P_'.
+Generating RTLIL representation for module `$_SDFFE_PP1P_'.
+Generating RTLIL representation for module `$_DLATCH_NP0_'.
+Generating RTLIL representation for module `$_DLATCH_PP0_'.
+Generating RTLIL representation for module `$_DLATCH_NP1_'.
+Generating RTLIL representation for module `$_DLATCH_PP1_'.
+Generating RTLIL representation for module `$_DLATCH_NPP_'.
+Generating RTLIL representation for module `$_DLATCH_PPP_'.
+Successfully finished Verilog frontend.
+
+2.43.2. Continuing TECHMAP pass.
+Using template $paramod$_SDFFE_PP0P_\_TECHMAP_WIREINIT_Q_=1'x for cells of type $_SDFFE_PP0P_.
+Using template $paramod$_SDFFE_PP1P_\_TECHMAP_WIREINIT_Q_=1'x for cells of type $_SDFFE_PP1P_.
+No more expansions possible.
+<suppressed ~219 debug messages>
+
+2.44. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+<suppressed ~15 debug messages>
+
+2.45. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/abc9_model.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/abc9_model.v' to AST representation.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.46. Executing ABC9 pass.
+
+2.46.1. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.2. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.3. Executing SCC pass (detecting logic loops).
+Found 0 SCCs in module uart_weight_loader.
+Found 0 SCCs.
+
+2.46.4. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.5. Executing TECHMAP pass (map to technology primitives).
+
+2.46.5.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.46.5.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~506 debug messages>
+
+2.46.6. Executing OPT pass (performing simple optimizations).
+
+2.46.6.1. Executing OPT_EXPR pass (perform const folding).
+
+2.46.6.2. Executing OPT_MERGE pass (detect identical cells).
+Removed a total of 0 cells.
+
+2.46.6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Removed 0 multiplexer ports.
+
+2.46.6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+Performed a total of 0 changes.
+
+2.46.6.5. Executing OPT_MERGE pass (detect identical cells).
+Removed a total of 0 cells.
+
+2.46.6.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+
+2.46.6.8. Executing OPT_EXPR pass (perform const folding).
+
+2.46.6.9. Finished fast OPT passes. (There is nothing left to do.)
+
+2.46.7. Executing TECHMAP pass (map to technology primitives).
+
+2.46.7.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_map.v' to AST representation.
+Successfully finished Verilog frontend.
+
+2.46.7.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~2 debug messages>
+
+2.46.8. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_model.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_model.v' to AST representation.
+Generating RTLIL representation for module `$__ABC9_DELAY'.
+Generating RTLIL representation for module `$__ABC9_SCC_BREAKER'.
+Generating RTLIL representation for module `$__DFF_N__$abc9_flop'.
+Generating RTLIL representation for module `$__DFF_P__$abc9_flop'.
+Successfully finished Verilog frontend.
+
+2.46.9. Executing ABC9_OPS pass (helper functions for ABC9).
+<suppressed ~2 debug messages>
+
+2.46.10. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.11. Executing ABC9_OPS pass (helper functions for ABC9).
+<suppressed ~2 debug messages>
+
+2.46.12. Executing TECHMAP pass (map to technology primitives).
+
+2.46.12.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+2.46.12.2. Continuing TECHMAP pass.
+Using template CARRY4 for cells of type CARRY4.
+Using extmapper simplemap for cells of type $xor.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $or.
+No more expansions possible.
+<suppressed ~518 debug messages>
+
+2.46.13. Executing OPT pass (performing simple optimizations).
+
+2.46.13.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.46.13.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 62 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Computing hashes of 61 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+2.46.13.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+2.46.13.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.46.13.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 61 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.46.13.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.13.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+Removed 0 unused cells and 14 unused wires.
+<suppressed ~3 debug messages>
+
+2.46.13.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.46.13.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+2.46.13.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \uart_weight_loader..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+2.46.13.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \uart_weight_loader.
+Performed a total of 0 changes.
+
+2.46.13.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\uart_weight_loader'.
+Computing hashes of 61 cells of `\uart_weight_loader'.
+Finding duplicate cells in `\uart_weight_loader'.
+Removed a total of 0 cells.
+
+2.46.13.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+2.46.13.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \uart_weight_loader..
+
+2.46.13.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module uart_weight_loader.
+
+2.46.13.16. Finished fast OPT passes. (There is nothing left to do.)
+
+2.46.14. Executing AIGMAP pass (map logic to AIG).
+Module uart_weight_loader: replaced 9 cells with 60 new cells, skipped 52 cells.
+  replaced 3 cell types:
+       4 $_MUX_
+       1 $_OR_
+       4 $_XOR_
+  not replaced 1 cell types:
+      52 $specify2
+
+2.46.15. Executing AIGMAP pass (map logic to AIG).
+Module uart_weight_loader: replaced 664 cells with 3435 new cells, skipped 850 cells.
+  replaced 4 cell types:
+     219 $_MUX_
+      34 $_ORNOT_
+     359 $_OR_
+      52 $_XOR_
+  not replaced 7 cell types:
+     335 $_AND_
+     230 $_NOT_
+     178 FDRE
+       1 FDSE
+       3 IBUF
+      35 OBUF
+      68 CARRY4
+
+2.46.15.1. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.15.2. Executing ABC9_OPS pass (helper functions for ABC9).
+
+2.46.15.3. Executing XAIGER backend.
+<suppressed ~190 debug messages>
+Extracted 1541 AND gates and 4974 wires from module `uart_weight_loader' to a netlist network with 220 inputs and 302 outputs.
+
+2.46.15.4. Executing ABC9_EXE pass (technology mapping using ABC9).
+
+2.46.15.5. Executing ABC9.
+Running ABC command: "<yosys-exe-dir>/yosys-abc" -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ======== ABC command line "source <abc-temp-dir>/abc.script"
+ABC: + read_lut <abc-temp-dir>/input.lut 
+ABC: + read_box <abc-temp-dir>/input.box 
+ABC: + &read <abc-temp-dir>/input.xaig 
+ABC: + &ps 
+ABC: <abc-temp-dir>/input : i/o =    220/    302  and =    1246  lev =   79 (9.55)  mem = 0.04 MB  box = 68  bb = 0
+ABC: + &scorr 
+ABC: Warning: The network is combinational.
+ABC: + &sweep 
+ABC: + &dc2 
+ABC: + &dch -f -r 
+ABC: + &ps 
+ABC: <abc-temp-dir>/input : i/o =    220/    302  and =    1290  lev =   18 (1.50)  mem = 0.04 MB  ch =  193  box = 54  bb = 0
+ABC: cst =       0  cls =    169  lit =     193  unused =    1580  proof =     0
+ABC: + &if -W 300 -v 
+ABC: K = 8. Memory (bytes): Truth =    0. Cut =   68. Obj =  152. Set =  708. CutMin = no
+ABC: Node =    1290.  Ch =   169.  Total mem =    0.45 MB. Peak cut mem =    0.05 MB.
+ABC: P:  Del = 11195.00.  Ar =    1148.0.  Edge =     1298.  Cut =    15370.  T =     0.00 sec
+ABC: P:  Del = 11195.00.  Ar =    1106.0.  Edge =     1273.  Cut =    14979.  T =     0.00 sec
+ABC: P:  Del = 11195.00.  Ar =     858.0.  Edge =     1111.  Cut =    18994.  T =     0.00 sec
+ABC: F:  Del = 11195.00.  Ar =     811.0.  Edge =     1051.  Cut =    15693.  T =     0.00 sec
+ABC: A:  Del = 11195.00.  Ar =     798.0.  Edge =      998.  Cut =    15604.  T =     0.00 sec
+ABC: A:  Del = 11195.00.  Ar =     797.0.  Edge =      998.  Cut =    15600.  T =     0.00 sec
+ABC: Total time =     0.02 sec
+ABC: + &write -n <abc-temp-dir>/output.aig 
+ABC: + &mfs 
+ABC: + &ps -l 
+ABC: <abc-temp-dir>/input : i/o =    220/    302  and =    1035  lev =   15 (1.57)  mem = 0.04 MB  box = 53  bb = 0
+ABC: Mapping (K=6)  :  lut =    284  edge =     977  lev =    8 (0.85)  levB =   32  mem = 0.02 MB
+ABC: LUT = 284 : 2=98 34.5 %  3=50 17.6 %  4=63 22.2 %  5=59 20.8 %  6=14 4.9 %  Ave = 3.44
+ABC: + &write -n <abc-temp-dir>/output.aig 
+ABC: + &verify 
+ABC: Networks are equivalent.  Time =     0.05 sec
+ABC: + time 
+ABC: elapse: 0.24 seconds, total: 0.24 seconds
+
+2.46.15.6. Executing AIGER frontend.
+<suppressed ~1070 debug messages>
+Removed 1476 unused cells and 3088 unused wires.
+
+2.46.15.7. Executing ABC9_OPS pass (helper functions for ABC9).
+ABC RESULTS:              $lut cells:      313
+ABC RESULTS:           \CARRY4 cells:       53
+ABC RESULTS:           input signals:       21
+ABC RESULTS:          output signals:      112
+Removing temp directory.
+
+2.46.16. Executing TECHMAP pass (map to technology primitives).
+
+2.46.16.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/abc9_unmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/abc9_unmap.v' to AST representation.
+Generating RTLIL representation for module `$__DFF_x__$abc9_flop'.
+Generating RTLIL representation for module `$__ABC9_SCC_BREAKER'.
+Successfully finished Verilog frontend.
+
+2.46.16.2. Continuing TECHMAP pass.
+No more expansions possible.
+<suppressed ~5 debug messages>
+Removed 91 unused cells and 5551 unused wires.
+
+2.47. Executing XILINX_SRL pass (Xilinx shift register extraction).
+
+2.48. Executing TECHMAP pass (map to technology primitives).
+
+2.48.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/lut_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/lut_map.v' to AST representation.
+Generating RTLIL representation for module `$lut'.
+Successfully finished Verilog frontend.
+
+2.48.2. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/xilinx/cells_map.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/xilinx/cells_map.v' to AST representation.
+Generating RTLIL representation for module `$__SHREG_'.
+Generating RTLIL representation for module `$__XILINX_SHREG_'.
+Generating RTLIL representation for module `$__XILINX_MUXF78'.
+Successfully finished Verilog frontend.
+
+2.48.3. Continuing TECHMAP pass.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1001 for cells of type $lut.
+Using template $paramod$c67ff654dfa9062d61db52bd013fb1271e5b9a9b$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0010 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0100 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1110 for cells of type $lut.
+Using template $paramod$5dd0a747ca3c1c3f3fa5939c11607b40c5c78b01$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01101100 for cells of type $lut.
+Using template $paramod$611e5863a30eeacc19b5015939188ef7be763eab$lut for cells of type $lut.
+Using template $paramod$38bb80538c4563d1b0e51349dfb7879c92847931$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11001010 for cells of type $lut.
+Using template $paramod$4af6beda6a1732706b73624172d62d310e434a4a$lut for cells of type $lut.
+Using template $paramod$2886ad3436b29b668c3036f9687bc2b40f09f93e$lut for cells of type $lut.
+Using template $paramod$52f4b3155131aba4bef715ec573a79c52a986142$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10001100 for cells of type $lut.
+Using template $paramod$658b9ed803f0d3d335616d3858b53e0a2522f1e8$lut for cells of type $lut.
+Using template $paramod$eba7de026ff587370e320127e266317dae097a89$lut for cells of type $lut.
+Using template $paramod$6e238df02989b317f10820a22773676e71120644$lut for cells of type $lut.
+Using template $paramod$3430340b7b5842cb53598832e70c2030710c7529$lut for cells of type $lut.
+Using template $paramod$c3a24d9d00ec425b21dafa005c3e98836c9c5bc1$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11100010 for cells of type $lut.
+Using template $paramod$3718b46f9fc8e7db62b1202aeaec21c3331ed565$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00010000 for cells of type $lut.
+Using template $paramod$c1eec2e1dfa2d89c31dc9812ee8a255bd0b35b52$lut for cells of type $lut.
+Using template $paramod$027b71830bd0fbfb04ad11206c5a0de76ed9d3f5$lut for cells of type $lut.
+Using template $paramod$b812877c6826ca7c644c48fb02bb69a3ab237674$lut for cells of type $lut.
+Using template $paramod$f45429e380905f064bb0bad3a8bdb941708e63a7$lut for cells of type $lut.
+Using template $paramod$6d7cc275871d0ceead401cadfae2ff1124665ec4$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1000 for cells of type $lut.
+Using template $paramod$d4fae2c0d9ad2966369cd4e39b81c71bcd1327c9$lut for cells of type $lut.
+Using template $paramod$21dfb7f39c059d886e02a3279e1f78dd3510baa5$lut for cells of type $lut.
+Using template $paramod$e306c575c0d40f21302d3b2791c02e5664e954b0$lut for cells of type $lut.
+Using template $paramod$ce15874c299a587dd16825ec2d2d2759b547554e$lut for cells of type $lut.
+Using template $paramod$9ae0f136c9ed34a2deb323e9b2a3a520eea61514$lut for cells of type $lut.
+Using template $paramod$6d6beead1425af15cf78b27fd9b11b41b5d4bce8$lut for cells of type $lut.
+Using template $paramod$f405ee362848dd1a47c58160f854302f6ecf95ff$lut for cells of type $lut.
+Using template $paramod$b689b8ff42a80f1cd99d931a6ab60c44f4f74f36$lut for cells of type $lut.
+Using template $paramod$571404c0889eaf57f492cb5e37f8acb5df5852f9$lut for cells of type $lut.
+Using template $paramod$251994398653c4cf8de320f1e306e535d5d2d624$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0001 for cells of type $lut.
+Using template $paramod$29a4d0c6059d145fabdbb76bae6a8ddc030e61d0$lut for cells of type $lut.
+Using template $paramod$dd48b04dd066bf6387a27e9c89d94468f5bca112$lut for cells of type $lut.
+Using template $paramod$b8a924862f2747e446fd1318ab6ba012767bf5a0$lut for cells of type $lut.
+Using template $paramod$6f77eecf7d02ff6a6b4e8866b4024b8396f32086$lut for cells of type $lut.
+Using template $paramod$9ae90607a69604075831a445b036e8b4d271642b$lut for cells of type $lut.
+Using template $paramod$2b2b3565ec13859d2b24f2fa297fa46249270140$lut for cells of type $lut.
+Using template $paramod$7bb6a37e65823eeb4b38c370fec30ab082759a14$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01000000 for cells of type $lut.
+Using template $paramod$5183b4454493323aca6310872659274580528fcf$lut for cells of type $lut.
+Using template $paramod$e3e4230bb990723642112b292aa705ee0cbad0d4$lut for cells of type $lut.
+Using template $paramod$a6597eda4608f36e684c1dd07ed552fcbec112b2$lut for cells of type $lut.
+Using template $paramod$56bb4d9bf97fc81a192056c9c549dc5015bd963e$lut for cells of type $lut.
+Using template $paramod$5c0dccc44f5a815fcbf4633067d0f9da5d6aa949$lut for cells of type $lut.
+Using template $paramod$453f9bbfb2bd89396d4ea57bf6cad1aa5fd87b3d$lut for cells of type $lut.
+Using template $paramod$d7d9e230552e7fad3f6cea28095bc5f6839349bb$lut for cells of type $lut.
+Using template $paramod$e695cb26fe946f9e6b42f38f72ffd6c732096f2a$lut for cells of type $lut.
+Using template $paramod$b4f15f202f50520dbc381cd0880ac94f830f05a8$lut for cells of type $lut.
+Using template $paramod$d4fb1bc26b7b9ce11784c9cbfe7e1ae6afd58caa$lut for cells of type $lut.
+Using template $paramod$baa88887c4630803f83ac99e16ebe1294bd45a7a$lut for cells of type $lut.
+Using template $paramod$b1904934df82402a7377cdf4fd31702bba6ec891$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11101010 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1011 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10000000 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01100000 for cells of type $lut.
+Using template $paramod$47a8214374025465e226fa66bee690ff33268a25$lut for cells of type $lut.
+Using template $paramod$77c2a0573790d304ab2299da6d598e8d2e184867$lut for cells of type $lut.
+Using template $paramod$de5074a80e0a92a065a2ccd0d26c618282111f8c$lut for cells of type $lut.
+Using template $paramod$364c9ffbffac467d60dfec81bba4e18476c15602$lut for cells of type $lut.
+Using template $paramod$0517fb01044da31a3b22edd53ea8ef5543f8966c$lut for cells of type $lut.
+Using template $paramod$a5dd9ee10fc2202a29791f7d68d4afcce241aee5$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10001111 for cells of type $lut.
+Using template $paramod$be48d952fcad8a16b8d84daa4c48a3065f343e5e$lut for cells of type $lut.
+Using template $paramod$c5f3c57a6d466a2f42208bafb8985b96ce884440$lut for cells of type $lut.
+Using template $paramod$b25387aa71e84a5e5945d02fae93668ea8c5209e$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000001\LUT=2'01 for cells of type $lut.
+Using template $paramod$b44ecaff72c879d3b25d0ce6e0884f84ec4ab0bf$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11011000 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00000001 for cells of type $lut.
+Using template $paramod$ee19d45db61acb4c70d938b97483a4ed4b792645$lut for cells of type $lut.
+Using template $paramod$332a399730bfc61adea04021a76b1c4e4030f37d$lut for cells of type $lut.
+Using template $paramod$826a0b7a339c63c0e1ece984357acfb2358f5309$lut for cells of type $lut.
+Using template $paramod$d6a246575d0ba3dcbbccd768ad41b602f82ff057$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00001101 for cells of type $lut.
+Using template $paramod$4c5b5a9ff9eec13ca2be59a022b336692e694fe8$lut for cells of type $lut.
+Using template $paramod$7f4ebac96145db16248c56cebeb420d7b29cec07$lut for cells of type $lut.
+Using template $paramod$6b62468353a716e43972563d3074fa328b3ddcae$lut for cells of type $lut.
+Using template $paramod$6e9e6a8c197baf37c91b35f37ccfce5ef9b2ba13$lut for cells of type $lut.
+Using template $paramod$3a16cdc423338332acc062d6121d7f50fc30fbe6$lut for cells of type $lut.
+Using template $paramod$d575d3554e876f643193272ee6813447059f103f$lut for cells of type $lut.
+Using template $paramod$7e3d8ac009723e554811ad53385162c0e6a41625$lut for cells of type $lut.
+Using template $paramod$82687d3ad8130b5b49618b6a28f43c60b5130fe1$lut for cells of type $lut.
+Using template $paramod$e0ac4970911a6c74952cb33fafe88731c4d87378$lut for cells of type $lut.
+Using template $paramod$17e73c622107a376b1917b25d6b319494548d143$lut for cells of type $lut.
+Using template $paramod$122a4c0b007fa7ed75dbda7c4d71a52e22ce1276$lut for cells of type $lut.
+Using template $paramod$3352694b384c9431624f23558a71f71f407f37f8$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10101100 for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'11010000 for cells of type $lut.
+Using template $paramod$a5788e8bd3559e65ba7c6a1d93529c6fb76569b9$lut for cells of type $lut.
+Using template $paramod$b8bd75877fef501d816af42d7dc4612590ff0abc$lut for cells of type $lut.
+Using template $paramod$97ff426f3eb096278233b6ce19299b61eadd2700$lut for cells of type $lut.
+Using template $paramod$4df55009fb953f225e01e50a1de2e43a2251b1de$lut for cells of type $lut.
+Using template $paramod$e9c77024ca501b890c641f9c0b10e27242db8730$lut for cells of type $lut.
+Using template $paramod$abe27b7e3cc631f5c0cbe05a74ef6bd6447b7a0f$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00100000 for cells of type $lut.
+Using template $paramod$eab8c2e20ad6848564bec45c7148558972138f5b$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00000110 for cells of type $lut.
+Using template $paramod$40e8d68863af4af31c9b52bbc7b7e79926256dfc$lut for cells of type $lut.
+Using template $paramod$ae62c4506200d486a255c6d204765ca2887ffb82$lut for cells of type $lut.
+Using template $paramod$a202c7ebcfe5965ba770b66864616dfec9297db2$lut for cells of type $lut.
+Using template $paramod$c2a179693003f74a0b056a632fc22cbf1ee6663d$lut for cells of type $lut.
+Using template $paramod$e6e176c1efd569365c94449206267a7d67e36d1a$lut for cells of type $lut.
+Using template $paramod$cf1d1a451b8b217fb34fac0599f48bf17f971bb2$lut for cells of type $lut.
+Using template $paramod$cf52221ef2d451442dd7d72d5c8ad598e89310e9$lut for cells of type $lut.
+Using template $paramod$61d7feca0897b7fe4635e3e4afdd9cb044a89bcb$lut for cells of type $lut.
+Using template $paramod$82ff689787d54c69a19c6b3bee9625cd1ccbc1f0$lut for cells of type $lut.
+Using template $paramod$5470439b5cbfe19b9738dd2b7ca8f47b5ea34c0f$lut for cells of type $lut.
+Using template $paramod$7a98e3c834dd83a8af817c3899766b05346484c9$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10111000 for cells of type $lut.
+Using template $paramod$272652f6c6fbe9a75eff76e45cc7e2788835518b$lut for cells of type $lut.
+Using template $paramod$83654492dda69eb545ab3f6252a686e370c945e7$lut for cells of type $lut.
+Using template $paramod$b4d0f4738a5ce50c7f36c2aa2ecc09cfb874f2b6$lut for cells of type $lut.
+Using template $paramod$efc81b4a407986cbb1e3dd274ca0a8e16f9e85bb$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'01110000 for cells of type $lut.
+No more expansions possible.
+<suppressed ~1905 debug messages>
+
+2.49. Executing XILINX_DFFOPT pass (optimize FF control signal usage).
+Optimizing FFs in uart_weight_loader.
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3333/$abc$15112$iopadmap$wr_data (2 -> 5)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3604/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3603/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3602/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3601/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3600/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3599/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3598/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3648/rx_clk_div (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3623/tx_active (1 -> 5)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3582/ld_error (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3597/ld_progress (2 -> 6)
+  Merging D + CE LUTs for $auto$ff.cc:337:slice$3332/$abc$15112$iopadmap$wr_data (2 -> 5)
+
+2.50. Executing OPT_LUT_INS pass (discard unused LUT inputs).
+Optimizing LUTs in uart_weight_loader.
+
+2.51. Executing CLKBUFMAP pass (inserting clock buffers).
+Inserting BUFG on uart_weight_loader.$abc$15112$iopadmap$clk[0].
+Removed 17 unused cells and 692 unused wires.
+
+2.52. Executing HIERARCHY pass (managing design hierarchy).
+Attribute `top' found on module `uart_weight_loader'. Setting top module to uart_weight_loader.
+
+2.52.1. Analyzing design hierarchy..
+Top module:  \uart_weight_loader
+
+2.52.2. Analyzing design hierarchy..
+Top module:  \uart_weight_loader
+Removed 0 unused modules.
+
+2.53. Printing statistics.
+
+=== uart_weight_loader ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      612 wires
+     1277 wire bits
+       44 public wires
+      244 public wire bits
+       12 ports
+       38 port bits
+      348 cells
+        1   BUFG
+        3   IBUF
+       28   INV
+       86   LUT2
+       48   LUT3
+       61   LUT4
+       62   LUT5
+       24   LUT6
+       35   OBUF
+      232 submodules
+       53   CARRY4
+      178   FDRE
+        1   FDSE
+
+   Estimated number of LCs:        195
+
+=== design hierarchy ===
+
+        +----------Count including submodules.
+        | 
+      348 uart_weight_loader
+
+        +----------Count including submodules.
+        | 
+      612 wires
+     1277 wire bits
+       44 public wires
+      244 public wire bits
+       12 ports
+       38 port bits
+        - memories
+        - memory bits
+        - processes
+      348 cells
+        1   BUFG
+        3   IBUF
+       28   INV
+       86   LUT2
+       48   LUT3
+       61   LUT4
+       62   LUT5
+       24   LUT6
+       35   OBUF
+      232 submodules
+       53   CARRY4
+      178   FDRE
+        1   FDSE
+
+   Estimated number of LCs:        195
+
+2.54. Executing CHECK pass (checking for obvious problems).
+Checking module uart_weight_loader...
+Found and reported 0 problems.
+
+3. Executing JSON backend.
+
+Warnings: 34 unique messages, 34 total
+End of script. Logfile hash: 589688774b, CPU: user 3.86s system 0.18s, MEM: 128.39 MB peak
+Yosys 0.63 (git sha1 70a11c6bf0e8dd669f56c7da3587f78b405138e2, clang++ 16.0.0 -fPIC -O3)
+Time spent: 61% 27x read_verilog (2 sec), 6% 12x techmap (0 sec), ...

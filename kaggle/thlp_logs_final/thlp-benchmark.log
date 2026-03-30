@@ -1,0 +1,45 @@
+[{"stream_name":"stderr","time":7.06656539,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.06662744,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.06663199,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.06663448,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":7.690180099,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.690226069,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.690230419,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.690234039,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":43.159874997,"data":"\u001b[33mWARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7aac352ca8d0\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/kaggle-benchmarks/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":75.697837707,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7aac350df530\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/kaggle-benchmarks/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":108.681972997,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7aac350ddc40\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/kaggle-benchmarks/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":142.711011473,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7aac34f7b260\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/kaggle-benchmarks/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":178.707937985,"data":"\u001b[0m\u001b[33mWARNING: Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('\u003cpip._vendor.urllib3.connection.HTTPSConnection object at 0x7aac34f78e60\u003e: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /simple/kaggle-benchmarks/\u001b[0m\u001b[33m\r\n"}
+,{"stream_name":"stdout","time":210.734075187,"data":"\u001b[0m\u001b[31mERROR: Could not find a version that satisfies the requirement kaggle-benchmarks (from versions: none)\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stdout","time":210.734111977,"data":"\u001b[0m\u001b[31mERROR: No matching distribution found for kaggle-benchmarks\u001b[0m\u001b[31m\r\n"}
+,{"stream_name":"stderr","time":211.24516934,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":211.24520291,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":211.24521055,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 131, in execute_notebook\n"}
+,{"stream_name":"stderr","time":211.24534983,"data":"    raise_for_execution_errors(nb, output_path)\n"}
+,{"stream_name":"stderr","time":211.24535717,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n"}
+,{"stream_name":"stderr","time":211.245520629,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":211.24563611,"data":"papermill.exceptions.PapermillExecutionError: \n"}
+,{"stream_name":"stderr","time":211.24565835,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":211.24566278,"data":"Exception encountered at \"In [2]\":\n"}
+,{"stream_name":"stderr","time":211.24566595,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":211.24566945,"data":"ModuleNotFoundError                       Traceback (most recent call last)\n"}
+,{"stream_name":"stderr","time":211.24567303,"data":"/tmp/ipykernel_17/2011185272.py in \u003ccell line: 0\u003e()\n"}
+,{"stream_name":"stderr","time":211.2456767,"data":"      1 # We import the library as 'kbench' for brevity\n"}
+,{"stream_name":"stderr","time":211.24567976,"data":"----\u003e 2 import kaggle_benchmarks as kbench\n"}
+,{"stream_name":"stderr","time":211.24568301,"data":"      3 import pandas as pd\n"}
+,{"stream_name":"stderr","time":211.24568621,"data":"      4 from dataclasses import dataclass\n"}
+,{"stream_name":"stderr","time":211.24568909,"data":"      5 \n"}
+,{"stream_name":"stderr","time":211.24569211,"data":"\n"}
+,{"stream_name":"stderr","time":211.24569504,"data":"ModuleNotFoundError: No module named 'kaggle_benchmarks'\n"}
+,{"stream_name":"stderr","time":211.2456982,"data":"\n"}
+,{"stream_name":"stderr","time":213.671353234,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":213.671391814,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":213.840910741,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":213.840934471,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":214.421087002,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":214.687721829,"data":"[NbConvertApp] Writing 14228 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":217.26163037,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":218.065310258,"data":"[NbConvertApp] Writing 293142 bytes to __results__.html\n"}
+,{"stream_name":"stdout","time":219.057054603,"data":"\u001b[0m"}
+]

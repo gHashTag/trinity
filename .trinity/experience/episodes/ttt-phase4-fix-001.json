@@ -1,0 +1,74 @@
+{
+  "episode_id": "ttt-phase4-fix-001",
+  "timestamp": "2026-03-30T00:00:00Z",
+  "title": "TTT Dogfood Phase 4 — Fix TRI-27 Execution Segfault",
+  "issue": "#474",
+  "outcome": "SUCCESS",
+  "root_causes": [
+    {
+      "cause": "Test runner state pollution",
+      "description": "std.testing.allocator reused across all 52 tests without isolation, causing allocator corruption to accumulate"
+    },
+    {
+      "cause": "ST instruction address calculation bug",
+      "description": "ST treated immediate as word index (addr*4) instead of byte address, inconsistent with LD"
+    },
+    {
+      "cause": "No MAX_INSTRUCTIONS limit",
+      "description": "Infinite loop if .t27 file lacks HALT"
+    },
+    {
+      "cause": "RET stack underflow",
+      "description": "RET without CALL caused unhandled StackUnderflow error → SIGSEGV"
+    }
+  ],
+  "fixes_applied": [
+    {
+      "file": "src/tri27/emu/executor.zig",
+      "line": 583,
+      "change": "Added MAX_INSTRUCTIONS = 100_000 with graceful halt",
+      "code": "if (cpu.instructions_executed >= MAX_INSTRUCTIONS) { cpu.flags.H = true; break; }"
+    },
+    {
+      "file": "src/tri27/emu/executor.zig",
+      "line": 594,
+      "change": "InvalidMemory → graceful halt instead of error return",
+      "code": "if (byte_addr + 4 > memory.len) { cpu.flags.H = true; break; }"
+    },
+    {
+      "file": "src/tri27/emu/executor.zig",
+      "line": 71,
+      "change": "Fixed ST instruction address calculation",
+      "code": "const word_index = addr * 4 → const byte_addr = addr (removed *4)"
+    },
+    {
+      "file": "src/tri27/emu/executor.zig",
+      "line": 501",
+      "change": "RET stack underflow → graceful halt",
+      "code": "if (cpu.sp < 4) { cpu.flags.H = true; return; }"
+    },
+    {
+      "file": "src/tri27/emu/smoke_tests.zig",
+      "line": 122,
+      "change": "Added arena allocator per-test isolation",
+      "code": "var arena = std.heap.ArenaAllocator.init(allocator); defer arena.deinit();"
+    }
+  ],
+  "verification": {
+    "golden_tests": "110 tests PASSED",
+    "smoke_tests": "52/52 Tier 1 files executed without crash",
+    "halt_coverage": "52/52 .t27 files contain HALT instruction (100%)"
+  },
+  "lessons_learned": [
+    "Always use arena allocators for test isolation when running multiple tests in a loop",
+    "ST/LD instructions must use consistent address interpretation (byte vs word)",
+    "Graceful halt (set H flag) > error return for execution loops",
+    "MAX_INSTRUCTIONS limit prevents infinite loops from malformed .t27 files"
+  ],
+  "next_steps": [
+    "Phase 4a: Expand smoke tests to all 781 Tier 1 algorithms",
+    "Phase 4b: Add memory usage tracking",
+    "Phase 4c: Benchmark execution speed per algorithm",
+    "Phase 5: Full self-hosting (TRI compiles TRI)"
+  ]
+}

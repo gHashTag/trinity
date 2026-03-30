@@ -3,13 +3,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // VSA COMMANDS — Vector Symbolic Architecture CLI
 // ═══════════════════════════════════════════════════════════════════════════════
-// Holographic Reduced Representations (HRR) for cognitive computing
+// Holographic Reduced Representations (hrr) for cognitive computing
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const HRR = @import("vsa").HRR;
+const hrr_mod = @import("vsa").hrr;
 
 const GOLDEN = colors.GOLDEN;
 const CYAN = colors.CYAN;
@@ -70,9 +70,9 @@ fn cmdBind(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const concept_a = args[0];
     const concept_b = args[1];
 
-    var hrr = try HRR.init(allocator, 1000);
+    var hrr = try hrr_mod.HRR.init(allocator, 1000);
     defer {
-        // HRR doesn't own the vectors, so we don't need to deinit
+        // hrr doesn't own the vectors, so we don't need to deinit
     }
 
     const vec_a = try hrr.seededVector(concept_a);
@@ -107,7 +107,7 @@ fn cmdUnbind(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const bound_name = args[0];
     const key_name = args[1];
 
-    var hrr = try HRR.init(allocator, 1000);
+    var hrr = try hrr_mod.HRR.init(allocator, 1000);
 
     const bound_vec = try hrr.seededVector(bound_name);
     defer hrr.freeVector(bound_vec);
@@ -137,7 +137,7 @@ fn cmdBundle(allocator: std.mem.Allocator, args: []const []const u8) !void {
         return;
     }
 
-    var hrr = try HRR.init(allocator, 1000);
+    var hrr = try hrr_mod.HRR.init(allocator, 1000);
 
     var vectors = try allocator.alloc([]f32, args.len);
     defer {
@@ -178,7 +178,7 @@ fn cmdSimilarity(allocator: std.mem.Allocator, args: []const []const u8) !void {
     const concept_a = args[0];
     const concept_b = args[1];
 
-    var hrr = try HRR.init(allocator, 1000);
+    var hrr = try hrr_mod.HRR.init(allocator, 1000);
 
     const vec_a = try hrr.seededVector(concept_a);
     defer hrr.freeVector(vec_a);
@@ -230,7 +230,7 @@ fn cmdMemory(_: std.mem.Allocator, args: []const []const u8) !void {
 
 fn cmdMemoryShow() !void {
     std.debug.print("\n{s}═══ VSA MEMORY ═══{s}\n", .{ CYAN, RESET });
-    std.debug.print("{s}Mode:{s}          Direct HRR operations\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}Mode:{s}          Direct hrr operations\n", .{ GOLDEN, RESET });
     std.debug.print("{s}Dimension:{s}     1000 (standard)\n", .{ GOLDEN, RESET });
     std.debug.print("{s}Consciousness:{s}  0.500 (default)\n", .{ GOLDEN, RESET });
     std.debug.print("{s}Status:{s}        ", .{ GOLDEN, RESET });
@@ -247,7 +247,7 @@ fn cmdMemoryStore(args: []const []const u8) !void {
     const concept = args[0];
 
     std.debug.print("\n{s}✓ Stored concept: {s}{s}\n", .{ GREEN, concept, RESET });
-    std.debug.print("  (Note: Direct HRR mode - concepts are generated on-demand)\n\n", .{});
+    std.debug.print("  (Note: Direct hrr mode - concepts are generated on-demand)\n\n", .{});
 }
 
 fn cmdMemoryAssociate(args: []const []const u8) !void {

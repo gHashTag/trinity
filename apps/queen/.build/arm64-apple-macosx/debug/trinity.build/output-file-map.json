@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/master.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Entry/App.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.swiftdeps"
+  }
+}

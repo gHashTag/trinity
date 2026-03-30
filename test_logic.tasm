@@ -1,0 +1,10 @@
+# Logic test for TRI-27
+ldi r0, 0xFF
+ldi r1, 0x0F
+and r2, r0, r1    ; r2 = 0x0F (15)
+or r3, r2, r1     ; r3 = 0x0F | 0x0F = 0x0F
+xor r4, r0, r1    ; r4 = 0xFF ^ 0x0F = 0xF0
+not r5             ; r5 = ~r5
+shl r6, r0        ; r6 = r0 << r0
+shr r7, r6        ; r7 = r6 >> r6
+halt

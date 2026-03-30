@@ -1,0 +1,78 @@
+# 📊 Глубокий отчёт: Почему статус не движется
+
+## 🔴 4 Корневые проблемы найдены
+
+### 1. Сломанный heartbeat — ложные показания
+
+| Показано | Реальность | Ошибка |
+|----------|--------------|--------|
+| Build❌ | Build OK (exit 0) | `build_ok:false` в heartbeat |
+| "Тесты не проходят" | Tests PASS (exit 0) | `test_ok` отсутствует в JSON |
+| errors_scanned: 0 | В базе есть 25 старых | Парсинг не работает |
+
+**Heartbeat.json:**
+```json
+{"agent":"mu","wake":28,"timestamp":1773224376,"errors_scanned":0,"fixes_applied":0,"build_ok":false}
+```
+
+### 2. Разорван цикл обучения MU
+
+```
+tri pipeline audit → specs/REGENERATION_REPORT.md (ТОЛЬКО ОТЧЁТ)
+                            ↓
+                     [НЕ ПОДАЁТ В MU!]
+                            ↓
+               .trinity/mu/errors/*.json (ВХОД ДЛЯ MU)
+                            ↓
+               .trinity/mu/learning_db.json (25 СТАРЫХ ПАТТЕРНОВ ОТ 11 МАРТА)
+```
+
+| Источник | Кол-во ошибок |
+|----------|---------------|
+| REGENERATION_REPORT.md | **34 (ТЕКУЩИЕ)** |
+| MU learning_db.json | 25 (СТАРЫЕ) |
+
+MU учится из **СТАРЫХ** ошибок вместо ТЕКУЩИХ!
+
+### 3. 34 specs падают — VIBEE codegen имеет известные баги
+
+Из REGENERATION_REPORT.md: 25 specs `❌ ast-check failed`, 9 specs `❌ no output`
+
+| Категория | Кол-во | Пример |
+|-----------|--------|--------|
+| Неизвестные generics | 6+ | `Enum(...)`, `HashMap<K,V>` |
+| Дубликаты функций | 3+ | `pub fn init()` дважды |
+| Синтаксические ошибки | 3+ | `expected type, found 'return'` |
+| Verilog→Zig mismatch | 10 | `language:verilog` → Zig stub |
+
+**Вывод:** 34 failing specs = 34 ИЗВЕСТНЫХ багов codegen. Без патча VIBEE compile rate = 90% навсегда.
+
+### 4. 23 dirty files — готовый код не закоммичен
+
+- Scholar daemon (новый, готов)
+- Research bridge (+239 LOC, компилируется)
+- Pipeline decompose (+296 LOC, компилируется)
+- Voice v2 доработки (тесты проходят)
+- MU daemon изменения
+- Config (railway.toml, build.zig)
+
+Код написан и работает, но не закоммичен → dirty_files растёт.
+
+---
+
+## 📋 План разблокировки (4 шага)
+
+| Шаг | Действие | Ожидаемый эффект |
+|------|-----------|-----------------|
+| 1 | Удалить heartbeat + пересобрать | `build_ok:true, test_ok:true` |
+| 2 | Коммит готового кода (2 коммита) | dirty_files: 23 → ~5 |
+| 3 | Переместить 10 Verilog specs в archive | compile_rate: 90% → **93%** |
+| 4 | Исправить MU stats parsing | errors_scanned: 0 → 25+ |
+
+**Ожидание:** V-number: 1.311 → **~1.40** (движение!)
+
+---
+
+Полный план записан в: `/Users/playra/.claude/plans/dreamy-chasing-eagle.md`
+
+Готов к реализации?

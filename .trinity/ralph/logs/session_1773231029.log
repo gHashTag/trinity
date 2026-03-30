@@ -1,0 +1,31 @@
+**Trinity Cloud Dev — реализовано и закоммичено.**
+
+| Компонент | Статус | Commit |
+|-----------|---------|---------|
+| `SOUL.md` — душа агента | ✅ | `1ad0fbc2a` |
+| `cloud_orchestrator.zig` — spawn/kill/list/cleanup | ✅ | `1ad0fbc2a` |
+| `Dockerfile.agent` — контейнер (ubuntu + zig + gh + claude) | ✅ | `1ad0fbc2a` |
+| `agent-entrypoint.sh` — startup скрипт | ✅ | `1ad0fbc2a` |
+| `cloud_tools.zig` — 7 MCP tools | ✅ | `1ad0fbc2a` |
+| `cloud_monitor.zig` — HTTP heartbeat receiver | ✅ | `1ad0fbc2a` |
+| `railway_api.zig` — +3 метода (create/delete/connect) | ✅ | `1ad0fbc2a` |
+| `tri_cloud.zig` — +6 subcommands | ✅ | `1ad0fbc2a` |
+| `server.zig` — cloud_ tools зарегистрированы | ✅ | `1ad0fbc2a` |
+| `agent-spawn.yml` — GitHub Actions auto-spawn | ✅ | `1ad0fbc2a` |
+
+**Команды CLI:**
+```
+tri cloud spawn <issue>       # Spawn agent для issue
+tri cloud kill <issue>        # Убить контейнер
+tri cloud agents               # Список активных
+tri cloud status               # Статус инфры
+tri cloud cleanup              # Очистить неактивные
+tri cloud spawn-all           # Spawn всех с label agent:spawn
+```
+
+**MCP tools:** `cloud_spawn`, `cloud_kill`, `cloud_list`, `cloud_status`, `cloud_logs`, `cloud_spawn_all`, `cloud_cleanup`
+
+**Следующие шаги:**
+1. Docker image push: `docker build -f deploy/Dockerfile.agent -t ghcr.io/ghashtag/trinity-agent:latest .`
+2. Добавить secrets в GitHub
+3. Тест на живом issue: `tri cloud spawn 121`

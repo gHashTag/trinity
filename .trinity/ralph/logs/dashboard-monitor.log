@@ -1,0 +1,5 @@
+[2026-02-28 19:12:33] INFO: === Starting monitoring cycle ===
+[2026-02-28 19:12:33] INFO: Main Site: OK (HTTP 200, 0s)
+[2026-02-28 19:12:34] INFO: Status Page: OK (HTTP 200, 1.0s)
+[2026-02-28 19:12:34] INFO: Documentation: OK (HTTP 200, 0s)
+[2026-02-28 19:12:34] INFO: === Monitoring cycle complete (failures: 0/0) ===

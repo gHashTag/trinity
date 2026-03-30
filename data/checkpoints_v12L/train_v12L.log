@@ -1,0 +1,105 @@
+
+================================================================
+  HSLM Training â€” Hybrid Symbolic Language Model
+  ~1.95M ternary parameters, ~390KB
+  Autograd + STE quantization + AdamW
+================================================================
+[1/4] Initializing model...
+       Params: 1952262, Memory: 1872KB
+[2/4] Loading training data...
+       File: data/tinystories/real_tinystories.txt
+       Loaded 100000 stories, 5462458 tokens
+[3/4] Initializing trainer...
+       LR: 0.000300 â†’ 0.0000010 (cosine), Steps: 100000, Batch: 32Ã—1=32, Ctx: 81, Warmup: 5000, Opt: LAMB
+       Label smoothing: 0.10
+       STE: TWN (Li et al. 2016), threshold: 0.50, warmup: 10000
+       WD: 0.100 (cosine, disable at 50%)
+       Consciousness: adaptive threshold 0.15 -> phi^-1 (warmup 10K steps)
+       Full STE backprop: 1952991 trainable params (100%%)
+       Parallel: 6 workers (SIMD + threading)
+[4/4] Training...
+
+Step     | Loss     | AvgL10   | PPL      | LR       | C-Ratio  | Tok/s
+---------|----------|----------|----------|----------|----------|--------
+     100 |  12.8507 |  12.0699 | 381065.34 | 0.000006 |   0.0000 |   5407
+     200 |  10.8348 |  11.1804 | 50758.34 | 0.000012 |   0.0000 |   5468
+     300 |   8.9885 |  10.2830 |  8010.45 | 0.000018 |   0.0000 |   5577
+     400 |   9.4156 |   9.0660 | 12278.90 | 0.000024 |   0.0000 |   5806
+     500 |   8.6214 |   8.4367 |  5549.10 | 0.000030 |   0.0000 |   6010
+     600 |   7.7851 |   7.8446 |  2404.62 | 0.000036 |   0.0000 |   5944
+     700 |   7.6304 |   7.6196 |  2059.89 | 0.000042 |   0.0000 |   5740
+     800 |   6.9104 |   7.1427 |  1002.64 | 0.000048 |   0.0000 |   5590
+     900 |   7.1027 |   6.9533 |  1215.23 | 0.000054 |   0.0000 |   5515
+    1000 |   6.5996 |   6.9656 |   734.79 | 0.000060 |   0.0000 |   5524
+
+[MILESTONE step 1000] Generated text:
+  > Once upon a time˜starwent o, âtheir  a st opthingwas of |>sayvXÕÎ‚re Žed to |>3derõba¦ü«endoftext|>re ll watmom«ll play ”gfolooked it owQcevlowas parky, saw ed to PXwatmo, ca÷Once upon a time, kopŽfriends ü. +Rexll ed to there was a ]was omed and t.
+<|endoftext|>
+Once upon a time, Mhe atwar.s . He ded everesømeefd, kin. She âc gssomjI . AMed and t . He t.arwas Tomsi.c.
+<|endoftext|>
+Once upon a time, wed 
+  > The little catg¡ the their <üt ed to thingthingo, ll momsumugingst X”uld someout3wor›ba and endoftext|>÷cwas watcÁftext”ed to he ‚güo, ce‚Îittle pa"
+Ítoy ~ll parküo, it «thingbaopŽRgo oilexgehappy funlookkears atgbig.tessewas  ›mhesput dwj. He weverø
+  > She was veryÁtheir gplayst Ôthingthing¡re esll |>coingthere was a vt to õo, derput ll wored to «X”Žwatcherwas The foüed to looked parkQcecaved back friends st vfriends ~eswatthingim ba]Îld opplayplre ll it was so in a lived happy grein a was  ded scgsMt. She i.tbigput .
+<|endoftext|>
+Once upon a time,  as premshthere was a in e esll ed and . He ed was  wgomged and w and ed ed evert ,   £cjfspres, mbigesMdtt. He there was a es. He w. She ›eversput  and ed s e ed and  aomt jcever.Tom gt £v shMkdsm
+
+    1100 |   6.8425 |   6.8231 |   936.78 | 0.000066 |   0.3223 |   5346
+    1200 |   6.7521 |   6.7711 |   855.82 | 0.000072 |   0.3223 |   5237
+    1300 |   6.7287 |   6.4409 |   836.08 | 0.000078 |   0.3223 |   5280
+    1400 |   6.2888 |   6.3721 |   538.51 | 0.000084 |   0.3223 |   5339
+    1500 |   6.8790 |   6.2698 |   971.62 | 0.000090 |   0.3223 |   5424
+    1600 |   6.1884 |   6.3184 |   487.04 | 0.000096 |   0.3223 |   5505
+    1700 |   5.9956 |   6.3162 |   401.65 | 0.000102 |   0.3223 |   5558
+    1800 |   6.1423 |   6.1138 |   465.12 | 0.000108 |   0.3223 |   5593
+    1900 |   5.8879 |   6.2171 |   360.63 | 0.000114 |   0.3223 |   5655
+    2000 |   6.3167 |   6.1799 |   553.77 | 0.000120 |   0.3223 |   5709
+
+[MILESTONE step 2000] Generated text:
+  > Once upon a timel ayceuurwas happyst opthingthingloved to ll saybe |>thv the ug‚ed to ke o, derto the ucwould e, Ž«ld in a re was learnparken learnthinginThey looked g‘dwith¦with ÷. They esimfriends ed toy to «üvmst opened to e . cawas so was 8happy gresaid was e
+  > The little catstarwent ll their came . ‰was ugthinguse endoftext|>say. They smilparkwas re «t to doommom  and looklookll e dergo sated thingyouyoumomsen hered to thingin cace¦Û÷. They vsayfriends 0¦ckmim was ll Once upon a time, st opwalkimthere was a bder big Lilre en, it was he eced  lto cinefing , s . The was y thing bbebg. The , cy arao
+  > She was veryll it  happytilgthingst re saysawugycaresplayittle do«The said ¦there was a would bao, youwas sadextnd starwas togetherwith foll ‚. parkbirdcemorst scarpacare 0ddhe sawendü and mthingthingŽingo dwas withll 8happy Tom put was s l
+
+    2100 |   6.0563 |   6.0674 |   426.79 | 0.000126 |   0.2859 |   5722
+    2200 |   6.1732 |   6.0712 |   479.73 | 0.000132 |   0.2859 |   5773
+    2300 |   6.2810 |   6.0951 |   534.34 | 0.000138 |   0.2859 |   5784
+    2400 |   6.0872 |   6.0601 |   440.19 | 0.000144 |   0.2859 |   5790
+    2500 |   5.9571 |   6.0630 |   386.50 | 0.000150 |   0.2859 |   5757
+    2600 |   5.6325 |   5.9948 |   279.36 | 0.000156 |   0.2859 |   5807
+    2700 |   6.1255 |   6.0535 |   457.37 | 0.000162 |   0.2859 |   5845
+    2800 |   6.2961 |   6.0859 |   542.48 | 0.000168 |   0.2859 |   5878
+    2900 |   5.9581 |   5.9870 |   386.89 | 0.000174 |   0.2859 |   5882
+    3000 |   6.2924 |   5.9557 |   540.48 | 0.000180 |   0.2859 |   5890
+
+[MILESTONE step 3000] Generated text:
+  > Once upon a time. They plll re itbahey aid and thingrs
+  > The little catboll esgidis  gLucrst re s sBen playll re ing  and  the e . He 
+  > She was veryyou . He baF. They wthingwas ums  and pous and saw rŽplayA the e  and ll . learnpdid re  s cwas very together¦d
+
+    3100 |   6.1466 |   6.1124 |   467.14 | 0.000186 |   0.2803 |   5856
+    3200 |   5.8857 |   6.0934 |   359.84 | 0.000192 |   0.2803 |   5810
+    3300 |   6.2255 |   6.1328 |   505.46 | 0.000198 |   0.2803 |   5818
+    3400 |   6.2214 |   6.1264 |   503.41 | 0.000204 |   0.2803 |   5851
+    3500 |   5.6255 |   5.9918 |   277.40 | 0.000210 |   0.2803 |   5883
+    3600 |   6.1006 |   6.0486 |   446.13 | 0.000216 |   0.2803 |   5885
+    3700 |   5.8744 |   6.0880 |   355.81 | 0.000222 |   0.2803 |   5887
+    3800 |   6.2627 |   5.9891 |   524.66 | 0.000228 |   0.2803 |   5881
+    3900 |   5.7973 |   6.0190 |   329.42 | 0.000234 |   0.2803 |   5899
+    4000 |   6.3449 |   6.0668 |   569.56 | 0.000240 |   0.2803 |   5926
+    4100 |   6.1946 |   6.0217 |   490.11 | 0.000246 |   0.2803 |   5945
+    4200 |   6.3803 |   6.0802 |   590.13 | 0.000252 |   0.2803 |   5955
+    4300 |   6.1543 |   5.8950 |   470.73 | 0.000258 |   0.2803 |   5965
+    4400 |   5.9693 |   6.1057 |   391.25 | 0.000264 |   0.2803 |   5973
+    4500 |   6.0227 |   5.9910 |   412.70 | 0.000270 |   0.2803 |   5976
+    4600 |   6.0835 |   6.0742 |   438.58 | 0.000276 |   0.2803 |   5975
+    4700 |   5.9972 |   5.9940 |   402.31 | 0.000282 |   0.2803 |   5988
+    4800 |   6.3675 |   5.9867 |   582.62 | 0.000288 |   0.2803 |   6000
+    4900 |   6.2059 |   5.9711 |   495.67 | 0.000294 |   0.2803 |   6021
+    5000 |   5.5551 |   5.8831 |   258.54 | 0.000300 |   0.2803 |   6014
+    5100 |   5.5848 |   5.9740 |   266.35 | 0.000300 |   0.2803 |   6006
+    5200 |   5.8578 |   6.0577 |   349.96 | 0.000300 |   0.2803 |   5994
+    5300 |   6.1315 |   5.9510 |   460.11 | 0.000300 |   0.2803 |   5992
+    5400 |   6.3435 |   6.0965 |   568.79 | 0.000300 |   0.2803 |   5986
+    5500 |   5.9711 |   6.0593 |   391.93 | 0.000300 |   0.2803 |   5976
+    5600 |   6.2099 |   6.0613 |   497.67 | 0.000300 |   0.2803 |   5976
+    5700 |   6.1206 |   6.0858 |   455.13 | 0.000300 |   0.2803 |   5964

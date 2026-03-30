@@ -1,0 +1,17 @@
+{
+  "title": "Trinity Cognitive Probes - TTM Track (MC Format)",
+  "id": "playra/trinity-cognitive-probes-ttm-mc",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "subtitle": "Metacognitive Calibration for AGI Assessment",
+  "description": "**Part of the DeepMind AGI Hackathon Submission**\n\nThe TTM (Trinity Metacognition Probe) track in MC format evaluates few-shot learning through multiple choice questions generated from open-ended probes.\n\n**Contains:**\n- 733 MC questions\n- Ground truth answers (A/B/C/D)\n- Difficulty levels (u03c6-scaled)\n- Brain zone metadata\n- Neural analog references\n\n**Evaluation Metrics:**\n- Accuracy: Binary correct/incorrect per item\n- Calibration: How well model probabilities match actual correctness\n- Composite: 60% accuracy + 20% calibration + 20% mean score\n\n**Organization:** gHashTag/trinity\n**License:** MIT\n",
+  "resources": [
+    {
+      "path": "tmp_mc.csv",
+      "description": "TTM Track MC format - 733 items"
+    }
+  ]
+}

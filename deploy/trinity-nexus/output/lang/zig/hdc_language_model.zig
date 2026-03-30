@@ -1,0 +1,296 @@
+// @origin(generated) @regen(done)
+// ═══════════════════════════════════════════════════════════════════════════════
+// hdc_language_model v1.1.0 - Generated from .vibee specification
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Sacred formula: V = n × 3^k × π^m × φ^p × e^q
+// Golden identity: φ² + 1/φ² = 3
+//
+// Author: 
+// DO NOT EDIT - This file is auto-generated
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const math = std.math;
+const Allocator = std.mem.Allocator;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// [CYR:A]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// iny φ-towithy] (Sacred Formula)
+pub const PHI: f64 = 1.618033988749895;
+pub const PHI_INV: f64 = 0.618033988749895;
+pub const PHI_SQ: f64 = 2.618033988749895;
+pub const TRINITY: f64 = 3.0;
+pub const SQRT5: f64 = 2.2360679774997896;
+pub const TAU: f64 = 6.283185307179586;
+pub const PI: f64 = 3.141592653589793;
+pub const E: f64 = 2.718281828459045;
+pub const PHOENIX: i64 = 999;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// 
+pub const CharModel = struct {
+    vec: HybridBigInt,
+    count: u32,
+};
+
+/// 
+pub const HDCLanguageModel = struct {
+    allocator: std.mem.Allocator,
+    item_memory: ItemMemory,
+    ngram_encoder: NGramEncoder,
+    context_size: usize,
+    dimension: usize,
+    char_models: Array<?Ptr<CharModel>, 256>,
+    char_count: Array<u32, 256>,
+    jit_engine: ?[]const u8,
+};
+
+/// 
+pub const PredictionResult = struct {
+    predicted_char: u8,
+    confidence: f64,
+    top_k: Array<CharScore, 8>,
+    top_k_len: usize,
+};
+
+/// 
+pub const CharScore = struct {
+    char: u8,
+    similarity: f64,
+};
+
+/// 
+pub const GenerationConfig = struct {
+    temperature: f64,
+    max_length: usize,
+    top_k: usize,
+    repetition_penalty: f64,
+    seed: u64,
+};
+
+/// 
+pub const ModelStats = struct {
+    unique_chars: u32,
+    total_contexts: u32,
+    dimension: usize,
+    context_size: usize,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// [CYR:A]  WASM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+var global_buffer: [65536]u8 align(16) = undefined;
+var f64_buffer: [8192]f64 align(16) = undefined;
+
+export fn get_global_buffer_ptr() [*]u8 {
+    return &global_buffer;
+}
+
+export fn get_f64_buffer_ptr() [*]f64 {
+    return &f64_buffer;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATION PATTERNS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Trit - ternary digit (-1, 0, +1)
+pub const Trit = enum(i8) {
+    negative = -1, // FALSE
+    zero = 0,      // UNKNOWN
+    positive = 1,  // TRUE
+
+    pub fn trit_and(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@min(@intFromEnum(a), @intFromEnum(b)));
+    }
+
+    pub fn trit_or(a: Trit, b: Trit) Trit {
+        return @enumFromInt(@max(@intFromEnum(a), @intFromEnum(b)));
+    }
+
+    pub fn trit_not(a: Trit) Trit {
+        return @enumFromInt(-@intFromEnum(a));
+    }
+
+    pub fn trit_xor(a: Trit, b: Trit) Trit {
+        const av = @intFromEnum(a);
+        const bv = @intFromEnum(b);
+        if (av == 0 or bv == 0) return .zero;
+        if (av == bv) return .negative;
+        return .positive;
+    }
+};
+
+/// Check TRINITY identity: φ² + 1/φ² = 3
+fn verify_trinity() f64 {
+    return PHI * PHI + 1.0 / (PHI * PHI);
+}
+
+/// φ-andfieldsandI
+fn phi_lerp(a: f64, b: f64, t: f64) f64 {
+    const phi_t = math.pow(f64, t, PHI_INV);
+    return a + (b - a) * phi_t;
+}
+
+/// notandI φ-withand
+fn generate_phi_spiral(n: u32, scale: f64, cx: f64, cy: f64) u32 {
+    const max_points = f64_buffer.len / 2;
+    const count = if (n > max_points) @as(u32, @intCast(max_points)) else n;
+    var i: u32 = 0;
+    while (i < count) : (i += 1) {
+        const fi: f64 = @floatFromInt(i);
+        const angle = fi * TAU * PHI_INV;
+        const radius = scale * math.pow(f64, PHI, fi * 0.1);
+        f64_buffer[i * 2] = cx + radius * @cos(angle);
+        f64_buffer[i * 2 + 1] = cy + radius * @sin(angle);
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BEHAVIOR FUNCTIONS - Generated from behaviors
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Text corpus as string
+/// When: Model processes each (context, next_char) pair
+/// Then: Stores context vectors bundled per next character
+pub fn train(input: []const u8) []const u8 {
+// DEFERRED (v12): implement — Stores context vectors bundled per next character
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = input;
+}
+
+
+/// Multiple text samples as string slice
+/// When: Trains on all samples sequentially
+/// Then: Model ready for prediction with combined knowledge
+pub fn trainOnCorpus(items: anytype) !void {
+// DEFERRED (v12): implement — Model ready for prediction with combined knowledge
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = items;
+}
+
+
+pub fn predict(logits: []const f32) u32 {
+    // Argmax prediction: return index of max logit
+    var max_idx: u32 = 0;
+    var max_val: f32 = logits[0];
+    for (logits[1..], 1..) |v, i| {
+        if (v > max_val) { max_val = v; max_idx = @as(u32, @intCast(i)); }
+    }
+    return max_idx;
+}
+
+/// Seed text and GenerationConfig
+/// When: Iteratively predicts and samples next character
+/// Then: Returns generated text with temperature/top-k/repetition control
+pub fn generateWithConfig(config: anytype) []const u8 {
+// Generate: Returns generated text with temperature/top-k/repetition control
+    const template = @as([]const u8, "generated_output");
+    _ = template;
+}
+
+
+/// Seed text and max_length
+/// When: Greedy generation (temperature=0, no sampling)
+/// Then: Returns generated text string (backward compatible)
+pub fn generate(input: []const u8) []const u8 {
+// Generate: Returns generated text string (backward compatible)
+    const template = @as([]const u8, "generated_output");
+    _ = template;
+}
+
+
+/// Test text string
+/// When: Computes softmax probability for each actual next char
+/// Then: Returns perplexity score (lower = better model)
+pub fn perplexity(input: []const u8) f32 {
+// DEFERRED (v12): implement — Returns perplexity score (lower = better model)
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = input;
+}
+
+
+/// Array of (char, similarity) pairs and temperature
+/// When: Applies softmax with temperature scaling
+/// Then: Returns probability distribution over characters
+pub fn softmaxSimilarities(items: anytype) f32 {
+// DEFERRED (v12): implement — Returns probability distribution over characters
+    // Add 'implementation:' field in .vibee spec to provide real code.
+_ = items;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS - Generated from behaviors and test_cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "train_behavior" {
+// Given: Text corpus as string
+// When: Model processes each (context, next_char) pair
+// Then: Stores context vectors bundled per next character
+// Test train: verify behavior is callable (compile-time check)
+_ = train;
+}
+
+test "trainOnCorpus_behavior" {
+// Given: Multiple text samples as string slice
+// When: Trains on all samples sequentially
+// Then: Model ready for prediction with combined knowledge
+// Test trainOnCorpus: verify behavior is callable (compile-time check)
+_ = trainOnCorpus;
+}
+
+test "predict_behavior" {
+// Given: Context string of context_size characters
+// When: Encodes context and queries all char models
+// Then: Returns PredictionResult with best matching char and top-k
+// Test predict: verify behavior is callable (compile-time check)
+_ = predict;
+}
+
+test "generateWithConfig_behavior" {
+// Given: Seed text and GenerationConfig
+// When: Iteratively predicts and samples next character
+// Then: Returns generated text with temperature/top-k/repetition control
+// Test generateWithConfig: verify behavior is callable (compile-time check)
+_ = generateWithConfig;
+}
+
+test "generate_behavior" {
+// Given: Seed text and max_length
+// When: Greedy generation (temperature=0, no sampling)
+// Then: Returns generated text string (backward compatible)
+// Test generate: verify behavior is callable (compile-time check)
+_ = generate;
+}
+
+test "perplexity_behavior" {
+// Given: Test text string
+// When: Computes softmax probability for each actual next char
+// Then: Returns perplexity score (lower = better model)
+// Test perplexity: verify returns a float in valid range
+// DEFERRED (v12): Add specific test for perplexity
+_ = perplexity;
+}
+
+test "softmaxSimilarities_behavior" {
+// Given: Array of (char, similarity) pairs and temperature
+// When: Applies softmax with temperature scaling
+// Then: Returns probability distribution over characters
+// Test softmaxSimilarities: verify task distribution
+    try std.testing.expect(distribution.agent_tasks.len > 0);
+}
+
+test "phi_constants" {
+    try std.testing.expectApproxEqAbs(PHI * PHI_INV, 1.0, 1e-10);
+    try std.testing.expectApproxEqAbs(PHI_SQ - PHI, 1.0, 1e-10);
+}

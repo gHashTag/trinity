@@ -1,0 +1,156 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-03-30T00:00:00Z",
+  "purpose": "Dependency graph for zig-golden-float kernel expansion",
+  "rules": [
+    "Only copy files whose ALL dependencies are ALSO being copied",
+    "If a file imports Trinity-specific modules (queen, cli, tri, quantum, igla, etc.) → SKIP it",
+    "Cycle detection: packed_trit ↔ hybrid → MUST resolve together"
+  ],
+  "dependency_graph": {
+    "hybrid.zig": {
+      "imports": ["std", "bigint.zig", "packed_trit.zig"],
+      "status": "DEPENDS_ON: bigint, packed_trit",
+      "safe_to_copy": "MUST_COPY_WITH: bigint, packed_trit"
+    },
+    "packed_trit.zig": {
+      "imports": ["std", "hybrid.zig"],
+      "status": "DEPENDS_ON: hybrid",
+      "safe_to_copy": "MUST_COPY_WITH: hybrid, bigint (CYCLE)"
+    },
+    "bigint.zig": {
+      "imports": ["std"],
+      "status": "PURE_STD",
+      "safe_to_copy": "YES"
+    },
+    "constants.zig": {
+      "imports": ["std"],
+      "status": "PURE_STD",
+      "safe_to_copy": "YES"
+    },
+    "vsa/core.zig": {
+      "imports": ["std", "common.zig"],
+      "status": "DEPENDS_ON: common",
+      "safe_to_copy": "MUST_COPY_WITH: common"
+    },
+    "vsa/common.zig": {
+      "imports": ["std", "hybrid.zig"],
+      "status": "DEPENDS_ON: hybrid (trinity/src/)",
+      "safe_to_copy": "MUST_COPY_WITH: hybrid, bigint, packed_trit"
+    },
+    "vsa/10k_vsa.zig": {
+      "imports": ["std", "builtin", "common.zig"],
+      "status": "DEPENDS_ON: common",
+      "safe_to_copy": "MUST_COPY_WITH: common"
+    },
+    "vsa/hrr.zig": {
+      "imports": ["std"],
+      "status": "PURE_STD",
+      "safe_to_copy": "YES"
+    },
+    "vsa/fpga_bind.zig": {
+      "imports": ["std", "builtin", "common.zig"],
+      "status": "DEPENDS_ON: common",
+      "safe_to_copy": "MUST_COPY_WITH: common"
+    },
+    "vsa/concurrency.zig": {
+      "imports": ["std", "common.zig"],
+      "status": "DEPENDS_ON: common",
+      "safe_to_copy": "MUST_COPY_WITH: common"
+    },
+    "vsa/encoding.zig": {
+      "imports": ["gen_encoding.zig", "text_encoding.zig"],
+      "status": "COMPOSITE_REEXPORT",
+      "safe_to_copy": "SKIP (re-export module)"
+    },
+    "vsa/gen_encoding.zig": {
+      "imports": ["std", "common.zig"],
+      "status": "DEPENDS_ON: common",
+      "safe_to_copy": "MUST_COPY_WITH: common"
+    },
+    "vsa/text_encoding.zig": {
+      "imports": ["std", "common.zig", "core.zig"],
+      "status": "DEPENDS_ON: common, core",
+      "safe_to_copy": "MUST_COPY_WITH: common, core"
+    },
+    "jit.zig": {
+      "imports": ["std", "hybrid.zig", "vsa.zig", "builtin"],
+      "status": "DEPENDS_ON: hybrid, vsa (AGGREGATOR)",
+      "safe_to_copy": "SKIP (imports vsa.zig which is Trinity-specific)"
+    },
+    "jit_arm64.zig": {
+      "imports": ["std", "hybrid.zig", "vsa.zig", "builtin"],
+      "status": "DEPENDS_ON: hybrid, vsa",
+      "safe_to_copy": "SKIP (imports vsa.zig)"
+    },
+    "jit_x86_64.zig": {
+      "imports": ["std", "hybrid.zig", "vsa.zig", "builtin"],
+      "status": "DEPENDS_ON: hybrid, vsa",
+      "safe_to_copy": "SKIP (imports vsa.zig)"
+    },
+    "vsa.zig": {
+      "imports": ["ALL_VSA_SUBMODULES"],
+      "status": "TRINITY_AGGREGATOR",
+      "safe_to_copy": "SKIP (Trinity-specific aggregator)"
+    }
+  },
+  "trinity_specific_modules": [
+    "vsa.zig",
+    "vsa/agent.zig",
+    "vsa/storage.zig",
+    "vsa/photon*.zig",
+    "vsa/trinity_canvas/**",
+    "vsa/gen_core*.zig",
+    "vsa/bsd.zig",
+    "vsa/benchmarks.zig",
+    "vsa/tests.zig",
+    "vsa/quantum_transition.zig",
+    "vsa/wave_scroll.zig",
+    "quantum/**",
+    "cosmos/**",
+    "gravity/**",
+    "plasma/**",
+    "tri/**",
+    "tri27/**",
+    "clara/**",
+    "queen/**",
+    "sdk/**",
+    "vm.zig"
+  ],
+  "copy_plan_tier1": [
+    "bigint.zig",
+    "packed_trit.zig",
+    "hybrid.zig",
+    "constants.zig"
+  ],
+  "copy_plan_tier2": [
+    "vsa/hrr.zig"
+  ],
+  "copy_plan_tier3_vsa": [
+    "vsa/common.zig",
+    "vsa/core.zig",
+    "vsa/10k_vsa.zig",
+    "vsa/fpga_bind.zig",
+    "vsa/concurrency.zig",
+    "vsa/gen_encoding.zig",
+    "vsa/text_encoding.zig"
+  ],
+  "skip_list": [
+    "vsa.zig",
+    "vsa/encoding.zig",
+    "vsa/agent/**",
+    "vsa/storage.zig",
+    "vsa/photon*.zig",
+    "vsa/trinity_canvas/**",
+    "vsa/gen_core*.zig",
+    "vsa/bsd.zig",
+    "vsa/benchmarks.zig",
+    "vsa/tests.zig",
+    "vsa/quantum_transition.zig",
+    "vsa/wave_scroll.zig",
+    "jit.zig",
+    "jit_arm64.zig",
+    "jit_x86_64.zig",
+    "jit_unified.zig"
+  ]
+}

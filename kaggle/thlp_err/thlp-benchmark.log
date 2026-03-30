@@ -1,0 +1,83 @@
+[{"stream_name":"stderr","time":7.776083494,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.776175877,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.776181748,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.776189475,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":8.532192683,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.532231535,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.532237457,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.532241755,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":13.920434327,"data":"\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/102.6 kB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m102.6/102.6 kB\u001b[0m \u001b[31m4.2 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\r\n"}
+,{"stream_name":"stdout","time":13.971019375000001,"data":"\u001b[?25h\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/71.0 kB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m71.0/71.0 kB\u001b[0m \u001b[31m4.0 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\r\n"}
+,{"stream_name":"stdout","time":14.483724671,"data":"\u001b[?25h\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/46.2 MB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[91m━\u001b[0m\u001b[90m╺\u001b[0m\u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m1.2/46.2 MB\u001b[0m \u001b[31m38.9 MB/s\u001b[0m eta \u001b[36m0:00:02\u001b[0m\r\u001b[2K   \u001b[91m━━━━━\u001b[0m\u001b[90m╺\u001b[0m\u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m6.2/46.2 MB\u001b[0m \u001b[31m89.4 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m\u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m13.5/46.2 MB\u001b[0m \u001b[31m194.0 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m\u001b[90m━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m20.7/46.2 MB\u001b[0m \u001b[31m206.3 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[90m╺\u001b[0m\u001b[90m━━━━━━━━━━━━━━━\u001b[0m \u001b[32m27.8/46.2 MB\u001b[0m \u001b[31m205.3 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[90m╺\u001b[0m\u001b[90m━━━━━━━━━\u001b[0m \u001b[32m35.2/46.2 MB\u001b[0m \u001b[31m208.0 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m\u001b[90m━━━\u001b[0m \u001b[32m42.3/46.2 MB\u001b[0m \u001b[31m204.7 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m202.5 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m46.2/46.2 MB\u001b[0m \u001b[31m38.1 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\r\n"}
+,{"stream_name":"stderr","time":29.755237484,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":29.75527745,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":29.755285227,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 131, in execute_notebook\n"}
+,{"stream_name":"stderr","time":29.755404218,"data":"    raise_for_execution_errors(nb, output_path)\n"}
+,{"stream_name":"stderr","time":29.755464642,"data":"  File \"/usr/local/lib/python3.12/dist-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n"}
+,{"stream_name":"stderr","time":29.755640598,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":29.755990574,"data":"papermill.exceptions.PapermillExecutionError: \n"}
+,{"stream_name":"stderr","time":29.756012838,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":29.756021408,"data":"Exception encountered at \"In [2]\":\n"}
+,{"stream_name":"stderr","time":29.756028381,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":29.756035096,"data":"VersionError                              Traceback (most recent call last)\n"}
+,{"stream_name":"stderr","time":29.756040531,"data":"/tmp/ipykernel_17/2011185272.py in \u003ccell line: 0\u003e()\n"}
+,{"stream_name":"stderr","time":29.756046537,"data":"      1 # We import the library as 'kbench' for brevity\n"}
+,{"stream_name":"stderr","time":29.75605201,"data":"----\u003e 2 import kaggle_benchmarks as kbench\n"}
+,{"stream_name":"stderr","time":29.756068355,"data":"      3 import pandas as pd\n"}
+,{"stream_name":"stderr","time":29.756072728,"data":"      4 from dataclasses import dataclass\n"}
+,{"stream_name":"stderr","time":29.756076676,"data":"      5 \n"}
+,{"stream_name":"stderr","time":29.756080613,"data":"\n"}
+,{"stream_name":"stderr","time":29.756084502,"data":"/usr/local/lib/python3.12/dist-packages/kaggle_benchmarks/__init__.py in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":29.756089137,"data":"     13 # limitations under the License.\n"}
+,{"stream_name":"stderr","time":29.756093222,"data":"     14 \n"}
+,{"stream_name":"stderr","time":29.756102207,"data":"---\u003e 15 from kaggle_benchmarks import (\n"}
+,{"stream_name":"stderr","time":29.756119927,"data":"     16     actors,\n"}
+,{"stream_name":"stderr","time":29.756124837,"data":"     17     assertions,\n"}
+,{"stream_name":"stderr","time":29.756129374,"data":"\n"}
+,{"stream_name":"stderr","time":29.75613368,"data":"/usr/local/lib/python3.12/dist-packages/kaggle_benchmarks/kaggle/__init__.py in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":29.756139146,"data":"     13 # limitations under the License.\n"}
+,{"stream_name":"stderr","time":29.75614323,"data":"     14 \n"}
+,{"stream_name":"stderr","time":29.756147044,"data":"---\u003e 15 from kaggle_benchmarks.kaggle import serialization\n"}
+,{"stream_name":"stderr","time":29.75615117,"data":"     16 from kaggle_benchmarks.kaggle.benchmark_types_pb2 import (  # type: ignore[attr-defined]\n"}
+,{"stream_name":"stderr","time":29.756155110999998,"data":"     17     BenchmarkTaskRun,\n"}
+,{"stream_name":"stderr","time":29.756159025,"data":"\n"}
+,{"stream_name":"stderr","time":29.756163285,"data":"/usr/local/lib/python3.12/dist-packages/kaggle_benchmarks/kaggle/serialization.py in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":29.756172312,"data":"     35 )\n"}
+,{"stream_name":"stderr","time":29.75617628,"data":"     36 from kaggle_benchmarks import messages as benchmark_messages\n"}
+,{"stream_name":"stderr","time":29.756185399,"data":"---\u003e 37 from kaggle_benchmarks.kaggle import benchmark_types_pb2 as types\n"}
+,{"stream_name":"stderr","time":29.756189678,"data":"     38 \n"}
+,{"stream_name":"stderr","time":29.756193548,"data":"     39 TASK_FILE_SUFFIX = \".task.json\"\n"}
+,{"stream_name":"stderr","time":29.756202954,"data":"\n"}
+,{"stream_name":"stderr","time":29.756206877,"data":"/usr/local/lib/python3.12/dist-packages/kaggle_benchmarks/kaggle/benchmark_types_pb2.py in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":29.75622324,"data":"     10 from google.protobuf import symbol_database as _symbol_database\n"}
+,{"stream_name":"stderr","time":29.756228253,"data":"     11 from google.protobuf.internal import builder as _builder\n"}
+,{"stream_name":"stderr","time":29.756232477,"data":"---\u003e 12 _runtime_version.ValidateProtobufRuntimeVersion(\n"}
+,{"stream_name":"stderr","time":29.756237354,"data":"     13     _runtime_version.Domain.PUBLIC,\n"}
+,{"stream_name":"stderr","time":29.756241899,"data":"     14     5,\n"}
+,{"stream_name":"stderr","time":29.75624583,"data":"\n"}
+,{"stream_name":"stderr","time":29.756249758,"data":"/usr/local/lib/python3.12/dist-packages/google/protobuf/runtime_version.py in ValidateProtobufRuntimeVersion(gen_domain, gen_major, gen_minor, gen_patch, gen_suffix, location)\n"}
+,{"stream_name":"stderr","time":29.756254368,"data":"    111 \n"}
+,{"stream_name":"stderr","time":29.756258216,"data":"    112   if MINOR \u003c gen_minor or (MINOR == gen_minor and PATCH \u003c gen_patch):\n"}
+,{"stream_name":"stderr","time":29.75626788,"data":"--\u003e 113     _ReportVersionError(\n"}
+,{"stream_name":"stderr","time":29.756273121,"data":"    114         'Detected incompatible Protobuf Gencode/Runtime versions when loading'\n"}
+,{"stream_name":"stderr","time":29.756277368,"data":"    115         f' {location}: gencode {gen_version} runtime {version}. Runtime version'\n"}
+,{"stream_name":"stderr","time":29.756281469,"data":"\n"}
+,{"stream_name":"stderr","time":29.756285237,"data":"/usr/local/lib/python3.12/dist-packages/google/protobuf/runtime_version.py in _ReportVersionError(msg)\n"}
+,{"stream_name":"stderr","time":29.756301857,"data":"     48 \n"}
+,{"stream_name":"stderr","time":29.756316841,"data":"     49 def _ReportVersionError(msg):\n"}
+,{"stream_name":"stderr","time":29.756321577,"data":"---\u003e 50   raise VersionError(msg)\n"}
+,{"stream_name":"stderr","time":29.756326202,"data":"     51 \n"}
+,{"stream_name":"stderr","time":29.756330848,"data":"     52 \n"}
+,{"stream_name":"stderr","time":29.756335321999998,"data":"\n"}
+,{"stream_name":"stderr","time":29.756344499,"data":"VersionError: Detected incompatible Protobuf Gencode/Runtime versions when loading benchmark_types.proto: gencode 5.29.6 runtime 5.29.5. Runtime version cannot be older than the linked gencode version. See Protobuf version guarantees at https://protobuf.dev/support/cross-version-runtime-guarantee.\n"}
+,{"stream_name":"stderr","time":29.75635086,"data":"\n"}
+,{"stream_name":"stderr","time":32.607841569,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":32.607883913,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":32.799528025,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":32.799556598,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":33.545808244,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":33.930042983999996,"data":"[NbConvertApp] Writing 18884 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":37.028980339,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":38.082256695,"data":"[NbConvertApp] Writing 297426 bytes to __results__.html\n"}
+,{"stream_name":"stdout","time":39.110049076,"data":"\u001b[?25h"}
+]

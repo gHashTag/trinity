@@ -1,0 +1,17 @@
+{
+  "title": "Trinity Cognitive Probes - THLP Track (MC Format)",
+  "id": "playra/trinity-cognitive-probes-thlp-mc",
+  "licenses": [
+    {
+      "name": "MIT"
+    }
+  ],
+  "subtitle": "Hippocampal Learning Probe for AGI Assessment",
+  "description": "**Part of the DeepMind AGI Hackathon Submission**\n\nThe THLP (Trinity Hippocampal Learning Probe) track in MC format evaluates few-shot learning, belief updating, and error-driven learning through multiple choice questions.\n\n**Contains:**\n- 192 MC questions\n- Ground truth answers (A/B/C/D)\n- Difficulty levels (u03c6-scaled)\n- Brain zone metadata (hippocampus, entorhinal cortex)\n- Neural analog references\n\n**Evaluation Metrics:**\n- Accuracy: Binary correct/incorrect per item\n- Calibration: How well model probabilities match actual correctness\n- Composite: 60% accuracy + 20% calibration + 20% mean score\n\n**Organization:** gHashTag/trinity\n**License:** MIT\n",
+  "resources": [
+    {
+      "path": "thlp_mc.csv",
+      "description": "THLP Track MC format - 192 items"
+    }
+  ]
+}

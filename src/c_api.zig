@@ -9,7 +9,7 @@
 const std = @import("std");
 const vsa = @import("vsa.zig");
 const hybrid = @import("hybrid.zig");
-const encoding = @import("vsa/gen_encoding.zig");
+const encoding = @import("vsa/encoding.zig");
 
 const HybridBigInt = hybrid.HybridBigInt;
 const Trit = hybrid.Trit;
@@ -204,7 +204,7 @@ export fn trinity_vsa_encode_text_words(text: [*]const u8, len: usize) ?*anyopaq
     const slice = text[0..len];
     const ptr = heapAlloc() orelse return null;
     // encodeTextWords returns ![]HybridBigInt, take first element
-    const vectors = vsa.encodeTextWords(slice, allocator) catch return null;
+    const vectors = encoding.encodeTextWords(slice, allocator) catch return null;
     defer allocator.free(vectors);
     if (vectors.len > 0) {
         ptr.* = vectors[0];
@@ -272,7 +272,7 @@ export fn trinity_vsa_to_array(v: ?*anyopaque, out: [*]i8, max_len: usize) usize
 
 /// Get maximum supported vector dimension
 export fn trinity_vsa_max_dim() usize {
-    return vsa.MAX_TRITS;
+    return hybrid.MAX_TRITS;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

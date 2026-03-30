@@ -1,0 +1,31 @@
+{
+  "name": "livecodes",
+  "version": "0.12.0",
+  "description": "A Code Playground That Just Works!",
+  "author": "Hatem Hosny",
+  "license": "MIT",
+  "keywords": ["playground", "code", "repl", "client", "sdk", "react", "vue", "svelte", "python"],
+  "private": false,
+  "repository": {
+    "url": "https://github.com/live-codes/livecodes"
+  },
+  "type": "module",
+  "main": "./livecodes.js",
+  "module": "./livecodes.js",
+  "browser": "./livecodes.js",
+  "types": "./livecodes.d.ts",
+  "exports": {
+    ".": {
+      "import": "./livecodes.js",
+      "require": "./livecodes.cjs",
+      "default": "./livecodes.js"
+    },
+    "./react": {
+      "import": "./react.js"
+    },
+    "./vue": {
+      "import": "./vue.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

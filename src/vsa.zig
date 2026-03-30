@@ -3,112 +3,64 @@
 //!
 //! VSA operations for Trinity S³AI — bind, unbind, bundle, similarity.
 //!
+//! THIN WRAPPER: Re-exports from zig-golden-float package + Trinity-specific modules
+// ───────────────────────────────────────────────────────────────
+// Import from golden-float package (now external dependency)
+// ───────────────────────────────────────────────────────────────────────
+
 const std = @import("std");
 
-pub const common = @import("vsa/common.zig");
-pub const core = @import("vsa/core.zig");
+// Import from golden-float package
+const gf = @import("golden-float");
+
+// ───────────────────────────────────────────────────────────────
+// Re-exports from zig-golden-float package
+// ───────────────────────────────────────────────────────────────────────
+
+// VSA core from package
+pub const vsa_core = gf.vsa;
+pub const vsa_common = gf.vsa_common;
+
+// Re-export MAX_TRITS for convenience (used by sdk.zig, e2e_test.zig, etc.)
+pub const MAX_TRITS = gf.vsa_common.MAX_TRITS;
+pub const vsa_10k = gf.vsa_10k;
+pub const hrr = gf.hrr;
+pub const vsa_concurrency = gf.vsa_concurrency;
+pub const fpga_bind = gf.fpga_bind;
+
+// Re-export key VSA functions (from gf.vsa)
+pub const bind = gf.vsa.bind;
+pub const unbind = gf.vsa.unbind;
+pub const bundle2 = gf.vsa.bundle2;
+pub const bundle3 = gf.vsa.bundle3;
+pub const cosineSimilarity = gf.vsa.cosineSimilarity;
+pub const hammingDistance = gf.vsa.hammingDistance;
+pub const hammingSimilarity = gf.vsa.hammingSimilarity;
+pub const dotSimilarity = gf.vsa.dotSimilarity;
+pub const permute = gf.vsa.permute;
+pub const inversePermute = gf.vsa.inversePermute;
+pub const encodeSequence = gf.vsa.encodeSequence;
+pub const probeSequence = gf.vsa.probeSequence;
+pub const randomVector = gf.vsa.randomVector;
+pub const bundleN = gf.vsa.bundleN;
+pub const countNonZero = gf.vsa.countNonZero;
+pub const vectorNorm = gf.vsa.vectorNorm;
+
+// VSA composite modules - NOT in golden-float yet, use local files
 pub const encoding = @import("vsa/encoding.zig");
 pub const storage = @import("vsa/storage.zig");
-pub const concurrency = @import("vsa/concurrency.zig");
 pub const agent = @import("vsa/agent.zig");
-pub const HRR = @import("vsa/hrr.zig").HRR;
 
-// Re-export common types
-pub const HybridBigInt = common.HybridBigInt;
-pub const Trit = common.Trit;
-pub const Vec32i8 = common.Vec32i8;
-pub const SIMD_WIDTH = common.SIMD_WIDTH;
-pub const MAX_TRITS = common.MAX_TRITS;
-pub const SearchResult = common.SearchResult;
+pub const concurrency = gf.vsa_concurrency;
 
-// Re-export core functions
-pub const randomVector = core.randomVector;
-pub const bind = core.bind;
-pub const unbind = core.unbind;
-pub const bundle2 = core.bundle2;
-pub const bundle3 = core.bundle3;
-pub const permute = core.permute;
-pub const inversePermute = core.inversePermute;
-pub const cosineSimilarity = core.cosineSimilarity;
-pub const hammingDistance = core.hammingDistance;
-pub const hammingSimilarity = core.hammingSimilarity;
-pub const dotSimilarity = core.dotSimilarity;
-pub const vectorNorm = core.vectorNorm;
-pub const bundleN = core.bundleN;
-pub const countNonZero = core.countNonZero;
-pub const encodeSequence = core.encodeSequence;
-pub const probeSequence = core.probeSequence;
+// ───────────────────────────────────────────────────────────────────────
+// Trinity-specific modules (NOT in zig-golden-float)
+// ───────────────────────────────────────────────────────────────────────────────
 
-// Re-export encoding
-// Text encoding stubs (not fully implemented in gen_encoding)
-pub fn encodeText(allocator: std.mem.Allocator, text: []const u8) ![]i8 {
-    _ = allocator;
-    _ = text;
-    return error.NotImplemented;
-}
-
-pub fn decodeText(allocator: std.mem.Allocator, vec: []const i8) ![]u8 {
-    _ = allocator;
-    _ = vec;
-    return error.NotImplemented;
-}
-
-pub const TEXT_VECTOR_DIM: usize = 1000;
-
-// Re-export text encoding functions from encoding module
-pub const charToVector = encoding.charToVector;
-pub const encodeTextWords = encoding.encodeTextWords;
-pub const textSimilarity = encoding.textSimilarity;
-pub const textsAreSimilar = encoding.textsAreSimilar;
-
-// Re-export storage
-pub const TextCorpus = storage.TextCorpus;
-
-// Re-export concurrency & DAG
-pub const ChaseLevDeque = concurrency.ChaseLevDeque;
-pub const LockFreePool = concurrency.LockFreePool;
-pub const DependencyGraph = concurrency.DependencyGraph;
-pub const TaskNode = concurrency.TaskNode;
-pub const TaskState = concurrency.TaskState;
-pub const getGlobalPool = concurrency.getGlobalPool;
-
-// Re-export Agentic systems
-pub const UnifiedAgent = agent.UnifiedAgent;
-pub const AgentMemory = agent.AgentMemory;
-pub const AgentRole = agent.AgentRole;
-pub const Modality = agent.Modality;
-pub const MultiModalToolUse = agent.MultiModalToolUse;
-pub const AutonomousAgent = agent.AutonomousAgent;
-pub const ImprovementLoop = agent.ImprovementLoop;
-pub const UnifiedAutonomousSystem = agent.UnifiedAutonomousSystem;
-pub const UnifiedRequest = agent.UnifiedRequest;
-pub const UnifiedResponse = agent.UnifiedResponse;
-pub const SystemCapability = agent.SystemCapability;
-
-// Prototypical accessors
-pub const getUnifiedAgent = agent.getUnifiedAgent;
-pub const getAgentMemory = agent.getAgentMemory;
-pub const getAutonomousAgent = agent.getAutonomousAgent;
-pub const getUnifiedSystem = agent.getUnifiedSystem;
-
-/// Hamming distance for ternary trit slices.
-/// Counts positions where trits differ. Unequal lengths add the difference.
-pub fn hammingDistanceSlice(a: []const i8, b: []const i8) usize {
-    const len = @min(a.len, b.len);
-    var distance: usize = 0;
-    for (0..len) |i| {
-        if (a[i] != b[i]) distance += 1;
-    }
-    if (a.len > b.len) {
-        distance += a.len - b.len;
-    } else {
-        distance += b.len - a.len;
-    }
-    return distance;
-}
+pub const formats = gf.formats; // Only available via full package import
 
 test {
-    _ = @import("vsa/tests.zig");
+    // Note: vsa_tests module removed in golden-float 0.2.0
+    // VSA tests now run via zig build test
+    _ = gf.vsa;
 }
-
-// φ² + 1/φ² = 3 | TRINITY

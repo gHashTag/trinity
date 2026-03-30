@@ -104,23 +104,43 @@ pub const CsvParser = struct {
             // Need at least id, task, question, answer
             if (fields.items.len < 4) continue;
 
+            // Determine format based on column count
+            // tmp format: id,task,question,answer,confidence,difficulty,brain_zone,neural_analog (8 cols)
+            // thlp format: id,task,question,answer,ground_truth,examples,context,difficulty,brain_zone,neural_analog (10 cols)
+            const is_thlp_format = fields.items.len >= 10;
+
+            const difficulty = if (fields.items.len > 4)
+                if (is_thlp_format and fields.items.len > 7 and fields.items[7].len > 0)
+                    std.fmt.parseFloat(f64, fields.items[7]) catch 5.0
+                else if (!is_thlp_format and fields.items.len > 5 and fields.items[5].len > 0)
+                    std.fmt.parseFloat(f64, fields.items[5]) catch 5.0
+                else
+                    5.0
+            else
+                5.0;
+
+            const brain_zone = if (is_thlp_format and fields.items.len > 8)
+                try self.allocator.dupe(u8, fields.items[8])
+            else if (!is_thlp_format and fields.items.len > 6)
+                try self.allocator.dupe(u8, fields.items[6])
+            else
+                "";
+
+            const neural_analog = if (is_thlp_format and fields.items.len > 9)
+                try self.allocator.dupe(u8, fields.items[9])
+            else if (!is_thlp_format and fields.items.len > 7)
+                try self.allocator.dupe(u8, fields.items[7])
+            else
+                "";
+
             const row = CsvRow{
                 .id = try self.allocator.dupe(u8, fields.items[0]),
                 .task = try self.allocator.dupe(u8, fields.items[1]),
                 .question = try self.allocator.dupe(u8, fields.items[2]),
                 .answer = try self.allocator.dupe(u8, fields.items[3]),
-                .difficulty = if (fields.items.len > 4)
-                    try std.fmt.parseFloat(f64, fields.items[4])
-                else
-                    5.0,
-                .brain_zone = if (fields.items.len > 5)
-                    try self.allocator.dupe(u8, fields.items[5])
-                else
-                    "",
-                .neural_analog = if (fields.items.len > 6)
-                    try self.allocator.dupe(u8, fields.items[6])
-                else
-                    "",
+                .difficulty = difficulty,
+                .brain_zone = brain_zone,
+                .neural_analog = neural_analog,
             };
 
             try rows.append(self.allocator, row);

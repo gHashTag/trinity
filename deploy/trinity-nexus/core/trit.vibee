@@ -1,0 +1,32 @@
+name: trit
+version: "1.0.0"
+language: zig
+module: trit
+
+description: |
+  Balanced ternary trit type: {-1, 0, +1}
+  Foundation for Trinity VSA operations.
+
+types:
+  Trit:
+    description: "Balanced ternary value"
+    values:
+      - Neg: -1
+      - Zero: 0
+      - Pos: 1
+
+behaviors:
+  - name: multiply
+    given: Two trits a and b
+    when: Multiplying trits
+    then: Returns a * b as trit
+
+  - name: negate
+    given: A trit value
+    when: Negating
+    then: Returns -trit
+
+  - name: from_int
+    given: An integer value
+    when: Converting to trit
+    then: Returns Pos if > 0, Neg if < 0, Zero otherwise

@@ -9,7 +9,9 @@ const Evaluator = @import("evaluator.zig").Evaluator;
 const Exporter = @import("export.zig").Exporter;
 
 pub fn main() !void {
-    const allocator = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
@@ -52,13 +54,7 @@ fn runParse(allocator: std.mem.Allocator, args: []const []const u8) !void {
     std.debug.print("Tasks: ", .{});
 
     var tasks = std.StringHashMap(usize).init(allocator);
-    defer {
-        var iter = tasks.iterator();
-        while (iter.next()) |e| {
-            allocator.free(e.key_ptr.*);
-        }
-        tasks.deinit();
-    }
+    defer tasks.deinit();  // Keys point to CsvRow data, freed separately
 
     for (result.rows) |row| {
         const count = tasks.get(row.task) orelse 0;
@@ -152,8 +148,11 @@ fn runEval(allocator: std.mem.Allocator, args: []const []const u8) !void {
         }
     }
 
-    const eval_result = try evaluator.evaluate(parse_result.rows, responses.items);
+    var eval_result = try evaluator.evaluate(parse_result.rows, responses.items);
     evaluator.printReport(eval_result);
+
+    // Cleanup eval_result
+    eval_result.deinit(allocator);
 }
 
 fn runStatus(allocator: std.mem.Allocator) !void {

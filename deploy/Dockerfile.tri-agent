@@ -1,0 +1,67 @@
+# TRINITY 27-AGENT GRID — Pure Zig Agent Container
+# Each of the 27 agents runs in this container with AGENT_DOMAIN environment variable
+# NO bash, NO Python — 100% Zig
+
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies only (minimal)
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15 (pinned version for reproducibility)
+ENV ZIG_VERSION=0.15.2
+RUN curl -fsSL https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz | tar xJ \
+    && mv /zig-linux-x86_64-${ZIG_VERSION} /zig \
+    && /zig/zig version
+
+ENV PATH="/zig:${PATH}"
+
+# Create Trinity directory structure
+WORKDIR /trinity
+RUN mkdir -p /trinity/.trinity/experience/episodes \
+         /trinity/.trinity/logs \
+         /trinity/.trinity/state
+
+# Copy Trinity source (build happens at container start for dev, or pre-built in prod)
+# For prod, pre-built binaries are copied instead
+COPY . /trinity/
+
+# Build tri CLI and all agent commands
+# This builds ALL 50+ binaries including the unified tri CLI
+RUN zig build -Doptimize=ReleaseFast tri
+
+# Verify build
+RUN /trinity/zig-out/bin/tri version || echo "Version check skipped"
+
+# Create non-root user for security
+RUN adduser --disabled-password --gecos "" trinity \
+    && chown -R trinity:trinity /trinity
+
+USER trinity
+
+# Environment variables (set at runtime by docker-compose)
+# AGENT_DOMAIN — One of 27 Coptic letter domains (alpha, beta, gamma, ..., omega, sampi, sho)
+# AGENT_PORT — Port for this agent's HTTP API (9001-9026 for agents, 8080 for Queen/Omega)
+# QUEEN_URL — URL of Queen orchestration service (default: http://queen:8080)
+# GITHUB_TOKEN — GitHub auth for agent-gamma
+# TELEGRAM_BOT_TOKEN — Telegram bot token for agent-nu
+# RAILWAY_TOKEN — Railway token for agent-rho
+
+ENV AGENT_DOMAIN=""
+ENV AGENT_PORT=9000
+ENV QUEEN_URL="http://queen:8080"
+
+# Health check — HTTP endpoint on agent port
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${AGENT_PORT}/health || exit 1
+
+# Expose agent port (configured at runtime)
+EXPOSE ${AGENT_PORT}
+
+# Run agent — domain-specific entrypoint via tri CLI
+# The tri agent run command reads AGENT_DOMAIN and starts the appropriate agent
+ENTRYPOINT ["/trinity/zig-out/bin/tri", "agent", "run"]

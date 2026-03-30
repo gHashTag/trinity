@@ -15,7 +15,8 @@
 const std = @import("std");
 const vsa = @import("vsa");
 
-const HybridBigInt = vsa.HybridBigInt;
+const gf = @import("golden-float");
+const HybridBigInt = gf.bigint.HybridBigInt;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONSTANTS

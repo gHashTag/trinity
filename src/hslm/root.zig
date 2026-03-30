@@ -198,10 +198,10 @@ test "hslm autograd training step" {
     defer batch_data.deinit();
     ds.nextBatch(&batch_data);
 
-    const loss = ft.trainStep(batch_data.getInput(0), batch_data.getTarget(0));
-    try std.testing.expect(!std.math.isNan(loss));
-    try std.testing.expect(!std.math.isInf(loss));
-    try std.testing.expect(loss > 0.0);
+    const loss_value = ft.trainStep(batch_data.getInput(0), batch_data.getTarget(0));
+    try std.testing.expect(!std.math.isNan(loss_value));
+    try std.testing.expect(!std.math.isInf(loss_value));
+    try std.testing.expect(loss_value > 0.0);
     try std.testing.expect(ft.metrics.step == 1);
 }
 

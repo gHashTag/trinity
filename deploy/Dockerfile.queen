@@ -1,63 +1,15 @@
-# Queen Self-Improving Container
-# Multi-stage build: Zig backend + React frontend
+# Queen Backend Container — Simple Runtime Image
+# Copies pre-built binary from host (no in-Docker build)
 
-# ============================================================================
-# Stage 1: Frontend Build (React + Vite)
-# ============================================================================
-
-FROM node:20-alpine AS frontend-build
-
-WORKDIR /app
-
-# Install dependencies
-COPY apps/queen-web/package*.json ./
-RUN npm ci
-
-# Build frontend
-COPY apps/queen-web/ ./
-RUN npm run build
-
-# ============================================================================
-# Stage 2: Zig Backend Build
-# ============================================================================
-
-FROM ubuntu:22.04 AS backend-build
-
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates curl jq \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Zig 0.15
-ENV ZIG_VERSION=0.15.2
-RUN curl -fsSL https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz | tar xJ
-ENV PATH="/zig-linux-x86_64-${ZIG_VERSION}:${PATH}"
-
-# Copy Trinity source
-COPY . /trinity
-WORKDIR /trinity
-
-# Build Queen backend
-RUN zig build -Doptimize=ReleaseFast queen-backend
-
-# ============================================================================
-# Stage 3: Runtime Image
-# ============================================================================
-
-FROM ubuntu:22.04 AS runtime
+FROM ubuntu:22.04
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Zig toolchain and binaries from build stage
-# Note: ENV vars don't propagate between stages, so hardcode version
-COPY --from=backend-build /zig-linux-x86_64-0.15.2 /zig/
-COPY --from=backend-build /trinity/zig-out/ /usr/local/bin/
-
-# Copy frontend (built separately)
-COPY --from=frontend-build /app/dist /var/www/html
+# Copy pre-built binary (build on host first with: zig build queen-backend)
+COPY zig-out/bin/queen-backend /usr/local/bin/
 
 # Create directories for Trinity state
 RUN mkdir -p /trinity/.trinity/queen /trinity/.trinity/experience/episodes
@@ -74,5 +26,5 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 # Expose ports
 EXPOSE 8080
 
-# Run Queen backend (also serves static files)
-CMD ["sh", "-c", "cd /trinity && exec /usr/local/bin/queen-backend"]
+# Run Queen backend
+CMD ["/usr/local/bin/queen-backend"]
