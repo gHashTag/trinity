@@ -69,7 +69,19 @@ pub const Lexer = struct {
 
         const c = self.source[self.pos];
 
+        // Single-line comment markers: ; # - (at line start only for -)
         if (c == ';' or c == '#') {
+            try self.lexComment();
+            return;
+        }
+
+        // Dash as comment marker (only at line start after whitespace)
+        if (c == '-' and self.column == 1 and self.pos + 1 < self.source.len) {
+            if (self.source[self.pos + 1] == ' ') {
+                try self.lexComment();
+                return;
+            }
+        }
             try self.lexComment();
             return;
         }

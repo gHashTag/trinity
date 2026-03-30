@@ -1,12 +1,12 @@
 {
   "state": "COMMITTED",
-  "issue_number": 474,
-  "branch": "",
-  "issue_title_len": 0,
-  "issue_title": "",
-  "files_count": 2,
+  "issue_number": 477,
+  "branch": "main",
+  "issue_title_len": 50,
+  "issue_title": "Demo GIFs",
+  "files_count": 0,
   "tests_passed": true,
   "commit_hash": "",
-  "started_at": 1774849236,
-  "last_updated": 1774849840
+  "started_at": 1774869279,
+  "last_updated": 1774869279
 }

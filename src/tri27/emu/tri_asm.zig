@@ -73,7 +73,8 @@ fn parseLineWithLabels(line: []const u8, labels: *const LabelTable, line_num: us
         return .{ 0, true }; // Flag that this was a label definition
     }
 
-    if (rest_trimmed.len == 0 or rest_trimmed[0] == ';' or rest_trimmed[0] == '#' or rest_trimmed[0] == '|') return error.EmptyLine;
+    if (rest_trimmed.len == 0 or rest_trimmed[0] == ';' or rest_trimmed[0] == '#' or rest_trimmed[0] == '|' or
+        (rest_trimmed.len > 1 and rest_trimmed[0] == '-' and rest_trimmed[1] == ' ')) return error.EmptyLine;
 
     // Skip directive lines (e.g., ".const", ".data", ".code", ".dword", ".byte")
     // These are section markers and data directives (not yet implemented)
@@ -612,7 +613,9 @@ pub fn assemble(allocator: Allocator, source: []const u8) ![]u8 {
 
         // Skip empty lines, comments, and directives
         // Directives like .const, .data, .code are section markers (not yet implemented)
-        if (trimmed.len == 0 or trimmed[0] == ';' or trimmed[0] == '#' or trimmed[0] == '|') {
+        // Comments starting with - (followed by space)
+        if (trimmed.len == 0 or trimmed[0] == ';' or trimmed[0] == '#' or trimmed[0] == '|' or
+            (trimmed.len > 1 and trimmed[0] == '-' and trimmed[1] == ' ')) {
             line_num += 1;
             continue;
         }

@@ -161,7 +161,7 @@ pub const Assembler = struct {
         }
 
         // M-type: op src, addr
-        if (std.mem.eql(u8, op_lower, "store")) {
+        if (std.mem.eql(u8, op_lower, "store") or std.mem.eql(u8, op_lower, "st")) {
             if (operands.len != 2) return AsmError.InvalidSyntax;
             const src = try parseRegister(operands[0]);
             const addr = try parseImmediateU16(operands[1]);
@@ -176,7 +176,7 @@ pub const Assembler = struct {
             return encoder.encode_sti(imm, addr);
         }
 
-        if (std.mem.eql(u8, op_lower, "load")) {
+        if (std.mem.eql(u8, op_lower, "load") or std.mem.eql(u8, op_lower, "ld")) {
             if (operands.len != 2) return AsmError.InvalidSyntax;
             const dst = try parseRegister(operands[0]);
             const addr = try parseImmediateU16(operands[1]);

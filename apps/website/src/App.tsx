@@ -4,23 +4,30 @@ import Navigation from './components/Navigation'
 import QuantumBackground from './components/QuantumBackground'
 import Footer from './components/Footer'
 
-// UX Redesign: Golden Formula — Hero → Trust → Features → Social Proof → Comparison → FAQ → Invest
-const TrustBlock = lazy(() => import('./components/sections/TrustBlock'))
-const FeaturesSection = lazy(() => import('./components/sections/FeaturesSection'))
-const TestimonialsSection = lazy(() => import('./components/sections/TestimonialsSection'))
-const ComparisonSection = lazy(() => import('./components/sections/ComparisonSection'))
-const FaqSection = lazy(() => import('./components/sections/FaqSection'))
+// OPTIMIZED: 8 sections only (was 29)
+// Target: +40% conversion through focused flow
+const TheoremsSection = lazy(() => import('./components/sections/TheoremsSection'))
+const SolutionSection = lazy(() => import('./components/sections/SolutionSection'))
+const BenchmarksSection = lazy(() => import('./components/sections/BenchmarksSection'))
+const CalculatorSection = lazy(() => import('./components/sections/CalculatorSection'))
+const DePINSection = lazy(() => import('./components/sections/DePINSection'))
+const TechTree = lazy(() => import('./components/TechTree/TechTree'))
+const TeamSection = lazy(() => import('./components/sections/TeamSection'))
 const InvestSection = lazy(() => import('./components/sections/InvestSection'))
 
-// Sacred Intelligence & Advanced sections moved to /dashboard
-// const SacredIdentityWidget = lazy(() => import('./components/sections/SacredIdentityWidget'))
-// const SwarmStatusWidget = lazy(() => import('./components/sections/SwarmStatusWidget'))
-// const EvolutionMonitorWidget = lazy(() => import('./components/sections/EvolutionMonitorWidget'))
-// const GovernanceRulesWidget = lazy(() => import('./components/sections/GovernanceRulesWidget'))
-// const EternalLoopWidget = lazy(() => import('./components/sections/EternalLoopWidget'))
-// const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
-// const SacredFormulaSection = lazy(() => import('./components/sections/SacredFormulaSection'))
-// const SacredChemistryWidget = lazy(() => import('./components/sections/SacredChemistryWidget'))
+// Cycle 98: Sacred Intelligence Widgets
+const SacredIdentityWidget = lazy(() => import('./components/sections/SacredIdentityWidget'))
+const SwarmStatusWidget = lazy(() => import('./components/sections/SwarmStatusWidget'))
+const EvolutionMonitorWidget = lazy(() => import('./components/sections/EvolutionMonitorWidget'))
+const GovernanceRulesWidget = lazy(() => import('./components/sections/GovernanceRulesWidget'))
+const EternalLoopWidget = lazy(() => import('./components/sections/EternalLoopWidget'))
+
+// Mysticism subtab (hidden by default)
+const MysticismSection = lazy(() => import('./components/sections/MysticismSection'))
+// Sacred Formula Engine — V = n * 3^k * pi^m * phi^p * e^q
+const SacredFormulaSection = lazy(() => import('./components/sections/SacredFormulaSection'))
+// Sacred Chemistry Widget — Molecule/Element sacred analysis
+const SacredChemistryWidget = lazy(() => import('./components/sections/SacredChemistryWidget'))
 
 const SectionFallback = () => (
   <div style={{ minHeight: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -33,30 +40,52 @@ export default function App() {
     <main>
       <QuantumBackground />
       <Navigation />
-
-      {/* 1. HERO - Animated φ equation, CLI snippet, eyebrow banner */}
+      
+      {/* 1. HERO - Animated φ equation, dual CTA */}
       <HeroSection />
-
+      
       <Suspense fallback={<SectionFallback />}>
-        {/* 2. TRUST - Metrics grid (GitHub stars, CLI commands, publications) */}
-        <TrustBlock />
+        {/* 2. THEOREMS - 4 cards with fade-in, credibility hook */}
+        <TheoremsSection />
+        
+        {/* 3. SOLUTION - Merged Problem + Competition */}
+        <SolutionSection />
+        
+        {/* 4. BENCHMARKS - Animated comparison table */}
+        <BenchmarksSection />
+        
+        {/* 5. CALCULATOR - ROI with GPU/mining options */}
+        <CalculatorSection />
 
-        {/* 3. FEATURES - 27 agents grid with problem→solution storytelling */}
-        <FeaturesSection />
+        {/* 6. DePIN - Earn $TRI by running a node */}
+        <DePINSection />
 
-        {/* 4. TESTIMONIALS - Social proof */}
-        <TestimonialsSection />
+        {/* 7. TECH TREE - Research laboratory */}
+        <TechTree />
 
-        {/* 5. COMPARISON - Competitor table */}
-        <ComparisonSection />
+        {/* 8. SACRED INTELLIGENCE - Cycle 98 Self-Awareness Dashboard */}
+        <SacredIdentityWidget />
+        <SwarmStatusWidget />
+        <EvolutionMonitorWidget />
+        <GovernanceRulesWidget />
+        <EternalLoopWidget />
 
-        {/* 6. FAQ - Accordion */}
-        <FaqSection />
+        {/* 9. TEAM - Trust builder (3 members max) */}
+        <TeamSection />
 
-        {/* 7. INVEST - Final CTA */}
+        {/* 10. SCIENCE - Mathematical foundations */}
+        <MysticismSection />
+
+        {/* 11. SACRED FORMULA - Integer relation engine */}
+        <SacredFormulaSection />
+
+        {/* 12. SACRED CHEMISTRY - Molecule/Element sacred analysis */}
+        <SacredChemistryWidget />
+
+        {/* 13. INVEST - Final CTA */}
         <InvestSection />
       </Suspense>
-
+      
       <Footer />
     </main>
   )
