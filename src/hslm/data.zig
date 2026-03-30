@@ -402,7 +402,6 @@ pub const Dataset = struct {
 
     /// Compute complexity score for a sequence
     fn computeComplexity(self: *const Self, tokens: []const u16) f32 {
-        _ = self;
         if (tokens.len == 0) return 0.0;
 
         // Complexity factors:
