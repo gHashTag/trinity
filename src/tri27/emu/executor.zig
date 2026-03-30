@@ -73,20 +73,19 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
             const addr = @as(usize, @abs(inst.immediate));
             const value = cpu.t27[inst.dst];
 
-            // Memory word is 32 bits (fits 2 Trit27s)
-            const word_index = addr * 4;
-            if (word_index + @sizeOf(u64) > memory.len) {
+            // Immediate is byte address (like LD), NOT word index
+            // Writing 4 bytes starting at byte address
+            if (addr + 4 > memory.len) {
                 return ExecError.InvalidMemory;
             }
 
             // Pack Trit27 into 64-bit word for storage
             const packed_word: u64 = @bitCast(value.trits);
-            // Manual word write (little-endian)
-            const base = word_index;
-            memory[base] = @as(u8, @truncate(packed_word));
-            memory[base + 1] = @as(u8, @truncate(packed_word >> 8));
-            memory[base + 2] = @as(u8, @truncate(packed_word >> 16));
-            memory[base + 3] = @as(u8, @truncate(packed_word >> 24));
+            // Manual word write (little-endian) - write 4 bytes
+            memory[addr] = @as(u8, @truncate(packed_word));
+            memory[addr + 1] = @as(u8, @truncate(packed_word >> 8));
+            memory[addr + 2] = @as(u8, @truncate(packed_word >> 16));
+            memory[addr + 3] = @as(u8, @truncate(packed_word >> 24));
 
             cpu.pc += 1;
         },
@@ -499,7 +498,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
         .RET => {
             // Pop return address from stack
             if (cpu.sp < 4) {
-                return ExecError.StackUnderflow;
+                cpu.flags.H = true; // Graceful halt on stack underflow
+                // Don't advance IP (like HALT)
+                return;
             }
 
             cpu.sp -= 4;
@@ -580,11 +581,20 @@ pub fn estimateCycles(opcode: Opcode) u64 {
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 pub fn run(cpu: *CPUState, memory: []align(8) u8) ExecError!void {
     const decodeInstruction = @import("./decoder.zig").decodeInstruction;
+    const MAX_INSTRUCTIONS: usize = 100_000;
 
     while (!cpu.flags.H) {
+        if (cpu.instructions_executed >= MAX_INSTRUCTIONS) {
+            cpu.flags.H = true; // Graceful halt on instruction limit
+            break;
+        }
+
         // Fetch instruction word from memory
         const byte_addr = cpu.pc * 4;
-        if (byte_addr + 4 > memory.len) return ExecError.InvalidMemory;
+        if (byte_addr + 4 > memory.len) {
+            cpu.flags.H = true; // Graceful halt instead of error
+            break;
+        }
 
         const inst_word: u32 = memory[byte_addr] |
             @as(u32, memory[byte_addr + 1]) << 8 |

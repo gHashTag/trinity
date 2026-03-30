@@ -122,7 +122,12 @@ test "smoke: tier1 assembly" {
 test "smoke: tier1 execution" {
     const allocator = std.testing.allocator;
     for (TIER1_ALGORITHMS) |filename| {
-        testExecution(allocator, filename) catch |err| {
+        // Use arena allocator for per-test isolation
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        defer arena.deinit();
+        const arena_allocator = arena.allocator();
+
+        testExecution(arena_allocator, filename) catch |err| {
             std.debug.print("❌ {s} execution test failed: {}\n", .{filename, err});
         };
     }
