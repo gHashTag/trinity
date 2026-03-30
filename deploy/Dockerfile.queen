@@ -51,12 +51,12 @@ RUN apt-get update && apt-get install -y \
     ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Zig toolchain
-COPY --from=backend-build /zig-linux-x86_64-${ZIG_VERSION} /zig/
-ENV PATH="/zig-linux-x86_64-${ZIG_VERSION}:${PATH}"
+# Copy Zig toolchain and binaries from build stage
+# Note: ENV vars don't propagate between stages, so hardcode version
+COPY --from=backend-build /zig-linux-x86_64-0.15.2 /zig/
+COPY --from=backend-build /trinity/zig-out/ /usr/local/bin/
 
-# Copy compiled binaries
-COPY --from=backend-build /trinity/zig-out/bin/queen-backend /usr/local/bin/
+# Copy frontend (built separately)
 COPY --from=frontend-build /app/dist /var/www/html
 
 # Create directories for Trinity state
