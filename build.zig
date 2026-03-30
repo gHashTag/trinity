@@ -383,6 +383,7 @@ pub fn build(b: *std.Build) void {
             .optimize = .ReleaseFast,
         }),
     });
+    trinity_search.root_module.addImport("golden-float", golden_float_mod);
     b.installArtifact(trinity_search);
 
     const run_search = b.addRunArtifact(trinity_search);
@@ -401,6 +402,7 @@ pub fn build(b: *std.Build) void {
             .optimize = .ReleaseFast,
         }),
     });
+    trinity_query.root_module.addImport("golden-float", golden_float_mod);
     b.installArtifact(trinity_query);
 
     const run_query = b.addRunArtifact(trinity_query);
