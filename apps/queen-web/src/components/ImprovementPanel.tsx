@@ -29,8 +29,8 @@ export function ImprovementPanel() {
         body: JSON.stringify(data),
       });
 
-      const data = await res.json();
-      setResult(data);
+      const responseData = await res.json();
+      setResult(responseData);
       setIsImproving(false);
 
       // Invalidate health and status queries
