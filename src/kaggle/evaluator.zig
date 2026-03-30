@@ -24,21 +24,25 @@ pub const EvalResult = struct {
     incorrect: usize = 0,
     accuracy: f64 = 0.0,
     strategy_counts: [6]usize = [_]usize{0} ** 6,
-    confusion: std.AutoHashMap(ConfusionKey, usize),
+    confusion: std.HashMap(ConfusionKey, usize, ConfusionKeyContext, std.hash_map.default_max_load_percentage),
     per_task: std.StringHashMap(TaskStats),
 
     pub const ConfusionKey = struct {
         expected: []const u8,
         predicted: []const u8,
+    };
 
-        pub fn hash(self: ConfusionKey) u64 {
+    const ConfusionKeyContext = struct {
+        pub fn hash(self: ConfusionKeyContext, key: ConfusionKey) u64 {
+            _ = self;
             var hasher = std.hash.Wyhash.init(0);
-            hasher.update(self.expected);
-            hasher.update(self.predicted);
+            hasher.update(key.expected);
+            hasher.update(key.predicted);
             return hasher.final();
         }
 
-        pub fn eql(a: ConfusionKey, b: ConfusionKey) bool {
+        pub fn eql(self: ConfusionKeyContext, a: ConfusionKey, b: ConfusionKey) bool {
+            _ = self;
             return std.mem.eql(u8, a.expected, b.expected) and
                    std.mem.eql(u8, a.predicted, b.predicted);
         }
@@ -71,7 +75,7 @@ pub const Evaluator = struct {
         std.debug.assert(rows.len == responses.len);
 
         var result = EvalResult{
-            .confusion = std.AutoHashMap(EvalResult.ConfusionKey, usize).init(self.allocator),
+            .confusion = std.HashMap(EvalResult.ConfusionKey, usize, EvalResult.ConfusionKeyContext, std.hash_map.default_max_load_percentage).initContext(self.allocator, .{}),
             .per_task = std.StringHashMap(EvalResult.TaskStats).init(self.allocator),
         };
         defer {
@@ -115,7 +119,7 @@ pub const Evaluator = struct {
 
             // Track per-task statistics
             const task_stats = try result.per_task.getOrPut(row.task);
-            if (!task_stats.exists) {
+            if (!task_stats.found_existing) {
                 task_stats.key_ptr.* = try self.allocator.dupe(u8, row.task);
                 task_stats.value_ptr.* = .{};
             }
@@ -125,7 +129,7 @@ pub const Evaluator = struct {
             }
 
             if ((i + 1) % 100 == 0) {
-                std.debug.print("  Evaluated {d}/{d} (acc: {d:.2}%)\n", .{
+                std.debug.print("  Evaluated {d}/{d} (acc: {:.2}%)\n", .{
                     i + 1, rows.len,
                     @as(f64, @floatFromInt(result.correct * 100)) / @as(f64, @floatFromInt(result.total)),
                 });
@@ -155,7 +159,7 @@ pub const Evaluator = struct {
         // For testing: return correct answer 70% of time
         const timestamp = std.time.nanoTimestamp();
         const seed = @as(u64, @intCast(@abs(timestamp)));
-        const rng = std.Random.DefaultPrng.init(seed);
+        var rng = std.Random.DefaultPrng.init(seed);
         if (rng.random().float(f64) < 0.7) {
             return self.allocator.dupe(u8, row.answer);
         } else {

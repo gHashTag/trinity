@@ -317,12 +317,13 @@ pub fn formatWorkerAnalysis(analysis: *const WorkerAnalysis) ![]const u8 {
     defer buf.deinit();
 
     const status_str = if (analysis.is_training) "🟢 training" else if (analysis.is_stalled) "🟡 stalled" else "🔴 idle";
+    const can_restart_str = if (analysis.can_restart) "true" else "false";
 
     try buf.writer().print(
         \\{s}: {s}
-        \\  step={d} PPL={d:.1} age={d}s
+        \\  step={d} PPL={:.1} age={d}s
         \\  error={s}
-        \\  can_restart={}
+        \\  can_restart={s}
     , .{
         analysis.name,
         status_str,
@@ -330,10 +331,10 @@ pub fn formatWorkerAnalysis(analysis: *const WorkerAnalysis) ![]const u8 {
         analysis.latest_ppl,
         analysis.log_age_sec,
         formatErrorCategory(analysis.error_category),
-        analysis.can_restart,
+        can_restart_str,
     });
 
-    return buf.toOwnedSlice(std.heap.page_allocator);
+    return buf.toOwnedSlice();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -545,17 +546,20 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
 
         for (results.items, 0..) |analysis, idx| {
             if (idx > 0) try json_buf.append(allocator, ',');
+            const training_str = if (analysis.is_training) "true" else "false";
+            const stalled_str = if (analysis.is_stalled) "true" else "false";
+            const can_restart_str = if (analysis.can_restart) "true" else "false";
             try json_buf.writer(allocator).print(
-                \\"name":"{s}","account":"{s}","step":{d},"ppl":{d:.1},"training":{},"stalled":{},"error":"{s}","can_restart":{}}
+                \\{{"name":"{s}","account":"{s}","step":{d},"ppl":{:.1},"training":{s},"stalled":{s},"error":"{s}","can_restart":{s}}}
             , .{
                 analysis.name,
                 analysis.account,
                 analysis.latest_step,
                 analysis.latest_ppl,
-                analysis.is_training,
-                analysis.is_stalled,
+                training_str,
+                stalled_str,
                 formatErrorCategory(analysis.error_category),
-                analysis.can_restart,
+                can_restart_str,
             });
         }
 
