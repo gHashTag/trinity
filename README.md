@@ -69,6 +69,52 @@ This is the first floating-point format in history **derived from fundamental ma
 
 [Golden Ratio Partition Paper](docs/docs/research/golden_ratio_partition.md) | [zenodo:10.5281/zenodo.19227879](https://doi.org/10.5281/zenodo.19227879)
 
+### GF16: Developer Value — Why You Should Care
+
+#### The Problem
+
+IEEE f16 in Zig generates **2,304 SIMD instructions** for vectorized ops (constant f16↔f32 conversion).
+That's 40× more than f32. Your ML pipeline is bottlenecked by format conversion, not computation.
+([Source: ziglang/zig#19550](https://github.com/ziglang/zig/issues/19550))
+
+#### The Solution
+
+GF16 is a `packed struct(u16)` — no hardware f16 dependency.
+Convert once on input (fromF32), compute in f32, pack on output (toF32).
+~56 instructions instead of 2,304.
+
+#### GF16 vs IEEE f16 vs BF16
+
+| Metric         | IEEE f16  | BF16      | GF16       |
+|----------------|-----------|-----------|------------|
+| Range (max)    | 65,504    | 3.4e38    | ~4.3e9     |
+| Underflow      | 6.1e-5    | ~1.2e-38  | ~4.7e-10   |
+| Precision      | 3.3 dig   | 2.4 dig   | 2.8 dig    |
+| Grad overflow  | ❌ Common  | ✅ Rare    | ✅ Rare     |
+| Grad vanishing | ❌ Common  | ✅ Rare    | ✅ Rare     |
+| Loss scaling   | Required  | Not needed | Not needed |
+| Zig SIMD inst  | 2,304     | ~100      | ~56        |
+| φ-distance     | 0.118     | 0.525     | **0.049**  |
+
+#### Industry Benchmarks
+
+FP8 gives **85% higher req/sec** and **94% higher tokens/sec** than FP16 at inference.
+BF16 eliminates gradient scaling problems that break FP16 on large models.
+GF16 takes the **best of both**: range like BF16, precision like FP16.
+
+#### When to Use GF16
+
+✅ ML weight storage and inference
+✅ Zig projects needing 16-bit float without f16 overhead
+✅ Edge/IoT where BF16 hardware unavailable
+✅ Ternary neural networks (combine with TF3-9)
+
+#### When NOT to Use GF16
+
+❌ Need IEEE 754 compliance (regulatory)
+❌ Need >3 decimal digits precision
+❌ Hardware with native BF16 (TPU, A100) — use BF16
+
 ---
 
 ## TRI-27 — Ternary Kernel
