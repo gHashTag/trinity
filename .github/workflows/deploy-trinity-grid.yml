@@ -1,12 +1,13 @@
-# Trinity 28-Agent Grid — Railway Deployment
+# Trinity 27-Agent Grid — Railway Deployment
 # Deploys Queen + 27 agents via Railway CLI with matrix strategy
-# All services in one project, private networking via *.railway.internal
 #
-# Cost: ~$5-8/mo on one Hobby account ($5 credits)
-# - Idle: ~112MB RAM + 0.28 vCPU ≈ $0.22/mo
-# - Under load: ~928MB RAM + 7 vCPU peaks ≈ $5-8/mo
+# Prerequisites:
+# 1. Railway Project Token (NOT Account Token!)
+#    - Railway Dashboard → Project → Settings → Tokens → Generate
+# 2. Add as GitHub Secret: RAILWAY_TOKEN
+# 3. Add Environment ID as: RAILWAY_ENVIRONMENT_ID (optional)
 #
-# Usage: Run "Deploy Trinity Grid" workflow from GitHub Actions tab
+# Usage: GitHub Actions tab → Deploy Trinity Grid → Run workflow
 
 name: Deploy Trinity Grid
 
@@ -21,12 +22,10 @@ on:
 
 env:
   RAILWAY_PROJECT: trinity-grid
-  QUEEN_PORT: 8080
-  AGENT_PORT_START: 9001
 
 jobs:
   # ============================================================================
-  # DEPLOY: Matrix strategy for parallel deployment
+  # DEPLOY: Parallel deployment via matrix strategy
   # ============================================================================
   deploy:
     if: github.event.inputs.destroy != 'true'
@@ -35,34 +34,34 @@ jobs:
       fail-fast: false
       matrix:
         agent:
-          - queen    # Port 8080 — Orchestration service
-          - alpha    # Port 9001 — Core bootstrapping
-          - beta     # Port 9002 — Benchmarking, metrics
-          - gamma    # Port 9003 — Git operations
-          - delta    # Port 9004 — Database, persistence
-          - epsilon  # Port 9005 — Error handling, recovery
-          - zeta     # Port 9006 — Zig compilation, VIBEE
-          - eta      # Port 9007 — Event orchestration, hooks
-          - theta    # Port 9008 — Testing, validation
-          - iota     # Port 9009 — I18n, localization
-          - kappa    # Port 9010 — Knowledge base, VSA
-          - lambda   # Port 9011 — Learning, experience
-          - mu       # Port 9012 — Memory management
-          - nu       # Port 9013 — Telegram notifications
-          - xi       # Port 9014 — MCP server integration
-          - omicron  # Port 9015 — Optimization, ASHA+PBT
-          - pi       # Port 9016 — Pipeline orchestration
-          - koppa    # Port 9017 — Compression, GF16
-          - rho      # Port 9018 — Railway cloud deployment
-          - sigma    # Port 9019 — Swarm intelligence
-          - tau      # Port 9020 — Ternary VM execution
-          - upsilon  # Port 9021 — UI components (Queen)
-          - phi      # Port 9022 — Math, φ² + 1/φ² = 3
-          - khi      # Port 9023 — CLI commands (310+)
-          - psi      # Port 9024 — Privacy, PII detection
-          - omega    # Port 9025 — Orchestration (Queen alt)
-          - sampi    # Port 9026 — SACred intelligence
-          - sho      # Port 9027 — FPGA synthesis, Verilog
+          - queen    # Port 8080
+          - alpha    # Port 9001
+          - beta     # Port 9002
+          - gamma    # Port 9003
+          - delta    # Port 9004
+          - epsilon  # Port 9005
+          - zeta     # Port 9006
+          - eta      # Port 9007
+          - theta    # Port 9008
+          - iota     # Port 9009
+          - kappa    # Port 9010
+          - lambda   # Port 9011
+          - mu       # Port 9012
+          - nu       # Port 9013
+          - xi       # Port 9014
+          - omicron  # Port 9015
+          - pi       # Port 9016
+          - koppa    # Port 9017
+          - rho      # Port 9018
+          - sigma    # Port 9019
+          - tau      # Port 9020
+          - upsilon  # Port 9021
+          - phi      # Port 9022
+          - khi      # Port 9023
+          - psi      # Port 9024
+          - omega    # Port 9025
+          - sampi    # Port 9026
+          - sho      # Port 9027
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,6 +72,7 @@ jobs:
       - name: Link Railway Project
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
         run: |
           railway link --project ${{ env.RAILWAY_PROJECT }} || railway init --name ${{ env.RAILWAY_PROJECT }}
 
@@ -82,21 +82,22 @@ jobs:
         run: |
           # Set port based on agent
           if [ "${{ matrix.agent }}" = "queen" ]; then
-            PORT=${{ env.QUEEN_PORT }}
+            PORT=8080
             DOMAIN=omega
+            DOCKERFILE=deploy/Dockerfile.queen
           else
-            # Extract port number from agent position
             AGENTS=(alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi koppa rho sigma tau upsilon phi khi psi omega sampi sho)
             for i in "${!AGENTS[@]}"; do
               if [ "${AGENTS[$i]}" = "${{ matrix.agent }}" ]; then
-                PORT=$((i + ${{ env.AGENT_PORT_START }}))
+                PORT=$((9001 + i))
                 DOMAIN=${{ matrix.agent }}
+                DOCKERFILE=deploy/Dockerfile.tri-agent
                 break
               fi
             done
           fi
 
-          # Create or update service
+          # Create service
           railway service create ${{ matrix.agent }} 2>/dev/null || true
 
           # Set environment variables
@@ -105,30 +106,17 @@ jobs:
           railway variables set --service ${{ matrix.agent }} AGENT_PORT=$PORT
           railway variables set --service ${{ matrix.agent }} TMPDIR=/tmp
 
-          # Queen-specific variables
+          # Queen-specific
           if [ "${{ matrix.agent }}" = "queen" ]; then
             railway variables set --service queen SELF_IMPROVE_INTERVAL=3600
             railway variables set --service queen EPISODE_WINDOW=100
           else
-            # Agents need Queen URL (private networking)
+            # Agents connect to Queen via private network
             railway variables set --service ${{ matrix.agent }} QUEEN_URL=queen.railway.internal:8080
           fi
 
           # Deploy
-          if [ "${{ matrix.agent }}" = "queen" ]; then
-            railway up --service queen -d deploy/Dockerfile.queen
-          else
-            railway up --service ${{ matrix.agent }} -d deploy/Dockerfile.tri-agent
-          fi
-
-      - name: Verify ${{ matrix.agent }} Health
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "Waiting for ${{ matrix.agent }} to be healthy..."
-          sleep 10
-          # Railway healthcheck is automatic from Dockerfile
-          railway status --service ${{ matrix.agent }}
+          railway up --service ${{ matrix.agent }} -d $DOCKERFILE
 
   # ============================================================================
   # STATUS: Show all deployed services
@@ -144,29 +132,18 @@ jobs:
       - name: Link Railway Project
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
         run: railway link --project ${{ env.RAILWAY_PROJECT }}
 
       - name: Show All Services Status
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "=== Trinity 28-Agent Grid Status ==="
-          echo ""
+          echo "=== Trinity 27-Agent Grid Status ==="
           railway status
 
-      - name: Show Private Network Endpoints
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo ""
-          echo "=== Private Networking Endpoints ==="
-          echo "Queen: queen.railway.internal:8080"
-          echo "Agents: agent-{domain}.railway.internal:{port}"
-          echo ""
-          echo "All services communicate via Railway private network (Wireguard)."
-
   # ============================================================================
-  # DESTROY: Remove all services (optional)
+  # DESTROY: Remove all services
   # ============================================================================
   destroy:
     if: github.event.inputs.destroy == 'true'
@@ -178,6 +155,7 @@ jobs:
       - name: Link Railway Project
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
         run: railway link --project ${{ env.RAILWAY_PROJECT }}
 
       - name: Destroy All Services
@@ -185,10 +163,5 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
           echo "Destroying all Trinity grid services..."
-          railway service list --json | jq -r '.[].serviceId' | xargs -I {} railway service rm {} -y
-          echo "All services destroyed."
-
-      - name: Confirm Destruction
-        run: |
-          echo "✅ All Trinity grid services have been destroyed."
-          echo "Project ${{ env.RAILWAY_PROJECT }} is now empty."
+          railway service list --json 2>/dev/null | jq -r '.[].serviceId' | xargs -I {} railway service rm {} -y || echo "No services to destroy"
+          echo "✅ All services destroyed"
