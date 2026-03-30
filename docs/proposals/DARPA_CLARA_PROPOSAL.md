@@ -132,15 +132,13 @@ Trinity achieves AR-based ML through **four-layer composition**:
 
 **Proof Sketch**: 36 opcodes organized in trie structure. Decode: O(1) trie traversal. Execute: O(1) per operation (register-to-register). Program: O(k) where k = instruction count.
 
-#### Theorem 4: Trinity Identity (φ² + φ⁻² = 3)
+### Mathematical Foundation: φ² + φ⁻² = 3
 
-**Statement**: The golden ratio φ = (1 + √5)/2 satisfies φ² + φ⁻² = 3, providing the mathematical foundation for ternary {-1, 0, +1} computing.
+The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden ratio) provides the mathematical foundation for balanced ternary computing with {-1, 0, +1} values.
 
-**Proof Sketch**: Direct algebraic verification. φ² = (3 + √5)/2, φ⁻² = (3 - √5)/2, sum = 3.
+**Proof**: Direct algebraic verification. φ² = (3 + √5)/2, φ⁻² = (3 - √5)/2, sum = 3.
 
-### Mathematical Foundation: Trinity Identity
-
-The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden ratio) provides the mathematical foundation for balanced ternary computing with {-1, 0, +1} values. This identity demonstrates that three-state systems achieve optimal information density per symbol (1.58 bits/trit) and underpins the VSA binding operations.
+**Significance**: This identity demonstrates that three-state systems achieve optimal information density per symbol (1.58 bits/trit) and underpins the VSA binding operations. The golden ratio emerges naturally in ternary representation, providing mathematical elegance to the Trinity architecture.
 
 ### 1.3 Multi-Family Integration Plan
 
@@ -154,7 +152,7 @@ The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden r
 | FPGA | B002 | ✅ Published | Hardware |
 
 **Deliverables**:
-- Theory package: 4 theorems with formal proofs
+- Theory package: 3 theorems with formal proofs
 - Algorithm package: Zig implementations (src/vsa.zig, src/hslm/, src/tri27/)
 - OSS: tri-cli with CLARA extensions
 
@@ -286,7 +284,7 @@ const defaultMetaRules = [_]MetaRule{
 |--------|-------------|---------|
 | **Weights** | Binary stochastic | Ternary {-1, 0, +1} |
 | **Hardware** | CPU only | FPGA accelerated |
-| **Complexity** | No polynomial proof | 4 theorems with O(·) bounds |
+| **Complexity** | No polynomial proof | 3 theorems with O(·) bounds |
 | **Open source** | ✅ | ✅ |
 | **Verifiability** | Partial | Full (Zig type system) |
 
@@ -493,11 +491,12 @@ RET assignments
 
 ### 6.1 Theory Package
 
-1. **4 Mathematical Theorems** with formal proofs
+1. **3 Mathematical Theorems** with formal proofs
    - Theorem 1: VSA O(n) complexity
    - Theorem 2: Ternary MAC O(1) in FPGA
    - Theorem 3: TRI-27 O(1) opcode dispatch
-   - Theorem 4: Trinity Identity φ² + φ⁻² = 3
+
+2. **Mathematical Foundation**: Trinity Identity φ² + φ⁻² = 3 (golden ratio basis for ternary computing)
 
 2. **Complexity Analysis Document** (see `CLARA_COMPLEXITY_ANALYSIS.md`)
    - Per-operation complexity bounds
