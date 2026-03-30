@@ -246,7 +246,7 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
         }
 
         for (result.rows) |r| {
-            try responses.append(allocator, try evaluator.mockResponse(r));
+            try responses.append(try evaluator.mockResponse(r));
         }
 
         // Evaluate
