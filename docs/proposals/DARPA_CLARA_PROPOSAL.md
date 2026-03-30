@@ -160,7 +160,9 @@ The Trinity Identity φ² + φ⁻² = 3 (where φ = (1 + √5)/2 is the golden r
 
 | Component | Bundle | Status | CLARA Family |
 |-----------|--------|--------|--------------|
-| GF16 | B006 | ✅ Published | Bayesian |
+| GF16 | B006 | ✅ Published | Bayesian (ML-side)* |
+
+*> **GF16 Clarification**: GF16 provides ML-side probabilistic inference via sacred ternary arithmetic (16-element field), distinct from AR-side Bayesian Logic Programs per CLARA Amendment 1. |
 | Queen Lotus | B004 | ✅ Published | Reinforcement Learning |
 | Tri Language | B005 | ✅ Published | Formal Specification |
 
@@ -263,7 +265,7 @@ const defaultMetaRules = [_]MetaRule{
 | **Neural Networks** | HSLM (B001) | 1.95M params, PPL=125 | ✅ |
 | **Logic Programs** | VSA (B007) | 10K-bit vectors, bind/unbind | ✅ |
 | **Classical Logic** | TRI-27 (B003) | 36 opcodes, 68/68 tests | ✅ |
-| **Bayesian** | GF16 (B006) | Probabilistic format | ✅ |
+| **Bayesian** | GF16 (B006) | Probabilistic format* | ✅ |
 | **Reinforcement Learning** | Queen Lotus (B004) | Self-learning 0-5 cycle | ✅ |
 | **GAM + LP** | (Planned) | VSA extension | ⏳ Phase 2 |
 | **ASP** | (Planned) | Tri Language extension | ⏳ Phase 2 |
@@ -273,6 +275,8 @@ const defaultMetaRules = [_]MetaRule{
 | **HiLog** | (Planned) | Higher-order VSA | ⏳ Phase 2 |
 | **Bounded rationality** | Queen Lotus | Quality=unknown/unstable/good | ✅ |
 | **Sample complexity** | (To be measured) | Phase 2 experiments | ⏳ Phase 2 |
+
+*> **GF16 Clarification**: GF16 serves as ML-side probabilistic inference (sacred ternary arithmetic), distinct from AR-side Bayesian Logic Programs per CLARA Amendment 1. |
 
 ---
 
@@ -311,6 +315,21 @@ const defaultMetaRules = [_]MetaRule{
 | **Hardware** | ❌ | ✅ (FPGA) |
 
 **Key Difference**: Trinity provides ISA-level formalization (TRI-27) and hardware implementation.
+
+### 3.4 Summary Comparison Table
+
+| System | Logic | ML | Hardware | Explainability | Poly-time |
+|--------|-------|-----|----------|--------------|----------|
+| **BLP** (Bayesian Logic Programming) | ✅ | ❌ | ❌ | Partial | ❌ |
+| **ProbLog/DeepProbLog** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **MLN** (Markov Logic Networks) | Partial | ✅ | ❌ | ❌ | ❌ |
+| **Trinity** | ✅ Datalog | ✅ HSLM | ✅ FPGA | ✅ 3 formats | ✅ 3 theorems |
+
+**Key Distinctions**:
+- **BLP**: Logic-only, no learning component
+- **ProbLog/DeepProbLog**: Adds neural weights to Prolog but lacks polynomial guarantees
+- **MLN**: Probabilistic logic but no closed-form inference complexity bounds
+- **Trinity**: Only system with proven O(n) VSA, O(1) MAC, O(1) dispatch, and hardware verification
 
 ---
 
@@ -415,6 +434,9 @@ Patient with 5 conditions, 20 possible treatments, find optimal combo minimizing
 #### Trinity Solution
 
 **GF16**: Probabilistic reasoning
+
+> **Note**: GF16 serves as ML-side probabilistic inference, distinct from AR-side Bayesian Logic Programs per CLARA Amendment 1. GF16 provides compact sacred arithmetic (ternary GF16 = 16 elements) for gradient-based learning, while Datalog (Layer 3) handles symbolic probabilistic reasoning.
+
 ```zig
 // P(treatment_success | conditions) as GF16 value
 const prob = gf16_bayes(treatment_data, prior_conditions);
