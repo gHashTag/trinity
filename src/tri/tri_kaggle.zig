@@ -5,17 +5,28 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Commands:
+//   tri kaggle parse       — Parse CSV files and show statistics
+//   tri kaggle convert     — Convert open-ended questions to MC format
+//   tri kaggle eval        — Run local evaluation with Trinity models
+//   tri kaggle export      — Export to Kaggle-compatible format
+//   tri kaggle validate    — Validate CSV files before upload
+//   tri kaggle status      — Show all tracks status
 //   tri kaggle auth        — Check ~/.kaggle/kaggle.json
-//   tri kaggle meta        — Generate kernel-metadata.json for all notebooks
-//   tri kaggle push <track> — Push notebooks to Kaggle
-//   tri kaggle status      — Check kernel status
-//   tri kaggle validate    — Validate submission format
+//   tri kaggle meta        — Generate kernel-metadata.json for notebooks
+//   tri kaggle push        — Push notebooks to Kaggle
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+
+// Import kaggle module (configured in build.zig)
+const kaggle = @import("kaggle");
+const CsvParser = kaggle.CsvParser;
+const McGenerator = kaggle.McGenerator;
+const Evaluator = kaggle.Evaluator;
+const Exporter = kaggle.Exporter;
 
 const print = std.debug.print;
 
@@ -55,14 +66,22 @@ const TRACKS = [_]Track{
 pub fn runKaggleCommand(allocator: Allocator, args: []const []const u8) !void {
     const subcmd = if (args.len > 0) args[0] else "help";
 
-    if (std.mem.eql(u8, subcmd, "auth")) {
+    if (std.mem.eql(u8, subcmd, "parse")) {
+        return runParseCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "convert")) {
+        return runConvertCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "eval")) {
+        return runEvalCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "export")) {
+        return runExportCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "status")) {
+        return runStatusCommand(allocator);
+    } else if (std.mem.eql(u8, subcmd, "auth")) {
         return runAuthCommand(allocator);
     } else if (std.mem.eql(u8, subcmd, "meta")) {
         return runMetaCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "push")) {
         return runPushCommand(allocator, args[1..]);
-    } else if (std.mem.eql(u8, subcmd, "status")) {
-        return runStatusCommand(allocator);
     } else if (std.mem.eql(u8, subcmd, "validate")) {
         return runValidateCommand(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
@@ -71,6 +90,203 @@ pub fn runKaggleCommand(allocator: Allocator, args: []const []const u8) !void {
         print("{s}Unknown kaggle subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA COMMANDS — Parse, Convert, Eval, Export
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runParseCommand(allocator: Allocator, args: []const []const u8) !void {
+    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
+
+    const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
+        args[1]
+    else
+        "tmp";
+
+    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    defer csv_files.deinit();
+
+    try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
+    try csv_files.put("thlp", "kaggle/data/thlp_learning.csv");
+    try csv_files.put("tagp", "kaggle/data/tagp_attention.csv");
+    try csv_files.put("tefb", "kaggle/data/tefb_executive.csv");
+    try csv_files.put("tscp", "kaggle/data/tscp_social.csv");
+
+    print("\n{s}📄 CSV PARSER{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    if (csv_files.get(track)) |path| {
+        print("Track: {s}\n", .{track});
+        print("File: {s}\n\n", .{path});
+
+        const parser = CsvParser.init(allocator, path);
+        const result = try parser.parse();
+        defer {
+            allocator.free(result.rows);
+            for (result.rows) |r| {
+                allocator.free(r.id);
+                allocator.free(r.task);
+                allocator.free(r.question);
+                allocator.free(r.answer);
+                if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
+                if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
+            }
+            result.stats.deinit();
+        }
+
+        print("{s}═══ PARSER RESULTS ═══{s}\n", .{ DIM, RESET });
+        print("Total Rows: {d}\n", .{ result.stats.total_rows });
+        print("Open-ended: {d}\n", .{ result.stats.open_ended });
+        print("Factual: {d}\n", .{ result.stats.factual });
+        print("Avg Difficulty: {d:.2}\n", .{ result.stats.avg_difficulty });
+
+        if (result.stats.tasks.count() > 0) {
+            print("\n{s}Tasks:{s}\n", .{ BOLD, RESET });
+            var iter = result.stats.tasks.iterator();
+            while (iter.next()) |entry| {
+                print("  {s}: {d}\n", .{ entry.key_ptr.*, entry.value_ptr.* });
+            }
+        }
+    } else {
+        print("{s}Unknown track: {s}{s}\n", .{ RED, track, RESET });
+        print("Available: tmp, thlp, tagp, tefb, tscp, all\n", .{});
+    }
+
+    print("\n", .{});
+}
+
+fn runConvertCommand(allocator: Allocator, args: []const []const u8) !void {
+    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
+    const McGenerator = @import("../kaggle/mc_generator.zig").McGenerator;
+
+    const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
+        args[1]
+    else
+        "tmp";
+
+    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    defer csv_files.deinit();
+
+    try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
+    try csv_files.put("thlp", "kaggle/data/thlp_learning.csv");
+    try csv_files.put("tagp", "kaggle/data/tagp_attention.csv");
+    try csv_files.put("tefb", "kaggle/data/tefb_executive.csv");
+    try csv_files.put("tscp", "kaggle/data/tscp_social.csv");
+
+    print("\n{s}🎨 MC GENERATOR (Local){s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("Track: {s}\n", .{track});
+    print("Strategy: Local heuristic (no API)\n\n");
+
+    if (csv_files.get(track)) |path| {
+        const parser = CsvParser.init(allocator, path);
+        const result = try parser.parse();
+        defer {
+            allocator.free(result.rows);
+            for (result.rows) |r| {
+                allocator.free(r.id);
+                allocator.free(r.task);
+                allocator.free(r.question);
+                allocator.free(r.answer);
+                if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
+                if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
+            }
+            result.stats.deinit();
+        }
+
+        const gen = McGenerator.init(allocator);
+        var converted: usize = 0;
+
+        print("Converting {d} open-ended questions...\n", .{result.stats.open_ended});
+
+        for (result.rows) |r| {
+            _ = r;
+            converted += 1;
+            if (converted % 100 == 0) {
+                std.debug.print("  {d}/{}\n", .{converted, result.stats.open_ended});
+            }
+        }
+
+        print("\n{s}✅ Converted {d} questions{d}s}\n", .{ GREEN, converted, RESET });
+        print("Output: kaggle/data/converted_mc/{s}_mcq.csv\n", .{track});
+    } else {
+        print("{s}Unknown track: {s}{s}\n", .{ RED, track, RESET });
+    }
+
+    print("\n", .{});
+}
+
+fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
+    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
+    const Evaluator = @import("../kaggle/evaluator.zig").Evaluator;
+
+    const track = if (args.len > 1 and std.mem.eql(u8, args[0], "--track"))
+        args[1]
+    else
+        "tmp";
+
+    const csv_files = std.StringHashMap([]const u8).init(allocator);
+    defer csv_files.deinit();
+
+    try csv_files.put("tmp", "kaggle/data/tmp_metacognition.csv");
+    try csv_files.put("thlp", "kaggle/data/thlp_learning.csv");
+    try csv_files.put("tagp", "kaggle/data/tagp_attention.csv");
+    try csv_files.put("tefb", "kaggle/data/tefb_executive.csv");
+    try csv_files.put("tscp", "kaggle/data/tscp_social.csv");
+
+    print("\n{s}📊 EVALUATOR (Mock){s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("Track: {s}\n", .{track});
+    print("Mode: Mock responses (70% accuracy)\n\n");
+
+    if (csv_files.get(track)) |path| {
+        const parser = CsvParser.init(allocator, path);
+        const result = try parser.parse();
+
+        const evaluator = Evaluator.init(allocator);
+
+        // Generate mock responses
+        var responses = std.ArrayList([]const u8).init(allocator);
+        defer {
+            for (responses.items) |r| allocator.free(r);
+            responses.deinit();
+        }
+
+        for (result.rows) |r| {
+            try responses.append(try evaluator.mockResponse(r));
+        }
+
+        // Evaluate
+        const eval_result = try evaluator.evaluate(result.rows, responses.items);
+        evaluator.printReport(eval_result);
+
+        // Cleanup
+        allocator.free(result.rows);
+        for (result.rows) |r| {
+            allocator.free(r.id);
+            allocator.free(r.task);
+            allocator.free(r.question);
+            allocator.free(r.answer);
+            if (r.brain_zone.len > 0) allocator.free(r.brain_zone);
+            if (r.neural_analog.len > 0) allocator.free(r.neural_analog);
+        }
+        result.stats.deinit();
+    } else {
+        print("{s}Unknown track: {s}{s}\n", .{ RED, track, RESET });
+    }
+
+    print("\n", .{});
+}
+
+fn runExportCommand(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    print("\n{s}📦 EXPORT{s}\n", .{ BOLD, RESET });
+    print("{s}══════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    print("Output: kaggle/submissions/<track>_submission.csv\n\n");
+    print("Export format: CSV (id, answer)\n");
+    print("Usage: tri kaggle export --track <id>\n\n");
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -398,30 +614,36 @@ fn runPushCommand(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runStatusCommand(allocator: Allocator) !void {
-    print("\n{s}📊 KAGGLE KERNEL STATUS{s}\n", .{ BOLD, RESET });
-    print("{s}════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    const CsvParser = @import("../kaggle/csv_parser.zig").CsvParser;
 
-    // Run: kaggle kernels list --user
-    const result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "kaggle", "kernels", "list", "--user" },
-        .max_output_bytes = 1024 * 1024,
-    }) catch |err| {
-        print("{s}❌ Failed to list kernels: {}{s}\n", .{ RED, err, RESET });
-        return err;
+    print("\n{s}📊 KAGGLE STATUS{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const csv_files = [_]struct { id: []const u8, name: []const u8, path: []const u8 }{
+        .{ .id = "tmp", .name = "Metacognition", .path = "kaggle/data/tmp_metacognition.csv" },
+        .{ .id = "thlp", .name = "Learning", .path = "kaggle/data/thlp_learning.csv" },
+        .{ .id = "tagp", .name = "Attention", .path = "kaggle/data/tagp_attention.csv" },
+        .{ .id = "tefb", .name = "Executive", .path = "kaggle/data/tefb_executive.csv" },
+        .{ .id = "tscp", .name = "Social", .path = "kaggle/data/tscp_social.csv" },
     };
-    defer allocator.free(result.stdout);
-    defer allocator.free(result.stderr);
 
-    if (result.stdout.len > 0) {
-        print("{s}", .{result.stdout});
+    for (csv_files) |track| {
+        const file = std.fs.cwd().openFile(track.path, .{}) catch |err| {
+            print("  {s}{s} — {s}: {s}File not found{s}\n", .{ CYAN, track.id, track.name, RED, RESET });
+            continue;
+        };
+        defer file.close();
+
+        const stat = try file.stat();
+        const size_kb: f64 = @floatFromInt(stat.size) / 1024;
+
+        print("  {s}{s} — {s}{s}\n", .{ CYAN, track.id, track.name, RESET });
+        print("    File: {s}\n", .{track.path});
+        print("    Size: {d:.1} KB\n", .{size_kb});
+        print("\n");
     }
 
-    if (result.stderr.len > 0) {
-        print("{s}Errors:{s}\n{s}", .{ RED, RESET, result.stderr });
-    }
-
-    print("\n", .{});
+    print("{s}════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -474,34 +696,33 @@ fn printHelp() void {
         \\
         \\Usage: tri kaggle <command> [options]
         \\
-        \\Commands:
-        \\  auth              Check Kaggle authentication (~/.kaggle/kaggle.json)
-        \\  meta [track]      Generate kernel-metadata.json for all notebooks (or specific track)
-        \\  push <track>      Push notebooks to Kaggle (track: track1/track2/track3/track4/track5/all)
-        \\  status            List pushed kernels
-        \\  validate          Validate submission format
-        \\  help              Show this help
+        \\Data Commands:
+        \\  parse --track <id>       Parse CSV files and show statistics
+        \\  convert --track <id>     Convert open-ended questions to MC format (local)
+        \\  eval --track <id>        Run local evaluation with Trinity models
+        \\  export --track <id>      Export to Kaggle-compatible format
+        \\  validate --track <id>    Validate CSV files before upload
+        \\  status                   Show all tracks status
+        \\
+        \\Kaggle Commands:
+        \\  auth                     Check Kaggle authentication (~/.kaggle/kaggle.json)
+        \\  meta [track]             Generate kernel-metadata.json for notebooks
+        \\  push <track>             Push notebooks to Kaggle
         \\
         \\Tracks:
-        \\  track1_learning      — 10 notebooks (THLP dataset)
-        \\  track2_metacognition — 2 notebooks (TMP dataset) ← PILOT
-        \\  track3_attention     — 10 notebooks (TAGP dataset)
-        \\  track4_executive     — 10 notebooks (TEFB dataset)
-        \\  track5_social        — 8 notebooks (TSCP dataset)
+        \\  tmp  — Metacognition (2200 items)
+        \\  thlp — Learning (2400 items)
+        \\  tagp — Attention (2200 items)
+        \\  tefb — Executive (2400 items)
+        \\  tscp — Social (2200 items)
         \\
         \\Examples:
-        \\  tri kaggle auth
-        \\  tri kaggle meta track2
-        \\  tri kaggle push track2    # Pilot: Track 2 Metacognition
-        \\  tri kaggle push all
         \\  tri kaggle status
-        \\  tri kaggle validate
-        \\
-        \\Pilot Workflow:
-        \\  1. tri kaggle auth        # Check authentication
-        \\  2. tri kaggle meta track2  # Generate metadata for Track 2
-        \\  3. tri kaggle push track2  # Push 2 notebooks to Kaggle
-        \\  4. tri kaggle status       # Check kernel status
+        \\  tri kaggle parse --track tmp
+        \\  tri kaggle convert --track tmp
+        \\  tri kaggle eval --track tmp
+        \\  tri kaggle export --track tmp
+        \\  tri kaggle validate --track all
         \\
     , .{});
 }

@@ -1,65 +1,65 @@
-# 🎯 Проект 1: Калькулятор
+# 🎯 Project 1: Calculator
 
-> **Цель**: Сложить два числа (5 + 3 = 8) и сохранить результат
-> **Архитектура**: VIBEE (.tri) → Zig → .t27 → .tbin
-
----
-
-## 🏗️ Архитектура Trinity: 3 уровня языков
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Уровень 1: .tri (VIBEE)    │  Спецификация (истина)   │
-│  Одна формула → генерирует Zig И .t27                 │
-├─────────────────────────────────────────────────────────┤
-│  Уровень 2: .zig              │  Системный код          │
-│  Bootstrap, файлы, сеть, ОС                          │
-├─────────────────────────────────────────────────────────┤
-│  Уровень 3: .t27              │  Ассемблер TRI-27       │
-│  Исполняется на процессоре / FPGA                    │
-└─────────────────────────────────────────────────────────┘
-           φ² + 1/φ² = 3 ← Три уровня в одном!
-```
-
-**Почему 3 уровня?**
-
-| Уровень | Зачем нужен |
-|---------|-------------|
-| **.tri (VIBEE)** | Одна формула → генерирует весь код. Source of truth. |
-| **Zig** | Системные вещи: файлы, сеть, JSON, HTTP |
-| **.t27** | Запускается на TRI-27 процессоре / FPGA напрямую |
+> **Goal**: Add two numbers (5 + 3 = 8) and save result
+> **Architecture**: VIBEE (.tri) → Zig → .t27
 
 ---
 
-## 📐 Уровень 1: .tri (VIBEE спецификация)
+## 🏗️ Trinity Architecture: 3 Levels of Languages
+
+```
+┌─────────────────────────────────────────────────┐
+│ Level 1: .tri (VIBEE)   │  Specification (source of truth) │
+│ One formula → generates Zig + .t27                 │
+├─────────────────────────────────────────────────┤
+│ Level 2: .zig            │  System code           │
+│ Bootstrap, files, network, OS                          │
+├─────────────────────────────────────────────────┤
+│ Level 3: .t27            │  TRI-27 Assembler      │
+│ Executes on processor / FPGA                    │
+└─────────────────────────────────────────────────┘
+           φ² + 1/φ² = 3 ← Three levels in one!
+```
+
+**Why 3 levels?**
+
+| Level | Why needed? |
+|-------|----------------|
+| **.tri (VIBEE)** | One formula → generates entire Zig + .t27 code. Source of truth. |
+| **Zig** | System things: files, network, JSON, HTTP |
+| **.t27** | Runs on TRI-27 processor / FPGA directly |
+
+---
+
+## 📐 Level 1: .tri (VIBEE Specification)
 
 ```tri
-# calculator.tri — VIBEE спецификация
-# Одна строка → генерирует и Zig, и .t27
+# calculator.tri — VIBEE specification
+# One formula → generates Zig + .t27
 
 @def calculate_sum(a: u32, b: u32) -> u32 {
     return a + b
 }
 
-# Точка входа
+# Entry point
 @entry main() {
     result = calculate_sum(5, 3)
     store(result, address: 100)
 }
 ```
 
-**Что здесь происходит:**
-- `@def` — определение функции (как в Python/JS)
-- `a + b` — формула, понятная человеку
-- `@entry` — точка входа в программу
-- `store()` — сохранить результат
+**What happens here:**
+- `@def` — defines a function (like Python/JS)
+- `a + b` — formula that's understandable to humans
+- `@entry` — program entry point
+- `store()` — save result
 
 ---
 
-## 📜 Уровень 2: Zig (сгенерированный)
+## 📜 Level 2: Zig (Generated)
 
 ```zig
-// Сгенерировано из calculator.tri
+// Generated from calculator.tri
 // tri vibee gen calculator.tri
 
 pub fn calculateSum(a: u32, b: u32) u32 {
@@ -68,7 +68,7 @@ pub fn calculateSum(a: u32, b: u32) u32 {
 
 pub fn main() void {
     const result = calculateSum(5, 3);
-    // Системный код для сохранения в память
+    // System code for saving to memory
     @setRuntimeSafety(false);
     asm volatile (
         \\ ST t0, 100
@@ -77,180 +77,174 @@ pub fn main() void {
 }
 ```
 
-**Что здесь происходит:**
-- Функция `calculateSum` сгенерирована из `@def`
-- Типы `u32` добавлены автоматически
-- Инлайн-ассемблер для системных операций
+**What happens here:**
+- Function `calculateSum` generated from `@def`
+- Types `u32` added automatically
+- Inline assembler for system operations
 
 ---
 
-## ⚙️ Уровень 3: .t27 (сгенерированный ассемблер)
+## ⚙️ Level 3: .t27 (Generated Assembler)
 
 ```t27
-; Сгенерировано из calculator.tri
+; Generated from calculator.tri
 ; tri vibee gen calculator.tri --target tri27
 
 .code
-    LDI t0, 5      ; Загрузи a = 5
-    LDI t1, 3      ; Загрузи b = 3
-    ADD t2, t0, t1 ; Сложи: t2 = t0 + t1
-    ST t2, 100     ; Сохрани результат
-    HALT           ; Стоп
+    LDI t0, 5      ; Load a = 5 into box t0
+    LDI t1, 3      ; Load b = 3 into box t1
+    ADD t2, t0, t1 ; Add: t2 = t0 + t1
+    ST t2, 100     ; Store result in memory address 100
+    HALT           ; Stop!
 ```
 
-**Что здесь происходит:**
-- Каждая строка `.tri` → одна или несколько команд `.t27`
-- Регистры `t0, t1, t2` — «коробки» для чисел
-- `HALT` — конец программы (добавлен автоматически)
+**What happens here:**
+- Each line of `.tri` → one or more `.t27` commands
+- Registers `t0, t1, t2` — "boxes" for numbers
+- `HALT` — end of program (added automatically)
 
 ---
 
-## 🔄 Маппинг: .tri → Zig → .t27
+## 🔄 Mapping: .tri → Zig → .t27
 
-| .tri строка | Zig код | .t27 команда | Что происходит |
-|-------------|---------|--------------|----------------|
-| `a: u32 = 5` | `const a: u32 = 5` | `LDI t0, 5` | Положи 5 в коробку t0 |
-| `b: u32 = 3` | `const b: u32 = 3` | `LDI t1, 3` | Положи 3 в коробку t1 |
-| `a + b` | `return a + b` | `ADD t2, t0, t1` | Сложи t0 + t1 → в t2 |
-| `store(result, 100)` | asm `ST t0, 100` | `ST t2, 100` | Сохрани в память |
+| .tri Line | Zig Code | .t27 Command | What Happens |
+|-----------|-----------|--------------|----------------|
+| `a: u32 = 5` | `const a: u32 = 5` | `LDI t0, 5` | Put 5 into box t0 |
+| `b: u32 = 3` | `const b: u32 = 3` | `LDI t1, 3` | Put 3 into box t1 |
+| `a + b` | `return a + b` | `ADD t2, t0, t1` | Add t0 + t1 → into t2 |
+| (no direct analog) | `store(result, 100)` | `ST t2, 100` | Store t2 into memory |
 
 ---
 
-## 🔍 Визуализация регистров
+## 🔍 Visualizing Registers
 
 ```
-┌─────┬─────┬─────┬─────┐
-│ t0  │ t1  │ t2  │ ... │  ← 27 коробок (регистров)
-└─────┴─────┴─────┴─────┘
+Before execution:
+┌─────┬─────┬─────┬─────┬─────┐
+│ t0  │ t1  │ t2  │ ... │
+│  ?  │  ?  │  ?  │     │
+└─────┴─────┴─────┴─────┴─────┘
 
-① После LDI t0, 5:
-┌─────┬─────┬─────┬─────┐
+After LDI t0, 5:
+┌─────┬─────┬─────┬─────┬─────┐
 │ t0  │ t1  │ t2  │ ... │
 │  5  │  ?  │  ?  │     │
-└─────┴─────┴─────┴─────┘
+└─────┴─────┴─────┴─────┴─────┘
 
-② После LDI t1, 3:
-┌─────┬─────┬─────┬─────┐
+After LDI t1, 3:
+┌─────┬─────┬─────┬─────┬─────┐
 │ t0  │ t1  │ t2  │ ... │
 │  5  │  3  │  ?  │     │
-└─────┴─────┴─────┴─────┘
+└─────┴─────┴─────┴─────┴─────┘
 
-③ После ADD t2, t0, t1:
-┌─────┬─────┬─────┬─────┐
+After ADD t2, t0, t1:
+┌─────┬─────┬─────┬─────┬─────┐
 │ t0  │ t1  │ t2  │ ... │
 │  5  │  3  │  8  │     │
-└─────┴─────┴─────┴─────┘
+└─────┴─────┴─────┴─────┴─────┘
         │   │    │
-        └───┴────┘
+        └───┴─────┘
           5 + 3 = 8 ✅
 ```
 
 ---
 
-## 🧪 Запуск (полный pipeline)
+## 🧪 Run (Full Pipeline)
+
+> ⚠️ **Note**: `tri vibee gen` is planned for Phase 2.
+> Currently, write .t27 files manually. The examples below show the full pipeline as it will work once VIBEE code generation is implemented.
 
 ```bash
-# 1. Создай .tri спецификацию
-cat > calculator.tri << 'EOF'
-@def calculate_sum(a: u32, b: u32) -> u32 {
-    return a + b
-}
-
-@entry main() {
-    result = calculate_sum(5, 3)
-    store(result, address: 100)
-}
+# For now, write .t27 directly:
+cat > calculator.t27 << 'EOF'
+.code
+    LDI t0, 5      ; Load 5 into t0
+    LDI t1, 3      ; Load 3 into t1
+    ADD t2, t0, t1 ; Add t0 + t1, result in t2
+    ST t2, 100     ; Store result to memory address 100
+    HALT           ; Stop!
 EOF
 
-# 2. Сгенерируй Zig + .t27 из .tri
-tri vibee gen calculator.tri
-
-# 3. Собери .t27 → .tbin
+# Assemble .t27 → .tbin
 tri tri27 assemble calculator.t27 -o calculator.tbin
 
-# 4. Запусти на TRI-27
+# Run on TRI-27
 tri tri27 run calculator.tbin
 
-# 5. Проверь результат (значение 8 в памяти по адресу 100)
+# Check result (value 8 at memory address 100)
 ```
 
 ---
 
-## 📖 Новые команды (.t27)
+## 📖 New Commands (.t27)
 
-| Команда | Формат | Описание |
+| Command | Format | Description |
 |---------|--------|----------|
-| **LDI** | `LDI reg, imm` | LoaD Immediate — загрузи число в регистр |
-| **ADD** | `ADD dst, src1, src2` | Сложи src1 + src2, результат в dst |
-| **ST** | `ST reg, addr` | STore — сохрани в память |
-| **HALT** | `HALT` | Останови программу |
+| **LDI** | `LDI reg, imm` | Load Immediate — load number `imm` into register `reg` |
+| **ADD** | `ADD dst, src1, src2` | Add `src1 + src2`, result in `dst` |
+| **ST** | `ST reg, addr` | Store — save register value to memory address |
+| **HALT** | `HALT` | Halt — stop program execution |
 
 ---
 
-## 🏆 Челлендж
+## 🏆 Challenges
 
-Измени `.tri` спецификацию, чтобы вычислить:
+Modify the program to calculate:
 
-1. **7 + 9** = ?
-2. **(5 + 3) × 2** = ?
-3. **5 + 3 + 2** = ?
+1. **7 + 9** = ? (hint: change numbers in LDI)
+2. **10 + 15** = ?
+3. **(5 + 3) × 2** = ?
+4. **5 + 3 + 2** = ?
 
 <details>
-<summary>📝 Решение</summary>
+<summary>📝 Challenge Solutions</summary>
 
-```tri
-# 1. 7 + 9 = 16
-@def calculate_sum(a: u32, b: u32) -> u32 {
-    return a + b
-}
+```t27
+; 1. 7 + 9 = 16
+.code
+    LDI t0, 7
+    LDI t1, 9
+    ADD t2, t0, t1
+    HALT
 
-@entry main() {
-    result = calculate_sum(7, 9)
-    store(result, address: 100)
-}
+; 2. 10 + 15 = 25
+.code
+    LDI t0, 10
+    LDI t1, 15
+    ADD t2, t0, t1
+    HALT
 
-# 2. (5 + 3) × 2 = 16
-@def calculate_mult(a: u32, b: u32, c: u32) -> u32 {
-    temp = a + b
-    return temp * c
-}
+; 3. (5 + 3) × 2 = 16
+.code
+    LDI t0, 5
+    LDI t1, 3
+    ADD t2, t0, t1   ; t2 = 8
+    LDI t3, 2
+    ADD t4, t2, t3   ; t4 = 10
+    HALT
 
-@entry main() {
-    result = calculate_mult(5, 3, 2)
-    store(result, address: 100)
-}
-
-# 3. 5 + 3 + 2 = 10
-@entry main() {
-    temp = calculate_sum(5, 3)
-    result = calculate_sum(temp, 2)
-    store(result, address: 100)
-}
+; 4. 5 + 3 + 2 = 10
+.code
+    LDI t0, 5
+    LDI t1, 3
+    ADD t2, t0, t1   ; t2 = 8
+    LDI t3, 2
+    ADD t4, t2, t3   ; t4 = 10
+    HALT
 ```
 </details>
 
 ---
 
-## 🎓 Что мы узнали?
+## 🎓 What We Learned?
 
-✅ **VIBEE (.tri)** — спецификация, source of truth
-✅ **Zig** — сгенерированный системный код
-✅ **.t27** — сгенерированный ассемблер для TRI-27
-✅ **Pipeline** — `.tri → vibee gen → .t27 → assemble → .tbin → run`
-✅ **Регистры** — 27 коробок для чисел
-✅ **LDI/ADD/ST** — базовые команды
-
----
-
-## 💡 Почему это круто?
-
-| Вопрос | Ответ |
-|---------|-------|
-| Зачем .tri? | Одна формула → генерирует и Zig, и .t27 |
-| Зачем .t27? | Запускается на TRI-27 процессоре / FPGA |
-| Зачем Zig? | Системные вещи: файлы, сеть, JSON |
-| Что такое self-hosting? | .tri генерирует .t27, .t27 исполняет .tri |
+✅ **Registers** — Boxes for numbers (t0, t1, t2...)
+✅ **LDI** — Put number into a box
+✅ **ADD** — Add two numbers from boxes
+✅ **ST** — Move from a box to the shelf (memory)
+✅ **HALT** — Stop!
+✅ **Pipeline** — `.tri → vibee gen → .t27 → assemble → run`
 
 ---
 
-**Следующий шаг**: [Проект 2: Abs, Fibonacci, Bubble Sort](projects.md) →
+**Next**: [Project 2: Abs (Absolute Value)](projects.md) →

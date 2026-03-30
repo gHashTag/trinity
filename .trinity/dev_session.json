@@ -1,2 +1,12 @@
-{"state": "SHIPPED", "issue_number": 474, "branch": "", "issue_title_len": 0, "issue_title": "", "files_count": 2, "tests_passed": true, "commit_hash": "", "started_at": 1774849236, "last_updated": 1774849840
+{
+  "state": "COMMITTED",
+  "issue_number": 474,
+  "branch": "",
+  "issue_title_len": 0,
+  "issue_title": "",
+  "files_count": 2,
+  "tests_passed": true,
+  "commit_hash": "",
+  "started_at": 1774849236,
+  "last_updated": 1774849840
 }

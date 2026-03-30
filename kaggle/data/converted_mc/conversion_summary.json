@@ -1,0 +1,49 @@
+{
+  "total_questions": 11400,
+  "total_open_ended": 4314,
+  "total_factual": 7086,
+  "total_converted": 4314,
+  "tracks": [
+    {
+      "total": 2200,
+      "open_ended": 733,
+      "factual": 1467,
+      "converted": 733,
+      "errors": 0,
+      "track": "tmp"
+    },
+    {
+      "total": 2200,
+      "open_ended": 0,
+      "factual": 2200,
+      "converted": 0,
+      "errors": 0,
+      "track": "tagp"
+    },
+    {
+      "total": 2400,
+      "open_ended": 1805,
+      "factual": 595,
+      "converted": 1805,
+      "errors": 0,
+      "track": "tefb"
+    },
+    {
+      "total": 2200,
+      "open_ended": 1584,
+      "factual": 616,
+      "converted": 1584,
+      "errors": 0,
+      "track": "tscp"
+    },
+    {
+      "total": 2400,
+      "open_ended": 192,
+      "factual": 2208,
+      "converted": 192,
+      "errors": 0,
+      "track": "thlp"
+    }
+  ],
+  "llm_used": true
+}

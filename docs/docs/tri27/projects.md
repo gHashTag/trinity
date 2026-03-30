@@ -40,7 +40,7 @@ pub fn main() void {
 }
 ```
 
-### ⚙️ .t27 (assembler)
+### ⚙️ .t27 (Assembler)
 
 ```t27
 ; Project 2: Absolute Value
@@ -135,7 +135,7 @@ fn fibonacci(n: u32) void {
 }
 ```
 
-### ⚙️ .t27 (assembler)
+### ⚙️ .t27 (Assembler)
 
 ```t27
 ; Project 3: Fibonacci
@@ -187,8 +187,8 @@ done:
 ### 🔍 Memory Visualization
 
 ```
-Address | Value  | Explanation
---------|--------|----------
+Address | Value | Explanation
+--------|----------|----------
 100     | 0      | F(0) = 0
 104     | 1      | F(1) = 1
 108     | 1      | F(2) = 1
@@ -243,7 +243,7 @@ fn bubble_sort(arr: []u32) void {
 }
 ```
 
-### ⚙️ .t27 (assembler)
+### ⚙️ .t27 (Assembler)
 
 ```t27
 ; Project 4: Bubble Sort
@@ -325,13 +325,14 @@ Initial array: [5, 2, 8, 1, 9]
 
 i=0, j=0: Compare 5 and 2 → swap → [2, 5, 8, 1, 9]
 i=0, j=1: Compare 5 and 8 → OK
-i=0, j=2: Compare 8 and 1 → swap → [2, 5, 1, 8, 9]
-i=0, j=3: Compare 8 and 9 → OK
-
-i=1, j=0: Compare 2 and 5 → OK
-i=1, j=1: Compare 5 and 1 → swap → [2, 1, 5, 8, 9]
-i=1, j=2: Compare 5 and 8 → OK
-
+i=0, j=2: Compare 8 and 1 → OK
+i=1, j=3: Compare 8 and 9 → OK
+i=1, j=4: Compare 2 and 5 → OK
+i=1, j=5: Compare 5 and 1 → OK
+i=1, j=6: Compare 1 and 9 → OK
+i=1, j=7: Compare 8 and 9 → OK
+i=1, j=8: Compare 9 and 1 → OK
+i=1, j=9: Compare 1 and 2 → OK
 ...continues...
 
 Result: [1, 2, 5, 8, 9] ✅

@@ -30,6 +30,11 @@ pub const ExecError = error{
 // EXECUTE — Execute a single instruction
 // ═══════════════════════════════════════════════════════════════════════
 pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecError!void {
+    // Bounds check registers (27 ternary registers: t0-t26)
+    if (inst.dst >= 27 or inst.src1 >= 27 or inst.src2 >= 27 or inst.cond >= 27) {
+        return ExecError.InvalidRegister;
+    }
+
     // Increment IP before execution (unless this is a control flow instruction)
     cpu.instructions_executed += 1;
 
@@ -294,7 +299,9 @@ pub fn execute(cpu: *CPUState, inst: Instruction, memory: []align(8) u8) ExecErr
 
             // Shift right by immediate amount (regular integer shift)
             const shift = @abs(inst.immediate);
-            const result = a.trits >> @intCast(shift);
+            // Clamp shift to prevent overflow (max 63 bits for i64)
+            const clamped_shift = @min(shift, @as(i64, 63));
+            const result = a.trits >> clamped_shift;
             const trit_value = Trit27{ .trits = result };
 
             cpu.t27[inst.dst] = trit_value;

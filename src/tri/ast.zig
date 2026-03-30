@@ -1,9 +1,9 @@
-//! Strand III: Language \& Hardware Bridge
+//! Strand III: Language & Hardware Bridge
 //!
 //! TRI-27 compiler component or VSA operations for Trinity S³AI.
 //!
 //! AST — Abstract Syntax Tree for Tri language
-//! v0.2 — Node types for parsed code
+//! v1.0 — Full statement types including control flow
 
 const Token = @import("token.zig").Token;
 pub const TritValue = @import("token.zig").TritValue;
@@ -28,15 +28,28 @@ pub const VarDecl = struct {
     init: ?Expression,
 };
 
-// Match expression payload
-pub const MatchExpr = struct {
-    value: Expression,
-    arms: []MatchArm,
+// If statement payload
+pub const IfStmt = struct {
+    condition: *Expression,
+    then_block: []Statement,
+    else_block: ?[]Statement,
+};
+
+// While statement payload
+pub const WhileStmt = struct {
+    condition: *Expression,
+    body: []Statement,
 };
 
 // Return statement payload
 pub const ReturnStmt = struct {
     value: ?Expression,
+};
+
+// Match expression payload
+pub const MatchExpr = struct {
+    value: *Expression,
+    arms: []MatchArm,
 };
 
 // Expression types
@@ -46,22 +59,21 @@ pub const Expression = union(enum) {
     literal_float: f64,
     identifier: []const u8,
     wildcard,
-    binary_op: struct { op: BinOp, left: *Expression, right: *Expression },
-    call: struct { func: []const u8, args: []Expression },
+    binary_op: BinaryOp,
+    call: CallExpr,
 };
 
-// Binary operator types
-pub const BinOp = enum {
-    at_at, // @@
-    plus_plus, // ++
-    tilde, // ~
-    plus, // +
-    minus, // -
-    times, // *
-    eq, // ==
-    neq, // !=
-    gt, // >
-    lt, // <
+// Binary operation payload
+pub const BinaryOp = struct {
+    op: BinOp,
+    left: *Expression,
+    right: *Expression,
+};
+
+// Function call payload
+pub const CallExpr = struct {
+    func: []const u8,
+    args: []Expression,
 };
 
 // Match arm pattern
@@ -77,6 +89,20 @@ pub const MatchArm = struct {
     body: []Statement,
 };
 
+// Binary operator types
+pub const BinOp = enum {
+    at_at,       // @@
+    plus_plus,    // ++
+    tilde,        // ~
+    plus,         // +
+    minus,        // -
+    times,        // *
+    eq,           // ==
+    neq,          // !=
+    gt,           // >
+    lt,           // <
+};
+
 // Function parameter
 pub const Param = struct {
     name: []const u8,
@@ -90,6 +116,8 @@ pub const Statement = union(enum) {
     expression: Expression,
     return_stmt: ReturnStmt,
     match_expr: MatchExpr,
+    if_stmt: IfStmt,
+    while_stmt: WhileStmt,
 };
 
 // Array type payload
@@ -108,7 +136,6 @@ pub const Type = union(enum) {
     t_tf3: void,
     t_void: void,
     array: ArrayType,
-    type_struct: []Field,
 };
 
 // Struct field
@@ -116,3 +143,5 @@ pub const Field = struct {
     name: []const u8,
     type: Type,
 };
+
+// φ² + 1/φ² = 3 | TRINITY

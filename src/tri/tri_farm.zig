@@ -46,6 +46,9 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
         return runFarmFill(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "stats")) {
         return runFarmStatsCommand(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "analyze")) {
+        const farm_analyzer = @import("farm_analyzer_v2.zig");
+        return farm_analyzer.runAnalyzeCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "evolve")) {
         const tri_farm_evolve = @import("evolution.zig");
         return tri_farm_evolve.runEvolveCommand(allocator, args[1..]);
@@ -1696,6 +1699,7 @@ fn printHelp() void {
         \\  watch-daemon     24/7 autonomous monitoring (start/stop/status)
         \\  from-issues      Execute farm tasks from GitHub Issues (farm-task label)
         \\  stats            Farm statistics & simulation comparison (--farm only, --export csv, --scenario S1|S3|...)
+        \\  analyze           Logs-based sacred worker analysis (uses Railway API)
         \\
         \\Fly.io Commands (Wave 9 Migration):
         \\  fly-init         Initialize Fly.io farm (discover accounts)

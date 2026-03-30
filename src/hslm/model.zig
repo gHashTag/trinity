@@ -614,6 +614,13 @@ fn quantizeAbsMean(float_weights: []const f32, ternary_weights: []i8) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn softmax(logits: []const f32, probs: []f32) void {
+    softmaxWithTemp(logits, 1.0, probs);
+}
+
+/// Softmax with temperature scaling for distillation and label smoothing
+pub fn softmaxWithTemp(logits: []const f32, temperature: f32, probs: []f32) void {
+    const inv_temp = if (temperature > 0.001) 1.0 / temperature else 1.0;
+
     // Find max for numerical stability
     var max_val: f32 = logits[0];
     for (logits[1..]) |v| {
@@ -622,7 +629,8 @@ pub fn softmax(logits: []const f32, probs: []f32) void {
 
     var sum: f64 = 0.0;
     for (logits, 0..) |v, i| {
-        const e = @exp(@as(f64, v - max_val));
+        const scaled = (v - max_val) * inv_temp;
+        const e = @exp(@as(f64, scaled));
         probs[i] = @floatCast(e);
         sum += e;
     }
