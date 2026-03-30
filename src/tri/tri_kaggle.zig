@@ -236,17 +236,17 @@ fn runEvalCommand(allocator: Allocator, args: []const []const u8) !void {
         const parser = CsvParser.init(allocator, path);
         var result = try parser.parse();
 
-        const evaluator = Evaluator.init(allocator);
+        var evaluator = Evaluator.init(allocator);
 
         // Generate mock responses
-        var responses = std.ArrayList([]const u8).init(allocator);
+        var responses = std.ArrayList([]const u8){};
         defer {
             for (responses.items) |r| allocator.free(r);
             responses.deinit(allocator);
         }
 
         for (result.rows) |r| {
-            try responses.append(try evaluator.mockResponse(r));
+            try responses.append(allocator, try evaluator.mockResponse(r));
         }
 
         // Evaluate
