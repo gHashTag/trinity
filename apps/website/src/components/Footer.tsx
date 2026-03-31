@@ -64,7 +64,7 @@ export default function Footer() {
                 <li><a href="#benchmarks" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Benchmarks section">{t.nav?.[3] || 'Benchmarks'}</a></li>
                 <li><a href="#invest" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7, transition: 'opacity 0.2s' }} aria-label="Navigate to Invest section">{t.nav?.[9] || 'Invest'}</a></li>
                 <li>
-                  <a href="/trinity/docs/" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
+                  <a href="https://t27.ai/docs/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, transition: 'opacity 0.2s' }} aria-label="Open documentation in new tab">
                     {t.footer?.docs || 'Documentation'}
                   </a>
                 </li>
@@ -133,13 +133,28 @@ export default function Footer() {
             <nav aria-label="Contact links">
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <li>
+                  <a href="https://www.reddit.com/r/t27ai/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Visit Reddit community (opens in new tab)">
+                    Reddit
+                  </a>
+                </li>
+                <li>
                   <a href="https://github.com/gHashTag/trinity" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Visit GitHub repository (opens in new tab)">
                     GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="https://t.me/vibee_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram group (opens in new tab)">
-                    Telegram
+                  <a href="https://t.me/t27_dev" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram dev group (opens in new tab)">
+                    Telegram (Dev)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://t.me/t27_lang" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Join Telegram language channel (opens in new tab)">
+                    Telegram (Language)
+                  </a>
+                </li>
+                <li>
+                  <a href="https://x.com/t27_lang" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text)', textDecoration: 'none', fontSize: '0.85rem', opacity: 0.7 }} aria-label="Follow on X (opens in new tab)">
+                    X (Twitter)
                   </a>
                 </li>
                 <li>

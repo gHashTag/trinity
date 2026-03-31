@@ -2,8 +2,10 @@
   "lang": "zh",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "定理", "解决方案", "基准测试", "计算器", "DePIN", "科技树", "团队", "科学", "投资"],
+  "nav": ["TRINITY", "定理", "出版物", "解决方案", "基准测试", "计算器", "DePIN", "团队", "投资"],
   "hero": {
+    "badge_publications": "7篇出版物",
+    "badge_doi": "DOI已验证",
     "tag": "GPU验证的绿色AI经济",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "RTX 3090上298K tokens/s | A100上274K | 已验证",
@@ -28,6 +30,7 @@
   },
   "navExtra": {
     "dashboard": "仪表板",
+    "tree": "研究实验室",
     "docs": "文档"
   },
   "theorems": {
@@ -243,6 +246,12 @@
       { "value": "80.2%", "label": "密度提升", "color": "yellow" },
       { "value": "0.17%", "label": "熵", "color": "green" }
     ]
+  },
+  "publications": {
+    "badge": "科学出版物",
+    "title": "DOI支持的学术成果",
+    "subtitle": "所有研究成果均已在Zenodo上发布，并拥有永久DOI标识符。",
+    "viewAll": "查看完整文档 →"
   },
   "benchmarks": {
     "title": "GPU验证<span class=\"grad\">基准测试</span>",

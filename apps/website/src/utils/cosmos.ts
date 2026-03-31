@@ -7,7 +7,7 @@
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SacredFit, computeSacredFormula } from './sacredFormula';
+import { SacredFit, computeSacredFormula } from '../services/chatApi';
 import {
   HUBBLE_MEASUREMENTS,
   DENSITY_PARAMETERS,
@@ -306,12 +306,8 @@ export async function predictConstants(): Promise<ConstantPrediction[]> {
   return predictions;
 }
 
-/**
- * Find sacred formula fit for a value
- */
-export function sacredFormulaFit(value: number, tolerance: number = 0.01): SacredFit {
-  return computeSacredFormula(value);
-}
+// Re-export from chatApi module
+export { computeSacredFormula } from '../services/chatApi';
 
 /**
  * Find a specific sacred constant by name
@@ -461,9 +457,19 @@ export function predictIslandOfStability(): { Z: number; N: number; halfLife: st
   };
 }
 
-// Removed duplicate - function already declared above
+/**
+ * Find stable elements using sacred patterns
+ */
+export function findStableElements(maxZ: number = 150): number[] {
+  return findStableElements(maxZ);
+}
 
-// Removed duplicate - function already declared above
+/**
+ * Calculate sacred stability score for element Z
+ */
+export function sacredElementStability(Z: number): number {
+  return sacredElementStability(Z);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED COSMOLOGY DETECTION
