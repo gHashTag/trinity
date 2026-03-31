@@ -419,9 +419,7 @@ pub const QueenBackend = struct {
         var engine = auto_improve.init(self.allocator);
         const result = try engine.runCycle();
 
-        std.debug.print("✅ Applied {d} deltas, {d} patterns found\n", .{
-            result.applied_deltas, result.patterns_found
-        });
+        std.debug.print("✅ Applied {d} deltas, {d} patterns found\n", .{ result.applied_deltas, result.patterns_found });
 
         // Update health stats
         self.health.improve_cycles += 1;
