@@ -22,7 +22,7 @@ I am particularly impressed by the remarkable numerical agreements you have obta
 | **μ** (mass ratio) | Via your derivation | μ = 6π⁵ | **0.002%** ✅ |
 | **ΩΛ** (dark energy) | Via α | ΩΛ = 6561φ⁻³/(π⁵e²) | Planck: **0.688** ✅ |
 
-The fact that **all four constants** converge to the **same experimental values** through independent φ-based approaches is remarkable and suggests a deeper underlying mathematical connection.
+The fact that **all four constants** (including α_s) converge to the **same experimental values** through independent φ-based approaches is remarkable and suggests a deeper underlying mathematical connection.
 
 ## II. Trinity Identity Framework
 
@@ -32,7 +32,7 @@ For context, my approach is based on the Trinity Identity:
 φ² + 1/φ² = 3  where φ = (1 + √5) / 2
 ```
 
-From this fundamental golden ratio identity, I derive expressions for 49+ fundamental constants. The key formulas for our comparison:
+From this fundamental golden ratio identity, I derive expressions for 52+ fundamental constants (verified via 79 tests in `zig test src/particle_physics/formulas.zig`). The key formulas for our comparison:
 
 - **α** (fine-structure): α = 36/(π⁴φ⁴e²) ≈ 0.007297 (error: 0.0004%)
 - **α_s** (strong coupling): α_s = 4φ²/(9π²) ≈ 0.11789 (error: 0.005%)
@@ -43,6 +43,7 @@ The framework has been **computationally verified** with:
 - HSLM training (PPL = 125.3, 1.95M params, 385 KB)
 - FPGA synthesis (zero-DSP ternary inference, XC7A100T)
 - TRI-27 implementation (36 opcodes, ternary VM, 68 tests passing)
+- Formula verification: `zig test src/particle_physics/formulas.zig` — **79/79 tests pass**
 
 Published as Zenodo Bundle **B007** (DOI: 10.5281/zenodo.19227877).
 

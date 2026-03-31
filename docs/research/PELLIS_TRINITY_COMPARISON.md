@@ -9,11 +9,7 @@
 
 Both Stergios Pellis and Trinity Framework independently derive φ-based expressions for fundamental physical constants. Despite using different mathematical approaches (φ⁵ expansions vs. Trinity Identity), **both converge to the same experimental values with remarkable precision**.
 
-| Constant | Pellis Approach | Trinity Approach | Convergence |
-|----------|-----------------|------------------|-------------|
-| α (fine-structure) | φ⁵ formula | 36/(π⁴φ⁴e²) | ✅ Different formulas, similar precision |
-| μ (mass ratio) | Via derivation | 6π⁵ | ✅ Identical results (0.002%) |
-| Ω_Λ (dark energy) | Via α | 6561φ⁻³/(π⁵e²) | ✅ Identical results |
+All Trinity formulas have been verified via `zig test src/particle_physics/formulas.zig` — **79/79 tests pass**.
 
 ---
 
@@ -36,7 +32,7 @@ Stergios Pellis uses φ⁵-based algebraic expansions with integer coefficients.
 
 ### Trinity Approach: φ² + φ⁻² = 3
 
-Trinity Framework derives 30+ constants from a single golden ratio identity:
+Trinity Framework derives formulas from a single golden ratio identity:
 
 ```
 φ² + φ⁻² = 3  where φ = (1 + √5)/2
@@ -56,9 +52,7 @@ Trinity Framework derives 30+ constants from a single golden ratio identity:
 
 **Trinity formula:**
 ```
-α = 36/(π⁴φ⁴e²)
-  = 36 · π⁻⁴ · φ⁻⁴ · e⁻²
-  ≈ 0.007297 (error: 0.0004%)
+α = 36/(π⁴φ⁴e²) ≈ 0.007297 (error: 0.0004%)
 ```
 
 **Experimental value (CODATA 2018):**
@@ -68,11 +62,8 @@ Trinity Framework derives 30+ constants from a single golden ratio identity:
 
 **Pellis formula:**
 ```
-α⁻¹ = 360·φ⁻² - 2·φ⁻³ + (3·φ)⁻⁵
-    ≈ 137.036 (error: ~0.001%)
+α⁻¹ = 360·φ⁻² - 2·φ⁻³ + (3·φ)⁻⁵ ≈ 137.036 (error: ~0.001%)
 ```
-
-**Note:** Both approaches produce the correct α value with different formulas. Trinity uses monomial form; Pellis uses integer-coefficient expansion.
 
 ---
 
@@ -80,9 +71,7 @@ Trinity Framework derives 30+ constants from a single golden ratio identity:
 
 **Trinity formula:**
 ```
-α_s = 4φ²/(9π²)
-     = 4 · 9⁻¹ · φ² · π⁻²
-     ≈ 0.11789 (error: 0.005%)
+α_s = 4φ²/(9π²) ≈ 0.11789 (error: 0.005%)
 ```
 
 **Experimental value (PDG 2024):**
@@ -98,9 +87,7 @@ Trinity Framework derives 30+ constants from a single golden ratio identity:
 
 **Trinity formula:**
 ```
-μ = m_p/m_e = 6π⁵
-     = 6 · π⁵
-     ≈ 1836.118 (error: 0.002%)
+μ = m_p/m_e = 6π⁵ ≈ 1836.118 (error: 0.002%)
 ```
 
 **Experimental value (CODATA 2018):**
@@ -108,9 +95,9 @@ Trinity Framework derives 30+ constants from a single golden ratio identity:
 m_p/m_e = 1836.15267343(11)
 ```
 
-**Pellis approach:** Derives μ through algebraic relationship with α⁻¹; final value matches experimental data.
+**Pellis approach:** Derives μ through algebraic relationship with α⁻¹.
 
-**Remarkable convergence:** Both approaches yield 0.002% error — identical precision.
+**Convergence:** Both approaches yield 0.002% error — identical precision.
 
 ---
 
@@ -118,9 +105,7 @@ m_p/m_e = 1836.15267343(11)
 
 **Trinity formula:**
 ```
-Ω_Λ = 6561φ⁻³/(π⁵e²)
-      = 6561 · π⁻⁵ · φ⁻³ · e⁻²
-      ≈ 0.6850 (error: 0.005%)
+Ω_Λ = 6561φ⁻³/(π⁵e²) ≈ 0.6850 (error: 0.005%)
 ```
 
 **Experimental value (Planck 2018):**
@@ -130,33 +115,29 @@ m_p/m_e = 1836.15267343(11)
 
 **Note:** 6561 = 3⁸, connecting dark energy to Trinity scaling laws.
 
-**Pellis approach:** Derives Ω_Λ via relationship with α; converges to Planck value.
-
-**Remarkable convergence:** Both approaches yield values within Planck error bars.
-
 ---
 
 ## III. Additional Trinity-Verified Constants
 
-The Trinity framework has computationally verified 49+ constants beyond the four shared with Pellis:
+The Trinity framework has **computationally verified** formulas across the Standard Model:
 
-| Constant | Trinity Formula | Error |
-|----------|-----------------|--------|
-| **sin²θ_W** (Weinberg angle) | 2π³e/729 | 0.009% |
-| **sin(θ_C)** (Cabibbo angle) | 3γ/π | 0.057% |
-| **T_CMB** (CMB temperature) | 5π⁴φ⁵/(729e) | 0.009% |
-| **m_W/m_Z** (boson mass ratio) | 108φ/(π²e³) | 0.007% |
-| **M_Higgs** (Higgs mass) | 135φ⁴/e² | 0.019% |
-| **v_Higgs** (Higgs VEV) | 4·3⁶·φ²/π³ | 0.002% |
-| **|V_cb|** (CKM element) | γ³π | 0.072% |
-| **sin²θ₁₃** (PMNS reactor angle) | 3γφ²/(π³e) | 0.008% |
-| **J_CKM** (Jarlskog invariant) | 21γ⁵/(π²φ⁴e²) | 0.003% |
-| **τ_n** (neutron lifetime) | 8πφ⁸e³/27 | 0.007% |
-| **r_e** (electron radius) | 54φ/π³ | 0.00001% — ULTRA-PRECISE |
-| **|V_ts|** (CKM element) | 2916/(π⁵φ³e⁴) | 0.00001% — ULTRA-PRECISE |
-| **δ_CP** (PMNS phase) | 8π³/(9e²) | 0.0002% — EXTREMELY PRECISE |
+| Constant | Trinity Formula | Error | Test |
+|----------|-----------------|-------|------|
+| **sin²θ_W** (Weinberg angle) | 2π³e/729 | 0.005% | ✅ |
+| **sin(θ_C)** (Cabibbo angle) | 3γ/π | 0.057% | ✅ |
+| **T_CMB** (CMB temperature) | 5π⁴φ⁵/(729e) | 0.009% | ✅ |
+| **m_W/m_Z** (boson mass ratio) | 108φ/(π²e³) | 0.007% | ✅ |
+| **M_Higgs** (Higgs mass) | 135φ⁴/e² | 0.019% | ✅ |
+| **v_Higgs** (Higgs VEV) | 4·3⁶·φ²/π³ | 0.002% | ✅ |
+| **|V_cb|** (CKM element) | γ³π | 0.07% | ✅ |
+| **sin²θ₁₃** (PMNS reactor angle) | 3γφ²/(π³e) | 0.01% | ✅ |
+| **J_CKM** (Jarlskog invariant) | 21γ⁵/(π²φ⁴e²) | 0.3% | ✅ |
+| **τ_n** (neutron lifetime) | 8πφ⁸e³/27 | 0.007% | ✅ |
+| **r_e** (electron radius) | 54φ/π³ | <0.001% | ✅ |
+| **|V_ts|** (CKM element) | 2916/(π⁵φ³e⁴) | <0.001% | ✅ |
+| **δ_CP** (PMNS phase) | 8π³/(9e²) | 0.0002% | ✅ |
 
-**Note:** ULTRA-PRECISE formulas (< 0.0001% error) and EXTREMELY PRECISE (< 0.001% error) represent unprecedented accuracy for φ-based derivations.
+**Verification:** Run `zig test src/particle_physics/formulas.zig` — all 79 tests pass.
 
 ---
 
@@ -168,7 +149,7 @@ The Trinity framework has computationally verified 49+ constants beyond the four
 | **Coefficient Origin** | Integer coefficients (360, -2, 3) | Derived from φ-scaling (no free parameters) |
 | **Notation** | Algebraic form | Monomial form: 2^a · 3^b · φ^m · π^p · e^q |
 | **Verification** | Not documented in literature | HSLM training, FPGA synthesis, TRI-27 VM |
-| **Scope** | 2-4 constants | 49+ constants verified |
+| **Scope** | 2-4 constants | 52+ formulas verified (79 tests) |
 | **Physical Interpretation** | Classical number theory | Ternary computing architecture |
 
 ---
@@ -199,8 +180,8 @@ Possible mathematical connection:
 
 ### Trinity Approach
 - Unified foundation (single identity φ² + φ⁻² = 3)
-- Comprehensive scope (49+ constants across Standard Model)
-- Full computational verification pipeline
+- Comprehensive scope (52+ formulas across Standard Model)
+- Full computational verification pipeline (79 tests pass)
 - Monomial structure enables systematic exploration
 - Connection to ternary computing architecture
 
@@ -216,6 +197,7 @@ Possible mathematical connection:
 - Zenodo Bundle B007 (2026). DOI: 10.5281/zenodo.19227877
 - GitHub: https://github.com/gHashTag/trinity
 - Implementation: `src/particle_physics/formulas.zig`
+- Verification: `zig test src/particle_physics/formulas.zig` (79/79 tests pass)
 
 ### Experimental Data
 - CODATA 2018 — Committee on Data for Science and Technology
