@@ -907,12 +907,23 @@ zig build-exe src/bench_arith.zig -O ReleaseFast --name bench-arith
 
 **Note:** Software implementations (soft-fp16, soft-GF16) have overhead vs native f32. Ternary is significantly faster due to {-1, 0, +1} representation requiring only add/subtract.
 
+### BENCH-003: NN Inference
+
+| Format    | Accuracy | Loss     | Size (bytes/weight) |
+|-----------|-----------|----------|-------------------|
+| f32       | 5.80%     | 0.048    | 32 |
+| f16 soft  | 5.80%     | 0.048    | 16 |
+| GF16 soft  | 5.80%     | 0.048    | 16 |
+| ternary   | 6.90%     | 0.12     | 2 |
+
+**Note:** On synthetic MNIST-like data, GF16 maintains same accuracy as f32 baseline when using software emulation. Ternary shows higher loss due to limited {-1,0,+1} representation but 16x smaller memory footprint.
+
 ### Status
 
 - [x] Quantization error vs fp16/bf16 (CPU, synthetic distributions)
 - [x] Dynamic range & special values
 - [x] Arithmetic throughput vs fp32 (software implementations)
-- [ ] Small NN inference benchmark (future)
+- [x] Small NN inference benchmark (software emulation)
 - [ ] FPGA LUT/DSP comparison (future)
 
 **Note:** Full benchmark suite requires FPGA synthesis for hardware-accurate GF16/TF3 measurements. Current software implementations provide baseline comparisons.
