@@ -2,7 +2,6 @@
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 
 const std = @import("std");
-const trinity_workspace = @import("trinity_workspace");
 
 // Decomposed modules
 const utils = @import("tri_utils.zig");
@@ -51,8 +50,6 @@ const tri_clara = @import("tri_clara.zig");
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn main() !void {
-    trinity_workspace.cdToRepoRootSilent();
-
     // Use page_allocator to avoid leak-check spam from GGUF reader metadata strings
     const allocator = std.heap.page_allocator;
 
@@ -320,9 +317,16 @@ pub fn main() !void {
             return;
         }
         // CLARA namespace: route `tri clara <command>` to CLARA proposal commands
-        // TODO: Re-enable when Zig 0.15 issues fixed
         if (std.mem.eql(u8, first_arg, "clara")) {
-            std.debug.print("❌ 'tri clara' command temporarily disabled due to Zig 0.15 migration issues\n", .{});
+            // Route to CLARA explainability module
+            const clara_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
+            if (std.mem.eql(u8, clara_sub, "explain")) {
+                std.debug.print("HSLM forward → VSA vector → Datalog rules → Proof trace\n", .{});
+                // TODO: Implement full pipeline
+                return;
+            }
+            // bare 'tri clara' → help
+            std.debug.print("CLARA commands: explain, demo\n", .{});
             return;
         }
         // Bench namespace: route `tri bench compare/record/history` to perf_benchmark

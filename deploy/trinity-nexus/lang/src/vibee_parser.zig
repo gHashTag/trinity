@@ -10,7 +10,37 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayListUnmanaged;
+
+// Zig 0.15 compatibility wrapper
+fn ArrayList(comptime T: type) type {
+    return struct {
+        list: std.ArrayListUnmanaged(T),
+
+        pub fn init(allocator: Allocator) @This() {
+            return .{ .list = .{} };
+        }
+
+        pub fn deinit(self: *@This(), allocator: Allocator) void {
+            self.list.deinit(allocator);
+        }
+
+        pub fn append(self: *@This(), allocator: Allocator, item: T) !void {
+            try self.list.append(allocator, item);
+        }
+
+        pub fn items(self: *@This()) []T {
+            return self.list.items;
+        }
+
+        pub fn itemsConst(self: *const @This()) []const T {
+            return self.list.items;
+        }
+
+        pub fn len(self: *const @This()) usize {
+            return self.list.items.len;
+        }
+    };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  [CYR:A]

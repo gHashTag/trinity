@@ -170,6 +170,13 @@ const execute_map = [_]ExecuteEntry{
             return math_commands.runParticlesCommand(a, args);
         }
     }.f },
+    .{ .name = "particle-constants", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            _ = a;
+            _ = args;
+            @import("tri_math.zig").runConstantsCommand();
+        }
+    }.f },
 
     // ── Sacred Formula Engine v1.1 (Evidence-based) ──
     .{ .name = "math-table", .execute = struct {

@@ -2,28 +2,8 @@
   "lang": "es",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Confianza", "Características", "Testimonios", "Comparación", "FAQ", "Invertir"],
-  "trustBlock": {
-    "title": "Confianza de desarrolladores"
-  },
-  "features": {
-    "problemTitle": "El problema del olvido",
-    "problem": "Los agentes de IA olvidan todo después de cada sesión. Repiten errores. No pueden aprender unos de otros.",
-    "solution": "Los 27 agentes especializados de Trinity (uno por letra copta) comparten memoria persistente a través de .trinity/experience/. Cada error guardado. Cada lección aprendida."
-  },
-  "testimonials": {
-    "title": "Lo que dicen los desarrolladores"
-  },
-  "comparison": {
-    "title": "Cómo se compara <span class=\"grad\">Trinity</span>",
-    "subtitle": "Plataformas de agentes de IA comparadas. Trinity es la única con aprendizaje persistente."
-  },
-  "faq": {
-    "title": "Preguntas frecuentes"
-  },
+  "nav": ["TRINITY", "Teoremas", "Solucion", "Benchmarks", "Calculadora", "DePIN", "Arbol Tech", "Equipo", "Ciencia", "Invertir"],
   "hero": {
-    "badge_publications": "7 PUBLICACIONES",
-    "badge_doi": "DOI-VERIFICADO",
     "tag": "Economia IA Verde Verificada por GPU",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "298K tokens/s en RTX 3090 | 274K en A100 | VERIFICADO",
@@ -48,7 +28,6 @@
   },
   "navExtra": {
     "dashboard": "Panel",
-    "tree": "Lab. Investigacion",
     "docs": "Docs"
   },
   "theorems": {
@@ -264,12 +243,6 @@
       { "value": "80.2%", "label": "Densidad +", "color": "yellow" },
       { "value": "0.17%", "label": "Entropia", "color": "green" }
     ]
-  },
-  "publications": {
-    "badge": "PUBLICACIONES CIENTÍFICAS",
-    "title": "Resultados de Investigación con DOI",
-    "subtitle": "Toda la investigación publicada en Zenodo con identificadores DOI permanentes.",
-    "viewAll": "Ver Documentación Completa →"
   },
   "benchmarks": {
     "title": "Benchmarks Verificados por <span class=\"grad\">GPU</span>",

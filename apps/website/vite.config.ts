@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig(() => ({
-  base: '/', // Custom domain t27.ai (no subpath)
+export default defineConfig(({ command }) => ({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {

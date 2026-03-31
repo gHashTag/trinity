@@ -2,28 +2,8 @@
   "lang": "zh",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "信任", "功能", "评价", "比较", "FAQ", "投资"],
-  "trustBlock": {
-    "title": "开发者的信任"
-  },
-  "features": {
-    "problemTitle": "遗忘问题",
-    "problem": "AI 代理在每次会话后都会忘记一切。它们重复错误。无法相互学习。",
-    "solution": "Trinity 的 27 个专用代理（每个科普特字母一个）通过 .trinity/experience/ 共享永久记忆。保存每个错误。学习每课教训。"
-  },
-  "testimonials": {
-    "title": "开发者评价"
-  },
-  "comparison": {
-    "title": "<span class=\"grad\">Trinity</span> 如何比较",
-    "subtitle": "AI 代理平台比较。Trinity 是唯一具有持久学习功能的平台。"
-  },
-  "faq": {
-    "title": "常见问题"
-  },
+  "nav": ["TRINITY", "定理", "解决方案", "基准测试", "计算器", "DePIN", "科技树", "团队", "科学", "投资"],
   "hero": {
-    "badge_publications": "7篇出版物",
-    "badge_doi": "DOI已验证",
     "tag": "GPU验证的绿色AI经济",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "RTX 3090上298K tokens/s | A100上274K | 已验证",
@@ -48,7 +28,6 @@
   },
   "navExtra": {
     "dashboard": "仪表板",
-    "tree": "研究实验室",
     "docs": "文档"
   },
   "theorems": {
@@ -264,12 +243,6 @@
       { "value": "80.2%", "label": "密度提升", "color": "yellow" },
       { "value": "0.17%", "label": "熵", "color": "green" }
     ]
-  },
-  "publications": {
-    "badge": "科学出版物",
-    "title": "DOI支持的学术成果",
-    "subtitle": "所有研究成果均已在Zenodo上发布，并拥有永久DOI标识符。",
-    "viewAll": "查看完整文档 →"
   },
   "benchmarks": {
     "title": "GPU验证<span class=\"grad\">基准测试</span>",

@@ -6,13 +6,17 @@
 // φ² + 1/φ² = 3 = TRINITY
 //
 // ============================================================================
-
-const std = @import("std");
-
+// FIXME: resurrect trinity_workspace when queen backend is implemented for CLARA
+//
 // Import existing queen modules
 const episodes = @import("episodes.zig");
-const self_learning = @import("self_learning.zig");
 const auto_improve = @import("auto_improve.zig");
+const episode_handler = @import("episode_handler.zig");
+const EpisodeLogger = @import("episode_logger.zig").EpisodeLogger;
+
+// ============================================================================
+
+const std = @import("std");
 
 // ============================================================================
 // CONSTANTS
@@ -70,9 +74,13 @@ pub const ImproveResponse = struct {
     message: []const u8,
     applied_deltas: u32 = 0,
     quality_score: f64 = 0.0,
-    patterns_found: usize = 0,
     cycles_analyzed: usize = 0,
-    new_config: ?self_learning.Tri27Config = null,
+    patterns_found: usize = 0,
+};
+
+// Placeholder for Tri27Config (self_learning module integration)
+pub const Tri27Config = struct {
+    auto_adapt: bool = false,
 };
 
 // ============================================================================
@@ -83,6 +91,7 @@ pub const QueenBackend = struct {
     allocator: std.mem.Allocator,
     config: BackendConfig,
     server: ?std.net.Server,
+    logger: EpisodeLogger,
     health: struct {
         started_at: i64,
         improve_cycles: u32,
@@ -95,6 +104,7 @@ pub const QueenBackend = struct {
             .allocator = allocator,
             .config = BackendConfig{},
             .server = null,
+            .logger = EpisodeLogger.init(".trinity/logs"),
             .health = .{
                 .started_at = @intCast(std.time.nanoTimestamp()),
                 .improve_cycles = 0,
@@ -109,6 +119,7 @@ pub const QueenBackend = struct {
             .allocator = allocator,
             .config = config,
             .server = null,
+            .logger = EpisodeLogger.init(".trinity/logs"),
             .health = .{
                 .started_at = @intCast(std.time.nanoTimestamp()),
                 .improve_cycles = 0,
@@ -179,7 +190,7 @@ pub const QueenBackend = struct {
         const method = parts.next() orelse return;
         const path = parts.next() orelse return;
 
-        // Route request
+        // Route request (pass path with query string for /api/episodes filtering)
         const response = try self.routeRequest(method, path, request_text);
 
         // Send response
@@ -206,7 +217,11 @@ pub const QueenBackend = struct {
             if (std.mem.eql(u8, endpoint, "status")) {
                 return try self.handleStatus();
             } else if (std.mem.eql(u8, endpoint, "episodes")) {
-                return try self.handleEpisodes();
+                if (std.mem.eql(u8, method, "POST")) {
+                    return try self.handleEpisodesPost(body);
+                } else {
+                    return try self.handleEpisodes(path);
+                }
             } else if (std.mem.eql(u8, endpoint, "improve")) {
                 if (std.mem.eql(u8, method, "POST")) {
                     return try self.handleImprove(body);
@@ -263,10 +278,9 @@ pub const QueenBackend = struct {
 
     /// Handle GET /api/status - System status
     fn handleStatus(self: *const QueenBackend) ![]const u8 {
-        // Load tri27 config
-        const tri27_config = self_learning.loadConfig(self.allocator) catch |err| {
-            std.debug.print("Failed to load config: {}\n", .{err});
-            return try self.errorResponse("Failed to load config", 500);
+        // Load tri27 config (not implemented - use placeholder)
+        const tri27_config = Tri27Config{
+            .auto_adapt = false,
         };
 
         const status = SystemStatus{
@@ -281,41 +295,118 @@ pub const QueenBackend = struct {
         return try self.httpResponse("application/json", body);
     }
 
-    /// Handle GET /api/episodes - Recent episodes
-    fn handleEpisodes(self: *const QueenBackend) ![]const u8 {
-        const recent = episodes.loadRecentEpisodes(self.allocator, self.config.episode_window) catch |err| {
-            std.debug.print("Failed to load episodes: {}\n", .{err});
+    /// Handle GET /api/episodes - Recent episodes with optional filters
+    /// Query params: ?agent={name}&type={task|observation|action|error}
+    fn handleEpisodes(self: *const QueenBackend, path_with_query: []const u8) ![]const u8 {
+        // Import jsonl_reader for loading JSONL episodes
+        const jsonl_reader = @import("jsonl_reader.zig");
+        const EpisodeType = @import("episode_handler.zig").EpisodeType;
+
+        // Parse query parameters
+        var agent_filter: ?[]const u8 = null;
+        var type_filter: ?EpisodeType = null;
+
+        if (std.mem.indexOfScalar(u8, path_with_query, '?')) |query_start| {
+            const query_str = path_with_query[query_start + 1 ..];
+            var params = std.mem.splitScalar(u8, query_str, '&');
+
+            while (params.next()) |param| {
+                var kv = std.mem.splitScalar(u8, param, '=');
+                const key = kv.next() orelse continue;
+                const value = kv.next() orelse continue;
+
+                if (std.mem.eql(u8, key, "agent")) {
+                    agent_filter = value;
+                } else if (std.mem.eql(u8, key, "type")) {
+                    // Map string to EpisodeType
+                    type_filter = std.meta.stringToEnum(EpisodeType, value) orelse continue;
+                }
+            }
+        }
+
+        std.debug.print("📊 GET /api/episodes agent={s} type={s}\n", .{
+            if (agent_filter) |a| a else "(all)",
+            if (type_filter) |t| @tagName(t) else "(all)",
+        });
+
+        std.debug.print("🔍 Loading from JSONL files with filters\n", .{});
+
+        // Load episodes from JSONL with filters
+        const jsonl_config = jsonl_reader.JsonlEpisodesConfig{
+            .logs_dir = ".trinity/logs",
+            .agent_filter = agent_filter,
+            .type_filter = type_filter,
+            .max_count = self.config.episode_window,
+        };
+
+        const loaded_episodes = jsonl_reader.loadJsonlEpisodes(self.allocator, jsonl_config) catch |err| {
+            std.debug.print("Failed to load JSONL episodes: {}\n", .{err});
             return try self.errorResponse("Failed to load episodes", 500);
         };
         defer {
-            for (recent) |ep| {
+            for (loaded_episodes) |ep| {
                 if (ep.context.active_issues.len > 0)
                     self.allocator.free(ep.context.active_issues);
             }
-            self.allocator.free(recent);
+            self.allocator.free(loaded_episodes);
         }
 
-        // Create simplified response
-        var summaries = try std.ArrayList(episodes.EpisodeSummary).initCapacity(self.allocator, recent.len);
-        defer summaries.deinit(self.allocator);
+        // Create simplified response for debugging
+        var summaries = try std.ArrayList(struct {
+            id: u64,
+            timestamp: u64,
+            source: episodes.Source,
+            success: bool,
+        }).initCapacity(self.allocator, loaded_episodes.len);
 
-        for (recent) |ep| {
-            const summary = episodes.EpisodeSummary{
+        for (loaded_episodes) |ep| {
+            try summaries.append(self.allocator, .{
                 .id = ep.id,
                 .timestamp = ep.timestamp,
                 .source = ep.source,
-                .action_type = @tagName(ep.action),
-                .key = "",
-                .outcome = ep.outcome,
                 .success = ep.result.success,
-                .duration_ms = ep.result.timing.duration_ms,
-            };
-            try summaries.append(self.allocator, summary);
+            });
         }
 
-        const body = try std.json.Stringify.valueAlloc(self.allocator, summaries.items, .{});
+        const response_body = try std.json.Stringify.valueAlloc(self.allocator, summaries.items, .{});
+        return try self.httpResponse("application/json", response_body);
+    }
 
-        return try self.httpResponse("application/json", body);
+    /// Handle POST /api/episodes - Log new episode from JSON body
+    fn handleEpisodesPost(self: *QueenBackend, body: []const u8) ![]const u8 {
+        // Extract JSON body from HTTP request
+        const json_body = if (std.mem.indexOf(u8, body, "\r\n\r\n")) |idx|
+            body[idx + 4 ..]
+        else if (std.mem.indexOf(u8, body, "\n\n")) |idx|
+            body[idx + 2 ..]
+        else
+            body;
+
+        // Parse JSON into EpisodeRequest
+        const parsed = episode_handler.parseEpisode(self.allocator, json_body) catch |err| {
+            std.debug.print("Failed to parse episode JSON: {}\n", .{err});
+            return try self.errorResponse("Invalid JSON body", 400);
+        };
+        defer parsed.deinit();
+
+        const episode = parsed.value;
+
+        // Log episode to JSONL file
+        self.logger.log(self.allocator, episode) catch |err| {
+            std.debug.print("Failed to log episode: {}\n", .{err});
+            return try self.errorResponse("Failed to log episode", 500);
+        };
+
+        std.debug.print("✅ Episode logged: {s} (agent={s}, type={s})\n", .{
+            episode.episode_id, episode.agent, @tagName(episode.episode_type),
+        });
+
+        // Return success response
+        const response_body = try std.fmt.allocPrint(self.allocator,
+            \\{{"success":true,"episode_id":"{s}","trinity_signature":{d:.6}}}
+        , .{ episode.episode_id, TRINITY_IDENTITY });
+
+        return try self.httpResponse("application/json", response_body);
     }
 
     /// Handle POST /api/improve - Trigger self-improvement
@@ -324,8 +415,8 @@ pub const QueenBackend = struct {
 
         std.debug.print("🔄 Self-improvement cycle triggered\n", .{});
 
-        // Use AutoImprove instead of self_learning directly
-        var engine = auto_improve.AutoImprove.init(self.allocator);
+        // Use AutoImprove for self-improvement cycle
+        var engine = auto_improve.init(self.allocator);
         const result = try engine.runCycle();
 
         std.debug.print("✅ Applied {d} deltas, {d} patterns found\n", .{
@@ -343,7 +434,6 @@ pub const QueenBackend = struct {
             .quality_score = result.quality_score,
             .patterns_found = result.patterns_found,
             .cycles_analyzed = result.cycles_analyzed,
-            .new_config = result.config,
         };
 
         const body_json = try std.json.Stringify.valueAlloc(self.allocator, response, .{});
@@ -354,26 +444,64 @@ pub const QueenBackend = struct {
     fn handleTriSpec(self: *const QueenBackend) ![]const u8 {
         std.debug.print("📋 Generating .tri spec from episodes\n", .{});
 
-        const recent = episodes.loadRecentEpisodes(self.allocator, self.config.episode_window) catch |err| {
-            std.debug.print("Failed to load episodes: {}\n", .{err});
+        // Import jsonl_reader for loading JSONL episodes
+        const jsonl_reader = @import("jsonl_reader.zig");
+
+        // Load episodes from JSONL
+        const jsonl_config = jsonl_reader.JsonlEpisodesConfig{
+            .logs_dir = ".trinity/logs",
+            .agent_filter = null,
+            .type_filter = null,
+            .max_count = self.config.episode_window,
+        };
+
+        const recent_episodes = jsonl_reader.loadJsonlEpisodes(self.allocator, jsonl_config) catch |err| {
+            std.debug.print("Failed to load JSONL episodes: {}\n", .{err});
             return try self.errorResponse("Failed to load episodes", 500);
         };
         defer {
-            for (recent) |ep| {
+            for (recent_episodes) |ep| {
                 if (ep.context.active_issues.len > 0)
                     self.allocator.free(ep.context.active_issues);
             }
-            self.allocator.free(recent);
+            self.allocator.free(recent_episodes);
         }
 
-        // Generate .tri spec using EpisodeToTri converter
-        var buffer = try std.ArrayList(u8).initCapacity(self.allocator, 0);
-        defer buffer.deinit(self.allocator);
-        const converter = auto_improve.EpisodeToTri.init(self.allocator);
-        try converter.generateSpec(recent, buffer.writer(self.allocator));
+        std.debug.print("📊 Loaded {d} episodes for spec generation\n", .{recent_episodes.len});
 
-        const body = try buffer.toOwnedSlice(self.allocator);
-        return try self.httpResponse("text/x-yaml", body);
+        // Initialize AutoImprove to analyze episodes
+        var engine = auto_improve.init(self.allocator);
+
+        // Calculate quality score from loaded episodes
+        var success_count: usize = 0;
+        var total_count: usize = 0;
+
+        for (recent_episodes) |ep| {
+            if (ep.result.success) {
+                success_count += 1;
+            }
+            total_count += 1;
+        }
+
+        const quality_score: f64 = if (total_count > 0)
+            @as(f64, @floatFromInt(success_count)) / @as(f64, @floatFromInt(total_count))
+        else
+            0.0;
+
+        std.debug.print("📈 Quality score: {d:.3} ({d}/{d})\n", .{
+            quality_score, success_count, total_count,
+        });
+
+        // Analyze patterns from episodes
+        const patterns = try engine.analyzePatterns(recent_episodes);
+        defer self.allocator.free(patterns);
+
+        // Generate .tri spec based on quality score and patterns
+        const spec = try engine.generateTriSpec(quality_score, patterns);
+
+        std.debug.print("✅ Generated .tri spec: {d} bytes\n", .{spec.len});
+
+        return try self.httpResponse("text/x-yaml", spec);
     }
 
     /// Handle GET /api/pipeline - Pipeline status

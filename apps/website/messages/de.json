@@ -2,28 +2,8 @@
   "lang": "de",
   "langSwitch": "EN",
   "langHref": "?lang=en",
-  "nav": ["TRINITY", "Vertrauen", "Funktionen", "Bewertungen", "Vergleich", "FAQ", "Investieren"],
-  "trustBlock": {
-    "title": "Vertraut von Entwicklern"
-  },
-  "features": {
-    "problemTitle": "Das Vergessensproblem",
-    "problem": "KI-Agenten vergessen nach jeder Sitzung alles. Sie wiederholen Fehler. Sie können nicht voneinander lernen.",
-    "solution": "Trinitys 27 spezialisierte Agenten (einer pro koptischem Buchstaben) teilen sich dauerhaften Speicher über .trinity/experience/. Jeder Fehler gespeichert. Jede Lektion gelernt."
-  },
-  "testimonials": {
-    "title": "Was Entwickler sagen"
-  },
-  "comparison": {
-    "title": "Wie <span class=\"grad\">Trinity</span> sich vergleicht",
-    "subtitle": "Vergleich der KI-Agenten-Plattformen. Trinity ist die einzige mit dauerhaftem Lernen."
-  },
-  "faq": {
-    "title": "Häufig gestellte Fragen"
-  },
+  "nav": ["TRINITY", "Theoreme", "Lösung", "Benchmarks", "Rechner", "DePIN", "Tech-Baum", "Team", "Wissenschaft", "Investieren"],
   "hero": {
-    "badge_publications": "7 PUBLIKATIONEN",
-    "badge_doi": "DOI-VERIFIZIERT",
     "tag": "GPU-verifizierte Green AI Economy",
     "headline": "φ² + 1/φ² = 3",
     "subheadline": "298K Tokens/s auf RTX 3090 | 274K auf A100 | VERIFIZIERT",
@@ -48,7 +28,6 @@
   },
   "navExtra": {
     "dashboard": "Dashboard",
-    "tree": "Forschungslab",
     "docs": "Doku"
   },
   "theorems": {
@@ -184,12 +163,6 @@
     ],
     "progress": [ { "label": "Wissen (.tri)", "value": "20.645 Dateien" }, { "label": "Effizienz", "value": "578,8x (Verifiziert)" }, { "label": "Code-Kompression", "value": "80,2%" } ],
     "metrics": [ { "value": "20K+", "label": "TRI Dateien", "color": "green" }, { "value": "578x", "label": "Energie-Sprung", "color": "blue" }, { "value": "100×", "label": "SU(3) Boost", "color": "purple" }, { "value": "27", "label": "CIS Buchstaben", "color": "cyan" }, { "value": "80,2%", "label": "Dichte Hoch", "color": "yellow" }, { "value": "0,17%", "label": "Entropie", "color": "green" } ]
-  },
-  "publications": {
-    "badge": "WISSENSCHAFTLICHE PUBLIKATIONEN",
-    "title": "DOI-gestützte Forschungsergebnisse",
-    "subtitle": "Alle Forschungsergebnisse auf Zenodo mit permanenten DOI-Identifikatoren veröffentlicht.",
-    "viewAll": "Volle Dokumentation →"
   },
   "benchmarks": {
     "title": "GPU-verifizierte <span class=\"grad\">Benchmarks</span>", "sub": "✓ = Auf echten GPUs verifiziert (RunPod) | RTX 3090 & A100 getestet. Keine Simulation.",

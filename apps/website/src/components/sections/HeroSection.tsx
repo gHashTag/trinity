@@ -2,7 +2,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useI18n } from '../../i18n/context';
-import CodeSnippet from '../CodeSnippet';
 
 // 27 triangle petal paths from trinity-logo-with-label.svg (lines 2-28)
 const SYMBOL_PATHS = [
@@ -174,31 +173,6 @@ export default function HeroSection() {
     <section id="hero" aria-labelledby="hero-heading">
       <div className="radial-glow" aria-hidden="true" />
 
-      {/* Eyebrow Banner */}
-      <motion.div
-        className="fade"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{
-          background: 'rgba(0,255,136,0.1)',
-          border: '1px solid rgba(0,255,136,0.3)',
-          borderRadius: '50px',
-          padding: '0.5rem 1.5rem',
-          display: 'inline-block',
-          marginBottom: '2rem',
-        }}
-      >
-        <span style={{
-          color: 'var(--accent)',
-          fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-          fontWeight: 500,
-          letterSpacing: '0.05em',
-        }}>
-          v5.1.0 — 7 DOI-verified publications on Zenodo
-        </span>
-      </motion.div>
-
       <h2 style={{ color: 'var(--accent)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: 'clamp(0.1em, 2vw, 0.3em)', marginBottom: '0', margin: 0 }}>
         <motion.div
           className="fade"
@@ -221,12 +195,7 @@ export default function HeroSection() {
       </motion.div>
       
       <AnimatedEquation />
-
-      {/* CLI Code Snippet */}
-      <CodeSnippet language="bash">{`$ brew tap gHashTag/trinity && brew install tri
-$ tri agent run 420    # autonomous 8-step dev cycle
-$ tri cloud mail-setup zoho t27.ai`}</CodeSnippet>
-
+      
       {/* Only show headline if it's not the φ equation (already shown above) */}
       {t.headline && !t.headline.includes('φ²') && (
         <motion.h2
@@ -260,26 +229,24 @@ $ tri cloud mail-setup zoho t27.ai`}</CodeSnippet>
         aria-label="Call to action buttons"
       >
         <motion.a
-          href="https://github.com/gHashTag/trinity#installation"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#theorems"
           className="btn"
           style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(218,165,32,0.3)' }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Install Trinity CLI"
+          aria-label="Learn more about the theorems"
         >
-          Install CLI
+          {t.cta}
         </motion.a>
         <motion.a
-          href="#publications"
+          href="#calculator"
           className="btn secondary"
           style={{ minWidth: 'clamp(140px, 40vw, 200px)' }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Read scientific publications"
+          aria-label="Open the sacred calculator"
         >
-          Read Papers
+          {t.ctaSecondary}
         </motion.a>
       </motion.div>
 

@@ -365,8 +365,7 @@ pub const VerilogCodeGen = struct {
     }
 
     fn writeFPGAModule(self: *Self, spec: *const VibeeSpec) !void {
-        const module_name = if (spec.module.len > 0) spec.module else spec.name;
-        try self.builder.writeFmt("module {s} (\n", .{module_name});
+        try self.builder.writeFmt("module {s} (\n", .{spec.name});
         self.builder.incIndent();
 
         // Write port list from signals
@@ -449,16 +448,8 @@ pub const VerilogCodeGen = struct {
         try self.builder.newline();
 
         for (types) |t| {
-            try self.builder.writeFmt("// Type: {s} ({d} values)\n", .{ t.name, t.values.items.len });
+            try self.builder.writeFmt("// Type: {s} ({d} fields)\n", .{ t.name, t.fields.items.len });
             try self.builder.writeFmt("// {s}\n", .{t.description});
-
-            // Generate localparam declarations from values field
-            if (t.values.items.len > 0) {
-                for (t.values.items) |v| {
-                    try self.builder.writeFmt("localparam {s} = {s};\n", .{ v.name, v.value });
-                }
-                try self.builder.newline();
-            }
 
             // Generate parameter definitions for type fields
             for (t.fields.items) |field| {

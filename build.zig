@@ -1549,7 +1549,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "treesitter_zig", .module = ts_zig_mod },
                 .{ .name = "tri_train", .module = tri_train_mod },
-                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+                // FIXME: resurrect trinity_workspace when queen backend is implemented for CLARA
+                // .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
             },
         }),
     });

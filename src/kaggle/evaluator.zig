@@ -24,24 +24,12 @@ pub const EvalResult = struct {
     incorrect: usize = 0,
     accuracy: f64 = 0.0,
     strategy_counts: [6]usize = [_]usize{0} ** 6,
-    confusion: std.AutoHashMap(ConfusionKey, usize),
+    confusion: ConfusionMap,
     per_task: std.StringHashMap(TaskStats),
 
     pub const ConfusionKey = struct {
         expected: []const u8,
         predicted: []const u8,
-
-        pub fn hash(self: ConfusionKey) u64 {
-            var hasher = std.hash.Wyhash.init(0);
-            hasher.update(self.expected);
-            hasher.update(self.predicted);
-            return hasher.final();
-        }
-
-        pub fn eql(a: ConfusionKey, b: ConfusionKey) bool {
-            return std.mem.eql(u8, a.expected, b.expected) and
-                   std.mem.eql(u8, a.predicted, b.predicted);
-        }
     };
 
     pub const TaskStats = struct {
@@ -50,6 +38,25 @@ pub const EvalResult = struct {
         accuracy: f64 = 0.0,
     };
 };
+
+// Custom HashMap context for ConfusionKey
+pub const ConfusionContext = struct {
+    pub fn hash(self: ConfusionContext, key: EvalResult.ConfusionKey) u64 {
+        _ = self;
+        var hasher = std.hash.Wyhash.init(0);
+        hasher.update(key.expected);
+        hasher.update(key.predicted);
+        return hasher.final();
+    }
+
+    pub fn eql(self: ConfusionContext, a: EvalResult.ConfusionKey, b: EvalResult.ConfusionKey) bool {
+        _ = self;
+        return std.mem.eql(u8, a.expected, b.expected) and
+               std.mem.eql(u8, a.predicted, b.predicted);
+    }
+};
+
+pub const ConfusionMap = std.HashMap(EvalResult.ConfusionKey, usize, ConfusionContext, std.hash_map.default_max_load_percentage);
 
 pub const Evaluator = struct {
     allocator: Allocator,
@@ -71,7 +78,7 @@ pub const Evaluator = struct {
         std.debug.assert(rows.len == responses.len);
 
         var result = EvalResult{
-            .confusion = std.AutoHashMap(EvalResult.ConfusionKey, usize).init(self.allocator),
+            .confusion = ConfusionMap.init(self.allocator),
             .per_task = std.StringHashMap(EvalResult.TaskStats).init(self.allocator),
         };
         defer {
@@ -115,7 +122,7 @@ pub const Evaluator = struct {
 
             // Track per-task statistics
             const task_stats = try result.per_task.getOrPut(row.task);
-            if (!task_stats.exists) {
+            if (task_stats.found_existing == false) {
                 task_stats.key_ptr.* = try self.allocator.dupe(u8, row.task);
                 task_stats.value_ptr.* = .{};
             }
@@ -155,7 +162,7 @@ pub const Evaluator = struct {
         // For testing: return correct answer 70% of time
         const timestamp = std.time.nanoTimestamp();
         const seed = @as(u64, @intCast(@abs(timestamp)));
-        const rng = std.Random.DefaultPrng.init(seed);
+        var rng = std.Random.DefaultPrng.init(seed);
         if (rng.random().float(f64) < 0.7) {
             return self.allocator.dupe(u8, row.answer);
         } else {

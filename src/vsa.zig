@@ -3,8 +3,24 @@
 //!
 //! VSA operations for Trinity S³AI — bind, unbind, bundle, similarity.
 //!
+//! TTT DOGFOOD ARCHITECTURE (Phase 2):
+//! .tri specs → .t27 (TRI-27 Assembly) → .zig (via zig-golden-float kernel)
+//!
+//! Source of truth: specs/vsa/core.tri
+//! Generated targets:
+//!   - src/tri27/vsa_*.t27 (TRI-27 assembly)
+//!   - external/zig-golden-float/src/vsa/core.zig (kernel implementation)
+//!   - trinity/src/vsa/core.zig (duplicate, pending migration to import)
+//!
+//! Phase 2 Status:
+//!   ✅ .tri specs exist (specs/vsa/core.tri, specs/vsa/ops.tri)
+//!   ✅ .t27 files exist (bind, bundle2, cosine, permute, similarity, unbind)
+//!   ✅ zig-golden-float has identical core.zig
+//!   ⏳ Pending: Update build system to use zig-golden-float as module
+//!
 const std = @import("std");
 
+// Local imports (duplicates of zig-golden-float, pending migration)
 pub const common = @import("vsa/common.zig");
 pub const core = @import("vsa/core.zig");
 pub const encoding = @import("vsa/encoding.zig");

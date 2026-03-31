@@ -29,8 +29,7 @@ pub fn main() !void {
 
     if (std.mem.eql(u8, command, "gen")) {
         if (args.len < 3) {
-            const stderr = std.io.getStdErr().writer();
-            try stderr.print("Error: Missing input file\n", .{});
+            std.debug.print("Error: Missing input file\n", .{});
             printUsage();
             return;
         }
@@ -206,54 +205,52 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
 }
 
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8) !void {
-    const stderr = std.io.getStdErr().writer();
-
     // Read source file
     const file = std.fs.cwd().openFile(input_path, .{}) catch |err| {
-        try stderr.print("Error opening file: {}\n", .{err});
+        std.debug.print("Error opening file: {}\n", .{err});
         return;
     };
     defer file.close();
 
     const stat = file.stat() catch |err| {
-        try stderr.print("Error getting file size: {}\n", .{err});
+        std.debug.print("Error getting file size: {}\n", .{err});
         return;
     };
 
     const source = allocator.alloc(u8, stat.size) catch |err| {
-        try stderr.print("Error allocating memory: {}\n", .{err});
+        std.debug.print("Error allocating memory: {}\n", .{err});
         return;
     };
     defer allocator.free(source);
 
     _ = file.readAll(source) catch |err| {
-        try stderr.print("Error reading file: {}\n", .{err});
+        std.debug.print("Error reading file: {}\n", .{err});
         return;
     };
 
     // Parse specification
-    try stderr.print("Parsing specification...\n", .{});
+    std.debug.print("Parsing specification...\n", .{});
     var parser = vibee_parser.VibeeParser.init(allocator, source);
 
     var spec = parser.parse() catch |err| {
-        try stderr.print("Error parsing spec: {}\n", .{err});
+        std.debug.print("Error parsing spec: {}\n", .{err});
         return;
     };
     defer spec.deinit();
 
-    try stderr.print("  Name: {s}\n", .{spec.name});
-    try stderr.print("  Version: {s}\n", .{spec.version});
-    try stderr.print("  Language: {s}\n", .{spec.language});
+    std.debug.print("  Name: {s}\n", .{spec.name});
+    std.debug.print("  Version: {s}\n", .{spec.version});
+    std.debug.print("  Language: {s}\n", .{spec.language});
     if (spec.languages.items.len > 1) {
-        try stderr.print("  Languages: [", .{});
+        std.debug.print("  Languages: [", .{});
         for (spec.languages.items, 0..) |lang, i| {
-            if (i > 0) try stderr.print(", ", .{});
-            try stderr.print("{s}", .{lang});
+            if (i > 0) std.debug.print(", ", .{});
+            std.debug.print("{s}", .{lang});
         }
-        try stderr.print("]\n", .{});
+        std.debug.print("]\n", .{});
     }
-    try stderr.print("  Types: {d}\n", .{spec.types.items.len});
-    try stderr.print("  Behaviors: {d}\n", .{spec.behaviors.items.len});
+    std.debug.print("  Types: {d}\n", .{spec.types.items.len});
+    std.debug.print("  Behaviors: {d}\n", .{spec.behaviors.items.len});
 
     // Multi-language mode: generate output for each target language
     if (spec.languages.items.len > 1) {
@@ -267,15 +264,15 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8) !void {
     var generated_code: []const u8 = undefined;
 
     if (std.mem.eql(u8, spec.language, "varlog") or std.mem.eql(u8, spec.language, "verilog")) {
-        try stderr.print("Generating Verilog...\n", .{});
+        std.debug.print("Generating Verilog...\n", .{});
         var codegen = verilog_codegen.VerilogCodeGen.init(allocator);
         defer codegen.deinit();
         generated_code = try codegen.generate(&spec);
     } else if (isMultiLangTarget(spec.language)) {
-        try stderr.print("Generating {s}...\n", .{spec.language});
+        std.debug.print("Generating {s}...\n", .{spec.language});
         generated_code = try generateMultiLang(allocator, &spec);
     } else {
-        try stderr.print("Generating Zig...\n", .{});
+        std.debug.print("Generating Zig...\n", .{});
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
         defer codegen.deinit();
         generated_code = try codegen.generate(&spec);
@@ -288,24 +285,22 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8) !void {
 }
 
 fn generateSingleLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec, language: []const u8) !void {
-    const stderr = std.io.getStdErr().writer();
-
     var generated_code: []const u8 = undefined;
 
     if (std.mem.eql(u8, language, "varlog") or std.mem.eql(u8, language, "verilog")) {
-        try stderr.print("Generating Verilog...\n", .{});
+        std.debug.print("Generating Verilog...\n", .{});
         var codegen = verilog_codegen.VerilogCodeGen.init(allocator);
         defer codegen.deinit();
         generated_code = try codegen.generate(spec);
     } else if (isMultiLangTarget(language)) {
-        try stderr.print("Generating {s}...\n", .{language});
+        std.debug.print("Generating {s}...\n", .{language});
         // Temporarily set spec.language for the generator
         const orig_lang = spec.language;
         spec.language = language;
         generated_code = try generateMultiLang(allocator, spec);
         spec.language = orig_lang;
     } else {
-        try stderr.print("Generating Zig...\n", .{});
+        std.debug.print("Generating Zig...\n", .{});
         var codegen = zig_codegen.ZigCodeGen.init(allocator);
         defer codegen.deinit();
         generated_code = try codegen.generate(spec);

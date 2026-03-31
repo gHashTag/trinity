@@ -232,7 +232,11 @@ pub const Matcher = struct {
         var iter = std.mem.tokenizeScalar(u8, expected, ' ');
         while (iter.next()) |word| {
             const w = std.mem.trim(u8, word, ".,!?;:");
-            try exp_words.append(self.allocator, try self.allocator.dupe(u8, w));
+            const duped = self.allocator.dupe(u8, w) catch return null;
+            exp_words.append(self.allocator, duped) catch {
+                self.allocator.free(duped);
+                return null;
+            };
         }
 
         if (exp_words.items.len < 2) return null;

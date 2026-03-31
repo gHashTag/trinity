@@ -1,0 +1,14 @@
+{
+  "id": "playra/trinity-thlp-mc",
+  "title": "Trinity THLP MC Task - kaggle_benchmarks v2026",
+  "code_file": "thlp_mc_task.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "false",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": ["playra/trinity-cognitive-probes-thlp-mc"],
+  "competition_sources": [],
+  "kernel_sources": []
+}
