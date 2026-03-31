@@ -111,8 +111,8 @@ export default function InvestSection() {
         >
           <h4 style={{ marginBottom: '1.5rem', fontWeight: 500, fontSize: 'clamp(1rem, 3vw, 1.2rem)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{inv.talentTitle}</h4>
           <div style={{ marginTop: 'auto' }}>
-            <motion.a 
-              href="https://t.me/vibee_dev" 
+            <motion.a
+              href="https://t.me/t27_dev"
               className="btn secondary" 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
