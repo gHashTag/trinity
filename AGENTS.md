@@ -416,6 +416,27 @@ cat .trinity/dev_session.json | jq
 
 **Goal:** keep the repo root small; agents and humans follow the same rules.
 
+**TTT Dogfood Architecture**:
+
+`.tri` spec is SINGLE source of truth — generates to ANY target language.
+
+```
+.tri (VIBEE spec)          ← SINGLE source of truth
+    │
+    ├── tri gen → .t27     ← TRI-27 Assembly (our language)
+    ├── tri gen → .zig     ← via zig-golden-float (kernel)
+    ├── tri gen → .py      ← Python target (future)
+    ├── tri gen → .rs      ← Rust target (future)
+    └── tri gen → .go      ← Go target (future)
+```
+
+**Architecture Split**:
+- **zig-golden-float/** = Kernel (numerical operations, VSA, Ternary VM)
+- **trinity/** = Language layer (.tri specs, .t27 assembly, configs, docs)
+- **NO .zig files in trinity/src/** except build.zig
+
+**Agent Rule**: If something can't be done via `tri` → fix in zig-golden-float kernel.
+
 1. **Verilog (`*.v`)** — not in the repository root. Put loose RTL in **`hardware/rtl-root/`**; curated flows under **`fpga/`** (e.g. `fpga/openxc7-synth/`). If something landed in root: **`npm run sweep-rtl`** (moves `*.v` into `hardware/rtl-root/`, collisions → `stray-from-root/`).
 2. **Binaries** — build with **`zig build`**; run from **`zig-out/bin/`**. Do not leave `a.out`, `*.o`, or ad-hoc test binaries in root (they are ignored or removed).
 3. **Scripts & one-offs** — **`scripts/`**; long-lived experiments → **`archive/`** when obsolete. Retired **`.tri`** bundles: **`archive/specs-tri/`**; active specs stay under **`specs/`**. Tri **language reference** (grammar lexer, spec prose): **`specs/tri/lang-ref/`**. Sample **YAML/dot configs**: **`tools/config/`**.
