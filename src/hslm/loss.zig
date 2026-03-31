@@ -9,8 +9,6 @@ const constants = @import("constants.zig");
 const model_mod = @import("model.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
-
-const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
 const CONTEXT_LEN = constants.CONTEXT_LEN;
 
@@ -81,7 +79,7 @@ pub fn focalCrossEntropyLoss(logits: []const f32, target: u16, config: LossConfi
     const target_prob = probs[@as(usize, target)];
 
     // Compute focal weight
-    const focal_weight = @pow(1.0 - target_prob, config.focal_gamma);
+    const focal_weight = std.math.pow(f32, 1.0 - target_prob, config.focal_gamma);
 
     const clamped = @max(target_prob, 1e-7);
     return focal_weight * (-@log(clamped));
@@ -352,9 +350,7 @@ test "focal loss" {
 }
 
 test "sequence loss" {
-    const batch_size = 2;
     const seq_len = 3;
-    const total_logits = batch_size * seq_len * VOCAB_SIZE;
 
     var logits: [VOCAB_SIZE * seq_len]f32 = undefined;
     @memset(&logits, 0.0);

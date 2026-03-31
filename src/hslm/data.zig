@@ -375,7 +375,7 @@ pub const Dataset = struct {
             const seq_len = self.getCurrentSeqLen();
             var i: usize = 0;
             while (i + seq_len < self.tokens.items.len) : (i += 1) {
-                const tokens = try self.allocator.dupe(u16, self.tokens.items[i..i + seq_len]);
+                const tokens = try self.allocator.dupe(u16, self.tokens.items[i .. i + seq_len]);
                 const complexity = self.computeComplexity(tokens);
                 try self.items.append(self.allocator, .{
                     .tokens = tokens,
@@ -549,9 +549,9 @@ test "curriculum step schedule" {
     curriculum.updateDifficulty(249);
     try std.testing.expectEqual(@as(usize, 8), curriculum.getSeqLen());
 
-    // At step 250 (first milestone), should jump
+    // At step 250 (first milestone), should jump to 14 (8 + 6)
     curriculum.updateDifficulty(250);
-    try std.testing.expectEqual(@as(usize, 16), curriculum.getSeqLen());
+    try std.testing.expectEqual(@as(usize, 14), curriculum.getSeqLen());
 }
 
 test "dataset with curriculum" {
