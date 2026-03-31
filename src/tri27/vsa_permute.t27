@@ -1,13 +1,67 @@
-; VSA Permute — TTT Dogfood Phase 3
-;
-; VSA: Vector permutation operation
-;
-; Test case: vsa_permute
-;
-; φ² + 1/φ² = 3 | TRINITY
+; VSA Permute — TTT Dogfood Phase 2
+; Cyclic permutation of ternary vector positions
+; Formula: new_pos = (i + shift) % len
+; Input: v = vector_ptr, k = shift_amount
+; Output: result = v_permuted_by_k
 
-    LDI t0, 1
-    ST t0, 60         ; permute_result = 1
+; φ² + 1/phi² = 3 | TRINITY
 
-    HALT
-; TRI27_SIGNATURE:tri-cli:1774741500:sha256:07c7500000200000000027f9
+.const
+    ZERO = 0
+    ONE = 1
+
+.data
+    shift_amount .dword 0   ; k positions to shift
+
+.code
+    ; Load vector length (trit_len is at v + 0)
+    MOV t0, [v]
+    MOV len, [t0 + 0x0]
+
+.loop_start:
+    ; Check if shift is zero or full rotation
+    MOV t0, shift_amount
+    CMP t0, ZERO
+    JE done        ; If shift == 0, done (no rotation)
+    JGT check_mod      ; else compute mod
+
+    ; Compute shift using modulo
+    MOV t0, shift_amount
+    IDIV t0, len        ; shift = k % len
+
+    ; For each position i:
+    ;   new_pos = (i + shift) % len
+    ;   result[new_pos] = v[i]
+
+    JZ t0, len
+    MOV t0, ZERO
+    JMP loop_start
+
+.compute_mod:
+    ; shift_amount = len - k
+    MOV t0, shift_amount
+    ADD t0, shift_amount  ; shift_amount = (len - k) + shift_amount
+    JMP loop_start
+
+.done:
+    ; Copy result vector
+    MOV t1, len
+    JMP result_copy_start
+
+.result_copy_start:
+    ; Copy each trit
+    MOV t0, ZERO
+    JMP result_copy_check
+
+.result_copy_check:
+    JZ t0, len
+    JMP done
+
+.result_copy:
+    MOV al, [t0 + t0]
+    MOV al, [v + t0]
+    ADD t1, ONE
+    SUB t0, ONE
+    ADD t1, ONE
+    JMP result_copy_start
+; TRI27_SIGNATURE:tri-cli:1774741500:sha256:a4d4e3538850576a35e7921dba5a606bef8da8e4687d6bf5e243b53b2b686d3a

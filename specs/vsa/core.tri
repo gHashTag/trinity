@@ -19,3 +19,21 @@ unbind = "bind with inverse (self-inverse for ternary)"
 bundle = "element-wise majority vote"
 similarity = "cosine similarity in [-1, 1]"
 permute = "cyclic shift for sequence encoding"
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════ needs simple documentation
+
+# VSA Core Operations Specification
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════Attempt 1: simple documentation addition to describe the kernel architecture status
+
+## Architecture Status
+
+### Kernel: zig-golden-float
+**Path:** `external/zig-golden-float/src/vsa/core.zig`**Status:** ✅ IDENTICAL to `src/vsa/core.zig` (verified by diff)**Purpose:** Provides authoritative VSA core operations (bind, bundle2, bundle3, cosine similarity, permute, inverse permute, hamming distance, vector norm, count non-zero, bundle N)
+
+### .t27 Assembly Files
+**Existing:**- `src/tri27/vsa_bind.t27` (bind operation)- `src/tri27/vsa_bundle2.t27` (bundle2)- `src/tri27/vsa_bundle3.t27` (bundle3)**Created (Phase 2):**- `src/tri27/vsa_cosine.t27` (cosine similarity)- `src/tri27/vsa_permute.t27` (permute operation)- `src/tri27/vsa_unbind.t27` (unbind)- `src/tri27/vsa_similarity.t27` (dot similarity)
+
+### Tri27 CLI Generation
+**Status:** Ready to generate .zig from `specs/vsa/core.tri`
+**Expected Output:** Zig code in `src/vsa/` that imports from zig-golden-float kernel
+
