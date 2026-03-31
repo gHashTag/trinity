@@ -71,7 +71,7 @@ pub fn logStep(allocator: Allocator, step: AgentStep) !void {
     });
 
     // Build JSON manually (Zig 0.15 compatible)
-    var buf: std.ArrayList(u8) = .empty;
+    var buf = try std.ArrayList(u8).initCapacity(allocator, 256);
     defer buf.deinit(allocator);
     const w = buf.writer(allocator);
 
@@ -80,8 +80,8 @@ pub fn logStep(allocator: Allocator, step: AgentStep) !void {
     try w.print("\"agent\":\"{s}\",", .{step.agent});
     try w.print("\"episode_type\":\"{s}\",", .{episode_type});
     try w.print("\"timestamp\":\"{d}\",", .{ts});
-    try w.print("\"title\":\"{s}\", .{title});
-    try w.print("\"correlation_id\":\"{d}", .{step.issue_number});
+    try w.print("\"title\":\"{s}\"", .{title});
+    try w.print("\"correlation_id\":\"{d}\",", .{step.issue_number});
     try w.writeAll("\"data\":{");
     try w.print("\"domain\":\"github_issue\"", .{});
 
