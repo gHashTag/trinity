@@ -81,7 +81,7 @@ pub fn logStep(allocator: Allocator, step: AgentStep) !void {
     });
 
     // Build JSON with proper escaping
-    var buf = try std.ArrayList(u8).initCapacity(allocator, 1024);
+    var buf: std.ArrayList(u8) = .empty;
     defer buf.deinit(allocator);
     const w = buf.writer(allocator);
 
@@ -98,7 +98,7 @@ pub fn logStep(allocator: Allocator, step: AgentStep) !void {
     try w.writeAll(escapeString(allocator, title));
     try w.writeAll("\",");
     try w.print("\"correlation_id\":{d},", .{step.issue_number});
-    try w.writeAll("\"data\":{");
+    try w.writeAll("\"data\":");
 
     // Build data object
     try w.writeAll("{");
@@ -188,7 +188,7 @@ pub fn logStep(allocator: Allocator, step: AgentStep) !void {
 /// Escape JSON string (minimal: quotes, backslashes, newlines)
 /// Returns escaped string (caller owns memory)
 fn escapeString(allocator: Allocator, s: []const u8) []const u8 {
-    var escaped = std.ArrayList(u8).initCapacity(allocator, s.len + s.len / 4) catch return s;
+    var escaped: std.ArrayList(u8) = .empty;
     defer escaped.deinit(allocator);
     const w = escaped.writer(allocator);
 
