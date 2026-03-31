@@ -27,6 +27,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Format conversion utilities
+    const formats_mod = b.createModule(.{
+        .root_source_file = b.path("src/formats.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // ═══════════════════════════════════════════════════════════════════════════
     // ZODD DATALOG — CLARA Rules Engine (DARPA CLARA proposal)
     // ═══════════════════════════════════════════════════════════════════════════
@@ -143,6 +150,24 @@ pub fn build(b: *std.Build) void {
     libqueen_step.dependOn(&install_queen_shared.step);
     libqueen_step.dependOn(&install_queen_static.step);
     libqueen_step.dependOn(&install_queen_header.step);
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // MNIST Real Data Benchmark — Phase 2 (Quantized)
+    // ═══════════════════════════════════════════════════════════════════════════
+    const bench_mnist = b.addExecutable(.{
+        .name = "bench-mnist",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/bench_mnist.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    bench_mnist.root_module.addImport("formats", formats_mod);
+    b.installArtifact(bench_mnist);
+
+    const bench_mnist_step = b.step("bench-mnist", "Run MNIST benchmark (Phase 2)");
+    const run_mnist = b.addRunArtifact(bench_mnist);
+    bench_mnist_step.dependOn(&run_mnist.step);
 
     // Cross-platform libvsa release builds
     const libvsa_release_step = b.step("release-libvsa", "Build libtrinity-vsa for all platforms");
@@ -513,7 +538,7 @@ pub fn build(b: *std.Build) void {
     const tri_kaggle = b.addExecutable(.{
         .name = "tri-kaggle",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/kaggle/main_cli.zig"),
+            .root_source_file = b.path("src/kaggle/clutrr_cli.zig"),
             .target = target,
             .optimize = optimize,
             .imports = &.{
@@ -1549,8 +1574,7 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "vsa", .module = vsa_tri },
                 .{ .name = "treesitter_zig", .module = ts_zig_mod },
                 .{ .name = "tri_train", .module = tri_train_mod },
-                // FIXME: resurrect trinity_workspace when queen backend is implemented for CLARA
-                // .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
+                .{ .name = "trinity_workspace", .module = trinity_workspace_mod },
             },
         }),
     });
