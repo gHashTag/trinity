@@ -24,6 +24,7 @@ const Allocator = std.mem.Allocator;
 const experience_hooks = @import("experience_hooks.zig");
 const tri_experience = @import("tri_experience.zig");
 const toxic_verdict = @import("pathology.zig");
+const queen_bridge = @import("queen/queen_bridge.zig");
 
 const print = std.debug.print;
 
@@ -100,12 +101,14 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     github_commands.runGithubCommand(allocator, &[_][]const u8{ "issue", "view", issue_str }, false) catch |err| {
         steps[0].setDetail(@errorName(err));
         printStepEnd(false);
+        queen_bridge.logStepError(allocator, "gamma", issue_num, "issue view", @errorName(err)) catch {};
         all_ok = false;
     };
     if (steps[0].detail_len == 0) {
         steps[0].success = true;
         steps[0].setDetail("OK");
         printStepEnd(true);
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "issue view", "Fetched issue details") catch {};
     }
 
     // Step 2: Experience recall
@@ -117,11 +120,13 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
         steps[1].setDetail(@errorName(err));
         printStepEnd(false);
         // Non-fatal: no past episodes is OK
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "experience recall", "No past episodes") catch {};
     };
     if (steps[1].detail_len == 0) {
         steps[1].success = true;
         steps[1].setDetail("OK");
         printStepEnd(true);
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "experience recall", "Recalled past episodes") catch {};
     }
 
     // Step 2b: Verdict briefing — show agent what's weak BEFORE it starts
@@ -134,6 +139,7 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     steps[2].success = true;
     steps[2].setDetail("OK");
     printStepEnd(true);
+    queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "spec create", "Created .tri spec") catch {};
 
     // Step 4: Gen
     printStepStart(4, 8, "Code generate");
@@ -141,12 +147,14 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     commands.runGenCommand(allocator, &[_][]const u8{}) catch |err| {
         steps[3].setDetail(@errorName(err));
         printStepEnd(false);
+        queen_bridge.logStepError(allocator, "gamma", issue_num, "code generate", @errorName(err)) catch {};
         all_ok = false;
     };
     if (steps[3].detail_len == 0) {
         steps[3].success = true;
         steps[3].setDetail("OK");
         printStepEnd(true);
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "code generate", "Generated Zig code") catch {};
     }
 
     // Step 5: Verify
@@ -156,6 +164,7 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     steps[4].success = true;
     steps[4].setDetail("OK");
     printStepEnd(true);
+    queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "verify", "Tests passed") catch {};
 
     // Step 6: Verdict with explain
     printStepStart(6, 8, "Toxic verdict");
@@ -164,6 +173,7 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     steps[5].success = true;
     steps[5].setDetail("OK");
     printStepEnd(true);
+    queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "verdict", "Toxic analysis complete") catch {};
 
     // Step 7: Experience save
     printStepStart(7, 8, "Experience save");
@@ -197,6 +207,7 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
         steps[6].success = true;
         steps[6].setDetail("OK");
         printStepEnd(true);
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "experience save", "Episode saved") catch {};
     }
 
     // Step 8: Git commit
@@ -207,11 +218,13 @@ fn runFullCycle(allocator: Allocator, issue_num: u32, issue_str: []const u8) !vo
     commands.runGitCommand(allocator, "commit", &[_][]const u8{commit_msg}) catch |err| {
         steps[7].setDetail(@errorName(err));
         printStepEnd(false);
+        queen_bridge.logStepError(allocator, "gamma", issue_num, "git commit", @errorName(err)) catch {};
     };
     if (steps[7].detail_len == 0) {
         steps[7].success = true;
         steps[7].setDetail("OK");
         printStepEnd(true);
+        queen_bridge.logStepSuccess(allocator, "gamma", issue_num, "git commit", "Changes committed") catch {};
     }
 
     // Summary

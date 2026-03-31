@@ -19,15 +19,8 @@ pub const EpisodeLogger = struct {
             ep.agent,
         });
 
-        // Open file for append (create if not exists, preserve if exists)
-        const file = blk: {
-            const f = std.fs.cwd().openFile(path, .{}) catch {
-                // File doesn't exist, create it
-                std.fs.cwd().makePath(self.logs_dir) catch {};
-                break :blk try std.fs.cwd().createFile(path, .{});
-            };
-            break :blk f;
-        };
+        // Open file for append (truncate=false preserves existing content)
+        const file = try std.fs.cwd().createFile(path, .{ .truncate = false });
         defer file.close();
         try file.seekFromEnd(0);
 
