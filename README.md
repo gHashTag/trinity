@@ -453,6 +453,17 @@ tri help --search test # Search commands
 | `tri formula <value>` | Sacred formula decomposition |
 | `tri sacred` | 32 constants + 9 predictions table |
 
+**Reproduce Pellis–Trinity comparison in 10 seconds:**
+
+```bash
+tri math constants --category=em
+tri math compare --pellis
+```
+
+<p align="center">
+  <img src="demotapes/tri_math_constants.gif" alt="tri math demo" width="600">
+</p>
+
 #### Sacred Biology (v14.0)
 
 | Command | Description |
