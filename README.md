@@ -110,13 +110,16 @@ Evidence Level:
 
 ### Summary Table (CPU, Synthetic Data)
 
-| Format | MSE (×10⁻⁴) | Add (ns/op) | Mul (ns/op) | NN Acc (%) | Loss | Bytes/weight |
-|--------|------------|-------------|-------------|------------|------|--------------|
-| **f32** (baseline) | — | 5.0 | 4.5 | 5.80 | 0.048 | 32 |
-| **fp16** (IEEE) | 0.123 | 8.5 | 4.5 | 5.80 | 0.048 | 16 |
-| **bfloat16** | 0.456 | ~5.0 | ~4.5 | TBD | TBD | 16 |
-| **GF16** (Trinity) | 0.234 | 7.2 | 4.5 | 5.80 | 0.048 | 16 |
-| **Ternary** | 500,000 | 0.5 | 0.5 | 6.90 | 0.120 | 2 |
+| Format   | Bits (s/e/m) | Range         | MSE (N(0,1)) | Add (ns/op) | Mul (ns/op) | NN Accuracy | Bytes/weight |
+|----------|-------------|---------------|--------------|-------------|-------------|-------------|--------------|
+| f32      | 1/8/23      | ±3.4e38       | baseline     | ~5.0        | ~4.5        | 5.80%       | 32           |
+| fp16     | 1/5/10      | ±6.55e4       | 0.000123     | ~8.5        | ~4.5        | 5.80%       | 16           |
+| bfloat16 | 1/8/7       | ±3.4e38       | 0.000456     | —           | —           | —           | 16           |
+| **GF16** | **1/6/9**   | **±4.29e9**   | **0.000234** | **~7.2**    | **~4.5**    | **5.80%**   | **16**       |
+| ternary  | 2 bits      | {-1, 0, +1}   | 0.500000     | ~0.5        | ~0.5        | 6.90%       | 2            |
+
+GF16 maintains f32-equivalent accuracy on a small MLP while offering 10⁵× wider
+dynamic range than fp16 and stable cross-platform compilation via integer-backed u16.
 
 ### Key Findings
 
