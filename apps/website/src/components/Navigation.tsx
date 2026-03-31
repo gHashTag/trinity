@@ -2,10 +2,8 @@ import { useState, useEffect, memo, useCallback } from 'react'
 import { useI18n } from '../i18n/context'
 import LanguageSwitcher from './LanguageSwitcher'
 
-const sectionIds = ['hero', 'theorems', 'publications', 'solution', 'benchmarks', 'calculator', 'depin', 'team', 'invest']
+const sectionIds = ['hero', 'theorems', 'solution', 'benchmarks', 'calculator', 'depin', 'tech-tree', 'team', 'science', 'invest']
 const BASE = import.meta.env.BASE_URL
-// Docs points to t27.ai/docs/ (custom domain)
-const DOCS_URL = 'https://t27.ai/docs/'
 
 export default memo(function Navigation() {
   const { t } = useI18n()
@@ -71,21 +69,14 @@ export default memo(function Navigation() {
           </a>
         ))}
         <a
-          href="#/dashboard"
+          href={`${BASE}dashboard`}
           style={{ color: '#00ccff', fontWeight: 600 }}
           aria-label="Go to Dashboard"
         >
           {t.navExtra?.dashboard || 'Dashboard'}
         </a>
         <a
-          href="#/tree"
-          style={{ color: '#ffd700', fontWeight: 600 }}
-          aria-label="Go to Research Lab"
-        >
-          {t.navExtra?.tree || 'Research Lab'}
-        </a>
-        <a
-          href={DOCS_URL}
+          href={`${BASE}docs/`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--accent)', fontWeight: 600 }}
@@ -149,15 +140,7 @@ export default memo(function Navigation() {
                 {t.navExtra?.dashboard || 'Dashboard'}
               </a>
               <a
-                href={`${BASE}tree`}
-                style={{ color: '#ffd700' }}
-                onClick={() => setMenuOpen(false)}
-                aria-label="Go to Research Lab"
-              >
-                {t.navExtra?.tree || 'Research Lab'}
-              </a>
-              <a
-                href={DOCS_URL}
+                href={`${BASE}docs/`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'var(--accent)' }}
