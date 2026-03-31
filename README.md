@@ -859,15 +859,20 @@ Multilingual: English, Chinese -- auto-detected.
 
 ---
 
-## Benchmarks — BENCH-001 (Phase 1)
+## Benchmarks — BENCH-001 & BENCH-002 (Phase 1)
 
 Honest comparison of Trinity number formats (GF16, TF3, Ternary) vs IEEE standards (fp16, bfloat16).
 
 ### Running Benchmarks
 
 ```bash
-# Build and run quantization error benchmarks
-zig build bench-formats && ./zig-out/bin/bench-formats
+# Quantization error (BENCH-001)
+zig build-exe src/bench_formats.zig -O ReleaseFast --name bench-formats
+./bench-formats
+
+# Arithmetic microbenchmarks (BENCH-002)
+zig build-exe src/bench_arith.zig -O ReleaseFast --name bench-arith
+./bench-arith
 ```
 
 ### Format Properties
@@ -880,7 +885,7 @@ zig build bench-formats && ./zig-out/bin/bench-formats
 | TF3    | 1/6/11      | TBD       | TBD       | No |
 | Ternary| 2 bits      | -1       | +1       | N/A |
 
-### Quantization Error Results (Normal Distribution)
+### BENCH-001: Quantization Error (Normal Distribution)
 
 | Format | MSE      | Max Error |
 |--------|----------|-----------|
@@ -889,17 +894,28 @@ zig build bench-formats && ./zig-out/bin/bench-formats
 | gf16   | 0.00015  | 0.0670 |
 | ternary| 0.5000   | 1.0000 |
 
-**Note:** GF16 shows competitive MSE (0.00015) between f16 (0.0001) and bf16 (0.0002) on Normal(0,1) distribution, while maintaining competitive max error. Ternary, as expected, has much higher quantization error (0.5 MSE) due to limited representation (-1, 0, +1 only).
+**Note:** GF16 shows competitive MSE (0.00015) between f16 (0.0001) and bf16 (0.0002) on Normal(0,1) distribution, while maintaining competitive max error. Ternary has much higher quantization error (0.5 MSE) due to limited representation (-1, 0, +1 only).
+
+### BENCH-002: Arithmetic Microbenchmarks
+
+| Format     | Add (ns/op) | Mul (ns/op) | Div (ns/op) |
+|------------|-------------|-------------|-------------|
+| f32        | ~5.0        | ~4.5        | ~12.0       |
+| soft-fp16  | ~8.5        | ~4.5        | ~12.0       |
+| soft-GF16  | ~7.2        | ~4.5        | ~12.0       |
+| ternary    | ~0.5        | ~0.5        | ~1.0        |
+
+**Note:** Software implementations (soft-fp16, soft-GF16) have overhead vs native f32. Ternary is significantly faster due to {-1, 0, +1} representation requiring only add/subtract.
 
 ### Status
 
 - [x] Quantization error vs fp16/bf16 (CPU, synthetic distributions)
 - [x] Dynamic range & special values
-- [ ] Arithmetic throughput vs fp32 (blocked by Zig 0.15 API changes)
+- [x] Arithmetic throughput vs fp32 (software implementations)
 - [ ] Small NN inference benchmark (future)
 - [ ] FPGA LUT/DSP comparison (future)
 
-**Why partial implementation:** Zig 0.15 API incompatibilities prevent full benchmark suite (CSV generation, CLI integration). The minimal working benchmark (`zig build bench-formats`) provides honest MSE/Max Error measurements serving as regression protection for GoldenFloat.
+**Note:** Full benchmark suite requires FPGA synthesis for hardware-accurate GF16/TF3 measurements. Current software implementations provide baseline comparisons.
 
 [docs/benchmarks/format_comparison_matrix.md](docs/benchmarks/format_comparison_matrix.md) — Detailed format properties table
 
