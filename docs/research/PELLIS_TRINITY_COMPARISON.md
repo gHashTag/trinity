@@ -38,6 +38,8 @@ Trinity Framework derives formulas from a single golden ratio identity:
 φ² + φ⁻² = 3  where φ = (1 + √5)/2
 ```
 
+**Notation:** In Trinity formulas, γ denotes φ⁻³ ≈ 0.2361 (Barbero-Immirzi parameter), not the Euler-Mascheroni constant (0.5772). This parameter was originally hypothesized as the Barbero-Immirzi parameter (see DELTA-001.md — rejected at 0.617% error), but retained as algebraic shorthand for φ⁻³.
+
 **Key features:**
 - Single fundamental identity as foundation
 - Monomial notation: 2^a · 3^b · φ^m · π^p · e^q
