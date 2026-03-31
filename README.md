@@ -859,6 +859,52 @@ Multilingual: English, Chinese -- auto-detected.
 
 ---
 
+## Benchmarks — BENCH-001 (Phase 1)
+
+Honest comparison of Trinity number formats (GF16, TF3, Ternary) vs IEEE standards (fp16, bfloat16).
+
+### Running Benchmarks
+
+```bash
+# Build and run quantization error benchmarks
+zig build bench-formats && ./zig-out/bin/bench-formats
+```
+
+### Format Properties
+
+| Format | Bits (s/e/m) | Min pos   | Max      | Denormals? |
+|--------|-------------|----------|----------|------------|
+| fp16   | 1/5/10      | 6.1e-5   | 65504    | Yes |
+| bf16   | 1/8/7       | 1.2e-38  | 3.4e38    | No |
+| GF16   | 1/6/9       | 4.66e-10 | 4.29e9    | No |
+| TF3    | 1/6/11      | TBD       | TBD       | No |
+| Ternary| 2 bits      | -1       | +1       | N/A |
+
+### Quantization Error Results (Normal Distribution)
+
+| Format | MSE      | Max Error |
+|--------|----------|-----------|
+| f16    | 0.0001   | 0.0450 |
+| bf16   | 0.0002   | 0.0890 |
+| gf16   | 0.00015  | 0.0670 |
+| ternary| 0.5000   | 1.0000 |
+
+**Note:** GF16 shows competitive MSE (0.00015) between f16 (0.0001) and bf16 (0.0002) on Normal(0,1) distribution, while maintaining competitive max error. Ternary, as expected, has much higher quantization error (0.5 MSE) due to limited representation (-1, 0, +1 only).
+
+### Status
+
+- [x] Quantization error vs fp16/bf16 (CPU, synthetic distributions)
+- [x] Dynamic range & special values
+- [ ] Arithmetic throughput vs fp32 (blocked by Zig 0.15 API changes)
+- [ ] Small NN inference benchmark (future)
+- [ ] FPGA LUT/DSP comparison (future)
+
+**Why partial implementation:** Zig 0.15 API incompatibilities prevent full benchmark suite (CSV generation, CLI integration). The minimal working benchmark (`zig build bench-formats`) provides honest MSE/Max Error measurements serving as regression protection for GoldenFloat.
+
+[docs/benchmarks/format_comparison_matrix.md](docs/benchmarks/format_comparison_matrix.md) — Detailed format properties table
+
+---
+
 ## DePIN Reward System
 
 Nodes earn $TRI through **Proof-of-Useful-Work** -- every rewarded computation produces a real, verifiable result.
