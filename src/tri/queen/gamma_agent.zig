@@ -46,7 +46,17 @@ pub fn mapPullRequestAction(action: []const u8) queen_bridge.StepType {
     return .observe; // default
 }
 
-/// Create episode from GitHub issue event
+/// Create episode from GitHub issue opened event
+pub fn logIssueOpened(
+    allocator: Allocator,
+    issue_number: u32,
+    title: []const u8,
+    labels: []const []const u8,
+) !void {
+    try queen_bridge.logGitHubIssueStart(allocator, "gamma", issue_number, title, labels);
+}
+
+/// Create episode from GitHub issue action (legacy, use specific functions)
 pub fn logIssueEvent(
     allocator: Allocator,
     queen_url: []const u8,
@@ -56,15 +66,23 @@ pub fn logIssueEvent(
     thought: ?[]const u8,
 ) !void {
     _ = queen_url;
-    const step_type = mapIssueAction(action);
+    _ = thought; // TODO: use thought in episode data
 
+    // For opened issues, use specialized API
+    if (std.mem.eql(u8, action, "opened") or std.mem.eql(u8, action, "reopened")) {
+        // Empty labels slice for now
+        try queen_bridge.logGitHubIssueStart(allocator, "gamma", issue_number, title, &[_][]const u8{});
+        return;
+    }
+
+    // For other actions, use general logStep
+    const step_type = mapIssueAction(action);
     try queen_bridge.logStep(allocator, .{
         .agent = "gamma",
         .issue_number = issue_number,
-        .step_name = action,
+        .step_name = title,
         .step_type = step_type,
-        .thought = thought,
-        .action = if (step_type == .act) title else null,
+        .action = action,
         .result = if (step_type == .success) "Issue closed" else null,
     });
 }
