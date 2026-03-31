@@ -546,16 +546,16 @@ pub fn runAnalyzeCommand(allocator: Allocator, args: []const []const u8) !void {
         for (results.items, 0..) |analysis, idx| {
             if (idx > 0) try json_buf.append(allocator, ',');
             try json_buf.writer(allocator).print(
-                \\"name":"{s}","account":"{s}","step":{d},"ppl":{d:.1},"training":{},"stalled":{},"error":"{s}","can_restart":{}}
+                \\"name\\":\\"{s}\\",\\"account\\":\\"{s}\\",\\"step\\":{d},\\"ppl\\":{d:.1},\\"training\\":{s},\\"stalled\\":{s},\\"error\\":\\"{s}\\",\\"can_restart\\":{s}}}}
             , .{
                 analysis.name,
                 analysis.account,
                 analysis.latest_step,
                 analysis.latest_ppl,
-                analysis.is_training,
-                analysis.is_stalled,
+                if (analysis.is_training) "true" else "false",
+                if (analysis.is_stalled) "true" else "false",
                 formatErrorCategory(analysis.error_category),
-                analysis.can_restart,
+                if (analysis.can_restart) "true" else "false",
             });
         }
 

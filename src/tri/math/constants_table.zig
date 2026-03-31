@@ -22,34 +22,34 @@ const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 
 pub const OutputFormat = enum {
-    table,  // Default: Unicode table
-    json,   // JSON output
-    latex,  // LaTeX table
-    csv,    // CSV format
+    table, // Default: Unicode table
+    json, // JSON output
+    latex, // LaTeX table
+    csv, // CSV format
 };
 
 pub const Category = enum {
     all,
-    em,           // Electromagnetic
-    strong,       // Strong force
-    weak,         // Weak force
-    cosmo,        // Cosmology
-    ckm,          // CKM matrix
-    pmns,         // PMNS neutrino
-    masses,       // Particle masses
-    nuclear,      // Nuclear physics
-    quantum,      // Quantum physics
+    em, // Electromagnetic
+    strong, // Strong force
+    weak, // Weak force
+    cosmo, // Cosmology
+    ckm, // CKM matrix
+    pmns, // PMNS neutrino
+    masses, // Particle masses
+    nuclear, // Nuclear physics
+    quantum, // Quantum physics
     mathematical, // Mathematical constants
-    ratios,       // Mass ratios
-    condensed,    // Condensed matter
-    planck,       // Planck units
+    ratios, // Mass ratios
+    condensed, // Condensed matter
+    planck, // Planck units
     astrophysics, // Astrophysics
-    nuclear_magic,// Nuclear magic numbers
+    nuclear_magic, // Nuclear magic numbers
 };
 
 pub const SortBy = enum {
-    error_pct,   // Sort by error % (ascending)
-    name,    // Sort by name
+    error_pct, // Sort by error % (ascending)
+    name, // Sort by name
     category, // Sort by category
 };
 
@@ -123,21 +123,21 @@ fn matchesCategory(constant: sacred_formula.SacredConstant, cat: Category) bool 
     return switch (cat) {
         .all => true,
         .em => std.mem.eql(u8, target_cat, "particle_physics") and
-               (std.mem.indexOf(u8, constant.name, "alpha") != null or
+            (std.mem.indexOf(u8, constant.name, "alpha") != null or
                 std.mem.indexOf(u8, constant.name, "CHSH") != null),
         .strong => std.mem.eql(u8, target_cat, "particle_physics") and
-                  std.mem.indexOf(u8, constant.symbol, "ALPHA_STRONG") != null,
+            std.mem.indexOf(u8, constant.symbol, "ALPHA_STRONG") != null,
         .weak => std.mem.eql(u8, target_cat, "particle_physics") and
-              (std.mem.indexOf(u8, constant.name, "Weinberg") != null or
-               std.mem.indexOf(u8, constant.name, "CKM") != null),
+            (std.mem.indexOf(u8, constant.name, "Weinberg") != null or
+                std.mem.indexOf(u8, constant.name, "CKM") != null),
         .cosmo => std.mem.eql(u8, target_cat, "cosmology"),
         .ckm => std.mem.eql(u8, target_cat, "ckm"),
         .pmns => std.mem.eql(u8, target_cat, "neutrino"),
         .masses => std.mem.eql(u8, target_cat, "particle_physics") and
-               (std.mem.indexOf(u8, constant.symbol, "MASS") != null or
+            (std.mem.indexOf(u8, constant.symbol, "MASS") != null or
                 std.mem.indexOf(u8, constant.symbol, "MASS") != null),
         .nuclear => std.mem.eql(u8, target_cat, "nuclear") or
-                   std.mem.eql(u8, target_cat, "nuclear_magic"),
+            std.mem.eql(u8, target_cat, "nuclear_magic"),
         .quantum => std.mem.eql(u8, target_cat, "quantum"),
         .mathematical => std.mem.eql(u8, target_cat, "mathematical"),
         .ratios => std.mem.eql(u8, target_cat, "ratios"),
@@ -233,14 +233,16 @@ fn displayTable(cat: Category, sort: SortBy) void {
 
         // Print row
         std.debug.print("{s}│{s} {s:>3}{s} │ {s:<9}{s} │ {s:<16}{s} │ {d:>8.6}{s} │ {d:>7.6}{s} │ {s}{d:>5.4}%{s} │{s}\n", .{
-            GOLDEN, RESET,
-            WHITE, idx + 1, RESET,
-            CYAN, name_display, RESET,
-            WHITE, formula_str, RESET,
-            c.computed, RESET,
-            c.target, RESET,
-            err_color, c.error_pct, RESET,
-            GOLDEN, RESET,
+            GOLDEN,       RESET,
+            WHITE,        idx + 1,
+            RESET,        CYAN,
+            name_display, RESET,
+            WHITE,        formula_str,
+            RESET,        c.computed,
+            RESET,        c.target,
+            RESET,        err_color,
+            c.error_pct,  RESET,
+            GOLDEN,       RESET,
         });
     }
 
@@ -434,7 +436,7 @@ pub fn displayPellisComparison() void {
 
     // Print header
     std.debug.print("\n{s}┌──────────────────────────────────────────────────────────────────────────────┐{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("{s}│{s} {s}PELLIS φ⁵  vs  TRINITY φ² + φ⁻² = 3{s}                            {s}│{s}\n", .{ GOLDEN, RESET, BOLD, GOLDEN, RESET, GOLDEN, RESET });
+    std.debug.print("{s}│{s} {s}PELLIS φ⁵  vs  TRINITY φ² + φ⁻² = 3{s}                            {s}│{s}\n", .{ GOLDEN, RESET, BOLD, GOLDEN, RESET, GOLDEN });
     std.debug.print("{s}├─────────────┬──────────────────────────┬───────────────────────────────────────┤{s}\n", .{ GOLDEN, RESET });
     std.debug.print("{s}│{s} {s}Constant{s}   │ {s}Pellis{s}                   │ {s}Trinity{s}                                {s}│{s}\n", .{ GOLDEN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, GOLDEN, RESET });
     std.debug.print("{s}├─────────────┼──────────────────────────┼───────────────────────────────────────┤{s}\n", .{ GOLDEN, RESET });
@@ -451,11 +453,9 @@ pub fn displayPellisComparison() void {
     });
 
     if (pellis_err < trinity_err) {
-        std.debug.print("{s}│{s}             │ {s}err: {d:.8}% {s}🏆{s}        │ {s}err: {d:.4}%{s}                             {s}│{s}\n", .{
-            GOLDEN, RESET, WHITE, pellis_err, GREEN, RESET, WHITE, trinity_err, RESET, GOLDEN, RESET,
-        });
+        std.debug.print("{s}│{s}             │ {s}err: {d:.8}% {s}[TROPHY]{s}        │ {s}err: {d:.4}%{s}                             {s}│{s}\n", .{ GOLDEN, RESET, WHITE, pellis_err, GREEN, RESET, WHITE, trinity_err, RESET, GOLDEN, RESET });
     } else {
-        std.debug.print("{s}│{s}             │ {s}err: {d:.8}%{s}            │ {s}err: {d:.4}% {s}🏆{s}                            {s}│{s}\n", .{
+        std.debug.print("{s}│{s}             │ {s}err: {d:.8}%{s}            │ {s}err: {d:.4}% {s}[TROPHY]{s}                            {s}│{s}\n", .{
             GOLDEN, RESET, WHITE, pellis_err, RESET, WHITE, trinity_err, GREEN, RESET, GOLDEN, RESET,
         });
     }
@@ -478,14 +478,14 @@ pub fn displayPellisComparison() void {
     std.debug.print("{s}├─────────────┼──────────────────────────┼───────────────────────────────────────┤{s}\n", .{ GOLDEN, RESET });
 
     // Summary rows
-    std.debug.print("{s}│{s} {s}Scope{s}       │ {s}~4 constants{s}           │ {s}142 formulas {s}🏆{s}                        {s}│{s}\n", .{
+    std.debug.print("{s}│{s} {s}Scope{s}       │ {s}~4 constants{s}           │ {s}142 formulas {s}[TROPHY]{s}                        {s}│{s}\n", .{
         GOLDEN, RESET, CYAN, RESET, WHITE, RESET, WHITE, GREEN, RESET, GOLDEN, RESET,
     });
     std.debug.print("{s}│{s} {s}Building{s}    │ {s}{{integers, φ}}{s}           │ {s}{{3, φ, π, e, γ=φ⁻³}}{s}                      {s}│{s}\n", .{
         GOLDEN, RESET, CYAN, RESET, WHITE, RESET, WHITE, RESET, GOLDEN, RESET,
     });
     std.debug.print("{s}│{s} {s}Style{s}       │ {s}Polynomial{s}              │ {s}Monomial{s}                               {s}│{s}\n", .{
-        GOLDEN, RESET, CYAN, RESET, WHITE, RESET, GOLDEN, RESET,
+        GOLDEN, RESET, CYAN, RESET, WHITE, RESET, WHITE, RESET, GOLDEN, RESET,
     });
 
     std.debug.print("{s}└─────────────┴──────────────────────────┴───────────────────────────────────────┘{s}\n\n", .{ GOLDEN, RESET });

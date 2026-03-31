@@ -26,6 +26,7 @@ const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
 const sacred_v2 = @import("../tri_sacred_v2.zig");
 const prediction_mod = @import("prediction.zig");
+const constants_table = @import("constants_table.zig");
 
 // Proof Graph Engine v1.0 - Evidence-Native Proof Assistant
 // sacred module exports proof commands from proof_builder.zig
@@ -119,6 +120,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
     if (std.mem.eql(u8, subcommand, "constants")) {
         try runConstantsCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "compare")) {
+        try runCompareCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "eval")) {
         try runEvalCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "compute")) {
@@ -513,8 +516,15 @@ pub fn runVerifyCommand(allocator: std.mem.Allocator, args: []const []const u8) 
 
 pub fn runCompareCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     _ = allocator;
-    var max_n: usize = 20;
 
+    // Check for --pellis flag
+    if (args.len > 0 and std.mem.eql(u8, args[0], "--pellis")) {
+        constants_table.displayPellisComparison();
+        return;
+    }
+
+    // Default behavior: show numeric comparison
+    var max_n: usize = 20;
     if (args.len > 0) {
         max_n = try std.fmt.parseInt(usize, args[0], 10);
     }
