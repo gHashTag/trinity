@@ -1,0 +1,6 @@
+format,accuracy_percent,loss,size_bytes
+f32,97.67,0.0773,4
+fp16,97.70,0.1533,2
+bf16,9.80,2.3026,2
+gf16,97.67,0.0774,2
+ternary,9.80,2.3027,1
