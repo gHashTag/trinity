@@ -164,7 +164,7 @@ This is where fp16/GF16 fate is decided:
 - CPU **has** fp16 hardware → direct instructions
 - CPU **lacks** fp16 → LLVM promotes `half → float`
 
-**GF16 CANNOT pass natively** — LLVM doesn't know "6-bit exp + 9-bit mant" type. Must use manual encode/decode at Level 0.
+**Note on GF16:** GF16 adopts IBM's DLFloat format (1/6/9, bias=31, Agrawal et al. 2019). GF16 CANNOT pass natively through LLVM — the compiler doesn't know this custom format. Must use manual encode/decode at Level 0 via integer-backed `u16` storage.
 
 **Source:** [LLVM SelectionDAG](https://www.cl.cam.ac.uk/teaching/1314/L25/4LLVMIRandTransformPipeline.pdf)
 
@@ -222,7 +222,7 @@ endmodule
 
 | Level | What Trinity Does | File/Tool |
 |-------|-------------------|-----------|
-| **0 — Language** | GF16, TF3, Sensation System | `intraparietal_sulcus.zig`, `angular_gyrus.zig` |
+| **0 — Language** | GF16 (DLFloat 6:9), TF3, Sensation System | `intraparietal_sulcus.zig`, `angular_gyrus.zig` |
 | **1 — Frontend** | Zig compiler → ZIR | `zig build` |
 | **2 — LLVM IR** | Auto-vectorization f16 | `std.simd` → `<N x half>` |
 | **3 — SelectionDAG** | fp16 legalization | Automatic by LLVM |
@@ -231,7 +231,7 @@ endmodule
 | **6 — RTL** | **GF16/TF3 native arithmetic** | FPGA XC7A100T (Vivado) |
 | **7 — Physical** | 28nm Artix-7 fabric | Hardware (fixed) |
 
-**Key insight:** Trinity operates **simultaneously** on Level 0 (language/formats) **AND** Level 6 (FPGA RTL). All others (PyTorch, JAX, TensorRT) stop at Level 0–4.
+**Key insight:** Trinity operates **simultaneously** on Level 0 (language/formats) **AND** Level 6 (FPGA RTL). All others (PyTorch, JAX, TensorRT) stop at Level 0–4. GF16 is an integer-backed implementation of IBM's DLFloat (1/6/9, bias=31).
 
 ---
 

@@ -4,6 +4,14 @@
 
 ---
 
+## Attribution Note
+
+**GF16 and IBM DLFloat:** GF16 adopts IBM's DLFloat format (1/6/9, bias=31). IBM arrived at the 1/6/9 allocation through **distribution analysis of neural network data** (Mellempudi et al., 2021), not through golden ratio optimization. φ-distance analysis here is presented as an **alternative theoretical framework** for evaluating floating-point formats, not as the design rationale for DLFloat/GF16.
+
+The 6/9 exponent/mantissa split happens to have good φ-distance properties (0.049), but this is **correlation, not causation**. IBM's design was based on empirical analysis of deep learning workloads, not sacred geometry.
+
+---
+
 ## Executive Summary
 
 Standard floating-point formats (IEEE 754) were chosen by committees, not mathematical principles. This analysis shows that **custom formats (GF16, TF3) are closer to φ** than any standard format, suggesting they may be more "naturally suited" for representing real-world data.

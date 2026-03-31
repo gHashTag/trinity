@@ -108,6 +108,8 @@ Evidence Level:
 
 **Honest comparison of Trinity number formats (GF16, Ternary) against IEEE standards (fp16, bfloat16).**
 
+**Note on GF16 Attribution:** GF16 adopts IBM's DLFloat format specification (1/6/9, bias=31) first proposed in Agrawal et al. (2019). The novelty of GF16 is its **integer-backed implementation** using `u16` storage, which bypasses 62+ compiler bugs in half-precision floating-point and provides stable cross-platform compilation.
+
 ### Summary Table (CPU, Synthetic Data)
 
 | Format   | Bits (s/e/m) | Range         | MSE (N(0,1)) | Add (ns/op) | Mul (ns/op) | NN Accuracy | Bytes/weight |
@@ -115,11 +117,11 @@ Evidence Level:
 | f32      | 1/8/23      | ±3.4e38       | baseline     | ~5.0        | ~4.5        | 5.80%       | 32           |
 | fp16     | 1/5/10      | ±6.55e4       | 0.000123     | ~8.5        | ~4.5        | 5.80%       | 16           |
 | bfloat16 | 1/8/7       | ±3.4e38       | 0.000456     | —           | —           | —           | 16           |
-| **GF16** | **1/6/9**   | **±4.29e9**   | **0.000234** | **~7.2**    | **~4.5**    | **5.80%**   | **16**       |
+| **GF16** (DLFloat 6:9) | **1/6/9**   | **±4.29e9**   | **0.000234** | **~7.2**    | **~4.5**    | **5.80%**   | **16**       |
 | ternary  | 2 bits      | {-1, 0, +1}   | 0.500000     | ~0.5        | ~0.5        | 6.90%       | 2            |
 
-GF16 maintains f32-equivalent accuracy on a small MLP while offering 10⁵× wider
-dynamic range than fp16 and stable cross-platform compilation via integer-backed u16.
+GF16 (DLFloat 6:9) maintains f32-equivalent accuracy on a small MLP while offering 10⁵× wider
+dynamic range than fp16. GF16 is an **integer-backed implementation of IBM's DLFloat format** (Agrawal et al., 2019; Mellempudi et al., 2021).
 
 ### Key Findings
 
@@ -138,17 +140,32 @@ dynamic range than fp16 and stable cross-platform compilation via integer-backed
 | **BENCH-001** | Quantization error (MSE/MAE) on Normal/Log-normal/Uniform distributions | ✅ Complete |
 | **BENCH-002** | Arithmetic throughput (add/mul/div) | ✅ Complete |
 | **BENCH-003** | NN inference accuracy on frozen weights | ✅ Complete |
+| **BENCH-004** | MNIST real data validation | ✅ GF16 encode/decode, trained weights support |
 
 ### Running Benchmarks
 
 ```bash
-# Build and run
+# Build and run (Phase 1: synthetic data)
 zig build bench-quant && ./zig-out/bin/bench-quant
 zig build bench-arith && ./zig-out/bin/bench-arith
 zig build bench-nn    && ./zig-out/bin/bench-nn
 
+# Phase 2: MNIST real data (requires download)
+# 1. Download MNIST test data:
+cd data
+curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz
+curl -LO https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
+gunzip t10k-images-idx3-ubyte.gz t10k-labels-idx1-ubyte.gz
+cd ..
+# 2. Run with random weights (sanity check):
+zig build bench-mnist && ./.zig-cache/o/*/bench-mnist
+# 3. Run with trained weights:
+#    (Export from PyTorch using format in docs/research/gf16_vs_literature.md)
+zig build bench-mnist && ./.zig-cache/o/*/bench-mnist --weights=mnist_mlp_784x128x10.bin
+#    or: ./zig-out/bin/bench-mnist
+
 # Results written to results/
-ls results/quant_*.csv results/arith_*.csv results/nn_*.csv
+ls results/quant_*.csv results/arith_*.csv results/nn_*.csv results/mnist_*.csv
 ```
 
 ### Documentation
