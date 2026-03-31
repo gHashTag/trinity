@@ -234,6 +234,49 @@ tri fpga power sacred_alu --clock 100MHz --duration 60s
 
 ---
 
+## FPGA Cost Summary (Phase 1)
+
+### Ternary Baseline (Measured)
+
+| Unit       | Device      | LUT | FF  | DSP | Fmax (MHz) | Notes |
+|------------|------------|-----|-----|-----|------------|-------|
+| hslm_full_top | XC7A100T   | 4,267 | 2,449 | 0 | ≥92 | Autoregressive LLM, 63 tok/s |
+| ternary_mac   | XC7A100T   | ~150 | ~80 | 0 | ≥100 | Single MAC unit |
+
+### GF16 Format — To Be Measured (Phase 2)
+
+| Unit       | Device      | LUT | FF  | DSP | Fmax (MHz) | Notes |
+|------------|------------|-----|-----|-----|------------|-------|
+| gf16_add      | XC7A100T   | TBD | TBD | TBD | ≥100 | Integer-backed u16, 3-stage pipeline |
+| gf16_mul      | XC7A100T   | TBD | TBD | TBD | ≥100 | Uses DSP48E1 optionally |
+| gf16_alu      | XC7A100T   | TBD | TBD | TBD | ≥100 | Combined add+mul |
+
+**Measurement Procedure:**
+
+1. Synthesize each GF16 unit through sacred ALU flow:
+   ```bash
+   tri sacred synth gf16_add
+   tri sacred synth gf16_mul
+   tri sacred synth gf16_alu
+   ```
+
+2. Extract LUT/FF/DSP/Fmax from synthesis reports:
+   ```bash
+   # Reports stored in var/trinity/output/fpga/
+   cat var/trinity/output/fpga/gf16_add_utilization.txt
+   cat var/trinity/output/fpga/gf16_mul_utilization.txt
+   cat var/trinity/output/fpga/gf16_alu_utilization.txt
+   ```
+
+3. Populate table above with extracted values.
+
+**Expected Results (hypothesis):**
+- GF16 add: <200 LUT (simpler than ternary MAC)
+- GF16 mul: ~300 LUT (or 1 DSP48E1 if using DSP)
+- Fmax: ≥100 MHz (same clock domain as ternary)
+
+---
+
 ## Benchmarks
 
 ### CPU baseline

@@ -131,6 +131,31 @@ This section presents the measured results from Phase 1 benchmarks on CPU with s
 | 10-20× energy savings | Projected | Section 9 estimate |
 | φ-ratio is optimal | Hypothesis | Future work |
 
+### 8.5 FPGA Cost (Partial)
+
+| Format | LUT | FF | DSP | Fmax | Status |
+|--------|-----|-----|-----|------|--------|
+| **Ternary** (hslm_full_top) | 4,267 | 2,449 | 0 | ≥92 MHz | Measured |
+| **GF16** add | TBD | TBD | TBD | TBD | To be measured |
+| **GF16** mul | TBD | TBD | TBD | TBD | To be measured |
+| **fp16** (Xilinx IP) | ~500 | ~300 | 1 | ≥200 MHz | From datasheet |
+| **bf16** (Xilinx IP) | ~450 | ~250 | 1 | ≥200 MHz | From datasheet |
+
+*Ternary measurements from hslm_full_top synthesis on XC7A100T. GF16 measurements pending via `tri sacred synth gf16_add/mul/alu`. fp16/bf16 estimates from Xilinx LogiCORE IP datasheets.*
+
+**Measurement commands:**
+```bash
+# Synthesize GF16 units
+tri sacred synth gf16_add
+tri sacred synth gf16_mul
+tri sacred synth gf16_alu
+
+# Extract reports
+cat var/trinity/output/fpga/gf16_add_utilization.txt
+cat var/trinity/output/fpga/gf16_mul_utilization.txt
+cat var/trinity/output/fpga/gf16_alu_utilization.txt
+```
+
 ## 9. References
 
 - [DLFloat: Progressively Larger Floats](https://arxiv.org/abs/2201.070640) — Micikevicius et al., 2024
