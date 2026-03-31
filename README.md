@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://maas-log-prod.cn-wlcb.ufileos.com/anthropic/9abb931a-09e2-47f1-b604-85eb9b561805/52f3aea9c58e791b8438dfaa4e33281f.jpg?UCloudPublicKey=TOKEN_e15ba47a-d098-4fbd-9afc-a0dcf0e4e621&Expires=1774961194&Signature=HpSLonNyhvxJewblKFKHIDlKjxI=" width="400" alt="Trinity Logo">
+  <img src="https://maas-log-prod.cn-wlcb.ufileos.com/anthropic/9abb931a-09e2-47f1-b604-85eb9b561805/52f3aea9c58e791b8438dfaa4e33281f.jpg?UCloudPublicKey=TOKEN_e15ba47a-d098-4fbd-9afc-a0dcf0e4e621&Expires=1774961194&Signature=HpSLonNyhvxJewblKFKHIDlKjxI=" alt="Trinity">
 </p>
 
 <p align="center">
