@@ -209,4 +209,4 @@ Additional enhancements:
 - All 3 Mirror log columns now include **HH:MM:SS timestamps** with source-specific icons
 - Chat **LEARNED badge** animates with green glow pulse (2s cycle, framer-motion boxShadow keyframes)
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**
+**GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**

@@ -106,5 +106,5 @@ echo "  - Speedup vs CPU dot product: ~40x"
 echo ""
 
 echo "═══════════════════════════════════════════════════════════════════════════════"
-echo "KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3"
+echo " | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3"
 echo "═══════════════════════════════════════════════════════════════════════════════"

@@ -1,6 +1,6 @@
 # Ternary Embeddings Specification
 # 16x memory reduction for token embeddings
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: ternary_embeddings
 version: "1.0.0"

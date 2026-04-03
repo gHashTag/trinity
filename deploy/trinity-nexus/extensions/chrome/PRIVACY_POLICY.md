@@ -88,6 +88,6 @@ https://github.com/gHashTag/trinity/tree/main/extension/chrome
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**
 
 *Your privacy is protected by code, not promises.*

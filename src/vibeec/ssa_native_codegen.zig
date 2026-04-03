@@ -712,7 +712,7 @@ pub fn runNativeBenchmark(allocator: Allocator) !void {
     }
 
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
 }
 

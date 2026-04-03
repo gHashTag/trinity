@@ -1,6 +1,6 @@
 # Ternary KV Cache Specification
 # 16x memory reduction via 2-bit quantization
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: ternary_kv_cache
 version: "1.0.0"

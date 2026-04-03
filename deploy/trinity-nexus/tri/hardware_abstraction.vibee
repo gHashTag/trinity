@@ -107,4 +107,4 @@ behaviors:
     when: Need performance stats
     then: Return PerfCounters with operation counts
 
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3
+# GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

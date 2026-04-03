@@ -6,7 +6,7 @@ module: storage_network_v2_3
 # Trinity Storage Network v2.3 — Saga Pattern (Non-Blocking Distributed Transactions)
 # Build on v2.2 (Dynamic Erasure Coding, 400-node)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   StepPhase:

@@ -232,4 +232,4 @@ const ok = TextCorpus.MemorySerializer.deserialize(&restored, buffer[0..written]
 
 Cycle 50 achieves **IMMORTAL** status with 100% improvement rate. Memory Persistence with TRMM binary format enables save/load of AgentMemory across sessions with FNV-1a checksum integrity verification. This marks the **HALF-CENTURY milestone** — 50 consecutive IMMORTAL cycles. Golden Chain now at **50 cycles unbroken**.
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**

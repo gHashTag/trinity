@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Trinity Compression Benchmark v1.0
 # TCV1-TCV5 vs gzip/zstd - Internal Trit + End-to-End Pipeline
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: compression_benchmark

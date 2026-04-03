@@ -592,7 +592,7 @@ pub fn runBenchmark(allocator: Allocator) !void {
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     std.debug.print("  CPU Baseline: 7.61 GFLOPS | GPU Target: 500-1500 GFLOPS\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
 }
 

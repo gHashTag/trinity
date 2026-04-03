@@ -117,5 +117,5 @@ pub fn main() !void {
     std.debug.print("  Speed: {d:.1} tokens/sec\n", .{@as(f64, @floatFromInt(num_tokens)) / (@as(f64, @floatFromInt(gen_time)) / 1e9)});
 
     std.debug.print("\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED\n", .{});
 }

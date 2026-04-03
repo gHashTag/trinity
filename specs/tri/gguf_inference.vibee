@@ -158,4 +158,4 @@ threading:
   parallel_threshold: 10000  # rows for parallel matVec
   num_threads: auto  # detect CPU cores
 
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3
+# GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

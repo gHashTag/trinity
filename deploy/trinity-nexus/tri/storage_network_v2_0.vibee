@@ -6,7 +6,7 @@ module: storage_network_v2_0
 # Trinity Storage Network v2.0 — Multi-Region Topology, Slashing Escrow, Prometheus HTTP
 # Build on v1.9 (Erasure-Coded Repair, Reputation Consensus, Stake Delegation, 100-node)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   Region:

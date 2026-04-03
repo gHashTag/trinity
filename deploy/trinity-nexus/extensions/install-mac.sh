@@ -80,4 +80,4 @@ echo -e "${YELLOW}Opening Chrome extensions page...${NC}"
 open "chrome://extensions/" 2>/dev/null || echo "Could not open Chrome automatically"
 
 echo ""
-echo "KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED"
+echo "GOLDEN CHAIN IS CLOSED"

@@ -165,7 +165,7 @@ fn generateTwitterThread(allocator: Allocator, highlights: [][]const u8) !Twitte
 }
 
 /// Generate Reddit post using showcase template
-fn generateRedditPost(allocator: Allocator, _highlights: [][]const u8, _project_name: []const u8) !RedditPost {
+fn generateRedditPost(allocator: Allocator, highlights: [][]const u8, project_name: []const u8) !RedditPost {
     const title_slice = try std.fmt.allocPrint(allocator, "[Trinity]: Agent T ready", .{});
     defer allocator.free(title_slice);
 

@@ -111,4 +111,4 @@ pub const TRINITY: f64 = 3.0;  // φ² + 1/φ² = 3
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**
+**GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

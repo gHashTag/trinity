@@ -496,5 +496,5 @@ fn drawHelp() void {
     drawText("[RMB] Point Source", x, y, 12, MUTED_COLOR);
 
     // Footer
-    drawText("KOSCHEI IS IMMORTAL", x, g_screen_height - 30, 12, rl.Color{ .r = 0x44, .g = 0x44, .b = 0x44, .a = 0xFF });
+    drawText("", x, g_screen_height - 30, 12, rl.Color{ .r = 0x44, .g = 0x44, .b = 0x44, .a = 0xFF });
 }

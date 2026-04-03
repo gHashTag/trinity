@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # E2E ALL MODELS TEST SPECIFICATION
 # Comprehensive testing across all supported model sizes and technologies
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: e2e_all_models
@@ -264,5 +264,5 @@ metrics:
     max_memory_overhead: 1.5
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════

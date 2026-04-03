@@ -1,6 +1,6 @@
 # Ternary Matrix Multiplication Specification
 # BitNet-style {-1, 0, +1} weights for 20x memory reduction
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: ternary_matmul
 version: "1.0.0"

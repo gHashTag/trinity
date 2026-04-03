@@ -187,7 +187,7 @@ pub fn runLoadTest(allocator: Allocator, config: LoadTestConfig) !LoadTestResult
     std.debug.print("  Scaling Decisions:  {d}\n", .{result.scaling_decisions});
     std.debug.print("  Peak Instances:     {d}\n", .{result.peak_instances});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print("GOLDEN CHAIN IS CLOSED\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     
     return result;

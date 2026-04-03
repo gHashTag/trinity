@@ -170,4 +170,4 @@ Source: `specs/tri/trinity_canvas_v2_4.vibee`
 
 Trinity Canvas v2.4 transforms the Mirror of Three Worlds from a live dashboard into an interactive control center. RAZUM gets real chat I/O, MATERIYA gets file search with cross-layer navigation, DUKH gets tool execution buttons. Each column now serves its world's purpose: Mind thinks, Matter stores, Spirit acts. Build clean: 0 errors, 1.21s, 1531 lines. Improvement rate **2.47** (4.0x above golden ratio threshold).
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**
+**GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**

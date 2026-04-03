@@ -322,4 +322,4 @@ Symbolic Meaning:
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN SELLS FOR MILLIONS | φ² + 1/φ² = 3**
+**GOLDEN CHAIN SELLS FOR MILLIONS | φ² + 1/φ² = 3**

@@ -217,4 +217,4 @@ behaviors:
     when: Need to clear all state
     then: Flush cache, reset profiles, clear queue
 
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3
+# GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

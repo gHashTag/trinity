@@ -29,20 +29,20 @@ Cycle 28 delivers a **Vision Understanding Engine** that enables local image ana
 |    Any Image -> Analysis -> Cross-Modal Output               |
 +-------------------------------------------------------------+
 |  INPUT: PPM / BMP / Raw RGB / Grayscale buffers             |
-|          |                                                   |
+|         |                                                  |
 |     PATCH EXTRACTION (configurable NxN grid)                |
-|          |                                                   |
+|         |                                                  |
 |     FEATURE ENCODING                                        |
 |       - Color histograms (16 bins/channel)                  |
 |       - Edge detection (Sobel operator)                     |
 |       - Texture analysis (GLCM)                             |
 |       - Brightness / Saturation / Complexity                |
-|          |                                                   |
+|         |                                                  |
 |     SCENE ANALYSIS                                          |
 |       - Region classification (10 categories)               |
 |       - Object detection (VSA codebook similarity)          |
 |       - OCR pipeline (threshold -> segment -> recognize)    |
-|          |                                                   |
+|         |                                                  |
 |     CROSS-MODAL OUTPUT                                      |
 |       - Vision -> Text (describe image)                     |
 |       - Vision -> Code (diagram -> code skeleton)           |
@@ -249,4 +249,4 @@ Cycle 28 successfully delivers a vision understanding engine with image loading,
 
 **Golden Chain Status:** 28 cycles IMMORTAL
 **Formula:** phi^2 + 1/phi^2 = 3 = TRINITY
-**KOSCHEI IS IMMORTAL**
+****

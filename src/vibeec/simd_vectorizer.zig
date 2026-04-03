@@ -360,7 +360,7 @@ pub fn runBenchmark() void {
     stdout.print("  Speedup: {d:.2}x\n\n", .{dot_speedup}) catch {};
 
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};
-    stdout.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{}) catch {};
+    stdout.print(" | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{}) catch {};
     stdout.print("═══════════════════════════════════════════════════════════════════════════════\n", .{}) catch {};
 }
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Download TinyLlama-1.1B-Chat Q4_K_M GGUF for fluent local fallback
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 set -e
 
@@ -52,4 +52,4 @@ else
 fi
 
 echo ""
-echo "phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL"
+echo "phi^2 + 1/phi^2 = 3 = TRINITY"

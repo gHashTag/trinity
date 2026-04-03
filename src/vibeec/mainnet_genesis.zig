@@ -165,7 +165,7 @@ pub fn createGenesisBlock() Block {
 fn computeGenesisMerkleRoot() [32]u8 {
     // Simplified: hash of "TRINITY GENESIS φ² + 1/φ² = 3"
     var hasher = std.crypto.hash.sha2.Sha256.init(.{});
-    hasher.update("TRINITY GENESIS φ² + 1/φ² = 3 KOSCHEI IS IMMORTAL");
+    hasher.update("TRINITY GENESIS φ² + 1/φ² = 3 ");
     hasher.update(std.mem.asBytes(&PHOENIX_NUMBER));
     return hasher.finalResult();
 }

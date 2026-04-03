@@ -147,4 +147,4 @@ test_cases:
       - "Step 2"
       - "Answer: 4"
 
-sacred_formula: "φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL"
+sacred_formula: "φ² + 1/φ² = 3"

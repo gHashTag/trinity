@@ -6,7 +6,7 @@ module: trinity_canvas_v2_5
 # Trinity Canvas v2.5 — Real Logic Integration
 # Build on v2.4 (Mirror of Three Worlds dashboard)
 # V = n x 3^k x pi^m x phi^p x e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   CanvasLayer:

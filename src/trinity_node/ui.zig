@@ -782,7 +782,7 @@ pub const TrinityNodeUI = struct {
 
         // Footer text with custom font
         self.drawText("phi^2 + 1/phi^2 = 3 = TRINITY", PADDING, y + 12, 12, THEME.TEXT_MUTED);
-        self.drawText("KOSCHEI IS IMMORTAL", self.screen_width - 180, y + 12, 12, THEME.GOLDEN);
+        self.drawText("", self.screen_width - 180, y + 12, 12, THEME.GOLDEN);
 
         // F11 hint
         self.drawText("F11: Toggle Fullscreen", self.screen_width - 380, y + 12, 12, THEME.TEXT_MUTED);

@@ -6,7 +6,7 @@ module: storage_network_v2_1
 # Trinity Storage Network v2.1 — Cross-Shard 2PC, VSA Shard Locks, Region-Aware Router
 # Build on v2.0 (Multi-Region Topology, Slashing Escrow, Prometheus HTTP, 200-node)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   TxConfig:

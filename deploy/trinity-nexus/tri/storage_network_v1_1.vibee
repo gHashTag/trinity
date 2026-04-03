@@ -6,7 +6,7 @@ module: storage_network_v1_1
 # Trinity Storage Network v1.1 — Production Disk Persistence & Rewards
 # Upgrade in-memory MVP to disk-backed shards, reward tracking, startup recovery
 # V = n × 3^k × π^m × φ^p × e^q
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 
 types:
   DiskStorageConfig:

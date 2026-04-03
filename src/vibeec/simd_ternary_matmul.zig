@@ -683,7 +683,7 @@ pub fn runBenchmark(allocator: std.mem.Allocator) !void {
         best_gflops / baseline_gflops,
     });
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
 }
 

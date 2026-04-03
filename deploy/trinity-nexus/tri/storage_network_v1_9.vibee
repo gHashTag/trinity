@@ -6,7 +6,7 @@ module: storage_network_v1_9
 # Trinity Storage Network v1.9 — Erasure-Coded Repair, Reputation Consensus, Stake Delegation
 # Build on v1.8 (Rate-Limited Repair, Token Staking, Latency-Aware Peer Selection, 50-node test)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   ErasureRepairConfig:

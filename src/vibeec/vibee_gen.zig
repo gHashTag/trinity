@@ -5,7 +5,7 @@
 // Generates Zig/Verilog code from .vibee specifications
 // Single source of truth: .vibee specs -> generated code
 //
-// φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+// φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -89,7 +89,7 @@ fn printUsage() void {
         \\  language: c           -> Generates .h file
         \\  language: sql         -> Generates .sql file
         \\
-        \\φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+        \\φ² + 1/φ² = 3 = TRINITY
         \\
     , .{});
 }
@@ -131,7 +131,7 @@ fn printKoscheiCycle() void {
         \\  - ALL changes go through .vibee specs
         \\  - One source of truth = no duplication
         \\
-        \\φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+        \\φ² + 1/φ² = 3 = TRINITY
         \\
     , .{});
 }
@@ -282,7 +282,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
 
             try generateSingleLang(allocator, &spec, lang, lang_output);
         }
-        std.debug.print("\nφ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL\n\n", .{});
+        std.debug.print("\nφ² + 1/φ² = 3 = TRINITY\n\n", .{});
         return;
     }
 
@@ -324,7 +324,7 @@ fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_pat
 
     std.debug.print("\n✓ Code generated successfully!\n", .{});
     std.debug.print("  Output: {s}\n", .{output_path});
-    std.debug.print("\nφ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL\n\n", .{});
+    std.debug.print("\nφ² + 1/φ² = 3 = TRINITY\n\n", .{});
 }
 
 fn generateSingleLang(allocator: std.mem.Allocator, spec: *vibee_parser.VibeeSpec, language: []const u8, lang_output: []const u8) !void {

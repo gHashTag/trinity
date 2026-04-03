@@ -6,7 +6,7 @@ module: storage_network_v1_2
 # Trinity Storage Network v1.2 — CLI Commands, LRU Eviction, XOR Parity, Peer Discovery
 # Build on v1.1 (disk persistence, lazy loading, rewards, 5-node test)
 # V = n × 3^k × π^m × φ^p × e^q
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 
 types:
   LruConfig:

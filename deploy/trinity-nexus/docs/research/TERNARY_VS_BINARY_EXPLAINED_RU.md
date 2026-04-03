@@ -287,4 +287,4 @@ Bandwidth:   5.05x efor]andya
 
 ---
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3 | TERNARY > BINARY**
+**φ² + 1/φ² = 3 | TERNARY > BINARY**

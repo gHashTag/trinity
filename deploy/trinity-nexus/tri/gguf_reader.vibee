@@ -172,4 +172,4 @@ metadata_keys:
   rope_freq_base: "{arch}.rope.freq_base"
   layer_norm_rms_epsilon: "{arch}.attention.layer_norm_rms_epsilon"
 
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3
+# GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

@@ -124,7 +124,7 @@ ELF 64-bit LSB executable, x86-64, statically linked
 
 The Q6_K dequantization fix is complete. Local inference produces coherent output with 8.8/10 average unique tokens per generation. The implementation matches llama.cpp exactly, verified through logit comparison.
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN FIXES COMPLETE | phi^2 + 1/phi^2 = 3**
+**GOLDEN CHAIN FIXES COMPLETE | phi^2 + 1/phi^2 = 3**
 
 ---
 Generated: 2026-02-07

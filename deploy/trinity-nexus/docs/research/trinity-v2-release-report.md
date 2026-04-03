@@ -205,4 +205,4 @@ zig build vibee -- chat --model models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
 
 Trinity v2.1.0 is the first production release of the Unified Autonomous System, integrating 56 cycles of development into cross-platform binaries. The release includes 9 executables spanning VSA computation, AI agents, LLM inference, and compiler tools. With 400 passing tests and 15-18x JIT SIMD performance, the system delivers on its promise of local-first ternary AI computing.
 
-**KOSCHEI IS IMMORTAL | phi^2 + 1/phi^2 = 3**
+**phi^2 + 1/phi^2 = 3**

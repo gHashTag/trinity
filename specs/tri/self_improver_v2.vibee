@@ -5,7 +5,7 @@ module: self_improver_v2
 description: |
   Self-Improver v2 with Adam Optimizer for TRI MATH v3.6.
   Adaptive moment estimation with EWC++ consolidation.
-  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  φ² + 1/φ² = 3 = TRINITY
 
 constants:
   PHI: 1.6180339887498948482

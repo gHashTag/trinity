@@ -165,5 +165,5 @@ pub fn main() !void {
 
     const file_size = try file.getPos();
     std.debug.print("Created test_minimal.tri ({d} bytes)\n", .{file_size});
-    std.debug.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print("\n | GOLDEN CHAIN IS CLOSED\n", .{});
 }

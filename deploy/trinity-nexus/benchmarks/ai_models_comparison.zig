@@ -374,7 +374,7 @@ pub fn main() !void {
     try stdout.print("  • Cost reduction:      {d:.0}%\n", .{(1.0 - TRINITY.cost_factor) * 100.0});
     try stdout.print("  • Memory reduction:    {d:.0}%\n", .{(1.0 - TRINITY.memory_factor) * 100.0});
     try stdout.print("\n", .{});
-    try stdout.print("KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3 | TERNARY > BINARY\n", .{});
+    try stdout.print("φ² + 1/φ² = 3 | TERNARY > BINARY\n", .{});
     try stdout.print("\n", .{});
 }
 

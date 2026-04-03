@@ -1,7 +1,7 @@
 # Ternary Matrix Multiplication Specification v2.0
 # BitNet-style {-1, 0, +1} weights — 10x matmul speedup, 16-20x compression
 # OPT-T02: Phase 2 — consolidates ternary_weights + tnn + ternary_packing
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: ternary_matmul
 version: "2.0.0"

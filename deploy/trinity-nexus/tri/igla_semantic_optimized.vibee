@@ -11,7 +11,7 @@ module: igla_semantic_opt
 #   A (Agitation): Competitors achieve 85%+ with float, we need ternary edge
 #   S (Solution): Top-k matching + SIMD parallel + adaptive thresholds
 #
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 constants:

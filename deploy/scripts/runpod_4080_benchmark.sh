@@ -6,7 +6,7 @@
 
 echo "════════════════════════════════════════════════════════════════"
 echo "   TRINITY GPU BENCHMARK - RTX 4080"
-echo "   φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL"
+echo "   φ² + 1/φ² = 3 = TRINITY"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
@@ -162,4 +162,4 @@ echo "════════════════════════�
 nvidia-smi --query-gpu=name,memory.total,power.draw,temperature.gpu --format=csv
 echo ""
 echo "Copy these results for the report!"
-echo "φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL"
+echo "φ² + 1/φ² = 3 = TRINITY"

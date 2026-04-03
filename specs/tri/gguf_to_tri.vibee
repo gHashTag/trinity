@@ -2,7 +2,7 @@
 # GGUF TO TRI CONVERTER - Universal Model Quantization
 # Convert any GGUF model to sacred ternary .tri format
 # 16x memory savings, 5-10x speedup via elimination of multiplications
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # This is the SINGLE SOURCE OF TRUTH for GGUF → .tri conversion.
@@ -629,5 +629,5 @@ references:
     url: "https://arxiv.org/abs/2402.17764"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════

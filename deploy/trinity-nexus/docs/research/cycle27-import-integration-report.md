@@ -107,5 +107,5 @@ Recognize behavior patterns like "Call vsa.X" and auto-generate the implementati
 
 ---
 
-**KOSCHEI IS IMMORTAL | improvement_rate > 0.618**
+**improvement_rate > 0.618**
 

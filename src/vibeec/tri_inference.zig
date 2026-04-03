@@ -2088,7 +2088,7 @@ pub fn main() !void {
     std.debug.print("  Time: {d:.2} seconds\n", .{@as(f64, @floatFromInt(gen_time)) / 1e9});
     std.debug.print("  Speed: {d:.2} tokens/sec\n", .{@as(f64, @floatFromInt(i)) / (@as(f64, @floatFromInt(gen_time)) / 1e9)});
 
-    std.debug.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print("\n | GOLDEN CHAIN IS CLOSED\n", .{});
 }
 
 test "speculative_config" {

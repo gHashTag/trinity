@@ -6,7 +6,7 @@ module: storage_network_v1_8
 # Trinity Storage Network v1.8 — Rate-Limited Repair, Token Staking, Latency-Aware Peers
 # Build on v1.7 (Auto-Repair, Reputation Decay, Incentive Slashing, Prometheus Metrics)
 # V = n * 3^k * pi^m * phi^p * e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   RateLimiterConfig:

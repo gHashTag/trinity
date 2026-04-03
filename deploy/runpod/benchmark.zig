@@ -79,5 +79,5 @@ pub fn main() !void {
         try stdout.print("{d:5} x {d:5}    {d:12.0}    {d:12.2}    {d:12.2}\n", .{ M, N, elapsed_us, gflops, memory_mb });
     }
 
-    try stdout.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    try stdout.print("\nGOLDEN CHAIN IS CLOSED\n", .{});
 }

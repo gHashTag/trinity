@@ -10,14 +10,33 @@ const Vec32i8 = common.Vec32i8;
 const SIMD_WIDTH = common.SIMD_WIDTH;
 const MAX_TRITS = common.MAX_TRITS;
 
+/// Helper: Safe trit access after ensureUnpacked()
+inline fn getTritSafe(vec: *const HybridBigInt, pos: usize) Trit {
+    const cache = vec.unpacked_cache orelse return 0;
+    return cache[pos];
+}
+
+/// Helper: Safe trit write after ensureUnpacked()
+inline fn setTritSafe(vec: *HybridBigInt, pos: usize, value: Trit) void {
+    const cache = vec.unpacked_cache orelse return;
+    cache[pos] = value;
+}
+
 /// Bind operation (XOR-like for balanced ternary)
 pub fn bind(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
+    const page_alloc = std.heap.page_allocator;
     a.ensureUnpacked();
     b.ensureUnpacked();
 
-    var result = HybridBigInt.zero();
-    result.mode = .unpacked_mode;
-    result.dirty = true;
+    var result = HybridBigInt{
+        .packed_data = [_]u8{0} ** common.MAX_PACKED_BYTES,
+        .unpacked_cache = null,
+        .allocator = page_alloc,
+        .mode = .unpacked_mode,
+        .trit_len = 1,
+        .dirty = true,
+    };
+    result.ensureUnpacked();
 
     const len = @max(a.trit_len, b.trit_len);
     result.trit_len = len;
@@ -27,16 +46,32 @@ pub fn bind(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
 
     var i: usize = 0;
     while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
-        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const a_vec: Vec32i8 = undefined;
+        const b_vec: Vec32i8 = undefined;
+
+        inline for (0..SIMD_WIDTH) |j| {
+            const idx = i + j;
+            a_vec[j] = getTritSafe(a, idx);
+            b_vec[j] = getTritSafe(b, idx);
+        }
+
         const prod = a_vec * b_vec;
-        result.unpacked_cache[i..][0..SIMD_WIDTH].* = prod;
+        var result_vec: Vec32i8 = undefined;
+
+        inline for (0..SIMD_WIDTH) |j| {
+            result_vec[j] = @truncate(prod[j]);
+        }
+
+        // Write back using safe access
+        inline for (0..SIMD_WIDTH) |j| {
+            result.setTritSafe(i + j, result_vec[j]);
+        }
     }
 
     while (i < len) : (i += 1) {
-        const a_trit: Trit = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-        const b_trit: Trit = if (i < b.trit_len) b.unpacked_cache[i] else 0;
-        result.unpacked_cache[i] = a_trit * b_trit;
+        const a_trit: Trit = if (i < a.trit_len) getTritSafe(a, i) else 0;
+        const b_trit: Trit = if (i < b.trit_len) getTritSafe(b, i) else 0;
+        result.setTritSafe(i, a_trit * b_trit);
     }
 
     return result;
@@ -47,12 +82,19 @@ pub fn unbind(bound: *HybridBigInt, key: *HybridBigInt) HybridBigInt {
 }
 
 pub fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
+    const page_alloc = std.heap.page_allocator;
     a.ensureUnpacked();
     b.ensureUnpacked();
 
-    var result = HybridBigInt.zero();
-    result.mode = .unpacked_mode;
-    result.dirty = true;
+    var result = HybridBigInt{
+        .packed_data = [_]u8{0} ** common.MAX_PACKED_BYTES,
+        .unpacked_cache = null,
+        .allocator = page_alloc,
+        .mode = .unpacked_mode,
+        .trit_len = 1,
+        .dirty = true,
+    };
+    result.ensureUnpacked();
 
     const len = @max(a.trit_len, b.trit_len);
     result.trit_len = len;
@@ -62,8 +104,14 @@ pub fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
 
     var i: usize = 0;
     while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
-        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const a_vec: Vec32i8 = undefined;
+        const b_vec: Vec32i8 = undefined;
+
+        inline for (0..SIMD_WIDTH) |j| {
+            const idx = i + j;
+            a_vec[j] = getTritSafe(a, idx);
+            b_vec[j] = getTritSafe(b, idx);
+        }
 
         const a_wide: @Vector(32, i16) = a_vec;
         const b_wide: @Vector(32, i16) = b_vec;
@@ -81,21 +129,21 @@ pub fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
         out = @select(i16, neg_mask, neg_ones, out);
 
         inline for (0..SIMD_WIDTH) |j| {
-            result.unpacked_cache[i + j] = @truncate(out[j]);
+            result.setTritSafe(i + j, @truncate(out[j]));
         }
     }
 
     while (i < len) : (i += 1) {
-        const a_trit: i16 = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-        const b_trit: i16 = if (i < b.trit_len) b.unpacked_cache[i] else 0;
+        const a_trit: i16 = if (i < a.trit_len) getTritSafe(a, i) else 0;
+        const b_trit: i16 = if (i < b.trit_len) getTritSafe(b, i) else 0;
         const sum = a_trit + b_trit;
 
         if (sum > 0) {
-            result.unpacked_cache[i] = 1;
+            result.setTritSafe(i, 1);
         } else if (sum < 0) {
-            result.unpacked_cache[i] = -1;
+            result.setTritSafe(i, -1);
         } else {
-            result.unpacked_cache[i] = 0;
+            result.setTritSafe(i, 0);
         }
     }
 
@@ -103,13 +151,20 @@ pub fn bundle2(a: *HybridBigInt, b: *HybridBigInt) HybridBigInt {
 }
 
 pub fn bundle3(a: *HybridBigInt, b: *HybridBigInt, c: *HybridBigInt) HybridBigInt {
+    const page_alloc = std.heap.page_allocator;
     a.ensureUnpacked();
     b.ensureUnpacked();
     c.ensureUnpacked();
 
-    var result = HybridBigInt.zero();
-    result.mode = .unpacked_mode;
-    result.dirty = true;
+    var result = HybridBigInt{
+        .packed_data = [_]u8{0} ** common.MAX_PACKED_BYTES,
+        .unpacked_cache = null,
+        .allocator = page_alloc,
+        .mode = .unpacked_mode,
+        .trit_len = 1,
+        .dirty = true,
+    };
+    result.ensureUnpacked();
 
     const len = @max(@max(a.trit_len, b.trit_len), c.trit_len);
     const min_len = @min(@min(a.trit_len, b.trit_len), c.trit_len);
@@ -118,9 +173,16 @@ pub fn bundle3(a: *HybridBigInt, b: *HybridBigInt, c: *HybridBigInt) HybridBigIn
     // SIMD path: 32 trits at a time via i16 widening + sign extraction
     var i: usize = 0;
     while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
-        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
-        const c_vec: Vec32i8 = c.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        const a_vec: Vec32i8 = undefined;
+        const b_vec: Vec32i8 = undefined;
+        const c_vec: Vec32i8 = undefined;
+
+        inline for (0..SIMD_WIDTH) |j| {
+            const idx = i + j;
+            a_vec[j] = getTritSafe(a, idx);
+            b_vec[j] = getTritSafe(b, idx);
+            c_vec[j] = getTritSafe(c, idx);
+        }
 
         const a_wide: @Vector(32, i16) = a_vec;
         const b_wide: @Vector(32, i16) = b_vec;
@@ -139,23 +201,23 @@ pub fn bundle3(a: *HybridBigInt, b: *HybridBigInt, c: *HybridBigInt) HybridBigIn
         out = @select(i16, neg_mask, neg_ones, out);
 
         inline for (0..SIMD_WIDTH) |j| {
-            result.unpacked_cache[i + j] = @truncate(out[j]);
+            result.setTritSafe(i + j, @truncate(out[j]));
         }
     }
 
     // Scalar remainder
     while (i < len) : (i += 1) {
-        const a_trit: i16 = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-        const b_trit: i16 = if (i < b.trit_len) b.unpacked_cache[i] else 0;
-        const c_trit: i16 = if (i < c.trit_len) c.unpacked_cache[i] else 0;
+        const a_trit: i16 = if (i < a.trit_len) getTritSafe(a, i) else 0;
+        const b_trit: i16 = if (i < b.trit_len) getTritSafe(b, i) else 0;
+        const c_trit: i16 = if (i < c.trit_len) getTritSafe(c, i) else 0;
         const sum = a_trit + b_trit + c_trit;
 
         if (sum > 0) {
-            result.unpacked_cache[i] = 1;
+            result.setTritSafe(i, 1);
         } else if (sum < 0) {
-            result.unpacked_cache[i] = -1;
+            result.setTritSafe(i, -1);
         } else {
-            result.unpacked_cache[i] = 0;
+            result.setTritSafe(i, 0);
         }
     }
 
@@ -176,7 +238,8 @@ pub fn cosineSimilarity(a: *const HybridBigInt, b: *const HybridBigInt) f64 {
 /// Cosine similarity using 16-wide f16 SIMD (2× throughput vs f32).
 /// Converts ternary vectors to f16, computes similarity with 16-wide operations.
 /// Returns f64 in range [-1, 1].
-pub fn cosineSimilarityF16(a: *const HybridBigInt, b: *const HybridBigInt) f64 {
+pub fn cosineSimilarityF16(a: *const HybridBigInt, b: *const HybridBigInt, allocator: std.mem.Allocator) f64 {
+    _ = allocator;
     @constCast(a).ensureUnpacked();
     @constCast(b).ensureUnpacked();
 
@@ -194,13 +257,13 @@ pub fn cosineSimilarityF16(a: *const HybridBigInt, b: *const HybridBigInt) f64 {
     // Process 16 elements at a time using f16 SIMD
     var i: usize = 0;
     while (i < num_f16_chunks * F16_VEC_SIZE) : (i += F16_VEC_SIZE) {
-        // Load trits into i8 vectors
+        // Load trits into i8 vectors using safe access
         var a_trits: @Vector(F16_VEC_SIZE, i8) = undefined;
         var b_trits: @Vector(F16_VEC_SIZE, i8) = undefined;
 
         inline for (0..F16_VEC_SIZE) |j| {
-            a_trits[j] = if (i + j < a.trit_len) a.unpacked_cache[i + j] else 0;
-            b_trits[j] = if (i + j < b.trit_len) b.unpacked_cache[i + j] else 0;
+            a_trits[j] = if (i + j < a.trit_len) getTritSafe(@constCast(a), i + j) else 0;
+            b_trits[j] = if (i + j < b.trit_len) getTritSafe(@constCast(b), i + j) else 0;
         }
 
         // Convert to f16
@@ -232,10 +295,10 @@ pub fn cosineSimilarityF16(a: *const HybridBigInt, b: *const HybridBigInt) f64 {
         acc_norm_b += @as(f64, sum_b_sq);
     }
 
-    // Handle scalar tail
+    // Handle scalar tail using safe access
     while (i < len) : (i += 1) {
-        const a_trit: i8 = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-        const b_trit: i8 = if (i < b.trit_len) b.unpacked_cache[i] else 0;
+        const a_trit: i8 = if (i < a.trit_len) getTritSafe(@constCast(a), i) else 0;
+        const b_trit: i8 = if (i < b.trit_len) getTritSafe(@constCast(b), i) else 0;
 
         const a_f32: f32 = @floatFromInt(a_trit);
         const b_f32: f32 = @floatFromInt(b_trit);
@@ -264,15 +327,21 @@ pub fn hammingDistance(a: *HybridBigInt, b: *HybridBigInt) usize {
 
     var i: usize = 0;
     while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const a_vec: Vec32i8 = a.unpacked_cache[i..][0..SIMD_WIDTH].*;
-        const b_vec: Vec32i8 = b.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        // Use safe slice access - loads 32 trits at a time
+        const base = i;
+        var a_vec: Vec32i8 = undefined;
+        var b_vec: Vec32i8 = undefined;
+        inline for (0..SIMD_WIDTH) |j| {
+            a_vec[j] = getTritSafe(a, base + j);
+            b_vec[j] = getTritSafe(b, base + j);
+        }
         const diff = a_vec != b_vec;
         distance += @popCount(@as(u32, @bitCast(diff)));
     }
 
     while (i < len) : (i += 1) {
-        const a_trit: Trit = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-        const b_trit: Trit = if (i < b.trit_len) b.unpacked_cache[i] else 0;
+        const a_trit: Trit = if (i < a.trit_len) getTritSafe(a, i) else 0;
+        const b_trit: Trit = if (i < b.trit_len) getTritSafe(b, i) else 0;
         if (a_trit != b_trit) distance += 1;
     }
 
@@ -307,29 +376,39 @@ pub fn countNonZero(v: *HybridBigInt) usize {
 
     var i: usize = 0;
     while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const vec: Vec32i8 = v.unpacked_cache[i..][0..SIMD_WIDTH].*;
+        // Use safe slice access - loads 32 trits at a time
+        const base = i;
+        var vec: Vec32i8 = undefined;
+        inline for (0..SIMD_WIDTH) |j| {
+            vec[j] = getTritSafe(v, base + j);
+        }
         const zeros: Vec32i8 = @splat(0);
         const nonzero = vec != zeros;
         count += @popCount(@as(u32, @bitCast(nonzero)));
     }
 
     while (i < v.trit_len) : (i += 1) {
-        if (v.unpacked_cache[i] != 0) count += 1;
+        if (getTritSafe(v, i) != 0) count += 1;
     }
 
     return count;
 }
 
 /// Bundle N vectors — SIMD accelerated majority vote (OPT-001)
-pub fn bundleN(vectors: []*HybridBigInt) HybridBigInt {
+pub fn bundleN(vectors: []*HybridBigInt, allocator: std.mem.Allocator) !HybridBigInt {
+    _ = allocator; // Reserved for future heap operations
     if (vectors.len == 0) return HybridBigInt.zero();
     if (vectors.len == 1) {
-        vectors[0].ensureUnpacked();
+        vectors[0].ensureUnpacked(allocator);
         var result = HybridBigInt.zero();
         result.mode = .unpacked_mode;
         result.dirty = true;
         result.trit_len = vectors[0].trit_len;
-        @memcpy(result.unpacked_cache[0..vectors[0].trit_len], vectors[0].unpacked_cache[0..vectors[0].trit_len]);
+        result.ensureUnpacked(allocator);
+        // Copy using safe access
+        for (0..vectors[0].trit_len) |i| {
+            setTritSafe(&result, i, getTritSafe(vectors[0], i));
+        }
         return result;
     }
     if (vectors.len == 2) return bundle2(vectors[0], vectors[1]);
@@ -337,24 +416,34 @@ pub fn bundleN(vectors: []*HybridBigInt) HybridBigInt {
 
     var max_len: usize = 0;
     for (vectors) |v| {
-        v.ensureUnpacked();
+        v.ensureUnpacked(allocator);
         max_len = @max(max_len, v.trit_len);
     }
 
-    var accum: [MAX_TRITS]i16 = [_]i16{0} ** MAX_TRITS;
+    // Allocate accumulator on heap (115 KB) - macOS stack fix
+    const accum = allocator.alloc(i16, MAX_TRITS) catch |err| {
+        std.debug.panic("OOM in bundleN: {}", .{err});
+    };
+    defer allocator.free(accum);
+    @memset(accum, @as(i16, 0));
 
     for (vectors) |v| {
         const num_chunks = v.trit_len / SIMD_WIDTH;
         var i: usize = 0;
         while (i < num_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-            const vec: Vec32i8 = v.unpacked_cache[i..][0..SIMD_WIDTH].*;
+            // Use safe vector slice access
+            const base = i;
+            var vec: Vec32i8 = undefined;
+            inline for (0..SIMD_WIDTH) |j| {
+                vec[j] = getTritSafe(v, base + j);
+            }
             const wide: @Vector(32, i16) = vec;
-            const acc_vec: @Vector(32, i16) = accum[i..][0..SIMD_WIDTH].*;
+            const acc_vec: @Vector(32, i16) = @as(@Vector(32, i16), accum[i..][0..SIMD_WIDTH].*);
             const sum_val = acc_vec + wide;
-            accum[i..][0..SIMD_WIDTH].* = sum_val;
+            accum[i..][0..SIMD_WIDTH].* = @as([MAX_TRITS]i16, sum_val);
         }
         while (i < v.trit_len) : (i += 1) {
-            accum[i] += @as(i16, v.unpacked_cache[i]);
+            accum[i] += @as(i16, getTritSafe(v, i));
         }
     }
 
@@ -362,11 +451,12 @@ pub fn bundleN(vectors: []*HybridBigInt) HybridBigInt {
     result.mode = .unpacked_mode;
     result.dirty = true;
     result.trit_len = max_len;
+    result.ensureUnpacked(allocator);
 
     const num_result_chunks = max_len / SIMD_WIDTH;
     var i: usize = 0;
     while (i < num_result_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
-        const acc_vec: @Vector(32, i16) = accum[i..][0..SIMD_WIDTH].*;
+        const acc_vec: @Vector(32, i16) = @as(@Vector(32, i16), accum[i..][0..SIMD_WIDTH].*);
         const zeros: @Vector(32, i16) = @splat(0);
         const ones: @Vector(32, i16) = @splat(1);
         const neg_ones: @Vector(32, i16) = @splat(-1);
@@ -379,17 +469,18 @@ pub fn bundleN(vectors: []*HybridBigInt) HybridBigInt {
         out = @select(i16, neg_mask, neg_ones, out);
 
         inline for (0..SIMD_WIDTH) |j| {
-            result.unpacked_cache[i + j] = @truncate(out[j]);
+            setTritSafe(&result, i + j, @truncate(out[j]));
         }
     }
 
     while (i < max_len) : (i += 1) {
-        if (accum[i] > 0) {
-            result.unpacked_cache[i] = 1;
-        } else if (accum[i] < 0) {
-            result.unpacked_cache[i] = -1;
+        const val = accum[i];
+        if (val > 0) {
+            setTritSafe(&result, i, 1);
+        } else if (val < 0) {
+            setTritSafe(&result, i, -1);
         } else {
-            result.unpacked_cache[i] = 0;
+            setTritSafe(&result, i, 0);
         }
     }
 
@@ -404,7 +495,7 @@ pub fn randomVector(len: usize, seed: u64) HybridBigInt {
     var rng = std.Random.DefaultPrng.init(seed);
     const random = rng.random();
     for (0..result.trit_len) |i| {
-        result.unpacked_cache[i] = random.intRangeAtMost(i8, -1, 1);
+        setTritSafe(&result, i, random.intRangeAtMost(i8, -1, 1));
     }
     return result;
 }
@@ -419,7 +510,7 @@ pub fn permute(v: *HybridBigInt, k: usize) HybridBigInt {
     const shift = k % v.trit_len;
     for (0..v.trit_len) |i| {
         const new_pos = (i + shift) % v.trit_len;
-        result.unpacked_cache[new_pos] = v.unpacked_cache[i];
+        setTritSafe(&result, new_pos, getTritSafe(v, i));
     }
     return result;
 }
@@ -434,7 +525,7 @@ pub fn inversePermute(v: *HybridBigInt, k: usize) HybridBigInt {
     const shift = k % v.trit_len;
     for (0..v.trit_len) |i| {
         const new_pos = (i + v.trit_len - shift) % v.trit_len;
-        result.unpacked_cache[new_pos] = v.unpacked_cache[i];
+        setTritSafe(&result, new_pos, getTritSafe(v, i));
     }
     return result;
 }
@@ -584,19 +675,19 @@ pub fn qbundle(vectors: []const HybridBigInt, amplitudes: []const f32, allocator
         }
     }
 
-    // Handle scalar tail
+    // Handle scalar tail using safe access
     while (i < result.trit_len) : (i += 1) {
         var sum: f32 = 0.0;
         for (vectors, 0..) |*vec, k| {
             @constCast(vec).ensureUnpacked();
             if (i < vec.trit_len) {
                 const weight = amplitudes[k] / normalized;
-                sum += @as(f32, @floatFromInt(vec.unpacked_cache[i])) * weight;
+                sum += @as(f32, @floatFromInt(getTritSafe(vec, i))) * weight;
             }
         }
 
         // Threshold-based quantization (collapse)
-        result.unpacked_cache[i] = if (sum > 0.5) 1 else if (sum < -0.5) -1 else 0;
+        setTritSafe(&result, i, if (sum > 0.5) 1 else if (sum < -0.5) -1 else 0);
     }
 
     return result;
@@ -697,7 +788,7 @@ pub fn entangle(a: *const HybridBigInt, b: *const HybridBigInt, correlation: f32
     var left = a.*;
     var right = b.*;
 
-    // Apply correlation: blend some trits
+    // Apply correlation: blend some trits using safe access
     if (correlation > 0 and a.trit_len == b.trit_len) {
         const num_entangled = @as(usize, @intFromFloat(@as(f32, @floatFromInt(a.trit_len)) * correlation));
 
@@ -705,8 +796,8 @@ pub fn entangle(a: *const HybridBigInt, b: *const HybridBigInt, correlation: f32
             const idx = i; // Simple linear mapping
             if (idx < a.trit_len and idx < b.trit_len) {
                 // Swap some trits to create correlation
-                left.unpacked_cache[idx] = b.unpacked_cache[idx];
-                right.unpacked_cache[idx] = a.unpacked_cache[idx];
+                setTritSafe(&left, idx, getTritSafe(@constCast(b), idx));
+                setTritSafe(&right, idx, getTritSafe(@constCast(a), idx));
             }
         }
     }
@@ -734,10 +825,10 @@ test "qbundle with amplitudes" {
 
     // Result should be valid ternary vector
     try std.testing.expect(result.trit_len > 0);
-    // Check first 100 trits are in valid range
+    // Check first 100 trits are in valid range using safe access
     const check_len = @min(100, result.trit_len);
     for (0..check_len) |i| {
-        const trit = result.unpacked_cache[i];
+        const trit = getTritSafe(&result, i);
         try std.testing.expect(trit >= -1 and trit <= 1);
     }
 }
@@ -767,9 +858,9 @@ test "computeCoherence" {
     const v2 = randomVector(50, 124);
     var v3 = randomVector(50, 125);
 
-    // Set v3 to be similar to v1
+    // Set v3 to be similar to v1 using safe access
     for (0..@min(v1.trit_len, v3.trit_len)) |i| {
-        if (i < v3.trit_len) v3.unpacked_cache[i] = v1.unpacked_cache[i];
+        if (i < v3.trit_len) setTritSafe(&v3, i, getTritSafe(&v1, i));
     }
 
     // Create array of vectors (pass by value for computeCoherence API)
@@ -787,10 +878,10 @@ test "entangle with correlation" {
 
     const fully_entangled = entangle(&a, &b, 1.0);
 
-    // With full correlation, vectors should share trits
+    // With full correlation, vectors should share trits using safe access
     try std.testing.expectEqual(
-        a.unpacked_cache[0],
-        fully_entangled.right.unpacked_cache[0],
+        getTritSafe(@constCast(a), 0),
+        getTritSafe(@constCast(&fully_entangled.right), 0),
     );
 
     const independent = entangle(&a, &b, 0.0);

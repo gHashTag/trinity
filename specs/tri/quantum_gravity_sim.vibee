@@ -6,7 +6,7 @@ description: |
   Quantum gravity simulation engine for TRI MATH v3.3.
   Simulates LQG spin foam evolution, Regge calculus on simplicial
   lattice, and AdS/CFT thermalization. Pure math, zero-alloc.
-  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  φ² + 1/φ² = 3 = TRINITY
 
 constants:
   PHI: 1.6180339887498948482

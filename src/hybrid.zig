@@ -88,8 +88,10 @@ pub const StorageMode = enum {
 pub const HybridBigInt = struct {
     /// Packed storage (always valid)
     packed_data: [MAX_PACKED_BYTES]u8,
-    /// Unpacked cache (valid only when mode == unpacked_mode)
-    unpacked_cache: [MAX_TRITS]Trit,
+    /// Unpacked cache (allocated on heap when needed, null when packed)
+    unpacked_cache: ?[]Trit,
+    /// Allocator for heap operations
+    allocator: ?std.mem.Allocator,
     /// Current storage mode
     mode: StorageMode,
     /// Number of significant trits
@@ -99,16 +101,74 @@ pub const HybridBigInt = struct {
 
     const Self = @This();
 
-    /// Create zero value
+    /// Create zero value (minimal stack usage)
     pub fn zero() Self {
         const zero_pack = tvc_packed.encodePack(.{ 0, 0, 0, 0, 0 });
         return Self{
             .packed_data = [_]u8{zero_pack} ** MAX_PACKED_BYTES,
-            .unpacked_cache = [_]Trit{0} ** MAX_TRITS,
+            .unpacked_cache = null, // 8 bytes on stack (vs 59 KB)
+            .allocator = null,
             .mode = .packed_mode,
             .trit_len = 1,
             .dirty = false,
         };
+    }
+
+    /// Deallocate heap resources
+    pub fn deinit(self: *Self) void {
+        if (self.unpacked_cache) |cache| {
+            const alloc = self.allocator orelse return;
+            alloc.free(cache);
+        }
+    }
+
+    /// Ensure unpacked cache is allocated and valid
+    pub fn ensureUnpacked(self: *Self) void {
+        if (self.mode == .unpacked_mode) return;
+        if (self.unpacked_cache) |_| return; // Already allocated (discard result)
+
+        // Use provided allocator, or fallback to page_allocator
+        const alloc = self.allocator orelse std.heap.page_allocator;
+
+        // Allocate on heap
+        const cache = alloc.alloc(Trit, MAX_TRITS) catch |err| {
+            std.debug.panic("OOM in HybridBigInt.ensureUnpacked: {}", .{err});
+        };
+        @memset(cache, @as(Trit, 0), MAX_TRITS);
+
+        // Unpack from packed_data to cache
+        const num_packs = (self.trit_len + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
+        for (0..num_packs) |pack_idx| {
+            const trits = tvc_packed.decodePack(self.packed_data[pack_idx]);
+            const base = pack_idx * TRITS_PER_BYTE;
+            for (0..TRITS_PER_BYTE) |j| {
+                if (base + j < MAX_TRITS) {
+                    cache[base + j] = trits[j];
+                }
+            }
+        }
+
+        // Store cache and allocator in self (for future access)
+        self.* = .{
+            .packed_data = self.packed_data,
+            .unpacked_cache = cache,
+            .allocator = alloc,
+            .trit_len = self.trit_len,
+            .mode = .unpacked_mode,
+            .dirty = false,
+        };
+    }
+
+    /// Safe access to unpacked cache (panics if not unpacked)
+    inline fn getTritChecked(self: *const Self, pos: usize) Trit {
+        const cache = self.unpacked_cache orelse return 0;
+        return cache[pos];
+    }
+
+    /// Safe write to unpacked cache (panics if not unpacked)
+    inline fn setTritChecked(self: *Self, pos: usize, value: Trit) void {
+        const cache = self.unpacked_cache orelse return;
+        cache[pos] = value;
     }
 
     /// Create from i64
@@ -122,7 +182,7 @@ pub const HybridBigInt = struct {
         while (v != 0 and pos < MAX_TRITS) {
             var rem = @mod(v, @as(i64, 3));
             if (rem == 2) rem = -1;
-            result.unpacked_cache[pos] = @intCast(rem);
+            result.setTritChecked(pos, @intCast(rem));
             v = @divFloor(v - rem, 3);
             pos += 1;
         }
@@ -152,6 +212,11 @@ pub const HybridBigInt = struct {
         return self.unpacked_cache[pos];
     }
 
+
+    /// Get trit value as i8 (for Vec operations)
+    pub fn getTritAsI8(self: *const Self, pos: usize) i8 {
+        return @intCast(self.getTrit(pos));
+    }
     /// Set trit at position (marks dirty)
     pub fn setTrit(self: *Self, pos: usize, value: Trit) void {
         if (pos >= MAX_TRITS) return;
@@ -163,27 +228,11 @@ pub const HybridBigInt = struct {
         }
     }
 
-    /// Ensure unpacked cache is valid
-    pub fn ensureUnpacked(self: *Self) void {
-        if (self.mode == .unpacked_mode) return;
-
-        // Unpack from packed_data to unpacked_cache
-        const num_packs = (self.trit_len + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
-        for (0..num_packs) |pack_idx| {
-            const trits = tvc_packed.decodePack(self.packed_data[pack_idx]);
-            const base = pack_idx * TRITS_PER_BYTE;
-            for (0..TRITS_PER_BYTE) |j| {
-                if (base + j < MAX_TRITS) {
-                    self.unpacked_cache[base + j] = trits[j];
-                }
-            }
-        }
-        self.mode = .unpacked_mode;
-    }
-
     /// Pack the unpacked cache back to packed storage
     pub fn pack(self: *Self) void {
         if (!self.dirty and self.mode == .packed_mode) return;
+
+        self.ensureUnpacked();
 
         const num_packs = (self.trit_len + TRITS_PER_BYTE - 1) / TRITS_PER_BYTE;
         for (0..num_packs) |pack_idx| {
@@ -258,8 +307,8 @@ pub const HybridBigInt = struct {
         for (0..max_len + 1) |i| {
             if (i >= MAX_TRITS) break;
 
-            const a_trit: i16 = if (i < a.trit_len) a.unpacked_cache[i] else 0;
-            const b_trit: i16 = if (i < b.trit_len) b.unpacked_cache[i] else 0;
+            const a_trit: i16 = if (i < a.trit_len) a.getTritChecked(i) else 0;
+            const b_trit: i16 = if (i < b.trit_len) b.getTritChecked(i) else 0;
 
             var sum: i16 = a_trit + b_trit + carry;
             carry = 0;
@@ -305,8 +354,8 @@ pub const HybridBigInt = struct {
 
             inline for (0..SIMD_WIDTH) |i| {
                 const idx = base + i;
-                a_vec[i] = if (idx < a.trit_len) a.unpacked_cache[idx] else 0;
-                b_vec[i] = if (idx < b.trit_len) b.unpacked_cache[idx] else 0;
+                a_vec[i] = if (idx < a.trit_len) a.getTritChecked(idx) else 0;
+                b_vec[i] = if (idx < b.trit_len) .getTritChecked(idx) else 0;
             }
 
             const simd_result = simdAddTrits(a_vec, b_vec);
@@ -377,14 +426,14 @@ pub const HybridBigInt = struct {
         result.dirty = true;
 
         for (0..a.trit_len) |i| {
-            const a_trit = a.unpacked_cache[i];
+            const a_trit = a.getTritChecked(i);
             if (a_trit == 0) continue;
 
             var carry: Trit = 0;
             for (0..b.trit_len) |j| {
                 if (i + j >= MAX_TRITS) break;
 
-                var prod: i16 = @as(i16, a_trit) * @as(i16, b.unpacked_cache[j]);
+                var prod: i16 = @as(i16, a_trit) * @as(i16, .getTritChecked(j));
                 prod += result.unpacked_cache[i + j];
                 prod += carry;
                 carry = 0;
@@ -428,8 +477,8 @@ pub const HybridBigInt = struct {
             var b_vec: Vec32i8 = undefined;
 
             inline for (0..SIMD_WIDTH) |i| {
-                a_vec[i] = a.unpacked_cache[base + i];
-                b_vec[i] = b.unpacked_cache[base + i];
+                a_vec[i] = a.getTritChecked(base + i);
+                b_vec[i] = .getTritChecked(base + i);
             }
 
             total += simdDotProduct(a_vec, b_vec);
@@ -438,7 +487,7 @@ pub const HybridBigInt = struct {
         // Remainder (scalar)
         const remainder_start = num_chunks * SIMD_WIDTH;
         for (remainder_start..min_len) |i| {
-            total += @as(i32, a.unpacked_cache[i]) * @as(i32, b.unpacked_cache[i]);
+            total += @as(i32, a.getTritChecked(i)) * @as(i32, .getTritChecked(i));
         }
 
         return total;

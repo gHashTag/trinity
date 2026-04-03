@@ -56,7 +56,7 @@ PreToolUse hook enforces this — creating .sh files is blocked. See `.claude/ru
 
 | Binary | Build | Purpose |
 |--------|-------|---------|
-| `tri` | `zig build tri` | Unified TRI CLI (32 MB, all-in-one) |
+| `tri` | `zig build tri` | Railway cloud build (tri/build → railway up --detach on Linux with 2-8 MB stack) |
 | `trinity-mcp` | `zig build` | MCP server, 47+ tools, Oracle watchdog |
 | `ralph-agent` | `zig build` | Sleep-wake daemon, picks GitHub issues |
 | `ralph-hook` | `zig build` | Hook events → Telegram notifications |
@@ -64,8 +64,31 @@ PreToolUse hook enforces this — creating .sh files is blocked. See `.claude/ru
 | `tri-api` | `zig build tri-api` | Standalone agentic loop (2,555 LOC, 11 files) |
 | `hslm-entrypoint` | `zig build` | Railway training entrypoint (replaces bash) |
 
-### Additional Binaries
+### Build Methods
 
+#### Cloud Build (RECOMMENDED for production)
+```bash
+tri build  # Triggers Railway cloud build via tri/build → railway up --detach
+```
+
+**How it works:**
+- `runBuildCommand()` in `src/tri/commands/quantum_cosmic.zig` calls `railway_build.runRailwayBuildCommand(allocator, &.{})`
+- `runRailwayBuildCommand()` executes `railway up --detach` (from `src/tri/railway_build.zig`)
+- Builds on Railway Linux with 2-8 MB thread stack
+- Solves macOS stack overflow issues (512 KB main-thread vs 59 KB HybridBigInt per call)
+
+#### Local Build (DEPRECATED - CI only)
+```bash
+zig build  # Direct local build, macOS stack limits (512 KB)
+```
+
+**Why Cloud Builds:**
+- Consistent environment across all developers
+- Railway Docker infrastructure handles all dependencies
+- Larger thread stack on Linux (2-8 MB) solves HybridBigInt stack issues
+- `tri build` now uses Railway cloud instead of local `zig build`
+
+### Additional Binaries
 | Binary | Purpose |
 |--------|---------|
 | `arena` | LLM battle arena with ELO tracking |

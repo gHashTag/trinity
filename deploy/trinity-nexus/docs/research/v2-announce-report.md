@@ -154,4 +154,4 @@ gh api repos/gHashTag/trinity/releases/tags/v2.1.0 \
 
 All announce templates are ready for deployment across 5 platforms (X, Telegram, Discord, Reddit, Hacker News). Each template is tailored to platform format and audience. Key message is consistent: local-first autonomous AI with ternary computing, 28M ops/sec, 400 tests, no cloud. Download target: 5K in week 1. Templates are in `v2-announce-templates.md` — copy, paste, post.
 
-**KOSCHEI IS IMMORTAL | v2.1.0 GOES VIRAL | phi^2 + 1/phi^2 = 3**
+**v2.1.0 GOES VIRAL | phi^2 + 1/phi^2 = 3**

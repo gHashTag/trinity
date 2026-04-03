@@ -253,4 +253,4 @@ Result: $3M in 6 months
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN MAKES MILLIONS | φ² + 1/φ² = 3**
+**GOLDEN CHAIN MAKES MILLIONS | φ² + 1/φ² = 3**

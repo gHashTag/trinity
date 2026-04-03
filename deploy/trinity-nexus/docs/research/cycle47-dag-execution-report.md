@@ -233,4 +233,4 @@ pub fn getEffectivePriority(self: *const TaskNode) f64 {
 
 Cycle 47 achieves **IMMORTAL** status with 100% improvement rate. Task Dependency Graph with DAG-based execution enables complex workflow scheduling with topological ordering and φ⁻¹ priority integration. Golden Chain now at **47 cycles unbroken**.
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**

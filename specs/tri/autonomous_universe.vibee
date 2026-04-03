@@ -4,7 +4,7 @@ language: zig
 module: autonomous_universe
 description: |
   Live Multiverse Renderer for TRI MATH v3.6.
-  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  φ² + 1/φ² = 3 = TRINITY
 
 constants:
   PHI: 1.618033988749895

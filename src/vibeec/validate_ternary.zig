@@ -237,5 +237,5 @@ pub fn main() !void {
     std.debug.print("║  Memory compression:   {d:.1}x                               ║\n", .{ratio});
     std.debug.print("║  Generation speed:     {d:.1} tok/s                          ║\n", .{tokens_per_sec});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
-    std.debug.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print("\n | GOLDEN CHAIN IS CLOSED\n", .{});
 }

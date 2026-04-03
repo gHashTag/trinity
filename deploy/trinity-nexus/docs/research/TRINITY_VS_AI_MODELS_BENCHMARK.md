@@ -331,4 +331,4 @@ While Gemma 3, Llama, and other models advance AI capabilities, they remain cons
 
 ---
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3 | TERNARY > BINARY**
+**φ² + 1/φ² = 3 | TERNARY > BINARY**

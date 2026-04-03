@@ -57,8 +57,12 @@ test "permute/inverse_permute roundtrip" {
     var v = randomVector(100, 99999);
     var permuted = permute(&v, 7);
     const recovered = inversePermute(&permuted, 7);
+
+    permuted.ensureUnpacked(std.heap.page_allocator);
+    recovered.ensureUnpacked(std.heap.page_allocator);
+
     for (0..v.trit_len) |i| {
-        try std.testing.expectEqual(v.unpacked_cache[i], recovered.unpacked_cache[i]);
+        try std.testing.expectEqual(permuted.getTrit(i), recovered.getTrit(i));
     }
 }
 
@@ -66,17 +70,18 @@ test "permute shift correctness" {
     var v = HybridBigInt.zero();
     v.mode = .unpacked_mode;
     v.trit_len = 5;
-    v.unpacked_cache[0] = 1;
-    v.unpacked_cache[1] = -1;
-    v.unpacked_cache[2] = 0;
-    v.unpacked_cache[3] = 1;
-    v.unpacked_cache[4] = -1;
+    v.ensureUnpacked(std.heap.page_allocator);
+    v.setTrit(0, 1);
+    v.setTrit(1, -1);
+    v.setTrit(2, 0);
+    v.setTrit(3, 1);
+    v.setTrit(4, -1);
     const p = permute(&v, 2);
-    try std.testing.expectEqual(@as(Trit, 1), p.unpacked_cache[0]);
-    try std.testing.expectEqual(@as(Trit, -1), p.unpacked_cache[1]);
-    try std.testing.expectEqual(@as(Trit, 1), p.unpacked_cache[2]);
-    try std.testing.expectEqual(@as(Trit, -1), p.unpacked_cache[3]);
-    try std.testing.expectEqual(@as(Trit, 0), p.unpacked_cache[4]);
+    try std.testing.expectEqual(@as(Trit, 1), p.getTrit(0));
+    try std.testing.expectEqual(@as(Trit, -1), p.getTrit(1));
+    try std.testing.expectEqual(@as(Trit, 1), p.getTrit(2));
+    try std.testing.expectEqual(@as(Trit, -1), p.getTrit(3));
+    try std.testing.expectEqual(@as(Trit, 0), p.getTrit(4));
 }
 
 test "sequence encoding" {
@@ -90,11 +95,13 @@ test "sequence encoding" {
 test "bind self-inverse" {
     var a = randomVector(100, 12345);
     const bound = bind(&a, &a);
+    bound.ensureUnpacked(std.heap.page_allocator);
+
     for (0..a.trit_len) |i| {
-        if (a.unpacked_cache[i] != 0) {
-            try std.testing.expectEqual(@as(Trit, 1), bound.unpacked_cache[i]);
+        if (bound.getTrit(i) != 0) {
+            try std.testing.expectEqual(@as(Trit, 1), bound.getTrit(i));
         } else {
-            try std.testing.expectEqual(@as(Trit, 0), bound.unpacked_cache[i]);
+            try std.testing.expectEqual(@as(Trit, 0), bound.getTrit(i));
         }
     }
 }

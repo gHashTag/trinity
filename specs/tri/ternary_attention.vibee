@@ -1,6 +1,6 @@
 # Ternary Attention Specification
 # Full ternary attention using TernaryKVCache
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: ternary_attention
 version: "1.0.0"

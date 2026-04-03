@@ -118,4 +118,4 @@ rm -rf ~/Applications/NeoDetect
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

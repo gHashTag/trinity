@@ -1,6 +1,6 @@
 # E2E Coherent Text Generation Specification
 # φ² + 1/φ² = 3 = TRINITY
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN GENERATES TEXT
+# GOLDEN CHAIN GENERATES TEXT
 
 name: e2e_coherent_generation
 version: "2.0.0"
@@ -224,5 +224,5 @@ sacred_constants:
   trinity_identity: "φ² + 1/φ² = 3"
   
 # ═══════════════════════════════════════════════════════════════════════════════
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN GENERATES TEXT | φ² + 1/φ² = 3
+# GOLDEN CHAIN GENERATES TEXT | φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════

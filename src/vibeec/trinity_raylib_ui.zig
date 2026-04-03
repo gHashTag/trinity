@@ -335,7 +335,7 @@ fn renderChatPanel() void {
     }
 
     // Footer
-    drawText("phi^2 + 1/phi^2 = 3 | TRINITY          KOSCHEI IS IMMORTAL", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT - 20, 10, THEME.TEXT_MUTED);
+    drawText("phi^2 + 1/phi^2 = 3 | TRINITY          ", WINDOW_WIDTH / 2 - 200, WINDOW_HEIGHT - 20, 10, THEME.TEXT_MUTED);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

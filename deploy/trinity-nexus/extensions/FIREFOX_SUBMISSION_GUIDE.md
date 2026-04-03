@@ -100,7 +100,7 @@ TECHNICAL:
 SOURCE CODE:
 https://github.com/gHashTag/trinity/tree/main/extension/firefox
 
-KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED
+GOLDEN CHAIN IS CLOSED
 ```
 
 **Category**: Privacy & Security
@@ -219,4 +219,4 @@ Screenshot suggestions:
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

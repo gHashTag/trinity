@@ -187,7 +187,7 @@ behaviors:
   - name: render_panel
     given: x=0, y=screen_height-40, w=screen_width, h=40
     when: Rendering footer
-    then: Background + border + "phi^2 + 1/phi^2 = 3" + "KOSCHEI IS IMMORTAL" + F11 hint
+    then: Background + border + "phi^2 + 1/phi^2 = 3" + "" + F11 hint
 
   # === Fullscreen Toggle ===
   - name: handle_keyboard

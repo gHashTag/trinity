@@ -171,4 +171,4 @@ const stats = TextCorpus.getDeadlineStats();
 
 Cycle 46 achieves **IMMORTAL** status with 100% improvement rate. Deadline scheduling with EDF algorithm and φ⁻¹ weighted urgency provides real-time constraint handling for the parallel job system. Golden Chain now at **46 cycles unbroken**.
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**

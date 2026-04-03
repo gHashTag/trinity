@@ -6,7 +6,7 @@ module: storage_network_v2_4
 # Trinity Storage Network v2.4 — Transaction Write-Ahead Log (Crash Recovery)
 # Build on v2.3 (Saga Pattern, 500-node)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   WalEventType:

@@ -37,25 +37,25 @@ Cycle 45 integrated the Priority Job Queue mechanism into the TRI CLI, enabling 
 ```
 +-------------------+     +------------------+     +------------------+
 |  Level 0          | --> |  CRITICAL        | --> |  Immediate       |
-|  (weight: 1.000)  |     |  Deadline-aware  |     |  Execution       |
+|  (weight: 1.000) |   | Deadline-aware |   | Execution       |
 +-------------------+     +------------------+     +------------------+
          |
          v
 +-------------------+     +------------------+     +------------------+
 |  Level 1          | --> |  HIGH            | --> |  Important       |
-|  (weight: 0.618)  |     |  phi^-1          |     |  Tasks           |
+|  (weight: 0.618) |   | phi^-1         |   | Tasks           |
 +-------------------+     +------------------+     +------------------+
          |
          v
 +-------------------+     +------------------+     +------------------+
 |  Level 2          | --> |  NORMAL          | --> |  Default         |
-|  (weight: 0.382)  |     |  phi^-2          |     |  Priority        |
+|  (weight: 0.382) |   | phi^-2         |   | Priority        |
 +-------------------+     +------------------+     +------------------+
          |
          v
 +-------------------+     +------------------+     +------------------+
 |  Level 3          | --> |  LOW             | --> |  Background      |
-|  (weight: 0.236)  |     |  phi^-3          |     |  Tasks           |
+|  (weight: 0.236) |   | phi^-3         |   | Tasks           |
 +-------------------+     +------------------+     +------------------+
 ```
 
@@ -134,7 +134,7 @@ threshold = phi^-1 = 0.618033...
 
 0.667 > 0.618 OK
 
-VERDICT: KOSCHEI IS IMMORTAL
+VERDICT: 
 ```
 
 ---

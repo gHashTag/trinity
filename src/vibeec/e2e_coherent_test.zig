@@ -167,7 +167,7 @@ pub fn main() !void {
     std.debug.print("  Speed:             {d:.2} tokens/sec\n", .{@as(f64, @floatFromInt(gen_count)) / gen_time_sec});
 
     std.debug.print("\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
 }
 
 fn runWithoutTokenizer(allocator: std.mem.Allocator, tri_path: []const u8, prompt: []const u8) !void {

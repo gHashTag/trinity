@@ -75,7 +75,7 @@ pub fn main() !void {
     std.debug.print("  Fits in 8GB RAM:  {s}\n", .{if (int4_7b_gb < 7.5) "YES" else "NO"});
 
     std.debug.print("\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print(" | GOLDEN CHAIN IS CLOSED\n", .{});
 }
 
 test "demo" {

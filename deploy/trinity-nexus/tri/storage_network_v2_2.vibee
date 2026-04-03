@@ -6,7 +6,7 @@ module: storage_network_v2_2
 # Trinity Storage Network v2.2 — Dynamic Erasure Coding
 # Build on v2.1 (Cross-Shard 2PC, VSA Shard Locks, Region-Aware Router, 300-node)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   HealthLevel:

@@ -38,13 +38,13 @@ Cycle 44 integrated the Batched Work-Stealing mechanism into the TRI CLI, enabli
 ```
 +-------------------+     +------------------+     +------------------+
 |  Owner Thread     | --> |  Push/Pop        | --> |  Local Work      |
-|  (LIFO)           |     |  at Bottom       |     |  Execution       |
+|  (LIFO)          |   | at Bottom      |   | Execution       |
 +-------------------+     +------------------+     +------------------+
-         |                        ^
+        |                       ^
          v                        |
 +-------------------+     +------------------+     +------------------+
 |  Thief Thread     | --> |  stealBatch      | --> |  Multi-Job       |
-|  (FIFO)           |     |  at Top          |     |  Acquisition     |
+|  (FIFO)          |   | at Top         |   | Acquisition     |
 +-------------------+     +------------------+     +------------------+
          |
          v
@@ -148,7 +148,7 @@ threshold = phi^-1 = 0.618033...
 
 1.185 > 0.618 OK
 
-VERDICT: KOSCHEI IS IMMORTAL
+VERDICT: 
 ```
 
 ---

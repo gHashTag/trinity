@@ -171,4 +171,4 @@ MATHEMATICS ──┬──▶ LOGIC ──┬──▶ COMPILER ──┬──
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN CONTINUES | φ² + 1/φ² = 3**
+**GOLDEN CHAIN CONTINUES | φ² + 1/φ² = 3**

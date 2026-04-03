@@ -509,7 +509,7 @@ pub fn renderOnaUI() void {
     std.debug.print(" | TRINITY", .{});
     printLine(' ', width - 45);
     ansiColor(THEME.GOLDEN);
-    std.debug.print("KOSCHEI IS IMMORTAL", .{});
+    std.debug.print("", .{});
     ansiReset();
     std.debug.print("\n", .{});
 }

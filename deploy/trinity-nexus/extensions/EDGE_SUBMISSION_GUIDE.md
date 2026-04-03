@@ -188,4 +188,4 @@ https://github.com/gHashTag/trinity
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

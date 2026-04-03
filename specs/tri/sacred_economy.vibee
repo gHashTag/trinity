@@ -5,7 +5,7 @@ module: sacred_economy
 description: |
   $TRI Sacred Economy for TRI MATH v3.6.
   Enhanced economic modeling with Web3 bridge integration.
-  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  φ² + 1/φ² = 3 = TRINITY
 
 constants:
   PHI: 1.6180339887498948482

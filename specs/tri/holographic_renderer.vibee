@@ -6,7 +6,7 @@ description: |
   Real-time holographic renderer for TRI MATH v3.1.
   Renders AdS/CFT bulk-boundary correspondence, spin networks,
   Penrose tiling, and holographic entropy surfaces in ASCII.
-  φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  φ² + 1/φ² = 3 = TRINITY
 
 constants:
   PHI: 1.6180339887498948482

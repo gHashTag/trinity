@@ -496,4 +496,4 @@ The verification is successful when:
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**
+**GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3**

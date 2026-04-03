@@ -404,7 +404,7 @@ pub const BenchmarkRunner = struct {
         std.debug.print("  Memory: {d:.2} MB RSS\n", .{MemoryMetrics.toMB(memory.rss_bytes)});
         std.debug.print("  Load Time: {d:.2} ms\n", .{load_time});
         std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-        std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+        std.debug.print("GOLDEN CHAIN IS CLOSED\n", .{});
         std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
     }
 
@@ -457,7 +457,7 @@ pub const BenchmarkRunner = struct {
         }
 
         try writer.writeAll("\n---\n");
-        try writer.writeAll("*KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED*\n");
+        try writer.writeAll("*GOLDEN CHAIN IS CLOSED*\n");
     }
 };
 

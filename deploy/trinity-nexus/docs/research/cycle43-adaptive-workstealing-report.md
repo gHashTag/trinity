@@ -93,7 +93,7 @@ threshold = φ⁻¹ = 0.618033...
 
 0.69 > 0.618 ✓
 
-VERDICT: KOSCHEI IS IMMORTAL
+VERDICT: 
 ```
 
 ---

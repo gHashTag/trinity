@@ -100,4 +100,4 @@
 
 **Estimated Total Time:** 2-3 hours (excluding shipping)
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**

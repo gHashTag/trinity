@@ -295,4 +295,4 @@ MIT License - See LICENSE file for details.
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

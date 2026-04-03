@@ -6,7 +6,7 @@ module: storage_network_v1_3
 # Trinity Storage Network v1.3 — Remote Storage, Bandwidth Metering, Shard Pinning, HKDF
 # Build on v1.2 (CLI, LRU eviction, XOR parity, peer discovery)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   HkdfConfig:

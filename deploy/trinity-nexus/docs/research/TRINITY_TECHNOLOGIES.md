@@ -311,4 +311,4 @@ For ternary: log₂(3) = ln(3) / ln(2) = 1.0986 / 0.6931 = 1.585 ∎
 
 ---
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3 | TERNARY > BINARY**
+**φ² + 1/φ² = 3 | TERNARY > BINARY**

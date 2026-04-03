@@ -251,7 +251,7 @@ fn runBenchmark(allocator: std.mem.Allocator) !void {
     std.debug.print("  Dead Code Elimination: Removes unused computations\n", .{});
     std.debug.print("  Combined: 50-80%% instruction reduction on constant-heavy code\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
+    std.debug.print("GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
 }
 

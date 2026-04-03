@@ -256,7 +256,7 @@ pub fn runFullPipelineBenchmark(allocator: Allocator) !void {
     std.debug.print("  Constant Folding + DCE provides 1.2-10x+ speedup\n", .{});
     std.debug.print("  Optimization is PROVEN to work on real .999 bytecode\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
-    std.debug.print("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
+    std.debug.print("GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3\n", .{});
     std.debug.print("═══════════════════════════════════════════════════════════════════════════════\n", .{});
 }
 

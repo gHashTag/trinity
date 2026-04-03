@@ -1,6 +1,6 @@
 # Optimized KV Cache Specification
 # Ring buffer with sliding window for infinite context
-# φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3
 
 name: kv_cache_optimized
 version: "1.0.0"

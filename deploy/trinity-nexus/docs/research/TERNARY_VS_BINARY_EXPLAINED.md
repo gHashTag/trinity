@@ -287,4 +287,4 @@ TOTAL: 5-10x more efficient on ternary models
 
 ---
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3 | TERNARY > BINARY**
+**φ² + 1/φ² = 3 | TERNARY > BINARY**

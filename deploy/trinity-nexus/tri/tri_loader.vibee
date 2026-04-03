@@ -1,6 +1,6 @@
 # tri_loader.vibee - Trinity Model Loader
 # Single source of truth for .tri format loading
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 
 name: tri_loader
 version: "1.0.0"

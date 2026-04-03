@@ -113,6 +113,6 @@ pub fn main() !void {
 
     try stdout.writeAll("\n");
     try stdout.writeAll("═══════════════════════════════════════════════════════════════════════════════\n");
-    try stdout.writeAll("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n");
+    try stdout.writeAll("GOLDEN CHAIN IS CLOSED\n");
     try stdout.writeAll("═══════════════════════════════════════════════════════════════════════════════\n");
 }

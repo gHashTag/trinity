@@ -76,7 +76,9 @@ fn bipolarRandom(dim: usize, seed: u64) HybridBigInt {
     const random = rng.random();
 
     for (0..result.trit_len) |i| {
-        result.unpacked_cache[i] = if (random.boolean()) @as(i8, 1) else @as(i8, -1);
+        if (result.unpacked_cache) |cache| {
+            cache[i] = if (random.boolean()) @as(i8, 1) else @as(i8, -1);
+        }
     }
     return result;
 }

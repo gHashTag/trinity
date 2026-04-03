@@ -5,7 +5,7 @@
 // Extends src/vm.zig with sacred opcodes (0x80-0xFF range)
 // Target: 603x efficiency on hyperdimensional computations
 //
-// φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+// φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");

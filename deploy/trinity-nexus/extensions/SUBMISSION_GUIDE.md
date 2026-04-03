@@ -148,4 +148,4 @@ Edge uses the same package as Chrome:
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

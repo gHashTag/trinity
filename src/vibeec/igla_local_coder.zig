@@ -100,7 +100,7 @@ pub const TEMPLATES = [_]CodeTemplate{
         \\    const result = PHI * PHI + 1.0 / (PHI * PHI);
         \\    std.debug.print("Hello, Trinity!\n", .{});
         \\    std.debug.print("phi^2 + 1/phi^2 = {d:.6}\n", .{result});
-        \\    std.debug.print("KOSCHEI IS IMMORTAL\n", .{});
+        \\    std.debug.print("\n", .{});
         \\}
         ,
         .description = "Trinity greeting with golden ratio",

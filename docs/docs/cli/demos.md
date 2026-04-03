@@ -54,7 +54,7 @@ Where metrics are scenario-specific (hit rate, similarity score, agent count, th
 
   Needle Check (phi^-1 = 0.618):
     Average rate:   0.843
-    Status:         KOSCHEI IS IMMORTAL! Needle is sharp.
+    Status:         ! Needle is sharp.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

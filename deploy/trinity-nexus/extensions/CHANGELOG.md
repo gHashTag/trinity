@@ -57,4 +57,4 @@ All notable changes to NeoDetect Anti-Detect Browser Extension.
 
 ---
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED**
+**GOLDEN CHAIN IS CLOSED**

@@ -9,7 +9,7 @@ description: |
   Three columns: RAZUM (Mind/φ), MATERIYA (Matter/π), DUKH (Spirit/e).
   Real-time polling from /health endpoint every 2 seconds.
   Log ring buffer (20 entries) on backend, accumulated to 50 on frontend.
-  phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+  phi^2 + 1/phi^2 = 3 = TRINITY
 
 # =============================================================================
 # TRINITY CANVAS v2.3 — MIRROR OF THREE WORLDS

@@ -6,7 +6,7 @@ module: storage_network_v1_5
 # Trinity Storage Network v1.5 — Proof-of-Storage, Shard Rebalancing, Bandwidth Aggregation, Auto-Discovery
 # Build on v1.4 (Reed-Solomon, connection pooling, manifest DHT, 12-node test)
 # V = n × 3^k × π^m × φ^p × e^q
-# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# phi^2 + 1/phi^2 = 3 = TRINITY
 
 types:
   StorageChallenge:

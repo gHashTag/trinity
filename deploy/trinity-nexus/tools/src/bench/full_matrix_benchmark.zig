@@ -157,6 +157,6 @@ pub fn main() !void {
     try stdout.writeAll("  CPU: Intel Xeon Platinum 8375C @ 2.90GHz\n");
     try stdout.writeAll("  Method: Batch Row (4 rows) + SIMD-8 + LUT decode\n");
     try stdout.writeAll("═══════════════════════════════════════════════════════════════════════════════\n");
-    try stdout.writeAll("KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n");
+    try stdout.writeAll("GOLDEN CHAIN IS CLOSED\n");
     try stdout.writeAll("═══════════════════════════════════════════════════════════════════════════════\n");
 }

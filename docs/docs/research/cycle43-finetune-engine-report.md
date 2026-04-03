@@ -37,13 +37,13 @@ Cycle 43 integrated the IGLA Fine-Tuning Engine into the TRI CLI, enabling inter
 ```
 +-------------------+     +------------------+     +------------------+
 |  Training         | --> |  Pattern         | --> |  Weight          |
-|  Examples         |     |  Extraction      |     |  Adaptation      |
+|  Examples        |   | Extraction     |   | Adaptation      |
 +-------------------+     +------------------+     +------------------+
-         |                        |                        |
+        |                      |                       |
          v                        v                        v
 +-------------------+     +------------------+     +------------------+
-|  Example Store    |     |  Pattern Engine  |     |  Adapted Model   |
-|  (100 examples)   |     |  (n-gram hash)   |     |  (personalized)  |
+|  Example Store   |   | Pattern Engine |   | Adapted Model   |
+|  (100 examples)  |   | (n-gram hash)  |   | (personalized)  |
 +-------------------+     +------------------+     +------------------+
 ```
 
@@ -104,7 +104,7 @@ threshold = phi^-1 = 0.618033...
 
 0.784 > 0.618 OK
 
-VERDICT: KOSCHEI IS IMMORTAL
+VERDICT: 
 ```
 
 ---

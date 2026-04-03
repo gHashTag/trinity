@@ -72,5 +72,5 @@ pub fn main() !void {
     }
 
     std.debug.print("└──────────┴────────────────┴────────────────┴──────────┘\n", .{});
-    std.debug.print("\nKOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED\n", .{});
+    std.debug.print("\n | GOLDEN CHAIN IS CLOSED\n", .{});
 }

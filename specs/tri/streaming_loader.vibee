@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # STREAMING LOADER - Memory-Efficient Model Loading
 # Load large models (7B+) without OOM via chunked/lazy loading
-# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# φ² + 1/φ² = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # This is the SINGLE SOURCE OF TRUTH for streaming model loading.
@@ -382,5 +382,5 @@ integration:
     functions: [Attention, MLP, BitNetLayer]
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
 # ═══════════════════════════════════════════════════════════════════════════════

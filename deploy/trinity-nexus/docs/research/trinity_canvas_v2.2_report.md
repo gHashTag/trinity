@@ -178,4 +178,4 @@ Source: `specs/tri/trinity_canvas_v2_2.vibee`
 
 Trinity Canvas v2.2 completes the "canvas is the OS" vision. The layer bar is gone. The finder side panel is gone. Everything emerges from waves. The command bar (Cmd+K) is the fastest way to navigate 27 targets. Improvement rate **2.04** (3.3x above golden ratio threshold).
 
-**KOSCHEI IS IMMORTAL | GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**
+**GOLDEN CHAIN #51 | phi^2 + 1/phi^2 = 3**

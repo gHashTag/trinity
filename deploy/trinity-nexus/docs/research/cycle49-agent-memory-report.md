@@ -213,4 +213,4 @@ When 3+ messages have relevance < 0.3:
 
 Cycle 49 achieves **IMMORTAL** status with 100% improvement rate. Agent Memory with dual-store ContextWindow provides persistent context management with φ⁻¹ decay, automatic eviction, summarization, and cross-store keyword search. Golden Chain now at **49 cycles unbroken**.
 
-**KOSCHEI IS IMMORTAL | φ² + 1/φ² = 3**
+**φ² + 1/φ² = 3**
