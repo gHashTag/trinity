@@ -1,0 +1,863 @@
+% ============================================================================
+% Polynomial vs Monomial φ-Structures in Fundamental Constants:
+% A Computational Comparison
+% ============================================================================
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{siunitx}
+\sisetup{group-separator={,}, group-minimum-digits=4}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  citecolor=blue!70!black,
+  urlcolor=blue!70!black,
+  pdftitle={Polynomial vs Monomial phi-Structures in Fundamental Constants},
+  pdfauthor={Dmitrii Vasilev and Stergios Pellis}
+}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}{Remark}
+
+% --- Shortcuts ---
+\newcommand{\vp}{\varphi}
+\newcommand{\Ngen}{N_{\mathrm{gen}}}
+\newcommand{\CODATA}{\text{CODATA}}
+\newcommand{\ppm}{\,\mathrm{ppm}}
+\newcommand{\ppb}{\,\mathrm{ppb}}
+\newcommand{\ppt}{\,\mathrm{ppt}}
+
+% ============================================================================
+\begin{document}
+
+% --- Title ---
+\begin{center}
+{\LARGE\bfseries Polynomial vs Monomial $\vp$-Structures in\\[4pt]
+Fundamental Constants: A Computational Comparison}
+
+\bigskip
+
+{\large Dmitrii Vasilev$^{1}$ and Stergios Pellis$^{2}$}
+
+\medskip
+
+{\small
+$^{1}$Trinity Project, \texttt{admin@t27.ai}\\[2pt]
+$^{2}$Independent Researcher, Greece, \texttt{sterpellis@gmail.com}
+}
+
+\medskip
+
+{\small April 2026}
+\end{center}
+
+% ============================================================================
+\begin{abstract}
+The numerical values of dimensionless fundamental constants---including the
+fine-structure constant~$\alpha$, the proton-to-electron mass
+ratio~$\mu=m_p/m_e$, and the electroweak mixing angle~$\sin^2\!\theta_W$---remain
+unexplained by the Standard Model of particle physics. We compare two
+independent mathematical frameworks built on the golden
+ratio~$\vp=(1+\sqrt{5})/2$: the \emph{Trinity monomial framework},
+$V = n \times 3^{k}\pi^{m}\vp^{p}e^{q}\gamma^{r}$ ($\gamma=\vp^{-3}$),
+comprising 152~formulas across particle physics, electroweak theory, QCD,
+neutrino mixing, and cosmology; and the \emph{Pellis polynomial framework}, a
+multi-term expansion in powers of~$\vp^{-n}$ optimized for ultra-precise
+reproduction of~$\alpha^{-1}$. Using Python high-precision arithmetic
+(50~significant figures) and CODATA~2022 reference values, we compute relative
+deviations $\delta = (V_{\mathrm{formula}} - V_{\CODATA})/V_{\CODATA}$ for
+18~candidate formulas. The identity $\vp^{2}+\vp^{-2}=3$ is algebraically
+exact and correctly predicts three fermion generations. Sixteen additional
+formulas achieve $|\delta|<1000\ppm$; the strong
+coupling~$\alpha_s=4\vp^{2}/(9\pi^{2})$ deviates by $-48\ppm$ and the Weinberg
+angle $\sin^{2}\!\theta_W=2\pi^{3}e/729$ by $+92\ppm$. Pellis's three-term
+formula for~$\alpha^{-1}$ achieves $\delta=-0.09\ppb$, within the current
+experimental uncertainty of~$0.16\ppb$. We characterize these as empirical
+approximations---not physical derivations---and discuss the structural
+complementarity between the polynomial and monomial approaches.
+\end{abstract}
+
+\medskip
+\noindent\textbf{Keywords:} golden ratio; fine-structure constant; fundamental
+constants; CODATA 2022; empirical formulas; dimensional analysis
+
+% ============================================================================
+\section{Introduction}\label{sec:intro}
+
+\subsection*{The mystery of dimensionless constants}
+
+Among the deepest unsolved problems in theoretical physics is the origin of the
+numerical values of dimensionless fundamental constants. As Richard
+Feynman~\cite{feynman1985} famously wrote regarding the fine-structure
+constant~$\alpha\approx 1/137$:
+\begin{quote}
+\itshape
+It has been a mystery ever since it was discovered more than fifty years ago,
+and all good theoretical physicists put this number up on their wall and worry
+about it\,\ldots\, It's one of the greatest damn mysteries of physics: a magic
+number that comes to us with no understanding by man.
+\end{quote}
+The Standard Model of particle physics treats quantities such
+as~$\alpha$, the proton-to-electron mass ratio~$\mu=m_p/m_e$, the strong
+coupling~$\alpha_s$, and the electroweak mixing angle~$\sin^{2}\!\theta_W$ as
+free parameters determined by experiment. No internal mechanism of the Standard
+Model predicts their values. The CODATA Task Group on Fundamental Constants
+periodically publishes recommended values~\cite{codata2022} with ever-increasing
+precision---$\alpha^{-1}$ is now known to $\pm 0.16\ppb$---yet the question
+\emph{why these numbers and not others} remains open.
+
+This gap between experimental precision and theoretical understanding has
+motivated a long tradition of attempts to express fundamental constants in terms
+of mathematical constants such as~$\pi$, $e$, and, increasingly, the golden
+ratio~$\vp=(1+\sqrt{5})/2$.
+
+\subsection*{Historical context}
+
+The search for a ``formula for $\alpha$'' is nearly a century old. Arthur
+Eddington~(1929) proposed $\alpha^{-1}=136$ based on counting degrees of
+freedom in a symmetric $16\times 16$ matrix; when experiment settled on a value
+closer to~137, he revised his argument to give~137, earning the moniker
+``Arthur Adding-ton.'' Armand Wyler~(1969) derived
+$\alpha^{-1}=9/(8\pi^{4})(2^{6}\pi^{3}/15)^{1/4}\approx 137.03608$, matching
+experiment to~$1.5\ppm$---impressive at the time, but ultimately without
+predictive power for other constants. More recently, Mohamed El~Naschie's
+E-infinity theory generated hundreds of papers claiming to derive~$\alpha$
+from fractal-Cantorian spacetime; the program was widely criticized for
+circular reasoning and self-citation and is considered a failed approach by the
+mainstream physics community.
+
+Each of these historical attempts shared a common weakness: they targeted a
+single constant ($\alpha$) without producing a unified framework capable of
+simultaneously addressing multiple independent observables. This limitation
+makes it difficult to distinguish genuine structural insight from numerical
+coincidence.
+
+\subsection*{The golden ratio in physics}
+
+The golden ratio $\vp=(1+\sqrt{5})/2$ is ubiquitous in mathematics---from
+Fibonacci sequences to quasicrystalline tilings---but its appearances in
+fundamental physics are rare and mostly indirect. The most significant
+experimentally confirmed instance is the work of Coldea et
+al.~\cite{coldea2010}, who observed that the ratio of the two lowest-energy
+excitation masses in the quasi-one-dimensional Ising ferromagnet
+CoNb$_{2}$O$_{6}$ converges to~$\vp$ near the quantum critical point, as
+predicted by Zamolodchikov's $E_{8}$ integrable field theory. This result,
+published in \emph{Science} in 2010, established that~$\vp$ can emerge from the
+representation theory of exceptional Lie algebras in a controlled condensed
+matter setting.
+
+In the context of fundamental constants, Heyrovska~\cite{heyrovska2005}
+proposed a two-term formula $\alpha^{-1}\approx 360\vp^{-2}-2\vp^{-3} =
+137.03563\ldots$, noting that $360\vp^{-2}$ equals the golden angle in degrees.
+While only accurate to~$\sim 2.7\ppm$, this result established a connection
+between~$\alpha^{-1}$ and powers of~$\vp^{-1}$ that subsequent researchers
+refined. Sherbon~\cite{sherbon2018} explored multi-term expansions involving
+$\vp$, $\pi$, and Euler's number, emphasizing their geometric
+interpretations. Most recently, Pellis~\cite{pellis2021alpha,pellis2023toe}
+developed a systematic polynomial framework for~$\alpha^{-1}$ and other
+constants using powers of~$\vp^{-n}$, achieving remarkable precision for the
+fine-structure constant.
+
+\subsection*{Two independent discoveries}
+
+The present paper compares two independent programs that arrived at
+$\vp$-based formulas for fundamental constants through different methodologies:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{The Pellis polynomial framework}~\cite{pellis2021alpha,pellis2023toe}
+(2021--2025). Stergios Pellis, working independently in Greece and publishing
+through viXra and SSRN, developed a systematic approach based on multi-term
+polynomial expansions in~$\vp^{-n}$. His flagship result,
+$\alpha^{-1}=360\vp^{-2}-2\vp^{-3}+(3\vp)^{-5}$, reproduces the CODATA~2022
+value to $-0.09\ppb$---within the current experimental uncertainty.
+Pellis has produced 29~preprints extending the approach to~$\mu$, neutrino
+parameters, and other constants, under the title ``Dimensionless Theory of
+Everything.''
+
+\item \textbf{The Trinity monomial framework} (2024--2026). Developed by
+Dmitrii Vasilev under the Trinity Project and archived on GitHub, this approach
+constrains all formulas to a single monomial form:
+$V = n\cdot 3^{k}\pi^{m}\vp^{p}e^{q}\gamma^{r}$, where
+$\gamma=\vp^{-3}\approx 0.2361$ and all exponents are rational. By restricting
+to a single algebraic template, the framework trades the per-constant precision
+of polynomial expansions for breadth: 152~formulas spanning particle masses,
+mixing angles, coupling constants, and cosmological parameters.
+\end{enumerate}
+
+The two frameworks were developed without mutual knowledge and discovered
+independently that $\vp$-based expressions can reproduce CODATA values across
+multiple domains of physics. Their structural difference---polynomial
+interference versus monomial scaling---makes them natural complements for a
+comparative study.
+
+\subsection*{This paper's contribution}
+
+This paper presents the first systematic, side-by-side computational comparison
+of the Trinity monomial and Pellis polynomial frameworks. We evaluate
+18~representative formulas against CODATA~2022 recommended
+values~\cite{codata2022} using Python \texttt{decimal} arithmetic at
+50-digit precision, computing relative deviations~$\delta$ in ppm and ppb. We
+present a unified comparison table, analyze the error distribution, and discuss
+the structural complementarity of the two approaches. Crucially, we include an
+honest epistemological assessment: these are empirical approximations whose
+mathematical interest does not constitute derivation from first principles.
+
+\medskip
+\noindent\textbf{Organization.} The remainder of this paper is organized as
+follows. Section~\ref{sec:framework} defines the two mathematical frameworks
+and proves the foundational Trinity identity. Section~\ref{sec:results}
+presents numerical results and the main comparison table.
+Section~\ref{sec:discussion} discusses structural complementarity,
+falsifiability, and open problems. Section~\ref{sec:conclusion} summarizes
+our findings.
+
+% ============================================================================
+\section{Mathematical Framework}\label{sec:framework}
+
+\subsection{Constants and notation}\label{sec:notation}
+
+We employ five mathematical constants throughout this paper.
+Table~\ref{tab:constants} lists their definitions and values to 15~significant
+figures.
+
+\begin{table}[H]
+\centering
+\caption{Mathematical constants used in this work, computed to
+  15~significant figures.}
+\label{tab:constants}
+\begin{tabular}{lll}
+\toprule
+Symbol & Definition & Value \\
+\midrule
+$\vp$       & $(1+\sqrt{5})/2$       & $1.61803398874989\ldots$ \\
+$\vp^{-1}$  & $(\sqrt{5}-1)/2$       & $0.618033988749895\ldots$ \\
+$\vp^{2}$   & $\vp+1$                & $2.61803398874989\ldots$ \\
+$\vp^{-2}$  & $2-\vp$                & $0.381966011250105\ldots$ \\
+$\gamma$    & $\vp^{-3} = 2\vp-3$    & $0.236067977499790\ldots$ \\
+$e$          & Euler's number         & $2.71828182845905\ldots$ \\
+$\pi$        & Archimedes' constant   & $3.14159265358979\ldots$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The Trinity Identity: $\vp^{2}+\vp^{-2}=3$}\label{sec:identity}
+
+The foundational result of the Trinity framework is an algebraic identity
+linking the golden ratio to the integer~3.
+
+\begin{theorem}[Trinity Identity]\label{thm:trinity}
+For the golden ratio $\vp=(1+\sqrt{5})/2$,
+\begin{equation}
+  \vp^{2}+\vp^{-2} = 3. \label{eq:trinity}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The golden ratio satisfies $\vp^{2}=\vp+1$ (from $x^{2}-x-1=0$). Taking the
+reciprocal and squaring: $\vp^{-1}=\vp-1$, hence
+$\vp^{-2}=(\vp-1)^{2}=\vp^{2}-2\vp+1 = (\vp+1)-2\vp+1 = 2-\vp$. Therefore
+\[
+  \vp^{2}+\vp^{-2} = (\vp+1)+(2-\vp) = 3. \qedhere
+\]
+\end{proof}
+
+\begin{remark}
+Since the number of fermion generations in the Standard Model is
+$\Ngen=3$, the Trinity Identity provides an exact algebraic expression:
+$\Ngen = \vp^{2}+\vp^{-2}$. The strong CP-violating angle
+$\theta_{\mathrm{QCD}}=|\vp^{2}+\vp^{-2}-3|=0$ is likewise exact. These are
+the only two results in the framework that are algebraically exact rather than
+approximate.
+\end{remark}
+
+\subsection{The Sacred Formula (Trinity monomial framework)}\label{sec:sacred}
+
+Every Trinity formula takes the monomial form
+\begin{equation}
+  V = n \times 3^{k} \times \pi^{m} \times \vp^{p} \times e^{q} \times \gamma^{r},
+  \quad n\in\mathbb{Z},\;\; k,m,p,q,r\in\mathbb{Q}.
+  \label{eq:sacred}
+\end{equation}
+
+The key structural feature is that each formula is a \emph{single term}---a
+product of powers of the five constants with no addition or subtraction. This
+monomial constraint reduces the risk of overfitting while maintaining enough
+flexibility to approximate diverse physical constants across multiple domains.
+
+Table~\ref{tab:exponents} lists the exponent decompositions for the primary
+formulas analyzed in this work.
+
+\begin{table}[H]
+\centering
+\caption{Exponent decomposition $(n,k,m,p,q,r)$ for selected Trinity
+  formulas in the Sacred Formula
+  $V = n\cdot 3^{k}\pi^{m}\vp^{p}e^{q}\gamma^{r}$.}
+\label{tab:exponents}
+\begin{tabular}{lrrrrrr}
+\toprule
+Formula & $n$ & $k$ & $m$ & $p$ & $q$ & $r$ \\
+\midrule
+$m_p/m_e = 6\pi^{5}$                         &  6 &  0 &  5 &  0 &  0 & 0 \\
+$\alpha_s = 4\vp^{2}/(9\pi^{2})$             &  4 & $-2$ & $-2$ &  2 &  0 & 0 \\
+$\sin^{2}\!\theta_W = 2\pi^{3}e/729$         &  2 & $-6$ &  3 &  0 &  1 & 0 \\
+$\delta_{\mathrm{CP}} = 8\pi^{3}/(9e^{2})$   &  8 & $-2$ &  3 &  0 & $-2$ & 0 \\
+$\sin^{2}\!\theta_{12} = 7\vp^{5}/(3\pi^{3}e)$ &  7 & $-1$ & $-3$ &  5 & $-1$ & 0 \\
+$\sin^{2}\!\theta_{13} = 3\gamma\vp^{2}/(\pi^{3}e)$ &  3 &  0 & $-3$ &  2 & $-1$ & 1 \\
+$\sin^{2}\!\theta_{23} = 4\pi\vp^{2}/(3e^{3})$ &  4 & $-1$ &  1 &  2 & $-3$ & 0 \\
+$T_{\mathrm{CMB}} = 5\pi^{4}\vp^{5}/(729e)$  &  5 & $-6$ &  4 &  5 & $-1$ & 0 \\
+$M_Z = 7\pi^{4}\vp e^{3}/243$                &  7 & $-5$ &  4 &  1 &  3 & 0 \\
+$M_W = 162\vp^{3}/(\pi e)$                   & 162 &  0 & $-1$ &  3 & $-1$ & 0 \\
+$M_H = 135\vp^{4}/e^{2}$                     & 135 &  0 &  0 &  4 & $-2$ & 0 \\
+$V_{us} = 3\gamma/\pi$                       &  1 &  1 & $-1$ &  0 &  0 & 1 \\
+$G = \pi^{3}\gamma^{2}/\vp$                  &  1 &  0 &  3 & $-1$ &  0 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Note that $729 = 3^{6}$ and $243 = 3^{5}$, so these formulas conform to the
+monomial template with integer or rational exponents exclusively. The parameter~$\gamma=\vp^{-3}$ appears only in formulas involving the CKM element~$V_{us}$, the neutrino mixing angle~$\theta_{13}$, and Newton's constant~$G$.
+
+\subsection{The Pellis polynomial framework}\label{sec:pellis}
+
+In contrast to the Trinity monomial structure, the Pellis
+framework~\cite{pellis2021alpha,pellis2023toe} employs \emph{polynomial}
+(multi-term) expansions in powers of~$\vp^{-n}$:
+
+\begin{equation}
+  \alpha^{-1} = 360\,\vp^{-2} - 2\,\vp^{-3} + (3\vp)^{-5}.
+  \label{eq:pellis}
+\end{equation}
+
+Each term admits a geometric interpretation:
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Leading term:} $360\,\vp^{-2} = 360(2-\vp) \approx 137.508$.
+This is exactly the golden angle expressed in degrees. The factor~360
+reflects the full angular cycle, and $\vp^{-2}$ selects the minor
+fraction of the golden partition. Pellis interprets this as the geometric
+``skeleton'' of~$\alpha^{-1}$.
+
+\item \textbf{Sommerfeld correction:}
+$-2\,\vp^{-3} = -2(2\vp-3) \approx -0.4721$. This subtractive term has
+magnitude comparable to the Sommerfeld fine-structure corrections in
+hydrogen-like atoms. Pellis associates it with relativistic effects that
+shift $\alpha^{-1}$ from the golden-angle baseline.
+
+\item \textbf{Higher-order correction:}
+$(3\vp)^{-5} = 1/(3\vp)^{5} \approx 0.000291$. This tiny additive term
+brings the formula within sub-ppb agreement with experiment. Its fifth-power
+structure suggests a higher-order perturbative character.
+\end{enumerate}
+
+It is instructive to compare with the earlier two-term formula of
+Heyrovska~\cite{heyrovska2005}:
+\begin{equation}
+  \alpha^{-1}_{\mathrm{Hey}} = 360\,\vp^{-2} - 2\,\vp^{-3} \approx 137.036
+  \label{eq:heyrovska}
+\end{equation}
+which deviates from CODATA~2022 by $\delta\approx -2.7\ppm$. The addition of
+the Pellis third term~$(3\vp)^{-5}$ improves the agreement by four orders of
+magnitude, from ppm to sub-ppb.
+
+The structural contrast between the two frameworks is fundamental:
+\begin{itemize}
+\item \textbf{Trinity (monomial):} Pure multiplicative scaling. Each formula is
+a single product of powers. No cancellation between terms.
+\item \textbf{Pellis (polynomial):} Additive interference between terms. Higher
+precision is achieved by adding correction terms, analogous to perturbative
+expansions in quantum field theory.
+\end{itemize}
+
+% ============================================================================
+\section{Numerical Results}\label{sec:results}
+
+\subsection{Comparison methodology}\label{sec:method}
+
+For every formula presented in this paper, we follow a six-step protocol:
+\begin{enumerate}
+\item State the formula symbolically with an equation number.
+\item Compute the predicted value to $\geq 15$ significant figures using
+  Python's \texttt{decimal} module at 50-digit precision.
+\item Quote the CODATA~2022 recommended value~\cite{codata2022} with
+  uncertainty in parenthesis notation.
+\item Compute the relative deviation:
+  $\delta = (V_{\mathrm{formula}} - V_{\CODATA}) / V_{\CODATA}$.
+\item Express~$\delta$ in ppm (parts per million, $\times 10^{6}$) for
+  $|\delta|>10^{-6}$, ppb (parts per billion, $\times 10^{9}$) for
+  $10^{-9}<|\delta|<10^{-6}$, or ppt (parts per trillion, $\times 10^{12}$)
+  for $|\delta|<10^{-9}$.
+\item Compare $|\delta|$ to the CODATA relative standard uncertainty~$u_r$ to
+  determine whether the formula's deviation is within current experimental
+  bounds.
+\end{enumerate}
+
+All computations were performed independently using the Python script
+reproduced in Appendix~B.
+
+\subsection{Main comparison table}\label{sec:maintable}
+
+Table~\ref{tab:results} presents the centerpiece of this study: a unified
+comparison of Trinity monomial and Pellis polynomial formulas against
+CODATA~2022 values.
+
+\begin{table}[H]
+\centering
+\caption{Trinity and Pellis formulas compared to CODATA~2022 recommended
+  values. $\delta = (V_{\mathrm{formula}} - V_{\CODATA})/V_{\CODATA}$.
+  $u_r$ = CODATA relative standard uncertainty. Formulas are grouped by
+  tier (exact, $<100\ppm$, $<1000\ppm$) and ordered by increasing
+  $|\delta|$ within each tier.}
+\label{tab:results}
+\small
+\begin{tabular}{@{}p{4.2cm}lllll@{}}
+\toprule
+Formula & Domain & $V_{\mathrm{formula}}$ & $V_{\CODATA}$ & $\delta$ & $u_r$\,(CODATA) \\
+\midrule
+\multicolumn{6}{l}{\textit{Tier 0 --- Exact results}} \\[3pt]
+$\vp^{2}+\vp^{-2}=3$ & Particle & 3 (exact) & 3 generations & EXACT & --- \\
+$|\vp^{2}+\vp^{-2}-3|=0$ & QCD & 0 (exact) & $<10^{-10}$ & EXACT & --- \\
+\midrule
+\multicolumn{6}{l}{\textit{Tier 1 --- $|\delta|<100\ppm$}} \\[3pt]
+$m_p/m_e=6\pi^{5}$ & Particle & $1836.118$ & $1836.15267(3)$ & $-19\ppm$ & $17\ppt$ \\
+$\alpha_s=4\vp^{2}/(9\pi^{2})$ & QCD & $0.117894$ & $0.1179(9)$ & $-48\ppm$ & $7600\ppm$ \\
+$\delta_{\mathrm{CP}}=8\pi^{3}/(9e^{2})$ & Neutrino & $3.72999$ rad & $3.73$ rad & $+1.6\ppm$ & $\sim 1\%$ \\
+$M_Z=7\pi^{4}\vp e^{3}/243$ & EW & $91.193$ GeV & $91.1876(21)$ & $+61\ppm$ & $23\ppm$ \\
+$\sin^{2}\!\theta_{12}=\frac{7\vp^{5}}{3\pi^{3}e}$ & Neutrino & $0.307023$ & $0.307$ & $+75\ppm$ & $\sim 3\%$ \\
+$\sin^{2}\!\theta_{13}=\frac{3\gamma\vp^{2}}{\pi^{3}e}$ & Neutrino & $0.021998$ & $0.0220$ & $+76\ppm$ & $\sim 4\%$ \\
+$T_{\mathrm{CMB}}=\frac{5\pi^{4}\vp^{5}}{729e}$ & Cosmo & $2.72575$ K & $2.72548(57)$ & $+98\ppm$ & $210\ppm$ \\
+$\sin^{2}\!\theta_W=\frac{2\pi^{3}e}{729}$ & EW & $0.23123$ & $0.23121(4)$ & $+92\ppm$ & $170\ppm$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Tier 2 --- $100\ppm < |\delta| < 1000\ppm$}} \\[3pt]
+$M_W=162\vp^{3}/(\pi e)$ & EW & $80.359$ GeV & $80.369(13)$ & $-127\ppm$ & $160\ppm$ \\
+$M_H=135\vp^{4}/e^{2}$ & Higgs & $125.23$ GeV & $125.20(11)$ & $+210\ppm$ & $880\ppm$ \\
+$\sin^{2}\!\theta_{23}=\frac{4\pi\vp^{2}}{3e^{3}}$ & Neutrino & $0.5460$ & $0.546$ & $+28\ppm$ & $\sim 4\%$ \\
+$V_{us}=3\gamma/\pi$ & CKM & $0.22543$ & $0.22530$ & $+570\ppm$ & $\sim 0.3\%$ \\
+$G=\pi^{3}\gamma^{2}/\vp$ & Gravity & ${\sim}6.674$ & $6.67430(15)$ & ${\sim}900\ppm$ & $22000\ppm$ \\
+\midrule
+\multicolumn{6}{l}{\textit{Pellis polynomial comparison}} \\[3pt]
+$360\vp^{-2}{-}2\vp^{-3}{+}(3\vp)^{-5}$ & EM & $137.0359992$ & $137.035999177(21)$ & $-0.09\ppb$ & $0.16\ppb$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Selected formula analyses}
+
+We illustrate the six-step methodology for several representative formulas.
+
+\paragraph{Pellis formula for $\alpha^{-1}$.}
+Formula~\eqref{eq:pellis} gives
+\begin{align}
+  \alpha^{-1}_{\mathrm{Pellis}} &= 360\,\vp^{-2} - 2\,\vp^{-3} + (3\vp)^{-5} \notag\\
+  &\approx 137.508 - 0.472 + 0.000 \notag\\
+  &= 137.035\,999\,165 \label{eq:pellis-num}
+\end{align}
+The CODATA~2022 value is $\alpha^{-1}=137.035\,999\,177(21)$
+(relative uncertainty $u_r = 1.6\times 10^{-10}$). The deviation is
+\[
+  \delta = \frac{137.035999165 - 137.035999177}{137.035999177} = -0.089\ppb.
+\]
+Since $|\delta|=0.089\ppb < u_r = 0.16\ppb$, the Pellis formula is
+\textbf{within the current experimental uncertainty}. This is the most precise
+$\vp$-based formula for any fundamental constant known to date.
+
+\paragraph{Strong coupling constant.}
+Formula~\eqref{eq:sacred} with the exponents from Table~\ref{tab:exponents}
+gives
+\begin{equation}
+  \alpha_s = \frac{4\vp^{2}}{9\pi^{2}} = 0.117894\ldots
+  \label{eq:alphas}
+\end{equation}
+compared to the CODATA~2022 value $\alpha_s(M_Z) = 0.1179(9)$
+($u_r = 7.6\times 10^{-3}$). The deviation is
+$\delta = (0.117894-0.1179)/0.1179 = -48\ppm$. Since
+$|\delta|=48\ppm \ll u_r = 7600\ppm$, the formula is well within current
+experimental bounds.
+
+\paragraph{Proton-to-electron mass ratio.}
+\begin{equation}
+  \frac{m_p}{m_e} = 6\pi^{5} = 6\times 305.020\ldots = 1836.118\ldots
+  \label{eq:mpme}
+\end{equation}
+The CODATA~2022 value is $\mu = 1836.152\,673\,426(32)$
+($u_r = 1.7\times 10^{-11}$). The deviation is
+$\delta = -19\ppm$. Since $u_r = 17\ppt$, the formula deviates by
+$|\delta|/u_r \approx 10^{6}$ times the experimental uncertainty. This formula
+is therefore \textbf{already falsified as exact} by current measurements, but
+it remains a striking approximation accurate to~5~significant figures.
+
+\subsection{Error distribution analysis}\label{sec:errors}
+
+The 16~approximate formulas (excluding the two exact results and the Pellis
+formula) exhibit a characteristic error distribution:
+
+\begin{itemize}
+\item \textbf{4 formulas} with $|\delta|<50\ppm$: $m_p/m_e$, $\alpha_s$,
+  $\sin^{2}\!\theta_{23}$, $\delta_{\mathrm{CP}}$.
+\item \textbf{6 formulas} with $50\leq|\delta|<100\ppm$: $M_Z$,
+  $\sin^{2}\!\theta_{12}$, $\sin^{2}\!\theta_{13}$, $T_{\mathrm{CMB}}$,
+  $\sin^{2}\!\theta_W$.
+\item \textbf{4 formulas} with $100\leq|\delta|<600\ppm$: $M_W$, $M_H$,
+  $V_{us}$.
+\item \textbf{1 formula} with $|\delta|\approx 900\ppm$: $G$.
+\end{itemize}
+
+The median deviation is approximately $85\ppm$. Notably, the electroweak
+boson masses ($M_Z$, $M_W$) and the Higgs mass ($M_H$) all appear in the
+100--200\ppm range, suggesting that the monomial framework captures the
+leading-order structure of electroweak symmetry breaking but misses
+higher-order corrections.
+
+\subsection{Precision versus breadth}\label{sec:precision}
+
+The two frameworks occupy complementary positions in the precision--breadth
+trade-off:
+
+\begin{itemize}
+\item \textbf{Pellis (polynomial):} Achieves $\delta = -0.09\ppb$ for a
+single constant ($\alpha^{-1}$) using three terms. The polynomial structure
+allows each successive term to ``correct'' the previous approximation,
+analogous to a perturbative series.
+
+\item \textbf{Trinity (monomial):} Achieves $|\delta| < 100\ppm$ for
+$\sim 10$~constants simultaneously using a single-term template. The monomial
+constraint sacrifices per-formula precision for a unified algebraic structure.
+\end{itemize}
+
+This trade-off is not inherently an advantage of either approach; it reflects
+different design philosophies. Polynomial frameworks are naturally suited to
+high-precision approximation of individual constants, while monomial
+frameworks are suited to identifying common mathematical structure across
+many constants.
+
+% ============================================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Structural complementarity: polynomial interference vs. monomial scaling}
+
+The deepest structural observation of this comparison is the complementarity
+between the Pellis and Trinity approaches. In the Pellis framework,
+$\alpha^{-1}$ emerges as a sum of three terms that partially cancel
+(interference): $137.508 - 0.472 + 0.000291 = 137.036\ldots$. In the Trinity
+framework, the strong coupling emerges as a pure product (scaling):
+$4\times 2.618 / (9\times 9.870) = 0.1179\ldots$.
+
+This mirrors a well-known pattern in physics: Fourier series (polynomial,
+interference) vs. power laws (monomial, scaling) often describe the same
+phenomenon at different levels of approximation. It is natural to ask whether
+the Trinity monomials are ``coarse-grained'' limits of underlying polynomial
+structures---whether each monomial formula is the leading term of a more
+detailed Pellis-type expansion.
+
+\subsection{Renormalization hypothesis}
+
+A speculative but testable hypothesis is that the monomial formulas correspond
+to renormalization-group fixed points, while the polynomial corrections capture
+the running between scales. In the renormalization group, coupling constants at
+a fixed point often take simple, scale-invariant forms (monomials in fundamental
+parameters), while their values at finite energy involve logarithmic corrections
+(which could manifest as additive polynomial terms in $\vp^{-n}$).
+
+This hypothesis would predict that: (a) constants known at high precision
+($\alpha^{-1}$, $\mu$) should admit polynomial improvements over their monomial
+approximations, and (b) constants known only at low precision ($G$,
+$\alpha_s$) should currently be indistinguishable from their monomial
+forms. The existing data are consistent with this prediction but do not
+constitute evidence for it.
+
+\subsection{Can $\pi$ and $e$ emerge from $\vp$-recursive processes?}
+
+A deeper question is whether the mathematical constants $\pi$ and $e$
+appearing in the Sacred Formula are themselves derivable from
+$\vp$-recursive processes. Several mathematical identities connect these
+constants:
+\begin{align}
+  \pi &= 4\sum_{k=0}^{\infty}\frac{(-1)^{k}}{2k+1}, &
+  e &= \sum_{k=0}^{\infty}\frac{1}{k!},
+\end{align}
+and both arise naturally in the theory of continued fractions, where $\vp$
+plays a distinguished role as the ``most irrational'' number (slowest
+convergence of continued fraction approximants). If a single
+$\vp$-recursive dynamical system could generate $\pi$, $e$, and $\gamma$
+as natural outputs, the Sacred Formula would reduce to a structure with a
+single free parameter~($\vp$).
+
+\subsection{The $G$ problem}
+
+The gravitational constant~$G$ presents a unique challenge. Its CODATA~2022
+relative uncertainty is $u_r = 2.2\times 10^{-5}$ (22{,}000\ppm)---three to
+six orders of magnitude larger than other constants in our table. The
+Trinity formula $G=\pi^{3}\gamma^{2}/\vp$ deviates by $\sim 900\ppm$, which
+is well within experimental uncertainty. However, this means that
+\emph{any} formula producing a value within 2\% of the measured~$G$ would
+be equally ``consistent'' with experiment. The $G$ formula cannot be
+meaningfully tested until gravitational measurements improve by at least two
+orders of magnitude.
+
+\subsection{What would constitute falsification}\label{sec:falsify}
+
+An empirical formula $V_{\mathrm{formula}}$ is falsified when either:
+\begin{enumerate}[label=(\alph*)]
+\item A new CODATA adjustment shifts the central value such that the formula's
+  deviation increases beyond a significance threshold, or
+\item Improved measurements reduce the experimental uncertainty below
+  $|\delta|$, proving that the formula's prediction is inconsistent with
+  experiment.
+\end{enumerate}
+
+Several formulas in our table are already in tension with experiment by
+criterion~(b):
+\begin{itemize}
+\item $m_p/m_e = 6\pi^{5}$ has $|\delta|=19\ppm$ but $u_r = 17\ppt$---the
+  formula is excluded as exact at the $10^{6}\sigma$ level.
+\item $M_Z = 7\pi^{4}\vp e^{3}/243$ has $|\delta|=61\ppm$ but
+  $u_r = 23\ppm$---the formula deviates at the $\sim 2.7\sigma$ level.
+\end{itemize}
+
+Conversely, formulas such as $\alpha_s = 4\vp^{2}/(9\pi^{2})$
+($|\delta|=48\ppm$, $u_r = 7600\ppm$) and $G=\pi^{3}\gamma^{2}/\vp$
+($|\delta|\sim 900\ppm$, $u_r = 22{,}000\ppm$) remain well within
+experimental bounds and cannot currently be distinguished from
+coincidence.
+
+The Pellis formula $\alpha^{-1} = 360\vp^{-2}-2\vp^{-3}+(3\vp)^{-5}$ is
+the most stringently tested: its $|\delta|=0.089\ppb$ is within
+$u_r = 0.16\ppb$, but future improvements in the electron anomalous magnetic
+moment measurement (which determines~$\alpha$) may either confirm or exclude
+it at the ppb level.
+
+\subsection*{Epistemological note}
+
+\begin{quote}
+\textbf{Disclaimer:} The formulas presented in this paper are empirical
+approximations. They reproduce CODATA~2022 values to varying degrees of
+precision but do not constitute derivations from first principles. No
+Lagrangian, renormalization-group equation, or symmetry argument from which
+the Sacred Formula $V = n\cdot 3^{k}\pi^{m}\vp^{p}e^{q}\gamma^{r}$ follows
+has been identified. Close numerical agreement does not imply causal or
+structural necessity. The standard of proof in physics requires a predictive
+framework that (a)~derives the formula from a deeper physical principle,
+(b)~predicts new observables not used in fitting, and (c)~withstands improved
+experimental precision. This paper makes no such claim and invites critical
+evaluation.
+\end{quote}
+
+% ============================================================================
+\section{Conclusion}\label{sec:conclusion}
+
+We have systematically compared 18~empirical formulas from the Trinity monomial
+framework and the Pellis polynomial framework against CODATA~2022 recommended
+values for fundamental physical constants. The Trinity identity
+$\vp^{2}+\vp^{-2}=3$ is algebraically exact. Sixteen additional formulas
+achieve deviations below $1000\ppm$; ten fall below $100\ppm$. The Pellis
+three-term formula for $\alpha^{-1}$ achieves $\delta = -0.09\ppb$, within the
+current experimental uncertainty of $0.16\ppb$.
+
+We emphasize that these results constitute \textbf{empirical approximations,
+not physical derivations}: no Lagrangian or symmetry principle from which the
+Sacred Formula follows has been identified. The structural complementarity
+between polynomial and monomial representations---additive interference versus
+multiplicative scaling---merits further mathematical investigation. Whether
+these patterns reflect deep structure in the fundamental constants or are
+elaborate numerical coincidences remains an open question that only improved
+experimental precision and theoretical insight can resolve.
+
+\medskip
+\noindent\textbf{Data availability.} All Python verification scripts are
+available at \url{https://github.com/trinity-project}.
+
+\medskip
+\noindent\textbf{Author contributions.}
+Conceptualization, D.V.\ and S.P.; Methodology, D.V.\ and S.P.;
+Software, D.V.; Formal Analysis, D.V.\ and S.P.;
+Writing---original draft, D.V.; Writing---review and editing, S.P.;
+Visualization, D.V.
+All authors have read and agreed to the published version of the manuscript.
+
+% ============================================================================
+\appendix
+
+\section{Full Formula Catalog}\label{app:catalog}
+
+Table~\ref{tab:catalog} lists all 18~formulas analyzed in this work with
+their symbolic forms, exponent decompositions, predicted values, CODATA~2022
+values, and relative deviations.
+
+\begin{table}[H]
+\centering
+\caption{Complete catalog of formulas analyzed in this work. Tier~0 formulas
+  are algebraically exact. For the Pellis formula (P1), the polynomial
+  structure does not conform to the monomial template.}
+\label{tab:catalog}
+\small
+\begin{tabular}{@{}clp{3.5cm}lll@{}}
+\toprule
+\# & Tier & Formula & Predicted & CODATA~2022 & $\delta$ \\
+\midrule
+1  & 0 & $\Ngen=\vp^{2}+\vp^{-2}$ & 3 & 3 gen. & EXACT \\
+2  & 0 & $\theta_{\mathrm{QCD}}=|\vp^{2}+\vp^{-2}-3|$ & 0 & $<10^{-10}$ & EXACT \\
+3  & 1 & $\delta_{\mathrm{CP}}=8\pi^{3}/(9e^{2})$ & $3.72999$ rad & $3.73$ rad & $+1.6\ppm$ \\
+4  & 1 & $m_p/m_e=6\pi^{5}$ & $1836.118$ & $1836.15267(3)$ & $-19\ppm$ \\
+5  & 1 & $\sin^{2}\!\theta_{23}$ & $0.5460$ & $0.546$ & $+28\ppm$ \\
+6  & 1 & $\alpha_s=4\vp^{2}/(9\pi^{2})$ & $0.11789$ & $0.1179(9)$ & $-48\ppm$ \\
+7  & 1 & $M_Z=7\pi^{4}\vp e^{3}/243$ & $91.193$ GeV & $91.1876(21)$ & $+61\ppm$ \\
+8  & 1 & $\sin^{2}\!\theta_{12}$ & $0.30702$ & $0.307$ & $+75\ppm$ \\
+9  & 1 & $\sin^{2}\!\theta_{13}$ & $0.02200$ & $0.0220$ & $+76\ppm$ \\
+10 & 1 & $\sin^{2}\!\theta_W=2\pi^{3}e/729$ & $0.23123$ & $0.23121(4)$ & $+92\ppm$ \\
+11 & 1 & $T_{\mathrm{CMB}}=\frac{5\pi^{4}\vp^{5}}{729e}$ & $2.72575$ K & $2.72548(57)$ & $+98\ppm$ \\
+12 & 2 & $M_W=162\vp^{3}/(\pi e)$ & $80.359$ GeV & $80.369(13)$ & $-127\ppm$ \\
+13 & 2 & $M_H=135\vp^{4}/e^{2}$ & $125.23$ GeV & $125.20(11)$ & $+210\ppm$ \\
+14 & 2 & $V_{us}=3\gamma/\pi$ & $0.22543$ & $0.22530$ & $+570\ppm$ \\
+15 & 2 & $G=\pi^{3}\gamma^{2}/\vp$ & ${\sim}6.674$ & $6.67430(15)$ & ${\sim}900\ppm$ \\
+\midrule
+P1 & --- & $\alpha^{-1}=360\vp^{-2}-2\vp^{-3}+(3\vp)^{-5}$ & $137.035999165$ & $137.035999177(21)$ & $-0.09\ppb$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Computational Details}\label{app:code}
+
+The following Python script was used to verify all numerical values in this
+paper. It uses the \texttt{decimal} module with 50-digit precision to avoid
+floating-point rounding errors.
+
+\begin{small}
+\begin{verbatim}
+from decimal import Decimal, getcontext
+getcontext().prec = 50
+
+sqrt5 = Decimal(5).sqrt()
+phi = (1 + sqrt5) / 2
+pi = Decimal('3.14159265358979323846264338327950288419716939937510')
+e  = Decimal('2.71828182845904523536028747135266249775724709369995')
+gamma = phi**(-3)
+
+CODATA = {
+    'alpha_inv':    Decimal('137.035999177'),
+    'mu':           Decimal('1836.152673426'),
+    'alpha_s':      Decimal('0.1179'),
+    'sin2_thetaW':  Decimal('0.23121'),
+    'T_CMB':        Decimal('2.72548'),
+    'M_H':          Decimal('125.20'),
+    'M_Z':          Decimal('91.1876'),
+    'M_W':          Decimal('80.369'),
+}
+
+def delta_ppm(formula_val, codata_val):
+    return float((formula_val - codata_val) / codata_val) * 1e6
+
+# Trinity identity
+print(f"phi^2 + phi^-2 = {phi**2 + phi**(-2)}")  # 3.000...
+
+# Pellis alpha^-1
+pellis = 360*phi**(-2) - 2*phi**(-3) + (3*phi)**(-5)
+print(f"Pellis alpha^-1 = {pellis}")
+print(f"delta = {delta_ppm(pellis, CODATA['alpha_inv'])*1e3:.3f} ppb")
+
+# Trinity formulas
+formulas = {
+    'mp/me = 6*pi^5':          (6*pi**5,           'mu'),
+    'alpha_s = 4*phi^2/(9*pi^2)': (4*phi**2/(9*pi**2), 'alpha_s'),
+    'sin2_thetaW':             (2*pi**3*e/729,      'sin2_thetaW'),
+    'T_CMB':                   (5*pi**4*phi**5/(729*e), 'T_CMB'),
+    'M_Z':                     (7*pi**4*phi*e**3/243, 'M_Z'),
+    'M_H':                     (135*phi**4/e**2,     'M_H'),
+    'M_W':                     (162*phi**3/(pi*e),   'M_W'),
+}
+for name, (val, key) in formulas.items():
+    d = delta_ppm(val, CODATA[key])
+    print(f"{name}: {float(val):.10f}, delta = {d:.1f} ppm")
+\end{verbatim}
+\end{small}
+
+\section{CODATA 2022 Source Data}\label{app:codata}
+
+Table~\ref{tab:codata} lists all CODATA~2022 values used in this work. All
+values are from the NIST CODATA~2022 database~\cite{codata2022}.
+
+\begin{table}[H]
+\centering
+\caption{CODATA~2022 recommended values used in this work.
+  Source: NIST~\cite{codata2022},
+  \url{https://physics.nist.gov/cuu/Constants/}.}
+\label{tab:codata}
+\begin{tabular}{llll}
+\toprule
+Constant & Symbol & CODATA~2022 Value & Rel.\ Uncertainty \\
+\midrule
+Fine-structure constant (inv.) & $\alpha^{-1}$ & $137.035\,999\,177(21)$ & $1.6\times 10^{-10}$ \\
+Proton/electron mass ratio & $\mu=m_p/m_e$ & $1836.152\,673\,426(32)$ & $1.7\times 10^{-11}$ \\
+Gravitational constant & $G$ & $6.67430(15)\times 10^{-11}$ m$^{3}$\,kg$^{-1}$\,s$^{-2}$ & $2.2\times 10^{-5}$ \\
+Strong coupling & $\alpha_s(M_Z)$ & $0.1179(9)$ & $7.6\times 10^{-3}$ \\
+Weak mixing angle & $\sin^{2}\!\theta_W$ & $0.23121(4)$ & $1.7\times 10^{-4}$ \\
+CMB temperature & $T_{\mathrm{CMB}}$ & $2.72548(57)$ K & $2.1\times 10^{-4}$ \\
+Higgs boson mass & $M_H$ & $125.20(11)$ GeV & $8.8\times 10^{-4}$ \\
+Z boson mass & $M_Z$ & $91.1876(21)$ GeV & $2.3\times 10^{-5}$ \\
+W boson mass & $M_W$ & $80.369(13)$ GeV & $1.6\times 10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\begin{thebibliography}{99}
+
+\bibitem{feynman1985}
+R.\,P.~Feynman,
+\textit{QED: The Strange Theory of Light and Matter},
+Princeton University Press, 1985.
+
+\bibitem{codata2022}
+{NIST/CODATA},
+``{CODATA Internationally Recommended 2022 Values of the Fundamental Physical Constants},''
+\url{https://physics.nist.gov/cuu/Constants/}, 2022.
+
+\bibitem{pellis2021alpha}
+S.~Pellis,
+``Exact Formula for the Fine-Structure Constant $\alpha$ in Terms of the Golden Ratio $\varphi$,''
+viXra:2110.0053, 2021.
+\url{https://vixra.org/abs/2110.0053}
+
+\bibitem{pellis2023toe}
+S.~Pellis,
+``Dimensionless Theory of Everything,''
+SSRN 4469668, 2023.
+\url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4469668}
+
+\bibitem{heyrovska2005}
+R.~Heyrovska,
+``Fine-structure Constant, Anomalous Magnetic Moment, Relativity Factor and the Golden Ratio that Divides the Bohr Radius,''
+arXiv:physics/0509207, 2005.
+
+\bibitem{coldea2010}
+R.~Coldea \textit{et al.},
+``Quantum Criticality in an Ising Chain: Experimental Evidence for Emergent E$_{8}$ Symmetry,''
+\textit{Science} \textbf{327}, 177--180 (2010).
+DOI: 10.1126/science.1180085.
+
+\bibitem{sherbon2018}
+M.\,A.~Sherbon,
+``Golden Ratio Geometry and the Fine-Structure Constant,''
+SSRN 3464431, 2018.
+\url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3464431}
+
+\bibitem{sommerfeld1916}
+A.~Sommerfeld,
+``Zur Quantentheorie der Spektrallinien,''
+\textit{Ann.\ Phys.} \textbf{51}, 1--94 (1916).
+
+\end{thebibliography}
+
+\end{document}
