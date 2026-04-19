@@ -1,0 +1,360 @@
+// @origin(spec:tri27_isa.zig) @regen(manual-impl)
+// TRI-27 DECODER — Unified Instruction Format for TRI-27 ISA
+// ═════════════════════════════════════════════════════════════════════════════
+// This is the SINGLE SOURCE OF TRUTH for Instruction encoding/decoding.
+// Both executor.zig and tri_emu_main.zig MUST use this definition.
+//
+// φ² + 1/φ² = 3 | TRINITY
+
+const std = @import("std");
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+// TRI-27 OPCODE ENUM
+// ═══════════════════════════════════════════════════════════════════════════════════
+pub const Opcode = enum(u8) {
+    // === ARITHMETIC (0x10-0x17) ===
+    NOP = 0x00,
+    MOV = 0x0F, // Move register to register
+    ADD = 0x10,
+    SUB = 0x11,
+    MUL = 0x12,
+    DIV = 0x13,
+    INC = 0x14,
+    DEC = 0x15,
+    EXP = 0x16, // e^x (transcendental)
+    SIN = 0x17, // sin(x) (transcendental)
+
+    // === LOGIC (0x18-0x1D) ===
+    AND = 0x18,
+    OR = 0x19,
+    XOR = 0x1A,
+    NOT = 0x1B,
+    SHL = 0x1C,
+    SHR = 0x1D,
+
+    // === MEMORY (0x02-0x05) ===
+    LD = 0x02,
+    ST = 0x03,
+    LDI = 0x04, // Load immediate
+    STI = 0x05, // Store immediate
+
+    // === CONTROL (0x40-0x4F) ===
+    JMP = 0x40,
+    JZ = 0x41,
+    JNZ = 0x42,
+    JGT = 0x44, // Jump if Greater Than
+    JLT = 0x45, // Jump if Less Than
+    CALL = 0x43,
+    RET = 0x4B,
+    HALT = 0x4D,
+
+    // === TERNARY (0x60-0x6D) ===
+    DOT = 0x60, // Dot product (VSA/TF3)
+    BIND = 0x61, // Bind two vectors
+    BUNDLE2 = 0x62, // Bundle 2 vectors
+    BUNDLE3 = 0x63, // Bundle 3 vectors
+
+    // === SACRED (0x80-0x92) ===
+    PHI_CONST = 0x80,
+    PI_CONST = 0x81,
+    E_CONST = 0x82,
+    SACR = 0x83, // Sacred arithmetic operation
+
+    // === STRING I/O (0x20-0x22) ===
+    STR_LOAD = 0x20, // Load string literal
+    STR_CONCAT = 0x21, // Concatenate strings
+    STR_PRINT = 0x22, // Print string
+
+    // === FILE I/O (0x23-0x25) ===
+    FILE_READ = 0x23, // Read file to string
+    FILE_WRITE = 0x24, // Write string to file
+    FILE_EXISTS = 0x25, // Check file exists
+
+    // === EXECUTOR EXTENSIONS ===
+    LD_IMM = 0x84, // Load immediate (executor compatibility)
+    ADD3 = 0x85, // Ternary add (executor)
+    SUB3 = 0x86, // Ternary sub (executor)
+    CMP3 = 0x87, // Ternary compare (executor)
+    SYSCALL = 0x88, // System call (executor)
+};
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED INSTRUCTION STRUCT
+// ═══════════════════════════════════════════════════════════════════════════════════
+/// Single canonical Instruction format for TRI-27.
+/// Field names chosen for compatibility with executor.zig:
+///   - dst (not rd) : destination register
+///   - src1, src2   : source registers
+///   - immediate    : signed 16-bit immediate value
+///   - has_imm      : whether instruction uses immediate
+pub const Instruction = struct {
+    /// Operation code (enum for type safety)
+    opcode: Opcode,
+
+    /// Destination register (0-26)
+    dst: u8 = 0,
+
+    /// Source register 1 (0-26)
+    src1: u8 = 0,
+
+    /// Source register 2 (0-26)
+    src2: u8 = 0,
+
+    /// Immediate value (16-bit signed)
+    immediate: i16 = 0,
+
+    /// Has immediate flag
+    has_imm: bool = false,
+
+    /// Condition code (for branches) - unused in most instructions
+    cond: u8 = 0,
+};
+
+/// ═══════════════════════════════════════════════════════════════════════════════
+// DECODER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════════
+/// Decode 32-bit instruction word into Instruction struct
+/// Word format (hybrid):
+///   [7:0]   = opcode (8 bits)
+///   [12:8]  = dst (5 bits)
+///   For immediate instructions:
+///     [16:13] = src1 (4 bits)
+///     [31:17] = immediate (15 bits)
+///   For 3-operand instructions:
+///     [17:13] = src1 (5 bits)
+///     [22:18] = src2 (5 bits)
+pub fn decode(word: u32) Instruction {
+    const opcode_val = @as(u8, @truncate(word & 0xFF));
+    const opcode = std.meta.intToEnum(Opcode, opcode_val) catch Opcode.NOP;
+
+    const dst = @as(u8, @truncate((word >> 8) & 0x1F));
+
+    // Determine if instruction has immediate or src2
+    const has_imm = switch (opcode) {
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
+        else => false,
+    };
+
+    const has_src2 = switch (opcode) {
+        .ADD, .SUB, .MUL, .DIV, .AND, .OR, .XOR => true,
+        else => false,
+    };
+
+    // Decode src1 based on instruction type
+    const src1: u8 = if (has_imm)
+        @as(u8, @truncate((word >> 13) & 0x0F)) // 4 bits for immediate instructions
+    else
+        @as(u8, @truncate((word >> 13) & 0x1F)); // 5 bits for other instructions
+
+    const src2: u8 = if (has_src2) @as(u8, @truncate((word >> 18) & 0x1F)) else 0;
+
+    const immediate: i16 = blk: {
+        if (!has_imm) break :blk 0;
+        // Decode 15-bit immediate (bits 31-17)
+        const imm_raw = @as(u16, @truncate((word >> 17) & 0x7FFF));
+        if (imm_raw & 0x4000 != 0)
+            break :blk @as(i16, @bitCast(imm_raw | 0x8000))
+        else
+            break :blk @as(i16, @intCast(imm_raw));
+    };
+
+    // For BUNDLE3: extract src2 (lower 5 bits) and v3_reg (upper 9 bits) from bits 18-31
+    const src2_or_v3 = @as(u16, @truncate((word >> 18) & 0x3FFF));
+    const v3_reg = @as(u8, @truncate((src2_or_v3 >> 5) & 0x1F));
+
+    return Instruction{
+        .opcode = opcode,
+        .dst = dst,
+        .src1 = src1,
+        .src2 = if (opcode == .BUNDLE3) @as(u8, @truncate(src2_or_v3 & 0x1F)) else src2,
+        .immediate = immediate,
+        .has_imm = has_imm,
+        .cond = if (opcode == .BUNDLE3) v3_reg else 0,
+    };
+}
+
+/// Wrapper for external decode calls (backward compatibility)
+pub fn decodeInstruction(word: u32) Instruction {
+    return decode(word);
+}
+
+/// Encode Instruction to 32-bit word
+pub fn encode(inst: Instruction) u32 {
+    var word: u32 = @intFromEnum(inst.opcode);
+    word |= @as(u32, inst.dst) << 8;
+
+    // Determine if this instruction uses immediate or src2
+    const has_src2 = switch (inst.opcode) {
+        .ADD, .SUB, .MUL, .DIV, .AND, .OR, .XOR => true,
+        else => false,
+    };
+
+    const has_imm = switch (inst.opcode) {
+        .LD, .ST, .LDI, .STI, .LD_IMM, .PHI_CONST, .PI_CONST, .E_CONST, .JMP, .JZ, .JNZ, .JGT, .JLT, .CALL, .RET, .SHL, .SHR, .STR_LOAD, .STR_CONCAT, .STR_PRINT, .FILE_READ, .FILE_WRITE, .FILE_EXISTS => true,
+        else => false,
+    };
+
+    // For instructions with immediate, src1 is encoded in lower bits of immediate field (bits 13-16)
+    // For 3-operand instructions, src1 is at bits 13-17 and src2 at bits 18-22
+    if (has_imm) {
+        // Encode src1 in bits 13-16 (4 bits), immediate in bits 17-31 (15 bits)
+        word |= @as(u32, inst.src1 & 0x0F) << 13;
+        const imm_clamped = std.math.clamp(inst.immediate, -16384, 16383);
+        const imm_u15: u16 = @bitCast(@as(i16, imm_clamped));
+        word |= @as(u32, imm_u15 & 0x7FFF) << 17;
+    } else if (has_src2) {
+        // 3-operand instruction: src1 at bits 13-17, src2 at bits 18-22
+        word |= @as(u32, inst.src1) << 13;
+        word |= @as(u32, inst.src2) << 18;
+    } else {
+        // 2-operand instruction (like MOV, NOT): src1 at bits 13-17
+        word |= @as(u32, inst.src1) << 13;
+    }
+
+    return word;
+}
+
+/// Get opcode name for debugging
+pub fn getOpcodeName(opcode: Opcode) []const u8 {
+    return @tagName(opcode);
+}
+
+/// Format instruction as assembly string
+pub fn formatInstruction(inst: Instruction, writer: anytype) !void {
+    try writer.print("{s} ", .{getOpcodeName(inst.opcode)});
+
+    // Format destination
+    try writer.print("t{d}", .{inst.dst});
+
+    // Format based on opcode type
+    if (inst.has_imm) {
+        // Immediate instruction
+        try writer.print(", {d}", .{inst.immediate});
+    } else if (inst.opcode == .NOT or inst.opcode == .EXP or inst.opcode == .SIN) {
+        // Unary NOT, EXP, SIN (transcendental)
+        try writer.print(", t{d}", .{inst.src1});
+    } else if (inst.opcode == .MOV) {
+        // MOV is two-operand (dst, src1)
+        try writer.print(", t{d}", .{inst.src1});
+    } else if (inst.opcode == .STR_PRINT) {
+        // STR_PRINT: dst, src1 (string address - unary)
+        try writer.print(", t{d}", .{inst.src1});
+    } else if (inst.opcode == .FILE_WRITE) {
+        // FILE_WRITE: src1, src2 (path + data addresses, no dst)
+        try writer.print("t{d}, t{d}", .{ inst.src1, inst.src2 });
+    } else if (inst.opcode == .HALT or inst.opcode == .NOP or inst.opcode == .RET) {
+        // No operands
+    } else if (inst.opcode == .BUNDLE3) {
+        // BUNDLE3 has three operands
+        try writer.print(", t{d}, t{d}, t{d}", .{ inst.src1, inst.src2, inst.cond });
+    } else {
+        // Two-operand instruction
+        try writer.print(", t{d}", .{inst.src1});
+        if (inst.opcode == .CALL) {
+            // CALL uses immediate (relative offset)
+            try writer.print(", +{d}", .{inst.immediate});
+        } else if (inst.opcode == .JMP or inst.opcode == .JZ or inst.opcode == .JNZ) {
+            // Branches use immediate (offset)
+            try writer.print(", {d}", .{inst.immediate});
+        } else if (inst.opcode == .JGT or inst.opcode == .JLT) {
+            // JGT/JLT: dst, src1 already printed, add offset
+            try writer.print(", {d}", .{inst.immediate});
+        } else if (inst.opcode == .STR_CONCAT) {
+            // STR_CONCAT: dst, src1, src2 (three operands)
+            try writer.print(", t{d}, t{d}", .{ inst.src1, inst.src2 });
+        } else if (inst.opcode == .FILE_READ or inst.opcode == .FILE_EXISTS) {
+            // FILE_READ/FILE_EXISTS: dst, src1 (two operands)
+            try writer.print(", t{d}", .{inst.src1});
+        } else {
+            try writer.print(", t{d}", .{inst.src2});
+        }
+    }
+}
+
+/// Get short format string for disassembly output
+pub fn formatInstructionShort(inst: Instruction, buffer: []u8) []const u8 {
+    var fbs = std.io.fixedBufferStream(buffer);
+    formatInstruction(inst, fbs.writer()) catch return buffer;
+    return fbs.getWritten();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ════════════════════════════════════════════════════════════════════════════════════════
+
+test "decoder: decode NOP" {
+    const nop_word: u32 = 0x00000000;
+    const inst = decode(nop_word);
+    try std.testing.expectEqual(Opcode.NOP, inst.opcode);
+    try std.testing.expectEqual(@as(u8, 0), inst.dst);
+    try std.testing.expectEqual(@as(u8, 0), inst.src1);
+    try std.testing.expectEqual(@as(u8, 0), inst.src2);
+    try std.testing.expectEqual(@as(i16, 0), inst.immediate);
+    try std.testing.expect(!inst.has_imm);
+}
+
+test "decoder: encode roundtrip ADD" {
+    const inst = Instruction{
+        .opcode = .ADD,
+        .dst = 5,
+        .src1 = 3,
+        .src2 = 7,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.ADD, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 5), decoded.dst);
+    try std.testing.expectEqual(@as(u8, 3), decoded.src1);
+    try std.testing.expectEqual(@as(u8, 7), decoded.src2);
+}
+
+test "encoder: LDI roundtrip with 15-bit immediate" {
+    const inst = Instruction{
+        .opcode = .LDI,
+        .dst = 2,
+        .immediate = 42, // Positive value within 15-bit range
+        .has_imm = true,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 2), decoded.dst);
+    try std.testing.expectEqual(@as(i16, 42), decoded.immediate);
+    try std.testing.expect(decoded.has_imm);
+}
+
+test "encoder: LDI roundtrip with negative 15-bit immediate" {
+    const inst = Instruction{
+        .opcode = .LDI,
+        .dst = 3,
+        .immediate = -1000, // Negative value within 15-bit range (-16384 to 16383)
+        .has_imm = true,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 3), decoded.dst);
+    try std.testing.expectEqual(@as(i16, -1000), decoded.immediate);
+    try std.testing.expect(decoded.has_imm);
+}
+
+test "encoder: LDI roundtrip with positive 15-bit immediate" {
+    const inst = Instruction{
+        .opcode = .LDI,
+        .dst = 5,
+        .immediate = 1000, // Positive value within 15-bit range
+        .has_imm = true,
+    };
+    const word = encode(inst);
+    const decoded = decode(word);
+    try std.testing.expectEqual(Opcode.LDI, decoded.opcode);
+    try std.testing.expectEqual(@as(u8, 5), decoded.dst);
+    try std.testing.expectEqual(@as(i16, 1000), decoded.immediate);
+    try std.testing.expect(decoded.has_imm);
+}
+
+test "decoder: getOpcodeName" {
+    try std.testing.expectEqualStrings("NOP", getOpcodeName(Opcode.NOP));
+    try std.testing.expectEqualStrings("ADD", getOpcodeName(Opcode.ADD));
+    try std.testing.expectEqualStrings("HALT", getOpcodeName(Opcode.HALT));
+}
