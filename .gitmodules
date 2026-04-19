@@ -4,3 +4,9 @@
 [submodule "trinity/trinity-training/zig-golden-float"]
 	path = trinity/trinity-training/zig-golden-float
 	url = https://github.com/gHashTag/zig-golden-float.git
+[submodule "vendor/hdc"]
+	path = vendor/hdc
+	url = https://github.com/gHashTag/zig-hdc
+[submodule "vendor/physics"]
+	path = vendor/physics
+	url = https://github.com/gHashTag/zig-physics
