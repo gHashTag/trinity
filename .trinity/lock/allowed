@@ -1,0 +1,36 @@
+ALLOWED_MODULES:
+  zig-golden-float
+  zig-knowledge-graph
+  zig-crypto-mining
+  zig-physics
+  zig-hdc
+  zig-agents
+  zig-sacred-geometry
+  trinity-training
+DENIED_MODULES:
+  src/brain/
+  src/consciousness/
+  src/hyperspace/
+  src/quantum/
+  src/quantum_gravity/
+  src/particle_physics/
+  src/qcd/
+  src/dark_matter/
+  src/baryogenesis/
+  src/gravity/
+  src/monopoles/
+  src/plasma/
+  src/string_theory/
+  src/superconductivity/
+  src/maxwell/
+  src/cosmos/
+  src/reality/
+  src/hyperspace/
+  src/agent_mu/
+  src/autonomous/
+  src/background_agent/
+  src/orchestration/
+  src/mcp/
+  src/registry/
+  src/ralph/
+  src/storm/

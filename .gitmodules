@@ -1,3 +1,6 @@
 [submodule "external/zig-golden-float"]
 	path = external/zig-golden-float
 	url = https://github.com/gHashTag/zig-golden-float
+[submodule "trinity/trinity-training/zig-golden-float"]
+	path = trinity/trinity-training/zig-golden-float
+	url = https://github.com/gHashTag/zig-golden-float.git
