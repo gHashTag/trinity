@@ -14,6 +14,10 @@
             .url = "git+https://github.com/CogitatorTech/zodd#main",
             .hash = "zodd-0.1.0-alpha.3-TJEk3Y7uAQDOkBXaPV_lynH1rF-eDwf9PnVc13MpPFym",
         },
+        .zig_hdc = .{
+            .url = "git+https://github.com/gHashTag/zig-hdc#main",
+            .hash = "zig-hdc-0.1.0-????????????????????????????????????????",
+        },
     },
     .paths = .{""},
     .fingerprint = 0xa9f69745ba7ed82d,

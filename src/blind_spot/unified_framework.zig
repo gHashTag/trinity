@@ -23,11 +23,11 @@ const std = @import("std");
 const math = std.math;
 const mem = std.mem;
 
-// Import from canonical source
-const sacred_constants = @import("sacred_constants_reexport.zig");
+// Import from math_bridge (tri-math migration complete)
+const bridge = @import("../math_bridge.zig");
 
 /// Golden ratio φ = (1 + √5)/2
-pub const PHI = sacred_constants.PHI;
+pub const PHI = bridge.PHI;
 
 /// φ³ = 4.23606797749978969641...
 pub const PHI_CUBED: f64 = PHI * PHI * PHI;

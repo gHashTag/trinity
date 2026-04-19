@@ -1,0 +1,169 @@
+# ═════════════════════════════════════════════════════════════════════════════════
+# CRYPTIC FINDING ISLAND — Knowledge Discovery
+# ═════════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════════════
+
+name: tri_find_island
+version: "1.0.0"
+language: zig
+module: cli
+
+cli:
+  main_command: find
+  subcommand: island
+  description: "Discover hidden knowledge islands behind cryptic riddles"
+
+  commands:
+    - name: find island
+      description: "Search and discover knowledge islands guarded by riddles"
+      function: "runFindIslandCommand"
+      args: "<query>"
+      flags:
+        - name: "list"
+          type: "bool"
+          default: false
+          description: "List all available islands"
+
+        - name: "domain"
+          type: "string"
+          default: null
+          description: "Filter by domain (mathematics, physics, sacred_formula, vsa, blind_spots, etc.)"
+
+        - name: "clues"
+          type: "string"
+          default: null
+          description: "Show clues for a specific island ID"
+
+        - name: "solve"
+          type: "string"
+          default: null
+          description: "Submit answer to solve riddle for island ID"
+
+        - name: "hint"
+          type: "int"
+          default: null
+          description: "Get a hint (1-3) for solving the riddle"
+
+        - name: "discovered"
+          type: "bool"
+          default: false
+          description: "Show only discovered islands"
+
+        - name: "undiscovered"
+          type: "bool"
+          default: false
+          description: "Show only undiscovered islands"
+
+      examples:
+        - 'tri find island --list'
+        - 'tri find island "phi"'
+        - 'tri find island --domain sacred_formula'
+        - 'tri find island --clues island_phi_wisdom'
+        - 'tri find island --solve island_phi_wisdom "phi^2"'
+        - 'tri find island island_trinity --hint 2'
+
+types:
+  Island:
+    fields:
+      id: "String" # Unique identifier
+      name: "String" # Human-readable name
+      domain: "String" # Knowledge domain
+      riddle: "String" # The cryptic riddle
+      answer: "String" # Correct answer (case-insensitive)
+      knowledge: "String" # Knowledge revealed when solved
+      difficulty: "Int" # 1-10 difficulty rating
+      discovered: "Bool" # User discovery status
+      discovery_date: "String" # YYYY-MM-DD or null
+      clues_count: "Int" # Number of clues available
+
+  Clue:
+    fields:
+      id: "String" # Unique identifier
+      island_id: "String" # Parent island
+      hint: "String" # Cryptic hint text
+      hint_level: "Int" # 1=subtle, 2=clearer, 3=strong hint
+
+  DiscoveryProgress:
+    fields:
+      island_id: "String" # Reference to island
+      attempts: "Int" # Riddle attempts
+      hints_used: "Int" # Hints requested
+      clues_found: "List[String]" # Clue IDs discovered
+      solved: "Bool" # Whether completed
+
+  IslandFilter:
+    fields:
+      query: "String" # Search query
+      domain: "String" # Domain filter
+      show_discovered: "Bool" # Filter by discovery status
+      min_difficulty: "Int" # Minimum difficulty (inclusive)
+      max_difficulty: "Int" # Maximum difficulty (inclusive)
+
+  DiscoveryResult:
+    fields:
+      island: "Island" # The island
+      correct: "Bool" # Whether answer was correct
+      message: "String" # Feedback message
+      new_clue_revealed: "Clue" # Optional new clue
+
+behaviors:
+  init:
+    given: "allocator"
+    when: "command starts"
+    then: "Load islands from .trinity/data/islands.json, create registry, return initialized instance"
+
+  listIslands:
+    given: "allocator, IslandFilter"
+    when: "user runs --list or provides query"
+    then: "Return list of Island matching filter, sorted by discovered then difficulty"
+
+  findIslandById:
+    given: "allocator, island_id (String)"
+    when: "lookup specific island"
+    then: "Return Island or null if not found"
+
+  submitAnswer:
+    given: "allocator, island_id (String), answer (String)"
+    when: "user runs --solve"
+    then: "Return DiscoveryResult with correctness, knowledge if correct, optional new clue"
+
+  getClues:
+    given: "allocator, island_id (String)"
+    when: "user runs --clues"
+    then: "Return list of Clue for that island, limited by discovery progress"
+
+  getHint:
+    given: "allocator, island_id (String), hint_level (Int)"
+    when: "user runs --hint"
+    then: "Return appropriate hint text based on progress"
+
+  recordDiscovery:
+    given: "allocator, island_id (String)"
+    when: "island solved for first time"
+    then: "Update island discovery status, save discovery progress to .trinity/data/discoveries.json"
+
+  validateAnswer:
+    given: "island (Island), answer (String)"
+    when: "checking solution"
+    then: "Return true if answer matches (case-insensitive, trimmed)"
+
+  searchIslands:
+    given: "allocator, query (String), IslandFilter"
+    when: "searching by name/domain/keywords"
+    then: "Return list of matching Island"
+
+  formatIslandSummary:
+    given: "island (Island)"
+    when: "displaying island info"
+    then: "Return formatted string with colors, difficulty indicator, discovery status"
+
+  formatClue:
+    given: "clue (Clue), revealed (Bool)"
+    when: "displaying clue"
+    then: "Return formatted string with hint level indicator"
+
+# Constants
+  STORAGE_PATH: ".trinity/data/islands.json"
+  DISCOVERY_PATH: ".trinity/data/discoveries.json"
+  MAX_HINTS_PER_DAY: 3
