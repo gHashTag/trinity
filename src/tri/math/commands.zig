@@ -11,8 +11,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const unified = @import("../unified_output.zig");
-const tri_exit_codes = @import("../tri_exit_codes.zig");
+const unified = @import("unified_output.zig");
+const tri_exit_codes = @import("tri_exit_codes.zig");
 
 const parent_mod = @import("mod.zig");
 const format = @import("format.zig");
@@ -24,7 +24,7 @@ const identities_mod = @import("identities.zig");
 const gematria_math = @import("gematria.zig");
 const sacred_formula = @import("formula.zig");
 const blind_spots_mod = @import("blind_spots.zig");
-const sacred_v2 = @import("../tri_sacred_v2.zig");
+const sacred_v2 = @import("tri_sacred_v2.zig");
 const prediction_mod = @import("prediction.zig");
 const constants_table = @import("constants_table.zig");
 
@@ -252,7 +252,7 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 }
 
 pub fn runConstantsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const tri_config = @import("../tri_config.zig");
+    const tri_config = @import("tri_config.zig");
 
     // Check global JSON flag first
     const global_json = tri_config.isJsonOutput();

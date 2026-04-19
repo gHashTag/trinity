@@ -5,28 +5,38 @@
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED MATHEMATICS FRAMEWORK v2.0 — MODULE EXPORT
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
 // φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 
-// Define sacred constants directly (re-export from src/sacred_constants.zig)
-pub const PHI: f64 = 1.6180339887498948482;
-pub const PHI_SQUARED: f64 = PHI * PHI;
-pub const INVERSE_PHI_SQUARED: f64 = 1.0 / PHI_SQUARED;
-pub const TRINITY_SUM: f64 = 3.0;
-pub const MU: f64 = 0.0382;
-pub const CHI: f64 = 1.0 / PHI / 10.0; // 0.0618...
-pub const SIGMA: f64 = PHI; // 1.618... (σ = φ)
-pub const EPSILON: f64 = 1.0 / 3.0; // 0.333...
-pub const BERRY_PHASE: f64 = std.math.pi * (1.0 - 1.0 / PHI);
-pub const SU3_CONSTANT: f64 = 3.0 / (2.0 * PHI);
+// Import from canonical source (ANTI-PATTERN: no inline constants!)
+const sacred = @import("sacred_constants.zig");
 
-// Define extended math constants
-pub const PI: f64 = 3.14159265358979323846;
-pub const E: f64 = 2.71828182845904523536;
-pub const TRANSCENDENTAL: f64 = PI * PHI * E;
+// Re-export sacred constants (tri-math migration)
+pub const PHI = sacred.PHI;
+pub const PHI_SQUARED = sacred.PHI_SQ;
+pub const INVERSE_PHI_SQUARED = sacred.PHI_INV_SQ;
+pub const TRINITY_SUM = sacred.TRINITY;
+
+// Extended constants (from math_bridge for compatibility)
+// Extended constants from sacred_constants.zig
+pub const PI = sacred.PI;
+pub const E = sacred.E;
+pub const TAU = sacred.TAU;
+pub const TRANSCENDENTAL = sacred.PI * sacred.PHI;
+
+pub const format = @import("format.zig");
+pub const constants = @import("constants.zig");
+pub const eval = @import("eval.zig");
+pub const compute = @import("compute.zig");
+pub const bench = @import("bench.zig");
+pub const identities = @import("identities.zig");
+pub const sacred_formula = @import("formula.zig");
+pub const gematria_math = @import("gematria.zig");
+pub const blind_spots = @import("blind_spots.zig");
+pub const gif_generator = @import("gif_generator.zig");
 
 // Fibonacci and Lucas tables
 pub const FIBONACCI_TABLE: [20]i64 = .{ 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181 };
@@ -101,24 +111,12 @@ pub fn phiHashMod(key: u64, table_bits: u6) usize {
     return @intCast(phiHash(key, shift));
 }
 
-// Submodules
-pub const format = @import("format.zig");
-pub const constants = @import("constants.zig");
-pub const eval = @import("eval.zig");
-pub const compute = @import("compute.zig");
-pub const bench = @import("bench.zig");
-pub const identities = @import("identities.zig");
-pub const sacred_formula = @import("formula.zig");
-pub const gematria_math = @import("gematria.zig");
-pub const blind_spots = @import("blind_spots.zig");
-pub const gif_generator = @import("gif_generator.zig");
-
 // Version
 pub const version = "4.0.0";
 
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═══════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
 
 test "module exports" {
     _ = format;
