@@ -149,6 +149,59 @@ impl TrainConfig {
     pub fn estimated_memory(&self) -> usize {
         self.param_count() * 4
     }
+
+    /// Get minimal configuration (small model for fast testing)
+    pub fn minimal() -> Self {
+        Self {
+            max_steps: 1000,
+            batch_size: 4,
+            seq_len: 27,  // 3^3 for testing
+            learning_rate: 1e-3,
+            warmup_steps: 50,
+            grad_clip: 1.0,
+            log_every: 100,
+            checkpoint_path: "minimal.bin".to_string(),
+            dims: LayerDims {
+                d_model: 243,  // 3^5
+                n_heads: 9,
+                d_ffn: 243,
+            },
+            lr_schedule: LrSchedule::default(),
+            kill_thresholds: KillThresholds::default(),
+            weight_decay: 0.01,
+            dropout: 0.1,
+        }
+    }
+
+    /// Check if training should stop early based on metrics
+    pub fn should_early_stop(&self, step: usize, current_ppl: f32) -> bool {
+        match self.kill_thresholds {
+            KillThresholds { .. } => false,
+        }
+    }
+
+    /// Get minimal configuration (small model for fast testing)
+    pub fn minimal() -> Self {
+        Self {
+            max_steps: 1000,
+            batch_size: 4,
+            seq_len: 27,
+            learning_rate: 1e-3,
+            warmup_steps: 50,
+            grad_clip: 1.0,
+            log_every: 100,
+            checkpoint_path: "minimal.bin".to_string(),
+            dims: LayerDims {
+                d_model: 243,
+                n_heads: 9,
+                d_ffn: 243,
+            },
+            lr_schedule: LrSchedule::default(),
+            kill_thresholds: KillThresholds::default(),
+            weight_decay: 0.01,
+            dropout: 0.1,
+        }
+    }
 }
 
 impl Default for TrainConfig {

@@ -204,6 +204,26 @@ pub enum TrainingPhase {
     Ntp,
 }
 
+impl TrainingPhase {
+    /// Get phase name for display
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::Nca => "NCA",
+            Self::Jepa => "JEPA",
+            Self::Ntp => "NTP",
+        }
+    }
+
+    /// Get total steps for this phase
+    pub fn total_steps(&self) -> usize {
+        match self {
+            Self::Nca => 15000,
+            Self::Jepa => 40000,
+            Self::Ntp => 50000,
+        }
+    }
+}
+
 /// Get training phases for a specific objective
 ///
 /// Returns ordered list of phases to execute.
