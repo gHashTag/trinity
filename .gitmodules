@@ -10,3 +10,15 @@
 [submodule "vendor/physics"]
 	path = vendor/physics
 	url = https://github.com/gHashTag/zig-physics
+[submodule "vendor/trinity-brain"]
+	path = vendor/trinity-brain
+	url = https://github.com/gHashTag/zig-brain
+[submodule "vendor/zig-crypto-mining"]
+	path = vendor/zig-crypto-mining
+	url = https://github.com/gHashTag/zig-crypto-mining
+[submodule "crates/trios-hdc/vendor/zig-hdc"]
+	path = crates/trios-hdc/vendor/zig-hdc
+	url = https://github.com/gHashTag/zig-hdc
+[submodule "crates/trios-physics/vendor/zig-physics"]
+	path = crates/trios-physics/vendor/zig-physics
+	url = https://github.com/gHashTag/zig-physics
